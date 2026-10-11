@@ -31,6 +31,30 @@ describe('studio reference audio contracts',()=>{
  it('retains clips when sanitization is an identity function',async()=>{const r=memory(),h=harness(r);await h.save();const pack=window.AlloModules.LiveAac.serializeResourceForStudentPack(r,{sanitizeHistoryForCloud:x=>x,stripUndefined:x=>x});expect(pack.karaokeAudio.version).toBe(4);expect(JSON.stringify(pack)).not.toContain('PRIVATE ATTEMPT');});
 });
 describe('studio audio controls and accessible preview',()=>{
+ it('refreshes clip availability on shared audio updates and removes the listener on unmount',()=>{
+  const resource=memory(),segments=api.enumerate(resource);let status='missing';
+  const inspect=vi.fn(()=>status==='ready'?{status,url:'blob:clip'}:{status});
+  window.__alloGetReadAloudAudioBridge=()=>({inspect});
+  const added=vi.spyOn(window,'addEventListener'),removed=vi.spyOn(window,'removeEventListener');
+  try {
+   mount(api.Controls,{resource,allowRuntimeAi:false,canPrepare:false});
+   const refresh=added.mock.calls.find(([name])=>name==='alloflow:karaoke-audio-updated')?.[1];
+   expect(refresh).toBeTypeOf('function');
+   expect(host.querySelector('[role="status"]').textContent).toBe('0/'+segments.length+' ready');
+   expect(host.querySelector('a[download]')).toBeNull();
+   status='ready';inspect.mockClear();
+   act(()=>window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated')));
+   expect(inspect).toHaveBeenCalledTimes(segments.length);
+   expect(host.querySelector('[role="status"]').textContent).toBe(segments.length+'/'+segments.length+' ready');
+   expect(host.querySelectorAll('a[download]')).toHaveLength(segments.length);
+   status='stale';
+   act(()=>window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated')));
+   expect(host.querySelector('[role="status"]').textContent).toBe('0/'+segments.length+' ready; '+segments.length+' stale');
+   expect(host.querySelector('a[download]')).toBeNull();
+   act(()=>root.unmount());root=null;
+   expect(removed).toHaveBeenCalledWith('alloflow:karaoke-audio-updated',refresh);
+  } finally { added.mockRestore();removed.mockRestore(); }
+ });
  it('plays saved reference audio with runtime AI disabled and highlights the active field',async()=>{const r=memory(),h=harness(r);await h.save();h.synthesize.mockClear();window.__alloGetReadAloudAudioBridge=()=>h.bridge;const audios=[];vi.stubGlobal('Audio',class{constructor(url){this.url=url;audios.push(this);}play(){return Promise.resolve();}pause(){}});mount(api.Controls,{resource:r,allowRuntimeAi:false,canPrepare:false});await act(async()=>button('Read reference aloud').click());expect(audios[0].url).toBe('blob:clip');expect(host.querySelectorAll('[aria-current="step"]')).toHaveLength(1);expect(button('Save TTS')).toBeUndefined();expect(h.synthesize).not.toHaveBeenCalled();expect(host.querySelector('a[download]').download).toMatch(/\.wav$/);await act(async()=>button('Stop reading').click());expect(host.querySelector('[aria-current]')).toBeNull();});
  it('uses only device speech for student-authored recall cues',async()=>{const h=harness(memory());window.__alloGetReadAloudAudioBridge=()=>h.bridge;const speech={speak:vi.fn(),cancel:vi.fn()};vi.stubGlobal('speechSynthesis',speech);window.speechSynthesis=speech;vi.stubGlobal('SpeechSynthesisUtterance',class{constructor(text){this.text=text;}});mount(api.CueControls,{resource:memory(),cardId:'c1',text:'My private cue',allowRuntimeAi:true});await act(async()=>button('Read cue aloud').click());expect(speech.speak.mock.calls[0][0].text).toBe('My private cue');expect(h.synthesize).not.toHaveBeenCalled();expect(h.persist).not.toHaveBeenCalled();});
  it('aborts pending preparation when the teacher leaves edit mode',async()=>{let signal;const prepare=vi.fn((_s,_p,o)=>{signal=o.signal;return new Promise(resolve=>signal.addEventListener('abort',()=>resolve({cancelled:true})));});window.__alloGetReadAloudAudioBridge=()=>({inspect:()=>({status:'missing'}),prepare});const r=memory();mount(api.Controls,{resource:r,canPrepare:true,allowRuntimeAi:true});await act(async()=>button('Save TTS').click());expect(signal.aborted).toBe(false);await act(async()=>root.render(React.createElement(api.Controls,{resource:r,canPrepare:false,allowRuntimeAi:true})));expect(signal.aborted).toBe(true);});

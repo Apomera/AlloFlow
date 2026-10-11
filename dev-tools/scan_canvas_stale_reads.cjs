@@ -175,7 +175,8 @@ function readsStateObject(node, stateNames) {
 // it as a dead control. Returning the key EXPRESSION rather than just a boolean
 // keeps the judgement with the reader: the closure refreshes on that value, so
 // anything the callback reads which is NOT in the key is still worth a look.
-function refreshKeyFor(fnNode, ancestors, src, stateNames) {
+function refreshKeyFor(fnNode, ancestors, src, stateNames, namedRefs) {
+  if (namedRefs.has(fnNode)) return namedRefs.get(fnNode);
   const idx = ancestors.indexOf(fnNode);
   if (idx < 2) return null;
   const prop = ancestors[idx - 1];
@@ -188,7 +189,7 @@ function refreshKeyFor(fnNode, ancestors, src, stateNames) {
     const nm = p.key && (p.key.name || p.key.value);
     if (nm !== 'key' || !p.value) continue;
     if (!readsStateObject(p.value, stateNames)) return null;
-    return src.slice(p.value.start, p.value.end).replace(/\s+/g, ' ');
+    return { expression: src.slice(p.value.start, p.value.end).replace(/\s+/g, ' '), names: null };
   }
   return null;
 }
@@ -240,7 +241,7 @@ function scanFile(abs) {
   const file = path.relative(ROOT, abs).split(path.sep).join('/');
   let ast;
   try {
-    ast = acorn.parse(src, { ecmaVersion: 2020, locations: true, allowReturnOutsideFunction: true });
+    ast = acorn.parse(src, { ecmaVersion: 'latest', locations: true, allowReturnOutsideFunction: true });
   } catch (e) { return { file, parseError: e.message, fails: [], infos: [] }; }
 
   // 1. The tool-state objects: `var d = (ctx.toolData && ctx.toolData['x']) || {}`
@@ -252,6 +253,54 @@ function scanFile(abs) {
     return undefined;
   }, []);
   if (!stateNames.size) return { file, fails: [], infos: [], skipped: 'no toolData binding' };
+
+  // A named useCallback ref is refreshed only when BOTH its dependency list
+  // and the element key contain the value. Callback identity alone does not
+  // defeat an element's guarded initialization.
+  const namedRefs = new Map(), callbackBindings = [], keyedUses = [];
+  const ownerOf = (anc) => anc.slice().reverse().find((n) => FN_TYPES.has(n.type)) || ast;
+  const readNames = (node) => {
+    const names = new Set();
+    walk(node, (n, anc) => {
+      if (n.type === 'Identifier' && isRead(n, anc[anc.length - 1])) names.add(n.name);
+      return undefined;
+    }, []);
+    return names;
+  };
+  walk(ast, (n, anc) => {
+    if (n.type === 'VariableDeclarator' && n.id.type === 'Identifier' && n.init && n.init.type === 'CallExpression') {
+      const call = n.init, callee = call.callee;
+      if (callee.type === 'MemberExpression' && callee.object.type === 'Identifier' && callee.object.name === 'React'
+          && callee.property.name === 'useCallback' && call.arguments[0] && FN_TYPES.has(call.arguments[0].type)
+          && call.arguments[1] && call.arguments[1].type === 'ArrayExpression') {
+        callbackBindings.push({ name: n.id.name, fn: call.arguments[0], deps: readNames(call.arguments[1]), owner: ownerOf(anc) });
+      }
+    }
+    if (n.type !== 'CallExpression') return undefined;
+    const callee = n.callee;
+    const name = callee.type === 'Identifier' ? callee.name : callee.type === 'MemberExpression' && callee.property.name;
+    if (!['createElement', 'h', 'H', 'el', 'e'].includes(name)) return undefined;
+    const props = n.arguments[1];
+    if (!props || props.type !== 'ObjectExpression') return undefined;
+    const property = (name) => props.properties.find((p) => p.type === 'Property' && !p.computed && (p.key.name || p.key.value) === name);
+    const ref = property('ref'), key = property('key');
+    if (ref && ref.value.type === 'Identifier' && key) {
+      keyedUses.push({ name: ref.value.name, key: key.value, owner: ownerOf(anc) });
+    }
+    return undefined;
+  }, []);
+  for (const binding of callbackBindings) {
+    const uses = keyedUses.filter((use) => use.name === binding.name && use.owner === binding.owner);
+    if (uses.length !== 1) continue;
+    const key = uses[0].key, names = readNames(key);
+    const ownerDecls = ownedDecls(binding.owner);
+    if (!readsStateObject(key, stateNames) && ![...names].some((name) => {
+      const decl = ownerDecls.get(name);
+      return decl && decl.init && readsStateObject(decl.init, stateNames);
+    })) continue;
+    namedRefs.set(binding.fn, { expression: src.slice(key.start, key.end).replace(/\s+/g, ' '),
+      names: new Set([...names].filter((name) => binding.deps.has(name))) });
+  }
 
   // Names ever used in callee position. `ctx` carries both per-render VALUES
   // (isDark, gradeLevel) and stable HELPERS (t, upd, beep, announceToSR), and
@@ -325,8 +374,9 @@ function scanFile(abs) {
     }
     if (guardIdx < 1) return undefined;             // not inside one, or not nested
     const guardFn = chain[guardIdx];
-    if (!keyCache.has(guardFn)) keyCache.set(guardFn, refreshKeyFor(guardFn, anc, src, stateNames));
-    const refreshKey = keyCache.get(guardFn);
+    if (!keyCache.has(guardFn)) keyCache.set(guardFn, refreshKeyFor(guardFn, anc, src, stateNames, namedRefs));
+    const refresh = keyCache.get(guardFn);
+    const refreshKey = refresh && (!refresh.names || refresh.names.has(node.name)) ? refresh.expression : null;
     const deferred = chain[guardIdx - 1];
     deferredSeen.add(deferred);
 

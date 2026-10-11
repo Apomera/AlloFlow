@@ -11,8 +11,10 @@ const ids=['commonOcto','blueRinged','giantPacific','mimicOcto','caribReef','coc
 const hash=s=>createHash('sha256').update(s).digest('hex');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Arm caps consumed dive RNG');}});
 function factory(s){const a=s.indexOf('function createCLHuntAnimal('),b=s.indexOf('// Compact, individually owned prey rig.',a);assert.ok(a>=0&&b>a);return new Function('T','species','Math',s.slice(a,b)+';return createCLHuntAnimal(T,species);');}
-// Keep the current mantle in this arm-tip comparison; its shape has a dedicated regression suite.
-const build=factory(source),oldBuild=factory(require('./helpers/cephalopod_pass68_reference.cjs').applyPass68ModelSource(prior));
+// Keep the later accepted mantle and pigment in both sides of this arm-tip comparison.
+const oldMantle=require('./helpers/cephalopod_pass68_reference.cjs').applyPass68ModelSource(prior);
+const oldSurface=require('./helpers/cephalopod_pass70_reference.cjs').applyPass70ModelSource(oldMantle);
+const build=factory(source),oldBuild=factory(oldSurface);
 function rig(id='commonOcto',old=false){const a=(old?oldBuild:build)(T,{id,bodyColor:0xbc6048},noRandom);owned.push(a);return a;}
 const pose=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',reducedMotion:false,...extra});
 const point=(g,i)=>new T.Vector3().fromBufferAttribute(g.attributes.position,i),normal=(g,i)=>new T.Vector3().fromBufferAttribute(g.attributes.normal,i);

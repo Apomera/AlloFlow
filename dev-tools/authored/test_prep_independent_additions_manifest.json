@@ -58,14 +58,14 @@
       {
         "id": "independent-diagnostic-batch-3",
         "label": "Assistant-reviewed independent diagnostic bank 3",
-        "reviewedAt": "2026-07-18",
+        "reviewedAt": "2026-10-10",
         "expectedPackId": "praxis-early-childhood-5025",
         "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
         "files": [
           "early_childhood_5025_batch3.json"
         ],
         "reviewReports": [
-          "early_childhood_5025_batch3.review.json"
+          "early_childhood_5025_batch3.ci-2026-10-10.review.json"
         ]
       }
     ],
@@ -103,14 +103,14 @@
       {
         "id": "independent-diagnostic-batch-3",
         "label": "Assistant-reviewed independent diagnostic bank 3",
-        "reviewedAt": "2026-07-18",
+        "reviewedAt": "2026-10-10",
         "expectedPackId": "praxis-educational-leadership-5412",
         "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
         "files": [
           "educational_leadership_5412_batch3.json"
         ],
         "reviewReports": [
-          "educational_leadership_5412_batch3.review.json"
+          "educational_leadership_5412_batch3.ci-2026-10-10.review.json"
         ]
       }
     ],

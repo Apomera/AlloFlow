@@ -52,7 +52,10 @@ describe('Anatomy heading structure', () => {
     expect(source).toContain("h('h4', { className: 'anatomy-body-title-heading' }, sys.icon + ' ' + sys.name)");
     // Inline relationship values remain strong text, with scientific membership separated from the navigation label.
     expect(source).toContain("h('strong', null, scientificSystemNames(sel))");
-    expect(source.match(/h\('strong', null, sys\.icon/g)).toHaveLength(1);
+    const root = render(filePath, { selectedStructure: 'femur' });
+    expect(root.querySelectorAll('.anatomy-body-header .anatomy-body-title-heading')).toHaveLength(1);
+    expect(root.querySelector('.anatomy-body-header .anatomy-body-title-heading').tagName).toBe('H4');
+    expect(root.querySelector('.anatomy-body-header strong')).toBeNull();
   });
 
   it.each(ANATOMY_PATHS)('never skips a heading level going down in %s', (filePath) => {

@@ -13,18 +13,32 @@
 //      staff scheduling poll impossible: it has no lesson and never will.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 
 const HEADER = readFileSync('view_header_source.jsx', 'utf8');
 const ASSIGNMENT_CENTER = readFileSync('view_assignment_center_source.jsx', 'utf8');
 const SHARED_ACTIVITY = readFileSync('shared_activity_source.jsx', 'utf8');
 const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+const headerAst = createRequire(import.meta.url)('@babel/parser').parse(HEADER, { sourceType: 'script', plugins: ['jsx'] });
+function documentsSurface() {
+  const stack = [headerAst];
+  const matches = [];
+  while (stack.length) {
+    const node = stack.pop();
+    if (node.type === 'JSXElement' && node.openingElement.attributes.some(attribute =>
+      attribute.type === 'JSXAttribute' && attribute.name.name === 'aria-labelledby' && attribute.value?.value === 'header-documents-dialog-title')) matches.push(node);
+    for (const child of Object.values(node)) {
+      if (Array.isArray(child)) child.forEach(value => { if (value?.type) stack.push(value); });
+      else if (child?.type) stack.push(child);
+    }
+  }
+  expect(matches).toHaveLength(1);
+  return HEADER.slice(matches[0].start, matches[0].end);
+}
 
 describe('setup is out of the dropdown menu', () => {
   it('no longer puts form controls inside the Documents menu', () => {
-    // The menu still exists; what must not come back is a form inside it.
-    const menuStart = HEADER.indexOf('role="menu"');
-    expect(menuStart, 'the Documents menu still exists').toBeGreaterThan(0);
-    const menu = HEADER.slice(menuStart, menuStart + 20000);
+    const menu = documentsSurface();
     expect(menu, 'no options textarea in a menu').not.toContain('optionsText');
     expect(menu, 'no identity select in a menu').not.toContain('identityMode');
   });
@@ -33,8 +47,12 @@ describe('setup is out of the dropdown menu', () => {
     expect(HEADER).toContain('Set up a poll, sign-up sheet or class activity');
   });
 
-  it('keeps the reason in the code, not just in a commit', () => {
-    expect(HEADER).toMatch(/keyboard-hostile|arrow handler steals focus/);
+  it('keeps Documents actions in a focus-contained dialog without menu key handling', () => {
+    const surface = documentsSurface();
+    expect(surface).toContain('role="dialog" aria-modal="true"');
+    expect(surface).not.toContain('role="menuitem"');
+    expect(HEADER).toContain('showExportMenu && _headerPortal(');
+    expect(HEADER).toMatch(/_headerUseFocusTrap\(_exportDialogRef,\s*(?:!!)?showExportMenu,\s*handleSetShowExportMenuToFalse\)/);
   });
 });
 

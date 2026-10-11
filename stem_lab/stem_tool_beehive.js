@@ -9816,7 +9816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
       // `var t = ctx.t` removed 2026-09-21: declared, never called. This tool already uses the __alloT wrapper; the bare alias drops the English fallback, so leaving it invites a future edit to ship raw keys.
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (typeof v === 'string' && v && v !== k) ? v : (fb != null ? fb : k); };
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var ArrowLeft = ctx.icons.ArrowLeft;
@@ -31690,7 +31690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'bee-history-note' }, delta == null ? 'Window change needs valid measurements on two different endpoint days. Missing endpoints are not estimated.' : 'Window change compares Day ' + view.firstDay + ' with Day ' + view.lastDay + '. It describes the difference; it does not establish its cause.'),
               h('details', { 'data-history-table': 'true' },
                 h('summary', null, 'Daily readings'),
-                h('div', { className: 'bee-history-table-wrap', tabIndex: 0, role: 'region', 'aria-label': 'Recorded daily readings table; scroll horizontally for all metrics' },
+                h('div', { className: 'bee-history-table-wrap', tabIndex: 0, role: 'region', 'aria-label': __alloT("stem.beehive.a11y_recorded_daily_readings_table_scroll_horizontally_for_all_metrics", 'Recorded daily readings table; scroll horizontally for all metrics') },
                   h('table', null,
                     h('caption', null, span + '. Unavailable means missing or invalid; a recorded zero remains 0.'),
                     h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Day'), BH_COLONY_HISTORY_METRICS.map(function(item) { return h('th', { key: item.id, scope: 'col' }, item.label + ' (' + (item.unit === 'workers' ? 'count' : item.unit) + ')'); }))),
@@ -31796,11 +31796,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('header', { className: 'bee-topics-heading' }, h('h2', { id: 'beehive-topic-explorer-title', tabIndex: -1 }, 'Bee science explorer'), h('p', null, 'Choose a diagram to inspect, then record what you notice in the Science Notebook.')),
             h('div', { className: 'bee-topics-progress' },
               h('strong', { 'data-topic-opened-count': 'true' }, exploredBeeViewIds.length + ' / ' + BEE_VIEWS.length + ' views opened'),
-              h('div', { 'data-topic-progress': 'true', role: 'progressbar', 'aria-label': 'Science views opened', 'aria-valuemin': 0, 'aria-valuemax': BEE_VIEWS.length, 'aria-valuenow': exploredBeeViewIds.length, 'aria-valuetext': exploredBeeViewIds.length + ' of ' + BEE_VIEWS.length + ' views opened', 'aria-describedby': 'beehive-topic-progress-help' }, h('span', { style: { width: exploredBeeViewIds.length / BEE_VIEWS.length * 100 + '%' } })),
+              h('div', { 'data-topic-progress': 'true', role: 'progressbar', 'aria-label': __alloT("stem.beehive.a11y_science_views_opened", 'Science views opened'), 'aria-valuemin': 0, 'aria-valuemax': BEE_VIEWS.length, 'aria-valuenow': exploredBeeViewIds.length, 'aria-valuetext': exploredBeeViewIds.length + ' of ' + BEE_VIEWS.length + ' views opened', 'aria-describedby': 'beehive-topic-progress-help' }, h('span', { style: { width: exploredBeeViewIds.length / BEE_VIEWS.length * 100 + '%' } })),
               h('p', { id: 'beehive-topic-progress-help' }, 'Opening a view records a visit. Use your Notebook observations and explanations to show what you learned.')),
             h('h3', null, '1. Choose a pathway'),
             h('p', { id: 'beehive-topic-path-help', className: 'bee-topics-help' }, 'Another pathway opens its next unopened view, or its first view if you have opened them all.'),
-            h('div', { className: 'bee-topic-paths', 'data-mobile-rail': 'learning-pathways', role: 'group', 'aria-label': 'Choose a bee science learning pathway', 'aria-describedby': 'beehive-topic-path-help' }, BEE_TOPIC_PATHWAYS.map(function(path) {
+            h('div', { className: 'bee-topic-paths', 'data-mobile-rail': 'learning-pathways', role: 'group', 'aria-label': __alloT("stem.beehive.a11y_choose_a_bee_science_learning_pathway", 'Choose a bee science learning pathway'), 'aria-describedby': 'beehive-topic-path-help' }, BEE_TOPIC_PATHWAYS.map(function(path) {
               var selected = path.id === activeBeePath.id, count = path.ids.filter(isBeeTopicExplored).length;
               var entryId = path.ids.find(function(id) { return !isBeeTopicExplored(id); }) || path.ids[0];
               return h('button', { key: path.id, type: 'button', 'data-topic-pathway': path.id, 'aria-pressed': selected, 'aria-label': path.label, 'aria-describedby': 'beehive-path-' + path.id + '-description beehive-path-' + path.id + '-count', onClick: function() { if (!selected) selectBeeView(entryId); } },
@@ -31983,11 +31983,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('div', { key: 'beehive-coach', id: 'beehive-play-focus', tabIndex: -1, 'data-beehive-focus-panel': 'coach', 'data-beehive-play-coach': 'true', 'data-coach-state': coachState, 'data-coach-role': viewMode, className: 'bee-coach', role: 'region', 'aria-label': __alloT('stem.beehive.current_sim_goal', 'Current simulation goal') },
             h('div', { className: 'bee-coach-layout' },
               h('div', { className: 'bee-coach-main', 'data-coach-main': 'true' }, h('div', { className: 'bee-coach-kicker' }, h('span', null, 'Next step'), h('span', { className: 'bee-coach-phase' }, phaseLabels[coachState])), h('h2', null, title), h('p', null, body),
-                h('dl', { className: 'bee-coach-readings', 'data-coach-readings': 'true', 'aria-label': 'Context for this step' }, readings.map(function(item) { return h('div', { key: item[0], 'data-coach-reading': item[0] }, h('dt', null, item[0]), h('dd', null, item[1])); }))),
+                h('dl', { className: 'bee-coach-readings', 'data-coach-readings': 'true', 'aria-label': __alloT("stem.beehive.a11y_context_for_this_step", 'Context for this step') }, readings.map(function(item) { return h('div', { key: item[0], 'data-coach-reading': item[0] }, h('dt', null, item[0]), h('dd', null, item[1])); }))),
               action && h('div', { className: 'bee-coach-action', 'data-beehive-coach-action': action.id, 'data-beehive-cause-effect': 'true', 'data-action-ready': ready ? 'true' : 'false' }, h('h3', null, ready ? 'Suggested action' : 'Check availability'),
                 h('button', { type: 'button', disabled: !ready, onClick: action.onClick, 'data-action-ready': ready ? 'true' : 'false', 'aria-describedby': 'beehive-coach-action-hint beehive-coach-watch', 'aria-keyshortcuts': ready ? action.shortcut || undefined : undefined }, action.label, action.shortcut && h('kbd', { 'aria-hidden': 'true' }, action.shortcut)),
                 h('p', { id: 'beehive-coach-action-hint', 'data-coach-action-hint': 'true' }, action.hint), h('p', { id: 'beehive-coach-watch', className: 'bee-coach-watch', 'data-beehive-coach-watch': 'true', role: 'note' }, h('strong', null, 'What to observe: '), action.watch))),
-            h('div', { className: 'bee-coach-context', 'data-beehive-quickstart': 'true', role: 'group', 'aria-label': 'Practice focus' }, h('strong', null, 'Practice focus'), h('p', null, routine)));
+            h('div', { className: 'bee-coach-context', 'data-beehive-quickstart': 'true', role: 'group', 'aria-label': __alloT("stem.beehive.a11y_practice_focus", 'Practice focus') }, h('strong', null, 'Practice focus'), h('p', null, routine)));
         }
         function renderBeeMissionDeck() {
           var mission, metrics = [], evidenceGoals = [], contextLabel = '', footer = '', phase = 'Setup guide', readingGuide = '', inquiryStep = 0, evidenceSource = 'current';
@@ -32107,7 +32107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-brief-layout' },
               h('aside', { className: 'bee-brief-reading', 'data-brief-read-guide': 'true', role: 'note', 'aria-labelledby': 'beehive-brief-guide' }, h('h3', { id: 'beehive-brief-guide' }, phase === 'Setup guide' ? 'Before you begin' : 'Read the evidence'), h('p', null, readingGuide), h('p', { className: 'bee-brief-boundary' }, footer)),
               h('div', { className: 'bee-brief-goals' }, h('h3', null, 'What to investigate'), h('ul', null, evidenceGoals.map(function(goal) { return h('li', { key: goal }, goal); })))),
-            h('div', { className: 'bee-brief-inquiry', role: 'group', 'aria-label': 'Inquiry loop' },
+            h('div', { className: 'bee-brief-inquiry', role: 'group', 'aria-label': __alloT("stem.beehive.a11y_inquiry_loop", 'Inquiry loop') },
               h('h3', null, 'Suggested inquiry step · ' + inquiry[inquiryStep]),
               h('p', { className: 'bee-brief-inquiry-note' }, 'Revisit any step as your evidence changes.'),
               h('ol', null, inquiry.map(function(label, index) { return h('li', { key: label, 'data-inquiry-step': label.toLowerCase(), 'aria-current': index === inquiryStep ? 'step' : undefined },
@@ -32559,7 +32559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', null, 'Read your saved writing side by side, then use specific evidence to build a cross-perspective explanation. You can start a draft anytime.')),
                 h('div', { className: 'bee-portfolio-progress' },
                   h('strong', { 'data-notebook-portfolio-written': 'true' }, portfolioCompleted + ' / 10 written'),
-                  h('div', { role: 'progressbar', 'aria-label': 'Portfolio sections written', 'aria-valuemin': 0, 'aria-valuemax': 10, 'aria-valuenow': portfolioCompleted, 'aria-valuetext': portfolioCompleted + ' of 10 sections written', 'aria-describedby': 'beehive-portfolio-progress-help' }, h('span', { style: { width: portfolioCompleted * 10 + '%' } })),
+                  h('div', { role: 'progressbar', 'aria-label': __alloT("stem.beehive.a11y_portfolio_sections_written", 'Portfolio sections written'), 'aria-valuemin': 0, 'aria-valuemax': 10, 'aria-valuenow': portfolioCompleted, 'aria-valuetext': portfolioCompleted + ' of 10 sections written', 'aria-describedby': 'beehive-portfolio-progress-help' }, h('span', { style: { width: portfolioCompleted * 10 + '%' } })),
                   h('p', { id: 'beehive-portfolio-progress-help' }, 'Nine role sections plus one synthesis. Writing counts record where text is saved; self-review records the checks you chose. Neither is a grade.')),
                 h('p', { className: 'bee-portfolio-nav-help' }, 'Opening a notebook switches the simulation perspective. Your saved writing stays in place.'),
                 h('div', { 'data-notebook-role-grid': 'true', className: 'bee-portfolio-roles' }, portfolioRoles.map(function(role) {
@@ -32652,7 +32652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('section', { 'data-beehive-journey': 'true', className: 'bee-journey-body', 'aria-labelledby': 'beehive-journey-title' },
             h('div', { className: 'bee-journey-heading' }, h('h2', { id: 'beehive-journey-title' }, 'Perspective journey'), h('span', { className: 'bee-journey-count' }, completed + ' / 3 milestones')),
             h('p', { className: 'bee-journey-intro' }, 'Choose any role. These game milestones track activities; they do not assess your explanations. A difficult or unfinished attempt can still provide useful evidence.'),
-            h('div', { className: 'bee-journey-role-grid', 'data-journey-role-grid': 'true', role: 'group', 'aria-label': 'Choose a perspective' }, milestones.map(function(item, index) {
+            h('div', { className: 'bee-journey-role-grid', 'data-journey-role-grid': 'true', role: 'group', 'aria-label': __alloT("stem.beehive.a11y_choose_a_perspective", 'Choose a perspective') }, milestones.map(function(item, index) {
               var current = viewMode === item.id, prefix = 'beehive-journey-' + item.id;
               return h('button', { key: item.id, type: 'button', className: 'bee-journey-role', 'data-journey-role': item.id, 'data-journey-milestone': item.done ? 'reached' : 'not-yet', 'aria-current': current ? 'step' : undefined, 'aria-label': 'Open ' + item.role, 'aria-describedby': prefix + '-criterion ' + prefix + '-record', onClick: function() { upd('viewMode', item.id); announceBee(item.role + ' opened.', false); } },
                 h('span', { className: 'bee-journey-role-top' }, h('span', null, (index + 1) + '. ' + item.role), current && h('span', null, 'Viewing')),
@@ -32746,7 +32746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('details', { className: 'bee-event-settings', 'data-event-settings': 'true' },
               h('summary', null, 'Event settings · ' + view.settings.length + ' preset effect' + (view.settings.length === 1 ? '' : 's')),
               h('p', { className: 'bee-event-note' }, 'These are model inputs, not measured changes. Limits and other daily processes can change the final result.'),
-              view.settings.length ? h('ul', { 'aria-label': 'Preset event effects' }, view.settings.map(function(metric) {
+              view.settings.length ? h('ul', { 'aria-label': __alloT("stem.beehive.a11y_preset_event_effects", 'Preset event effects') }, view.settings.map(function(metric) {
                 return h('li', { key: metric.id, 'data-event-impact': metric.id }, h('span', null, metric.label), h('strong', null, (metric.amount > 0 ? '+' : '') + reading(metric.amount, metric.unit)));
               })) : h('p', null, 'No numeric preset effects were recorded. Read the event description for changes to colony behavior.')),
             view.lesson && h('p', { className: 'bee-event-lesson' }, h('strong', null, 'Science connection: '), view.lesson),
@@ -32845,7 +32845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           });
           return h('figure', { className: 'bee-forecast-chart' },
             h('figcaption', null, metric.label + (metric.suffix ? ' (' + metric.suffix.trim() + ')' : '') + ' · Day ' + study.startDay + ' to ' + study.targetDay),
-            h('ul', { className: 'bee-forecast-legend', role: 'list', 'aria-label': 'Graph series' },
+            h('ul', { className: 'bee-forecast-legend', role: 'list', 'aria-label': __alloT("stem.beehive.a11y_graph_series", 'Graph series') },
               h('li', { style: { color: 'var(--bf-forecast)' } }, h('span', { className: 'bee-forecast-sample', 'data-series': 'forecast', 'aria-hidden': 'true' }), 'Saved forecast'),
               h('li', { style: { color: 'var(--bf-observed)' } }, h('span', { className: 'bee-forecast-sample', 'data-series': 'observations', 'aria-hidden': 'true' }), 'Observed readings')),
             h('div', { className: 'bee-forecast-plot' },
@@ -32860,7 +32860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function renderSavedForecastStudies() {
           var portfolio = bhNormalizeForecastPortfolio(d.notebook && d.notebook.forecastStudies);
           if (!portfolio.entries.length) return null;
-          return h('section', { 'data-forecast-saved-studies': 'true', className: 'mt-4 space-y-2', 'aria-label': 'Saved forecast investigations' },
+          return h('section', { 'data-forecast-saved-studies': 'true', className: 'mt-4 space-y-2', 'aria-label': __alloT("stem.beehive.a11y_saved_forecast_investigations", 'Saved forecast investigations') },
             h('h4', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Forecast investigations (' + portfolio.entries.length + '/6)'),
             portfolio.entries.map(function(entry) { return h('details', { key: entry.id, className: 'rounded-lg border p-3 ' + (dk ? 'border-slate-600 bg-slate-950 text-slate-100' : 'border-slate-300 bg-white text-slate-900') },
               h('summary', { className: 'min-h-[44px] cursor-pointer break-words text-xs font-bold' }, entry.title),
@@ -32896,7 +32896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('span', { className: 'bee-forecast-heading' }, h('strong', null, 'Forecast investigation'), h('small', null, study ? metric.label + ' · ' + (study.status === 'tracking' ? monitored + ' of ' + study.horizon + ' days observed' : 'Day ' + study.startDay + ' to ' + study.targetDay) : 'Predict, monitor, explain')),
               h('span', { className: 'bee-forecast-badge' }, statusLabel)),
             forecastStudyOpen && h('div', { className: 'bee-forecast-body' },
-              h('ol', { className: 'bee-forecast-steps', 'aria-label': 'Investigation progress' }, ['Predict', 'Monitor', 'Explain'].map(function(label, index) {
+              h('ol', { className: 'bee-forecast-steps', 'aria-label': __alloT("stem.beehive.a11y_investigation_progress", 'Investigation progress') }, ['Predict', 'Monitor', 'Explain'].map(function(label, index) {
                 var done = !!study && (index === 0 || index === 1 && study.status === 'complete' || index === 2 && study.saved);
                 return h('li', { key: label, 'data-complete': done ? 'true' : 'false', 'aria-current': phase === index + 1 && !(study && study.saved) ? 'step' : undefined }, (index + 1) + ' · ' + label);
               })),
@@ -32919,7 +32919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { style: { gridColumn: '1 / -1' } }, h('dt', null, 'Difference from forecast'), h('dd', null, Number.isFinite(result.error) ? (result.error > 0 ? '+' : '') + format(result.error) : study.status === 'tracking' ? 'Available at the checkpoint' : 'Not recorded', Number.isFinite(result.error) && h('p', { className: 'bee-forecast-muted' }, result.error > 0 ? 'Above the saved forecast' : result.error < 0 ? 'Below the saved forecast' : 'Matches the saved forecast at shown precision'))))),
                 h('p', null, result.alignment === 'unavailable' ? 'A direction check needs the starting reading and the exact checkpoint.' : 'The observed direction ' + (result.alignment === 'aligned' ? 'matches' : 'differs from') + ' your prediction at shown precision. This comparison does not establish cause.'),
                 h('details', { className: 'bee-forecast-details' }, h('summary', null, 'Daily readings and intervening choices'),
-                  h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': 'Daily forecast and observed readings' }, h('table', { 'data-forecast-study-table': 'true' },
+                  h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': __alloT("stem.beehive.a11y_daily_forecast_and_observed_readings", 'Daily forecast and observed readings') }, h('table', { 'data-forecast-study-table': 'true' },
                     h('caption', { className: 'py-2 text-left font-bold' }, result.metric.label + ': forecast and observed'),
                     h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'p-2' }, 'Day'), h('th', { scope: 'col', className: 'p-2' }, 'Forecast'), h('th', { scope: 'col', className: 'p-2' }, 'Observed'))),
                     h('tbody', null, Array.from({ length: study.horizon + 1 }, function(_, index) { var day = study.startDay + index, f = study.forecast.find(function(p) { return p.day === day; }), o = study.observations.find(function(p) { return p.day === day; }); return h('tr', { key: day }, h('th', { scope: 'row', className: 'p-2' }, day), h('td', { className: 'p-2' }, format(f && f[study.metricId])), h('td', { className: 'p-2' }, format(o && o[study.metricId]))); })))),
@@ -33011,7 +33011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var outcomeTone = outcome.tone === 'success' ? 'bg-emerald-700 text-white' : outcome.tone === 'danger' ? 'bg-rose-700 text-white' : outcome.tone === 'warning' ? 'bg-amber-600 text-slate-950' : 'bg-slate-700 text-white';
           var causal = managementCausalPath(ev.label, changes);
           function renderRecordedChanges() {
-            return h('section', { className: 'mt-3', 'data-management-readings': 'true', 'aria-label': 'Recorded changes immediately after the action' },
+            return h('section', { className: 'mt-3', 'data-management-readings': 'true', 'aria-label': __alloT("stem.beehive.a11y_recorded_changes_immediately_after_the_action", 'Recorded changes immediately after the action') },
               h('h4', { className: 'mb-2 text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Recorded changes'),
               changes.length > 0 ? h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_observed_intervention_metric_changes', 'Observed intervention metric changes') }, changes.map(function(change, index) {
                 var numeric = Number.isFinite(change.delta), suffix = typeof change.suffix === 'string' ? change.suffix : '';
@@ -33760,13 +33760,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', { type: 'button', 'data-experiment-schedule-plan-control': 'true', onClick: function(event) { focusExperimentGuideTarget(schedule.planTarget, event); }, className: 'mt-2 min-h-[44px] rounded-lg border px-3 py-2 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ' + (dk ? 'border-indigo-600 text-indigo-100 hover:bg-indigo-950/50' : 'border-indigo-300 text-indigo-900 hover:bg-white') }, schedule.plannedAction ? 'Locate planned-choice control' : 'Open the planned-choice item')),
               h('h6', { className: 'mt-3 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, schedule.distinctRuns ? 'Run A choices for today' : 'Run A choices at Day 0'),
               todayVisible.length
-                ? h('ul', { className: 'mt-2 grid gap-2', 'aria-label': 'Run A action choices for today' }, todayVisible.map(function(row) { return renderScheduleRow(row, schedule.distinctRuns); }))
+                ? h('ul', { className: 'mt-2 grid gap-2', 'aria-label': __alloT("stem.beehive.a11y_run_a_action_choices_for_today", 'Run A action choices for today') }, todayVisible.map(function(row) { return renderScheduleRow(row, schedule.distinctRuns); }))
                 : h('p', { className: 'mt-1 text-xs leading-relaxed ' + bodyTone }, schedule.distinctRuns ? 'No retained Run A action is scheduled for this day. Any added management choice should be the exception you planned.' : 'Start a separate Run B to track the daily schedule.'),
               schedule.today.length > 4 && h('details', { className: 'mt-1' }, h('summary', { className: 'min-h-[44px] cursor-pointer py-2 text-xs font-bold ' + bodyTone }, 'More choices for today (' + (schedule.today.length - 4) + ')'), h('ul', { className: 'grid gap-2' }, schedule.today.slice(4).map(function(row) { return renderScheduleRow(row, schedule.distinctRuns); }))),
               schedule.pastUnmatched > 0 && h('p', { 'data-experiment-schedule-past-warning': 'true', className: 'mt-2 text-xs font-semibold ' + bodyTone }, schedule.pastUnmatched + ' earlier non-planned choice' + (schedule.pastUnmatched === 1 ? ' is' : 's are') + ' not matched in the retained Run B record. Applying it late changes the timing; review the action audit before continuing.'),
               schedule.rows.length > 0 && h('details', { 'data-experiment-schedule-timeline': 'true', className: 'mt-2' },
                 h('summary', { className: 'min-h-[44px] cursor-pointer py-2 text-xs font-bold ' + bodyTone }, 'Review the full retained Run A schedule (' + schedule.rows.length + ' choices)'),
-                h('ol', { className: 'grid gap-2', 'aria-label': 'Full retained Run A action schedule' }, schedule.rows.map(function(row) { return renderScheduleRow(row, false); }))),
+                h('ol', { className: 'grid gap-2', 'aria-label': __alloT("stem.beehive.a11y_full_retained_run_a_action_schedule", 'Full retained Run A action schedule') }, schedule.rows.map(function(row) { return renderScheduleRow(row, false); }))),
               h('p', { className: 'mt-1 text-xs leading-relaxed ' + bodyTone }, 'Availability can change after your intervention. A locked control or a changed event is evidence to review, rather than a reason to add another unplanned choice. The management audit decides whether the completed records align.'));
           }
 
@@ -33822,7 +33822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('details', { className: 'mt-3' },
                 h('summary', { className: 'min-h-[44px] cursor-pointer py-3 text-[0.625rem] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, 'Review saved pairs and across-seed summaries'),
                 h('p', { className: 'mb-2 text-[0.625rem] leading-relaxed ' + bodyTone }, 'Groups share the model, stock, site, checkpoint, prediction, and actual action sequences. Each seed counts once. These descriptive means and ranges do not establish statistical confidence.'),
-                h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable paired trial summary', className: 'overflow-x-auto rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-slate-700' : 'border-slate-200') },
+                h('div', { role: 'region', tabIndex: 0, 'aria-label': __alloT("stem.beehive.a11y_scrollable_paired_trial_summary", 'Scrollable paired trial summary'), className: 'overflow-x-auto rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-slate-700' : 'border-slate-200') },
                   h('table', { 'data-experiment-archive-summary': 'true', className: 'w-full min-w-[32rem] text-left text-[0.625rem]' },
                     h('caption', { className: 'p-2 text-left font-bold' }, 'Paired outcome differences across distinct seeds (Run B minus Run A)'),
                     h('thead', null, h('tr', null, ['Protocol', 'Seeds / pairs', 'Mean difference', 'Observed range'].map(function(label) { return h('th', { key: label, scope: 'col', className: 'p-2' }, label); }))),
@@ -33831,7 +33831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('td', { className: 'p-2 tabular-nums' }, group.seedCount + ' seeds / ' + group.pairCount + ' pairs', group.repeatedSeedCount > 0 && h('span', { className: 'block ' + bodyTone }, group.repeatedSeedCount + ' replay pairs counted once')),
                       h('td', { className: 'p-2 font-bold tabular-nums' }, difference(group.meanDelta, group.suffix)),
                       h('td', { className: 'p-2 tabular-nums' }, difference(group.minDelta, group.suffix) + ' to ' + difference(group.maxDelta, group.suffix))); })))),
-                h('ol', { className: 'mt-3 space-y-2', 'aria-label': 'Saved completed trial pairs' }, experimentArchive.records.map(function(record, index) {
+                h('ol', { className: 'mt-3 space-y-2', 'aria-label': __alloT("stem.beehive.a11y_saved_completed_trial_pairs", 'Saved completed trial pairs') }, experimentArchive.records.map(function(record, index) {
                   var metric = bhExperimentPredictionMetric(record.notebook.predictedMetricId);
                   var delta = record.current.metrics[metric.id] - record.baseline.metrics[metric.id];
                   return h('li', { key: record.pairId, className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700' : 'border-slate-200') },
@@ -34166,7 +34166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { style: { color: sm.color, fontSize: '.875rem' } }, 'Brood-area estimate'),
                 h('p', { style: { color: sm.color } }, sm.desc)
               ),
-              h('dl', { className: 'bee-thermo-budget', 'aria-label': 'Classroom temperature calculation' },
+              h('dl', { className: 'bee-thermo-budget', 'aria-label': __alloT("stem.beehive.a11y_classroom_temperature_calculation", 'Classroom temperature calculation') },
                 h('div', { className: 'bee-thermo-term', 'data-term': 'outside' }, h('dt', null, '1 · Outside baseline'), h('dd', null, h('strong', null, reading.outsideC + ' °C'), h('p', null, 'The starting term in this model.'))),
                 h('div', { className: 'bee-thermo-term', 'data-term': 'heating' }, h('dt', null, '2 · Worker heating'), h('dd', null, h('strong', null, '+' + reading.heatingC.toFixed(1) + ' °C'), h('p', null, countText(iq.heaterBees) + ' heaters × 0.009'))),
                 h('div', { className: 'bee-thermo-term', 'data-term': 'cooling' }, h('dt', null, '3 · Modeled cooling'), h('dd', null, h('strong', null, '−' + reading.coolingC.toFixed(1) + ' °C'), h('p', null, countText(iq.beesFanning) + ' fanners × 0.04')))),

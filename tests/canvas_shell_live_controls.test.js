@@ -22,11 +22,19 @@ describe('Canvas shell live-session controls', () => {
 
   it('keeps the Live Session Center dock above the bottom-right tool stack', () => {
     // One consolidated dock button (teacher) and one signal button (student)
-    // at 5.5rem, with their popover panels at 8.75rem. The old per-feature
+    // at 5.5rem. The extracted dashboard opens as a bounded modal. The old per-feature
     // Live Polling / Pictionary floating buttons must not come back at
     // stack-overlapping positions.
     expect(src).toContain("bottom:'5.5rem'");
-    expect(src).toContain("bottom:'8.75rem'");
+    expect(src).toContain("inset:0,zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'");
+    expect(src).toContain('<LiveSessionDockView');
+    for (const file of ['view_live_session_dock_source.jsx', 'view_live_session_dock_module.js', 'desktop/web-app/public/view_live_session_dock_module.js']) {
+      const dock = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(/role[:=]\s*["']dialog["']/.test(dock), file).toBe(true);
+      expect(dock.includes('aria-modal'), file).toBe(true);
+      expect(dock.includes('calc(100vw - 2rem)'), file).toBe(true);
+      expect(dock.includes('calc(100dvh - 2rem)'), file).toBe(true);
+    }
     expect(src).not.toContain("bottom:'1rem',right:'1rem',zIndex:9999,background:'#1e3a8a'");
     expect(src).not.toContain("bottom:'4rem',right:'1rem',zIndex:9999,background:'#9f1239'");
     expect(src).not.toContain("zIndex:9999,background:'#9f1239'"); // standalone pictionary button retired

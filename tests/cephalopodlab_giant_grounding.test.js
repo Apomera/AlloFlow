@@ -26,7 +26,8 @@ const restFor=new Function('FLOOR_REST_Y','speciesId','bodyScale','return '+rest
 const rootY=new Function('gameState','isJetting','now','return '+source.match(/octopus\.position\.y = ([^;]+);/)[1]+';');
 const aboveFloor=new Function('gameState','octopus','terrainHeight','floorRestY','return '+expressionBetween('Propulsion floor distance','aboveFloor:',',recovering:')+';');
 const substrateDistance=new Function('gameState','octopus','terrainHeight','floorRestY','return '+expressionBetween('Substrate floor distance','var distFromFloor = ',';\n            var substrateContact = ')+';');
-const motionStart=source.indexOf('gameState.verticalY = (gameState.verticalY ||'),motionEnd=source.indexOf('rocks.forEach(',motionStart);
+// Stop at horizontal clearance selection; this suite exercises only the altitude clamp.
+const motionStart=source.indexOf('gameState.verticalY = (gameState.verticalY ||'),motionEnd=source.indexOf('var proposedCrevice=',motionStart);
 if(motionStart<0||motionEnd<=motionStart)throw Error('Cannot isolate production altitude clamp');
 const move=new Function('gameState','octopus','terrainHeight','floorRestY','vertInput','vertSpeed','dt','capabilities',source.slice(motionStart,motionEnd)+';return gameState.verticalY;');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Grounding consumed dive RNG');}}),allocated=[];

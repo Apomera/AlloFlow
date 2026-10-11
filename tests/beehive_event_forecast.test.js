@@ -35,7 +35,14 @@ describe('Beehive Beekeeper event impact forecast', () => {
   });
 
   it('keeps the impact metrics labelled for screen readers', () => {
-    expect(source).toContain("'aria-label': 'Preset event effects'");
+    const state = { beehive: {
+      viewMode: 'beekeeper',
+      activeEvent: { id: 'heatwave', label: 'Heatwave', effect: { workers: -800, honey: -3, morale: -8 } }
+    } };
+    expect(renderTool('beehive', state)).toContain('aria-label="Preset event effects"');
+    expect(renderTool('beehive', state, {
+      t: (key, fallback) => key === 'stem.beehive.a11y_preset_event_effects' ? 'Translated preset effects' : fallback
+    })).toContain('aria-label="Translated preset effects"');
     expect(source).toContain("'aria-labelledby': titleId");
     expect(source).toContain("'aria-describedby': promptId");
     expect(source).toContain("'data-beehive-event-prompt': 'true'");

@@ -46,7 +46,7 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 - Replaced 68 EBD/ID arithmetic, stacked-context, or credential-mismatched items with new school-based scenarios.
 - Removed misplaced 5383 language from 102 EBD/ID questions and their feedback.
 - Corrected SLD-contaminated scenarios, Praxis Core ambiguity/rationale defects, reading/grammar/quotation issues, and Early Childhood/ECSE defects.
-- Added 900 genuinely new ParaPro practice questions in a separately identified independent diagnostic bank.
+- Added 900 independent practice questions across reviewed packs, including 300 ParaPro questions, in separately identified independent diagnostic banks.
 - Preserved guided-review banks as a separate learning mode excluded from diagnostic analytics.
 
 ## Next release standard

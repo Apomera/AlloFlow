@@ -1,6 +1,6 @@
 // Generated exact-source bridge. Do not edit; run build.cjs.
-// Source SHA-256: 8994f7e735887b88ff24aa97b81a53078e38851f0831a1089d9a5e053e140663
-export const sourceSha256 = "8994f7e735887b88ff24aa97b81a53078e38851f0831a1089d9a5e053e140663";
+// Source SHA-256: 1a8881ac0cb9f033990ae4b3f5ca80f9414cd04f8ccfb7b069b224045c452b54
+export const sourceSha256 = "1a8881ac0cb9f033990ae4b3f5ca80f9414cd04f8ccfb7b069b224045c452b54";
 export function createWatershedRuntime() {
 const window = { StemLab: { findById: (items, id) => items.find(item => item.id === id) } };
 const t = (key, fallback) => fallback == null ? key : fallback;
@@ -9,7 +9,7 @@ const setTimeout = () => {}, checkWaterCycleChallenges = () => {};
 let steward, d = {};
 const setSteward = patch => { steward = Object.assign({}, steward, patch); };
 const upd = (key, value) => { d[key] = value; };
-// Original stem_lab/stem_tool_watercycle.js:646
+// Original stem_lab/stem_tool_watercycle.js:938
 var MAINE_WATERSHED_COMPONENTS = [
     {
       id: 'headwaterStreams', name: 'Headwater Streams', icon: '🏔️', color: '#0ea5e9',
@@ -55,7 +55,7 @@ var MAINE_WATERSHED_COMPONENTS = [
     }
   ];
 
-// Original stem_lab/stem_tool_watercycle.js:696
+// Original stem_lab/stem_tool_watercycle.js:988
 function wcWatershedCopy(t) {
     return {
       headwaterStreams: {
@@ -115,7 +115,7 @@ function wcWatershedCopy(t) {
     };
   }
 
-// Original stem_lab/stem_tool_watercycle.js:757
+// Original stem_lab/stem_tool_watercycle.js:1049
 function localizeWatershedComponents(t) {
     var copy = wcWatershedCopy(t);
     return MAINE_WATERSHED_COMPONENTS.map(function (component) {
@@ -129,7 +129,7 @@ function localizeWatershedComponents(t) {
     });
   }
 
-// Original stem_lab/stem_tool_watercycle.js:770
+// Original stem_lab/stem_tool_watercycle.js:1062
 var STEWARD_TECHNIQUES = [
     { id: 'bufferPlant', name: 'Riparian buffer planting', icon: '🌲', hours: 5, effects: { quality: 8, connectivity: 4 }, appliesTo: ['forestBuffer', 'headwaterStreams'] },
     { id: 'beaverDamAnalog', name: 'Beaver Dam Analog', icon: '🦫', hours: 6, effects: { quality: 11, connectivity: 6 }, appliesTo: ['floodplainWetlands'] },
@@ -143,7 +143,7 @@ var STEWARD_TECHNIQUES = [
     { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, effects: {}, appliesTo: 'any' }
   ];
 
-// Original stem_lab/stem_tool_watercycle.js:783
+// Original stem_lab/stem_tool_watercycle.js:1075
 var STEWARD_EVENTS = [
     { id: 'majorFlood', icon: '🌊', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer' && c.quality < 65) c.quality = Math.max(0, c.quality - 7); if (c.id === 'floodplainWetlands') c.quality = Math.min(100, c.quality + 3); }); } },
     { id: 'drought', icon: '☀️', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'headwaterStreams') c.quality = Math.max(0, c.quality - 8); if (c.id === 'riverMainstem') c.quality = Math.max(0, c.quality - 4); }); } },
@@ -157,10 +157,10 @@ var STEWARD_EVENTS = [
     { id: 'erosionEvent', icon: '🏞️', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer') c.support = Math.min(100, c.support + 8); }); } }
   ];
 
-// Original stem_lab/stem_tool_watercycle.js:801
+// Original stem_lab/stem_tool_watercycle.js:1093
 var _wcById = function(arr, id) { return window.StemLab && window.StemLab.findById ? window.StemLab.findById(arr, id) : null; };
 
-// Original stem_lab/stem_tool_watercycle.js:802
+// Original stem_lab/stem_tool_watercycle.js:1094
 var STEWARD_FEEDBACK_RULES = [
     { id: 'bufferFeedsHeadwaters', when: function(s) { var c = _wcById(s, 'forestBuffer'); return !!c && c.quality > 70; }, apply: function(s) { var h = _wcById(s, 'headwaterStreams'); if (h) h.quality = Math.min(100, h.quality + 4); }, },
     { id: 'beaverHelpsFloodplain', when: function(s) { var c = _wcById(s, 'floodplainWetlands'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) { m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); } }, },
@@ -168,7 +168,7 @@ var STEWARD_FEEDBACK_RULES = [
     { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, }
   ];
 
-// Original stem_lab/stem_tool_watercycle.js:814
+// Original stem_lab/stem_tool_watercycle.js:1164
 var STEWARD_CASCADE_HINTS = [
     { id: 'bufferFeedsHeadwaters', comp: 'forestBuffer', field: 'quality', threshold: 70,
       
@@ -184,14 +184,14 @@ var STEWARD_CASCADE_HINTS = [
       }
   ];
 
-// Original stem_lab/stem_tool_watercycle.js:829
+// Original stem_lab/stem_tool_watercycle.js:1179
 var STEWARD_DIFFICULTIES = {
     volunteer:   { id: 'volunteer',   hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, },
     coordinator: { id: 'coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, },
     director:    { id: 'director',    hoursPerYear: 14, eventSkip: 0,   severity: 1.4, }
   };
 
-// Original stem_lab/stem_tool_watercycle.js:838
+// Original stem_lab/stem_tool_watercycle.js:1188
 function wcStewardCopy(t) {
     return {
       ev: {
@@ -255,7 +255,7 @@ function wcStewardCopy(t) {
     };
   }
 
-// Original stem_lab/stem_tool_watercycle.js:905
+// Original stem_lab/stem_tool_watercycle.js:1255
 function applyStewardCopy(t) {
     // The load-time seed below runs before `var _wcT` has been assigned (var
     // hoists the declaration, not the value), and callers may reasonably pass
@@ -283,7 +283,7 @@ function applyStewardCopy(t) {
     });
   }
 
-// Original stem_lab/stem_tool_watercycle.js:936
+// Original stem_lab/stem_tool_watercycle.js:1286
 function defaultStewardState() {
     var diff = STEWARD_DIFFICULTIES.coordinator;
     return {
@@ -295,6 +295,8 @@ function defaultStewardState() {
       hoursLeft: diff.hoursPerYear,
       components: MAINE_WATERSHED_COMPONENTS.map(function(c) { return Object.assign({ id: c.id }, c.defaultState); }),
       yearActions: [],
+      yearStart: null,
+      decisionPreview: null,
       yearLog: [],
       lastEvent: null,
       cascadesFiredThisYear: [],
@@ -307,16 +309,16 @@ function defaultStewardState() {
     };
   }
 
-// Original stem_lab/stem_tool_watercycle.js:964
+// Original stem_lab/stem_tool_watercycle.js:1316
 var _wcT = function (key, fallback) { return fallback == null ? key : fallback; };
 
-// Original stem_lab/stem_tool_watercycle.js:965
+// Original stem_lab/stem_tool_watercycle.js:1317
 var _wcLocalizedCache = null;
 
-// Original stem_lab/stem_tool_watercycle.js:966
+// Original stem_lab/stem_tool_watercycle.js:1318
 var _wcLocalizedFor = null;
 
-// Original stem_lab/stem_tool_watercycle.js:968
+// Original stem_lab/stem_tool_watercycle.js:1320
 function watershedComponents() {
     // ctx.t is rebuilt every render, so identity comparison rebuilds the cache
     // exactly once per render rather than once per lookup.
@@ -326,14 +328,14 @@ function watershedComponents() {
     return _wcLocalizedCache;
   }
 
-// Original stem_lab/stem_tool_watercycle.js:977
+// Original stem_lab/stem_tool_watercycle.js:1408
 function getWatershedComponent(id) {
     var list = watershedComponents();
     for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
     return null;
   }
 
-// Original stem_lab/stem_tool_watercycle.js:983
+// Original stem_lab/stem_tool_watercycle.js:1414
 function stewardRng(seed, year, purpose) {
     var s = (seed || 'default') + ':' + year + ':' + purpose;
     var h = 2166136261 >>> 0;
@@ -346,10 +348,10 @@ function stewardRng(seed, year, purpose) {
     };
   }
 
-// Original stem_lab/stem_tool_watercycle.js:1660
+// Original stem_lab/stem_tool_watercycle.js:2945
 function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// Original stem_lab/stem_tool_watercycle.js:4632
+// Original stem_lab/stem_tool_watercycle.js:6217
 function startStewardCampaign(opts) {
             opts = opts || {};
             var fresh = defaultStewardState();
@@ -359,6 +361,7 @@ function startStewardCampaign(opts) {
             fresh.difficulty = diff.id;
             fresh.hoursPerYear = diff.hoursPerYear;
             fresh.hoursLeft = diff.hoursPerYear;
+            fresh.yearStart = fresh.components.map(function(c) { return Object.assign({}, c); });
             if (opts.seed) fresh.seed = opts.seed;
             setSteward(fresh);
             if (addToast) addToast('💧 Watershed Steward begins. Year 1 of 10 on ' + diff.label + '.', 'success');
@@ -366,14 +369,15 @@ function startStewardCampaign(opts) {
             if (typeof announceToSR === 'function') announceToSR('Watershed Steward started on ' + diff.label + '. Year 1 of 10. ' + diff.hoursPerYear + ' hours.');
           }
 
-// Original stem_lab/stem_tool_watercycle.js:4649
-function applyStewardTech(techId, componentId) {
+// Original stem_lab/stem_tool_watercycle.js:6235
+function applyStewardTech(techId, componentId, previewOnly) {
             var tech = STEWARD_TECHNIQUES.find(function(t) { return t.id === techId; });
             if (!tech) return;
-            if (steward.hoursLeft < tech.hours) { if (addToast) addToast('Not enough stewardship hours left.', 'warn'); return; }
+            var reason = steward.phase !== 'year' ? t('stem.watercycle.steward_decision_begin_year', 'Begin a campaign year to use this action.') : steward.hoursLeft < tech.hours ? t('stem.watercycle.steward_decision_insufficient', 'Not enough stewardship hours left.') : '';
             if (tech.appliesTo !== 'any' && componentId && tech.appliesTo.indexOf(componentId) < 0) {
-              if (addToast) addToast(tech.name + ' does not apply to that component.', 'info'); return;
+              reason = tech.name + ' does not apply to that component.';
             }
+            if (tech.appliesTo !== 'any' && (!componentId || !steward.components.some(function(c) { return c.id === componentId; }))) reason = t('stem.watercycle.steward_decision_choose_component', 'Choose an eligible watershed component.');
             var newComps = steward.components.map(function(c) {
               if (componentId && c.id !== componentId && tech.appliesTo !== 'any') return c;
               if (!componentId && tech.appliesTo !== 'any') return c;
@@ -383,14 +387,20 @@ function applyStewardTech(techId, componentId) {
               if (tech.effects.support !== undefined) nc.support = stewardClamp(nc.support + tech.effects.support, 0, 100);
               return nc;
             });
-            var actionLog = { tech: tech.name, target: componentId ? (getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId) : 'Watershed-wide', hours: tech.hours };
-            var patch = { components: newComps, hoursLeft: steward.hoursLeft - tech.hours, yearActions: steward.yearActions.concat([actionLog]) };
+            var targetName = componentId ? (getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId) : 'Watershed-wide';
+            var before = steward.components.map(function(c) { return Object.assign({}, c); });
+            var decision = { tech: tech, target: targetName, before: before, after: newComps, hoursAfter: steward.hoursLeft - tech.hours, canApply: !reason, reason: reason };
+            if (previewOnly) return decision;
+            if (reason) { if (addToast) addToast(reason, 'warn'); return; }
+            var actionLog = { tech: tech.name, techId: techId, target: targetName, targetId: componentId || null, hours: tech.hours, before: before, after: newComps.map(function(c) { return Object.assign({}, c); }) };
+            var patch = { components: newComps, hoursLeft: decision.hoursAfter, yearActions: steward.yearActions.concat([actionLog]), decisionPreview: null };
+            if (!steward.yearStart && !steward.yearActions.length) patch.yearStart = before;
             if (techId === 'damRemoval' || techId === 'fishPassage') patch.connectivityBoosts = (steward.connectivityBoosts || 0) + 1;
             setSteward(patch);
             if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (steward.hoursLeft - tech.hours) + ' hours left.');
           }
 
-// Original stem_lab/stem_tool_watercycle.js:4672
+// Original stem_lab/stem_tool_watercycle.js:6265
 function endStewardYear() {
             var pre = steward.components.map(function(c) { return Object.assign({}, c); });
 
@@ -402,6 +412,7 @@ function endStewardYear() {
               nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
               return nc;
             });
+            var annualStages = [{ id: 'actions', label: t('stem.watercycle.steward_decision_after_actions', 'After your actions'), components: pre }, { id: 'drift', label: t('stem.watercycle.steward_decision_routine', 'Routine yearly change'), components: drifted.map(function(c) { return Object.assign({}, c); }) }];
 
             // Seeded event
             var diff = STEWARD_DIFFICULTIES[steward.difficulty || 'coordinator'];
@@ -415,6 +426,7 @@ function endStewardYear() {
             }
             var eventState = { fundingBonusNextYear: steward.fundingBonusNextYear || 0, connectivityBoosts: steward.connectivityBoosts || 0 };
             ev.apply(drifted, eventState);
+            annualStages.push({ id: 'event', label: ev.name || t('stem.watercycle.steward_decision_event', 'Yearly event'), components: drifted.map(function(c) { return Object.assign({}, c); }) });
             // Severity scaling
             var sev = diff.severity || 1;
             if (sev !== 1) {
@@ -426,20 +438,26 @@ function endStewardYear() {
               }
             }
 
+            annualStages.push({ id: 'difficulty', label: t('stem.watercycle.steward_decision_difficulty', 'Difficulty adjustment'), components: drifted.map(function(c) { return Object.assign({}, c); }) });
+
             // Cascade rules
             var fired = [];
             STEWARD_FEEDBACK_RULES.forEach(function(rule) {
               if (rule.when(drifted)) { rule.apply(drifted); fired.push({ id: rule.id, msg: rule.msg }); }
             });
+            annualStages.push({ id: 'cascade', label: t('stem.watercycle.steward_decision_connected', 'Connected watershed effects'), components: drifted.map(function(c) { return Object.assign({}, c); }) });
 
             var snap = {
               year: steward.year, eventId: ev.id, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
               pre: pre, post: drifted.map(function(c) { return Object.assign({}, c); }),
+              yearStart: steward.yearStart ? steward.yearStart.map(function(c) { return Object.assign({}, c); }) : null,
+              stages: annualStages,
               actions: steward.yearActions.slice(), cascades: fired
             };
 
             setSteward({
               phase: 'review',
+              decisionPreview: null,
               components: drifted,
               lastEvent: ev,
               cascadesFiredThisYear: fired,
@@ -449,7 +467,7 @@ function endStewardYear() {
             if (typeof announceToSR === 'function') announceToSR('Year ' + steward.year + ' complete. Event: ' + ev.name + '.');
           }
 
-// Original stem_lab/stem_tool_watercycle.js:4730
+// Original stem_lab/stem_tool_watercycle.js:6331
 function advanceFromStewardReview() {
             if (steward.year >= steward.maxYears) {
               // Final outcome
@@ -473,7 +491,8 @@ function advanceFromStewardReview() {
                 phase: 'year', year: steward.year + 1,
                 hoursLeft: steward.hoursPerYear + (steward.fundingBonusNextYear || 0),
                 fundingBonusNextYear: 0,
-                yearActions: [], lastEvent: null
+                yearActions: [], lastEvent: null, decisionPreview: null,
+                yearStart: steward.components.map(function(c) { return Object.assign({}, c); })
               });
               if (typeof announceToSR === 'function') announceToSR('Year ' + (steward.year + 1) + ' begins.');
             }

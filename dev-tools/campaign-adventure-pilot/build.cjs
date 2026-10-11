@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const sourcePath = 'stem_lab/stem_tool_watercycle.js';
 const digest = data => crypto.createHash('sha256').update(data).digest('hex');
 function extractWatershed() {
-  const source = fs.readFileSync(path.join(root, sourcePath), 'utf8');
+  const source = fs.readFileSync(path.join(root, sourcePath), 'utf8').replace(/\r\n/g, '\n');
   const ast = parser.parse(source, { sourceType: 'script' });
   const functions = ['wcWatershedCopy','localizeWatershedComponents','wcStewardCopy','applyStewardCopy',
     'defaultStewardState','watershedComponents','getWatershedComponent','stewardRng','stewardClamp',
@@ -50,7 +50,7 @@ function extractWatershed() {
     "  continue: state => { steward = copy(state); advanceFromStewardReview(); return copy(steward); }",
     '};','}'
   ].join('\n')+'\n';
-  return {module, provenance: entries.map(({name,line,text})=>({name,line,sha256:digest(text)}))};
+  return {module, sourceSha256:digest(source), provenance: entries.map(({name,line,text})=>({name,line,sha256:digest(text)}))};
 }
 function protectedFiles() {
   const dirs = ['', 'desktop/web-app/src', 'desktop/web-app/public'];
@@ -67,21 +67,31 @@ function protectedFiles() {
       out.push(dir+'/'+file);
   return out.sort();
 }
-function verifyPreservation() {
-  const baseline = JSON.parse(fs.readFileSync(path.join(__dirname,'preservation.json'),'utf8'));
-  const changed = Object.entries(baseline.files).filter(([p,hash])=>!fs.existsSync(path.join(root,p))||digest(fs.readFileSync(path.join(root,p)))!==hash).map(([p])=>p);
-  if(changed.length) throw new Error('Protected files differ from pilot baseline: '+changed.join(', '));
+function capturePreservation() {
+  return {files:Object.fromEntries(protectedFiles().map(p=>[p,digest(fs.readFileSync(path.join(root,p)))]))};
+}
+function verifyPreservation(snapshot) {
+  const baseline = snapshot || JSON.parse(fs.readFileSync(path.join(__dirname,'preservation.json'),'utf8'));
+  const current = snapshot ? new Set(protectedFiles()) : null;
+  const changed = Object.entries(baseline.files).filter(([p,hash])=>(current&&!current.has(p))||!fs.existsSync(path.join(root,p))||digest(fs.readFileSync(path.join(root,p)))!==hash).map(([p])=>p);
+  if(current) for(const file of current) if(!Object.hasOwn(baseline.files,file)) changed.push(file);
+  if(changed.length) throw new Error('Protected files differ from '+(snapshot?'current preservation snapshot':'pilot baseline')+': '+changed.join(', '));
   return Object.keys(baseline.files).length;
 }
 function build(check = false) {
-  const {module,provenance} = extractWatershed();
-  const generated = path.join(__dirname,'watershed-source.mjs');
-  const meta = JSON.stringify({source:sourcePath,declarations:provenance},null,2)+'\n';
-  for(const [file,data] of [[generated,module],[path.join(__dirname,'provenance.json'),meta]]) {
-    if(check) { if(!fs.existsSync(file)||fs.readFileSync(file,'utf8')!==data) throw new Error('Pilot bridge is stale: '+path.basename(file)); }
-    else fs.writeFileSync(file,data);
+  const before = capturePreservation();
+  try {
+    const {module,sourceSha256,provenance} = extractWatershed();
+    const generated = path.join(__dirname,'watershed-source.mjs');
+    const meta = JSON.stringify({source:sourcePath,sourceSha256,declarations:provenance},null,2)+'\n';
+    for(const [file,data] of [[generated,module],[path.join(__dirname,'provenance.json'),meta]]) {
+      if(check) { if(!fs.existsSync(file)||fs.readFileSync(file,'utf8')!==data) throw new Error('Pilot bridge is stale: '+path.basename(file)); }
+      else fs.writeFileSync(file,data);
+    }
+    return provenance.length;
+  } finally {
+    verifyPreservation(before);
   }
-  return provenance.length;
 }
 if(require.main===module) {
   const args = process.argv.slice(2);
@@ -93,6 +103,7 @@ if(require.main===module) {
     console.log('Captured '+Object.keys(files).length+' protected source/build hashes.');
   }
   console.log('Watershed bridge: '+build(args.includes('--check'))+' exact source declarations.');
-  console.log('Preservation: '+verifyPreservation()+' original files unchanged.');
+  console.log('Preservation: current protected files unchanged during '+(args.includes('--check')?'check':'build')+'.');
+  if(args.includes('--audit-historical')) console.log('Historical preservation: '+verifyPreservation()+' original files unchanged.');
 }
-module.exports = {build,extractWatershed,verifyPreservation,root};
+module.exports = {build,extractWatershed,capturePreservation,verifyPreservation,root};

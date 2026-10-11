@@ -7928,11 +7928,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-002",
@@ -7973,11 +7977,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-003",
@@ -8018,11 +8026,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-004",
@@ -8034,7 +8046,7 @@
       "choices": [
         "Support the reduction because equal dismissal times mean the policy treats all students the same regardless of travel conditions.",
         "Quietly keep buses running from the school budget without district authorization so tutoring participation is not interrupted.",
-        "Remove after-school tutoring from the strategic plan entirely, on the grounds that any program creating transportation complications should not be formally linked to the district’s stated core values.",
+        "Remove the tutoring commitment from the strategic plan and recast it as an optional enrichment program, arguing that transportation access should be managed separately from the district's core values.",
         "Analyze who would lose access, present feasible transportation and scheduling alternatives, and use the stated value and evidence to recommend an equitable decision through authorized channels."
       ],
       "answerIndex": 3,
@@ -8063,11 +8075,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-005",
@@ -8108,11 +8124,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-006",
@@ -8153,11 +8173,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-007",
@@ -8198,11 +8222,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-008",
@@ -8243,11 +8271,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-009",
@@ -8288,11 +8320,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-010",
@@ -8333,11 +8369,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-011",
@@ -8378,11 +8418,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-012",
@@ -8423,11 +8467,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-013",
@@ -8468,11 +8516,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-014",
@@ -8513,11 +8565,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-015",
@@ -8527,7 +8583,7 @@
       "cognitiveLevel": "analysis",
       "prompt": "A successful reading pilot is ready to expand from two classrooms to an entire elementary school. Which evidence should govern the scale-up plan?",
       "choices": [
-        "Require every classroom in the school to copy all of the pilot routines exactly, including incidental scheduling features that are entirely unrelated to the reading mechanism itself.",
+        "Require each classroom to adopt the pilot's routines and scheduling details as a single implementation package, rather than distinguish essential reading practices from adaptable logistics.",
         "Expand immediately to every grade because waiting for capacity analysis would withhold a promising practice from students.",
         "Identify the pilot’s essential practices, training and coaching demands, resource and schedule requirements, subgroup results, adaptations, and capacity at each expansion stage.",
         "Judge readiness from the pilot’s average result and omit subgroup patterns so the scale-up message remains simple."
@@ -8558,11 +8614,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-016",
@@ -8573,7 +8633,7 @@
       "prompt": "A school’s improvement aim is stronger argumentative writing, but the action plan jumps directly from purchasing materials to state-test gains. What should leaders add?",
       "choices": [
         "Add a guarantee that the purchased materials will raise scores if teachers complete the required training hours.",
-        "Replace the student-learning aim entirely with a purchase-completion target, because the delivery of materials is far easier for school leaders to monitor and report on each month.",
+        "Replace the student-learning aim with a purchase-completion target so leaders can report a readily observable activity while postponing measures of classroom practice and writing growth.",
         "Track the number of pages assigned each week as the sole intermediate measure of writing quality.",
         "Specify intermediate drivers such as teacher task design, feedback quality, student revision opportunities, and common scoring, with measures connecting each driver to the aim."
       ],
@@ -8603,11 +8663,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-017",
@@ -8648,11 +8712,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-018",
@@ -8693,11 +8761,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-019",
@@ -8738,11 +8810,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-020",
@@ -8783,11 +8859,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-021",
@@ -8828,11 +8908,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-022",
@@ -8873,11 +8957,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-023",
@@ -8918,11 +9006,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-024",
@@ -8963,11 +9055,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-025",
@@ -9008,11 +9104,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-026",
@@ -9053,11 +9153,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-027",
@@ -9098,11 +9202,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-028",
@@ -9143,11 +9251,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-029",
@@ -9158,7 +9270,7 @@
       "prompt": "Participants rate a culturally responsive teaching institute highly. Which evaluation design would best determine whether the professional learning improved practice?",
       "choices": [
         "Track changes in teacher planning and instruction, student access and experience, implementation support, and relevant learning evidence over time, using multiple sources and comparison to baseline.",
-        "Use the favorable exit survey ratings as the outcome measure, because participant perceptions immediately after the institute are the most direct available indicator of eventual impact in the classroom.",
+        "Use the favorable exit-survey ratings as the main outcome measure, interpreting participants' satisfaction with the institute as sufficient evidence of improvements in their instruction and students' classroom experience.",
         "Compare this year’s state scores with last year’s scores and attribute any increase entirely to the institute.",
         "Count the number of institute materials downloaded after the event and treat higher access as proof of improved teaching."
       ],
@@ -9188,11 +9300,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-030",
@@ -9235,11 +9351,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-031",
@@ -9282,11 +9402,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-032",
@@ -9329,11 +9453,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-033",
@@ -9376,11 +9504,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-034",
@@ -9423,11 +9555,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-035",
@@ -9470,11 +9606,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-036",
@@ -9517,11 +9657,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-037",
@@ -9564,11 +9708,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-038",
@@ -9611,11 +9759,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-039",
@@ -9658,11 +9810,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-040",
@@ -9705,11 +9861,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-041",
@@ -9752,11 +9912,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-042",
@@ -9799,11 +9963,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-043",
@@ -9846,11 +10014,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-044",
@@ -9893,11 +10065,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-045",
@@ -9940,11 +10116,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-046",
@@ -9987,11 +10167,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-047",
@@ -10034,11 +10218,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-048",
@@ -10081,11 +10269,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-049",
@@ -10128,11 +10320,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-050",
@@ -10175,11 +10371,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-051",
@@ -10222,11 +10422,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-052",
@@ -10269,11 +10473,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-053",
@@ -10316,11 +10524,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-054",
@@ -10363,11 +10575,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-055",
@@ -10410,11 +10626,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-056",
@@ -10426,7 +10646,7 @@
       "choices": [
         "End recognition entirely because any public acknowledgment will inevitably create competition among employees.",
         "Give every employee the same award at each meeting so recognition is distributed with complete equality.",
-        "Ask administrators to nominate a greater number of staff members privately, but keep the underlying selection criteria entirely confidential so that no one is able to lobby for recognition or question the eventual outcome.",
+        "Ask administrators to nominate additional staff using private judgments about merit and keep selection decisions within the leadership team, reasoning that staff input into recognition criteria would create competing demands.",
         "Co-design transparent recognition criteria tied to shared values, invite varied evidence and nominations, and recognize both individual and collective contributions without turning praise into competition."
       ],
       "answerIndex": 3,
@@ -10457,11 +10677,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-057",
@@ -10480,7 +10704,7 @@
       "rationale": "Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
       "choiceRationales": [
         "Correct. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
-        "Not the best answer. A denial that omits a real proposal undermines credibility when the process becomes visible. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
+        "Not the best answer. An unverified blanket denial does not distinguish known facts from unresolved proposals or rumors and can undermine credibility. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
         "Not the best answer. Absolute disclosure may violate privacy and can misrepresent unapproved contingencies as decisions. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
         "Not the best answer. Silence allows consequential misinformation to shape trust and behavior. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence."
       ],
@@ -10504,11 +10728,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-058",
@@ -10551,11 +10779,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-059",
@@ -10596,11 +10828,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-060",
@@ -10641,11 +10877,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-061",
@@ -10686,11 +10926,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-062",
@@ -10731,11 +10975,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-063",
@@ -10776,11 +11024,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-064",
@@ -10821,11 +11073,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-065",
@@ -10866,11 +11122,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-066",
@@ -10911,11 +11171,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-067",
@@ -10962,11 +11226,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-068",
@@ -11013,11 +11281,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-069",
@@ -11064,11 +11336,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-070",
@@ -11115,11 +11391,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-071",
@@ -11166,11 +11446,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-072",
@@ -11217,11 +11501,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-073",
@@ -11268,11 +11556,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-074",
@@ -11319,11 +11611,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-075",
@@ -11368,11 +11664,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-076",
@@ -11417,11 +11717,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-077",
@@ -11466,11 +11770,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-078",
@@ -11515,11 +11823,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-079",
@@ -11564,11 +11876,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-080",
@@ -11613,11 +11929,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-081",
@@ -11662,11 +11982,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-082",
@@ -11711,11 +12035,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-083",
@@ -11760,11 +12088,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-084",
@@ -11809,11 +12141,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-085",
@@ -11858,11 +12194,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-086",
@@ -11907,11 +12247,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-087",
@@ -11956,11 +12300,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-088",
@@ -12003,11 +12351,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-089",
@@ -12050,11 +12402,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-090",
@@ -12097,11 +12453,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-091",
@@ -12144,11 +12504,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-092",
@@ -12191,11 +12555,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-093",
@@ -12238,11 +12606,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-094",
@@ -12285,11 +12657,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-095",
@@ -12334,11 +12710,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-096",
@@ -12383,11 +12763,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-097",
@@ -12432,11 +12816,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-098",
@@ -12481,11 +12869,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-099",
@@ -12530,11 +12922,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b3-100",
@@ -12579,11 +12975,15 @@
       ],
       "authorship": "assistant-authored-independent",
       "editorialReviewer": "OpenAI Codex",
-      "assistantReviewStatus": "reviewed-independent-draft",
-      "examItemStatus": "assistant-reviewed-independent-draft",
-      "reviewStatus": "assistant-reviewed-independent-draft",
-      "qaStatus": "pending-integrated-qa",
-      "authoredAt": "2026-07-18"
+      "assistantReviewStatus": "reviewed-independent-practice-item",
+      "examItemStatus": "assistant-approved-as-independent-practice-item",
+      "reviewStatus": "assistant-reviewed-independent-practice-item",
+      "qaStatus": "qa-passed-independent-practice-item",
+      "authoredAt": "2026-07-18",
+      "assistantReviewedAt": "2026-10-10",
+      "independentBatchId": "independent-diagnostic-batch-3",
+      "independentBatchNumber": 3,
+      "reviewMethod": "independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1"
     },
     {
       "id": "lead5412-b1-001-exp3",
@@ -23201,9 +23601,39 @@
   "expansionVersion": "source-kernel-audit-plus-independent-batches-and-guided-review-v2",
   "officialTotalTimeMinutes": 165,
   "simulationDomainCountsBasis": "release-declared-selected-response-allocation",
+  "independentAdditionReview": {
+    "schemaVersion": 1,
+    "status": "integrated-final-expansion",
+    "manifestSchemaVersion": 2,
+    "packId": "praxis-educational-leadership-5412",
+    "packVersion": "1.0.0",
+    "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 100,
+    "independentPracticeItems": 300,
+    "reviewedAt": "2026-10-10",
+    "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+    "batches": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "reviewedAt": "2026-10-10",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          {
+            "file": "educational_leadership_5412_batch3.json",
+            "reviewReport": "educational_leadership_5412_batch3.ci-2026-10-10.review.json",
+            "itemCount": 100,
+            "sha256": "4e4f26feee925f95f41585a207f7f55189706e1906d5bd9c5cd35b4abfc5e431"
+          }
+        ]
+      }
+    ],
+    "finalIndependentPracticeItems": 300,
+    "finalGuidedReviewItems": 200
+  },
+  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
-    "lastReviewedAt": "2026-07-18",
+    "lastReviewedAt": "2026-10-10",
     "structurallyReviewedItems": 500,
     "sourceItems": 200,
     "assistantAuthoredIndependentItems": 100,
@@ -23234,19 +23664,19 @@
     "independentBatchEvidence": [
       {
         "id": "independent-diagnostic-batch-3",
-        "reviewedAt": "2026-07-18",
+        "reviewedAt": "2026-10-10",
         "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
         "files": [
           "educational_leadership_5412_batch3.json"
         ],
         "reviewReports": [
-          "educational_leadership_5412_batch3.review.json"
+          "educational_leadership_5412_batch3.ci-2026-10-10.review.json"
         ],
         "artifactBindings": [
           {
             "file": "educational_leadership_5412_batch3.json",
             "algorithm": "sha256",
-            "sha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
+            "sha256": "4e4f26feee925f95f41585a207f7f55189706e1906d5bd9c5cd35b4abfc5e431",
             "itemCount": 100
           }
         ]
@@ -23254,35 +23684,5 @@
     ],
     "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "independentAdditionReview": {
-    "schemaVersion": 1,
-    "status": "integrated-final-expansion",
-    "manifestSchemaVersion": 2,
-    "packId": "praxis-educational-leadership-5412",
-    "packVersion": "1.0.0",
-    "sourceItems": 200,
-    "assistantAuthoredIndependentItems": 100,
-    "independentPracticeItems": 300,
-    "reviewedAt": "2026-07-18",
-    "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
-    "batches": [
-      {
-        "id": "independent-diagnostic-batch-3",
-        "reviewedAt": "2026-07-18",
-        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
-        "files": [
-          {
-            "file": "educational_leadership_5412_batch3.json",
-            "reviewReport": "educational_leadership_5412_batch3.review.json",
-            "itemCount": 100,
-            "sha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644"
-          }
-        ]
-      }
-    ],
-    "finalIndependentPracticeItems": 300,
-    "finalGuidedReviewItems": 200
-  },
-  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. It currently contains 200 distinct independent content kernels; 300 newly authored independent questions remain to reach 500.",
-  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. It currently contains 200 distinct independent content kernels; 300 newly authored independent questions remain to reach 500."
 }

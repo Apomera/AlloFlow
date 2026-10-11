@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const fs=require('fs'),path=require('path');
+const { selectPackStems } = require('./test_prep_pack_selection.cjs');
 const root=path.resolve(__dirname,'..');
 const waitBuffer=new Int32Array(new SharedArrayBuffer(4));
 function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data);return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
@@ -189,9 +190,12 @@ function updateQa(stem, pack, findings) {
 
 const officialReleaseMetadata={parapro:[90,0,150],audiology_5343:[120,0,120],early_childhood_5025:[120,0,120],educational_leadership_5412:[120,0,165],esol_5362:[120,0,120],plt_5_9_5623:[70,4,120],plt_7_12_5624:[70,4,120],plt_early_childhood_5621:[70,4,120],plt_k6_5622:[70,4,120],praxis_core_5752:[152,2,275],reading_specialist_5302:[95,2,150],school_counselor_5422:[120,0,120],school_librarian_5312:[120,0,120],school_psychologist_5403:[125,0,125],special_education_5355:[120,0,120],special_education_behavior_emotional_5372:[120,0,120],special_education_early_childhood_5692:[120,0,120],special_education_intellectual_disabilities_5322:[120,0,120],special_education_learning_disabilities_5383:[120,0,120],special_education_severe_profound_5547:[120,0,120],speech_language_pathology_5331:[132,0,150],teaching_reading_5205:[90,3,150]};
 const packFiles = fs.readdirSync(sourceDir).filter(name => name.endsWith('_pack.json')).sort();
+const selectedStems = selectPackStems(process.argv.slice(2), Object.keys(officialReleaseMetadata));
+const scopedSelection = process.argv.slice(2).some(arg => arg === '--pack' || arg.startsWith('--pack='));
 let expanded = 0;
 for (const packFile of packFiles) {
   const stem = packFile.slice(0, -'_pack.json'.length);
+  if (scopedSelection && !selectedStems.includes(stem)) continue;
   const packPath = path.join(sourceDir, packFile);
   const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
   if (/^eppp/i.test(pack.id || '') || !Array.isArray(pack.items)) continue;
@@ -418,5 +422,5 @@ for (const packFile of packFiles) {
   updateQa(stem, pack, findings);
   expanded++;
 }
-if (expanded !== 22) throw Error(`Expected 22 non-EPPP packs, expanded ${expanded}`);
+if (expanded !== selectedStems.length) throw Error(`Expected ${selectedStems.length} non-EPPP packs, expanded ${expanded}`);
 console.log(`Reviewed ${expanded} non-EPPP packs and finalized every manifest-staged independent diagnostic batch; the cross-pack 500-independent-question target remains in progress.`);

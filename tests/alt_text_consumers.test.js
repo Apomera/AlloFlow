@@ -127,7 +127,15 @@ describe('glossary descriptions and decorative icons remain distinct', () => {
     expect(imageAlt({image:PNG,imageAlt:'Roots take up water.'})).toBe('Roots take up water.');
     expect(imageAlt({image:PNG,imageAlt:'Roots take up water.',imageDecorative:true})).toBe('');
     expect(imageAlt({image:PNG,imageAlt:'Old picture.',imageAltHash:'stale-hash'})).toBe('');
-    expect(src('anchor_charts_source.jsx')).toContain('<img src={iconUrl} alt="" role="presentation"');
+    const anchor = src('anchor_charts_source.jsx');
+    // Reviewed descriptions are now supported; undescribed icons stay decorative.
+    expect(anchor).toContain('<img src={iconUrl} alt={iconAlt} role={iconAlt ? undefined : \'presentation\'}');
+    const altExpression = anchor.match(/const iconAlt = ([^\n]+);/);
+    expect(altExpression).not.toBeNull();
+    const iconAlt = new Function('section', 'return (' + altExpression[1] + ');');
+    expect(iconAlt({})).toBe('');
+    expect(iconAlt({ iconAlt: 42 })).toBe('');
+    expect(iconAlt({ iconAlt: '  Roots take up water.  ' })).toBe('Roots take up water.');
   });
 });
 

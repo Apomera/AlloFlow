@@ -8,6 +8,7 @@
 // plannable before content exists (the #1 regression, fixed 2026-07-10).
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { createRequire } from 'node:module';
 // Host files (ANTI, its mirror, App.jsx) come back with the code moved out of them (host_handlers_source.jsx,
 // allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
 import { readFileSync } from './helpers/host_source.js';
@@ -597,7 +598,8 @@ describe('honest failure attribution for generation steps', () => {
   it('the dispatcher rethrows on BOTH its catch paths, in source and both built copies', () => {
     // The multi-language batch path had its own catch that ignored
     // rethrowErrors entirely, so a teacher with several languages selected
-    // kept the silent swallow. Count 2 = batch + single-language paths.
+    // kept the silent swallow. Cancellation now has additional early rethrows;
+    // pin both reporting catches rather than a global throw-statement count.
     // Checking the built module AND its mirror also guards the
     // forgot-to-rebuild trap (verify:source-pair does not catch it).
     for (const path of [
@@ -606,8 +608,27 @@ describe('honest failure attribution for generation steps', () => {
       'desktop/web-app/public/generate_dispatcher_module.js',
     ]) {
       const code = readFileSync(path, 'utf-8');
-      const rethrows = code.match(/if \(configOverride && configOverride\.rethrowErrors\) throw err;/g) || [];
-      expect(rethrows.length, path).toBe(2);
+      const ast = createRequire(import.meta.url)('@babel/parser').parse(code, { sourceType: 'script', plugins: ['jsx'] });
+      const stack = [ast], catches = [];
+      while (stack.length) {
+        const node = stack.pop();
+        if (node.type === 'CatchClause' && node.param?.name === 'err' && node.body.body.some(statement =>
+          statement.type === 'ExpressionStatement' && statement.expression.type === 'CallExpression'
+          && statement.expression.callee.name === 'warnLog' && statement.expression.arguments[0]?.value === 'Unhandled error:')) catches.push(node);
+        for (const child of Object.values(node)) {
+          if (Array.isArray(child)) child.forEach(value => { if (value?.type) stack.push(value); });
+          else if (child?.type) stack.push(child);
+        }
+      }
+      expect(catches, path + ' batch and single-language reporting catches').toHaveLength(2);
+      for (const owner of catches) {
+        expect(owner.body.body.some(statement => statement.type === 'IfStatement'
+          && statement.test.type === 'LogicalExpression' && statement.test.operator === '&&'
+          && statement.test.left.name === 'configOverride' && statement.test.right.object?.name === 'configOverride'
+          && statement.test.right.property?.name === 'rethrowErrors'
+          && statement.consequent.type === 'ThrowStatement' && statement.consequent.argument?.name === owner.param.name),
+        path + ' must rethrow the original reporting-catch error when requested').toBe(true);
+      }
     }
   });
 });

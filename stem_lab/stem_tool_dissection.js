@@ -21566,7 +21566,7 @@ var d = labToolData.dissection || {};
                   !d.quizMode && React.createElement("details", { className: "diss-overlay-actions", "data-dissection-overlays": true, "aria-label": __alloT('stem.dissection.a11y_system_overlays', 'System overlays') },
                     React.createElement("summary", null, 'Systems and physiology tools'),
                     React.createElement("p", { className: "diss-overlay-help", id: "diss-overlay-help" }, 'Choose one overlay at a time. Available overlays depend on the specimen; “Not modeled” describes this simulation, not the absence of a biological system.'),
-                    React.createElement("div", { className: "diss-overlay-options", role: "group", "aria-label": 'System overlay selection', "aria-describedby": 'diss-overlay-help' },
+                    React.createElement("div", { className: "diss-overlay-options", role: "group", "aria-label": __alloT('stem.dissection.system_overlay_selection_label', 'System overlay selection'), "aria-describedby": 'diss-overlay-help' },
                       React.createElement("strong", { className: "diss-overlay-options__title" }, 'System overlays'),
                       [
                         { key: 'traceNervous', label: 'Nervous', active: !!d.traceNervous },

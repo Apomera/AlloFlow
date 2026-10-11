@@ -89,6 +89,22 @@ describe('session resource asset sync', () => {
     expect(hydrated).toEqual(resources);
   });
 
+  it('externalizes current and legacy Adventure art and restores nested inventory images', async () => {
+    const image = suffix => 'data:image/png;base64,' + suffix.repeat(128);
+    const resources = [{ id: 'story', type: 'adventure', data: {
+      sceneImage: image('LEGACY'), inventory: [{ image: image('OLDITEM') }],
+      snapshot: { currentScene: { text: 'Explore the wetland.' }, sceneImage: image('SCENE'), inventory: [null, { image: image('ITEM') }] },
+    } }];
+    const original = clone(resources);
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'STORY');
+    const assets = [...store.values()];
+    expect(assets.filter(entry => entry.kind === 'sessionImage')).toHaveLength(4);
+    const resourceBody = assets.find(entry => entry.kind === 'sessionResource');
+    expect(JSON.stringify(resourceBody)).not.toContain('data:image');
+    expect(await window.hydrateSessionAssets('app-test', manifest)).toEqual(original);
+    expect(resources).toEqual(original);
+  });
+
   it('round-trips nested visual-quiz question and option images through session assets', async () => {
     const questionImage = 'data:image/png;base64,' + 'Q'.repeat(90000);
     const optionImages = [

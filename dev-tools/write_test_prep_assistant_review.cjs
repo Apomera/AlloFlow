@@ -56,6 +56,7 @@ const inventory = {
   independentQuestionTarget: perPack.length * 500,
   newIndependentItemsNeeded: sum('newIndependentItemsNeeded'),
 };
+const independentParaProItemsReviewed = perPack.find(row => row.stem === 'parapro')?.assistantAuthoredIndependentItems || 0;
 
 const audit = {
   schemaVersion: 2,
@@ -79,6 +80,8 @@ const audit = {
     existingItemsQualitativelySampled: 169,
     newCredentialSpecificReplacementsReviewed: 68,
     newIndependentParaProItemsReviewed: inventory.assistantAuthoredIndependentItems,
+    newIndependentParaProItemsReviewedSemantics: 'legacy-total-assistant-authored-independent-items-alias',
+    independentParaProItemsReviewed,
     allActivitiesStructurallyChecked: true,
     allGuidedAnswerDerivationsChecked: true,
     allIndependentItemsWarningScanned: true,
@@ -115,7 +118,7 @@ const audit = {
     'Expanded the shared reference catalog to cover every source used by pack items and learning libraries, including readable title, organization, summary, and credibility metadata.',
     'Added a reproducible EPPP-guided QA gate across all 22 non-EPPP packs, with warning diagnostics kept distinct from hard release findings.',
     'Separated guided-review attempt mode from diagnostic analytics and excluded guided activities from smart review, targeted sets, custom quizzes, and saved-question review.',
-    `Added and assistant-reviewed ${inventory.assistantAuthoredIndependentItems} genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links.`,
+    `Added and assistant-reviewed ${inventory.assistantAuthoredIndependentItems} independent practice questions across credential-specific packs, including ${independentParaProItemsReviewed} ParaPro questions, with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links.`,
   ],
   limitations: [
     'Assistant review is not licensed-professional endorsement, independent legal/clinical review, field testing, psychometric calibration, or validation of score interpretations.',
@@ -167,7 +170,7 @@ ${table}
 - Replaced 68 EBD/ID arithmetic, stacked-context, or credential-mismatched items with new school-based scenarios.
 - Removed misplaced 5383 language from 102 EBD/ID questions and their feedback.
 - Corrected SLD-contaminated scenarios, Praxis Core ambiguity/rationale defects, reading/grammar/quotation issues, and Early Childhood/ECSE defects.
-- Added ${inventory.assistantAuthoredIndependentItems} genuinely new ParaPro practice questions in a separately identified independent diagnostic bank.
+- Added ${inventory.assistantAuthoredIndependentItems} independent practice questions across reviewed packs, including ${independentParaProItemsReviewed} ParaPro questions, in separately identified independent diagnostic banks.
 - Preserved guided-review banks as a separate learning mode excluded from diagnostic analytics.
 
 ## Next release standard

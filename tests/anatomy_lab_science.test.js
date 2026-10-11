@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { parse } from 'acorn';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
@@ -433,16 +434,32 @@ describe('Anatomy Lab assessment-state resilience', () => {
       _spotterTimedBestTime: 2.5,
       _spotterOpts: [{ id: 'skull' }, { id: 'ribs' }, { id: 'femur' }, { id: 'humerus' }]
     });
-    expect(html).toContain('4/4');
+    const root = document.createElement('div'); root.innerHTML = html;
+    expect(root.querySelector('[data-anatomy-spotter-score]').textContent).toBe('4 correct \u00b7 4 answered');
     expect(html).toContain('Best timed response: 2.5 s');
     expect(html).toContain('Response time: 1.3 s');
   });
 
   it('consolidates each Spotter answer into one state update', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('var patch={_spotterFeedback:optionId,_spotterElapsed:elapsed,_spotterTotal:total+1};');
-    expect(source).toContain('Object.assign(patch,confidenceEvidencePatch(spotterTarget,correct,current))');
-    expect(source).not.toContain("upd('_spotterElapsed', elapsed)");
+    withAnatomyTimers(() => {
+      const now = 1800000000000;
+      vi.spyOn(Date, 'now').mockReturnValue(now);
+      try {
+        const s = anatomySession({ _activeTab: 'spotter', _spotterActive: true, _spotterTarget: 'skull',
+          _spotterOpts: ['skull', 'mandible', 'clavicle', 'ribs'].map(id => ({ id })),
+          _spotterStartTime: now - 1250, _spotterTimed: true, _spotterRoundTimed: true,
+          _spotterScore: 4, _spotterTotal: 4, _structureConfidence: {}, _confidenceAt: {} });
+        const submit = s.node(element => element.props?.['aria-keyshortcuts'] === '1').props.onClick;
+        submit();
+        expect(s.updates).toHaveLength(1);
+        expect(s.updates[0].after).toMatchObject({ _spotterFeedback: 'skull', _spotterElapsed: 1.25,
+          _spotterScore: 5, _spotterTotal: 5, _structureConfidence: { skull: 'learning' }, _confidenceAt: { skull: now } });
+        const saved = JSON.parse(JSON.stringify(s.data()));
+        submit();
+        expect(s.updates).toHaveLength(1);
+        expect(s.data()).toEqual(saved);
+      } finally { vi.restoreAllMocks(); }
+    });
   });
 
   it('merges partial Homeostasis saves with safe teaching defaults', () => {
@@ -569,11 +586,23 @@ describe('Anatomy Lab progress-state integrity', () => {
   });
 
   it('applies connection and clinical-case interactions atomically', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('var connectionPatch = { _expandedConn:');
-    expect(source).toContain('updMulti(connectionPatch);');
-    expect(source).toContain("_activeCaseFeedback: 'reveal',");
-    expect(source).not.toContain("upd('_activeCaseFeedback', 'reveal')");
+    withAnatomyTimers(() => {
+      const connection = anatomySession({ selectedStructure: 'femur', _connectionsViewed: { forged: true } });
+      connection.node(element => element.props?.['data-anatomy-relationship-process'] === 'conn_3').props.onClick();
+      expect(connection.updates).toHaveLength(1);
+      expect(connection.updates[0].after).toMatchObject({ _activeTab: 'connections', _expandedConn: 'conn_3', _connectionsViewed: { conn_3: true } });
+      expect(connection.data()._connectionsViewed).not.toHaveProperty('forged');
+
+      const clinical = anatomySession({ system: 'circulatory', _showClinical: true, _clinicalSolvedIds: {} });
+      clinical.node(element => element.props?.['data-anatomy-case-reveal'] === 'case_3').props.onClick();
+      expect(clinical.updates).toHaveLength(1);
+      expect(clinical.updates[0].after._clinicalStudy.cases.case_3.revealed).toBe(true);
+      expect(clinical.data()._clinicalSolvedIds).toEqual({});
+      clinical.node(element => element.props?.['data-anatomy-case-review'] === 'case_3').props.onClick();
+      expect(clinical.updates).toHaveLength(2);
+      expect(clinical.updates[1].after).toMatchObject({ _activeCaseId: 'case_3', _activeCaseFeedback: 'reveal',
+        _clinicalSolvedIds: { case_3: true }, _clinicalSolved: 1 });
+    });
   });
 });
 describe('Anatomy Lab layer and quiz-state resilience', () => {
@@ -806,23 +835,38 @@ describe('Anatomy Lab connection disclosure semantics', () => {
 
   it('does not expose forged restored connection details', () => {
     const html = renderAnatomy({ _activeTab: 'connections', _expandedConn: 'forged_connection' });
-    expect(html).not.toContain('forged_connection');
+    const root = document.createElement('div'); root.innerHTML = html;
+    expect(root.textContent).not.toContain('forged_connection');
+    expect(root.querySelector('[data-anatomy-connection-id="forged_connection"]')).toBeNull();
+    expect(root.querySelector('#anatomy-connection-forged_connection')).toBeNull();
+    expect(root.querySelector('#anatomy-connection-select').value).toBe('');
+    const toggles = [...root.querySelectorAll('button[aria-controls^="anatomy-connection-conn_"]')];
+    expect(toggles.length).toBeGreaterThan(0);
+    expect(toggles.every(toggle => toggle.getAttribute('aria-expanded') === 'false')).toBe(true);
     expect(html).not.toContain('role="region" aria-label="Gas Exchange details"');
     expect(html).toContain('aria-label="Expand Gas Exchange" aria-expanded="false"');
   });
 
-  it('uses shared system cleanup for the rail and connection diagram buttons', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('function systemSelectionPatch(systemId)');
-    expect(source).toContain('function showAnatomySystem(systemId, contextLabel)');
-    expect(source).toContain('onClick: function() { showAnatomySystem(key); }');
-    expect(source).toContain('showConnectionDiagram(id,conn.title)');
-    expect(source).toContain('showAnatomySystem(systemId,title)');
-    expect(source).toContain(
-      "announceToSR(__alloFill(__alloT('stem.anatomy.sr_showing_diagram_for', 'Showing {value1} diagram for {value2}.'), " +
-      "{ value1: SYSTEMS[systemId].name, value2: contextLabel })"
-    );
-    expect(source).not.toContain("return h('button', { 'aria-label': conn.title");
+  it('cleans up diagram navigation while connection study preserves saved Quiz work', () => {
+    withAnatomyTimers(() => {
+      const quiz = { quizIdx: 4, quizScore: 3, quizFeedback: { chosen: 'skull', correct: true }, _quizAttempts: 4 };
+      const base = { system: 'circulatory', selectedStructure: 'heart', search: 'heart', ...quiz };
+      const rail = anatomySession(base);
+      rail.node(element => element.type === 'button' && element.props?.className?.includes('anatomy-system-button')
+        && element.props['aria-label'].startsWith('Respiratory.')).props.onClick();
+      expect(rail.updates).toHaveLength(1);
+      expect(rail.data()).toMatchObject({ system: 'respiratory', selectedStructure: null, search: '',
+        quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 });
+
+      const connection = anatomySession({ ...base, _activeTab: 'connections', _expandedConn: 'conn_1',
+        _connectionsViewed: { conn_1: true }, _studyFilter: 'review' });
+      const diagram = connection.node(element => element.props?.['data-anatomy-connection-diagram'] === 'respiratory');
+      expect(diagram.props['aria-label']).toBe('Show Respiratory diagram for Gas Exchange');
+      diagram.props.onClick();
+      expect(connection.updates).toHaveLength(1);
+      expect(connection.data()).toMatchObject({ system: 'respiratory', selectedStructure: null, search: '',
+        _studyFilter: 'all', _activeTab: 'connections', _expandedConn: 'conn_1', _connectionsViewed: { conn_1: true }, ...quiz });
+    });
   });
 });
 describe('Anatomy Lab adaptive study support', () => {
@@ -1086,7 +1130,27 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
     expect(source).toContain("markerConfidence === 'practice' ? '!' : markerConfidence === 'learning' ? '~' : '\u2713'");
     expect(source).toContain("cCtx.strokeText(markerStatusSymbol, px, py + 0.5);");
     expect(source).toContain("cCtx.fillText(markerStatusSymbol, px, py + 0.5);");
-    expect(source).toContain('var markerStatusVisible = !spotterActive || spotterFeedback !== null;');
+    const initializers = new Map();
+    function visit(node) {
+      if (!node || typeof node.type !== 'string') return;
+      if (node.type === 'VariableDeclarator' && ['spotterUsesAtlas', 'markerStatusVisible'].includes(node.id.name)) {
+        expect(initializers.has(node.id.name)).toBe(false);
+        initializers.set(node.id.name, source.slice(node.init.start, node.init.end));
+      }
+      for (const value of Object.values(node)) {
+        if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value.type === 'string') visit(value);
+      }
+    }
+    visit(parse(source, { ecmaVersion: 'latest', sourceType: 'script' }));
+    expect([...initializers.keys()].sort()).toEqual(['markerStatusVisible', 'spotterUsesAtlas']);
+    const visible = new Function('activeTab', 'd', 'spotterFeedback',
+      `var spotterUsesAtlas = ${initializers.get('spotterUsesAtlas')}; return ${initializers.get('markerStatusVisible')};`);
+    expect(visible('spotter', { _spotterActive: true }, null)).toBe(false);
+    expect(visible('spotter', { _spotterActive: true }, 'skull')).toBe(true);
+    expect(visible('spotter', { _spotterActive: false }, null)).toBe(true);
+    expect(visible('explore', { _spotterActive: true }, null)).toBe(true);
+    expect(visible('quiz', { _spotterActive: true }, null)).toBe(true);
   });
 
   it('renders a compact marker learning-status legend', () => {
@@ -1097,8 +1161,11 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
     expect(html).toContain('data-status="practice"');
     expect(html).toContain('data-status="learning"');
     expect(html).toContain('data-status="mastered"');
-    expect(html).toContain('>Review</span>');
-    expect(html).toContain('>Got it</span>');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const items = [...root.querySelectorAll('.anatomy-marker-legend-item')];
+    expect(items.map(item => item.querySelector('[data-status]').getAttribute('data-status'))).toEqual(['unrated', 'practice', 'learning', 'mastered']);
+    expect(items.map(item => item.textContent.replace(item.querySelector('[data-status]').textContent, '').trim())).toEqual(['Unrated', 'Need practice', 'Learning', 'Got it']);
+    expect(items.map(item => item.querySelector('[data-status]').getAttribute('aria-hidden'))).toEqual(['true', 'true', 'true', 'true']);
   });
 
   it('announces the selected structure study status in the canvas description', () => {
@@ -2140,12 +2207,9 @@ describe('Anatomy Systems in Motion', () => {
   });
 
   it('builds an accessible structure-centered relationship map', () => {
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     const html = renderAnatomy({
       system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'femur'
     });
-    expect(source).toContain('function openRelationshipConnection(connection)');
-    expect(source).toContain('nextConnectionsViewed[connection.id] = true');
     expect(html).toContain('data-anatomy-relationship-map="femur"');
     expect(html).toContain('role="figure"');
     expect(html).toContain('aria-labelledby="anatomy-relationship-map-femur"');
@@ -2154,6 +2218,15 @@ describe('Anatomy Systems in Motion', () => {
     expect(html).toContain('Lever System for Movement');
     expect(html).toContain('Open Muscular system diagram from Lever System for Movement');
     expect(html).toContain('These links connect the selected structure with an authored body-system process.');
+    withAnatomyTimers(() => {
+      const s = anatomySession({ selectedStructure: 'femur' });
+      s.node(element => element.props?.['data-anatomy-relationship-process'] === 'conn_3').props.onClick();
+      expect(s.updates).toHaveLength(1);
+      expect(s.data()).toMatchObject({ _activeTab: 'connections', _expandedConn: 'conn_3',
+        _connectionsViewed: { conn_3: true }, selectedStructure: 'femur', system: 'skeletal' });
+      expect(s.data()._connectionStudyOrigin).toMatchObject({ connectionId: 'conn_3', structureId: 'femur', systemId: 'skeletal', entry: 'process' });
+      expect(s.html().querySelector('#anatomy-connection-conn_3').getAttribute('aria-label')).toBe('Lever System for Movement details');
+    });
   });
 
   it('does not render a relationship map without a selected structure', () => {
@@ -2203,8 +2276,14 @@ describe('Anatomy Systems in Motion', () => {
     expect(html).toContain('data-scale-specialist="anatomyLens"');
     expect(html).toContain('Alveolus and gas-exchange deep dive');
     expect(html).toContain('data-scale-cell-context="lung"');
-    expect(html).toContain('Open cell level: Lung Cell Atlas');
-    expect(html).toContain('Current route: Respiratory → Alveoli → Alveolus and gas-exchange deep dive → Lung Cell Atlas.');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const cell = root.querySelector('button[data-scale-stage="cell"]');
+    expect(cell.querySelector('strong').textContent).toBe('Lung Cell Atlas');
+    expect(cell.querySelector('.anatomy-scale-action').textContent).toBe('Open cell view');
+    expect(root.querySelector('[data-scale-stage="body"] strong bdi').textContent).toBe('Respiratory');
+    expect(root.querySelector('[data-scale-stage="structure"] strong bdi').textContent).toBe('Alveoli');
+    expect(root.querySelector('[data-scale-stage="tissue"] strong bdi').textContent).toBe('Alveolus and gas-exchange deep dive');
+    expect(root.querySelector('.anatomy-scale-status').textContent).toBe('Destinations for \u2068Alveoli\u2069. Choose a detail or cell view to continue.');
   });
 
   it('hands brain structures to the dedicated brain and cell atlases', () => {
@@ -2213,10 +2292,17 @@ describe('Anatomy Systems in Motion', () => {
     });
     expect(html).toContain('data-anatomy-scale-journey="brain"');
     expect(html).toContain('data-scale-specialist="brainAtlas"');
-    expect(html).toContain('Open tissue or specialist level: Brain Atlas');
     expect(html).toContain('data-scale-cell-context="brain"');
-    expect(html).toContain('Open cell level: Brain Cell Atlas');
-    expect(html).toContain('Current route: Nervous → Brain → Brain Atlas → Brain Cell Atlas.');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const tissue = root.querySelector('button[data-scale-stage="tissue"]');
+    expect(tissue.querySelector('strong').textContent).toBe('Brain Atlas');
+    expect(tissue.querySelector('.anatomy-scale-action').textContent).toBe('Open detail view');
+    const cell = root.querySelector('button[data-scale-stage="cell"]');
+    expect(cell.querySelector('strong').textContent).toBe('Brain Cell Atlas');
+    expect(cell.querySelector('.anatomy-scale-action').textContent).toBe('Open cell view');
+    expect(root.querySelector('[data-scale-stage="body"] strong bdi').textContent).toBe('Nervous');
+    expect(root.querySelector('[data-scale-stage="structure"] strong bdi').textContent).toBe('Brain');
+    expect(root.querySelector('.anatomy-scale-status').textContent).toBe('Destinations for \u2068Brain\u2069. Choose a detail or cell view to continue.');
   });
   it('adds a branching intervention lab to disrupted physiology', () => {
     const html = renderAnatomy({

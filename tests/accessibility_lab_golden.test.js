@@ -329,7 +329,22 @@ describe('authentic workspace host contract', () => {
     const liveFollowCalls = handler.match(/[^\n]*_alloFollowResourceLive\s*\(/g) || [];
     expect(liveFollowCalls.length).toBeGreaterThanOrEqual(3);
     expect(liveFollowCalls.filter((call) => !/!options\.suppressLiveFollow/.test(call))).toEqual([]);
-    expect(hostSource).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
+    const wrapperStart = hostSource.indexOf('const handleRestoreView = (item, options = {}) => {');
+    const wrapperEnd = hostSource.indexOf('// BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE', wrapperStart);
+    expect(wrapperStart).toBeGreaterThan(-1);
+    expect(wrapperEnd).toBeGreaterThan(wrapperStart);
+    const calls = [];
+    const pendingClears = [];
+    const deps = {};
+    const restore = new Function('window', 'supportDraftSessionRef', 'requestReadingSupportTransition', '_alloMiscHandlersDeps', 'pendingQrAssignmentOpenGenerationRef', 'setPendingQrAssignmentResource',
+      hostSource.slice(wrapperStart, wrapperEnd) + '; return handleRestoreView;')(
+      { AlloModules: { MiscHandlers: { handleRestoreView: (...args) => { calls.push(args); return true; } } } },
+      { current: { blocked: () => false } }, callback => callback(), () => deps, { current: 0 }, value => pendingClears.push(value),
+    );
+    const item = { id: 'authentic-review' };
+    expect(restore(item, { suppressLiveFollow: true, preservePendingAssignment: true })).toBe(true);
+    expect(calls).toEqual([[item, { suppressLiveFollow: true }, deps]]);
+    expect(pendingClears).toEqual([]);
     expect(hostSource).toContain('onOpenAuthenticView: (item, reviewContext = {}) => {');
     expect(hostSource).toContain('handleRestoreView(item, { suppressLiveFollow: true })');
     expect(hostSource).toContain("const ACCESSIBILITY_REVIEW_SESSION_KEY = 'alloflow_accessibility_review_session_v1'");

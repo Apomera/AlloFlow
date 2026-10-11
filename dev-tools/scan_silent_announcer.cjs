@@ -41,6 +41,11 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+let acorn;
+for (const location of [path.join(ROOT, 'node_modules', 'acorn'), path.join(ROOT, 'desktop/web-app/node_modules/acorn'), 'acorn']) {
+  try { acorn = require(location); break; } catch (_) {}
+}
+if (!acorn) { console.error('scan_silent_announcer: acorn not found; cannot scan.'); process.exit(2); }
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 // Optional directory argument so the gate can be pointed at a fixture — a
@@ -85,10 +90,150 @@ function bodyOf(src, name) {
   return null;
 }
 
+// Prove helper delegation and the exact state rendered by a live region.
+// An unrelated aria-live node elsewhere in a large tool is not evidence.
+function liveDelegations(src) {
+  let ast;
+  try { ast = acorn.parse(src, { ecmaVersion: 'latest', sourceType: 'script' }); }
+  catch (_) { return new Set(); }
+  const fnTypes = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression']);
+  function walk(node, visit, ancestors = []) {
+    if (!node || typeof node.type !== 'string' || visit(node, ancestors) === false) return;
+    const next = ancestors.concat(node);
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach((child) => walk(child, visit, next));
+      else if (value && typeof value.type === 'string') walk(value, visit, next);
+    }
+  }
+  const functions = new Map(), duplicate = new Set(), functionContexts = new Map();
+  // Sibling components can reuse hook names without sharing the same state.
+  const pairs = new Set(), setters = new Map(), liveStates = new Set(), bindings = new Map();
+  const isScope = (node) => fnTypes.has(node.type) || ['Program', 'BlockStatement', 'CatchClause'].includes(node.type);
+  const scopeOf = (ancestors, kind) => ancestors.slice().reverse().find((node) => kind === 'var'
+    ? fnTypes.has(node.type) || node.type === 'Program' : isScope(node)) || ast;
+  function declare(pattern, scope) {
+    if (!pattern) return;
+    if (pattern.type === 'Identifier') {
+      if (!bindings.has(scope)) bindings.set(scope, new Map());
+      const names = bindings.get(scope), prior = names.get(pattern.name);
+      if (prior && prior.id !== pattern) prior.ambiguous = true;
+      else if (!prior) names.set(pattern.name, { id: pattern });
+    } else if (pattern.type === 'ArrayPattern') pattern.elements.forEach((part) => declare(part, scope));
+    else if (pattern.type === 'ObjectPattern') pattern.properties.forEach((part) => declare(part.value || part.argument, scope));
+    else if (pattern.type === 'RestElement') declare(pattern.argument, scope);
+    else if (pattern.type === 'AssignmentPattern') declare(pattern.left, scope);
+  }
+  function resolve(name, ancestors) {
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+      const names = bindings.get(ancestors[i]);
+      if (names && names.has(name)) {
+        const binding = names.get(name);
+        return binding.ambiguous ? null : binding;
+      }
+    }
+    return null;
+  }
+  const stateHook = (node) => node && node.type === 'CallExpression'
+    && node.callee.type === 'MemberExpression' && node.callee.property.name === 'useState';
+  const bindFunction = (name, node) => {
+    if (functions.has(name)) duplicate.add(name);
+    else functions.set(name, node);
+  };
+  walk(ast, (node, ancestors) => {
+    if (fnTypes.has(node.type)) {
+      functionContexts.set(node, ancestors);
+      node.params.forEach((parameter) => declare(parameter, node));
+      if (node.id) declare(node.id, node.type === 'FunctionDeclaration' ? scopeOf(ancestors) : node);
+    }
+    if (node.type === 'CatchClause') declare(node.param, node);
+    if (node.type === 'FunctionDeclaration' && node.id) bindFunction(node.id.name, node);
+    if (node.type === 'VariableDeclarator' && node.init) {
+      if (node.id.type === 'Identifier' && fnTypes.has(node.init.type)) bindFunction(node.id.name, node.init);
+    }
+    if (node.type === 'VariableDeclarator') {
+      const declaration = ancestors[ancestors.length - 1];
+      declare(node.id, scopeOf(ancestors, declaration.kind));
+    }
+  });
+  walk(ast, (node, ancestors) => {
+    if (node.type === 'VariableDeclarator' && node.init) {
+      if (node.id.type === 'Identifier' && stateHook(node.init)) {
+        const pair = resolve(node.id.name, ancestors);
+        if (pair) pairs.add(pair);
+      }
+      if (node.id.type === 'ArrayPattern' && stateHook(node.init)) {
+        const [state, setter] = node.id.elements;
+        if (state && setter && state.type === 'Identifier' && setter.type === 'Identifier') {
+          const stateBinding = resolve(state.name, ancestors), setterBinding = resolve(setter.name, ancestors);
+          if (stateBinding && setterBinding) setters.set(setterBinding, stateBinding);
+        }
+      }
+    }
+  });
+  const pairStates = new Map(), pairSetters = new Map();
+  walk(ast, (node, ancestors) => {
+    if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && node.init && node.init.type === 'MemberExpression'
+        && node.init.computed && node.init.object.type === 'Identifier') {
+      const pair = resolve(node.init.object.name, ancestors), binding = resolve(node.id.name, ancestors);
+      if (pairs.has(pair) && binding) {
+        if (node.init.property.value === 0) pairStates.set(pair, binding);
+        if (node.init.property.value === 1) pairSetters.set(pair, binding);
+      }
+    }
+    if (node.type !== 'CallExpression') return;
+    const callee = node.callee, name = callee.type === 'Identifier' ? callee.name : callee.type === 'MemberExpression' && callee.property.name;
+    if (!['createElement', 'h', 'H', 'el', 'e'].includes(name)) return;
+    const props = node.arguments[1];
+    if (!props || props.type !== 'ObjectExpression' || !props.properties.some((p) => p.type === 'Property'
+        && (p.key.value || p.key.name) === 'aria-live' && p.value.type === 'Literal' && ['polite', 'assertive'].includes(p.value.value))) return;
+    for (const child of node.arguments.slice(2)) walk(child, (n, chain) => {
+      if (fnTypes.has(n.type)) return false;
+      if (n.type !== 'Identifier') return;
+      const parent = chain[chain.length - 1];
+      if (parent && ((parent.type === 'MemberExpression' && !parent.computed && parent.property === n)
+          || (parent.type === 'Property' && !parent.computed && !parent.shorthand && parent.key === n))) return;
+      const binding = resolve(n.name, chain);
+      if (binding) liveStates.add(binding);
+    }, ancestors.concat(node));
+  });
+  for (const [pair, setter] of pairSetters) if (pairStates.has(pair)) setters.set(setter, pairStates.get(pair));
+  const healthy = new Set(), calls = new Map();
+  for (const [name, fn] of functions) {
+    if (duplicate.has(name)) continue;
+    const dependencies = new Set();
+    walk(fn.body, (node, ancestors) => {
+      if (fnTypes.has(node.type)) return false;
+      if (node.type !== 'CallExpression') return;
+      const call = node.callee;
+      if (call.type === 'Identifier') {
+        dependencies.add(call.name);
+        const setter = resolve(call.name, ancestors);
+        if (['announceToSR', 'srSay', 'alloAnnounce', 'addToast'].includes(call.name)
+            || (setters.has(setter) && liveStates.has(setters.get(setter)))) healthy.add(name);
+      } else if (call.type === 'MemberExpression') {
+        const object = call.object, property = call.property.name || call.property.value;
+        if (object.type === 'Identifier' && ((object.name === 'document' && ['getElementById', 'querySelector'].includes(property))
+            || (['ctx', 'props'].includes(object.name) && ['announceToSR', 'srSay'].includes(property))
+            || (object.name === 'window' && /announce/i.test(property)))) healthy.add(name);
+      }
+    }, functionContexts.get(fn).concat(fn));
+    calls.set(name, dependencies);
+  }
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [name, dependencies] of calls) {
+      if (!healthy.has(name) && [...dependencies].some((dependency) => healthy.has(dependency))) { healthy.add(name); changed = true; }
+    }
+  }
+  return healthy;
+}
+
 const broken = [], fine = [], usesHost = [], skipped = [];
 for (const { label: tool, full } of collectFiles()) {
   let src;
   try { src = fs.readFileSync(full, 'utf8'); } catch (_) { continue; }
+  const provenLive = liveDelegations(src);
 
   // Discover by SHAPE, not by allowlist. Every real announcer in this repo is
   // `function <prefix>Announce<suffix>(` — sfAnnounce, rhAnnounce, klAnnounce,
@@ -134,25 +279,22 @@ for (const { label: tool, full } of collectFiles()) {
     //   • bare `announceToSR(...)` — the host global (anatomy, artstudio)
     //   • `window.alloAnnounce(...)` — AlloFlowANTI.txt:15236 (research lanes)
     //   • `addToast(...)` — toasts render aria-live polite/assertive, :46666
-    const delegatesToHost = /ctx\.|props\.|window\.\w*[Aa]nnounce|\b(announceToSR|srSay|alloAnnounce|addToast)\s*\(/.test(body);
+    const delegatesToHost = /(?:ctx|props)\.(?:announceToSR|srSay)\s*\(|window\.\w*[Aa]nnounce|\b(announceToSR|srSay|alloAnnounce|addToast)\s*\(/.test(body);
     // ★ DELEGATES — a throttle/dedupe wrapper around a sibling announcer that
     // does reach the DOM. roadready's tryAnnounce calls rrAnnounce; it is not
     // silent. This was the 4th false positive.
-    const delegatesToSibling = names.some((other) => other !== localName
+    const delegatesToSibling = names.some((other) => other !== localName && provenLive.has(other)
       && new RegExp('\\b' + other.replace(/\$/g, '\\$') + '\\s*\\(').test(body));
 
     // ★ REACT-STATE live region (math_create, 2026-08-17): the announcer only
     // calls a state setter (setSrMsg / setA11yAnnouncement), and the component
     // renders that state into a role="status" aria-live element. The DOM write
     // happens in the render, so none of the tests above can see it. Accept the
-    // shape only when BOTH halves are present in the file: the body calls a
-    // set*(…) whose name suggests an announcement, and the file renders an
-    // aria-live attribute. A setter with no live region stays broken — that is
-    // precisely the original lifeskills defect.
-    const setterMatch = body.match(/\bset([A-Z]\w*)\s*\(/);
-    const reactStateLiveRegion = !!setterMatch
-      && /sr|announce|a11y|status|live/i.test(setterMatch[1])
-      && /["']aria-live["']|aria-live=/.test(src);
+    // shape only when the body calls the exact hook setter whose lexical
+    // state binding is rendered into aria-live. A sibling component's state
+    // with the same name cannot prove it. A setter with no live region stays
+    // broken, precisely the original lifeskills defect.
+    const reactStateLiveRegion = provenLive.has(localName);
 
     if (touchesDom || delegatesToHost || delegatesToSibling || reactStateLiveRegion) fine.push({ tool, localName, callCount });
     else broken.push({ tool, localName, callCount, body: body.replace(/\s+/g, ' ').slice(0, 110) });

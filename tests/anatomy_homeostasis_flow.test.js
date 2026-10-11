@@ -154,6 +154,8 @@ for(const file of files)describe('Homeostasis saved work and check flow: '+file,
 
   it('rejects old warming callbacks when the same disturbance is revisited with a fresh token',()=>{
     const s=session(file);s.predict('active');const oldCompare=s.node(n=>n.props?.['data-anatomy-run-feedback']).props.onClick;s.run();s.change('anatomy-feedback-disturbance','cool');s.change('anatomy-feedback-disturbance','warm');
+    // Settle render-owned exploration tracking before checking the rejected action.
+    vi.advanceTimersByTime(0);
     const before=clone(s.data());s.announce.mockClear();sound.mockClear();oldCompare();vi.advanceTimersByTime(300);expect(s.data()).toEqual(before);expect(s.announce).not.toHaveBeenCalled();expect(sound).not.toHaveBeenCalled();
     const oldRetry=s.node(n=>n.props?.['data-anatomy-run-feedback']).props.onClick;s.run();const retried=clone(s.data());oldRetry();expect(s.data()).toEqual(retried);
   });

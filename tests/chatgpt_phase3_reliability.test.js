@@ -88,7 +88,7 @@ describe('#3 — aborted waiters never start', () => {
     expect(dp).toContain("var _gateSignal = explicitSignal || ((typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null);");
     expect(dp).toContain("if ((err && (err.isAbort || err.name === 'AbortError')) || (_gateSignal && _gateSignal.aborted)) {");
     expect(dp).toContain('return { result: _raced, slotUntil: _slotUntil };');
-    expect(dp).toContain('(_geminiWaiters.shift()).resolve();');
+    expect(dp).toMatch(/var (\w+) = _geminiWaiters\.shift\(\);[\s\S]{0,160}?\1\.resolve\(\);/);
     expect(dp).toContain('_pruneAbortedWaiters();');
   });
 });
@@ -251,7 +251,12 @@ describe('#16 — audit-frame neutralization + pinned engines + fail-closed sani
   it('the Equal Access engine and its cache namespace are PINNED', () => {
     expect(dp).toContain('https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js');
     expect(dp).not.toContain('accessibility-checker-engine@3/ace.js');
-    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260802-1';"); // scores can shift → cache identity moved
+    const version = dp.match(/const _PIPELINE_PROMPT_VERSION = '(\d{8}-\d+)';/);
+    expect(version, 'cache identity must stay explicitly versioned').not.toBeNull();
+    expect(Number(version[1].slice(0, 8))).toBeGreaterThanOrEqual(20260802);
+    expect(dp).toContain('pdf_audit_${_PIPELINE_PROMPT_VERSION}_${_cacheBackendId()}');
+    expect(dp).toContain('pdf_remed_${_PIPELINE_PROMPT_VERSION}_${_cacheBackendId()}');
+    expect(dp).toContain('filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION');
   });
   it('BEHAVIORAL: without DOMPurify, execution-shaped rawhtml is WITHHELD, benign rawhtml still sanitizes', () => {
     expect(_sanitize('<script>alert(1)</script><p>hi</p>')).toContain('data-allo-rawhtml-withheld');

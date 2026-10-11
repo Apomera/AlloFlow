@@ -120,7 +120,7 @@ describe('Anatomy Clinical kidney functional-tissue-unit bridge', () => {
     expect(journey.querySelector('[data-scale-stage="tissue"]')?.getAttribute('data-scale-specialist')).toBe('regionalAtlas');
     expect(journey.querySelector('[data-scale-stage="cell"]')?.getAttribute('data-scale-cell-context')).toBe('kidney');
     expect(journey.querySelector('[data-scale-stage="cell"]')?.textContent).toContain('Cell Microdissection');
-    expect(journey.textContent).toContain('Clinical focus: Cortex of kidney');
+    expect(journey.textContent).toContain('Clinical focus: \u2068Cortex of kidney\u2069');
   });
 
   it.each(ANATOMY_PATHS)('opens the existing kidney regional atlas at its first FTU step in %s', (filePath) => {

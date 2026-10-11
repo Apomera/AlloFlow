@@ -2332,8 +2332,12 @@ async function readWordSoundsSyllableRecording(file, AudioContextClass = window.
   for (let offset = 0; offset < view.length; offset += 0x8000) binary += String.fromCharCode(...view.subarray(offset, offset + 0x8000));
   return { mime, base64: btoa(binary), durationSeconds: decoded.duration, decoded: true, source: 'teacher_recording' };
 }
-function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBeforePreview, id }) {
+function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBeforePreview, id, translate }) {
   const h = React.createElement;
+  const tr = (key, fallback) => {
+    try { const value = typeof translate === 'function' ? translate(key) : null; return typeof value === 'string' && value && value !== key ? value : fallback; }
+    catch (_) { return fallback; }
+  };
   const resolved = WS_CORE.resolveSyllableTask(word, board, language);
   const savedTask = resolved.supported && resolved.contentStatus === 'teacher_recorded' ? resolved : null;
   const initial = () => savedTask ? savedTask.audioUnits.map(unit => ({ label: unit.text, asset: unit.asset })) : [{ label: '', asset: null }, { label: '', asset: null }];
@@ -2631,7 +2635,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       h('label', null, h('input', { type: 'checkbox', checked: levelVolume, onChange: event => setLevelVolume(event.target.checked) }), ' Level volume'),
       h('p', { className: 'w-full' }, 'Cleanup keeps a short margin around speech and limits volume boosts. It does not remove background noise. Listen for quiet consonants; you can undo cleanup before saving.')),
     ...units.map((unit, index) => h('div', { key: index, className: 'flex flex-wrap items-center gap-2 py-2 border-t border-violet-200' },
-      h('label', null, 'Syllable ' + (index + 1) + ' label ', h('input', { ref: node => { syllableLabels.current[index] = node; }, value: unit.label, maxLength: 40, disabled: busy, placeholder: 'Written hint', className: 'border rounded p-2 w-32', onChange: event => change(units.map((value, i) => i === index ? { ...value, label: event.target.value } : value)) })),
+      h('label', null, 'Syllable ' + (index + 1) + ' label ', h('input', { ref: node => { syllableLabels.current[index] = node; }, value: unit.label, maxLength: 40, disabled: busy, placeholder: tr('word_sounds.written_hint_placeholder', 'Written hint'), className: 'border rounded p-2 w-32', onChange: event => change(units.map((value, i) => i === index ? { ...value, label: event.target.value } : value)) })),
       h('label', { className: buttonClass }, 'Upload syllable ' + (index + 1), h('input', { type: 'file', accept: 'audio/*', disabled: busy, className: 'block text-xs max-w-52', onChange: event => { upload(index, event.target.files?.[0]); event.target.value = ''; } })),
       typeof MediaRecorder !== 'undefined' && navigator.mediaDevices?.getUserMedia ? h('button', { type: 'button', className: buttonClass, disabled: busy, onClick: () => record(index) }, 'Record syllable ' + (index + 1)) : null,
       h('button', { type: 'button', className: buttonClass, disabled: busy || !unit.asset, onClick: () => preview([index]) }, 'Hear syllable ' + (index + 1)),
@@ -4824,6 +4828,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 <summary className="cursor-pointer font-bold text-violet-900">Word-specific syllable recordings</summary>
                                 <p className="text-sm my-2">Extend blending to words with two, three, or four syllables using your reviewed recordings. Recordings travel with the saved lesson.</p>
                                 <div className="space-y-2">{previewList.filter((word, index) => selectedIndices.has(index)).map(word => <WordSoundsSyllableRecordingEditor
+                                    translate={tf}
                                     key={word} word={word} language={wordSoundsLanguage} board={preparedSyllableFor(word)}
                                     onSave={task => setReviewedSyllableTasks(previous => ({ ...previous, [task.targetWord]: task }))} />)}</div>
                             </details>}
@@ -4836,7 +4841,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </select>
                                 <p className="text-sm text-slate-600 mt-2">{tf('word_sounds.taught_spellings_help', 'Optional spelling coverage check. Enter taught letters and adjacent letter groups, separated by commas; list known whole words separately. Review sound values and irregular spellings with the learner.')}</p>
                                 <label className="block mt-3 text-sm font-semibold" htmlFor="ws-taught-patterns">{tf('word_sounds.taught_patterns', 'Taught letters and letter groups')}</label>
-                                <input id="ws-taught-patterns" value={taughtPatternsText} onChange={e => setTaughtPatternsText(e.target.value)} placeholder="s, a, t, p, i, n, sh, ck" className="w-full min-h-11 border border-slate-400 rounded-lg p-2" />
+                                <input id="ws-taught-patterns" value={taughtPatternsText} onChange={e => setTaughtPatternsText(e.target.value)} placeholder={tf('word_sounds.taught_spellings_placeholder', 's, a, t, p, i, n, sh, ck')} className="w-full min-h-11 border border-slate-400 rounded-lg p-2" />
                                 <label className="block mt-3 text-sm font-semibold" htmlFor="ws-known-words">{tf('word_sounds.known_words', 'Known whole words')}</label>
                                 <input id="ws-known-words" value={knownWordsText} onChange={e => setKnownWordsText(e.target.value)} className="w-full min-h-11 border border-slate-400 rounded-lg p-2" />
                                 {instructionalProfile.taughtPatterns.length > 0 && <p role="status" className="mt-2 text-sm text-amber-900">{tf('word_sounds.pattern_review_words', 'Words to review against taught spellings: {words}', { words: previewList.filter(w => WS_CORE.profileCheck(w, instructionalProfile).status === 'review').join(', ') || tf('word_sounds.none', 'None') })}</p>}

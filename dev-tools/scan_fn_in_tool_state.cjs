@@ -95,6 +95,77 @@ function scanFile(file) {
     if (n.type === 'VariableDeclarator' && n.id && n.id.name && n.init && FN_TYPES.has(n.init.type)) fnNames.add(n.id.name);
   }, []);
 
+  // Returned view descriptors are not state when every caller keeps the
+  // record local and only reads its fields. Reject any record escape or a
+  // function-valued field read that is not immediately called.
+  const parents = new Map(), functions = new Map(), duplicateNames = new Set();
+  const functionTypes = new Set([...FN_TYPES, 'FunctionDeclaration']);
+  function functionName(node, ancestors) {
+    if (node.id && node.id.name) return node.id.name;
+    const parent = ancestors[ancestors.length - 1];
+    return parent && parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier' ? parent.id.name : null;
+  }
+  walk(ast, (node, ancestors) => {
+    parents.set(node, ancestors.slice());
+    if (!functionTypes.has(node.type)) return;
+    const name = functionName(node, ancestors);
+    if (!name) return;
+    if (functions.has(name)) duplicateNames.add(name);
+    else functions.set(name, node);
+  }, []);
+  function localBindingOnly(declaration, owner, functionKeys) {
+    const holder = declaration.id.name;
+    let safe = true;
+    walk(owner, (read, chain) => {
+      if (read.type !== 'Identifier' || read.name !== holder || read === declaration.id) return;
+      const context = chain[chain.length - 1];
+      if (context && context.type === 'MemberExpression' && context.object === read) {
+        const key = context.computed ? context.property.value : context.property.name;
+        const consumer = chain[chain.length - 2];
+        if ((context.computed && context.property.type !== 'Literal')
+            || (functionKeys.includes(key) && !(consumer && consumer.type === 'CallExpression' && consumer.callee === context))) safe = false;
+      } else if (!(context && ((context.type === 'UnaryExpression' && context.operator === '!')
+          || (context.type === 'ConditionalExpression' && context.test === read)))) safe = false;
+    }, []);
+    return safe;
+  }
+  function immediateFactoryOnly(fn, functionKeys) {
+    const chain = parents.get(fn), call = chain[chain.length - 1], declaration = chain[chain.length - 2];
+    if (!call || call.type !== 'CallExpression' || call.callee !== fn || !declaration
+        || declaration.type !== 'VariableDeclarator' || declaration.id.type !== 'Identifier' || declaration.init !== call) return false;
+    const owner = chain.slice(0, -1).reverse().find((node) => functionTypes.has(node.type)) || ast;
+    return localBindingOnly(declaration, owner, functionKeys);
+  }
+  function localCallsOnly(name, functionKeys, seen = new Set()) {
+    if (!name || duplicateNames.has(name) || seen.has(name)) return false;
+    const next = new Set(seen).add(name);
+    let safe = true, calls = 0;
+    walk(ast, (node, ancestors) => {
+      if (!safe) return;
+      const context = ancestors[ancestors.length - 1];
+      if (node.type === 'Identifier' && node.name === name) {
+        const definition = context && ((functionTypes.has(context.type) && context.id === node)
+          || (context.type === 'VariableDeclarator' && context.id === node));
+        const propertyName = context && ((context.type === 'MemberExpression' && !context.computed && context.property === node)
+          || (context.type === 'Property' && !context.computed && !context.shorthand && context.key === node));
+        const directCall = context && context.type === 'CallExpression' && context.callee === node;
+        if (!definition && !propertyName && !directCall) safe = false;
+      }
+      if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier' || node.callee.name !== name) return;
+      calls++;
+      const parent = ancestors[ancestors.length - 1];
+      if (parent && parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
+        const owner = ancestors.slice().reverse().find((a) => functionTypes.has(a.type)) || ast;
+        if (!localBindingOnly(parent, owner, functionKeys)) safe = false;
+        return;
+      }
+      const owner = ancestors.slice().reverse().find((a) => functionTypes.has(a.type));
+      const returnIndex = ancestors.map((a) => a.type).lastIndexOf('ReturnStatement');
+      if (returnIndex < 0 || !owner || !localCallsOnly(functionName(owner, parents.get(owner)), functionKeys, next)) safe = false;
+    }, []);
+    return safe && calls > 0;
+  }
+
   walk(ast, (node, ancestors) => {
     // Shape 1: object literal with a function-valued property, alongside
     // data-shaped keys (a challenge / item / card record).
@@ -134,6 +205,9 @@ function scanFile(file) {
                  && /^(fn|.*Fn|labelOf|check.*|grade.*|validate.*|predicate|format.*|render.*)$/.test(key)) fnProps.push(key);
       }
       if (fnProps.length && dataKeys.length >= 2) {
+        const owner = ancestors.slice().reverse().find((a) => functionTypes.has(a.type));
+        if (returned && owner && (localCallsOnly(functionName(owner, parents.get(owner)), fnProps)
+            || immediateFactoryOnly(owner, fnProps))) return;
         hits.push({ line: node.loc.start.line, why: 'data object literal carries function-valued key(s): ' + fnProps.join(', ')
           + ' (data keys: ' + dataKeys.slice(0, 5).join(', ') + ')' });
       }

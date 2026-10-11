@@ -10,7 +10,8 @@ beforeAll(() => {
   loadAlloModule('generation_matrix_module.js');
   loadAlloModule('agent_core_contracts_module.js');
   loadAlloModule('agent_core_blueprint_service_module.js');
-  loadAlloModule('udl_chat_source.jsx');
+  // The production wrapper binds the privacy and public-evidence dependencies.
+  loadAlloModule('udl_chat_module.js');
   // Load the canonical source directly: generated/public mirrors are rebuilt
   // separately and are intentionally outside this focused implementation.
   loadAlloModule('phase_o_misc_handlers_source.jsx');

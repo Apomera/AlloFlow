@@ -1712,7 +1712,11 @@ const WS_CORE = createWordSoundsCore();
       } catch (_) {}
       return WS_CORE.packAudioInventory(words, voice, language, entries);
     };
-    const WordSoundsPackMaintenance = ({ words, voice, language, activities, busy, notice, onAction, onCancel, onPlayAudio, onReviewSyllables }) => {
+    const WordSoundsPackMaintenance = ({ words, voice, language, activities, busy, notice, onAction, onCancel, onPlayAudio, onReviewSyllables, translate }) => {
+      const tr = (key, fallback) => {
+        try { const value = typeof translate === 'function' ? translate(key) : null; return typeof value === 'string' && value && value !== key ? value : fallback; }
+        catch (_) { return fallback; }
+      };
       const [selected, setSelected] = React.useState([]);
       const [filter, setFilter] = React.useState('attention');
       const inventory = wordSoundsPackInventory(words, voice, language, activities);
@@ -1725,7 +1729,7 @@ const WS_CORE = createWordSoundsCore();
       const h = React.createElement;
       const button = (label, action, disabled) => h('button', { type: 'button', onClick: action, disabled: busy || disabled, className: 'min-h-11 rounded-lg border border-violet-300 px-3 py-2 text-sm font-bold text-violet-800 disabled:opacity-50 focus:ring-2 focus:ring-violet-600' }, label);
       const attention = inventory.filter(row => !row.present || row.mismatch || row.unknown);
-      return h('section', { className: 'rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-3', 'aria-label': 'Prepared lesson audio and repair', 'aria-busy': busy },
+      return h('section', { className: 'rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-3', 'aria-label': tr('word_sounds.prepared_audio_repair_label', 'Prepared lesson audio and repair'), 'aria-busy': busy },
         h('h3', { className: 'font-bold text-slate-900' }, 'Prepared lesson audio and repair'),
         h('p', { className: 'text-xs text-slate-600' }, 'This list covers saved speech clips and syllable recordings. Shared speech sounds, instructions, and feedback can use separate app recordings. Regeneration changes the selected speech clips; teacher syllable recordings stay as recorded.'),
         h('p', { className: 'text-sm text-slate-700' }, 'Selected voice: ' + (voice || 'Automatic') + '. Selected language: ' + (language || 'Unspecified') + '. ' + inventory.filter(row => row.voiceMismatch).length + ' clips use another voice; ' + inventory.filter(row => row.languageMismatch).length + ' use another language. ' + inventory.filter(row => row.unknownVoice).length + ' have no saved voice information; ' + inventory.filter(row => row.unknownLanguage).length + ' have no saved language information.'),
@@ -3138,8 +3142,12 @@ async function readWordSoundsSyllableRecording(file, AudioContextClass = window.
   for (let offset = 0; offset < view.length; offset += 0x8000) binary += String.fromCharCode(...view.subarray(offset, offset + 0x8000));
   return { mime, base64: btoa(binary), durationSeconds: decoded.duration, decoded: true, source: 'teacher_recording' };
 }
-function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBeforePreview, id }) {
+function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBeforePreview, id, translate }) {
   const h = React.createElement;
+  const tr = (key, fallback) => {
+    try { const value = typeof translate === 'function' ? translate(key) : null; return typeof value === 'string' && value && value !== key ? value : fallback; }
+    catch (_) { return fallback; }
+  };
   const resolved = WS_CORE.resolveSyllableTask(word, board, language);
   const savedTask = resolved.supported && resolved.contentStatus === 'teacher_recorded' ? resolved : null;
   const initial = () => savedTask ? savedTask.audioUnits.map(unit => ({ label: unit.text, asset: unit.asset })) : [{ label: '', asset: null }, { label: '', asset: null }];
@@ -3437,7 +3445,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
       h('label', null, h('input', { type: 'checkbox', checked: levelVolume, onChange: event => setLevelVolume(event.target.checked) }), ' Level volume'),
       h('p', { className: 'w-full' }, 'Cleanup keeps a short margin around speech and limits volume boosts. It does not remove background noise. Listen for quiet consonants; you can undo cleanup before saving.')),
     ...units.map((unit, index) => h('div', { key: index, className: 'flex flex-wrap items-center gap-2 py-2 border-t border-violet-200' },
-      h('label', null, 'Syllable ' + (index + 1) + ' label ', h('input', { ref: node => { syllableLabels.current[index] = node; }, value: unit.label, maxLength: 40, disabled: busy, placeholder: 'Written hint', className: 'border rounded p-2 w-32', onChange: event => change(units.map((value, i) => i === index ? { ...value, label: event.target.value } : value)) })),
+      h('label', null, 'Syllable ' + (index + 1) + ' label ', h('input', { ref: node => { syllableLabels.current[index] = node; }, value: unit.label, maxLength: 40, disabled: busy, placeholder: tr('word_sounds.written_hint_placeholder', 'Written hint'), className: 'border rounded p-2 w-32', onChange: event => change(units.map((value, i) => i === index ? { ...value, label: event.target.value } : value)) })),
       h('label', { className: buttonClass }, 'Upload syllable ' + (index + 1), h('input', { type: 'file', accept: 'audio/*', disabled: busy, className: 'block text-xs max-w-52', onChange: event => { upload(index, event.target.files?.[0]); event.target.value = ''; } })),
       typeof MediaRecorder !== 'undefined' && navigator.mediaDevices?.getUserMedia ? h('button', { type: 'button', className: buttonClass, disabled: busy, onClick: () => record(index) }, 'Record syllable ' + (index + 1)) : null,
       h('button', { type: 'button', className: buttonClass, disabled: busy || !unit.asset, onClick: () => preview([index]) }, 'Hear syllable ' + (index + 1)),
@@ -19501,6 +19509,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ts: ts,
           syllableReviewRequest: syllableReviewRequest,
           packMaintenance: isTeacherMode && runtimeAiAllowed ? React.createElement(WordSoundsPackMaintenance, {
+            translate: ts,
             words: preloadedWords, voice: selectedVoice, language: wordSoundsLanguage, activities: activitySequence,
             busy: packRepairState.busy, notice: packRepairState.notice,
             onAction: handlePackAudioUpdate, onCancel: cancelPackAudioUpdate, onPlayAudio: handleAudio,
@@ -19512,6 +19521,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const target = String(item.targetWord || item.word || item.term || '').trim().toLowerCase();
             if (!target) return null;
             return React.createElement(WordSoundsSyllableRecordingEditor, {
+              translate: ts,
               key: target, id: 'ws-syllables-' + index, word: target, language: wordSoundsLanguage, board: item.activityItems?.syllable_blending,
               onBeforePreview: () => { audioRunIdRef.current += 1; pauseResponseAudio(); },
               onSave: (task) => {

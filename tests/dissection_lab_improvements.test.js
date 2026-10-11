@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import axe from 'axe-core';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { indexOfOrThrow, sliceBetween } from './helpers/anchored_slice.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -299,7 +300,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("type: 'neural transmission'");
       expect(source).toContain("type: 'blood flow'");
       expect(source).toContain("Toggle curated anatomical relationships");
-      const relationshipBlock = source.slice(source.indexOf('var CURATED_ANATOMY_RELATIONSHIPS'), source.indexOf('var VIEW_OCCLUSIONS'));
+      const relationshipBlock = sliceBetween(source, 'var CURATED_ANATOMY_RELATIONSHIPS', 'var VIEW_OCCLUSIONS', {
+        file: filePath, label: 'curated anatomical relationships',
+      });
       const structureIds = new Set(Array.from(source.matchAll(/\bid: '([^']+)'/g), (match) => match[1]));
       const relationshipTargets = Array.from(relationshipBlock.matchAll(/\b(?:from|to): '([^']+)'/g), (match) => match[1]);
       expect(relationshipTargets.length).toBeGreaterThan(80);
@@ -890,9 +893,10 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("verified[specimen + '|' + pendingOrgan.id] = { status: 'verified'");
       expect(source).toContain('Locating alone does not advance the step.');
 
-      const primaryActionStart = source.indexOf('function performPrimaryNextAction()');
-      const primaryActionEnd = source.indexOf('function renderNextActionCard()', primaryActionStart);
-      const primaryActionSource = source.slice(primaryActionStart, primaryActionEnd);
+      const primaryActionStart = indexOfOrThrow(source, 'function performPrimaryNextAction()', { file: filePath });
+      const primaryActionSource = sliceBetween(source, 'function performPrimaryNextAction()', 'function renderNextActionCard()', {
+        file: filePath, label: 'primary next-action handler',
+      });
       expect(primaryActionStart).toBeGreaterThan(-1);
       expect(primaryActionSource).toContain("focusDissectionTarget('diss-canvas'");
       expect(primaryActionSource).not.toContain("changeAnatomicalView(nextActionModel.targetView");
@@ -1268,11 +1272,14 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('small condensation beads give the tray depth');
       expect(source).toContain('Recessed stainless tray well with a sealed inner gasket and reflected rim light.');
       // Essentials keeps the tray quiet; Advanced retains the calibrated markings.
-      const tickStart = source.indexOf('// Keep fine tray markings with the detailed workspace;');
-      const tickEnd = source.indexOf('[[16,16]', tickStart);
+      const tickStart = indexOfOrThrow(source, '// Keep fine tray markings with the detailed workspace;', { file: filePath });
+      const tickEnd = indexOfOrThrow(source, '[[16,16]', { file: filePath, from: tickStart });
       expect(tickStart).toBeGreaterThan(-1);
       expect(tickEnd).toBeGreaterThan(tickStart);
-      const drawTicks = new Function('ctx', 'W', 'H', 'detailedCanvasHud', source.slice(tickStart, tickEnd));
+      const tickSource = sliceBetween(source, '// Keep fine tray markings with the detailed workspace;', '[[16,16]', {
+        file: filePath, label: 'detailed tray markings',
+      });
+      const drawTicks = new Function('ctx', 'W', 'H', 'detailedCanvasHud', tickSource);
       for (const detailed of [false, true]) {
         const tickCtx = { save: vi.fn(), restore: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn(), fillText: vi.fn() };
         drawTicks(tickCtx, 720, 540, detailed);
@@ -1302,8 +1309,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('Two functional chambers are shown with the sinus venosus and bulbus arteriosus in series.');
       expect(source).toContain("{ id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51");
       expect(source).toContain("{ id: 'gonads_f', name: 'Gonads', x: 0.59, y: 0.46");
-      const perchCutawayStart = source.indexOf('// Perch internal cutaway:');
-      const perchCutaway = source.slice(perchCutawayStart, source.indexOf("if (activeLayer === 'skeleton')", perchCutawayStart));
+      const perchCutaway = sliceBetween(source, '// Perch internal cutaway:', "if (activeLayer === 'skeleton')", {
+        file: filePath, label: 'perch internal cutaway',
+      });
       expect(perchCutaway).not.toContain('ctx.ellipse(cx, cy - H * 0.04, W * 0.10, H * 0.035');
       expect(source).toContain('function drawCraySegment(x1, y1, x2, y2, r1, r2, alpha)');
       expect(source).toContain('function drawCrayWalkingLeg(side, index, alpha)');
@@ -1314,7 +1322,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("if (activeLayer === 'muscle')");
       expect(source).toContain("{ id: 'carapace', name: 'Carapace', x: 0.47, y: 0.37");
       expect(source).toContain("{ id: 'telson', name: 'Telson & Uropods', x: 0.89, y: 0.45");
-      const crayfishRenderer = source.slice(source.indexOf("spec.bodyShape === 'crayfish'"), source.indexOf("spec.bodyShape === 'eye'"));
+      const crayfishRenderer = sliceBetween(source, "spec.bodyShape === 'crayfish'", "spec.bodyShape === 'eye'", {
+        file: filePath, label: 'crayfish renderer',
+      });
       expect(crayfishRenderer).not.toContain('ctx.rect(segX');
       expect(crayfishRenderer).not.toContain("ctx.fillStyle = 'rgba(255,255,255,0.4)'");
     }
@@ -1329,7 +1339,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('Sheep retinal specialization is represented as an area centralis, not a human fovea/macula.');
       expect(source).toContain("{ id: 'cornea', name: 'Cornea', x: 0.20, y: 0.45");
       expect(source).toContain("{ id: 'tapetum', name: 'Tapetum Lucidum', x: 0.67, y: 0.27");
-      const eyeRenderer = source.slice(source.indexOf('// Sheep eye: layered lateral cross-section'), source.indexOf('// Sheep heart: asymmetric ventricular mass'));
+      const eyeRenderer = sliceBetween(source, '// Sheep eye: layered lateral cross-section', '// Sheep heart: asymmetric ventricular mass', {
+        file: filePath, label: 'sheep eye renderer',
+      });
       expect(eyeRenderer).not.toContain('Fovea centralis');
       expect(eyeRenderer).not.toContain('Macula lutea region');
       expect(source).toContain('function traceSheepHeartBody()');
@@ -1341,8 +1353,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("(activeLayer === 'organs' && d.selectedOrgan === 'conduction')");
       expect(source).toContain("{ id: 'aorta_h', name: 'Aorta', x: 0.54, y: 0.12");
       expect(source).toContain("{ id: 'sup_vena_h', name: 'Cranial (Superior) Vena Cava', x: 0.69, y: 0.14");
-      const heartRendererStart = source.indexOf('// Sheep heart: asymmetric ventricular mass');
-      const heartRenderer = source.slice(heartRendererStart, source.indexOf('// Conduction system animation', heartRendererStart));
+      const heartRenderer = sliceBetween(source, '// Sheep heart: asymmetric ventricular mass', '// Conduction system animation', {
+        file: filePath, label: 'sheep heart renderer',
+      });
       expect(heartRenderer).not.toContain('ctx.moveTo(cx, cy - H * 0.25)');
     }
   });
@@ -1365,8 +1378,9 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("{ id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.24, y: 0.69");
       expect(source).toContain("{ id: 'heart', name: 'Heart (3-chamber)', x: 0.50, y: 0.35");
       expect(source).toContain("{ id: 'astragalus', name: 'Elongated Ankle Bones', x: 0.27, y: 0.78");
-      const frogRendererStart = source.indexOf('// Frog: integrated head-and-torso silhouette');
-      const frogRenderer = source.slice(frogRendererStart, source.indexOf('// Earthworm geometry is built', frogRendererStart));
+      const frogRenderer = sliceBetween(source, '// Frog: integrated head-and-torso silhouette', '// Earthworm geometry is built', {
+        file: filePath, label: 'frog renderer',
+      });
       expect(frogRenderer).not.toContain('var bS = breathScale;');
       expect(frogRenderer).not.toContain('Specular highlight (top-left)');
       expect(frogRenderer).not.toContain('draw simplified organ shapes inside body');
@@ -4372,7 +4386,26 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Stability');
     expect(html).toContain('Tension');
     expect(html).toContain('Trauma');
-    expect(html).toContain('Apply one controlled saline drop');
+    expect(html).not.toContain('Apply controlled drop');
+
+    const dropperHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
+        activeInstrument: 'dropper',
+        variationSeed: 4,
+        specimenCondition: 'dehydrated',
+      },
+    });
+    const dropperHost = document.createElement('div');
+    dropperHost.innerHTML = dropperHtml;
+    const salineAction = Array.from(dropperHost.querySelectorAll('button'))
+      .find((button) => button.textContent.includes('Apply controlled drop'));
+    expect(salineAction).toBeDefined();
+    expect(salineAction.type).toBe('button');
+    expect(dropperHtml).toContain('Dynamic tissue state');
   });
 
   it('calibrates every procedural instrument with live readiness and tissue consequences', () => {
@@ -5851,12 +5884,28 @@ expect(html).toContain('Scenario center');
       expect(latestA.dissection._procedureDemo).toMatchObject({ layer: 'skin', duration: 3200 });
 
       await act(async () => {
+        rootB.unmount();
+        rootB = null;
+        await Promise.resolve();
+      });
+      expect(canvasA._dissTimers?.procedureDemo).toBe(demoTimer);
+      expect(latestA.dissection._procedureDemo).toMatchObject({ layer: 'skin', duration: 3200 });
+
+      rootB = ReactDOMClient.createRoot(hostB);
+      await act(async () => {
+        rootB.render(React.createElement(LabB));
+        await Promise.resolve();
+      });
+
+      await act(async () => {
         hostA.querySelector('[aria-label="Replay the recorded technique attempt on the specimen"]').click();
         await Promise.resolve();
       });
       const replayTimer = canvasA._dissTimers?.procedureReplay;
       expect(replayTimer).toBeDefined();
       expect(latestA.dissection._procedureReplay?.actions).toHaveLength(1);
+      expect(canvasA._dissTimers?.procedureDemo).toBeUndefined();
+      expect(latestA.dissection._procedureDemo).toBeNull();
 
       const revealButton = hostA.querySelector('[data-next-action="peel-layer"] .diss-next-action__primary');
       expect(revealButton).not.toBeNull();
@@ -5900,7 +5949,8 @@ expect(html).toContain('Scenario center');
         await Promise.resolve();
       });
 
-      expect(canvasA._dissTimers?.procedureDemo).toBe(demoTimer);
+      expect(canvasA._dissTimers?.procedureDemo).toBeUndefined();
+      expect(latestA.dissection._procedureDemo).toBeNull();
       expect(canvasA._dissTimers?.procedureReplay).toBe(replayTimer);
       expect(canvasA._dissTimers?.layerPeel).toBe(peelTimer);
 
@@ -5912,7 +5962,7 @@ expect(html).toContain('Scenario center');
       expect(awardXP.mock.calls.filter(([toolId, amount, reason]) => toolId === 'dissection' && amount === 3 && reason === 'Peeled skin layer')).toHaveLength(1);
       expect(canvasA._dissTimers?.layerPeel).toBeUndefined();
       expect(canvasA._dissTimers?.layerTransition).toBeDefined();
-      expect(latestA.dissection._procedureDemo).not.toBeNull();
+      expect(latestA.dissection._procedureDemo).toBeNull();
       expect(latestA.dissection._procedureReplay).not.toBeNull();
     } finally {
       if (rootB) await act(async () => { rootB.unmount(); await Promise.resolve(); });
@@ -8423,7 +8473,10 @@ expect(html).toContain('Scenario center');
   const actionHandoffReflection = 'Next: explain what changed in the learning checkpoint before another technique action.';
 
   function actionHandoffProcedure(action, patch = {}) {
-    const before = actionHandoffOrder.slice(0, actionHandoffOrder.indexOf(action));
+    expect(actionHandoffOrder).toContain(action);
+    const actionIndex = actionHandoffOrder.indexOf(action);
+    expect(actionIndex).toBeGreaterThanOrEqual(0);
+    const before = actionHandoffOrder.slice(0, actionIndex);
     return {
       tissueState: { ...actionHandoffTissue },
       inspected: before.includes('inspect'), incisionStarted: before.includes('scalpel'),

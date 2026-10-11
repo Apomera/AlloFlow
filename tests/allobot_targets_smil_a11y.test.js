@@ -49,7 +49,15 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
       expect(source).toContain(`@keyframes ${keyframeName}`);
     }
 
-    expect(source).toContain("const anims = ['wave', 'backflip', 'shrug', 'look-around'];");
+    const ambientStart = source.indexOf('const scheduleAmbientAction = () => {');
+    const ambientEnd = source.indexOf('const checkFallbackInactivity', ambientStart);
+    expect(ambientStart).toBeGreaterThan(-1);
+    expect(ambientEnd).toBeGreaterThan(ambientStart);
+    const ambient = source.slice(ambientStart, ambientEnd);
+    const ambientNames = [...ambient.matchAll(/setIdleAnimation\('([^']+)'\)/g)].map(match => match[1]);
+    expect(ambientNames).toEqual(['look-around']);
+    expect(ambient).toContain('if (!motionDisabled)');
+    expect(ambient).toContain('setIdleAnimation(null)');
   });
 
   it('keeps every scaled orbit control at least 24 CSS pixels', () => {
@@ -125,9 +133,10 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     expect(source).toContain('data-allobot-antenna-mount');
     expect(source).toContain('data-allobot-antenna-lamp');
     expect(source).toContain('data-allobot-antenna-state');
-    for (const layer of ['socket', 'socket-highlight', 'stalk', 'signal-waves', 'lamp-housing', 'lamp-core', 'lamp-catchlight', 'sleep-dash']) {
+    for (const layer of ['socket', 'socket-highlight', 'stalk', 'lamp-housing', 'lamp-core', 'lamp-catchlight', 'sleep-dash']) {
       expect(source).toContain(`data-allobot-antenna-layer="${layer}"`);
     }
+    expect(source).not.toContain('data-allobot-antenna-layer="signal-waves"');
     expect(source).toContain("theme === 'contrast' ? '#FFFFFF' : '#64748B'");
     expect(source).toContain("style={{ transformOrigin: '50px 5px' }}");
   });

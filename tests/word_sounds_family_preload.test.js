@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vite
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 const require = createRequire(import.meta.url), modules = resolve('desktop/web-app/node_modules');
 const source = readFileSync('word_sounds_module.js', 'utf8');
 // Extract exactly the callback declaration; adjacent editor/repair hooks are
@@ -34,9 +35,11 @@ afterEach(() => {
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 async function tick(ms = 0) { await act(async () => { await vi.advanceTimersByTimeAsync(ms); }); }
 function mount(extra = {}) {
-  const start = source.indexOf('const WordFamiliesView = React.useMemo('), end = source.indexOf('const ts = React.useCallback(', start);
+  const viewSource = sliceBetween(source, 'const WordFamiliesView = React.useMemo(', 'const ts = React.useCallback(', {
+    file: 'word_sounds_module.js', label: 'Word Families view',
+  });
   const audioRunIdRef = { current: 0 };
-  const View = new Function('React', 't', 'ts', 'isMountedRef', 'audioRunIdRef', 'isPlayingAudioRef', 'currentActiveAudio', 'fisherYatesShuffle', 'Volume2', 'Check', 'X', source.slice(start, end) + ';return WordFamiliesView;')(
+  const View = new Function('React', 't', 'ts', 'isMountedRef', 'audioRunIdRef', 'isPlayingAudioRef', 'currentActiveAudio', 'fisherYatesShuffle', 'Volume2', 'Check', 'X', viewSource + ';return WordFamiliesView;')(
     { ...React, useMemo: fn => fn() }, key => key, () => '', { current: true }, audioRunIdRef, { current: false }, { current: null }, a => a, () => null, () => null, () => null);
   const props = { data: { family: 'at', targetWord: 'cat', options: ['hat', 'bat'], distractors: ['dog', 'sun'] },
     onPreloadAudio: vi.fn(async () => {}), onPlayAudio: vi.fn(async () => {}), onCheckAnswer: vi.fn(), soundOnlyMode: false, ...extra };
@@ -100,7 +103,7 @@ function audioHarness({ packed = null, cached = null } = {}) {
     wordSoundsVoiceRef: { current: 'af_heart' }, selectedVoice: 'af_heart',
     audioRunIdRef: { current: 1 }, isMountedRef: { current: true }, audioCancelledRef: { current: false },
     feedbackPlaybackRef: { current: null }, activePlaybackRef: { current: null }, currentActiveAudio: { current: null },
-    lastAudioRef: { current: null }, audioNotice: null, clearAudioNotice: vi.fn(),
+    lastAudioRef: { current: null }, audioNotice: null, clearAudioNotice: vi.fn(), cancelMicInput: vi.fn(),
     window: {}, warnLog: vi.fn(), debugLog: vi.fn(), setIsPlayingAudio: vi.fn(), ttsSpeed: 1,
     audioInstances: { current: new Map() }, preparedAudioInstances: { current: new Set() },
     reportPreparedRuntimePlayback: vi.fn(), notifyAudioUnavailable: vi.fn(), audioCache: { current: new Map() },
@@ -119,6 +122,7 @@ describe('silent option loading and playback outcomes', () => {
     const warm = h.handleAudio('hat', false); await tick(1001); await warm;
     expect(h.audioInstances.current.has('hat')).toBe(true);
     expect(h.setIsPlayingAudio).not.toHaveBeenCalled(); expect(instruction.pause).not.toHaveBeenCalled();
+    expect(h.cancelMicInput).not.toHaveBeenCalled();
     expect(h.clips.every(clip => clip.play.mock.calls.length === 0)).toBe(true);
     await h.handleAudio('hat', false); expect(h.setIsPlayingAudio).not.toHaveBeenCalled();
   });
@@ -126,6 +130,7 @@ describe('silent option loading and playback outcomes', () => {
     const h = audioHarness(), clip = new h.Audio('hat'); h.audioInstances.current.set('hat', clip);
     const played = h.handleAudio('hat'); await tick(); clip.finish();
     await expect(played).resolves.toEqual({ ok: true, status: 'ready' });
+    expect(h.cancelMicInput).toHaveBeenCalledOnce();
   });
   it('returns the actual cached playback failure to a sequenced activity', async () => {
     const h = audioHarness(), clip = new h.Audio('hat'); clip.play.mockRejectedValue(new Error('damaged')); h.audioInstances.current.set('hat', clip);

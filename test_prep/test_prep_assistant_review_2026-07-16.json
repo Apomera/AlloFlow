@@ -6,8 +6,8 @@
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-08-20T07:01:08.824Z",
-    "hash": "9a6d53ead23c59183b249232c64a0ce109193ae8fd02fb6c0bc27f9247bfa6b4"
+    "generatedAt": "2026-10-10T19:32:52.437Z",
+    "hash": "569c2044db345a0f1c80ca93fcabc4d01d4815927e2e2ec017eb7299878e0e80"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -24,6 +24,8 @@
     "existingItemsQualitativelySampled": 169,
     "newCredentialSpecificReplacementsReviewed": 68,
     "newIndependentParaProItemsReviewed": 900,
+    "newIndependentParaProItemsReviewedSemantics": "legacy-total-assistant-authored-independent-items-alias",
+    "independentParaProItemsReviewed": 300,
     "allActivitiesStructurallyChecked": true,
     "allGuidedAnswerDerivationsChecked": true,
     "allIndependentItemsWarningScanned": true,
@@ -71,7 +73,7 @@
     "Expanded the shared reference catalog to cover every source used by pack items and learning libraries, including readable title, organization, summary, and credibility metadata.",
     "Added a reproducible EPPP-guided QA gate across all 22 non-EPPP packs, with warning diagnostics kept distinct from hard release findings.",
     "Separated guided-review attempt mode from diagnostic analytics and excluded guided activities from smart review, targeted sets, custom quizzes, and saved-question review.",
-    "Added and assistant-reviewed 900 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
+    "Added and assistant-reviewed 900 independent practice questions across credential-specific packs, including 300 ParaPro questions, with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
   ],
   "limitations": [
     "Assistant review is not licensed-professional endorsement, independent legal/clinical review, field testing, psychometric calibration, or validation of score interpretations.",
@@ -127,7 +129,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 296,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "df8b9ddb6d9da92897b4a13423817da1990334389eba8961caba349e7e2e239b",
+      "packSha256": "d8f61df57ed847ce0d262078603554db038bd3fbbc9d5668a54c1fbe6a5b4b05",
       "itemsSha256": "9894da8379a5963a73b86194c84179a61421b09a762c5c3a4a2d951e5f0e1429"
     },
     {
@@ -146,8 +148,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 295,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "99d7d386620f2ce572b4d5534a060dc577ea0001f683b43cc8699ec1e267fb95",
-      "itemsSha256": "6cfdc7cca19c12804e1eab2b5fdaf00427e6dd4bc8f11e2cf5d9fbbb8959ed1c"
+      "packSha256": "b63cd365b036c8a11c9599fcfc993e8d1c74c8d2c4e68ccd8b6885543706e322",
+      "itemsSha256": "68a2d426baa64bb1276fa983c6400d951c706d73bb0972efd9aa896a63f8039a"
     },
     {
       "stem": "educational_leadership_5412",
@@ -165,8 +167,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "185e910b08add3da642d4f49dd8e0d606d895da21d3ea93aa23a36e4098bf416",
-      "itemsSha256": "7fa8331c523b650c88df9eabdc8b58fc862f2fd7d1d9096eb77f1481ad54f4ed"
+      "packSha256": "3c91cb7c2b8417bed3b3fcca99ee47c96908dcf6234cfdfd9d68c1100374d705",
+      "itemsSha256": "c63d685c2247da25686529830b6887ec1ef1194b2c661c0ff7036e1276779a9f"
     },
     {
       "stem": "esol_5362",
@@ -203,7 +205,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 0,
       "verdict": "reviewed-target-met",
-      "packSha256": "91cef4a2a38e243423edd63c5f837ce923b946945212b2c804057e8e18c48f28",
+      "packSha256": "4c71cfb7010a78fbbdee1114a4704a0d8bcbcaeb37c61c1c91e5eb891c60b4f5",
       "itemsSha256": "39c016af4d7f0849f9194537adbe7152d7a64519101706e54309a824034c90f3"
     },
     {
@@ -336,7 +338,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "c659751f81c9ea83b112084ab67c0decf7f59436d027f10767801f638cdaa570",
+      "packSha256": "54203c9aef413552efa426e9fcee4fa88406be107d1927e4340f86fe76842c73",
       "itemsSha256": "cd780d7d24bf7c01ec7599d62a7385f3c7292b99467de38238de22f53ba1224d"
     },
     {
@@ -355,7 +357,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 365,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "86f962fac2d4aa3eb72ece063051dda5483f2b40b03de1ff8664c367bba268d6",
+      "packSha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99",
       "itemsSha256": "8941238fedea371635805cca5228cabb3dd8d7e6104f1c3494c8b482cfc01323"
     },
     {
@@ -374,7 +376,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "de078fa9abe58434f385c5723d684308f99fbf8b1765955b278fa450e871f216",
+      "packSha256": "2c9a24d25f85c99aadc729c76396b0c974071ef542ddbaedceabdbd916a51e61",
       "itemsSha256": "3ba95e41576d587a9cc1b6b71a269cdaeddd510bd3be5db4962f09f73b71b146"
     },
     {

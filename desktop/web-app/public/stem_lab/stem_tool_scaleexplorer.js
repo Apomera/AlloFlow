@@ -9199,7 +9199,7 @@ return plaza;
       if(['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','ShiftLeft','ShiftRight'].indexOf(code)<0)return;
       ev.preventDefault();ev.stopPropagation();if(ev.repeat)return;if(nebulaReady()&&code!=='ShiftLeft'&&code!=='ShiftRight'){nebulaLookGoal=null;clearNebulaCourse();}airKeys[code]=true;airLast=nebulaLast=performance.now();invalidate();
     }
-    function airKeyUp(ev){if(airKeys[ev.code]){delete airKeys[ev.code];invalidate();}}
+    function airKeyUp(ev){if(disposed||!canvas.isConnected)return;if(airKeys[ev.code]){delete airKeys[ev.code];invalidate();}}
     function airBlur(){stopAir();invalidate();}
     function updateAirHud(data,state,now){
       var panel=airHud&&airHud();if(!panel||!airPose)return;

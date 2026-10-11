@@ -1,0 +1,321 @@
+{
+  "reviewedFile": "dev-tools/authored/educational_leadership_5412_batch3.json",
+  "reviewedAt": "2026-10-10",
+  "reviewKind": "automated-assistant-only",
+  "reviewer": "OpenAI Codex independent cross-review (automated assistant-only)",
+  "itemCount": 100,
+  "verdict": "pass - independent automated assistant content and structural review complete; suitable for integrated practice QA with the documented advisories and limitations",
+  "blockers": [],
+  "correctionsMade": [
+    {
+      "id": "lead5412-b3-004",
+      "issue": "Distractor wording or conceptual contrast generated an asymmetric-extreme warning.",
+      "resolution": "Replaced a response with a plausible misconception and aligned its feedback where necessary; prompt, key, key rationale, IDs, sources and blueprint links are unchanged."
+    },
+    {
+      "id": "lead5412-b3-015",
+      "issue": "Distractor wording or conceptual contrast generated an asymmetric-extreme warning.",
+      "resolution": "Replaced a response with a plausible misconception and aligned its feedback where necessary; prompt, key, key rationale, IDs, sources and blueprint links are unchanged."
+    },
+    {
+      "id": "lead5412-b3-016",
+      "issue": "Distractor wording or conceptual contrast generated an asymmetric-extreme warning.",
+      "resolution": "Replaced a response with a plausible misconception and aligned its feedback where necessary; prompt, key, key rationale, IDs, sources and blueprint links are unchanged."
+    },
+    {
+      "id": "lead5412-b3-029",
+      "issue": "Distractor wording or conceptual contrast generated an asymmetric-extreme warning.",
+      "resolution": "Replaced a response with a plausible misconception and aligned its feedback where necessary; prompt, key, key rationale, IDs, sources and blueprint links are unchanged."
+    },
+    {
+      "id": "lead5412-b3-056",
+      "issue": "Distractor wording or conceptual contrast generated an asymmetric-extreme warning.",
+      "resolution": "Replaced a response with a plausible misconception and aligned its feedback where necessary; prompt, key, key rationale, IDs, sources and blueprint links are unchanged."
+    },
+    {
+      "id": "lead5412-b3-057",
+      "issue": "Incorrect-option feedback asserted a real staffing proposal that the stem did not establish.",
+      "resolution": "Explained why an unverified blanket denial fails to distinguish known facts from unresolved proposals or rumors. Prompt, choices, key and main rationale are unchanged."
+    }
+  ],
+  "checks": {
+    "lineByLineCredentialReview": {
+      "status": "pass",
+      "reviewedItems": 100,
+      "reviewedItemIds": [
+        "lead5412-b3-001",
+        "lead5412-b3-002",
+        "lead5412-b3-003",
+        "lead5412-b3-004",
+        "lead5412-b3-005",
+        "lead5412-b3-006",
+        "lead5412-b3-007",
+        "lead5412-b3-008",
+        "lead5412-b3-009",
+        "lead5412-b3-010",
+        "lead5412-b3-011",
+        "lead5412-b3-012",
+        "lead5412-b3-013",
+        "lead5412-b3-014",
+        "lead5412-b3-015",
+        "lead5412-b3-016",
+        "lead5412-b3-017",
+        "lead5412-b3-018",
+        "lead5412-b3-019",
+        "lead5412-b3-020",
+        "lead5412-b3-021",
+        "lead5412-b3-022",
+        "lead5412-b3-023",
+        "lead5412-b3-024",
+        "lead5412-b3-025",
+        "lead5412-b3-026",
+        "lead5412-b3-027",
+        "lead5412-b3-028",
+        "lead5412-b3-029",
+        "lead5412-b3-030",
+        "lead5412-b3-031",
+        "lead5412-b3-032",
+        "lead5412-b3-033",
+        "lead5412-b3-034",
+        "lead5412-b3-035",
+        "lead5412-b3-036",
+        "lead5412-b3-037",
+        "lead5412-b3-038",
+        "lead5412-b3-039",
+        "lead5412-b3-040",
+        "lead5412-b3-041",
+        "lead5412-b3-042",
+        "lead5412-b3-043",
+        "lead5412-b3-044",
+        "lead5412-b3-045",
+        "lead5412-b3-046",
+        "lead5412-b3-047",
+        "lead5412-b3-048",
+        "lead5412-b3-049",
+        "lead5412-b3-050",
+        "lead5412-b3-051",
+        "lead5412-b3-052",
+        "lead5412-b3-053",
+        "lead5412-b3-054",
+        "lead5412-b3-055",
+        "lead5412-b3-056",
+        "lead5412-b3-057",
+        "lead5412-b3-058",
+        "lead5412-b3-059",
+        "lead5412-b3-060",
+        "lead5412-b3-061",
+        "lead5412-b3-062",
+        "lead5412-b3-063",
+        "lead5412-b3-064",
+        "lead5412-b3-065",
+        "lead5412-b3-066",
+        "lead5412-b3-067",
+        "lead5412-b3-068",
+        "lead5412-b3-069",
+        "lead5412-b3-070",
+        "lead5412-b3-071",
+        "lead5412-b3-072",
+        "lead5412-b3-073",
+        "lead5412-b3-074",
+        "lead5412-b3-075",
+        "lead5412-b3-076",
+        "lead5412-b3-077",
+        "lead5412-b3-078",
+        "lead5412-b3-079",
+        "lead5412-b3-080",
+        "lead5412-b3-081",
+        "lead5412-b3-082",
+        "lead5412-b3-083",
+        "lead5412-b3-084",
+        "lead5412-b3-085",
+        "lead5412-b3-086",
+        "lead5412-b3-087",
+        "lead5412-b3-088",
+        "lead5412-b3-089",
+        "lead5412-b3-090",
+        "lead5412-b3-091",
+        "lead5412-b3-092",
+        "lead5412-b3-093",
+        "lead5412-b3-094",
+        "lead5412-b3-095",
+        "lead5412-b3-096",
+        "lead5412-b3-097",
+        "lead5412-b3-098",
+        "lead5412-b3-099",
+        "lead5412-b3-100"
+      ],
+      "method": "Independent automated assistant reading of every credential-specific prompt, four choices, key, main rationale, four choice-feedback strings and learning links. This name denotes content scope, not a credentialed human reviewer.",
+      "blockingSemanticFindingsRemaining": 0
+    },
+    "keysDistractorsAndFeedback": {
+      "status": "pass",
+      "keysReviewed": 100,
+      "choiceFeedbackStringsReviewed": 400,
+      "answerIndexChanges": 0,
+      "keyedChoiceChanges": 0,
+      "keyRationaleChanges": 0,
+      "finalCorrectionsRechecked": 6,
+      "note": "All six final edits were re-read in exact before/after context; Leadership057 no longer asserts a proposal not established by its stem."
+    },
+    "blueprintAndLearningLinks": {
+      "status": "pass",
+      "domainCounts": {
+        "strategic-leadership": 17,
+        "instructional-leadership": 23,
+        "climate-cultural-leadership": 18,
+        "ethical-leadership": 16,
+        "organizational-leadership": 13,
+        "community-engagement-leadership": 13
+      },
+      "validMappedItems": 100,
+      "skillCount": 12,
+      "chapterCount": 12
+    },
+    "warningHeuristicReview": {
+      "status": "pass",
+      "checker": "dev-tools/authored/build_educational_leadership_5412_batch3.cjs:warningCodes",
+      "highRiskWarningsRemaining": 0,
+      "advisoryCode": "key-stem-lexical-overlap-advisory",
+      "advisoryCount": 37,
+      "advisoryItemIds": [
+        "lead5412-b3-002",
+        "lead5412-b3-003",
+        "lead5412-b3-004",
+        "lead5412-b3-005",
+        "lead5412-b3-008",
+        "lead5412-b3-011",
+        "lead5412-b3-013",
+        "lead5412-b3-020",
+        "lead5412-b3-023",
+        "lead5412-b3-024",
+        "lead5412-b3-026",
+        "lead5412-b3-028",
+        "lead5412-b3-029",
+        "lead5412-b3-032",
+        "lead5412-b3-034",
+        "lead5412-b3-035",
+        "lead5412-b3-036",
+        "lead5412-b3-037",
+        "lead5412-b3-044",
+        "lead5412-b3-045",
+        "lead5412-b3-046",
+        "lead5412-b3-047",
+        "lead5412-b3-048",
+        "lead5412-b3-049",
+        "lead5412-b3-052",
+        "lead5412-b3-054",
+        "lead5412-b3-055",
+        "lead5412-b3-056",
+        "lead5412-b3-066",
+        "lead5412-b3-069",
+        "lead5412-b3-070",
+        "lead5412-b3-072",
+        "lead5412-b3-074",
+        "lead5412-b3-078",
+        "lead5412-b3-084",
+        "lead5412-b3-088",
+        "lead5412-b3-090"
+      ],
+      "note": "Lexical overlap advisories are retained, not suppressed or described as eliminated."
+    },
+    "independentAuthorshipAndOriginality": {
+      "status": "pass",
+      "releasedSourceItemsCompared": 200,
+      "uniquePrompts": 100,
+      "uniqueResponseKernels": 100,
+      "uniqueContentKernels": 100,
+      "exactPromptResponseOrContentCollisions": 0,
+      "maximumPromptTokenJaccardAgainstReleasedSource": 0.47368421052631576,
+      "maximumSameDomainPromptTokenJaccardAgainstReleasedSource": 0.47368421052631576,
+      "closestPair": {
+        "newItemId": "lead5412-b3-098",
+        "sourceItemId": "lead5412-b2-097"
+      },
+      "method": "NFKD lowercase canonical a-z0-9 token sets; retain tokens longer than three characters; compute intersection/union against each released source prompt, with an additional same-domain comparison.",
+      "keyIsLongestCount": 22,
+      "keyPositionCounts": [
+        25,
+        25,
+        25,
+        25
+      ],
+      "fixedRepeatingKeyPattern": true,
+      "note": "These mechanical similarity checks do not establish human authorship, plagiarism clearance, secure-form quality or psychometric validity."
+    },
+    "referenceCatalogAndSourceConsultation": {
+      "status": "pass",
+      "catalogLinkedItems": 100,
+      "skillChapterLinkageFailures": 0,
+      "scope": "Named catalog linkage, ETS/PSEL blueprint alignment and relevant primary-source principle checks, not legal advice or exhaustive current jurisdictional compliance certification.",
+      "consultedPrimarySources": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
+        "https://www.npbea.org/wp-content/uploads/2017/06/Professional-Standards-for-Educational-Leaders_2015.pdf",
+        "https://studentprivacy.ed.gov/faq/who-school-official-under-ferpa",
+        "https://studentprivacy.ed.gov/faq/what-must-educational-agencies-or-institutions-do-ensure-only-school-officials-legitimate",
+        "https://www.eeoc.gov/laws/guidance/questions-and-answers-enforcement-guidance-retaliation-and-related-issues"
+      ],
+      "sourceAccessLimits": "Some ED/IDEA/CISA pages returned fetch errors or 403 responses. Relevant primary-source search excerpts and available primary documents were consulted; no full-access or exhaustive legal audit is claimed."
+    }
+  },
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "4e4f26feee925f95f41585a207f7f55189706e1906d5bd9c5cd35b4abfc5e431"
+  },
+  "integration": {
+    "packId": "praxis-educational-leadership-5412",
+    "batchNumber": 3,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100,
+    "manifestSchemaVersion": 2,
+    "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+    "sourceBuilderMutated": false,
+    "sharedExpansionScriptMutated": false,
+    "releaseBuilderMutated": false
+  },
+  "historicalReview": {
+    "path": "dev-tools/authored/educational_leadership_5412_batch3.review.json",
+    "sha256": "69877d22dfe2fe0fbca84482fda6db79c95d8cf5a5b2a745595d88580eaf1e32",
+    "reviewedAt": "2026-07-18",
+    "artifactBinding": {
+      "algorithm": "sha256",
+      "sha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644"
+    },
+    "remediation": [
+      {
+        "at": "2026-08-17",
+        "by": "Claude Opus 5 — AlloFlow fleet lane W4",
+        "scope": "answer-length tell only; distractor text",
+        "itemsChanged": 78,
+        "ledger": "dev-tools/authored/length_remediation_2026-08-17.json",
+        "priorSha256": "ab2019dc96de5719b07e09669f3c10eaf5b2731e483cd24787b740e4ac6fbd01",
+        "sha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
+        "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+      }
+    ]
+  },
+  "remediation": {
+    "at": "2026-10-10",
+    "by": "OpenAI Codex CI content recovery",
+    "priorArtifactSha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
+    "changedItemIds": [
+      "lead5412-b3-004",
+      "lead5412-b3-015",
+      "lead5412-b3-016",
+      "lead5412-b3-029",
+      "lead5412-b3-056",
+      "lead5412-b3-057"
+    ],
+    "changedFields": [
+      "incorrect choices",
+      "Leadership057 incorrect-choice feedback"
+    ]
+  },
+  "limitations": [
+    "This completed review is automated assistant-only, not professional endorsement, external human review, credentialed school-leader or legal approval, psychometric validation or field testing.",
+    "All 100 items were read, but educational leadership judgments depend on local facts, controlling law, board policy, contracts and qualified personnel. These items are exam practice, not legal, personnel, clinical, financial or licensure advice.",
+    "Some external primary references could not be retrieved in full; indexed primary-source excerpts and available documents support broad principles only. No exhaustive current jurisdictional compliance or complete citation audit is claimed.",
+    "The 37 lexical-overlap advisories remain. The fixed A/B/C/D authored key cycle remains, and runtime answer randomization was not verified in this review. This is not approval of a secure testing form.",
+    "The actual maximum same-domain prompt-token Jaccard is 0.47368421052631576 against the first 200 released source items. Similarity and warning checks are not comprehensive authorship, plagiarism, fairness, difficulty or learning-effectiveness validation.",
+    "Historical July review files and their August remediation notes were preserved byte-for-byte. This October review applies only to the exact artifactBinding above."
+  ]
+}

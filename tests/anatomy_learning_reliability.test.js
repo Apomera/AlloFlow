@@ -8,7 +8,9 @@ function session(file, extra = {}) {
   resetStemLab(); const tool = loadTool(file, 'anatomy');
   let data = { anatomy: { system: 'skeletal', view: 'anterior', complexity: 3, _activeTab: 'quiz', ...extra } };
   const announcements = [];
-  const render = () => tool.render(makeCtx({ toolData: data, gradeLevel: '9', announceToSR: message => announcements.push(message), setToolData: updater => { data = typeof updater === 'function' ? updater(data) : updater; } }));
+  const setToolData = updater => { data = typeof updater === 'function' ? updater(data) : updater; };
+  const announceToSR = message => announcements.push(message);
+  const render = () => tool.render(makeCtx({ toolData: data, gradeLevel: '9', announceToSR, setToolData }));
   const button = predicate => { const b = find(render(), n => n.type === 'button' && predicate(n)); expect(b).not.toBeNull(); return b; };
   const html = () => { const root = document.createElement('div'); root.innerHTML = renderTool('anatomy', data, { gradeLevel: '9' }); return root; };
   return { data: () => data.anatomy, announcements, button, html, captureQuestion: () => find(render(), n => n.props?.['data-anatomy-quiz-panel']).ref({}),
@@ -99,18 +101,26 @@ for (const file of paths) {
       expect(s.data()._confidenceAt.skull).toBe(now); expect(s.data()._spotterTotal).toBe(1);
     });
     it('keeps hidden card announcements limited to names and positions across navigation and Locate', () => {
-      const s = session(file, { _activeTab: 'explore', _structureConfidence: { ribs: 'practice' } }); s.click('Cards');
-      const hiddenAnnouncement = () => {
-        const root = s.html(); const card = root.querySelector('[data-anatomy-recall-card]');
-        const name = card.querySelector('h5').textContent; const position = root.querySelector('[aria-label="Flashcard progress"]').textContent.split('/');
-        expect(s.announcements.at(-1)).toBe(`Flashcard ${position[0]} / ${position[1]}. ${name}. Answer hidden`);
-      };
-      hiddenAnnouncement();
-      for (const label of ['Next flashcard', 'Previous', 'Random', 'Next unrated', 'Locate this card']) { s.click(label); hiddenAnnouncement(); }
-      s.click('Reveal function');
-      const answer = s.html().querySelector('#anatomy-flashcard-content p.text-xs').textContent;
-      s.click('Locate this card'); expect(s.announcements.at(-1)).toContain(answer);
-      s.click('Show structure name'); s.click('Locate this card'); hiddenAnnouncement();
+      document.body.innerHTML = ''; vi.useFakeTimers();
+      try {
+        const s = session(file, { _activeTab: 'explore', _structureConfidence: { ribs: 'practice' } }); s.click('Cards');
+        const commit = () => {
+          document.body.innerHTML = s.html().innerHTML;
+          vi.advanceTimersByTime(0);
+          return document.body;
+        };
+        const hiddenAnnouncement = () => {
+          const root = commit(); const card = root.querySelector('[data-anatomy-recall-card]');
+          const name = card.querySelector('h5').textContent; const position = root.querySelector('[aria-label="Flashcard progress"]').textContent.split('/');
+          expect(s.announcements.at(-1)).toBe(`Flashcard ${position[0]} / ${position[1]}. ${name}. Answer hidden`);
+        };
+        hiddenAnnouncement();
+        for (const label of ['Next flashcard', 'Previous', 'Random', 'Next unrated', 'Locate this card']) { s.click(label); hiddenAnnouncement(); }
+        s.click('Reveal function');
+        const answer = commit().querySelector('#anatomy-flashcard-content p.text-xs').textContent;
+        s.click('Locate this card'); commit(); expect(s.announcements.at(-1)).toContain(answer);
+        s.click('Show structure name'); s.click('Locate this card'); hiddenAnnouncement();
+      } finally { vi.clearAllTimers(); vi.useRealTimers(); document.body.innerHTML = ''; }
     });
   });
 }

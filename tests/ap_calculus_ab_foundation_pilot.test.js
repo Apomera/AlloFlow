@@ -1,10 +1,13 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const root = resolve(import.meta.dirname, '..');
-const pack = JSON.parse(fs.readFileSync(resolve(root, 'test_prep/ap_calculus_ab_foundation_pilot.json'), 'utf8'));
-const library = JSON.parse(fs.readFileSync(resolve(root, 'test_prep/ap_calculus_ab_foundation_pilot_learning_library.json'), 'utf8'));
+const packBytes = fs.readFileSync(resolve(root, 'test_prep/ap_calculus_ab_foundation_pilot.json'));
+const libraryBytes = fs.readFileSync(resolve(root, 'test_prep/ap_calculus_ab_foundation_pilot_learning_library.json'));
+const pack = JSON.parse(packBytes.toString('utf8'));
+const library = JSON.parse(libraryBytes.toString('utf8'));
 const qa = JSON.parse(fs.readFileSync(resolve(root, 'test_prep/ap_calculus_ab_foundation_pilot_qa.json'), 'utf8'));
 
 function countBy(values, selector) {
@@ -17,11 +20,11 @@ function countBy(values, selector) {
 }
 
 describe('AP Calculus AB foundation pilot', () => {
-  it('stays an unreleased 80-item internal preview', () => {
+  it('stays an unreleased 160-item expanded internal preview', () => {
     expect(pack).toMatchObject({
       schemaVersion: 1,
       id: 'ap-calculus-ab-foundation-pilot',
-      version: '0.1.0-internal-preview',
+      version: '0.2.0-internal-preview',
       status: 'preview',
       visibility: 'internal',
       released: false,
@@ -30,9 +33,9 @@ describe('AP Calculus AB foundation pilot', () => {
       calibrated: false,
       itemSchemaVersion: 2,
     });
-    expect(pack.items).toHaveLength(80);
+    expect(pack.items).toHaveLength(160);
     expect(pack.domains).toHaveLength(8);
-    expect(pack.sections).toHaveLength(16);
+    expect(pack.sections).toHaveLength(32);
     expect(pack.sections.every((section) => section.itemIds.length === 5)).toBe(true);
   });
 
@@ -51,19 +54,19 @@ describe('AP Calculus AB foundation pilot', () => {
     expect(pack.capabilities.limitations.join(' ')).toContain('not a complete AP Calculus AB exam simulation');
   });
 
-  it('balances ten items per unit and routes selected topic IDs at depth', () => {
+  it('balances twenty items per unit and routes selected topic IDs at depth', () => {
     const unitCounts = countBy(pack.items, (item) => item.domainId);
-    expect(Object.values(unitCounts)).toEqual([10, 10, 10, 10, 10, 10, 10, 10]);
+    expect(Object.values(unitCounts)).toEqual([20, 20, 20, 20, 20, 20, 20, 20]);
     const selectedTopics = pack.blueprint.selectedFrameworkTopicIds;
     const topicCounts = countBy(pack.items.flatMap((item) => item.topicIds), (topicId) => topicId);
     expect(selectedTopics).toHaveLength(66);
-    expect(selectedTopics.every((topicId) => topicCounts[topicId] >= 2)).toBe(true);
+    expect(selectedTopics.every((topicId) => topicCounts[topicId] >= 4)).toBe(true);
   });
 
   it('uses unique single-choice items with balanced answer positions', () => {
-    expect(new Set(pack.items.map((item) => item.id)).size).toBe(80);
-    expect(new Set(pack.items.map((item) => item.prompt)).size).toBe(80);
-    expect(countBy(pack.items, (item) => item.answerIndex)).toEqual({ 0: 20, 1: 20, 2: 20, 3: 20 });
+    expect(new Set(pack.items.map((item) => item.id)).size).toBe(160);
+    expect(new Set(pack.items.map((item) => item.prompt)).size).toBe(160);
+    expect(countBy(pack.items, (item) => item.answerIndex)).toEqual({ 0: 40, 1: 40, 2: 40, 3: 40 });
     for (const item of pack.items) {
       expect(item).toMatchObject({
         itemSchemaVersion: 2,
@@ -86,8 +89,8 @@ describe('AP Calculus AB foundation pilot', () => {
     expect(practices).toEqual(new Set(['MP1', 'MP2', 'MP3', 'MP4']));
     expect(representations).toEqual(new Set(['analytical', 'tabular', 'verbal', 'graphical-text']));
     expect(countBy(pack.items, (item) => item.calculatorUse)).toEqual({
-      'calculator-not-required': 56,
-      'calculator-permitted-practice': 24,
+      'calculator-not-required': 112,
+      'calculator-permitted-practice': 48,
     });
   });
 
@@ -122,6 +125,9 @@ describe('AP Calculus AB foundation pilot', () => {
       flashcards: 40,
       memoryAids: 16,
       practiceRoutes: 24,
+      diagnosticRoutes: 40,
+      diagnosticSets: 120,
+      remediationPlaybooks: 40,
       studyRoutes: 4,
       quickReference: 8,
       diagrams: 8,
@@ -143,8 +149,8 @@ describe('AP Calculus AB foundation pilot', () => {
     const routes = library.chapters.flatMap((chapter) => chapter.sections.map((section) => section.practiceRoute));
     const routedItemIds = routes.flatMap((route) => route.itemIds);
     expect(routes).toHaveLength(24);
-    expect(routedItemIds).toHaveLength(80);
-    expect(new Set(routedItemIds).size).toBe(80);
+    expect(routedItemIds).toHaveLength(160);
+    expect(new Set(routedItemIds).size).toBe(160);
     expect(new Set(routedItemIds)).toEqual(new Set(pack.items.map((item) => item.id)));
     expect(routes.every((route) => route.unscored && route.releaseEligible === false)).toBe(true);
   });
@@ -160,6 +166,59 @@ describe('AP Calculus AB foundation pilot', () => {
       expect(reference.decisionRules).toHaveLength(5);
       expect(reference.cautions.length).toBeGreaterThanOrEqual(3);
       expect(reference).toMatchObject({ originalStudyAid: true, officialExamReference: false, releaseEligible: false });
+    }
+  });
+
+  it('routes every topic through unscored diagnostics and a linked remediation playbook', () => {
+    const routes = library.topicDiagnosticRoutes;
+    const playbooks = library.topicRemediationPlaybooks;
+    const playbookById = new Map(playbooks.map((playbook) => [playbook.id, playbook]));
+    const diagnosticItemIds = routes.flatMap((route) => route.itemIds);
+    expect(routes).toHaveLength(40);
+    expect(new Set(routes.map((route) => route.id)).size).toBe(40);
+    expect(playbooks).toHaveLength(40);
+    expect(playbookById.size).toBe(40);
+    expect(routes.flatMap((route) => route.diagnosticSets)).toHaveLength(120);
+    expect(diagnosticItemIds).toHaveLength(160);
+    expect(new Set(diagnosticItemIds)).toEqual(new Set(pack.items.map((item) => item.id)));
+    for (const route of routes) {
+      expect(route.itemIds).toHaveLength(4);
+      expect(new Set(route.itemIds).size).toBe(4);
+      expect(route.diagnosticSets.map((set) => set.stage)).toEqual(['foundation', 'depth', 'transfer']);
+      expect(route.diagnosticSets.map((set) => set.itemIds.length)).toEqual([1, 2, 1]);
+      expect(route.diagnosticSets.flatMap((set) => set.itemIds)).toEqual(route.itemIds);
+      expect(route).toMatchObject({
+        unscored: true,
+        automatedScoring: false,
+        officialScore: false,
+        readinessInference: false,
+        psychometricInference: false,
+        releaseEligible: false,
+      });
+      for (const set of route.diagnosticSets) {
+        expect(set).toMatchObject({
+          unscored: true,
+          automatedScoring: false,
+          officialScore: false,
+          readinessInference: false,
+          releaseEligible: false,
+        });
+      }
+      const playbook = playbookById.get(route.remediationPlaybookId);
+      expect(playbook).toMatchObject({
+        diagnosticRouteId: route.id,
+        unscored: true,
+        automatedScoring: false,
+        officialScore: false,
+        readinessInference: false,
+        releaseEligible: false,
+      });
+      expect(playbook.steps.map((step) => step.phase)).toEqual([
+        'recognize', 'repair', 'contrast', 'practice', 'retry-transfer-reflect',
+      ]);
+      for (const set of route.diagnosticSets) {
+        expect(playbook.retryByStage[set.stage]).toEqual(set.itemIds);
+      }
     }
   });
 
@@ -196,24 +255,37 @@ describe('AP Calculus AB foundation pilot', () => {
   it('passes its bound native QA with zero structural findings', () => {
     expect(qa).toMatchObject({
       reportId: 'ap-calculus-ab-foundation-qa',
-      version: '0.1.0-internal-preview',
+      version: '0.2.0-internal-preview',
       status: 'pass',
       automatedAssessment: 'pass',
       structuralFindings: [],
     });
     expect(qa.metrics).toMatchObject({
-      itemCount: 80,
+      itemCount: 160,
       unitCount: 8,
       selectedFrameworkTopicCount: 66,
       foundationTopicRouteCount: 40,
       chapterCount: 8,
       sectionCount: 24,
+      diagnosticRouteCount: 40,
+      diagnosticSetCount: 120,
+      remediationPlaybookCount: 40,
       constructedResponseWorkshopCount: 8,
     });
     expect(qa.coverage).toEqual({
       allSelectedTopicsRepresented: true,
       allUnitsRepresented: true,
       everyItemSectionRouted: true,
+      everyTopicHasDiagnosticAndRemediation: true,
+    });
+    expect(qa.inputs.packSha256).toBe(createHash('sha256').update(packBytes).digest('hex'));
+    expect(qa.inputs.learningLibrarySha256).toBe(createHash('sha256').update(libraryBytes).digest('hex'));
+    expect(qa.reviewBoundary).toMatchObject({
+      subjectExpert: 'pending',
+      accessibility: 'pending',
+      production: 'pending',
+      psychometric: 'not-started',
+      releaseEligible: false,
     });
   });
 });

@@ -78,9 +78,12 @@ describe('H4 — repeated content headings are KEPT; real running heads still st
 });
 
 describe('H5 — assessment mode withholds the concept-sort key (behavioral slice)', () => {
-  const start = dp.indexOf('let _packHtml = rawHtml;');
+  const start = dp.indexOf('let _packHtml = ');
   const end = dp.indexOf('// Run WCAG sanitizer', start);
-  const postProcess = new Function('rawHtml', 'cfg', dp.slice(start, end) + '\nreturn _packHtml;');
+  if (start < 0 || end <= start) throw new Error('Assessment export slice not found');
+  const runPostProcess = new Function('rawHtml', 'cfg', '_alloRewriteResourceLinks', dp.slice(start, end) + '\nreturn _packHtml;');
+  // This fixture has no resource links; isolate the answer-key transformation.
+  const postProcess = (html, cfg) => runPostProcess(html, cfg, value => value);
   const FIXTURE = '<html><head></head><body>'
     + '<div class="question" data-correct="2">MCQ</div>'
     + '<div role="listitem" class="alloflow-cs-dropzone" data-category-id="cat-a" data-category-color="#123">Zone</div>'

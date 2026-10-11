@@ -45,7 +45,7 @@ describe('adventure scene art survives the trip to a student', () => {
   it('the asset uploader looks where the scene image actually lives', () => {
     const mse = read('module_scope_extras_module.js');
     expect(mse).toContain('processField(item.data.snapshot, "sceneImage"');
-    expect(mse).toContain('restoreField(item.data.snapshot, "sceneImage")');
+    expect(mse).toMatch(/restoreField\(item\.data\.snapshot, ['"]sceneImage['"]\)/);
     // The legacy top-level read stays for older saved resources.
     expect(mse).toContain('processField(item.data, "sceneImage", seed)');
   });

@@ -673,6 +673,8 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
       independentPracticeItems: derivedInventory.independentPracticeItems,
       guidedReviewActivities: derivedInventory.guidedReviewActivities,
       newIndependentParaProItemsReviewed: derivedInventory.assistantAuthoredIndependentItems,
+      newIndependentParaProItemsReviewedSemantics: 'legacy-total-assistant-authored-independent-items-alias',
+      independentParaProItemsReviewed: audit.perPack.find(row => row.stem === 'parapro').assistantAuthoredIndependentItems,
       allActivitiesStructurallyChecked: true,
       allGuidedAnswerDerivationsChecked: true,
     });
@@ -680,6 +682,9 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
       algorithm: 'sha256',
       hash: sha256(snapshotParts.join('\n')),
     });
+    expect(audit.scope.independentParaProItemsReviewed).toBe(300);
+    expect(audit.scope.newIndependentParaProItemsReviewed)
+      .toBeGreaterThan(audit.scope.independentParaProItemsReviewed);
   }, 60_000);
 
   it('catalogs every ParaPro Banks 3-5 source with readable metadata and an exact deploy mirror', () => {

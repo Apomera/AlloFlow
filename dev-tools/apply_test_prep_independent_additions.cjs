@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { originalityFindings } = require('./authored_batch_originality_checks.cjs');
+const { selectPackStems } = require('./test_prep_pack_selection.cjs');
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
@@ -618,7 +619,9 @@ function main() {
 
   const plans = [];
   const claimedAuthoredFiles = new Set();
-  for (const [stem, batches] of Object.entries(manifest.packs)) {
+  const selectedStems = selectPackStems(process.argv.slice(2), Object.keys(manifest.packs), ['--check']);
+  for (const stem of selectedStems) {
+    const batches = manifest.packs[stem];
     if (/^eppp/i.test(stem)) throw new Error(stem + ': EPPP additions are outside this pipeline');
     if (!Array.isArray(batches) || !batches.length || batches.length > 3) {
       throw new Error(stem + ': one to three complete authored batches are required');
@@ -728,7 +731,7 @@ function main() {
     return;
   }
 
-  // Write only after every manifest entry, artifact, and cross-review has passed.
+  // Write only after every selected entry, artifact, and cross-review has passed.
   for (const plan of plans) {
     const packJson = JSON.stringify(plan.pack, null, 2) + '\n';
     const itemsJson = JSON.stringify(plan.pack.items, null, 2) + '\n';

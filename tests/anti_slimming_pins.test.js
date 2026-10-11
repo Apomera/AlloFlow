@@ -40,7 +40,11 @@ describe('deps-builder dedupe pins (all three hosts)', () => {
         // (which silently stopped counting the epoch-passing call site).
         expect(text, family + ' builder declaration').toMatch(new RegExp('const ' + builder + ' = \\([A-Za-z0-9_, ]*\\) => \\(\\{'));
         const calls = text.split(builder + '(').length - 1;
-        expect(calls, family + ' builder call sites').toBeGreaterThanOrEqual(minCalls);
+        // Dice completion asks for current dependencies through a retained getter.
+        const callbackConsumers = family === 'AdventureSessionHandlers'
+          ? (text.match(/diceCompleteContextRef\.current\.getDeps = _alloAdventureSessionHandlersDeps;/g) || []).length
+          : 0;
+        expect(calls + callbackConsumers, family + ' builder consumer sites').toBeGreaterThanOrEqual(minCalls);
       }
     });
   }
@@ -69,7 +73,7 @@ describe('extraction pins', () => {
     // updateExportPreview → ExportPreviewHelpers
     expect(anti).toContain("if (_m && typeof _m.updateExportPreview === 'function') return _m.updateExportPreview({");
     // Student-pack serializer → LiveAac
-    expect(anti).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined })');
+    expect(anti).toContain('moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel })');
     expect(anti).not.toContain('const safePortableTtsAssets = (value) => {');
   });
 

@@ -56,12 +56,13 @@ describe('AlloSheet observation casebook browser workflow', () => {
     browser = await chromium.launch({ headless: true });
   }, 60000);
 
-  afterAll(() => {
-    if (browser) browser.close().catch(() => {});
+  afterAll(async () => {
+    if (browser) await browser.close();
   });
 
   it('creates, reviews, records, compares, saves, and prepares consent-gated reflection rows', async () => {
-    const page = await browser.newPage({ acceptDownloads: true });
+    const page = await browser.newPage({ acceptDownloads: true, timezoneId: 'America/New_York' });
+    expect(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone)).toBe('America/New_York');
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
     await page.setContent(interactivePage, { waitUntil: 'domcontentloaded' });
@@ -480,7 +481,8 @@ describe('AlloSheet observation casebook browser workflow', () => {
   }, 90000);
 
   it('keeps learner-support exports sensitive and agent reflection consent-gated', async () => {
-    const page = await browser.newPage({ acceptDownloads: true });
+    const page = await browser.newPage({ acceptDownloads: true, timezoneId: 'America/New_York' });
+    expect(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone)).toBe('America/New_York');
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
     await page.setContent(interactivePage, { waitUntil: 'domcontentloaded' });

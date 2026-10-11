@@ -2,19 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { sliceBetween } from './helpers/anchored_slice.js';
 import { restoreCLSquidFinReference } from './helpers/cephalopod_squid_fin_reference.js';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
 const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
-const start = source.indexOf('function createCLHuntAnimal(');
-const end = source.indexOf('// Compact, individually owned prey rig.', start);
-if (start < 0 || end <= start) throw new Error('Could not locate the actual animal rig');
-const build = new Function('T', 'species', 'Math', source.slice(start, end) + ';return createCLHuntAnimal(T,species);');
+const animalSource = sliceBetween(source, 'function createCLHuntAnimal(', '// Compact, individually owned prey rig.', {
+  file: process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', label: 'actual animal rig',
+});
+const build = new Function('T', 'species', 'Math', animalSource + ';return createCLHuntAnimal(T,species);');
 // Pass30 reverses only the exact accepted Humboldt fin roll for this older protected fingerprint.
 // All live geometry/material/motion assertions still use the actual production build.
 const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
-const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)))+';return createCLHuntAnimal(T,species);');
+const historicalAnimal=require('./helpers/cephalopod_pre55_animal_reference.cjs').restorePre55AnimalSource(source);
+const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(historicalAnimal))+';return createCLHuntAnimal(T,species);');
 
 const noRigRandom = Object.assign(Object.create(Math), {
   random() { throw new Error('Rig geometry or animation consumed the dive RNG'); },

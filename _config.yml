@@ -1,0 +1,27 @@
+{
+  "include": [],
+  "exclude": [
+    "node_modules",
+    "vendor/bundle",
+    "vendor/cache",
+    "vendor/gems",
+    "vendor/ruby",
+    "Gemfile",
+    "Gemfile.lock",
+    "reports",
+    "desktop",
+    "dev-tools",
+    "tests",
+    "mcp-testing",
+    "test-output-spaceexplorer-visual",
+    "scripts",
+    "quality",
+    "a11y-audit",
+    "app",
+    "test_prep",
+    "reading_library/books",
+    "lang/*.js",
+    "allopacks/media/*.png",
+    "allopacks/media/**/*.png"
+  ]
+}

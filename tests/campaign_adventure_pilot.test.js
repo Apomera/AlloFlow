@@ -1,11 +1,13 @@
 import {beforeAll,describe,it,expect,vi} from 'vitest';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import path from 'node:path';
 import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
 import {createAdapters} from '../dev-tools/campaign-adventure-pilot/adapters.mjs';
 import {makeRun,materialize,dispatch,validateRun,saveRun,readRun,listRuns,saveKey,PREFIX,addNote,forkRun,narrate} from '../dev-tools/campaign-adventure-pilot/core.mjs';
 const require=createRequire(import.meta.url);
-const {build,verifyPreservation,extractWatershed}=require('../dev-tools/campaign-adventure-pilot/build.cjs');
+const {build,verifyPreservation,capturePreservation,extractWatershed,root}=require('../dev-tools/campaign-adventure-pilot/build.cjs');
 const plain=x=>JSON.parse(JSON.stringify(x));
 let tree,water,grove,adapters;
 beforeAll(()=>{
@@ -21,15 +23,119 @@ function memoryStorage(){
 }
 describe('isolated campaign adventure pilot',()=>{
   it('leaves all protected Adventure and STEM source/build files unchanged',()=>{
-    expect(verifyPreservation()).toBeGreaterThanOrEqual(25);
+    const historical=fs.readFileSync('dev-tools/campaign-adventure-pilot/preservation.json','utf8');
+    const current=capturePreservation();
     expect(build(true)).toBe(23);
+    expect(verifyPreservation(current)).toBeGreaterThanOrEqual(25);
+    expect(fs.readFileSync('dev-tools/campaign-adventure-pilot/preservation.json','utf8')).toBe(historical);
   }, 60000);
+  it('retains the strict historical audit and rejects current protected-file drift',()=>{
+    const historical=JSON.parse(fs.readFileSync('dev-tools/campaign-adventure-pilot/preservation.json','utf8'));
+    expect(historical.capturedAt).toBe('2026-09-07T02:52:10.179Z');
+    const unchanged=verifyPreservation(capturePreservation());
+    const current=capturePreservation();
+    const file=Object.keys(current.files)[0];
+    current.files[file]='0'.repeat(64);
+    expect(()=>verifyPreservation(current)).toThrow('current preservation snapshot');
+    expect(unchanged).toBeGreaterThanOrEqual(Object.keys(historical.files).length);
+    const read=fs.readFileSync;
+    const spy=vi.spyOn(fs,'readFileSync').mockImplementation((file,...args)=>{
+      if(String(file)===path.join(root,'dev-tools/campaign-adventure-pilot/preservation.json'))
+        return JSON.stringify({files:current.files});
+      return read(file,...args);
+    });
+    try { expect(()=>verifyPreservation()).toThrow('pilot baseline'); }
+    finally { spy.mockRestore(); }
+  });
+  it.each([false,true])('guards protected files during pilot build/check (%s) without production writes',check=>{
+    let guardPhase=false;
+    const protectedFile=path.join(root,'stem_lab/stem_tool_watercycle.js');
+    const read=fs.readFileSync;
+    const readSpy=vi.spyOn(fs,'readFileSync').mockImplementation((file,...args)=>{
+      const value=read(file,...args);
+      if(guardPhase&&String(file)===protectedFile)
+        return Buffer.concat([Buffer.from(value),Buffer.from('\n// simulated out-of-scope drift\n')]);
+      if(check&&String(file)===path.join(root,'dev-tools/campaign-adventure-pilot/watershed-source.mjs')) guardPhase=true;
+      return value;
+    });
+    const writeSpy=vi.spyOn(fs,'writeFileSync').mockImplementation(()=>{guardPhase=true;});
+    try {
+      expect(()=>build(check)).toThrow('current preservation snapshot');
+      if(check) expect(writeSpy).not.toHaveBeenCalled();
+      else {
+        expect(writeSpy).toHaveBeenCalledTimes(2);
+        for(const [file]of writeSpy.mock.calls)
+          expect(path.dirname(file)).toBe(path.join(root,'dev-tools/campaign-adventure-pilot'));
+      }
+    } finally { writeSpy.mockRestore();readSpy.mockRestore(); }
+  },60000);
+  it.each(['added','removed'])('rejects a protected file being %s during the current snapshot',change=>{
+    const current=capturePreservation();
+    const rootFile=Object.keys(current.files).find(file=>!file.includes('/'));
+    expect(rootFile).toBeTruthy();
+    const read=fs.readdirSync;
+    const spy=vi.spyOn(fs,'readdirSync').mockImplementation((directory,...args)=>{
+      const entries=read(directory,...args);
+      if(String(directory)!==root) return entries;
+      return change==='added'?[...entries,'adventure_simulated_drift.js']:entries.filter(file=>file!==rootFile);
+    });
+    try { expect(()=>verifyPreservation(current)).toThrow('current preservation snapshot'); }
+    finally { spy.mockRestore(); }
+  });
   it('contains the exact selected watershed declarations, with source provenance',()=>{
     const generated=fs.readFileSync('dev-tools/campaign-adventure-pilot/watershed-source.mjs','utf8');
     const output=extractWatershed();
     expect(generated).toBe(output.module);
+    const provenance=JSON.parse(fs.readFileSync('dev-tools/campaign-adventure-pilot/provenance.json','utf8'));
+    expect(provenance.sourceSha256).toBe(output.sourceSha256);
+    expect(provenance.declarations).toEqual(output.provenance);
     expect(output.provenance.map(d=>d.name)).toEqual(expect.arrayContaining(['applyStewardTech','endStewardYear','advanceFromStewardReview','STEWARD_FEEDBACK_RULES']));
   });
+  it('keeps LF and CRLF model extraction identical while preserving raw source hashes',()=>{
+    const file=path.join(root,'stem_lab/stem_tool_watercycle.js');
+    const bytes=fs.readFileSync(file);
+    const source=bytes.toString('utf8').replace(/\r\n/g,'\n');
+    const snapshot=capturePreservation();
+    expect(snapshot.files['stem_lab/stem_tool_watercycle.js']).toBe(createHash('sha256').update(bytes).digest('hex'));
+    const read=fs.readFileSync;
+    let variant=source;
+    const spy=vi.spyOn(fs,'readFileSync').mockImplementation((target,...args)=>{
+      if(String(target)===file&&args[0]==='utf8') return variant;
+      return read(target,...args);
+    });
+    try {
+      const lf=extractWatershed();
+      variant=source.replace(/\n/g,'\r\n');
+      expect(extractWatershed()).toEqual(lf);
+      expect(lf.sourceSha256).toBe(createHash('sha256').update(source).digest('hex'));
+    } finally { spy.mockRestore(); }
+    expect(fs.readFileSync(file).equals(bytes)).toBe(true);
+    expect(capturePreservation()).toEqual(snapshot);
+  });
+  it('matches the current exact-source watershed runtime throughout all difficulties',()=>{
+    const source=extractWatershed().module;
+    const context={};vm.createContext(context);
+    vm.runInContext(source.replace(/^export const sourceSha256 = /m,'const sourceSha256 = ').replace(/^export function createWatershedRuntime/m,'function createWatershedRuntime')+'\nthis.runtime=createWatershedRuntime();',context);
+    const reference=context.runtime;
+    for(const difficulty of Object.keys(reference.difficulties)){
+      let run=makeRun(water,{seed:'SOURCE-PARITY',runId:'parity-'+difficulty,config:{difficulty}});
+      let expected=reference.start({seed:run.seed,difficulty});
+      expect(plain(materialize(water,run))).toEqual(plain(expected));
+      for(let year=1;year<=10;year++){
+        const action=water.actions(materialize(water,run)).find(a=>a.id.startsWith('tech:')&&!a.disabled);
+        if(action){
+          const [,tech,target]=action.id.split(':');
+          expected=reference.apply(expected,tech,target==='all'?null:target);
+          run=dispatch(water,run,action.id);
+          expect(plain(materialize(water,run))).toEqual(plain(expected));
+        }
+        expected=reference.endYear(expected);run=dispatch(water,run,'end-year');
+        expect(plain(materialize(water,run))).toEqual(plain(expected));
+        expected=reference.continue(expected);run=dispatch(water,run,'continue');
+        expect(plain(materialize(water,run))).toEqual(plain(expected));
+      }
+    }
+  },60000);
   it('matches Tree Life Lab for an entire eight-year campaign, every annual receipt and tree',()=>{
     const choices=['offspring','roots','reserve','offspring','offspring','reserve','roots','offspring'];
     let run=runFor(grove),reference=tree.groveStart({version:1,seed:run.seed,mode:'deck',choices:[]});

@@ -144,7 +144,7 @@
     "choices": [
       "Support the reduction because equal dismissal times mean the policy treats all students the same regardless of travel conditions.",
       "Quietly keep buses running from the school budget without district authorization so tutoring participation is not interrupted.",
-      "Remove after-school tutoring from the strategic plan entirely, on the grounds that any program creating transportation complications should not be formally linked to the district’s stated core values.",
+      "Remove the tutoring commitment from the strategic plan and recast it as an optional enrichment program, arguing that transportation access should be managed separately from the district's core values.",
       "Analyze who would lose access, present feasible transportation and scheduling alternatives, and use the stated value and evidence to recommend an equitable decision through authorized channels."
     ],
     "answerIndex": 3,
@@ -637,7 +637,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A successful reading pilot is ready to expand from two classrooms to an entire elementary school. Which evidence should govern the scale-up plan?",
     "choices": [
-      "Require every classroom in the school to copy all of the pilot routines exactly, including incidental scheduling features that are entirely unrelated to the reading mechanism itself.",
+      "Require each classroom to adopt the pilot's routines and scheduling details as a single implementation package, rather than distinguish essential reading practices from adaptable logistics.",
       "Expand immediately to every grade because waiting for capacity analysis would withhold a promising practice from students.",
       "Identify the pilot’s essential practices, training and coaching demands, resource and schedule requirements, subgroup results, adaptations, and capacity at each expansion stage.",
       "Judge readiness from the pilot’s average result and omit subgroup patterns so the scale-up message remains simple."
@@ -683,7 +683,7 @@
     "prompt": "A school’s improvement aim is stronger argumentative writing, but the action plan jumps directly from purchasing materials to state-test gains. What should leaders add?",
     "choices": [
       "Add a guarantee that the purchased materials will raise scores if teachers complete the required training hours.",
-      "Replace the student-learning aim entirely with a purchase-completion target, because the delivery of materials is far easier for school leaders to monitor and report on each month.",
+      "Replace the student-learning aim with a purchase-completion target so leaders can report a readily observable activity while postponing measures of classroom practice and writing growth.",
       "Track the number of pages assigned each week as the sole intermediate measure of writing quality.",
       "Specify intermediate drivers such as teacher task design, feedback quality, student revision opportunities, and common scoring, with measures connecting each driver to the aim."
     ],
@@ -1268,7 +1268,7 @@
     "prompt": "Participants rate a culturally responsive teaching institute highly. Which evaluation design would best determine whether the professional learning improved practice?",
     "choices": [
       "Track changes in teacher planning and instruction, student access and experience, implementation support, and relevant learning evidence over time, using multiple sources and comparison to baseline.",
-      "Use the favorable exit survey ratings as the outcome measure, because participant perceptions immediately after the institute are the most direct available indicator of eventual impact in the classroom.",
+      "Use the favorable exit-survey ratings as the main outcome measure, interpreting participants' satisfaction with the institute as sufficient evidence of improvements in their instruction and students' classroom experience.",
       "Compare this year’s state scores with last year’s scores and attribute any increase entirely to the institute.",
       "Count the number of institute materials downloaded after the event and treat higher access as proof of improved teaching."
     ],
@@ -2536,7 +2536,7 @@
     "choices": [
       "End recognition entirely because any public acknowledgment will inevitably create competition among employees.",
       "Give every employee the same award at each meeting so recognition is distributed with complete equality.",
-      "Ask administrators to nominate a greater number of staff members privately, but keep the underlying selection criteria entirely confidential so that no one is able to lobby for recognition or question the eventual outcome.",
+      "Ask administrators to nominate additional staff using private judgments about merit and keep selection decisions within the leadership team, reasoning that staff input into recognition criteria would create competing demands.",
       "Co-design transparent recognition criteria tied to shared values, invite varied evidence and nominations, and recognize both individual and collective contributions without turning praise into competition."
     ],
     "answerIndex": 3,
@@ -2590,7 +2590,7 @@
     "rationale": "Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
     "choiceRationales": [
       "Correct. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
-      "Not the best answer. A denial that omits a real proposal undermines credibility when the process becomes visible. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
+      "Not the best answer. An unverified blanket denial does not distinguish known facts from unresolved proposals or rumors and can undermine credibility. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
       "Not the best answer. Absolute disclosure may violate privacy and can misrepresent unapproved contingencies as decisions. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence.",
       "Not the best answer. Silence allows consequential misinformation to shape trust and behavior. Credible uncertainty communication is timely, accurate, bounded, and predictable. Leaders should correct material misinformation without inventing certainty or disclosing protected details, then maintain a dependable update cadence."
     ],

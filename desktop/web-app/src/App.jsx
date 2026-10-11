@@ -1515,26 +1515,9 @@ function _alloCleanMailboxUrl(value) {
         return '';
     }
 }
-// Apps Script containers go COLD. A deployment that has not been hit in a few
-// minutes can take 10-20s just to boot before it runs a line of handler code,
-// and session start is the worst case: it is the first traffic the script has
-// seen, and it fires a serial chain (session-doc write -> join -> dget) where
-// EVERY hop pays that boot cost if the container is still waking. An 8s abort
-// turns a slow-but-working start into "Mailbox error: timeout".
-//
-// So the ceiling is per-call-kind rather than one global number:
-//   - polls stay at 8s. A hung poll on a phone radio SHOULD abort fast; the
-//     poll loop re-fires seconds later and nothing is lost.
-//   - writes and session setup get 25s, because there is no loop behind them.
-//     Aborting one does not retry it later, it fails the teacher's action.
-// _ALLO_MB_SLOW_ACTIONS is the list of actions that pay the cold-start cost
-// and have no loop to recover: they default to the longer ceiling unless a
-// caller passes an explicit timeoutMs.
-// Last time ANY mailbox call succeeded. Two uses: the keep-alive decides whether
-// a ping is even needed, and a failure trace reports the idle gap so a cold
-// start is distinguishable from a network fault. Declared ABOVE _alloMailboxCall
-// on purpose: `let` hoists into a temporal dead zone, so a declaration placed
-// after the function would make the FIRST call throw a ReferenceError.
+// Apps Script cold starts need 25s for writes/setup; polls retain 8s and retry naturally.
+// Explicit timeoutMs overrides the slow-action default. Keep the last-success timestamp
+// above _alloMailboxCall to avoid its first-call TDZ; it drives keep-alive and idle traces.
 let _alloMbLastContactAt = 0;
 const ALLO_MB_TIMEOUT_MS = 8000;
 const ALLO_MB_SLOW_TIMEOUT_MS = 25000;
@@ -1723,26 +1706,9 @@ async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 
     }
     throw lastError;
 }
-// Download every slice of a mailbox-hosted pack and return the assembled
-// string. Part 1 is fetched alone because its reply carries `of` (the total
-// slice count); the remainder are then fetched CONCURRENTLY, which is the
-// whole point of this helper. The previous shape awaited each slice before
-// requesting the next, so a 7-slice pack cost 7 serial Apps Script round
-// trips (~0.4-1.5s each) before a student saw anything.
-//
-// Concurrency is capped deliberately. getpack's server-side rate limit is
-// keyed on pack id + secret (r:pack:<id>:<k>), NOT on the participant, so an
-// entire class shares one 120-reads-per-minute budget for the same pack. An
-// unbounded Promise.all over a 40-slice pack would burn that budget and hand
-// every student a rate-limited error, which is strictly worse than being slow.
-// Four in flight keeps a 30-student class well inside the budget while still
-// collapsing the serial chain.
-//
-// `call` is injected so each site keeps its own transport: the live-session
-// path passes the plain call (its hydration coordinator owns retries and
-// cancellation), the homework path passes the retrying variant.
-// `assertOk` runs before and after every request so an aborted or superseded
-// download stops promptly instead of finishing work nobody will use.
+// Fetch part 1 for the total, then at most four slices concurrently: a class shares
+// the pack-secret 120-read/min budget. Injected call preserves each transport retry policy;
+// assertOk before/after requests stops cancelled or superseded downloads.
 const ALLO_MB_PACK_FETCH_CONCURRENCY = 4;
 async function _alloFetchMailboxPackParts(call, baseParams, { assertOk = () => {}, onMeta = null } = {}) {
     const readPart = async part => {
@@ -2399,21 +2365,9 @@ if (typeof window !== 'undefined') window.__alloResolveGeminiAudioCapability = _
 function _usesLocalTextBackend(config) {
     return Boolean(!_isCanvasEnv && config && config.backend && config.backend !== 'gemini');
 }
-// ── AI capability resolver (W7, 2026-08-16) ──────────────────────────────────
-// ONE answer to "can this install talk to an AI?", per capability, reading the
-// SAME stored config the backends actually use (_readAlloAiUserConfig /
-// _alloEffectiveGeminiApiKey / _isCanvasEnv) — never a parallel copy of the
-// truth, which is the gate-reads-a-different-source lockout class this repo has
-// already shipped once. Consumers gate UI with it (disable-with-doorway on
-// teacher surfaces, hide in STEM tools); it must NEVER gate the runtime call
-// path itself — a call that would have worked must still work, so unknown
-// state fails to 'none' for DISPLAY only.
-//   text:   generation via Canvas, a Gemini key, or a local text backend.
-//   images: Imagen needs Canvas or a key (callImagen's own rule; the local
-//           SD-Turbo path is opportunistic and not counted as availability).
-//   tts:    'full' when a cloud leg exists, else 'local' — Kokoro and the
-//           device voice still speak on a keyless install, so TTS is never 'none'.
-//   reason: which leg made text true, for honest UI copy.
+// Display-only AI capabilities read the same effective config as their backends; never
+// gate runtime calls. Unknown text/images display none; Imagen requires Canvas/key.
+// TTS remains local without cloud access (Kokoro/device voice); reason names the active leg.
 function resolveAiCapability() {
     try {
         if (_isCanvasEnv) return { text: true, images: true, tts: 'full', reason: 'canvas' };
@@ -3365,25 +3319,8 @@ const _alloEducatorAccessCodeRequirement = () => {
     return 'unavailable';
   }
 };
-// ONLY a code that demonstrably exists may raise the gate.
-//
-// This read `!== 'off'`, which made BOTH 'pending' and 'unavailable' mean "demand a
-// password" — and neither of them says a code was ever set. The requirement has four
-// states but only two are answers: 'configured' and 'off'. The other two are "not known
-// yet" and "cannot tell".
-//
-// On Canvas that was fatal. `_isCanvasEnv` sends the check down the hydration branch,
-// where it reports 'pending' for the whole prefs-hydration window and sticks on
-// 'unavailable' forever if the device-storage bridge never resolves or a localStorage
-// write throws. So the gate opened on devices where no code had ever been configured,
-// and TeacherGate then reported "No educator access code is configured on this device"
-// with no input that could ever open it: Teacher, Parent and Independent were
-// unreachable and only Student was left. Nothing else showed it, because every non-
-// Canvas surface skips that branch and reads localStorage directly.
-//
-// The requirement and the VERIFIER now agree. The gate is raised only in the one state
-// where DeviceAccessCode.verify() has something to check the answer against, so an
-// unopenable prompt is no longer reachable.
+// Raise the educator gate only for configured codes. Pending/unavailable Canvas prefs
+// cannot prove a code exists; prompting there locks users out with no verifiable answer.
 const _alloEducatorAccessCodeRequired = () => _alloEducatorAccessCodeRequirement() === 'configured';
 // Failing open on 'pending' is right for the lockout but would, on its own, let a boot
 // path decide before hydration could tell it a code IS configured. The auto-entry
@@ -3447,20 +3384,9 @@ const _alloStudentSafeResources = (items) => {
     }).filter(Boolean);
 };
 const _alloIsStudentSafeResource = (item) => _alloStudentSafeResources([item]).length > 0;
-// ── Directions objectives (Phase 1, 2026-07-19) — pure helpers ─────────────
-// Backward-compatible: directions.data is a legacy markdown STRING or
-// { body, objectives[] }. One normalizer for every reader; one pure evaluator
-// (signals = { globalPoints, gameCompletions, ... }) so behavior is unit-testable.
-// NO GATING lives here by design — the checklist informs and celebrates.
-// ── ONE definition of "engaged" (2026-07-27) ──────────────────────────────────
-// Hoisted from inside the focus heartbeat so the heartbeat, the directions
-// `time` goal, and STEAM Lab's `timeSpent` quest all measure a minute the same
-// way. They did not: STEM accumulated WALL CLOCK (Date.now() minus mount, taken
-// on unmount), so an abandoned open tab satisfied "spend 5 minutes" there while
-// failing it here — the same phrase meaning two things in one app.
-// The canonical home is AlloQuestContract.ENGAGEMENT_TIMEOUT_MS; this literal is
-// the pre-module-load fallback (the heartbeat can start before the CDN module
-// lands). The conformance battery pins every copy equal to the contract's.
+// Directions normalize legacy markdown or {body, objectives}; pure goals never gate.
+// Engagement uses AlloQuestContract.ENGAGEMENT_TIMEOUT_MS with a pre-load fallback so
+// heartbeat, Directions time goals and STEAM quests count active time consistently.
 const _ALLO_ENGAGEMENT_TIMEOUT_MS = (typeof window !== 'undefined' && window.AlloQuestContract && typeof window.AlloQuestContract.ENGAGEMENT_TIMEOUT_MS === 'number')
     ? window.AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
     : 180000; // must equal AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
@@ -4250,24 +4176,8 @@ if (typeof window !== 'undefined' && window.speechSynthesis && !window.speechSyn
     };
     window.speechSynthesis._alloMuteGated = true;
 }
-// ── Centralized TTS player ────────────────────────────────────────────
-// Singleton coordinator for all read-aloud across the app. Replaces the
-// per-site speakText / _kokoroFallback / _browserTTSFallback duplicates that
-// each maintained their own _speakAudio. Gives us:
-//   - one "currently speaking" state, exposed via 'allo-speech-state' events
-//     so any UI (SpeakButton, persona chat, dbq) can show playing/stop state
-//   - click-again-to-stop semantics (matched by session id; stale resolves
-//     after a stop() are discarded)
-//   - global mute respect at every layer (mute-changed event auto-stops)
-//   - user-controlled playback rate via window.__alloPlaybackRate
-//   - language passthrough via window.__alloTextLanguage so ELL content
-//     reaches Gemini TTS with the right phonology hint
-//   - error toast when every fallback fails (silent failures were invisible
-//     to screen-reader users)
-// Stale-result strategy: a stop() bumps the current session id; in-flight
-// callTTS work that resolves afterward checks the id and bails. We also pass
-// an AbortSignal so the in-flight fetch terminates instead of running to
-// completion (saves the Gemini API budget on rapid click-stop sequences).
+// Central TTS owns speech-state events, session-id cancellation, mute, rate and language.
+// stop() invalidates stale results and aborts fetches; exhausted fallbacks report an error.
 if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     let _state = { isPlaying: false, status: 'idle', currentText: null, currentId: null, error: null };
     let _audio = null;
@@ -5252,30 +5162,9 @@ window._upgradeLabelPositions = function () {
 };
 if (window.AlloModules && window.AlloModules.LabelPositions) window._upgradeLabelPositions();
 
-// CDNModuleGate — unified loading-fallback for lazy-loaded CDN modules.
-//
-// Replaces ad-hoc per-component fallbacks that suffered from a real bug:
-// when a module took longer than expected to load, React had no signal to
-// re-render the parent, so the fallback would stay visible until the user
-// triggered a render some other way (close+reopen, mouse-move, etc.). This
-// gate polls `window.AlloModules[moduleKey]` every 200ms while open and
-// not-yet-loaded, then bumps internal state to force a re-evaluation as
-// soon as the module appears.
-//
-// Props:
-//   moduleKey   — string key on window.AlloModules to wait for
-//   isOpen      — when false, renders nothing
-//   onClose     — invoked on backdrop click + Close button (modal variant)
-//   icon        — emoji shown inside the spinner ring
-//   displayName — human-readable name used in the "Loading X..." string
-//   hintVariant — 'long' (with connection hint) or 'short'
-//   size        — 'modal' (centered fixed overlay) or 'inline' (in-flow card)
-//   t           — optional translation function; falls back to English
-//   children    — typically a function (Mod) => ReactElement that builds the
-//                 real UI from the loaded module. Plain children also work.
+// CDNModuleGate polls unloaded exports so slow CDN loads can trigger a render.
 // MODULE_GATE_WATCH_START
-// Registry notifications describe every app module. Only a changed export or
-// this view's own loading status should schedule a React update.
+// Registry events schedule updates only for changed exports or this view loading status.
 function _alloWatchModuleChanges(resolve, registryKey, refresh) {
   const status = () => window.__alloModuleRegistry?.[registryKey]?.status;
   let lastValue = resolve(), lastStatus = status(), disposed = false;
@@ -9859,23 +9748,10 @@ const SESSION_TIER1_LEAVES = new Set([
   // Resource IDs are non-PII (auto-generated by the host, never student-typed) so
   // Tier-1-safe. Fail-open by design: missing/empty list = show everything.
   'hiddenResourceIds',
-  // Bridge class-broadcast (teacher "Send to Class"). DELIBERATE, DOCUMENTED EXCEPTION:
-  // bridgePayload is a teacher-authored, class-WIDE instructional message — the SAME
-  // content delivered to every targeted student, not a per-student record. It carries
-  // free text by necessity: each student device translates it locally (per-device
-  // callGemini at the consumer), which requires the source text, so the text cannot be
-  // tokenized away. Mitigations applied when this was promoted from a raw-updateDoc
-  // bypass (2026-06-29): the sender is de-identified ('Teacher', never the account
-  // display name); the write now routes through writeToSession (this gate) so it is
-  // enforced + auditable; 24h TTL auto-cleanup already exists on the consumer.
-  // RESIDUAL RISK: a teacher could type a student's name into a class message — a
-  // conscious teacher communication choice, not silent system leakage. The fully
-  // Tier-1-clean transport is the existing WebRTC peer channel (as Concept Pictionary
-  // uses for its hidden concept, never touching Firestore); migrating bridge to it is
-  // the tracked long-term fix. To REVERT this exception, remove the two leaves below
-  // and the bridge broadcast fails closed (skipped) instead of bypassing the gate.
-  // bridgeReactions = { uid: { emoji (enum), timestamp } } — pseudonymous uid + an emoji
-  // reaction + time; no free text; Tier-1-safe on its own merits.
+  // Class-wide teacher text is a deliberate privacy exception: local student translation
+  // requires source text. writeToSession enforces the gate; sender is de-identified, TTL 24h.
+  // Residual typed-name risk remains; WebRTC is the planned clean transport. Removing these
+  // two leaves fails closed. bridgeReactions contains only pseudonymous uid, enum emoji/time.
   'bridgePayload', 'bridgeReactions',
   // Teacher-shared class resources for live sessions. This field is allowed only
   // through writeToSession(), which routes arrays through prepareSessionResourcesForWrite
@@ -12431,22 +12307,9 @@ const AlloFlowContent = () => {
       studentProjectSettings.hideStudentAiFeatures === true
       || (qrStudentModeActive && !studentAiConfigured)
   );
-  // In-app students (2026-09-14). The QR guard swaps the window AI globals for
-  // blocked functions, but a student who is NOT on a QR link (Student role on
-  // a shared device with hideStudentAiFeatures on) kept the teacher's live
-  // window.callGemini. The host hands modules callGemini = null, yet ~40 module
-  // sites reach the AI through the global instead (Concept Map 3D layout and
-  // hints, Memory Palace sculptures, "Surprise me", persona image edits,
-  // vision alt-text), so the setting hid nothing there. Swap the text, vision
-  // and image-edit globals for blocked functions while the flag holds and put
-  // the originals back when the role flips to teacher. Audio is left alone:
-  // read-aloud is an access feature, not generation, and the QR path only
-  // blocks it when a personal key lacks it.
-  // The same applies to the host's own module-scope bindings: ~30 lazy tools
-  // (Learning Hub: AlloHaven, Test Prep, Lit Lab, Story Forge, Reading
-  // Library, SEL Hub, STEM Lab, ...) are mounted with `callGemini,` straight
-  // from those bindings, not through the null-when-hidden prop. callImagen
-  // reads window.__alloStudentAiDisabled itself.
+  // Hidden student AI blocks text, vision and image-edit globals AND module-scope
+  // bindings, then restores teacher access. Prop-only hiding misses lazy/global callers.
+  // Keep read-aloud accessible; callImagen independently checks the student-disabled flag.
   const [, setStudentAiGuardTick] = useState(0);
   useEffect(() => {
       if (typeof window === 'undefined' || !studentAiFeaturesHidden) return undefined;
@@ -17476,23 +17339,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // after the first subtest; removed to avoid a double-advance race with the module.
   const orfScreeningSavedRef = React.useRef(null);
   React.useEffect(() => { if (fluencyStatus !== 'complete') orfScreeningSavedRef.current = null; }, [fluencyStatus]);
-  // Persist screening ORF results (2026-08-23). Until now this effect only
-  // advanced the battery: the record went to setLatestProbeResult (in-memory
-  // screeningHistory on an imported-student row) and NEVER to saveProbeResult,
-  // so no ORF score reached alloflow_probe_history. The RTI tier, the aimline
-  // (applied to the ORF series only, by contract), the trend series and the IEP
-  // export all read an empty series, and standalone (non-battery) screening
-  // runs were discarded entirely by the status !== 'running' gate. This mirrors
-  // the math writeback in view_sidebar_panels_source.jsx: RAW-validate the
-  // score first (Number(null) is 0, so a missing read must not record as a
-  // real 0 WCPM), and carry wcpm AND itemsPerMin with the same number
-  // (_probeTypeAndScore reads itemsPerMin, the AlloSheet walker reads wcpm).
-  // The ref guards the standalone path against a re-fire when saveFluencyReview
-  // replaces fluencyResult while fluencyStatus is still 'complete' (the battery
-  // path resets status to 'idle', so it never re-fires). Deps stay
-  // [fluencyStatus, fluencyResult] on purpose: everything else is read at fire
-  // time, and addToast/saveProbeResult must stay OUT of the dep array (both are
-  // declared below this hook; naming them in deps is the TDZ render-crash class).
+  // Persist battery and standalone ORF results only after raw score validation (null is
+  // not zero); wcpm and itemsPerMin serve different consumers. The ref prevents standalone
+  // review re-fires. Keep deps [fluencyStatus, fluencyResult]: addToast/saveProbeResult are
+  // declared later and would cause a TDZ render crash if named in the dependency array.
   React.useEffect(() => {
     if (fluencyStatus !== 'complete' || !fluencyResult) return;
     const inBattery = !!(screenerSession && screenerSession.status === 'running' && screenerSession.subtests[screenerSession.currentIndex] === 'orf');

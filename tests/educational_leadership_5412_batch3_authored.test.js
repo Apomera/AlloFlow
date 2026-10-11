@@ -7,7 +7,12 @@ import { describe, expect, it } from 'vitest';
 const root = path.resolve(import.meta.dirname, '..');
 const require = createRequire(import.meta.url);
 const authoredPath = path.join(root, 'dev-tools', 'authored', 'educational_leadership_5412_batch3.json');
-const reviewPath = path.join(root, 'dev-tools', 'authored', 'educational_leadership_5412_batch3.review.json');
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'dev-tools', 'authored', 'test_prep_independent_additions_manifest.json'), 'utf8'));
+const batch = manifest.packs.educational_leadership_5412[0];
+const reviewPath = path.join(root, 'dev-tools', 'authored', batch.reviewReports[0]);
+const historicalReviewPath = path.join(root, 'dev-tools', 'authored', 'educational_leadership_5412_batch3.review.json');
+const historicalReviewBytes = fs.readFileSync(historicalReviewPath);
+const historicalReview = JSON.parse(historicalReviewBytes.toString('utf8'));
 const authoredBytes = fs.readFileSync(authoredPath);
 const items = JSON.parse(authoredBytes.toString('utf8'));
 const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
@@ -157,11 +162,11 @@ describe('Praxis Educational Leadership 5412 assistant-authored Batch 3', () => 
     }
   });
 
-  it('has exact manifest-v2-compatible SHA-256 review evidence with all 100 keys manually reviewed', () => {
+  it('has exact manifest-v2-compatible SHA-256 evidence with complete automated assistant key and feedback review', () => {
     expect(review).toMatchObject({
       reviewedFile: 'dev-tools/authored/educational_leadership_5412_batch3.json',
-      reviewedAt: '2026-07-18',
-      reviewer: 'OpenAI Codex independent cross-review',
+      reviewedAt: '2026-10-10',
+      reviewKind: 'automated-assistant-only',
       itemCount: 100,
       blockers: [],
       integration: {
@@ -173,8 +178,12 @@ describe('Praxis Educational Leadership 5412 assistant-authored Batch 3', () => 
         reviewEvidenceProfile: 'hash-bound-independent-cross-review-v1',
       },
     });
+    expect(batch.reviewReports).toEqual(['educational_leadership_5412_batch3.ci-2026-10-10.review.json']);
+    expect(review.reviewedAt).toBe(batch.reviewedAt);
+    expect(review.reviewer).toContain('OpenAI Codex independent cross-review');
     expect(review.verdict).toMatch(/^pass/i);
-    expect(review.correctionsMade).toHaveLength(2);
+    expect(review.correctionsMade.map((correction) => correction.id))
+      .toEqual(['lead5412-b3-004', 'lead5412-b3-015', 'lead5412-b3-016', 'lead5412-b3-029', 'lead5412-b3-056', 'lead5412-b3-057']);
     expect(Object.values(review.checks).every((check) => check.status === 'pass')).toBe(true);
     expect(review.checks.lineByLineCredentialReview.reviewedItemIds).toEqual(items.map((item) => item.id));
     expect(review.checks.keysDistractorsAndFeedback.keysReviewed).toBe(100);
@@ -182,5 +191,33 @@ describe('Praxis Educational Leadership 5412 assistant-authored Batch 3', () => 
       algorithm: 'sha256',
       sha256: crypto.createHash('sha256').update(authoredBytes).digest('hex'),
     });
+  });
+
+  it('preserves the July review and its three historical corrections without attributing new changes to that reviewer', () => {
+    const historicalSha256 = crypto.createHash('sha256').update(historicalReviewBytes).digest('hex');
+    expect(historicalSha256).toBe('69877d22dfe2fe0fbca84482fda6db79c95d8cf5a5b2a745595d88580eaf1e32');
+    expect(historicalReview.reviewedAt).toBe('2026-07-18');
+    expect(historicalReview.correctionsMade).toHaveLength(3);
+    expect(historicalReview.correctionsMade[0].ids).toEqual(['lead5412-b3-030', 'lead5412-b3-068']);
+    expect(historicalReview.correctionsMade[1].id).toBe('lead5412-b3-082');
+    expect(historicalReview.correctionsMade[2].change).toContain('Rewrote 78 distractors');
+    expect(historicalReview.remediation[0]).toMatchObject({ at: '2026-08-17', itemsChanged: 78 });
+    expect(historicalReview.remediation[0].note).toContain('the original reviewer did not review these replacements');
+    expect(review.historicalReview).toMatchObject({
+      path: 'dev-tools/authored/educational_leadership_5412_batch3.review.json',
+      sha256: historicalSha256,
+      reviewedAt: '2026-07-18',
+      artifactBinding: historicalReview.artifactBinding,
+    });
+    expect(review.historicalReview.artifactBinding.sha256).not.toBe(review.artifactBinding.sha256);
+    expect(review.limitations.join(' ')).toMatch(/not .*professional|not professional/i);
+  });
+
+  it('does not invent a real proposal when explaining a rumor-response distractor', () => {
+    const rumor = items.find((item) => item.id === 'lead5412-b3-057');
+    expect(rumor.prompt).toMatch(/board has not acted/);
+    expect(rumor.answerIndex).toBe(0);
+    expect(rumor.choiceRationales[1]).toMatch(/known facts from unresolved proposals or rumors/);
+    expect(rumor.choiceRationales[1]).not.toMatch(/omits a real proposal/);
   });
 });

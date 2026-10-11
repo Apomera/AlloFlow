@@ -3,15 +3,16 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
-const start=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',start);
-if(start<0||end<=start)throw Error('Animal factory anchors missing');
-const build=new Function('T','species','Math',source.slice(start,end)+';return createCLHuntAnimal(T,species);');
+const animalSource=sliceBetween(source,'function createCLHuntAnimal(','// Compact, individually owned prey rig.',{file:process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js',label:'actual animal rig'});
+const build=new Function('T','species','Math',animalSource+';return createCLHuntAnimal(T,species);');
 const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
-// Restore only the approved cuttle funnel for this historical whole-rig fingerprint.
-const priorBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)),true)+';return createCLHuntAnimal(T,species);');
+// Reverse later approved changes before slicing, retaining the frozen whole-rig fingerprints.
+const historicalAnimal=require('./helpers/cephalopod_pre55_animal_reference.cjs').restorePre55AnimalSource(source);
+const priorBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(historicalAnimal),true)+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Nautilus eye geometry consumed dive RNG');}}),allocated=[];
 const names=new Set(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight','cl-eye-lid']),stride=33;
 const state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});

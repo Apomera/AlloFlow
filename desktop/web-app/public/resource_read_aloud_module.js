@@ -183,7 +183,7 @@
     const React = window.React, e = React.createElement;
     const { resource, cardId, mode = 'reference', canPrepare = false, allowRuntimeAi = false, t, onActiveSegment, stopPlayback, voiceSpeed = 1, voiceVolume = 1 } = props;
     const tr = (key, fallback) => { const translated = t?.('resource_read_aloud.' + key); return translated && translated !== 'resource_read_aloud.' + key ? translated : fallback; };
-    const [tick, setTick] = React.useState(0), [active, setActive] = React.useState(-1), [busy, setBusy] = React.useState(false), [progress, setProgress] = React.useState(''), [expanded, setExpanded] = React.useState(false), [message, setMessage] = React.useState('');
+    const [, setTick] = React.useState(0), [active, setActive] = React.useState(-1), [busy, setBusy] = React.useState(false), [progress, setProgress] = React.useState(''), [expanded, setExpanded] = React.useState(false), [message, setMessage] = React.useState('');
     const [paused, setPaused] = React.useState(false), [pauseBetween, setPauseBetween] = React.useState(false), [followFocus, setFollowFocus] = React.useState(true);
     const runtime = React.useRef({ token: 0, audio: null, utterance: null, finish: null, prepare: null, paused: false, resume: null });
     const mounted = React.useRef(true);

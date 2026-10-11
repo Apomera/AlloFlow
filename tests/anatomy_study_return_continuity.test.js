@@ -167,6 +167,8 @@ for (const file of files) describe('Study return, export, and focus continuity: 
   it.each(['resume', 'refresh'])('rejects retained %s after the frozen saved deck is materially replaced', action => {
     const s = partial(file, true), stale = s.action(action), history = clone(s.data()._flashcardRounds);
     history['skeletal:3:review'] = { ...history['skeletal:3:review'], deckIds: ['ribs'], index: 0, rated: {} };
+    // The rendered current card records an observation independently of this action.
+    settle();
     s.patch({ _flashcardRounds: history }); const before = clone(s.data()), focused = marker(); s.announce.mockClear(); stale(); settle();
     expect(s.data()).toEqual(before); expect(document.activeElement).toBe(focused); expect(s.announce).not.toHaveBeenCalled();
   });

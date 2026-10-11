@@ -9,7 +9,7 @@
     "prompt": "During an interactive read-aloud, several children answer with one-word responses. Which teacher move most directly expands oral language?",
     "choices": [
       "Pause after an open question, invite a child to explain, and recast the response in a slightly more complex sentence.",
-      "Ask only yes-or-no questions so every response can be scored quickly.",
+      "Use brief yes-or-no turns to build response fluency before inviting children to explain their ideas.",
       "Supply the complete answer before children have time to formulate language.",
       "Correct each grammatical difference the child produces immediately, without responding to the meaning the child was trying to express."
     ],
@@ -617,7 +617,7 @@
       "This response removes two phonemes even though the direction identifies only the initial /p/ sound.",
       "Correct. The spoken word plane begins with the phoneme sequence /p/ /l/. Removing only /p/ leaves /l/ /ā/ /n/, pronounced lane.",
       "This response uses visual spelling as the criterion even though phoneme deletion is performed on spoken sounds.",
-      "This response misrepresents the resulting pronunciation and makes an unsupported generalization about spelling changes."
+      "The spelling lain sounds like lane, but this option gives a false rule: phoneme deletion changes the spoken sound sequence, not merely its spelling."
     ],
     "skillIds": [
       "phonological-phonics-word-reading"
@@ -2042,7 +2042,7 @@
     "choiceRationales": [
       "Correct. Measurement comparisons require an equal unit iterated continuously from a common endpoint. Same-size cubes without gaps or overlaps preserve the meaning of the counts.",
       "This response changes unit size, so the two numerical counts do not represent directly comparable lengths.",
-      "This response adds unmeasured space between units and inflates the apparent length.",
+      "Gaps leave parts of the desk length unmeasured, so the cube count does not represent a continuous iteration of the same-sized unit.",
       "This response omits part of the object and produces a count that does not represent its full length."
     ],
     "skillIds": [
@@ -2487,7 +2487,7 @@
     "id": "ec5025-b3-055",
     "type": "single-choice",
     "domainId": "mathematics",
-    "contentFocus": "measurement-data",
+    "contentFocus": "geometry-reasoning",
     "difficulty": "application",
     "cognitiveLevel": "apply",
     "prompt": "Children propose two ways to solve 9 + 6. Which teacher question best promotes mathematical reasoning?",
@@ -2506,10 +2506,10 @@
       "This response uses an aesthetic feature unrelated to whether the representations model the same sum."
     ],
     "skillIds": [
-      "measurement-data"
+      "geometry-reasoning"
     ],
     "chapterIds": [
-      "ec5025-ch-05"
+      "ec5025-ch-06"
     ],
     "references": [
       "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -3069,7 +3069,7 @@
       "The river completely determined every town decision, so people made no environmental changes.",
       "Human choices cannot affect water movement or habitat under any conditions.",
       "People modified the river area for flood protection while also designing space that can support recreation and habitat.",
-      "Adaptation and modification are entirely identical terms and therefore cannot describe two different kinds of human action."
+      "Adaptation describes the levee and modification describes the park because these terms are classified by whether a project has a protective or recreational purpose."
     ],
     "answerIndex": 2,
     "rationale": "The levee is a deliberate environmental modification, and the wetland park reflects additional choices with possible social and ecological benefits and tradeoffs.",
@@ -3077,7 +3077,7 @@
       "This response uses environmental determinism and ignores the constructed levee and planned park.",
       "This response denies observable effects of infrastructure and land-use decisions.",
       "Correct. The levee is a deliberate environmental modification, and the wetland park reflects additional choices with possible social and ecological benefits and tradeoffs.",
-      "This response erases a useful distinction: people can adjust behavior to conditions and can also alter environments."
+      "These terms distinguish adjusting to environmental conditions from changing them; they are not separated by a project's protective or recreational purpose."
     ],
     "skillIds": [
       "geography-economics-inquiry"
@@ -4227,7 +4227,7 @@
     "rationale": "Beat is the recurring pulse underlying music, while rhythm organizes durations and accents. The chant can keep one beat while its sound lengths vary.",
     "choiceRationales": [
       "This response confuses timing with pitch and dynamics: pitch describes highness or lowness, and dynamics describes loudness rather than recurring pulse or duration patterns.",
-      "This response imports visual-art concepts because texture and value describe visual relationships rather than musical pulse or the arrangement of sound lengths.",
+      "Musical texture concerns the layers or relationships of sounding parts, not the recurring beat. Visual value concerns lightness or darkness, not the chant's rhythm.",
       "Correct. Beat is the recurring pulse underlying music, while rhythm organizes durations and accents. The chant can keep one beat while its sound lengths vary.",
       "This response uses dramatic elements because character and setting organize a story rather than naming musical pulse and duration patterns."
     ],
@@ -4264,7 +4264,7 @@
     "contentFocus": "creative-performing-arts",
     "difficulty": "application",
     "cognitiveLevel": "apply",
-    "prompt": "A teacher plays the same melody softly and then loudly without changing its notes. Which element changed?",
+    "prompt": "A teacher plays the same melody at the same pace, first softly and then loudly, without changing its notes. Which element changed?",
     "choices": [
       "Pitch",
       "Melody",

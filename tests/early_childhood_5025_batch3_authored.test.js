@@ -7,7 +7,12 @@ import { describe, expect, it } from 'vitest';
 const root = path.resolve(import.meta.dirname, '..');
 const require = createRequire(import.meta.url);
 const authoredPath = path.join(root, 'dev-tools', 'authored', 'early_childhood_5025_batch3.json');
-const reviewPath = path.join(root, 'dev-tools', 'authored', 'early_childhood_5025_batch3.review.json');
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'dev-tools', 'authored', 'test_prep_independent_additions_manifest.json'), 'utf8'));
+const batch = manifest.packs.early_childhood_5025[0];
+const reviewPath = path.join(root, 'dev-tools', 'authored', batch.reviewReports[0]);
+const historicalReviewPath = path.join(root, 'dev-tools', 'authored', 'early_childhood_5025_batch3.review.json');
+const historicalReviewBytes = fs.readFileSync(historicalReviewPath);
+const historicalReview = JSON.parse(historicalReviewBytes.toString('utf8'));
 const authoredBytes = fs.readFileSync(authoredPath);
 const items = JSON.parse(authoredBytes.toString('utf8'));
 const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
@@ -127,18 +132,57 @@ describe('Early Childhood Education 5025 assistant-authored Batch 3', () => {
 
   it('has an exact SHA-256-bound independent review artifact with no blockers', () => {
     expect(review.reviewedFile).toBe('dev-tools/authored/early_childhood_5025_batch3.json');
-    expect(review.reviewedAt).toBe('2026-07-18');
+    expect(batch.reviewReports).toEqual(['early_childhood_5025_batch3.ci-2026-10-10.review.json']);
+    expect(review.reviewedAt).toBe('2026-10-10');
+    expect(review.reviewedAt).toBe(batch.reviewedAt);
     expect(review.reviewer).toContain('OpenAI Codex independent cross-review');
+    expect(review.reviewKind).toBe('automated-assistant-only');
     expect(review.itemCount).toBe(100);
     expect(review.verdict).toMatch(/^pass/i);
     expect(review.blockers).toEqual([]);
-    expect(review.correctionsMade.length).toBeGreaterThanOrEqual(5);
+    expect(review.correctionsMade.map((correction) => correction.id))
+      .toEqual(['ec5025-b3-001', 'ec5025-b3-014', 'ec5025-b3-045', 'ec5025-b3-055', 'ec5025-b3-067', 'ec5025-b3-091', 'ec5025-b3-092']);
     expect(review.checks.warningHeuristicReview).toMatchObject({ status: 'pass', highRiskWarningsRemaining: 0 });
     expect(Object.values(review.checks).every((check) => check.status === 'pass')).toBe(true);
+    expect(review.checks.lineByLineItemReview.reviewedItems).toBe(100);
+    expect(review.checks.lineByLineItemReview.reviewedItemIds).toEqual(items.map((item) => item.id));
     expect(review.artifactBinding).toEqual({
       algorithm: 'sha256',
       sha256: crypto.createHash('sha256').update(authoredBytes).digest('hex'),
     });
+  });
+
+  it('preserves the historical July review and distinguishes the current automated assistant review', () => {
+    const historicalSha256 = crypto.createHash('sha256').update(historicalReviewBytes).digest('hex');
+    expect(historicalSha256).toBe('4c1f0972a630082fb9742c04c004175a2916bd92e2c550c0e471b1b7c51aca8f');
+    expect(historicalReview.reviewedAt).toBe('2026-07-18');
+    expect(historicalReview.correctionsMade.length).toBeGreaterThanOrEqual(5);
+    expect(historicalReview.remediation[0]).toMatchObject({ at: '2026-08-17', itemsChanged: 39 });
+    expect(historicalReview.remediation[0].note).toContain('the original reviewer did not review these replacements');
+    expect(review.historicalReview).toMatchObject({
+      path: 'dev-tools/authored/early_childhood_5025_batch3.review.json',
+      sha256: historicalSha256,
+      reviewedAt: '2026-07-18',
+      artifactBinding: historicalReview.artifactBinding,
+    });
+    expect(review.historicalReview.artifactBinding.sha256).not.toBe(review.artifactBinding.sha256);
+    expect(review.limitations.join(' ')).toMatch(/not .*professional|not professional/i);
+  });
+
+  it('keeps phoneme, measurement, musical, and reasoning explanations bounded by the item evidence', () => {
+    const byId = (id) => items.find((item) => item.id === id);
+    expect(byId('ec5025-b3-014').choiceRationales[3]).toMatch(/lain sounds like lane/);
+    expect(byId('ec5025-b3-014').choiceRationales[3]).toMatch(/false rule/);
+    expect(byId('ec5025-b3-045').choiceRationales[2]).toMatch(/unmeasured/);
+    expect(byId('ec5025-b3-045').choiceRationales[2]).not.toMatch(/inflates/);
+    expect(byId('ec5025-b3-055')).toMatchObject({
+      domainId: 'mathematics', contentFocus: 'geometry-reasoning',
+      skillIds: ['geometry-reasoning'], chapterIds: ['ec5025-ch-06'],
+    });
+    expect(byId('ec5025-b3-091').choiceRationales[1]).toMatch(/Musical texture.*layers or relationships/);
+    expect(byId('ec5025-b3-091').choiceRationales[1]).toMatch(/Visual value.*lightness or darkness/);
+    expect(byId('ec5025-b3-092').prompt).toMatch(/same pace/);
+    expect(byId('ec5025-b3-092').choices[byId('ec5025-b3-092').answerIndex]).toBe('Dynamics');
   });
 });
 

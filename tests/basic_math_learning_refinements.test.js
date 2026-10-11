@@ -24,7 +24,7 @@ async function click(label) {
 }
 
 describe('basic math learning refinements', () => {
-  it('conserves value through carrying and borrowing across zero', async () => {
+  it('conserves value while borrowing across zero and removes one place at a time', async () => {
     await mount('arithmetic', 'arithmeticStudio', { _arithmeticStudio: { operation: 'subtract', a: 102, b: 38 } });
     const total = () => Number(document.querySelector('[data-model-total]').dataset.modelTotal);
     expect(total()).toBe(102);
@@ -35,9 +35,17 @@ describe('basic math learning refinements', () => {
     expect(total()).toBe(102);
     expect(document.querySelector('[data-place="1"]').dataset.count).toBe('12');
     await click('Next step');
+    expect(total()).toBe(94);
+    expect(document.querySelector('[data-place="10"]').dataset.count).toBe('9');
+    expect(document.querySelector('[data-place="1"]').dataset.count).toBe('4');
+    expect(document.querySelector('[data-value-change]').textContent).toContain('102 \u2212 8 = 94');
+    await click('Next step');
     expect(total()).toBe(64);
     expect(document.querySelector('[data-place="10"]').dataset.count).toBe('6');
     expect(document.querySelector('[data-place="1"]').dataset.count).toBe('4');
+    expect(document.querySelector('[data-value-change]').textContent).toContain('94 \u2212 30 = 64');
+    await click('Next step');
+    expect(total()).toBe(64);
   });
 
   it('carries into a new place while preserving the sum', async () => {

@@ -114,7 +114,7 @@
   // The diagram is a permanent, non-WebGL route to the same spatial evidence.
   function Diagram(props) {
     var h = props.h, id = props.station, m = props.model, inspect = props.view === 'inspect', children;
-    if (props.view === 'gallery') return h('svg', { className: 'pg-diagram', viewBox: '0 0 800 480', role: 'img', 'aria-label': 'Gallery overview: room, sculpture, and star', 'data-gallery-diagram': true },
+    if (props.view === 'gallery') return h('svg', { className: 'pg-diagram', viewBox: '0 0 800 480', role: 'img', 'aria-label': t('overview_label', 'Gallery overview: room, sculpture, and star'), 'data-gallery-diagram': true },
       h('rect', { width: 800, height: 480, fill: '#e8eeed' }),
       STATIONS.map(function (item, index) { return h(Diagram, { key: item.id, h: h, station: item.id, model: model((props.models || {})[item.id]), view: 'illusion', mini: true, x: 10 + 260 * index, y: 60, width: 260, height: 260, description: item.title }); }));
     var line = function (x1, y1, x2, y2, color, key) { return h('line', { key: key, x1: x1, y1: y1, x2: x2, y2: y2, stroke: color || '#536e70', strokeWidth: 4, strokeLinecap: 'round' }); };

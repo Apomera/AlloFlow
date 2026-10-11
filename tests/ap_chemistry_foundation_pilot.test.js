@@ -107,13 +107,18 @@ describe('AP Chemistry internal foundation pilot', () => {
   it('provides nine native chapters with structured lessons and study aids', () => {
     expect(library.chapters).toHaveLength(9);
     expect(library.chapters.filter((chapter) => chapter.foundationPrototype).length).toBe(9);
-    expect(library.chapters.every((chapter) => Array.isArray(chapter.sections))).toBe(true);
-    expect(library.chapters.every((chapter) => chapter.knowledgeChecks.length === 1)).toBe(true);
+    expect(library.chapters.every((chapter) => Array.isArray(chapter.sections) && chapter.sections.length === 3)).toBe(true);
+    expect(library.chapters.every((chapter) => chapter.knowledgeChecks.length === 3)).toBe(true);
+    for (const chapter of library.chapters) {
+      expect(chapter.sectionCount).toBe(3);
+      expect(chapter.knowledgeCheckCount).toBe(3);
+      expect(chapter.knowledgeChecks.map((check) => check.sectionId)).toEqual(chapter.sections.map((section) => section.id));
+    }
     expect(library.flashcards).toHaveLength(9);
     expect(library.memoryAids).toHaveLength(9);
     expect(library.sourceCatalog).toHaveLength(3);
-    expect(library.summary).toMatchObject({ chapters: 9, sections: 9, knowledgeChecks: 9, richLessonPrototypes: 9 });
-    expect(library.contentMigration).toMatchObject({ contentVersion: 'ap-chemistry-foundation-v4', richLessonPrototypes: 9 });
+    expect(library.summary).toMatchObject({ chapters: 9, sections: 27, knowledgeChecks: 27, richLessonPrototypes: 9 });
+    expect(library.contentMigration).toMatchObject({ contentVersion: 'ap-chemistry-foundation-v4', sections: 27, completeSections: 27, richLessonPrototypes: 9 });
     expect(library.blueprint.pilotAlignment).toMatch(/700-item/);
     expect(library.chapters.every((chapter) => {
       const section = chapter.sections[0];

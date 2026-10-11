@@ -12,6 +12,7 @@ function harness(confirm = vi.fn().mockResolvedValue(true), stateOverrides = {})
   const settings = { history: [], inputText: 'Water evaporates and condenses.', sourceTopic: 'Water cycle', gradeLevel: '6th Grade', selectedLanguages: [], studentInterests: [],
     adventureInputMode: 'choice', adventureLanguageMode: 'English', adventureCustomInstructions: '', adventureTextInput: '',
     adventureDifficulty: 'Normal', adventureArtStyle: 'auto', globalPoints: 10, isTeacherMode: true, isProcessing: false,
+    isAdventureStartCurrent: () => true,
     alloBotRef: { current: null }, lastReadTurnRef: { current: 5 },
     t: key => key, setAdventureState: update => { state = typeof update === 'function' ? update(state) : update; },
     setFailedAdventureAction: vi.fn(), setPendingAdventureUpdate: vi.fn(), setShowDice: vi.fn(), setDiceResult: vi.fn(), setAdventureTextInput: vi.fn(),
@@ -22,6 +23,15 @@ function harness(confirm = vi.fn().mockResolvedValue(true), stateOverrides = {})
 }
 
 describe('Adventure clarity lifecycle', () => {
+  it('rejects an obsolete start context without opening a confirmation or changing the story', async () => {
+    const h = harness();
+    h.settings.isAdventureStartCurrent = () => false;
+    await h.handlers.handleStartAdventure(h.deps);
+    expect(h.confirm).not.toHaveBeenCalled();
+    expect(h.state).toEqual(h.initial);
+    expect(h.settings.setShowNewGameSetup).not.toHaveBeenCalled();
+  });
+
   it('keeps the entire current story when Start over is cancelled', async () => {
     const h = harness(vi.fn().mockResolvedValue(false));
     await h.handlers.handleStartAdventure(h.deps);

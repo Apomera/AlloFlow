@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { indexOfOrThrow, sliceBetween } from './helpers/anchored_slice.js';
 
 const require=createRequire(import.meta.url),THREE=require(resolve('vendor/three-r128/three.min.js'));
 const {restoreOriginalSeagrassSource}=require('./helpers/cephalopod_seagrass_reference.cjs');
@@ -24,7 +25,7 @@ assert.equal(original.version,1);assert.equal(original.baselineSourceSha256,'223
 assert.equal(sha(JSON.stringify(original.randomLines)),original.randomLinesSha256,'Frozen RNG oracle corrupted');
 assert.equal(sha(original.grassRecyclingSource),original.grassRecyclingSha256,'Frozen original recycling oracle corrupted');
 assert.deepEqual(original.contract,{grass:80,kelp:25,ownedSpawnDraws:525,originalGeometryAndFlex:true,originalRngCallSites:true,originalGrassRecycling:true});
-function region(start,end,value=source){const a=value.indexOf(start),b=value.indexOf(end,a);assert.ok(a>=0&&b>a,'Missing actual production region: '+start);return value.slice(a,b);}
+function region(start,end,value=source){const result=sliceBetween(value,start,end,{file:process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js',label:'production region: '+start});assert.ok(result.length>0,'Missing actual production region: '+start);return result;}
 const plantHelpers=region('      function shadeCLHuntPlantFlex(','      function createCLHuntMarineSnowGeometry(');
 // Literal approval guards restore only the reviewed pass28 flow formulas.
 const approvedPlantFlowChanges=[
@@ -74,12 +75,16 @@ function construct(seed=2741){
   const updateGround=region('        function updateGround(){','        // A repeatable opening');
   const opening=region('        // A repeatable opening','        if(isDeepSpecies(speciesId))');
   const denPositions=region('        var DEN_POSITIONS = [','        var dens = [];');
-  const result=new Function('THREE','Math',plantHelpers+reefHelpers+terrain+`
+  const speciesHelper=source.match(/function isDeepSpecies\(speciesId\) \{\s*return[^;]+;\s*\}/)?.[0];
+  assert.ok(speciesHelper,'Actual species habitat helper missing');
+  const result=new Function('THREE','Math',plantHelpers+reefHelpers+terrain+speciesHelper+`
     var scene=new THREE.Scene(),renderer={capabilities:{isWebGL2:false},extensions:{has:function(){return false;}}};
+    var speciesId='commonOcto',reefRefuge=null,landmarks=[];
     function reefSurface(){}
     `+rocks+corals+grassSpawn+kelpSpawn+denPositions+`
     var dens=DEN_POSITIONS.map(function(pos){var group=new THREE.Group();group.position.set(pos.x,0,pos.z);return{group:group,x:pos.x,z:pos.z};});
     var shelters=[],crabs=[],clams=[new THREE.Object3D()];
+    var rockCollisionFootprints=rocks.map(function(rock){return createCLHuntRockCollisionFootprint(THREE,rock);});
     `+grounding+settle+composition+updateGround+`
     var initial=grass.concat(kelpStrands).map(function(plant){return{mesh:plant.mesh,position:plant.mesh.position.toArray(),rotation:plant.mesh.rotation.toArray(),phase:plant.phase,height:plant.mesh.geometry.userData.clPlantHeight};});
     `+opening+`
@@ -118,7 +123,10 @@ describe('Cephalopod Hunter deterministic habitat composition',()=>{
 
   it('casts solid reef rocks from both faces while keeping opaque receivers and other habitat material policies',()=>{
     for(const seed of [2741,73,12345]){const fixture=construct(seed);try{
-      assert.ok(fixture.rocks.length>0);assert.equal(new Set(fixture.rocks.map(rock=>rock.geometry)).size,fixture.rocks.length);assert.equal(new Set(fixture.rocks.map(rock=>rock.material)).size,fixture.rocks.length);
+      const ordinaryRocks=fixture.rocks.filter(rock=>!rock.userData.clRefuge),refugeRocks=fixture.rocks.filter(rock=>rock.userData.clRefuge);
+      assert.ok(ordinaryRocks.length>0);assert.equal(new Set(fixture.rocks.map(rock=>rock.geometry)).size,fixture.rocks.length);assert.equal(new Set(ordinaryRocks.map(rock=>rock.material)).size,ordinaryRocks.length);
+      assert.equal(refugeRocks.length,3,'The accepted reef refuge adds three solid passage rocks');
+      assert.equal(new Set(refugeRocks.map(rock=>rock.material)).size,1,'Only the refuge shares its static rock material');
       for(const rock of fixture.rocks){assert.equal(rock.material.shadowSide,THREE.DoubleSide,'Solid reef rock must cast both surface faces');assert.equal(rock.material.side,THREE.FrontSide,'Rock surface receiver remains FrontSide');assert.equal(rock.material.type,'MeshStandardMaterial');assert.equal(rock.material.transparent,false);assert.equal(rock.material.opacity,1);assert.equal(rock.castShadow,true);assert.equal(rock.receiveShadow,true);}
       for(const mesh of fixture.corals.concat(fixture.grass.map(plant=>plant.mesh),fixture.kelp.map(plant=>plant.mesh)))assert.equal(mesh.material.shadowSide,null,'Other habitat caster policy remains stock');
     }finally{release(fixture.scene);}}
@@ -183,7 +191,7 @@ describe('Cephalopod Hunter deterministic habitat composition',()=>{
     assert.ok(!composition.includes('Math.random'));assert.ok(!/new THREE\.|\.clone\(|\.dispose\(|setAttribute\(|needsUpdate/.test(composition));
     assert.ok(source.includes('        settleReefCorals(null,[]);\n        settleCLHuntHabitatPlants(null,true);'));
     assert.ok(source.includes('              settleCLHuntHabitatPlants(octopus.position,reefRocksMoved);'));
-    const tick=source.indexOf('if (!gameState._recycleNextAt || now > gameState._recycleNextAt)'),call=source.indexOf('settleCLHuntHabitatPlants(octopus.position,reefRocksMoved);');assert.ok(tick>=0&&call>tick);assert.equal(source.match(/settleCLHuntHabitatPlants\(/g).length,3);
+    const tick=indexOfOrThrow(source,'if (!gameState._recycleNextAt || now > gameState._recycleNextAt)',{file:process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js'}),call=indexOfOrThrow(source,'settleCLHuntHabitatPlants(octopus.position,reefRocksMoved);',{file:process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js',from:tick});assert.ok(tick>=0&&call>tick);assert.equal(source.match(/settleCLHuntHabitatPlants\(/g).length,3);
     for(const text of ['updateCLHuntPlantFlex(k.flex,now,k.phase,0.0008,gameState.a11y.reducedMotion);','updateCLHuntPlantFlex(g.flex,now,g.phase,0.001,gameState.a11y.reducedMotion);','grounded.forEach(function(o){if(o)o.position.y=terrainHeight(o.position.x,o.position.z)+o.userData.groundOffset;});','if(disposed)return;','scene.traverse(function(obj) {','if (obj.geometry) obj.geometry.dispose();'])assert.ok(source.includes(text),'Protected static lifecycle changed: '+text);
   });
 });

@@ -5463,7 +5463,7 @@ if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProf
     if (status !== 'ready') return h('section', { role: 'status', style: { padding: 20 } },
       h('p', null, status === 'loading' ? 'Loading Water Worlds…' : status),
       status !== 'loading' && h('button', { type: 'button', onClick: function() { setStatus('loading'); retry[1](function(n) { return n + 1; }); }, style: { minHeight: 44, padding: 12 } }, 'Retry Water Worlds'));
-    return h(window.WaterWorldsView, { React: React, saved: props.saved, isDark: props.ctx.isDark || props.ctx.isContrast, gradeLevel: props.ctx.gradeLevel,
+    return h(window.WaterWorldsView, { React: React, saved: props.saved, t: props.ctx.t, isDark: props.ctx.isDark || props.ctx.isContrast, gradeLevel: props.ctx.gradeLevel,
       onSave: function(value) { props.ctx.setToolData(function(prev) { return Object.assign({}, prev, {
         waterCycle: Object.assign({}, prev.waterCycle, { waterWorlds: value }) }); }); } });
   }
@@ -13701,7 +13701,7 @@ const d = labToolData.waterCycle || {};
                   })),
                 h('p', { className: 'wc-air-profile-summary', 'data-air-profile-summary': 'true' }, airProfile.summary),
                 showColdBand && h('p', { className: 'wc-air-zero-note' }, 'Shaded lower band: below-freezing air before arrival.'),
-                airProfile.crossings.length > 0 && h('ol', { className: 'wc-air-crossing-list', 'aria-label': 'Air-temperature crossings, from cloud toward surface' },
+                airProfile.crossings.length > 0 && h('ol', { className: 'wc-air-crossing-list', 'aria-label': __alloT("stem.watercycle.a11y_air_temperature_crossings_from_cloud_toward_surface", "Air-temperature crossings, from cloud toward surface") },
                   airProfile.crossings.map(function(crossing, index) { return h('li', { key: index },
                     h('span', { className: 'wc-air-crossing-key', 'aria-hidden': 'true' }, index + 1),
                     h('span', null, crossing.direction === 'warming' ? 'Into warmer air: below 0\u00B0C to above 0\u00B0C.' : 'Into colder air: above 0\u00B0C to below 0\u00B0C.'));
@@ -13804,7 +13804,7 @@ const d = labToolData.waterCycle || {};
                           d: 'M120 ' + (tlChartY(tlTouch.progress) - 8) + 'l8 8-8 8-8-8Z' }); }),
                         tlContext.nodes.map(function(tlRow) { return h('circle', { key: tlRow.id, className: 'wc-tl-point', 'data-tl-point': tlRow.id, 'data-tl-marker': tlRow.id, 'data-tl-temperature': tlRow.temperatureC, 'data-tl-progress': tlRow.progress, 'data-selected': String(tlRow.id === tlReading.node), cx: tlChartX(tlRow.temperatureC), cy: tlChartY(tlRow.progress), r: 5 }); }),
                         h('circle', { className: 'wc-tl-selected-ring', cx: tlChartX(tlSelected.temperatureC), cy: tlChartY(tlSelected.progress), r: 11 }))),
-                      h('div', { className: 'wc-tl-axis', role: 'group', 'aria-label': 'Temperature axis in degrees Celsius' }, h('span', null, '\u2212' + tlExtent + '\u00B0C'), h('span', null, '0\u00B0C'), h('span', null, '+' + tlExtent + '\u00B0C')),
+                      h('div', { className: 'wc-tl-axis', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_temperature_axis_in_degrees_celsius", "Temperature axis in degrees Celsius") }, h('span', null, '\u2212' + tlExtent + '\u00B0C'), h('span', null, '0\u00B0C'), h('span', null, '+' + tlExtent + '\u00B0C')),
                       h('p', { className: 'wc-tl-air-summary', 'data-tl-air-summary': '1' }, tlAir.summary),
                       h('ul', { className: 'wc-tl-crossing-list' },
                         tlAir.crossings.length > 0 && h('li', null, h('span', { className: 'wc-tl-key-cross', 'aria-hidden': true }), 'Dashed line: air passes through 0°C.'),
@@ -13812,7 +13812,7 @@ const d = labToolData.waterCycle || {};
                           h('span', { className: 'wc-tl-key-touch', 'aria-hidden': true }), 'At 0°C: ' + tlTouch.label + '. The air does not pass from one side of 0°C to the other here.'); }),
                         tlAir.zeroBands.map(function(tlBand, tlIndex) { return h('li', { key: 'band-' + tlIndex, 'data-tl-band-copy': tlBand.start },
                           h('span', { className: 'wc-tl-key-band', 'aria-hidden': true }), 'Thick line: air remains at 0°C along this section.'); }))),
-                    h('div', { className: 'wc-tl-nodes', role: 'group', 'aria-label': 'Choose a level to inspect' }, tlContext.nodes.map(function(tlRow) { return h('button', {
+                    h('div', { className: 'wc-tl-nodes', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_choose_a_level_to_inspect", "Choose a level to inspect") }, tlContext.nodes.map(function(tlRow) { return h('button', {
                       key: tlRow.id, type: 'button', className: 'wc-tl-node', 'data-tl-select': tlRow.id, 'data-tl-temperature': tlRow.temperatureC,
                       'data-tl-phase': tlRow.particleCode, 'aria-pressed': tlRow.id === tlReading.node, 'aria-controls': 'wcThermalLayerDetail', onClick: function() { tlChooseNode(tlRow.id); }
                     }, h('strong', null, h('span', { className: 'wc-tl-letter', 'aria-hidden': true }, tlLevelLetters[tlContext.nodes.indexOf(tlRow)]), tlRow.label), h('b', { className: 'wc-tl-node-temperature' }, tlRow.temperatureText), h('span', null, tlRow.particleLabel),
@@ -13930,7 +13930,7 @@ const d = labToolData.waterCycle || {};
                     h('select', { id: 'wcStormMomentMetric', value: reading.metric, 'aria-describedby': 'wcStormMomentScale', onChange: function(event) { chooseMetric(event.target.value); } },
                       WCStormMoments.metrics().map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })),
                     h('p', { id: 'wcStormMomentScale', className: 'wc-sm-scale-note' }, 'Each track has its own qualitative 0–100 scale. Compare moments within a track; equal numbers across tracks do not mean equal water amounts.')),
-                  h('div', { className: 'wc-sm-stage-choices', role: 'group', 'aria-label': 'Choose a fixed snapshot to inspect' },
+                  h('div', { className: 'wc-sm-stage-choices', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_choose_a_fixed_snapshot_to_inspect", "Choose a fixed snapshot to inspect") },
                     context.rows.map(function(row) { return h('button', { key: row.id, id: 'wcStormMoment-' + row.id, type: 'button', className: 'wc-sm-stage-button',
                       'data-sm-select': row.id, 'aria-pressed': reading.stage === row.id, 'aria-controls': 'wcStormMomentDetail', onClick: function() { chooseStage(row.id); } },
                       h('span', null, row.label), h('span', null, 'Model position ' + row.time),
@@ -14089,7 +14089,7 @@ const d = labToolData.waterCycle || {};
                 h('div', { className: 'wc-sn-head' }, h('h4', { id: 'wcStormLifecycleTitle' }, 'Storm lifecycle'),
                   h('span', { className: 'wc-sn-current' }, lifecycle.stageLabel)),
                 h('p', null, 'Move the chamber through the same weather setup. Cloud shapes and upward arrows are schematic cues for growth and lift.'),
-                h('div', { className: 'wc-sn-stages', role: 'group', 'aria-label': 'Jump the chamber to a storm stage' },
+                h('div', { className: 'wc-sn-stages', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_jump_the_chamber_to_a_storm_stage", "Jump the chamber to a storm stage") },
                   stormStageStops.map(function(stageStop, index) {
                     var active = lifecycle.stageKey === stageStop.key;
                     return h('button', { key: stageStop.key, type: 'button', className: 'wc-sn-stage',
@@ -14116,7 +14116,7 @@ const d = labToolData.waterCycle || {};
                   h('p', { id: 'wcStormPositionHelp' }, '0–100 is an illustrative model sequence, not elapsed minutes. Stage choices jump to one point within each stage.'),
                   h('div', { className: 'wc-sn-playback' },
                     h('button', { type: 'button', 'data-storm-playback': 'back', disabled: lifecycle.time <= 0,
-                      'aria-label': 'Move back 4 model positions',
+                      'aria-label': __alloT("stem.watercycle.a11y_move_back_4_model_positions", "Move back 4 model positions"),
                       onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time - 4, false); } }, '← Back 4'),
                     h('button', { type: 'button', 'data-storm-playback': 'play', 'aria-pressed': playing,
                       'aria-disabled': precipMotionReduced, 'aria-describedby': precipMotionReduced ? 'wcStormMotionHelp' : undefined,
@@ -14126,7 +14126,7 @@ const d = labToolData.waterCycle || {};
                         setStormLifecycleTime(restartTime, !precipConfig.stormAutoPlay);
                       } }, precipMotionReduced ? 'Manual mode' : playing ? 'Pause time' : lifecycle.time >= 100 ? 'Replay storm' : 'Play storm'),
                     h('button', { type: 'button', 'data-storm-playback': 'forward', disabled: lifecycle.time >= 100,
-                      'aria-label': 'Move forward 4 model positions',
+                      'aria-label': __alloT("stem.watercycle.a11y_move_forward_4_model_positions", "Move forward 4 model positions"),
                       onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, 'Forward 4 →')),
                   precipMotionReduced && h('p', { id: 'wcStormMotionHelp' }, 'Reduced motion is on. Explore with the stage choices, slider or four-position steps.')),
                 h('p', { className: 'wc-storm-stage-copy wc-sn-context' }, WCStormMoments.currentCopy(precipModel)));
@@ -14255,10 +14255,10 @@ const d = labToolData.waterCycle || {};
                 h('div', { className: 'wc-ls-head' },
                   h('div', null, h('p', { className: 'wc-ls-kicker' }, 'From charge to thunder'), h('h5', { id: 'wcLightningStudyTitle', tabIndex: -1 }, 'Inspect a lightning flash')),
                   h('button', { type: 'button', className: 'wc-ls-auto', 'data-lightning-study-choice': 'auto',
-                    'aria-label': 'Automatic sequence', 'aria-pressed': selected.key === 'auto',
+                    'aria-label': __alloT("stem.watercycle.a11y_automatic_sequence", "Automatic sequence"), 'aria-pressed': selected.key === 'auto',
                     onClick: function() { selectLightningStudyStep('auto'); } }, 'Automatic timing')),
                 h('p', { className: 'wc-ls-intro' }, 'Choose a step to hold its structure still in the chamber.'),
-                h('ol', { className: 'wc-ls-steps', 'aria-label': 'Five phases of a cloud-to-ground lightning sequence' },
+                h('ol', { className: 'wc-ls-steps', 'aria-label': __alloT("stem.watercycle.a11y_five_phases_of_a_cloud_to_ground_lightning_sequence", "Five phases of a cloud-to-ground lightning sequence") },
                   WC_LIGHTNING_STUDY_STEPS.slice(1).map(function(step, stepIndex) {
                     var stepAvailable = isWcLightningStudyStepAvailable(precipModel, step.key);
                     return h('li', { key: step.key }, h('button', { type: 'button', className: 'wc-lightning-study-step wc-ls-step',
@@ -33245,7 +33245,7 @@ const d = labToolData.waterCycle || {};
               React.createElement('style', { 'data-wc-gwf-style': 'true' }, WC_GROUNDWATER_FLOW_STYLE),
               React.createElement('div', { className: 'wc-gwf-body' },
                 React.createElement('p', { className: 'wc-gwf-intro' }, 'Hydraulic head is the height water stands above a shared reference in a nonpumping well. Compare these two wells at the same moment.'),
-                React.createElement('div', { className: 'wc-gwf-setups', role: 'group', 'aria-label': 'Choose a pair of groundwater head levels' }, WCGroundwaterFlow.setups().map(function(setup) {
+                React.createElement('div', { className: 'wc-gwf-setups', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_choose_a_pair_of_groundwater_head_levels", "Choose a pair of groundwater head levels") }, WCGroundwaterFlow.setups().map(function(setup) {
                   return React.createElement('button', { key: setup.id, type: 'button', 'data-gwf-setup': setup.id, 'aria-pressed': setup.id === gfState.setup, 'aria-controls': gfPrefix + '-Figure ' + gfPrefix + '-Feedback', onClick: function() { gfUpdate({ type: 'setup', id: setup.id }, gfPrefix + '-SetupTitle'); } },
                     React.createElement('strong', null, setup.label), React.createElement('small', null, setup.id === 'left-high' ? 'Left well level is higher' : setup.id === 'right-high' ? 'Right well level is higher' : 'Both well levels match'), React.createElement('span', { className: 'wc-gwf-selection' }, setup.id === gfState.setup ? 'Selected setup' : 'Compare setup'));
                 })),
@@ -33264,11 +33264,11 @@ const d = labToolData.waterCycle || {};
                       React.createElement('line', { className: 'wc-gwf-reference', 'data-gwf-reference': 'true', x1: 14, x2: 306, y1: 194, y2: 194 }),
                       gfState.checked && gfSetup.direction !== 'still' && React.createElement('path', { className: 'wc-gwf-arrow', 'data-gwf-arrow': gfSetup.direction, d: gfSetup.direction === 'right' ? 'M104 132Q133 125 159 132T212 132m-10-9 10 9-10 9' : 'M212 132Q184 139 159 132T104 132m10-9-10 9 10 9' })),
                     gfState.checked && gfSetup.direction === 'still' && React.createElement('p', { className: 'wc-gwf-no-flow', 'data-gwf-no-flow': 'true' }, 'Equal head: no net horizontal flow driven by a head difference.'),
-                    React.createElement('ul', { className: 'wc-gwf-key', 'aria-label': 'Observation well diagram key' },
+                    React.createElement('ul', { className: 'wc-gwf-key', 'aria-label': __alloT("stem.watercycle.a11y_observation_well_diagram_key", "Observation well diagram key") },
                       React.createElement('li', null, React.createElement('i', { 'aria-hidden': true }), 'Bottom dashed line: the common reference.'),
                       React.createElement('li', null, React.createElement('i', { 'data-key': 'screen', 'aria-hidden': true }), 'Short marks on each well: openings into the same aquifer.')),
                     React.createElement('p', { className: 'wc-gwf-reading-note' }, 'The well levels and water table are schematic. The grains show solid material with water in the connected spaces.')),
-                  React.createElement('section', { className: 'wc-gwf-inquiry', 'aria-label': 'Predict and check groundwater flow' },
+                  React.createElement('section', { className: 'wc-gwf-inquiry', 'aria-label': __alloT("stem.watercycle.a11y_predict_and_check_groundwater_flow", "Predict and check groundwater flow") },
                     React.createElement('fieldset', { className: 'wc-gwf-question' }, React.createElement('legend', null, 'Using these heads, which way would water flow horizontally?'),
                       React.createElement('div', { className: 'wc-gwf-answers' }, [['right','Toward the right'],['left','Toward the left'],['still','No net horizontal flow']].map(function(answer) {
                         return React.createElement('button', { key: answer[0], type: 'button', 'data-gwf-answer': answer[0], 'aria-pressed': gfState.answer === answer[0], 'aria-controls': gfPrefix + '-Feedback', onClick: function() { gfUpdate({ type: 'answer', value: answer[0] }); } }, answer[1]);
@@ -33312,7 +33312,7 @@ const d = labToolData.waterCycle || {};
               React.createElement('summary', { id: prefix + '-Summary' }, 'Look inside the ground'),
               React.createElement('div', { className: 'wc-gw-content' },
                 React.createElement('p', { className: 'wc-gw-intro' }, 'Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.'),
-                React.createElement('div', { className: 'wc-gw-options', role: 'group', 'aria-label': 'Choose a groundwater feature to inspect' },
+                React.createElement('div', { className: 'wc-gw-options', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_choose_a_groundwater_feature_to_inspect", "Choose a groundwater feature to inspect") },
                   WCGroundwaterLens.parts().map(function(item) { return React.createElement('button', { key: item.id, type: 'button', 'data-gw-select': item.id, 'aria-pressed': reading.part === item.id, 'aria-controls': prefix + '-Detail', onClick: function() { choose(item.id); } }, React.createElement('span', { className: 'wc-gw-choice-mark', 'aria-hidden': true }, reading.part === item.id ? '✓' : '○'), item.label); })
                 ),
                 React.createElement('section', { id: prefix + '-Detail', className: 'wc-gw-reading', 'aria-labelledby': prefix + '-DetailTitle' },
@@ -33355,7 +33355,7 @@ const d = labToolData.waterCycle || {};
                     part.id === 'groundwater' && React.createElement('p', { className: 'wc-gw-scope' }, 'Direction in the pore view is illustrative. The well comparison below uses a specific pair of head levels.')
                   )
                 ),
-                React.createElement('ul', { className: 'wc-gw-key', 'aria-label': 'Diagram key' }, [['grain','Solid grains · hatched'],['water','Liquid water'],['air','Air space · open']].map(function(item) { return React.createElement('li', { key: item[0] }, React.createElement('span', { className: 'wc-gw-swatch', 'data-material': item[0], 'aria-hidden': true }), item[1]); })),
+                React.createElement('ul', { className: 'wc-gw-key', 'aria-label': __alloT("stem.watercycle.a11y_diagram_key", "Diagram key") }, [['grain','Solid grains · hatched'],['water','Liquid water'],['air','Air space · open']].map(function(item) { return React.createElement('li', { key: item[0] }, React.createElement('span', { className: 'wc-gw-swatch', 'data-material': item[0], 'aria-hidden': true }), item[1]); })),
                 part.id === 'groundwater' && typeof renderWcGroundwaterFlow === 'function' && renderWcGroundwaterFlow(scope, identity),
                 React.createElement('details', { className: 'wc-gw-context' },
                   React.createElement('summary', null, 'Understand this zone'),
@@ -33479,7 +33479,7 @@ const d = labToolData.waterCycle || {};
               React.createElement('style', { 'data-wc-phase-map-style': '1' }, WC_PHASE_CHANGE_MAP_STYLE),
               React.createElement('div', { className: 'wc-pm-body' },
                 React.createElement('p', { className: 'wc-pm-scope' }, 'Choose a route between water states, then predict its heat direction. This concept diagram is independent of the current scene.'),
-                React.createElement('div', { className: 'wc-pm-states', role: 'group', 'aria-label': 'Three physical states of water' },
+                React.createElement('div', { className: 'wc-pm-states', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_three_physical_states_of_water", "Three physical states of water") },
                   [['solid','Ice and snow'],['liquid','Droplets and flowing water'],['gas','An invisible gas']].map(function(item) {
                     return React.createElement('div', { key: item[0], className: 'wc-pm-state' }, pmGlyph(item[0]), React.createElement('strong', null, pmLabels[item[0]]), React.createElement('small', null, item[1]));
                   })),
@@ -34491,11 +34491,11 @@ const d = labToolData.waterCycle || {};
                 ),
                 React.createElement('p', { className: 'wc-land-cutaway-weather', 'data-cutaway-weather': rain === 0 ? 'no-rain' : 'rain' }, rain === 0 ? 'No new rain · existing soil wetness remains.' : 'Rain reaches the surface · compare the two possible pathways.')
               ),
-              React.createElement('div', { className: 'wc-land-cutaway-key', 'aria-label': 'Land pathway diagram key' },
+              React.createElement('div', { className: 'wc-land-cutaway-key', 'aria-label': __alloT("stem.watercycle.a11y_land_pathway_diagram_key", "Land pathway diagram key") },
                 React.createElement('span', null, React.createElement('i', { className: 'is-runoff', 'aria-hidden': true }), 'Runoff · over the surface'),
                 React.createElement('span', null, React.createElement('i', { className: 'is-infiltration', 'aria-hidden': true }), 'Infiltration · into soil pores')
               ),
-              React.createElement('div', { className: 'wc-land-cutaway-features', role: 'group', 'aria-label': 'Adjust a landscape feature' }, features.map(function(feature) {
+              React.createElement('div', { className: 'wc-land-cutaway-features', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_adjust_a_landscape_feature", "Adjust a landscape feature") }, features.map(function(feature) {
                 return React.createElement('button', { key: feature.input, type: 'button', 'data-cutaway-input': feature.input,
                   'aria-label': 'Adjust ' + feature.title.toLowerCase() + ', currently ' + feature.value,
                   onClick: function() { openWcClimateControls(feature.input); } },
@@ -36169,7 +36169,7 @@ React.createElement("div", {
                 React.createElement("strong", null, wcScenarioHeadline),
                 React.createElement("span", null, wcScenarioDetail)
               ),
-              React.createElement("div", { className: "wc-compare-actions", role: "group", "aria-label": "Manage comparison baseline", "aria-describedby": "wcBaselineActionsHelp" },
+              React.createElement("div", { className: "wc-compare-actions", role: "group", "aria-label": __alloT("stem.watercycle.a11y_manage_comparison_baseline", "Manage comparison baseline"), "aria-describedby": "wcBaselineActionsHelp" },
                 React.createElement("button", {
                   type: "button",
                   className: "wc-compare-btn is-restore",
@@ -36183,7 +36183,7 @@ React.createElement("div", {
                   type: "button",
                   className: "wc-compare-btn",
                   "data-tooltip": "Save the current settings as the new baseline",
-                  "aria-label": "Save current as baseline",
+                  "aria-label": __alloT("stem.watercycle.a11y_save_current_as_baseline", "Save current as baseline"),
                   "aria-describedby": "wcBaselineActionsHelp",
                   onClick: captureWcScenarioBaseline
                 }, "Save current as baseline"),
@@ -36191,7 +36191,7 @@ React.createElement("div", {
                   type: "button",
                   className: "wc-compare-btn is-clear",
                   "data-tooltip": "Clear the saved baseline",
-                  "aria-label": "Clear baseline",
+                  "aria-label": __alloT("stem.watercycle.a11y_clear_baseline", "Clear baseline"),
                   "aria-describedby": "wcBaselineActionsHelp",
                   onClick: function() { clearWcScenarioBaseline(); focusWcComparisonTarget("wcSetScenarioBaseline"); }
                 }, "Clear baseline")
@@ -37035,7 +37035,7 @@ React.createElement("div", {
                       return React.createElement("text", { key: label, className: "wc-signal-place-label", x: wcSignalChartX(labelIndex), y: wcSignalChartHeight - 10, textAnchor: "middle" }, label);
                     })
                   ),
-                  React.createElement("div", { className: "wc-signal-legend", role: "list", "aria-label": "Teaching signal line and marker key" },
+                  React.createElement("div", { className: "wc-signal-legend", role: "list", "aria-label": __alloT("stem.watercycle.a11y_teaching_signal_line_and_marker_key", "Teaching signal line and marker key") },
                     wcSignalSeries.map(function(series) {
                       return React.createElement("span", { key: series.key, role: "listitem" }, wcSignalLegendMark(series), React.createElement("span", null, series.label), React.createElement("small", null, series.pattern));
                     })
@@ -37237,7 +37237,7 @@ React.createElement("div", {
                   d.wcQuiz.isAI && React.createElement('p', { className: 'wc-check-detail' }, 'AI-generated question'),
                   React.createElement('h4', { id: 'wcQuizQuestion', tabIndex: -1, className: 'wc-check-question' }, d.wcQuiz.q),
                   React.createElement('p', { id: 'wcQuizInstructions', className: 'wc-check-detail' }, d.aiQuizLoading ? 'A new question is being generated. Answer choices will be available when it is ready.' : d.wcQuiz.answered ? 'Your first answer is recorded below. Use the explanation to guide an investigation.' : 'Choose one answer. Then review the explanation and investigate.'),
-                  React.createElement('div', { className: 'wc-check-choices', role: 'group', 'aria-label': 'Quiz answer choices' },
+                  React.createElement('div', { className: 'wc-check-choices', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_quiz_answer_choices", "Quiz answer choices") },
                     d.wcQuiz.opts.map(function(opt) {
                       var isCorrect = opt === d.wcQuiz.a;
                       var wasChosen = d.wcQuiz.chosen === opt;
@@ -37340,7 +37340,7 @@ React.createElement("div", {
                   myth && React.createElement('div', { role: 'group', 'aria-labelledby': 'wcMythQuestion', 'aria-describedby': 'wcMythInstructions' },
                     React.createElement('h4', { id: 'wcMythQuestion', tabIndex: -1, className: 'wc-check-question' }, myth.s),
                     React.createElement('p', { id: 'wcMythInstructions', className: 'wc-check-detail' }, myth.answered ? 'Your first answer is recorded below. Examine the explanation, then investigate.' : 'Decide whether the statement is true or false.'),
-                    !myth.answered && React.createElement('div', { className: 'wc-check-choices', role: 'group', 'aria-label': 'True or false answers' }, [true, false].map(function(val) {
+                    !myth.answered && React.createElement('div', { className: 'wc-check-choices', role: 'group', 'aria-label': __alloT("stem.watercycle.a11y_true_or_false_answers", "True or false answers") }, [true, false].map(function(val) {
                       return React.createElement('button', { type: 'button', key: String(val), onClick: function() {
                           var right = val === myth.t;
                           var nextMythsDone = (d.wcMythsDone || 0) + 1;
