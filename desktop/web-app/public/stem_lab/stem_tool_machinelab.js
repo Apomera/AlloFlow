@@ -8005,6 +8005,70 @@ window.StemLab = window.StemLab || {
               (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')))
           ]);
         }
+        function limitExplanationView() {
+          var direction = fit.fits ? 'fits' : !envelope.possible || (!fit.forceOK && !fit.travelOK) ? 'budget' : !fit.forceOK ? 'force' : 'travel';
+          var explanation = direction === 'fits' ? __alloT('stem.machinelab.limit_explain_fits',
+            'Both results meet the limits. Increasing mechanical advantage lowers effort but increases hand travel; decreasing it does the reverse.')
+            : direction === 'budget' ? __alloT('stem.machinelab.limit_explain_budget',
+            'The task needs more work than the force × travel budget allows. Changing geometry only trades effort for travel. Increase a limit or reduce the load or its movement.')
+            : direction === 'force' ? __alloT('stem.machinelab.limit_explain_force',
+            'Effort is over its limit. A larger mechanical advantage reduces effort but increases hand travel. Check both limits before changing geometry.')
+            : __alloT('stem.machinelab.limit_explain_travel',
+            'Hand travel is over its limit. A smaller mechanical advantage reduces hand travel but increases effort. Check both limits before changing geometry.');
+          return h('details', { key: 'limit-explanation', 'data-ml-limit-explanation': bench.id,
+            style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
+            h('summary', { key: 'title', style: { cursor: 'pointer', padding: '6px 0', fontSize: 13, fontWeight: 750, color: T.text } },
+              __alloT('stem.machinelab.limit_explain_title', 'Read the limits')),
+            h('p', { key: 'intro', style: textStyle }, __alloT('stem.machinelab.limit_explain_scope',
+              'Bars compare each result with its own limit. Compare the percentages across the two limits. Values and formulas are rounded; checks use full precision.')),
+            h('div', { key: 'budgets', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 8 } }, [
+              { key: 'force', label: __alloT('stem.machinelab.effort_needed', 'Effort needed'), unit: 'N', value: fit.force, limit: forceLimit, ok: fit.forceOK },
+              { key: 'travel', label: __alloT('stem.machinelab.design_total_travel', 'Total hand travel'), unit: 'm', value: fit.travel, limit: travelLimit, ok: fit.travelOK }
+            ].map(function (metric) {
+              var margin = metric.limit - metric.value, amount = Math.abs(margin), percent = 100 * metric.value / metric.limit;
+              var tolerance = 1e-9 * Math.max(1, metric.limit);
+              var state = margin === 0 ? 'at' : metric.ok && amount <= tolerance ? 'tolerance' : metric.ok ? 'below' : 'over';
+              var small = __alloT('stem.machinelab.limit_explain_small', '<0.001');
+              var marginText = state === 'at' ? __alloT('stem.machinelab.limit_explain_at', 'At the limit.')
+                : state === 'tolerance' ? __alloT('stem.machinelab.limit_explain_tolerance', 'At the limit within calculation tolerance.')
+                : (amount < 0.001 ? small : fmt(amount, 3)) + ' ' + metric.unit + (state === 'below'
+                  ? __alloT('stem.machinelab.limit_explain_below', ' below the limit.') : __alloT('stem.machinelab.limit_explain_over', ' over the limit.'));
+              var scale = Math.max(metric.value, metric.limit);
+              return h('div', { key: metric.key, role: 'group', 'aria-label': metric.label,
+                'data-ml-limit-budget': metric.key, 'data-value': metric.value, 'data-limit': metric.limit,
+                'data-percent': percent, 'data-margin': margin, 'data-state': state,
+                style: { minWidth: 0, padding: 10, borderRadius: 8, border: '1px solid ' + T.border,
+                  background: T.card, color: T.text, overflowWrap: 'anywhere' } }, [
+                h('p', { key: 'label', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 800 }) }, metric.label),
+                h('p', { key: 'values', style: textStyle }, __alloT('stem.machinelab.design_current', 'Current') + ': ' + fmt(metric.value, 3) + ' ' + metric.unit + ' · ' +
+                  __alloT('stem.machinelab.limit_explain_limit', 'Limit') + ': ' + fmt(metric.limit, 3) + ' ' + metric.unit),
+                h('div', { key: 'bars', 'aria-hidden': 'true' }, [
+                  { key: 'current', label: __alloT('stem.machinelab.design_current', 'Current'), value: metric.value },
+                  { key: 'limit', label: __alloT('stem.machinelab.limit_explain_limit', 'Limit'), value: metric.limit }
+                ].map(function (bar) {
+                  return h('div', { key: bar.key, style: { display: 'grid', gridTemplateColumns: 'minmax(0,auto) minmax(0,1fr)', gap: 8, alignItems: 'center', margin: '6px 0', fontSize: 11 } }, [
+                    h('span', { key: 'label', style: { width: 46, overflowWrap: 'anywhere' } }, bar.label),
+                    h('div', { key: 'track', style: { minWidth: 0, background: T.bg, height: 14 } },
+                      h('div', { 'data-ml-limit-bar': bar.key, style: { boxSizing: 'border-box', height: 14, maxWidth: '100%',
+                        width: (100 * bar.value / scale) + '%', border: '2px ' + (bar.key === 'current' ? 'solid ' : 'dashed ') + T.text,
+                        background: bar.key === 'current' ? (metric.ok ? T.accent : T.bad) : 'transparent' } }))
+                  ]);
+                })),
+                h('p', { key: 'percent', style: Object.assign({}, textStyle, { fontWeight: 750 }) },
+                  __alloT('stem.machinelab.limit_explain_uses', 'Uses ') + (percent > 0 && percent < 0.001 ? small : fmt(percent, 3)) +
+                  __alloT('stem.machinelab.limit_explain_percent', '% of this limit.')),
+                h('p', { key: 'margin', style: Object.assign({}, textStyle, { fontWeight: 750 }) }, marginText),
+                h('p', { key: 'formula', 'data-ml-limit-formula': metric.key, style: Object.assign({}, textStyle, { fontSize: 12 }) }, metric.key === 'force'
+                  ? __alloT('stem.machinelab.limit_explain_force_formula', 'Load ÷ mechanical advantage: ') + fmt(load, 3) + ' N ÷ ' + fmt(ma, 3) + ' = ' + fmt(metric.value, 3) + ' N'
+                  : __alloT('stem.machinelab.limit_explain_travel_formula', 'Load movement × mechanical advantage: ') + fmt(loadDist, 3) + ' m × ' + fmt(ma, 3) + ' = ' + fmt(metric.value, 3) + ' m')
+              ]);
+            })),
+            h('p', { key: 'direction', 'data-ml-limit-direction': direction, style: textStyle }, explanation),
+            envelope.possible && !feasible.length ? h('p', { key: 'discrete', 'data-ml-limit-discrete': 'none', 'data-control': control.key, style: textStyle },
+              __alloT('stem.machinelab.limit_explain_discrete', 'An ideal mechanical-advantage interval exists, but no available increment of this setting reaches it with the other settings held fixed: ') +
+              control.label + '. ' + __alloT('stem.machinelab.limit_explain_discrete_help', 'Try another geometry setting or reconsider the task or limits.')) : null
+          ]);
+        }
         function taskCapacityView() {
           return h('div', { key: 'capacity', role: 'group', 'aria-label': __alloT('stem.machinelab.capacity_title', 'Find a task that fits'),
             'data-ml-task-capacity': bench.id, style: { marginTop: 16, borderTop: '1px solid ' + T.border, paddingTop: 10 } }, [
@@ -8152,6 +8216,7 @@ window.StemLab = window.StemLab || {
               h('p', { key: 'status', role: 'status', 'data-ml-design-fit': String(fit.fits), style: Object.assign({}, textStyle, { fontWeight: 800 }) },
                 fit.fits ? __alloT('stem.machinelab.design_fits', 'This setup meets both limits.') : __alloT('stem.machinelab.design_misses', 'This setup does not meet both limits.')),
               resultRows(fit, 'current'),
+              limitExplanationView(),
               h('p', { key: 'work', style: textStyle }, __alloT('stem.machinelab.design_work', 'Task work: ') + fmt(envelope.work, 3) + ' J · ' +
                 __alloT('stem.machinelab.design_budget', 'Force limit × travel limit: ') + fmt(envelope.budget, 3) + ' J'),
               !envelope.possible ? h('p', { key: 'impossible', 'data-ml-design-impossible': '', style: textStyle },

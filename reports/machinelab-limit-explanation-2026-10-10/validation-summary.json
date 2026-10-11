@@ -1,0 +1,119 @@
+{
+  "date": "2026-10-10",
+  "feature": "Machine Lab: Read the limits",
+  "source": {
+    "canonical": "stem_lab/stem_tool_machinelab.js",
+    "public": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+    "sha256": "061def243e9860912174c7af5e003f80fd0dce10b9e656c3ac2b301be905ccef",
+    "byteParity": true,
+    "nativeHtmlContainsExactCanonicalSource": true
+  },
+  "unit": {
+    "passed": 884,
+    "failed": 0,
+    "uncovered": 0,
+    "files": 18,
+    "nativeReceipts": 19,
+    "aggregate": "tests-final.json",
+    "views": {
+      "passed": 192,
+      "groups": [
+        82,
+        110
+      ],
+      "method": "Complementary name filters in fresh processes; skipped cases counted only in the other passing group."
+    },
+    "focused": {
+      "passed": 64,
+      "includedIn884": true,
+      "receipt": "tests-focused.json"
+    }
+  },
+  "browser": {
+    "passed": 150,
+    "errors": 0,
+    "independentFreshBrowserScenarios": 13,
+    "receipt": "browser/results.json",
+    "receiptSha256": "ba5d79c4d70f772609aa9272a3a0b5c42ea1d90f509565ddc32f3b67e847632c",
+    "harness": "dev-tools/ml_limit_explanation_qa.cjs",
+    "harnessSha256": "488251069fbfcd52f8bfc5388302ed0e262329b7e24ada763d5912c30db75010",
+    "screenshots": [
+      {
+        "file": "browser/desktop-read-the-limits.png",
+        "sha256": "5422b7234cf26df589fe35e14331204c196c9d3d7d247986e634b8415c676183",
+        "visuallyInspected": true,
+        "unchangedFromInitialInspection": true
+      },
+      {
+        "file": "browser/phone-force-limit-explanation.png",
+        "sha256": "bf64fee23d0204e9b0ec9d1575332c966b12253f8101ed5893f5ed630a9eca24",
+        "visuallyInspected": true,
+        "unchangedFromInitialInspection": true
+      },
+      {
+        "file": "browser/forced-colors-discrete-limits.png",
+        "sha256": "18721d27df29177d2f7d9c2379abe2ff2432d86fbf3469826ac6882f40c5bd89",
+        "visuallyInspected": true,
+        "unchangedFromInitialInspection": true
+      },
+      {
+        "file": "browser/dark-phone-extreme-screw-limits.png",
+        "sha256": "e2da6d15e6f500678f1450de516cf48a6a5fd83477dbdc6369b84cead838a1a9",
+        "visuallyInspected": true,
+        "unchangedFromInitialInspection": true
+      }
+    ],
+    "download": {
+      "file": "browser/downloaded-record.txt",
+      "sha256": "06736e210f32d8a1090031469e735a472d49957cf966150e35ee08f8889c5cad",
+      "fixedDesignAndWritingPreserved": true
+    }
+  },
+  "review": {
+    "independentAssistantReview": "No blocking math, state or accessibility issue found.",
+    "visualInspection": "Four captures inspected for readable text, bounded cards, visible keyboard focus and distinguishable solid/dashed references."
+  },
+  "recovery": [
+    {
+      "receipt": "tests-focused-initial.json",
+      "outcome": "63 passed, one invalid fractional pulley fixture failed; replaced with valid off-grid lever fixture. No production change."
+    },
+    {
+      "receipt": "tests-regression-initial.json",
+      "outcome": "Initial combined worker exited unexpectedly after 692 passed assertions; excluded incomplete receipt despite reporter success flag."
+    },
+    {
+      "receipt": "tests-views-memory-initial.json",
+      "outcome": "512 MiB view-suite worker ran out of JavaScript heap after 180/192 passed cases; recovered all 192 cases in fresh complementary groups."
+    },
+    {
+      "receipt": "tests-views-filter-initial.json",
+      "outcome": "Unavailable shell session left a zero-result startup receipt; recovered with complete second-filter run."
+    },
+    {
+      "receipts": [
+        "tests-resume-exits.json",
+        "tests-recovery-exits.json",
+        "tests-last-recovery-exit.json"
+      ],
+      "outcome": "Available process-exit records are retained; shell sessions were unavailable after some otherwise complete per-file receipts."
+    },
+    {
+      "receipt": "browser/results-initial.json",
+      "outcome": "Five decorative width checks used full-precision tolerance against rounded Chromium CSS serialization; isolated CSS percentage tolerance changed to 0.0001 percentage points, numeric physics tolerance unchanged. Final native run passes."
+    }
+  ],
+  "checks": {
+    "sourceSyntax": true,
+    "harnessSyntax": true,
+    "scopedWhitespace": true
+  },
+  "knownExistingWarnings": [
+    "React key warnings in siege/compare view tests"
+  ],
+  "limitations": [
+    "Ideal frictionless calculations; no material-strength or physical-size assessment.",
+    "No full application build, physical assistive-technology session or performance benchmark.",
+    "Local changes only; no push or deployment."
+  ]
+}

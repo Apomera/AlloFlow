@@ -1,0 +1,50 @@
+[
+  {
+    "File": "tests/machinelab_design_tradeoffs.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_design_revisions.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_design_decisions.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_design_limits.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_bench_math.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_paired_evidence.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_guided_investigation.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_record_review.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_work_record.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_read_aloud.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_i18n_hygiene.test.js",
+    "ExitCode": 0
+  },
+  {
+    "File": "tests/machinelab_views.test.js",
+    "ExitCode": 1
+  }
+]
