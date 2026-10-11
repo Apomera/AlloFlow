@@ -1,0 +1,53 @@
+{
+  "sourceSha256": "3e1ff34f4520bb2522cb69416e7f54a82efce2d7fe90b4a2a6e79e7c176371e9",
+  "testFile": "tests/machinelab_efficiency_lab.test.js",
+  "execution": "Four fresh Vitest processes filtered to disjoint describe groups. All process exit codes were observed as zero. Other-group skips do not count as coverage.",
+  "nodeMaxHeapMiB": 512,
+  "workers": 1,
+  "pool": "forks",
+  "isolate": false,
+  "testTimeoutMs": 30000,
+  "totalPassed": 112,
+  "totalFailed": 0,
+  "groups": [
+    {
+      "name": "physics",
+      "testNamePattern": "Machine Lab: assumed efficiency physics",
+      "receipt": "tests-efficiency-physics.json",
+      "exitCode": 0,
+      "passed": 11,
+      "failed": 0,
+      "skippedOtherGroups": 101
+    },
+    {
+      "name": "comparison",
+      "testNamePattern": "Machine Lab: optional efficiency comparison",
+      "receipt": "tests-efficiency-comparison.json",
+      "exitCode": 0,
+      "passed": 31,
+      "failed": 0,
+      "skippedOtherGroups": 81
+    },
+    {
+      "name": "practice",
+      "testNamePattern": "Machine Lab: guided calculation practice",
+      "receipt": "tests-efficiency-practice.json",
+      "exitCode": 0,
+      "passed": 41,
+      "failed": 0,
+      "skippedOtherGroups": 71
+    },
+    {
+      "name": "records",
+      "testNamePattern": "Machine Lab: honest saved efficiency work",
+      "receipt": "tests-efficiency-records.json",
+      "exitCode": 0,
+      "passed": 29,
+      "failed": 0,
+      "skippedOtherGroups": 83
+    }
+  ],
+  "testSha256": "26f7a507631463cf39ddd5757868215216bddf672becc674a93865b3ad2add6b",
+  "fullInventory": 112,
+  "fixtureNote": "Before the saved-work group first ran, the preservation fixture was corrected from the nonexistent benchEvidence map to benchExperiments, benchInvestigations and benchReferences. No failed run occurred. The other three groups were unchanged."
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "Receipt": "regression-19a.json",
+    "Pattern": "^(?!Machine Lab: (every view|the |lever observation|force and distance|motion inspection|focus mechanism))Machine Lab: (shape-based|traveled-distance|motion detective|clue reminder|stroke distance)",
+    "SourceSha256": "3e1ff34f4520bb2522cb69416e7f54a82efce2d7fe90b4a2a6e79e7c176371e9",
+    "ExitCode": 0
+  },
+  {
+    "Receipt": "regression-19b.json",
+    "Pattern": "^(?!Machine Lab: (every view|the |lever observation|force and distance|motion inspection|focus mechanism))(?!Machine Lab: (shape-based|traveled-distance|motion detective|clue reminder|stroke distance))",
+    "SourceSha256": "3e1ff34f4520bb2522cb69416e7f54a82efce2d7fe90b4a2a6e79e7c176371e9",
+    "ExitCode": 0
+  }
+]
