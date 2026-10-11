@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "command": "node dev-tools/ml_power_lab_qa.cjs reports/machinelab-power-lab-2026-10-11/browser",
+  "observedExitCode": 0,
+  "sourceSha256": "cda2cda814118f996a3212bdbec7a57f26085638abcb8ebed8bd07dd278ab9b4",
+  "publicSourceSha256": "cda2cda814118f996a3212bdbec7a57f26085638abcb8ebed8bd07dd278ab9b4",
+  "renderedCanonicalSourceExactly": true,
+  "scenarios": 13,
+  "checks": 528,
+  "errors": 0,
+  "firstRunPassed": true,
+  "productionEdits": false,
+  "harness": {
+    "file": "dev-tools/ml_power_lab_qa.cjs",
+    "sha256": "6aae492c9b2345e20279bc1e215837ce8d82a014744b0bfbf801362d97ff61b1"
+  },
+  "results": {
+    "file": "results.json",
+    "sha256": "50b48c5b416a9b534979e09d914d3159629695aaa60ea0206791cfa5a05f7b02",
+    "bytes": 36460
+  },
+  "download": {
+    "file": "downloaded-record.txt",
+    "sha256": "d23214ba7c1314972016ebeb47b21b504a3ede206538136eb1a60ec3090382aa",
+    "bytes": 3086
+  },
+  "screenshots": [
+    {
+      "file": "desktop-power-checked.png",
+      "sha256": "2a75036bc1e96388389506c96d5078290d2236c2cb4d3783ae0d3a71f2164fb5",
+      "bytes": 81144,
+      "width": 529,
+      "height": 1677,
+      "visuallyReviewed": true
+    },
+    {
+      "file": "phone-power-hints.png",
+      "sha256": "78b48d3b4c474cee79a4e240bf93debb0cbf1c3e65bf31667c2edeed30bfa3af",
+      "bytes": 87847,
+      "width": 334,
+      "height": 2165,
+      "visuallyReviewed": true
+    },
+    {
+      "file": "forced-colors-power-rotary.png",
+      "sha256": "a40cb23c8528aa9e31ef0446d7dec24e6f1ce127e0eeb89441e2eaf2fa3fc1ea",
+      "bytes": 100917,
+      "width": 264,
+      "height": 3087,
+      "visuallyReviewed": true
+    },
+    {
+      "file": "dark-phone-power-record.png",
+      "sha256": "b3194e66efd20152663ad1171d22f51a9cef432f75d7276cd450da5c331652ad",
+      "bytes": 22913,
+      "width": 334,
+      "height": 441,
+      "visuallyReviewed": true
+    }
+  ],
+  "visualReview": "Reviewed all four native screenshots: readable desktop and phone metrics, pace comparison, hints and focus outlines; forced-colors rotary units and table fit; dark fixed work record wraps without clipping. No overlaps or horizontal overflow.",
+  "coverage": [
+    "All six machines at 80% over 5 seconds; 40 machine/skill combinations",
+    "Half-minute conversion, 100% zero loss, rotary torque-times-angular-speed balance",
+    "Half/same/double duration preserves work and changes average power and movement rates",
+    "Budget fit, finite input validation, minutes bounds, wrong units and arithmetic",
+    "Keyboard input, Enter checks, two hints, rounded answers, sticky solution-viewed status",
+    "Next skill, independent fixed skill records, count, geometry, Apply/Undo, station draft isolation",
+    "Grade gates, invalid geometry, preserved design and efficiency records",
+    "Native text download includes both saved power skill snapshots and previous evidence"
+  ],
+  "excludeFromCommit": [
+    "ml-shots.html",
+    "browser-temp/",
+    "downloads/"
+  ]
+}

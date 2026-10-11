@@ -1,0 +1,11 @@
+[
+  {
+    "testNamePattern": "Machine Lab: power motion physics",
+    "sourceAfterSha256": "cda2cda814118f996a3212bdbec7a57f26085638abcb8ebed8bd07dd278ab9b4",
+    "testSha256": "995d335a4aba90278352d1fe238d91fb1180a1be77770c686928161e847f4d9c",
+    "receipt": "tests-power-physics.json",
+    "exitCode": -1073740791,
+    "sourceSha256": "cda2cda814118f996a3212bdbec7a57f26085638abcb8ebed8bd07dd278ab9b4",
+    "name": "physics"
+  }
+]
