@@ -1,0 +1,9 @@
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-compound-lab-2026-10-11/regression-13.json
+
+
+<--- Last few GCs --->
+
+[16880:00000196F581C000]     7733 ms: Scavenge (interleaved) 42.6 (57.2) -> 38.5 (57.2) MB, pooled: 3 MB, 1.46 / 0.00 ms  (average mu = 0.992, current mu = 0.999) allocation failure;
+
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----

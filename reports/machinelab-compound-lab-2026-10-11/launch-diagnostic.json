@@ -1,0 +1,8 @@
+{
+  "command": "node reports/machinelab-compound-lab-2026-10-11/run-regressions.cjs",
+  "toolChunkId": "d24e44",
+  "observedShellExitCode": 1,
+  "output": "ParentContainsErrorRecordException: An error occurred while creating the pipeline.",
+  "resolution": "Retried the same command with the shell login profile disabled. Final child process results are recorded independently in regression-processes.json.",
+  "coverageClaimedForThisLaunch": false
+}

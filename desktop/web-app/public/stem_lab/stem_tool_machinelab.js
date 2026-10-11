@@ -186,6 +186,19 @@ window.StemLab = window.StemLab || {
       return Object.keys(result).every(function (key) { return result[key] === null || typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;
     },
 
+    // Compatible series stages: output work/motion of stage 1 is input to stage 2.
+    // Ratios are constant; the coupling adds no loss beyond each assumed efficiency.
+    compoundWork: function (load, distance, maIn, maOut, percentIn, percentOut) {
+      if (![load, distance, maIn, maOut].every(pos) || ![percentIn, percentOut].every(function (p) { return finite(p) && p >= 1 && p <= 100; })) return null;
+      var etaIn = percentIn / 100, etaOut = percentOut / 100, idealMA = maIn * maOut;
+      var actualMA = idealMA * etaIn * etaOut, workOut = load * distance, transferWork = workOut / etaOut, inputWork = transferWork / etaIn;
+      var firstLoss = Math.max(0, inputWork - transferWork), secondLoss = Math.max(0, transferWork - workOut);
+      var result = { idealMA: idealMA, efficiency: percentIn * percentOut / 100, actualMA: actualMA,
+        inputForce: load / actualMA, inputTravel: distance * idealMA, transferForce: load / (maOut * etaOut), transferTravel: distance * maOut,
+        workOut: workOut, transferWork: transferWork, inputWork: inputWork, firstLoss: firstLoss, secondLoss: secondLoss, totalLoss: firstLoss + secondLoss };
+      return Object.keys(result).every(function (key) { return finite(result[key]); }) ? result : null;
+    },
+
     // An ideal task needs MA >= load/forceLimit and MA <= travelLimit/loadTravel.
     // Limits concern accumulated hand-path distance, not the size of a 3D bay.
     designEnvelope: function (load, loadTravel, forceLimit, travelLimit) {
@@ -6962,6 +6975,7 @@ window.StemLab = window.StemLab || {
       benchDesignRecords: {},
       benchEfficiency: {}, benchEfficiencyRecords: {},
       benchPower: {}, benchPowerRecords: {},
+      benchCompound: {}, benchCompoundRecords: {},
       shopDemoId: 0, shopSlowMotion: false, shopDemoDuration: 2200,
       shopAnimating: false,
       shopMotionProgress: null, shopClueBench: null,
@@ -8301,6 +8315,280 @@ window.StemLab = window.StemLab || {
           ]) : null,
           h('style', { key: 'focus' }, '.ml-power-lab summary:focus-visible,.ml-power-lab input:focus-visible,.ml-power-lab select:focus-visible,.ml-power-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-power-lab button:disabled{cursor:default;opacity:0.65}')
         ])], 'power-lab');
+      }
+
+      function compoundKinds() { return ['idealMA', 'efficiency', 'actualMA', 'inputForce', 'inputTravel', 'transferForce', 'inputWork', 'firstLoss', 'secondLoss']; }
+      function compoundGeometry(source, b) {
+        var copy = {};
+        b.controls.forEach(function (c) { if (c.key !== b.loadKey) copy[c.key] = source[c.key]; });
+        return copy;
+      }
+      function validCompoundGeometry(settings, b) {
+        return settings && typeof settings === 'object' && !Array.isArray(settings) && b.controls.every(function (c) {
+          return c.key === b.loadKey || (finite(settings[c.key]) && settings[c.key] >= c.min && settings[c.key] <= c.max);
+        }) && pos(b.ma(settings));
+      }
+      function compoundModel(inputSettings, outputSettings, load, distance, percentIn, percentOut, b, second) {
+        if (!second || second.id === b.id || !validCompoundGeometry(inputSettings, b) || !validCompoundGeometry(outputSettings, second)) return null;
+        var task = Object.assign({}, inputSettings, { loadDistance: distance }); task[b.loadKey] = load;
+        if (!validStationSetup(task, b)) return null;
+        return _machineMath.compoundWork(load, distance, b.ma(inputSettings), second.ma(outputSettings), percentIn, percentOut);
+      }
+      function compoundSession(source, b) {
+        var raw = source.benchCompound && source.benchCompound[b.id];
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) raw = {};
+        function field(value, fallback) { return value === undefined ? fallback : typeof value === 'string' ? value.slice(0, 64) : finite(value) ? String(value) : ''; }
+        var secondId = raw.second === undefined ? (b.id === 'pulley' ? 'lever' : 'pulley') : raw.second;
+        var second = BENCHES.find(function (candidate) { return candidate.id === secondId && candidate.id !== b.id; }) || null;
+        var geometry = {}, outputSettings = {};
+        if (second) second.controls.forEach(function (c) {
+          if (c.key === second.loadKey) return;
+          geometry[c.key] = raw.geometry === undefined ? String(_defaults[c.key]) : field(raw.geometry && raw.geometry[c.key], '');
+          outputSettings[c.key] = _machineMath.parseNum(geometry[c.key]);
+        });
+        var inputSettings = compoundGeometry(source, b), load = source[b.loadKey], distance = source.loadDistance;
+        var percentIn = field(raw.percentIn, '80'), percentOut = field(raw.percentOut, '90');
+        var question = compoundKinds().indexOf(raw.question) >= 0 ? raw.question : 'idealMA';
+        var signature = JSON.stringify([b.id, inputSettings, load, distance, second && second.id, geometry, percentIn, percentOut, question]), fresh = raw.signature === signature;
+        var draft = { second: second ? second.id : '', geometry: geometry, percentIn: percentIn, percentOut: percentOut, question: question, signature: signature,
+          answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '', unit: fresh && ['ratio', '%', 'N', 'm', 'J', 'W'].indexOf(raw.unit) >= 0 ? raw.unit : '',
+          explanation: fresh && typeof raw.explanation === 'string' ? raw.explanation.slice(0, 600) : '',
+          hint: fresh && Number.isInteger(raw.hint) && raw.hint >= 0 && raw.hint <= 2 ? raw.hint : 0, checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
+        return { draft: draft, signature: signature, second: second, inputSettings: inputSettings, outputSettings: outputSettings, load: load, distance: distance,
+          model: compoundModel(inputSettings, outputSettings, load, distance, _machineMath.parseNum(percentIn), _machineMath.parseNum(percentOut), b, second) };
+      }
+      function compoundUnit(unit) { return unit === 'ratio' ? '×' : unit; }
+      function compoundQuestion(kind, model, maIn, maOut, load, distance, percentIn, percentOut) {
+        var p = powerFmt, e1 = String(percentIn / 100), e2 = String(percentOut / 100), m1 = p(maIn), m2 = p(maOut);
+        var work = p(load) + ' N × ' + p(distance) + ' m', product = '(' + m1 + ' × ' + m2 + ' × ' + e1 + ' × ' + e2 + ')';
+        var specs = {
+          idealMA: ['ratio', __alloT('stem.machinelab.compound_q_ima', 'Calculate combined ideal MA'),
+            __alloT('stem.machinelab.compound_rule_ima', 'Multiply the two ideal mechanical advantages. Do not add them.'), m1 + ' × ' + m2],
+          efficiency: ['%', __alloT('stem.machinelab.compound_q_eff', 'Calculate combined efficiency'),
+            __alloT('stem.machinelab.compound_rule_eff', 'Convert both percentages to decimals, multiply them, then multiply by 100. Do not average the percentages.'), e1 + ' × ' + e2 + ' × 100'],
+          actualMA: ['ratio', __alloT('stem.machinelab.compound_q_ama', 'Calculate combined actual MA'),
+            __alloT('stem.machinelab.compound_rule_ama', 'Actual MA = combined ideal MA × both efficiency fractions.'), product],
+          inputForce: ['N', __alloT('stem.machinelab.compound_q_force', 'Calculate force into the first stage'),
+            __alloT('stem.machinelab.compound_rule_force', 'Input force = final load ÷ combined actual MA.'), p(load) + ' N ÷ ' + product],
+          inputTravel: ['m', __alloT('stem.machinelab.compound_q_travel', 'Calculate total input travel'),
+            __alloT('stem.machinelab.compound_rule_travel', 'Input travel = final output movement × both ideal MAs. Efficiencies do not change the assumed geometry.'), p(distance) + ' m × ' + m1 + ' × ' + m2],
+          transferForce: ['N', __alloT('stem.machinelab.compound_q_transfer', 'Calculate force between stages'),
+            __alloT('stem.machinelab.compound_rule_transfer', 'Work backward from the final load: force between stages = load ÷ (output-stage ideal MA × output-stage efficiency fraction).'), p(load) + ' N ÷ (' + m2 + ' × ' + e2 + ')'],
+          inputWork: ['J', __alloT('stem.machinelab.compound_q_work', 'Calculate total input work'),
+            __alloT('stem.machinelab.compound_rule_work', 'Useful work = final load × final movement. Input work = useful work ÷ both efficiency fractions.'), '(' + work + ') ÷ (' + e1 + ' × ' + e2 + ')'],
+          firstLoss: ['J', __alloT('stem.machinelab.compound_q_first_loss', 'Calculate energy lost in the first stage'),
+            __alloT('stem.machinelab.compound_rule_first_loss', 'Work between stages = useful work ÷ output-stage efficiency. First-stage loss = that work × (1 ÷ input-stage efficiency − 1).'),
+            '(' + work + ') ÷ ' + e2 + ' × (1 ÷ ' + e1 + ' − 1)'],
+          secondLoss: ['J', __alloT('stem.machinelab.compound_q_second_loss', 'Calculate energy lost in the second stage'),
+            __alloT('stem.machinelab.compound_rule_second_loss', 'Second-stage loss = useful work × (1 ÷ output-stage efficiency − 1).'),
+            '(' + work + ') × (1 ÷ ' + e2 + ' − 1)']
+        };
+        var spec = specs[kind];
+        return { unit: spec[0], title: spec[1], formula: spec[2], setup: spec[3], target: model[kind],
+          given: __alloT('stem.machinelab.compound_given', 'Input-stage MA / efficiency: ') + m1 + ' / ' + String(percentIn) + '% · ' +
+            __alloT('stem.machinelab.compound_given_second', 'Output-stage MA / efficiency: ') + m2 + ' / ' + String(percentOut) + '% · ' +
+            __alloT('stem.machinelab.compound_final_task', 'Final load / movement: ') + p(load) + ' N / ' + p(distance) + ' m' };
+      }
+      function validCompoundRecord(record, b, kind) {
+        if (!record || Array.isArray(record) || record.version !== 1 || record.benchId !== b.id || record.question !== kind || compoundKinds().indexOf(kind) < 0 ||
+          typeof record.answer !== 'string' || record.answer.length > 64 || typeof record.explanation !== 'string' || record.explanation.length > 600 ||
+          ['', 'ratio', '%', 'N', 'm', 'J', 'W'].indexOf(record.unit) < 0 || !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
+        var second = BENCHES.find(function (candidate) { return candidate.id === record.second && candidate.id !== b.id; });
+        var model = compoundModel(record.inputSettings, record.outputSettings, record.load, record.loadDistance, record.percentIn, record.percentOut, b, second);
+        if (!model || (record.completion !== 'solution' && (record.completion !== 'checked' ||
+          powerAnswer(record, compoundQuestion(kind, model, b.ma(record.inputSettings), second.ma(record.outputSettings), record.load, record.loadDistance, record.percentIn, record.percentOut)) !== 'correct'))) return null;
+        return record;
+      }
+      function compoundRecordText(record, b) {
+        var second = BENCHES.find(function (candidate) { return candidate.id === record.second; });
+        var model = compoundModel(record.inputSettings, record.outputSettings, record.load, record.loadDistance, record.percentIn, record.percentOut, b, second);
+        var question = compoundQuestion(record.question, model, b.ma(record.inputSettings), second.ma(record.outputSettings), record.load, record.loadDistance, record.percentIn, record.percentOut);
+        var lines = [__alloT('stem.machinelab.compound_record', 'Recorded compound-machine skill: ') + b.label + ' → ' + second.label + ' — ' + question.title];
+        [[b, record.inputSettings], [second, record.outputSettings]].forEach(function (stage, index) {
+          lines.push((index === 0 ? __alloT('stem.machinelab.compound_stage_in', 'Input stage: ') : __alloT('stem.machinelab.compound_stage_out', 'Output stage: ')) + stage[0].label);
+          stage[0].controls.forEach(function (c) { if (c.key !== stage[0].loadKey) lines.push(c.label + ': ' + powerFmt(stage[1][c.key]) + (c.unit ? ' ' + c.unit : '')); });
+        });
+        return lines.concat([question.given, question.formula, question.setup + ' = ' + powerFmt(question.target) + ' ' + compoundUnit(question.unit),
+          __alloT('stem.machinelab.compound_record_energy', 'Work: input → between stages → useful output: ') + powerFmt(model.inputWork) + ' J → ' + powerFmt(model.transferWork) + ' J → ' + powerFmt(model.workOut) + ' J',
+          __alloT('stem.machinelab.compound_record_losses', 'Losses: first / second stage: ') + powerFmt(model.firstLoss) + ' J / ' + powerFmt(model.secondLoss) + ' J',
+          __alloT('stem.machinelab.eff_record_answer', 'Entered answer: ') + (record.answer.trim() ? record.answer + ' ' + compoundUnit(record.unit) : __alloT('stem.machinelab.eff_no_answer', 'none')),
+          __alloT('stem.machinelab.compound_reason_record', 'My trade-off explanation: ') + (record.explanation.trim() || __alloT('stem.machinelab.compound_no_reason', 'not entered')),
+          record.completion === 'solution' ? __alloT('stem.machinelab.eff_record_solution', 'Worked solution viewed; this is practice, not an independent score.')
+            : __alloT('stem.machinelab.eff_record_checked', 'Answer checked within the stated rounding tolerance; this is practice, not a score.'),
+          __alloT('stem.machinelab.eff_record_hints', 'Hints opened: ') + record.hint + '/2',
+          __alloT('stem.machinelab.compound_snapshot_scope', 'Fixed conceptual series model: compatible motion, constant ratios and no extra coupling loss. This does not establish a physical connection or usable stroke.')
+        ]).join('\n');
+      }
+      function stationCompoundLab() {
+        if (young) return null;
+        var session = compoundSession(d, bench), draft = session.draft, model = session.model, second = session.second, kinds = compoundKinds();
+        var p1 = _machineMath.parseNum(draft.percentIn), p2 = _machineMath.parseNum(draft.percentOut);
+        var question = model && compoundQuestion(draft.question, model, bench.ma(session.inputSettings), second.ma(session.outputSettings), session.load, session.distance, p1, p2);
+        var result = model && (draft.revealed ? 'solution' : draft.checked ? powerAnswer(draft, question) : null);
+        var rawRecords = d.benchCompoundRecords && d.benchCompoundRecords[bench.id], saved = kinds.map(function (kind) { return validCompoundRecord(rawRecords && rawRecords[kind], bench, kind); }).filter(Boolean);
+        var textStyle = { fontSize: 13, lineHeight: 1.55, color: T.text, overflowWrap: 'anywhere' };
+        var control = { width: '100%', minHeight: 42, boxSizing: 'border-box', padding: 8, border: '1px solid ' + T.border, borderRadius: 6, color: T.text, background: T.card, font: 'inherit' };
+        var buttonStyle = Object.assign({}, control, { width: 'auto', cursor: 'pointer', whiteSpace: 'normal' });
+        var summaryStyle = { minHeight: 42, padding: '10px 0', cursor: 'pointer', fontWeight: 800, color: T.text };
+        var prefix = 'ml-compound-', helpId = prefix + 'help-' + bench.id, roundingId = prefix + 'rounding-' + bench.id;
+        function change(patch) {
+          setLabToolData(function (prev) {
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = compoundSession(source, bench);
+            if (latest.signature !== session.signature) return prev;
+            var next = Object.assign({}, latest.draft, patch);
+            if (['second', 'geometry', 'percentIn', 'percentOut', 'question'].some(function (key) { return patch[key] !== undefined; }))
+              Object.assign(next, { answer: '', unit: '', explanation: '', hint: 0, checked: false, revealed: false });
+            var entries = Object.assign({}, source.benchCompound || {}); entries[bench.id] = next;
+            next.signature = compoundSession(Object.assign({}, source, { benchCompound: entries }), bench).signature;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchCompound: entries }) });
+          });
+        }
+        function save() {
+          setLabToolData(function (prev) {
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = compoundSession(source, bench), ld = latest.draft;
+            if (latest.signature !== session.signature || !latest.model || (!ld.revealed && (!ld.checked || powerAnswer(ld,
+              compoundQuestion(ld.question, latest.model, bench.ma(latest.inputSettings), latest.second.ma(latest.outputSettings), latest.load, latest.distance,
+                _machineMath.parseNum(ld.percentIn), _machineMath.parseNum(ld.percentOut))) !== 'correct'))) return prev;
+            var records = Object.assign({}, source.benchCompoundRecords || {}), station = {};
+            kinds.forEach(function (kind) { var prior = validCompoundRecord(records[bench.id] && records[bench.id][kind], bench, kind); if (prior) station[kind] = prior; });
+            station[ld.question] = { version: 1, benchId: bench.id, second: latest.second.id, inputSettings: Object.assign({}, latest.inputSettings),
+              outputSettings: Object.assign({}, latest.outputSettings), load: latest.load, loadDistance: latest.distance,
+              percentIn: _machineMath.parseNum(ld.percentIn), percentOut: _machineMath.parseNum(ld.percentOut), question: ld.question,
+              answer: ld.answer, unit: ld.unit, explanation: ld.explanation, hint: ld.hint, completion: ld.revealed ? 'solution' : 'checked' };
+            records[bench.id] = station;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchCompoundRecords: records }) });
+          });
+        }
+        function select(key, label, options, onChange) {
+          return h('div', { key: key }, [
+            h('label', { key: 'label', htmlFor: prefix + key + '-' + bench.id, style: textStyle }, label),
+            h('select', { key: 'select', id: prefix + key + '-' + bench.id, value: draft[key], style: control, 'aria-invalid': key === 'unit' && result === 'unit' || key === 'second' && !second,
+              onChange: onChange || function (ev) { var patch = {}; patch[key] = ev.target.value; if (key === 'unit') patch.checked = false; change(patch); } },
+              options.map(function (option) { return h('option', { key: option[0], value: option[0] }, option[1]); }))
+          ]);
+        }
+        function decimal(key, label, value, invalid, handler) {
+          return h('div', { key: key }, [
+            h('label', { key: 'label', htmlFor: prefix + key + '-' + bench.id, style: textStyle }, label),
+            h('input', { key: 'input', id: prefix + key + '-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: value, style: control, 'aria-invalid': !!invalid,
+              'aria-describedby': helpId, onChange: handler || function (ev) { var patch = {}; patch[key] = ev.target.value.slice(0, 64); change(patch); } })
+          ]);
+        }
+        function action(key, label, handler, disabled) { var props = { key: key, type: 'button', style: buttonStyle, onClick: handler, disabled: !!disabled }; props['data-ml-compound-' + key] = ''; return h('button', props, label); }
+        function metric(key, label, unit) { return h('div', { key: key, 'data-ml-compound-metric': key, 'data-value': model[key], style: { padding: 8, border: '1px solid ' + T.border, borderRadius: 6, background: T.bg, minWidth: 0 } }, [
+          h('dt', { key: 'label', style: textStyle }, label), h('dd', { key: 'value', style: Object.assign({}, textStyle, { fontWeight: 800, margin: '4px 0 0' }) }, powerFmt(model[key]) + ' ' + unit)
+        ]); }
+        function comparison() {
+          var direction = metricDirection(model.transferForce, model.inputForce), stageEffect = direction === 'less' ? 'less' : direction === 'more' ? 'more' : 'same';
+          var rowStyle = { textAlign: 'left', padding: 5, borderBottom: '1px solid ' + T.border, overflowWrap: 'anywhere' };
+          return h('details', { key: 'comparison', 'data-ml-compound-comparison': bench.id }, [
+            h('summary', { key: 'title', style: summaryStyle }, __alloT('stem.machinelab.compound_compare', 'Follow force, travel and work through both stages')),
+            h('p', { key: 'flow', style: textStyle }, __alloT('stem.machinelab.compound_flow', 'Input → ') + bench.label + ' → ' + second.label + ' → ' + __alloT('stem.machinelab.compound_final', 'final task')),
+            h('dl', { key: 'ratios', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
+              metric('idealMA', __alloT('stem.machinelab.compound_ima', 'Combined ideal MA'), '×'),
+              metric('efficiency', __alloT('stem.machinelab.compound_eff', 'Combined efficiency'), '%'),
+              metric('actualMA', __alloT('stem.machinelab.compound_ama', 'Combined actual MA'), '×')
+            ]),
+            h('table', { key: 'ledger', 'data-ml-compound-ledger': '', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12, color: T.text } }, [
+              h('caption', { key: 'caption', style: { textAlign: 'left', padding: '8px 0', fontWeight: 800 } }, __alloT('stem.machinelab.compound_ledger', 'Stage ledger: force × travel = work')),
+              h('thead', { key: 'head' }, h('tr', null, [
+                __alloT('stem.machinelab.compound_position', 'Position'), __alloT('stem.machinelab.compound_force_n', 'Force (N)'),
+                __alloT('stem.machinelab.compound_travel_m', 'Travel (m)'), __alloT('stem.machinelab.compound_work_j', 'Work (J)')
+              ].map(function (label, i) { return h('th', { key: i, scope: 'col', style: rowStyle }, label); }))),
+              h('tbody', { key: 'body' }, [
+                ['input', __alloT('stem.machinelab.compound_input_row', 'Input to first stage'), model.inputForce, model.inputTravel, model.inputWork, ['inputForce', 'inputTravel', 'inputWork']],
+                ['transfer', __alloT('stem.machinelab.compound_transfer_row', 'Between stages'), model.transferForce, model.transferTravel, model.transferWork, ['transferForce', 'transferTravel', 'transferWork']],
+                ['output', __alloT('stem.machinelab.compound_output_row', 'Final output'), session.load, session.distance, model.workOut, [null, null, 'workOut']]
+              ].map(function (row) { return h('tr', { key: row[0], 'data-ml-compound-stage': row[0], 'data-force': row[2], 'data-travel': row[3], 'data-work': row[4] }, [
+                h('th', { key: 'label', scope: 'row', style: rowStyle }, row[1]),
+                row.slice(2, 5).map(function (value, index) { return h('td', { key: index, style: rowStyle, 'data-ml-compound-metric': row[5][index] || undefined, 'data-value': value }, powerFmt(value)); })
+              ]); }))
+            ]),
+            h('dl', { key: 'losses', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
+              metric('firstLoss', __alloT('stem.machinelab.compound_first_loss', 'First-stage energy loss'), 'J'),
+              metric('secondLoss', __alloT('stem.machinelab.compound_second_loss', 'Second-stage energy loss'), 'J'),
+              metric('totalLoss', __alloT('stem.machinelab.compound_total_loss', 'Total energy lost'), 'J')
+            ]),
+            h('p', { key: 'balance', style: textStyle }, __alloT('stem.machinelab.compound_balance', 'Input work = useful output work + both stage losses. Percentages multiply; they are not averaged. Geometry determines travel.')),
+            h('p', { key: 'comparison', 'data-ml-compound-added-stage': stageEffect, style: textStyle }, (stageEffect === 'less'
+              ? __alloT('stem.machinelab.compound_added_less', 'Adding this input stage reduces effort compared with the output stage alone. ')
+              : stageEffect === 'more' ? __alloT('stem.machinelab.compound_added_more', 'Adding this input stage increases effort compared with the output stage alone. ')
+              : __alloT('stem.machinelab.compound_added_same', 'Adding this input stage leaves effort unchanged within numerical tolerance. ')) +
+              __alloT('stem.machinelab.compound_alone_values', 'Output stage alone: ') + powerFmt(model.transferForce) + ' N, ' + powerFmt(model.transferTravel) + ' m, ' + powerFmt(model.transferWork) + ' J. ' +
+              __alloT('stem.machinelab.compound_tradeoff', 'The extra stage changes input travel by its ideal MA and input work by 1 ÷ its efficiency fraction. Extra stages do not always reduce effort.'))
+          ]);
+        }
+        function practice() {
+          return h('div', { key: 'practice' }, [
+            h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_practice', 'Practice a compound-machine skill')),
+            select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, compoundQuestion(kind, model, bench.ma(session.inputSettings), second.ma(session.outputSettings), session.load, session.distance, p1, p2).title]; })),
+            h('p', { key: 'given', 'data-ml-compound-given': '', style: textStyle }, question.given),
+            h('p', { key: 'rounding', id: roundingId, style: textStyle }, __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
+            h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
+            h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer, style: control, 'aria-describedby': roundingId,
+              'aria-invalid': result === 'invalid' || result === 'incorrect', onChange: function (ev) { change({ answer: ev.target.value.slice(0, 64), checked: false }); },
+              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } }),
+            select('unit', __alloT('stem.machinelab.eff_unit', 'Answer unit'), [
+              ['', __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')], ['ratio', __alloT('stem.machinelab.compound_unit_ratio', 'Ratio — no physical unit')],
+              ['%', __alloT('stem.machinelab.compound_unit_percent', '% — percent')], ['N', __alloT('stem.machinelab.eff_unit_n', 'N — newtons')],
+              ['m', __alloT('stem.machinelab.eff_unit_m', 'm — metres')], ['J', __alloT('stem.machinelab.eff_unit_j', 'J — joules')], ['W', __alloT('stem.machinelab.power_unit_w', 'W — watts')]
+            ]),
+            h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
+              action('check', __alloT('stem.machinelab.eff_check', 'Check calculation'), function () { change({ checked: true }); }),
+              action('hint', draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup'), function () { change({ hint: Math.min(2, draft.hint + 1) }); }, draft.hint >= 2),
+              action('reveal', __alloT('stem.machinelab.eff_solution', 'Show worked solution'), function () { change({ revealed: true }); }, draft.revealed)
+            ]),
+            h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: textStyle }, [
+              draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-compound-hint-level': draft.hint }, question.formula) : null,
+              draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
+              result ? h('p', { key: 'result', 'data-ml-compound-result': result }, result === 'invalid' ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
+                : result === 'unit' ? __alloT('stem.machinelab.compound_unit_help', 'Check the unit: mechanical advantage is a ratio, efficiency uses %, force N, travel m and energy J.')
+                : result === 'incorrect' ? __alloT('stem.machinelab.compound_retry', 'Not yet. Check which stage you are solving, multiply the ratios, and convert percentages to decimals. A hint can help.')
+                : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) +
+                  question.setup + ' = ' + powerFmt(question.target) + ' ' + compoundUnit(question.unit)) : null
+            ]),
+            h('label', { key: 'explanation-label', htmlFor: prefix + 'explanation-' + bench.id, style: textStyle }, __alloT('stem.machinelab.compound_explanation', 'Explain the trade-off (optional)')),
+            h('p', { key: 'prompt', id: prefix + 'reason-help-' + bench.id, style: textStyle }, __alloT('stem.machinelab.compound_reason_prompt', 'Compared with the output stage alone, what changed in effort, travel and work? Use the numbers to explain. This reflection is saved, not automatically graded.')),
+            h('textarea', { key: 'explanation', id: prefix + 'explanation-' + bench.id, rows: 3, maxLength: 600, value: draft.explanation,
+              'aria-describedby': prefix + 'reason-help-' + bench.id, style: control, onChange: function (ev) { change({ explanation: ev.target.value.slice(0, 600) }); } }),
+            h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
+              action('save', __alloT('stem.machinelab.power_save', 'Save / update this skill'), save, result !== 'correct' && result !== 'solution'),
+              action('next', __alloT('stem.machinelab.power_next', 'Next skill'), function () { change({ question: kinds[(kinds.indexOf(draft.question) + 1) % kinds.length] }); })
+            ]),
+            h('p', { key: 'save-help', style: textStyle }, __alloT('stem.machinelab.compound_save_help', 'Save before moving on. This station keeps one fixed record per skill, including both geometries, the final task, efficiencies and your explanation. Saving again replaces only that skill.'))
+          ]);
+        }
+        return card([h('details', { key: 'lab', className: 'ml-compound-lab', 'data-ml-compound': bench.id }, [
+          h('summary', { key: 'title', style: summaryStyle }, __alloT('stem.machinelab.compound_title', 'Compound machine lab')),
+          h('p', { key: 'intro', style: textStyle }, __alloT('stem.machinelab.compound_intro', 'Combine two stages in a conceptual series model. This station supplies the input-stage geometry. Its load and movement become the final output task. Choose a different output stage and edit its geometry here; other workshop stations stay unchanged.')),
+          h('p', { key: 'scope', id: helpId, style: textStyle }, __alloT('stem.machinelab.compound_scope', 'Assume compatible motion, constant ratios and no extra coupling loss. This does not connect the 3D machines or check real stroke, direction, strength or starting friction. Final movement is measured at the output stage; a ramp output uses vertical rise. Each stage efficiency must be 1–100%.')),
+          select('second', __alloT('stem.machinelab.compound_second', 'Output-stage machine'), [['', __alloT('stem.machinelab.compound_choose_second', 'Choose an output stage')]].concat(BENCHES.filter(function (b) { return b.id !== bench.id; }).map(function (b) { return [b.id, b.label]; })),
+            function (ev) { change({ second: ev.target.value, geometry: undefined }); }),
+          second ? h('fieldset', { key: 'geometry', style: { margin: '12px 0', padding: 10, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 6 } }, [
+            h('legend', { key: 'legend', style: textStyle }, __alloT('stem.machinelab.compound_geometry', 'Output-stage geometry')),
+            second.controls.filter(function (c) { return c.key !== second.loadKey; }).map(function (c) {
+              var value = session.outputSettings[c.key], invalid = value === null || value < c.min || value > c.max || !pos(second.ma(session.outputSettings));
+              return decimal('geometry-' + c.key, c.label + ' (' + c.min + '–' + c.max + (c.unit ? ' ' + c.unit : '') + ')', draft.geometry[c.key], invalid, function (ev) {
+                var geometry = Object.assign({}, draft.geometry); geometry[c.key] = ev.target.value.slice(0, 64); change({ geometry: geometry });
+              });
+            })
+          ]) : null,
+          decimal('percentIn', __alloT('stem.machinelab.compound_percent_in', 'Input-stage efficiency (%)'), draft.percentIn, !(p1 >= 1 && p1 <= 100)),
+          decimal('percentOut', __alloT('stem.machinelab.compound_percent_out', 'Output-stage efficiency (%)'), draft.percentOut, !(p2 >= 1 && p2 <= 100)),
+          model ? h('div', { key: 'valid' }, [comparison(), practice()]) : h('p', { key: 'invalid', role: 'status', style: textStyle }, __alloT('stem.machinelab.compound_invalid', 'Enter valid stage geometries, efficiencies and a working final task before calculating.')),
+          h('p', { key: 'count', 'data-ml-compound-count': saved.length, style: textStyle }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
+            __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),
+          saved.length ? h('details', { key: 'saved', 'data-ml-compound-saved': bench.id }, [
+            h('summary', { key: 'title', style: summaryStyle }, __alloT('stem.machinelab.compound_saved', 'Saved compound-machine skills')),
+            saved.map(function (record) { return h('p', { key: record.question, style: Object.assign({}, textStyle, { whiteSpace: 'pre-line', paddingTop: 8, borderTop: '1px solid ' + T.border }) }, compoundRecordText(record, bench)); }),
+            h('button', { key: 'record', type: 'button', style: buttonStyle, onClick: openWorkRecord }, __alloT('stem.machinelab.design_open_record', 'Open work record'))
+          ]) : null,
+          h('style', { key: 'focus' }, '.ml-compound-lab summary:focus-visible,.ml-compound-lab input:focus-visible,.ml-compound-lab select:focus-visible,.ml-compound-lab textarea:focus-visible,.ml-compound-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-compound-lab button:disabled{cursor:default;opacity:0.65}')
+        ])], 'compound-lab');
       }
       function stationDesignLimits() {
         if (band !== 'g68' && band !== 'g912') return null;
@@ -12018,6 +12306,7 @@ window.StemLab = window.StemLab || {
               stationDesignLimits(),
               stationEfficiencyLab(),
               stationPowerLab(),
+              stationCompoundLab(),
               readout(),
               tradePanel(),
               proveePanel(),
@@ -12977,6 +13266,17 @@ window.StemLab = window.StemLab || {
           });
         });
 
+        var compoundRows = {};
+        BENCHES.forEach(function (b) {
+          var records = d.benchCompoundRecords && d.benchCompoundRecords[b.id];
+          compoundKinds().forEach(function (kind) {
+            var record = validCompoundRecord(records && records[kind], b, kind);
+            if (!record) return;
+            compoundRows[lines.length] = { bench: b.id, skill: kind };
+            lines.push(compoundRecordText(record, b));
+          });
+        });
+
         function editRecord(entry, value) {
           if (entry.isDesign) { editDesignRecord(entry.record, entry.bench, value); return; }
           setLabToolData(function (prev) {
@@ -13017,6 +13317,8 @@ window.StemLab = window.StemLab || {
                 'data-ml-efficiency-record-station': efficiencyRows[i],
                 'data-ml-power-record-station': powerRows[i] && powerRows[i].bench,
                 'data-ml-power-record-skill': powerRows[i] && powerRows[i].skill,
+                'data-ml-compound-record-station': compoundRows[i] && compoundRows[i].bench,
+                'data-ml-compound-record-skill': compoundRows[i] && compoundRows[i].skill,
                 style: {
                   padding: '6px 0', fontSize: 13, color: T.text, lineHeight: 1.55, whiteSpace: 'pre-line', overflowWrap: 'anywhere',
                   borderTop: i ? '1px solid ' + T.border : 'none'
