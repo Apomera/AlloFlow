@@ -1,0 +1,19 @@
+{
+  "baselineCommit": "1745ec1e1",
+  "baselineSha256": "79a2cab5b82d57f53173ce472663167ee00a335642c28c52c0295e32e6e7c5b5",
+  "source": "stem_lab/stem_tool_machinelab.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+  "sourceSha256": "19b5d0f85931b68081c2e64cee39d26cbfc63d0b721704cecb2f747f18c7131c",
+  "byteParity": true,
+  "outsidePowerRegionAndNewHelperByteIdentical": true,
+  "existingPhysicalMathHelpersByteIdentical": true,
+  "changeCallbackByteIdentical": true,
+  "saveCallbackOnlyVersionSelectionChanged": true,
+  "existingTestOnlySelectorExpectationChanged": true,
+  "existingTest": {
+    "path": "tests/machinelab_power_lab.test.js",
+    "baselineSha256": "995d335a4aba90278352d1fe238d91fb1180a1be77770c686928161e847f4d9c",
+    "sha256": "467783888d38bc19e2a946474855ce24999e05af297f49fecf9bb8271bfa8ad1"
+  },
+  "scope": "One new powerBudget math helper and power session/question/record helpers and lab presentation. Existing physical math, defaults, efficiency and compound labs, other views and export callers are unchanged. Existing power test changes only its explicit expected selector list; all prior assertions remain."
+}

@@ -1,0 +1,330 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { loadTool, makeCtx, newStore, ReactDOMServer, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+// Expected energy and capacity use independent physical givens, never a production helper.
+const BENCHES = [
+  { id: 'lever', load: 'leverLoad', settings: { leverEffortArm: 2, leverLoadArm: 1, leverLoad: 400 }, ma: 2 },
+  { id: 'pulley', load: 'pulleyLoad', settings: { pulleySegments: 2, pulleyLoad: 400 }, ma: 2 },
+  { id: 'windlass', load: 'windlassLoad', settings: { windlassHandleR: 0.45, windlassDrumR: 0.1, windlassLoad: 400 }, ma: 4.5, radius: 0.45 },
+  { id: 'ramp', load: 'rampLoad', settings: { rampLength: 4, rampHeight: 1, rampLoad: 400 }, ma: 4 },
+  { id: 'wedge', load: 'wedgeLoad', settings: { wedgeLength: 0.3, wedgeThickness: 0.06, wedgeLoad: 800 }, ma: 5 },
+  { id: 'screw', load: 'screwLoad', settings: { screwHandleR: 0.15, screwPitch: 0.005, screwLoad: 2000 }, ma: 60 * Math.PI, radius: 0.15 }
+];
+const BASE = Object.assign({ loadDistance: 0.5 }, ...BENCHES.map(b => b.settings));
+const NEW_SKILLS = [
+  { id: 'budgetEnergy', unit: 'J', words: /energy|work/i },
+  { id: 'budgetLoad', unit: 'N', words: /load/i },
+  { id: 'budgetMovement', unit: 'm', words: /movement|rise/i },
+  { id: 'requiredEfficiency', unit: '%', words: /efficiency/i }
+];
+const OLD_SKILLS = [
+  { id: 'inputPower', unit: 'W', value: '50' }, { id: 'usefulPower', unit: 'W', value: '40' },
+  { id: 'lossPower', unit: 'W', value: '10' }, { id: 'handSpeed', unit: 'm/s', value: '0.2' },
+  { id: 'loadSpeed', unit: 'm/s', value: '0.1' }, { id: 'budgetTime', unit: 's', value: '2.5' },
+  { id: 'torque', unit: 'N·m', value: '50', rotation: true },
+  { id: 'rpm', unit: 'rpm', value: String(0.5 / (2 * Math.PI * 0.1) / 5 * 60), rotation: true }
+];
+const kinds = b => [...OLD_SKILLS.filter(q => !q.rotation || b.radius), ...NEW_SKILLS].map(q => q.id);
+const CASES = BENCHES.flatMap(b => NEW_SKILLS.map(q => ({ b, q, name: `${b.id}/${q.id}` })));
+const CAPACITY_KEYS = ['budgetEnergy', 'usefulBudgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'];
+function expected(load = 400, movement = 0.5, percent = 80, seconds = 5, watts = 100) {
+  const budgetEnergy = watts * seconds, usefulBudgetEnergy = budgetEnergy * percent / 100;
+  return { budgetEnergy, usefulBudgetEnergy, budgetLoad: usefulBudgetEnergy / movement,
+    budgetMovement: usefulBudgetEnergy / load, requiredEfficiency: load * movement / budgetEnergy * 100 };
+}
+let tool;
+beforeEach(() => { resetStemLab(); tool = loadTool('stem_lab/stem_tool_machinelab.js', 'machineLab'); });
+function nodes(n) { return Array.isArray(n) ? n.flatMap(nodes) : n && typeof n === 'object' ? [n, ...nodes(n.props?.children)] : []; }
+function text(n) { return Array.isArray(n) ? n.map(text).join('') : n == null || typeof n === 'boolean' ? '' : typeof n === 'object' ? text(n.props?.children) : String(n); }
+function session(b = BENCHES[0], extra = {}) {
+  const store = newStore({ machineLab: { view: 'machines', bench: b.id, bandOverride: 'g68', ...BASE, ...extra } });
+  const awardXP = vi.fn(), tryAward = vi.fn(); let renderedState, tree;
+  const render = () => { if (renderedState !== store.toolData.machineLab) { renderedState = store.toolData.machineLab; tree = tool.render(makeCtx({ awardXP, tryAward }, store)); } return tree; };
+  const find = predicate => nodes(render()).find(predicate);
+  const byId = suffix => find(n => n.props?.id === `ml-power-${suffix}-${store.toolData.machineLab.bench}`);
+  const action = kind => find(n => n.type === 'button' && n.props[`data-ml-power-${kind}`] !== undefined);
+  const invoke = node => { expect(node).toBeTruthy(); node.props.onClick({ currentTarget: { closest: () => ({ isConnected: false }) } }); };
+  return { render, find, store, byId, action, invoke, awardXP, tryAward, state: () => store.toolData.machineLab,
+    refresh: () => { renderedState = undefined; },
+    patch: patch => { store.toolData = { ...store.toolData, machineLab: { ...store.toolData.machineLab, ...patch } }; },
+    planning: () => find(n => n.props?.['data-ml-power-planning'] !== undefined),
+    metric: key => find(n => n.props?.['data-ml-power-budget-metric'] === key),
+    result: () => find(n => n.props?.['data-ml-power-result'] !== undefined)?.props['data-ml-power-result'],
+    edit: (suffix, value) => { const n = byId(suffix); expect(n, `Missing ${suffix}`).toBeTruthy(); n.props.onChange({ target: { value: String(value) } }); },
+    click: kind => { const n = action(kind); expect(n?.props.disabled).not.toBe(true); invoke(n); },
+    recordRow: (question, station = b.id) => find(n => n.props?.['data-ml-power-record-station'] === station && n.props?.['data-ml-power-record-skill'] === question),
+    html: () => ReactDOMServer.renderToStaticMarkup(render()) };
+}
+function answer(s, q, value) {
+  const b = BENCHES.find(b => b.id === s.state().bench);
+  s.edit('question', q.id); s.edit('answer', value === undefined ? expected(s.state()[b.load])[q.id] : value); s.edit('unit', q.unit); s.click('check');
+}
+function record(q = NEW_SKILLS[0], extra = {}) {
+  return { version: 2, benchId: 'lever', settings: { ...BENCHES[0].settings, loadDistance: 0.5 }, percent: 80, seconds: 5, budget: 100,
+    question: q.id, answer: String(expected()[q.id]), unit: q.unit, hint: 0, completion: 'checked', ...extra };
+}
+
+describe('Machine Lab: independent single-stage budget physics', () => {
+  it.each(BENCHES)('computes independent $id energy and capacities across endpoints', b => {
+    for (const [percent, seconds, budget] of [[80, 5, 100], [100, 3600, 100000], [1, 0.01, 0.01], [37.5, 120, 0.03]]) {
+      const load = b.settings[b.load], result = tool._math.powerBudget(load, 0.5, b.ma, percent, seconds, budget, b.radius);
+      const target = expected(load, 0.5, percent, seconds, budget); expect(result).toBeTruthy();
+      for (const key of CAPACITY_KEYS) expect(result[key], key).toBeCloseTo(target[key], 8);
+      expect(result.budgetLoad * 0.5).toBeCloseTo(target.usefulBudgetEnergy, 7);
+      expect(result.budgetMovement * load).toBeCloseTo(target.usefulBudgetEnergy, 7);
+      expect(result.requiredEfficiency / 100 * target.budgetEnergy).toBeCloseTo(load * 0.5, 8);
+      expect(result.workIn).toBeCloseTo(load * 0.5 / (percent / 100), 8);
+      expect(result.powerFits).toBe(load * 0.5 / (percent / 100) / seconds <= budget + 1e-9);
+    }
+  });
+
+  it.each(['load', 'movement', 'MA', 'efficiency', 'duration', 'budget'].map((name, index) => ({ name, index })))('rejects malformed $name without coercion', ({ index }) => {
+    for (const value of [null, undefined, '', '5', true, {}, NaN, Infinity, -Infinity, -1, 0]) {
+      const args = [400, 0.5, 2, 80, 5, 100]; args[index] = value;
+      expect(tool._math.powerBudget(...args), String(value)).toBeNull();
+    }
+  });
+
+  it('retains efficiency, time and watt boundaries and rotation validation', () => {
+    for (const [index, value] of [[3, 0.999], [3, 100.001], [4, 0.009], [4, 3600.001], [5, 0.009], [5, 100000.001]]) {
+      const args = [400, 0.5, 2, 80, 5, 100]; args[index] = value; expect(tool._math.powerBudget(...args)).toBeNull();
+    }
+    for (const radius of ['', '0.45', true, 0, -1, NaN, Infinity, Number.MIN_VALUE, Number.MAX_VALUE]) expect(tool._math.powerBudget(400, 0.5, 2, 80, 5, 100, radius)).toBeNull();
+    for (const radius of [undefined, null]) expect(tool._math.powerBudget(400, 0.5, 2, 80, 5, 100, radius).torque).toBeNull();
+  });
+
+  it('rejects capacity and inherited arithmetic overflow', () => {
+    for (const args of [[400, 2, Number.MAX_VALUE, 80, 5, 100], [Number.MAX_VALUE, 2, 2, 80, 5, 100],
+      [Number.MIN_VALUE, 0.5, 2, 80, 5, 100], [400, Number.MIN_VALUE, 2, 80, 5, 100]]) expect(tool._math.powerBudget(...args)).toBeNull();
+  });
+
+  it('leaves energy-limited capacities independent of mechanical advantage and handle radius', () => {
+    const first = tool._math.powerBudget(400, 0.5, 2, 80, 5, 100, 0.2), other = tool._math.powerBudget(400, 0.5, 10, 80, 5, 100, 0.9);
+    for (const key of CAPACITY_KEYS) expect(other[key], key).toBe(first[key]);
+    expect(other.force).toBeCloseTo(first.force / 5, 10); expect(other.travel).toBe(first.travel * 5);
+  });
+
+  it('holds movement and load separately when computing each capacity', () => {
+    const first = tool._math.powerBudget(400, 0.5, 2, 80, 5, 100), heavier = tool._math.powerBudget(800, 0.5, 2, 80, 5, 100), farther = tool._math.powerBudget(400, 1, 2, 80, 5, 100);
+    expect(heavier.budgetLoad).toBe(first.budgetLoad); expect(heavier.budgetMovement).toBe(first.budgetMovement / 2);
+    expect(farther.budgetLoad).toBe(first.budgetLoad / 2); expect(farther.budgetMovement).toBe(first.budgetMovement);
+    expect(heavier.requiredEfficiency).toBe(first.requiredEfficiency * 2); expect(farther.requiredEfficiency).toBe(first.requiredEfficiency * 2);
+  });
+
+  it('doubles capacities with duration or power and keeps required efficiency independent of assumed efficiency', () => {
+    const first = tool._math.powerBudget(400, 0.5, 2, 80, 5, 100);
+    for (const other of [tool._math.powerBudget(400, 0.5, 2, 80, 10, 100), tool._math.powerBudget(400, 0.5, 2, 80, 5, 200)]) {
+      for (const key of CAPACITY_KEYS.slice(0, 4)) expect(other[key], key).toBe(first[key] * 2);
+      expect(other.requiredEfficiency).toBe(first.requiredEfficiency / 2);
+    }
+    const lessEfficient = tool._math.powerBudget(400, 0.5, 2, 40, 5, 100);
+    expect(lessEfficient.requiredEfficiency).toBe(first.requiredEfficiency); expect(lessEfficient.budgetEnergy).toBe(first.budgetEnergy);
+    for (const key of ['usefulBudgetEnergy', 'budgetLoad', 'budgetMovement']) expect(lessEfficient[key], key).toBe(first[key] / 2);
+  });
+
+  it('does not clamp impossible efficiency or tiny positive capacity', () => {
+    const tiny = tool._math.powerBudget(400, 0.5, 2, 1, 0.01, 0.01);
+    expect(tiny.requiredEfficiency).toBe(200000000); expect(tiny.budgetEnergy).toBe(0.0001);
+    expect(tiny.budgetLoad).toBeCloseTo(0.000002, 14); expect(tiny.budgetMovement).toBeCloseTo(0.0000000025, 16); expect(tiny.powerFits).toBe(false);
+    const boundary = tool._math.powerBudget(400, 0.5, 2, 100, 5, 40); expect(boundary.requiredEfficiency).toBe(100); expect(boundary.powerFits).toBe(true);
+  });
+});
+
+describe('Machine Lab: single-stage budget visualization', () => {
+  it.each(BENCHES)('shows independent $id metrics and zero-based energy bars without changing settings', b => {
+    const s = session(b), before = s.state(), target = expected(before[b.load]);
+    expect(s.planning().type).toBe('details'); expect(s.planning().props.open).not.toBe(true);
+    for (const key of CAPACITY_KEYS) expect(Number(s.metric(key).props['data-value']), key).toBeCloseTo(target[key], 10);
+    for (const [budget, duration] of [[100, 5], [0.01, 0.01], [100000, 3600]]) {
+      s.edit('budget', budget); s.edit('duration', duration); const current = s.state();
+      const chart = s.find(n => n.props?.['data-ml-power-budget-chart'] !== undefined); expect(chart).toBeTruthy();
+      const required = before[b.load] * 0.5 / 0.8, available = budget * duration, scale = Math.max(required, available);
+      for (const [kind, value] of [['required', required], ['available', available]]) {
+        const bar = nodes(chart).find(n => n.props?.['data-ml-power-budget-bar'] === kind); expect(bar).toBeTruthy();
+        expect(Number(bar.props['data-value'])).toBeCloseTo(value, 8); expect(parseFloat(bar.props.style.width)).toBeCloseTo(value / scale * 100, 10);
+        expect(bar.props.style.minWidth ?? 0).toBe(0);
+      }
+      expect(text(chart)).not.toMatch(/NaN|Infinity/); expect(s.state()).toBe(current);
+      for (const key of Object.keys(BASE)) expect(s.state()[key]).toBe(before[key]);
+    }
+    expect(s.state().benchPowerRecords).toBeUndefined(); expect(s.awardXP).not.toHaveBeenCalled(); expect(s.tryAward).not.toHaveBeenCalled();
+  });
+
+  it('removes planning metrics and practice when an assumption becomes invalid', () => {
+    const s = session(); s.edit('percent', '100.01');
+    expect(s.planning()).toBeUndefined(); expect(s.metric('budgetEnergy')).toBeUndefined(); expect(s.action('check')).toBeUndefined();
+    expect(s.find(n => n.props?.['data-ml-power-budget-chart'] !== undefined)).toBeUndefined();
+  });
+
+  it('names the energy figure and exposes all new skill units with a full question title', () => {
+    const s = session(), chart = s.find(n => n.props?.['data-ml-power-budget-chart'] !== undefined);
+    const label = chart.props['aria-labelledby']; expect(label).toBeTruthy(); expect(nodes(chart).some(n => n.props?.id === label)).toBe(true);
+    expect(nodes(s.byId('unit')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(expect.arrayContaining(['', 'W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%']));
+    for (const q of NEW_SKILLS) { s.edit('question', q.id); expect(text(s.find(n => n.props?.['data-ml-power-question-title'] !== undefined))).toMatch(q.words); }
+  });
+});
+
+describe('Machine Lab: single-stage budget skill practice', () => {
+  it.each(CASES)('checks and saves the independent $name answer in a fixed version-2 snapshot', ({ b, q }) => {
+    const s = session(b), before = s.state(), target = expected(before[b.load])[q.id]; answer(s, q, Number(target.toPrecision(3)));
+    expect(s.result()).toBe('correct'); expect(s.state().benchPowerRecords).toBeUndefined(); s.click('save');
+    expect(s.state().benchPowerRecords[b.id][q.id]).toEqual({ version: 2, benchId: b.id, settings: { ...b.settings, loadDistance: 0.5 },
+      percent: 80, seconds: 5, budget: 100, question: q.id, answer: String(Number(target.toPrecision(3))), unit: q.unit, hint: 0, completion: 'checked' });
+    for (const key of Object.keys(BASE)) expect(s.state()[key]).toBe(before[key]);
+    const reloaded = session(b, { view: 'learn', manualTopic: 'record', benchPowerRecords: JSON.parse(JSON.stringify(s.state().benchPowerRecords)) });
+    expect(reloaded.recordRow(q.id)).toBeTruthy(); expect(text(reloaded.recordRow(q.id))).toMatch(q.words); expect(text(reloaded.recordRow(q.id))).toContain('Answer checked');
+    expect(s.awardXP).not.toHaveBeenCalled(); expect(s.tryAward).not.toHaveBeenCalled();
+  });
+
+  it.each(NEW_SKILLS)('requires the correct $unit unit for $id', q => {
+    const s = session(); answer(s, q);
+    for (const unit of ['', q.unit === '%' ? 'm' : '%']) {
+      s.edit('unit', unit); expect(s.result()).toBeUndefined(); s.click('check'); expect(s.result()).toBe('unit');
+      expect(s.byId('unit').props['aria-invalid']).toBe(true); expect(s.action('save').props.disabled).toBe(true); s.invoke(s.action('save')); expect(s.state().benchPowerRecords).toBeUndefined();
+    }
+    s.edit('unit', q.unit); s.click('check'); expect(s.result()).toBe('correct');
+  });
+
+  it.each(NEW_SKILLS)('accepts appropriate rounding but rejects an error outside one percent for $id', q => {
+    const s = session(), target = expected()[q.id]; answer(s, q, target * 0.9901); expect(s.result()).toBe('correct');
+    s.edit('answer', target * 1.0099); s.click('check'); expect(s.result()).toBe('correct');
+    s.edit('answer', target * 1.0101); s.click('check'); expect(s.result()).toBe('incorrect');
+    s.edit('answer', target * 0.9899); s.click('check'); expect(s.result()).toBe('incorrect');
+  });
+
+  it.each(NEW_SKILLS)('provides progressive $id hints and retains worked-solution provenance', q => {
+    const s = session(); s.edit('question', q.id); const hint = () => s.find(n => n.props?.['data-ml-power-hint-level'] !== undefined);
+    for (const level of [1, 2]) { s.click('hint'); expect(hint().props['data-ml-power-hint-level']).toBe(level); expect(text(hint())).toMatch(q.words); expect(s.result()).toBeUndefined(); }
+    expect(s.action('hint').props.disabled).toBe(true); expect(s.action('save').props.disabled).toBe(true);
+    s.edit('answer', '123'); s.edit('unit', q.unit === '%' ? 'm' : '%'); s.click('reveal'); s.click('save');
+    expect(s.state().benchPowerRecords.lever[q.id]).toMatchObject({ version: 2, question: q.id, answer: '123', unit: q.unit === '%' ? 'm' : '%', hint: 2, completion: 'solution' });
+    s.edit('answer', expected()[q.id]); s.edit('unit', q.unit); s.click('check'); expect(s.result()).toBe('solution'); s.click('save');
+    expect(s.state().benchPowerRecords.lever[q.id].completion).toBe('solution');
+  });
+
+  it('accepts a tiny positive movement capacity and rejects zero', () => {
+    const s = session(); s.edit('percent', '1'); s.edit('duration', '0.01'); s.edit('budget', '0.01');
+    expect(Number(s.metric('budgetMovement').props['data-value'])).toBeCloseTo(0.0000000025, 16);
+    answer(s, NEW_SKILLS[2], '0'); expect(s.result()).toBe('incorrect'); s.edit('answer', '0.0000000025'); s.click('check'); expect(s.result()).toBe('correct');
+    s.click('save'); s.patch({ view: 'learn', manualTopic: 'record' }); expect(s.recordRow('budgetMovement')).toBeTruthy();
+  });
+
+  it('checks efficiency above 100 percent without silently clamping the impossible requirement', () => {
+    const s = session(); s.edit('budget', '20'); expect(Number(s.metric('requiredEfficiency').props['data-value'])).toBe(200);
+    answer(s, NEW_SKILLS[3], '100'); expect(s.result()).toBe('incorrect'); s.edit('answer', '200'); s.click('check'); expect(s.result()).toBe('correct');
+    s.click('save'); s.patch({ view: 'learn', manualTopic: 'record' }); expect(text(s.recordRow('requiredEfficiency'))).toContain('200 %');
+  });
+
+  it('uses converted seconds for every new calculation and its saved assumptions', () => {
+    const s = session(); s.edit('duration', '2'); s.edit('timeUnit', 'min'); const target = expected(400, 0.5, 80, 120, 100);
+    for (const q of NEW_SKILLS) { answer(s, q, Number(target[q.id].toPrecision(3))); expect(s.result()).toBe('correct'); s.click('save'); expect(s.state().benchPowerRecords.lever[q.id].seconds).toBe(120); }
+  });
+
+  it('states separate load and movement assumptions including vertical rise on a ramp', () => {
+    const s = session(BENCHES[3]); s.edit('question', 'budgetMovement');
+    const given = text(s.find(n => n.props?.['data-ml-power-given'] !== undefined)); expect(given).toContain('400');
+    expect(text(s.planning())).toMatch(/vertical|rise/i); s.click('hint'); expect(text(s.find(n => n.props?.['data-ml-power-hint-level'] !== undefined))).toMatch(/load/i);
+    s.edit('question', 'budgetLoad'); expect(text(s.find(n => n.props?.['data-ml-power-given'] !== undefined))).toContain('0.5');
+  });
+});
+
+describe('Machine Lab: planning practice state integrity', () => {
+  it.each(BENCHES)('cycles through legacy and new $id skills while clearing attempt state', b => {
+    const s = session(b), order = kinds(b); expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(order);
+    for (let index = 0; index < order.length; index++) {
+      expect(s.byId('question').props.value).toBe(order[index]); s.edit('answer', '123'); s.edit('unit', 'J'); s.click('hint'); s.click('reveal'); s.click('next');
+      expect(s.byId('question').props.value).toBe(order[(index + 1) % order.length]); expect(s.byId('answer').props.value).toBe(''); expect(s.byId('unit').props.value).toBe('');
+      expect(s.result()).toBeUndefined(); expect(s.action('save').props.disabled).toBe(true);
+      expect(s.state().benchPower[b.id]).toMatchObject({ answer: '', unit: '', hint: 0, checked: false, revealed: false });
+      expect(s.state().benchPowerRecords).toBeUndefined();
+    }
+    expect(s.awardXP).not.toHaveBeenCalled(); expect(s.tryAward).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['station', { bench: 'pulley' }], ['view', { view: 'learn' }], ['geometry', { leverEffortArm: 3 }],
+    ['load', { leverLoad: 500 }], ['movement', { loadDistance: 0.6 }],
+    ['efficiency', { benchPower: { lever: { percent: '70', question: 'budgetEnergy' } } }],
+    ['duration', { benchPower: { lever: { duration: '10', question: 'budgetEnergy' } } }],
+    ['budget', { benchPower: { lever: { budget: '200', question: 'budgetEnergy' } } }]
+  ])('rejects delayed planning actions and edits after the %s changes', (_name, patch) => {
+    const s = session(); answer(s, NEW_SKILLS[0]); const actions = ['check', 'hint', 'reveal', 'save', 'next'].map(s.action), input = s.byId('answer');
+    s.patch(patch); const before = s.state(); actions.forEach(s.invoke); input.props.onChange({ target: { value: '999' } }); expect(s.state()).toBe(before);
+  });
+
+  it('does not restore a saved answer cleared by Next or a later question selection', () => {
+    const s = session(); answer(s, NEW_SKILLS[0]); const save = s.action('save'); s.click('next'); const afterNext = s.state(); s.invoke(save);
+    expect(s.state()).toBe(afterNext); expect(s.state().benchPowerRecords).toBeUndefined();
+    answer(s, NEW_SKILLS[1]); const next = s.action('next'), secondSave = s.action('save'); s.edit('question', 'requiredEfficiency'); const afterChoice = s.state();
+    s.invoke(next); s.invoke(secondSave); expect(s.state()).toBe(afterChoice);
+  });
+
+  it('rechecks edited numbers on Save and retains other station drafts', () => {
+    const s = session(); answer(s, NEW_SKILLS[0]); const save = s.action('save'); s.edit('answer', '1'); s.invoke(save); expect(s.state().benchPowerRecords).toBeUndefined();
+    const lever = s.state().benchPower.lever; s.patch({ bench: 'pulley' }); s.edit('question', 'budgetMovement'); expect(s.state().benchPower.lever).toBe(lever);
+    s.patch({ bench: 'lever' }); expect(s.byId('question').props.value).toBe('budgetEnergy'); expect(s.byId('answer').props.value).toBe('1');
+  });
+});
+
+describe('Machine Lab: verifiable single-stage planning records', () => {
+  it.each(OLD_SKILLS)('retains version-1 $id records and honest newly available distractor units', q => {
+    const b = q.rotation ? BENCHES[2] : BENCHES[0], legacy = record(NEW_SKILLS[0], { version: 1, benchId: b.id, settings: { ...b.settings, loadDistance: 0.5 }, question: q.id, unit: q.unit, answer: q.value });
+    const s = session(b, { view: 'learn', manualTopic: 'record', benchPowerRecords: { [b.id]: { [q.id]: legacy } } });
+    expect(s.recordRow(q.id)).toBeTruthy(); expect(s.state().benchPowerRecords[b.id][q.id]).toBe(legacy);
+    s.patch({ benchPowerRecords: { [b.id]: { [q.id]: { ...legacy, version: 2 } } } }); expect(s.recordRow(q.id)).toBeUndefined();
+    for (const unit of ['m', '%']) {
+      s.patch({ benchPowerRecords: { [b.id]: { [q.id]: { ...legacy, completion: 'solution', unit } } } }); expect(s.recordRow(q.id)).toBeTruthy(); expect(text(s.recordRow(q.id))).toContain(`${q.value} ${unit}`);
+      s.patch({ benchPowerRecords: { [b.id]: { [q.id]: { ...legacy, completion: 'checked', unit } } } }); expect(s.recordRow(q.id)).toBeUndefined();
+    }
+  });
+
+  it.each(NEW_SKILLS)('rejects wrong versions and forged arithmetic or units for $id', q => {
+    const s = session(BENCHES[0], { view: 'learn', manualTopic: 'record' });
+    for (const patch of [{ version: 1 }, { version: 3 }, { answer: '999999' }, { unit: q.unit === '%' ? 'm' : '%' }]) {
+      s.patch({ benchPowerRecords: { lever: { [q.id]: record(q, patch) } } }); expect(s.recordRow(q.id)).toBeUndefined();
+    }
+    s.patch({ benchPowerRecords: { lever: { [q.id]: record(q) } } }); expect(s.recordRow(q.id)).toBeTruthy();
+  });
+
+  it.each([
+    ['wrong station', { benchId: 'pulley' }], ['missing geometry', { settings: { leverLoad: 400 } }],
+    ['string efficiency', { percent: '80' }], ['efficiency above range', { percent: 101 }],
+    ['string duration', { seconds: '5' }], ['duration above range', { seconds: 3601 }],
+    ['string budget', { budget: '100' }], ['zero budget', { budget: 0 }],
+    ['invalid unit', { unit: 'kg' }], ['invalid hint', { hint: 3 }], ['invalid completion', { completion: 'passed' }],
+    ['non-string answer', { answer: 500 }], ['overlong answer', { answer: '2'.repeat(65) }],
+    ['mismatched skill', { question: 'budgetLoad' }]
+  ])('omits imported planning evidence with %s', (_name, patch) => {
+    const s = session(BENCHES[0], { benchPowerRecords: { lever: { budgetEnergy: record(NEW_SKILLS[0], patch) } } });
+    expect(s.find(n => n.props?.['data-ml-power-saved'] === 'lever')).toBeUndefined(); s.patch({ view: 'learn', manualTopic: 'record' }); expect(s.recordRow('budgetEnergy')).toBeUndefined();
+  });
+
+  it('coexists with legacy records and replaces only the active skill while preserving unrelated evidence', () => {
+    const original = record(NEW_SKILLS[0], { version: 1, question: 'inputPower', unit: 'W', answer: '50' }), other = { note: 'untouched station' };
+    const retained = { benchEfficiencyRecords: { lever: { keep: true } }, benchDesignRecords: { lever: { keep: true } }, provenBenches: { lever: true } };
+    const s = session(BENCHES[0], { ...retained, benchPowerRecords: { lever: { inputPower: original }, pulley: other } });
+    for (const q of NEW_SKILLS) { answer(s, q); s.click('save'); }
+    expect(s.state().benchPowerRecords.lever.inputPower).toBe(original); expect(s.state().benchPowerRecords.pulley).toBe(other);
+    const first = s.state().benchPowerRecords.lever, preserved = first.budgetMovement; s.edit('budget', '200'); answer(s, NEW_SKILLS[0], '1000'); s.click('save');
+    expect(s.state().benchPowerRecords.lever.budgetMovement).toBe(preserved); expect(s.state().benchPowerRecords.lever.budgetEnergy).not.toBe(first.budgetEnergy);
+    expect(Object.keys(s.state().benchPowerRecords.lever).sort()).toEqual(['inputPower', ...NEW_SKILLS.map(q => q.id)].sort());
+    for (const key of Object.keys(retained)) expect(s.state()[key]).toBe(retained[key]);
+    s.patch({ view: 'learn', manualTopic: 'record', leverLoad: 999, loadDistance: 2 });
+    for (const q of NEW_SKILLS) expect(s.recordRow(q.id)).toBeTruthy(); expect(text(s.recordRow('budgetMovement'))).toContain('1 m'); expect(text(s.recordRow('budgetEnergy'))).toContain('1000 J');
+  });
+
+  it('exports recomputed fixed-task planning results with literal escaped answers and solution provenance', async () => {
+    const saved = record(NEW_SKILLS[3], { answer: '<script>literal</script>', unit: 'm', hint: 2, completion: 'solution', requiredEfficiency: 9999, budgetEnergy: 9999 });
+    const s = session(BENCHES[0], { view: 'learn', manualTopic: 'record', leverLoad: 900, leverEffortArm: 4, benchPowerRecords: { lever: { requiredEfficiency: saved } } });
+    const evidence = text(s.recordRow('requiredEfficiency'));
+    for (const snippet of ['80%', '400 N', '40 %', '5 s', 'Worked solution viewed', 'Hints opened: 2/2']) expect(evidence).toContain(snippet);
+    expect(evidence).not.toContain('9999'); expect(s.html()).not.toContain('<script>literal</script>');
+    const write = vi.fn(async () => true), descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard'); window.StemLab.writeClipboard = write;
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: write } });
+    try {
+      s.refresh(); s.invoke(s.find(n => n.type === 'button' && /Copy.*record/i.test(text(n)))); await Promise.resolve(); expect(write).toHaveBeenCalledOnce(); const copied = write.mock.calls[0][0];
+      for (const snippet of ['400 N', '40 %', '5 s', 'Worked solution viewed', 'Hints opened: 2/2', saved.answer]) expect(copied).toContain(snippet);
+      expect(copied).not.toContain('9999'); expect(s.state().benchPowerRecords.lever.requiredEfficiency).toBe(saved);
+    } finally { if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor); else delete navigator.clipboard; }
+  });
+});

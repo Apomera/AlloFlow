@@ -186,6 +186,18 @@ window.StemLab = window.StemLab || {
       return Object.keys(result).every(function (key) { return result[key] === null || typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;
     },
 
+    // Energy-limited alternatives for one station at a sustained input power.
+    // Load capacity holds movement fixed; movement capacity holds load fixed.
+    powerBudget: function (load, distance, ma, percent, seconds, budget, radius) {
+      var power = this.powerMotion(load, distance, ma, percent, seconds, budget, radius);
+      if (!power) return null;
+      var available = budget * seconds, useful = available * (percent / 100);
+      var result = Object.assign({}, power, { budgetEnergy: available, usefulBudgetEnergy: useful,
+        budgetLoad: useful / distance, budgetMovement: useful / load,
+        requiredEfficiency: (power.workOut / available) * 100 });
+      return Object.keys(result).every(function (key) { return result[key] === null || typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;
+    },
+
     // Compatible series stages: output work/motion of stage 1 is input to stage 2.
     // Ratios are constant; the coupling adds no loss beyond each assumed efficiency.
     compoundWork: function (load, distance, maIn, maOut, percentIn, percentOut) {
@@ -8134,14 +8146,17 @@ window.StemLab = window.StemLab || {
         ])], 'efficiency-lab');
       }
 
+      function powerPlanningKinds() { return ['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']; }
+      function powerRecordVersion(kind) { return powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
       function powerKinds(b) {
         return ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime'].concat(
-          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : []);
+          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds());
       }
       function powerRadius(settings, b) { return b.id === 'windlass' ? settings.windlassHandleR : b.id === 'screw' ? settings.screwHandleR : null; }
       function powerFmt(value) { return finite(value) ? value.toLocaleString('en-US', { useGrouping: false, maximumSignificantDigits: 6 }) : '—'; }
+      function powerResultFmt(kind, value) { return kind === 'requiredEfficiency' ? String(value) : powerFmt(value); }
       function powerModel(settings, b, percent, seconds, budget) {
-        return validStationSetup(settings, b) ? _machineMath.powerMotion(settings[b.loadKey], settings.loadDistance, b.ma(settings),
+        return validStationSetup(settings, b) ? _machineMath.powerBudget(settings[b.loadKey], settings.loadDistance, b.ma(settings),
           percent, seconds, budget, powerRadius(settings, b)) : null;
       }
       function powerSession(source, b) {
@@ -8156,7 +8171,7 @@ window.StemLab = window.StemLab || {
         if (seconds !== null) seconds *= timeUnit === 'min' ? 60 : 1;
         var draft = { percent: percent, duration: duration, timeUnit: timeUnit, budget: budget, question: question, signature: signature,
           answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '',
-          unit: fresh && ['W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N'].indexOf(raw.unit) >= 0 ? raw.unit : '',
+          unit: fresh && ['W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%'].indexOf(raw.unit) >= 0 ? raw.unit : '',
           hint: fresh && Number.isInteger(raw.hint) && raw.hint >= 0 && raw.hint <= 2 ? raw.hint : 0,
           checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
         return { draft: draft, settings: settings, signature: signature, seconds: seconds,
@@ -8169,6 +8184,27 @@ window.StemLab = window.StemLab || {
         var timeGiven = __alloT('stem.machinelab.power_time_given', 'Task time: ') + seconds + ' s';
         var energyGiven = __alloT('stem.machinelab.eff_useful', 'Useful work: ') + useful + ' J · ' +
           __alloT('stem.machinelab.eff_percent', 'Efficiency: ') + percent + '%';
+        var planningGiven = __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)') + ': ' + String(budget) + ' · ' +
+          __alloT('stem.machinelab.power_time_given', 'Task time: ') + String(model.seconds) + ' s';
+        var planning = {
+          budgetEnergy: ['J', __alloT('stem.machinelab.power_q_budget_energy', 'Calculate input energy available from power and time'), planningGiven,
+            __alloT('stem.machinelab.power_rule_budget_energy', 'Input energy available = input-power budget × time in seconds. One watt is one joule per second.'),
+            String(budget) + ' W × ' + String(model.seconds) + ' s'],
+          budgetLoad: ['N', __alloT('stem.machinelab.power_q_budget_load', 'Calculate the load at this power budget'), planningGiven + ' · ' +
+            __alloT('stem.machinelab.power_planning_hold_movement', 'Movement held fixed: ') + String(settings.loadDistance) + ' m · ' + percent + '%',
+            __alloT('stem.machinelab.power_rule_budget_load', 'At full input power, useful work = power × seconds × efficiency as a decimal. Load force = useful work ÷ the held load movement.'),
+            '(' + String(budget) + ' W × ' + String(model.seconds) + ' s × ' + eta + ') ÷ ' + String(settings.loadDistance) + ' m'],
+          budgetMovement: ['m', b.id === 'ramp' ? __alloT('stem.machinelab.power_q_budget_rise', 'Calculate vertical rise at this power budget') : __alloT('stem.machinelab.power_q_budget_movement', 'Calculate load movement at this power budget'), planningGiven + ' · ' +
+            __alloT('stem.machinelab.power_planning_hold_load', 'Load held fixed: ') + String(settings[b.loadKey]) + ' N · ' + percent + '%',
+            b.id === 'ramp' ? __alloT('stem.machinelab.power_rule_budget_rise', 'Vertical rise = input-power budget × seconds × efficiency as a decimal ÷ the held load force. This is rise, not travel along the ramp.') :
+              __alloT('stem.machinelab.power_rule_budget_movement', 'Load movement = input-power budget × seconds × efficiency as a decimal ÷ the held load force.'),
+            '(' + String(budget) + ' W × ' + String(model.seconds) + ' s × ' + eta + ') ÷ ' + String(settings[b.loadKey]) + ' N'],
+          requiredEfficiency: ['%', __alloT('stem.machinelab.power_q_required_efficiency', 'Calculate the efficiency required by this task'), planningGiven + ' · ' +
+            __alloT('stem.machinelab.eff_given_load', 'Load: ') + String(settings[b.loadKey]) + ' N · ' + __alloT('stem.machinelab.lift_distance', 'Load moves') + ': ' + String(settings.loadDistance) + ' m',
+            __alloT('stem.machinelab.power_rule_required_efficiency', 'Required efficiency (%) = useful task work ÷ available input energy × 100. Use load × movement ÷ (power × seconds), then multiply by 100. Keep a result above 100%; do not clamp it.'),
+            '(' + String(settings[b.loadKey]) + ' N × ' + String(settings.loadDistance) + ' m) ÷ (' + String(budget) + ' W × ' + String(model.seconds) + ' s) × 100']
+        };
+        if (planning[kind]) return { unit: planning[kind][0], target: model[kind], title: planning[kind][1], given: planning[kind][2], formula: planning[kind][3], setup: planning[kind][4] };
         var specs = {
           inputPower: ['W', __alloT('stem.machinelab.power_q_input', 'Calculate average input power'), energyGiven + ' · ' + timeGiven,
             __alloT('stem.machinelab.power_rule_input', 'Input work = useful work ÷ efficiency as a decimal. Average input power = input work ÷ seconds.'),
@@ -8214,8 +8250,8 @@ window.StemLab = window.StemLab || {
         return Math.abs(value - question.target) <= Math.max(1e-10, Math.abs(question.target) * 0.01) ? 'correct' : 'incorrect';
       }
       function validPowerRecord(record, b, kind) {
-        if (!record || Array.isArray(record) || record.version !== 1 || record.benchId !== b.id || record.question !== kind || powerKinds(b).indexOf(kind) < 0 ||
-          typeof record.answer !== 'string' || record.answer.length > 64 || ['', 'W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N'].indexOf(record.unit) < 0 ||
+        if (!record || Array.isArray(record) || record.version !== powerRecordVersion(kind) || record.benchId !== b.id || record.question !== kind || powerKinds(b).indexOf(kind) < 0 ||
+          typeof record.answer !== 'string' || record.answer.length > 64 || ['', 'W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%'].indexOf(record.unit) < 0 ||
           !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
         var model = powerModel(record.settings, b, record.percent, record.seconds, record.budget);
         if (!model || (record.completion !== 'solution' && (record.completion !== 'checked' ||
@@ -8233,7 +8269,7 @@ window.StemLab = window.StemLab || {
           __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)') + ': ' + powerFmt(record.budget),
           __alloT('stem.machinelab.eff_input', 'Input work: ') + powerFmt(model.workIn) + ' J · ' +
             __alloT('stem.machinelab.eff_useful', 'Useful work: ') + powerFmt(model.workOut) + ' J',
-          question.given, question.formula, question.setup + ' = ' + powerFmt(question.target) + ' ' + question.unit,
+          question.given, question.formula, question.setup + ' = ' + powerResultFmt(record.question, question.target) + ' ' + question.unit,
           __alloT('stem.machinelab.eff_record_answer', 'Entered answer: ') + (record.answer.trim() ? record.answer + ' ' + record.unit : __alloT('stem.machinelab.eff_no_answer', 'none')),
           record.completion === 'solution' ? __alloT('stem.machinelab.eff_record_solution', 'Worked solution viewed; this is practice, not an independent score.')
             : __alloT('stem.machinelab.eff_record_checked', 'Answer checked within the stated rounding tolerance; this is practice, not a score.'),
@@ -8281,7 +8317,7 @@ window.StemLab = window.StemLab || {
             var records = Object.assign({}, source.benchPowerRecords || {}), station = {};
             // Only supported, valid skill records are retained for this station.
             kinds.forEach(function (kind) { var prior = validPowerRecord(records[bench.id] && records[bench.id][kind], bench, kind); if (prior) station[kind] = prior; });
-            station[ld.question] = { version: 1, benchId: bench.id, settings: stationSettingsCopy(latest.settings, bench),
+            station[ld.question] = { version: powerRecordVersion(ld.question), benchId: bench.id, settings: stationSettingsCopy(latest.settings, bench),
               percent: _machineMath.parseNum(ld.percent), seconds: latest.seconds, budget: _machineMath.parseNum(ld.budget),
               question: ld.question, answer: ld.answer, unit: ld.unit, hint: ld.hint, completion: ld.revealed ? 'solution' : 'checked' };
             records[bench.id] = station;
@@ -8386,6 +8422,43 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'pace-help', style: style }, __alloT('stem.machinelab.power_pace_help', 'Halving the time doubles average power and movement rates. Doubling time halves them. Work, efficiency and modeled effort stay the same; this table does not change the station.'))
           ]);
         }
+        function budgetPlanning() {
+          var scale = Math.max(model.workIn, model.budgetEnergy);
+          var rows = [
+            { id: 'required', label: __alloT('stem.machinelab.power_planning_required_work', 'Input work needed'), value: model.workIn, ink: T.effort, pattern: 'solid' },
+            { id: 'available', label: __alloT('stem.machinelab.power_planning_available_work', 'Input energy available'), value: model.budgetEnergy, ink: T.load, pattern: 'striped' }
+          ];
+          return h('details', { key: 'planning', 'data-ml-power-planning': bench.id, style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
+            h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_planning_title', 'Plan a task at this power')),
+            h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.power_planning_intro', 'Hold the power budget and task time fixed. Compare the input work the current task needs with the input energy supplied at full budget.')),
+            h('figure', { key: 'chart', 'data-ml-power-budget-chart': '', 'aria-labelledby': prefix + 'budget-chart-title-' + bench.id, style: panelStyle }, [
+              h('figcaption', { key: 'caption', id: prefix + 'budget-chart-title-' + bench.id, style: Object.assign({}, style, { fontWeight: 800, marginBottom: 10 }) }, __alloT('stem.machinelab.power_planning_energy_title', 'Power × time gives an energy budget')),
+              h('p', { key: 'equation', style: Object.assign({}, style, { margin: '0 0 14px', fontVariantNumeric: 'tabular-nums' }) }, powerFmt(budget) + ' W × ' + powerFmt(model.seconds) + ' s = ' + powerFmt(model.budgetEnergy) + ' J'),
+              h('dl', { key: 'rows', style: { display: 'grid', gap: 16, margin: 0 } }, rows.map(function (row) {
+                return h('div', { key: row.id, style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: '7px 10px', minWidth: 0, color: T.text, fontSize: 12, lineHeight: 1.5 } }, [
+                  h('dt', { key: 'label' }, row.label),
+                  h('dd', { key: 'value', style: { margin: 0, fontWeight: 800, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere', maxWidth: 120 } }, powerFmt(row.value) + ' J'),
+                  h('dd', { key: 'track', 'aria-hidden': 'true', 'data-ml-power-budget-track': '', style: { margin: 0, gridColumn: '1/-1', height: 22, outline: '1px solid ' + T.border, borderRadius: 3, overflow: 'hidden', background: T.card } },
+                    h('span', { 'data-ml-power-budget-bar': row.id, 'data-value': row.value, 'data-pattern': row.pattern, style: { display: 'block', height: '100%', width: (row.value / scale * 100) + '%', color: row.ink,
+                      backgroundColor: row.pattern === 'solid' ? row.ink : T.card, backgroundImage: row.pattern === 'solid' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' } }))
+                ]);
+              })),
+              h('p', { key: 'help', style: Object.assign({}, style, { margin: '12px 0 0', fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.power_planning_chart_help', 'Both bars start at zero and use the same energy scale. Solid is required work; stripes are the available budget. Tiny values may be too narrow to see, so compare the numbers too.'))
+            ]),
+            h('dl', { key: 'cards', className: 'ml-power-visual-grid ml-power-budget-grid' }, [
+              ['budgetEnergy', __alloT('stem.machinelab.power_planning_available_work', 'Input energy available'), 'J'],
+              ['usefulBudgetEnergy', __alloT('stem.machinelab.power_planning_useful_budget', 'Useful work at this budget'), 'J'],
+              ['budgetLoad', __alloT('stem.machinelab.power_planning_load', 'Load at held movement'), 'N'],
+              ['budgetMovement', bench.id === 'ramp' ? __alloT('stem.machinelab.power_planning_rise', 'Vertical rise at held load') : __alloT('stem.machinelab.power_planning_movement', 'Movement at held load'), 'm'],
+              ['requiredEfficiency', __alloT('stem.machinelab.power_planning_efficiency', 'Efficiency required by this task'), '%']
+            ].map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-budget-metric': metric[0], 'data-value': model[metric[0]], style: { padding: 10, background: T.bg, border: '1px solid ' + T.border, borderRadius: 8, minWidth: 0 } }, [
+              h('dt', { key: 'label', style: style }, metric[1]), h('dd', { key: 'value', style: valueStyle }, (metric[0] === 'requiredEfficiency' ? String(model[metric[0]]) : powerFmt(model[metric[0]])) + ' ' + metric[2])
+            ]); })),
+            h('p', { key: 'held', style: style }, __alloT('stem.machinelab.power_planning_hold_movement', 'Movement held fixed: ') + powerFmt(session.settings.loadDistance) + ' m · ' + __alloT('stem.machinelab.power_planning_hold_load', 'Load held fixed: ') + powerFmt(session.settings[bench.loadKey]) + ' N'),
+            h('p', { key: 'meaning', 'data-ml-power-budget-meaning': '', style: Object.assign({}, style, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, __alloT('stem.machinelab.power_planning_meaning', 'Load and movement are alternative calculations: hold one fixed while finding the other. Do not combine both limits into one larger task. A required efficiency above 100% cannot be reached through efficiency alone; allow more time or power, or reduce the task.')),
+            h('p', { key: 'scope', style: style }, __alloT('stem.machinelab.power_planning_scope', 'These are energy-based limits at full mechanical input power and constant efficiency. They do not check peak force, available travel, strength or acceleration, and they do not change station settings. Changing mechanical advantage alone trades effort for hand travel; it does not change this task’s energy budget.'))
+          ]);
+        }
         function practice() {
           var skillLabels = {
             inputPower: __alloT('stem.machinelab.power_choose_input', 'Input power'),
@@ -8395,11 +8468,16 @@ window.StemLab = window.StemLab || {
             loadSpeed: bench.id === 'ramp' ? __alloT('stem.machinelab.power_choose_rise', 'Vertical rise rate') : __alloT('stem.machinelab.power_choose_load', 'Load movement rate'),
             budgetTime: __alloT('stem.machinelab.power_choose_time', 'Time at power budget'),
             torque: __alloT('stem.machinelab.power_choose_torque', 'Handle torque'),
-            rpm: __alloT('stem.machinelab.power_choose_rpm', 'Handle RPM')
+            rpm: __alloT('stem.machinelab.power_choose_rpm', 'Handle RPM'),
+            budgetEnergy: __alloT('stem.machinelab.power_choose_energy_budget', 'Energy budget'),
+            budgetLoad: __alloT('stem.machinelab.power_choose_load_budget', 'Load at budget'),
+            budgetMovement: bench.id === 'ramp' ? __alloT('stem.machinelab.power_choose_rise_budget', 'Rise at budget') : __alloT('stem.machinelab.power_choose_movement_budget', 'Movement at budget'),
+            requiredEfficiency: __alloT('stem.machinelab.power_choose_required_eff', 'Required efficiency')
           };
           return h('div', { key: 'practice', 'data-ml-power-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.power_practice', 'Practice a power & motion skill')),
             select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, skillLabels[kind]]; })),
+            h('h4', { key: 'question-title', 'data-ml-power-question-title': '', style: Object.assign({}, style, { fontSize: 14, fontWeight: 800, margin: '10px 0 6px' }) }, question.title),
             h('p', { key: 'given', 'data-ml-power-given': '', style: Object.assign({}, style, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, question.given),
             h('p', { key: 'rounding', id: roundingId, style: style }, __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: style }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
@@ -8411,7 +8489,8 @@ window.StemLab = window.StemLab || {
               ['', __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')], ['W', __alloT('stem.machinelab.power_unit_w', 'W — watts')],
               ['m/s', __alloT('stem.machinelab.power_unit_speed', 'm/s — metres per second')], ['s', __alloT('stem.machinelab.power_unit_time', 's — seconds')],
               ['N·m', __alloT('stem.machinelab.power_unit_torque', 'N·m — newton-metres')], ['rpm', __alloT('stem.machinelab.power_choose_unit_rpm', 'rpm — turns per minute')],
-              ['J', __alloT('stem.machinelab.eff_unit_j', 'J — joules')], ['N', __alloT('stem.machinelab.eff_unit_n', 'N — newtons')]
+              ['J', __alloT('stem.machinelab.eff_unit_j', 'J — joules')], ['N', __alloT('stem.machinelab.eff_unit_n', 'N — newtons')],
+              ['m', __alloT('stem.machinelab.eff_unit_m', 'm — metres')], ['%', __alloT('stem.machinelab.eff_unit_percent', '% — percent')]
             ]),
             h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
               action('check', __alloT('stem.machinelab.eff_check', 'Check calculation'), function () { change({ checked: true }); }),
@@ -8424,10 +8503,10 @@ window.StemLab = window.StemLab || {
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-power-result': result }, result === 'invalid'
                 ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
-                : result === 'unit' ? __alloT('stem.machinelab.power_unit_help', 'Check the unit: power uses W, movement rate m/s, time s, torque N·m and rotation rate rpm.')
-                : result === 'incorrect' ? __alloT('stem.machinelab.power_retry', 'Not yet. Check the percentage, time conversion and calculation. A hint can help.')
+                : result === 'unit' ? __alloT('stem.machinelab.power_planning_unit_help', 'Check the requested unit: W for power, J for energy, N for load, m for movement, % for efficiency, m/s for rate, s for time, N·m for torque, or rpm for rotation rate.')
+                : result === 'incorrect' ? (draft.question === 'budgetEnergy' ? __alloT('stem.machinelab.power_retry_budget_energy', 'Not yet. Multiply the input-power budget by time in seconds to find joules; do not apply efficiency to input energy.') : draft.question === 'budgetLoad' ? __alloT('stem.machinelab.power_retry_budget_load', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held movement.') : draft.question === 'budgetMovement' ? __alloT('stem.machinelab.power_retry_budget_movement', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held load force.') : draft.question === 'requiredEfficiency' ? __alloT('stem.machinelab.power_retry_required_efficiency', 'Not yet. Divide load × movement by power × seconds, then multiply by 100. Keep a result above 100%; it shows that efficiency alone cannot meet the task.') : __alloT('stem.machinelab.power_retry', 'Not yet. Check the percentage, time conversion and calculation. A hint can help.'))
                 : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) +
-                  question.setup + ' = ' + powerFmt(question.target) + ' ' + question.unit) : null
+                  question.setup + ' = ' + powerResultFmt(draft.question, question.target) + ' ' + question.unit) : null
             ]),
             h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
               action('save', __alloT('stem.machinelab.power_save', 'Save / update this skill'), save, result !== 'correct' && result !== 'solution'),
@@ -8447,7 +8526,7 @@ window.StemLab = window.StemLab || {
           h('p', { key: 'seconds', 'data-ml-power-seconds': session.seconds, style: style }, __alloT('stem.machinelab.power_time_given', 'Task time: ') + (session.seconds === null ? '—' : powerFmt(session.seconds)) + ' s'),
           input('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), !(budget >= 0.01 && budget <= 100000), prefix + 'ranges-' + bench.id),
           h('p', { key: 'ranges', id: prefix + 'ranges-' + bench.id, style: style }, __alloT('stem.machinelab.power_ranges', 'Efficiency: 1–100%. Duration: 0.01–3600 seconds (up to 60 minutes). Input-power budget: 0.01–100000 W. One minute equals 60 seconds.')),
-          model ? h('div', { key: 'valid' }, [comparison(), practice()])
+          model ? h('div', { key: 'valid' }, [comparison(), budgetPlanning(), practice()])
             : h('p', { key: 'invalid', role: 'status', style: style }, __alloT('stem.machinelab.power_invalid', 'Enter valid assumptions and a working station setup before calculating or checking an answer.')),
           h('p', { key: 'count', 'data-ml-power-count': saved.length, style: style }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),
@@ -8456,7 +8535,7 @@ window.StemLab = window.StemLab || {
             saved.map(function (record) { return h('p', { key: record.question, style: Object.assign({}, style, { whiteSpace: 'pre-line', borderTop: '1px solid ' + T.border, paddingTop: 8 }) }, powerRecordText(record, bench)); }),
             h('button', { key: 'record', type: 'button', style: button, onClick: openWorkRecord }, __alloT('stem.machinelab.design_open_record', 'Open work record'))
           ]) : null,
-          h('style', { key: 'visual' }, '.ml-power-lab label{display:block;margin-bottom:5px;font-weight:650}.ml-power-lab input,.ml-power-lab select{margin-bottom:10px}.ml-power-visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-power-visual-grid>div{min-width:0}.ml-power-lab [data-ml-power-comparison]{border-top:1px solid currentColor}.ml-power-lab td,.ml-power-lab th{font-variant-numeric:tabular-nums}@media(max-width:440px){.ml-power-visual-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-lab [data-ml-power-pace-track]{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-power-lab [data-ml-power-pace-bar]{background:Highlight!important}.ml-power-lab [data-ml-power-budget-marker]{border-color:CanvasText!important;outline-color:Canvas!important;background:Canvas!important}.ml-power-lab button:disabled{opacity:1!important}}'),
+          h('style', { key: 'visual' }, '.ml-power-lab label{display:block;margin-bottom:5px;font-weight:650}.ml-power-lab input,.ml-power-lab select{margin-bottom:10px}.ml-power-visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-power-visual-grid>div{min-width:0}.ml-power-budget-grid>div:last-child{grid-column:1/-1}.ml-power-lab [data-ml-power-comparison]{border-top:1px solid currentColor}.ml-power-lab td,.ml-power-lab th{font-variant-numeric:tabular-nums}@media(max-width:440px){.ml-power-visual-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-lab [data-ml-power-budget-track]{outline-color:CanvasText!important;background:Canvas!important}.ml-power-lab [data-ml-power-budget-bar]{forced-color-adjust:none;color:CanvasText!important;background-color:Canvas!important}.ml-power-lab [data-ml-power-budget-bar][data-pattern=solid]{background-color:CanvasText!important}.ml-power-lab [data-ml-power-pace-track]{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-power-lab [data-ml-power-pace-bar]{background:Highlight!important}.ml-power-lab [data-ml-power-budget-marker]{border-color:CanvasText!important;outline-color:Canvas!important;background:Canvas!important}.ml-power-lab button:disabled{opacity:1!important}}'),
           h('style', { key: 'focus' }, '.ml-power-lab summary:focus-visible,.ml-power-lab input:focus-visible,.ml-power-lab select:focus-visible,.ml-power-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-power-lab button:disabled{cursor:default;opacity:0.65}')
         ])], 'power-lab');
       }

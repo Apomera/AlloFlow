@@ -1,0 +1,51 @@
+{
+  "format": "machine-lab-new-power-planning-coverage-v1",
+  "sourceSha256": "19b5d0f85931b68081c2e64cee39d26cbfc63d0b721704cecb2f747f18c7131c",
+  "publicMirrorSha256": "19b5d0f85931b68081c2e64cee39d26cbfc63d0b721704cecb2f747f18c7131c",
+  "file": "tests/machinelab_power_planning.test.js",
+  "testSha256": "0ca3185f56cc76d7fd1c8a21e018fe7caf27ad511be0f8d74a7939f67fe623c9",
+  "passed": 111,
+  "failed": 0,
+  "uncovered": 0,
+  "nativeProcesses": 5,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "d9d7204c2decae92bbeabb92ca22ec03f215b485041f2e077b169c74f6f1dc61"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "35bec8627ac3323f30ffb2797a88639d30158acefc3a0c75eeeaea7abe099821"
+  },
+  "receipts": [
+    {
+      "path": "group-01.json",
+      "sha256": "1e65f84d7dfc8898048c2132a13082ec9e3befc97178da3b2d11d0b6fc011108",
+      "passed": 18,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-02.json",
+      "sha256": "1515ff4c3c40b481882b6140dc2c46a1be3305ebf969c42cdf702325875b0fb0",
+      "passed": 8,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-03.json",
+      "sha256": "3e37a11b2b96a60d3675317c7beb9c41d4b3e71b2cc8e6a04739fe287533f1f1",
+      "passed": 40,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-04.json",
+      "sha256": "0cc792fbbfbad77c98b3e399e0db0bcfa1097be7b3157d1dddaeb0b4297e3a0e",
+      "passed": 16,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-05.json",
+      "sha256": "2e02f4f256c8f160dc3fbffefabf18f5a2e9650007d8613b038019394de90573",
+      "passed": 29,
+      "observedExitCode": 0
+    }
+  ]
+}

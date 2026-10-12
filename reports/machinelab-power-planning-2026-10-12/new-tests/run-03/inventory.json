@@ -1,0 +1,561 @@
+{
+  "file": "tests/machinelab_power_planning.test.js",
+  "sha256": "0ca3185f56cc76d7fd1c8a21e018fe7caf27ad511be0f8d74a7939f67fe623c9",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: independent single-stage budget physics computes independent 'lever' energy and capacities across endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: independent single-stage budget physics computes independent 'pulley' energy and capacities across endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: independent single-stage budget physics computes independent 'windlass' energy and capacities across endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: independent single-stage budget physics computes independent 'ramp' energy and capacities across endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: independent single-stage budget physics computes independent 'wedge' energy and capacities across endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: independent single-stage budget physics computes independent 'screw' energy and capacities across endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects malformed 'load' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects malformed 'movement' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects malformed 'MA' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects malformed 'efficiency' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects malformed 'duration' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects malformed 'budget' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: independent single-stage budget physics retains efficiency, time and watt boundaries and rotation validation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: independent single-stage budget physics rejects capacity and inherited arithmetic overflow",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: independent single-stage budget physics leaves energy-limited capacities independent of mechanical advantage and handle radius",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: independent single-stage budget physics holds movement and load separately when computing each capacity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: independent single-stage budget physics doubles capacities with duration or power and keeps required efficiency independent of assumed efficiency",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: independent single-stage budget physics does not clamp impossible efficiency or tiny positive capacity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: single-stage budget visualization shows independent 'lever' metrics and zero-based energy bars without changing settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: single-stage budget visualization shows independent 'pulley' metrics and zero-based energy bars without changing settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: single-stage budget visualization shows independent 'windlass' metrics and zero-based energy bars without changing settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: single-stage budget visualization shows independent 'ramp' metrics and zero-based energy bars without changing settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: single-stage budget visualization shows independent 'wedge' metrics and zero-based energy bars without changing settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: single-stage budget visualization shows independent 'screw' metrics and zero-based energy bars without changing settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: single-stage budget visualization removes planning metrics and practice when an assumption becomes invalid",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: single-stage budget visualization names the energy figure and exposes all new skill units with a full question title",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'lever/budgetEnergy' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'lever/budgetLoad' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'lever/budgetMovement' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 29,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'lever/requiredEfficiency' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 30,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'pulley/budgetEnergy' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 31,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'pulley/budgetLoad' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 32,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'pulley/budgetMovement' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 33,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'pulley/requiredEfficiency' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 34,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'windlass/budgetEnergy' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 35,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'windlass/budgetLoad' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 36,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'windlass/budgetMovement' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 37,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'windlass/requiredEfficiency' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 38,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'ramp/budgetEnergy' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 39,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'ramp/budgetLoad' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 40,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'ramp/budgetMovement' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 41,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'ramp/requiredEfficiency' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 42,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'wedge/budgetEnergy' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 43,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'wedge/budgetLoad' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 44,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'wedge/budgetMovement' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 45,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'wedge/requiredEfficiency' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 46,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'screw/budgetEnergy' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 47,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'screw/budgetLoad' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 48,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'screw/budgetMovement' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 49,
+      "fullName": "Machine Lab: single-stage budget skill practice checks and saves the independent 'screw/requiredEfficiency' answer in a fixed version-2 snapshot",
+      "executedPassCount": 1
+    },
+    {
+      "index": 50,
+      "fullName": "Machine Lab: single-stage budget skill practice requires the correct 'J' unit for 'budgetEnergy'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 51,
+      "fullName": "Machine Lab: single-stage budget skill practice requires the correct 'N' unit for 'budgetLoad'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 52,
+      "fullName": "Machine Lab: single-stage budget skill practice requires the correct 'm' unit for 'budgetMovement'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 53,
+      "fullName": "Machine Lab: single-stage budget skill practice requires the correct '%' unit for 'requiredEfficiency'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 54,
+      "fullName": "Machine Lab: single-stage budget skill practice accepts appropriate rounding but rejects an error outside one percent for 'budgetEnergy'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 55,
+      "fullName": "Machine Lab: single-stage budget skill practice accepts appropriate rounding but rejects an error outside one percent for 'budgetLoad'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 56,
+      "fullName": "Machine Lab: single-stage budget skill practice accepts appropriate rounding but rejects an error outside one percent for 'budgetMovement'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 57,
+      "fullName": "Machine Lab: single-stage budget skill practice accepts appropriate rounding but rejects an error outside one percent for 'requiredEfficiency'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 58,
+      "fullName": "Machine Lab: single-stage budget skill practice provides progressive 'budgetEnergy' hints and retains worked-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 59,
+      "fullName": "Machine Lab: single-stage budget skill practice provides progressive 'budgetLoad' hints and retains worked-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 60,
+      "fullName": "Machine Lab: single-stage budget skill practice provides progressive 'budgetMovement' hints and retains worked-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 61,
+      "fullName": "Machine Lab: single-stage budget skill practice provides progressive 'requiredEfficiency' hints and retains worked-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 62,
+      "fullName": "Machine Lab: single-stage budget skill practice accepts a tiny positive movement capacity and rejects zero",
+      "executedPassCount": 1
+    },
+    {
+      "index": 63,
+      "fullName": "Machine Lab: single-stage budget skill practice checks efficiency above 100 percent without silently clamping the impossible requirement",
+      "executedPassCount": 1
+    },
+    {
+      "index": 64,
+      "fullName": "Machine Lab: single-stage budget skill practice uses converted seconds for every new calculation and its saved assumptions",
+      "executedPassCount": 1
+    },
+    {
+      "index": 65,
+      "fullName": "Machine Lab: single-stage budget skill practice states separate load and movement assumptions including vertical rise on a ramp",
+      "executedPassCount": 1
+    },
+    {
+      "index": 66,
+      "fullName": "Machine Lab: planning practice state integrity cycles through legacy and new 'lever' skills while clearing attempt state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 67,
+      "fullName": "Machine Lab: planning practice state integrity cycles through legacy and new 'pulley' skills while clearing attempt state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 68,
+      "fullName": "Machine Lab: planning practice state integrity cycles through legacy and new 'windlass' skills while clearing attempt state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 69,
+      "fullName": "Machine Lab: planning practice state integrity cycles through legacy and new 'ramp' skills while clearing attempt state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 70,
+      "fullName": "Machine Lab: planning practice state integrity cycles through legacy and new 'wedge' skills while clearing attempt state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 71,
+      "fullName": "Machine Lab: planning practice state integrity cycles through legacy and new 'screw' skills while clearing attempt state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 72,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the station changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 73,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the view changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 74,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the geometry changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 75,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the load changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 76,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the movement changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 77,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the efficiency changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 78,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the duration changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 79,
+      "fullName": "Machine Lab: planning practice state integrity rejects delayed planning actions and edits after the budget changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 80,
+      "fullName": "Machine Lab: planning practice state integrity does not restore a saved answer cleared by Next or a later question selection",
+      "executedPassCount": 1
+    },
+    {
+      "index": 81,
+      "fullName": "Machine Lab: planning practice state integrity rechecks edited numbers on Save and retains other station drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 82,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'inputPower' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 83,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'usefulPower' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 84,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'lossPower' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 85,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'handSpeed' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 86,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'loadSpeed' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 87,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'budgetTime' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 88,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'torque' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 89,
+      "fullName": "Machine Lab: verifiable single-stage planning records retains version-1 'rpm' records and honest newly available distractor units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 90,
+      "fullName": "Machine Lab: verifiable single-stage planning records rejects wrong versions and forged arithmetic or units for 'budgetEnergy'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 91,
+      "fullName": "Machine Lab: verifiable single-stage planning records rejects wrong versions and forged arithmetic or units for 'budgetLoad'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 92,
+      "fullName": "Machine Lab: verifiable single-stage planning records rejects wrong versions and forged arithmetic or units for 'budgetMovement'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 93,
+      "fullName": "Machine Lab: verifiable single-stage planning records rejects wrong versions and forged arithmetic or units for 'requiredEfficiency'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 94,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with wrong station",
+      "executedPassCount": 1
+    },
+    {
+      "index": 95,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with missing geometry",
+      "executedPassCount": 1
+    },
+    {
+      "index": 96,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with string efficiency",
+      "executedPassCount": 1
+    },
+    {
+      "index": 97,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with efficiency above range",
+      "executedPassCount": 1
+    },
+    {
+      "index": 98,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with string duration",
+      "executedPassCount": 1
+    },
+    {
+      "index": 99,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with duration above range",
+      "executedPassCount": 1
+    },
+    {
+      "index": 100,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with string budget",
+      "executedPassCount": 1
+    },
+    {
+      "index": 101,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with zero budget",
+      "executedPassCount": 1
+    },
+    {
+      "index": 102,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with invalid unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 103,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with invalid hint",
+      "executedPassCount": 1
+    },
+    {
+      "index": 104,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with invalid completion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 105,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with non-string answer",
+      "executedPassCount": 1
+    },
+    {
+      "index": 106,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with overlong answer",
+      "executedPassCount": 1
+    },
+    {
+      "index": 107,
+      "fullName": "Machine Lab: verifiable single-stage planning records omits imported planning evidence with mismatched skill",
+      "executedPassCount": 1
+    },
+    {
+      "index": 108,
+      "fullName": "Machine Lab: verifiable single-stage planning records coexists with legacy records and replaces only the active skill while preserving unrelated evidence",
+      "executedPassCount": 1
+    },
+    {
+      "index": 109,
+      "fullName": "Machine Lab: verifiable single-stage planning records preserves a just-over-100-percent requirement in the worked solution, fixed record and export",
+      "executedPassCount": 1
+    },
+    {
+      "index": 110,
+      "fullName": "Machine Lab: verifiable single-stage planning records exports recomputed fixed-task planning results with literal escaped answers and solution provenance",
+      "executedPassCount": 1
+    }
+  ]
+}
