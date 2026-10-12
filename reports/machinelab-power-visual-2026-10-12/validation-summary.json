@@ -1,0 +1,170 @@
+{
+  "date": "2026-10-12",
+  "scope": "Power and motion pace comparison figure, responsive metric cards, setup and practice hierarchy.",
+  "source": {
+    "canonical": "stem_lab/stem_tool_machinelab.js",
+    "publicMirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+    "sha256": "5580dd78b69dae7a50a6bcac6586262a42de935be58706a64825df8511e71579",
+    "byteParity": true,
+    "scopeProof": "source-scope.json",
+    "scopeProofSha256": "74c8bab11c50fce9aad9ad482668a6ca37be79c649d4a2d23d489c4ca786daf0"
+  },
+  "tests": {
+    "passed": 457,
+    "failed": 0,
+    "uncovered": 0,
+    "files": 7,
+    "successfulNativeProcesses": 18,
+    "allObservedChildExits": 0,
+    "inventoryExactlyOnce": true,
+    "existingTestsUnchanged": true,
+    "coverage": [
+      {
+        "file": "tests/machinelab_work_record.test.js",
+        "sha256": "49e47e41a430beabbeb80572750c248faf2e5492ff76d74cfda71c6dc2b47ee4",
+        "passed": 11
+      },
+      {
+        "file": "tests/machinelab_read_aloud.test.js",
+        "sha256": "0d0696fdbc38c2d69fb930837d1b45759e25569a9faee1a22e8a968e5a188877",
+        "passed": 8
+      },
+      {
+        "file": "tests/machinelab_i18n_hygiene.test.js",
+        "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+        "passed": 8
+      },
+      {
+        "file": "tests/machinelab_grade_bands.test.js",
+        "sha256": "c9ca6bc0aa0796f41467b3af1bcc928b729c0cc8790a2a2cffc21d82d5bfd5b4",
+        "passed": 37
+      },
+      {
+        "file": "tests/machinelab_a11y.test.js",
+        "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+        "passed": 28
+      },
+      {
+        "file": "tests/machinelab_views.test.js",
+        "sha256": "cb05b9a04d97bba407f6129c8e09ef9db6a835f08d820ddcd40d159e51c0a72b",
+        "passed": 192
+      },
+      {
+        "file": "tests/machinelab_power_lab.test.js",
+        "sha256": "995d335a4aba90278352d1fe238d91fb1180a1be77770c686928161e847f4d9c",
+        "passed": 173
+      }
+    ],
+    "aggregate": "regression-final.json",
+    "aggregateSha256": "9f50d34862a85fb93b41f43ea720a4fca8e0f4e7bb484695186e10cf19c2a06e",
+    "processManifest": "regression-processes.json",
+    "processManifestSha256": "501878d83eab67688d7504254c296364817fadc267dc99e5e94ca4672b862f87"
+  },
+  "browser": {
+    "checks": 577,
+    "scenarios": 10,
+    "errors": 0,
+    "observedExitCode": 0,
+    "process": {
+      "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/process.json",
+      "sha256": "5bba18041433c7d327b0adb5ee90cd265bb75dc6af5e6e20f47d41ef6d46a64b"
+    },
+    "screenshots": [
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/desktop-power-pace.png",
+        "sha256": "d20c30c86c1c05e65e08ba67cd1a93cb802dbb9344785df1d55f952a0dfd8fb8",
+        "bytes": 17430,
+        "width": 529,
+        "height": 451,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/dark-phone-power-pace.png",
+        "sha256": "8b7d1713c23b3586b4abb8991d86fb6f8f42e0e89393fa10e22a460604abe6e3",
+        "bytes": 18190,
+        "width": 334,
+        "height": 470,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/dark-phone-power-practice.png",
+        "sha256": "a26dd59eef3bac21c1bacdc16a7c08d0f0b4aa4d6702c702435e13950eae9e8e",
+        "bytes": 37850,
+        "width": 334,
+        "height": 998,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/forced-colors-power-pace.png",
+        "sha256": "a0aaa6893043c5c2072bc5db3c708c19052507ed05bba863d52fce9180ae80ed",
+        "bytes": 15491,
+        "width": 264,
+        "height": 507,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/forced-colors-power-practice.png",
+        "sha256": "d316db32fc971fa1eaaf6f9aac13b41ea294d229584e575c18c15679770eb39d",
+        "bytes": 31167,
+        "width": 264,
+        "height": 1001,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/phone-large-budget.png",
+        "sha256": "4ec39c4db80a9dd40f7bde22c16a6772bbf9f38e13e3b634596e1f9b1ffab23e",
+        "bytes": 17913,
+        "width": 385,
+        "height": 470,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/phone-low-budget-extreme.png",
+        "sha256": "dff3f77e4e7ce822765dea1866ba4ea57e877b4396e91f8a75add89440806224",
+        "bytes": 18862,
+        "width": 264,
+        "height": 551,
+        "visuallyInspected": true
+      }
+    ],
+    "sourceExactInNativePage": true
+  },
+  "review": {
+    "agent": "pace_review",
+    "result": "No remaining code-review blockers",
+    "evidenceReview": "Read-only reviewer verified native exit, final browser pointer and all 14 referenced artifacts, exact embedded source, and exactly-once regression verifier structure.",
+    "sourceSha256": "5580dd78b69dae7a50a6bcac6586262a42de935be58706a64825df8511e71579",
+    "corrections": "Equal two-pixel row borders keep tracks the same width. Browser-found skill label clipping resolved with compact selector-only labels; full questions and records unchanged.",
+    "markerVisibility": "Added a contrasting outline behind the dashed marker; forced colors uses system Canvas/CanvasText."
+  },
+  "staticChecks": {
+    "syntaxFiles": [
+      "stem_lab/stem_tool_machinelab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "tests/machinelab_work_record.test.js",
+      "tests/machinelab_read_aloud.test.js",
+      "tests/machinelab_i18n_hygiene.test.js",
+      "tests/machinelab_grade_bands.test.js",
+      "tests/machinelab_a11y.test.js",
+      "tests/machinelab_views.test.js",
+      "tests/machinelab_power_lab.test.js",
+      "dev-tools/ml_power_visual_qa.cjs",
+      "reports/machinelab-power-visual-2026-10-12/browser/run-native.cjs",
+      "reports/machinelab-power-visual-2026-10-12/run-regressions.cjs",
+      "reports/machinelab-power-visual-2026-10-12/verify-source-scope.cjs",
+      "reports/machinelab-power-visual-2026-10-12/verify-evidence.cjs"
+    ],
+    "observedExitCodes": 0
+  },
+  "limitations": [
+    "Constant-efficiency steady-motion conceptual model; no simulation playback, strength or acceleration change.",
+    "Subpixel bars are not given misleading minimum widths; numeric labels remain available.",
+    "Scoped tests and local Chromium host, not a full application build, physical assistive-device session, performance benchmark or deployment."
+  ],
+  "excludedGeneratedArtifacts": [
+    "ml-shots.html",
+    "browser-temp/",
+    "test-temp/",
+    "downloads/"
+  ]
+}
