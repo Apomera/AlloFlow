@@ -1,0 +1,32 @@
+{
+  "finalSourceSha256": "1638880a9e7b98963b72461ea5394c728f2298912f68efadfa3e8fe0655ec1d9",
+  "restoredReviewedSourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+  "result": "Reversing exactly five new option labels reproduces the independently reviewed source byte for byte. No calculation, state, rendering structure or record logic changed.",
+  "labels": [
+    {
+      "key": "stem.machinelab.compound_q_pin",
+      "final": "Average input power",
+      "initial": "Calculate average input power"
+    },
+    {
+      "key": "stem.machinelab.compound_q_ptransfer",
+      "final": "Average power between stages",
+      "initial": "Calculate average power between stages"
+    },
+    {
+      "key": "stem.machinelab.compound_q_pout",
+      "final": "Average useful output power",
+      "initial": "Calculate average useful output power"
+    },
+    {
+      "key": "stem.machinelab.compound_q_ploss1",
+      "final": "First-stage power loss",
+      "initial": "Calculate average power lost in the first stage"
+    },
+    {
+      "key": "stem.machinelab.compound_q_ploss2",
+      "final": "Second-stage power loss",
+      "initial": "Calculate average power lost in the second stage"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "group": "legacy-grading",
+  "completed": false,
+  "exitCode": null,
+  "receiptMatchesBeforeUiFix": true,
+  "sourceSha256": "1638880a9e7b98963b72461ea5394c728f2298912f68efadfa3e8fe0655ec1d9",
+  "note": "Client context interruption removed shell visibility. No Node process remained. Seven child exits were durably observed; legacy-grading had no observed completion. Existing grading receipt/log preserved before retry; matching before-ui-fix receipt is stale and is not evidence for the final source.",
+  "includedInFinalCoverage": false
+}

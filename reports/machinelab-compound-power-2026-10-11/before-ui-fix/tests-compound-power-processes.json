@@ -1,0 +1,122 @@
+[
+  {
+    "testAfterSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "name": "new-physics",
+    "testFile": "tests/machinelab_compound_power.test.js",
+    "exitCode": 0,
+    "receipt": "tests-new-physics.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-new-physics.log",
+    "testSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "testNamePattern": "Machine Lab: compound power physics"
+  },
+  {
+    "testAfterSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "name": "new-comparison",
+    "testFile": "tests/machinelab_compound_power.test.js",
+    "exitCode": 0,
+    "receipt": "tests-new-comparison.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-new-comparison.log",
+    "testSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "testNamePattern": "Machine Lab: compound power comparison"
+  },
+  {
+    "testAfterSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "name": "new-skills",
+    "testFile": "tests/machinelab_compound_power.test.js",
+    "exitCode": 0,
+    "receipt": "tests-new-skills.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-new-skills.log",
+    "testSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "testNamePattern": "Machine Lab: compound power skills"
+  },
+  {
+    "testAfterSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "name": "new-identity",
+    "testFile": "tests/machinelab_compound_power.test.js",
+    "exitCode": 0,
+    "receipt": "tests-new-identity.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-new-identity.log",
+    "testSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "testNamePattern": "Machine Lab: compound power identity"
+  },
+  {
+    "testAfterSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "name": "new-records",
+    "testFile": "tests/machinelab_compound_power.test.js",
+    "exitCode": 0,
+    "receipt": "tests-new-records.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-new-records.log",
+    "testSha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+    "testNamePattern": "Machine Lab: compound power records"
+  },
+  {
+    "testAfterSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "name": "legacy-physics",
+    "testFile": "tests/machinelab_compound_lab.test.js",
+    "exitCode": 0,
+    "receipt": "tests-legacy-physics.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-legacy-physics.log",
+    "testSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "testNamePattern": "Machine Lab: compound physics"
+  },
+  {
+    "testAfterSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "name": "legacy-comparison",
+    "testFile": "tests/machinelab_compound_lab.test.js",
+    "exitCode": 0,
+    "receipt": "tests-legacy-comparison.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-legacy-comparison.log",
+    "testSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "testNamePattern": "Machine Lab: optional compound comparison"
+  },
+  {
+    "testAfterSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "name": "legacy-grading",
+    "testFile": "tests/machinelab_compound_lab.test.js",
+    "exitCode": 0,
+    "receipt": "tests-legacy-grading.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-legacy-grading.log",
+    "testSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "testNamePattern": "Machine Lab: compound skill grading"
+  },
+  {
+    "testAfterSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "name": "legacy-practice",
+    "testFile": "tests/machinelab_compound_lab.test.js",
+    "exitCode": 0,
+    "receipt": "tests-legacy-practice.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-legacy-practice.log",
+    "testSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "testNamePattern": "Machine Lab: guided compound practice"
+  },
+  {
+    "testAfterSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "name": "legacy-records",
+    "testFile": "tests/machinelab_compound_lab.test.js",
+    "exitCode": 0,
+    "receipt": "tests-legacy-records.json",
+    "sourceAfterSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
+    "log": "tests-legacy-records.log",
+    "testSha256": "c1570af8305001765c54f386c7ea3fc6e73a5c60bcdd312f528bc688ff8c1cd1",
+    "testNamePattern": "Machine Lab: honest saved compound skills"
+  }
+]

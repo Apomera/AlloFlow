@@ -1,0 +1,36 @@
+{
+  "documentWidth": 320,
+  "viewport": 320,
+  "panel": {
+    "scroll": 258,
+    "client": 258
+  },
+  "overflow": [
+    {
+      "tag": "SELECT",
+      "id": "ml-compound-question-screw",
+      "text": "Calculate combined ideal MACalculate combined efficiencyCalculate combined actual MACalculate force ",
+      "value": "firstLossPower",
+      "scroll": 333,
+      "client": 256,
+      "rect": {
+        "x": 31,
+        "y": 2532.984375,
+        "width": 258,
+        "height": 42,
+        "top": 2532.984375,
+        "right": 289,
+        "bottom": 2574.984375,
+        "left": 31
+      },
+      "styles": {
+        "display": "inline-block",
+        "whiteSpace": "pre",
+        "overflowWrap": "normal",
+        "width": "258px",
+        "padding": "8px"
+      }
+    }
+  ],
+  "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278"
+}
