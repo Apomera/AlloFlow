@@ -1,0 +1,572 @@
+{
+  "schemaVersion": 1,
+  "createdAtUtc": "2026-10-12T04:21:16.894796+00:00",
+  "purpose": "Original Allopack illustration archival snapshot",
+  "assets": [
+    {
+      "path": "images/30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4.png",
+      "bytes": 2262560,
+      "sha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "projectPaths": [
+        "allopacks/media/crew_ask_grade6_8/ca-term-howl.png",
+        "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "allopacks/media/crew_feedback_grade6_8/cf-term-howl.png",
+        "allopacks/media/crew_halfway_grade6_8/ch-term-howl.png",
+        "allopacks/media/crew_norms_grade6_8/cn-term-howl.png",
+        "allopacks/media/crew_perspective_grade6_8/cp-term-howl.png",
+        "allopacks/media/crew_repair_grade6_8/crepair-term-howl.png",
+        "allopacks/media/crew_story_grade6_8/cy-term-howl.png",
+        "allopacks/media/crew_system_grade6_8/cs-term-howl.png",
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-howl.png",
+        "allopacks/media/crew_upstander_grade6_8/cu-term-howl.png",
+        "allopacks/media/crew_zones_grade6_8/cz-term-howl.png"
+      ]
+    },
+    {
+      "path": "images/6d4248b7cea392ca5017954c7d90c5931d446c086f4c61839f83b30284f81b8f.png",
+      "bytes": 1986867,
+      "sha256": "6d4248b7cea392ca5017954c7d90c5931d446c086f4c61839f83b30284f81b8f",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-present.png"
+      ]
+    },
+    {
+      "path": "images/3093d821d2c0b9e873797c092de7b344b8eaca87ebbe9b836f3e81be1ccf5745.png",
+      "bytes": 1861416,
+      "sha256": "3093d821d2c0b9e873797c092de7b344b8eaca87ebbe9b836f3e81be1ccf5745",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-change.png"
+      ]
+    },
+    {
+      "path": "images/70c1ab823cebffe782247aa46a6b4f90ed50ac40b1c895e6be0db326f0865c37.png",
+      "bytes": 2145397,
+      "sha256": "70c1ab823cebffe782247aa46a6b4f90ed50ac40b1c895e6be0db326f0865c37",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-same.png"
+      ]
+    },
+    {
+      "path": "images/ab53c20856d5d7b523392045fa052268af9abbda216cf6a21a2f714a6e11b460.png",
+      "bytes": 2490336,
+      "sha256": "ab53c20856d5d7b523392045fa052268af9abbda216cf6a21a2f714a6e11b460",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-budget.png"
+      ]
+    },
+    {
+      "path": "images/1537bfbe78a1b92585b77d3aa947c2cd616d94c9aceea05c6940d532e51f35dd.png",
+      "bytes": 2071910,
+      "sha256": "1537bfbe78a1b92585b77d3aa947c2cd616d94c9aceea05c6940d532e51f35dd",
+      "projectPaths": [
+        "allopacks/media/crew_attention_grade6_8/cd-term-choice.png"
+      ]
+    },
+    {
+      "path": "images/0be1e4e49f8078dc671e4b8af414eab6960bb405f460b1d8bcd16d314e20042e.png",
+      "bytes": 1887740,
+      "sha256": "0be1e4e49f8078dc671e4b8af414eab6960bb405f460b1d8bcd16d314e20042e",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-invent.png"
+      ]
+    },
+    {
+      "path": "images/c12078d73c777b0d06769f7e3779a5323eea97b6ce6f4c5df50edb656d24fb8f.png",
+      "bytes": 1498432,
+      "sha256": "c12078d73c777b0d06769f7e3779a5323eea97b6ce6f4c5df50edb656d24fb8f",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-order.png"
+      ]
+    },
+    {
+      "path": "images/c04658249bcc66f6e597e678e92855aa25fb82512fc1b321e840c7dd27af019f.png",
+      "bytes": 1882925,
+      "sha256": "c04658249bcc66f6e597e678e92855aa25fb82512fc1b321e840c7dd27af019f",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-img-interview.png"
+      ]
+    },
+    {
+      "path": "images/b6a0424d3bd1804052e4399b59d9169a473ed0aed4462a476024dff056f1759c.png",
+      "bytes": 3235240,
+      "sha256": "b6a0424d3bd1804052e4399b59d9169a473ed0aed4462a476024dff056f1759c",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-service.png"
+      ]
+    },
+    {
+      "path": "images/7d8fcc54b4fef1a6204d1ab28f26fe0ae5c735a1c1ff3969e20f02ae36fbb4d6.png",
+      "bytes": 1334955,
+      "sha256": "7d8fcc54b4fef1a6204d1ab28f26fe0ae5c735a1c1ff3969e20f02ae36fbb4d6",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-timeline.png"
+      ]
+    },
+    {
+      "path": "images/78589cbddd0268017daa4021b4ef8ca30056d9300fa28800ec9fa0b91112b550.png",
+      "bytes": 2535265,
+      "sha256": "78589cbddd0268017daa4021b4ef8ca30056d9300fa28800ec9fa0b91112b550",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-img-then-now.png"
+      ]
+    },
+    {
+      "path": "images/6279f6d091b2722d6e127a3cfeda67466b847e26ce7ed5345336df6509021f78.png",
+      "bytes": 2072479,
+      "sha256": "6279f6d091b2722d6e127a3cfeda67466b847e26ce7ed5345336df6509021f78",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-past.png"
+      ]
+    },
+    {
+      "path": "images/40edef71152f12769b03fa7e39600fd85f64c1c6f608afa544a3458f98f6c64c.png",
+      "bytes": 2039342,
+      "sha256": "40edef71152f12769b03fa7e39600fd85f64c1c6f608afa544a3458f98f6c64c",
+      "projectPaths": [
+        "allopacks/media/crew_attention_grade6_8/cd-term-ban.png"
+      ]
+    },
+    {
+      "path": "images/38a32ea6eff1cefa80de2f09bba3adcd7fcd2ae1836612702a51afffb450ba9b.png",
+      "bytes": 2094739,
+      "sha256": "38a32ea6eff1cefa80de2f09bba3adcd7fcd2ae1836612702a51afffb450ba9b",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-img-clue-box.png"
+      ]
+    },
+    {
+      "path": "images/4168bc6d318db098aedfeecacd021ff6a7c6fc5d9e6a62f2a11eac5d2f63fff6.png",
+      "bytes": 1994334,
+      "sha256": "4168bc6d318db098aedfeecacd021ff6a7c6fc5d9e6a62f2a11eac5d2f63fff6",
+      "projectPaths": [
+        "allopacks/media/crew_attention_grade6_8/cd-term-notification.png"
+      ]
+    },
+    {
+      "path": "images/900befbfc367bbd66b79f1d9fed0a64269236511cb46f901c9cc477c6df0e565.png",
+      "bytes": 3027945,
+      "sha256": "900befbfc367bbd66b79f1d9fed0a64269236511cb46f901c9cc477c6df0e565",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-img-what-local-does-v2.png"
+      ]
+    },
+    {
+      "path": "images/ed9184f437ad405b6a2c08a608f1a60a163dbc0903925953242d56bfd5ebbcb1.png",
+      "bytes": 3056422,
+      "sha256": "ed9184f437ad405b6a2c08a608f1a60a163dbc0903925953242d56bfd5ebbcb1",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-img-who-showed-up.png"
+      ]
+    },
+    {
+      "path": "images/ce4874081d575f9d92d4460da6b0968c2f9058229a17be21624b8091fcc7feac.png",
+      "bytes": 3085511,
+      "sha256": "ce4874081d575f9d92d4460da6b0968c2f9058229a17be21624b8091fcc7feac",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-petition.png"
+      ]
+    },
+    {
+      "path": "images/a9a2c00952cffb2fd5d70947c9cf08d8d69cf658ad175a6978dcfeeea1b186c5.png",
+      "bytes": 2329332,
+      "sha256": "a9a2c00952cffb2fd5d70947c9cf08d8d69cf658ad175a6978dcfeeea1b186c5",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-history.png"
+      ]
+    },
+    {
+      "path": "images/abe1a29947a076353e1525a1d15820ba20e5c9e79b5bb89e2a6905672ea6fc0d.png",
+      "bytes": 2100092,
+      "sha256": "abe1a29947a076353e1525a1d15820ba20e5c9e79b5bb89e2a6905672ea6fc0d",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-clue.png"
+      ]
+    },
+    {
+      "path": "images/37ee1f9a57b82b1511c165ac24535b363b628670e71e885903470948438c90ea.png",
+      "bytes": 1364382,
+      "sha256": "37ee1f9a57b82b1511c165ac24535b363b628670e71e885903470948438c90ea",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-term-memory.png"
+      ]
+    },
+    {
+      "path": "images/e631e81945ec52712d2e10ce3a9234f3ac6b50b8f3bb80e7c40d75e72ed3bcd0.png",
+      "bytes": 2159130,
+      "sha256": "e631e81945ec52712d2e10ce3a9234f3ac6b50b8f3bb80e7c40d75e72ed3bcd0",
+      "projectPaths": [
+        "allopacks/media/crew_attention_grade6_8/cd-term-catchup.png"
+      ]
+    },
+    {
+      "path": "images/6ca5f27b6c6f7f64d43a5ed8402fde9795451a12e9f90c2d2a5baa8cb1abbdef.png",
+      "bytes": 1808376,
+      "sha256": "6ca5f27b6c6f7f64d43a5ed8402fde9795451a12e9f90c2d2a5baa8cb1abbdef",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-depend.png"
+      ]
+    },
+    {
+      "path": "images/c07773fa769b4c2320d8ea6df0c32d5af815854473696622c8809d710e54d795.png",
+      "bytes": 2516145,
+      "sha256": "c07773fa769b4c2320d8ea6df0c32d5af815854473696622c8809d710e54d795",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-expedition.png"
+      ]
+    },
+    {
+      "path": "images/4ee02ac5d889e6a427546ba88cc5f92dcf92441a2787b77296e03a7815bb7dce.png",
+      "bytes": 2324771,
+      "sha256": "4ee02ac5d889e6a427546ba88cc5f92dcf92441a2787b77296e03a7815bb7dce",
+      "projectPaths": [
+        "allopacks/media/crew_story_grade6_8/cy-img-story.png"
+      ]
+    },
+    {
+      "path": "images/613f534c638f896884b30715d10b9abec543747ac48eaa355e48dd6176f17c8f.png",
+      "bytes": 2138479,
+      "sha256": "613f534c638f896884b30715d10b9abec543747ac48eaa355e48dd6176f17c8f",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-img-baton.png"
+      ]
+    },
+    {
+      "path": "images/a09771b2bae502048d1695a79a3939b814dd0df60d053dc58b6ac6f72f76fce2.png",
+      "bytes": 1749073,
+      "sha256": "a09771b2bae502048d1695a79a3939b814dd0df60d053dc58b6ac6f72f76fce2",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-askearly.png"
+      ]
+    },
+    {
+      "path": "images/2a85b6aea2d43ecdc06ef111cafb4095e257a93caafa42eb9f41556b2ec358a8.png",
+      "bytes": 2063915,
+      "sha256": "2a85b6aea2d43ecdc06ef111cafb4095e257a93caafa42eb9f41556b2ec358a8",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-img-sentence.png"
+      ]
+    },
+    {
+      "path": "images/4567176efa4415f3309871ba285ac1d9cbee29c386573826b63e103988bcd54e.png",
+      "bytes": 2006165,
+      "sha256": "4567176efa4415f3309871ba285ac1d9cbee29c386573826b63e103988bcd54e",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-img-trap.png"
+      ]
+    },
+    {
+      "path": "images/83b69d2676b9ad23dea7f687c67998bc9ddfd36e10084f032d903b0ba3906edb.png",
+      "bytes": 2137783,
+      "sha256": "83b69d2676b9ad23dea7f687c67998bc9ddfd36e10084f032d903b0ba3906edb",
+      "projectPaths": [
+        "allopacks/media/crew_story_grade6_8/cy-img-conference.png"
+      ]
+    },
+    {
+      "path": "images/f7fc7a99fef69650d0ba1c7345f974022b8c629b604cea1f7042615574ed9bad.png",
+      "bytes": 2055160,
+      "sha256": "f7fc7a99fef69650d0ba1c7345f974022b8c629b604cea1f7042615574ed9bad",
+      "projectPaths": [
+        "allopacks/media/crew_story_grade6_8/cy-img-two-threes.png"
+      ]
+    },
+    {
+      "path": "images/2af0e2bc381f7262bf4be8e04f1b6a6d92b9a322f5238275ba5b67c7b9756b22.png",
+      "bytes": 3055659,
+      "sha256": "2af0e2bc381f7262bf4be8e04f1b6a6d92b9a322f5238275ba5b67c7b9756b22",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-img-open-meeting.png"
+      ]
+    },
+    {
+      "path": "images/b6406fdcd870fe224d95911f487779ec3f3f6786db92dbf995756cc69c21e3b8.png",
+      "bytes": 2868649,
+      "sha256": "b6406fdcd870fe224d95911f487779ec3f3f6786db92dbf995756cc69c21e3b8",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-mayor.png"
+      ]
+    },
+    {
+      "path": "images/08cc4eb06883a24f6bdcc231431495c3f0bb84f6e0c9e53ab5d6524bcea2fe3a.png",
+      "bytes": 2813651,
+      "sha256": "08cc4eb06883a24f6bdcc231431495c3f0bb84f6e0c9e53ab5d6524bcea2fe3a",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-council.png"
+      ]
+    },
+    {
+      "path": "images/e2a97e23293230befe1f3b69cc119ba04da9c90cc33d0c8107eb5ff96466f71e.png",
+      "bytes": 3353066,
+      "sha256": "e2a97e23293230befe1f3b69cc119ba04da9c90cc33d0c8107eb5ff96466f71e",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-government.png"
+      ]
+    },
+    {
+      "path": "images/5c14d9839f2249e5e5a51441f4661d10729dd9067908068acf8ab9763bc8d897.png",
+      "bytes": 3362244,
+      "sha256": "5c14d9839f2249e5e5a51441f4661d10729dd9067908068acf8ab9763bc8d897",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-ordinance.png"
+      ]
+    },
+    {
+      "path": "images/53f62cb5ed735bc8557351e05f01eaee2f37380b5c2f96bdb558ef6a171b8585.png",
+      "bytes": 3464926,
+      "sha256": "53f62cb5ed735bc8557351e05f01eaee2f37380b5c2f96bdb558ef6a171b8585",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-img-three-levels.png"
+      ]
+    },
+    {
+      "path": "images/b1e14f4df8730e69ef3efa005e2df991dc27e796c3d0f431dfebf562bfee7746.png",
+      "bytes": 2767805,
+      "sha256": "b1e14f4df8730e69ef3efa005e2df991dc27e796c3d0f431dfebf562bfee7746",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-img-three-tools.png"
+      ]
+    },
+    {
+      "path": "images/173c87bf1e4782caf451ab14279a03fc8259012c0d77f11f1f4ffc9f7f5c7d5a.png",
+      "bytes": 2662607,
+      "sha256": "173c87bf1e4782caf451ab14279a03fc8259012c0d77f11f1f4ffc9f7f5c7d5a",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-vote.png"
+      ]
+    },
+    {
+      "path": "images/579beecc93a53d04454032900d3fe9c2f67c8522bf52c5e0aef287133699f52c.png",
+      "bytes": 2452259,
+      "sha256": "579beecc93a53d04454032900d3fe9c2f67c8522bf52c5e0aef287133699f52c",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-citizen.png"
+      ]
+    },
+    {
+      "path": "images/373130a9f129dc85f06fdb007ff698458480b5e5d6eccdb973f196667f895fe4.png",
+      "bytes": 3694683,
+      "sha256": "373130a9f129dc85f06fdb007ff698458480b5e5d6eccdb973f196667f895fe4",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-term-local.png"
+      ]
+    },
+    {
+      "path": "images/b88f6cfe61cc41abf1baf89c590bed8e32df4974e163bfe9d0e3c3382813766c.png",
+      "bytes": 3491405,
+      "sha256": "b88f6cfe61cc41abf1baf89c590bed8e32df4974e163bfe9d0e3c3382813766c",
+      "projectPaths": [
+        "allopacks/media/local_government_grade4/lg-img-what-local-does.png"
+      ]
+    },
+    {
+      "path": "images/1e5ac854c069aeee7d6042377f44f14d5406e36ee2471dc3b6abc0893db9d7de.png",
+      "bytes": 1548325,
+      "sha256": "1e5ac854c069aeee7d6042377f44f14d5406e36ee2471dc3b6abc0893db9d7de",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-web.png"
+      ]
+    },
+    {
+      "path": "images/8d9714b0eb03fdcb00dfa766fd14f89aa129e0726cb5b04918ccadce464132d8.png",
+      "bytes": 1793231,
+      "sha256": "8d9714b0eb03fdcb00dfa766fd14f89aa129e0726cb5b04918ccadce464132d8",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-car.png"
+      ]
+    },
+    {
+      "path": "images/fa2d6480c7120facd11e728a71bb131d54713218fe291c8ce541125acd67a6c2.png",
+      "bytes": 1214288,
+      "sha256": "fa2d6480c7120facd11e728a71bb131d54713218fe291c8ce541125acd67a6c2",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-phone.png"
+      ]
+    },
+    {
+      "path": "images/b084dac6f8c5fb84a06436066ed2f0ccd10e5af8e9028884ae8ee782534e82e3.png",
+      "bytes": 1657089,
+      "sha256": "b084dac6f8c5fb84a06436066ed2f0ccd10e5af8e9028884ae8ee782534e82e3",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-telephone.png"
+      ]
+    },
+    {
+      "path": "images/947e0d2ef0d7117875eb2ac12cc35f15a517594d167d40b8c1aa61cc8c3b00b0.png",
+      "bytes": 1706078,
+      "sha256": "947e0d2ef0d7117875eb2ac12cc35f15a517594d167d40b8c1aa61cc8c3b00b0",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-img-stairs.png"
+      ]
+    },
+    {
+      "path": "images/d3835962fa81f205536bf56fab7a3c1af8bd6dc7ea8c1ee774c0e8a3a46b1a3c.png",
+      "bytes": 1473859,
+      "sha256": "d3835962fa81f205536bf56fab7a3c1af8bd6dc7ea8c1ee774c0e8a3a46b1a3c",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-television.png"
+      ]
+    },
+    {
+      "path": "images/fdaef3f9e2804a65ab650b968545665b1f2887ec1f6d2eef2b9f44f9751151cf.png",
+      "bytes": 1598700,
+      "sha256": "fdaef3f9e2804a65ab650b968545665b1f2887ec1f6d2eef2b9f44f9751151cf",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-moon.png"
+      ]
+    },
+    {
+      "path": "images/6d0e44edef6e935a6135c01eceff94b3e5f74e61b0c879570b1a4b4e617d006a.png",
+      "bytes": 1992219,
+      "sha256": "6d0e44edef6e935a6135c01eceff94b3e5f74e61b0c879570b1a4b4e617d006a",
+      "projectPaths": [
+        "allopacks/media/then_and_now_grade2/tw-tl-flight.png"
+      ]
+    },
+    {
+      "path": "images/6a4e12e3fcf973ec2d78bd9fb81e7ea62eab95d0e1be6023dfb80114e8ca0f3a.png",
+      "bytes": 1682291,
+      "sha256": "6a4e12e3fcf973ec2d78bd9fb81e7ea62eab95d0e1be6023dfb80114e8ca0f3a",
+      "projectPaths": [
+        "allopacks/media/crew_norms_grade6_8/cn-img-signal-v2.png"
+      ]
+    },
+    {
+      "path": "images/ae0cafa7913a02f5d537fe8b85033aeb5c231d26db887e4375fb801fc4c449b7.png",
+      "bytes": 2278011,
+      "sha256": "ae0cafa7913a02f5d537fe8b85033aeb5c231d26db887e4375fb801fc4c449b7",
+      "projectPaths": [
+        "allopacks/media/crew_halfway_grade6_8/ch-term-prepared.png",
+        "allopacks/media/crew_system_grade6_8/cs-term-prepared.png"
+      ]
+    },
+    {
+      "path": "images/f19084cc158cf9f0c7287b5ca8a1be3bfb8e534e9c948800b26c782f66df8748.png",
+      "bytes": 1610869,
+      "sha256": "f19084cc158cf9f0c7287b5ca8a1be3bfb8e534e9c948800b26c782f66df8748",
+      "projectPaths": [
+        "allopacks/media/crew_system_grade6_8/cs-img-marcus-after-v2.png"
+      ]
+    },
+    {
+      "path": "images/9327368266efe09d444a98e9770326b78e176a94e3595ce2ef2e44ed82289704.png",
+      "bytes": 1822187,
+      "sha256": "9327368266efe09d444a98e9770326b78e176a94e3595ce2ef2e44ed82289704",
+      "projectPaths": [
+        "allopacks/media/crew_upstander_grade6_8/cu-img-table-v2.png"
+      ]
+    },
+    {
+      "path": "images/4448db78c5bfe0e61a7c661e8675963420bee01a560ed3b86b2f20f6d3c7ae86.png",
+      "bytes": 1594934,
+      "sha256": "4448db78c5bfe0e61a7c661e8675963420bee01a560ed3b86b2f20f6d3c7ae86",
+      "projectPaths": [
+        "allopacks/media/crew_perspective_grade6_8/cp-img-chat-v2.png"
+      ]
+    },
+    {
+      "path": "images/a09395573ef9b98dc1157bac4d3f4c9f0243e4047af034a63ac10258f172c209.png",
+      "bytes": 1594827,
+      "sha256": "a09395573ef9b98dc1157bac4d3f4c9f0243e4047af034a63ac10258f172c209",
+      "projectPaths": [
+        "allopacks/media/crew_ask_grade6_8/ca-img-stuck-v2.png"
+      ]
+    },
+    {
+      "path": "images/2bfe81195b464dbc49469ae36a76d7b9b2e2f7c4af1ed7532b3960d48c408f09.png",
+      "bytes": 2261261,
+      "sha256": "2bfe81195b464dbc49469ae36a76d7b9b2e2f7c4af1ed7532b3960d48c408f09",
+      "projectPaths": [
+        "allopacks/media/crew_halfway_grade6_8/ch-term-trend.png"
+      ]
+    },
+    {
+      "path": "images/1bb6cc1026db19940429f89eab7edb0c5baa5bd6601e41698860ed23afb39609.png",
+      "bytes": 2100797,
+      "sha256": "1bb6cc1026db19940429f89eab7edb0c5baa5bd6601e41698860ed23afb39609",
+      "projectPaths": [
+        "allopacks/media/crew_feedback_grade6_8/cf-term-redo.png"
+      ]
+    },
+    {
+      "path": "images/4d0cfd23ad608dc29f30eebb2d85520f95d2967cc39c5835348d26380862e02d.png",
+      "bytes": 2297576,
+      "sha256": "4d0cfd23ad608dc29f30eebb2d85520f95d2967cc39c5835348d26380862e02d",
+      "projectPaths": [
+        "allopacks/media/crew_feedback_grade6_8/cf-term-target.png"
+      ]
+    },
+    {
+      "path": "images/bfd10923772eaf858fa23bb6385aa82a9b448234fee75051478d8b3e5861be89.png",
+      "bytes": 1998663,
+      "sha256": "bfd10923772eaf858fa23bb6385aa82a9b448234fee75051478d8b3e5861be89",
+      "projectPaths": [
+        "allopacks/media/crew_halfway_grade6_8/ch-term-timely.png"
+      ]
+    },
+    {
+      "path": "images/e62341bb200519dd2f0aee3ed8aa569c6a13b7aef2fb9c8143a3b7e1ee90544e.png",
+      "bytes": 2855539,
+      "sha256": "e62341bb200519dd2f0aee3ed8aa569c6a13b7aef2fb9c8143a3b7e1ee90544e",
+      "projectPaths": [
+        "allopacks/media/crew_feedback_grade6_8/cf-term-evidence.png"
+      ]
+    },
+    {
+      "path": "images/6f502f6b67b5dab71478b840959ac5e9a783438838fb66cfb7ec99ad9e63c361.png",
+      "bytes": 2135909,
+      "sha256": "6f502f6b67b5dab71478b840959ac5e9a783438838fb66cfb7ec99ad9e63c361",
+      "projectPaths": [
+        "allopacks/media/crew_feedback_grade6_8/cf-term-assess.png",
+        "allopacks/media/crew_story_grade6_8/cy-term-self-assess.png"
+      ]
+    },
+    {
+      "path": "images/f800529e56fb9a8c0b6eb88b07df342862b92514038d4107174b043bcaebe0e6.png",
+      "bytes": 1940652,
+      "sha256": "f800529e56fb9a8c0b6eb88b07df342862b92514038d4107174b043bcaebe0e6",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-quality.png"
+      ]
+    },
+    {
+      "path": "images/3a87d0514b8469a832a41c152b24e15c896aa47b6b6d2a7b70ea5d1c8c613228.png",
+      "bytes": 2384728,
+      "sha256": "3a87d0514b8469a832a41c152b24e15c896aa47b6b6d2a7b70ea5d1c8c613228",
+      "projectPaths": [
+        "allopacks/media/crew_story_grade6_8/cy-term-believable.png"
+      ]
+    },
+    {
+      "path": "images/f0d39b3c8bb462c7d2b4f46eed2ba5d385c76dd4fc0a3d08597761053c0c9265.png",
+      "bytes": 2224304,
+      "sha256": "f0d39b3c8bb462c7d2b4f46eed2ba5d385c76dd4fc0a3d08597761053c0c9265",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-visible.png"
+      ]
+    },
+    {
+      "path": "images/5a723e5748536ba0a3f6128a8958f8c5321e4e3a0754b9d0262bafa3c70741db.png",
+      "bytes": 2412810,
+      "sha256": "5a723e5748536ba0a3f6128a8958f8c5321e4e3a0754b9d0262bafa3c70741db",
+      "projectPaths": [
+        "allopacks/media/crew_story_grade6_8/cy-term-adjective.png"
+      ]
+    },
+    {
+      "path": "images/edfd6deb4a5aa104eca8be0d792c3be8d157322d757c56f3ef5dcc4f4e2cd97d.png",
+      "bytes": 2191816,
+      "sha256": "edfd6deb4a5aa104eca8be0d792c3be8d157322d757c56f3ef5dcc4f4e2cd97d",
+      "projectPaths": [
+        "allopacks/media/crew_teamwork_grade6_8/cteam-term-hope.png"
+      ]
+    },
+    {
+      "path": "images/e522e8b5f509326944e97a6e7c93e069087f8b9dada0ea59f4b97e9ed35437bc.png",
+      "bytes": 2285723,
+      "sha256": "e522e8b5f509326944e97a6e7c93e069087f8b9dada0ea59f4b97e9ed35437bc",
+      "projectPaths": [
+        "allopacks/media/crew_story_grade6_8/cy-term-trimester.png"
+      ]
+    }
+  ]
+}
