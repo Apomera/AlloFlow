@@ -17,7 +17,7 @@ const NEW_SKILLS = [
   { id: 'actualMA', unit: '×', expected: b => b.ma * 0.8, words: /actual.*(MA|advantage)/i },
   { id: 'travel', unit: 'm', expected: b => 0.5 * b.ma, words: /travel/i }
 ];
-const KINDS = ['input', 'force', 'loss', ...NEW_SKILLS.map(q => q.id)];
+const KINDS = ['input', 'force', 'loss', ...NEW_SKILLS.map(q => q.id), 'minMA', 'maxMA', 'forceEfficiency', 'taskEfficiency'];
 const CASES = BENCHES.flatMap(b => NEW_SKILLS.map(q => ({ b, q, name: `${b.id}/${q.id}` })));
 let tool;
 beforeEach(() => { resetStemLab(); tool = loadTool('stem_lab/stem_tool_machinelab.js', 'machineLab'); });
@@ -171,7 +171,7 @@ describe('Machine Lab: efficiency energy visualization', () => {
     expect(s.practice()).toBeUndefined(); expect(s.action('next')).toBeUndefined();
   });
 
-  it('labels new practice controls, offers all seven skills and announces feedback', () => {
+  it('labels new practice controls, offers all eleven skills and announces feedback', () => {
     const s = session(), all = nodes(s.practice());
     expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(KINDS);
     expect(nodes(s.byId('unit')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(expect.arrayContaining(['', 'N', 'J', 'm', '%', '×']));
@@ -182,7 +182,7 @@ describe('Machine Lab: efficiency energy visualization', () => {
 });
 
 describe('Machine Lab: Next calculation state integrity', () => {
-  it('cycles through seven skills and clears answer, unit, hints and completion without saving', () => {
+  it('cycles through eleven skills and clears answer, unit, hints and completion without saving', () => {
     const s = session();
     for (let index = 0; index < KINDS.length; index++) {
       expect(s.byId('question').props.value).toBe(KINDS[index]);

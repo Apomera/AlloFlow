@@ -1,0 +1,486 @@
+{
+  "file": "tests/machinelab_efficiency_envelope.test.js",
+  "sha256": "1274510988b38cb2c9b350e1049fb2e6c5918fd97650becbdc20f8bbb1eabd7c",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: independent efficiency envelope physics derives independent 'lever' interval and thresholds across efficiency and limit endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: independent efficiency envelope physics derives independent 'pulley' interval and thresholds across efficiency and limit endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: independent efficiency envelope physics derives independent 'windlass' interval and thresholds across efficiency and limit endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: independent efficiency envelope physics derives independent 'ramp' interval and thresholds across efficiency and limit endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: independent efficiency envelope physics derives independent 'wedge' interval and thresholds across efficiency and limit endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: independent efficiency envelope physics derives independent 'screw' interval and thresholds across efficiency and limit endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects invalid 'load' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects invalid 'movement' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects invalid 'MA' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects invalid 'efficiency' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects invalid 'force limit' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects invalid 'travel limit' without coercion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: independent efficiency envelope physics enforces inclusive efficiency and planning-limit domains",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: independent efficiency envelope physics rejects inherited overflow and overflow introduced by planning quotients",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: independent efficiency envelope physics keeps the interval independent of current MA while changing the current-effort threshold",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: independent efficiency envelope physics changes only the force-derived minimum when assumed efficiency changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: independent efficiency envelope physics retains sub-one and over-one-hundred-percent thresholds and exactly touching limits",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: independent efficiency envelope physics does not inflate an exact impossible interval into a numerical-tolerance fit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: efficiency envelope visualization shows proportional 'lever' rows, exact metrics and current markers without altering settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: efficiency envelope visualization shows proportional 'pulley' rows, exact metrics and current markers without altering settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: efficiency envelope visualization shows proportional 'windlass' rows, exact metrics and current markers without altering settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: efficiency envelope visualization shows proportional 'ramp' rows, exact metrics and current markers without altering settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: efficiency envelope visualization shows proportional 'wedge' rows, exact metrics and current markers without altering settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: efficiency envelope visualization shows proportional 'screw' rows, exact metrics and current markers without altering settings",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: efficiency envelope visualization distinguishes range, point and even an extremely narrow empty interval",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: efficiency envelope visualization offers eleven labeled skills and keeps unavailable planning separate from seven valid legacy skills",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'lever/minMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'lever/maxMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'lever/forceEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 29,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'lever/taskEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 30,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'pulley/minMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 31,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'pulley/maxMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 32,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'pulley/forceEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 33,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'pulley/taskEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 34,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'windlass/minMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 35,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'windlass/maxMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 36,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'windlass/forceEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 37,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'windlass/taskEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 38,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'ramp/minMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 39,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'ramp/maxMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 40,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'ramp/forceEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 41,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'ramp/taskEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 42,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'wedge/minMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 43,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'wedge/maxMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 44,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'wedge/forceEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 45,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'wedge/taskEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 46,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'screw/minMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 47,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'screw/maxMA' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 48,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'screw/forceEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 49,
+      "fullName": "Machine Lab: efficiency envelope skill practice checks, saves and reloads 'screw/taskEfficiency' from independent givens",
+      "executedPassCount": 1
+    },
+    {
+      "index": 50,
+      "fullName": "Machine Lab: efficiency envelope skill practice requires the requested unit for 'minMA' and rejects blank, negative and nonfinite answers",
+      "executedPassCount": 1
+    },
+    {
+      "index": 51,
+      "fullName": "Machine Lab: efficiency envelope skill practice requires the requested unit for 'maxMA' and rejects blank, negative and nonfinite answers",
+      "executedPassCount": 1
+    },
+    {
+      "index": 52,
+      "fullName": "Machine Lab: efficiency envelope skill practice requires the requested unit for 'forceEfficiency' and rejects blank, negative and nonfinite answers",
+      "executedPassCount": 1
+    },
+    {
+      "index": 53,
+      "fullName": "Machine Lab: efficiency envelope skill practice requires the requested unit for 'taskEfficiency' and rejects blank, negative and nonfinite answers",
+      "executedPassCount": 1
+    },
+    {
+      "index": 54,
+      "fullName": "Machine Lab: efficiency envelope skill practice accepts one-percent rounding but rejects larger errors for 'minMA'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 55,
+      "fullName": "Machine Lab: efficiency envelope skill practice accepts one-percent rounding but rejects larger errors for 'maxMA'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 56,
+      "fullName": "Machine Lab: efficiency envelope skill practice accepts one-percent rounding but rejects larger errors for 'forceEfficiency'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 57,
+      "fullName": "Machine Lab: efficiency envelope skill practice accepts one-percent rounding but rejects larger errors for 'taskEfficiency'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 58,
+      "fullName": "Machine Lab: efficiency envelope skill practice reveals progressive 'minMA' hints and permanently retains viewed-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 59,
+      "fullName": "Machine Lab: efficiency envelope skill practice reveals progressive 'maxMA' hints and permanently retains viewed-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 60,
+      "fullName": "Machine Lab: efficiency envelope skill practice reveals progressive 'forceEfficiency' hints and permanently retains viewed-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 61,
+      "fullName": "Machine Lab: efficiency envelope skill practice reveals progressive 'taskEfficiency' hints and permanently retains viewed-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 62,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the force limit changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 63,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the travel limit changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 64,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the invalid limit changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 65,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the station changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 66,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the view changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 67,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the geometry changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 68,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the load changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 69,
+      "fullName": "Machine Lab: efficiency envelope state integrity rejects delayed check, next and save after the movement changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 70,
+      "fullName": "Machine Lab: efficiency envelope state integrity keeps an equivalent numeric limit formatting change from invalidating a checked planning answer",
+      "executedPassCount": 1
+    },
+    {
+      "index": 71,
+      "fullName": "Machine Lab: efficiency envelope state integrity preserves a checked old skill through invalid planning limits and saves its original schema",
+      "executedPassCount": 1
+    },
+    {
+      "index": 72,
+      "fullName": "Machine Lab: efficiency envelope state integrity cycles the four planning skills back to input and resets practice without saving",
+      "executedPassCount": 1
+    },
+    {
+      "index": 73,
+      "fullName": "Machine Lab: efficiency envelope state integrity keeps the saved settings and limits immutable while replacing only the active station on explicit save",
+      "executedPassCount": 1
+    },
+    {
+      "index": 74,
+      "fullName": "Machine Lab: efficiency envelope state integrity retains below-one-percent and above-one-hundred-percent answers without clamping",
+      "executedPassCount": 1
+    },
+    {
+      "index": 75,
+      "fullName": "Machine Lab: efficiency envelope state integrity uses full screw geometry in force-threshold givens and ramp vertical movement in travel practice",
+      "executedPassCount": 1
+    },
+    {
+      "index": 76,
+      "fullName": "Machine Lab: verifiable efficiency envelope records requires version 3 and independently verifies the saved 'minMA' arithmetic and units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 77,
+      "fullName": "Machine Lab: verifiable efficiency envelope records requires version 3 and independently verifies the saved 'maxMA' arithmetic and units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 78,
+      "fullName": "Machine Lab: verifiable efficiency envelope records requires version 3 and independently verifies the saved 'forceEfficiency' arithmetic and units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 79,
+      "fullName": "Machine Lab: verifiable efficiency envelope records requires version 3 and independently verifies the saved 'taskEfficiency' arithmetic and units",
+      "executedPassCount": 1
+    },
+    {
+      "index": 80,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with missing limits",
+      "executedPassCount": 1
+    },
+    {
+      "index": 81,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with array limits",
+      "executedPassCount": 1
+    },
+    {
+      "index": 82,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with string force",
+      "executedPassCount": 1
+    },
+    {
+      "index": 83,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with string travel",
+      "executedPassCount": 1
+    },
+    {
+      "index": 84,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with force outside range",
+      "executedPassCount": 1
+    },
+    {
+      "index": 85,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with travel outside range",
+      "executedPassCount": 1
+    },
+    {
+      "index": 86,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with nonfinite limit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 87,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with wrong station",
+      "executedPassCount": 1
+    },
+    {
+      "index": 88,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with invalid geometry",
+      "executedPassCount": 1
+    },
+    {
+      "index": 89,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with string efficiency",
+      "executedPassCount": 1
+    },
+    {
+      "index": 90,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with unknown unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 91,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with invalid hint",
+      "executedPassCount": 1
+    },
+    {
+      "index": 92,
+      "fullName": "Machine Lab: verifiable efficiency envelope records omits a version-3 record with invalid completion",
+      "executedPassCount": 1
+    },
+    {
+      "index": 93,
+      "fullName": "Machine Lab: verifiable efficiency envelope records keeps all seven old record schemas readable and rejects relabeling them as planning records",
+      "executedPassCount": 1
+    },
+    {
+      "index": 94,
+      "fullName": "Machine Lab: verifiable efficiency envelope records retains viewed-solution distractor input honestly while rejecting it as a checked answer",
+      "executedPassCount": 1
+    },
+    {
+      "index": 95,
+      "fullName": "Machine Lab: verifiable efficiency envelope records exports recomputed fixed task and limits with full threshold precision and honest provenance",
+      "executedPassCount": 1
+    }
+  ]
+}

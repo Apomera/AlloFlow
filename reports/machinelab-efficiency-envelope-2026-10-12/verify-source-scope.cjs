@@ -1,0 +1,21 @@
+const fs=require('fs'),cp=require('child_process'),assert=require('assert'),crypto=require('crypto');
+const out='reports/machinelab-efficiency-envelope-2026-10-12',source='stem_lab/stem_tool_machinelab.js',mirror='desktop/web-app/public/'+source,baselineCommit='86d2b7fc6';
+const read=p=>fs.readFileSync(p,'utf8'),oldFile=p=>cp.execFileSync('git',['show',baselineCommit+':'+p],{encoding:'utf8',maxBuffer:8*1024*1024});
+const current=read(source),baseline=oldFile(source),hash=text=>crypto.createHash('sha256').update(text).digest('hex');
+function region(text,a,b){const start=text.indexOf(a),end=text.indexOf(b,start);assert(start>=0&&end>start);return{start,end,text:text.slice(start,end)};}
+const now=region(current,'      function efficiencyPlanningKinds()','      function powerPlanningKinds()'),old=region(baseline,'      function efficiencyKinds()','      function powerPlanningKinds()');
+const helper=region(current,'    // Continuous mechanical-advantage limits','    // Average rates for the same fixed task.');
+assert.equal(current.slice(0,helper.start)+current.slice(helper.end,now.start)+old.text+current.slice(now.end),baseline);
+assert.equal(region(now.text,'        function change(patch)','        function save()').text,region(old.text,'        function change(patch)','        function save()').text);
+assert.equal(region(now.text,'      function efficiencyAnswer(','      function validEfficiencyRecord(').text,region(old.text,'      function efficiencyAnswer(','      function validEfficiencyRecord(').text);
+let question=region(now.text,'      function efficiencyQuestion(','      function efficiencyAnswer(').text;
+const planning=region(question,'        if (efficiencyRecordVersion(kind) === 3) {','        var inverse = {');
+question=(question.slice(0,planning.start)+question.slice(planning.end)).replace('function efficiencyQuestion(kind, model, settings, b, planning)','function efficiencyQuestion(kind, model, settings, b)');
+assert.equal(question,region(old.text,'      function efficiencyQuestion(','      function efficiencyAnswer(').text);
+assert.equal(current,read(mirror));
+const test='tests/machinelab_efficiency_skills.test.js',testCurrent=read(test),testBaseline=oldFile(test);
+const before="const KINDS = ['input', 'force', 'loss', ...NEW_SKILLS.map(q => q.id)];",after="const KINDS = ['input', 'force', 'loss', ...NEW_SKILLS.map(q => q.id), 'minMA', 'maxMA', 'forceEfficiency', 'taskEfficiency'];";
+assert.equal(testCurrent.split(after).length,2);
+assert.equal(testCurrent.replace(after,before).replace('offers all eleven skills','offers all seven skills').replace('cycles through eleven skills','cycles through seven skills'),testBaseline);
+const proof={baselineCommit,baselineSha256:hash(baseline),source,mirror,sourceSha256:hash(current),byteParity:true,outsideEfficiencyRegionAndNewHelperByteIdentical:true,existingPhysicalMathHelpersByteIdentical:true,changeCallbackByteIdentical:true,existingQuestionCalculationsByteIdentical:true,answerGradingByteIdentical:true,existingTestOnlySkillInventoryAndDescriptionsChanged:true,existingTest:{path:test,baselineSha256:hash(testBaseline),sha256:hash(testCurrent)},scope:'One new efficiencyEnvelope helper and efficiency session/question/record helpers and lab presentation. Existing physical math, power/compound labs, design search, defaults, other views and export callers unchanged. Existing seven question calculations and grading unchanged. Existing efficiency test changes only the expected skill inventory and two descriptive skill counts; every prior case remains.'};
+fs.writeFileSync(out+'/source-scope.json',JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify(proof));

@@ -1,0 +1,107 @@
+{
+  "command": "node dev-tools/ml_efficiency_envelope_qa.cjs reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01",
+  "startedAt": "2026-10-12T21:02:05.651Z",
+  "finishedAt": "2026-10-12T21:04:03.677Z",
+  "observedExitCode": 0,
+  "signal": null,
+  "error": null,
+  "sourceSha256": "e10d476980428471e6ddd5d31f193da4d071f259d10cca7a275f8e34ae126b0c",
+  "sourceSha256After": "e10d476980428471e6ddd5d31f193da4d071f259d10cca7a275f8e34ae126b0c",
+  "publicMirrorSha256": "e10d476980428471e6ddd5d31f193da4d071f259d10cca7a275f8e34ae126b0c",
+  "publicMirrorSha256After": "e10d476980428471e6ddd5d31f193da4d071f259d10cca7a275f8e34ae126b0c",
+  "sourceExactInNativePage": true,
+  "scenarios": 12,
+  "checks": 907,
+  "errors": [],
+  "screenshots": [
+    {
+      "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/desktop-efficiency-envelope.png",
+      "sha256": "60643d76b77c011c695ad2d93747ba3165e263fac65642be9ee479ed0b1dd0e0",
+      "bytes": 55834,
+      "width": 529,
+      "height": 1048,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/dark-phone-efficiency-envelope.png",
+      "sha256": "e87da9bc5a0972469696b384fb4634b8532cd7bd608abf1d1c35c2fa3cb9d4ed",
+      "bytes": 60074,
+      "width": 334,
+      "height": 1443,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/dark-phone-envelope-practice.png",
+      "sha256": "7fa5209f33b8e4413d93cc62c54f35bc1731be9f99cc7b3a077cc5db3321d38d",
+      "bytes": 48439,
+      "width": 334,
+      "height": 1181,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/forced-colors-efficiency-envelope.png",
+      "sha256": "9dfe9cfae43e6aeefb5ccf7d062beda99b0c4087b66e6487ee4fbd5a0335f012",
+      "bytes": 51724,
+      "width": 264,
+      "height": 1621,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/forced-colors-envelope-practice.png",
+      "sha256": "a5e7181822d19b6b197304d51d53047a7b63a3663a55e7effda6ba3fd69ab066",
+      "bytes": 33140,
+      "width": 264,
+      "height": 1075,
+      "visuallyInspected": true
+    }
+  ],
+  "harness": {
+    "path": "dev-tools/ml_efficiency_envelope_qa.cjs",
+    "sha256": "4343e3482dbf3fede449529a6de79e964409b927fa72406f0a3533ed12f1acb9",
+    "bytes": 22836
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/harness-snapshot.cjs",
+    "sha256": "4343e3482dbf3fede449529a6de79e964409b927fa72406f0a3533ed12f1acb9",
+    "bytes": 22836
+  },
+  "helperPreamble": {
+    "path": "dev-tools/ml_efficiency_lab_qa.cjs",
+    "sha256": "1388c2c01180b88eb57ca2d0efc7c9503253fff28e3e1d299c9ec17d593a6916",
+    "bytes": 20619
+  },
+  "baseHarness": {
+    "path": "dev-tools/ml_scene_shots.cjs",
+    "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7",
+    "bytes": 20872
+  },
+  "results": {
+    "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/results.json",
+    "sha256": "66478c73a9e8745ec3f1ff67649e9b4243636d0eb94ac7984a9a7b3fd118f055",
+    "bytes": 109007
+  },
+  "nativePage": {
+    "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "e26c722da17417f37f5861b138339a6bf54c886075e7e666ff7b2ecf420fed2d",
+    "bytes": 2498445
+  },
+  "console": {
+    "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/console.log",
+    "sha256": "0c210edbabdbb2cda59c6e439fa66fc6e12c7867d90ad5fe0441800d6cbc3b39",
+    "bytes": 449
+  },
+  "downloadedRecord": {
+    "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/downloaded-record.txt",
+    "sha256": "98ffbdf805d3039d5e082d81e3a1b82bc61dbb69df9f582100cb2b9c9267e868",
+    "bytes": 2022
+  },
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ],
+  "visualReview": {
+    "reviewedBy": "Browser author",
+    "findings": "All five native captures inspected. Exact range and empty interval remain readable; dashed current MA and solid/striped/crossed conditions are distinct. Forced-colors exact-point chart, 320 px metric cards and long practice text have no clipping or overlap. Keyboard focus is visible.",
+    "screenshots": 5
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "baselineCommit": "86d2b7fc6",
+  "baselineSha256": "19b5d0f85931b68081c2e64cee39d26cbfc63d0b721704cecb2f747f18c7131c",
+  "source": "stem_lab/stem_tool_machinelab.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+  "sourceSha256": "e10d476980428471e6ddd5d31f193da4d071f259d10cca7a275f8e34ae126b0c",
+  "byteParity": true,
+  "outsideEfficiencyRegionAndNewHelperByteIdentical": true,
+  "existingPhysicalMathHelpersByteIdentical": true,
+  "changeCallbackByteIdentical": true,
+  "existingQuestionCalculationsByteIdentical": true,
+  "answerGradingByteIdentical": true,
+  "existingTestOnlySkillInventoryAndDescriptionsChanged": true,
+  "existingTest": {
+    "path": "tests/machinelab_efficiency_skills.test.js",
+    "baselineSha256": "33481259ffec661ebb7dfde2d09bda9c513462a30c929dc8681f40769d1eece3",
+    "sha256": "00373675e60b7f1aaad7c8f10facd62b339eea157f0bf61a174fc0d9ef60d738"
+  },
+  "scope": "One new efficiencyEnvelope helper and efficiency session/question/record helpers and lab presentation. Existing physical math, power/compound labs, design search, defaults, other views and export callers unchanged. Existing seven question calculations and grading unchanged. Existing efficiency test changes only the expected skill inventory and two descriptive skill counts; every prior case remains."
+}
