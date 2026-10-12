@@ -1,0 +1,198 @@
+{
+  "date": "2026-10-12",
+  "scope": "Compound-machine stage route, proportional patterned energy split, responsive setup and calculation hierarchy, and practice feedback styling.",
+  "source": {
+    "canonical": "stem_lab/stem_tool_machinelab.js",
+    "publicMirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+    "sha256": "faee373d6d9895fef3430b99cdf55ade04ded465ce0c400d288b9e9fa3b6b7ca",
+    "byteParity": true,
+    "exactBrowserEmbeddedSource": true,
+    "scopeProof": "source-scope.json",
+    "scopeProofSha256": "02e2f24fc2e2794dfe098f87acdf476d18bd81e81b7d29ac8177482d46cda47a"
+  },
+  "tests": {
+    "passed": 822,
+    "failed": 0,
+    "uncovered": 0,
+    "files": 9,
+    "successfulFreshProcesses": 28,
+    "existing": 822,
+    "added": 0,
+    "allFinalObservedExitCodes": 0,
+    "receiptAndTestHashesVerified": true,
+    "aggregate": "tests-final.json",
+    "aggregateSha256": "c793aa44bb0015903cf2d515164c156d92e74411ebe73ee37903419cc5a8581b",
+    "nodeOldSpaceMiB": 512,
+    "nodeSemiSpaceMiB": 8,
+    "workers": 1,
+    "pool": "forks",
+    "isolate": false,
+    "testTimeoutMs": 30000
+  },
+  "browser": {
+    "checks": 78,
+    "errors": 0,
+    "scenarios": 4,
+    "observedExitCode": 0,
+    "manifest": "browser/process.json",
+    "manifestSha256": "844cc3b907f109d874fe9ee5d947cbeb88397959514b07e9f1470c20a49e934c",
+    "screenshots": [
+      {
+        "path": "reports/machinelab-compound-visual-2026-10-12/browser/desktop-stage-energy.png",
+        "sha256": "09a9160a297b4db71b29e895d95dad9a848db2e18ba0dfae6e489ab38d37f25d",
+        "bytes": 34334,
+        "width": 529,
+        "height": 684,
+        "visuallyInspected": true,
+        "inspection": "Readable three-stage route, direction arrows, stage numbers, energy ledger, and proportional solid/striped/dotted energy display.",
+        "identicalToInspectedPriorImage": {
+          "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/desktop-stage-energy.png",
+          "sha256": "09a9160a297b4db71b29e895d95dad9a848db2e18ba0dfae6e489ab38d37f25d",
+          "bytes": 34334
+        }
+      },
+      {
+        "path": "reports/machinelab-compound-visual-2026-10-12/browser/desktop-power-budget.png",
+        "sha256": "b68e7e2e308d2798d940a5f1b868dfd68c6b7d4779228300ed65086b49fbdf90",
+        "bytes": 59549,
+        "width": 529,
+        "height": 1054,
+        "visuallyInspected": true,
+        "inspection": "Power cards and two-column budget cards retain full labels, units, values, and feasibility explanations with no clipping.",
+        "identicalToInspectedPriorImage": {
+          "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/desktop-power-budget.png",
+          "sha256": "b68e7e2e308d2798d940a5f1b868dfd68c6b7d4779228300ed65086b49fbdf90",
+          "bytes": 59549
+        }
+      },
+      {
+        "path": "reports/machinelab-compound-visual-2026-10-12/browser/dark-phone-stage-energy.png",
+        "sha256": "a62c3b74993a2f4f8f4e42ce5bdb71744397477ed12e0901162d7e2ab2500b2e",
+        "bytes": 35846,
+        "width": 334,
+        "height": 1077,
+        "visuallyInspected": true,
+        "inspection": "390 CSS px dark layout stacks route cards with downward connectors; ledger and energy key remain readable.",
+        "identicalToInspectedPriorImage": {
+          "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/dark-phone-stage-energy.png",
+          "sha256": "a62c3b74993a2f4f8f4e42ce5bdb71744397477ed12e0901162d7e2ab2500b2e",
+          "bytes": 35846
+        }
+      },
+      {
+        "path": "reports/machinelab-compound-visual-2026-10-12/browser/dark-phone-practice.png",
+        "sha256": "07d6642756b3da8bc240e6e1d358b85b3f658053c5971dca608b91fdb66b0fa7",
+        "bytes": 55245,
+        "width": 334,
+        "height": 1280,
+        "visuallyInspected": true,
+        "inspection": "390 CSS px dark practice card shows givens, checked answer, two hints, feedback, explanation, and visible Save focus ring without clipping.",
+        "identicalToInspectedPriorImage": {
+          "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/dark-phone-practice.png",
+          "sha256": "07d6642756b3da8bc240e6e1d358b85b3f658053c5971dca608b91fdb66b0fa7",
+          "bytes": 55245
+        }
+      },
+      {
+        "path": "reports/machinelab-compound-visual-2026-10-12/browser/forced-colors-stage-energy.png",
+        "sha256": "9e2901093c1d1de3633ada41fa212e71afed6472e2b2fbfc9f9c2369161e2dea",
+        "bytes": 34500,
+        "width": 264,
+        "height": 1258,
+        "visuallyInspected": true,
+        "inspection": "320 CSS px forced-colors display retains distinct solid/striped/dotted fills and legend swatches, readable numbers, card and track boundaries.",
+        "identicalToInspectedPriorImage": {
+          "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/forced-colors-stage-energy.png",
+          "sha256": "9e2901093c1d1de3633ada41fa212e71afed6472e2b2fbfc9f9c2369161e2dea",
+          "bytes": 34500
+        }
+      },
+      {
+        "path": "reports/machinelab-compound-visual-2026-10-12/browser/desktop-zero-loss.png",
+        "sha256": "c1b37cd793d0e5e3d39d0f8b24a3a7c9cda66c3168a89a10d30c919928948425",
+        "bytes": 32516,
+        "width": 529,
+        "height": 684,
+        "visuallyInspected": true,
+        "inspection": "100% stages show a fully useful-work bar and explicit 0 J / 0% labels for both loss categories.",
+        "identicalToInspectedPriorImage": {
+          "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/desktop-zero-loss.png",
+          "sha256": "c1b37cd793d0e5e3d39d0f8b24a3a7c9cda66c3168a89a10d30c919928948425",
+          "bytes": 32516
+        }
+      }
+    ]
+  },
+  "review": {
+    "result": "No blocking findings",
+    "independentAgent": "visual_audit",
+    "reviewedSourceSha256": "faee373d6d9895fef3430b99cdf55ade04ded465ce0c400d288b9e9fa3b6b7ca",
+    "correctionsBeforeValidation": [
+      "Use background-color rather than background in the forced-colors legend rule to preserve stripe/dot pattern images."
+    ],
+    "visualReview": "Browser agent and primary agent inspected all six retained final screenshots for responsive chart, calculation and practice layout.",
+    "visualReviewManifest": "browser/visual-review.json",
+    "visualReviewSha256": "84e937f1beb79398ba340a84354b0b54ba18d58cff5da63f8ca6f6bc117d5f01",
+    "codeReview": "review.json",
+    "codeReviewSha256": "c100c7697c66f57b240184bf86b0cdde3e12540425898e023844b2f72746b50d"
+  },
+  "staticChecks": {
+    "syntaxFiles": [
+      "stem_lab/stem_tool_machinelab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "tests/machinelab_compound_planning.test.js",
+      "tests/machinelab_compound_power.test.js",
+      "tests/machinelab_compound_lab.test.js",
+      "tests/machinelab_work_record.test.js",
+      "tests/machinelab_read_aloud.test.js",
+      "tests/machinelab_i18n_hygiene.test.js",
+      "tests/machinelab_grade_bands.test.js",
+      "tests/machinelab_a11y.test.js",
+      "tests/machinelab_views.test.js",
+      "dev-tools/ml_compound_visual_qa.cjs",
+      "reports/machinelab-compound-visual-2026-10-12/run-focused-tests.cjs",
+      "reports/machinelab-compound-visual-2026-10-12/run-regressions.cjs",
+      "reports/machinelab-compound-visual-2026-10-12/verify-source-scope.cjs",
+      "reports/machinelab-compound-visual-2026-10-12/verify-evidence.cjs"
+    ],
+    "syntaxObservedExitCodes": 0
+  },
+  "priorBrowserAttempts": [
+    {
+      "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-1/process.json",
+      "sha256": "2547451c97494d8f7759913080ef15c3a56c0811ea7abf294deed57c28c8ac79",
+      "bytes": 1739
+    },
+    {
+      "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-2/process.json",
+      "sha256": "2547451c97494d8f7759913080ef15c3a56c0811ea7abf294deed57c28c8ac79",
+      "bytes": 1739
+    },
+    {
+      "path": "reports/machinelab-compound-visual-2026-10-12/browser/attempt-3/process.json",
+      "sha256": "59e52bb66f86e3b3e562e34bf84906ab47306a5aed00083662e12ce26f1852fb",
+      "bytes": 4549
+    }
+  ],
+  "interruptedTestRunner": {
+    "evidence": "test-interruption/interruption.json",
+    "sha256": "269528b62aa0099dd571e2cf477c2538d4e2632cfb3956f7696257780386f30f",
+    "explanation": "The original runner stopped after 14 observed successful groups. Verified resume reuses those groups and runs only the final group, with complete exactly-once coverage."
+  },
+  "interruptedRegressionOutput": {
+    "evidence": "test-interruption/regression-interruption.json",
+    "sha256": "c15f580ed77fb511b5528fbfc90c8418239ac03552bf7a112d9bbf5478ab92e3",
+    "explanation": "The output session closed, but all 13 native child processes completed with recorded exit 0. The complete manifest and final receipt/log were verified and restored after temporary diagnostic relocation; no native regression rerun was needed."
+  },
+  "normalization": "Generated metadata and console logs use LF; native assertion JSON and screenshots remain unchanged.",
+  "evidenceExclusions": [
+    "Every nested ml-shots.html, browser-temp/ and downloads/",
+    "test-temp/"
+  ],
+  "limitations": [
+    "Presentation changes use the existing conceptual model; diagram is not a physically connected machine assembly.",
+    "Very small energy shares can be below pixel resolution; numeric values remain available in the legend.",
+    "Scoped Machine Lab regressions, not the full repository suite or a full application build.",
+    "Native Chromium React/THREE harness; no physical assistive-device session, performance benchmark, push or deployment."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "observedRunnerExitCode": 1,
+  "runnerToolChunk": "a9ec6f",
+  "completedNativeProcesses": 14,
+  "unobservedGroup": "legacy-records",
+  "nodeProcessesAbsent": true,
+  "retained": [],
+  "reason": "Tool session ended without terminal diagnostics or a final native-child observation. Previously observed successful children remain hash-bound; unobserved group must rerun.",
+  "sourceSha256": "faee373d6d9895fef3430b99cdf55ade04ded465ce0c400d288b9e9fa3b6b7ca"
+}

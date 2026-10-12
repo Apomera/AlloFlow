@@ -1,0 +1,13 @@
+{
+  "baselineCommit": "bd6ca5b84",
+  "baselineSha256": "c8782233487e8f5148ae3e8d4cba03d14e9591d074154dadbd33ddc81c3892b0",
+  "source": "stem_lab/stem_tool_machinelab.js",
+  "publicMirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+  "sourceSha256": "faee373d6d9895fef3430b99cdf55ade04ded465ce0c400d288b9e9fa3b6b7ca",
+  "byteParity": true,
+  "changedRegion": "stationCompoundLab presentation only",
+  "outsideRegionByteIdentical": true,
+  "changeAndSaveCallbacksByteIdentical": true,
+  "callbackSha256": "2299fae402d7af30226d286e9748d48c5a9bb345ffb8bd11f7c8fc78eb563fc7",
+  "unchanged": "All math helpers, compound models/questions/record validation/export, defaults and other view implementations are outside the changed region."
+}

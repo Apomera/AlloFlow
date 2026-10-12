@@ -8512,7 +8512,9 @@ window.StemLab = window.StemLab || {
         var textStyle = { fontSize: 13, lineHeight: 1.55, color: T.text, overflowWrap: 'anywhere' };
         var control = { width: '100%', minHeight: 42, boxSizing: 'border-box', padding: 8, border: '1px solid ' + T.border, borderRadius: 6, color: T.text, background: T.card, font: 'inherit' };
         var buttonStyle = Object.assign({}, control, { width: 'auto', cursor: 'pointer', whiteSpace: 'normal' });
-        var summaryStyle = { minHeight: 42, padding: '10px 0', cursor: 'pointer', fontWeight: 800, color: T.text };
+        var summaryStyle = { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 800, color: T.text, lineHeight: 1.5 };
+        var panelStyle = { padding: 14, margin: '16px 0', border: '1px solid ' + T.border, borderRadius: 12, background: T.bg, minWidth: 0 };
+        var valueStyle = { margin: '6px 0 0', fontSize: 21, lineHeight: 1.25, fontWeight: 850, fontVariantNumeric: 'tabular-nums', color: T.text, overflowWrap: 'anywhere' };
         var prefix = 'ml-compound-', helpId = prefix + 'help-' + bench.id, roundingId = prefix + 'rounding-' + bench.id;
         var timeHelpId = prefix + 'time-help-' + bench.id, budgetHelpId = prefix + 'budget-help-' + bench.id;
         var invalidBudgetText = __alloT('stem.machinelab.compound_budget_invalid', 'Planning needs a task duration of 0.01–3600 seconds and an input-power budget of 0.01–100000 W. Other valid calculations remain available.');
@@ -8570,12 +8572,61 @@ window.StemLab = window.StemLab || {
               'aria-describedby': key === 'duration' ? timeHelpId : key === 'budget' ? budgetHelpId : helpId, onChange: handler || function (ev) { var patch = {}; patch[key] = ev.target.value.slice(0, 64); change(patch); } })
           ]);
         }
-        function action(key, label, handler, disabled) { var props = { key: key, type: 'button', style: buttonStyle, onClick: handler, disabled: !!disabled }; props['data-ml-compound-' + key] = ''; return h('button', props, label); }
+        function action(key, label, handler, disabled) { var props = { key: key, type: 'button', style: Object.assign({}, buttonStyle, key === 'check' ? { background: T.accent, color: T.accentInk, borderColor: T.accent, fontWeight: 800 } : {}), onClick: handler, disabled: !!disabled }; props['data-ml-compound-' + key] = ''; return h('button', props, label); }
         function metric(key, label, unit) { return h('div', { key: key, 'data-ml-compound-metric': key, 'data-value': model[key], style: { padding: 8, border: '1px solid ' + T.border, borderRadius: 6, background: T.bg, minWidth: 0 } }, [
           h('dt', { key: 'label', style: textStyle }, label), h('dd', { key: 'value', style: Object.assign({}, textStyle, { fontWeight: 800, margin: '4px 0 0' }) }, powerFmt(model[key]) + ' ' + unit)
         ]); }
+        function stageMap() {
+          var stages = [
+            { id: 'input', machine: bench, label: __alloT('stem.machinelab.compound_stage_in', 'Input stage: '), detail: String(p1) + '%' },
+            { id: 'output', machine: second, label: __alloT('stem.machinelab.compound_stage_out', 'Output stage: '), detail: String(p2) + '%' }
+          ];
+          return h('figure', { key: 'stage-map', 'data-ml-compound-stage-map': '', style: { margin: '14px 0 18px' } }, [
+            h('figcaption', { key: 'caption', style: Object.assign({}, textStyle, { fontWeight: 800, marginBottom: 10 }) },
+              __alloT('stem.machinelab.compound_visual_route', 'Two stages, one final task')),
+            h('ol', { key: 'route', className: 'ml-compound-route', style: { padding: 0, margin: 0, listStyle: 'none', color: T.text } }, stages.map(function (stage, index) {
+              return h('li', { key: stage.id, 'data-ml-compound-flow-node': stage.id, className: 'ml-compound-route-node', style: { border: '1px solid ' + T.border, background: T.bg, borderRadius: 10, padding: 10, minWidth: 0 } }, [
+                h('div', { key: 'icon', 'aria-hidden': 'true', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } }, [benchPreview(stage.machine.id, false), h('strong', { key: 'step', style: { fontSize: 12, color: T.dim } }, String(index + 1))]),
+                h('span', { key: 'label', style: { display: 'block', fontSize: 11, lineHeight: 1.5, color: T.muted } }, stage.label),
+                h('strong', { key: 'name', style: { display: 'block', fontSize: 15, lineHeight: 1.4, overflowWrap: 'anywhere' } }, stage.machine.label),
+                h('span', { key: 'efficiency', style: { display: 'block', fontSize: 12, lineHeight: 1.5, marginTop: 6 } }, stage.detail + ' ' + __alloT('stem.machinelab.compound_visual_efficiency', 'efficiency'))
+              ]);
+            }).concat([h('li', { key: 'task', 'data-ml-compound-flow-node': 'task', className: 'ml-compound-route-node', style: { padding: 10, border: '1px solid ' + T.load, borderRadius: 10, background: T.bg, minWidth: 0 } }, [
+              h('span', { key: 'symbol', 'aria-hidden': 'true', style: { display: 'block', fontSize: 30, height: 42, lineHeight: '42px', color: T.load, marginBottom: 8 } }, '◎'),
+              h('span', { key: 'label', style: { fontSize: 11, lineHeight: 1.5, color: T.muted } }, __alloT('stem.machinelab.compound_visual_task', 'Final task')),
+              h('strong', { key: 'load', style: { display: 'block', fontSize: 15, lineHeight: 1.4, overflowWrap: 'anywhere' } }, powerFmt(session.load) + ' N'),
+              h('span', { key: 'movement', style: { display: 'block', fontSize: 12, lineHeight: 1.5, marginTop: 6 } }, powerFmt(session.distance) + ' m · ' + (second.id === 'ramp' ? __alloT('stem.machinelab.compound_visual_rise', 'vertical rise') : __alloT('stem.machinelab.compound_visual_movement', 'movement')))
+            ])]))
+          ]);
+        }
+        function energySplit() {
+          var pieces = [
+            { id: 'useful', label: __alloT('stem.machinelab.compound_visual_useful', 'Useful output'), value: model.workOut, ink: T.load, pattern: 'solid' },
+            { id: 'first', label: __alloT('stem.machinelab.compound_first_loss', 'First-stage energy loss'), value: model.firstLoss, ink: T.effort, pattern: 'striped' },
+            { id: 'second', label: __alloT('stem.machinelab.compound_second_loss', 'Second-stage energy loss'), value: model.secondLoss, ink: T.hint, pattern: 'dotted' }
+          ];
+          function fill(piece) { return piece.pattern === 'striped' ? 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' : piece.pattern === 'dotted' ? 'radial-gradient(currentColor 1px,transparent 1px)' : 'none'; }
+          return h('figure', { key: 'energy-split', 'data-ml-compound-energy-split': '', style: panelStyle }, [
+            h('figcaption', { key: 'title', style: Object.assign({}, textStyle, { fontWeight: 800, marginBottom: 10 }) },
+              __alloT('stem.machinelab.compound_visual_energy', 'Where the input energy goes')),
+            h('div', { key: 'total', style: Object.assign({}, valueStyle, { marginBottom: 10 }) }, powerFmt(model.inputWork) + ' J'),
+            h('div', { key: 'bar', 'aria-hidden': 'true', className: 'ml-compound-energy-track', style: { display: 'flex', height: 24, border: '1px solid ' + T.border, borderRadius: 5, overflow: 'hidden', background: T.card } }, pieces.map(function (piece) {
+              return h('span', { key: piece.id, 'data-ml-compound-energy-bar': piece.id, 'data-pattern': piece.pattern, style: { width: (piece.value / model.inputWork * 100) + '%', flexShrink: 0, height: '100%', color: piece.ink,
+                backgroundColor: piece.pattern === 'solid' ? piece.ink : T.card, backgroundImage: fill(piece), backgroundSize: piece.pattern === 'dotted' ? '5px 5px' : undefined } });
+            })),
+            h('dl', { key: 'key', style: { display: 'grid', gap: 10, margin: '14px 0 0' } }, pieces.map(function (piece) {
+              var share = piece.value / model.inputWork * 100;
+              return h('div', { key: piece.id, 'data-ml-compound-energy-part': piece.id, 'data-value': piece.value, 'data-share': share, style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '4px 12px', fontSize: 12, lineHeight: 1.5 } }, [
+                h('dt', { key: 'label', style: { display: 'flex', alignItems: 'center', gap: 8, color: T.text } }, [
+                  h('span', { key: 'swatch', 'aria-hidden': 'true', className: 'ml-compound-energy-swatch', 'data-pattern': piece.pattern, style: { display: 'inline-block', width: 14, height: 14, flexShrink: 0, border: '1px solid currentColor', color: piece.ink, backgroundColor: piece.pattern === 'solid' ? piece.ink : T.card, backgroundImage: fill(piece), backgroundSize: piece.pattern === 'dotted' ? '5px 5px' : undefined } }), piece.label]),
+                h('dd', { key: 'value', style: { margin: 0, fontWeight: 800, color: T.text, fontVariantNumeric: 'tabular-nums' } }, powerFmt(piece.value) + ' J · ' + powerFmt(share) + '%')
+              ]);
+            })),
+            h('p', { key: 'help', style: Object.assign({}, textStyle, { margin: '10px 0 0', fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.compound_visual_share', 'Each percentage is a share of the same input energy. Very small shares may be too narrow to see; the values remain in the key.'))
+          ]);
+        }
         function powerFlow() {
-          return h('section', { key: 'power-flow', 'data-ml-compound-power-flow': bench.id, 'aria-labelledby': prefix + 'power-title-' + bench.id }, [
+          return h('section', { key: 'power-flow', 'data-ml-compound-power-flow': bench.id, 'aria-labelledby': prefix + 'power-title-' + bench.id, style: panelStyle }, [
             h('h3', { key: 'title', id: prefix + 'power-title-' + bench.id, style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_power_flow', 'Follow average power through both stages')),
             session.powerModel ? h('div', { key: 'valid' }, [
               h('p', { key: 'duration', style: textStyle }, __alloT('stem.machinelab.compound_power_interval', 'Every value uses the same task duration: ') + String(session.seconds) + ' s.'),
@@ -8596,23 +8647,23 @@ window.StemLab = window.StemLab || {
         }
         function budgetPlanning() {
           var plan = session.budgetModel;
-          return h('section', { key: 'budget-plan', 'data-ml-compound-budget-plan': bench.id, 'aria-labelledby': prefix + 'budget-title-' + bench.id }, [
+          return h('section', { key: 'budget-plan', 'data-ml-compound-budget-plan': bench.id, 'aria-labelledby': prefix + 'budget-title-' + bench.id, style: panelStyle }, [
             h('h3', { key: 'title', id: prefix + 'budget-title-' + bench.id, style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_budget_title', 'Work backward from a power budget')),
             plan ? h('div', { key: 'valid' }, [
               h('p', { key: 'given', style: textStyle }, __alloT('stem.machinelab.compound_budget_given', 'Input-power budget / time: ') + String(plan.budget) + ' W / ' + String(plan.seconds) + ' s'),
-              h('dl', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
+              h('dl', { key: 'metrics', className: 'ml-compound-budget-cards' }, [
                 ['budgetTime', __alloT('stem.machinelab.compound_budget_time', 'Time at full budget'), 's'],
                 ['budgetLoad', __alloT('stem.machinelab.compound_budget_load', 'Load at held movement'), 'N'],
                 ['budgetMovement', second.id === 'ramp' ? __alloT('stem.machinelab.compound_budget_rise', 'Vertical rise at held load') : __alloT('stem.machinelab.compound_budget_movement', 'Movement at held load'), 'm'],
                 ['requiredEfficiency', __alloT('stem.machinelab.compound_budget_required', 'Required combined efficiency'), '%']
               ].map(function (entry) { return h('div', { key: entry[0], 'data-ml-compound-budget-metric': entry[0], 'data-value': plan[entry[0]],
                 style: { padding: 8, border: '1px solid ' + T.border, borderRadius: 6, background: T.bg, minWidth: 0 } }, [
-                h('dt', { key: 'label', style: textStyle }, entry[1]), h('dd', { key: 'value', style: Object.assign({}, textStyle, { fontWeight: 800, margin: '4px 0 0' }) }, powerFmt(plan[entry[0]]) + ' ' + entry[2])
+                h('dt', { key: 'label', style: textStyle }, entry[1]), h('dd', { key: 'value', style: valueStyle }, powerFmt(plan[entry[0]]) + ' ' + entry[2])
               ]); })),
-              h('p', { key: 'fit', 'data-ml-compound-budget-fit': String(plan.powerFits), style: textStyle }, plan.powerFits
+              h('p', { key: 'fit', 'data-ml-compound-budget-fit': String(plan.powerFits), style: Object.assign({}, textStyle, { padding: 10, background: T.card, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (plan.powerFits ? T.ok : T.warn), borderRadius: 7 }) }, plan.powerFits
                 ? __alloT('stem.machinelab.compound_budget_fits', 'The current task fits this input-power budget under the assumed efficiencies.')
                 : __alloT('stem.machinelab.compound_budget_exceeds', 'The current task needs more input power than the budget under the assumed efficiencies. More time, a smaller task or higher combined efficiency can reduce the demand.')),
-              h('p', { key: 'ideal-fit', 'data-ml-compound-budget-ideal-fit': String(plan.idealFits), style: textStyle }, plan.idealFits
+              h('p', { key: 'ideal-fit', 'data-ml-compound-budget-ideal-fit': String(plan.idealFits), style: Object.assign({}, textStyle, { padding: 10, background: T.card, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (plan.idealFits ? T.load : T.bad), borderRadius: 7 }) }, plan.idealFits
                 ? __alloT('stem.machinelab.compound_budget_ideal_possible', 'The required efficiency is at most 100% within numerical tolerance. This is a necessary energy condition, not a promise that a real machine can achieve it.')
                 : __alloT('stem.machinelab.compound_budget_ideal_impossible', 'The required efficiency exceeds 100%. Even loss-free stages cannot complete this task within the budget and time. Increase the budget or time, or reduce the task.')),
               h('p', { key: 'held', style: textStyle }, __alloT('stem.machinelab.compound_budget_alternatives', 'The load and movement results are alternatives: each holds the other at its current value. Do not combine them as simultaneous limits. Time uses the current task and efficiencies; required efficiency holds the task, budget and time fixed.')),
@@ -8625,7 +8676,7 @@ window.StemLab = window.StemLab || {
           var rowStyle = { textAlign: 'left', padding: 5, borderBottom: '1px solid ' + T.border, overflowWrap: 'anywhere' };
           return h('details', { key: 'comparison', 'data-ml-compound-comparison': bench.id }, [
             h('summary', { key: 'title', style: summaryStyle }, __alloT('stem.machinelab.compound_compare', 'Follow force, travel and work through both stages')),
-            h('p', { key: 'flow', style: textStyle }, __alloT('stem.machinelab.compound_flow', 'Input → ') + bench.label + ' → ' + second.label + ' → ' + __alloT('stem.machinelab.compound_final', 'final task')),
+            stageMap(),
             h('dl', { key: 'ratios', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
               metric('idealMA', __alloT('stem.machinelab.compound_ima', 'Combined ideal MA'), '×'),
               metric('efficiency', __alloT('stem.machinelab.compound_eff', 'Combined efficiency'), '%'),
@@ -8646,6 +8697,7 @@ window.StemLab = window.StemLab || {
                 row.slice(2, 5).map(function (value, index) { return h('td', { key: index, style: rowStyle, 'data-ml-compound-metric': row[5][index] || undefined, 'data-value': value }, powerFmt(value)); })
               ]); }))
             ]),
+            energySplit(),
             h('dl', { key: 'losses', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
               metric('firstLoss', __alloT('stem.machinelab.compound_first_loss', 'First-stage energy loss'), 'J'),
               metric('secondLoss', __alloT('stem.machinelab.compound_second_loss', 'Second-stage energy loss'), 'J'),
@@ -8662,11 +8714,11 @@ window.StemLab = window.StemLab || {
           ]);
         }
         function practice() {
-          return h('div', { key: 'practice' }, [
+          return h('div', { key: 'practice', 'data-ml-compound-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_practice', 'Practice a compound-machine skill')),
             select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, compoundQuestion(kind, model, bench.ma(session.inputSettings), second.ma(session.outputSettings), session.load, session.distance, p1, p2).title]; })),
             !canPractice ? h('p', { key: 'time-invalid', role: 'status', style: textStyle }, isPlan ? invalidBudgetText : invalidTimeText) : null,
-            h('p', { key: 'given', 'data-ml-compound-given': '', style: textStyle }, question.given),
+            h('p', { key: 'given', 'data-ml-compound-given': '', style: Object.assign({}, textStyle, { padding: 12, background: T.bg, borderRadius: 8, borderLeft: '3px solid ' + T.accent }) }, question.given),
             h('p', { key: 'rounding', id: roundingId, style: textStyle }, __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer, style: control, 'aria-describedby': roundingId,
@@ -8682,7 +8734,7 @@ window.StemLab = window.StemLab || {
               action('hint', draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup'), function () { change({ hint: Math.min(2, draft.hint + 1) }); }, !canPractice || draft.hint >= 2),
               action('reveal', __alloT('stem.machinelab.eff_solution', 'Show worked solution'), function () { change({ revealed: true }); }, !canPractice || draft.revealed)
             ]),
-            h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: textStyle }, [
+            h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-ml-compound-feedback': result || (draft.hint ? 'hint' : 'idle'), style: Object.assign({}, textStyle, result || draft.hint ? { margin: '14px 0', padding: '0 12px', border: '1px solid ' + (result === 'correct' ? T.ok : result === 'incorrect' || result === 'invalid' || result === 'unit' ? T.warn : T.border), borderLeftWidth: 4, borderRadius: 8, background: T.bg } : {}) }, [
               draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-compound-hint-level': draft.hint }, question.formula) : null,
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-compound-result': result }, result === 'invalid' ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
@@ -8721,10 +8773,12 @@ window.StemLab = window.StemLab || {
               });
             })
           ]) : null,
+          h('div', { key: 'efficiencies', className: 'ml-compound-fields' }, [
           decimal('percentIn', __alloT('stem.machinelab.compound_percent_in', 'Input-stage efficiency (%)'), draft.percentIn, !(p1 >= 1 && p1 <= 100)),
-          decimal('percentOut', __alloT('stem.machinelab.compound_percent_out', 'Output-stage efficiency (%)'), draft.percentOut, !(p2 >= 1 && p2 <= 100)),
+          decimal('percentOut', __alloT('stem.machinelab.compound_percent_out', 'Output-stage efficiency (%)'), draft.percentOut, !(p2 >= 1 && p2 <= 100))]),
+          h('div', { key: 'timing', className: 'ml-compound-fields' }, [
           decimal('duration', __alloT('stem.machinelab.compound_duration', 'Compound-task duration'), draft.duration, !(session.seconds >= 0.01 && session.seconds <= 3600)),
-          select('timeUnit', __alloT('stem.machinelab.power_time_unit', 'Task time unit'), [['s', __alloT('stem.machinelab.power_seconds', 'Seconds')], ['min', __alloT('stem.machinelab.power_minutes', 'Minutes')]]),
+          select('timeUnit', __alloT('stem.machinelab.power_time_unit', 'Task time unit'), [['s', __alloT('stem.machinelab.power_seconds', 'Seconds')], ['min', __alloT('stem.machinelab.power_minutes', 'Minutes')]])]),
           h('p', { key: 'time-help', id: timeHelpId, style: textStyle }, __alloT('stem.machinelab.compound_time_help', 'Use 0.01–3600 seconds (up to 60 minutes). Both stages share this calculation interval; changing it does not change animation playback. These are average mechanical powers, not electrical input or a prediction of acceleration. Saved power skills keep their own fixed duration.')),
           decimal('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), draft.budget, !(_machineMath.parseNum(draft.budget) >= 0.01 && _machineMath.parseNum(draft.budget) <= 100000)),
           h('p', { key: 'budget-help', id: budgetHelpId, style: textStyle }, __alloT('stem.machinelab.compound_budget_help', 'Use 0.01–100000 W at the mechanical input. This planning budget does not change the task or animation. It is not electrical motor consumption. Planning records keep their own fixed budget and duration.')),
@@ -8736,6 +8790,7 @@ window.StemLab = window.StemLab || {
             saved.map(function (record) { return h('p', { key: record.question, style: Object.assign({}, textStyle, { whiteSpace: 'pre-line', paddingTop: 8, borderTop: '1px solid ' + T.border }) }, compoundRecordText(record, bench)); }),
             h('button', { key: 'record', type: 'button', style: buttonStyle, onClick: openWorkRecord }, __alloT('stem.machinelab.design_open_record', 'Open work record'))
           ]) : null,
+          h('style', { key: 'visual' }, '.ml-compound-lab label{display:block;margin-bottom:5px;font-weight:650}.ml-compound-lab input,.ml-compound-lab select{margin-bottom:10px}.ml-compound-lab [data-ml-compound-comparison]{margin-top:18px;border-top:1px solid currentColor}.ml-compound-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ml-compound-fields>div{min-width:0}.ml-compound-budget-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-compound-route{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.ml-compound-route-node{position:relative}.ml-compound-route-node:not(:last-child):after{content:"→";position:absolute;right:-17px;top:45%;font-size:16px;font-weight:800}.ml-compound-lab dd{font-variant-numeric:tabular-nums}@media(max-width:440px){.ml-compound-fields,.ml-compound-budget-cards{grid-template-columns:minmax(0,1fr)}.ml-compound-route{grid-template-columns:minmax(0,1fr);gap:22px}.ml-compound-route-node:not(:last-child):after{content:"↓";right:50%;top:auto;bottom:-23px}.ml-compound-route-node>div:first-child{float:left;margin-right:10px}.ml-compound-route-node{min-height:92px}}@media(forced-colors:active){.ml-compound-energy-track,.ml-compound-energy-swatch{forced-color-adjust:none;background-color:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.ml-compound-energy-track [data-pattern]{color:CanvasText!important;background-color:Canvas!important}.ml-compound-energy-track [data-pattern=solid],.ml-compound-energy-swatch[data-pattern=solid]{background-color:CanvasText!important}.ml-compound-route svg *{stroke:CanvasText!important}.ml-compound-lab button:disabled{opacity:1!important}}'),
           h('style', { key: 'focus' }, '.ml-compound-lab summary:focus-visible,.ml-compound-lab input:focus-visible,.ml-compound-lab select:focus-visible,.ml-compound-lab textarea:focus-visible,.ml-compound-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-compound-lab button:disabled{cursor:default;opacity:0.65}')
         ])], 'compound-lab');
       }

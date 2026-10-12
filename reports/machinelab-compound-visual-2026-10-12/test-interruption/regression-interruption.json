@@ -1,0 +1,9 @@
+{
+  "toolError": "code-mode host closed its stdout",
+  "completedNativeProcesses": 13,
+  "finalChildObservedExit": 0,
+  "finalReceiptAndLogHashesVerified": true,
+  "reason": "The native runner completed after the last visible progress item. Archiving the final receipt temporarily caused a verified-resume ENOENT; the preserved full 13-process zero-exit manifest and exact receipt/log were verified and restored. No native test retry required.",
+  "recoveryError": "880fbc: ENOENT after temporary diagnostic relocation; no child tests executed by that recovery call.",
+  "finalSourceSha256": "faee373d6d9895fef3430b99cdf55ade04ded465ce0c400d288b9e9fa3b6b7ca"
+}
