@@ -1,0 +1,13 @@
+{
+  "baselineCommit": "04b899d3a",
+  "baselineSha256": "5580dd78b69dae7a50a6bcac6586262a42de935be58706a64825df8511e71579",
+  "source": "stem_lab/stem_tool_machinelab.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+  "sourceSha256": "79a2cab5b82d57f53173ce472663167ee00a335642c28c52c0295e32e6e7c5b5",
+  "byteParity": true,
+  "outsideEfficiencyRegionByteIdentical": true,
+  "physicalMathHelpersByteIdentical": true,
+  "changeCallbackByteIdentical": true,
+  "saveCallbackOnlyVersionSelectionChanged": true,
+  "scope": "Efficiency session/question/answer/record helpers and efficiency lab presentation only. Defaults, physical math, all power and compound helpers/labs, other views and record export callers unchanged."
+}

@@ -7868,25 +7868,54 @@ window.StemLab = window.StemLab || {
         var changed = stationReferenceSettings(b).filter(function (c) { return change.before[c.key] !== change.after[c.key]; });
         return changed.length === 1 && changed[0].key === change.key ? change : null;
       }
+      function efficiencyKinds() { return ['input', 'force', 'loss', 'output', 'efficiency', 'actualMA', 'travel']; }
+      function efficiencyUnits() { return ['', 'N', 'J', 'm', '%', '×']; }
+      function efficiencyRecordVersion(kind) { return ['input', 'force', 'loss'].indexOf(kind) >= 0 ? 1 : 2; }
       function efficiencySession(source, b) {
         var raw = source.benchEfficiency && source.benchEfficiency[b.id];
         if (!raw || typeof raw !== 'object' || Array.isArray(raw)) raw = {};
         var percent = raw.percent === undefined ? '80' : typeof raw.percent === 'string' ? raw.percent.slice(0, 64) : finite(raw.percent) ? String(raw.percent) : '';
-        var question = ['input', 'force', 'loss'].indexOf(raw.question) >= 0 ? raw.question : 'input';
+        var question = efficiencyKinds().indexOf(raw.question) >= 0 ? raw.question : 'input';
         var settings = stationSettingsCopy(source, b);
         var signature = JSON.stringify([b.id, settings, percent, question]);
         var fresh = raw.signature === signature;
         var draft = { percent: percent, question: question, signature: signature,
           answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '',
-          unit: fresh && ['N', 'J', 'm'].indexOf(raw.unit) >= 0 ? raw.unit : '',
+          unit: fresh && efficiencyUnits().indexOf(raw.unit) >= 0 ? raw.unit : '',
           hint: fresh && Number.isInteger(raw.hint) && raw.hint >= 0 && raw.hint <= 2 ? raw.hint : 0,
           checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
         var model = validStationSetup(settings, b) ? _machineMath.efficiencyWork(settings[b.loadKey], settings.loadDistance, b.ma(settings), _machineMath.parseNum(percent)) : null;
         return { draft: draft, settings: settings, signature: signature, model: model };
       }
       function efficiencyQuestion(kind, model, settings, b) {
-        var percent = fmt(model.efficiency * 100, 3), fraction = fmt(model.efficiency, 5);
+        // Preserve a near-100% assumption in the problem and setup: rounding it
+        // to 100% would erase a small, nonzero loss that the learner must find.
+        var percent = String(model.efficiency * 100), fraction = String(model.efficiency);
         var useful = fmt(model.workOut, 3), loadValue = fmt(settings[b.loadKey], 3), idealMA = fmt(b.ma(settings), 3);
+        var input = String(model.workIn), output = String(model.workOut), effort = String(model.force), load = String(settings[b.loadKey]);
+        var inverse = {
+          output: { unit: 'J', target: model.workOut,
+            title: __alloT('stem.machinelab.eff_question_output', 'Calculate useful output work'),
+            given: __alloT('stem.machinelab.eff_input', 'Input work: ') + input + ' J · ' + __alloT('stem.machinelab.eff_percent', 'Efficiency: ') + percent + '%',
+            formula: __alloT('stem.machinelab.eff_output_rule', 'Useful output work = input work × efficiency as a decimal. Divide the percentage by 100 first.'),
+            setup: input + ' J × ' + fraction },
+          efficiency: { unit: '%', target: model.efficiency * 100,
+            title: __alloT('stem.machinelab.eff_question_percent', 'Calculate efficiency from work'),
+            given: __alloT('stem.machinelab.eff_useful', 'Useful work: ') + output + ' J · ' + __alloT('stem.machinelab.eff_input', 'Input work: ') + input + ' J',
+            formula: __alloT('stem.machinelab.eff_percent_rule', 'Efficiency (%) = useful output work ÷ input work × 100. The joules cancel; convert the ratio to a percentage.'),
+            setup: '(' + output + ' J ÷ ' + input + ' J) × 100' },
+          actualMA: { unit: '×', target: model.actualMA,
+            title: __alloT('stem.machinelab.eff_question_ma', 'Calculate actual mechanical advantage'),
+            given: __alloT('stem.machinelab.eff_given_load', 'Load: ') + load + ' N · ' + __alloT('stem.machinelab.eff_modeled_force', 'Modeled effort: ') + effort + ' N',
+            formula: __alloT('stem.machinelab.eff_ma_rule', 'Actual mechanical advantage = load force ÷ modeled effort force. The newtons cancel, leaving a ratio, shown as ×.'),
+            setup: load + ' N ÷ ' + effort + ' N' },
+          travel: { unit: 'm', target: model.travel,
+            title: __alloT('stem.machinelab.eff_question_travel', 'Calculate total hand travel'),
+            given: __alloT('stem.machinelab.eff_input', 'Input work: ') + input + ' J · ' + __alloT('stem.machinelab.eff_modeled_force', 'Modeled effort: ') + effort + ' N',
+            formula: __alloT('stem.machinelab.eff_travel_rule', 'Total hand travel = input work ÷ modeled effort force. One joule is one newton-metre, so J ÷ N gives metres.'),
+            setup: input + ' J ÷ ' + effort + ' N' }
+        };
+        if (inverse[kind]) return Object.assign({ absoluteTolerance: 0.0000000001 }, inverse[kind]);
         if (kind === 'force') return { unit: 'N', target: model.force,
           title: __alloT('stem.machinelab.eff_question_force', 'Calculate the modeled effort force'),
           given: __alloT('stem.machinelab.eff_given_load', 'Load: ') + loadValue + ' N · ' + __alloT('stem.machinelab.eff_ideal_ma', 'Ideal MA: ') + idealMA + ' · ' + percent + '%',
@@ -7903,12 +7932,12 @@ window.StemLab = window.StemLab || {
         var value = _machineMath.parseNum(draft.answer);
         if (value === null || value < 0) return 'invalid';
         if (draft.unit !== question.unit) return 'unit';
-        return Math.abs(value - question.target) <= Math.max(0.0005, Math.abs(question.target) * 0.01) ? 'correct' : 'incorrect';
+        return Math.abs(value - question.target) <= Math.max(question.absoluteTolerance === undefined ? 0.0005 : question.absoluteTolerance, Math.abs(question.target) * 0.01) ? 'correct' : 'incorrect';
       }
       function validEfficiencyRecord(record, b) {
-        if (!record || Array.isArray(record) || record.version !== 1 || record.benchId !== b.id || !validStationSetup(record.settings, b) ||
-          ['input', 'force', 'loss'].indexOf(record.question) < 0 || typeof record.answer !== 'string' || record.answer.length > 64 ||
-          ['', 'N', 'J', 'm'].indexOf(record.unit) < 0 || !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
+        if (!record || Array.isArray(record) || record.version !== efficiencyRecordVersion(record.question) || record.benchId !== b.id || !validStationSetup(record.settings, b) ||
+          efficiencyKinds().indexOf(record.question) < 0 || typeof record.answer !== 'string' || record.answer.length > 64 ||
+          efficiencyUnits().indexOf(record.unit) < 0 || !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
         var model = _machineMath.efficiencyWork(record.settings[b.loadKey], record.settings.loadDistance, b.ma(record.settings), record.percent);
         if (!model || (record.completion !== 'solution' && (record.completion !== 'checked' || efficiencyAnswer(record, efficiencyQuestion(record.question, model, record.settings, b)) !== 'correct'))) return null;
         return record;
@@ -7917,7 +7946,7 @@ window.StemLab = window.StemLab || {
         var model = _machineMath.efficiencyWork(record.settings[b.loadKey], record.settings.loadDistance, b.ma(record.settings), record.percent);
         var question = efficiencyQuestion(record.question, model, record.settings, b);
         return [__alloT('stem.machinelab.eff_record', 'Recorded efficiency calculation: ') + b.label,
-          __alloT('stem.machinelab.eff_assumption', 'Assumed constant efficiency: ') + fmt(record.percent, 3) + '%',
+          __alloT('stem.machinelab.eff_assumption', 'Assumed constant efficiency: ') + String(record.percent) + '%',
           __alloT('stem.machinelab.eff_record_task', 'Fixed task — load: ') + fmt(record.settings[b.loadKey], 3) + ' N; ' +
             __alloT('stem.machinelab.lift_distance', 'Load moves') + ': ' + fmt(record.settings.loadDistance, 3) + ' m; ' + __alloT('stem.machinelab.eff_ideal_ma', 'Ideal MA: ') + fmt(b.ma(record.settings), 3),
           __alloT('stem.machinelab.eff_modeled_force', 'Modeled effort: ') + fmt(model.force, 3) + ' N',
@@ -7925,7 +7954,7 @@ window.StemLab = window.StemLab || {
           __alloT('stem.machinelab.eff_useful', 'Useful work: ') + fmt(model.workOut, 3) + ' J',
           __alloT('stem.machinelab.eff_input', 'Input work: ') + fmt(model.workIn, 3) + ' J',
           __alloT('stem.machinelab.eff_lost', 'Energy lost: ') + fmt(model.loss, 3) + ' J',
-          question.title + ': ' + question.setup + ' = ' + fmt(question.target, 3) + ' ' + question.unit,
+          question.title + ': ' + question.setup + ' = ' + (record.version === 2 ? powerFmt(question.target) : fmt(question.target, 3)) + ' ' + question.unit,
           __alloT('stem.machinelab.eff_record_answer', 'Entered answer: ') + (record.answer.trim() ? record.answer + ' ' + record.unit : __alloT('stem.machinelab.eff_no_answer', 'none')),
           record.completion === 'solution' ? __alloT('stem.machinelab.eff_record_solution', 'Worked solution viewed; this is practice, not an independent score.')
             : __alloT('stem.machinelab.eff_record_checked', 'Answer checked within the stated rounding tolerance; this is practice, not a score.'),
@@ -7934,7 +7963,7 @@ window.StemLab = window.StemLab || {
       }
       function stationEfficiencyLab() {
         if (young) return null;
-        var session = efficiencySession(d, bench), draft = session.draft, model = session.model;
+        var session = efficiencySession(d, bench), draft = session.draft, model = session.model, kinds = efficiencyKinds();
         var question = model && efficiencyQuestion(draft.question, model, session.settings, bench);
         var result = model && (draft.revealed ? 'solution' : draft.checked ? efficiencyAnswer(draft, question) : null);
         var prefix = 'ml-efficiency-', saved = validEfficiencyRecord(d.benchEfficiencyRecords && d.benchEfficiencyRecords[bench.id], bench);
@@ -7944,6 +7973,7 @@ window.StemLab = window.StemLab || {
         var buttonStyle = { minHeight: 42, padding: '8px 10px', borderRadius: 7, border: '1px solid ' + T.border,
           background: T.card, color: T.text, font: 'inherit', cursor: 'pointer', whiteSpace: 'normal' };
         var summaryStyle = { cursor: 'pointer', minHeight: 42, boxSizing: 'border-box', padding: '10px 0', fontWeight: 800, color: T.text };
+        var panelStyle = { margin: '16px 0', padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.bg, minWidth: 0 };
         // Delayed handlers cannot grade or save a different station or task.
         function change(patch) {
           setLabToolData(function (prev) {
@@ -7966,11 +7996,34 @@ window.StemLab = window.StemLab || {
             if (latest.signature !== session.signature || !latest.model || (!ld.revealed && (!ld.checked ||
               efficiencyAnswer(ld, efficiencyQuestion(ld.question, latest.model, latest.settings, bench)) !== 'correct'))) return prev;
             var records = Object.assign({}, source.benchEfficiencyRecords || {});
-            records[bench.id] = { version: 1, benchId: bench.id, settings: stationSettingsCopy(latest.settings),
+            records[bench.id] = { version: efficiencyRecordVersion(ld.question), benchId: bench.id, settings: stationSettingsCopy(latest.settings),
               percent: _machineMath.parseNum(ld.percent), question: ld.question, answer: ld.answer, unit: ld.unit,
               hint: ld.hint, completion: ld.revealed ? 'solution' : 'checked' };
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchEfficiencyRecords: records }) });
           });
+        }
+        function energySplit() {
+          var parts = [
+            { id: 'useful', label: __alloT('stem.machinelab.eff_useful_work', 'Useful work'), value: model.workOut, share: model.efficiency * 100, ink: T.load, pattern: 'solid' },
+            { id: 'loss', label: __alloT('stem.machinelab.eff_energy_lost', 'Energy lost'), value: model.loss, share: (1 - model.efficiency) * 100, ink: T.effort, pattern: 'striped' }
+          ];
+          function fill(part) { return part.pattern === 'solid' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)'; }
+          return h('figure', { key: 'energy-split', 'data-ml-efficiency-energy-split': '', 'aria-labelledby': prefix + 'energy-title-' + bench.id, style: panelStyle }, [
+            h('figcaption', { key: 'title', id: prefix + 'energy-title-' + bench.id, style: Object.assign({}, textStyle, { fontWeight: 800 }) }, __alloT('stem.machinelab.eff_visual_energy', 'Where the input energy goes')),
+            h('p', { key: 'input', style: Object.assign({}, textStyle, { margin: '8px 0 12px' }) }, [
+              __alloT('stem.machinelab.eff_input', 'Input work: '), h('strong', { key: 'value', style: { fontSize: 20, fontVariantNumeric: 'tabular-nums' } }, powerFmt(model.workIn) + ' J')]),
+            h('div', { key: 'track', className: 'ml-efficiency-energy-track', 'aria-hidden': 'true', style: { display: 'flex', height: 26, outline: '1px solid ' + T.border, borderRadius: 4, overflow: 'hidden', background: T.card } }, parts.map(function (part) {
+              return h('span', { key: part.id, 'data-ml-efficiency-energy-bar': part.id, 'data-pattern': part.pattern, style: { width: part.share + '%', flexShrink: 0, height: '100%', color: part.ink, backgroundColor: part.pattern === 'solid' ? part.ink : T.card, backgroundImage: fill(part) } });
+            })),
+            h('dl', { key: 'ledger', style: { display: 'grid', gap: 10, margin: '14px 0 0' } }, parts.map(function (part) {
+              return h('div', { key: part.id, 'data-ml-efficiency-energy-part': part.id, 'data-value': part.value, 'data-share': part.share, style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '4px 12px', fontSize: 12, lineHeight: 1.5, color: T.text } }, [
+                h('dt', { key: 'name', style: { display: 'flex', alignItems: 'center', gap: 8 } }, [
+                  h('span', { key: 'swatch', 'aria-hidden': 'true', className: 'ml-efficiency-energy-swatch', 'data-pattern': part.pattern, style: { width: 14, height: 14, flexShrink: 0, border: '1px solid currentColor', color: part.ink, backgroundColor: part.pattern === 'solid' ? part.ink : T.card, backgroundImage: fill(part) } }), part.label]),
+                h('dd', { key: 'value', style: { margin: 0, fontWeight: 800, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, powerFmt(part.value) + ' J · ' + powerFmt(part.share) + '%')
+              ]);
+            })),
+            h('p', { key: 'help', style: Object.assign({}, textStyle, { margin: '12px 0 0', fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.eff_visual_share', 'Both percentages are shares of the same input work. Solid is useful work; stripes are energy lost. Very small shares may be too narrow to see, so compare the numbers too.'))
+          ]);
         }
         function comparisonView() {
           var limits = d.benchDesignLimits && d.benchDesignLimits[bench.id];
@@ -7982,7 +8035,7 @@ window.StemLab = window.StemLab || {
           return h('details', { key: 'compare', 'data-ml-efficiency-comparison': bench.id, style: { border: '1px solid ' + T.border, borderRadius: 8, padding: 10, margin: '10px 0' } }, [
             h('summary', { key: 'title', style: summaryStyle }, __alloT('stem.machinelab.eff_compare', 'Compare ideal and modeled results')),
             h('p', { key: 'ideal', style: textStyle }, __alloT('stem.machinelab.eff_ideal_force', 'Ideal effort: ') + fmt(model.idealForce, 3) + ' N · ' + __alloT('stem.machinelab.eff_ideal_ma', 'Ideal MA: ') + fmt(ma, 3)),
-            h('dl', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 8, margin: 0 } }, [
+            h('dl', { key: 'metrics', className: 'ml-efficiency-metric-grid' }, [
               ['force', __alloT('stem.machinelab.eff_modeled_effort', 'Modeled effort'), 'N'],
               ['travel', __alloT('stem.machinelab.design_total_travel', 'Total hand travel'), 'm'],
               ['workOut', __alloT('stem.machinelab.eff_useful_work', 'Useful work'), 'J'],
@@ -7992,10 +8045,11 @@ window.StemLab = window.StemLab || {
             ].map(function (metric) { return h('div', { key: metric[0], 'data-ml-efficiency-metric': metric[0], 'data-value': model[metric[0]],
               style: { padding: 9, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 6, background: T.bg, color: T.text } }, [
               h('dt', { key: 'name', style: { fontSize: 12 } }, metric[1]),
-              h('dd', { key: 'value', style: { margin: '4px 0 0', fontWeight: 800, overflowWrap: 'anywhere' } }, fmt(model[metric[0]], 3) + ' ' + metric[2])
+              h('dd', { key: 'value', style: { margin: '6px 0 0', fontSize: 20, lineHeight: 1.3, fontWeight: 800, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, powerFmt(model[metric[0]]) + ' ' + metric[2])
             ]); })),
+            energySplit(),
             h('p', { key: 'balance', style: textStyle }, __alloT('stem.machinelab.eff_balance', 'Input work = useful work + energy lost. Values are rounded; calculations use full precision.')),
-            limitsValid ? h('p', { key: 'limits', 'data-ml-efficiency-fit': String(!!(forceOK && travelOK)), style: textStyle }, [
+            limitsValid ? h('p', { key: 'limits', 'data-ml-efficiency-fit': String(!!(forceOK && travelOK)), style: Object.assign({}, textStyle, { padding: 12, background: T.bg, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (forceOK && travelOK ? T.ok : T.warn), borderRadius: 8 }) }, [
               h('strong', { key: 'status' }, forceOK && travelOK ? __alloT('stem.machinelab.eff_fits', 'This modeled setup meets both design limits. ')
                 : __alloT('stem.machinelab.eff_misses', 'This modeled setup exceeds a design limit. ')),
               __alloT('stem.machinelab.eff_force_limit', 'Effort limit: ') + fmt(forceLimit, 3) + ' N (' + (forceOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')) + '). ' +
@@ -8004,15 +8058,25 @@ window.StemLab = window.StemLab || {
           ]);
         }
         function practiceView() {
-          return h('div', { key: 'practice' }, [
+          var labels = {
+            input: __alloT('stem.machinelab.eff_choose_input', 'Input work'),
+            force: __alloT('stem.machinelab.eff_choose_force', 'Effort force'),
+            loss: __alloT('stem.machinelab.eff_choose_loss', 'Energy lost'),
+            output: __alloT('stem.machinelab.eff_choose_output', 'Useful output work'),
+            efficiency: __alloT('stem.machinelab.eff_choose_percent', 'Efficiency (%)'),
+            actualMA: __alloT('stem.machinelab.eff_choose_ma', 'Actual MA'),
+            travel: __alloT('stem.machinelab.eff_choose_travel', 'Hand travel')
+          };
+          return h('div', { key: 'practice', 'data-ml-efficiency-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.eff_practice', 'Practice a calculation')),
             h('label', { key: 'question-label', htmlFor: prefix + 'question-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_choose_question', 'Choose what to calculate')),
             h('select', { key: 'question', id: prefix + 'question-' + bench.id, value: draft.question, style: inputStyle,
-              onChange: function (ev) { change({ question: ev.target.value }); } }, ['input', 'force', 'loss'].map(function (kind) {
-              return h('option', { key: kind, value: kind }, efficiencyQuestion(kind, model, session.settings, bench).title);
+              onChange: function (ev) { change({ question: ev.target.value }); } }, kinds.map(function (kind) {
+              return h('option', { key: kind, value: kind }, labels[kind]);
             })),
-            h('p', { key: 'given', 'data-ml-efficiency-given': '', style: textStyle }, question.given),
-            h('p', { key: 'rule', id: prefix + 'rounding-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_rounding', 'Use full values when possible, or round to 3 decimal places. Checks allow 1% or 0.0005 units, whichever is larger. This is practice, with no points awarded.')),
+            h('h4', { key: 'question-title', 'data-ml-efficiency-question-title': '', style: Object.assign({}, textStyle, { fontSize: 14, margin: '10px 0 6px', fontWeight: 800 }) }, question.title),
+            h('p', { key: 'given', 'data-ml-efficiency-given': '', style: Object.assign({}, textStyle, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, question.given),
+            h('p', { key: 'rule', id: prefix + 'rounding-' + bench.id, style: textStyle }, efficiencyRecordVersion(draft.question) === 2 ? __alloT('stem.machinelab.eff_inverse_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.') : __alloT('stem.machinelab.eff_rounding', 'Use full values when possible, or round to 3 decimal places. Checks allow 1% or 0.0005 units, whichever is larger. This is practice, with no points awarded.')),
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
               'aria-describedby': prefix + 'rounding-' + bench.id, 'aria-invalid': result === 'invalid' || result === 'incorrect', style: inputStyle,
@@ -8024,26 +8088,31 @@ window.StemLab = window.StemLab || {
               h('option', { key: 'blank', value: '' }, __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')),
               h('option', { key: 'n', value: 'N' }, __alloT('stem.machinelab.eff_unit_n', 'N — newtons')),
               h('option', { key: 'j', value: 'J' }, __alloT('stem.machinelab.eff_unit_j', 'J — joules')),
-              h('option', { key: 'm', value: 'm' }, __alloT('stem.machinelab.eff_unit_m', 'm — metres'))
+              h('option', { key: 'm', value: 'm' }, __alloT('stem.machinelab.eff_unit_m', 'm — metres')),
+              h('option', { key: 'percent', value: '%' }, __alloT('stem.machinelab.eff_unit_percent', '% — percent')),
+              h('option', { key: 'ratio', value: '×' }, __alloT('stem.machinelab.eff_unit_ratio', '× — ratio'))
             ]),
             h('div', { key: 'buttons', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
-              h('button', { key: 'check', type: 'button', 'data-ml-efficiency-check': '', style: buttonStyle, onClick: function () { change({ checked: true }); } }, __alloT('stem.machinelab.eff_check', 'Check calculation')),
+              h('button', { key: 'check', type: 'button', 'data-ml-efficiency-check': '', style: Object.assign({}, buttonStyle, { background: T.accent, color: T.accentInk, borderColor: T.accent, fontWeight: 800 }), onClick: function () { change({ checked: true }); } }, __alloT('stem.machinelab.eff_check', 'Check calculation')),
               h('button', { key: 'hint', type: 'button', 'data-ml-efficiency-hint': '', style: buttonStyle, disabled: draft.hint >= 2,
                 onClick: function () { change({ hint: Math.min(2, draft.hint + 1) }); } }, draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup')),
               h('button', { key: 'reveal', type: 'button', 'data-ml-efficiency-reveal': '', style: buttonStyle, disabled: draft.revealed,
                 onClick: function () { change({ revealed: true }); } }, __alloT('stem.machinelab.eff_solution', 'Show worked solution'))
             ]),
-            h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: textStyle }, [
+            h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, textStyle, result || draft.hint ? { margin: '14px 0', padding: '0 12px', border: '1px solid ' + (result === 'correct' ? T.ok : result === 'incorrect' || result === 'unit' || result === 'invalid' ? T.warn : T.border), borderLeftWidth: 4, borderRadius: 8, background: T.bg } : {}) }, [
               draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-efficiency-hint-level': draft.hint }, question.formula) : null,
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-efficiency-result': result }, result === 'invalid' ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
-                : result === 'unit' ? __alloT('stem.machinelab.eff_check_unit', 'Check the unit: force uses newtons (N); work and energy use joules (J).')
-                : result === 'incorrect' ? __alloT('stem.machinelab.eff_try_again', 'Not yet. Check the percentage-to-decimal conversion and your calculation. A hint can help.')
-                : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) + question.setup + ' = ' + fmt(question.target, 3) + ' ' + question.unit) : null
+                : result === 'unit' ? __alloT('stem.machinelab.eff_check_units_all', 'Use N for force, J for work or energy, m for hand travel, % for efficiency, and × for the mechanical-advantage ratio.')
+                : result === 'incorrect' ? (draft.question === 'efficiency' ? __alloT('stem.machinelab.eff_retry_percent', 'Not yet. Divide useful work by input work, then multiply by 100 to give a percentage.') : draft.question === 'actualMA' ? __alloT('stem.machinelab.eff_retry_ma', 'Not yet. Divide the load force by the modeled effort force. Actual MA is a ratio, not a percentage.') : draft.question === 'travel' ? __alloT('stem.machinelab.eff_retry_travel', 'Not yet. Divide input work by modeled effort force to find hand travel. Use input work, not useful output work.') : __alloT('stem.machinelab.eff_try_again', 'Not yet. Check the percentage-to-decimal conversion and your calculation. A hint can help.'))
+                : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) + question.setup + ' = ' + (efficiencyRecordVersion(draft.question) === 2 ? powerFmt(question.target) : fmt(question.target, 3)) + ' ' + question.unit) : null
             ]),
+            h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
             h('button', { key: 'save', type: 'button', 'data-ml-efficiency-save': '', style: buttonStyle, disabled: result !== 'correct' && result !== 'solution', onClick: save },
               saved ? __alloT('stem.machinelab.eff_update_record', 'Update saved efficiency work') : __alloT('stem.machinelab.eff_save_record', 'Save efficiency work')),
-            h('p', { key: 'save-help', style: textStyle }, __alloT('stem.machinelab.eff_save_help', 'Save a checked answer or a viewed solution. The record keeps this task, efficiency, answer and hints; later setting changes do not rewrite it.'))
+            h('button', { key: 'next', type: 'button', 'data-ml-efficiency-next': '', style: buttonStyle, onClick: function () { change({ question: kinds[(kinds.indexOf(draft.question) + 1) % kinds.length] }); } }, __alloT('stem.machinelab.power_next', 'Next skill'))
+            ]),
+            h('p', { key: 'save-help', style: textStyle }, __alloT('stem.machinelab.eff_save_next_help', 'Save before moving to the next skill. Each station keeps its latest efficiency calculation; saving again replaces that station’s prior calculation. The record keeps the task, answer, hints and any viewed solution; later settings do not rewrite it.'))
           ]);
         }
         return card([h('details', { key: 'lab', className: 'ml-efficiency-lab', 'data-ml-efficiency': bench.id }, [
@@ -8061,7 +8130,7 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'text', style: Object.assign({}, textStyle, { whiteSpace: 'pre-line' }) }, efficiencyRecordText(saved, bench)),
             h('button', { key: 'record', type: 'button', style: buttonStyle, onClick: openWorkRecord }, __alloT('stem.machinelab.design_open_record', 'Open work record'))
           ]) : null,
-          h('style', { key: 'focus' }, '.ml-efficiency-lab summary:focus-visible,.ml-efficiency-lab input:focus-visible,.ml-efficiency-lab select:focus-visible,.ml-efficiency-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-efficiency-lab button:disabled{cursor:default;opacity:0.65}')
+          h('style', { key: 'focus' }, '.ml-efficiency-lab summary:focus-visible,.ml-efficiency-lab input:focus-visible,.ml-efficiency-lab select:focus-visible,.ml-efficiency-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-efficiency-lab button:disabled{cursor:default;opacity:0.65}.ml-efficiency-lab label{display:block;margin-bottom:5px;font-weight:650}.ml-efficiency-lab input,.ml-efficiency-lab select{margin-bottom:10px}.ml-efficiency-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}@media(max-width:440px){.ml-efficiency-metric-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-efficiency-energy-track{outline-color:CanvasText!important}.ml-efficiency-energy-track [data-pattern],.ml-efficiency-energy-swatch{forced-color-adjust:none;color:CanvasText!important;background-color:Canvas!important;border-color:CanvasText!important}.ml-efficiency-energy-track [data-pattern=solid],.ml-efficiency-energy-swatch[data-pattern=solid]{background-color:CanvasText!important}}')
         ])], 'efficiency-lab');
       }
 

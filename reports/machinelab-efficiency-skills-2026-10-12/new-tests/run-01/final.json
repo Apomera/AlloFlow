@@ -1,0 +1,45 @@
+{
+  "format": "machine-lab-new-efficiency-coverage-v1",
+  "sourceSha256": "79a2cab5b82d57f53173ce472663167ee00a335642c28c52c0295e32e6e7c5b5",
+  "publicMirrorSha256": "79a2cab5b82d57f53173ce472663167ee00a335642c28c52c0295e32e6e7c5b5",
+  "file": "tests/machinelab_efficiency_skills.test.js",
+  "testSha256": "33481259ffec661ebb7dfde2d09bda9c513462a30c929dc8681f40769d1eece3",
+  "passed": 77,
+  "failed": 0,
+  "uncovered": 0,
+  "nativeProcesses": 4,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "0026168a7044bd5ce6c36ed8db5092fa8b5fcffb27a84912ea58b5b345d30881"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "19f505fd7ba086a0e2bf12f9fc9e000cb900c8ae132505d52d072513fe358c0a"
+  },
+  "receipts": [
+    {
+      "path": "group-01.json",
+      "sha256": "a220887b60bade82d43228f51fbece4e68b58a4f9684eec32ea33e47207455d0",
+      "passed": 39,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-02.json",
+      "sha256": "16a506e1d4b9754f0a9f9e3aa34d22db642b41251993e241bdc8bca033286fd4",
+      "passed": 8,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-03.json",
+      "sha256": "11c34ab22eb214bb87661e2944212d314197fac13d197dd0653dc7c0b2624416",
+      "passed": 10,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-04.json",
+      "sha256": "608c8ad262ee42bf7575aeec2588c5aabad522d85c6e26f90b233e5bb44a9733",
+      "passed": 20,
+      "observedExitCode": 0
+    }
+  ]
+}

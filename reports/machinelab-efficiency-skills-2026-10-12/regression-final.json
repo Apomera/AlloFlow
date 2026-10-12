@@ -1,0 +1,135 @@
+{
+  "format": "machine-lab-independent-run-coverage-v1",
+  "sourceSha256": "79a2cab5b82d57f53173ce472663167ee00a335642c28c52c0295e32e6e7c5b5",
+  "passed": 396,
+  "failed": 0,
+  "uncovered": 0,
+  "files": 7,
+  "nativeReceipts": 17,
+  "description": "Fresh serial processes; filtered cases counted only where executed. Duplicate display names distinguished by stable inventory position.",
+  "coverage": [
+    {
+      "file": "tests/machinelab_work_record.test.js",
+      "sha256": "49e47e41a430beabbeb80572750c248faf2e5492ff76d74cfda71c6dc2b47ee4",
+      "passed": 11
+    },
+    {
+      "file": "tests/machinelab_read_aloud.test.js",
+      "sha256": "0d0696fdbc38c2d69fb930837d1b45759e25569a9faee1a22e8a968e5a188877",
+      "passed": 8
+    },
+    {
+      "file": "tests/machinelab_i18n_hygiene.test.js",
+      "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+      "passed": 8
+    },
+    {
+      "file": "tests/machinelab_grade_bands.test.js",
+      "sha256": "c9ca6bc0aa0796f41467b3af1bcc928b729c0cc8790a2a2cffc21d82d5bfd5b4",
+      "passed": 37
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+      "passed": 28
+    },
+    {
+      "file": "tests/machinelab_views.test.js",
+      "sha256": "cb05b9a04d97bba407f6129c8e09ef9db6a835f08d820ddcd40d159e51c0a72b",
+      "passed": 192
+    },
+    {
+      "file": "tests/machinelab_efficiency_lab.test.js",
+      "sha256": "26f7a507631463cf39ddd5757868215216bddf672becc674a93865b3ad2add6b",
+      "passed": 112
+    }
+  ],
+  "receipts": [
+    {
+      "receipt": "regression-01.json",
+      "sha256": "41b58a75e03fe514916e71e626d1e6f82ba6de7249a337fa3df8f3eb18f695b7",
+      "passed": 11
+    },
+    {
+      "receipt": "regression-02.json",
+      "sha256": "02cf8631348eff81a61f7d233674813585109fc50a3bff481cc5daac5fa0cad0",
+      "passed": 8
+    },
+    {
+      "receipt": "regression-03.json",
+      "sha256": "1042f76d20e359b00b0f6838dde84da7c0c578883843d8bf462a7f587f5ee9b3",
+      "passed": 8
+    },
+    {
+      "receipt": "regression-04.json",
+      "sha256": "11b80f8f90c441a1e61ff94f752e49e44161fdfb0ef60f59cb5c1fe2daa6fc5e",
+      "passed": 37
+    },
+    {
+      "receipt": "regression-05.json",
+      "sha256": "d52793ef38a9c7592ecc3b7b0040763f32482d3abd0b3913db4bce2357362c43",
+      "passed": 28
+    },
+    {
+      "receipt": "regression-06.json",
+      "sha256": "bdedbffdfa18394c6faeae9ff61648686d1e99fd095aa0a896403c7d61276813",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-07.json",
+      "sha256": "1baf900d272410fd698691c066e32f834c86dd4bb8fa90680f2e89695fe668ff",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-08.json",
+      "sha256": "5d8f2b4498566539851aba5a456385515c88ba73b1b8c697796f0b6b8ab17230",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-09.json",
+      "sha256": "abb8f6df6c9d9d4c0606a7173d3796e5de9fe95431040377febd72df97686f9e",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-10.json",
+      "sha256": "6663d0f0c7d6ebb979ff2720141141047b03bb85da5f6e74f6831571e5e0d560",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-11.json",
+      "sha256": "1de72384431aff2db20be9500a023e7441b8fc6f1ec0b78aa9aa3237b72ebc5f",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-12.json",
+      "sha256": "3854218e69edd937bf73e6157cf653649b4af5a1cc05f032b6c3e4292d1bbed0",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-13.json",
+      "sha256": "a1126553c4c4334c8324bb2b07ed01cc9dac8241ac3b11ab380a32a53ea0da43",
+      "passed": 24
+    },
+    {
+      "receipt": "regression-14.json",
+      "sha256": "863802376ec831f0b5a99f18ebb45ea1892b236f9e02a3aa125c4947d88da08b",
+      "passed": 11
+    },
+    {
+      "receipt": "regression-15.json",
+      "sha256": "38ca1728404e3763d501bfb56e5b7ca6dbf05675cae45b2d11ad81dc5ce7677c",
+      "passed": 31
+    },
+    {
+      "receipt": "regression-16.json",
+      "sha256": "c04b4ba18a0d60c55c6e444373e2800a12e8041b3e2710f2ed8aca65f956c8a8",
+      "passed": 41
+    },
+    {
+      "receipt": "regression-17.json",
+      "sha256": "8f5d8be909045b7f9b328b7617c3697f62b0ab73ecc3b198dbbbbc8e5fb5f06f",
+      "passed": 29
+    }
+  ],
+  "processManifest": "regression-processes.json"
+}
