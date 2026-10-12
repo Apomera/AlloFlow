@@ -1,0 +1,10 @@
+{
+  "baselineCommit": "1e708cb5c",
+  "baselineSha256": "e10d476980428471e6ddd5d31f193da4d071f259d10cca7a275f8e34ae126b0c",
+  "sourceSha256": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "mirrorSha256": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "byteParity": true,
+  "onlyReadoutChanged": true,
+  "syntax": true,
+  "unchanged": "Physical helpers, station controls, state and grading callbacks, practice labs, saved records, exports, all other views"
+}

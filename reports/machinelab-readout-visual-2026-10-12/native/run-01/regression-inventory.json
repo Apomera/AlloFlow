@@ -1,0 +1,388 @@
+{
+  "format": "machine-lab-readout-native-inventory-v1",
+  "files": [
+    {
+      "file": "tests/machinelab_grade_bands.test.js",
+      "sha256": "c9ca6bc0aa0796f41467b3af1bcc928b729c0cc8790a2a2cffc21d82d5bfd5b4",
+      "assertions": [
+        {
+          "index": 0,
+          "fullName": "Machine Lab: band resolution prefers an explicit in-tool override",
+          "executedPassCount": 1
+        },
+        {
+          "index": 1,
+          "fullName": "Machine Lab: band resolution uses the host gradeBand when there is no override",
+          "executedPassCount": 1
+        },
+        {
+          "index": 2,
+          "fullName": "Machine Lab: band resolution derives a band from gradeLevel when the host omits gradeBand",
+          "executedPassCount": 1
+        },
+        {
+          "index": 3,
+          "fullName": "Machine Lab: band resolution falls back to g68 rather than blanking on an unrecognised band",
+          "executedPassCount": 1
+        },
+        {
+          "index": 4,
+          "fullName": "Machine Lab: every band renders every bench renders lever at k2 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 5,
+          "fullName": "Machine Lab: every band renders every bench renders pulley at k2 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 6,
+          "fullName": "Machine Lab: every band renders every bench renders windlass at k2 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 7,
+          "fullName": "Machine Lab: every band renders every bench renders ramp at k2 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 8,
+          "fullName": "Machine Lab: every band renders every bench renders wedge at k2 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 9,
+          "fullName": "Machine Lab: every band renders every bench renders screw at k2 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 10,
+          "fullName": "Machine Lab: every band renders every bench renders lever at g35 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 11,
+          "fullName": "Machine Lab: every band renders every bench renders pulley at g35 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 12,
+          "fullName": "Machine Lab: every band renders every bench renders windlass at g35 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 13,
+          "fullName": "Machine Lab: every band renders every bench renders ramp at g35 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 14,
+          "fullName": "Machine Lab: every band renders every bench renders wedge at g35 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 15,
+          "fullName": "Machine Lab: every band renders every bench renders screw at g35 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 16,
+          "fullName": "Machine Lab: every band renders every bench renders lever at g68 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 17,
+          "fullName": "Machine Lab: every band renders every bench renders pulley at g68 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 18,
+          "fullName": "Machine Lab: every band renders every bench renders windlass at g68 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 19,
+          "fullName": "Machine Lab: every band renders every bench renders ramp at g68 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 20,
+          "fullName": "Machine Lab: every band renders every bench renders wedge at g68 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 21,
+          "fullName": "Machine Lab: every band renders every bench renders screw at g68 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 22,
+          "fullName": "Machine Lab: every band renders every bench renders lever at g912 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 23,
+          "fullName": "Machine Lab: every band renders every bench renders pulley at g912 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 24,
+          "fullName": "Machine Lab: every band renders every bench renders windlass at g912 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 25,
+          "fullName": "Machine Lab: every band renders every bench renders ramp at g912 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 26,
+          "fullName": "Machine Lab: every band renders every bench renders wedge at g912 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 27,
+          "fullName": "Machine Lab: every band renders every bench renders screw at g912 without throwing or blanking",
+          "executedPassCount": 1
+        },
+        {
+          "index": 28,
+          "fullName": "Machine Lab: bands restate rather than filter shows all six benches at every band",
+          "executedPassCount": 1
+        },
+        {
+          "index": 29,
+          "fullName": "Machine Lab: bands restate rather than filter gives each band its own wording for the same machine",
+          "executedPassCount": 1
+        },
+        {
+          "index": 30,
+          "fullName": "Machine Lab: bands restate rather than filter withholds the formula line from k2 but shows it from g35 up",
+          "executedPassCount": 1
+        },
+        {
+          "index": 31,
+          "fullName": "Machine Lab: bands restate rather than filter shows the work-in/work-out ledger only from g68 up",
+          "executedPassCount": 1
+        },
+        {
+          "index": 32,
+          "fullName": "Machine Lab: answer position is rotated, not authored-in-place does not place the correct k2 answer in the same slot on every bench",
+          "executedPassCount": 1
+        },
+        {
+          "index": 33,
+          "fullName": "Machine Lab: answer position is rotated, not authored-in-place keeps exactly one correct option per bench after rotation",
+          "executedPassCount": 1
+        },
+        {
+          "index": 34,
+          "fullName": "Machine Lab: partial stored state is filled from defaults renders real numbers when the stored state predates the current controls",
+          "executedPassCount": 1
+        },
+        {
+          "index": 35,
+          "fullName": "Machine Lab: partial stored state is filled from defaults keeps the stored values that ARE present rather than overwriting them",
+          "executedPassCount": 1
+        },
+        {
+          "index": 36,
+          "fullName": "Machine Lab: invalid geometry degrades honestly shows a dash instead of a number when the ramp cannot exist",
+          "executedPassCount": 1
+        }
+      ]
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+      "assertions": [
+        {
+          "index": 0,
+          "fullName": "Machine Lab a11y: interactive elements uses native buttons and inputs, never a hand-rolled clickable div",
+          "executedPassCount": 1
+        },
+        {
+          "index": 1,
+          "fullName": "Machine Lab a11y: interactive elements gives every button a non-empty accessible name",
+          "executedPassCount": 1
+        },
+        {
+          "index": 2,
+          "fullName": "Machine Lab a11y: interactive elements labels every slider, since the thumb carries no text",
+          "executedPassCount": 1
+        },
+        {
+          "index": 3,
+          "fullName": "Machine Lab a11y: interactive elements labels every text input",
+          "executedPassCount": 1
+        },
+        {
+          "index": 4,
+          "fullName": "Machine Lab a11y: interactive elements ties every slider label to its control with a for/id pair",
+          "executedPassCount": 1
+        },
+        {
+          "index": 5,
+          "fullName": "Machine Lab a11y: non-text content gives every graphic a text alternative",
+          "executedPassCount": 1
+        },
+        {
+          "index": 6,
+          "fullName": "Machine Lab a11y: non-text content hides decorative SVG from the accessibility tree",
+          "executedPassCount": 1
+        },
+        {
+          "index": 7,
+          "fullName": "Machine Lab a11y: non-text content captions every data table",
+          "executedPassCount": 1
+        },
+        {
+          "index": 8,
+          "fullName": "Machine Lab a11y: non-text content marks row and column headers so a table reads in two dimensions",
+          "executedPassCount": 1
+        },
+        {
+          "index": 9,
+          "fullName": "Machine Lab a11y: results are announced, not just shown marks the prediction result as a status region",
+          "executedPassCount": 1
+        },
+        {
+          "index": 10,
+          "fullName": "Machine Lab a11y: results are announced, not just shown marks the siege feedback as a status region",
+          "executedPassCount": 1
+        },
+        {
+          "index": 11,
+          "fullName": "Machine Lab a11y: results are announced, not just shown marks AI errors as alerts",
+          "executedPassCount": 1
+        },
+        {
+          "index": 12,
+          "fullName": "Machine Lab a11y: results are announced, not just shown carries a screen-reader summary of the current state on every view",
+          "executedPassCount": 1
+        },
+        {
+          "index": 13,
+          "fullName": "Machine Lab a11y: nothing is picture-only ships the energy ledger as a table even while showing bars",
+          "executedPassCount": 1
+        },
+        {
+          "index": 14,
+          "fullName": "Machine Lab a11y: nothing is picture-only ships the wall condition as a table even while showing the diagram",
+          "executedPassCount": 1
+        },
+        {
+          "index": 15,
+          "fullName": "Machine Lab a11y: nothing is picture-only states the trajectory numbers in text beside the graph",
+          "executedPassCount": 1
+        },
+        {
+          "index": 16,
+          "fullName": "Machine Lab a11y: colour contrast parses all three palettes out of the tool",
+          "executedPassCount": 1
+        },
+        {
+          "index": 17,
+          "fullName": "Machine Lab a11y: colour contrast meets WCAG AA 4.5:1 for body text on both surfaces",
+          "executedPassCount": 1
+        },
+        {
+          "index": 18,
+          "fullName": "Machine Lab a11y: colour contrast meets AA for the muted and dim secondary text used at 11 to 13 px",
+          "executedPassCount": 1
+        },
+        {
+          "index": 19,
+          "fullName": "Machine Lab a11y: colour contrast meets AA for button labels on the accent fill",
+          "executedPassCount": 1
+        },
+        {
+          "index": 20,
+          "fullName": "Machine Lab a11y: colour contrast meets AA for the ok and bad status colours",
+          "executedPassCount": 1
+        },
+        {
+          "index": 21,
+          "fullName": "Machine Lab a11y: colour contrast keeps the accent readable as text on the card, where the ledger uses it",
+          "executedPassCount": 1
+        },
+        {
+          "index": 22,
+          "fullName": "Machine Lab a11y: every band and view stays accessible keeps buttons named and graphics labelled at k2",
+          "executedPassCount": 1
+        },
+        {
+          "index": 23,
+          "fullName": "Machine Lab a11y: every band and view stays accessible keeps buttons named and graphics labelled at g35",
+          "executedPassCount": 1
+        },
+        {
+          "index": 24,
+          "fullName": "Machine Lab a11y: every band and view stays accessible keeps buttons named and graphics labelled at g68",
+          "executedPassCount": 1
+        },
+        {
+          "index": 25,
+          "fullName": "Machine Lab a11y: every band and view stays accessible keeps buttons named and graphics labelled at g912",
+          "executedPassCount": 1
+        },
+        {
+          "index": 26,
+          "fullName": "Machine Lab: mirror parity keeps the CDN and desktop copies byte-identical",
+          "executedPassCount": 1
+        },
+        {
+          "index": 27,
+          "fullName": "Machine Lab: mirror parity registers the same tool id from the desktop copy",
+          "executedPassCount": 1
+        }
+      ]
+    },
+    {
+      "file": "tests/machinelab_i18n_hygiene.test.js",
+      "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+      "assertions": [
+        {
+          "index": 0,
+          "fullName": "Machine Lab translation keys are fit to translate has no key without an English fallback, out of namespace, blank, or double-booked",
+          "executedPassCount": 1
+        },
+        {
+          "index": 1,
+          "fullName": "Machine Lab translation keys are fit to translate holds for the mirrored copy the desktop app serves",
+          "executedPassCount": 1
+        },
+        {
+          "index": 2,
+          "fullName": "Machine Lab translation keys are fit to translate catches a call with no English fallback",
+          "executedPassCount": 1
+        },
+        {
+          "index": 3,
+          "fullName": "Machine Lab translation keys are fit to translate catches a key outside the namespace the pack pipeline collects",
+          "executedPassCount": 1
+        },
+        {
+          "index": 4,
+          "fullName": "Machine Lab translation keys are fit to translate catches a blank or whitespace-only English string",
+          "executedPassCount": 1
+        },
+        {
+          "index": 5,
+          "fullName": "Machine Lab translation keys are fit to translate catches one key carrying two different English strings",
+          "executedPassCount": 1
+        },
+        {
+          "index": 6,
+          "fullName": "Machine Lab translation keys are fit to translate allows the same key twice when the English agrees, which is how shared words work",
+          "executedPassCount": 1
+        },
+        {
+          "index": 7,
+          "fullName": "Machine Lab translation keys are fit to translate is not fooled by commas, parens or apostrophes inside the English",
+          "executedPassCount": 1
+        }
+      ]
+    }
+  ]
+}

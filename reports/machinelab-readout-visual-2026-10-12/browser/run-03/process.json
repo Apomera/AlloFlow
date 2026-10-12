@@ -1,0 +1,112 @@
+{
+  "command": "node dev-tools/ml_readout_visual_qa.cjs reports/machinelab-readout-visual-2026-10-12/browser/run-03",
+  "startedAt": "2026-10-12T21:38:29.690Z",
+  "finishedAt": "2026-10-12T21:39:33.199Z",
+  "observedExitCode": 0,
+  "signal": null,
+  "error": null,
+  "sourceSha256": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "sourceSha256After": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "publicMirrorSha256": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "publicMirrorSha256After": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "sourceExactInNativePage": true,
+  "scenarios": 13,
+  "checks": 413,
+  "errors": [],
+  "screenshots": [
+    {
+      "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/desktop-lever-readout.png",
+      "sha256": "9daee340880070aee584f08356f044044697fbd7a070191bc766d4410f5f092c",
+      "bytes": 25156,
+      "width": 553,
+      "height": 685,
+      "visuallyInspected": true,
+      "inspection": "Root and independent browser reviewer inspected the byte-identical run-02 image; no clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/desktop-pulley-readout.png",
+      "sha256": "cb2e4084b2e717fd583ffe1ba662fdee1d1976ace68c0bd0863c320f420f05c3",
+      "bytes": 24922,
+      "width": 553,
+      "height": 574,
+      "visuallyInspected": true,
+      "inspection": "Root and independent browser reviewer inspected the byte-identical run-02 image; no clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/dark-phone-screw-readout.png",
+      "sha256": "864765fd51cb2471151799f7bc08730d8f198cda9496b398e92b5b73371a4bd0",
+      "bytes": 32148,
+      "width": 288,
+      "height": 926,
+      "visuallyInspected": true,
+      "inspection": "Root and independent browser reviewer inspected the byte-identical run-02 image; no clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/forced-colors-readout.png",
+      "sha256": "bf4d640114cca27f4e68806374fe011f94825b63497a6b7732d535041520828a",
+      "bytes": 23974,
+      "width": 288,
+      "height": 877,
+      "visuallyInspected": true,
+      "inspection": "Root and independent browser reviewer inspected the byte-identical run-02 image; no clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/phone-younger-readout.png",
+      "sha256": "ebd04112571d73432bee70c4d7c4ea207cd59be5cfe8d8dffa68a0d05832fcb4",
+      "bytes": 6884,
+      "width": 288,
+      "height": 197,
+      "visuallyInspected": true,
+      "inspection": "Root and independent browser reviewer inspected the byte-identical run-02 image; no clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/tablet-grade35-readout.png",
+      "sha256": "7be1a6ac0e74362ec261bd4ab8f75bb91a59f782f9dbe37e2442bece5852b69b",
+      "bytes": 23237,
+      "width": 362,
+      "height": 621,
+      "visuallyInspected": true,
+      "inspection": "Root and independent browser reviewer inspected the byte-identical run-02 image; no clipping or overlap."
+    }
+  ],
+  "harness": {
+    "path": "dev-tools/ml_readout_visual_qa.cjs",
+    "sha256": "cbfc7c70eb30f9a1ad9f0c19a4a803b1b189b5764f862e906d8f6b8acb8e2613",
+    "bytes": 9822
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/harness-snapshot.cjs",
+    "sha256": "cbfc7c70eb30f9a1ad9f0c19a4a803b1b189b5764f862e906d8f6b8acb8e2613",
+    "bytes": 9822
+  },
+  "helperPreamble": {
+    "path": "dev-tools/ml_efficiency_lab_qa.cjs",
+    "sha256": "1388c2c01180b88eb57ca2d0efc7c9503253fff28e3e1d299c9ec17d593a6916",
+    "bytes": 20619
+  },
+  "baseHarness": {
+    "path": "dev-tools/ml_scene_shots.cjs",
+    "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7",
+    "bytes": 20872
+  },
+  "results": {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/results.json",
+    "sha256": "4ca2fc687b1a55d9b2652d2ceb2961041e9c0dca6f36dd73d4080e1d23304c1f",
+    "bytes": 24020
+  },
+  "nativePage": {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/ml-shots.html",
+    "sha256": "0f9249764cae2fe9f9068b45748294188df14b06f02f60797e196186f8d101dd",
+    "bytes": 2507900
+  },
+  "console": {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/console.log",
+    "sha256": "ddab63055fe11c69e00ce7a6c8a24b60cbbb9934a5d84e77cf711c69697d0c46",
+    "bytes": 473
+  },
+  "downloadedRecord": null,
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "command": "node dev-tools/ml_readout_visual_qa.cjs reports/machinelab-readout-visual-2026-10-12/browser/run-01",
+  "startedAt": "2026-10-12T21:36:02.954Z",
+  "finishedAt": "2026-10-12T21:36:03.238Z",
+  "observedExitCode": 1,
+  "signal": null,
+  "error": null,
+  "sourceSha256": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "sourceSha256After": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "publicMirrorSha256": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "publicMirrorSha256After": "d9a463bab0000a52be4d585de4ecf45ae6ed894dd5b4fbff49027f2b39fc6735",
+  "sourceExactInNativePage": false,
+  "scenarios": 0,
+  "checks": 0,
+  "errors": [
+    "Missing native browser results"
+  ],
+  "screenshots": [],
+  "harness": {
+    "path": "dev-tools/ml_readout_visual_qa.cjs",
+    "sha256": "ad26477a1181f970cead9340849778ef3938a3a3a21e1ab09c8b63faa6336cd9",
+    "bytes": 9265
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-01/harness-snapshot.cjs",
+    "sha256": "ad26477a1181f970cead9340849778ef3938a3a3a21e1ab09c8b63faa6336cd9",
+    "bytes": 9265
+  },
+  "helperPreamble": {
+    "path": "dev-tools/ml_efficiency_lab_qa.cjs",
+    "sha256": "1388c2c01180b88eb57ca2d0efc7c9503253fff28e3e1d299c9ec17d593a6916",
+    "bytes": 20619
+  },
+  "baseHarness": {
+    "path": "dev-tools/ml_scene_shots.cjs",
+    "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7",
+    "bytes": 20872
+  },
+  "results": null,
+  "nativePage": null,
+  "console": {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-01/console.log",
+    "sha256": "3f57625f951712d0011b3a881273d665f8d403dc8f778cb58a797984dcc03108",
+    "bytes": 778
+  },
+  "downloadedRecord": null,
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ]
+}

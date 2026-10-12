@@ -10100,50 +10100,114 @@ window.StemLab = window.StemLab || {
 
       // The readout. Every band sees MA; the wording and the extra rows change.
       function readout() {
-        var rows = [];
-        rows.push({ k: __alloT('stem.machinelab.ma', 'Mechanical advantage'), v: ma === null ? '—' : (fmt(ma, 2) + '×'), hi: true });
-
-        if (band === 'k2') {
-          rows.push({
-            k: __alloT('stem.machinelab.how_it_feels', 'How it feels'),
-            v: ma === null ? '—' : (ma >= 2
-              ? __alloT('stem.machinelab.much_easier', 'Much easier')
-              : (ma > 1 ? __alloT('stem.machinelab.a_bit_easier', 'A bit easier') : __alloT('stem.machinelab.no_help', 'No help')))
-          });
-        } else {
-          rows.push({ k: __alloT('stem.machinelab.load', 'Load'), v: fmt(load, 0) + ' N' });
-          rows.push({ k: __alloT('stem.machinelab.effort_needed', 'Effort needed'), v: effort === null ? '—' : fmt(effort, 1) + ' N' });
+        var young = band === 'k2', advanced = band === 'g68' || band === 'g912';
+        var validMA = finite(ma) && ma > 0;
+        var titleId = 'ml-readout-title-' + bench.id;
+        // More significant places keep the smallest permitted screw effort visible.
+        function amount(value) {
+          return finite(value) && value !== 0 && Math.abs(value) < 0.1
+            ? String(Number(value.toPrecision(4))) : fmt(value, 3);
         }
-        if (band === 'g68' || band === 'g912') {
-          rows.push({ k: __alloT('stem.machinelab.load_moves', 'Load moves'), v: fmt(loadDist, 2) + ' m' });
-          rows.push({ k: __alloT('stem.machinelab.you_move', 'Your hand moves'), v: effortDist === null ? '—' : fmt(effortDist, 2) + ' m' });
+        var ratioAmount = validMA && ma !== 1 && Number(amount(ma)) === 1 ? String(ma) : amount(ma);
+        var feeling = !validMA ? '—' : ma >= 2
+          ? __alloT('stem.machinelab.much_easier', 'Much easier')
+          : ma > 1 ? __alloT('stem.machinelab.a_bit_easier', 'A bit easier') : __alloT('stem.machinelab.no_help', 'No help');
+        var exchange = !validMA ? __alloT('stem.machinelab.bad_setup', 'These settings do not describe a working machine. Adjust the sliders.')
+          : ma > 1 ? __alloT('stem.machinelab.trade_less_force', 'Less force · more distance')
+            : ma < 1 ? __alloT('stem.machinelab.trade_more_force', 'More force · less distance')
+              : __alloT('stem.machinelab.trade_equal', 'Same force · same distance');
+        var metrics = young ? [] : [
+          { id: 'effort', label: __alloT('stem.machinelab.effort_needed', 'Effort needed'), value: effort, unit: 'N', side: 'effort' },
+          { id: 'load', label: __alloT('stem.machinelab.load', 'Load'), value: load, unit: 'N', side: 'load' }
+        ];
+        if (advanced) metrics = metrics.concat([
+          { id: 'effortDistance', label: __alloT('stem.machinelab.you_move', 'Your hand moves'), value: effortDist, unit: 'm', side: 'effort' },
+          { id: 'loadDistance', label: __alloT('stem.machinelab.load_moves', 'Load moves'), value: loadDist, unit: 'm', side: 'load' }
+        ]);
+        function geometry() {
+          if (young || !validMA) return null;
+          var count = bench.id === 'pulley', screw = bench.id === 'screw';
+          var first = bench.controls[0], second = bench.controls[1];
+          var numerator = screw ? 2 * Math.PI * d.screwHandleR : d[first.key];
+          var denominator = count ? 1 : d[second.key];
+          var scale = Math.max(numerator, denominator);
+          var captionId = 'ml-readout-geometry-title-' + bench.id;
+          return h('figure', { key: 'geometry', 'data-ml-readout-geometry': '', 'data-ml-geometry-chart': bench.id,
+            'aria-labelledby': captionId, style: { margin: '14px 0 0', padding: 12, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border } }, [
+            h('figcaption', { key: 'caption', id: captionId, style: { marginBottom: 10, color: T.text, fontSize: 13, fontWeight: 800 } },
+              __alloT('stem.machinelab.readout_geometry', 'How this setup makes MA')),
+            count ? h('div', { key: 'segments' }, [
+              h('div', { key: 'chips', 'aria-hidden': 'true', className: 'ml-readout-strands', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
+                // The slider permits six segments; do not allocate unbounded saved input.
+                Array.from({ length: ma <= 6 ? ma : 0 }, function (_, index) {
+                  return h('span', { key: index, 'data-ml-geometry-segment': index + 1, style: { width: 34, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: T.text } }, [
+                    h('span', { key: 'rope', className: 'ml-readout-rope', style: { display: 'block', height: 28, width: 4, borderLeft: '2px solid ' + T.effort, borderRight: '2px solid ' + T.effort } }),
+                    h('span', { key: 'number', style: { display: 'grid', placeItems: 'center', width: 26, height: 26, borderRadius: '50%', border: '1px solid ' + T.border, background: T.card, fontSize: 12, fontWeight: 750 } }, index + 1)
+                  ]);
+                })),
+              h('p', { key: 'count', 'data-ml-geometry-count': ma, style: { margin: 0, color: T.text, lineHeight: 1.5, fontSize: 13 } },
+                first.label + ': ' + amount(ma) + ' → MA = ' + amount(ma) + '×'),
+              h('p', { key: 'hint', style: { margin: '6px 0 0', color: T.dim, fontSize: 12, lineHeight: 1.5 } },
+                __alloT('stem.machinelab.readout_supports', 'Count the strands supporting the moving block, not the wheels.'))
+            ]) : h('div', { key: 'ratio' }, [
+              h('dl', { key: 'parts', className: 'ml-readout-ratio', style: { margin: 0 } }, [
+                { id: 'numerator', label: screw ? __alloT('stem.machinelab.readout_circumference', 'Handle path in one full turn') : first.label, value: numerator, side: 'effort' },
+                { id: 'denominator', label: second.label, value: denominator, side: 'load' }
+              ].map(function (part, index) {
+                return h('div', { key: part.id, 'data-ml-geometry-part': part.id, 'data-value': part.value,
+                  style: { position: 'relative', padding: index ? '12px 0 0' : '0 0 12px', borderTop: index ? '1px solid ' + T.border : 'none' } }, [
+                  h('dt', { key: 'label', style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, part.label),
+                  h('dd', { key: 'value', style: { margin: '2px 0 0', fontSize: 17, fontWeight: 800, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere', color: T.text } }, [
+                    h('span', { key: 'number' }, amount(part.value) + ' m'),
+                    h('div', { key: 'track', 'aria-hidden': 'true', className: 'ml-readout-length-track', style: { height: 6, marginTop: 7, background: T.card, outline: '1px solid ' + T.border, borderRadius: 2 } },
+                    h('div', { 'data-ml-geometry-bar': part.id, style: { width: (part.value / scale * 100) + '%', height: '100%', background: part.side === 'effort' ? T.effort : T.load,
+                      backgroundImage: part.side === 'load' ? 'repeating-linear-gradient(135deg,transparent 0,transparent 3px,' + T.card + ' 3px,' + T.card + ' 5px)' : 'none' } }))
+                  ])
+                ]);
+              })),
+              screw ? h('p', { key: 'circumference', style: { margin: '10px 0 0', fontSize: 12, lineHeight: 1.5, color: T.muted, overflowWrap: 'anywhere' } },
+                '2π × ' + amount(d.screwHandleR) + ' m ≈ ' + amount(numerator) + ' m') : null,
+              h('p', { key: 'equation', 'data-ml-geometry-equation': '', style: { margin: '10px 0 0', padding: '8px 10px', borderRadius: 7, background: T.card,
+                border: '1px solid ' + T.border, color: T.text, fontSize: 14, fontWeight: 800, lineHeight: 1.5, overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } },
+                amount(numerator) + ' m ÷ ' + amount(denominator) + ' m ≈ ' + ratioAmount + '×'),
+              h('p', { key: 'scale', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.5, color: T.dim } },
+                __alloT('stem.machinelab.readout_length_scale', 'Both bars use the same length scale. Read the numbers beside very small bars. Values are rounded for display.'))
+            ]),
+            h('p', { key: 'formula', style: { margin: '10px 0 0', fontSize: 12, lineHeight: 1.5, color: T.dim, overflowWrap: 'anywhere' } }, bench.formula)
+          ]);
         }
-
-        return card([
-          h('div', { key: 'grid' }, rows.map(function (r, i) {
-            return h('div', {
-              key: 'r' + i,
-              style: {
-                display: 'flex', justifyContent: 'space-between', gap: 10,
-                padding: '5px 0',
-                borderBottom: i < rows.length - 1 ? '1px solid ' + T.border : 'none'
-              }
-            }, [
-              h('span', { key: 'k', style: { fontSize: 13, color: T.muted } }, r.k),
-              h('span', {
-                key: 'v',
-                style: {
-                  fontSize: r.hi ? 17 : 13, fontWeight: 700,
-                  color: r.hi ? T.accent : T.text, fontVariantNumeric: 'tabular-nums'
-                }
-              }, r.v)
+        return h('section', { key: 'readout', className: 'ml-readout', 'data-ml-readout': bench.id, 'aria-labelledby': titleId,
+          style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 14, marginBottom: 12, minWidth: 0, color: T.text } }, [
+          h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 } }, [
+            h('h3', { key: 'title', id: titleId, style: { margin: 0, fontSize: 16, fontWeight: 850 } }, __alloT('stem.machinelab.readout_title', 'Read this setup')),
+            h('span', { key: 'ideal', style: { border: '1px solid ' + T.border, borderRadius: 6, padding: '3px 7px', color: T.dim, fontSize: 11, fontWeight: 750 } },
+              __alloT('stem.machinelab.readout_ideal', 'Ideal model'))
+          ]),
+          h('div', { key: 'headline', style: { padding: 12, borderRadius: 10, border: '1px solid ' + T.border, background: T.bg, borderLeft: '4px solid ' + T.accent } }, [
+            h('dl', { key: 'ma', style: { margin: 0 } }, h('div', { 'data-ml-readout-metric': 'ma', 'data-value': validMA ? ma : undefined }, [
+              h('dt', { key: 'label', style: { fontSize: 12, fontWeight: 650, color: T.muted } }, __alloT('stem.machinelab.ma', 'Mechanical advantage')),
+              h('dd', { key: 'value', style: { margin: '3px 0 0', fontSize: 32, lineHeight: 1.2, fontWeight: 900, color: T.accent, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, validMA ? ratioAmount + '×' : '—')
+            ])),
+            young ? h('dl', { key: 'feel', style: { margin: '8px 0 0' } }, h('div', { 'data-ml-readout-metric': 'feel' }, [
+              h('dt', { key: 'label', style: { fontSize: 12, color: T.muted } }, __alloT('stem.machinelab.how_it_feels', 'How it feels')),
+              h('dd', { key: 'value', style: { margin: '2px 0 0', fontSize: 17, fontWeight: 750 } }, feeling)
+            ])) : h('p', { key: 'exchange', 'data-ml-readout-trade': !validMA ? 'invalid' : ma > 1 ? 'advantage' : ma < 1 ? 'disadvantage' : 'equal', style: { margin: '8px 0 0', fontSize: 12, lineHeight: 1.5, fontWeight: 700 } }, exchange)
+          ]),
+          geometry(),
+          metrics.length ? h('dl', { key: 'metrics', className: 'ml-readout-metrics', style: { margin: '12px 0 0', display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } }, metrics.map(function (metric) {
+            return h('div', { key: metric.id, 'data-ml-readout-metric': metric.id, 'data-value': finite(metric.value) ? metric.value : undefined,
+              style: { minWidth: 0, padding: 10, background: T.bg, borderRadius: 9, border: '1px solid ' + T.border } }, [
+              h('dt', { key: 'label', style: { display: 'flex', gap: 6, alignItems: 'baseline', color: T.muted, fontSize: 12, lineHeight: 1.4 } }, [
+                h('span', { key: 'symbol', 'aria-hidden': 'true', style: { color: metric.side === 'effort' ? T.effort : T.load } }, metric.side === 'effort' ? '◆' : '○'), metric.label
+              ]),
+              h('dd', { key: 'value', style: { margin: '5px 0 0', fontSize: 20, fontWeight: 850, lineHeight: 1.4, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } },
+                finite(metric.value) ? amount(metric.value) + ' ' + metric.unit : '—')
             ]);
-          })),
-          (band !== 'k2') ? h('p', {
-            key: 'f',
-            style: { margin: '10px 0 0', fontSize: 12, color: T.dim, fontFamily: 'ui-monospace, monospace' }
-          }, bench.formula) : null
-        ], 'readout');
+          })) : null,
+          !young ? h('p', { key: 'assumption', style: { margin: '10px 0 0', fontSize: 11, lineHeight: 1.5, color: T.dim } },
+            __alloT('stem.machinelab.readout_assumption', 'These values assume no energy losses. Geometry sets the ratio; the load sets the force needed.')) : null,
+          h('style', { key: 'styles' }, '@media(max-width:440px){.ml-readout-metrics{grid-template-columns:minmax(0,1fr)!important}}@media(forced-colors:active){.ml-readout-length-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-readout-length-track [data-ml-geometry-bar]{background-color:CanvasText!important}.ml-readout-length-track [data-ml-geometry-bar=denominator]{background-image:repeating-linear-gradient(135deg,transparent 0,transparent 3px,Canvas 3px,Canvas 5px)!important}.ml-readout-rope{border-color:CanvasText!important}}')
+        ]);
       }
 
       // The one idea, restated on every bench at every level, plus the numbers
