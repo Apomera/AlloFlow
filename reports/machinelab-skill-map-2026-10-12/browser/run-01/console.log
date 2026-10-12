@@ -1,0 +1,13 @@
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 windlass
+native scenario 2 screw
+native scenario 3 windlass
+native scenario 4 lever
+native scenario 5 ramp
+native scenario 6 pulley
+{
+  "scenarios": 6,
+  "checks": 238,
+  "screenshots": 3,
+  "errors": []
+}

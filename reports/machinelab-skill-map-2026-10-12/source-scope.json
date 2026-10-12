@@ -1,0 +1,10 @@
+{
+  "baselineCommit": "d5aa990f3",
+  "baselineSha256": "727615aa085a7170b435773189f605414f79e6b866983c2489a610be29c6cdd7",
+  "sourceSha256": "0b7b3109ec57ce4aa27407c041336bd66b99ca3ccb7d29bb91e6765f1ffa5441",
+  "mirrorSha256": "0b7b3109ec57ce4aa27407c041336bd66b99ca3ccb7d29bb91e6765f1ffa5441",
+  "onlyPowerPracticeChanged": true,
+  "physicalMathGradingStateAndRecordHelpersUnchanged": true,
+  "sourceMirrorParity": true,
+  "syntax": true
+}

@@ -1,0 +1,151 @@
+{
+  "file": "tests/machinelab_skill_map.test.js",
+  "sha256": "5c1a57b2281fa658c38ab189b0be6a486c3fc430e18d784cb22a19d4de429c12",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: skill map inventory organizes every skill once in native closed lever navigation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: skill map inventory organizes every skill once in native closed pulley navigation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: skill map inventory organizes every skill once in native closed ramp navigation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: skill map inventory organizes every skill once in native closed wedge navigation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: skill map inventory organizes every skill once in native closed windlass navigation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: skill map inventory organizes every skill once in native closed screw navigation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: skill map inventory follows the existing age and valid-model visibility rules",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: skill map guarded navigation selects a lever family skill and clears only the current practice draft",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: skill map guarded navigation selects a windlass family skill and clears only the current practice draft",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: skill map guarded navigation selects a screw family skill and clears only the current practice draft",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after station changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after view changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after geometry changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after efficiency changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after time changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after budget changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: skill map guarded navigation ignores a delayed skill card after question changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: skill map guarded navigation invalidates old answer, check and save handlers when a card changes the selected skill",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: skill map guarded navigation treats the active card as a no-op and retains checked work and hints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: skill map saved evidence displays valid v1, v2 and v3 records together with their honest saved provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: skill map saved evidence shows checked practice only after an explicit save and preserves its hint count",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: skill map saved evidence identifies saved worked solutions even when the learner later enters the correct answer",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: skill map saved evidence retains fixed evidence and marks an earlier setup after relevant geometry changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: skill map saved evidence marks saved work as earlier when percent changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: skill map saved evidence marks saved work as earlier when duration changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: skill map saved evidence marks saved work as earlier when budget changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: skill map saved evidence compares numeric assumptions and seconds rather than input spelling or time-unit labels",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: skill map saved evidence ignores malformed or arithmetically invalid saved evidence without changing storage",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: skill map saved evidence preserves other station records and never borrows their status",
+      "executedPassCount": 1
+    }
+  ]
+}

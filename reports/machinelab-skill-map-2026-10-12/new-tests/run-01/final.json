@@ -1,0 +1,39 @@
+{
+  "format": "machine-lab-new-skill-map-coverage-v1",
+  "sourceSha256": "27a86e3cac514d8c4906c05c1e8af3eceb7c2c4d485f23d441e622cf86374825",
+  "publicMirrorSha256": "27a86e3cac514d8c4906c05c1e8af3eceb7c2c4d485f23d441e622cf86374825",
+  "file": "tests/machinelab_skill_map.test.js",
+  "testSha256": "5c1a57b2281fa658c38ab189b0be6a486c3fc430e18d784cb22a19d4de429c12",
+  "passed": 29,
+  "failed": 0,
+  "uncovered": 0,
+  "nativeProcesses": 3,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "1a161daf14c24ec8711a918e60dccaf2dfebcfcfd4e767ac6d5617cdf88be45f"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "9ac9cb840d8194b56259269e552c231faa49022f06f78c4e8b4a1847a971d7b4"
+  },
+  "receipts": [
+    {
+      "path": "group-01.json",
+      "sha256": "4a5329179891deb07d82b2ce09704edd36db5a4c1d62b86ce51e38decec1c673",
+      "passed": 7,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-02.json",
+      "sha256": "2226a5b2aa49aa6db5fad2e6fef28bedc5f1734f5dea05d3a974c7754a2bea92",
+      "passed": 12,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-03.json",
+      "sha256": "1becb334301dd1bccea9d8cec0cfffbbf0e7d2c05feabafd7515f0a4b55dc4cf",
+      "passed": 10,
+      "observedExitCode": 0
+    }
+  ]
+}

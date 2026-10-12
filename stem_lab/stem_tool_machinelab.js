@@ -8699,8 +8699,57 @@ window.StemLab = window.StemLab || {
             rotationalWork: __alloT('stem.machinelab.rot_choose_work', 'Work from torque'),
             rotationalPower: __alloT('stem.machinelab.rot_choose_power', 'Power from torque')
           };
+          function skillMap() {
+            var records = {}, checked = 0, solutions = 0;
+            saved.forEach(function (record) { records[record.question] = record; if (record.completion === 'checked') checked++; else solutions++; });
+            var families = [
+              ['power', __alloT('stem.machinelab.map_power', 'Power and energy'), __alloT('stem.machinelab.map_power_help', 'Follow useful power and losses.'), ['inputPower', 'usefulPower', 'lossPower']],
+              ['motion', __alloT('stem.machinelab.map_motion', 'Movement rates'), __alloT('stem.machinelab.map_motion_help', 'Connect distance with task time.'), ['handSpeed', 'loadSpeed']],
+              ['planning', __alloT('stem.machinelab.map_plan', 'Plan a task'), __alloT('stem.machinelab.map_plan_help', 'Explore time, energy and power limits.'), ['budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']],
+              ['rotation', __alloT('stem.machinelab.map_rotation', 'Rotation'), __alloT('stem.machinelab.map_rotation_help', 'Connect turns, torque, work and power.'), ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']]
+            ];
+            return h('details', { key: 'skill-map', 'data-ml-power-skill-map': bench.id, style: { margin: '6px 0 14px', borderBottom: '1px solid ' + T.border } }, [
+              h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_skill_map_title', 'Explore skills and saved practice')),
+              h('p', { key: 'counts', 'data-ml-power-map-saved': saved.length, 'data-ml-power-map-checked': checked, 'data-ml-power-map-solutions': solutions,
+                style: Object.assign({}, style, { padding: 10, background: T.bg, borderRadius: 8, fontWeight: 750 }) },
+                __alloT('stem.machinelab.map_saved', 'Saved: ') + saved.length + '/' + kinds.length + ' · ' + __alloT('stem.machinelab.map_checked', 'Checked: ') + checked + ' · ' + __alloT('stem.machinelab.map_solutions', 'Solution viewed: ') + solutions),
+              h('p', { key: 'help', style: style }, __alloT('stem.machinelab.map_help', 'Choose a tile to practise that skill below. Selecting another skill clears the current draft; save first. Labels describe saved practice, including hints and the setup used.')),
+              families.map(function (family) {
+                var items = family[3].filter(function (kind) { return kinds.indexOf(kind) >= 0; });
+                if (!items.length) return null;
+                var headingId = prefix + 'family-' + family[0] + '-' + bench.id;
+                return h('section', { key: family[0], 'data-ml-power-skill-family': family[0], 'aria-labelledby': headingId, style: { margin: '18px 0' } }, [
+                  h('h4', { key: 'heading', id: headingId, style: Object.assign({}, style, { fontSize: 14, margin: '0 0 3px', fontWeight: 850 }) }, family[1]),
+                  h('p', { key: 'help', style: Object.assign({}, style, { fontSize: 12, margin: '0 0 9px' }) }, family[2]),
+                  h('div', { key: 'tiles', className: 'ml-power-skill-grid' }, items.map(function (kind) {
+                    var record = records[kind], active = kind === draft.question, unit = powerQuestion(kind, model, session.settings, bench, budget).unit;
+                    var matches = record && record.percent === _machineMath.parseNum(draft.percent) && record.seconds === session.seconds && record.budget === budget &&
+                      Object.keys(session.settings).every(function (key) { return record.settings[key] === session.settings[key]; });
+                    var status = !record ? __alloT('stem.machinelab.map_unsaved', 'No saved record') : record.completion === 'solution'
+                      ? __alloT('stem.machinelab.map_viewed', 'Worked solution viewed') : __alloT('stem.machinelab.map_answer_checked', 'Answer checked');
+                    return h('button', { key: kind, type: 'button', 'data-ml-power-skill': kind, 'data-ml-power-skill-status': record ? record.completion : 'unsaved',
+                      'data-ml-power-skill-setup': record ? matches ? 'current' : 'earlier' : 'none', 'aria-pressed': active,
+                      onClick: function () { if (!active) change({ question: kind }); },
+                      style: Object.assign({}, button, { width: '100%', minWidth: 0, padding: 11, textAlign: 'left', borderWidth: 2, borderColor: active ? T.accent : T.border, background: active ? T.bg : T.card }) }, [
+                      h('span', { key: 'name', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, fontWeight: 800, lineHeight: 1.4 } }, [
+                        h('span', { key: 'label', style: { overflowWrap: 'anywhere' } }, skillLabels[kind]),
+                        h('span', { key: 'unit', style: { fontSize: 12, whiteSpace: 'nowrap' } }, unit)
+                      ]),
+                      active ? h('span', { key: 'active', style: { display: 'block', fontSize: 12, fontWeight: 800, marginTop: 5 } }, __alloT('stem.machinelab.map_current', 'Current skill')) : null,
+                      h('span', { key: 'status', style: { display: 'block', fontSize: 12, lineHeight: 1.5, marginTop: 5 } }, status),
+                      record ? h('span', { key: 'hints', style: { display: 'block', fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.machinelab.eff_record_hints', 'Hints opened: ') + record.hint + '/2') : null,
+                      record ? h('span', { key: 'setup', style: { display: 'block', fontSize: 12, lineHeight: 1.5 } }, matches
+                        ? __alloT('stem.machinelab.map_matching', 'Saved with this setup') : __alloT('stem.machinelab.map_earlier', 'Saved with an earlier setup')) : null
+                    ]);
+                  }))
+                ]);
+              }),
+              h('style', { key: 'style' }, '.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-power-skill-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}}')
+            ]);
+          }
           return h('div', { key: 'practice', 'data-ml-power-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.power_practice', 'Practice a power & motion skill')),
+            skillMap(),
             select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, skillLabels[kind]]; })),
             h('h4', { key: 'question-title', 'data-ml-power-question-title': '', style: Object.assign({}, style, { fontSize: 14, fontWeight: 800, margin: '10px 0 6px' }) }, question.title),
             h('p', { key: 'given', 'data-ml-power-given': '', style: Object.assign({}, style, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, question.given),
