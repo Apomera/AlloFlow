@@ -8262,11 +8262,21 @@ window.StemLab = window.StemLab || {
         ])], 'efficiency-lab');
       }
 
+      function powerRotationKinds() { return ['turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']; }
+      function powerRotation(model, settings, b) {
+        if (!model || !b || (b.id !== 'windlass' && b.id !== 'screw')) return null;
+        var radius = powerRadius(settings, b), angle = model.turns * 2 * Math.PI;
+        var result = { handPerTurn: 2 * Math.PI * radius,
+          advance: b.id === 'screw' ? settings.screwPitch : 2 * Math.PI * settings.windlassDrumR,
+          turns: model.turns, angularTravel: angle, omega: model.omega, torque: model.torque,
+          rotationalWork: model.torque * angle, rotationalPower: model.torque * model.omega };
+        return Object.keys(result).every(function (key) { return finite(result[key]) && result[key] > 0; }) ? result : null;
+      }
       function powerPlanningKinds() { return ['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']; }
-      function powerRecordVersion(kind) { return powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
+      function powerRecordVersion(kind) { return powerRotationKinds().indexOf(kind) >= 0 ? 3 : powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
       function powerKinds(b) {
         return ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime'].concat(
-          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds());
+          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds(), b.id === 'windlass' || b.id === 'screw' ? powerRotationKinds() : []);
       }
       function powerRadius(settings, b) { return b.id === 'windlass' ? settings.windlassHandleR : b.id === 'screw' ? settings.screwHandleR : null; }
       function powerFmt(value) { return finite(value) ? value.toLocaleString('en-US', { useGrouping: false, maximumSignificantDigits: 6 }) : '—'; }
@@ -8287,7 +8297,7 @@ window.StemLab = window.StemLab || {
         if (seconds !== null) seconds *= timeUnit === 'min' ? 60 : 1;
         var draft = { percent: percent, duration: duration, timeUnit: timeUnit, budget: budget, question: question, signature: signature,
           answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '',
-          unit: fresh && ['W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%'].indexOf(raw.unit) >= 0 ? raw.unit : '',
+          unit: fresh && ['W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%', 'turns', 'rad', 'rad/s'].indexOf(raw.unit) >= 0 ? raw.unit : '',
           hint: fresh && Number.isInteger(raw.hint) && raw.hint >= 0 && raw.hint <= 2 ? raw.hint : 0,
           checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
         return { draft: draft, settings: settings, signature: signature, seconds: seconds,
@@ -8321,6 +8331,34 @@ window.StemLab = window.StemLab || {
             '(' + String(settings[b.loadKey]) + ' N × ' + String(settings.loadDistance) + ' m) ÷ (' + String(budget) + ' W × ' + String(model.seconds) + ' s) × 100']
         };
         if (planning[kind]) return { unit: planning[kind][0], target: model[kind], title: planning[kind][1], given: planning[kind][2], formula: planning[kind][3], setup: planning[kind][4] };
+        if (powerRotationKinds().indexOf(kind) >= 0) {
+          var rotation = powerRotation(model, settings, b);
+          if (!rotation) return null;
+          var rotarySpecs = {
+            turns: ['turns', __alloT('stem.machinelab.rot_q_turns', 'Calculate handle turns for this task'),
+              __alloT('stem.machinelab.lift_distance', 'Load moves') + ': ' + p(settings.loadDistance) + ' m · ' + __alloT('stem.machinelab.power_advance', 'Load advance per turn: ') + p(rotation.advance) + ' m',
+              __alloT('stem.machinelab.rot_rule_turns', 'Turns = load movement ÷ load advance per turn. Fractional turns are allowed; do not round up to a whole turn.'),
+              p(settings.loadDistance) + ' m ÷ (' + p(rotation.advance) + ' m/turn)'],
+            angularTravel: ['rad', __alloT('stem.machinelab.rot_q_angle', 'Convert total turns to angular travel'),
+              __alloT('stem.machinelab.power_turns', 'Handle turns') + ': ' + p(rotation.turns),
+              __alloT('stem.machinelab.rot_rule_angle', 'Angular travel = turns × 2π radians per turn. Use radians, not degrees; keep all turns, including the fractional part.'),
+              p(rotation.turns) + ' × 2π rad'],
+            omega: ['rad/s', __alloT('stem.machinelab.rot_q_omega', 'Convert handle RPM to angular speed'),
+              __alloT('stem.machinelab.power_rpm', 'Average handle RPM') + ': ' + p(model.rpm) + ' rpm',
+              __alloT('stem.machinelab.rot_rule_omega', 'Angular speed = RPM × 2π ÷ 60. Convert turns to radians and minutes to seconds.'),
+              p(model.rpm) + ' × 2π ÷ 60 rad/s'],
+            rotationalWork: ['J', __alloT('stem.machinelab.rot_q_work', 'Calculate input work from torque and angle'),
+              __alloT('stem.machinelab.power_torque', 'Applied handle torque') + ': ' + p(rotation.torque) + ' N·m · ' + __alloT('stem.machinelab.rot_angle', 'Total angular travel') + ': ' + p(rotation.angularTravel) + ' rad',
+              __alloT('stem.machinelab.rot_rule_work', 'Input work = applied torque × angular travel in radians. Torque already includes the assumed losses; do not divide by efficiency again. Report energy in joules.'),
+              p(rotation.torque) + ' N·m × ' + p(rotation.angularTravel) + ' rad'],
+            rotationalPower: ['W', __alloT('stem.machinelab.rot_q_power', 'Calculate input power from torque and angular speed'),
+              __alloT('stem.machinelab.power_torque', 'Applied handle torque') + ': ' + p(rotation.torque) + ' N·m · ' + __alloT('stem.machinelab.power_omega', 'Average angular speed') + ': ' + p(rotation.omega) + ' rad/s',
+              __alloT('stem.machinelab.rot_rule_power', 'Input power = applied torque × angular speed in radians per second. Convert RPM first if needed. Torque already includes the assumed losses; do not apply efficiency again.'),
+              p(rotation.torque) + ' N·m × ' + p(rotation.omega) + ' rad/s']
+          };
+          var rotarySpec = rotarySpecs[kind];
+          return { unit: rotarySpec[0], target: rotation[kind], title: rotarySpec[1], given: rotarySpec[2], formula: rotarySpec[3], setup: rotarySpec[4] };
+        }
         var specs = {
           inputPower: ['W', __alloT('stem.machinelab.power_q_input', 'Calculate average input power'), energyGiven + ' · ' + timeGiven,
             __alloT('stem.machinelab.power_rule_input', 'Input work = useful work ÷ efficiency as a decimal. Average input power = input work ÷ seconds.'),
@@ -8367,7 +8405,7 @@ window.StemLab = window.StemLab || {
       }
       function validPowerRecord(record, b, kind) {
         if (!record || Array.isArray(record) || record.version !== powerRecordVersion(kind) || record.benchId !== b.id || record.question !== kind || powerKinds(b).indexOf(kind) < 0 ||
-          typeof record.answer !== 'string' || record.answer.length > 64 || ['', 'W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%'].indexOf(record.unit) < 0 ||
+          typeof record.answer !== 'string' || record.answer.length > 64 || ['', 'W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%', 'turns', 'rad', 'rad/s'].indexOf(record.unit) < 0 ||
           !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
         var model = powerModel(record.settings, b, record.percent, record.seconds, record.budget);
         if (!model || (record.completion !== 'solution' && (record.completion !== 'checked' ||
@@ -8491,6 +8529,72 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'scale', style: Object.assign({}, style, { margin: '12px 0 0', fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.power_visual_scale', 'Longer bars mean more power. All rows use the same scale; the dashed line marks the budget. Small values may be too narrow to see, so compare the numbers too. These time comparisons do not change your settings.'))
           ]);
         }
+        function rotationGuide() {
+          var rotation = powerRotation(model, session.settings, bench);
+          if (!rotation) return null;
+          var titleId = prefix + 'rotation-title-' + bench.id, scale = Math.max(rotation.handPerTurn, rotation.advance);
+          return h('details', { key: 'rotation-guide', 'data-ml-power-rotation': bench.id, className: 'ml-rotation-guide', style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
+            h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.rot_guide_title', 'Follow a turn: motion, work and power')),
+            h('figure', { key: 'turn', 'aria-labelledby': titleId, style: panelStyle }, [
+              h('figcaption', { key: 'caption', id: titleId, style: Object.assign({}, style, { fontWeight: 850, fontSize: 15 }) }, __alloT('stem.machinelab.rot_one_turn', 'One turn → load movement')),
+              h('div', { key: 'route', className: 'ml-rotation-route', style: { display: 'grid', gridTemplateColumns: 'minmax(120px,0.7fr) minmax(0,1fr)', alignItems: 'center', gap: 14, marginTop: 12 } }, [
+                h('div', { key: 'circle', style: { textAlign: 'center' } }, [
+                  h('svg', { key: 'diagram', viewBox: '0 0 180 155', 'aria-hidden': 'true', focusable: 'false', 'data-ml-rotation-reference': '', style: { display: 'block', width: '100%', maxWidth: 220, margin: 'auto', color: T.effort } }, [
+                    h('circle', { key: 'path', cx: 90, cy: 75, r: 45, fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 }),
+                    h('path', { key: 'marks', d: 'M90 24V36 M129 75H141 M90 114V126 M39 75H51', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }),
+                    h('path', { key: 'direction', d: 'M127 42L136 55L122 51Z', fill: 'currentColor' }),
+                    h('text', { key: 'angle', x: 90, y: 81, textAnchor: 'middle', fill: 'currentColor', style: { fontSize: 19, fontWeight: 850 } }, '2π rad'),
+                    [[90,15,'0 / 1'],[160,80,'¼'],[90,145,'½'],[20,80,'¾']].map(function (tick, index) {
+                      return h('text', { key: index, x: tick[0], y: tick[1], textAnchor: 'middle', fill: 'currentColor', style: { fontSize: 13, fontWeight: 750 } }, tick[2]);
+                    })
+                  ]),
+                  h('p', { key: 'conversion', style: Object.assign({}, style, { fontSize: 12, fontWeight: 750, margin: '4px 0' }) }, __alloT('stem.machinelab.rot_turn_conversion', '1 turn = 2π rad ≈ 6.28319 rad'))
+                ]),
+                h('dl', { key: 'paths', style: { margin: 0, display: 'grid', gap: 14 } }, [
+                  { id: 'hand', metric: 'handPerTurn', label: __alloT('stem.machinelab.rot_hand_per_turn', 'Hand path per turn'), value: rotation.handPerTurn, pattern: 'solid' },
+                  { id: 'load', metric: 'advance', label: __alloT('stem.machinelab.rot_load_per_turn', 'Load advance per turn'), value: rotation.advance, pattern: 'striped' }
+                ].map(function (part) { return h('div', { key: part.id, 'data-ml-power-rotation-metric': part.metric, 'data-value': part.value }, [
+                  h('dt', { key: 'label', style: Object.assign({}, style, { fontSize: 12 }) }, part.label),
+                  h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 18 }) }, powerFmt(part.value) + ' m'),
+                  h('dd', { key: 'bar', 'aria-hidden': 'true', className: 'ml-rotation-track', style: { margin: '7px 0 0', height: 13, borderRadius: 3, background: T.card, outline: '1px solid ' + T.border } },
+                    h('span', { 'data-ml-rotation-bar': part.id, 'data-value': part.value, 'data-pattern': part.pattern,
+                      style: { display: 'block', width: (part.value / scale * 100) + '%', height: '100%', color: part.id === 'hand' ? T.effort : T.load,
+                        backgroundColor: part.pattern === 'solid' ? T.effort : T.card,
+                        backgroundImage: part.pattern === 'solid' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' } }))
+                ]); }))
+              ]),
+              h('p', { key: 'scale', style: Object.assign({}, style, { fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.rot_reference_scope', 'The circle is a one-turn reference, not the playback position. The bars share one length scale: solid is hand travel, stripes are load advance. Read the numbers beside tiny bars.')),
+              h('p', { key: 'advance', style: Object.assign({}, style, { fontSize: 12 }) }, bench.id === 'screw'
+                ? __alloT('stem.machinelab.power_screw_scope', 'The screw assumes a single-start thread: one turn advances by one pitch.')
+                : __alloT('stem.machinelab.rot_drum_scope', 'One drum revolution winds a rope length of 2π × drum radius. The handle and drum turn together without slip.'))
+            ]),
+            h('div', { key: 'task', style: panelStyle }, [
+              h('h3', { key: 'title', style: Object.assign({}, style, { fontSize: 15, margin: '0 0 10px', fontWeight: 850 }) }, __alloT('stem.machinelab.rot_this_task', 'From one turn to this task')),
+              h('p', { key: 'travel', 'data-ml-rotation-travel-equation': '', style: Object.assign({}, style, { fontVariantNumeric: 'tabular-nums' }) },
+                powerFmt(rotation.turns) + ' × ' + powerFmt(rotation.handPerTurn) + ' m = ' + powerFmt(model.travel) + ' m · ' + __alloT('stem.machinelab.rot_hand_total', 'total hand path')),
+              h('p', { key: 'load', 'data-ml-rotation-load-equation': '', style: Object.assign({}, style, { fontVariantNumeric: 'tabular-nums' }) },
+                powerFmt(rotation.turns) + ' × ' + powerFmt(rotation.advance) + ' m = ' + powerFmt(session.settings.loadDistance) + ' m · ' + __alloT('stem.machinelab.rot_load_total', 'load movement')),
+              h('dl', { key: 'metrics', className: 'ml-power-visual-grid' }, [
+                ['turns', __alloT('stem.machinelab.power_turns', 'Handle turns'), __alloT('stem.machinelab.power_turn_unit', 'turns')],
+                ['angularTravel', __alloT('stem.machinelab.rot_angle', 'Total angular travel'), 'rad'],
+                ['omega', __alloT('stem.machinelab.power_omega', 'Average angular speed'), 'rad/s'],
+                ['torque', __alloT('stem.machinelab.power_torque', 'Applied handle torque'), 'N·m'],
+                ['rotationalWork', __alloT('stem.machinelab.rot_work', 'Input work from torque'), 'J'],
+                ['rotationalPower', __alloT('stem.machinelab.rot_power', 'Input power from torque'), 'W']
+              ].map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-rotation-metric': metric[0], 'data-value': rotation[metric[0]], style: { padding: 10, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } }, [
+                h('dt', { key: 'label', style: Object.assign({}, style, { fontSize: 12 }) }, metric[1]),
+                h('dd', { key: 'value', style: valueStyle }, powerFmt(rotation[metric[0]]) + ' ' + metric[2])
+              ]); })),
+              h('p', { key: 'work', 'data-ml-rotation-work-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.effort, background: T.card }) },
+                powerFmt(rotation.torque) + ' N·m × ' + powerFmt(rotation.angularTravel) + ' rad = ' + powerFmt(rotation.rotationalWork) + ' J'),
+              h('p', { key: 'power', 'data-ml-rotation-power-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.load, background: T.card }) },
+                powerFmt(rotation.torque) + ' N·m × ' + powerFmt(rotation.omega) + ' rad/s = ' + powerFmt(rotation.rotationalPower) + ' W'),
+              h('p', { key: 'scope', style: Object.assign({}, style, { fontSize: 12 }) }, __alloT('stem.machinelab.rot_work_scope', 'Use radians in the torque equations. Torque already accounts for the assumed efficiency: these products give input work and power. Values are rounded for display; calculations use full precision.'))
+            ]),
+            h('p', { key: 'practice', style: style }, __alloT('stem.machinelab.rot_practice_help', 'Try the five rotation skills in the practice menu below. Partial turns count; task duration is separate from demonstration timing.')),
+            h('style', { key: 'style' }, '@media(max-width:600px){.ml-rotation-route{grid-template-columns:minmax(0,1fr)!important}}@media(forced-colors:active){.ml-rotation-guide svg{color:CanvasText!important}.ml-rotation-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-rotation-track [data-ml-rotation-bar]{color:CanvasText!important;background-color:Canvas!important}.ml-rotation-track [data-pattern=solid]{background-color:CanvasText!important}}')
+          ]);
+        }
         function comparison() {
           var labels = [
             ['inputPower', __alloT('stem.machinelab.power_input', 'Average input power'), 'W'],
@@ -8588,7 +8692,12 @@ window.StemLab = window.StemLab || {
             budgetEnergy: __alloT('stem.machinelab.power_choose_energy_budget', 'Energy budget'),
             budgetLoad: __alloT('stem.machinelab.power_choose_load_budget', 'Load at budget'),
             budgetMovement: bench.id === 'ramp' ? __alloT('stem.machinelab.power_choose_rise_budget', 'Rise at budget') : __alloT('stem.machinelab.power_choose_movement_budget', 'Movement at budget'),
-            requiredEfficiency: __alloT('stem.machinelab.power_choose_required_eff', 'Required efficiency')
+            requiredEfficiency: __alloT('stem.machinelab.power_choose_required_eff', 'Required efficiency'),
+            turns: __alloT('stem.machinelab.rot_choose_turns', 'Handle turns'),
+            angularTravel: __alloT('stem.machinelab.rot_choose_angle', 'Angular travel'),
+            omega: __alloT('stem.machinelab.rot_choose_omega', 'Angular speed'),
+            rotationalWork: __alloT('stem.machinelab.rot_choose_work', 'Work from torque'),
+            rotationalPower: __alloT('stem.machinelab.rot_choose_power', 'Power from torque')
           };
           return h('div', { key: 'practice', 'data-ml-power-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.power_practice', 'Practice a power & motion skill')),
@@ -8606,7 +8715,9 @@ window.StemLab = window.StemLab || {
               ['m/s', __alloT('stem.machinelab.power_unit_speed', 'm/s — metres per second')], ['s', __alloT('stem.machinelab.power_unit_time', 's — seconds')],
               ['N·m', __alloT('stem.machinelab.power_unit_torque', 'N·m — newton-metres')], ['rpm', __alloT('stem.machinelab.power_choose_unit_rpm', 'rpm — turns per minute')],
               ['J', __alloT('stem.machinelab.eff_unit_j', 'J — joules')], ['N', __alloT('stem.machinelab.eff_unit_n', 'N — newtons')],
-              ['m', __alloT('stem.machinelab.eff_unit_m', 'm — metres')], ['%', __alloT('stem.machinelab.eff_unit_percent', '% — percent')]
+              ['m', __alloT('stem.machinelab.eff_unit_m', 'm — metres')], ['%', __alloT('stem.machinelab.eff_unit_percent', '% — percent')],
+              ['turns', __alloT('stem.machinelab.rot_unit_turns', 'turns — revolutions')], ['rad', __alloT('stem.machinelab.rot_unit_rad', 'rad — radians')],
+              ['rad/s', __alloT('stem.machinelab.rot_unit_omega', 'rad/s — radians per second')]
             ]),
             h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
               action('check', __alloT('stem.machinelab.eff_check', 'Check calculation'), function () { change({ checked: true }); }),
@@ -8619,7 +8730,9 @@ window.StemLab = window.StemLab || {
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-power-result': result }, result === 'invalid'
                 ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
+                : result === 'unit' && powerRotationKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.rot_unit_help', 'Use turns for revolutions, rad for angular travel, rad/s for angular speed, J for work, or W for power. Torque uses N·m; energy uses J.')
                 : result === 'unit' ? __alloT('stem.machinelab.power_planning_unit_help', 'Check the requested unit: W for power, J for energy, N for load, m for movement, % for efficiency, m/s for rate, s for time, N·m for torque, or rpm for rotation rate.')
+                : result === 'incorrect' && powerRotationKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.rot_retry', 'Not yet. ') + question.formula
                 : result === 'incorrect' ? (draft.question === 'budgetEnergy' ? __alloT('stem.machinelab.power_retry_budget_energy', 'Not yet. Multiply the input-power budget by time in seconds to find joules; do not apply efficiency to input energy.') : draft.question === 'budgetLoad' ? __alloT('stem.machinelab.power_retry_budget_load', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held movement.') : draft.question === 'budgetMovement' ? __alloT('stem.machinelab.power_retry_budget_movement', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held load force.') : draft.question === 'requiredEfficiency' ? __alloT('stem.machinelab.power_retry_required_efficiency', 'Not yet. Divide load × movement by power × seconds, then multiply by 100. Keep a result above 100%; it shows that efficiency alone cannot meet the task.') : __alloT('stem.machinelab.power_retry', 'Not yet. Check the percentage, time conversion and calculation. A hint can help.'))
                 : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) +
                   question.setup + ' = ' + powerResultFmt(draft.question, question.target) + ' ' + question.unit) : null
@@ -8642,7 +8755,7 @@ window.StemLab = window.StemLab || {
           h('p', { key: 'seconds', 'data-ml-power-seconds': session.seconds, style: style }, __alloT('stem.machinelab.power_time_given', 'Task time: ') + (session.seconds === null ? '—' : powerFmt(session.seconds)) + ' s'),
           input('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), !(budget >= 0.01 && budget <= 100000), prefix + 'ranges-' + bench.id),
           h('p', { key: 'ranges', id: prefix + 'ranges-' + bench.id, style: style }, __alloT('stem.machinelab.power_ranges', 'Efficiency: 1–100%. Duration: 0.01–3600 seconds (up to 60 minutes). Input-power budget: 0.01–100000 W. One minute equals 60 seconds.')),
-          model ? h('div', { key: 'valid' }, [comparison(), budgetPlanning(), practice()])
+          model ? h('div', { key: 'valid' }, [comparison(), rotationGuide(), budgetPlanning(), practice()])
             : h('p', { key: 'invalid', role: 'status', style: style }, __alloT('stem.machinelab.power_invalid', 'Enter valid assumptions and a working station setup before calculating or checking an answer.')),
           h('p', { key: 'count', 'data-ml-power-count': saved.length, style: style }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),

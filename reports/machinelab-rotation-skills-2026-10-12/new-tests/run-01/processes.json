@@ -1,0 +1,42 @@
+{
+  "format": "machine-lab-new-rotation-skills-native-processes-v1",
+  "sourceSha256": "727615aa085a7170b435773189f605414f79e6b866983c2489a610be29c6cdd7",
+  "testSha256": "20dc308c6d3e6b2a30321b5dbdd9a66e162398c3a37780d5475c99d59078766f",
+  "runnerSha256": "c3292f3c6cb8ed3aa3073b7f9fbf39e24c4f791b3224a9639775892aaddbf6ca",
+  "file": "tests/machinelab_rotation_skills.test.js",
+  "nodeHeapMiB": 512,
+  "nodeSemiSpaceMiB": 8,
+  "workers": 1,
+  "pool": "forks",
+  "isolate": false,
+  "testTimeoutMs": 30000,
+  "runs": [
+    {
+      "file": "tests/machinelab_rotation_skills.test.js",
+      "pattern": "^Machine Lab: independent rotary geometry and visuals ",
+      "expected": 13,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_rotation_skills.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-rotation-skills-2026-10-12\\new-tests\\run-01\\group-01.json",
+        "--testNamePattern",
+        "^Machine Lab: independent rotary geometry and visuals "
+      ],
+      "receipt": "group-01.json",
+      "log": "group-01.log",
+      "startedAt": "2026-10-12T22:15:03.119Z",
+      "sourceSha256": "727615aa085a7170b435773189f605414f79e6b866983c2489a610be29c6cdd7",
+      "mirrorBeforeSha256": "727615aa085a7170b435773189f605414f79e6b866983c2489a610be29c6cdd7",
+      "testSha256": "20dc308c6d3e6b2a30321b5dbdd9a66e162398c3a37780d5475c99d59078766f",
+      "status": "running"
+    }
+  ]
+}
