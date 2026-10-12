@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-11",
+  "scope": "Compound-machine mechanical power budgets, four inverse planning skills and version-three fixed task records.",
+  "source": {
+    "canonical": "stem_lab/stem_tool_machinelab.js",
+    "publicMirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+    "sha256": "c8782233487e8f5148ae3e8d4cba03d14e9591d074154dadbd33ddc81c3892b0",
+    "byteParity": true,
+    "exactBrowserEmbeddedSource": true,
+    "scopeProof": "source-scope.json",
+    "scopeProofSha256": "3242f9475ede535e15e3ad6905c23e8374f60dd3539e08048dcf1253f73742d6"
+  },
+  "tests": {
+    "passed": 1107,
+    "failed": 0,
+    "uncovered": 0,
+    "files": 11,
+    "successfulFreshProcesses": 37,
+    "existing": 948,
+    "added": 159,
+    "allFinalObservedExitCodes": 0,
+    "receiptAndTestHashesVerified": true,
+    "aggregate": "tests-final.json",
+    "aggregateSha256": "edd315224587cb3a27994e4a37607cb57d13e4c89e19e97414f08454674f7a48",
+    "nodeOldSpaceMiB": 512,
+    "nodeSemiSpaceMiB": 8,
+    "workers": 1,
+    "pool": "forks",
+    "isolate": false,
+    "testTimeoutMs": 30000
+  },
+  "browser": {
+    "checks": 684,
+    "errors": 0,
+    "scenarios": 13,
+    "observedExitCode": 0,
+    "manifest": "browser/process.json",
+    "manifestSha256": "15da6cd28608c7365f47b3f1423d9574b9ecddf7b67e3d15b59c072b35d6d3b8",
+    "screenshots": [
+      {
+        "path": "reports/machinelab-compound-planning-2026-10-11/browser/desktop-compound-planning-checked.png",
+        "sha256": "a213317cbaba64792187ad38396778816a45cc79545afe3203ee17254a8419b7",
+        "bytes": 52786,
+        "width": 529,
+        "height": 933,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-compound-planning-2026-10-11/browser/phone-compound-planning-hints.png",
+        "sha256": "47e73474085d9d52f4a7b5c7101cec49f8a03088ef47b82bd95211b8ac243351",
+        "bytes": 62615,
+        "width": 334,
+        "height": 1290,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-compound-planning-2026-10-11/browser/forced-colors-compound-planning-solution.png",
+        "sha256": "7bc74885a55e6c5fd60b437053e374813daf1618aabd174f4bc7c4d35acbad25",
+        "bytes": 59397,
+        "width": 264,
+        "height": 1668,
+        "visuallyInspected": true
+      },
+      {
+        "path": "reports/machinelab-compound-planning-2026-10-11/browser/dark-phone-compound-planning-record.png",
+        "sha256": "45293f0ac4defc54c8e077efc289278770200640d1f944a1deb8e636345fc97c",
+        "bytes": 55467,
+        "width": 334,
+        "height": 885,
+        "visuallyInspected": true
+      }
+    ],
+    "nativeDownload": {
+      "path": "reports/machinelab-compound-planning-2026-10-11/browser/downloaded-record.txt",
+      "sha256": "42749181a70891145e70b42fb36d07966ae4ed835ac1c10f7ff6532cbffdafbe",
+      "bytes": 8225
+    }
+  },
+  "review": {
+    "result": "No blocking findings",
+    "independentAgent": "power_planning_review",
+    "reviewedSourceSha256": "c8782233487e8f5148ae3e8d4cba03d14e9591d074154dadbd33ddc81c3892b0",
+    "correctionsBeforeValidation": [
+      "Use identical power-domain relative tolerance for current and ideal fit checks.",
+      "Give required-efficiency retry feedback its independent equation, excluding assumed efficiencies."
+    ],
+    "visualReview": "Browser agent and primary agent inspected all four native screenshots; no clipping of calculation cards, short selected skill labels, answer controls or saved record."
+  },
+  "staticChecks": {
+    "syntaxFiles": [
+      "stem_lab/stem_tool_machinelab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "tests/machinelab_compound_planning.test.js",
+      "tests/machinelab_compound_power.test.js",
+      "tests/machinelab_compound_lab.test.js",
+      "tests/machinelab_work_record.test.js",
+      "tests/machinelab_read_aloud.test.js",
+      "tests/machinelab_i18n_hygiene.test.js",
+      "tests/machinelab_grade_bands.test.js",
+      "tests/machinelab_a11y.test.js",
+      "tests/machinelab_views.test.js",
+      "tests/machinelab_efficiency_lab.test.js",
+      "tests/machinelab_power_lab.test.js",
+      "dev-tools/ml_compound_planning_qa.cjs",
+      "reports/machinelab-compound-planning-2026-10-11/run-focused-tests.cjs",
+      "reports/machinelab-compound-planning-2026-10-11/run-regressions.cjs",
+      "reports/machinelab-compound-planning-2026-10-11/verify-source-scope.cjs",
+      "reports/machinelab-compound-planning-2026-10-11/verify-evidence.cjs"
+    ],
+    "syntaxObservedExitCodes": 0
+  },
+  "attempts": {
+    "failed": 0,
+    "retried": 0
+  },
+  "normalization": "Generated metadata and console logs use LF; native assertion JSON, screenshots and native download remain unchanged.",
+  "evidenceExclusions": [
+    "Every nested ml-shots.html, browser-temp/ and downloads/",
+    "test-temp/"
+  ],
+  "limitations": [
+    "Energy limits under sustained mechanical power and constant efficiency; no strength, peak-force, stroke, acceleration or electrical-input model.",
+    "All 30 ordered pairs receive physics checks; new grading combinations cover four skills at each of six default station pairings.",
+    "Scoped Machine Lab regressions, not the full repository suite or a full application build.",
+    "Native Chromium React/THREE harness; no physical assistive-device session, performance benchmark, push or deployment."
+  ]
+}

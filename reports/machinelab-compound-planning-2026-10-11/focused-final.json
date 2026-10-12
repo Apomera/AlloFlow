@@ -1,0 +1,105 @@
+{
+  "format": "machine-lab-independent-run-coverage-v1",
+  "sourceSha256": "c8782233487e8f5148ae3e8d4cba03d14e9591d074154dadbd33ddc81c3892b0",
+  "passed": 538,
+  "failed": 0,
+  "uncovered": 0,
+  "files": 3,
+  "nativeReceipts": 15,
+  "description": "Fresh serial native processes. Filtered pending cases count only in the group that executes them; every stable inventory position passed exactly once.",
+  "coverage": [
+    {
+      "file": "tests/machinelab_compound_planning.test.js",
+      "sha256": "f59942265f48529a65d17ef833d4fdba9928e4e6bb280d3f6dcc73ca884567f9",
+      "passed": 159
+    },
+    {
+      "file": "tests/machinelab_compound_power.test.js",
+      "sha256": "99bb38e156886fc4c178d05bb02faaa9888e489927519d9d68aec4ab23c4737b",
+      "passed": 156
+    },
+    {
+      "file": "tests/machinelab_compound_lab.test.js",
+      "sha256": "4bb849f3f075dde0e45c9266323e8b6e1cec6fb08244de27c142b58298712d05",
+      "passed": 223
+    }
+  ],
+  "receipts": [
+    {
+      "receipt": "tests-planning-physics.json",
+      "sha256": "aa47548f1c314b1e73f77633dda05cb3be8f95aa5d765256346b06ef1fcaa94b",
+      "passed": 48
+    },
+    {
+      "receipt": "tests-planning-comparison.json",
+      "sha256": "da45406e7281bf6c9055f7fa43acc8a845e719935d420e1de0347e7f4b1db5c8",
+      "passed": 29
+    },
+    {
+      "receipt": "tests-planning-skills.json",
+      "sha256": "b4843b3007843ade6a2d3322a410e80f162eb3c6f8453fc82f63d159007a0a67",
+      "passed": 44
+    },
+    {
+      "receipt": "tests-planning-identity.json",
+      "sha256": "23a5ac51035f518b2a7ba250be630065b84ba87922582bbad28b1c066421ac72",
+      "passed": 8
+    },
+    {
+      "receipt": "tests-planning-records.json",
+      "sha256": "54cc8acf7fcc13c83e6a439a4d0ce641977eece9dfd54785b7d733d46b5f8ffe",
+      "passed": 30
+    },
+    {
+      "receipt": "tests-power-physics.json",
+      "sha256": "bba476707de960460b7e7b0c45e97648bc0a280416674de952524f6be8a85ee3",
+      "passed": 39
+    },
+    {
+      "receipt": "tests-power-comparison.json",
+      "sha256": "81bf3dcf0ab07fffb679e131a024eba1fd1f8cfa3e0641b73f8bf253bd1131d0",
+      "passed": 28
+    },
+    {
+      "receipt": "tests-power-skills.json",
+      "sha256": "36fdc9fc1cca5f495fb8f380eb623754dca3f98bd60663a74eb0b46cfbdeb486",
+      "passed": 51
+    },
+    {
+      "receipt": "tests-power-identity.json",
+      "sha256": "27577fe82b256e324bdd5002256fe9a4db34cc18d8d4db4b46e2984a4b18ac93",
+      "passed": 7
+    },
+    {
+      "receipt": "tests-power-records.json",
+      "sha256": "7b5eaab1e077163c803b1a5d2b54284d726b0236dcc7a806ed3876a437ed0205",
+      "passed": 31
+    },
+    {
+      "receipt": "tests-legacy-physics.json",
+      "sha256": "6a5007f6354a5c711174c1c1547f358694d13c12e7180e54c932a5a611b5b1a1",
+      "passed": 38
+    },
+    {
+      "receipt": "tests-legacy-comparison.json",
+      "sha256": "f92ce4e2cd38dc511d97489c34c542f5377376e82d9207a19959e5677718ddd6",
+      "passed": 51
+    },
+    {
+      "receipt": "tests-legacy-grading.json",
+      "sha256": "11173ab4ae267db0e2d34ffa9450e28d60dc8b07ca6ab10f7bf8bcfdc7b1d772",
+      "passed": 74
+    },
+    {
+      "receipt": "tests-legacy-practice.json",
+      "sha256": "eee48b18add3f79b30fb26e9cbdc7681fc1034bf3d287d0db5b2aad0c9f0e4ee",
+      "passed": 27
+    },
+    {
+      "receipt": "tests-legacy-records.json",
+      "sha256": "0343e935027faf7f89c0682a20d083813e877c4c8d9ea0ddf57ca60fb4bd339e",
+      "passed": 33
+    }
+  ],
+  "processManifest": "focused-processes.json"
+}

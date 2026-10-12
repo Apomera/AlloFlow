@@ -211,6 +211,20 @@ window.StemLab = window.StemLab || {
       return Object.keys(result).every(function (key) { return finite(result[key]); }) ? result : null;
     },
 
+    // Inverse energy planning under a sustained mechanical input-power budget.
+    // Load and movement capacities are alternatives, each holding the other fixed.
+    compoundBudget: function (load, distance, maIn, maOut, percentIn, percentOut, seconds, budget) {
+      if (!finite(budget) || budget < 0.01 || budget > 100000) return null;
+      var power = this.compoundPower(load, distance, maIn, maOut, percentIn, percentOut, seconds);
+      if (!power) return null;
+      var available = budget * seconds, useful = available * (percentIn / 100) * (percentOut / 100);
+      var requiredEfficiency = power.workOut / available * 100;
+      var result = Object.assign({}, power, { budget: budget, budgetTime: power.inputWork / budget,
+        budgetLoad: useful / distance, budgetMovement: useful / load, requiredEfficiency: requiredEfficiency,
+        powerFits: power.inputPower <= budget + 1e-9 * budget, idealFits: power.usefulPower <= budget + 1e-9 * budget });
+      return Object.keys(result).every(function (key) { return typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;
+    },
+
     // An ideal task needs MA >= load/forceLimit and MA <= travelLimit/loadTravel.
     // Limits concern accumulated hand-path distance, not the size of a 3D bay.
     designEnvelope: function (load, loadTravel, forceLimit, travelLimit) {
@@ -8330,7 +8344,8 @@ window.StemLab = window.StemLab || {
       }
 
       function compoundPowerKinds() { return ['inputPower', 'transferPower', 'usefulPower', 'firstLossPower', 'secondLossPower']; }
-      function compoundKinds() { return ['idealMA', 'efficiency', 'actualMA', 'inputForce', 'inputTravel', 'transferForce', 'inputWork', 'firstLoss', 'secondLoss'].concat(compoundPowerKinds()); }
+      function compoundBudgetKinds() { return ['budgetTime', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']; }
+      function compoundKinds() { return ['idealMA', 'efficiency', 'actualMA', 'inputForce', 'inputTravel', 'transferForce', 'inputWork', 'firstLoss', 'secondLoss'].concat(compoundPowerKinds(), compoundBudgetKinds()); }
       function compoundGeometry(source, b) {
         var copy = {};
         b.controls.forEach(function (c) { if (c.key !== b.loadKey) copy[c.key] = source[c.key]; });
@@ -8341,12 +8356,13 @@ window.StemLab = window.StemLab || {
           return c.key === b.loadKey || (finite(settings[c.key]) && settings[c.key] >= c.min && settings[c.key] <= c.max);
         }) && pos(b.ma(settings));
       }
-      function compoundModel(inputSettings, outputSettings, load, distance, percentIn, percentOut, b, second, seconds) {
+      function compoundModel(inputSettings, outputSettings, load, distance, percentIn, percentOut, b, second, seconds, budget) {
         if (!second || second.id === b.id || !validCompoundGeometry(inputSettings, b) || !validCompoundGeometry(outputSettings, second)) return null;
         var task = Object.assign({}, inputSettings, { loadDistance: distance }); task[b.loadKey] = load;
         if (!validStationSetup(task, b)) return null;
         return seconds === undefined ? _machineMath.compoundWork(load, distance, b.ma(inputSettings), second.ma(outputSettings), percentIn, percentOut)
-          : _machineMath.compoundPower(load, distance, b.ma(inputSettings), second.ma(outputSettings), percentIn, percentOut, seconds);
+          : budget === undefined ? _machineMath.compoundPower(load, distance, b.ma(inputSettings), second.ma(outputSettings), percentIn, percentOut, seconds)
+          : _machineMath.compoundBudget(load, distance, b.ma(inputSettings), second.ma(outputSettings), percentIn, percentOut, seconds, budget);
       }
       function compoundSession(source, b) {
         var raw = source.benchCompound && source.benchCompound[b.id];
@@ -8364,15 +8380,17 @@ window.StemLab = window.StemLab || {
         var percentIn = field(raw.percentIn, '80'), percentOut = field(raw.percentOut, '90');
         var duration = field(raw.duration, '5'), timeUnit = raw.timeUnit === 'min' ? 'min' : 's', seconds = _machineMath.parseNum(duration);
         if (seconds !== null) seconds *= timeUnit === 'min' ? 60 : 1;
+        var budget = field(raw.budget, '100');
         var question = compoundKinds().indexOf(raw.question) >= 0 ? raw.question : 'idealMA';
-        var signature = JSON.stringify([b.id, inputSettings, load, distance, second && second.id, geometry, percentIn, percentOut, duration, timeUnit, question]), fresh = raw.signature === signature;
-        var draft = { second: second ? second.id : '', geometry: geometry, percentIn: percentIn, percentOut: percentOut, duration: duration, timeUnit: timeUnit, question: question, signature: signature,
-          answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '', unit: fresh && ['ratio', '%', 'N', 'm', 'J', 'W'].indexOf(raw.unit) >= 0 ? raw.unit : '',
+        var signature = JSON.stringify([b.id, inputSettings, load, distance, second && second.id, geometry, percentIn, percentOut, duration, timeUnit, budget, question]), fresh = raw.signature === signature;
+        var draft = { second: second ? second.id : '', geometry: geometry, percentIn: percentIn, percentOut: percentOut, duration: duration, timeUnit: timeUnit, budget: budget, question: question, signature: signature,
+          answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '', unit: fresh && ['ratio', '%', 'N', 'm', 'J', 'W'].concat(compoundBudgetKinds().indexOf(question) >= 0 ? ['s'] : []).indexOf(raw.unit) >= 0 ? raw.unit : '',
           explanation: fresh && typeof raw.explanation === 'string' ? raw.explanation.slice(0, 600) : '',
           hint: fresh && Number.isInteger(raw.hint) && raw.hint >= 0 && raw.hint <= 2 ? raw.hint : 0, checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
         var powerModel = compoundModel(inputSettings, outputSettings, load, distance, _machineMath.parseNum(percentIn), _machineMath.parseNum(percentOut), b, second, seconds);
-        return { draft: draft, signature: signature, second: second, inputSettings: inputSettings, outputSettings: outputSettings, load: load, distance: distance, seconds: seconds, powerModel: powerModel,
-          model: powerModel || compoundModel(inputSettings, outputSettings, load, distance, _machineMath.parseNum(percentIn), _machineMath.parseNum(percentOut), b, second) };
+        var budgetModel = compoundModel(inputSettings, outputSettings, load, distance, _machineMath.parseNum(percentIn), _machineMath.parseNum(percentOut), b, second, seconds, _machineMath.parseNum(budget));
+        return { draft: draft, signature: signature, second: second, inputSettings: inputSettings, outputSettings: outputSettings, load: load, distance: distance, seconds: seconds, powerModel: powerModel, budgetModel: budgetModel,
+          model: budgetModel || powerModel || compoundModel(inputSettings, outputSettings, load, distance, _machineMath.parseNum(percentIn), _machineMath.parseNum(percentOut), b, second) };
       }
       function compoundUnit(unit) { return unit === 'ratio' ? '×' : unit; }
       function compoundQuestion(kind, model, maIn, maOut, load, distance, percentIn, percentOut) {
@@ -8413,6 +8431,27 @@ window.StemLab = window.StemLab || {
             formula: __alloT('stem.machinelab.compound_power_rule', 'Average power = energy transferred or lost ÷ task duration in seconds. One watt is one joule per second. Use the energy for the requested stage.'),
             setup: energy + ' J ÷ ' + duration + ' s' };
         }
+        if (compoundBudgetKinds().indexOf(kind) >= 0) {
+          var budget = finite(model.budget) ? String(model.budget) : '—', seconds = finite(model.seconds) ? String(model.seconds) : '—';
+          var planning = {
+            budgetTime: ['s', __alloT('stem.machinelab.compound_q_budget_time', 'Time at budget'),
+              __alloT('stem.machinelab.compound_rule_budget_time', 'Time at full budget = load × movement ÷ (both efficiency fractions × mechanical input power). Use seconds. This is the minimum time under the constant-efficiency energy model.'),
+              '(' + work + ') ÷ (' + e1 + ' × ' + e2 + ' × ' + budget + ' W)'],
+            budgetLoad: ['N', __alloT('stem.machinelab.compound_q_budget_load', 'Load at budget'),
+              __alloT('stem.machinelab.compound_rule_budget_load', 'Load at budget = input power × seconds × both efficiency fractions ÷ final movement. Hold movement fixed; this is an energy limit, not a strength rating.'),
+              budget + ' W × ' + seconds + ' s × ' + e1 + ' × ' + e2 + ' ÷ ' + p(distance) + ' m'],
+            budgetMovement: ['m', __alloT('stem.machinelab.compound_q_budget_movement', 'Movement at budget'),
+              __alloT('stem.machinelab.compound_rule_budget_movement', 'Movement at budget = input power × seconds × both efficiency fractions ÷ final load. Hold load fixed. For a ramp output, movement means vertical rise, not travel along the ramp.'),
+              budget + ' W × ' + seconds + ' s × ' + e1 + ' × ' + e2 + ' ÷ ' + p(load) + ' N'],
+            requiredEfficiency: ['%', __alloT('stem.machinelab.compound_q_required_efficiency', 'Required efficiency'),
+              __alloT('stem.machinelab.compound_rule_required_efficiency', 'Required combined efficiency = useful work ÷ available input energy × 100. Available input energy = input power × seconds. Calculate the percentage even if it exceeds 100%; that means the task is impossible within this budget and time, even without losses.'),
+              '(' + work + ') ÷ (' + budget + ' W × ' + seconds + ' s) × 100']
+          }, plan = planning[kind];
+          return { unit: plan[0], title: plan[1], formula: plan[2], setup: plan[3], target: model[kind],
+            given: __alloT('stem.machinelab.compound_final_task', 'Final load / movement: ') + p(load) + ' N / ' + p(distance) + ' m · ' +
+              __alloT('stem.machinelab.compound_budget_given', 'Input-power budget / time: ') + budget + ' W / ' + seconds + ' s · ' +
+              __alloT('stem.machinelab.compound_budget_efficiencies', 'Stage efficiencies: ') + String(percentIn) + '% / ' + String(percentOut) + '%' };
+        }
         var spec = specs[kind];
         return { unit: spec[0], title: spec[1], formula: spec[2], setup: spec[3], target: model[kind],
           given: __alloT('stem.machinelab.compound_given', 'Input-stage MA / efficiency: ') + m1 + ' / ' + String(percentIn) + '% · ' +
@@ -8420,30 +8459,36 @@ window.StemLab = window.StemLab || {
             __alloT('stem.machinelab.compound_final_task', 'Final load / movement: ') + p(load) + ' N / ' + p(distance) + ' m' };
       }
       function validCompoundRecord(record, b, kind) {
-        var isPower = compoundPowerKinds().indexOf(kind) >= 0;
-        if (!record || Array.isArray(record) || record.version !== (isPower ? 2 : 1) || (isPower && !finite(record.seconds)) || record.benchId !== b.id || record.question !== kind || compoundKinds().indexOf(kind) < 0 ||
+        var isPower = compoundPowerKinds().indexOf(kind) >= 0, isPlan = compoundBudgetKinds().indexOf(kind) >= 0;
+        if (!record || Array.isArray(record) || record.version !== (isPlan ? 3 : isPower ? 2 : 1) || ((isPower || isPlan) && !finite(record.seconds)) || (isPlan && !finite(record.budget)) || record.benchId !== b.id || record.question !== kind || compoundKinds().indexOf(kind) < 0 ||
           typeof record.answer !== 'string' || record.answer.length > 64 || typeof record.explanation !== 'string' || record.explanation.length > 600 ||
-          ['', 'ratio', '%', 'N', 'm', 'J', 'W'].indexOf(record.unit) < 0 || !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
+          ['', 'ratio', '%', 'N', 'm', 'J', 'W'].concat(isPlan ? ['s'] : []).indexOf(record.unit) < 0 || !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
         var second = BENCHES.find(function (candidate) { return candidate.id === record.second && candidate.id !== b.id; });
-        var model = compoundModel(record.inputSettings, record.outputSettings, record.load, record.loadDistance, record.percentIn, record.percentOut, b, second, isPower ? record.seconds : undefined);
+        var model = compoundModel(record.inputSettings, record.outputSettings, record.load, record.loadDistance, record.percentIn, record.percentOut, b, second, isPower || isPlan ? record.seconds : undefined, isPlan ? record.budget : undefined);
         if (!model || (record.completion !== 'solution' && (record.completion !== 'checked' ||
           powerAnswer(record, compoundQuestion(kind, model, b.ma(record.inputSettings), second.ma(record.outputSettings), record.load, record.loadDistance, record.percentIn, record.percentOut)) !== 'correct'))) return null;
         return record;
       }
       function compoundRecordText(record, b) {
         var second = BENCHES.find(function (candidate) { return candidate.id === record.second; });
-        var isPower = compoundPowerKinds().indexOf(record.question) >= 0;
-        var model = compoundModel(record.inputSettings, record.outputSettings, record.load, record.loadDistance, record.percentIn, record.percentOut, b, second, isPower ? record.seconds : undefined);
+        var isPower = compoundPowerKinds().indexOf(record.question) >= 0, isPlan = compoundBudgetKinds().indexOf(record.question) >= 0;
+        var model = compoundModel(record.inputSettings, record.outputSettings, record.load, record.loadDistance, record.percentIn, record.percentOut, b, second, isPower || isPlan ? record.seconds : undefined, isPlan ? record.budget : undefined);
         var question = compoundQuestion(record.question, model, b.ma(record.inputSettings), second.ma(record.outputSettings), record.load, record.loadDistance, record.percentIn, record.percentOut);
         var lines = [__alloT('stem.machinelab.compound_record', 'Recorded compound-machine skill: ') + b.label + ' → ' + second.label + ' — ' + question.title];
         [[b, record.inputSettings], [second, record.outputSettings]].forEach(function (stage, index) {
           lines.push((index === 0 ? __alloT('stem.machinelab.compound_stage_in', 'Input stage: ') : __alloT('stem.machinelab.compound_stage_out', 'Output stage: ')) + stage[0].label);
           stage[0].controls.forEach(function (c) { if (c.key !== stage[0].loadKey) lines.push(c.label + ': ' + powerFmt(stage[1][c.key]) + (c.unit ? ' ' + c.unit : '')); });
         });
-        if (isPower) lines.push(compoundQuestion('inputWork', model, b.ma(record.inputSettings), second.ma(record.outputSettings), record.load, record.loadDistance, record.percentIn, record.percentOut).given,
+        if (isPower || isPlan) lines.push(compoundQuestion('inputWork', model, b.ma(record.inputSettings), second.ma(record.outputSettings), record.load, record.loadDistance, record.percentIn, record.percentOut).given,
           __alloT('stem.machinelab.compound_record_power', 'Average mechanical power: input → between stages → useful output: ') +
           powerFmt(model.inputPower) + ' W → ' + powerFmt(model.transferPower) + ' W → ' + powerFmt(model.usefulPower) + ' W',
           __alloT('stem.machinelab.compound_record_power_losses', 'Average power lost: first / second stage: ') + powerFmt(model.firstLossPower) + ' W / ' + powerFmt(model.secondLossPower) + ' W');
+        if (isPlan) lines.push(__alloT('stem.machinelab.compound_budget_record', 'Fixed input-power budget: ') + String(record.budget) + ' W · ' + String(record.seconds) + ' s',
+          __alloT('stem.machinelab.compound_budget_record_limits', 'At full budget, calculated time / load / movement / required efficiency: ') +
+          powerFmt(model.budgetTime) + ' s / ' + powerFmt(model.budgetLoad) + ' N / ' + powerFmt(model.budgetMovement) + ' m / ' + powerFmt(model.requiredEfficiency) + '%',
+          __alloT('stem.machinelab.compound_budget_record_scope', 'Load and movement are alternative energy limits: each holds the other at this recorded task value. Ramp output movement is vertical rise. Values are not clamped to slider ranges and are not strength, stroke or peak-force limits.'),
+          model.idealFits ? __alloT('stem.machinelab.compound_budget_record_possible', 'The required combined efficiency is at most 100% within numerical tolerance; this is an energy condition, not a guarantee that a real machine can achieve it.')
+            : __alloT('stem.machinelab.compound_budget_record_impossible', 'Required combined efficiency exceeds 100%: the task cannot fit this budget and time even without losses.'));
         return lines.concat([question.given, question.formula, question.setup + ' = ' + powerFmt(question.target) + ' ' + compoundUnit(question.unit),
           __alloT('stem.machinelab.compound_record_energy', 'Work: input → between stages → useful output: ') + powerFmt(model.inputWork) + ' J → ' + powerFmt(model.transferWork) + ' J → ' + powerFmt(model.workOut) + ' J',
           __alloT('stem.machinelab.compound_record_losses', 'Losses: first / second stage: ') + powerFmt(model.firstLoss) + ' J / ' + powerFmt(model.secondLoss) + ' J',
@@ -8460,7 +8505,8 @@ window.StemLab = window.StemLab || {
         var session = compoundSession(d, bench), draft = session.draft, model = session.model, second = session.second, kinds = compoundKinds();
         var p1 = _machineMath.parseNum(draft.percentIn), p2 = _machineMath.parseNum(draft.percentOut);
         var question = model && compoundQuestion(draft.question, model, bench.ma(session.inputSettings), second.ma(session.outputSettings), session.load, session.distance, p1, p2);
-        var isPower = compoundPowerKinds().indexOf(draft.question) >= 0, canPractice = !!model && (!isPower || !!session.powerModel);
+        var isPower = compoundPowerKinds().indexOf(draft.question) >= 0, isPlan = compoundBudgetKinds().indexOf(draft.question) >= 0;
+        var canPractice = !!model && (!isPower || !!session.powerModel) && (!isPlan || !!session.budgetModel);
         var result = canPractice && (draft.revealed ? 'solution' : draft.checked ? powerAnswer(draft, question) : null);
         var rawRecords = d.benchCompoundRecords && d.benchCompoundRecords[bench.id], saved = kinds.map(function (kind) { return validCompoundRecord(rawRecords && rawRecords[kind], bench, kind); }).filter(Boolean);
         var textStyle = { fontSize: 13, lineHeight: 1.55, color: T.text, overflowWrap: 'anywhere' };
@@ -8468,7 +8514,8 @@ window.StemLab = window.StemLab || {
         var buttonStyle = Object.assign({}, control, { width: 'auto', cursor: 'pointer', whiteSpace: 'normal' });
         var summaryStyle = { minHeight: 42, padding: '10px 0', cursor: 'pointer', fontWeight: 800, color: T.text };
         var prefix = 'ml-compound-', helpId = prefix + 'help-' + bench.id, roundingId = prefix + 'rounding-' + bench.id;
-        var timeHelpId = prefix + 'time-help-' + bench.id;
+        var timeHelpId = prefix + 'time-help-' + bench.id, budgetHelpId = prefix + 'budget-help-' + bench.id;
+        var invalidBudgetText = __alloT('stem.machinelab.compound_budget_invalid', 'Planning needs a task duration of 0.01–3600 seconds and an input-power budget of 0.01–100000 W. Other valid calculations remain available.');
         var invalidTimeText = __alloT('stem.machinelab.compound_power_invalid', 'Enter a task duration from 0.01 to 3600 seconds to calculate power. Force, travel and work still describe the same task.');
         function change(patch) {
           setLabToolData(function (prev) {
@@ -8477,8 +8524,9 @@ window.StemLab = window.StemLab || {
             var latest = compoundSession(source, bench);
             if (latest.signature !== session.signature) return prev;
             if (compoundPowerKinds().indexOf(latest.draft.question) >= 0 && !latest.powerModel && (patch.checked || patch.revealed || patch.hint)) return prev;
+            if (compoundBudgetKinds().indexOf(latest.draft.question) >= 0 && !latest.budgetModel && (patch.checked || patch.revealed || patch.hint)) return prev;
             var next = Object.assign({}, latest.draft, patch);
-            if (['second', 'geometry', 'percentIn', 'percentOut', 'duration', 'timeUnit', 'question'].some(function (key) { return patch[key] !== undefined; }))
+            if (['second', 'geometry', 'percentIn', 'percentOut', 'duration', 'timeUnit', 'budget', 'question'].some(function (key) { return patch[key] !== undefined; }))
               Object.assign(next, { answer: '', unit: '', explanation: '', hint: 0, checked: false, revealed: false });
             var entries = Object.assign({}, source.benchCompound || {}); entries[bench.id] = next;
             next.signature = compoundSession(Object.assign({}, source, { benchCompound: entries }), bench).signature;
@@ -8490,17 +8538,18 @@ window.StemLab = window.StemLab || {
             var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
             if (source.view !== 'machines' || source.bench !== bench.id) return prev;
             var latest = compoundSession(source, bench), ld = latest.draft;
-            var powerSkill = compoundPowerKinds().indexOf(ld.question) >= 0;
-            if (latest.signature !== session.signature || !latest.model || (powerSkill && !latest.powerModel) || (!ld.revealed && (!ld.checked || powerAnswer(ld,
+            var powerSkill = compoundPowerKinds().indexOf(ld.question) >= 0, planSkill = compoundBudgetKinds().indexOf(ld.question) >= 0;
+            if (latest.signature !== session.signature || !latest.model || (powerSkill && !latest.powerModel) || (planSkill && !latest.budgetModel) || (!ld.revealed && (!ld.checked || powerAnswer(ld,
               compoundQuestion(ld.question, latest.model, bench.ma(latest.inputSettings), latest.second.ma(latest.outputSettings), latest.load, latest.distance,
                 _machineMath.parseNum(ld.percentIn), _machineMath.parseNum(ld.percentOut))) !== 'correct'))) return prev;
             var records = Object.assign({}, source.benchCompoundRecords || {}), station = {};
             kinds.forEach(function (kind) { var prior = validCompoundRecord(records[bench.id] && records[bench.id][kind], bench, kind); if (prior) station[kind] = prior; });
-            station[ld.question] = { version: powerSkill ? 2 : 1, benchId: bench.id, second: latest.second.id, inputSettings: Object.assign({}, latest.inputSettings),
+            station[ld.question] = { version: planSkill ? 3 : powerSkill ? 2 : 1, benchId: bench.id, second: latest.second.id, inputSettings: Object.assign({}, latest.inputSettings),
               outputSettings: Object.assign({}, latest.outputSettings), load: latest.load, loadDistance: latest.distance,
               percentIn: _machineMath.parseNum(ld.percentIn), percentOut: _machineMath.parseNum(ld.percentOut), question: ld.question,
               answer: ld.answer, unit: ld.unit, explanation: ld.explanation, hint: ld.hint, completion: ld.revealed ? 'solution' : 'checked' };
-            if (powerSkill) station[ld.question].seconds = latest.seconds;
+            if (powerSkill || planSkill) station[ld.question].seconds = latest.seconds;
+            if (planSkill) station[ld.question].budget = latest.budgetModel.budget;
             records[bench.id] = station;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchCompoundRecords: records }) });
           });
@@ -8518,7 +8567,7 @@ window.StemLab = window.StemLab || {
           return h('div', { key: key }, [
             h('label', { key: 'label', htmlFor: prefix + key + '-' + bench.id, style: textStyle }, label),
             h('input', { key: 'input', id: prefix + key + '-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: value, style: control, 'aria-invalid': !!invalid,
-              'aria-describedby': key === 'duration' ? timeHelpId : helpId, onChange: handler || function (ev) { var patch = {}; patch[key] = ev.target.value.slice(0, 64); change(patch); } })
+              'aria-describedby': key === 'duration' ? timeHelpId : key === 'budget' ? budgetHelpId : helpId, onChange: handler || function (ev) { var patch = {}; patch[key] = ev.target.value.slice(0, 64); change(patch); } })
           ]);
         }
         function action(key, label, handler, disabled) { var props = { key: key, type: 'button', style: buttonStyle, onClick: handler, disabled: !!disabled }; props['data-ml-compound-' + key] = ''; return h('button', props, label); }
@@ -8543,6 +8592,32 @@ window.StemLab = window.StemLab || {
               h('p', { key: 'balance', style: textStyle }, __alloT('stem.machinelab.compound_power_balance', 'Input power = useful output power + both stage power losses. Useful output power ÷ input power gives the same combined efficiency as the energy calculation.')),
               h('p', { key: 'pace', style: textStyle }, __alloT('stem.machinelab.compound_power_pace', 'For the same task and efficiencies, twice the duration halves every average power. Force, travel and work stay the same. At fixed task, efficiencies and duration, geometry changes effort and travel but not required power.'))
             ]) : h('p', { key: 'invalid', 'data-ml-compound-power-invalid': '', role: 'status', style: textStyle }, invalidTimeText)
+          ]);
+        }
+        function budgetPlanning() {
+          var plan = session.budgetModel;
+          return h('section', { key: 'budget-plan', 'data-ml-compound-budget-plan': bench.id, 'aria-labelledby': prefix + 'budget-title-' + bench.id }, [
+            h('h3', { key: 'title', id: prefix + 'budget-title-' + bench.id, style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_budget_title', 'Work backward from a power budget')),
+            plan ? h('div', { key: 'valid' }, [
+              h('p', { key: 'given', style: textStyle }, __alloT('stem.machinelab.compound_budget_given', 'Input-power budget / time: ') + String(plan.budget) + ' W / ' + String(plan.seconds) + ' s'),
+              h('dl', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
+                ['budgetTime', __alloT('stem.machinelab.compound_budget_time', 'Time at full budget'), 's'],
+                ['budgetLoad', __alloT('stem.machinelab.compound_budget_load', 'Load at held movement'), 'N'],
+                ['budgetMovement', second.id === 'ramp' ? __alloT('stem.machinelab.compound_budget_rise', 'Vertical rise at held load') : __alloT('stem.machinelab.compound_budget_movement', 'Movement at held load'), 'm'],
+                ['requiredEfficiency', __alloT('stem.machinelab.compound_budget_required', 'Required combined efficiency'), '%']
+              ].map(function (entry) { return h('div', { key: entry[0], 'data-ml-compound-budget-metric': entry[0], 'data-value': plan[entry[0]],
+                style: { padding: 8, border: '1px solid ' + T.border, borderRadius: 6, background: T.bg, minWidth: 0 } }, [
+                h('dt', { key: 'label', style: textStyle }, entry[1]), h('dd', { key: 'value', style: Object.assign({}, textStyle, { fontWeight: 800, margin: '4px 0 0' }) }, powerFmt(plan[entry[0]]) + ' ' + entry[2])
+              ]); })),
+              h('p', { key: 'fit', 'data-ml-compound-budget-fit': String(plan.powerFits), style: textStyle }, plan.powerFits
+                ? __alloT('stem.machinelab.compound_budget_fits', 'The current task fits this input-power budget under the assumed efficiencies.')
+                : __alloT('stem.machinelab.compound_budget_exceeds', 'The current task needs more input power than the budget under the assumed efficiencies. More time, a smaller task or higher combined efficiency can reduce the demand.')),
+              h('p', { key: 'ideal-fit', 'data-ml-compound-budget-ideal-fit': String(plan.idealFits), style: textStyle }, plan.idealFits
+                ? __alloT('stem.machinelab.compound_budget_ideal_possible', 'The required efficiency is at most 100% within numerical tolerance. This is a necessary energy condition, not a promise that a real machine can achieve it.')
+                : __alloT('stem.machinelab.compound_budget_ideal_impossible', 'The required efficiency exceeds 100%. Even loss-free stages cannot complete this task within the budget and time. Increase the budget or time, or reduce the task.')),
+              h('p', { key: 'held', style: textStyle }, __alloT('stem.machinelab.compound_budget_alternatives', 'The load and movement results are alternatives: each holds the other at its current value. Do not combine them as simultaneous limits. Time uses the current task and efficiencies; required efficiency holds the task, budget and time fixed.')),
+              h('p', { key: 'scope', style: textStyle }, __alloT('stem.machinelab.compound_budget_scope', 'These are energy calculations at full mechanical input power, with constant efficiencies. They do not check strength, peak force, available stroke or acceleration. Results can exceed the sliders or time-input range; no settings are applied. Changing geometry alone cannot improve these limits at fixed task, efficiencies, budget and time.'))
+            ]) : h('p', { key: 'invalid', 'data-ml-compound-budget-invalid': '', role: 'status', style: textStyle }, invalidBudgetText)
           ]);
         }
         function comparison() {
@@ -8583,14 +8658,14 @@ window.StemLab = window.StemLab || {
               : __alloT('stem.machinelab.compound_added_same', 'Adding this input stage leaves effort unchanged within numerical tolerance. ')) +
               __alloT('stem.machinelab.compound_alone_values', 'Output stage alone: ') + powerFmt(model.transferForce) + ' N, ' + powerFmt(model.transferTravel) + ' m, ' + powerFmt(model.transferWork) + ' J. ' +
               __alloT('stem.machinelab.compound_tradeoff', 'The extra stage changes input travel by its ideal MA and input work by 1 ÷ its efficiency fraction. Extra stages do not always reduce effort.')),
-            powerFlow()
+            powerFlow(), budgetPlanning()
           ]);
         }
         function practice() {
           return h('div', { key: 'practice' }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_practice', 'Practice a compound-machine skill')),
             select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, compoundQuestion(kind, model, bench.ma(session.inputSettings), second.ma(session.outputSettings), session.load, session.distance, p1, p2).title]; })),
-            !canPractice ? h('p', { key: 'time-invalid', role: 'status', style: textStyle }, invalidTimeText) : null,
+            !canPractice ? h('p', { key: 'time-invalid', role: 'status', style: textStyle }, isPlan ? invalidBudgetText : invalidTimeText) : null,
             h('p', { key: 'given', 'data-ml-compound-given': '', style: textStyle }, question.given),
             h('p', { key: 'rounding', id: roundingId, style: textStyle }, __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
@@ -8601,7 +8676,7 @@ window.StemLab = window.StemLab || {
               ['', __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')], ['ratio', __alloT('stem.machinelab.compound_unit_ratio', 'Ratio — no physical unit')],
               ['%', __alloT('stem.machinelab.compound_unit_percent', '% — percent')], ['N', __alloT('stem.machinelab.eff_unit_n', 'N — newtons')],
               ['m', __alloT('stem.machinelab.eff_unit_m', 'm — metres')], ['J', __alloT('stem.machinelab.eff_unit_j', 'J — joules')], ['W', __alloT('stem.machinelab.power_unit_w', 'W — watts')]
-            ]),
+            ].concat(isPlan ? [['s', __alloT('stem.machinelab.power_unit_time', 's — seconds')]] : [])),
             h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
               action('check', __alloT('stem.machinelab.eff_check', 'Check calculation'), function () { change({ checked: true }); }, !canPractice),
               action('hint', draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup'), function () { change({ hint: Math.min(2, draft.hint + 1) }); }, !canPractice || draft.hint >= 2),
@@ -8611,14 +8686,15 @@ window.StemLab = window.StemLab || {
               draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-compound-hint-level': draft.hint }, question.formula) : null,
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-compound-result': result }, result === 'invalid' ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
-                : result === 'unit' ? __alloT('stem.machinelab.compound_unit_help_power', 'Check the unit: mechanical advantage is a ratio, efficiency uses %, force N, travel m, energy J and power W.')
-                : result === 'incorrect' ? (isPower ? __alloT('stem.machinelab.compound_power_retry', 'Not yet. Use the energy for the requested stage and divide by the task duration in seconds. Convert minutes to seconds before dividing. A hint can help.')
+                : result === 'unit' ? __alloT('stem.machinelab.compound_unit_help_planning', 'Check the unit: ratios have no physical unit; efficiency uses %, force N, movement m, energy J, power W and time s.')
+                : result === 'incorrect' ? (isPlan ? (draft.question === 'requiredEfficiency' ? __alloT('stem.machinelab.compound_required_efficiency_retry', 'Not yet. Divide useful work by budget × seconds, then multiply by 100. You are solving for the combined efficiency; do not use the currently assumed stage efficiencies. A result above 100% identifies an impossible target.') : __alloT('stem.machinelab.compound_budget_retry', 'Not yet. Solve for the requested unknown using input power × seconds and both efficiency fractions. Hold the other task value fixed. A hint can help.')) : isPower ? __alloT('stem.machinelab.compound_power_retry', 'Not yet. Use the energy for the requested stage and divide by the task duration in seconds. Convert minutes to seconds before dividing. A hint can help.')
                   : __alloT('stem.machinelab.compound_retry', 'Not yet. Check which stage you are solving, multiply the ratios, and convert percentages to decimals. A hint can help.'))
                 : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) +
                   question.setup + ' = ' + powerFmt(question.target) + ' ' + compoundUnit(question.unit)) : null
             ]),
             h('label', { key: 'explanation-label', htmlFor: prefix + 'explanation-' + bench.id, style: textStyle }, __alloT('stem.machinelab.compound_explanation', 'Explain the trade-off (optional)')),
-            h('p', { key: 'prompt', id: prefix + 'reason-help-' + bench.id, style: textStyle }, isPower
+            h('p', { key: 'prompt', id: prefix + 'reason-help-' + bench.id, style: textStyle }, isPlan
+              ? __alloT('stem.machinelab.compound_budget_reason', 'Choose one way to meet the power budget. Explain what you would change, what stays fixed, and why changing mechanical advantage alone does not reduce the required input energy. This reflection is saved, not automatically graded.') : isPower
               ? __alloT('stem.machinelab.compound_power_reason', 'Explain what would change if the same task took twice as long. Distinguish power in watts from energy in joules. This reflection is saved, not automatically graded.')
               : __alloT('stem.machinelab.compound_reason_prompt', 'Compared with the output stage alone, what changed in effort, travel and work? Use the numbers to explain. This reflection is saved, not automatically graded.')),
             h('textarea', { key: 'explanation', id: prefix + 'explanation-' + bench.id, rows: 3, maxLength: 600, value: draft.explanation,
@@ -8650,6 +8726,8 @@ window.StemLab = window.StemLab || {
           decimal('duration', __alloT('stem.machinelab.compound_duration', 'Compound-task duration'), draft.duration, !(session.seconds >= 0.01 && session.seconds <= 3600)),
           select('timeUnit', __alloT('stem.machinelab.power_time_unit', 'Task time unit'), [['s', __alloT('stem.machinelab.power_seconds', 'Seconds')], ['min', __alloT('stem.machinelab.power_minutes', 'Minutes')]]),
           h('p', { key: 'time-help', id: timeHelpId, style: textStyle }, __alloT('stem.machinelab.compound_time_help', 'Use 0.01–3600 seconds (up to 60 minutes). Both stages share this calculation interval; changing it does not change animation playback. These are average mechanical powers, not electrical input or a prediction of acceleration. Saved power skills keep their own fixed duration.')),
+          decimal('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), draft.budget, !(_machineMath.parseNum(draft.budget) >= 0.01 && _machineMath.parseNum(draft.budget) <= 100000)),
+          h('p', { key: 'budget-help', id: budgetHelpId, style: textStyle }, __alloT('stem.machinelab.compound_budget_help', 'Use 0.01–100000 W at the mechanical input. This planning budget does not change the task or animation. It is not electrical motor consumption. Planning records keep their own fixed budget and duration.')),
           model ? h('div', { key: 'valid' }, [comparison(), practice()]) : h('p', { key: 'invalid', role: 'status', style: textStyle }, __alloT('stem.machinelab.compound_invalid', 'Enter valid stage geometries, efficiencies and a working final task before calculating.')),
           h('p', { key: 'count', 'data-ml-compound-count': saved.length, style: textStyle }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),

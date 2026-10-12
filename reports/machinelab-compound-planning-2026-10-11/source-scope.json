@@ -1,0 +1,16 @@
+{
+  "baselineCommit": "64bf6c948f486e28c62ff34453d2598e9ffbe58f",
+  "source": "stem_lab/stem_tool_machinelab.js",
+  "publicMirror": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+  "sourceSha256": "c8782233487e8f5148ae3e8d4cba03d14e9591d074154dadbd33ddc81c3892b0",
+  "baselineSha256": "1638880a9e7b98963b72461ea5394c728f2298912f68efadfa3e8fe0655ec1d9",
+  "reconstructedBaselineSha256": "1638880a9e7b98963b72461ea5394c728f2298912f68efadfa3e8fe0655ec1d9",
+  "byteParity": true,
+  "unchangedOutsideRegions": true,
+  "originalCompoundWorkAndPowerHelpersUnchanged": true,
+  "regions": [
+    "New compoundBudget helper only, inserted immediately before designEnvelope",
+    "compoundPowerKinds through the end of compoundLab; excludes stationDesignLimits"
+  ],
+  "method": "Remove the new helper and restore the baseline compound UI region in memory. The complete reconstructed source matches the prior committed source byte for byte."
+}

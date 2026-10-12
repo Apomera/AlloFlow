@@ -17,6 +17,7 @@ const QUESTIONS = [
   { id: 'inputWork', unit: 'J' }, { id: 'firstLoss', unit: 'J' }, { id: 'secondLoss', unit: 'J' }
 ];
 const POWER_KINDS = ['inputPower', 'transferPower', 'usefulPower', 'firstLossPower', 'secondLossPower'];
+const PLANNING_KINDS = ['budgetTime', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'];
 const PAIRS = BENCHES.flatMap(first => BENCHES.filter(second => second !== first).map(second => ({ first, second, name: `${first.id}/${second.id}` })));
 const CHALLENGES = BENCHES.flatMap(b => QUESTIONS.map(q => ({ b, q, name: `${b.id}/${q.id}` })));
 const defaultSecond = b => BENCHES.find(x => x.id === (b.id === 'pulley' ? 'lever' : 'pulley'));
@@ -113,9 +114,9 @@ describe('Machine Lab: optional compound comparison', () => {
   it.each(['k2', 'g35', 'g68', 'g912'])('gates the optional compound lab for %s', bandOverride => {
     const s = session(BENCHES[0], { bandOverride }); expect(!!s.panel()).toBe(['g68', 'g912'].includes(bandOverride));
   });
-  it.each(BENCHES)('offers five different output stages and all fourteen skills for $id', b => {
+  it.each(BENCHES)('offers five different output stages and all eighteen skills for $id', b => {
     const s = session(b), options = suffix => nodes(s.byId(suffix)).filter(n => n.type === 'option').map(n => n.props.value);
-    expect(options('second').filter(Boolean)).toEqual(BENCHES.filter(x => x !== b).map(x => x.id)); expect(options('second')).toContain(''); expect(options('question')).toEqual([...QUESTIONS.map(q => q.id), ...POWER_KINDS]);
+    expect(options('second').filter(Boolean)).toEqual(BENCHES.filter(x => x !== b).map(x => x.id)); expect(options('second')).toContain(''); expect(options('question')).toEqual([...QUESTIONS.map(q => q.id), ...POWER_KINDS, ...PLANNING_KINDS]);
     expect(options('unit')).toEqual(expect.arrayContaining(['ratio', '%', 'N', 'm', 'J', 'W']));
   });
   it('uses independent default output geometry and permits editing it without altering either workshop', () => {
@@ -229,8 +230,8 @@ describe('Machine Lab: guided compound practice', () => {
   it('rechecks current answers before accepting a delayed save callback', () => {
     const s = session(); answer(s); const oldSave = s.action('save'); s.edit('answer', '1'); s.invoke(oldSave); expect(s.state().benchCompoundRecords).toBeUndefined();
   });
-  it('cycles all fourteen skills without saving or awarding progress', () => {
-    const s = session(), expectedKinds = [...QUESTIONS.map(q => q.id), ...POWER_KINDS], seen = [];
+  it('cycles all eighteen skills without saving or awarding progress', () => {
+    const s = session(), expectedKinds = [...QUESTIONS.map(q => q.id), ...POWER_KINDS, ...PLANNING_KINDS], seen = [];
     for (let i = 0; i < expectedKinds.length; i++) { seen.push(s.byId('question').props.value); s.click('next'); }
     expect(seen).toEqual(expectedKinds); expect(s.byId('question').props.value).toBe('idealMA'); expect(s.byId('answer').props.value).toBe('');
     expect(s.result()).toBeUndefined(); expect(s.state().benchCompoundRecords).toBeUndefined(); expect(s.awardXP).not.toHaveBeenCalled(); expect(s.tryAward).not.toHaveBeenCalled();
