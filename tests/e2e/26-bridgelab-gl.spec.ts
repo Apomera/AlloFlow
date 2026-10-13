@@ -764,7 +764,12 @@ function momentPrecisionExpected(oracle: GuideEnergyOracle, inputs: GuideInputs,
   const point = oracle.bridgeSeismicSample(response, time);
   const value = id === 'motion' ? Math.abs(point.relativeM * 100)
     : id === 'acceleration' ? Math.abs(point.absoluteAccelerationMps2) / 9.80665 : point.storedJPerKg;
-  return { time, value, unit: id === 'motion' ? 'cm' : id === 'acceleration' ? 'g' : 'J/kg',
+  const kinetic = point.velocityMps * point.velocityMps / 2;
+  const elasticCoordinate = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+  const elastic = elasticCoordinate * elasticCoordinate / 2;
+  const energyScientific = (id === 'motion' || id === 'acceleration')
+    && [kinetic, elastic, kinetic + elastic].some(value => value !== 0 && Math.abs(value) < 0.001);
+  return { time, value, energyScientific, unit: id === 'motion' ? 'cm' : id === 'acceleration' ? 'g' : 'J/kg',
     quantity: id === 'motion' ? 'relativeMotion' : id === 'acceleration' ? 'absoluteAcceleration' : 'storedEnergy' };
 }
 
@@ -811,7 +816,7 @@ async function checkMomentPrecision(page: Pg, oracle: GuideEnergyOracle, inputs:
   expect(evidence.reading.overflow).toBeLessThanOrEqual(1);
   expect(evidence.overflow).toBeLessThanOrEqual(1);
   const scientific = expected.value !== 0 && Math.abs(expected.value) < 0.001;
-  expect(evidence.help.count).toBe(scientific ? 1 : 0);
+  expect(evidence.help.count).toBe(scientific || expected.energyScientific ? 1 : 0);
   if (scientific) {
     expect(value).toBeGreaterThan(0);
     expect(evidence.reading.text).toMatch(/e-\d+/);
@@ -1259,6 +1264,562 @@ test.describe('Bridge Lab — real WebGL', () => {
   test.afterEach(async ({ page }) => {
     await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
   });
+
+  for (const width of [1280, 320]) {
+    test('cycle tap: direct event exploration preserves evidence at ' + width + 'px', async ({ page }) => {
+      test.setTimeout(180_000);
+      const report = process.env.BRIDGE_CAPTURE_REPORT || ENHANCEMENT_REPORT;
+      await mkdir(report, { recursive: true });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mountWorkflow(page, width, { bridgeView: 'immersive', bridgeObserver: 'bank', seismicEnabled: true,
+        seismicGuideOpen: true, seismicEnergyOrbit: true, seismicEnergyInterval: true,
+        seismicIntervalPinS: 19.117, seismicTime: 19.417, seismicPlaying: false, autoDriving: false,
+        bridgeBankYaw: 18, seismicSceneNote: 'Keep my direct inspection.' });
+      await page.getByRole('button', { name: 'From the riverbank', exact: true }).click();
+      await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();
+      await page.getByRole('button', { name: 'A · reference', exact: true }).click();
+      const oracle = await loadFrameEnergyOracle(), pair = await guidePairInputs(page);
+      type Kind = 'turning' | 'crossing';
+      function roots(inputs: GuideInputs) {
+        const response = oracle.bridgeSeismicResponse(inputs), result: Record<Kind, number[]> = { turning: [], crossing: [] };
+        for (const [kind, field] of [['turning', 'velocityMps'], ['crossing', 'relativeM']] as const) {
+          for (let i = 1; i < response.samples.length; i++) {
+            const a = response.samples[i - 1], b = response.samples[i];
+            if (a.timeS < 16 - 1e-9 || a[field] === 0 && b[field] === 0 || Math.sign(a[field]) === Math.sign(b[field])) continue;
+            const time = a[field] === 0 ? a.timeS : b[field] === 0 ? b.timeS
+              : a.timeS + (b.timeS - a.timeS) * Math.abs(a[field]) / (Math.abs(a[field]) + Math.abs(b[field]));
+            if (!result[kind].some(previous => Math.abs(previous - time) < 1e-7)) result[kind].push(time);
+          }
+        }
+        return result;
+      }
+      const aRoots = roots(pair[0]), bRoots = roots(pair[1]);
+      const scene = page.locator('[data-bridge-energy-orbit="scene"]');
+      const bucket = () => page.evaluate(() => (window as any).__bucket());
+      const nearest = (times: number[], time: number) => times.reduce((best, next) => Math.abs(next - time) < Math.abs(best - time) ? next : best);
+      async function point(orbit: import('@playwright/test').Locator, x: number, y: number) {
+        const svg = orbit.locator('[data-orbit-cycle-timeline]');
+        await svg.evaluate(node => node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }));
+        return svg.evaluate((node, p) => {
+          const svg = node as SVGSVGElement, local = svg.createSVGPoint(); local.x = p.x; local.y = p.y;
+          const screen = local.matrixTransform(svg.getScreenCTM()!); return { x: screen.x, y: screen.y };
+        }, { x, y });
+      }
+      async function tap(orbit: import('@playwright/test').Locator, kind: Kind, time: number, expected: number) {
+        const before = await bucket(), lane = orbit.locator('[data-orbit-cycle-tap="' + kind + '"]');
+        await lane.scrollIntoViewIfNeeded();
+        const box = await lane.boundingBox(), position = { x: (time - 16) / 8 * box!.width, y: box!.height / 2 };
+        if (width === 320) await lane.tap({ position }); else await lane.click({ position });
+        await expect.poll(bucket).toEqual({ ...before, seismicTime: expected, seismicPlaying: false, autoDriving: false });
+        await expect(orbit.locator('[data-orbit-cycle-current]')).toHaveAttribute('data-orbit-cycle-current', kind);
+        await expect(orbit.locator('[data-orbit-cycle-selected="true"]')).toHaveAttribute('data-orbit-cycle-time', String(expected));
+        await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-frame', String(expected));
+      }
+      async function capture(orbit: import('@playwright/test').Locator, selector: string, name: string) {
+        const node = orbit.locator(selector), before = await bucket();
+        await expect.poll(() => node.evaluate(async el => {
+          const settle = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+          await settle(); el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }); await settle();
+          const box = el.getBoundingClientRect();
+          for (let p = el.parentElement; p; p = p.parentElement) {
+            if (!/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowY)) continue;
+            const b = p.getBoundingClientRect(); if (box.top < b.top || box.bottom > b.bottom) return false;
+          }
+          return box.top >= 0 && box.bottom <= innerHeight;
+        })).toBe(true);
+        await node.screenshot({ path: join(report, 'cycle-tap-' + width + '-' + name + '.png') });
+        expect(await bucket()).toEqual(before);
+      }
+      const aTime = aRoots.turning.at(-2)!;
+      await tap(scene, 'turning', aTime + 0.01, aTime);
+      await capture(scene, '[data-orbit-cycle-map-status]', 'turning-status');
+      await capture(scene, '[data-orbit-cycle-timeline]', 'turning');
+      await tap(scene, 'crossing', aTime, nearest(aRoots.crossing, aTime));
+      await capture(scene, '[data-orbit-cycle-timeline]', 'crossing');
+      for (const kind of ['turning', 'crossing'] as Kind[]) {
+        const band = scene.locator('[data-orbit-cycle-tap="' + kind + '"]');
+        const box = await band.boundingBox(); expect(box!.height).toBeGreaterThanOrEqual(44);
+        expect(await band.evaluate(el => getComputedStyle(el).cursor)).toBe('pointer');
+        expect(await band.evaluate(el => !el.hasAttribute('tabindex') && !!el.closest('[aria-hidden="true"]'))).toBe(true);
+      }
+      for (const x of [5, 255]) {
+        const before = await bucket(), p = await point(scene, x, 42);
+        await page.mouse.click(p.x, p.y); expect(await bucket()).toEqual(before);
+      }
+      const beforeAxis = await bucket(), axis = await point(scene, 130, 168);
+      await page.mouse.click(axis.x, axis.y); expect(await bucket()).toEqual(beforeAxis);
+      if (width === 320) {
+        const p = await point(scene, 150, 110), before = await bucket();
+        const session = await page.context().newCDPSession(page);
+        await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: p.x, y: p.y }] });
+        for (const dy of [15, 30, 50, 75]) await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: p.x, y: p.y - dy }] });
+        await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        await session.detach(); expect(await bucket()).toEqual(before);
+      }
+      await page.getByRole('button', { name: 'B · current', exact: true }).click();
+      const bTime = nearest(bRoots.turning, aTime); expect(bTime).not.toBe(aTime);
+      await tap(scene, 'turning', aTime, bTime);
+      const next = scene.getByRole('button', { name: 'Next center crossing', exact: true });
+      const target = Number(await next.getAttribute('data-orbit-next-time')), beforeKey = await bucket();
+      await next.focus(); await next.press('Enter');
+      expect(await bucket()).toEqual({ ...beforeKey, seismicTime: target, seismicPlaying: false, autoDriving: false });
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicSceneTrial: 'current', seismicIntensityG: 1e-9, seismicTime: 19.417 }));
+      const tinyRoots = roots(await flowCurrentInputs(page));
+      await tap(scene, 'crossing', 21, nearest(tinyRoots.crossing, 21));
+      expect(Number(await scene.locator('[data-orbit-energy="stored"]').getAttribute('data-orbit-value'))).toBeGreaterThan(0);
+      await page.evaluate(() => (window as any).__set({ seismicIntensityG: 0, seismicTime: 24 }));
+      const zero = await bucket(), zeroPoint = await point(scene, 130, 42);
+      await page.mouse.click(zeroPoint.x, zeroPoint.y); expect(await bucket()).toEqual(zero);
+      await expect(scene.locator('[data-orbit-cycle-current]')).toHaveCount(0);
+      expect(await scene.locator('[data-orbit-cycle-tap="turning"]').evaluate(el => getComputedStyle(el).cursor)).toBe('default');
+      await capture(scene, '[data-orbit-cycle-timeline]', 'zero');
+      await page.evaluate(() => (window as any).__set({ bridgeView: '2d', seismicIntensityG: 0.12, seismicTime: 19.417 }));
+      const fallback = page.locator('[data-bridge-energy-orbit="fallback"]'), fallbackRoots = roots(await flowCurrentInputs(page));
+      await tap(fallback, 'turning', 21, nearest(fallbackRoots.turning, 21));
+      expect((await bucket()).seismicSceneNote).toBe('Keep my direct inspection.');
+      expect((await bucket()).seismicIntervalPinS).toBe(19.117);
+      await checkWorkflowHealth(page);
+      await writeFile(join(report, 'cycle-tap-' + width + '-evidence.json'), JSON.stringify({ aTime, bTime, tinyRoots, fallbackRoots }, null, 2));
+    });
+  }
+
+  for (const width of [1280, 320]) {
+    test('cycle readout: precise event identity follows the selected timeline at ' + width + 'px', async ({ page }) => {
+      test.setTimeout(180_000);
+      const report = process.env.BRIDGE_CAPTURE_REPORT || ENHANCEMENT_REPORT;
+      await mkdir(report, { recursive: true });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mountWorkflow(page, width, { bridgeView: 'immersive', bridgeObserver: 'bank', seismicEnabled: true,
+        seismicGuideOpen: true, seismicEnergyOrbit: true, seismicEnergyInterval: true,
+        seismicIntervalPinS: 19.117, seismicTime: 19.417, seismicPlaying: false, autoDriving: false,
+        bridgeBankYaw: 18, seismicSceneNote: 'Keep my cycle explanation.' });
+      await page.getByRole('button', { name: 'From the riverbank', exact: true }).click();
+      await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();
+      await page.getByRole('button', { name: 'A · reference', exact: true }).click();
+      await page.evaluate(() => (window as any).__set({ seismicTime: 19.417 }));
+      const scene = page.locator('[data-bridge-energy-orbit="scene"]');
+      const core = scene.locator('[data-orbit-cycle-timeline]');
+      const bucket = () => page.evaluate(() => (window as any).__bucket());
+      async function check(orbit: import('@playwright/test').Locator, trial: string, time: number, kind?: string) {
+        const map = orbit.locator('[data-orbit-cycle-map]'), status = map.locator('[data-orbit-cycle-map-status]');
+        await expect(map).toHaveAttribute('data-orbit-cycle-map', trial);
+        await expect(status.locator('[data-orbit-cycle-time-label]')).toHaveText(time.toFixed(3) + ' s');
+        await expect(status).toContainText(time < 16 ? 'Before free vibration' : 'Free vibration');
+        await expect(status.locator('[data-orbit-cycle-scope]')).toHaveText(trial === 'reference' ? 'A · reference'
+          : (await bucket()).seismicSceneCompare && (await bucket()).bridgeView === 'immersive' ? 'B · current' : 'Current experiment');
+        expect(await status.locator('[data-orbit-cycle-time-label]').evaluate(node => ({
+          font: getComputedStyle(node).fontSize, nowrap: getComputedStyle(node).whiteSpace,
+          native: !node.closest('svg,[aria-hidden="true"]'), live: node.closest('[aria-live]')?.getAttribute('aria-live')
+        }))).toEqual({ font: '14px', nowrap: 'nowrap', native: true, live: 'off' });
+        const badge = status.locator('[data-orbit-cycle-current]');
+        if (kind) {
+          await expect(badge).toHaveAttribute('data-orbit-cycle-current', kind);
+          await expect(badge).toContainText(kind === 'turning' ? 'Turning point' : 'Center crossing');
+          await expect(badge.locator('[aria-hidden="true"]')).toHaveText(kind === 'turning' ? '○' : '◇');
+          await expect(map.locator('[data-orbit-cycle-selected="true"]')).toHaveCount(1);
+          await expect(map.locator('[data-orbit-cycle-selected="true"]')).toHaveAttribute('data-orbit-cycle-marker', kind);
+        } else {
+          await expect(badge).toHaveCount(0);
+          await expect(map.locator('[data-orbit-cycle-selected="true"]')).toHaveCount(0);
+        }
+        expect(await map.locator('[data-orbit-cycle-timeline]').evaluate(node => [...node.querySelectorAll('text')]
+          .every(text => Number(text.getAttribute('font-size')) === 16 && 16 * (text.getScreenCTM()?.a || 0) >= 10))).toBe(true);
+        expect(await map.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+      }
+      async function capture(name: string) {
+        const before = await bucket();
+        await expect.poll(() => core.evaluate(async node => {
+          const settle = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+          await settle(); node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }); await settle();
+          const b = node.getBoundingClientRect();
+          for (let p = node.parentElement; p; p = p.parentElement) {
+            if (!/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowY)) continue;
+            const r = p.getBoundingClientRect(); if (b.top < r.top || b.bottom > r.bottom) return false;
+          }
+          return b.top >= 0 && b.bottom <= innerHeight;
+        })).toBe(true);
+        await core.screenshot({ path: join(report, 'cycle-readout-' + width + '-' + name + '.png') });
+        expect(await bucket()).toEqual(before);
+      }
+      const beforeJump = await bucket();
+      const turningTime = Number(await scene.locator('[data-orbit-next="turning"]').getAttribute('data-orbit-next-time'));
+      await scene.getByRole('button', { name: 'Next turning point', exact: true }).click();
+      expect(await bucket()).toEqual({ ...beforeJump, seismicTime: turningTime, seismicPlaying: false, autoDriving: false });
+      await check(scene, 'reference', turningTime, 'turning'); await capture('turning');
+      const nearTime = turningTime + (Number(turningTime.toFixed(3)) >= turningTime ? 1e-5 : -1e-5);
+      expect(nearTime.toFixed(3)).toBe(turningTime.toFixed(3));
+      await page.evaluate(time => (window as any).__set({ seismicTime: time }), nearTime);
+      await check(scene, 'reference', nearTime);
+      await page.evaluate(time => (window as any).__set({ seismicTime: time }), turningTime);
+      await page.getByRole('button', { name: 'B · current', exact: true }).click();
+      await check(scene, 'current', turningTime);
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicIntensityG: 1e-9, seismicDampingRatio: 0.05, seismicTime: 19.417 }));
+      await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();
+      const saved = (await bucket()).seismicTrials;
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: true, seismicSceneSource: 'saved', seismicSceneTrial: 'reference',
+        seismicReferenceIndex: 0, seismicIntensityG: 2e-9, seismicDampingRatio: 0.25 }));
+      const crossingTime = Number(await scene.locator('[data-orbit-next="crossing"]').getAttribute('data-orbit-next-time'));
+      await scene.getByRole('button', { name: 'Next center crossing', exact: true }).click();
+      await check(scene, 'reference', crossingTime, 'crossing'); await capture('crossing');
+      await page.evaluate(() => (window as any).__set({ seismicTime: 10.123 }));
+      await check(scene, 'reference', 10.123);
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicSceneTrial: 'current', seismicIntensityG: 0, seismicTime: 24 }));
+      await check(scene, 'current', 24); await capture('zero');
+      await page.evaluate(() => (window as any).__set({ bridgeView: '2d', seismicIntensityG: 0.12, seismicTime: 19.417 }));
+      const fallback = page.locator('[data-bridge-energy-orbit="fallback"]');
+      const fallbackTime = Number(await fallback.locator('[data-orbit-next="turning"]').getAttribute('data-orbit-next-time'));
+      await fallback.getByRole('button', { name: 'Next turning point', exact: true }).click();
+      await check(fallback, 'current', fallbackTime, 'turning');
+      expect((await bucket()).seismicTrials).toEqual(saved);
+      expect((await bucket()).seismicIntervalPinS).toBe(beforeJump.seismicIntervalPinS);
+      expect((await bucket()).seismicSceneNote).toBe('Keep my cycle explanation.');
+      await checkWorkflowHealth(page);
+      await writeFile(join(report, 'cycle-readout-' + width + '-evidence.json'), JSON.stringify({ turningTime, nearTime, crossingTime, fallbackTime }, null, 2));
+    });
+  }
+
+  for (const width of [1280, 320]) {
+    test('cycle preview: selected-trial destinations explain energy before inspection at ' + width + 'px', async ({ page }) => {
+      test.setTimeout(180_000);
+      const report = process.env.BRIDGE_CAPTURE_REPORT || ENHANCEMENT_REPORT;
+      await mkdir(report, { recursive: true });
+      const oracle = await loadFrameEnergyOracle();
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mountWorkflow(page, width, { bridgeView: 'immersive', bridgeObserver: 'bank', seismicEnabled: true,
+        seismicGuideOpen: true, seismicEnergyOrbit: true, seismicTime: 19.417, seismicIntervalPinS: 12.319,
+        seismicPlaying: false, autoDriving: false, bridgeBankYaw: 18, bridgeBankPitch: -8,
+        seismicPrediction: 'Compare cycle moments.', seismicSceneNote: 'Keep my energy explanation.' });
+      await page.getByRole('button', { name: 'From the riverbank', exact: true }).click();
+      await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();
+      await page.getByRole('button', { name: 'A · reference', exact: true }).click();
+      await page.evaluate(() => (window as any).__set({ seismicTime: 19.417 }));
+      const scene = page.locator('[data-bridge-energy-orbit="scene"]');
+      const controls = scene.locator('[data-orbit-cycle-controls]');
+      const bucket = () => page.evaluate(() => (window as any).__bucket());
+      function close(actual: number, expected: number) {
+        if (expected === 0) expect(actual).toBe(0);
+        else expect(Math.abs(actual - expected)).toBeLessThanOrEqual(Math.abs(expected) * 2e-9);
+      }
+      function share(value: number, other: number) {
+        if (value === 0) return '0%';
+        if (other === 0) return '100%';
+        const percent = value / (value + other) * 100;
+        return percent < 0.1 ? '<0.1%' : percent > 99.9 ? '>99.9%' : percent.toFixed(1) + '%';
+      }
+      async function check(orbit: import('@playwright/test').Locator, inputs: GuideInputs, trial: string) {
+        const response = oracle.bridgeSeismicResponse(inputs), result: any[] = [];
+        for (const kind of ['turning', 'crossing']) for (const step of ['previous', 'next']) {
+          const button = orbit.locator('[data-orbit-step="' + step + '"][data-orbit-kind="' + kind + '"]');
+          const preview = button.locator('[data-orbit-target-preview]');
+          await expect(button.locator('[data-orbit-cycle-symbol]')).toHaveAttribute('aria-hidden', 'true');
+          await expect(button.locator('[data-orbit-cycle-symbol]')).toHaveText(kind === 'turning' ? '○' : '◇');
+          if (await button.isDisabled()) { await expect(preview).toHaveCount(0); continue; }
+          const time = Number(await button.getAttribute('data-orbit-' + step + '-time'));
+          const point = oracle.bridgeSeismicSample(response, time), coordinate = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+          const kinetic = point.velocityMps * point.velocityMps / 2, elastic = coordinate * coordinate / 2, stored = kinetic + elastic;
+          const primary = kind === 'turning' ? elastic : kinetic, other = kind === 'turning' ? kinetic : elastic;
+          await expect(preview).toHaveAttribute('data-orbit-target-preview', kind);
+          await expect(preview).toHaveAttribute('data-orbit-target-time', String(time));
+          await expect(preview).toHaveAttribute('data-orbit-target-trial', trial);
+          close(Number(await preview.getAttribute('data-orbit-target-stored')), stored);
+          close(Number(await preview.getAttribute('data-orbit-target-share')), primary / stored);
+          await expect(preview.locator('[data-orbit-target-percent]')).toHaveText(share(primary, other));
+          await expect(button.locator('[data-orbit-destination]')).toHaveText(time.toFixed(3) + ' s');
+          await expect(button).toHaveAccessibleDescription(new RegExp(time.toFixed(3) + ' s.*' + (kind === 'turning' ? 'Elastic' : 'Kinetic')));
+          for (const [id, amount] of [['kinetic', kinetic], ['elastic', elastic]] as const) {
+            const part = preview.locator('[data-orbit-target-part="' + id + '"]');
+            close(Number(await part.getAttribute('data-orbit-target-fraction')), amount / stored);
+            expect(await part.evaluate(node => !!node.closest('[aria-hidden="true"]'))).toBe(true);
+          }
+          expect(await button.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+          result.push({ kind, step, time, kinetic, elastic, stored });
+        }
+        return result;
+      }
+      async function capture(name: string) {
+        const before = await bucket();
+        await expect.poll(() => controls.evaluate(async node => {
+          const settle = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+          await settle(); node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }); await settle();
+          const b = node.getBoundingClientRect();
+          for (let p = node.parentElement; p; p = p.parentElement) {
+            if (!/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowY)) continue;
+            const r = p.getBoundingClientRect(); if (b.top < r.top || b.bottom > r.bottom) return false;
+          }
+          return b.top >= 0 && b.bottom <= innerHeight;
+        })).toBe(true);
+        await controls.screenshot({ path: join(report, 'cycle-preview-' + width + '-' + name + '.png') });
+        expect(await bucket()).toEqual(before);
+      }
+      const guideA = (await bucket()).seismicGuideBaseline.inputs;
+      const initial = await check(scene, guideA, 'reference'); expect(initial).toHaveLength(4);
+      await capture('reference');
+      for (const [index, target] of initial.entries()) {
+        await page.evaluate(() => (window as any).__set({ seismicTime: 19.417 }));
+        const before = await bucket(), button = scene.locator('[data-orbit-step="' + target.step + '"][data-orbit-kind="' + target.kind + '"]');
+        await button.focus(); await button.press(index % 2 ? 'Enter' : 'Space');
+        expect(await bucket()).toEqual({ ...before, seismicTime: target.time, seismicPlaying: false, autoDriving: false });
+        await expect(scene.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-frame', String(target.time));
+        close(Number(await scene.locator('[data-orbit-energy="stored"]').getAttribute('data-orbit-value')), target.stored);
+      }
+      await page.getByRole('button', { name: 'B · current', exact: true }).click();
+      const current = await check(scene, await flowCurrentInputs(page), 'current'); expect(current).toHaveLength(4);
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicIntensityG: 1e-9, seismicDampingRatio: 0.05 }));
+      await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();
+      const saved = (await bucket()).seismicTrials;
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: true, seismicSceneSource: 'saved', seismicSceneTrial: 'reference',
+        seismicReferenceIndex: 0, seismicIntensityG: 2e-9, seismicDampingRatio: 0.25, seismicTime: 19.417 }));
+      const tiny = await check(scene, saved[0].inputs, 'reference'); expect(tiny).toHaveLength(4);
+      expect(tiny.every(point => point.stored > 0 && point.stored < 0.001)).toBe(true);
+      await capture('tiny');
+      for (const time of [0, 24]) {
+        await page.evaluate(time => (window as any).__set({ seismicTime: time }), time);
+        await check(scene, saved[0].inputs, 'reference');
+        const boundary = time === 0 ? 'previous' : 'next';
+        for (const kind of ['turning', 'crossing']) await expect(scene.locator('[data-orbit-step="' + boundary + '"][data-orbit-kind="' + kind + '"]')).toBeDisabled();
+      }
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicSceneTrial: 'current', seismicIntensityG: 0 }));
+      await expect(controls.locator('[data-orbit-target-preview]')).toHaveCount(0);
+      for (const button of await controls.locator('button').all()) await expect(button).toBeDisabled();
+      await capture('zero');
+      await page.evaluate(() => (window as any).__set({ bridgeView: '2d', seismicIntensityG: 0.12, seismicTime: 19.417 }));
+      await check(page.locator('[data-bridge-energy-orbit="fallback"]'), await flowCurrentInputs(page), 'current');
+      expect((await bucket()).seismicTrials).toEqual(saved);
+      expect((await bucket()).seismicSceneNote).toBe('Keep my energy explanation.');
+      await checkWorkflowHealth(page);
+      await writeFile(join(report, 'cycle-preview-' + width + '-evidence.json'), JSON.stringify({ initial, current, tiny }, null, 2));
+    });
+  }
+
+  for (const width of [1280, 320]) {
+    test('orbit composition: precise shares stay readable through trial and cycle changes at ' + width + 'px', async ({ page }) => {
+      test.setTimeout(180_000);
+      const report = process.env.BRIDGE_CAPTURE_REPORT || ENHANCEMENT_REPORT;
+      await mkdir(report, { recursive: true });
+      const oracle = await loadFrameEnergyOracle();
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mountWorkflow(page, width, { bridgeView: 'immersive', bridgeObserver: 'bank', seismicEnabled: true,
+        seismicGuideOpen: true, seismicEnergyOrbit: true, seismicIntervalPinS: 12.319, seismicTime: 7.217,
+        seismicPlaying: false, autoDriving: false, seismicSceneNote: 'Keep the energy explanation.',
+        seismicPrediction: 'Compare energy at a turning point.', bridgeBankYaw: 18, bridgeBankPitch: -8 });
+      await page.getByRole('button', { name: 'From the riverbank', exact: true }).click();
+      await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();
+      await page.getByRole('button', { name: 'A · reference', exact: true }).click();
+      const scene = page.locator('[data-bridge-energy-orbit="scene"]');
+      const split = scene.locator('[data-orbit-split]');
+      const selector = page.getByRole('combobox', { name: 'Scene key moments', exact: true });
+      const bucket = () => page.evaluate(() => (window as any).__bucket());
+      function close(actual: number, expected: number) {
+        if (expected === 0) expect(actual).toBe(0);
+        else expect(Math.abs(actual - expected)).toBeLessThanOrEqual(Math.abs(expected) * 2e-9);
+      }
+      function share(value: number, other: number) {
+        if (value + other === 0) return '—';
+        if (value === 0) return '0%';
+        if (other === 0) return '100%';
+        const percent = value / (value + other) * 100;
+        return percent < 0.1 ? '<0.1%' : percent > 99.9 ? '>99.9%' : percent.toFixed(1) + '%';
+      }
+      async function check(orbit: import('@playwright/test').Locator, inputs: GuideInputs, trial: string) {
+        const time = (await bucket()).seismicTime;
+        const response = oracle.bridgeSeismicResponse(inputs), point = oracle.bridgeSeismicSample(response, time);
+        const kinetic = point.velocityMps * point.velocityMps / 2, coordinate = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+        const expected = { kinetic, elastic: coordinate * coordinate / 2, stored: kinetic + coordinate * coordinate / 2 };
+        const card = orbit.locator('[data-orbit-split]');
+        await expect(card).toHaveAttribute('data-orbit-split', trial);
+        await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-frame', String(time));
+        await expect(card.locator('[data-orbit-energy-total]')).toHaveText(frameEnergyNumber(expected.stored));
+        for (const id of ['kinetic', 'elastic', 'stored'] as const) {
+          const row = card.locator('[data-orbit-energy="' + id + '"]');
+          close(Number(await row.getAttribute('data-orbit-value')), expected[id]);
+          await expect(row.locator('strong')).toHaveText(frameEnergyNumber(expected[id]));
+          await expect(row).toContainText('J/kg');
+          if (id === 'stored') continue;
+          expect(await row.evaluate(node => node.parentElement?.tagName === 'DL' && !node.closest('[aria-hidden="true"]'))).toBe(true);
+          await expect(row.locator('dt')).toHaveText(id === 'kinetic' ? 'Kinetic' : 'Elastic');
+          await expect(row.locator('[data-orbit-energy-share]')).toHaveText(share(expected[id], expected[id === 'kinetic' ? 'elastic' : 'kinetic']));
+          const fraction = expected.stored > 0 ? expected[id] / expected.stored : 0;
+          close(Number(await card.locator('[data-orbit-part="' + id + '"]').getAttribute('data-orbit-fraction')), fraction);
+        }
+        if (expected.stored > 0) await expect(card.locator('[data-orbit-energy-scale-help]')).toHaveText('Bar = 100% of the stored total now.');
+        else await expect(card.locator('[data-orbit-energy-scale-help]')).toHaveCount(0);
+        await expect(card.locator('[data-orbit-energy-bar]')).toHaveAccessibleName(expected.stored > 0
+          ? 'Stored energy split: Kinetic ' + share(expected.kinetic, expected.elastic) + ', Elastic ' + share(expected.elastic, expected.kinetic)
+          : 'No stored energy');
+        expect(await card.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+        return expected;
+      }
+      async function capture(name: string) {
+        const before = await bucket();
+        await expect.poll(() => split.evaluate(async node => {
+          const settle = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+          await settle(); node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }); await settle();
+          const b = node.getBoundingClientRect();
+          for (let p = node.parentElement; p; p = p.parentElement) {
+            if (!/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowY)) continue;
+            const r = p.getBoundingClientRect(); if (b.top < r.top || b.bottom > r.bottom) return false;
+          }
+          return b.top >= 0 && b.bottom <= innerHeight;
+        })).toBe(true);
+        await split.screenshot({ path: join(report, 'orbit-composition-' + width + '-' + name + '.png') });
+        expect(await bucket()).toEqual(before);
+      }
+      const guideA = (await bucket()).seismicGuideBaseline.inputs;
+      await selector.selectOption('motion');
+      const peak = await check(scene, guideA, 'reference');
+      for (const id of ['kinetic', 'elastic']) await expect(split.locator('[data-orbit-energy-share="' + id + '"]')).toHaveText(
+        (await page.locator('[data-moment-energy-component="' + id + '"] dd').first().textContent())!);
+      await capture('peak');
+      const beforeCycle = await bucket();
+      const destination = Number(await scene.locator('[data-orbit-next="crossing"]').getAttribute('data-orbit-next-time'));
+      await scene.getByRole('button', { name: 'Next center crossing', exact: true }).click();
+      expect(await bucket()).toEqual({ ...beforeCycle, seismicTime: destination, seismicPlaying: false, autoDriving: false });
+      const crossing = await check(scene, guideA, 'reference');
+      expect(crossing.kinetic).toBeGreaterThan(crossing.elastic);
+      await page.getByRole('button', { name: 'B · current', exact: true }).click();
+      const current = await check(scene, await flowCurrentInputs(page), 'current');
+      expect(current.stored).not.toBe(crossing.stored);
+      await page.evaluate(() => (window as any).__set({ seismicIntensityG: 1e-9, seismicDampingRatio: 0.05, seismicSceneCompare: false }));
+      await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();
+      const saved = (await bucket()).seismicTrials;
+      await page.evaluate(() => (window as any).__set({ seismicIntensityG: 2e-9, seismicDampingRatio: 0.25,
+        seismicSceneCompare: true, seismicSceneSource: 'saved', seismicReferenceIndex: 0, seismicSceneTrial: 'reference' }));
+      await selector.selectOption('acceleration');
+      const tiny = await check(scene, saved[0].inputs, 'reference');
+      expect(tiny.stored).toBeGreaterThan(0); expect(tiny.stored).toBeLessThan(0.001);
+      await expect(split.locator('[data-orbit-energy-total]')).toContainText('e-');
+      await capture('tiny');
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicSceneTrial: 'current', seismicIntensityG: 0 }));
+      await check(scene, await flowCurrentInputs(page), 'current');
+      await expect(split.locator('[data-orbit-energy-empty]')).toHaveText('No stored energy');
+      await expect(split.locator('[data-orbit-energy-share]')).toHaveText(['—', '—']);
+      await capture('zero');
+      await page.evaluate(() => (window as any).__set({ bridgeView: '2d', seismicIntensityG: 0.12, seismicTime: 17.123 }));
+      await check(page.locator('[data-bridge-energy-orbit="fallback"]'), await flowCurrentInputs(page), 'current');
+      expect((await bucket()).seismicTrials).toEqual(saved);
+      expect((await bucket()).seismicSceneNote).toBe('Keep the energy explanation.');
+      await checkWorkflowHealth(page);
+      await writeFile(join(report, 'orbit-composition-' + width + '-evidence.json'), JSON.stringify({ peak, crossing, current, tiny }, null, 2));
+    });
+  }
+
+  for (const width of [1280, 320]) {
+    test('moment energy: preview and orbit retain selected evidence at ' + width + 'px', async ({ page }) => {
+      test.setTimeout(240_000);
+      const report = process.env.BRIDGE_CAPTURE_REPORT || ENHANCEMENT_REPORT;
+      await mkdir(report, { recursive: true });
+      const oracle = await loadFrameEnergyOracle();
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mountWorkflow(page, width, { bridgeView: 'immersive', bridgeObserver: 'bank', seismicEnabled: true,
+        seismicGuideOpen: true, seismicArchetype: 'balanced', seismicFrequencyHz: 1.1, seismicIntensityG: 0.12,
+        seismicDampingRatio: 0.05, seismicTime: 7.217, seismicIntervalPinS: 12.319, seismicEnergyOrbit: false,
+        seismicPlaying: false, autoDriving: false, bridgeBankYaw: 18, bridgeBankPitch: -8,
+        bridgeWalkPos: 0.63, bridgeLookYaw: 27, bridgeLookPitch: -12, seismicTrialName: 'Keep peak trial',
+        seismicPrediction: 'Keep prediction.', seismicObservation: 'Keep explanation.',
+        seismicScenePrediction: 'Keep scene prediction.', seismicSceneNote: 'Keep scene note.', seismicGuidePrediction: 'Keep guide prediction.' });
+      await page.getByRole('button', { name: 'From the riverbank', exact: true }).click();
+      await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();
+      await page.getByRole('button', { name: 'Record paired evidence', exact: true }).click();
+      await page.getByRole('button', { name: 'A · reference', exact: true }).click();
+      const preview = page.locator('[data-moment-energy-preview]'), action = page.locator('[data-moment-energy-route="orbit"]');
+      const orbit = page.locator('[data-bridge-energy-orbit="scene"]');
+      const selector = page.getByRole('combobox', { name: 'Scene key moments', exact: true });
+      async function bucket() { return page.evaluate(() => (window as any).__bucket()); }
+      function close(actual: number, expected: number) {
+        if (expected === 0) expect(actual).toBe(0);
+        else expect(Math.abs(actual - expected)).toBeLessThanOrEqual(Math.abs(expected) * 2e-9);
+      }
+      function sample(inputs: GuideInputs, id: 'motion' | 'acceleration') {
+        const response = oracle.bridgeSeismicResponse(inputs);
+        const field = id === 'motion' ? 'relativeM' : 'absoluteAccelerationMps2';
+        const point = response.samples.reduce((best: any, next: any) => Math.abs(next[field]) > Math.abs(best[field]) ? next : best, response.samples[0]);
+        const kinetic = point.velocityMps * point.velocityMps / 2;
+        const elasticCoordinate = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+        const elastic = elasticCoordinate * elasticCoordinate / 2;
+        return { time: point.timeS, kinetic, elastic, stored: kinetic + elastic };
+      }
+      async function check(inputs: GuideInputs, id: 'motion' | 'acceleration', trial: 'reference' | 'current') {
+        const expected = sample(inputs, id);
+        await selector.selectOption(id);
+        await expect(preview).toHaveAttribute('data-moment-energy-trial', trial);
+        await expect(preview).toHaveAttribute('data-moment-energy-time', String(expected.time));
+        await expect(page.locator('[data-moment-time-label]')).toHaveText(expected.time.toFixed(3) + ' s');
+        close(Number(await preview.locator('[data-moment-energy-total]').getAttribute('data-moment-energy-total')), expected.stored);
+        await expect(preview.locator('[data-moment-energy-total]')).toHaveText(frameEnergyNumber(expected.stored) + ' J/kg');
+        for (const id of ['kinetic', 'elastic'] as const) {
+          const row = preview.locator('[data-moment-energy-component="' + id + '"]');
+          close(Number(await row.getAttribute('data-moment-energy-value')), expected[id]);
+          close(Number(await row.getAttribute('data-moment-energy-fraction')), expected[id] / expected.stored);
+          await expect(row.locator('dd').last()).toHaveText(frameEnergyNumber(expected[id]) + ' J/kg');
+          const widthPercent = await preview.locator('[data-moment-energy-part="' + id + '"]').evaluate(node => parseFloat((node as HTMLElement).style.width));
+          // CSS serializes percentage widths with fewer digits than numeric data attributes.
+          expect(Math.abs(widthPercent - expected[id] / expected.stored * 100)).toBeLessThanOrEqual(expected[id] / expected.stored * 100 * 5e-6);
+          expect(await row.evaluate(node => !node.closest('svg,[aria-hidden="true"]') && node.parentElement?.tagName === 'DL')).toBe(true);
+        }
+        await expect(preview.locator('[data-moment-energy-bar]')).toHaveAttribute('aria-hidden', 'true');
+        await expect(preview.locator('[data-moment-energy-scale-help]')).toHaveText('Bar = 100% of the stored total now.');
+        await expect(action).toHaveAttribute('aria-controls', 'bridge-energy-orbit-scene');
+        await expect(action).toBeEnabled();
+        expect(await preview.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+        expect((await bucket()).seismicTime).toBe(expected.time);
+        return expected;
+      }
+      async function open(expected: ReturnType<typeof sample>, trial: 'reference' | 'current', key: 'Enter' | 'Space') {
+        const before = await bucket();
+        await action.focus(); await action.press(key);
+        expect(await bucket()).toEqual({ ...before, seismicEnergyOrbit: true, seismicPlaying: false, autoDriving: false });
+        await expect(orbit).toHaveAttribute('open', '');
+        await expect(orbit.locator('summary').first()).toBeFocused();
+        await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-frame', String(expected.time));
+        await expect(orbit.locator('[data-orbit-frame]')).toHaveAttribute('data-orbit-trial', trial);
+        for (const id of ['kinetic', 'elastic', 'stored'] as const) {
+          close(Number(await orbit.locator('[data-orbit-energy="' + id + '"]').getAttribute('data-orbit-value')), expected[id]);
+        }
+      }
+      async function capture(locator: import('@playwright/test').Locator, name: string) {
+        const before = await bucket();
+        await expect.poll(() => locator.evaluate(async node => {
+          const settle = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+          await settle(); node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }); await settle();
+          const b = node.getBoundingClientRect();
+          for (let p = node.parentElement; p; p = p.parentElement) {
+            if (!/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowY)) continue;
+            const r = p.getBoundingClientRect(); if (b.top < r.top || b.bottom > r.bottom) return false;
+          }
+          return b.top >= 0 && b.bottom <= innerHeight && node.scrollWidth - node.clientWidth <= 1;
+        })).toBe(true);
+        await locator.screenshot({ path: join(report, 'moment-energy-' + width + '-' + name + '.png') });
+        expect(await bucket()).toEqual(before);
+      }
+      const guideA = (await bucket()).seismicGuideBaseline.inputs;
+      const reference = await check(guideA, 'motion', 'reference');
+      await capture(preview, 'preview'); await capture(action, 'action');
+      await open(reference, 'reference', 'Enter');
+      await page.getByRole('button', { name: 'B · current', exact: true }).click();
+      expect((await bucket()).seismicTime).toBe(reference.time);
+      await expect(preview).toHaveCount(0);
+      const current = await flowCurrentInputs(page);
+      const currentPeak = await check(current, 'acceleration', 'current');
+      await open(currentPeak, 'current', 'Space');
+      await page.evaluate(() => (window as any).__set({ seismicIntensityG: 1e-9, seismicDampingRatio: 0.05,
+        seismicSceneCompare: false, seismicEnergyOrbit: false }));
+      await page.getByRole('button', { name: 'Save earthquake trial', exact: true }).click();
+      const saved = (await bucket()).seismicTrials;
+      await page.evaluate(() => (window as any).__set({ seismicIntensityG: 2e-9, seismicDampingRatio: 0.25,
+        seismicSceneCompare: true, seismicSceneSource: 'saved', seismicReferenceIndex: 0, seismicSceneTrial: 'reference' }));
+      const tiny = await check(saved[0].inputs, 'acceleration', 'reference');
+      expect(tiny.stored).toBeGreaterThan(0); expect(tiny.stored).toBeLessThan(0.001);
+      await expect(preview.locator('[data-moment-energy-total]')).toContainText('e-');
+      await expect(page.locator('[data-moment-scientific-help]')).toContainText('2.5e-6 means 0.0000025');
+      await capture(preview, 'tiny-preview'); await open(tiny, 'reference', 'Space');
+      expect((await bucket()).seismicTrials).toEqual(saved);
+      await page.evaluate(() => (window as any).__set({ seismicSceneCompare: false, seismicSceneTrial: 'current', seismicIntensityG: 0 }));
+      for (const id of ['motion', 'acceleration']) await expect(selector.locator('option[value="' + id + '"]')).toBeDisabled();
+      await expect(preview).toHaveCount(0); await expect(action).toHaveCount(0);
+      await checkWorkflowHealth(page);
+      await writeFile(join(report, 'moment-energy-' + width + '-evidence.json'), JSON.stringify({ width, guideA, reference, current, currentPeak, tinyInputs: saved[0].inputs, tiny }, null, 2));
+    });
+  }
 
   for (const width of [1000, 320]) {
     test('force addition: signed vectors, shared scales and selected trial evidence at ' + width + 'px', async ({ page }) => {
@@ -6089,14 +6650,14 @@ test.describe('Bridge Lab — real WebGL', () => {
               }) }
           };
         });
-        expect(actual.axis).toEqual({ start: 16, end: 24, viewBox: '0 0 260 88', hidden: 'true', focusable: 'false',
+        expect(actual.axis).toEqual({ start: 16, end: 24, viewBox: '0 0 260 180', hidden: 'true', focusable: 'false',
           ticks: ['16 s', '18 s', '20 s', '22 s', '24 s'] });
         const start = Math.min(pin, time), end = Math.max(pin, time), visibleStart = Math.max(16, start), visibleEnd = Math.min(24, end);
         const positiveOverlap = visibleEnd > visibleStart;
         if (enabled && positiveOverlap) {
           expect(actual.intervals).toHaveLength(1);
           const span = actual.intervals[0];
-          expect(span).toMatchObject({ tag: 'rect', trial, start, end, visibleStart, visibleEnd, y: 8, height: 46 });
+          expect(span).toMatchObject({ tag: 'rect', trial, start, end, visibleStart, visibleEnd, y: 8, height: 136 });
           expect(span.x).toBeCloseTo(xAt(visibleStart), 10);
           const expectedWidth = (visibleEnd - visibleStart) / 8 * 236;
           expect(span.width).toBeGreaterThan(0);
@@ -6107,7 +6668,7 @@ test.describe('Bridge Lab — real WebGL', () => {
         if (enabled && pin >= 16 && pin <= 24) {
           expect(actual.pins).toHaveLength(1);
           const marker = actual.pins[0];
-          expect(marker).toMatchObject({ tag: 'g', time: pin, trial, line: { y1: 8, y2: 62 }, square: { y: 2, width: 6, height: 6 } });
+          expect(marker).toMatchObject({ tag: 'g', time: pin, trial, line: { y1: 8, y2: 152 }, square: { y: 2, width: 6, height: 6 } });
           expect(marker.line.x1).toBeCloseTo(xAt(pin), 10); expect(marker.line.x2).toBeCloseTo(xAt(pin), 10);
           expect(marker.square.x).toBeCloseTo(xAt(pin) - 3, 10);
           expect(marker.line.dash).toBeTruthy(); expect(marker.line.dash).not.toBe('none');
@@ -6450,7 +7011,7 @@ test.describe('Bridge Lab — real WebGL', () => {
         await expect(map).toContainText('Free-vibration moments');
         await expect(map).toContainText('Turning points');
         await expect(map).toContainText('Center crossings');
-        await expect(map).toContainText('Time in the experiment (s). The white line marks the inspected time during free vibration. Use the buttons below to inspect the selected trial.');
+        await expect(map).toContainText('Tap the blue row for a turning point or the gold row for a center crossing. The nearest moment is selected. For keyboard access, use the previous/next buttons below. The white line marks the inspected time.');
         const status = map.locator('[data-orbit-cycle-map-status]');
         await expect(status).toContainText(scope === 'fallback' ? 'Current experiment' : trial === 'reference' ? 'A · reference' : 'B · current');
         await expect(status).toContainText(time.toFixed(3) + ' s');
@@ -6459,7 +7020,7 @@ test.describe('Bridge Lab — real WebGL', () => {
         const timeline = map.locator('[data-orbit-cycle-timeline]');
         await expect(timeline).toHaveAttribute('aria-hidden', 'true');
         await expect(timeline).toHaveAttribute('focusable', 'false');
-        await expect(timeline).toHaveAttribute('viewBox', '0 0 260 88');
+        await expect(timeline).toHaveAttribute('viewBox', '0 0 260 180');
         await expect(timeline).toHaveAttribute('data-orbit-cycle-start', '16');
         await expect(timeline).toHaveAttribute('data-orbit-cycle-end', '24');
         await expect(map.locator('button,a,input,[tabindex="0"]')).toHaveCount(0);
@@ -6486,10 +7047,10 @@ test.describe('Bridge Lab — real WebGL', () => {
           const marker = actual.markers.find(candidate => candidate.kind === expected.kind && Math.abs(candidate.time - expected.time) < 1e-9);
           expect(marker, 'every selected-trial root appears in the correct timeline lane').toBeTruthy();
           expect(marker!.x).toBeCloseTo(12 + (expected.time - 16) / 8 * 236, 4);
-          expect(marker!.y).toBeCloseTo(expected.kind === 'turning' ? 20 : 44, 4);
+          expect(marker!.y).toBeCloseTo(expected.kind === 'turning' ? 42 : 110, 4);
           expect(marker!.selected).toBe(String(Math.abs(expected.time - time) < 1e-7));
           if (expected.kind === 'turning') {
-            expect(marker!.shape).toBe('circle'); expect(marker!.radius).toBe(2.5);
+            expect(marker!.shape).toBe('circle'); expect(marker!.radius).toBe(3.2);
           } else expect(['path', 'polygon']).toContain(marker!.shape);
         }
         if (expectedMarkers.length && time >= 16) {

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cf-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "VERDICT THINKING",
+      "assetId": "cf-term-verdict",
+      "reason": "A gavel is the lesson's verdict metaphor."
+    },
+    {
+      "resourceId": "cf-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "MAP THINKING",
+      "assetId": "cf-term-rubric",
+      "reason": "The rubric grid supports finding a specific row and next level."
+    },
+    {
+      "resourceId": "cf-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "SELF-ASSESS FIRST",
+      "assetId": "cf-term-assess",
+      "reason": "Comparing work against a model shows self-assessment."
+    },
+    {
+      "resourceId": "cf-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "REVISE, DO NOT REDO",
+      "assetId": "cf-term-revise",
+      "reason": "Only one passage changes while the remainder is preserved."
+    }
+  ]
+}

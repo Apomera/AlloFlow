@@ -85,11 +85,11 @@ describe('Immersive Reader on a preserved original', () => {
     const words = [...dialog().querySelectorAll('[data-word]')].map(node => node.textContent).join('');
     // Line breaks render as blocks, so compare without whitespace: every word, in order, unchanged.
     expect(words.replace(/\s+/g, '')).toBe(MACBETH.replace(/\s+/g, ''));
-    expect(chips()[0].getAttribute('aria-label')).toBe('Gloss for hurlyburly');
+    expect(chips()[0].getAttribute('aria-label')).toBe('Word help for hurlyburly');
   });
-  it('follows the page: turning Show glosses off removes them from Immersive Reader too', () => {
+  it('follows the page: turning Show word help off removes them from Immersive Reader too', () => {
     mount(original());
-    const toggle = [...host.querySelectorAll('label')].find(label => /Show glosses/.test(label.textContent)).querySelector('input');
+    const toggle = [...host.querySelectorAll('label')].find(label => /Show word help/.test(label.textContent)).querySelector('input');
     act(() => { toggle.click(); });
     expect(chips()).toHaveLength(0);
     act(() => { toggle.click(); });

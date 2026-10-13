@@ -2087,7 +2087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           specialAbility: 'packStrike'   // Fast jet, higher stamina cost; pack behavior is not simulated
         },
         { id: 'caribReef', name: __alloT('stem.cephalopodlab.caribbean_reef_octopus', 'Caribbean Reef Octopus'), scientific: 'Octopus briareus', emoji: '🐙',
-          tagline: 'Showy + sociable', accent: '#22d3ee',
+          tagline: 'Iridescent reef forager', accent: '#22d3ee',
           description: __alloT('stem.cephalopodlab.common_in_caribbean_reefs_at_3_20_m_di', 'Common in Caribbean reefs at 3-20 m. Distinctive blue-green iridescence. Typically a nocturnal forager that shelters in dark reef crevices. Strong chromatophore range with prominent leucophores. In this simulation: mid-size and balanced; the day/night cycle and predator responses are simplified.'),
           bodyColor: 0x4a8a8a, armColor: 0x2a6a6a,
           maxHealth: 90, maxHunger: 90,
@@ -10918,10 +10918,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         window.StemLab.ensureThree({ orbit: false }).then(function () { onReady(); }).catch(function () { console.error('[CephalopodLab] Three.js failed to load'); if (onError) onError(); });
       }
 
+      // A single resolved setup drives the launch controls, live dive and replay.
+      function clHuntDiveSetup(config) {
+        config=config||{};
+        var species=SIM_SPECIES.find(function(item){return item.id===config.huntSpeciesId;})||SIM_SPECIES[0];
+        var missionAvailable=!isDeepSpecies(species.id)&&species.id!=='humboldtSquid';
+        var requested=['reefMission','free','observe'].indexOf(config.huntMode)>=0?config.huntMode:'reefMission';
+        var mode=requested==='reefMission'&&!missionAvailable?'free':requested;
+        var label=mode==='observe'?'Field study':mode==='reefMission'?'Reef mission':'Free exploration';
+        var description=mode==='observe'?'Explore without health loss or hunger depletion. Prey, predators, stamina and species abilities still behave under the same simplified game rules.':mode==='reefMission'?'Catch a crab, open a clam, then return to the HOME den. Hunger and injury are active; use cover and manage your energy.':'Explore at your own pace with hunger and injury active. There is no required meal sequence or HOME objective.';
+        return {species:species,mode:mode,label:label,description:description,missionAvailable:missionAvailable};
+      }
+      function clHuntStartState(prior,replay) {
+        prior=prior||{};var last=replay&&prior.huntLastRun;
+        var setup=clHuntDiveSetup(last?{huntSpeciesId:last.speciesId,huntMode:['reefMission','free','observe'].indexOf(last.mode)>=0?last.mode:prior.huntMode}:prior);
+        var next={hunt3DActive:true,huntSpeciesId:setup.species.id,huntMode:setup.mode,huntsAttempted:(prior.huntsAttempted||0)+1};
+        if(last)next.huntSeed=last.seed;
+        return next;
+      }
+
       function renderHuntSim() {
         var threeLoaded = !!window.THREE || (d._threeLoaded === true);
         var threeError = !!d._threeError;
         var active = !!d.hunt3DActive;
+        var diveSetup=clHuntDiveSetup(d);
 
         return h('div', null,
           panelHeader(__alloT('stem.cephalopodlab.hdr_hunter_sim_3d_underwater', '🎯 Hunter Sim — 3D Underwater'),
@@ -10929,19 +10949,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
           !active ? h('div',{style:cardStyle()},
             h('div',{style:subheaderStyle()},'Start your dive'),
-            h('p',{style:{fontSize:14,lineHeight:1.6}},'Dusk on the reef: catch a crab, open a clam, then return to the HOME den. The sheltered reef route rewards camouflage; the sand channel is exposed. Swimming and deep-water species explore their own habitat.'),
+            h('p',{'aria-live':'polite',style:{fontSize:14,lineHeight:1.6}},diveSetup.description),
+            !diveSetup.missionAvailable?h('p',{style:{fontSize:12,opacity:0.8}},diveSetup.species.name+' explores its own habitat. The crab-and-clam reef mission is unavailable for this species.'):null,
             h('div',{style:{display:'flex',gap:16,flexWrap:'wrap'}},
-              h('label',null,'Mode ',h('select',{value:d.huntMode||'reefMission',onChange:function(e){setCL({huntMode:e.target.value});}},h('option',{value:'reefMission'},'Reef mission'),h('option',{value:'free'},'Free exploration'),h('option',{value:'observe'},'Field study — no injury or hunger'))),
+              h('label',{style:{display:'flex',flexDirection:'column',gap:5,minWidth:0,maxWidth:'100%'}},'Species ',h('select',{'aria-label':'Dive species',value:diveSetup.species.id,onChange:function(e){var next=clHuntDiveSetup({huntSpeciesId:e.target.value,huntMode:d.huntMode});setCL({huntSpeciesId:next.species.id,huntMode:next.mode});},style:{maxWidth:'100%'}},SIM_SPECIES.map(function(sp){return h('option',{key:sp.id,value:sp.id},sp.name);}))),
+              h('label',{style:{display:'flex',flexDirection:'column',gap:5,minWidth:0,maxWidth:'100%'}},'Mode ',h('select',{'aria-label':'Dive mode',value:diveSetup.mode,onChange:function(e){setCL({huntMode:e.target.value});},style:{maxWidth:'100%'}},h('option',{value:'reefMission',disabled:!diveSetup.missionAvailable},'Reef mission'),h('option',{value:'free'},'Free exploration'),h('option',{value:'observe'},'Field study — no injury or hunger'))),
               h('label',null,'Graphics ',h('select',{value:d.huntQuality||'balanced',onChange:function(e){setCL({huntQuality:e.target.value});}},h('option',{value:'low'},'Low'),h('option',{value:'balanced'},'Balanced'),h('option',{value:'high'},'High'))),
               h('label',null,'World seed ',h('input',{type:'number',min:1,max:4294967295,value:d.huntSeed||2741,onChange:function(e){setCL({huntSeed:Number(e.target.value)||2741});},style:{width:110}}))),
             h('p',{style:{fontSize:12,opacity:0.8}},'Energy, compressed depths, predator awareness, display effects and ink reserves are simplified game rules. The seed repeats the starting world; live movement still depends on your input.'),
-            threeLoaded?h('button',{onClick:function(){setCL(function(prior){return {hunt3DActive:true,huntSpeciesId:'commonOcto',huntMode:'reefMission',huntsAttempted:(prior.huntsAttempted||0)+1};});},style:{padding:'12px 18px',borderRadius:9,border:0,background:'#72dfbd',color:'#102b35',fontWeight:800,cursor:'pointer'}},'Start reef mission'):null):null,
+            threeLoaded?h('button',{onClick:function(){setCL(function(prior){return clHuntStartState(prior,false);});},style:{padding:'12px 18px',borderRadius:9,border:0,background:'#72dfbd',color:'#102b35',fontWeight:800,cursor:'pointer',maxWidth:'100%',whiteSpace:'normal'}},'Start '+diveSetup.label.toLowerCase()+' · '+diveSetup.species.name):null):null,
           !active && d.huntLastRun ? h('div',{style:cardStyle()},
             h('h3',{style:subheaderStyle()},d.huntLastRun.missionComplete?'Reef mission complete':'Last dive'),
             h('p',null,d.huntLastRun.species+' · '+d.huntLastRun.seconds+'s · score '+d.huntLastRun.score+' · seed '+d.huntLastRun.seed),
             h('p',null,'Crabs '+d.huntLastRun.stats.crabs+' · clams '+d.huntLastRun.stats.clams+' · fish '+d.huntLastRun.stats.fish+(d.huntLastRun.stats.marineSnow?' · marine snow '+d.huntLastRun.stats.marineSnow:'')),
             h('ol',null,(d.huntLastRun.events||[]).slice(-8).map(function(e,i){return h('li',{key:i,style:{fontSize:12,margin:'5px 0'}},Math.floor(e.at/1000)+'s · '+e.text);})),
-            h('button',{onClick:function(){setCL(function(prior){return {hunt3DActive:true,huntSpeciesId:prior.huntLastRun.speciesId,huntSeed:prior.huntLastRun.seed,huntsAttempted:(prior.huntsAttempted||0)+1};});}},'Replay this world')):null,
+            h('p',{style:{fontSize:12,opacity:0.8}},['reefMission','free','observe'].indexOf(d.huntLastRun.mode)>=0?'Recorded mode: '+clHuntDiveSetup({huntSpeciesId:d.huntLastRun.speciesId,huntMode:d.huntLastRun.mode}).label+'. Replay restores this mode, species and seed.':'This older dive did not record its mode. Replay uses the selected mode above, with its recorded species and seed.'),
+            h('button',{onClick:function(){setCL(function(prior){return clHuntStartState(prior,true);});}},'Replay this world')):null,
           // Run stats card
           (function() {
             var pearlSt = (function() {
@@ -11058,7 +11081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     setCL({
                       hunt3DActive: true,
                       huntSpeciesId: sp.id,
-                      huntMode:d.huntMode||'reefMission',
+                      huntMode:clHuntDiveSetup({huntSpeciesId:sp.id,huntMode:d.huntMode}).mode,
                       huntsAttempted: (d.huntsAttempted || 0) + 1
                     });
                     awardXP(3);
@@ -11415,7 +11438,7 @@ function findCLHuntCrevice(position,height,rocks,footprints,bodyScale,speciesId,
       // A small mouth allowance permits slow entry before the ordinary envelope hits a corner.
       // Beyond that allowance the edge plane no longer describes a nearby physical surface.
       var along=((x-edge.x)*edge.dx+(z-edge.z)*edge.dz)/edge.lengthSq,allowance=ordinary/Math.sqrt(edge.lengthSq);
-      if(signed>0&&signed<ordinary*2&&along>=-allowance&&along<=1+allowance)surfaces.push({index:i,distance:signed,nx:edge.nx,nz:edge.nz});
+      if(signed>0&&signed<ordinary*2&&along>=-allowance&&along<=1+allowance)surfaces.push({index:i,distance:signed,nx:edge.nx,nz:edge.nz,ax:rock.position.x+edge.x,az:rock.position.z+edge.z,bx:rock.position.x+edge.x+edge.dx,bz:rock.position.z+edge.z+edge.dz,minY:rock.position.y+footprint.minY,maxY:rock.position.y+footprint.maxY});
     }
     // An overlapped rock is not a hidden chamber; keep ordinary collision to push out.
     if(inside)return null;
@@ -11425,9 +11448,51 @@ function findCLHuntCrevice(position,height,rocks,footprints,bodyScale,speciesId,
   for(var a=0;a<near.length;a++)for(var b=a+1;b<near.length;b++){
     var first=near[a],second=near[b],opposition=first.nx*second.nx+first.nz*second.nz,width=first.distance+second.distance;
     if(first.index===second.index||opposition>=-0.75||width<compressed*2+bodyScale*0.008||width>=ordinary*2)continue;
-    if(!best||width<best.width)best={width:width,first:first.index,second:second.index,margin:compressed};
+    if(!best||width<best.width)best={width:width,first:first.index,second:second.index,margin:compressed,walls:[first,second]};
   }
   return best;
+}
+
+// A posture describes exposure in the same finite passage as collision, never immunity.
+function clHuntRefugeState(previous,crevice,position,speciesId,bodyScale,input,dt){
+  function open(){return {phase:'open',mouthDepth:0,settledFor:0,hideBlend:0,peekBlend:0,first:-1,second:-1};}
+  if(['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'].indexOf(speciesId)<0)return open();
+  // Render-only, paused and invalid-time calls cannot advance settling or exit easing.
+  if(!(dt>0)||!Number.isFinite(dt))return previous||open();
+  var before=previous||open(),controls=input||{},active=false,mouthDepth=0;
+  if(crevice&&position&&bodyScale>0&&Number.isFinite(bodyScale+position.x+position.z+crevice.width)&&crevice.width>0&&crevice.walls&&crevice.walls.length===2){
+    var first=crevice.walls[0],second=crevice.walls[1];
+    if(first&&second&&Number.isFinite(first.ax+first.az+first.bx+first.bz+first.nx+first.nz+second.ax+second.az+second.bx+second.bz+second.nx+second.nz)){
+      var length=Math.hypot(first.bx-first.ax,first.bz-first.az),otherLength=Math.hypot(second.bx-second.ax,second.bz-second.az),normalLength=Math.hypot(first.nx,first.nz)*Math.hypot(second.nx,second.nz);
+      if(length>0.04&&otherLength>0.04&&normalLength>0.0001&&(first.nx*second.nx+first.nz*second.nz)/normalLength<-0.75){
+        var axisX=(first.bx-first.ax)/length,axisZ=(first.bz-first.az)/length;
+        var a0=first.ax*axisX+first.az*axisZ,a1=first.bx*axisX+first.bz*axisZ,b0=second.ax*axisX+second.az*axisZ,b1=second.bx*axisX+second.bz*axisZ;
+        var start=Math.max(Math.min(a0,a1),Math.min(b0,b1)),end=Math.min(Math.max(a0,a1),Math.max(b0,b1)),along=position.x*axisX+position.z*axisZ;
+        if(end-start>bodyScale*0.08){mouthDepth=Math.min(along-start,end-along);active=mouthDepth>=-bodyScale*0.22;}
+      }
+    }
+  }
+  var elapsed=Math.min(dt,0.1),ease=controls.reducedMotion?1:1-Math.exp(-8*elapsed);
+  if(!active){
+    var leavingHide=(before.hideBlend||0)*(1-ease),leavingPeek=(before.peekBlend||0)*(1-ease);
+    return {phase:leavingHide>0.01||leavingPeek>0.01?'exiting':'open',mouthDepth:0,settledFor:0,hideBlend:leavingHide,peekBlend:leavingPeek,first:-1,second:-1};
+  }
+  var actualTravel=Number.isFinite(controls.fromX+controls.fromZ)?Math.hypot(position.x-controls.fromX,position.z-controls.fromZ):0;
+  var moving=actualTravel>dt*0.04||Math.abs(controls.forward||0)>0.01||Math.abs(controls.turn||0)>0.01||Math.abs(controls.vertical||0)>0.01||!!controls.jetting;
+  var same=before.first===crevice.first&&before.second===crevice.second;
+  var tuckDepth=bodyScale*0.42,depthBlend=Math.max(0,Math.min(1,(mouthDepth-bodyScale*0.08)/(bodyScale*0.34)));
+  var settledFor=moving||mouthDepth<tuckDepth?0:Math.min(2,(same?before.settledFor||0:0)+elapsed);
+  var hideTarget=depthBlend*Math.min(1,settledFor/0.8),peekTarget=Math.max(0,Math.min(1,1-Math.max(0,mouthDepth)/tuckDepth));
+  var leaving=same&&mouthDepth<before.mouthDepth-dt*0.04;
+  var phase=moving?(leaving?'exiting':'entering'):mouthDepth<tuckDepth?'peeking':settledFor>=0.6?'tucked':'settling';
+  return {phase:phase,mouthDepth:mouthDepth,settledFor:settledFor,hideBlend:(before.hideBlend||0)+(hideTarget-(before.hideBlend||0))*ease,peekBlend:(before.peekBlend||0)+(peekTarget-(before.peekBlend||0))*ease,first:crevice.first,second:crevice.second};
+}
+function clHuntRefugeText(posture,detail){
+  var phase=posture&&posture.phase;
+  var status={entering:'ENTERING CREVICE · release movement to tuck',settling:'SETTLING IN CREVICE · stay still to tuck',tucked:'TUCKED IN CREVICE · openings stay exposed',peeking:'PEEKING · opening exposed',exiting:'LEAVING CREVICE · keep rock between you and danger'};
+  var guidance={entering:'Crawl between the rock faces; release movement to gather your arms. Rock cover depends on direction. ',settling:'Stay still to gather your arms. Rock cover depends on direction; the mouths remain exposed. ',tucked:'Tucked in the crevice. Use Forward / Back to peek or withdraw. Rock cover depends on direction; the mouths remain exposed. ',peeking:'At the crevice mouth: the opening is exposed. Move deeper and stop to tuck, or face prey and strike when in range. ',exiting:'Leaving the crevice. Keep rock between you and danger; the opening remains exposed. '};
+  var action={entering:'Entering · release movement to tuck',settling:'Stay still to tuck · openings exposed',tucked:'Tucked · Forward / Back to peek',peeking:'Opening exposed · move deeper to tuck',exiting:'Leaving · keep rock between you and danger'};
+  return (detail==='action'?action:detail?guidance:status)[phase]||'';
 }
 
 function resolveCLHuntRockCollision(position,height,rockPosition,footprint,margin){
@@ -12045,6 +12110,14 @@ function createCLHuntAnimal(T, species) {
       var nautilusEyeCompatibility=new T.Group();nautilusEyeCompatibility.name='cl-eye-highlight';nautilusEyeCompatibility.position.set(nautilusEyeSide*0.435*scale,0.109*scale,0.456*scale);root.add(nautilusEyeCompatibility);
     }
   }
+  // Keep the body, funnel and eye surfaces in one retained refuge frame. The
+  // ordinary frame is identity; arms and web retain their own contact pose.
+  var creviceBody=null,creviceBodyMeshes=[],creviceBodyPoint=new T.Vector3();
+  if(!swimming){
+    creviceBody=new T.Group();creviceBody.name='cl-crevice-body';creviceBody.matrixAutoUpdate=false;
+    var bodyChildren=root.children.slice();root.add(creviceBody);
+    bodyChildren.forEach(function(part){creviceBody.add(part);});
+  }
   // Smooth tapered tubes use stable topology; their buffers are updated in place.
   var limbs=[],arms=[],tentacles=[],fins=[],dumboFins=[],cuttleFins=[];
   var rings=20, sides=8;
@@ -12078,6 +12151,7 @@ function createCLHuntAnimal(T, species) {
     }
     var m=new T.Mesh(g,armMat);m.name='cl-'+kind+'-'+index;m.frustumCulled=false;root.add(m);
     var l={mesh:m,kind:kind,index:index,angle:angle,length:length,radius:radius,phase:index*0.86,compressCurrent:1,compressTarget:1,basePosX:0,basePosZ:0,baseRotX:0,baseRotZ:0,points:[]};
+    l.creviceRadiusScale=new Float64Array(rings+1);l.creviceRadiusScale.fill(1);
     for(var k=0;k<=rings;k++)l.points.push(new T.Vector3());limbs.push(l);
     if(kind==='arm')arms.push(l);else tentacles.push(l);return l;
   }
@@ -12217,6 +12291,132 @@ function createCLHuntAnimal(T, species) {
   var strikeTubeSide=new T.Vector3(-1,0,0);
   var grabPreviousBase=new T.Vector3(),grabPreviousTarget=new T.Vector3(),grabCurvePoint=new T.Vector3(),grabFrom=new T.Vector3(),grabTo=new T.Vector3(),grabRotation=new T.Quaternion(),grabIdentity=new T.Quaternion(),grabPreviousFrom=new T.Vector3(),grabPreviousTo=new T.Vector3(),grabDirection=new T.Vector3(),grabTargetBend=new T.Quaternion();
   var suckerOral=new T.Vector3(),suckerAcross=new T.Vector3(),suckerSurface=new T.Vector3();
+  if(creviceBody)creviceBody.traverse(function(part){
+    if(!part.isMesh||!part.geometry)return;
+    if(!part.geometry.boundingBox)part.geometry.computeBoundingBox();
+    var path=[],parent=part;while(parent!==creviceBody){path.unshift(parent);parent=parent.parent;}
+    creviceBodyMeshes.push({mesh:part,path:path,matrix:new T.Matrix4(),bounds:part.geometry.boundingBox});
+  });
+  // The refuge fold uses the same finite wall segments as movement. Buffers are
+  // retained across frames and across exit easing; it never changes collision or capture.
+  var crevicePose={active:false,valid:false,blend:0,width:0,inverse:new T.Matrix4(),normalMatrix:new T.Matrix3(),across:new T.Vector3(),along:new T.Vector3(),offset:new T.Vector3(),candidate:new T.Vector3(),walls:[]};
+  for(var cw=0;cw<2;cw++)crevicePose.walls.push({nx:0,nz:0,ax:0,az:0,bx:0,bz:0,plane:new T.Plane(),start:new T.Vector3(),end:new T.Vector3(),direction:new T.Vector3(),length:0});
+  function prepareCLHuntCrevicePose(state){
+    crevicePose.active=false;
+    var blend=Number.isFinite(state.squeezeBlend)?Math.max(0,Math.min(1,state.squeezeBlend)):0,crevice=state.crevice;
+    if(blend<=0&&!crevice&&!crevicePose.valid)return;
+    if(crevice&&crevice.walls&&crevice.walls.length===2){
+      var valid=Number.isFinite(crevice.width)&&crevice.width>0;
+      for(var i=0;i<2&&valid;i++){
+        var w=crevice.walls[i],n=w&&Math.hypot(w.nx,w.nz);
+        valid=!!w&&Number.isFinite(w.ax+w.az+w.bx+w.bz+w.nx+w.nz)&&n>0.999&&n<1.001&&Math.hypot(w.bx-w.ax,w.bz-w.az)>0.001;
+      }
+      if(valid&&crevice.walls[0].nx*crevice.walls[1].nx+crevice.walls[0].nz*crevice.walls[1].nz>=-0.75)valid=false;
+      if(!valid){crevicePose.valid=false;return;}
+      crevicePose.width=crevice.width;
+      for(var i=0;i<2;i++){var from=crevice.walls[i],to=crevicePose.walls[i];to.nx=from.nx;to.nz=from.nz;to.ax=from.ax;to.az=from.az;to.bx=from.bx;to.bz=from.bz;to.minY=Number.isFinite(from.minY)&&Number.isFinite(from.maxY)&&from.maxY>from.minY?from.minY:NaN;to.maxY=Number.isFinite(from.minY)&&Number.isFinite(from.maxY)&&from.maxY>from.minY?from.maxY:NaN;}
+      crevicePose.valid=true;
+    }
+    if(!crevicePose.valid)return;
+    root.updateWorldMatrix(true,false);crevicePose.inverse.copy(root.matrixWorld).invert();crevicePose.normalMatrix.getNormalMatrix(crevicePose.inverse);
+    for(var i=0;i<2;i++){
+      var wall=crevicePose.walls[i];
+      wall.plane.setComponents(wall.nx,0,wall.nz,-wall.nx*wall.ax-wall.nz*wall.az).applyMatrix4(crevicePose.inverse,crevicePose.normalMatrix);
+      wall.start.set(wall.ax,0,wall.az).applyMatrix4(crevicePose.inverse);wall.end.set(wall.bx,0,wall.bz).applyMatrix4(crevicePose.inverse);
+      wall.direction.subVectors(wall.end,wall.start);wall.length=wall.direction.length();wall.direction.multiplyScalar(1/wall.length);
+    }
+    crevicePose.across.subVectors(crevicePose.walls[0].plane.normal,crevicePose.walls[1].plane.normal).normalize();
+    crevicePose.along.copy(crevicePose.walls[0].direction).addScaledVector(crevicePose.across,-crevicePose.walls[0].direction.dot(crevicePose.across)).normalize();
+    if(crevicePose.across.lengthSq()<0.99||crevicePose.along.lengthSq()<0.99)return;
+    // A cached frame can outlast the input easing only near its finite rocks.
+    // This protects an emerging limb without dragging unrelated open-water poses.
+    var nearby=true,reach=3.0*scale;
+    for(var i=0;i<2&&nearby;i++){
+      var wall=crevicePose.walls[i],originDistance=-wall.start.dot(wall.direction),originY=root.matrixWorld.elements[13];
+      nearby=wall.plane.constant>=-0.80*scale&&originDistance>=-reach&&originDistance<=wall.length+reach;
+      if(Number.isFinite(wall.minY+wall.maxY))nearby=nearby&&originY>=wall.minY-reach&&originY<=wall.maxY+reach;
+    }
+    if(!nearby){crevicePose.valid=false;return;}
+    crevicePose.blend=blend;crevicePose.active=true;
+  }
+  function poseCLHuntCreviceBody(state){
+    if(!creviceBody)return;
+    creviceBody.matrix.identity();creviceBody.matrixWorldNeedsUpdate=true;
+    if(!crevicePose.active)return;
+    var across=crevicePose.across,walls=crevicePose.walls,minQ=Infinity,maxQ=-Infinity,minY=Infinity;
+    var lower=-Infinity,upper=Infinity,worldMinY=Infinity,worldMaxY=-Infinity;
+    var reserve=0.008*scale,n0=walls[0].plane.normal.dot(across),n1=walls[1].plane.normal.dot(across);
+    if(n0<=0.001||n1>=-0.001)return;
+    for(var wi=0;wi<2;wi++){walls[wi].bodyMin=Infinity;walls[wi].bodyMax=-Infinity;}
+    // Bounding corners include the mantle's authored 3.5% papilla allowance,
+    // the current breath transform and the attached eye/funnel geometry.
+    creviceBodyMeshes.forEach(function(entry){
+      entry.matrix.identity();entry.path.forEach(function(part){if(part.matrixAutoUpdate)part.updateMatrix();entry.matrix.multiply(part.matrix);});
+      var box=entry.bounds;
+      for(var corner=0;corner<8;corner++){
+        var point=creviceBodyPoint.set(corner&1?box.max.x:box.min.x,corner&2?box.max.y:box.min.y,corner&4?box.max.z:box.min.z).applyMatrix4(entry.matrix);
+        var q=point.dot(across),matrix=root.matrixWorld.elements,worldY=matrix[1]*point.x+matrix[5]*point.y+matrix[9]*point.z+matrix[13];
+        minQ=Math.min(minQ,q);maxQ=Math.max(maxQ,q);minY=Math.min(minY,point.y);worldMinY=Math.min(worldMinY,worldY);worldMaxY=Math.max(worldMaxY,worldY);
+        for(var wi=0;wi<2;wi++){var wall=walls[wi],distance=crevicePose.offset.subVectors(point,wall.start).dot(wall.direction);wall.bodyMin=Math.min(wall.bodyMin,distance);wall.bodyMax=Math.max(wall.bodyMax,distance);}
+        lower=Math.max(lower,q+(reserve-walls[0].plane.distanceToPoint(point))/n0);
+        upper=Math.min(upper,q+(reserve-walls[1].plane.distanceToPoint(point))/n1);
+      }
+    });
+    if(!(maxQ>minQ&&upper>lower))return;
+    // Remain fully constrained while any conservative body extent overlaps a
+    // finite wall. Ease only after the entire body clears the mouth or its height.
+    // The shared frame keeps eyes and funnel attached throughout that release.
+    var weight=0;
+    for(var i=0;i<2;i++){
+      var wall=walls[i],clear=Math.max(-wall.bodyMax-reserve,wall.bodyMin-wall.length-reserve,0);
+      if(Number.isFinite(wall.minY+wall.maxY))clear=Math.max(clear,wall.minY-worldMaxY-reserve,worldMinY-wall.maxY-reserve);
+      var release=Math.max(0,Math.min(1,clear/(0.90*scale)));release=release*release*(3-2*release);weight=Math.max(weight,1-release);
+    }
+    var blend=weight,ratio=Math.min(1,(upper-lower)/(maxQ-minQ)),factor=1+(ratio-1)*blend;
+    var shift=((lower+upper)*0.5-ratio*(minQ+maxQ)*0.5)*blend;
+    var hide=Number.isFinite(state.refugeHideBlend)?Math.max(0,Math.min(1,state.refugeHideBlend)):0;
+    var vertical=1-0.26*hide*blend,ax=across.x,ay=across.y,az=across.z,k=factor-1;
+    // Shrink upward from the retained underside, rather than pushing into the
+    // seabed. A tucked body is a visual posture, never predator immunity.
+    creviceBody.matrix.set(1+k*ax*ax,k*ax*ay,k*ax*az,ax*shift,
+      k*ay*ax,vertical+k*ay*ay,k*ay*az,ay*shift+(1-vertical)*minY,
+      k*az*ax,k*az*ay,1+k*az*az,az*shift,0,0,0,1);
+  }
+  function clHuntCreviceContactWeight(point,support){
+    var weight=0,matrix=root.matrixWorld.elements,worldY=matrix[1]*point.x+matrix[5]*point.y+matrix[9]*point.z+matrix[13];
+    for(var i=0;i<2;i++){
+      var wall=crevicePose.walls[i],distance=crevicePose.offset.subVectors(point,wall.start).dot(wall.direction);
+      var clear=Math.max(-distance-support,distance-wall.length-support,0);
+      if(Number.isFinite(wall.minY+wall.maxY))clear=Math.max(clear,wall.minY-worldY-support,worldY-wall.maxY-support);
+      var release=Math.max(0,Math.min(1,clear/(0.20*scale)));release=release*release*(3-2*release);weight=Math.max(weight,1-release);
+    }
+    return weight;
+  }
+  function constrainCLHuntCreviceArm(l){
+    if(!crevicePose.active){l.creviceFoldSign=0;return;}
+    var across=crevicePose.across,along=crevicePose.along,walls=crevicePose.walls;
+    var armAlong=Math.cos(l.angle)*along.x+Math.sin(l.angle)*along.z;
+    if(!l.creviceFoldSign)l.creviceFoldSign=Math.abs(armAlong)>0.08?Math.sign(armAlong):(l.index%2?1:-1);
+    var foldDirection=l.creviceFoldSign;
+    for(var j=0;j<=rings;j++){
+      var point=l.points[j],baseRadius=l.radius*scale*Math.pow(1-j/rings,0.8)+0.007*scale;
+      var radius=Math.min(baseRadius,crevicePose.width*0.245),reserve=radius*1.40+0.004*scale,support=baseRadius*1.50+0.024*scale;
+      var q=point.dot(across),n0=walls[0].plane.normal.dot(across),n1=walls[1].plane.normal.dot(across);
+      l.creviceRadiusScale[j]=1;
+      if(n0<=0.001||n1>=-0.001)continue;
+      var lower=q+(reserve-walls[0].plane.distanceToPoint(point))/n0,upper=q+(reserve-walls[1].plane.distanceToPoint(point))/n1;
+      var half=(upper-lower)*0.5;if(!(half>0.001*scale))continue;
+      var mid=(lower+upper)*0.5,reach=q-mid,folded=half*Math.tanh(reach/half),shift=folded-reach;
+      // Feed transverse reach along the passage rather than collapsing rings.
+      var feed=Math.sqrt(Math.max(0,reach*reach-folded*folded))*foldDirection;
+      crevicePose.candidate.copy(point).addScaledVector(across,shift).addScaledVector(along,feed);
+      // The tube/cup support must clear a finite end in both poses before
+      // interpolation can unfold it. This also stays safe at zero input blend.
+      var weight=Math.max(clHuntCreviceContactWeight(point,support),clHuntCreviceContactWeight(crevicePose.candidate,support));
+      l.creviceRadiusScale[j]=1+(radius/baseRadius-1)*weight;
+      point.addScaledVector(across,shift*weight).addScaledVector(along,feed*weight);
+    }
+  }
   function update(time,dt,state){
     if(squidSurfaceFrame){root.updateWorldMatrix(true,false);squidSurfaceFrame.value.copy(root.matrixWorld).invert();}
     if(cuttleSurfaceFrame){root.updateWorldMatrix(true,false);cuttleSurfaceFrame.value.copy(root.matrixWorld).invert();}
@@ -12269,12 +12469,14 @@ function createCLHuntAnimal(T, species) {
     var pulse=Math.sin(squid?squidMantlePhase:membraneSwimmer?membraneMantlePhase:!swimming?octopusMantlePhase:time*(jet?11:2.2))*motion;
     if(membraneSwimmer)mantle.scale.set(1+pulse*(0.018+membraneJetBlend*0.037),1+pulse*(0.024+membraneJetBlend*0.021),1+membraneJetBlend*0.04-pulse*0.008);
     else mantle.scale.set(1+pulse*(squid||!swimming?0.018+jet*0.037:jet?0.055:0.018),1+pulse*(squid||!swimming?0.024+jet*0.021:jet?0.045:0.024),1+jet*0.04-pulse*0.008);
-    // Local mantle compression retains the existing breath pose and restores with the arm fold.
-    if(!swimming){var squeeze=Math.max(0,Math.min(1,state.squeezeBlend||0));mantle.scale.x*=1-0.28*squeeze;mantle.scale.y*=1+0.08*squeeze;mantle.scale.z*=1-0.10*squeeze;}
+    // The passage frame compresses across the selected walls even while turning.
+    // Keep the old fallback pose for callers without usable wall metadata.
+    if(!swimming){prepareCLHuntCrevicePose(state);var squeeze=Math.max(0,Math.min(1,state.squeezeBlend||0));if(!crevicePose.active){mantle.scale.x*=1-0.28*squeeze;mantle.scale.y*=1+0.08*squeeze;mantle.scale.z*=1-0.10*squeeze;}}
     // A small cross-section brace keeps the axial mantle/head attachment unchanged.
     if(squidStrikeEnvelope){mantle.scale.x*=1-0.018*squidStrikeBrace;mantle.scale.y*=1-0.012*squidStrikeBrace;}
     var pp=mantleGeo.attributes.position.array,rough=!swimming&&state.substrate!=='sand'?(state.camo||0)*0.035:0;
     for(var p=0;p<pp.length;p+=3){var x=basePositions[p],y=basePositions[p+1],z=basePositions[p+2],n=1+rough*Math.sin(x*18)*Math.sin(y*20+z*13);pp[p]=x*n;pp[p+1]=y*n;pp[p+2]=z*n;}mantleGeo.attributes.position.needsUpdate=true;
+    if(!swimming)poseCLHuntCreviceBody(state);
     var si=0;
     limbs.forEach(function(l){
       var isTent=l.kind==='tentacle',fil=l.kind==='filament',compress=l.compressCurrent||1;
@@ -12405,6 +12607,7 @@ function createCLHuntAnimal(T, species) {
         }
         l.points[j].set(x*scale,y*scale,z*scale);
       }
+      if(!swimming&&l.kind==='arm')constrainCLHuntCreviceArm(l);
       var pos=l.mesh.geometry.attributes.position.array,norm=l.mesh.geometry.attributes.normal.array;
       for(var j2=0;j2<=rings;j2++){
         var t2=j2/rings,center=l.points[j2];tangent.subVectors(l.points[Math.min(rings,j2+1)],l.points[Math.max(0,j2-1)]).normalize();
@@ -12424,6 +12627,7 @@ function createCLHuntAnimal(T, species) {
         normal.crossVectors(binormal,tangent).normalize();
         var radius=l.radius*scale*Math.pow(1-t2,squid&&!isTent?0.95:0.8)+(squid?0.006:0.007)*scale;
         if(isTent)radius+=Math.sin(Math.max(0,(t2-0.76)/0.24)*Math.PI)*0.050*scale;
+        if(!swimming&&crevicePose.active)radius*=l.creviceRadiusScale[j2];
         var sectionWidth=radius,sectionDepth=radius;
         if(squid&&isTent){
           // Keep the stalk circular and its centerline/contact point unchanged; only the distal club flattens.
@@ -13131,12 +13335,12 @@ function createCLHuntFish(T,index){
       // Advice describes implemented game rules; natural-history evidence is in the pass71 report.
       function clHuntSpeciesStrategy(id) {
         var strategies={
-          commonOcto:'Crawl close to the floor. Follow REFUGE on the map if shown, or explore natural reef gaps. Your arms fold automatically in a fitting crevice. Rock blocks a predator’s view; the open mouths remain exposed. Peek out to strike, then retreat.',
-          blueRinged:'Your small body fits passages larger octopuses cannot use. Crawl near the floor, settle for camouflage and keep rock between you and predators. Warning rings are a defensive display, not camouflage.',
-          mimicOcto:'Use rock cover and a fitting passage while crawling near the floor. Your Mimic control adds a defensive disguise when retreating. Sand burrow digging is not simulated yet.',
-          giantPacific:'Choose a wide passage for your larger body. At a marked REFUGE, use the wider crevice; the small one cannot fit this body. Crawl near the floor to fold automatically. Rock cover breaks sight; return to HOME for den recovery.',
-          caribReef:'Move between meals using rock cover. Look for REFUGE if shown, or natural crevices, and crawl near the floor to enter a fitting gap. Settle to blend, then peek out through an open mouth before striking.',
-          coconutOcto:'Use Interact to carry a nearby shelter and place it again. Carrying affects movement; placing creates a shelter spot in this game. You can also crawl through fitting reef gaps. Shell assembly and a distinct transport gait are not simulated yet.',
+          commonOcto:'Crawl close to the floor and follow REFUGE on the map, or explore natural reef gaps. Stop inside a fitting passage to tuck your body and arms. Move toward a mouth to peek, then retreat to settle again. Rock blocks sight from some directions; open mouths remain exposed.',
+          blueRinged:'Your small body fits passages larger octopuses cannot use. Crawl near the floor and stop inside a fitting crevice to tuck in. Keep rock between you and predators when peeking. Warning rings are a defensive display, not camouflage or guaranteed safety.',
+          mimicOcto:'Crawl near the floor and tuck into a fitting reef passage; move to a mouth to peek. Your Mimic control adds a defensive disguise when retreating. Real mimic octopuses can use sediment burrows; sand burrow digging is not simulated yet.',
+          giantPacific:'Choose a wide passage for your larger body. At REFUGE, use the wider crevice; the small one cannot fit this body. Crawl near the floor, stop inside to tuck, and back toward a mouth to watch before emerging. Rock cover breaks sight from some directions; return to HOME for den recovery.',
+          caribReef:'Move between meals using reef cover. Look for REFUGE or natural crevices and crawl near the floor into a fitting gap. Stop to tuck behind the opaque rock, then peek through a mouth before striking. A passage is not a sealed den; its openings remain exposed.',
+          coconutOcto:'Use Interact to carry a nearby shelter and place it again. Carried shelters do not protect you; placing creates a shelter spot in this game. You can also stop inside fitting reef gaps to tuck, then move to a mouth to peek. Shell assembly and a distinct transport gait are not simulated yet.',
           cuttlefish:'Approach quietly, settle to blend and align a selected target before a tentacle strike. Display distracts nearby prey under simplified game rules. Your rigid cuttlebone excludes the octopus squeeze mechanic; use wider routes.',
           bobtailSquid:'Stay near cover and approach prey carefully. Night counter-illumination improves camouflage in this game, but does not make you invisible. This squid cannot use the octopus squeeze mechanic; sand burial is not simulated yet.',
           humboldtSquid:'Pursue visible prey in the water column, align your strike and save stamina for short jet bursts. Group coordination is not simulated. Reef squeezing is for the benthic octopuses.',
@@ -13153,7 +13357,7 @@ function createCLHuntFish(T,index){
         var usable=refuge.gaps.filter(function(gap){return gap.width>=minimum;}).sort(function(a,b){return a.width-b.width;})[0];
         if(!usable)return '';
         var dx=usable.x-position.x,dz=usable.z-position.z,distance=Math.sqrt(dx*dx+dz*dz);
-        return usable.label+' '+Math.round(distance)+' metres away at REFUGE on the map. Crawl near the floor to enter. Rock blocks sight; the mouths remain exposed. ';
+        return usable.label+' '+Math.round(distance)+' metres away at REFUGE on the map. Crawl near the floor to enter, then release movement to tuck your arms. Forward / Back controls how far you peek. Rock blocks sight; the mouths remain exposed. ';
       }
 
       // Controls describe the same species capabilities and input mode as the live dive.
@@ -13179,6 +13383,7 @@ function createCLHuntFish(T,index){
         if(species.specialAbility==='mimicry')defense.rows.push(row('Hold M','Mimic','Hold for a defensive disguise.'));
         if(species.specialAbility==='passingCloud')defense.rows.push(row('Hold H','Display','Hold a passing-cloud display to distract nearby fish.'));
         if(species.specialAbility==='burglarAlarm')defense.rows.push(row('Hold B','Flash','Hold for a defensive flash display.'));
+        if(['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'].indexOf(species.id)>=0)defense.rows.push({input:'Reef crevice',action:'Crawl near the bottom into a fitting gap. Release movement to tuck your arms; use Forward / Back to peek or withdraw. Turning, rising or jetting interrupts settling. Rock cover depends on direction; open mouths remain exposed.'});
         var views={title:'Camera & pause',rows:[
           row('V','Tools → View','Cycle Follow, Side, Tactical and Hunt views.'),
           row('F','Tools → Inspect','Pause to inspect. Drag or use orbit controls; '+(touch?'Closer / Farther zoom.':'arrow keys orbit, scroll or + / − zoom.')+' Return to dive closes inspection.'),
@@ -13194,8 +13399,8 @@ function createCLHuntFish(T,index){
         var THREE = window.THREE;
         if (!THREE) return;
         // Resolve selected species (defaults to common octopus).
-        var speciesId = d.huntSpeciesId || 'commonOcto';
-        var species = SIM_SPECIES.find(function(s) { return s.id === speciesId; }) || SIM_SPECIES[0];
+        var diveSetup=clHuntDiveSetup(d);
+        var species=diveSetup.species, speciesId=species.id;
         // Run configuration and a reproducible random stream are local to this dive.
         var initialSeed=(Number(d.huntSeed)||2741)>>>0, randomState=initialSeed;
         var Math=Object.create(window.Math);
@@ -13204,8 +13409,8 @@ function createCLHuntFish(T,index){
           carryCost:speciesId==='giantPacific'?0:speciesId==='coconutOcto'?0.3:1,
           jetDrain:speciesId==='humboldtSquid'?58:45, diet:speciesId==='vampireSquid'?'detritus':'prey',
           swimming:['humboldtSquid','cuttlefish','bobtailSquid','vampireSquid','dumboOcto','nautilus'].indexOf(speciesId)>=0};
-        var mission=d.huntMode==='reefMission' && !isDeepSpecies(speciesId) && speciesId!=='humboldtSquid';
-        var observation=d.huntMode==='observe', quality=d.huntQuality||'balanced';
+        var mission=diveSetup.mode==='reefMission';
+        var observation=diveSetup.mode==='observe', quality=d.huntQuality||'balanced';
         var cachedAudio=loadAudioSettings(), selectedPrey=null, explicitTarget=false, targetCycle=0;
         var controlPanel=null,missionHud=null,touchPanel=null,settingsPanel=null;
         var inspection={active:false,yaw:1.15,pitch:0.18,distance:6,drag:null,wasPaused:false,labels:true},inspectionPanel=null,anatomyLabels=[];
@@ -13228,7 +13433,7 @@ function createCLHuntFish(T,index){
           recordEvent('Finish',reason==='mission'?'Returned with two kinds of food':reason==='health'?'Health depleted':'Dive ended');
           gameState.leaderboardRec=updateLeaderboard(species.id,gameState.runStats,gameState.score,gameNow);
           var summary={species:species.name,speciesId:species.id,score:gameState.score,seconds:Math.round(gameNow/1000),
-            reason:reason,seed:initialSeed,stats:Object.assign({},gameState.runStats),events:gameState.events.slice(),
+            reason:reason,seed:initialSeed,mode:diveSetup.mode,stats:Object.assign({},gameState.runStats),events:gameState.events.slice(),
             missionComplete:!!gameState.missionComplete,inkRemaining:gameState.inkReserves};
           try{window.localStorage.setItem('allo.cephalopodlab.lastRun.v2',JSON.stringify(summary));}catch(e){}
           if(reason!=='left')setCL({huntLastRun:summary});
@@ -16771,6 +16976,7 @@ function createCLHuntFish(T,index){
           counterIlluminationActive: 0,
           // Squeeze detection (between rocks)
           isSqueezing: false,
+          refugePosture: null, refugeHideBlend: 0, refugePeekBlend: 0,
           // Per-run scoring breakdown (shown on death)
           runStats: {
             crabs: 0, fish: 0, clams: 0,
@@ -16940,6 +17146,7 @@ function createCLHuntFish(T,index){
         var settingsContent=document.createElement('div');settingsContent.className='cl-hunt-settings-content';settingsPanel.appendChild(settingsContent);
         var guideTitle=document.createElement('h2');guideTitle.className='cl-hunt-guide-title';guideTitle.id='cl-hunt-guide-title';guideTitle.tabIndex=-1;guideTitle.textContent='Dive controls';settingsContent.appendChild(guideTitle);settingsPanel.setAttribute('aria-labelledby',guideTitle.id);
         var guideIntro=document.createElement('p');guideIntro.className='cl-hunt-guide-intro';settingsContent.appendChild(guideIntro);
+        var modeSummary=document.createElement('p');modeSummary.className='cl-hunt-guide-note';modeSummary.setAttribute('data-dive-mode',diveSetup.mode);modeSummary.textContent=diveSetup.label+' · '+diveSetup.description;settingsContent.appendChild(modeSummary);
         var strategySection=document.createElement('section');strategySection.className='cl-hunt-guide-group';strategySection.setAttribute('aria-label','Species strategy');settingsContent.appendChild(strategySection);
         var strategyTitle=document.createElement('h3');strategyTitle.textContent='Playing as '+species.name;strategySection.appendChild(strategyTitle);
         var strategyText=document.createElement('p');strategyText.className='cl-hunt-guide-note';strategyText.textContent=clHuntSpeciesStrategy(speciesId);strategySection.appendChild(strategyText);strategySection.style.marginBottom='14px';
@@ -17231,7 +17438,7 @@ function createCLHuntFish(T,index){
         }
         function preyCandidates(){var list=crabs.filter(function(c){return c.userData.alive;});fishSchools.forEach(function(s){s.fish.forEach(function(f){if(f.userData.alive)list.push(f);});});return list;}
         function cycleTarget(){gameState.observationUntil=0;if(capabilities.diet==='detritus'){var advice=clHuntInputCue('Find marine snow. Tap Forage [R] nearby, or hold E.','Find marine snow. Tap Forage nearby, or hold Gather / hold.');gameState.strikeMessage=advice;gameState.strikeMessageUntil=gameNow+3500;clAnnounce(advice);updateMission();canvasEl.focus();return;}var list=preyCandidates().filter(function(p){return p.position.distanceTo(octopus.position)<28;}).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);});targetCycle=explicitTarget&&selectedPrey?list.indexOf(selectedPrey)+1:0;selectedPrey=list.length?list[targetCycle%list.length]:null;explicitTarget=!!selectedPrey;updateTrackedPrey();updateMission();clAnnounce(selectedPrey?clHuntInputCue('Target selected. Move into range and press E.','Target selected. Move into range and tap Strike / hold.'):'No prey nearby. Follow the reef toward the yellow map markers.');canvasEl.focus();}
-        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var observationFood=capabilities.diet==='detritus'?marineSnow.slice():preyCandidates();var nearest=observationFood.sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var foodText=capabilities.diet==='detritus'?(nearest?'Nearest marine snow '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No marine snow nearby. '):(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ');var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':gameState.isSqueezing?'In a reef crevice. ':'In open water. ')+foodText+clHuntRefugeAdvice(reefRefuge,speciesId,bodyScale,octopus.position)+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder=Array.prototype.slice.call(controlPanel.children);mobileSecondaryButtons.push(observeButton);
+        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var observationFood=capabilities.diet==='detritus'?marineSnow.slice():preyCandidates();var nearest=observationFood.sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var foodText=capabilities.diet==='detritus'?(nearest?'Nearest marine snow '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No marine snow nearby. '):(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ');var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':clHuntRefugeText(gameState.refugePosture,true)||'In open water. ')+foodText+clHuntRefugeAdvice(reefRefuge,speciesId,bodyScale,octopus.position)+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder=Array.prototype.slice.call(controlPanel.children);mobileSecondaryButtons.push(observeButton);
         applyLiveAccess();
 
         // Spatial cover and readable prey intent. All thresholds are game rules.
@@ -17893,6 +18100,8 @@ function createCLHuntFish(T,index){
             }
             if(gameState.isSqueezing||wasSqueezing)gameState.runStats.longestSqueezeMs=Math.max(gameState.runStats.longestSqueezeMs,now-gameState.runStats.currentSqueezeStart);
             gameState.squeezeBlend=(gameState.squeezeBlend||0)+((gameState.isSqueezing?1:0)-(gameState.squeezeBlend||0))*(gameState.a11y.reducedMotion?1:1-Math.exp(-10*dt));
+            gameState.refugePosture=clHuntRefugeState(gameState.refugePosture,gameState.crevice,octopus.position,speciesId,bodyScale,{fromX:movementOrigin.x,fromZ:movementOrigin.z,forward:moveFwd,turn:turn,vertical:vertInput,jetting:isJetting,reducedMotion:gameState.a11y.reducedMotion},dt);
+            gameState.refugeHideBlend=gameState.refugePosture.hideBlend;gameState.refugePeekBlend=gameState.refugePosture.peekBlend;
             arms.forEach(function(arm){
               arm.compressTarget=gameState.isSqueezing?0.55:1;
               arm.compressCurrent+=(arm.compressTarget-arm.compressCurrent)*(gameState.a11y.reducedMotion?1:1-Math.exp(-10*dt));
@@ -19128,7 +19337,7 @@ function createCLHuntFish(T,index){
             var directedStrikeRadius=octopusStrikeVisual?octopusStrikeVisual.radiusWorld/bodyScale:0;
             var strikePose=strikePhase*strikePhase*(3-2*strikePhase);
             animal.update(now / 1000, dt, { moving:isMoving, jet:isJetting, camo:gameState.camoEff,
-              substrate:gameState.currentSubstrate, display:gameState.isDisplaying, squeezeBlend:gameState.squeezeBlend||0,
+              substrate:gameState.currentSubstrate, display:gameState.isDisplaying, squeezeBlend:gameState.squeezeBlend||0, crevice:gameState.crevice, refugeHideBlend:gameState.refugeHideBlend||0, refugePeekBlend:gameState.refugePeekBlend||0,
               strike:strikePose,strikeAim:directedStrikeAim,strikeRadius:directedStrikeRadius,strikePreparation:strikePreparation,strikeBrace:strikeBrace, reducedMotion:gameState.a11y.reducedMotion });
 
             // ─── Moray eel AI ───
@@ -19235,7 +19444,7 @@ function createCLHuntFish(T,index){
             if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — '+clHuntInputCue('Q to rise','hold Rise'));else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — '+clHuntInputCue('Q to rise','hold Rise'));
             if(gameState.inDen)status.push('IN DEN — safe, regenerating');
             if(gameState.isInked)status.push('INKED — harder to track');
-            if(gameState.isSqueezing)status.push('REEF GAP · stay behind rock to hide');
+            var refugeStatus=clHuntRefugeText(gameState.refugePosture,false);if(refugeStatus)status.push(refugeStatus);
             if(carriedShelter){var carryInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];status.push('Carrying '+carryInfo.label+' · '+clHuntShelterCarryText(carryInfo,capabilities.carryCost)+' · '+clHuntInputCue('G drops','Interact drops'));}
             else if(gameState.inShelterDen){var activeCover=clHuntNearestPlacedShelter(shelters,octopus.position,SHELTER_DEN_RADIUS,1.0);if(activeCover)status.push(clHuntPlacedShelterText(SHELTER_TYPES[activeCover.userData.shelterType],activeCover.userData,now));}
             if(gameState.isMimicking)status.push('Mimicking · predators wary');
@@ -19298,7 +19507,7 @@ function createCLHuntFish(T,index){
               }
               }   // close pearl-fallback else
             }
-            if(!prompt&&gameState.isSqueezing){prompt='Squeezing · wait behind rock, then peek out to strike';pColor='rgba(125,211,167,0.65)';}
+            if(!prompt&&gameState.refugePosture&&gameState.refugePosture.phase!=='open'){prompt=clHuntRefugeText(gameState.refugePosture,'action');pColor='rgba(125,211,167,0.65)';}
             setActionPrompt(gameState.forageTarget||gameState.forageProgress>0?'':prompt, pColor);
           } else {
             setActionPrompt('', null);

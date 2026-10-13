@@ -346,6 +346,122 @@ describe('space station docking physics', () => {
     expect(forecast.endpoint.time).toBe(0);
     expect(forecast.points).toHaveLength(1);
   });
+
+  it.each([.25, .5, 1, 2])('delivers a %s-second pulse using the real propellant budget and rocket equation', (seconds) => {
+    const sim = flight({ timeScale: 8 });
+    sim.canvas._dockSetPulseSeconds(seconds);
+    sim.canvas._dockManeuver('fwd');
+    const fuel = 400 * seconds / (220 * 9.80665);
+    const deltaV = 220 * 9.80665 * Math.log(8080 / (8080 - fuel));
+    expect(sim.state.t).toBeCloseTo(seconds, 10);
+    expect(sim.state.propellant).toBeCloseTo(80 - fuel, 10);
+    expect(sim.state.vy - 1).toBeCloseTo(deltaV, 9);
+    expect(sim.state.lastManeuver.thrustDeltaV).toBeCloseTo(deltaV, 9);
+    expect(sim.state.lastManeuver.usedFuel).toBeCloseTo(fuel, 10);
+    expect(sim.state.paused).toBe(true);
+    expect(Object.values(sim.state.thrust).some(Boolean)).toBe(false);
+    const after = JSON.stringify(sim.state);
+    sim.advance(10);
+    expect(JSON.stringify(sim.state)).toBe(after);
+  });
+
+  it.each(['back', 'up', 'down', 'fwd'])('matches a held orbital burn when stepping the %s thruster', (direction) => {
+    const held = flight({ orbital: true });
+    held.canvas._dockSetThrust(direction, true);
+    held.advance(1);
+    const pulse = flight({ orbital: true });
+    pulse.canvas._dockSetPulseSeconds(1);
+    pulse.canvas._dockManeuver(direction);
+    for (const key of ['x', 'y', 'vx', 'vy', 'propellant', 'deltaV', 't']) expect(pulse.state[key]).toBeCloseTo(held.state[key], 9);
+  });
+
+  it('uses quarter-strength precision pulses and releases other controls before a coast step', () => {
+    const sim = flight({ orbital: true });
+    sim.canvas._dockSetPrecision();
+    sim.canvas._dockSetPulseSeconds(1);
+    sim.canvas._dockManeuver('fwd');
+    expect(sim.state.lastManeuver.usedFuel).toBeCloseTo(100 / (220 * 9.80665), 10);
+    const propellant = sim.state.propellant;
+    sim.canvas._dockSetDamp();
+    sim.canvas._dockManeuver('coast');
+    expect(sim.state.lastManeuver.seconds).toBeCloseTo(5, 9);
+    expect(sim.state.lastManeuver.usedFuel).toBe(0);
+    expect(sim.state.lastManeuver.thrustDeltaV).toBe(0);
+    expect(sim.state.lastManeuver.dvx).toBeGreaterThan(0);
+    expect(sim.state.propellant).toBe(propellant);
+    expect(sim.state.damp).toBe(false);
+    expect(sim.state.paused).toBe(true);
+    expect(Object.values(sim.state.thrust).some(Boolean)).toBe(false);
+  });
+
+  it('limits a nearly empty pulse to its actual reserve and permits unpowered stepping afterward', () => {
+    const sim = flight();
+    sim.state.propellant = .0001;
+    sim.state.fuel = .0001 / 80 * 100;
+    sim.canvas._dockManeuver('fwd');
+    expect(sim.state.propellant).toBe(0);
+    expect(sim.state.lastManeuver.usedFuel).toBe(.0001);
+    expect(sim.state.lastManeuver.thrustDeltaV).toBeCloseTo(220 * 9.80665 * Math.log1p(.0001 / 8000), 10);
+    const empty = JSON.stringify(sim.state);
+    sim.canvas._dockManeuver('up');
+    expect(JSON.stringify(sim.state)).toBe(empty);
+    sim.canvas._dockManeuver('coast');
+    expect(sim.state.t).toBeCloseTo(5.5, 9);
+    expect(sim.state.lastManeuver.usedFuel).toBe(0);
+  });
+
+  it('ends a step at contact without extra ticks or duplicate completion reports', () => {
+    const sim = flight();
+    Object.assign(sim.state, { x: 0, y: -5.01, vx: 0, vy: .3 });
+    sim.canvas._dockManeuver('fwd');
+    expect(sim.state.overResult).toBe('docked');
+    expect(sim.state.lastManeuver.seconds).toBeLessThan(.5);
+    expect(sim.state.lastManeuver.seconds).toBeCloseTo(sim.state.t, 10);
+    const end = JSON.stringify(sim.state);
+    sim.canvas._dockManeuver('coast');
+    sim.canvas._dockManeuver('fwd');
+    expect(JSON.stringify(sim.state)).toBe(end);
+    expect(sim.reports).toHaveLength(1);
+  });
+
+  it('ignores invalid or hidden-page commands and clears step feedback when resuming or resetting', () => {
+    const sim = flight();
+    const before = JSON.stringify(sim.state);
+    for (const value of ['bad', '__proto__', 'constructor']) sim.canvas._dockManeuver(value);
+    for (const value of ['bad', -1, 0, Infinity, NaN]) sim.canvas._dockSetPulseSeconds(value);
+    sim.canvas._dockSetCamera('bad');
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    sim.canvas._dockManeuver('fwd');
+    expect(JSON.stringify(sim.state)).toBe(before);
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+    sim.canvas._dockManeuver('coast');
+    sim.canvas._dockTogglePause();
+    expect(sim.state.lastManeuver).toBeNull();
+    sim.canvas._dockManeuver('coast');
+    sim.canvas._dockSetScenario('final');
+    expect(sim.state.lastManeuver).toBeNull();
+  });
+
+  it('enlarges close approach without moving the vehicle or changing the collision geometry', () => {
+    const sim = flight();
+    sim.canvas._dockSetScenario('final');
+    const before = JSON.stringify(sim.state);
+    const close = sim.canvas._dockViewSnapshot();
+    sim.canvas._dockSetCamera('wide');
+    const wide = sim.canvas._dockViewSnapshot();
+    expect(close.scale).toBeGreaterThan(wide.scale * 5);
+    expect(close.portX).toBeCloseTo(close.ox - 5 * close.scale, 10);
+    sim.canvas._dockSetCamera('approach');
+    expect(JSON.stringify(sim.state)).toBe(before);
+    for (const [x, y] of [[26, -190], [.6, -25], [0, -5], [80, -50], [-200, -100], [0, 34]]) {
+      Object.assign(sim.state, { x, y });
+      const view = sim.canvas._dockViewSnapshot();
+      expect(view.ox + y * view.scale).toBeGreaterThanOrEqual(30);
+      expect(view.ox + y * view.scale).toBeLessThan(625);
+      expect(view.oy - x * view.scale).toBeGreaterThanOrEqual(122);
+      expect(view.oy - x * view.scale).toBeLessThanOrEqual(294);
+    }
+  });
 });
 
 describe('space station EVA mechanics and resource budget', () => {
@@ -473,5 +589,74 @@ describe('space station timed EVA torque response', () => {
     expect(late.inertia).toBe(16);
     expect(late.time).toBe(2.5);
     for (const key of ['angle', 'omega', 'angularMomentum', 'netTorque', 'energy']) expect(Number.isFinite(late[key])).toBe(true);
+  });
+
+  it.each([16, 32, 64])('stops spin with equal opposite angular impulses at inertia %s without restoring orientation', inertia => {
+    const settings = { torque: 18, inertia, braced: false, counterRatio: 1 };
+    const firstCutoff = reaction(settings, .5), counterStart = reaction(settings, 1.5);
+    const stopped = reaction(settings, 2), later = reaction(settings, 2.5);
+    expect(counterStart.omega).toBe(firstCutoff.omega);
+    expect(counterStart.angle - firstCutoff.angle).toBeCloseTo(firstCutoff.omega, 12);
+    expect(counterStart.phase).toBe('counterpulse');
+    expect(counterStart.netTorque).toBe(18);
+    expect(stopped.omega).toBe(0);
+    expect(stopped.angularMomentum).toBe(0);
+    expect(stopped.netTorque).toBe(0);
+    expect(stopped.energy).toBe(0);
+    expect(stopped.angle).toBeCloseTo(-18 / inertia * .75, 12);
+    expect(later.angle).toBeCloseTo(stopped.angle, 12);
+    expect(later.omega).toBe(0);
+  });
+
+  it.each([.5, 1.5, 2])('leaves the physically correct residual spin for counterpulse ratio %s', counterRatio => {
+    const settings = { torque: 24, inertia: 40, braced: false, counterRatio };
+    const cutoff = reaction(settings, 2), coast = reaction(settings, 2.5);
+    const impulse = -.5 * 24 + .5 * 24 * counterRatio;
+    expect(cutoff.angularMomentum).toBeCloseTo(impulse, 12);
+    expect(cutoff.omega).toBeCloseTo(impulse / 40, 12);
+    expect(Math.sign(cutoff.omega)).toBe(Math.sign(counterRatio - 1));
+    expect(coast.angle - cutoff.angle).toBeCloseTo(cutoff.omega * .5, 12);
+    expect(coast.energy).toBe(cutoff.energy);
+    expect(coast.netTorque).toBe(0);
+  });
+
+  it('obeys work-energy and torque derivatives while braking through zero into reverse spin', () => {
+    const settings = { torque: 30, inertia: 16, braced: false, counterRatio: 2 };
+    const start = reaction(settings, 1.5), zero = reaction(settings, 1.75), end = reaction(settings, 2);
+    expect(zero.energy).toBe(0);
+    expect(zero.omega).toBe(0);
+    expect(zero.netTorque).toBe(60);
+    expect(start.energy).toBeCloseTo(end.energy, 12);
+    expect(zero.energy - start.energy).toBeCloseTo(60 * (zero.angle - start.angle), 12);
+    expect(end.energy - zero.energy).toBeCloseTo(60 * (end.angle - zero.angle), 12);
+    expect(reaction({ torque: 19, inertia: 36, braced: false, counterRatio: 1.5 }, 2).angularMomentum).toBe(4.75);
+    for (const time of [.2, .8, 1.6, 1.9, 2.3]) {
+      const before = reaction(settings, time - 1e-5), now = reaction(settings, time), after = reaction(settings, time + 1e-5);
+      expect((after.angle - before.angle) / 2e-5).toBeCloseTo(now.omega, 8);
+      expect((after.angularMomentum - before.angularMomentum) / 2e-5).toBeCloseTo(now.netTorque, 7);
+    }
+  });
+
+  it('keeps orientation and angular velocity continuous at all three torque transitions', () => {
+    const settings = { torque: 30, inertia: 16, braced: false, counterRatio: 1.5 };
+    for (const time of [.5, 1.5, 2]) {
+      const exact = reaction(settings, time);
+      for (const nearby of [time - 1e-9, time + 1e-9]) {
+        const state = reaction(settings, nearby);
+        expect(state.angle).toBeCloseTo(exact.angle, 7);
+        expect(state.omega).toBeCloseTo(exact.omega, 7);
+      }
+    }
+  });
+
+  it('transfers both tool reactions into a locked restraint and bounds restored counterpulse settings', () => {
+    for (const time of [.2, 1.5, 1.8, 2.5]) {
+      const held = reaction({ braced: true, counterRatio: 2 }, time);
+      for (const key of ['angle', 'omega', 'angularMomentum', 'netTorque', 'energy']) expect(held[key]).toBe(0);
+    }
+    expect(reaction({ counterRatio: 'broken' }, 2).counterRatio).toBe(0);
+    expect(reaction({ counterRatio: Infinity }, 2).counterRatio).toBe(0);
+    expect(reaction({ counterRatio: -1 }, 2).counterRatio).toBe(0);
+    expect(reaction({ counterRatio: 99 }, 2).counterRatio).toBe(2);
   });
 });

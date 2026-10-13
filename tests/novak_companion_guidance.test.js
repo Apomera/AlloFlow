@@ -3,7 +3,7 @@
 //      easier ones; it is a companion that previews, builds background and
 //      scaffolds toward the original, which stays. The sidebar button says
 //      "Create adapted companion", not "Rewrite Text".
-//  (c) the companion note on an adapted text is shown open.
+//  (c) a concise companion purpose stays visible; fuller teaching guidance is in Teacher setup.
 //  (d) when a standard requires grade-level text, Full Pack plans no adapted
 //      text by default, names the original with word supports as the main
 //      reading, and one click adds a companion for background and preview.
@@ -96,7 +96,7 @@ describe('(c) the companion note shows by default', () => {
     expect(note.closest('details')).toBeNull();
     expect(host.querySelector('details[data-instructional-role]').open).toBe(false);
   });
-  it('the whole reader shows it open for a supporting adapted text', () => {
+  it('the reader keeps a concise purpose visible and the full explanation in Teacher setup', async () => {
     const noop = () => {};
     const pure = window.AlloModules.PureHelpers, phase = window.AlloModules.PhaseNHelpers;
     const item = adapted();
@@ -105,9 +105,14 @@ describe('(c) the companion note shows by default', () => {
       splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null, handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop, isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop,
       cursorStyles: { read: '', define: '', 'add-glossary': '', revise: '' }, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: text => React.createElement('div', null, text), formatInteractiveText: (text, cloze) => phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text }) => text }),
       SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, handleTextMouseUp: noop, highlightGlossaryTerms: x => x, latestGlossary: [], generatedContent: item }));
+    const summary = host.querySelector('[data-companion-summary]');
+    expect(summary.textContent).toBe('Use alongside the original.');
+    expect(summary.closest('[hidden]')).toBeNull();
     const note = host.querySelector('[data-companion-note]');
     expect(note.textContent).toContain('scaffold students toward the original');
-    expect(note.closest('details')).toBeNull();
+    expect(note.closest('[data-teacher-setup-panel]').hidden).toBe(true);
+    await click(host.querySelector('[data-teacher-setup-toggle]'));
+    expect(note.closest('[data-teacher-setup-panel]').hidden).toBe(false);
   });
   it('a main reading and a student view show no companion note', () => {
     show(React.createElement(Reader.ReadingRoleControl, { role: 'primary', roleLabel: 'Main reading', formLabel: 'Original', isTeacherMode: true, onSave: () => true, showCompanionNote: false }));

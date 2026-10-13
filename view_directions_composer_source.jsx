@@ -51,10 +51,10 @@ function DirectionsComposerView({
   };
   return (
 <div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); setShowDirectionsComposer(false); } }}>
-          <div data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Assignment Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+          <div data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
             <div className="flex items-center gap-2 mb-1">
               <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
-              <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Assignment Directions'}</h2>
+              <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Lesson Directions'}</h2>
               <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
             </div>
             <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>

@@ -37,9 +37,29 @@ describe('flightsim four-forces overlay', () => {
         expect(at, `${path}: ${later} is gone`).toBeGreaterThan(-1);
         expect(at, `${path}: ${later} paints over the force diagram again`).toBeLessThan(forces);
       }
-      // ...and the help overlay must still cover it.
-      expect(source.indexOf('Help Overlay (press ?)'), `${path}: the help overlay no longer covers the force card`)
-        .toBeGreaterThan(forces);
+    });
+  });
+
+  it('keeps the accessible DOM help above the canvas force diagram', () => {
+    eachSource((source, path) => {
+      // Help is now scrollable DOM. Canvas paint order cannot establish that
+      // it covers the force card: its stacking level must exceed the flight
+      // canvas, and the live flying view must actually render the reference.
+      const helpStart = source.indexOf('var renderFlightHelp =');
+      expect(helpStart, `${path}: the accessible help renderer is gone`).toBeGreaterThan(-1);
+      const helpBlock = source.slice(helpStart, source.indexOf('var challengeObjectiveText =', helpStart));
+      const helpLayer = helpBlock.match(/position: 'absolute',\s*zIndex: (\d+)/);
+      expect(helpLayer, `${path}: help no longer has an overlay stacking level`).not.toBeNull();
+      expect(helpBlock, `${path}: the help reference lost its accessible region`).toContain("role: 'region'");
+      expect(helpBlock, `${path}: help lost its DOM close control`).toContain("id: 'skyschool-close-help'");
+      const surface = source.indexOf("role: 'application'");
+      const canvasStart = source.lastIndexOf("h('canvas',", surface);
+      const helpRender = source.indexOf('d.showHelp && renderFlightHelp()', surface);
+      expect(canvasStart, `${path}: the interactive canvas is gone`).toBeGreaterThan(-1);
+      expect(helpRender, `${path}: flying no longer renders the help region`).toBeGreaterThan(surface);
+      const canvasLayer = source.slice(canvasStart, helpRender).match(/zIndex: (\d+)/);
+      expect(canvasLayer, `${path}: the interactive canvas lost its stacking level`).not.toBeNull();
+      expect(Number(helpLayer[1]), `${path}: the canvas can cover the help reference`).toBeGreaterThan(Number(canvasLayer[1]));
     });
   });
 

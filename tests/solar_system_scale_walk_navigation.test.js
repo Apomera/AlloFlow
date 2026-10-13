@@ -124,6 +124,8 @@ function expectStop(env, index) {
   expect(env.select.value).toBe(world.key);
   expect(env.stop.getAttribute('data-scale-walk-stop')).toBe(world.key);
   expect(env.stop.textContent).toContain(`Stop ${index + 1} of 9`);
+  expect([...env.lab.querySelectorAll('[data-scale-gap-to][aria-pressed="true"]')]
+    .map(node => node.dataset.scaleGapTo)).toEqual(index ? [world.key] : []);
   expect(env.lab.querySelectorAll('[aria-current="step"]')).toHaveLength(1);
   expect(env.row(world.key).getAttribute('aria-current')).toBe('step');
   const selected = env.map.querySelectorAll('[data-scale-map-selected="true"]');
@@ -285,6 +287,87 @@ describe('Solar System scale walk stop guide and map views', () => {
     expect(env.reading('total')).toBeCloseTo(total * 2, 10);
     expect(Number(env.marker('Earth').getAttribute('cx'))).toBe(markerX);
     expect(parseFloat(env.map.querySelector('[data-scale-map-tick="1"]').textContent)).toBeCloseTo(200 * 1.524 / 30.07, 1);
+  });
+
+  it.each([10, 100, 1000])('compares all eight adjacent gaps on one true linear scale for a %s meter walk', length => {
+    const env = renderScaleWalk({ scaleWalkLength: length });
+    const figure = env.lab.querySelector('[data-scale-walk-gaps]');
+    expect(figure.tagName).toBe('FIGURE');
+    expect(document.getElementById(figure.getAttribute('aria-labelledby')).textContent).toBe('Compare the gaps');
+    const rows = [...figure.querySelectorAll('[data-scale-gap-to]')];
+    expect(rows.map(row => row.dataset.scaleGapTo)).toEqual(WORLDS.slice(1).map(world => world.key));
+    const gaps = WORLDS.slice(1).map((world, index) => (world.au - WORLDS[index].au) * length / 30.07);
+    const longest = Math.max(...gaps);
+    let total = 0;
+    rows.forEach((row, index) => {
+      const gap = Number(row.dataset.gapMeters); total += gap;
+      expect(row.type).toBe('button');
+      expect(gap).toBeCloseTo(gaps[index], 10); expect(gap).toBeGreaterThan(0);
+      expect(row.getAttribute('aria-label')).toContain(`Gap from ${WORLDS[index].key} to ${WORLDS[index + 1].key}: ${gaps[index].toFixed(2)} meters`);
+      const bar = row.querySelector('[data-scale-gap-bar]');
+      expect(parseFloat(bar.style.width)).toBeCloseTo(gap / longest * 100, 10);
+      expect(bar.style.minWidth).toBe('');
+      expect(bar.parentElement.getAttribute('aria-hidden')).toBe('true');
+    });
+    expect(total).toBeCloseTo(length, 10);
+    expect(figure.textContent).toContain(`0 to ${longest.toFixed(2)} m, the longest gap`);
+    expect(figure.textContent).toContain('not current distances between planets');
+    expect(figure.querySelector('[data-scale-gap-summary]').textContent).toContain('starting point has no incoming gap');
+    expect(env.renderWrites).toBe(0);
+  });
+
+  it('links every gap row to its destination and reports its fraction of the whole walk', () => {
+    const explanation = 'Keep this authored scale explanation.';
+    const saved = JSON.stringify([100, 'double', explanation]);
+    const journal = [{ planet: 'Solar System', observation: 'Prior placement plan' }];
+    const env = renderScaleWalk({ scaleWalkLength: 100, scaleWalkMap: 'inner', scaleWalkClaim: 'double',
+      scaleWalkExplanation: explanation, scaleWalkSaved: saved, journalEntries: journal });
+    WORLDS.slice(1).forEach((world, index) => {
+      env.click(env.lab.querySelector(`[data-scale-gap-to="${world.key}"]`));
+      expectStop(env, index + 1);
+      const summary = env.lab.querySelector('[data-scale-gap-summary]');
+      const percent = (world.au - WORLDS[index].au) / 30.07 * 100;
+      expect(Number(summary.dataset.wholeWalkPercent)).toBeCloseTo(percent, 10);
+      expect(summary.textContent).toContain(`${percent.toFixed(2)}% of the entire 100 m Sun-to-Neptune walk`);
+      expectMap(env, index < 4 ? 'inner' : 'full');
+      expect(env.state.scaleWalkExplanation).toBe(explanation);
+      expect(env.state.scaleWalkSaved).toBe(saved);
+      expect(env.state.journalEntries).toBe(journal);
+      expect(env.saveButton.disabled).toBe(true);
+    });
+    expect(Number(env.lab.querySelector('[data-scale-gap-summary]').dataset.wholeWalkPercent)).toBeLessThan(37);
+    expect(parseFloat(env.lab.querySelector('[data-scale-gap-bar="Neptune"]').style.width)).toBeCloseTo(100, 10);
+  });
+
+  it('uses the latest map choice for a captured gap selection and ignores events from a closed planner', () => {
+    const env = renderScaleWalk({ scaleWalkMap: 'full', scaleWalkStop: 'Earth' });
+    const outerRow = env.lab.querySelector('[data-scale-gap-to="Neptune"]');
+    const chooseOuter = env.props(outerRow).onClick;
+    env.click(env.button('Inner planets'));
+    chooseOuter({ currentTarget: outerRow, target: outerRow }); env.render();
+    expectMap(env, 'full'); expectStop(env, 8);
+    const earthRow = env.lab.querySelector('[data-scale-gap-to="Earth"]');
+    const chooseEarth = env.props(earthRow).onClick;
+    const close = env.button('Close scale walk');
+    env.props(close).onClick({ currentTarget: close, target: close });
+    const closedState = env.state;
+    chooseEarth({ currentTarget: earthRow, target: earthRow });
+    expect(env.state).toBe(closedState);
+    expect(env.state.showScaleWalk).toBe(false);
+    expect(env.state.scaleWalkStop).toBe('Neptune');
+  });
+
+  it('doubles gap values while preserving bar proportions and whole-walk percentages', () => {
+    const env = renderScaleWalk({ scaleWalkLength: 100, scaleWalkStop: 'Earth', scaleWalkMap: 'inner' });
+    const bars = () => [...env.lab.querySelectorAll('[data-scale-gap-bar]')].map(bar => parseFloat(bar.style.width));
+    const before = bars(), oldGap = env.reading('gap');
+    const oldPercent = Number(env.lab.querySelector('[data-scale-gap-summary]').dataset.wholeWalkPercent);
+    env.click(env.button('Try doubling this walk'));
+    bars().forEach((width, index) => expect(width).toBeCloseTo(before[index], 10));
+    expect(env.reading('gap')).toBeCloseTo(oldGap * 2, 10);
+    expect(Number(env.lab.querySelector('[data-scale-gap-summary]').dataset.wholeWalkPercent)).toBeCloseTo(oldPercent, 10);
+    expect(env.lab.querySelector('[data-scale-gap-summary]').textContent).toContain('entire 200 m Sun-to-Neptune walk');
+    expectStop(env, 3); expectMap(env, 'inner');
   });
 
   it('keeps a saved placement plan immutable during inspection and enables a new save after scaling', () => {

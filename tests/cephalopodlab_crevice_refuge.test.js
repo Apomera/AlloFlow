@@ -103,11 +103,23 @@ describe('Cephalopod Hunter geometric crevice refuge',()=>{
     const prey={position:new THREE.Vector3(2.5,.55,0),userData:{alive:true,cfg:{}}};assert.equal(rules.ready(prey).reason,'cover');
     prey.position.set(0,.55,2);assert.equal(rules.ready(prey).ready,true);
   });
-  it('narrows only the local mantle and restores the breath scale exactly after compression',()=>{
-    const block=slice('    // Local mantle compression', '    // A small cross-section brace');
-    const apply=new Function('mantle','state','swimming',block),mantle={scale:new THREE.Vector3(1.02,.98,1.01)};
-    apply(mantle,{squeezeBlend:1},false);assert.ok(mantle.scale.x<.75);assert.ok(mantle.scale.z<.92);assert.ok(mantle.scale.y>1);
-    mantle.scale.set(1.02,.98,1.01);apply(mantle,{squeezeBlend:0},false);assert.deepEqual(mantle.scale.toArray(),[1.02,.98,1.01]);
-    apply(mantle,{squeezeBlend:1},true);assert.deepEqual(mantle.scale.toArray(),[1.02,.98,1.01]);
+  it('fits the attached body to real crevice walls and restores ordinary body matrices without losing the breath pose',()=>{
+    const factory=new Function('THREE',slice('function createCLHuntAnimal(','// Compact, individually owned prey rig.')+';return createCLHuntAnimal(THREE,{id:"commonOcto",bodyColor:0x99775d});');
+    const tucked=factory(THREE),ordinary=factory(THREE),scene=reef(),gap=find(scene);
+    const state={moving:false,jet:false,strike:0,camo:.3,substrate:'rock',display:false,reducedMotion:false,squeezeBlend:0,refugeHideBlend:0};
+    ordinary.update(7,.05,state);tucked.update(7,.05,{...state,squeezeBlend:1,crevice:gap,refugeHideBlend:1});
+    tucked.root.updateMatrixWorld(true);ordinary.root.updateMatrixWorld(true);
+    const body=tucked.root.getObjectByName('cl-crevice-body');assert.ok(body);assert.ok(body.matrix.determinant()>0.01&&body.matrix.determinant()<.8);
+    assert.deepEqual(tucked.mantle.scale.toArray(),ordinary.mantle.scale.toArray(),'The wall frame must retain the same breath transform');
+    const point=new THREE.Vector3();let bodyVertices=0;
+    body.traverse(part=>{if(!part.isMesh)return;const positions=part.geometry.attributes.position;for(let i=0;i<positions.count;i++){point.fromBufferAttribute(positions,i).applyMatrix4(part.matrixWorld);assert.ok(Number.isFinite(point.x+point.y+point.z));if(Math.abs(point.z)<1.5)assert.ok(Math.abs(point.x)<=.15+1e-6,'Body vertex penetrated the settled straight passage');bodyVertices++;}});
+    assert.ok(bodyVertices>2000);
+    tucked.root.position.z=ordinary.root.position.z=6;
+    tucked.update(7,0,state);ordinary.update(7,0,state);tucked.root.updateMatrixWorld(true);ordinary.root.updateMatrixWorld(true);assert.ok(body.matrix.equals(new THREE.Matrix4()));
+    const matrices=animal=>{const parts=[];animal.root.getObjectByName('cl-crevice-body').traverse(part=>{if(part.isMesh)parts.push([part.name,part.matrixWorld.elements.slice()]);});return parts;};
+    assert.deepEqual(matrices(tucked),matrices(ordinary),'All attached body surfaces must restore their ordinary world matrices');
+    assert.deepEqual(tucked.mantle.scale.toArray(),ordinary.mantle.scale.toArray());
+    for(const animal of [tucked,ordinary]){const geometries=new Set(),materials=new Set();animal.root.traverse(part=>{if(part.geometry)geometries.add(part.geometry);if(part.material)materials.add(part.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());}
+    for(const rock of scene.rocks){rock.geometry.dispose();rock.material.dispose();}
   });
 });

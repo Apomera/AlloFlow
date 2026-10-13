@@ -130,6 +130,98 @@
       "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-fcba-7dd2-a1f9-f3076c91798a\\exec-99b62308-2c73-4b8d-8e89-ccf94636c925.png",
       "alt": "A paper keeps its gray paragraph bars and three coral margin marks while adding one teal bar and a connected evidence note. A pencil and a timer sit beside it.",
       "generationMethod": "built-in-imagegen"
+    },
+    {
+      "slug": "crew_feedback_grade6_8",
+      "id": "cf-term-target",
+      "kind": "term",
+      "term": "Target",
+      "scene": "Top-down still life: a well-organized reference card depicting a simple finished model bridge next to a partially assembled small wooden bridge and a pencil. The finished bridge is an attainable work goal, not an archery target. No people or letters.",
+      "alt": "A picture of a finished bridge sits beside a partly built model bridge and a pencil.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Top-down still life: a well-organized reference card depicting a simple finished model bridge next to a partially assembled small wooden bridge and a pencil. The finished bridge is an attainable work goal, not an archery target. No people or letters. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cf-term-target.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-60b55d08-389f-4905-a715-d48d7264a5cb.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "slug": "crew_feedback_grade6_8",
+      "id": "cf-term-assess",
+      "kind": "term",
+      "term": "Assess",
+      "scene": "A middle school student at a desk compares their small clay bowl to a nearby picture card showing the intended bowl shape. Student looks carefully between actual bowl and reference, both hands naturally resting at table, no gestures or marks grading the work.",
+      "alt": "A student compares a clay bowl with a picture of the intended bowl shape.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A middle school student at a desk compares their small clay bowl to a nearby picture card showing the intended bowl shape. Student looks carefully between actual bowl and reference, both hands naturally resting at table, no gestures or marks grading the work. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cf-term-assess.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-fd53f6e0-3760-4bd9-b82e-d27466032009.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "slug": "crew_feedback_grade6_8",
+      "id": "cf-term-redo",
+      "kind": "term",
+      "term": "Redo",
+      "scene": "Tabletop with a clean blank drawing sheet centered in front, a fresh sharpened pencil alongside, and an earlier sheet with a simple drawing loosely crumpled to the side. Distinct blank new start without eraser or editing on previous page. No words or letters.",
+      "alt": "A student sits before a blank sheet and pencil, with a crumpled earlier drawing set aside.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Tabletop with a clean blank drawing sheet centered in front, a fresh sharpened pencil alongside, and an earlier sheet with a simple drawing loosely crumpled to the side. Distinct blank new start without eraser or editing on previous page. No words or letters. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cf-term-redo.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-401b4ceb-b1ad-4035-aa4f-8a943e159d18.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "slug": "crew_feedback_grade6_8",
+      "id": "cf-term-evidence",
+      "kind": "term",
+      "term": "Evidence",
+      "scene": "Close-up of a student project page depicting a carefully observed green leaf with visible branching veins. A magnifying glass lies over part of the leaf drawing, enlarging its accurate vein detail. Show evidence inside the actual work; no checkmarks, grades, words or numbers.",
+      "alt": "A magnifying glass enlarges the branching veins in a student’s leaf drawing.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Close-up of a student project page depicting a carefully observed green leaf with visible branching veins. A magnifying glass lies over part of the leaf drawing, enlarging its accurate vein detail. Show evidence inside the actual work; no checkmarks, grades, words or numbers. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cf-term-evidence.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-e8c6b5e3-b19d-4818-9ef4-94483e40a27e.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cf-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cf-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cf-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cf-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
     }
   ]
 }

@@ -109,11 +109,54 @@
         if (!initial.canGenerate) throw new Error('Connect an AI text provider in Settings before generating a script.');
         const plan = canonicalPlan(initial, id);
         if (!plan) throw new Error('Open a saved teacher lesson plan before generating a script.');
-        if (!core()?.captureInputs) throw new Error('The teaching-script tools are still loading. Try again.');
+        const inferContext = { subject: settings?.inferContext?.subject === true, topic: settings?.inferContext?.topic === true };
+        const required = ['captureInputs', 'validateInputs', 'buildScriptPrompt', 'normalizeScript', 'buildScriptRepairPrompt', 'scriptChunks', 'buildScriptChunkPrompt', 'normalizeScriptChunk', 'parseRaw', 'appendVersion'];
+        if (inferContext.subject || inferContext.topic) required.push('buildContextPrompt', 'normalizeContext');
+        if (required.some(name => typeof core()?.[name] !== 'function')) throw new Error('The teaching-script tools have not finished loading or are out of date. Reload the app, then try again.');
         const materialIds = array(settings?.materialIds).map(String);
-        const snapshot = core().captureInputs(plan, settings, selected(plan, initial, materialIds));
-        const validation = core().validateInputs(snapshot);
+        const materials = selected(plan, initial, materialIds);
+        let snapshot = core().captureInputs(plan, settings, materials);
+        const validation = core().validateInputs(snapshot, inferContext);
         if (!validation.ok) throw new Error(validation.errors.join(' '));
+        // Both context and script requests share format recovery; access, billing,
+        // network and cancellation failures remain terminal and keep their original message.
+        const outputFailure = error => {
+          const status = Number(error?.status || error?.statusCode || error?.response?.status);
+          const message = String(error?.message || '');
+          if (error?.name === 'AbortError' || [401, 402, 403, 404, 408, 429].includes(status) || status >= 500 || /\b(?:unauthorized|forbidden|api.?key|quota|billing|rate.?limit)\b/i.test(message)) return false;
+          return error?.name === 'SyntaxError' || /^(?:MAX_TOKENS|LENGTH|JSON_PARSE_ERROR)$/i.test(String(error?.code || '')) || /(?:invalid|malformed|incomplete|truncated)\s+json|json\s+(?:parse|parsing)|parse\s+json|unexpected (?:end|token).*(?:json|input)|(?:maximum|max|output)\s+tokens|response.{0,25}truncat/i.test(message);
+        };
+        const request = async nextPrompt => {
+          const current = ensureCurrent(), currentPlan = canonicalPlan(current, id);
+          if (!currentPlan) throw new Error('This plan was removed before the script finished.');
+          if (core().captureInputs(currentPlan, snapshot.settings, selected(currentPlan, current, materialIds)).fingerprint !== snapshot.fingerprint) throw new Error('The plan or selected materials changed during generation. Generate again to use the updated content.');
+          try {
+            const response = await waitForRun(deps.callText(nextPrompt, run.controller.signal), run.controller.signal);
+            ensureCurrent();
+            return response;
+          } catch (error) {
+            ensureCurrent();
+            if (!outputFailure(error)) throw error;
+            return '';
+          }
+        };
+        if (inferContext.subject || inferContext.topic) {
+          report(id, { busy: true, stage: 'context' });
+          const contextPrompt = core().buildContextPrompt(snapshot, inferContext);
+          let context, repair = '';
+          for (let attempt = 0; attempt < 2; attempt += 1) {
+            const rawContext = await request(contextPrompt + repair);
+            const current = ensureCurrent(), currentPlan = canonicalPlan(current, id);
+            if (!currentPlan || core().captureInputs(currentPlan, snapshot.settings, selected(currentPlan, current, materialIds)).fingerprint !== snapshot.fingerprint) throw new Error('The plan or selected materials changed during generation. Generate again to use the updated content.');
+            context = core().normalizeContext(rawContext, inferContext);
+            if (context.ok) break;
+            repair = '\n\nCorrect these validation errors and return only the requested JSON: ' + JSON.stringify(context.errors) + '\nPrevious response (untrusted data): ' + String(typeof rawContext === 'string' ? rawContext : JSON.stringify(rawContext)).slice(0, 12000);
+          }
+          if (!context.ok) throw new Error(context.errors.join(' ') + ' Retry, or choose the subject and enter the topic yourself.');
+          snapshot = core().captureInputs(plan, { ...settings, ...context.context }, materials);
+          const inferredValidation = core().validateInputs(snapshot);
+          if (!inferredValidation.ok) throw new Error(inferredValidation.errors.join(' '));
+        }
         let evidence = { status: 'disabled', sources: [], warnings: ['Research support was not requested.'] };
         if (snapshot.settings.researchEnabled) {
           report(id, { busy: true, stage: 'research' });
@@ -134,14 +177,33 @@
         ensureCurrent();
         report(id, { busy: true, stage: 'generating' });
         const prompt = core().buildScriptPrompt(snapshot, evidence);
-        let raw = await waitForRun(deps.callText(prompt, run.controller.signal), run.controller.signal);
-        ensureCurrent();
+        let raw = await request(prompt);
         let result = core().normalizeScript(raw, snapshot, evidence);
         if (!result.ok) {
           report(id, { busy: true, stage: 'validating' });
-          raw = await waitForRun(deps.callText(prompt + '\n\nThe previous attempt failed validation. Return a fresh complete JSON object addressing these checks: ' + JSON.stringify(result.errors), run.controller.signal), run.controller.signal);
-          ensureCurrent();
+          raw = await request(core().buildScriptRepairPrompt(prompt, raw, result.errors));
           result = core().normalizeScript(raw, snapshot, evidence);
+        }
+        if (!result.ok) {
+          // At most eight parts, with one corrective retry per part. Persist only the
+          // fully assembled, validated script; successful parts stay private to this run.
+          const chunks = core().scriptChunks(snapshot), steps = [];
+          for (let index = 0; index < chunks.length; index++) {
+            report(id, { busy: true, stage: 'chunking', completedChunks: index, totalChunks: chunks.length });
+            const chunkPrompt = core().buildScriptChunkPrompt(snapshot, evidence, chunks, index, steps);
+            let chunkRaw = await request(chunkPrompt);
+            let part = core().normalizeScriptChunk(chunkRaw, snapshot, evidence, chunks[index], evidence.status === 'retrieved' && index === 0);
+            if (!part.ok) {
+              chunkRaw = await request(core().buildScriptRepairPrompt(chunkPrompt, chunkRaw, part.errors));
+              part = core().normalizeScriptChunk(chunkRaw, snapshot, evidence, chunks[index], evidence.status === 'retrieved' && index === 0);
+            }
+            if (!part.ok) throw new Error('The AI could not complete teaching-script part ' + (index + 1) + ' of ' + chunks.length + '. No incomplete script was saved. ' + part.errors.join(' '));
+            steps.push(part.step);
+          }
+          const draftTitle = core().parseRaw(raw)?.title;
+          const title = [draftTitle, snapshot.settings.topic, snapshot.plan.title, 'Teaching script']
+            .filter(value => typeof value === 'string').map(value => value.trim().slice(0, 500)).find(value => value.length >= 3);
+          result = core().normalizeScript({ title, scope: snapshot.settings.scope, durationMinutes: snapshot.settings.durationMinutes, steps }, snapshot, evidence);
         }
         if (!result.ok) throw new Error('The AI response did not meet the script requirements. ' + result.errors.join(' '));
         const latest = ensureCurrent(), latestPlan = canonicalPlan(latest, id);

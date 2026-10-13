@@ -169,7 +169,7 @@ describe('controlled stall investigations', () => {
       ] },
     };
     const record = FS.stallInvestigationRecord({ ...attempt, attempts: Array.from({ length: 8 }, () => attempt) });
-    expect(record.completedAt).toBe(attempt.completedAt);
+    expect(record.completedAt).toBe(new Date(attempt.completedAt).toISOString());
     expect(record.explanation).toBe(attempt.explanation);
     expect(FS.stallEvidencePairs(record.observations).complete).toBe(true);
     expect(record.flight).toMatchObject({ status: 'complete', recovered: true, recoverySeconds: 5 });
@@ -189,7 +189,7 @@ describe('controlled stall investigations', () => {
       ] },
     };
     const record = FS.stallInvestigationRecord({ ...attempt, attempts: Array.from({ length: 8 }, () => attempt) });
-    expect(record.completedAt).toBe(attempt.completedAt);
+    expect(record.completedAt).toBe(new Date(attempt.completedAt).toISOString());
     expect(record.explanation).toBe(attempt.explanation);
     expect(FS.stallEvidencePairs(record.observations).complete).toBe(true);
     expect(record.flight).toMatchObject({ status: 'complete', recovered: true, recoverySeconds: 5 });

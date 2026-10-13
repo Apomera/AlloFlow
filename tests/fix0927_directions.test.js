@@ -45,6 +45,44 @@ const pack = () => [
   { id: 'res-c', type: 'note-taking', title: 'Notes' }, { id: 'res-d', type: 'faq', title: 'Unrelated' },
 ];
 
+describe('lesson plans and directions have distinct labels', () => {
+  it('uses plain, distinct feature names in both deployed string sets', () => {
+    for (const strings of [STRINGS, PUBLIC_STRINGS]) {
+      expect(strings.lesson_plan.title).toBe('Lesson Plan');
+      expect(strings.lesson_plan.header_title).toBe('Lesson Plan');
+      expect(strings.directions.title).toBe('Lesson Directions');
+    }
+  });
+
+  it.each(['UDL Lesson Plan', 'Lesson Plan', 'Assignment Directions'])('displays legacy inherited title %s as Lesson Directions', title => {
+    const model = adapter({ item: { ...directions('Read the resource.'), title }, t });
+    expect(model.viewProps.title).toBe('Lesson Directions');
+  });
+
+  it('preserves a custom directions title', () => {
+    const model = adapter({ item: directions('Read the resource.'), t });
+    expect(model.viewProps.title).toBe('Homework');
+  });
+
+  it.each(['', 'Friday fieldwork'])('drafts directions with its own default while preserving an entered title: %s', async title => {
+    const source = read('host_handlers_source.jsx');
+    const from = source.indexOf('const deriveDirectionsDraft =');
+    const to = source.indexOf('const sendPackHome =', from);
+    let draft = { title };
+    const deps = {
+      directionsDeriving: false, setDirectionsDeriving: vi.fn(),
+      history: [{ id: 'plan', type: 'lesson-plan', title: 'UDL Lesson Plan', data: { objectives: ['Observe'] } }],
+      _alloStudentSafeResources: () => [], callGemini: vi.fn().mockResolvedValue('1. Observe the materials.'),
+      setMbDirectionsDraft: update => { draft = update(draft); }, t, addToast: vi.fn(), warnLog: vi.fn(),
+    };
+    const derive = new Function('__d', source.slice(from, to) + ';return deriveDirectionsDraft;')(deps);
+    await derive();
+    expect(draft.title).toBe(title || 'Lesson Directions');
+    expect(draft.body).toBe('1. Observe the materials.');
+    expect(draft.derivedFrom).toBe('plan');
+  });
+});
+
 describe('directions i18n: the view has its own keys', () => {
   it('shows "Your goals" and the device note, never the command palette strings', () => {
     const text = textOf(React.createElement(View, { t, title: 'Homework', bodyHtml: '',
@@ -142,7 +180,7 @@ describe("the student's choice is kept and reported", () => {
   it('the teacher side keeps the reported choice', () => {
     const source = host.slice(host.indexOf('      const applyHwEvidence = (v) => {'), host.indexOf('      const answerRtcOffer = async'));
     let state = {};
-    new Function('setMbHwEvidence', source + ';return applyHwEvidence;')(update => { state = update(state); })(
+    new Function('setMbHwEvidence', 'cancelled', source + ';return applyHwEvidence;')(update => { state = update(state); }, false)(
       { kind: 'hw-evidence', uid: 'u1', directionsId: 'dir-1', doneCount: 0, total: 0, objectives: [], choice: { resourceId: 'res-b', label: 'Quiz' } });
     expect(state['u1|dir-1'].choice).toEqual({ resourceId: 'res-b', label: 'Quiz' });
   });

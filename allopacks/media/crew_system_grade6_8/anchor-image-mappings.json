@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cs-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "CAPTURE SPOT",
+      "assetId": "cs-term-capture",
+      "reason": "The arrow leads the heard assignment into one notebook."
+    },
+    {
+      "resourceId": "cs-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "LAUNCH CHECK",
+      "assetId": "cs-term-launch",
+      "reason": "Packing a bag beside a clock matches the launch check."
+    },
+    {
+      "resourceId": "cs-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "WEEKLY RESET",
+      "assetId": "cs-term-reset",
+      "reason": "The divided weekly grid matches a weekly reset and chunking work."
+    }
+  ]
+}

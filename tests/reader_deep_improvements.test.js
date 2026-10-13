@@ -161,11 +161,11 @@ describe('a calmer reading surface', () => {
 
   it('keeps one banner box in every mode, so switching modes does not move the passage', () => {
     const view = mount(item());
-    const box = cls => cls.split(/\s+/).filter(name => /^(border-2|px-3|py-2|rounded-xl)$/.test(name)).sort().join(' ');
+    const box = cls => cls.split(/\s+/).filter(name => /^(border-2|px-3|py-2|rounded-lg)$/.test(name)).sort().join(' ');
     const read = box($('[data-reading-mode-status]').className);
     view.rerender(item()); act(() => root.render(React.createElement(View, { ...view.props(), interactionMode: 'define' })));
     expect(box($('[data-reading-mode-status]').className)).toBe(read);
-    expect(read).toBe('border-2 px-3 py-2 rounded-xl');
+    expect(read).toBe('border-2 px-3 py-2 rounded-lg');
     for (const file of ['app_styles_source.jsx', 'app_styles_module.js']) {
       const css = readFileSync(file, 'utf8');
       expect(css).toContain('[data-adapted-reader] [data-reading-mode-status] { min-height: 3.75rem;');
@@ -246,7 +246,7 @@ describe('teacher review', () => {
     const folded = $('[data-adapted-word-help-student-view]');
     expect(folded.open).toBe(false);
     expect(folded.querySelector('[data-adapted-word-help]')).not.toBeNull();
-    const toggle = byText('Review word supports'); if (toggle && toggle.getAttribute('aria-expanded') === 'false') await click(toggle);
+    const toggle = byText('Review word help'); if (toggle && toggle.getAttribute('aria-expanded') === 'false') await click(toggle);
     const panel = $('[data-adapted-word-help-teacher]'); if (panel && !panel.open) act(() => { panel.open = true; });
     await click(host.querySelector('button[aria-label^="Edit word help: reeds"]'));
     const row = [...host.querySelectorAll('[data-gloss-entry]')].find(node => node.textContent.includes('reeds'));
@@ -318,6 +318,33 @@ describe('unnamed learners sharing one page', () => {
 });
 
 describe('questions at the end of each section', () => {
+  it('keeps the title and first heading together, with questions only after section content', async () => {
+    const data = '# Herons\n\n## Food\n\nHerons wait for fish.\n\n## Nests\n\nHerons nest in trees.';
+    mount(item({ data, words: [] }));
+    expect($('[data-section-think="0"]')).toBeNull();
+    const food = $('[data-section-think="1"]');
+    expect(food.previousElementSibling.getAttribute('data-reading-paragraph')).toBe('2');
+    expect(food.previousElementSibling.textContent).toContain('Herons wait for fish.');
+    expect(food.nextElementSibling.querySelector('h3').textContent.trim()).toBe('Nests');
+    await click(food.querySelector('[data-section-think-toggle]'));
+    expect(food.querySelector('[data-section-prompts-section]').value).toBe('1');
+    expect([...food.querySelectorAll('[data-section-prompts] option')].some(option => option.textContent === 'Herons wait for fish.')).toBe(true);
+  });
+
+  it.each([
+    ['table', '| Food | Habitat |\n| --- | --- |\n| Fish | Marsh |'],
+    ['chart', '[[CHART: {"title":"Heron habitat"}]]']
+  ])('puts the question after a section’s final %s without changing its answer identity', async (kind, visual) => {
+    const data = '## Food\n\nHerons wait for fish.\n\n' + visual + '\n\n## Nests\n\nHerons nest in trees.';
+    mount(item({ data, words: [] }));
+    const food = $('[data-section-think="0"]');
+    expect(food.previousElementSibling.getAttribute('data-reading-' + kind)).toBe('true');
+    expect(food.nextElementSibling.querySelector('h2').textContent.trim()).toBe('Nests');
+    await click(food.querySelector('[data-section-think-toggle]'));
+    expect(food.querySelector('[data-section-prompts-section]').value).toBe('0');
+    expect(food.querySelector('[data-section-prompts-section] option').textContent).toBe('Food');
+  });
+
   it('each section ends with its own button, the questions open there, and answered sections are marked', async () => {
     mount(item());
     const buttons = [...host.querySelectorAll('[data-section-think-toggle]')];

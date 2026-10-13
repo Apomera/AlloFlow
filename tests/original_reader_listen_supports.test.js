@@ -28,7 +28,7 @@ const support = (id, word, text) => ({ id, start: at(word), end: at(word) + word
 const THANE = support('thane', 'thane', 'A Scottish lord');
 const HEREAFTER = support('hereafter', 'hereafter', 'In the future.');
 const split = text => pure.splitTextToSentences(text, {});
-const spoken = entry => 'Word support for "' + entry.quote + '": ' + entry.text + (/[.!?]$/.test(entry.text) ? '' : '.');
+const spoken = entry => 'Word help for "' + entry.quote + '": ' + entry.text + (/[.!?]$/.test(entry.text) ? '' : '.');
 const units = text => text.split(/\n{2,}/).flatMap(p => p.trim().startsWith('|') || p.includes('\n|') ? [] : split(p));
 const clean = sentence => String(sentence).replace(/^#{1,6}\s+/, '').trim();
 
@@ -71,8 +71,8 @@ describe('listen plan for an exact passage', () => {
   it('reads each support after its whole sentence, in text order, as its own unit', () => {
     const plan = View.exactListenPlan(TEXT, [HEREAFTER, THANE], split, spoken);
     const spokenUnits = units(plan.text);
-    expect(spokenUnits).toEqual(['# Act 1', 'All hail, Macbeth!', 'Hail to thee, thane of Cawdor!', 'Word support for "thane": A Scottish lord.',
-      'Thou shalt be king hereafter.', 'Word support for "hereafter": In the future.', 'So foul and fair a day I have not seen.']);
+    expect(spokenUnits).toEqual(['# Act 1', 'All hail, Macbeth!', 'Hail to thee, thane of Cawdor!', 'Word help for "thane": A Scottish lord.',
+      'Thou shalt be king hereafter.', 'Word help for "hereafter": In the future.', 'So foul and fair a day I have not seen.']);
     expect(plan.units).toHaveLength(spokenUnits.length);
     expect(plan.units[3]).toEqual({ support: 'thane' });
     expect(plan.units[5]).toEqual({ support: 'hereafter' });
@@ -82,7 +82,7 @@ describe('listen plan for an exact passage', () => {
 
   it('keeps the passage sentences identical, so saved sentence audio serves both modes', () => {
     const passage = units(TEXT).map(clean);
-    const withSupports = units(View.exactListenPlan(TEXT, [THANE, HEREAFTER], split, spoken).text).filter(unit => !unit.startsWith('Word support')).map(clean);
+    const withSupports = units(View.exactListenPlan(TEXT, [THANE, HEREAFTER], split, spoken).text).filter(unit => !unit.startsWith('Word help')).map(clean);
     expect(withSupports).toEqual(passage);
   });
 
@@ -90,7 +90,7 @@ describe('listen plan for an exact passage', () => {
     const table = 'Look at this.\n\n| thane | lord |\n|---|---|';
     const inTable = { id: 't', start: table.indexOf('thane'), end: table.indexOf('thane') + 5, quote: 'thane', text: 'A lord.' };
     const plan = View.exactListenPlan(table, [inTable, { id: 'e', start: 0, end: 4, quote: 'Look', text: ' ' }], split, entry => entry.text.trim() ? spoken(entry) : '');
-    expect(units(plan.text)).toEqual(['Look at this.', 'Word support for "thane": A lord.']);
+    expect(units(plan.text)).toEqual(['Look at this.', 'Word help for "thane": A lord.']);
   });
 });
 
@@ -101,7 +101,7 @@ describe('original reader read-aloud', () => {
     expect(lastSpeak()).toEqual([TEXT, 'simplified-main', 0, true, 'English']);
     rerender({ isPlaying: true, playingContentId: 'simplified-main', playbackState: { currentIdx: 2 } });
     expect(markedText()).toBe('Hail to thee, thane of Cawdor!');
-    expect(find('mark[data-reading-now] [data-reading-gloss]')?.getAttribute('aria-label')).toBe('Gloss for thane');
+    expect(find('mark[data-reading-now] [data-reading-gloss]')?.getAttribute('aria-label')).toBe('Word help for thane');
     expect(button('Stop original')).toBeTruthy();
     rerender({ playbackState: { currentIdx: 4 } });
     expect(markedText()).toBe('So foul and fair a day I have not seen.');
@@ -109,15 +109,15 @@ describe('original reader read-aloud', () => {
 
   it('reads supports after their sentences and marks the support being read', () => {
     mount();
-    act(() => button('Listen with glosses').click());
+    act(() => button('Listen with word help').click());
     const [text, id] = lastSpeak();
     expect(id).toBe('simplified-main');
-    expect(text).toContain('Hail to thee, thane of Cawdor!\n\nWord support for "thane": A Scottish lord.\n\n');
+    expect(text).toContain('Hail to thee, thane of Cawdor!\n\nWord help for "thane": A Scottish lord.\n\n');
     expect(text).not.toContain('thane. ');
     rerender({ isPlaying: true, playingContentId: 'simplified-main', playbackState: { currentIdx: 3 } });
-    expect(find('[data-reading-gloss][data-reading-now]')?.getAttribute('aria-label')).toBe('Gloss for thane');
+    expect(find('[data-reading-gloss][data-reading-now]')?.getAttribute('aria-label')).toBe('Word help for thane');
     expect(find('mark[data-reading-now]')).toBeNull();
-    expect(button('Stop gloss reading')).toBeTruthy();
+    expect(button('Stop reading word help')).toBeTruthy();
     rerender({ playbackState: { currentIdx: 4 } });
     expect(markedText()).toBe('Thou shalt be king hereafter.');
     expect(find('[data-reading-gloss][data-reading-now]')).toBeNull();
@@ -139,9 +139,9 @@ describe('original reader read-aloud', () => {
     expect(markedText()).toBe('All hail, Macbeth!');
     const withSupports = units(View.exactListenPlan(TEXT, [THANE, HEREAFTER], split, spoken).text);
     rerender({ playbackState: { currentIdx: 3, sentences: withSupports } });
-    expect(button('Stop gloss reading')).toBeTruthy();
-    expect(find('[data-reading-gloss][data-reading-now]')?.getAttribute('aria-label')).toBe('Gloss for thane');
-    act(() => button('Stop gloss reading').click());
+    expect(button('Stop reading word help')).toBeTruthy();
+    expect(find('[data-reading-gloss][data-reading-now]')?.getAttribute('aria-label')).toBe('Word help for thane');
+    act(() => button('Stop reading word help').click());
     expect(props.stopPlayback).toHaveBeenCalledTimes(1);
     expect(props.handleSpeak).not.toHaveBeenCalled();
   });
@@ -151,13 +151,13 @@ describe('original reader read-aloud', () => {
     act(() => find('[data-reader-display]').click());
     act(() => find('[data-reader-listen-along]').click());
     expect(latestKaraoke.text).toBe(TEXT);
-    expect(latestKaraoke.sentenceList).toContain('Word support for "thane": A Scottish lord.');
-    expect(latestKaraoke.sentenceList.indexOf('Word support for "thane": A Scottish lord.')).toBe(latestKaraoke.sentenceList.indexOf('Hail to thee, thane of Cawdor!') + 1);
+    expect(latestKaraoke.sentenceList).toContain('Word help for "thane": A Scottish lord.');
+    expect(latestKaraoke.sentenceList.indexOf('Word help for "thane": A Scottish lord.')).toBe(latestKaraoke.sentenceList.indexOf('Hail to thee, thane of Cawdor!') + 1);
     act(() => latestKaraoke.onClose());
-    const glosses = Array.from(host.querySelectorAll('label')).find(label => label.textContent.includes('Show glosses')).querySelector('input');
+    const glosses = Array.from(host.querySelectorAll('label')).find(label => label.textContent.includes('Show word help')).querySelector('input');
     act(() => glosses.click());
     act(() => find('[data-reader-listen-along]').click());
-    expect(latestKaraoke.sentenceList.some(sentence => sentence.startsWith('Word support'))).toBe(false);
+    expect(latestKaraoke.sentenceList.some(sentence => sentence.startsWith('Word help'))).toBe(false);
   });
 
   it('Save audio prepares every support line along with the passage', async () => {
@@ -166,8 +166,8 @@ describe('original reader read-aloud', () => {
     mount();
     await act(async () => find('[data-review-state="audio"] [data-review-action="audio"]').click());
     const [sentences, , options] = window.__alloPrepareReadAloud.mock.calls[0];
-    expect(sentences).toEqual(['Act 1', 'All hail, Macbeth!', 'Hail to thee, thane of Cawdor!', 'Word support for "thane": A Scottish lord.',
-      'Thou shalt be king hereafter.', 'Word support for "hereafter": In the future.', 'So foul and fair a day I have not seen.']);
+    expect(sentences).toEqual(['Act 1', 'All hail, Macbeth!', 'Hail to thee, thane of Cawdor!', 'Word help for "thane": A Scottish lord.',
+      'Thou shalt be king hereafter.', 'Word help for "hereafter": In the future.', 'So foul and fair a day I have not seen.']);
     expect(options.entries.every(entry => entry.language === 'English')).toBe(true);
   });
 });

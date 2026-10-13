@@ -4118,8 +4118,10 @@ function _alloBuildDirectionsResultAdapter(options) {
 
     const defaultTitleKey = 'directions.title';
     const translatedTitle = typeof input.t === 'function' ? input.t(defaultTitleKey) : '';
-    const title = clamp(item.title, 240)
-        || clamp(translatedTitle && translatedTitle !== defaultTitleKey ? translatedTitle : 'Assignment Directions', 240);
+    const savedTitle = clamp(item.title, 240);
+    const inheritedPlanTitle = /^(?:(?:UDL\s+)?Lesson Plan|Assignment Directions)$/i.test(savedTitle);
+    const title = (!inheritedPlanTitle && savedTitle)
+        || clamp(translatedTitle && translatedTitle !== defaultTitleKey ? translatedTitle : 'Lesson Directions', 240);
     const markdown = String(normalized.body || '').trim();
     const parsedBody = markdown && typeof input.parseMarkdownToHTML === 'function'
         ? input.parseMarkdownToHTML(markdown)
@@ -14383,7 +14385,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=3d1ccc9e0'); };
+    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=42164b5e'); };
     window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=3d1ccc9e0'); };
     window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=3d1ccc9e0'); };
     loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=3d1ccc9e0');
@@ -14422,7 +14424,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=3d1ccc9e0'); }; })();
-    window.__alloLazyMaineSldPractice = () => { loadModule('MaineSldPractice', 'https://alloflow-cdn.pages.dev/maine_sld_practice_module.js?v=36955de0'); };
+    window.__alloLazyMaineSldPractice = () => { loadModule('MaineSldPractice', 'https://alloflow-cdn.pages.dev/maine_sld_practice_module.js?v=7b10a099'); };
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
@@ -14552,9 +14554,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Teaching-script research and editor load only when a teacher opens a plan.
     window.__alloLazyLessonTeachingScript = function() {
       const retry = name => window.__alloModuleRegistry?.[name]?.status === 'failed' && window.__alloRetryModule(name);
-      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=3d1ccc9e0');
-      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=3d1ccc9e0');
-      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=3d1ccc9e0');
+      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=41cc7377');
+      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=df6a9dc7');
+      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=094519c3');
       if (!window.AlloModules?.ResourceContentFingerprint && !retry('ResourceContentFingerprint')) loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
     };
     window.__alloLazyLessonTeachingResearch = () => {
@@ -14584,11 +14586,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=caf6d483'); }; })();
     window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=2ce0737b'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=3d1ccc9e0'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=cead47d5'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=3d1ccc9e0'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=2fc79874'); }; })();
     window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=3d1ccc9e0'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=3d1ccc9e0');
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=b517933d');
     window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=3d1ccc9e0'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
     loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=3d1ccc9e0');
@@ -14597,7 +14599,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=3d1ccc9e0');
     loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=3d1ccc9e0');
     loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=3d1ccc9e0');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=3d1ccc9e0');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=d999f3e8');
     loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=3d1ccc9e0');
     window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=3d1ccc9e0'); }; })();
     window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=3d1ccc9e0'); }; })();
@@ -14654,7 +14656,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // dependencies of its own: it reaches Lumen lazily, loading those STEM
     // plugins on demand when a teacher first imports outside STEM Lab.
     loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=3d1ccc9e0');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=3d1ccc9e0');
+    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=96e18182');
     loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=3d1ccc9e0');
     window.__alloLazySharedActivity = function() {
       if (window.AlloModules?.SharedActivity?.SharedAssignmentActivityPanel) return true;
@@ -14666,7 +14668,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazySharedActivity();
     loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=3d1ccc9e0');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=3d1ccc9e0');
-    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=3d1ccc9e0'); };
+    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=9db1f9a5'); };
     window.__alloEnsureSidebarPanels();
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=3d1ccc9e0');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
@@ -14777,8 +14779,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=3d1ccc9e0');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=3d1ccc9e0');
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=3d1ccc9e0');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=3d1ccc9e0');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3d1ccc9e0');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=49d7ba71');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=a52e1cdb');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=617a14f1');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=3d1ccc9e0');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=3d1ccc9e0');
@@ -14792,10 +14794,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=3d1ccc9e0');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=3d1ccc9e0');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=3d1ccc9e0');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0af9108e'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d6ec2eb2'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=3d1ccc9e0');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=3d1ccc9e0');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=bb64e99b');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=3d1ccc9e0');
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=3d1ccc9e0');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=3d1ccc9e0');
@@ -14808,7 +14810,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=b578e499');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=830ddcbc');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=3d1ccc9e0');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=3d1ccc9e0');
@@ -19409,7 +19411,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'tour-tool-alignment', text: t('tour.alignment_text'), title: t('tour.alignment_title') },
       { id: 'tour-tool-dbq', text: t('tour.dbq_text') || 'Document-Based Questions: students analyze primary sources, build evidence-based arguments, and practice the central skill of social-studies + ELA assessments. Generates source documents, scaffolded questions, and answer keys aligned to your standards.', title: t('tour.dbq_title') || 'Document-Based Questions' },
       { id: 'tour-tool-lesson-plan', text: t('tour.lesson_plan_text'), title: t('tour.lesson_plan_title') },
-      // N3: Assignment Directions shipped with a tour anchor (#tour-tool-directions)
+      // N3: Lesson Directions shipped with a tour anchor (#tour-tool-directions)
       // but no tour step, so the one card in the column that AlloFlow does not write
       // for you was the one card the tour never mentioned.
       { id: 'tour-tool-directions', text: t('tour.directions_text') || "Write student directions yourself, or use Draft for me to start from your lesson plan and resource pack. Review and edit the steps, learning goal, due date, and success criteria for your class, then save. Read the directions as a learner before assigning them.", title: t('tour.directions_title') || 'Prepare student directions' },
@@ -30753,6 +30755,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   const normalizeMaterialItem = (itemText) => {
       if (!itemText) return "";
+      // Already-linked materials must remain stable when a plan is rendered again.
+      if (/\[[^\]\r\n]+\]\(\s*resource:\s*[^)\r\n]+\)/i.test(itemText)) return itemText;
       const rawManifestRegex = /^\[([A-Z0-9-\s]+)\]\s*['"](.+?)['"]\s*\(ID:\s*([a-zA-Z0-9-]+)\)(.*)/;
       const match1 = itemText.match(rawManifestRegex);
       if (match1) {
@@ -37580,7 +37584,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           case 'analysis': return t('analysis.title');
           case 'udl-advice': return t('sidebar.ai_guide');
           case 'faq': return t('faq.title');
-          case 'directions': return t('directions.title') || 'Assignment Directions';
+          case 'directions': return t('directions.title') || 'Lesson Directions';
           case 'brainstorm': return t('brainstorm.title');
           case 'sentence-frames': return t('scaffolds.title');
           case 'adventure': return t('adventure.title');
@@ -42178,7 +42182,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             data-allo-anno-host="true"
             className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''} ${annotationMode === 'voice' ? 'cursor-crosshair' : ''}`}
             style={readingTheme !== 'default' ? {
-              backgroundColor: readingTheme === 'warm' ? '#fdcba5' : readingTheme === 'sepia' ? '#d1bfa9' : readingTheme === 'blue' ? '#b9dbf4' : readingTheme === 'green' ? '#caeccf' : readingTheme === 'rose' ? '#f9c8d8' : readingTheme === 'dyslexia' ? '#f4ebbe' : readingTheme === 'dim' ? '#adb3bd' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : undefined,
+              backgroundColor: readingTheme === 'warm' ? '#fff1e6' : readingTheme === 'sepia' ? '#f3eadb' : readingTheme === 'blue' ? '#eef5fc' : readingTheme === 'green' ? '#eef7ec' : readingTheme === 'rose' ? '#fdf0f4' : readingTheme === 'dyslexia' ? '#fcf8e4' : readingTheme === 'dim' ? '#adb3bd' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'warm' ? '#432714' : readingTheme === 'sepia' ? '#2a1f13' : readingTheme === 'blue' ? '#16304b' : readingTheme === 'green' ? '#123f21' : readingTheme === 'rose' ? '#561530' : readingTheme === 'dyslexia' ? '#3f3b31' : readingTheme === 'dim' ? '#000000' : undefined,
               fontFamily: readingTheme === 'dyslexia' ? "'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif" : undefined,
               letterSpacing: readingTheme === 'dyslexia' ? '0.05em' : undefined,
@@ -47052,7 +47056,7 @@ if (typeof __firebase_config !== 'undefined') {
 
 // Recoverable presentation-only view; keeps draft state in the host on retry.
 function DirectionsComposerView(props) {
-  return <_AlloRecoverableLazyView registryKey="DirectionsComposer" componentName="DirectionsComposerView" loaderName="__alloLazyDirectionsComposer" displayName={props.t('directions.title') || 'Assignment Directions'} loadingMessage="Loading Assignment Directions…" failedMessage="Assignment Directions could not load. Your draft is still here; retry when your connection is ready." zIndex={395} onClose={() => props.setShowDirectionsComposer(false)} t={props.t} viewProps={props} />;
+  return <_AlloRecoverableLazyView registryKey="DirectionsComposer" componentName="DirectionsComposerView" loaderName="__alloLazyDirectionsComposer" displayName={props.t('directions.title') || 'Lesson Directions'} loadingMessage="Loading Lesson Directions…" failedMessage="Lesson Directions could not load. Your draft is still here; retry when your connection is ready." zIndex={395} onClose={() => props.setShowDirectionsComposer(false)} t={props.t} viewProps={props} />;
 }
 
 function PersonaWorkspaceView(props) {

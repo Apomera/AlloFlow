@@ -173,9 +173,9 @@ describe('Directions Result safe view extraction', () => {
     expect(host).toContain("loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js");
     expect(host).toContain('window.__alloLazyDirectionsResult');
     const restoreStart = restoreOwner.indexOf('function handleRestoreView(');
-    const restoreSlice = restoreOwner.slice(restoreStart, restoreStart + 2200);
+    const restoreSlice = restoreOwner.slice(restoreStart, restoreOwner.indexOf('const detectClimaxArchetype =', restoreStart));
     expect(restoreSlice).toMatch(/item\.type === ['"]directions['"][\s\S]*?__alloLazyDirectionsResult/);
-    expect(host).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
+    expect(host).toContain('moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps())');
     const core = host.match(/const CORE_BOOT_MODULES = \[([^\]]+)\]/)?.[1] || '';
     expect(core).not.toContain('DirectionsResult');
     expect(host).toContain('Directions could not load');

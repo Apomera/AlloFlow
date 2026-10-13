@@ -1,0 +1,599 @@
+{
+  "slug": "crew_story_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_story_grade6_8.allopack.json",
+  "sourcePackSha256": "fd58176f541434b349031ee7ad0020c8e7d44c24e11b7d4bca37a465c64c86c7",
+  "illustratedPack": "allopacks/illustrated/crew_story_grade6_8.allopack.json",
+  "illustratedPackSha256": "46289a79fdc8432a0cd331c4ebca58d08fadd0b437b8fed6f89350a9fbbf31cd",
+  "plan": "allopacks/media/crew_story_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "cy-term-evidence",
+      "kind": "term",
+      "term": "Evidence",
+      "title": "Evidence",
+      "prompt": "Create a square isolated OBJECT ICON on an empty ivory background: a small tent-shaped desk calendar with blank grid cells and exactly one cell outlined by a coral circle. Beside it, four simple vertical tally strokes crossed by one diagonal tally stroke. The entire image contains only this calendar and tally. No humans, faces, hair, arms, hands, bodies, plants, books, table or classroom. Warm simple flat shapes in muted coral, mustard, teal, navy. No words, numbers, letters, labels, logos or watermarks.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-e90f9af7-7ef1-4183-be26-de0ada360323.png",
+      "file": "cy-term-evidence.png",
+      "alt": "A blank desk calendar has one grid cell circled in coral and five tally marks beside it.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-term-evidence.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "93b5b365d4f4a32a97b433a9e9c2bc60263f2132eef4a380fa32318ec7967373",
+      "optimizedSha256": "09f65d8f4a59b76d94fb69ce4d1ae09ce2626395df0e88fd4bfa126f7e9849d9",
+      "bytes": 11606,
+      "altSource": "vision",
+      "altHash": "img-byj-098646e2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 0,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cy-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "EVIDENCE",
+          "field": "iconUrl",
+          "reason": "The calendar and tally support a date and count as evidence."
+        }
+      ]
+    },
+    {
+      "id": "cy-term-claim",
+      "kind": "term",
+      "term": "Claim",
+      "title": "Claim",
+      "prompt": "Create a square isolated OBJECT ICON on an empty ivory background: one large rounded coral-outline speech bubble containing a single mustard five-point star centered inside. Nothing else at all. No humans, faces, hair, arms, hands, bodies, plants, books, computers or classroom. Warm simple flat shapes in muted coral, mustard, teal, navy. No words, numbers, letters, labels, logos or watermarks.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-ec100822-46d6-472a-86f3-7c2adbd4042e.png",
+      "file": "cy-term-claim.png",
+      "alt": "A coral speech bubble contains a single mustard-colored star.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-term-claim.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "c4392c2c33cd495a737a1f6c9dbb1a8fea342b5c51ec7734da40fee33bc7c0cb",
+      "optimizedSha256": "52dc69c66ab8cf7847c0814de8d437bf47485d04a626525389139639931003f5",
+      "bytes": 5790,
+      "altSource": "vision",
+      "altHash": "img-5z3-08edbab8",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 1,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cy-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "A CLAIM",
+          "field": "iconUrl",
+          "reason": "The star in a speech bubble matches a broad claim about oneself."
+        }
+      ]
+    },
+    {
+      "id": "cy-term-level",
+      "kind": "term",
+      "term": "Level",
+      "title": "Level",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Four plain steps rising left to right, a student standing on the third. Constraints: no numbers on steps. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Composition: square, one clear central concept, generous margin. If a student appears, natural balanced standing posture, exactly two arms each attached to a shoulder and one hand at each wrist; both hands relaxed at sides, coherent hair rooted on the scalp. Exactly four steps and feet supported by the third step for the level concept.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-5532020a-3936-4d92-84af-da19ca742ef0.png",
+      "file": "cy-term-level.png",
+      "alt": "A student stands on the third of four colored steps that rise from left to right.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-term-level.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "77674259f8d7148e0349004e5173004c994a6da041cbd5f8ab91e128535d36a7",
+      "optimizedSha256": "572b1a65eb32af818d0a9145a2f535514d0a5447a3ee4803424d35488f5cfe45",
+      "bytes": 12594,
+      "altSource": "vision",
+      "altHash": "img-cz3-b22ac532",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 3,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cy-term-gap",
+      "kind": "term",
+      "term": "Gap",
+      "title": "Gap",
+      "prompt": "Square educational glossary illustration. A path of plain oval stepping stones curves gently from lower left toward upper right. In its middle one clearly missing stone leaves an obvious wide empty gap. A single plain footprint shape lies on the stone immediately after the gap. No people or other objects. Warm simple flat illustration with clean rounded forms in muted coral, mustard, teal and navy on pale warm ivory. No words, letters, numerals, labels, captions, logos or watermark.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-959fb87b-8e98-4b1a-849d-deb461341db3.png",
+      "file": "cy-term-gap.png",
+      "alt": "A trail of colored stepping stones has a wide gap, with a footprint on the stone just beyond it.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-term-gap.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "87e72fb798b89e37738ae9b979fc270b0c57eeb3b2e18c6173b31138e468d596",
+      "optimizedSha256": "f0047c70e9b3e32408a749369f64d73d912967c9f816a0dc207afd63f5931ad6",
+      "bytes": 10554,
+      "altSource": "vision",
+      "altHash": "img-avj-9ef91013",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 4,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cy-anchor",
+          "sectionIndex": 3,
+          "sectionLabel": "WHY THE GAP",
+          "field": "iconUrl",
+          "reason": "The missing step directly represents the gap to work on next."
+        }
+      ]
+    },
+    {
+      "id": "cy-term-slc",
+      "kind": "term",
+      "term": "Student-led conference",
+      "title": "Student-led conference",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A small table with three chairs: a student, an adult family member, and a teacher; the student is the one speaking. Constraints: student clearly leading. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Square composition. Exactly three people seated on three separate chairs around a small table, a middle-school student at left speaking, family member center and teacher right listening. Student speaking with one forearm lifted gently and palm open, opposite hand resting on table. Each arm clearly joins its own shoulder through elbow to wrist, exactly two arms per person. Hair coherently rooted on scalp. Paper entirely blank.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-5f3bbef3-e466-471a-a23f-bcc6ca75f788.png",
+      "file": "cy-term-slc.png",
+      "alt": "A student speaks with an open hand at a small table while a family member and teacher listen.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-term-slc.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "0ca66e90aae5e2e2fc08cadf4b1644fed4260686d084853a9695fe5f43ab5786",
+      "optimizedSha256": "168b7c52d9aa11f13ea7837be17a93d9cd910097db03fc30ca21a709c6fff9c9",
+      "bytes": 36418,
+      "altSource": "vision",
+      "altHash": "img-11hj-159b3fea",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 5,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cy-term-rehearse",
+      "kind": "term",
+      "term": "Rehearse",
+      "title": "Rehearse",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two students facing each other in Crew chairs, one holding a card, a small clock on the wall. Constraints: no text on card. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Square composition, exactly two middle-school students seated facing each other. Left student holds one blank card with both hands at lap height; right student rests hands on thighs while listening. All arms connected shoulder-elbow-wrist and no fused fingers. Small wall clock has plain hands with no numerals. Hair coherently rooted.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-d537dfc6-4b71-4cd9-80b8-6072e91e5e41.png",
+      "file": "cy-term-rehearse.png",
+      "alt": "Two students sit facing each other, one holding a blank card; a numberless clock hangs above them.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-term-rehearse.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "4a3b0739b747a3c525f62f7dcf029e7f9b1e53399461970ac69837b82977d532",
+      "optimizedSha256": "9dc864786fcf361f95a4c3be50bebd1d78b6f9438d448b1c469fb2f827e333cc",
+      "bytes": 31046,
+      "altSource": "vision",
+      "altHash": "img-vyj-a9760da7",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cy-img-two-threes",
+      "kind": "lesson",
+      "title": "Two threes.",
+      "prompt": "Use case: illustration-story. Asset type: wide landscape lesson panel for a Grade 6–8 Crew SEL learning pack. Draw exactly two side-by-side panels separated by generous cream space. Left: a middle-school girl with coherent long dark wavy hair and coral sweatshirt sits naturally on a chair, hands relaxed on her knees. Above her a thought bubble contains exactly three simple mustard stars. Right: a middle-school boy with short coherent dark curls and a mustard hoodie sits naturally on a chair, hands on his knees. His thought bubble contains three distinct objects: a group of tally strokes, a blank small calendar with one coral-marked cell, and a small broken teal gear. The left panel expresses a rating; the right expresses concrete evidence and a difficulty. Clear friendly faces, exactly two arms attached at natural shoulder positions, elbows and wrists anatomically correct, limbs separated, complete hairstyles rooted on scalp. Warm, simple flat educational illustration with clean rounded forms, gentle paper texture, muted coral, mustard, teal and navy on pale warm ivory. Landscape composition. No words, letters, numerals, readable writing, raster labels, captions, logos or watermarks. Tally strokes are allowed. No extra people or objects.",
+      "caption": "only one story has a count, a date, and a thing that went wrong.",
+      "plannedLabels": [
+        {
+          "text": "Zoe's 3"
+        },
+        {
+          "text": "Malik's 3"
+        }
+      ],
+      "afterType": "simplified",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-f2de0800-c276-4560-8646-c379d0b5448e.png",
+      "file": "cy-img-two-threes.png",
+      "alt": "Two seated students have thought bubbles: one contains three stars, and the other contains tally marks, a marked calendar cell, and a broken gear.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-img-two-threes.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "f7fc7a99fef69650d0ba1c7345f974022b8c629b604cea1f7042615574ed9bad",
+      "optimizedSha256": "0df22a61f3cc54afa2917ae23dbd5ebf4cb021e162681e62f1d1b7700178cf92",
+      "bytes": 37098,
+      "altSource": "vision",
+      "altHash": "img-126n-178c9132",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Zoe's 3",
+          "position": "top-left",
+          "anchorX": 33,
+          "anchorY": 17
+        },
+        {
+          "text": "Malik's 3",
+          "position": "top-right",
+          "anchorX": 78,
+          "anchorY": 18
+        }
+      ],
+      "placement": {
+        "resourceId": "cy-reading-illustrations",
+        "panelId": "cy-img-two-threes",
+        "afterResourceId": "cy-reading"
+      }
+    },
+    {
+      "id": "cy-img-story",
+      "kind": "lesson",
+      "title": "The shape of the story.",
+      "prompt": "Use case: illustration-story. Asset type: wide landscape lesson panel for a Grade 6–8 Crew SEL learning pack. Close view of exactly three cream cards arranged in a shallow fan on a pale wood tabletop, all three card faces visible with ample room between their central icons. First card shows a simple four-step staircase icon in teal. Second card shows a small blank calendar grid with one coral marked cell. Third card shows two path segments separated by a clearly visible gap. Each card contains ONLY its one symbolic icon with plenty of empty cream margin. A small teal circular timer sits to one side, plain clock hands and a small mustard wedge indicating a short span, no numbers. No people, hands or arms. Warm simple flat educational illustration, rounded forms, muted coral, mustard, teal and navy, pale warm cream background and subtle paper texture. Landscape composition with generous margin. No words, letters, numerals, readable writing, labels, captions, logos or watermark.",
+      "caption": "five sentences, two minutes.",
+      "plannedLabels": [
+        {
+          "text": "Level"
+        },
+        {
+          "text": "Evidence"
+        },
+        {
+          "text": "Gap"
+        }
+      ],
+      "afterType": "anchor-chart",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-8cafadb2-b77d-4b2f-883d-503c71112f7e.png",
+      "file": "cy-img-story.png",
+      "alt": "Three cards show steps, a marked calendar cell, and a gap between two path segments; a small timer sits beside them.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-img-story.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "4ee02ac5d889e6a427546ba88cc5f92dcf92441a2787b77296e03a7815bb7dce",
+      "optimizedSha256": "e500a1b8a331ca25798bb971deb9fc56a557d90593036251c1825310fc60013c",
+      "bytes": 39972,
+      "altSource": "vision",
+      "altHash": "img-1553-b8209078",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Level",
+          "position": "bottom-left",
+          "anchorX": 21,
+          "anchorY": 47
+        },
+        {
+          "text": "Evidence",
+          "position": "bottom-center",
+          "anchorX": 47,
+          "anchorY": 44
+        },
+        {
+          "text": "Gap",
+          "position": "bottom-right",
+          "anchorX": 72,
+          "anchorY": 49
+        }
+      ],
+      "placement": {
+        "resourceId": "cy-anchor-illustrations",
+        "panelId": "cy-img-story",
+        "afterResourceId": "cy-anchor"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cy-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "THE STORY",
+          "field": "iconUrl",
+          "reason": "The three cards and timer match level, evidence, gap and a timed story."
+        }
+      ]
+    },
+    {
+      "id": "cy-img-conference",
+      "kind": "lesson",
+      "title": "Saying it where it counts.",
+      "prompt": "Use case: illustration-story. Asset type: wide landscape lesson panel for a Grade 6–8 Crew SEL learning pack. In a warm uncluttered classroom, exactly three people sit around one small conference table on separate chairs: a middle-school student with dark curly hair and mustard hoodie is mid-sentence at the left, an adult family member in a coral cardigan listens at center, and a teacher in a teal top listens and nods at the right. The student leads the conversation. A single blank story card lies on the tabletop. Student makes a gentle small palm-up speaking gesture with one arm: shoulder clearly visible, upper arm down beside ribcage, elbow bent naturally, forearm extending toward table, hand at wrist; opposite forearm rests on the tabletop. Both adults have hands resting naturally on table, each hand traceable through forearm and elbow to its own shoulder. Natural anatomy, exactly two arms per person, no fused limbs, clear separate silhouettes. Coherent hairstyles rooted to each scalp, simple friendly faces. Warm simple flat educational illustration, rounded forms, muted coral, mustard, teal and navy, pale warm cream background, gentle paper texture. Landscape framing with generous margin. No words, letters, numerals, readable writing, labels, captions, logos or watermark.",
+      "caption": "the conference is where you say what is behind the grade.",
+      "plannedLabels": [
+        {
+          "text": "The student"
+        },
+        {
+          "text": "The story"
+        }
+      ],
+      "afterType": "faq",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-dfbad4e8-dc60-4952-8627-3fc23c9d64d7.png",
+      "file": "cy-img-conference.png",
+      "alt": "A student speaks with one palm open at a conference table while a family member and teacher listen; a blank story card lies in front of them.",
+      "status": "visual-review-passed",
+      "optimizedFile": "optimized/cy-img-conference.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "83b69d2676b9ad23dea7f687c67998bc9ddfd36e10084f032d903b0ba3906edb",
+      "optimizedSha256": "0a3c365deac9336f5eee5637903d226847fe938fadfa31d93fd1eb6adcafe95a",
+      "bytes": 67110,
+      "altSource": "vision",
+      "altHash": "img-1x27-7ee718fd",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The student",
+          "position": "top-left",
+          "anchorX": 28,
+          "anchorY": 46
+        },
+        {
+          "text": "The story",
+          "position": "top-right",
+          "anchorX": 49,
+          "anchorY": 65
+        }
+      ],
+      "placement": {
+        "resourceId": "cy-faq-illustrations",
+        "panelId": "cy-img-conference",
+        "afterResourceId": "cy-faq"
+      }
+    },
+    {
+      "slug": "crew_story_grade6_8",
+      "id": "cy-term-adjective",
+      "kind": "term",
+      "term": "Adjective",
+      "scene": "Three distinct backpacks side by side on a bench: a tall blue backpack, a small green backpack, and a bright orange backpack. Clearly different observable describing qualities, clean simple composition. No people or written words.",
+      "alt": "A tall blue backpack, a small green backpack and a bright orange backpack sit together.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Three distinct backpacks side by side on a bench: a tall blue backpack, a small green backpack, and a bright orange backpack. Clearly different observable describing qualities, clean simple composition. No people or written words. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cy-term-adjective.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12dbf-0e2f-76b2-be80-e5442163a116\\exec-60c43f9f-1de5-4c64-936d-5b1be2dd4dac.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cy-term-adjective.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "5a723e5748536ba0a3f6128a8958f8c5321e4e3a0754b9d0262bafa3c70741db",
+      "optimizedSha256": "00d06ce40a0377b149bdb9c9d8e199529ea7e63e8abc15561e54f4d19a27cc7a",
+      "bytes": 38698,
+      "altSource": "vision",
+      "altHash": "img-13tz-e90c81a7",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 2,
+        "field": "image"
+      }
+    },
+    {
+      "slug": "crew_story_grade6_8",
+      "id": "cy-term-trimester",
+      "kind": "term",
+      "term": "Trimester",
+      "scene": "A simple school year planning board divided into exactly three equal side-by-side large rectangular sections, all equal size and clear edges. The middle section softly filled muted coral, outer two pale ivory with teal border. Small schoolhouse model beside board provides context. No writing, symbols, numbers, months or arbitrary calendar grid.",
+      "alt": "A student points to the highlighted middle section of a three-part school-year board.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A simple school year planning board divided into exactly three equal side-by-side large rectangular sections, all equal size and clear edges. The middle section softly filled muted coral, outer two pale ivory with teal border. Small schoolhouse model beside board provides context. No writing, symbols, numbers, months or arbitrary calendar grid. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cy-term-trimester.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12dbf-0e2f-76b2-be80-e5442163a116\\exec-863a4f08-13cd-4de1-a773-15328f286442.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cy-term-trimester.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "e522e8b5f509326944e97a6e7c93e069087f8b9dada0ea59f4b97e9ed35437bc",
+      "optimizedSha256": "b942ac5345c9bec250753d920c8f36a9e95d0e85f2c5a3b3ace4042dbe311fbb",
+      "bytes": 25392,
+      "altSource": "vision",
+      "altHash": "img-q53-373df331",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "slug": "crew_story_grade6_8",
+      "id": "cy-term-believable",
+      "kind": "term",
+      "term": "Believable",
+      "scene": "Two middle school students seated side by side at a desk. One calmly shows a folder containing a small completed model sketch and a small photograph of that same finished model; the other looks at the matching evidence attentively. All arms connected naturally, hands resting in simple positions, no pointing. No text.",
+      "alt": "One student shows a sketch and a photograph of the same model to an attentive classmate.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Two middle school students seated side by side at a desk. One calmly shows a folder containing a small completed model sketch and a small photograph of that same finished model; the other looks at the matching evidence attentively. All arms connected naturally, hands resting in simple positions, no pointing. No text. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cy-term-believable.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12dbf-0e2f-76b2-be80-e5442163a116\\exec-200f07cc-938e-475f-b498-c15a9f54e52e.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cy-term-believable.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "3a87d0514b8469a832a41c152b24e15c896aa47b6b6d2a7b70ea5d1c8c613228",
+      "optimizedSha256": "f3fd49b7cb9bf40c45076b17bca896066b492655f0aace42891a8a01cbd898a9",
+      "bytes": 35766,
+      "altSource": "vision",
+      "altHash": "img-10tb-c2956ba0",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cy-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cy-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cy-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cy-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cy-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cy-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 11,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A middle school student at a desk compares their small clay bowl to a nearby picture card showing the intended bowl shape. Student looks carefully between actual bowl and reference, both hands naturally resting at table, no gestures or marks grading the work. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "A student compares a clay bowl with a picture of the intended bowl shape.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-fd53f6e0-3760-4bd9-b82e-d27466032009.png",
+      "provider": "Built-in image generation",
+      "id": "cy-term-self-assess",
+      "kind": "term",
+      "term": "Self-assess",
+      "file": "cy-term-self-assess.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_feedback_grade6_8",
+        "assetId": "cf-term-assess",
+        "file": "allopacks/media/crew_feedback_grade6_8/cf-term-assess.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cy-term-self-assess.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "6f502f6b67b5dab71478b840959ac5e9a783438838fb66cfb7ec99ad9e63c361",
+      "optimizedSha256": "c62351765bd0edbb0597828264b437aabd5d3f8075ee01000e0bcfe36381585d",
+      "bytes": 32198,
+      "altSource": "vision",
+      "altHash": "img-x57-f53b8979",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cy-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 15,
+  "imagePlacementCount": 19,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_story_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 19,
+    "uniqueImageCount": 15,
+    "anchorSectionImages": 4,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

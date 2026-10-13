@@ -2,6 +2,9 @@ const { createHash } = require('node:crypto');
 const delta = require('./firstresponse_finger_joins_delta.json');
 const hash = source => createHash('sha256').update(source).digest('hex');
 function revertFingerJoins(source) {
+  if (hash(source) !== delta.beforeSHA256 && hash(source) !== delta.afterSHA256) {
+    source = require('./firstresponse_eye_crease_delta.cjs').revertEyeCreases(source);
+  }
   if (hash(source) === delta.beforeSHA256) return source;
   if (hash(source) !== delta.afterSHA256) throw new Error('Finger joins source does not match its exact refinement delta');
   for (const edit of [...delta.edits].reverse()) {

@@ -39,7 +39,7 @@ function render(extra = {}) {
 describe('extracted Directions composer', () => {
   it('renders the named dialog and preserves draft edits through host setters', () => {
     const h = render();
-    expect(host.querySelector('[role="dialog"]').getAttribute('aria-label')).toBe('Assignment Directions');
+    expect(host.querySelector('[role="dialog"]').getAttribute('aria-label')).toBe('Lesson Directions');
     const title = host.querySelector('input[aria-label="Directions title"]');
     expect(title.value).toBe('Existing assignment');
     act(() => Simulate.change(title, { target: { value: 'Revised assignment' } }));

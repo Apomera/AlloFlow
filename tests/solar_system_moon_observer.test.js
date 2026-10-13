@@ -24,6 +24,25 @@ function translate(key, fallback) {
   return WORLD_KEYS.find((name) => key === `stem.solar_sys.${name.toLowerCase()}`) || fallback || key;
 }
 
+// Exercise production elements and handlers without parsing unrelated screens
+// and global styles into jsdom on every render. Browser QA uses the whole tool.
+function moonTestTree(tree) {
+  const retained = [];
+  function visit(node) {
+    if (Array.isArray(node)) { node.forEach(visit); return; }
+    if (!React.isValidElement(node)) return;
+    const props = node.props;
+    if (props.id === 'solar-moon-lab' ||
+        props['data-solarsystem-investigation-hub'] !== undefined ||
+        props['data-solarsystem-evidence-constellation'] !== undefined) {
+      retained.push(node); return;
+    }
+    React.Children.forEach(props.children, visit);
+  }
+  visit(tree);
+  return React.createElement(React.Fragment, null, retained);
+}
+
 // Capture the actual native production handlers. Every SSR render starts a new
 // React instance; mounted refs, focus, layout, and keyboard use are browser work.
 function renderMoon(seed = {}, overrides = {}, siblings = {}) {
@@ -35,6 +54,7 @@ function renderMoon(seed = {}, overrides = {}, siblings = {}) {
   const config = window.StemLab._registry.solarSystem;
   let callbacks, renderWrites = 0;
   const callbackReact = { ...React, createElement(type, props, ...children) {
+    if (type === 'style') return null;
     if (typeof type === 'string' && props &&
         ['onClick', 'onChange'].some((name) => typeof props[name] === 'function')) {
       const id = String(callbacks.size);
@@ -52,7 +72,7 @@ function renderMoon(seed = {}, overrides = {}, siblings = {}) {
       const ctx = makeCtx({ t: translate, ...overrides, React: callbackReact }, store);
       const setToolData = ctx.setToolData;
       ctx.setToolData = function(updater) { renderWrites++; setToolData(updater); };
-      markup = ReactDOMServer.renderToStaticMarkup(React.createElement(() => config.render(ctx)));
+      markup = ReactDOMServer.renderToStaticMarkup(React.createElement(() => moonTestTree(config.render(ctx))));
       if (!store.dirty) break;
     }
     document.body.innerHTML = markup;
@@ -116,6 +136,7 @@ function assertHidden(env) {
   expect(env.result.textContent).toContain('Outcome hidden until you commit');
   expect(env.lab.querySelector('[data-inquiry-stage]').dataset.inquiryStage).toBe('predict');
   expect(env.save).toBeNull();
+  expect(env.lab.querySelector('[data-moon-alignment-checks]')).toBeNull();
   expect([...env.lab.querySelectorAll('[data-moon-prediction]')].every((button) => !button.disabled)).toBe(true);
 }
 
@@ -313,6 +334,63 @@ describe('Solar System Moon observer workbench', () => {
     expect(diagram().querySelector('line[stroke-width="4"]')).not.toBeNull();
     expect(env.lab.textContent).toContain('Evidence differs from your hypothesis.');
     expect(env.save.disabled).toBe(false);
+  });
+
+  it.each([[0, 0], [180, 0], [0, 90], [180, 90], [90, 90], [90, 0],
+    [270, 0], [359, 0], [12, 12], [12.001, 12], [45.25, 30.25]])(
+    'explains the two independent eclipse tests on fixed scales at phase %s and node %s', (phase, node) => {
+      const record = { phase, node, choice: 'none' };
+      const env = renderMoon({ moonPhaseAngle: phase, moonNodeOffset: node, moonPrediction: record });
+      const expected = geometry(phase, node);
+      const phaseGap = Math.min(phase, 360 - phase, Math.abs(phase - 180));
+      const figure = env.lab.querySelector('[data-moon-alignment-checks]');
+      expect(figure.tagName).toBe('FIGURE');
+      expect(document.getElementById(figure.getAttribute('aria-labelledby')).textContent).toBe('Two checks for an eclipse alignment');
+      expect(figure.querySelectorAll('button,input,a,[tabindex]')).toHaveLength(0);
+      for (const [key, value, min, max, lo, hi, met] of [
+        ['phase', phaseGap, 0, 90, 0, 12, phaseGap <= 12],
+        ['latitude', expected.latitude, -6, 6, -1.5, 1.5, Math.abs(expected.latitude) <= 1.5],
+      ]) {
+        const card = figure.querySelector(`[data-moon-check="${key}"]`);
+        expect(Number(card.dataset.value)).toBeCloseTo(value, 10);
+        expect(card.dataset.withinWindow).toBe(String(met));
+        expect(card.querySelector('.solar-moon-check-status').textContent).toContain(met ? 'Inside the model window' : 'Outside the model window');
+        expect(card.querySelector('[role="img"]').getAttribute('aria-label')).toContain(`Fixed scale ${min} to ${max} degrees`);
+        const marker = card.querySelector(`[data-moon-check-marker="${key}"]`);
+        const band = card.querySelector(`[data-moon-check-band="${key}"]`);
+        expect(parseFloat(marker.style.left)).toBeCloseTo((value - min) / (max - min) * 100, 10);
+        expect(parseFloat(band.style.left)).toBeCloseTo((lo - min) / (max - min) * 100, 10);
+        expect(parseFloat(band.style.width)).toBeCloseTo((hi - lo) / (max - min) * 100, 10);
+        const ticks = [...card.querySelectorAll('.solar-moon-check-axis span')];
+        expect(ticks[0].textContent).toBe(min + '°');
+        expect(ticks.at(-1).textContent).toBe((key === 'latitude' ? '+' : '') + max + '°');
+      }
+      expect(figure.querySelector('[data-moon-check-conclusion]').dataset.moonCheckConclusion).toBe(expected.alignment);
+      expect(figure.textContent).toContain('not shadow sizes or real eclipse predictions');
+      expect(figure.textContent).toContain('checks use unrounded values');
+      expect(env.state.moonPrediction).toBe(record);
+      expect(env.state.journalEntries).toEqual([]);
+      expect(env.renderWrites).toBe(0);
+    });
+
+  it('uses the unrounded latitude threshold and keeps angular evidence independent of viewing orientation', () => {
+    const boundary = Math.asin(1.5 / 5.145) * 180 / Math.PI;
+    for (const node of [boundary - .00001, boundary + .00001]) {
+      const env = renderMoon({ moonPhaseAngle: 0, moonNodeOffset: node,
+        moonPrediction: { phase: 0, node, choice: 'none' }, moonEvidenceSaved: true });
+      const checks = () => env.lab.querySelector('[data-moon-alignment-checks]');
+      const before = checks().outerHTML;
+      const latitude = checks().querySelector('[data-moon-check="latitude"]');
+      expect(latitude.dataset.withinWindow).toBe(String(node < boundary));
+      env.view('south');
+      expect(checks().outerHTML).toBe(before);
+      expect(env.state.moonEvidenceSaved).toBe(true);
+      expect(env.state.moonPrediction).toEqual({ phase: 0, node, choice: 'none' });
+      env.setNode('90'); assertHidden(env);
+      env.predict('none'); expect(checks()).not.toBeNull();
+      env.setPhase('180'); assertHidden(env);
+      expect(env.state.journalEntries).toEqual([]);
+    }
   });
 
   it('locks the first native prediction when different captured choices fire in the same frame', () => {

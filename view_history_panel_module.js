@@ -686,6 +686,14 @@ function HistoryPanel(props) {
     resourceTypeLabelCache.set(type, label);
     return label;
   };
+  const getHistoryDisplayTitle = (type, title, fallback) => {
+    const safeTitle = getSafeRowText(title, fallback, 240);
+    return ["lesson-plan", "directions"].includes(type) && /^(?:(?:UDL\s+)?Lesson Plan|Assignment Directions)$/i.test(safeTitle) ? getResourceTypeLabel(type) : safeTitle;
+  };
+  const getHistoryDisplayMeta = (type, meta) => {
+    const safeMeta = typeof meta === "string" ? meta.trim().slice(0, 500) : "";
+    return type === "lesson-plan" ? safeMeta.replace(/(^|[|·•–—]\s*|\s+-\s+)UDL[\s-]+Aligned(?=\s*(?:[|·•–—]|$)|\s+-\s+)/gi, (_, prefix) => prefix + getResourceTypeLabel(type)) : safeMeta;
+  };
   let historyUnitsById = null;
   let nextHistoryUnitIndex = 0;
   const getHistoryRowUnit = (unitId) => {
@@ -709,13 +717,13 @@ function HistoryPanel(props) {
     const itemType = getSafeRowText(getSafeArtifactField(item, "type"), "", 100);
     if (resourceTypeFilter !== "all" && itemType !== resourceTypeFilter) return false;
     if (!normalizedResourceSearch) return true;
-    const itemTitle = getSafeRowText(
+    const itemTitle = getHistoryDisplayTitle(
+      itemType,
       getSafeArtifactField(item, "title"),
-      getSafeRowText(getDefaultTitle(itemType), "Resource", 240),
-      240
+      getSafeRowText(getDefaultTitle(itemType), "Resource", 240)
     );
     const rawMeta = getSafeArtifactField(item, "meta");
-    const itemMeta = typeof rawMeta === "string" ? rawMeta : "";
+    const itemMeta = getHistoryDisplayMeta(itemType, rawMeta);
     return [itemTitle, itemMeta, itemType, getResourceTypeLabel(itemType)].join(" ").toLocaleLowerCase().includes(normalizedResourceSearch);
   });
   const legacyRowIdentityRef = React.useRef({ ids: /* @__PURE__ */ new WeakMap(), sequence: 0 });
@@ -1288,10 +1296,10 @@ function HistoryPanel(props) {
       } catch (_) {
       }
       const defaultItemTitle = getSafeRowText(rawDefaultItemTitle, "Resource", 240);
-      const safeItemTitle = getSafeRowText(getSafeArtifactField(item, "title"), defaultItemTitle, 240);
+      const safeItemTitle = getHistoryDisplayTitle(itemType, getSafeArtifactField(item, "title"), defaultItemTitle);
       const itemTitle = isTeacherMode && !isIndependentMode ? safeItemTitle : sanitizeString(safeItemTitle);
       const rawItemMeta = getSafeArtifactField(item, "meta");
-      const itemMeta = typeof rawItemMeta === "string" ? rawItemMeta.trim().slice(0, 500) : "";
+      const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);
       const itemTypeLabel = getResourceTypeLabel(itemType);
       const itemTextBadge = getInstructionalTextBadge(item);
       const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";

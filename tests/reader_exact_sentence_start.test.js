@@ -74,7 +74,7 @@ describe('original reader sentence starts', () => {
     const [text, id, index, restart] = lastSpeak();
     expect([id, restart]).toEqual(['simplified-main', true]);
     expect(units(text)[index]).toBe('Thou shalt be king hereafter.');
-    expect(units(text)[index - 1]).toMatch(/^Word support for “thane”|^Word support for "thane"/);
+    expect(units(text)[index - 1]).toMatch(/^Word help for “thane”|^Word help for "thane"/);
   });
 
   it('reads the plain original from the clicked sentence when glosses are hidden', () => {

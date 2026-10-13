@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cteam-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "THE TRAP",
+      "assetId": "cteam-term-loafing",
+      "reason": "The untouched page and waiting group match the shared-work trap."
+    },
+    {
+      "resourceId": "cteam-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "THE SENTENCE",
+      "assetId": "cteam-term-part",
+      "reason": "The named puzzle piece represents a clearly owned part."
+    }
+  ]
+}

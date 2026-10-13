@@ -104,7 +104,7 @@ describe('every view renders real content', () => {
   });
 
   it('the flying view exposes a touch-accessible pause control and live fullscreen state', () => {
-    const html = renderTool('flightSim', { flightSim: { view: 'flying' } });
+    const html = renderTool('flightSim', { flightSim: { view: 'flying', railCollapsed: false } });
     expect(html).toContain('aria-label="Pause flight"');
     expect(html).toContain('aria-pressed="false"');
     expect(html).toContain('data-flightsim-flight-deck="true"');

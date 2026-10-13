@@ -1,0 +1,236 @@
+{
+  "caseId": "samira",
+  "routeSummary": "Q1 NO; Q2 NO; Q3a-d NO; Q4 YES; Q5/Q6 narratives; Q7 YES for the documented uses; Q8 YES; Q9(a). Each decision is supported by sources S1-S9 in the participant record.",
+  "summary": "A fully documented fictional practice case: basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of necessary instructional adaptations; no missing-record premise is needed.",
+  "qualityNotes": [
+    "This key models a defensible team analysis of the supplied fictional sources, not an automatic scoring rule or an actual eligibility determination. All names, institutions, dates, scores and statements are invented and visibly labeled. Sources are authored report summaries, not confidential records or test protocols.",
+    "Q1 uses district summative and multi-tiered performance evidence because comparable achievement norms were not established. Processing composites are included for the narrower, corroborated purposes described in S5/S9. English proficiency, a composite score, an IQ-achievement contrast or membership in a language group does not decide SLD.",
+    "The record intentionally omits secured items/protocols, confidence intervals, FSIQ, standardized adaptive scores, Arabic achievement equivalents and unrelated medical testing. None is needed to complete this exercise as designed. Do not calculate missing conversions, significance tests or diagnostic findings. These choices are not a universal evaluation battery for actual students.",
+    "A participant may reasonably ask further clinical questions or disagree with this model, but should identify the exact evidence and effect on the decision. Do not manufacture facts or treat the answer key as a substitute for professional judgment. Actual certification, dissent and notice remain human team responsibilities."
+  ],
+  "administrative": [
+    {
+      "field": "Child / birth date / grade",
+      "entry": "Samira Haddad / January 12, 2017 / Grade 4",
+      "rationale": "Use the fictional identifiers supplied in the header. The September evaluation age is 9 years 8 months; it is not a substitute for the supplied birth date."
+    },
+    {
+      "field": "Meeting and repeated date fields",
+      "entry": "October 2, 2026",
+      "rationale": "S1 identifies the planned training meeting date. Use this date and Samira Haddad on repeated child/date fields, not the workshop delivery date."
+    },
+    {
+      "field": "SAU / school / school phone",
+      "entry": "Example Learning SAU / Example Learning Elementary / 207-555-0100 (training placeholder)",
+      "rationale": "These are the supplied fictional institutional entries, not actual contact information."
+    },
+    {
+      "field": "School address and contact",
+      "entry": "100 Practice Way, Example Town, ME 00000 (not a mailing address); Morgan Ellis, evaluation coordinator; morgan.ellis@school.example",
+      "rationale": "Copy the labeled training information without replacing it with a real school's identity."
+    },
+    {
+      "field": "Parent/guardian and address",
+      "entry": "Rania Haddad; 20 Sample Lane, Example Town, ME 00000 (not a mailing address)",
+      "rationale": "Family voice and qualified interpretation are documented in S1-S3 and S8. The address is a fictional placeholder."
+    },
+    {
+      "field": "Certification / Written Notice",
+      "entry": "Use the S1 team names and roles for practice. Discuss agreement or disagreement; leave actual signatures unsigned. Record the discussion and form completion in the practice Written Notice plan, without claiming an actual notice was issued.",
+      "rationale": "The official certification page requires actual team members' agreement/disagreement signatures and a separate statement from dissenting members. S1 describes a planned meeting, not completed certification."
+    }
+  ],
+  "sections": [
+    {
+      "id": "Q1",
+      "selection": "NO; check Basic reading skill and Reading fluency skills",
+      "entry": "S4 documents performance across all eight areas at the relevant instructional point, using June Grade 3 summative and September beginning-Grade-4 evidence. Basic reading is 8/20 then 9/20 against a local 16/20 criterion. Fluency is 61 then 63 correct words/minute at 92% accuracy on Grade 3 review passages, below the local Grade 4 entry targets of 105 and 95%. Repeated S3 probes and S7 classroom observation corroborate these difficulties. The other six areas meet their documented task criteria, with conditions and continuing language needs recorded below.",
+      "rationale": "The form asks whether achievement is adequate in every listed area; documented difficulty in two supports NO and progression to Q2. Local criteria guide this fictional instructional review, not an SLD cutoff. No standardized achievement score or invented age/grade equivalent is used where norm comparability is unestablished.",
+      "evidence": [
+        "S4: June 2026 district summative and September 2026 eight-area review; separate independent versus supported conditions",
+        "S3: four independent monitoring reviews; S7: September 18 regular-classroom observation",
+        "S2 and S9: language history, interpretation and assessment-quality limits"
+      ],
+      "parts": [
+        {
+          "label": "Oral expression",
+          "entry": "Do not check. June 9/12; September 10/12 on explanation rubrics; local minimum 9/12 (S4).",
+          "rationale": "Visual planning was allowed, without supplied answers. S2 documents ongoing academic-language needs; adequacy on these tasks is not full English proficiency."
+        },
+        {
+          "label": "Listening comprehension",
+          "entry": "Do not check. June 8/10; September 9/10; local minimum 8/10 (S4).",
+          "rationale": "An unfamiliar curriculum passage was read aloud and Samira answered independently. This measures listening, not reading comprehension."
+        },
+        {
+          "label": "Written expression",
+          "entry": "Do not check. June and September 9/12; local minimum 9/12. September spelling 11/15 (S4).",
+          "rationale": "Independent handwriting with an ordinary planning sheet, no scribe. Monitor spelling and academic-language development; a concern does not establish another inadequate area."
+        },
+        {
+          "label": "Basic reading skill",
+          "entry": "Check. June 8/20; September 9/20 new words using taught patterns; local criterion 16/20 (S4).",
+          "rationale": "Vocabulary familiarity did not remove first-letter guesses and vowel/syllable errors. S3 repeated probes and S7 observation provide corroboration."
+        },
+        {
+          "label": "Reading fluency skills",
+          "entry": "Check. June 61 and September 63 correct words/minute, both 92% accuracy; local entry targets 105 and 95% (S4).",
+          "rationale": "Three new Grade 3 review passages, without preview/correction. S3 shows persistent inefficiency; these local targets are not national norms or eligibility thresholds."
+        },
+        {
+          "label": "Reading comprehension",
+          "entry": "Do not check. June and September 8/10; local minimum 8/10. September reading took 22 minutes (S4).",
+          "rationale": "Independent, untimed reading with self-rereading, no audio or supplied words. Comprehension accuracy is adequate; the slow pace remains a fluency concern."
+        },
+        {
+          "label": "Mathematic calculation",
+          "entry": "Do not check. June and September 18/20; local minimum 16/20 (S4).",
+          "rationale": "Independent grade-appropriate operations/place value; clarified directions did not include calculation prompts."
+        },
+        {
+          "label": "Mathematics problem-solving",
+          "entry": "Do not check. June 8/10; September 9/10; local minimum 8/10 (S4).",
+          "rationale": "Samira chose operations and explained solutions. Read-aloud word problems isolated mathematics; they are not evidence of independent reading."
+        }
+      ]
+    },
+    {
+      "id": "Q2",
+      "selection": "NO",
+      "entry": "S3 documents qualified Maine-certified teachers, daily 90-minute literacy instruction and methods addressing the assessed skills: explicit phonemic analysis, cumulative phonics/word analysis, spelling, oral reading, vocabulary and comprehension with modeling, practice and correction. ESOL was 30 minutes four days weekly with daily language-access supports. Additional reading intervention delivered 51/56 planned 25-minute sessions across 14 instructional weeks; four checks documented 9/10, 10/10, 9/10 and 10/10 lesson elements. Attendance was 97%. Schooling and language history in S2 support the opportunity review.",
+      "rationale": "Appropriate methodologies, qualified delivery and language access are documented; the underachievement is not explained by a lack of appropriate learning experiences/instruction in this record. Attendance or intervention duration alone would not establish NO. Summer had no school intervention and is not counted as instructional weeks. Proceed to Q3.",
+      "evidence": [
+        "S3: instruction, provider, session, fidelity, summer-gap and parent progress-sharing records",
+        "S2: continuous English-medium schooling since kindergarten; distinct Arabic literacy opportunities"
+      ],
+      "parts": []
+    },
+    {
+      "id": "Q3",
+      "selection": "NO for each of Q3a, Q3b, Q3c and Q3d",
+      "entry": "Complete and verify all four primary-cause determinations separately. The supplied sensory/motor, cognitive/adaptive, emotional and language/context evidence supports NO for each; proceed to Q4.",
+      "rationale": "The question is whether a listed factor primarily accounts for underachievement, not whether a student has any characteristic or concern. Neither multilingual identity nor reading-related frustration determines a selection.",
+      "evidence": [
+        "S2-S6: source-specific language, instruction, achievement, psychological, adaptive, health and emotional evidence",
+        "S7: regular-classroom behavior and independent reading difficulty"
+      ],
+      "parts": [
+        {
+          "label": "Q3a. Visual, hearing or motor disability",
+          "entry": "NO. September 8 nurse screening: vision 20/20 each eye; hearing passed bilaterally. September 10 OT/teacher review found functional pencil use, handwriting, page tracking and mobility without a motor barrier to reading tasks. No uncorrected sensory concern was reported (S6).",
+          "rationale": "These sources support the primary-cause finding; screenings are not diagnoses or proof that every possible condition is absent."
+        },
+        {
+          "label": "Q3b. Intellectual disability",
+          "entry": "NO. S5 WISC-V NVI 102, Visual Spatial 105 and Fluid Reasoning 103 do not show globally depressed performance on those tasks. S6 parent/teacher interviews document expected developmental history, independent daily routines, classroom organization, peer cooperation and learning of nonreading routines; reading homework needs help.",
+          "rationale": "Integrate reasoning with developmental/adaptive functioning. NVI is not FSIQ or culture-free intelligence; descriptive interviews are not standardized adaptive scores."
+        },
+        {
+          "label": "Q3c. Emotional disability",
+          "entry": "NO. The September 15 counselor review, parent/teacher reports and observations describe peer participation, no removals or pervasive mood/behavior change, and engagement outside difficult reading. Errors occur while calm and attending. Samira's frustration/public-reading reluctance is task-linked and her request for private feedback is documented (S6/S7).",
+          "rationale": "The evidence does not support emotional disability as the primary explanation. Reading-related distress remains a real support need, not an exclusion or a diagnosis."
+        },
+        {
+          "label": "Q3d. Environmental, cultural or economic disadvantage and/or limited English proficiency",
+          "entry": "NO. S2 documents stable access and uninterrupted schooling, family/student input, and English development; S3 verifies appropriate instruction/access. ACCESS 2026 listening 5.1, speaking 4.6, reading 2.8 and writing 3.5 are a limited snapshot. Familiar-word meanings and oral explanation are stronger than independent decoding; reading difficulty persists despite verified access (S2-S4).",
+          "rationale": "The converging history and task evidence, not proficiency levels or language identity alone, supports this primary-cause analysis. Continue ESOL; do not require an English threshold or equivalent Arabic reading difficulty."
+        }
+      ]
+    },
+    {
+      "id": "Q4",
+      "selection": "YES",
+      "entry": "The four streams below converge on persistent word-analysis/reading-efficiency difficulties with stronger oral/conceptual, mathematical and selected visual-reasoning performance. The pattern is relevant to the reading concern when considered with instruction, language history and primary-cause findings; it is not merely an English-literacy versus mathematics contrast.",
+      "rationale": "Q4 requires an integrated team interpretation using appropriate evidence. No fixed score spread, processing composite cutoff or IQ-achievement discrepancy determines the finding. Record all eight cells, then proceed to Q5.",
+      "evidence": [
+        "S3/S8: intervention response and instructional comparison; S7: classroom performance",
+        "S4: district summative achievement; S5/S9: standardized processing results and bounded interpretation"
+      ],
+      "parts": [
+        {
+          "label": "Q4a. Response to scientific research-based intervention",
+          "strengths": "S3: new-word accuracy rises 6, 7, 8, 9/20; Grade 3 monitoring rises 55 to 63 correct words/minute, 90% to 92% accuracy. S8 adapted instruction supports 8/10 delayed retention and 7-8/10 new-word transfer.",
+          "weaknesses": "S3 independent acquisition remains limited after documented delivery. S8 general-sequence delayed retention is 3-4/10 and transfer 3/10; broad monitoring remains 9/20 despite narrow-target improvement. Summer is a documented instruction gap, not counted dosage.",
+          "rationale": "Use repeated response with documented methods/fidelity. Progress is a strength, not proof of adequacy; slow response is not sufficient by itself to identify SLD."
+        },
+        {
+          "label": "Q4b. Classroom performance",
+          "strengths": "S7: engaged in science, 4/5 oral concept questions correct and 5/6 diagram labels with a word bank. Concept explanation improves with content access. S2/S4 show organized oral explanations and independent mathematics work.",
+          "weaknesses": "S7: during six minutes, 105/180 words attempted with 14 errors and 6 first-letter guesses; two requested pronunciations marked assisted. Prompted taught-word success is 8/10 versus 4/10 on the next independent school-day probe.",
+          "rationale": "These are observed classroom/task findings, not timed fluency norms, achievement composites or an inference about motivation. Keep independent and assisted work separate."
+        },
+        {
+          "label": "Q4c. Achievement assessments",
+          "strengths": "S4 June/September summative review: oral expression 9/12 then 10/12; listening 8/10 then 9/10; writing 9/12 both; untimed independent comprehension 8/10 both; calculation 18/20 both; problem-solving 8/10 then 9/10.",
+          "weaknesses": "S4 basic reading is 8/20 then 9/20 versus local 16/20 criterion. Fluency is 61 then 63 correct words/minute at 92%, below local entry targets 105 and 95%. Adequate comprehension required slow independent reading.",
+          "rationale": "District core-curriculum summative evidence meets this source category. Local criteria are not national norms; read-aloud mathematics does not count as independent reading."
+        },
+        {
+          "label": "Q4d. Standardized psychological-processing data",
+          "strengths": "S5 fictional age-based composites, mean 100/SD 15: WISC-V NVI 102, Visual Spatial 105, Fluid Reasoning 103, Processing Speed 98; CTOPP-2 Phonological Memory 94. These are relative resources on the assessed tasks.",
+          "weaknesses": "S5 CTOPP-2 Phonological Awareness 79 and Rapid Symbolic Naming 82 document difficulty on English phonological and familiar-symbol tasks. Exact Arabic-English norm representativeness is not established; corroboration and bounded interpretation are necessary.",
+          "rationale": "S5/S9 document examiner, dates, required subtests, standardized conditions and limits. Scores contribute to the pattern, not a language-independent diagnosis; overlapping WISC indexes are not independent replications."
+        }
+      ]
+    },
+    {
+      "id": "Q5",
+      "selection": "Narrative; no YES/NO box",
+      "entry": "Dr. Mercer observed the regular Grade 4 classroom September 18, 9:05-9:40 a.m., after parent consent (S1/S7). During English science instruction with the class's ordinary visuals/vocabulary, Samira attended, answered 4/5 oral concept questions and labeled 5/6 diagram parts. In six minutes of independent reading she attempted 105 of 180 words with 14 errors, including 6 first-letter guesses; two requested pronunciations and later teacher read-aloud were recorded as assistance. In a separate 20-minute reading lesson she read 8/10 taught words with prompts, versus 4/10 independently on the next school-day probe. Slow/error-prone decoding and weak carryover restrict print access despite engagement and conceptual strengths.",
+      "rationale": "Record observer, date, duration, regular-classroom setting, tasks and support conditions, then connect behavior with academic functioning. Do not equate this classroom count with timed fluency or interpret reading distress as an emotional diagnosis.",
+      "evidence": [
+        "S7: evaluation observation and reading-lesson follow-up; S1: August 24 consent"
+      ],
+      "parts": []
+    },
+    {
+      "id": "Q6",
+      "selection": "Narrative; no YES/NO box",
+      "entry": "Marina Cole, RN, reviewed the school health record, parent questionnaire and available pediatric summary with consent on September 10. No educationally relevant medical finding was identified in those reviewed sources, including no reported seizures, traumatic brain injury, diagnosed ADHD, significant sleep problem, chronic illness or medication effect. Vision/hearing screening and functional motor observations are documented separately in S6.",
+      "rationale": "This is an affirmative report of a documented review, not an inference from absent information, a medical examination or certification that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
+      "evidence": [
+        "S6: dated nurse/health, sensory and motor sources"
+      ],
+      "parts": []
+    },
+    {
+      "id": "Q7",
+      "selection": "YES for the assessments' documented, limited uses",
+      "entry": "S5/S9 document Dr. Mercer's credentials/training, September 16 WISC-V and September 17 CTOPP-2 administration in English per manual, required subtests, understood response demands and a second psychologist's score check. S4/S9 establish curriculum alignment, comparable repeated probes, consistent scoring and independent rubric review. Trained ESOL administration, 2026 ACCESS reporting cautions, qualified language consultation and family input are documented. The team uses processing composites as bounded, corroborated evidence; it does not assert exact bilingual norm representation, translate test items into standard scores or use unsuitable achievement norms.",
+      "rationale": "YES applies to these documented purposes, not every possible interpretation of these scores. Qualifications alone do not establish validity, and understood English directions do not erase norm limitations. Q7's printed verification box is conditional on NO; this explanation may be retained in supporting notes. No automatic Q7 stop/skip is printed.",
+      "evidence": [
+        "S5/S9: standardized administration, evaluator qualifications, construct use, score check and explicit interpretation limits",
+        "S2/S4: ACCESS reset cautions; performance-based achievement choice and scoring review"
+      ],
+      "parts": []
+    },
+    {
+      "id": "Q8",
+      "selection": "YES",
+      "entry": "The integrated record supports a specific learning disability affecting basic reading and reading fluency. Persistent independent word-reading and efficiency difficulties converge across longitudinal intervention data, classroom observation and summative performance (S3/S4/S7), with relevant but carefully bounded phonological-processing evidence (S5/S9). Appropriate instruction/access and the separate primary-cause reviews are documented (S2/S3/S6). English development continues alongside this disability-related reading need.",
+      "rationale": "The conclusion follows the complete supplied evidence, not a low score, a contrast with mathematics, limited Arabic literacy, language identity or intervention response alone. Q8 identifies disability; proceed separately to Q9 to determine whether special education is necessary.",
+      "evidence": [
+        "S2-S7/S9: integrated achievement, instruction, context, processing, observation and assessment-quality evidence"
+      ],
+      "parts": []
+    },
+    {
+      "id": "Q9",
+      "selection": "a",
+      "entry": "Samira requires disability-related adaptation of reading methodology/delivery: smaller error-selected steps, fewer new contrasts, immediate individualized feedback, spaced retrieval and planned transfer to unfamiliar words/text. S3 shows persistent difficulty despite accessible general instruction/intervention. In S8, general-sequence next-day retention is 3-4/10 and transfer 3/10; adapted instruction yields 8/10 retention and 7-8/10 transfer, with one-week retention 8/10 versus 4/10. Access supports improve content responses to 8/10 from 4/10 but do not remediate independent decoding; broad monitoring remains 9/20 and 63 correct words/minute at 92%. General education interventions/accommodations alone have not adequately addressed the need. Select 9(a), coordinate necessary instruction with continuing ESOL/content access, and monitor independent retention, transfer and fluency.",
+      "rationale": "This is the required supporting Summary. Necessity is shown separately from Q8 by the longitudinal record and independent performance under different instructional conditions. The short comparison informs planning, not causal proof or a prerequisite trial. Methods may occur in general education; necessity of individualized disability-related adaptation, not provider, place, program name or score cutoff, supports 9(a). No separate related service is identified by this evidence.",
+      "evidence": [
+        "S3: delivered general instruction/intervention and continuing broad difficulty",
+        "S8: repeated instructional comparison, retention/transfer, access versus skill, and family/student review"
+      ],
+      "parts": []
+    }
+  ],
+  "followUp": [
+    "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles; do not fabricate real signatures or a completed Written Notice. An actual dissent requires a separate statement.",
+    "Translate the S8 instructional findings into measurable individualized reading instruction and independent progress monitoring. Review broad reading gains as well as taught-item retention and new-word transfer; the narrow successful probes do not mean the wider need is resolved.",
+    "Coordinate ESOL and content access with reading instruction. Preserve Arabic use, qualified interpretation, private corrective feedback and meaningful student/family participation. Report reading and language development separately.",
+    "Reconsider interpretation, additional assessment or instructional changes if new evidence warrants them. Do not require more intervention cycles, an English-proficiency level or equivalent Arabic reading failure before appropriate action."
+  ],
+  "familyExample": "Samira explains ideas, learns mathematics and brings strong storytelling skills. The evaluation also shows persistent difficulty reading unfamiliar words accurately and efficiently, beyond what her English-development history explains. Ordinary reading intervention and access supports have not been enough for independent reading. Smaller steps based on her errors, retrieval practice and planned transfer improved her independence, so she needs individualized reading instruction while English-language and classroom supports continue. We will respect Arabic use and review progress with you through a qualified interpreter."
+}

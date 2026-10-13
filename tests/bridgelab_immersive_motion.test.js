@@ -1844,6 +1844,445 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     act(()=>Simulate.change(field('Pinned time (s)'),{target:{value:'99'}}));expect(state.seismicIntervalPinS).toBe(24);expect(state.seismicPlaying).toBe(false);
     expect(host.querySelector('[data-interval-bars]').innerHTML).not.toMatch(/NaN|Infinity/);
   });
+  function checkOrbitComposition(inputs, time, trial = 'current', origin = 'scene') {
+    const orbit = host.querySelector('[data-bridge-energy-orbit="' + origin + '"]');
+    expect(orbit).toBeTruthy();
+    const response = guideEnergyResponse(inputs);
+    const point = guideEnergyOracle.bridgeSeismicEnergyInterval(response, time, time).earlier;
+    const kinetic = point.velocityMps * point.velocityMps / 2;
+    const elasticSpeed = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+    const elastic = elasticSpeed * elasticSpeed / 2;
+    const expected = { kinetic, elastic, stored: kinetic + elastic };
+    const numberText = value => value !== 0 && value < 0.001 ? value.toExponential(2) : value.toFixed(3);
+    const percentage = id => {
+      const other = id === 'kinetic' ? 'elastic' : 'kinetic';
+      if (!expected.stored) return '—';
+      if (expected[id] === 0) return '0%';
+      if (expected[other] === 0) return '100%';
+      const fraction = expected[id] / expected.stored;
+      return fraction < 0.001 ? '<0.1%' : fraction > 0.999 ? '>99.9%' : (fraction * 100).toFixed(1) + '%';
+    };
+    const split = orbit.querySelector('[data-orbit-split]');
+    expect(split.dataset.orbitSplit).toBe(trial);
+    expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitTrial).toBe(trial);
+    const total = orbit.querySelector('[data-orbit-energy-total]');
+    expect(total.tagName).toBe('STRONG');
+    expect(total.textContent).toBe(numberText(expected.stored));
+    expect(total.parentElement.textContent).toContain(numberText(expected.stored) + ' J/kg');
+    expect(Number(orbit.querySelector('[data-orbit-energy="stored"]').dataset.orbitValue)).toBe(expected.stored);
+    const scaleHelp = split.querySelector('[data-orbit-energy-scale-help]');
+    expect(Boolean(scaleHelp)).toBe(expected.stored > 0);
+    if (scaleHelp) expect(scaleHelp.textContent).toContain('100%');
+    expect(Boolean(split.querySelector('[data-orbit-energy-empty]'))).toBe(expected.stored === 0);
+    const bar = split.querySelector('[role="img"]');
+    expect(bar).toBeTruthy();
+    if (!expected.stored) expect(bar.getAttribute('aria-label')).toContain('No stored energy');
+    for (const id of ['kinetic', 'elastic']) {
+      const row = orbit.querySelector('[data-orbit-energy="' + id + '"]');
+      expect(row.closest('dl')).toBeTruthy();
+      expect(row.closest('svg,[aria-hidden="true"]')).toBeNull();
+      expect(row.querySelector('dt').textContent.toLowerCase()).toBe(id);
+      expect(Number(row.dataset.orbitValue)).toBe(expected[id]);
+      expect(row.querySelector('strong').textContent).toBe(numberText(expected[id]));
+      expect(row.querySelector('strong').closest('dd').textContent).toBe(numberText(expected[id]) + ' J/kg');
+      const fraction = expected.stored > 0 ? expected[id] / expected.stored : 0;
+      const share = row.querySelector('[data-orbit-energy-share="' + id + '"]');
+      expect(share.tagName).toBe('DD');
+      expect(share.textContent).toBe(percentage(id));
+      if (expected.stored) expect(bar.getAttribute('aria-label')).toContain(percentage(id));
+      const part = split.querySelector('[data-orbit-part="' + id + '"]');
+      expect(Number(part.dataset.orbitFraction)).toBe(fraction);
+      expect(Number.parseFloat(part.style.width)).toBeCloseTo(fraction * 100, 10);
+    }
+    expect(split.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+    return expected;
+  }
+
+  it('orbit composition: labels native energy shares and follows A/B at one inspection time', () => {
+    mount({ seismicEnergyOrbit: true, seismicGuideOpen: true, seismicSceneNote: 'Compare the same moment.' });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 7.217 });
+    const currentInputs = guideEnergyCurrentInputs(), before = { ...state };
+    const b = checkOrbitComposition(currentInputs, 7.217);
+    click('A · reference');
+    const a = checkOrbitComposition(state.seismicGuideBaseline.inputs, 7.217, 'reference');
+    expect(a.stored).not.toBe(b.stored);
+    expect(guideEnergyCurrentInputs()).toEqual(currentInputs);
+    expect(state.seismicTime).toBe(7.217);
+    expect(state.seismicSceneNote).toBe(before.seismicSceneNote);
+    click('B · current');
+    expect(checkOrbitComposition(currentInputs, 7.217)).toEqual(b);
+  });
+
+  it('orbit composition: preserves tiny nonzero energy and amplitude-independent shares', () => {
+    mount({ seismicEnergyOrbit: true, seismicTime: 7.217, seismicIntensityG: 0.12 });
+    const ordinary = checkOrbitComposition(guideEnergyCurrentInputs(), 7.217);
+    const shares = [...host.querySelectorAll('[data-orbit-energy-share]')].map(node => node.textContent);
+    patch({ seismicIntensityG: 1e-7 });
+    const tiny = checkOrbitComposition(guideEnergyCurrentInputs(), 7.217);
+    expect(tiny.stored).toBeGreaterThan(0);
+    expect(tiny.stored).toBeLessThan(0.001);
+    expect(tiny.kinetic / tiny.stored).toBeCloseTo(ordinary.kinetic / ordinary.stored, 10);
+    expect([...host.querySelectorAll('[data-orbit-energy-share]')].map(node => node.textContent)).toEqual(shares);
+    expect(host.querySelector('[data-orbit-energy-total]').textContent).toMatch(/e-\d+/);
+  });
+
+  it('orbit composition: distinguishes an empty total from two zero-percent shares in scene and fallback', () => {
+    mount({ seismicEnergyOrbit: true, seismicIntensityG: 0, seismicTime: 7.217 });
+    expect(checkOrbitComposition(guideEnergyCurrentInputs(), 7.217).stored).toBe(0);
+    expect(host.querySelector('[data-orbit-energy-empty]').textContent).toContain('No stored energy');
+    expect([...host.querySelectorAll('[data-orbit-energy-share]')].map(node => node.textContent)).toEqual(['—', '—']);
+    expect(button('Next turning point').disabled).toBe(true);
+    act(() => { viewerStatus = 'failed'; viewerListener('failed'); });
+    expect(checkOrbitComposition(guideEnergyCurrentInputs(), 7.217, 'current', 'fallback').stored).toBe(0);
+  });
+
+  it('orbit composition: tells tiny cycle shares truthfully while preserving viewpoint, pin, inputs and notes', () => {
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18,
+      seismicEnergyOrbit: true, seismicTime: 16, seismicIntervalPinS: 2.317,
+      seismicSceneNote: 'Keep this observation.', seismicObservation: 'Energy changes form.',
+      seismicPrediction: 'At a turn, most energy will be elastic.' });
+    const inputs = guideEnergyCurrentInputs();
+    const invariant = () => [state.bridgeView, state.bridgeObserver, state.bridgeBankYaw, state.seismicIntervalPinS,
+      state.seismicSceneNote, state.seismicObservation, state.seismicPrediction, guideEnergyCurrentInputs()];
+    const before = invariant();
+    for (const [label, dominant] of [['Next turning point', 'elastic'], ['Next center crossing', 'kinetic']]) {
+      const time = Number(button(label).dataset.orbitNextTime);
+      click(label);
+      expect(state.seismicTime).toBe(time);
+      const amounts = checkOrbitComposition(inputs, time);
+      expect(amounts[dominant] / amounts.stored).toBeGreaterThan(0.999);
+      expect(invariant()).toEqual(before);
+      expect(state.seismicPlaying).toBe(false);
+      tick(300);
+      expect(state.seismicTime).toBe(time);
+    }
+  });
+
+  function checkCycleTargetPreviews(inputs, trial = 'current') {
+    const response = guideEnergyResponse(inputs);
+    const controls = host.querySelector('[data-orbit-cycle-controls]');
+    expect(controls).toBeTruthy();
+    const buttons = [...controls.querySelectorAll('button[data-orbit-step]')];
+    expect(buttons).toHaveLength(4);
+    return buttons.map(control => {
+      const kind = control.dataset.orbitKind, step = control.dataset.orbitStep;
+      const preview = control.querySelector('[data-orbit-target-preview]');
+      const symbol = control.querySelector('[data-orbit-cycle-symbol]');
+      expect(symbol).toBeTruthy();
+      expect(symbol.dataset.orbitCycleSymbol).toBe(kind);
+      expect(symbol.textContent).toBe(kind === 'turning' ? '○' : '◇');
+      expect(symbol.getAttribute('aria-hidden')).toBe('true');
+      const descriptionIds = control.getAttribute('aria-describedby').split(/\s+/);
+      const timeLabel = control.querySelector('[data-orbit-destination]');
+      expect(descriptionIds).toContain(timeLabel.id);
+      for (const id of descriptionIds) expect(document.getElementById(id)).toBeTruthy();
+      const label = control.getAttribute('aria-label');
+      expect(label).toBe((step === 'previous' ? 'Previous' : 'Next') + (kind === 'turning' ? ' turning point' : ' center crossing'));
+      if (control.disabled) {
+        expect(preview).toBeNull();
+        expect(descriptionIds).toEqual([timeLabel.id]);
+        return { label, disabled: true };
+      }
+      const time = Number(step === 'next' ? control.dataset.orbitNextTime : control.dataset.orbitPreviousTime);
+      const sample = guideEnergyOracle.bridgeSeismicEnergyInterval(response, time, time).earlier;
+      const kinetic = sample.velocityMps * sample.velocityMps / 2;
+      const elasticSpeed = 2 * Math.PI * response.naturalFrequencyHz * sample.relativeM;
+      const elastic = elasticSpeed * elasticSpeed / 2, stored = kinetic + elastic;
+      const dominant = kind === 'turning' ? elastic : kinetic;
+      const other = kind === 'turning' ? kinetic : elastic;
+      const share = dominant / stored;
+      const shareText = dominant === 0 ? '0%' : other === 0 ? '100%'
+        : share < 0.001 ? '<0.1%' : share > 0.999 ? '>99.9%' : (100 * share).toFixed(1) + '%';
+      expect(stored).toBeGreaterThan(0);
+      expect(preview).toBeTruthy();
+      expect(preview.dataset.orbitTargetPreview).toBe(kind);
+      expect(preview.dataset.orbitTargetTrial).toBe(trial);
+      expect(Number(preview.dataset.orbitTargetTime)).toBe(time);
+      expect(Number(preview.dataset.orbitTargetStored)).toBe(stored);
+      expect(Number(preview.dataset.orbitTargetShare)).toBe(share);
+      expect(timeLabel.textContent).toBe(time.toFixed(3) + ' s');
+      expect(preview.querySelector('[data-orbit-target-percent]').textContent).toBe(shareText);
+      expect(preview.textContent).toContain(kind === 'turning' ? 'Elastic' : 'Kinetic');
+      expect(descriptionIds).toContain(preview.id);
+      for (const [id, value] of [['kinetic', kinetic], ['elastic', elastic]]) {
+        const part = preview.querySelector('[data-orbit-target-part="' + id + '"]');
+        expect(part).toBeTruthy();
+        expect(part.closest('[aria-hidden="true"]')).toBeTruthy();
+        expect(Number(part.dataset.orbitTargetFraction)).toBe(value / stored);
+        expect(Number.parseFloat(part.style.width)).toBeCloseTo(100 * value / stored, 10);
+      }
+      expect(preview.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+      return { label, disabled: false, time, kinetic, elastic, stored, share, shareText };
+    });
+  }
+
+  function cycleTapTimeline(scope = 'scene') {
+    const orbit = host.querySelector('[data-bridge-energy-orbit="' + scope + '"]');
+    const timeline = orbit.querySelector('[data-orbit-cycle-timeline]');
+    expect(timeline.getAttribute('aria-hidden')).toBe('true');
+    expect(timeline.getAttribute('focusable')).toBe('false');
+    expect(timeline.getAttribute('tabindex')).toBeNull();
+    return timeline;
+  }
+
+  function cycleTapTimes(kind, scope = 'scene') {
+    return [...cycleTapTimeline(scope).querySelectorAll('[data-orbit-cycle-marker="' + kind + '"]')]
+      .map(marker => Number(marker.dataset.orbitCycleTime)).sort((a, b) => a - b);
+  }
+
+  function tapCycleLane(kind, requestedTime, scope = 'scene') {
+    const timeline = cycleTapTimeline(scope);
+    const lane = timeline.querySelector('[data-orbit-cycle-tap="' + kind + '"]');
+    expect(lane).toBeTruthy();
+    expect(lane.tagName.toLowerCase()).toBe('rect');
+    expect(Number(lane.getAttribute('x'))).toBe(12);
+    expect(Number(lane.getAttribute('width'))).toBe(236);
+    expect(Number(lane.getAttribute('y'))).toBe(kind === 'turning' ? 8 : 76);
+    expect(Number(lane.getAttribute('height'))).toBe(68);
+    const x = 12 + (requestedTime - 16) / 8 * 236, y = kind === 'turning' ? 42 : 110;
+    const inverse = {}, inverseTransform = vi.fn(() => inverse);
+    const point = { x: 0, y: 0, matrixTransform: vi.fn(function(matrix) {
+      expect(matrix).toBe(inverse);
+      return { x: (this.x - 103) / 1.5, y: (this.y - 71) / 0.75 };
+    }) };
+    timeline.createSVGPoint = vi.fn(() => point);
+    timeline.getScreenCTM = vi.fn(() => ({ inverse: inverseTransform }));
+    act(() => Simulate.click(lane, { clientX: 103 + x * 1.5, clientY: 71 + y * 0.75 }));
+    return { timeline, lane, inverseTransform, point };
+  }
+
+  it('cycle tap: transforms pointer coordinates to exact recorded events and pauses without changing learner evidence', () => {
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18,
+      seismicEnergyOrbit: true, seismicTime: 19.417, seismicIntervalPinS: 12.319,
+      seismicSceneNote: 'Keep this turning-point observation.', seismicObservation: 'Energy changes form.',
+      seismicPrediction: 'The center crossing has mostly kinetic energy.' });
+    for (const kind of ['turning', 'crossing']) {
+      const times = cycleTapTimes(kind);
+      expect(times.length).toBeGreaterThan(2);
+      const target = times[Math.floor(times.length / 2)], near = target + 0.001;
+      patch({ seismicPlaying: true });
+      const before = { ...state };
+      const tapped = tapCycleLane(kind, near);
+      expect(tapped.lane.style.cursor).toBe('pointer');
+      expect(tapped.timeline.createSVGPoint).toHaveBeenCalledOnce();
+      expect(tapped.timeline.getScreenCTM).toHaveBeenCalledOnce();
+      expect(tapped.inverseTransform).toHaveBeenCalledOnce();
+      expect(tapped.point.matrixTransform).toHaveBeenCalledOnce();
+      expect(state).toEqual({ ...before, seismicTime: target, seismicPlaying: false, autoDriving: false });
+      checkCycleReadout(kind);
+      tick(300);
+      expect(state.seismicTime).toBe(target);
+    }
+    const beforeAxis = { ...state }, timeline = cycleTapTimeline();
+    act(() => Simulate.click(timeline, { clientX: 103 + 100 * 1.5, clientY: 71 + 150 * 0.75 }));
+    expect(state).toEqual(beforeAxis);
+    expect([...host.querySelectorAll('[data-orbit-cycle-controls] button[data-orbit-step]')]).toHaveLength(4);
+  });
+
+  it('cycle tap: the same lane position uses the selected A or B response and preserves the comparison', () => {
+    mount({ seismicEnergyOrbit: true, seismicGuideOpen: true, seismicSceneNote: 'Compare the two trials.',
+      seismicIntervalPinS: 12.319, seismicTime: 19.417 });
+    click('Prepare 5% / 20% comparison');
+    const requestedTime = 19.417, inspected = [];
+    for (const [label, trial] of [['A · reference', 'reference'], ['B · current', 'current']]) {
+      click(label);
+      const times = cycleTapTimes('turning');
+      const target = times.reduce((best, time) => Math.abs(time - requestedTime) < Math.abs(best - requestedTime) ? time : best);
+      const before = { ...state };
+      tapCycleLane('turning', requestedTime);
+      expect(state).toEqual({ ...before, seismicTime: target, seismicPlaying: false, autoDriving: false });
+      expect(state.seismicSceneTrial).toBe(trial);
+      expect(checkCycleReadout('turning').querySelector('[data-orbit-cycle-scope]').textContent).toBe(label);
+      inspected.push(target);
+    }
+    expect(inspected[0]).not.toBe(inspected[1]);
+  });
+
+  it('cycle tap: keeps tiny events interactive, empty lanes inert and fallback inspection on the current trial', () => {
+    act(() => media.change(true));
+    mount({ seismicEnergyOrbit: true, seismicIntensityG: 1e-9, seismicTime: 19.417,
+      seismicSceneNote: 'Keep the tiny-input observation.', seismicIntervalPinS: 12.319 });
+    const tinyTime = cycleTapTimes('crossing')[1], tinyBefore = { ...state };
+    tapCycleLane('crossing', tinyTime + 0.001);
+    expect(state).toEqual({ ...tinyBefore, seismicTime: tinyTime, seismicPlaying: false, autoDriving: false });
+    checkCycleReadout('crossing');
+    expect(Number(host.querySelector('[data-orbit-energy="stored"]').dataset.orbitValue)).toBeGreaterThan(0);
+    patch({ seismicIntensityG: 0 });
+    const emptyBefore = { ...state };
+    for (const kind of ['turning', 'crossing']) {
+      expect(cycleTapTimes(kind)).toEqual([]);
+      const empty = tapCycleLane(kind, 19.417);
+      expect(empty.lane.style.cursor).not.toBe('pointer');
+      expect(empty.timeline.createSVGPoint).not.toHaveBeenCalled();
+      expect(state).toEqual(emptyBefore);
+    }
+    checkCycleReadout(null);
+    patch({ bridgeView: '2d', seismicIntensityG: 0.12, seismicTime: 19.417 });
+    const fallbackTime = cycleTapTimes('turning', 'fallback')[1], fallbackBefore = { ...state };
+    tapCycleLane('turning', fallbackTime + 0.001, 'fallback');
+    expect(state).toEqual({ ...fallbackBefore, seismicTime: fallbackTime, seismicPlaying: false, autoDriving: false });
+    expect(checkCycleReadout('turning', 'fallback').querySelector('[data-orbit-cycle-scope]').textContent).toBe('Current experiment');
+  });
+
+  function checkCycleReadout(kind, scope = 'scene') {
+    const orbit = host.querySelector('[data-bridge-energy-orbit="' + scope + '"]');
+    const status = orbit.querySelector('[data-orbit-cycle-map-status]');
+    const time = status.querySelector('[data-orbit-cycle-time-label]');
+    expect(time.textContent).toBe(state.seismicTime.toFixed(3) + ' s');
+    expect(time.style.whiteSpace).toBe('nowrap');
+    expect(time.style.fontSize).toBe('14px');
+    expect(time.closest('svg,[aria-hidden="true"]')).toBeNull();
+    expect(time.closest('[aria-live]').getAttribute('aria-live')).toBe('off');
+    const badge = status.querySelector('[data-orbit-cycle-current]');
+    if (kind) {
+      expect(badge.dataset.orbitCycleCurrent).toBe(kind);
+      expect(badge.textContent).toContain(kind === 'turning' ? 'Turning point' : 'Center crossing');
+      expect(badge.querySelector('[aria-hidden="true"]').textContent).toBe(kind === 'turning' ? '○' : '◇');
+      const markers = orbit.querySelectorAll('[data-orbit-cycle-selected="true"]');
+      expect(markers).toHaveLength(1);
+      expect(markers[0].dataset.orbitCycleMarker).toBe(kind);
+    } else expect(badge).toBeNull();
+    return status;
+  }
+
+  it('cycle readout: identifies exact inspected events while rejecting nearby frames with the same rounded time', () => {
+    mount({ seismicEnergyOrbit: true, seismicTime: 19.417, seismicIntervalPinS: 12.319, seismicSceneNote: 'Keep the event explanation.' });
+    const before = { ...state }, target = Number(button('Next turning point').dataset.orbitNextTime);
+    click('Next turning point');
+    expect(state).toEqual({ ...before, seismicTime: target, seismicPlaying: false, autoDriving: false });
+    checkCycleReadout('turning');
+    const near = target + (Number(target.toFixed(3)) >= target ? 1e-5 : -1e-5);
+    expect(near.toFixed(3)).toBe(target.toFixed(3));
+    patch({ seismicTime: near }); checkCycleReadout(null);
+    click('Next center crossing'); checkCycleReadout('crossing');
+    expect(state.seismicIntervalPinS).toBe(before.seismicIntervalPinS);
+    expect(state.seismicSceneNote).toBe(before.seismicSceneNote);
+  });
+
+  it('cycle readout: follows A and B event identity at the same clock without changing learner evidence', () => {
+    mount({ seismicEnergyOrbit: true, seismicGuideOpen: true, seismicSceneNote: 'Keep A evidence.', seismicIntervalPinS: 12.319 });
+    click('Prepare 5% / 20% comparison'); click('A · reference'); patch({ seismicTime: 19.417 });
+    click('Next turning point');
+    expect(checkCycleReadout('turning').querySelector('[data-orbit-cycle-scope]').textContent).toBe('A · reference');
+    const before = { ...state };
+    click('B · current');
+    expect(state).toEqual({ ...before, seismicSceneTrial: 'current' });
+    expect(checkCycleReadout(null).querySelector('[data-orbit-cycle-scope]').textContent).toBe('B · current');
+  });
+
+  it('cycle readout: retains tiny-event identity, clears zero-input events and supports fallback inspection', () => {
+    act(() => media.change(true));
+    mount({ seismicEnergyOrbit: true, seismicIntensityG: 1e-9, seismicTime: 19.417, seismicSceneNote: 'Keep the tiny event.' });
+    click('Next center crossing'); checkCycleReadout('crossing');
+    expect(Number(host.querySelector('[data-orbit-energy="stored"]').dataset.orbitValue)).toBeGreaterThan(0);
+    patch({ seismicIntensityG: 0 }); checkCycleReadout(null);
+    patch({ seismicTime: 10.123 }); expect(checkCycleReadout(null).textContent).toContain('Before free vibration');
+    patch({ bridgeView: '2d', seismicIntensityG: 0.12, seismicTime: 19.417 });
+    click('Next turning point');
+    expect(checkCycleReadout('turning', 'fallback').querySelector('[data-orbit-cycle-scope]').textContent).toBe('Current experiment');
+    expect(state.seismicSceneNote).toBe('Keep the tiny event.');
+  });
+
+  it('cycle preview: all four destinations predict the inspected energy while keeping pin, notes and viewpoint', () => {
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18,
+      seismicEnergyOrbit: true, seismicTime: 20, seismicIntervalPinS: 2.317,
+      seismicSceneNote: 'Keep this observation.', seismicObservation: 'Energy changes form.',
+      seismicPrediction: 'At a turn, most energy will be elastic.' });
+    const inputs = guideEnergyCurrentInputs();
+    const invariant = () => [state.bridgeView, state.bridgeObserver, state.bridgeBankYaw, state.seismicIntervalPinS,
+      state.seismicSceneNote, state.seismicObservation, state.seismicPrediction, guideEnergyCurrentInputs()];
+    const before = invariant();
+    const initial = checkCycleTargetPreviews(inputs);
+    expect(initial.every(target => !target.disabled)).toBe(true);
+    for (const initialTarget of initial) {
+      patch({ seismicTime: 20 });
+      const target = checkCycleTargetPreviews(inputs).find(item => item.label === initialTarget.label);
+      click(target.label);
+      expect(state.seismicTime).toBe(target.time);
+      const actual = checkOrbitComposition(inputs, target.time);
+      for (const id of ['kinetic', 'elastic', 'stored']) expect(actual[id]).toBe(target[id]);
+      expect(invariant()).toEqual(before);
+      expect(state.seismicPlaying).toBe(false);
+      expect(state.autoDriving).toBe(false);
+      tick(300);
+      expect(state.seismicTime).toBe(target.time);
+    }
+  });
+
+  it('cycle preview: guide A and B predict their own destinations at the same inspection clock', () => {
+    mount({ seismicEnergyOrbit: true, seismicGuideOpen: true, seismicSceneNote: 'Compare A and B.' });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 20 });
+    const inputs = guideEnergyCurrentInputs();
+    const b = checkCycleTargetPreviews(inputs);
+    click('A · reference');
+    const a = checkCycleTargetPreviews(state.seismicGuideBaseline.inputs, 'reference');
+    expect(a.map(target => target.time)).not.toEqual(b.map(target => target.time));
+    expect(a.map(target => target.stored)).not.toEqual(b.map(target => target.stored));
+    expect(state.seismicTime).toBe(20);
+    expect(guideEnergyCurrentInputs()).toEqual(inputs);
+    click('B · current');
+    expect(checkCycleTargetPreviews(inputs)).toEqual(b);
+    expect(state.seismicTime).toBe(20);
+    expect(state.seismicSceneNote).toBe('Compare A and B.');
+  });
+
+  it('cycle preview: saved A predictions survive changes to current B and match energy after a jump', () => {
+    const inputs = { archetype: 'flexible', groundFrequencyHz: 0.8, intensityG: 0.17, dampingRatio: 0.025 };
+    const records = [{ version: 'bridge-seismic-v1', name: 'Saved flexible reference', timeS: 12.319,
+      inputs, prediction: 'Saved prediction', observation: 'Saved explanation' }];
+    mount({ bridgeView: 'immersive', seismicEnergyOrbit: true, seismicTrials: records, seismicReferenceIndex: 0,
+      seismicDampingRatio: 0.25, seismicSceneNote: 'Selected A evidence.', seismicIntervalPinS: 1.217 });
+    click('Compare saved trial in scene');
+    click('A · reference');
+    patch({ seismicTime: 20 });
+    const a = checkCycleTargetPreviews(inputs, 'reference');
+    patch({ seismicIntensityG: 0.07, seismicFrequencyHz: 2.6, seismicDampingRatio: 0.4 });
+    expect(checkCycleTargetPreviews(inputs, 'reference')).toEqual(a);
+    const target = a.find(item => item.label === 'Next center crossing');
+    click(target.label);
+    expect(state.seismicTime).toBe(target.time);
+    expect(checkOrbitComposition(inputs, target.time, 'reference').stored).toBe(target.stored);
+    expect(state.seismicTrials).toEqual(records);
+    expect(state.seismicSceneSource).toBe('saved');
+    expect(state.seismicSceneNote).toBe('Selected A evidence.');
+    expect(state.seismicIntervalPinS).toBe(1.217);
+  });
+
+  it('cycle preview: tiny nonzero energies retain accurate shares and manual inspection under reduced motion', () => {
+    media.change(true);
+    mount({ seismicEnergyOrbit: true, seismicTime: 20, seismicIntensityG: 1e-10 });
+    const inputs = guideEnergyCurrentInputs(), targets = checkCycleTargetPreviews(inputs);
+    expect(button('Replay scene').disabled).toBe(true);
+    for (const target of targets) {
+      expect(target.disabled).toBe(false);
+      expect(target.stored).toBeGreaterThan(0);
+      expect(target.stored).toBeLessThan(1e-12);
+      expect(target.share).toBeGreaterThan(0.999);
+    }
+    const target = targets.find(item => item.label === 'Next turning point');
+    click(target.label);
+    expect(state.seismicTime).toBe(target.time);
+    expect(checkOrbitComposition(inputs, target.time).stored).toBe(target.stored);
+    expect(state.seismicPlaying).toBe(false);
+  });
+
+  it('cycle preview: unavailable boundary destinations and zero input never imply an energy preview', () => {
+    mount({ seismicEnergyOrbit: true, seismicTime: 0 });
+    const inputs = guideEnergyCurrentInputs();
+    let targets = checkCycleTargetPreviews(inputs);
+    expect(targets.filter(target => target.disabled).map(target => target.label)).toEqual(['Previous turning point', 'Previous center crossing']);
+    patch({ seismicTime: 24 });
+    targets = checkCycleTargetPreviews(inputs);
+    expect(targets.filter(target => target.disabled).map(target => target.label)).toEqual(['Next turning point', 'Next center crossing']);
+    patch({ seismicIntensityG: 0, seismicTime: 20 });
+    targets = checkCycleTargetPreviews(guideEnergyCurrentInputs());
+    expect(targets.every(target => target.disabled)).toBe(true);
+    expect(host.querySelector('[data-orbit-target-preview]')).toBeNull();
+    expect(host.querySelectorAll('[data-orbit-cycle-symbol]')).toHaveLength(4);
+  });
+
   it('recent orbit follows the shared replay clock and the selected comparison trial', () => {
     mount({seismicEnergyOrbit:true,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');patch({seismicTime:7.217});
     const signature=lastScene.sig, plot=host.querySelector('[data-orbit-frame]');
@@ -1915,7 +2354,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
   });
   it('energy orbit saves and restores its exact cycle frame and prints recalculated energy evidence',()=>{
     mount({seismicEnergyOrbit:true,seismicSceneRecording:true,seismicSceneNote:'At a turn, kinetic energy is zero.'});click('Next turning point');
-    const time=state.seismicTime,energies=[...host.querySelectorAll('[data-orbit-energy]')].map(row=>row.querySelector('strong').textContent).join(' / ');
+    const time=state.seismicTime,energies=['kinetic','elastic','stored'].map(id=>host.querySelector('[data-orbit-energy="'+id+'"] strong').textContent).join(' / ');
     click('Save scene observation');const record=state.seismicTrials[0];expect(record.scene.display.energyOrbit).toBe(true);expect(record.timeS).toBe(time);
     patch({seismicEnergyOrbit:false,seismicTime:0,seismicTrials:[{...record,orbit:{storedJPerKg:999999}}]});
     expect(host.querySelector('[data-seismic-scene-orbit]').textContent).toContain(energies);
@@ -2618,6 +3057,202 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(state.seismicPlaying).toBe(false);
   });
 
+  function momentEnergyForPoint(response, point) {
+    const kinetic = point.velocityMps * point.velocityMps / 2;
+    const elasticCoordinate = 2 * Math.PI * response.naturalFrequencyHz * point.relativeM;
+    const elastic = elasticCoordinate * elasticCoordinate / 2;
+    return { kinetic, elastic, stored: kinetic + elastic };
+  }
+  function momentEnergyMaximum(inputs, id) {
+    const response = guideEnergyResponse(inputs);
+    const measure = id === 'motion' ? 'relativeM' : 'absoluteAccelerationMps2';
+    const point = response.samples.reduce((peak, candidate) =>
+      Math.abs(candidate[measure]) > Math.abs(peak[measure]) ? candidate : peak, response.samples[0]);
+    return { time: point.timeS, ...momentEnergyForPoint(response, point) };
+  }
+  function selectEnergyMoment(id) {
+    act(() => Simulate.change(field('Scene key moments'), { target: { value: id } }));
+  }
+  function checkMomentEnergy(inputs, id, trial = 'current') {
+    const expected = momentEnergyMaximum(inputs, id);
+    const insight = host.querySelector('[data-bridge-moment-insight="' + id + '"]');
+    expect(insight).toBeTruthy();
+    const preview = insight.querySelector('[data-moment-energy-preview]');
+    expect(preview).toBeTruthy();
+    expect(preview.dataset.momentEnergyTrial).toBe(trial);
+    expect(Number(preview.dataset.momentEnergyTime)).toBe(expected.time);
+    expect(state.seismicTime).toBe(expected.time);
+    expect(preview.querySelector('h6').textContent).toBe('Share of stored energy now');
+    const total = preview.querySelector('[data-moment-energy-total]');
+    expect(Number(total.dataset.momentEnergyTotal)).toBe(expected.stored);
+    const numberText = value => value !== 0 && Math.abs(value) < 0.001 ? value.toExponential(2) : value.toFixed(3);
+    expect(total.textContent).toBe(numberText(expected.stored) + ' J/kg');
+    expect(preview.querySelector('[data-moment-energy-bar]').getAttribute('aria-hidden')).toBe('true');
+    expect(preview.querySelector('[data-moment-energy-scale-help]').textContent).toBe('Bar = 100% of the stored total now.');
+    for (const id of ['kinetic', 'elastic']) {
+      const row = preview.querySelector('[data-moment-energy-component="' + id + '"]');
+      expect(row.closest('dl')).toBeTruthy();
+      expect(row.closest('svg,[aria-hidden="true"]')).toBeNull();
+      expect(row.querySelector('dt').textContent.toLowerCase()).toBe(id);
+      const amount = expected[id], fraction = expected.stored > 0 ? amount / expected.stored : 0;
+      expect(Number(row.dataset.momentEnergyValue)).toBe(amount);
+      expect(Number(row.dataset.momentEnergyFraction)).toBe(fraction);
+      expect(row.querySelectorAll('dd')[1].textContent).toBe(numberText(amount) + ' J/kg');
+      const share = row.querySelector('dd').textContent;
+      if (fraction === 0 || fraction === 1) expect(share).toBe((fraction * 100) + '%');
+      else if (fraction < 0.001) expect(share).toBe('<0.1%');
+      else if (fraction > 0.999) expect(share).toBe('>99.9%');
+      else expect(Number.parseFloat(share)).toBeCloseTo(fraction * 100, 1);
+      const part = preview.querySelector('[data-moment-energy-part="' + id + '"]');
+      expect(parseFloat(part.style.width)).toBeCloseTo(fraction * 100, 10);
+    }
+    expect(insight.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+    return expected;
+  }
+  function openMomentEnergy(expected, trial = 'current') {
+    const before = { ...state };
+    const action = host.querySelector('[data-moment-energy-route="orbit"]');
+    expect(action.tagName).toBe('BUTTON');
+    expect(action.type).toBe('button');
+    expect(action.textContent).toBe('Compare elastic and kinetic energy here');
+    expect(action.getAttribute('aria-controls')).toBe('bridge-energy-orbit-scene');
+    expect(action.disabled).toBe(false);
+    const summary = host.querySelector('[data-bridge-energy-orbit="scene"] > summary');
+    summary.scrollIntoView = vi.fn();
+    act(() => action.click());
+    const orbit = host.querySelector('[data-bridge-energy-orbit="scene"]');
+    expect(orbit.open).toBe(true);
+    expect(document.activeElement).toBe(orbit.querySelector(':scope > summary'));
+    expect(summary.scrollIntoView).toHaveBeenCalledWith({ block: 'start', inline: 'nearest', behavior: 'instant' });
+    expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitTrial).toBe(trial);
+    for (const id of ['kinetic', 'elastic', 'stored']) {
+      expect(Number(orbit.querySelector('[data-orbit-energy="' + id + '"]').dataset.orbitValue)).toBe(expected[id]);
+    }
+    expect(state).toEqual({ ...before, seismicEnergyOrbit: true, seismicPlaying: false, autoDriving: false });
+    tick(300);
+    expect(state.seismicTime).toBe(expected.time);
+    expect(state.seismicPlaying).toBe(false);
+  }
+
+  it.each(['motion', 'acceleration'])('moment energy: compares current %s peak and opens its orbit without moving the pin or notes', id => {
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18,
+      seismicIntervalPinS: 2.317, seismicEnergyInterval: true, seismicSceneNote: 'Keep the peak evidence.',
+      seismicPrediction: 'Compare motion and energy.', seismicObservation: 'Keep my explanation.',
+      seismicTime: 5, rot3d: { rotX: 22, rotY: 87 } });
+    selectEnergyMoment(id);
+    const expected = checkMomentEnergy(guideEnergyCurrentInputs(), id);
+    expect(expected.stored).toBeGreaterThan(0);
+    checkNativeMoment(guideEnergyCurrentInputs(), id);
+    openMomentEnergy(expected);
+  });
+
+  it('moment energy: follows guide A and clears the old peak when B is selected at the shared clock', () => {
+    mount({ seismicGuideOpen: true, seismicSceneNote: 'Keep guide notes.', seismicIntervalPinS: 3.217 });
+    click('Prepare 5% / 20% comparison');
+    click('A · reference');
+    const inputs = state.seismicGuideBaseline.inputs;
+    selectEnergyMoment('motion');
+    const a = checkMomentEnergy(inputs, 'motion', 'reference');
+    openMomentEnergy(a, 'reference');
+    click('B · current');
+    expect(state.seismicTime).toBe(a.time);
+    expect(field('Scene key moments').value).toBe('');
+    expect(host.querySelector('[data-moment-energy-preview]')).toBeNull();
+    expect(host.querySelector('[data-moment-energy-route="orbit"]')).toBeNull();
+    selectEnergyMoment('motion');
+    const b = checkMomentEnergy(guideEnergyCurrentInputs(), 'motion');
+    expect(b.time).not.toBe(a.time);
+    expect(b.stored).not.toBe(a.stored);
+    openMomentEnergy(b);
+  });
+
+  it('moment energy: retains saved A energy when current B settings change and preserves the notebook', () => {
+    const inputs = { archetype: 'flexible', groundFrequencyHz: 0.8, intensityG: 0.17, dampingRatio: 0.025 };
+    const records = [{ version: 'bridge-seismic-v1', name: 'Saved flexible reference', timeS: 12.319,
+      inputs, prediction: 'Saved prediction', observation: 'Saved explanation' }];
+    mount({ bridgeView: 'immersive', seismicTrials: records, seismicReferenceIndex: 0,
+      seismicDampingRatio: 0.25, seismicSceneNote: 'Selected A evidence.', seismicIntervalPinS: 1.217 });
+    click('Compare saved trial in scene');
+    click('A · reference');
+    selectEnergyMoment('acceleration');
+    const expected = checkMomentEnergy(inputs, 'acceleration', 'reference');
+    patch({ seismicIntensityG: 0.07, seismicFrequencyHz: 2.6, seismicDampingRatio: 0.4 });
+    expect(checkMomentEnergy(inputs, 'acceleration', 'reference')).toEqual(expected);
+    openMomentEnergy(expected, 'reference');
+    expect(state.seismicTrials).toEqual(records);
+    expect(state.seismicSceneSource).toBe('saved');
+  });
+
+  it('moment energy: keeps tiny nonzero energies visible and the orbit available under reduced motion', () => {
+    media.change(true);
+    mount({ seismicIntensityG: 1e-10, seismicIntervalPinS: 4.317 });
+    selectEnergyMoment('motion');
+    const expected = checkMomentEnergy(guideEnergyCurrentInputs(), 'motion');
+    for (const id of ['kinetic', 'elastic', 'stored']) {
+      expect(expected[id]).toBeGreaterThan(0);
+      expect(expected[id]).toBeLessThan(0.001);
+    }
+    expect(host.querySelector('[data-moment-energy-total]').textContent).toMatch(/e-\d+ J\/kg$/);
+    expect(host.querySelector('[data-moment-scientific-help]').textContent).toContain('still nonzero');
+    expect(button('Replay scene').disabled).toBe(true);
+    openMomentEnergy(expected);
+  });
+
+  it('moment energy: zero shaking offers no false peak comparison and retains the existing settling route', () => {
+    mount({ seismicIntensityG: 0, seismicTime: 5, seismicIntervalPinS: 3.217 });
+    for (const id of ['motion', 'acceleration']) {
+      expect(field('Scene key moments').querySelector('option[value="' + id + '"]').disabled).toBe(true);
+      selectEnergyMoment(id);
+      expect(state.seismicTime).toBe(5);
+      expect(host.querySelector('[data-moment-energy-preview]')).toBeNull();
+      expect(host.querySelector('[data-moment-energy-route="orbit"]')).toBeNull();
+    }
+    selectEnergyMoment('free');
+    expect(host.querySelector('[data-moment-energy-route="settling"]')).toBeTruthy();
+    expect(host.querySelector('[data-moment-energy-preview]')).toBeNull();
+    expect(host.querySelector('[data-moment-reading]').textContent).toBe('0.000 J/kg');
+    expect(state.seismicIntervalPinS).toBe(3.217);
+  });
+
+  it('moment energy: preserves the chosen explanation when undamped peak times coincide', () => {
+    mount({ seismicDampingRatio: 0, seismicSceneNote: 'Compare the explanations.' });
+    const inputs = guideEnergyCurrentInputs();
+    expect(momentEnergyMaximum(inputs, 'motion').time).toBe(momentEnergyMaximum(inputs, 'acceleration').time);
+    selectEnergyMoment('acceleration');
+    const acceleration = checkMomentEnergy(inputs, 'acceleration');
+    expect(host.querySelector('[data-bridge-moment-insight]').textContent).toContain('stationary frame');
+    openMomentEnergy(acceleration);
+    selectEnergyMoment('motion');
+    const motion = checkMomentEnergy(inputs, 'motion');
+    expect(motion).toEqual(acceleration);
+    expect(field('Scene key moments').value).toBe('motion');
+    openMomentEnergy(motion);
+  });
+
+  it('moment energy: keeps the opened orbit in graphics fallback with current B energy at the same time', () => {
+    mount({ seismicGuideOpen: true, seismicIntervalPinS: 2.317, seismicSceneNote: 'Keep A evidence.' });
+    click('Prepare 5% / 20% comparison');
+    click('A · reference');
+    selectEnergyMoment('motion');
+    const a = checkMomentEnergy(state.seismicGuideBaseline.inputs, 'motion', 'reference');
+    openMomentEnergy(a, 'reference');
+    const before = { ...state };
+    act(() => { viewerStatus = 'failed'; viewerListener('failed'); });
+    const orbit = host.querySelector('[data-bridge-energy-orbit="fallback"]');
+    expect(orbit.open).toBe(true);
+    expect(orbit.querySelector('[data-orbit-frame]').dataset.orbitTrial).toBe('current');
+    const response = guideEnergyResponse(guideEnergyCurrentInputs());
+    const point = guideEnergyOracle.bridgeSeismicEnergyInterval(response, a.time, a.time).earlier;
+    const expected = momentEnergyForPoint(response, point);
+    for (const id of ['kinetic', 'elastic', 'stored']) {
+      expect(Number(orbit.querySelector('[data-orbit-energy="' + id + '"]').dataset.orbitValue)).toBe(expected[id]);
+    }
+    expect(expected.stored).not.toBe(a.stored);
+    expect(host.querySelector('[data-moment-energy-preview]')).toBeNull();
+    expect(state).toEqual({ ...before, bridgeView: '2d' });
+  });
+
+
   function checkNativeMoment(inputs, id, trial = 'current') {
     const response = guideEnergyResponse(inputs);
     const time = { start: 0, motion: response.milestones.peakMotionS,
@@ -2648,7 +3283,9 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     const expectedText = (scientific ? value.toExponential(2) : value.toFixed(3)) + ' ' + unit;
     expect(reading.textContent).toBe(expectedText);
     const help = insight.querySelector('[data-moment-scientific-help]');
-    expect(Boolean(help)).toBe(scientific);
+    const energyScientific = (id === 'motion' || id === 'acceleration')
+      && Object.values(momentEnergyForPoint(response, point)).some(amount => amount !== 0 && Math.abs(amount) < 0.001);
+    expect(Boolean(help)).toBe(scientific || energyScientific);
     if (help) {
       expect(help.textContent).toContain('2.5e-6 means 0.0000025');
       expect(help.textContent).toContain('still nonzero');

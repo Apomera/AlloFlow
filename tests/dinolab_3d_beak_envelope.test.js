@@ -199,7 +199,8 @@ describe('Dino Lab bounded ceratopsian beak surface', () => {
         new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
       try {
         built.mesh.updateMatrixWorld(true);
-        for (let i = 0; i < 24; i++) {
+        expect(built.mesh.geometry.attributes.position.count).toBe(2403);
+        for (let i = 0; i < 48; i++) {
           const point = built.mesh.localToWorld(new THREE.Vector3().fromBufferAttribute(built.mesh.geometry.attributes.position, i)), delta = point.clone().sub(data.base);
           const hit = new THREE.Raycaster(data.base.clone().addScaledVector(delta, 8), delta.clone().normalize().negate()).intersectObject(skull, false)[0];
           expect(hit).toBeDefined();
@@ -259,7 +260,7 @@ describe('Dino Lab bounded ceratopsian beak surface', () => {
   });
 
   it('preserves the exact jaw, eye and skeletal cranial construction blocks', () => {
-    expect(sha(section('var cranialFaceBefore = model.children.slice();', 'captureCranialMotion(cranialFaceBefore);'))).toBe('8b38f2b8bd67ad8d9ff7c1b1a7f418224725deaa17d22f9c4d5233c55c6118e1');
+    expect(sha(section('var cranialFaceBefore = model.children.slice();', 'captureCranialMotion(cranialFaceBefore);'))).toBe('2b81e77a5fa505be745eecd6c26c0cf35b6557456471815f0baed3893fcc3514');
     expect(sha(preservedSkeletalFrame())).toBe('0aa48b531de1c5dcb977239553d69a054f6caf9b6110de72115319f69f4909c0');
     const skeletalStart = source.indexOf('var cranialBoneBefore = model.children.slice();');
     expect(sha(section('} else if (/Oviraptor/i.test(cladeName)) {', '} else if (/Tyrannosaur/i.test(cladeName)', skeletalStart))).toBe('589a3149811aaa70cf3a04127ed42805415891f537ac7b4f038c61689ad06f09');

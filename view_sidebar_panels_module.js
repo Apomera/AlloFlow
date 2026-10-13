@@ -1341,10 +1341,15 @@ function SimplifiedPanel(props) {
     textFormat
   } = props;
   if (!expandedTools || !expandedTools.includes("simplified")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { id: "tour-level-settings", "data-help-key": "tour-simplified-settings", className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
+  const readingOptionText = (key, fallback) => {
+    const value = typeof t === "function" ? t(key) : "";
+    return value && value !== key ? value : fallback;
+  };
+  const readingActionClass = "group flex min-h-12 w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-semibold leading-5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500";
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { id: "tour-level-settings", "data-help-key": "tour-simplified-settings", className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      "aria-label": t("wizard.output_format"),
       "data-help-key": "simplified_format",
       value: textFormat,
       onChange: (e) => setTextFormat(e.target.value),
@@ -1359,10 +1364,10 @@ function SimplifiedPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Social Media Thread" }, t("simplified.formats.social")),
     /* @__PURE__ */ React.createElement("option", { value: "Poetry" }, t("simplified.formats.poetry")),
     /* @__PURE__ */ React.createElement("option", { value: "Narrative Story" }, t("simplified.formats.narrative_story"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("input.length")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("input.length")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      "aria-label": t("input.length"),
       "data-help-key": "simplified_length",
       value: leveledTextLength,
       onChange: (e) => setLeveledTextLength(e.target.value),
@@ -1405,18 +1410,32 @@ function SimplifiedPanel(props) {
       onChange: (e) => setIncludeCharts(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCharts", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.data_visuals"))))), /* @__PURE__ */ React.createElement("p", { className: "my-3 text-sm text-slate-700" }, t("sidebar.read_original_guidance") || "Read the original with supports first. An adapted companion can activate background knowledge, build context, preview key concepts, and scaffold students toward the original; it does not replace the grade-level text."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-read-original": true, onClick: () => handleReadOriginal && handleReadOriginal(), disabled: !hasSourceOrAnalysis || isProcessing, className: SIDEBAR_PANEL_UI.primaryAction }, t("sidebar.read_original_with_supports") || "Read original with supports"), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCharts", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.data_visuals"))))), /* @__PURE__ */ React.createElement("div", { "data-reading-options": true, className: "space-y-2.5 bg-white p-3.5" }, !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-5 text-slate-600" }, readingOptionText("sidebar.reading_options_add_source", "Add source text to enable these options.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
+      "data-read-original": true,
+      onClick: () => handleReadOriginal && handleReadOriginal(),
+      disabled: !hasSourceOrAnalysis || isProcessing,
+      className: `${readingActionClass} border-indigo-200 bg-indigo-50 text-indigo-900 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-100`
+    },
+    /* @__PURE__ */ React.createElement(BookOpen, { size: 18, "aria-hidden": "true", className: "shrink-0" }),
+    /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, readingOptionText("sidebar.read_original_with_supports", "Read original with supports")),
+    /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, "aria-hidden": "true", className: "shrink-0" })
+  ), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-create-adapted": true,
       onClick: () => handleGenerate("simplified"),
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
-      className: SIDEBAR_PANEL_UI.primaryAction
+      className: `${readingActionClass} border-slate-200 bg-white text-slate-700 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-50 enabled:hover:text-indigo-900`
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, t("sidebar.create_adapted_companion") || "Create adapted companion", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
-    /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
-  ));
+    /* @__PURE__ */ React.createElement(Sparkles, { size: 18, "aria-hidden": "true", className: "shrink-0" }),
+    /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, readingOptionText("sidebar.create_adapted_companion", "Create adapted companion")),
+    /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, "aria-hidden": "true", className: "shrink-0" })
+  ), /* @__PURE__ */ React.createElement("details", { "data-reading-options-guidance": true, className: "text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer rounded-lg px-1 py-3 leading-5 marker:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, readingOptionText("sidebar.reading_options_about", "About these reading options")), /* @__PURE__ */ React.createElement("p", { className: "px-1 pb-2 leading-relaxed" }, readingOptionText("sidebar.read_original_guidance", "Keep the original as the main reading. An adapted companion can build background knowledge and help students understand it.")))));
 }
 function MathPanel(props) {
   const aiTextAvailable = useAiTextAvailable();

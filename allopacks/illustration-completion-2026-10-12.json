@@ -1,0 +1,211 @@
+{
+  "date": "2026-10-12",
+  "status": "complete-illustrated-drafts",
+  "educatorReview": "pending",
+  "newIllustratedEditions": 11,
+  "expandedExistingEditions": 6,
+  "newGlossaryIllustrations": 45,
+  "reviewedGlossaryReuses": 29,
+  "newlyFilledGlossarySlots": 74,
+  "reviewedImageEntriesInContinuation": 274,
+  "gallery": "allopacks/illustration-review-2026-10-12.html",
+  "coverageReport": "allopacks/illustration-coverage-2026-10-12.json",
+  "catalog": {
+    "packs": 62,
+    "illustratedEditions": 62,
+    "glossaryTerms": 661,
+    "glossaryImages": 661,
+    "packsWithoutIllustrations": [],
+    "missingGlossaryImages": 0
+  },
+  "validation": {
+    "crewAndLocal": {
+      "packs": 13,
+      "images": 194,
+      "reports": [
+        {
+          "slug": "crew_ask_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_attention_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_feedback_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_halfway_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_norms_grade6_8",
+          "images": 14,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_perspective_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_repair_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_story_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_system_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_teamwork_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_upstander_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_zones_grade6_8",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "local_government_grade4",
+          "images": 15,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        }
+      ]
+    },
+    "civicsAndMap": [
+      {
+        "slug": "american_revolution_causes_grade5",
+        "assets": 20,
+        "imagePlacements": 29,
+        "bytes": 403786,
+        "allAssetsUsed": true,
+        "sourceContentPreserved": true,
+        "productionArtifactEnvelope": true,
+        "productionAltHashes": true,
+        "uniqueAssets": 20
+      },
+      {
+        "slug": "constitution_grade8",
+        "assets": 18,
+        "imagePlacements": 29,
+        "bytes": 327405,
+        "allAssetsUsed": true,
+        "sourceContentPreserved": true,
+        "productionArtifactEnvelope": true,
+        "productionAltHashes": true,
+        "uniqueAssets": 18
+      },
+      {
+        "slug": "map_skills_grade3",
+        "assets": 23,
+        "imagePlacements": 29,
+        "bytes": 265173,
+        "allAssetsUsed": true,
+        "sourceContentPreserved": true,
+        "productionArtifactEnvelope": true,
+        "productionAltHashes": true,
+        "uniqueAssets": 23
+      },
+      {
+        "slug": "rules_and_fairness_grade1",
+        "assets": 19,
+        "imagePlacements": 28,
+        "bytes": 1053148,
+        "allAssetsUsed": true,
+        "sourceContentPreserved": true,
+        "productionArtifactEnvelope": true,
+        "productionAltHashes": true,
+        "uniqueAssets": 19
+      }
+    ],
+    "gallery": {
+      "images": {
+        "count": 274,
+        "failed": 0
+      },
+      "brokenLinks": 0,
+      "filterWorks": true,
+      "phoneOverflow": false
+    },
+    "tests": {
+      "filesPassed": 4,
+      "testsPassed": 107,
+      "files": [
+        "tests/allopack_edition_consistency.test.js",
+        "tests/allopack_id_uniqueness.test.js",
+        "tests/alt_text_service.test.js",
+        "tests/alt_text_consumers.test.js"
+      ]
+    }
+  }
+}

@@ -82,7 +82,7 @@ async function run(url) {
     await page.goto(url); await open(); await inspectViewer();
     await check('fourth bay renders equal-size projections and ray-picks all three physical spheres', async () => {
       await click('[data-walk-activity="parallax"]');
-      assert.equal(await page.locator('[data-walk-activity]').count(), 6);
+      assert.equal(await page.locator('[data-walk-activity]').count(), 10);
       assert.deepEqual((await state()).player, { x: 24, z: 9, yaw: 0, pitch: 0 });
       await page.locator('[data-walk-stage]').scrollIntoViewIfNeeded();
       const objects = await projected(), heights = objects.map(item => Math.abs(item.top.y - item.bottom.y));
@@ -194,7 +194,7 @@ async function run(url) {
       assert.equal((await state()).parallax.samples.length, 2);
       assert.equal(await page.locator('[data-perception-walk] canvas').count(), 0);
       await click('[data-walk-view="0"]'); assert.equal((await state()).player.x, 24);
-      const name = await page.locator('[data-walk-plan]').getAttribute('aria-label'); assert.match(name, /six challenge spaces/i);
+      const name = await page.locator('[data-walk-plan]').getAttribute('aria-label'); assert.match(name, /challenge spaces/i);
       assert.doesNotMatch(await page.locator('[data-perception-walk]').innerText(), /\\u[0-9a-f]{4}/i);
       await capturePage('fallback-mobile');
       await page.evaluate(() => window.__perceptionPreview.unmount()); assert.equal(await page.locator('canvas').count(), 0);

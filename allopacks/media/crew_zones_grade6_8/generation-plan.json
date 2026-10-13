@@ -1,0 +1,278 @@
+{
+  "slug": "crew_zones_grade6_8",
+  "sourceShotList": "allopacks/crew_zones_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "cz-term-zone",
+      "term": "Zone",
+      "kind": "term",
+      "scene": "Four colored circles in a row: green, yellow, red, blue, each with a simple line pattern",
+      "constraints": "no words in circles",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Four colored circles in a row: green, yellow, red, blue, each with a simple line pattern. no words in circles.",
+      "file": "cz-term-zone.png",
+      "alt": "Four students sit below green, yellow, red, and blue circles, each with a different line pattern.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-5906e24d-b833-4320-b278-b00191d55041.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cz-term-window",
+      "term": "Window",
+      "kind": "term",
+      "scene": "A plain window frame with a calm sky in the middle, storm clouds above, fog below",
+      "constraints": "three bands clearly different",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A plain window frame with a calm sky in the middle, storm clouds above, fog below. three bands clearly different.",
+      "file": "cz-term-window.png",
+      "alt": "Students look at a window divided into storm clouds above, a clear sky in the middle, and fog below.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-3fc69541-29e9-4c6e-a6ed-786d99c4712f.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cz-term-activated",
+      "term": "Activated",
+      "kind": "term",
+      "scene": "A student with wide eyes and both hands gripping a desk edge",
+      "constraints": "not angry, just revved",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student with wide eyes and both hands gripping a desk edge. not angry, just revved.",
+      "file": "cz-term-activated.png",
+      "alt": "A wide-eyed student grips a desk edge with both hands.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-7754896b-88d1-4591-87f5-8dae374d2243.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cz-term-shutdown",
+      "term": "Shutdown",
+      "kind": "term",
+      "scene": "A student with head resting on folded arms, room slightly dimmed",
+      "constraints": "not asleep",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student with head resting on folded arms, room slightly dimmed. not asleep.",
+      "file": "cz-term-shutdown.png",
+      "alt": "A student rests her head on folded arms, eyes open, beside an open notebook in a dim room.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-44b06328-cf88-442d-9740-80fdb6ffed9e.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cz-term-reset",
+      "term": "Reset",
+      "kind": "term",
+      "scene": "A student seated, eyes closed, both feet flat, one hand on the chest",
+      "constraints": "calm, at a desk",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student seated, eyes closed, both feet flat, one hand on the chest. calm, at a desk.",
+      "file": "cz-term-reset.png",
+      "alt": "A student sits at a desk with eyes closed, one hand on her chest and both feet on the floor.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-86e7c19f-4670-42b3-bf7e-877aef06927a.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cz-term-sensory",
+      "term": "Sensory",
+      "kind": "term",
+      "scene": "A hand pressing into a textured ball, a water bottle nearby",
+      "constraints": "everyday objects only",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A hand pressing into a textured ball, a water bottle nearby. everyday objects only.",
+      "file": "cz-term-sensory.png",
+      "alt": "A student squeezes a textured blue ball beside a water bottle.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-e96225b7-f64c-40d2-9fe2-f374df12fa16.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cz-img-priya",
+      "kind": "lesson",
+      "title": "The one-word check-in.",
+      "scene": "A student in a Crew circle with a tight jaw and bouncing leg; a small yellow circle floats near her. The Crew leader is looking her way without alarm.",
+      "caption": "one word tells her what is true and tells the leader she may need a minute.",
+      "plannedLabels": [
+        {
+          "text": "Yellow",
+          "position": "top-left",
+          "anchorX": 31,
+          "anchorY": 21
+        },
+        {
+          "text": "The leader notices",
+          "position": "top-right",
+          "anchorX": 49,
+          "anchorY": 25
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student in a Crew circle with a tight jaw and bouncing leg; a small yellow circle floats near her. The Crew leader is looking her way without alarm. All labels and captions will be editable native fields outside the artwork.",
+      "file": "cz-img-priya.png",
+      "alt": "A student sits with crossed arms and a bouncing foot beside a yellow circle while the Crew leader looks toward her calmly.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-7dd6c719-437c-4166-a268-1ffaf80ea645.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "simplified"
+    },
+    {
+      "id": "cz-img-window",
+      "kind": "lesson",
+      "title": "The window.",
+      "scene": "A large window frame; inside it a student reading calmly; above the frame the same student with jagged lines around them; below the frame the same student slumped in fog.",
+      "caption": "the goal is to notice when you have left it and to know one move back.",
+      "plannedLabels": [
+        {
+          "text": "Above",
+          "position": "bottom-left",
+          "anchorX": 49,
+          "anchorY": 11
+        },
+        {
+          "text": "Inside",
+          "position": "bottom-center",
+          "anchorX": 49,
+          "anchorY": 46
+        },
+        {
+          "text": "Below",
+          "position": "bottom-right",
+          "anchorX": 49,
+          "anchorY": 83
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A large window frame; inside it a student reading calmly; above the frame the same student with jagged lines around them; below the frame the same student slumped in fog. All labels and captions will be editable native fields outside the artwork.",
+      "file": "cz-img-window.png",
+      "alt": "The same student appears tense above a window, reading calmly inside it, and slumped in fog below it.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-05c629b9-fb26-47fd-97d8-0bea1a9c7b46.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "anchor-chart"
+    },
+    {
+      "id": "cz-img-reset",
+      "kind": "lesson",
+      "title": "The move back.",
+      "scene": "The same student from the first panel, three slow-breath arcs drawn near her mouth, shoulders lowered, the yellow circle now half green.",
+      "caption": "naming a state is not an excuse; it is the first move.",
+      "plannedLabels": [
+        {
+          "text": "Three breaths",
+          "position": "top-left",
+          "anchorX": 84,
+          "anchorY": 43
+        },
+        {
+          "text": "Shoulders down",
+          "position": "top-right",
+          "anchorX": 76,
+          "anchorY": 52
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student from the first panel, three slow-breath arcs drawn near her mouth, shoulders lowered, the yellow circle now half green. All labels and captions will be editable native fields outside the artwork.",
+      "file": "cz-img-reset.png",
+      "alt": "A student appears worried under a yellow circle, then breathes slowly with lowered shoulders beneath a half-yellow, half-green circle.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-1cb1060f-d369-4d55-a008-cc370eb6bafe.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "faq"
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cz-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cz-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cz-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cz-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Four diverse middle-school students engage in the same small group discussion at a round table. One speaks with a small natural open palm, one listens attentively, one writes in a notebook, and one draws a simple shape representing the topic. Give every person two correctly attached arms and coherent hair. Blank notebook pages except plain lines and a simple geometric sketch. Square composition.",
+      "alt": "Four students take part together by speaking, listening, writing, and drawing.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-619b3b03-6f98-4db7-a0fb-5b97182eee3d.png",
+      "provider": "Built-in image generation",
+      "id": "cz-term-participate",
+      "kind": "term",
+      "term": "Participate",
+      "file": "cz-term-participate.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-participation",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-participation.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "id": "cz-term-state",
+      "kind": "term",
+      "term": "State",
+      "scene": "Three side-by-side small portraits of the SAME middle-school student showing different current body-and-mind states: calm and attentive, tense and restless, and tired with lowered shoulders. Simple uncluttered portraits, same student and outfit, distinct but respectful facial expressions. No symbols that rank these states, no words or letters. Square overall composition.",
+      "file": "cz-term-state.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a classroom social-emotional learning resource. Style: warm, simple educational illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students in everyday classroom clothing with respectful expressions. Scene: Three side-by-side small portraits of the SAME middle-school student showing different current body-and-mind states: calm and attentive, tense and restless, and tired with lowered shoulders. Simple uncluttered portraits, same student and outfit, distinct but respectful facial expressions. No symbols that rank these states, no words or letters. Square overall composition. Constraints: natural simple gestures, anatomically coherent people, natural elbows, well-formed hands, coherent hair. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "The same student appears calm and attentive, tense and restless, then tired with lowered shoulders.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-e440-7c03-a253-0856b2c2b062\\exec-0c9a2ec6-e7dc-46fe-8cbe-74368ce8183f.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "cz-term-mindful",
+      "kind": "term",
+      "term": "Mindful",
+      "scene": "A fully clothed student wearing a green hoodie pauses at a classroom desk. Eyes gently lowered, both hands resting naturally on the desk beside a water bottle. They take a quiet moment to notice how they feel before choosing what to do. Calm reflective expression, not asleep. Square composition.",
+      "file": "cz-term-mindful.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a classroom social-emotional learning resource. Style: warm, simple educational illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students in everyday classroom clothing with respectful expressions. Scene: A fully clothed student wearing a green hoodie pauses at a classroom desk. Eyes gently lowered, both hands resting naturally on the desk beside a water bottle. They take a quiet moment to notice how they feel before choosing what to do. Calm reflective expression, not asleep. Square composition. Constraints: natural simple gestures, anatomically coherent people, natural elbows, well-formed hands, coherent hair. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "A student pauses quietly with both hands on the desk, noticing how they feel before choosing a next step.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-e440-7c03-a253-0856b2c2b062\\exec-acefab6d-a170-449c-8151-09505410591e.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "cz-term-regulate",
+      "kind": "term",
+      "term": "Regulate",
+      "scene": "A two-panel square educational illustration showing the SAME student in the same chair. Left: the student looks tense with raised shoulders and both hands naturally resting on knees. Right: the student takes a slow drink of water with one hand, other hand on knee, shoulders visibly lower and expression easing. A small gentle arrow between the panels suggests a gradual intentional change, not instant cure. No text. Clear connected anatomy and coherent short curly hair.",
+      "file": "cz-term-regulate.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a classroom social-emotional learning resource. Style: warm, simple educational illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students in everyday classroom clothing with respectful expressions. Scene: A two-panel square educational illustration showing the SAME student in the same chair. Left: the student looks tense with raised shoulders and both hands naturally resting on knees. Right: the student takes a slow drink of water with one hand, other hand on knee, shoulders visibly lower and expression easing. A small gentle arrow between the panels suggests a gradual intentional change, not instant cure. No text. Clear connected anatomy and coherent short curly hair. Constraints: natural simple gestures, anatomically coherent people, natural elbows, well-formed hands, coherent hair. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "A tense student takes a slow drink of water and begins to relax their shoulders.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-e440-7c03-a253-0856b2c2b062\\exec-c5fb7668-7d78-4046-a13c-b8b4a693b11e.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    }
+  ],
+  "style": "Warm, simple educational illustration in a muted earth palette",
+  "review": "All selected artwork visually inspected, including anatomy and hair; educator review pending"
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "mappings": [
+    {
+      "resourceId": "eg-sort",
+      "itemId": "eg2",
+      "assetId": "eg-term-silt",
+      "reason": "The boat-free sediment scene shows dark mud naturally left across low ground.",
+      "maxEdge": 320
+    },
+    {
+      "resourceId": "eg-sort",
+      "itemId": "eg3",
+      "assetId": "eg-img-green-strip",
+      "reason": "The revised boat-free aerial scene clearly shows green banks between desert on both sides.",
+      "maxEdge": 320
+    },
+    {
+      "resourceId": "eg-sort",
+      "itemId": "eg4",
+      "assetId": "eg-img-irrigation",
+      "reason": "Reviewed workers and connected water channels show irrigation ditches; use the corrected version with ancient wooden hoes.",
+      "maxEdge": 320
+    },
+    {
+      "resourceId": "eg-sort",
+      "itemId": "eg5",
+      "assetId": "eg-img-receipt",
+      "reason": "The revised scribe and grain-store scene shows recording stored grain without readable invented writing.",
+      "maxEdge": 320
+    },
+    {
+      "resourceId": "eg-sort",
+      "itemId": "eg6",
+      "assetId": "eg-term-bureaucracy",
+      "reason": "People wait before officials with writing boards, a neutral scene of collection and record keeping.",
+      "maxEdge": 320
+    },
+    {
+      "resourceId": "eg-sort",
+      "itemId": "eg7",
+      "assetId": "eg-term-specialist",
+      "reason": "A potter working at one craft gives a focused example of specialized work.",
+      "maxEdge": 320
+    }
+  ]
+}

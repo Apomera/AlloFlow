@@ -1,5 +1,5 @@
 // Word supports appear on the FIRST teacher open of a preserved original,
-// without the teacher having to find "Add word supports".
+// without the teacher having to find "Add word helps".
 //
 // WHY (Katie Novak, 2026-09): keep the grade-level words and add supports like
 // "A heath is an area of open land" THROUGHOUT the text, instead of replacing
@@ -87,7 +87,7 @@ describe('first teacher open of a preserved original', () => {
     // The original is on screen before any support arrives.
     expect(passage().textContent).toContain('hurlyburly');
     expect(auto().getAttribute('data-auto-word-supports')).toBe('working');
-    expect(auto().textContent).toContain('Adding word supports with AI. You can start reading now.');
+    expect(auto().textContent).toContain('Adding word help with AI. You can start reading now.');
     await settle();
     expect(view.generate).toHaveBeenCalledTimes(1);
     expect(view.generate.mock.calls[0][0].id).toBe('macbeth-1-1');
@@ -99,7 +99,7 @@ describe('first teacher open of a preserved original', () => {
     expect(passage().textContent).toContain('Upon the heath');
     expect(view.state.item.data).toBe(MACBETH);
     expect(auto().getAttribute('data-auto-word-supports')).toBe('added');
-    expect(auto().querySelector('[role=status]').textContent).toBe('Word supports added by AI. Review them.');
+    expect(auto().querySelector('[role=status]').textContent).toBe('Word help added by AI. Review the explanations.');
     // Reopening the same reading does not ask again.
     view.unmount(); view.render(); await settle();
     expect(view.generate).toHaveBeenCalledTimes(1);
@@ -123,12 +123,12 @@ describe('first teacher open of a preserved original', () => {
     expect(view.state.item.data).toBe(MACBETH);
   });
 
-  it('Review and edit supports opens the support list; Remove AI supports removes only AI supports', async () => {
+  it('Review and edit word help opens the support list; Remove AI word help removes only AI supports', async () => {
     const view = mount(); await settle();
-    // A teacher's own support must survive "Remove AI supports".
+    // A teacher's own support must survive "Remove AI word help".
     await act(async () => { await view.update(view.state.item, { type: 'upsert', annotation: at('Macbeth', 'The title character, a Scottish general.') }); });
     await click(host.querySelector('[data-auto-supports-review]'));
-    const toggle = [...host.querySelectorAll('button')].find(node => node.textContent.startsWith('Review word supports'));
+    const toggle = [...host.querySelectorAll('button')].find(node => node.textContent.startsWith('Review word help'));
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(auto().getAttribute('data-auto-word-supports')).toBe('done');
     // The notice is gone once reviewed; bring it back to test removal on a fresh reading.
@@ -139,7 +139,7 @@ describe('first teacher open of a preserved original', () => {
     const left = second.state.item.readingSupports.annotations;
     expect(left.map(entry => entry.quote)).toEqual(['Macbeth']);
     expect(left[0].origin).toBe('educator');
-    expect(host.querySelector('[data-gloss-status]').textContent).toBe('AI word supports removed. The original is unchanged.');
+    expect(host.querySelector('[data-gloss-status]').textContent).toBe('AI word help removed. The original is unchanged.');
     expect(second.state.item.data).toBe(MACBETH);
   });
 });
@@ -204,8 +204,8 @@ describe('what automatic supports cost', () => {
     const view = mount(); await settle();
     expect(view.generate).not.toHaveBeenCalled();
     expect(auto().getAttribute('data-auto-word-supports')).toBe('paused');
-    expect(auto().querySelector('[role=status]').textContent).toBe('Word supports are added automatically for up to 10 originals a day on this device. Use Add word supports for this one.');
-    const manual = [...host.querySelectorAll('button')].find(node => node.textContent.trim() === 'Add word supports');
+    expect(auto().querySelector('[role=status]').textContent).toBe('Word supports are added automatically for up to 10 originals a day on this device. Use Add word helps for this one.');
+    const manual = [...host.querySelectorAll('button')].find(node => node.textContent.trim() === 'Add word helps');
     await click(manual); await settle();
     expect(view.generate).toHaveBeenCalledTimes(1);
   });

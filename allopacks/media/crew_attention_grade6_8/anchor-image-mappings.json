@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cd-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "THE PULLS",
+      "assetId": "cd-term-pull",
+      "reason": "The phone and magnet show an attention pull."
+    },
+    {
+      "resourceId": "cd-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "THE HIDDEN COST",
+      "assetId": "cd-img-buzz",
+      "reason": "A buzzing phone in a pocket illustrates the hidden attention cost."
+    },
+    {
+      "resourceId": "cd-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "BOUNDARY, NOT BAN",
+      "assetId": "cd-term-boundary",
+      "reason": "A phone inside a closed bag matches the stated boundary."
+    },
+    {
+      "resourceId": "cd-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "MINDFUL MEANS",
+      "assetId": "cd-term-mindful",
+      "reason": "The student and compass support noticing where attention goes."
+    }
+  ]
+}

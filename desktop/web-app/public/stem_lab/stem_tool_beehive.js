@@ -442,6 +442,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-detail h4 { font-size:1.125rem; line-height:1.4; font-weight:800; }
       .bee-interior-detail dt { color:var(--hi-muted); }
       .bee-interior-detail dd { margin:.2rem 0 0; font-size:1.25rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-interior-topic-readings { display:grid; gap:.65rem; min-width:0; container:bee-topic-readings / inline-size; }
+      .bee-interior-topic-readings h5 { margin:0; font-size:1rem; line-height:1.4; font-weight:800; }
+      .bee-interior-topic-scope { font-weight:750; }
+      .bee-interior-topic-values { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; min-width:0; }
+      .bee-interior-topic-values > div { min-width:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-topic-values > [data-held="true"] { border-style:dashed; }
+      .bee-interior-topic-values dd { line-height:1.45; }
+      .bee-interior-topic-values .bee-interior-topic-direction { font-size:.875rem; font-weight:600; color:var(--hi-muted); }
+      .bee-interior-topic-readings > button { justify-self:start; max-width:100%; }
+      @container bee-topic-readings (min-width:28rem) { .bee-interior-topic-values[data-paired="true"] { grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-interior-topic-difference { grid-column:1/-1; } }
+      @container bee-interior (min-width:46rem) { .bee-interior-study[data-comparing="true"] .bee-interior-explanation { grid-column:1/-1; } }
+      .bee-interior-reference { container:bee-reference / inline-size; display:grid; gap:.75rem; min-width:0; padding:min(1rem,16px); border:1px solid var(--hi-line); border-radius:.75rem; background:var(--hi-tint); }
+      .bee-interior-reference-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.5rem; min-width:0; }
+      .bee-interior-reference-heading h4 { font-size:1.0625rem; line-height:1.4; font-weight:800; }
+      .bee-interior-reference-days { display:grid; grid-template-columns:minmax(0,1fr); gap:.75rem; min-width:0; }
+      .bee-interior-reference-days > div { display:grid; gap:.25rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-reference-days > [data-reference-card="held"] { border-style:dashed; }
+      .bee-interior-reference-days dt { color:var(--hi-muted); }
+      .bee-interior-reference-days dd { margin:0; }
+      .bee-interior-reference-days [data-reference-day] { font-size:1.25rem; line-height:1.4; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-interior-reference[data-reference-state="unavailable"] { border-style:dashed; }
+      @container bee-reference (min-width:28rem) { .bee-interior-reference-days { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       .bee-interior-footer { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid var(--hi-line); }
       .bee-interior-footer p { flex:1 1 22rem; }
       .bee-interior-season-note { padding:.75rem; border:1px dashed var(--hi-accent); border-radius:.5rem; }
@@ -465,6 +487,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-slot[data-selected="true"] text { fill:var(--hi-ink); }
       .bee-interior-position-ends { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem; font-weight:750; }
       .bee-interior-position p { color:var(--hi-muted); }
+      .bee-interior-frames .bee-interior-frame-presence { display:block; padding-top:.25rem; border-top:1px solid currentColor; font-weight:700; font-size:.875rem; line-height:1.6; }
+      .bee-interior-slot-presence :is(circle,path,text) { fill:var(--hi-ink); stroke:var(--hi-ink); stroke-width:1; }
+      .bee-interior-slot-presence path { fill:none; stroke-width:2.5; }
+      .bee-interior-slot-presence text { stroke:none; font-size:15px; }
+      .bee-interior-frame-guide { display:grid; gap:.5rem; min-width:0; padding-top:.65rem; border-top:1px solid var(--hi-line); }
+      .bee-interior-frame-guide-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.65rem 1rem; min-width:0; }
+      .bee-interior-frame-guide-heading > p { flex:1 1 15rem; min-width:0; }
+      .bee-interior-frame-guide-heading > button { flex:0 1 auto; }
+      @media(forced-colors:active) { .bee-interior-slot-presence :is(circle,path,text) { fill:CanvasText; stroke:CanvasText; } .bee-interior-slot[data-selected="true"] .bee-interior-slot-presence :is(circle,path,text) { fill:HighlightText; stroke:HighlightText; } .bee-interior-slot-presence path { fill:none!important; } .bee-interior-slot-presence text { stroke:none!important; } }
+      .bee-interior-position-disclosure { min-width:0; border:1px solid var(--hi-line); border-radius:.65rem; background:var(--hi-paper); }
+      .bee-interior-position-disclosure > summary { min-width:44px; min-height:44px; padding:.75rem; cursor:pointer; font-weight:750; line-height:1.6; }
+      .bee-interior-position-disclosure > summary:focus-visible { outline:3px solid var(--hi-accent); outline-offset:3px; }
+      .bee-interior-position-study { display:grid; gap:.75rem; min-width:0; padding:min(.875rem,14px); border-top:1px solid var(--hi-line); background:var(--hi-tint); border-radius:0 0 .65rem .65rem; }
+      .bee-interior-position-study > * { min-width:0; }
+      .bee-interior-position-study > h4 { font-size:1.0625rem; font-weight:800; line-height:1.4; }
+      .bee-interior-position-reading { display:grid; gap:.25rem; min-width:0; padding:.65rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-position-reading dt { color:var(--hi-muted); }
+      .bee-interior-position-reading dd { margin:0; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-interior-position-pair { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-position-figure { border-width:2px; }
+      .bee-interior-position-figure[data-selected="true"] { border-color:var(--hi-accent); }
+      .bee-interior-position-figure .bee-interior-position-selection { padding:.15rem .5rem; border:1px solid var(--hi-line); border-radius:.35rem; font-weight:750; }
+      .bee-interior-position-figure[data-selected="true"] .bee-interior-position-selection { color:var(--hi-ink); background:var(--hi-paper); border-color:var(--hi-accent); }
+      .bee-interior-position-figure figcaption > button { width:100%; margin-top:.35rem; white-space:normal; }
+      @media(forced-colors:active) { .bee-interior-position-figure[data-selected="true"],.bee-interior-position-figure[data-selected="true"] .bee-interior-position-selection { border-color:Highlight; } }
+      .bee-interior-position-figure figcaption { display:grid; gap:.35rem; }
+      .bee-interior-position-figure figcaption > strong { color:var(--hi-ink); }
+      @container bee-interior (min-width:46rem) { .bee-interior-position-pair { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      @container bee-interior (max-width:20rem) { .bee-interior-position-study { padding:8px; } .bee-interior-position-reading { padding:8px; } .bee-interior-position-figure { padding:4px; } .bee-interior-position-figure figcaption { padding:4px; } .bee-interior-position-figure .bee-interior-figure-heading { padding:.35rem 4px; } }
+      @media(forced-colors:active) { .bee-interior-position-disclosure > summary:focus-visible { outline-color:Highlight; } }
+      .bee-interior-focus { display:grid; gap:.75rem; min-width:0; padding:min(.875rem,14px); border:1px solid var(--hi-line); border-radius:.75rem; background:var(--hi-tint); }
+      .bee-interior-focus > h4 { font-size:1.0625rem; font-weight:800; line-height:1.4; }
+      .bee-interior-focus-grid { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-focus-group { display:grid; align-content:start; gap:.65rem; min-width:0; padding:.65rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-focus-group > h5 { margin:0; font-size:1rem; font-weight:750; line-height:1.4; }
+      .bee-interior-focus .bee-interior-key { margin:0; }
+      .bee-interior-position-key { display:grid; gap:.5rem; min-width:0; padding:.65rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-position-key ul { display:flex; flex-wrap:wrap; gap:.4rem 1rem; list-style:none; margin:0; padding:0; }
+      .bee-interior-position-key li { display:flex; align-items:center; gap:.5rem; min-width:0; }
+      .bee-interior-position-key .bee-interior-key-symbol { flex:0 0 auto; width:min(2rem,40px); height:min(2rem,40px); }
+      .bee-interior-position-key .bee-interior-cap-mark { stroke:var(--hi-paper); }
+      @container bee-interior (min-width:46rem) { .bee-interior-focus-grid { grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); } }
+      @container bee-interior (max-width:20rem) { .bee-interior-focus,.bee-interior-focus .bee-interior-focus-group,.bee-interior-position-key { padding:8px; } [data-beehive-root] .bee-interior .bee-interior-focus button { padding:8px 4px; gap:6px; } .bee-interior-focus .bee-interior-key-symbol { flex-basis:28px; width:28px; height:28px; } }
+      @media(forced-colors:active) { .bee-interior-position-key .bee-interior-cap-mark { stroke:Canvas; } }
       .bee-interior-position-layout { display:grid; gap:.75rem; min-width:0; }
       .bee-interior-position-layout .bee-interior-frames { grid-template-columns:repeat(2,minmax(0,1fr)); align-self:start; }
       .bee-interior-key { display:grid; gap:.65rem; padding:.75rem; border:1px solid var(--hi-line); border-radius:.6rem; margin-top:.75rem; }
@@ -482,6 +548,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-cell-detail { display:grid; gap:.5rem; border-top:1px solid var(--hi-line); padding-top:.75rem; }
       .bee-interior-highlight-note { border-left:3px solid var(--hi-accent); padding-left:.65rem; }
       .bee-interior-cell-detail p { color:var(--hi-muted); }
+      .bee-interior-study-key { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:.5rem; min-width:0; margin:0; padding:0; list-style:none; }
+      .bee-interior-study-key li { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; min-width:0; padding:min(.65rem,10px); border:1px solid var(--hi-line); border-radius:.5rem; color:var(--hi-ink); background:var(--hi-paper); }
+      .bee-interior-study-key span { flex:1 1 7rem; min-width:0; font-size:.875rem; font-weight:750; line-height:1.5; }
+      .bee-interior-study-key .bee-interior-study-symbol { flex:0 0 min(3rem,48px); width:min(3rem,48px); height:min(3rem,48px); }
+      @media(forced-colors:active) { .bee-interior-cell-detail .bee-interior-study-symbol .bee-interior-cap-mark { stroke:Canvas; } }
       .bee-interior-evidence { display:grid; gap:.75rem; min-width:0; padding:1rem; background:var(--hi-tint); border:1px solid var(--hi-line); border-radius:.75rem; }
       .bee-interior-evidence pre { white-space:pre-wrap; overflow-wrap:anywhere; min-width:0; max-width:100%; margin:0; padding:.75rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); color:var(--hi-ink); font:inherit; line-height:1.6; }
       .bee-interior-evidence-actions { display:flex; flex-wrap:wrap; gap:.65rem; }
@@ -490,6 +561,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       @media(forced-colors:active) { .bee-interior-slot rect { fill:Canvas; stroke:CanvasText; } .bee-interior-slot text { fill:CanvasText; } .bee-interior-slot[data-selected="true"] rect { fill:Highlight; stroke:CanvasText; } .bee-interior-slot[data-selected="true"] text { fill:HighlightText; } .bee-interior-key-symbol circle { fill:CanvasText; } .bee-interior-key-symbol .bee-interior-open-mark { fill:none; } .bee-interior-key-symbol :is(path,circle,polygon) { stroke:CanvasText; } [data-beehive-root] .bee-interior button:disabled { color:GrayText!important; border-color:GrayText!important; } }
       @media(forced-colors:active) { .bee-interior-cell .bee-interior-cap-mark { stroke:CanvasText; } .bee-interior-key-controls button .bee-interior-cap-mark { stroke:Canvas; } }
 
+
+      [data-beehive-root] { overflow-wrap:anywhere; }
+      [data-beehive-root] :is([data-experiment-notebook-phase],[data-experiment-notebook-review]) { min-inline-size:0; }
+      [data-beehive-root] :is([data-experiment-notebook-phase],[data-experiment-notebook-review]) > legend { max-width:100%; overflow-wrap:anywhere; }
+
+      .bee-interior-inquiry { display:grid; grid-template-columns:minmax(0,1fr); gap:.75rem; min-width:0; margin:0; padding:0; list-style:none; }
+      .bee-interior-inquiry > li { display:flex; flex-direction:column; gap:.6rem; min-width:0; padding:min(.875rem,14px); border:1px solid var(--hi-line); border-radius:.6rem; background:var(--hi-paper); }
+      .bee-interior-inquiry > li > strong { font-size:1.0625rem; line-height:1.4; }
+      .bee-interior-inquiry > li > p { color:var(--hi-muted); flex:1; }
+      .bee-interior-inquiry button { width:100%; }
+      @container bee-interior (max-width:20rem) {
+        .bee-interior-inquiry > li { padding:8px; }
+        [data-beehive-root] .bee-interior .bee-interior-inquiry button { padding:.5rem 6px; }
+      }
+      @container bee-interior (min-width:46rem) { .bee-interior-inquiry { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+      .bee-notebook-hive-context { container:bee-notebook-hive / inline-size; display:grid; gap:.75rem; min-width:0; margin-top:1.5rem; padding:min(1rem,16px); border:1px solid var(--bn-line); border-left:4px solid var(--bn-accent); border-radius:.75rem; background:var(--bn-tint); color:var(--bn-ink); overflow-wrap:anywhere; }
+      .bee-notebook-hive-context :is(h4,h5,p,dl) { margin:0; min-width:0; font-size:1rem; line-height:1.6; }
+      .bee-notebook-hive-context h4 { font-size:1.125rem; font-weight:800; }
+      .bee-notebook-hive-heading { display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; min-width:0; }
+      .bee-notebook-hive-heading h4 { flex:1 1 16rem; }
+      .bee-notebook-hive-heading > button { max-width:100%; white-space:normal; }
+      .bee-notebook-hive-context .bee-notebook-hive-reading { display:grid; gap:.65rem; min-width:0; padding-top:.75rem; border-top:1px solid var(--bn-line); }
+      .bee-notebook-hive-reading h5 { font-weight:800; }
+      .bee-notebook-hive-scope { font-weight:700; }
+      .bee-notebook-hive-values { display:grid; grid-template-columns:minmax(0,1fr); gap:.75rem; }
+      .bee-notebook-hive-values > div { display:grid; gap:.25rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--bn-line); border-radius:.5rem; background:var(--bn-paper); }
+      .bee-notebook-hive-values > [data-notebook-hive-card="held"] { border-style:dashed; }
+      .bee-notebook-hive-values dt { font-size:.875rem; color:var(--bn-muted); }
+      .bee-notebook-hive-values dd { min-width:0; margin:0; font-size:1.125rem; line-height:1.5; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-notebook-hive-context .bee-notebook-hive-note { font-size:.875rem; font-weight:400; color:var(--bn-muted); }
+      @container bee-notebook-hive (min-width:28rem) { .bee-notebook-hive-values { grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-notebook-hive-values > [data-notebook-hive-card="difference"] { grid-column:1/-1; } }
+      .bee-interior-cell-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem 1rem; min-width:0; }
+      .bee-interior-cell-toolbar > p { flex:1 1 15rem; color:var(--hi-muted); }
+      .bee-interior-lens { display:grid; gap:.85rem; min-width:0; margin-top:.75rem; padding:min(1rem,16px); border:1px solid var(--hi-line); border-top:4px solid var(--hi-accent); border-radius:.75rem; background:var(--hi-tint); }
+      .bee-interior-lens-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.65rem; }
+      .bee-interior-lens-heading h4 { font-size:1.125rem; line-height:1.4; font-weight:800; }
+      .bee-interior-lens-navigation { display:grid; grid-template-columns:minmax(0,1fr); gap:.85rem; min-width:0; align-items:start; }
+      .bee-interior-lens-map { display:grid; gap:.5rem; min-width:0; margin:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-radius:.6rem; background:var(--hi-paper); }
+      .bee-interior-lens-map h5 { margin:0; font-size:1rem; line-height:1.4; font-weight:800; }
+      .bee-interior-lens-map > svg { display:block; width:100%; height:auto; max-width:400px; margin:auto; overflow:visible; }
+      .bee-interior-lens-map .bee-interior-map-axis { color:var(--hi-muted); font-size:.875rem; line-height:1.5; }
+      .bee-interior-lens-map figcaption { font-size:.875rem; line-height:1.6; color:var(--hi-muted); }
+      .bee-interior-map-frame { fill:var(--hi-tint); stroke:var(--hi-ink); stroke-width:3; }
+      .bee-interior-map-comb { fill:var(--hi-paper); stroke:var(--hi-line); stroke-width:2; }
+      .bee-interior-map-crosshair { fill:none; stroke:var(--hi-muted); stroke-width:2; stroke-dasharray:3 5; }
+      .bee-interior-map-window { fill:var(--hi-tint); stroke:var(--hi-accent); stroke-width:4; }
+      .bee-interior-map-position { fill:var(--hi-paper); stroke:var(--hi-ink); stroke-width:3; stroke-dasharray:5 3; }
+      @container bee-interior (min-width:46rem) { .bee-interior-study[data-comparing="true"] .bee-interior-lens-navigation { grid-template-columns:minmax(0,1fr) minmax(0,1.6fr); } }
+      @container bee-interior (max-width:20rem) { .bee-interior-lens-map { padding:8px; } }
+      @media(forced-colors:active) { .bee-interior-map-frame,.bee-interior-map-comb,.bee-interior-map-window,.bee-interior-map-position { fill:Canvas; stroke:CanvasText; } .bee-interior-map-window { stroke:Highlight; } .bee-interior-map-crosshair { stroke:CanvasText; } }
+      .bee-interior-lens-controls { display:grid; grid-template-columns:minmax(0,1fr); gap:.75rem; min-width:0; }
+      .bee-interior-lens-controls label { display:grid; gap:.35rem; min-width:0; font-weight:750; }
+      [data-beehive-root] .bee-interior-lens-controls select { width:100%; min-width:0; min-height:44px; padding:.5rem; border:1px solid var(--hi-line); border-radius:.5rem; color:var(--hi-ink); background:var(--hi-paper); font:inherit; }
+      .bee-interior-lens-controls select:focus-visible { outline:3px solid var(--hi-accent); outline-offset:3px; }
+      .bee-interior-lens-axis { display:grid; align-content:start; gap:.5rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-radius:.6rem; background:var(--hi-paper); }
+      .bee-interior-lens-range { color:var(--hi-muted); font-variant-numeric:tabular-nums; }
+      .bee-interior-lens-steps { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; min-width:0; }
+      [data-beehive-root] .bee-interior .bee-interior-lens-steps button { display:flex; align-items:center; gap:.4rem; padding:8px; }
+      .bee-interior-lens-step-icon { flex:0 0 auto; font-size:1.125rem; line-height:1; }
+      .bee-interior-lens-steps button > span:last-child { min-width:0; }
+      [data-beehive-root] .bee-interior .bee-interior-lens-steps button[aria-disabled="true"] { cursor:default; color:var(--hi-muted); background:var(--hi-tint); border-style:dashed; box-shadow:none; }
+      @container bee-interior (max-width:20rem) { .bee-interior-lens-axis { padding:8px; } .bee-interior-lens-steps { grid-template-columns:minmax(0,1fr); } [data-beehive-root] .bee-interior .bee-interior-lens-steps button { padding:8px 4px; } }
+      @media(forced-colors:active) { [data-beehive-root] .bee-interior .bee-interior-lens-steps button[aria-disabled="true"] { color:GrayText!important; border-color:GrayText!important; } }
+      .bee-interior-lens-pair { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-lens .bee-interior-figure { min-width:0; padding:8px; background:var(--hi-paper); }
+      .bee-interior-lens .bee-interior-figure > svg { display:block; width:100%; max-width:360px; height:auto; margin:.5rem auto; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-lens figcaption { display:grid; gap:.4rem; }
+      .bee-interior-lens figcaption > strong { color:var(--hi-ink); font-size:1rem; }
+      .bee-interior-lens-halo { fill:none; stroke:var(--hi-paper); stroke-width:6; pointer-events:none; }
+      .bee-interior-lens-ring { fill:none; stroke:var(--hi-ink); stroke-width:2.5; stroke-dasharray:4 2; pointer-events:none; }
+      @container bee-interior (min-width:28rem) { .bee-interior-lens-controls,.bee-interior-lens-pair[data-paired="true"] { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      @container bee-interior (min-width:46rem) { .bee-interior-study[data-comparing="true"] .bee-interior-cell-toolbar,.bee-interior-study[data-comparing="true"] .bee-interior-lens { grid-column:1/-1; } }
+      @container bee-interior (max-width:20rem) { .bee-interior-lens { padding:8px; } }
+      @media(forced-colors:active) { .bee-interior-lens-halo { stroke:Canvas; } .bee-interior-lens-ring { stroke:CanvasText; } [data-beehive-root] .bee-interior-lens-controls select { color:CanvasText; background:Canvas; border-color:CanvasText; } }
+
+      .bee-interior-diagram-guide { display:grid; gap:.65rem; min-width:0; padding:min(.875rem,14px); border:1px solid var(--hi-line); border-radius:.65rem; background:var(--hi-tint); }
+      .bee-interior-diagram-guide > strong { font-size:1rem; }
+      .bee-interior-change-controls { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; min-width:0; }
+      .bee-interior-change-controls > label { display:flex; align-items:center; gap:.5rem; min-width:0; min-height:44px; padding:.4rem .5rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); font-weight:750; cursor:pointer; flex:1 1 15rem; }
+      .bee-interior-change-controls > label > span { min-width:0; }
+      .bee-interior-change-controls input { flex:0 0 24px; width:24px; height:24px; margin:0; accent-color:var(--hi-accent); }
+      .bee-interior-change-controls input:focus-visible { outline:3px solid var(--hi-accent); outline-offset:3px; }
+      .bee-interior-change-controls button { flex:1 1 11rem; }
+      .bee-interior-diagram-guide p { color:var(--hi-muted); }
+      .bee-interior-cell .bee-interior-change-halo { fill:none; stroke:#fffdf5; stroke-width:4; pointer-events:none; }
+      .bee-interior-cell .bee-interior-change-line { fill:none; stroke:#172e23; stroke-width:1.6; pointer-events:none; }
+      .bee-interior-diagram-guide .bee-interior-change-symbol { display:inline-block; width:1.5rem; height:1.5rem; vertical-align:middle; margin-right:.3rem; }
+      .bee-interior-change-symbol path { fill:none; stroke:currentColor; stroke-width:1.5; }
+      .bee-interior-lens-change { padding:.65rem; border:1px solid var(--hi-line); border-left:4px solid var(--hi-accent); border-radius:.4rem; background:var(--hi-paper); font-weight:750; }
+      @container bee-interior (min-width:46rem) { .bee-interior-study[data-comparing="true"] .bee-interior-diagram-guide { grid-column:1/-1; } }
+      @container bee-interior (max-width:20rem) { .bee-interior-diagram-guide { padding:8px; } }
+      @media(forced-colors:active) { .bee-interior-cell .bee-interior-change-halo { stroke:Canvas; } .bee-interior-cell .bee-interior-change-line { stroke:CanvasText; } .bee-interior-change-controls input:focus-visible { outline-color:Highlight; } }
+
+      .bee-interior-frame-pair { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-figure-heading { display:flex; flex-wrap:wrap; gap:.25rem .75rem; justify-content:space-between; padding:.5rem; font-size:1rem; font-weight:800; }
+      .bee-interior-figure-heading span { font-size:.875rem; font-weight:650; color:var(--hi-muted); }
+      .bee-interior-figure[data-held="true"] { border-style:dashed; }
+      [data-beehive-root] .bee-interior-key-controls button { flex-wrap:wrap; }
+      .bee-interior-key-controls button > span { min-width:0; flex:1 1 6rem; overflow-wrap:anywhere; }
+      .bee-interior-comparison { display:grid; gap:.75rem; min-width:0; padding:1rem; border:1px solid var(--hi-line); border-top:4px solid var(--hi-accent); border-radius:.75rem; background:var(--hi-tint); }
+      .bee-interior-comparison h4 { font-size:1.0625rem; line-height:1.4; font-weight:800; }
+      .bee-interior-comparison-actions { display:flex; flex-wrap:wrap; gap:.65rem; }
+      .bee-interior-change-rows { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-change-row { display:grid; gap:.5rem; min-width:0; padding:.75rem; border:1px solid var(--hi-line); border-radius:.6rem; background:var(--hi-paper); }
+      .bee-interior-change-row > dt { font-size:1rem; font-weight:800; }
+      .bee-interior-reading-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.5rem .75rem; min-width:0; }
+      .bee-interior-reading-heading > strong { flex:1 1 9rem; min-width:0; }
+      [data-beehive-root] .bee-interior-reading-heading > button { flex:0 1 auto; font-weight:700; }
+      .bee-interior-change-row[data-selected="true"] { border-color:var(--hi-accent); box-shadow:inset 4px 0 0 var(--hi-accent); }
+      .bee-interior-reading-rail { display:block; width:100%; height:.75rem; margin-block:.3rem .15rem; overflow:visible; }
+      .bee-interior-reading-axis { fill:none; stroke:var(--hi-line); stroke-width:1; vector-effect:non-scaling-stroke; }
+      .bee-interior-reading-held,.bee-interior-reading-current { stroke:var(--hi-accent); stroke-width:8; stroke-linecap:butt; }
+      .bee-interior-reading-held { stroke-dasharray:4 2; }
+      .bee-interior-scale-caption { grid-column:1/-1; color:var(--hi-muted); padding-top:.5rem; border-top:1px solid var(--hi-line); }
+      @media(forced-colors:active) { .bee-interior-change-row[data-selected="true"] { border-color:Highlight; border-width:2px; box-shadow:none; } .bee-interior-reading-axis { stroke:CanvasText; } .bee-interior-reading-held,.bee-interior-reading-current { stroke:CanvasText; } }
+      .bee-interior-change-row > dd { display:grid; gap:.6rem; margin:0; min-width:0; }
+      .bee-interior-change-value { display:grid; gap:.2rem; min-width:0; }
+      .bee-interior-change-value span { color:var(--hi-muted); }
+      .bee-interior-change-value strong { font-variant-numeric:tabular-nums; }
+      .bee-interior-change-value[data-difference="true"] { border-top:1px solid var(--hi-line); padding-top:.5rem; }
+      .bee-interior-comparison-evidence { min-width:0; padding-top:.5rem; border-top:1px solid var(--hi-line); }
+      [data-beehive-root] .bee-interior-comparison-evidence > summary { min-height:44px; display:list-item; padding:.65rem .2rem; cursor:pointer; font-weight:800; }
+      .bee-interior-comparison-evidence > div { display:grid; gap:.75rem; padding-top:.5rem; min-width:0; }
+      .bee-interior-comparison pre { white-space:pre-wrap; overflow-wrap:anywhere; max-width:100%; min-width:0; margin:0; padding:.75rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); color:var(--hi-ink); font:inherit; line-height:1.6; }
+      [data-beehive-root] .bee-interior-comparison summary:focus-visible { outline:3px solid var(--hi-accent); outline-offset:3px; }
+      @container bee-interior (min-width:28rem) { .bee-interior-change-row > dd { grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-interior-change-value[data-difference="true"] { grid-column:1/-1; } }
+      @container bee-interior (min-width:46rem) { .bee-interior-study[data-comparing="true"] .bee-interior-visuals { display:contents; } .bee-interior-study[data-comparing="true"] .bee-interior-frame-pair { grid-column:1/-1; grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-interior-study[data-comparing="true"] .bee-interior-key { margin-top:0; } .bee-interior-change-rows { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+
+      .bee-interior { padding:min(1rem,16px); }
+      @container bee-interior (max-width:20rem) {
+        .bee-interior :is(.bee-interior-position,.bee-interior-key,.bee-interior-detail,.bee-interior-comparison,.bee-interior-evidence) { padding:min(.75rem,12px); }
+        .bee-interior :is(.bee-interior-change-row,pre,.bee-interior-figure) { padding:8px; }
+        .bee-interior .bee-interior-figure-heading { padding:4px; }
+        [data-beehive-root] .bee-interior button { padding:.5rem min(.65rem,10px); }
+        .bee-interior .bee-interior-frames { grid-template-columns:minmax(0,1fr); }
+      }
 
       .bee-saved-discoveries { --bd-ink:#233d37; --bd-muted:#50655e; --bd-paper:#fffef8; --bd-line:#d8dfd2; --bd-tint:#eef2e7; margin-top:1rem; min-width:0; padding:1rem; border:1px solid var(--bd-line); border-radius:1rem; color:var(--bd-ink); background:var(--bd-tint); overflow-wrap:anywhere; }
       .bee-saved-discoveries > h4 { margin:0; font-size:1.125rem; line-height:1.4; font-weight:800; }
@@ -944,13 +1152,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-forecast-actions { display:flex; flex-wrap:wrap; gap:8px; }
       .bee-forecast-actions [data-primary="true"] { flex:1 1 15rem; }
       .bee-preview h4,.bee-outlook-core h4 { margin:0; font-size:.875rem; font-weight:800; color:var(--bf-ink); }
+      .bee-management-timing { display:grid; gap:.85rem; min-width:0; padding:min(1rem,16px); border:1px solid var(--bf-line); border-top:4px solid var(--bf-button); border-radius:.75rem; background:var(--bf-tint); font-size:.875rem; line-height:1.6; overflow-wrap:anywhere; }
+      .bee-management-timing :is(p,h4,figure,dl) { margin:0; min-width:0; }
+      .bee-preview .bee-management-timing h4 { font-size:1.125rem; line-height:1.4; }
+      .bee-timing-landmarks { display:grid; gap:.65rem; padding:.75rem; border:1px solid var(--bf-line); border-radius:.6rem; background:var(--bf-paper); min-width:0; }
+      .bee-timing-landmarks h5 { margin:0; font-size:1rem; line-height:1.4; }
+      .bee-timing-landmark-cards { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; min-width:0; }
+      .bee-timing-landmark-card { display:grid; align-content:start; gap:.5rem; padding:.75rem; border:1px solid var(--bf-line); border-top:3px solid var(--bf-button); border-radius:.5rem; background:var(--bf-tint); min-width:0; }
+      .bee-timing-landmark-title { font-weight:750; }
+      .bee-timing-landmark-day { font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-timing-landmark-card dl { display:grid; gap:.25rem; }
+      .bee-timing-landmark-card dt,.bee-timing-landmark-note { color:var(--bf-muted); }
+      .bee-timing-landmark-card dd { margin:0; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-timing-landmark-button { min-width:44px; width:100%; white-space:normal; overflow-wrap:anywhere; }
+      .bee-management-timing-chart :is(.bee-timing-baseline,.bee-timing-action,.bee-timing-cursor,.bee-timing-point) { vector-effect:non-scaling-stroke; }
+      @container(min-width:30rem) { .bee-timing-landmark-cards { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      @container(max-width:20rem) { .bee-timing-landmarks,.bee-timing-landmark-card { padding:.5rem; } }
+
+      .bee-projection-bridge { display:grid; gap:.75rem; min-width:0; padding:min(1rem,16px); border:1px solid var(--bf-line); border-top:4px solid var(--bf-button); border-radius:.75rem; background:var(--bf-paper); }
+      .bee-projection-bridge h5 { margin:0; font-size:1.125rem; line-height:1.5; }
+      .bee-projection-label { font-weight:750; }
+      .bee-projection-prompt { border-left:3px solid var(--bf-button); padding-left:.75rem; }
+      .bee-projection-details { min-width:0; border-top:1px solid currentColor; }
+      [data-beehive-root] .bee-projection-details > summary { min-height:44px; padding:.5rem 0; cursor:pointer; font-weight:750; }
+      .bee-projection-details pre { margin:.5rem 0 0; padding:.75rem; border:1px solid currentColor; border-radius:.5rem; max-width:100%; min-width:0; white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; line-height:1.6; }
+      .bee-projection-actions { display:flex; flex-wrap:wrap; gap:.65rem; min-width:0; }
+      .bee-projection-actions button { flex:1 1 14rem; min-width:44px; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+      .bee-notebook-projection-context { display:grid; gap:.75rem; min-width:0; margin-top:1.5rem; padding:min(1rem,16px); border:1px solid var(--bn-line); border-top:4px solid var(--bn-accent); border-radius:.75rem; color:var(--bn-ink); background:var(--bn-tint); overflow-wrap:anywhere; }
+      .bee-notebook-projection-context :is(h4,p) { margin:0; min-width:0; font-size:1rem; line-height:1.6; }
+      .bee-notebook-projection-context h4 { font-size:1.125rem; font-weight:800; }
+      .bee-notebook-projection-context > button { justify-self:start; max-width:100%; white-space:normal; }
+      .bee-projection-readings { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; min-width:0; margin:0; }
+      .bee-projection-readings > div { min-width:0; padding:.75rem; border:1px solid var(--bn-line); border-radius:.5rem; background:var(--bn-paper); }
+      .bee-projection-readings dt { line-height:1.6; }
+      .bee-projection-readings dd { margin:.35rem 0 0; font-size:1.125rem; line-height:1.5; font-weight:800; font-variant-numeric:tabular-nums; }
+      @container bee-notebook (min-width:36rem) { .bee-projection-readings { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+      @container(max-width:20rem) { .bee-projection-bridge { padding:.5rem; } }
+      @media(forced-colors:active) { [data-beehive-root] :is(.bee-projection-bridge,.bee-notebook-projection-context,.bee-projection-readings > div,.bee-projection-details pre) { color:CanvasText!important; background:Canvas!important; border-color:CanvasText!important; } [data-beehive-root] .bee-projection-actions button:disabled { color:GrayText!important; border-color:GrayText!important; } }
+
+      .bee-preview-hive-projection-link { display:grid; gap:.65rem; min-width:0; border-top:1px solid var(--bf-line); padding-top:.75rem; }
+      .bee-preview-hive-projection-label { font-size:1rem; line-height:1.5; font-weight:800; }
+      .bee-preview-hive-projection-link > button { justify-self:start; max-width:100%; }
+      .bee-timing-day-navigation { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; align-items:center; min-width:0; }
+      .bee-timing-day-navigation p { grid-column:1 / -1; grid-row:1; font-weight:750; text-align:center; font-variant-numeric:tabular-nums; }
+      .bee-timing-day-navigation > button { width:100%; min-width:44px; white-space:normal; overflow-wrap:normal; }
+      .bee-timing-day-navigation > button[aria-disabled="true"] { color:var(--bf-muted); border-style:dashed; cursor:not-allowed; }
+      .bee-timing-inspector { display:grid; gap:.65rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--bf-line); border-inline-start:4px solid var(--bf-button); border-radius:.6rem; background:var(--bf-paper); }
+      .bee-timing-inspector h5 { margin:0; font-size:1rem; line-height:1.5; }
+      .bee-timing-inspector dt { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; }
+      .bee-timing-inspector dt span { min-width:0; flex:1 1 7rem; }
+      @container(min-width:30rem) { .bee-timing-day-navigation { grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); } .bee-timing-day-navigation p { grid-column:2; } .bee-timing-day-navigation > button { grid-row:1; } .bee-timing-day-navigation > button:last-of-type { grid-column:3; } }
+      @container(max-width:20rem) { .bee-timing-day-navigation { grid-template-columns:minmax(0,1fr); } .bee-timing-inspector { padding:.5rem; } }
+      @media(forced-colors:active) { .bee-timing-inspector { border-color:CanvasText; } .bee-timing-day-navigation > button[aria-disabled="true"] { color:GrayText!important; border-color:GrayText!important; } }
+      .bee-management-timing-controls { display:grid; grid-template-columns:minmax(0,1fr); gap:.75rem; min-width:0; }
+      .bee-management-timing-controls label { display:grid; gap:.35rem; min-width:0; font-weight:750; }
+      [data-beehive-root] .bee-management-timing-controls select { width:100%; min-width:0; min-height:44px; padding:.5rem; border:1px solid var(--bf-line); border-radius:.5rem; color:var(--bf-ink); background:var(--bf-paper); font:inherit; }
+      .bee-management-timing-controls select:focus-visible { outline:3px solid var(--bf-button); outline-offset:3px; }
+      .bee-management-timing-legend { display:flex; flex-wrap:wrap; gap:.65rem 1.25rem; list-style:none; padding:0; margin:0; min-width:0; }
+      .bee-management-timing-legend li { display:flex; align-items:center; gap:.65rem; min-width:0; }
+      .bee-management-timing-legend span { min-width:0; }
+      .bee-management-timing-sample { display:block; flex:0 0 2rem; width:2rem; height:1rem; }
+      .bee-management-timing-sample[data-branch="baseline"] { color:var(--bf-forecast); }
+      .bee-management-timing-sample[data-branch="action"] { color:var(--bf-observed); }
+      .bee-management-timing-sample path { fill:none; stroke:currentColor; stroke-width:3; }
+      .bee-management-timing-sample[data-branch="baseline"] path { stroke-dasharray:6 4; }
+      .bee-management-timing-sample :is(circle,rect) { fill:var(--bf-paper); stroke:currentColor; stroke-width:2; }
+      .bee-management-timing-chart { display:grid; gap:.5rem; padding:8px; border:1px solid var(--bf-line); border-radius:.6rem; background:var(--bf-paper); min-width:0; }
+      .bee-management-timing-chart figcaption { font-weight:750; }
+      .bee-management-timing-chart > svg { display:block; width:100%; height:auto; border:1px solid var(--bf-line); border-radius:.4rem; }
+      .bee-management-timing-range,.bee-management-timing-days { display:flex; flex-wrap:wrap; gap:.35rem 1rem; justify-content:space-between; min-width:0; font-variant-numeric:tabular-nums; }
+      .bee-management-timing-range span,.bee-management-timing-days span { min-width:0; }
+      .bee-management-timing-chart .bee-timing-grid { stroke:var(--bf-line); stroke-width:1; }
+      .bee-management-timing-chart .bee-timing-cursor { stroke:var(--bf-muted); stroke-width:1.5; stroke-dasharray:3 4; }
+      .bee-management-timing-chart .bee-timing-baseline { fill:none; stroke:var(--bf-forecast); stroke-width:3; stroke-dasharray:8 5; }
+      .bee-management-timing-chart .bee-timing-action { fill:none; stroke:var(--bf-observed); stroke-width:3; }
+      .bee-management-timing-chart .bee-timing-point { fill:var(--bf-paper); stroke-width:3; }
+      .bee-management-timing-chart .bee-timing-point[data-preview-timeline-point="baseline"] { stroke:var(--bf-forecast); }
+      .bee-management-timing-chart .bee-timing-point[data-preview-timeline-point="action"] { stroke:var(--bf-observed); }
+      .bee-management-timing-readings { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; min-width:0; }
+      .bee-management-timing-readings > div { min-width:0; display:grid; align-content:start; gap:.35rem; padding:.75rem; border:1px solid var(--bf-line); border-radius:.6rem; background:var(--bf-paper); }
+      .bee-management-timing-readings dt { color:var(--bf-muted); }
+      .bee-management-timing-readings dd { margin:0; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      @container(min-width:30rem) { .bee-management-timing-controls { grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-management-timing-readings { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+      @container(max-width:20rem) { .bee-management-timing { padding:8px; } }
+      @media(forced-colors:active) { .bee-management-timing-chart .bee-timing-grid { stroke:GrayText; } .bee-management-timing-chart :is(.bee-timing-baseline,.bee-timing-action,.bee-timing-cursor,.bee-timing-point) { stroke:CanvasText; } .bee-management-timing-chart .bee-timing-point { fill:Canvas; } .bee-management-timing-sample { color:CanvasText!important; } .bee-management-timing-controls select { color:CanvasText; background:Canvas; border-color:CanvasText; } }
+
+      .bee-preview-hive-context { display:grid; gap:.65rem; min-width:0; padding:min(1rem,16px); border:1px solid var(--bf-line); border-inline-start:4px solid var(--bf-button); border-radius:.75rem; background:var(--bf-tint); overflow-wrap:anywhere; }
+      .bee-preview-hive-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.75rem; min-width:0; }
+      .bee-preview-hive-heading h4 { margin:0; font-size:1.125rem; line-height:1.4; font-weight:800; }
+      .bee-preview-hive-heading .bee-forecast-button { min-width:44px; text-align:start; }
+      .bee-preview-hive-scope { font-weight:750; }
+      .bee-preview-hive-readings { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; margin:0; min-width:0; }
+      .bee-preview-hive-readings > div { display:grid; align-content:start; gap:.35rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--bf-line); border-radius:.5rem; background:var(--bf-paper); }
+      .bee-preview-hive-readings > [data-held="true"] { border-style:dashed; }
+      .bee-preview-hive-readings dt,.bee-preview-hive-note { color:var(--bf-muted); }
+      .bee-preview-hive-readings dd { margin:0; font-size:1.125rem; line-height:1.45; font-weight:800; font-variant-numeric:tabular-nums; }
+      @container(min-width:28rem) { .bee-preview-hive-readings[data-paired="true"] { grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-preview-hive-difference { grid-column:1/-1; } }
+      @container(max-width:20rem) { .bee-preview-hive-context,.bee-preview-hive-readings > div { padding:8px; } .bee-preview-hive-heading .bee-forecast-button { padding:8px 4px; } }
       .bee-preview-controls,.bee-preview-metrics { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; margin:0; }
       .bee-preview [data-management-preview-results] { display:grid; gap:12px; }
       .bee-preview [data-management-preview-immediate] p { margin-top:10px; }
       .bee-preview-readiness { margin:0; padding:12px; border-left:3px solid var(--bf-button); border-radius:0 9px 9px 0; background:var(--bf-tint); font-weight:700; }
-      .bee-preview-immediate { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); gap:8px; padding:0; margin:8px 0 0; list-style:none; }
-      .bee-preview-immediate li { padding:10px; border:1px solid var(--bf-line); border-radius:9px; }
-      .bee-preview-immediate strong { display:block; }
+      .bee-preview-handoff { display:grid; gap:.65rem; min-width:0; overflow-wrap:anywhere; }
+      .bee-preview-handoff .bee-forecast-button { justify-self:start; text-align:start; min-width:44px; }
+      .bee-preview-handoff-help { color:var(--bf-muted); }
+      .bee-preview-immediate { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:.75rem; padding:0; margin:.75rem 0 0; list-style:none; }
+      .bee-preview-immediate li { min-width:0; padding:min(.875rem,14px); border:1px solid var(--bf-line); border-radius:.75rem; background:var(--bf-paper); overflow-wrap:anywhere; container-type:inline-size; }
+      .bee-preview-immediate h5 { margin:0; font-size:1rem; line-height:1.4; font-weight:800; }
+      .bee-preview-immediate-readings { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; margin:.75rem 0; min-width:0; }
+      .bee-preview-immediate-readings > div { min-width:0; padding:min(.65rem,10px); border:1px solid var(--bf-line); border-radius:.5rem; }
+      .bee-preview-immediate-readings > div:first-child { border-style:dashed; }
+      .bee-preview-immediate-readings > div:last-child { background:var(--bf-tint); }
+      .bee-preview-immediate-readings dt { color:var(--bf-muted); font-size:.875rem; line-height:1.5; }
+      .bee-preview-immediate-readings dd { margin:.35rem 0 0; font-size:1.125rem; line-height:1.4; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-preview [data-preview-immediate-difference] { margin:0; font-weight:750; font-variant-numeric:tabular-nums; }
+      @container(min-width:18rem) { .bee-preview-immediate-readings { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       .bee-preview-metric { min-width:0; padding:14px; border:1px solid var(--bf-line); border-radius:12px; }
       .bee-preview-metric dt { font-weight:800; }
       .bee-preview-metric dd { margin:10px 0 0; }
@@ -5173,6 +5489,204 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   }
 
 
+  // A held interior is local study state. Keep only raw primitive readings;
+  // display fallbacks and mutable notebook/simulation objects are not evidence.
+  function bhHiveInteriorSnapshot(rawValue) {
+    var raw = rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue) ? rawValue : {};
+    var data = {};
+    ['day', 'experimentRunSerial', 'simulationSeed', 'modelVersion', 'honey', 'syrup', 'pollen', 'brood', 'queenHealth', 'autoAdvance', 'colonySurvived'].forEach(function(key) {
+      var value = raw[key];
+      if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') data[key] = value;
+    });
+    data.activeEvent = !!raw.activeEvent;
+    var identityKnown = Number.isSafeInteger(data.experimentRunSerial) && data.experimentRunSerial >= 1 && data.experimentRunSerial <= 10000000 &&
+      Number.isSafeInteger(data.simulationSeed) && data.simulationSeed >= 0 && data.simulationSeed <= 4294967295 &&
+      typeof data.modelVersion === 'string' && !!data.modelVersion.trim() && data.modelVersion.length <= 64 && !/[\u0000-\u001f\u007f]/.test(data.modelVersion) && data.modelVersion !== BEEHIVE_UNKNOWN_MODEL_VERSION;
+    var dayKnown = Number.isSafeInteger(data.day) && data.day >= 0 && data.day <= 10000000;
+    return { available: identityKnown && dayKnown, data: data,
+      reason: !dayKnown ? 'A recorded model day is needed to hold a reference.' : !identityKnown ? 'Recorded run, seed and model information are needed to hold a reference.' : '' };
+  }
+
+  function bhHiveInteriorFrameModel(data, frame) {
+    var study = bhHiveInteriorEvidence(data, frame, 'brood', null, false), cells = [];
+    for (var row = 0; row < 11; row++) for (var col = 0; col < 21; col++) {
+      var u = (col - 10) / 10, v = 1 - row / 5;
+      cells.push({ row: row, col: col, u: u, v: v, role: study.patternKnown ? bhCombCellRole(u, v, {
+        honeyFill: Math.min(0.5, data.honey / 60), broodFill: Math.min(1, data.brood / 12000),
+        pollenLevel: Math.min(1, data.pollen / 30), layingRate: data.queenHealth / 100,
+        frameDepth: Math.abs(study.frame - 2.5) / 2.5
+      }) : 'unavailable' });
+    }
+    return { frame: study.frame, patternKnown: study.patternKnown, cells: cells };
+  }
+
+  // Cell coordinates belong to the diagram. They are never physical cell measurements.
+  function bhHiveInteriorLens(data, frameIndex, row, col) {
+    if (!Number.isInteger(row) || row < 0 || row > 10 || !Number.isInteger(col) || col < 0 || col > 20) {
+      return { available: false, selected: null, neighbors: [], reason: 'Choose a row and column within this illustration.' };
+    }
+    var model = bhHiveInteriorFrameModel(data, frameIndex), selected = model.cells[row * 21 + col];
+    var roleId = selected.role === 'foundation' ? 'empty' : selected.role;
+    var role = BH_HIVE_INTERIOR_ROLES.find(function(item) { return item.id === roleId; });
+    var x = 43 + col * 25 + (row % 2 ? 12.5 : 0), y = 47 + row * 22;
+    return { available: model.patternKnown, frame: model.frame, row: row, col: col, selected: selected,
+      roleId: roleId, label: role ? role.label : 'Pattern unavailable',
+      description: role ? role.description : 'No mark can be read because a required colony reading is not recorded.',
+      x: x, y: y, viewBox: (x - 55) + ' ' + (y - 48) + ' 110 96',
+      neighbors: model.cells.filter(function(cell) { return Math.abs(cell.row - row) <= 2 && Math.abs(cell.col - col) <= 2; }),
+      reason: model.patternKnown ? '' : 'A required colony reading is not recorded.' };
+  }
+
+  // Compare visible diagram categories, never measured or tracked physical cells.
+  function bhHiveInteriorDiagramChanges(heldValue, rawValue, frameIndex) {
+    var comparison = bhHiveInteriorComparison(heldValue, rawValue, frameIndex);
+    if (!comparison.available) return { available: false, frame: comparison.frame, changes: [], reason: comparison.reason };
+    var before = bhHiveInteriorFrameModel(comparison.held.data, comparison.frame);
+    var current = bhHiveInteriorFrameModel(comparison.current.data, comparison.frame);
+    if (!before.patternKnown || !current.patternKnown) return { available: false, frame: comparison.frame, changes: [],
+      reason: 'Both drawings need recorded food, pollen, brood and queen-health readings to compare their marks. Whole-colony readings may still be available below.' };
+    var changes = [];
+    before.cells.forEach(function(cell, index) {
+      var beforeRole = cell.role === 'foundation' ? 'empty' : cell.role;
+      var currentCell = current.cells[index], role = currentCell.role === 'foundation' ? 'empty' : currentCell.role;
+      if (beforeRole === role) return;
+      var beforeKey = BH_HIVE_INTERIOR_ROLES.find(function(item) { return item.id === beforeRole; });
+      var key = BH_HIVE_INTERIOR_ROLES.find(function(item) { return item.id === role; });
+      changes.push({ row: cell.row, col: cell.col, beforeRole: beforeRole, role: role, beforeLabel: beforeKey.label, label: key.label });
+    });
+    return { available: true, frame: comparison.frame, changes: changes, reason: changes.length ?
+      'Outlined marks differ between the held and current drawings.' :
+      'The schematic marks stayed the same. Check the whole-colony readings for smaller changes.' };
+  }
+
+  function bhHiveInteriorComparison(heldValue, rawValue, frameIndex) {
+    var held = bhHiveInteriorSnapshot(heldValue && heldValue.data), current = bhHiveInteriorSnapshot(rawValue);
+    var reason = heldValue && typeof heldValue.invalidReason === 'string' && heldValue.invalidReason ? heldValue.invalidReason : !held.available ? held.reason : !current.available ? current.reason :
+      ['experimentRunSerial', 'simulationSeed', 'modelVersion'].some(function(key) { return held.data[key] !== current.data[key]; }) ? 'This is a different run, seed or model. Hold a new reference to compare this colony.' :
+      current.data.day < held.data.day ? 'The colony is earlier than the held day. Hold a new reference before comparing.' : '';
+    var comparable = !reason, before = held.data, after = current.data;
+    var rows = BH_HIVE_INTERIOR_TOPICS.map(function(topic) {
+      var a = bhHiveInteriorEvidence(before, frameIndex, topic.id, null, false), b = bhHiveInteriorEvidence(after, frameIndex, topic.id, null, false);
+      var known = comparable && a.available && b.available;
+      // Subtract displayed readings so the visible arithmetic and evidence agree.
+      function displayed(value) { return Number(value.toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false })); }
+      var delta = known ? Math.round((displayed(after[topic.key]) - displayed(before[topic.key])) * 1000) / 1000 : null;
+      var suffix = topic.id === 'queen' ? ' points' : topic.suffix;
+      return { id: topic.id, label: topic.label, before: a.value, current: b.value, delta: delta,
+        difference: known ? (delta > 0 ? '+' : '') + delta.toLocaleString('en-US', { maximumFractionDigits: 3 }) + suffix : 'Not comparable',
+        direction: !known ? 'Unavailable' : delta > 0 ? 'Increased' : delta < 0 ? 'Decreased' : 'Unchanged' };
+    });
+    var frame = bhHiveInteriorEvidence(after, frameIndex, 'brood', null, false).frame;
+    var elapsed = comparable ? after.day - before.day : null;
+    var interval = elapsed === 0 ? 'Same modeled day; changes may be immediate.' : elapsed === null ? reason : elapsed + ' modeled day' + (elapsed === 1 ? '' : 's') + ' elapsed.';
+    var text = comparable ? 'Hive change comparison | Run ' + after.experimentRunSerial + ' · Seed ' + after.simulationSeed + ' · Model ' + after.modelVersion +
+      ' | Held Day ' + before.day + ' → Current Day ' + after.day + ' | Frame ' + (frame + 1) + '/6 in both schematic views | ' +
+      rows.map(function(row) { return row.label + ': ' + row.before + ' → ' + row.current + ' (' + row.difference + ')'; }).join(' | ') +
+      ' | Whole-colony readings; drawn cells are not measured counts. Food includes syrup. Differences do not isolate a cause.' : '';
+    return { available: comparable, canSave: comparable && rows.some(function(row) { return row.delta !== null; }), reason: reason,
+      held: held, current: current, frame: frame, elapsedDays: elapsed, interval: interval, rows: rows, text: text };
+  }
+
+
+  // Read the same rounded whole-colony pair shown in the held comparison.
+  // These bars compare recorded readings; they never count drawn comb cells.
+  function bhHiveInteriorReadingScale(comparisonValue, topicId) {
+    function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
+    function own(value, key) {
+      if (!object(value)) return undefined;
+      var descriptor = Object.getOwnPropertyDescriptor(value, key);
+      return descriptor && Object.prototype.hasOwnProperty.call(descriptor, 'value') ? descriptor.value : undefined;
+    }
+    var topic = BH_HIVE_INTERIOR_TOPICS.find(function(item) { return item.id === topicId; });
+    function unavailable(reason) {
+      return { available: false, id: topic ? topic.id : null, label: topic ? topic.label : '',
+        held: null, current: null, maximum: null, heldPercent: null, currentPercent: null,
+        scaleLabel: '', reason: reason };
+    }
+    if (!topic) return unavailable('Choose food, pollen, brood or queen to compare whole-colony readings.');
+    // Comparison owns the run, seed, model and day checks. Do not re-run the model.
+    if (own(comparisonValue, 'available') !== true) {
+      var reason = own(comparisonValue, 'reason');
+      return unavailable(typeof reason === 'string' && reason ? reason : 'Hold a valid reference to compare whole-colony readings.');
+    }
+    var rows = own(comparisonValue, 'rows');
+    var row = Array.isArray(rows) ? rows.find(function(item) { return own(item, 'id') === topic.id; }) : null;
+    if (!row || !Number.isFinite(own(row, 'delta'))) return unavailable('Both held and current readings are needed to compare this scale.');
+    var held = own(own(comparisonValue, 'held'), 'data'), current = own(own(comparisonValue, 'current'), 'data');
+    var a = own(held, topic.key), b = own(current, topic.key);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || a < 0 || b < 0 || a > topic.max || b > topic.max) {
+      return unavailable('Both held and current readings must be recorded numbers within this topic’s range.');
+    }
+    function displayed(value) {
+      var number = Number(value.toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false }));
+      return number === 0 ? 0 : number;
+    }
+    a = displayed(a); b = displayed(b);
+    var maximum = topic.id === 'queen' ? 100 : Math.max(a, b);
+    return { available: true, id: topic.id, label: topic.label, held: a, current: b, maximum: maximum,
+      heldPercent: maximum === 0 ? 0 : a / maximum * 100,
+      currentPercent: maximum === 0 ? 0 : b / maximum * 100,
+      scaleLabel: maximum === 0 ? 'Both readings are zero.' : topic.id === 'queen' ? 'Scale: 0 to 100 queen-health points.' : 'Scale: 0 to ' + maximum.toLocaleString('en-US', { maximumFractionDigits: 3 }) + topic.suffix + '.',
+      reason: '' };
+  }
+
+  // Navigate the current schematic only. A frame match never measures cells
+  // or establishes whether that category is present in a real colony.
+  function bhHiveInteriorFrameGuide(dataValue, frameIndex, topicId, roleId) {
+    var frames = [], matchingFrames = [], pattern = Object.create(null);
+    var topic = BH_HIVE_INTERIOR_TOPICS.find(function(item) { return item.id === topicId; }) || null;
+    var noRole = roleId === null || roleId === undefined;
+    var role = noRole ? null : BH_HIVE_INTERIOR_ROLES.find(function(item) { return item.id === roleId; }) || null;
+    var label = role ? role.label : topic ? topic.label : 'Frame guide unavailable';
+    function result(available, mapped, status, reason) {
+      for (var frame = 0; frame < 6; frame++) frames.push({ frame: frame,
+        frameKind: frame === 0 || frame === 5 ? 'Outside' : frame === 1 || frame === 4 ? 'Shoulder' : 'Centre',
+        status: status, label: status === 'unmapped' ? 'Not mapped' : 'Unavailable' });
+      return { available: available, mapped: mapped, label: label, frames: frames,
+        matchingFrames: matchingFrames, nextFrame: null, reason: reason };
+    }
+    if (!Number.isInteger(frameIndex) || frameIndex < 0 || frameIndex > 5) return result(false, false, 'unavailable',
+      'Choose one of the six schematic frames to use the frame guide.');
+    if (!topic || !noRole && !role) return result(false, false, 'unavailable',
+      'Choose a listed topic or cell-key category to use the frame guide.');
+    if (!dataValue || typeof dataValue !== 'object' || Array.isArray(dataValue)) return result(false, false, 'unavailable',
+      'The current model pattern needs recorded food, pollen, brood and queen-health readings.');
+    for (var keyIndex = 0; keyIndex < 4; keyIndex++) {
+      var key = ['honey', 'pollen', 'brood', 'queenHealth'][keyIndex], descriptor;
+      try { descriptor = Object.getOwnPropertyDescriptor(dataValue, key); } catch (_) { descriptor = null; }
+      var value = descriptor && Object.prototype.hasOwnProperty.call(descriptor, 'value') ? descriptor.value : undefined;
+      if (!Number.isFinite(value) || value < 0 || value > (key === 'queenHealth' ? 100 : 1000000)) return result(false, false, 'unavailable',
+        'The current model pattern needs recorded food, pollen, brood and queen-health readings.');
+      pattern[key] = value;
+    }
+    if (!role && topic.id === 'queen') return result(true, false, 'unmapped',
+      'The queen’s location is not mapped in the current model pattern. Choosing a frame does not establish where she is.');
+    function matches(cellRole) {
+      if (role) return role.id === 'empty' ? cellRole === 'empty' || cellRole === 'foundation' : cellRole === role.id;
+      if (topic.id === 'food') return cellRole === 'honey';
+      if (topic.id === 'pollen') return cellRole === 'pollen';
+      return cellRole === 'open_brood' || cellRole === 'capped_brood' || cellRole === 'drone_brood';
+    }
+    for (var frame = 0; frame < 6; frame++) {
+      var shown = bhHiveInteriorFrameModel(pattern, frame).cells.some(function(cell) { return matches(cell.role); });
+      frames.push({ frame: frame,
+        frameKind: frame === 0 || frame === 5 ? 'Outside' : frame === 1 || frame === 4 ? 'Shoulder' : 'Centre',
+        status: shown ? 'shown' : 'absent', label: shown ? 'Marks shown' : 'No matching marks' });
+      if (shown) matchingFrames.push(frame);
+    }
+    var nextFrame = null;
+    for (var offset = 1; offset < 6; offset++) {
+      var candidate = (frameIndex + offset) % 6;
+      if (matchingFrames.indexOf(candidate) !== -1) { nextFrame = candidate; break; }
+    }
+    var reason = !matchingFrames.length ? 'No matching marks for ' + label + ' are shown in the current model pattern.'
+      : nextFrame === null ? 'Marks for ' + label + ' are shown only on the selected frame in the current model pattern.'
+      : 'Marks for ' + label + ' are shown on other frames in the current model pattern.';
+    return { available: true, mapped: true, label: label, frames: frames,
+      matchingFrames: matchingFrames, nextFrame: nextFrame,
+      reason: reason + ' These schematic marks do not diagnose the colony.' };
+  }
+
   function bhAppendNotebookEvidence(entryValue, textValue) {
     var entry = entryValue && typeof entryValue === 'object' && !Array.isArray(entryValue) ? entryValue : {};
     var current = typeof entry.evidence === 'string' ? entry.evidence : '', text = typeof textValue === 'string' ? textValue.trim() : '';
@@ -8088,13 +8602,265 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var baselineEnd = result.baseline.timeline[matchedDays - 1], actionEnd = result.withAction.timeline[matchedDays - 1];
     result.daysCompared = matchedDays;
     [['workers', 'Workers', ''], ['brood', 'Brood', ''], ['honey', 'Combined food', ' lb'],
-      ['nectarHoney', 'Nectar honey', ' lb'], ['syrup', 'Syrup', ' lb'], ['varroaLevel', 'Varroa pressure', ' pt'],
+      ['nectarHoney', 'Nectar honey', ' lb'], ['syrup', 'Syrup', ' lb'], ['pollen', 'Pollen stores', ' lb'], ['varroaLevel', 'Varroa pressure', ' pt'],
       ['diseaseRisk', 'Disease risk', ' pt'], ['morale', 'Morale', ' pt'], ['queenHealth', 'Queen health', '%']
     ].forEach(function(field) {
       var before = baselineEnd[field[0]], after = actionEnd[field[0]];
       result.differences.push({ key: field[0], label: field[1], baseline: before, withAction: after, delta: Math.round((after - before) * 10) / 10, suffix: field[2] });
     });
     return result;
+  }
+
+  // Read the already-computed management branches; never run another forecast.
+  function bhManagementPreviewTimeline(previewValue, metricId) {
+    var metrics = [
+      { id: 'workers', label: 'Workers', suffix: '' },
+      { id: 'brood', label: 'Brood', suffix: '' },
+      { id: 'honey', label: 'Combined food', suffix: ' lb' },
+      { id: 'nectarHoney', label: 'Nectar honey', suffix: ' lb' },
+      { id: 'syrup', label: 'Syrup', suffix: ' lb' },
+      { id: 'pollen', label: 'Pollen stores', suffix: ' lb' },
+      { id: 'varroaLevel', label: 'Varroa pressure', suffix: ' pt' },
+      { id: 'diseaseRisk', label: 'Disease risk', suffix: ' pt' },
+      { id: 'morale', label: 'Morale', suffix: ' pt' },
+      { id: 'queenHealth', label: 'Queen health', suffix: '%' }
+    ];
+    var metric = metrics.find(function(item) { return item.id === metricId; }) || metrics[2];
+    function record(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function unavailable(reason, points) { return { available: false, reason: reason, metric: metric, points: points || [], min: null, max: null }; }
+    var preview = record(previewValue) ? previewValue : null;
+    if (!preview || !record(preview.action) || preview.action.eligible !== true) {
+      return unavailable('Choose an available management action to compare projected days.');
+    }
+    if (!record(preview.baseline) || !record(preview.withAction) || !Array.isArray(preview.baseline.timeline) || !Array.isArray(preview.withAction.timeline)) {
+      return unavailable('Both event-free projection timelines are needed.');
+    }
+    var count = preview.daysCompared;
+    if (!Number.isSafeInteger(count) || count < 1 || count > 30) {
+      return unavailable('A shared projection of 1 to 30 days is needed.');
+    }
+    var points = [], known = [], previousDay = -1;
+    function reading(point) { return Number.isFinite(point[metric.id]) && point[metric.id] >= 0 ? point[metric.id] : null; }
+    function displayed(value) { return Number(value.toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false })); }
+    for (var index = 0; index < count; index++) {
+      var before = preview.baseline.timeline[index], after = preview.withAction.timeline[index];
+      if (!record(before) || !record(after) || !Number.isSafeInteger(before.day) || before.day < 0 || before.day !== after.day || before.day <= previousDay) {
+        return unavailable('The projected days cannot be paired safely. Both branches must record the same increasing days.');
+      }
+      previousDay = before.day;
+      var baseline = reading(before), withAction = reading(after), delta = null;
+      if (baseline !== null) known.push(baseline);
+      if (withAction !== null) known.push(withAction);
+      if (baseline !== null && withAction !== null) {
+        var difference = displayed(withAction) - displayed(baseline);
+        delta = Math.abs(difference) <= Number.MAX_VALUE / 1000 ? Math.round(difference * 1000) / 1000 : difference;
+        if (delta === 0) delta = 0;
+      }
+      points.push({ day: before.day, offset: index + 1, baseline: baseline, withAction: withAction, delta: delta });
+    }
+    if (!known.length) return unavailable('No recorded numeric readings are available for this metric in the shared projection.', points);
+    var min = Math.min.apply(null, known), max = Math.max.apply(null, known);
+    if (min === max) {
+      var padding = Math.max(1, Math.abs(min) * 0.05);
+      min = Math.max(0, min - padding);
+      max = Math.min(Number.MAX_VALUE, max + padding);
+    }
+    return { available: true, reason: '', metric: metric, points: points, min: min, max: max };
+  }
+
+  // Summarize paired displayed readings already supplied by the timing explorer.
+  // No projection is rerun and no missing reading is treated as a zero difference.
+  function bhManagementTimelineLandmarks(timelineValue) {
+    function record(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function result(available, reason, totalDays, comparedDays, missingDays, differentDays, firstDifference, largestDifference, largestTieDays) {
+      return {
+        available: available, reason: reason, totalDays: totalDays, comparedDays: comparedDays,
+        missingDays: missingDays, differentDays: differentDays,
+        allMatch: available && missingDays === 0 && differentDays === 0,
+        firstDifference: firstDifference, largestDifference: largestDifference, largestTieDays: largestTieDays
+      };
+    }
+    function invalid() { return result(false, 'A valid paired management timeline is needed.', 0, 0, 0, 0, null, null, 0); }
+    function copy(point) { return { day: point.day, offset: point.offset, baseline: point.baseline, withAction: point.withAction, delta: point.delta }; }
+    if (!record(timelineValue) || timelineValue.available !== true || !Array.isArray(timelineValue.points) || timelineValue.points.length < 1 || timelineValue.points.length > 30) {
+      return invalid();
+    }
+    var points = timelineValue.points, previousDay = -1;
+    // Validate the complete sequence before retaining any partial summary.
+    for (var index = 0; index < points.length; index++) {
+      var point = points[index];
+      if (!record(point) || !Number.isSafeInteger(point.day) || point.day < 0 || point.day <= previousDay || point.offset !== index + 1) return invalid();
+      previousDay = point.day;
+    }
+    var comparedDays = 0, missingDays = 0, differentDays = 0;
+    var firstDifference = null, largestDifference = null, largestMagnitude = 0, largestTieDays = 0;
+    points.forEach(function(point) {
+      if (!Number.isFinite(point.baseline) || point.baseline < 0 || !Number.isFinite(point.withAction) || point.withAction < 0 || !Number.isFinite(point.delta)) {
+        missingDays++;
+        return;
+      }
+      comparedDays++;
+      if (point.delta === 0) return;
+      differentDays++;
+      if (!firstDifference) firstDifference = copy(point);
+      var magnitude = Math.abs(point.delta);
+      if (magnitude > largestMagnitude) {
+        largestMagnitude = magnitude;
+        largestDifference = copy(point);
+        largestTieDays = 1;
+      } else if (magnitude === largestMagnitude) {
+        largestTieDays++;
+      }
+    });
+    return result(comparedDays > 0, comparedDays > 0 ? '' : 'No paired numeric readings are recorded for these projected days.', points.length, comparedDays, missingDays, differentDays, firstDifference, largestDifference, largestTieDays);
+  }
+
+  function bhManagementProjectionMetric(metricId) {
+    var metrics = [
+      { id: 'workers', label: 'Workers', suffix: '' }, { id: 'brood', label: 'Brood', suffix: '' },
+      { id: 'honey', label: 'Combined food', suffix: ' lb' }, { id: 'nectarHoney', label: 'Nectar honey', suffix: ' lb' },
+      { id: 'syrup', label: 'Syrup', suffix: ' lb' }, { id: 'pollen', label: 'Pollen stores', suffix: ' lb' }, { id: 'varroaLevel', label: 'Varroa pressure', suffix: ' pt' },
+      { id: 'diseaseRisk', label: 'Disease risk', suffix: ' pt' }, { id: 'morale', label: 'Morale', suffix: ' pt' },
+      { id: 'queenHealth', label: 'Queen health', suffix: '%' }
+    ];
+    return metrics.find(function(item) { return item.id === metricId; }) || null;
+  }
+
+  function bhManagementProjectionDelta(baseline, withAction) {
+    function displayed(value) { return Number(value.toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false })); }
+    var difference = displayed(withAction) - displayed(baseline);
+    var delta = Math.abs(difference) <= Number.MAX_VALUE / 1000 ? Math.round(difference * 1000) / 1000 : difference;
+    return delta === 0 ? 0 : delta;
+  }
+
+  function bhManagementProjectionText(record) {
+    var source = record.source, action = record.action, selected = record.selected, metric = record.metric;
+    function reading(value) { return (value === 0 ? 0 : value).toLocaleString('en-US', { maximumFractionDigits: 3 }) + metric.suffix; }
+    return 'Management projection | Model projection, not observed colony readings.' +
+      ' | Source Day ' + source.day + ' → Projected Day ' + selected.day + ' (+' + selected.offset + ')' +
+      ' | ' + action.label + ' (' + action.cost + ' AP) today versus do nothing' +
+      ' | Requested: ' + record.requestedDays + ' days; paired: ' + record.daysCompared + ' days' +
+      ' | ' + metric.label + ': do nothing ' + reading(selected.baseline) + '; ' + action.label + ' ' + reading(selected.withAction) +
+      '; difference ' + (selected.delta > 0 ? '+' : '') + reading(selected.delta) +
+      ' | Run ' + source.runSerial + ' · Seed ' + source.seed + ' · Model ' + source.modelVersion +
+      ' | Stock ' + source.stockId + ' · Site ' + source.siteId + ' · Garden bonus ' + source.gardenBonus + '%; tracked from Day ' + source.gardenTrackedFromDay +
+      ' | Excludes random events, later management choices and AP refresh.';
+  }
+
+  // Validate the full kept copy before treating its text or metadata as evidence.
+  function bhManagementProjectionRecord(recordValue) {
+    function object(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function shape(value, keys) { return object(value) && Object.keys(value).length === keys.length && keys.every(function(key) { return Object.prototype.hasOwnProperty.call(value, key); }); }
+    function id(value) { return typeof value === 'string' && !!value.trim() && value.length <= 40 && !/[\u0000-\u001f\u007f]/.test(value); }
+    if (!shape(recordValue, ['schemaVersion', 'source', 'action', 'metric', 'selected', 'requestedDays', 'daysCompared', 'text']) || recordValue.schemaVersion !== 1 ||
+      !shape(recordValue.source, ['day', 'runSerial', 'seed', 'modelVersion', 'stockId', 'siteId', 'gardenBonus', 'gardenTrackedFromDay']) ||
+      !shape(recordValue.action, ['id', 'label', 'cost']) || !shape(recordValue.metric, ['id', 'label', 'suffix']) ||
+      !shape(recordValue.selected, ['day', 'offset', 'baseline', 'withAction', 'delta'])) return null;
+    var source = recordValue.source, selected = recordValue.selected;
+    var identity = bhHiveInteriorSnapshot({ day: source.day, experimentRunSerial: source.runSerial, simulationSeed: source.seed, modelVersion: source.modelVersion });
+    var action = BEEHIVE_MANAGEMENT_PREVIEW_CHOICES.find(function(item) { return item.id === recordValue.action.id; });
+    var metric = bhManagementProjectionMetric(recordValue.metric.id);
+    if (!identity.available || source.modelVersion !== BEEHIVE_COLONY_MODEL_VERSION || !id(source.stockId) || !id(source.siteId) || !Number.isFinite(source.gardenBonus) || source.gardenBonus < 0 || source.gardenBonus > 30 ||
+      !Number.isSafeInteger(source.gardenTrackedFromDay) || source.gardenTrackedFromDay < 0 || source.gardenTrackedFromDay > source.day ||
+      !action || action.label !== recordValue.action.label || action.cost !== recordValue.action.cost ||
+      !metric || metric.label !== recordValue.metric.label || metric.suffix !== recordValue.metric.suffix ||
+      (recordValue.requestedDays !== 7 && recordValue.requestedDays !== 30) || !Number.isSafeInteger(recordValue.daysCompared) || recordValue.daysCompared < 1 || recordValue.daysCompared > recordValue.requestedDays ||
+      !Number.isSafeInteger(selected.offset) || selected.offset < 1 || selected.offset > recordValue.daysCompared || !Number.isSafeInteger(selected.day) || selected.day !== source.day + selected.offset ||
+      !Number.isFinite(selected.baseline) || selected.baseline < 0 || !Number.isFinite(selected.withAction) || selected.withAction < 0 ||
+      !Number.isFinite(selected.delta) || Object.is(selected.delta, -0) || selected.delta !== bhManagementProjectionDelta(selected.baseline, selected.withAction)) return null;
+    var record = { schemaVersion: 1,
+      source: { day: source.day, runSerial: source.runSerial, seed: source.seed, modelVersion: source.modelVersion,
+        stockId: source.stockId, siteId: source.siteId, gardenBonus: source.gardenBonus, gardenTrackedFromDay: source.gardenTrackedFromDay },
+      action: { id: action.id, label: action.label, cost: action.cost }, metric: { id: metric.id, label: metric.label, suffix: metric.suffix },
+      selected: { day: selected.day, offset: selected.offset, baseline: selected.baseline, withAction: selected.withAction, delta: selected.delta },
+      requestedDays: recordValue.requestedDays, daysCompared: recordValue.daysCompared, text: '' };
+    record.text = bhManagementProjectionText(record);
+    return typeof recordValue.text === 'string' && record.text.length < 1200 && recordValue.text === record.text ? record : null;
+  }
+
+  function bhManagementProjectionConditions(rawValue) {
+    function own(value, key) { return Object.prototype.hasOwnProperty.call(value, key); }
+    function id(value) { return typeof value === 'string' && !!value.trim() && value.length <= 40 && !/[\u0000-\u001f\u007f]/.test(value); }
+    if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue) ||
+      !['day', 'experimentRunSerial', 'simulationSeed', 'modelVersion', 'experimentEnvironment'].every(function(key) { return own(rawValue, key); })) return null;
+    var identity = bhHiveInteriorSnapshot({ day: rawValue.day, experimentRunSerial: rawValue.experimentRunSerial,
+      simulationSeed: rawValue.simulationSeed, modelVersion: rawValue.modelVersion }), environmentValue = rawValue.experimentEnvironment;
+    if (!identity.available || !environmentValue || typeof environmentValue !== 'object' || Array.isArray(environmentValue) ||
+      !['schemaVersion', 'gardenBonus', 'trackedFromDay'].every(function(key) { return own(environmentValue, key); })) return null;
+    var environment = bhNormalizeExperimentEnvironment(environmentValue);
+    // These are the model's setting defaults, never defaults for observed identity.
+    var stockId = rawValue.subspecies || 'italian', siteId = rawValue.apiarySite || 'meadow';
+    if (!environment || environment.trackedFromDay > identity.data.day || !id(stockId) || !id(siteId) ||
+      (rawValue.subspecies && !own(rawValue, 'subspecies')) || (rawValue.apiarySite && !own(rawValue, 'apiarySite'))) return null;
+    return { day: identity.data.day, runSerial: identity.data.experimentRunSerial, seed: identity.data.simulationSeed,
+      modelVersion: identity.data.modelVersion, stockId: stockId, siteId: siteId,
+      gardenBonus: environment.gardenBonus, gardenTrackedFromDay: environment.trackedFromDay };
+  }
+
+  // Keep one selected pair from the already-computed preview; never rerun it.
+  function bhManagementProjectionCapture(rawState, previewValue, metricId, offsetValue, requestedHorizon, conditionsValue) {
+    function object(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function own(value, key) { return Object.prototype.hasOwnProperty.call(value, key); }
+    function unavailable(reason) { return { available: false, reason: reason, record: null }; }
+    var source = bhManagementProjectionConditions(rawState);
+    if (!source) return unavailable('Recorded day, run, seed, model and garden conditions are needed to keep a projection.');
+    if (source.modelVersion !== BEEHIVE_COLONY_MODEL_VERSION) return unavailable('This preview uses the current colony model. Advance one modeled day to establish its recorded model before keeping a projection.');
+    if (!object(conditionsValue) || !['stockId', 'siteId', 'gardenBonus'].every(function(key) { return own(conditionsValue, key); }) ||
+      conditionsValue.stockId !== source.stockId || conditionsValue.siteId !== source.siteId || conditionsValue.gardenBonus !== source.gardenBonus) {
+      return unavailable('The preview conditions must match this colony’s recorded stock, site and garden conditions.');
+    }
+    if (requestedHorizon !== 7 && requestedHorizon !== 30) return unavailable('Choose a recorded 7-day or 30-day preview.');
+    var metric = bhManagementProjectionMetric(metricId);
+    if (!metric) return unavailable('Choose one of the timing explorer’s recorded measures.');
+    if (!object(previewValue) || !own(previewValue, 'action') || !object(previewValue.action) ||
+      !['id', 'label', 'cost', 'eligible'].every(function(key) { return own(previewValue.action, key); }) || previewValue.action.eligible !== true) {
+      return unavailable('Choose an available management action before keeping its projection.');
+    }
+    var action = BEEHIVE_MANAGEMENT_PREVIEW_CHOICES.find(function(item) { return item.id === previewValue.action.id; });
+    if (!action || action.label !== previewValue.action.label || action.cost !== previewValue.action.cost) return unavailable('The management action’s recorded label and AP cost must match this model.');
+    if (!['baseline', 'withAction', 'daysCompared'].every(function(key) { return own(previewValue, key); }) ||
+      !object(previewValue.baseline) || !object(previewValue.withAction) || !own(previewValue.baseline, 'timeline') || !own(previewValue.withAction, 'timeline')) {
+      return unavailable('Both recorded management projection branches are needed.');
+    }
+    var timeline = bhManagementPreviewTimeline(previewValue, metricId);
+    if (!timeline.available || !own(previewValue, 'daysCompared') || timeline.points.length > requestedHorizon ||
+      !Number.isSafeInteger(offsetValue) || offsetValue < 1 || offsetValue > timeline.points.length) return unavailable('Choose a recorded paired day within this preview.');
+    for (var index = 0; index < timeline.points.length; index++) {
+      var before = previewValue.baseline.timeline[index], after = previewValue.withAction.timeline[index];
+      if (!own(before, 'day') || !own(after, 'day') || timeline.points[index].day !== source.day + index + 1) {
+        return unavailable('Every paired projected day must follow the recorded source day without a gap.');
+      }
+    }
+    var selected = timeline.points[offsetValue - 1];
+    if (!own(previewValue.baseline.timeline[offsetValue - 1], metricId) || !own(previewValue.withAction.timeline[offsetValue - 1], metricId) ||
+      !Number.isFinite(selected.baseline) || selected.baseline < 0 || !Number.isFinite(selected.withAction) || selected.withAction < 0 || !Number.isFinite(selected.delta)) {
+      return unavailable('Both selected projected readings must be recorded before keeping this pair.');
+    }
+    var record = { schemaVersion: 1, source: source, action: { id: action.id, label: action.label, cost: action.cost },
+      metric: metric, selected: { day: selected.day, offset: selected.offset, baseline: selected.baseline, withAction: selected.withAction, delta: selected.delta },
+      requestedDays: requestedHorizon, daysCompared: timeline.points.length, text: '' };
+    record.text = bhManagementProjectionText(record);
+    var validated = bhManagementProjectionRecord(record);
+    return validated ? { available: true, reason: '', record: validated } : unavailable('This projection cannot be kept as a complete, bounded evidence record.');
+  }
+
+  function bhManagementProjectionContext(contextValue, rawState) {
+    function unavailable(reason, record, current) { return { available: false, reason: reason, record: record || null,
+      sourceDay: record ? record.source.day : null, currentDay: current ? current.day : null, text: record ? record.text : '' }; }
+    if (!contextValue || typeof contextValue !== 'object' || Array.isArray(contextValue)) return unavailable('Keep a projected pair before adding it to the notebook.');
+    if (!Object.prototype.hasOwnProperty.call(contextValue, 'record')) return unavailable('A complete kept projection and last recorded day are needed.');
+    var record = bhManagementProjectionRecord(contextValue.record), current = bhManagementProjectionConditions(rawState);
+    if (!record) return unavailable('The kept projection is incomplete or its recorded text has changed. Keep a new pair.');
+    if (typeof contextValue.invalidReason === 'string' && contextValue.invalidReason.trim()) return unavailable(contextValue.invalidReason, record, current);
+    if (!current) return unavailable('Recorded colony identity and conditions are needed to use this kept projection.', record, current);
+    var source = record.source;
+    if (['runSerial', 'seed', 'modelVersion', 'stockId', 'siteId', 'gardenBonus', 'gardenTrackedFromDay'].some(function(key) { return current[key] !== source[key]; })) {
+      return unavailable('This is a different run, seed, model or preview condition. Keep a new projected pair.', record, current);
+    }
+    if (!Object.prototype.hasOwnProperty.call(contextValue, 'lastDay') || !Number.isSafeInteger(contextValue.lastDay) || contextValue.lastDay < source.day || contextValue.lastDay > current.day || current.day < source.day) {
+      return unavailable('The colony clock moved back or its last recorded day is unknown. Keep a new projected pair.', record, current);
+    }
+    return { available: true, reason: '', record: record, sourceDay: source.day, currentDay: current.day, text: record.text };
   }
 
   // Deterministic, event-free colony outlook used by the management UI.
@@ -9862,6 +10628,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var managementPreviewChoice = managementPreviewChoiceState[0], setManagementPreviewChoice = managementPreviewChoiceState[1];
         var managementPreviewHorizonState = React.useState(7);
         var managementPreviewHorizon = managementPreviewHorizonState[0], setManagementPreviewHorizon = managementPreviewHorizonState[1];
+        var managementTimelineMetricState = React.useState('honey'), managementTimelineMetric = managementTimelineMetricState[0], setManagementTimelineMetric = managementTimelineMetricState[1];
+        var managementTimelineOffsetState = React.useState(1), managementTimelineOffset = managementTimelineOffsetState[0], setManagementTimelineOffset = managementTimelineOffsetState[1];
+        var managementWritingContextState = React.useState(null), managementWritingContext = managementWritingContextState[0], setManagementWritingContext = managementWritingContextState[1];
+        var managementReturnFocusState = React.useState(0), requestManagementReturnFocus = managementReturnFocusState[1];
+        React.useEffect(function() {
+          if (!managementWritingContext || managementWritingContext.invalidReason) return;
+          var context = bhManagementProjectionContext(managementWritingContext, rawBeeState);
+          if (!context.available) setManagementWritingContext(Object.assign({}, managementWritingContext, { invalidReason: context.reason }));
+          else if (context.currentDay !== managementWritingContext.lastDay) setManagementWritingContext(Object.assign({}, managementWritingContext, { lastDay: context.currentDay }));
+        }, [managementWritingContext, rawBeeState]);
         var managementPreviewOpenState = React.useState(false);
         var managementPreviewOpen = managementPreviewOpenState[0], setManagementPreviewOpen = managementPreviewOpenState[1];
         var forecastStudyOpenState = React.useState(false), forecastStudyOpen = forecastStudyOpenState[0], setForecastStudyOpen = forecastStudyOpenState[1];
@@ -9892,10 +10668,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var forecastStudyIdRef = React.useRef(0);
         var forecastStudyFocusRef = React.useRef(null);
         React.useEffect(function() {
-          var selector = forecastStudyFocusRef.current;
-          if (!selector) return;
+          var intent = forecastStudyFocusRef.current;
+          if (!intent) return;
           forecastStudyFocusRef.current = null;
-          var target = document.querySelector(selector);
+          var target = typeof intent === 'string' ? document.querySelector(intent) : intent.root && intent.root.isConnected ? intent.root.querySelector(intent.selector) : null;
+          if (!target && intent.root && intent.root.isConnected && intent.fallbackSelector) target = intent.root.querySelector(intent.fallbackSelector);
           if (target) { target.focus(); if (target.scrollIntoView) target.scrollIntoView({ block: 'center' }); }
         });
         var backupReadRef = React.useRef(0), backupPreviewRef = React.useRef(null);
@@ -9998,6 +10775,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (backupUndoRef.current !== state) return;
             backupUndoRef.current = null; setBackupUndo(null);
           }
+          setHiveInteriorHeld(null);
+          setManagementWritingContext(null);
           _beeActionEffectsRef.current = {}; _aiTutorRequestRef.current = {};
           if (_beekeeperActionTimerRef.current) { clearTimeout(_beekeeperActionTimerRef.current); _beekeeperActionTimerRef.current = null; }
           _beeStateRef.current = state;
@@ -29588,6 +30367,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var hiveInteriorTopic = hiveInteriorTopicState[0], setHiveInteriorTopic = hiveInteriorTopicState[1];
         var hiveInteriorRoleState = React.useState(null);
         var hiveInteriorRole = hiveInteriorRoleState[0], setHiveInteriorRole = hiveInteriorRoleState[1];
+        var hiveInteriorLensState = React.useState(false);
+        var hiveInteriorLensOpen = hiveInteriorLensState[0], setHiveInteriorLensOpen = hiveInteriorLensState[1];
+        var hiveInteriorPositionsState = React.useState(false);
+        var hiveInteriorPositionsOpen = hiveInteriorPositionsState[0], setHiveInteriorPositionsOpen = hiveInteriorPositionsState[1];
+        var hiveInteriorChangesState = React.useState(false);
+        var hiveInteriorChangesShown = hiveInteriorChangesState[0], setHiveInteriorChangesShown = hiveInteriorChangesState[1];
+        var hiveInteriorCellState = React.useState({ row: 5, col: 10 });
+        var hiveInteriorCell = hiveInteriorCellState[0], setHiveInteriorCell = hiveInteriorCellState[1];
+        var hiveInteriorHeldState = React.useState(null);
+        var hiveInteriorHeld = hiveInteriorHeldState[0], setHiveInteriorHeld = hiveInteriorHeldState[1];
+        React.useEffect(function() {
+          if (!hiveInteriorHeld || hiveInteriorHeld.invalidReason) return;
+          var comparison = bhHiveInteriorComparison(hiveInteriorHeld, d, 0);
+          if (!comparison.available) setHiveInteriorHeld(Object.assign({}, hiveInteriorHeld, { invalidReason: comparison.reason }));
+        }, [hiveInteriorHeld, d.day, d.experimentRunSerial, d.simulationSeed, d.modelVersion]);
         var queen3dPart = d.queen3dPart || null;
         var queenInspection = bhQueenMapInspection(d.queen3dPatch, d.queen3dColony);
         var _queenExpandedState = React.useState(false);
@@ -29950,15 +30744,221 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             b.hive3dFramesSeen = Array.from(new Set(seen.concat([index])));
           });
         }
-        function selectHiveInteriorRole(id) {
+        function inspectHivePositionFrame(index, event) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!root || (index !== 0 && index !== 2)) return;
+          forecastStudyFocusRef.current = { root: root, selector: '#beehive-interior-read-title' };
+          selectHiveInteriorFrame(index);
+        }
+        function selectNextHivePatternFrame(event) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!root) return;
+          var live = _beeStateRef.current || d;
+          var currentFrame = Number.isInteger(live.hive3dFrame) && live.hive3dFrame >= 0 && live.hive3dFrame < 6 ? live.hive3dFrame : hive3dFrame;
+          var guide = bhHiveInteriorFrameGuide(live, currentFrame, hiveInteriorTopic, hiveInteriorRole);
+          if (!guide.available || guide.nextFrame === null) { announceBee(guide.reason, false); return; }
+          forecastStudyFocusRef.current = { root: root, selector: '[data-interior-frame="' + guide.nextFrame + '"]' };
+          selectHiveInteriorFrame(guide.nextFrame);
+          announceBee('Frame ' + (guide.nextFrame + 1) + ' selected. ' + guide.label + ' marks are shown in the current model pattern. Colony readings and action points are unchanged.', false);
+        }
+        function selectHiveInteriorRole(id, position) {
           var role = BH_HIVE_INTERIOR_ROLES.find(function(item) { return item.id === (id === 'foundation' ? 'empty' : id); });
           if (!role) return;
           setHiveInteriorRole(role.id);
           if (role.topic) setHiveInteriorTopic(role.topic);
+          if (position && Number.isInteger(position.row) && position.row >= 0 && position.row <= 10 && Number.isInteger(position.col) && position.col >= 0 && position.col <= 20) {
+            setHiveInteriorCell({ row: position.row, col: position.col });
+          } else {
+            var model = bhHiveInteriorFrameModel(_beeStateRef.current || d, hive3dFrame);
+            var matches = model.patternKnown ? model.cells.filter(function(cell) { return cell.role === role.id || role.id === 'empty' && cell.role === 'foundation'; }) : [];
+            matches.sort(function(a, b) { return Math.abs(a.row - hiveInteriorCell.row) + Math.abs(a.col - hiveInteriorCell.col) - Math.abs(b.row - hiveInteriorCell.row) - Math.abs(b.col - hiveInteriorCell.col) || a.row - b.row || a.col - b.col; });
+            if (matches.length) setHiveInteriorCell({ row: matches[0].row, col: matches[0].col });
+          }
         }
+        function inspectHiveInteriorCell(row, col) {
+          var live = _beeStateRef.current || d;
+          var lens = bhHiveInteriorLens(live, hive3dFrame, row, col);
+          if (!lens.available && hiveInteriorHeld) {
+            var comparison = bhHiveInteriorComparison(hiveInteriorHeld, live, hive3dFrame);
+            if (comparison.available) lens = bhHiveInteriorLens(comparison.held.data, hive3dFrame, row, col);
+          }
+          if (!lens.available) return;
+          selectHiveInteriorRole(lens.roleId, { row: row, col: col });
+        }
+        function inspectHiveDiagramChange(direction, event) {
+          if (!hiveInteriorHeld) return;
+          var guide = bhHiveInteriorDiagramChanges(hiveInteriorHeld, _beeStateRef.current || d, hive3dFrame);
+          if (!guide.available || !guide.changes.length) return;
+          var at = hiveInteriorCell.row * 21 + hiveInteriorCell.col, target;
+          if (direction < 0) {
+            for (var i = guide.changes.length - 1; i >= 0; i--) if (guide.changes[i].row * 21 + guide.changes[i].col < at) { target = guide.changes[i]; break; }
+            if (!target) target = guide.changes[guide.changes.length - 1];
+          } else {
+            target = guide.changes.find(function(cell) { return cell.row * 21 + cell.col > at; }) || guide.changes[0];
+          }
+          selectHiveInteriorRole(target.role, { row: target.row, col: target.col });
+          setHiveInteriorChangesShown(true);
+          focusHiveInteriorLens(event, true);
+        }
+        function focusHiveInteriorLens(event, opening) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          forecastStudyFocusRef.current = root ? { root: root, selector: opening ? '#beehive-interior-lens-title' : '[data-interior-lens-toggle]' } : null;
+          setHiveInteriorLensOpen(opening);
+        }
+        function openHiveManagement(event) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          var target = root && root.querySelector('[data-management-preview-choice]');
+          if (target) { forecastStudyFocusRef.current = null; target.focus(); if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+          else forecastStudyFocusRef.current = '[data-management-preview-choice]';
+          setManagementPreviewOpen(true);
+        }
+        function openHiveNotebookField(field, event) {
+          if (field !== 'prediction' && field !== 'evidence' && field !== 'explanation') return;
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!root) return;
+          var selector = '[data-beehive-notebook="beekeeper"] [data-notebook-field="' + field + '"]';
+          var notebook = root.querySelector('[data-beehive-notebook="beekeeper"]');
+          var target = notebook && notebook.open && root.querySelector(selector);
+          if (target) {
+            forecastStudyFocusRef.current = null;
+            target.focus();
+            if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+          } else {
+            forecastStudyFocusRef.current = { root: root, selector: selector };
+            upd('notebookOpen', true);
+          }
+          announceBee('Beekeeper ' + field + ' writing opened. Your existing writing is kept.', false);
+        }
+        function renderHiveNotebookContext() {
+          if (viewMode !== 'beekeeper' || !hiveInteriorHeld) return null;
+          var comparison = bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame);
+          var study = bhHiveInteriorEvidence(d, hive3dFrame, hiveInteriorTopic, hiveInteriorRole, false);
+          var row = comparison.rows.find(function(item) { return item.id === study.topic.id; });
+          var scope = row.id === 'queen' ? 'Model health score' : row.id === 'brood' ? 'Whole-colony total · all modeled brood' : 'Whole-colony total';
+          var scopeNote = study.role && study.role.id === 'empty' ? 'Unmarked comb has no separate colony total; these readings provide colony context.' : row.id === 'queen' ? 'This score does not locate the queen.' : 'These readings cover the whole colony, not the selected frame or the number of drawn marks.';
+          if (row.id === 'food') scopeNote += ' Food includes fed syrup; it does not measure harvestable honey.';
+          return h('section', { 'data-notebook-hive-context': 'true', className: 'bee-notebook-hive-context', 'aria-labelledby': 'beehive-notebook-hive-title' },
+            h('div', { className: 'bee-notebook-hive-heading' },
+              h('h4', { id: 'beehive-notebook-hive-title' }, 'Your held hive readings'),
+              h('button', { type: 'button', 'data-notebook-return-interior': 'true', className: 'bee-portfolio-button', onClick: openHiveInterior }, 'Return to held hive view')),
+            h('p', { 'data-notebook-hive-focus': 'true', className: 'bee-notebook-hive-note' }, 'Studying: ' + (study.role ? study.role.label : study.topic.label) + ' · Frame ' + (comparison.frame + 1) + '/6'),
+            h('p', { 'data-notebook-hive-context-status': 'true' }, comparison.available ? 'Held Day ' + comparison.held.data.day + ' → Current Day ' + comparison.current.data.day + ' · Frame ' + (comparison.frame + 1) + '/6 in both schematics. ' + comparison.interval : comparison.reason),
+            comparison.available && h('div', { 'data-notebook-hive-context-reading': row.id, className: 'bee-notebook-hive-reading', role: 'group', 'aria-labelledby': 'beehive-notebook-hive-reading-title' },
+              h('h5', { id: 'beehive-notebook-hive-reading-title' }, row.label),
+              h('p', { 'data-notebook-hive-scope': 'true', className: 'bee-notebook-hive-scope' }, scope),
+              h('dl', { 'data-notebook-hive-readings': 'true', className: 'bee-notebook-hive-values' },
+                h('div', { 'data-notebook-hive-card': 'held' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-notebook-hive-value': 'held' }, row.before)),
+                h('div', { 'data-notebook-hive-card': 'current' }, h('dt', null, 'Current · Day ' + comparison.current.data.day), h('dd', { 'data-notebook-hive-value': 'current' }, row.current)),
+                h('div', { 'data-notebook-hive-card': 'difference' }, h('dt', null, 'Current minus held'),
+                  h('dd', { 'data-notebook-hive-value': 'difference' }, row.difference), h('dd', { 'data-notebook-hive-direction': 'true', className: 'bee-notebook-hive-note' }, row.direction))),
+              h('p', { 'data-notebook-hive-scope-note': 'true', className: 'bee-notebook-hive-note' }, scopeNote)),
+            h('p', null, comparison.available ? 'Name the choice or interval in your prediction. Use the values when explaining what changed, what stayed the same, and what other conditions could matter.' : 'Hold a new reference inside the hive before using a comparison. Your notebook writing is kept.'));
+        }
+        function inspectHiveReadingTopic(id, event) {
+          var topic = BH_HIVE_INTERIOR_TOPICS.find(function(item) { return item.id === id; });
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!topic || !root) return;
+          var currentDetail = root.querySelector('[data-interior-detail="' + id + '"]');
+          var title = currentDetail && currentDetail.querySelector('#beehive-interior-detail-title');
+          if (title) {
+            forecastStudyFocusRef.current = null;
+            title.focus();
+            if (title.scrollIntoView) title.scrollIntoView({ block: 'center', behavior: 'auto' });
+          } else {
+            forecastStudyFocusRef.current = { root: root, selector: '#beehive-interior-detail-title' };
+          }
+          setHiveInteriorTopic(id);
+          setHiveInteriorRole(null);
+          announceBee(topic.label + ' opened inside the hive. ' + (id === 'queen' ? 'The reading is a model health score, not the queen’s location.' : 'The reading covers the whole colony; the highlighted marks are a schematic.'), false);
+        }
+        function renderHiveReference() {
+          var snapshot = bhHiveInteriorSnapshot(d);
+          var comparison = hiveInteriorHeld ? bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame) : null;
+          var referenceState = !comparison ? 'empty' : comparison.available ? 'held' : 'unavailable';
+          function dayLabel(value) { return Number.isSafeInteger(value) && value >= 0 && value <= 10000000 ? 'Day ' + value : 'Not recorded'; }
+          var status = !snapshot.available ? snapshot.reason : comparison ? comparison.available ? comparison.interval : comparison.reason : 'Hold the current readings before trying a choice or advancing a modeled day.';
+          return h('section', { id: 'beehive-interior-reference', 'data-interior-reference': 'true', 'data-reference-state': referenceState, className: 'bee-interior-reference', 'aria-labelledby': 'beehive-interior-reference-title' },
+            h('div', { className: 'bee-interior-reference-heading' },
+              h('h4', { id: 'beehive-interior-reference-title', tabIndex: -1 }, 'Comparison reference'),
+              h('span', { 'data-interior-reference-state': 'true', className: 'bee-interior-badge' }, referenceState === 'held' ? 'Held + current' : referenceState === 'unavailable' ? 'Comparison unavailable' : 'Current only')),
+            h('dl', { 'data-interior-reference-days': 'true', className: 'bee-interior-reference-days' },
+              h('div', { 'data-reference-card': 'held' }, h('dt', null, 'Held reference'),
+                h('dd', { 'data-reference-day': 'held' }, comparison ? dayLabel(comparison.held.data.day) : 'No reference'),
+                h('dd', { 'data-reference-description': 'held', className: 'bee-interior-note' }, !comparison ? 'Hold the current readings to begin.' : comparison.available ? 'Fixed until replaced.' : 'Unavailable for comparison')),
+              h('div', { 'data-reference-card': 'current' }, h('dt', null, 'Current colony'),
+                h('dd', { 'data-reference-day': 'current' }, dayLabel(snapshot.data.day)),
+                h('dd', { 'data-reference-description': 'current', className: 'bee-interior-note' }, 'Updates with the colony.'))),
+            h('div', { className: 'bee-interior-comparison-actions' },
+              h('button', { type: 'button', 'data-interior-hold': 'true', disabled: !snapshot.available, 'aria-describedby': 'beehive-interior-reference-status', onClick: function() { var live = bhHiveInteriorSnapshot(_beeStateRef.current || d); if (live.available) { setHiveInteriorHeld(live); announceBee('Colony readings held. Your colony clock and action points are unchanged.', false); } } }, hiveInteriorHeld ? 'Replace held readings' : 'Hold current readings'),
+              hiveInteriorHeld && h('button', { type: 'button', 'data-interior-clear': 'true', 'aria-describedby': 'beehive-interior-reference-status', onClick: function() { forecastStudyFocusRef.current = '[data-interior-hold]'; setHiveInteriorHeld(null); announceBee('Held readings cleared.', false); } }, 'Clear held readings')),
+            h('p', { id: 'beehive-interior-reference-status', 'data-interior-reference-status': 'true' }, status),
+            hiveInteriorHeld && h('p', { className: 'bee-interior-note' }, 'Replacing starts a new comparison from the current readings. The reference lasts until cleared or you leave this tool.'));
+        }
+
+        function renderHiveChangeComparison() {
+          var snapshot = bhHiveInteriorSnapshot(d), comparison = hiveInteriorHeld ? bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame) : null;
+          var append = comparison && comparison.canSave ? bhAppendNotebookEvidence(d.notebook && d.notebook.beekeeper, comparison.text) : null;
+          var message = !comparison ? 'Hold a reference, use the simulation controls, then return to compare. The reference lasts until you clear it or leave this tool.' : !comparison.available ? comparison.reason :
+            'Held Day ' + comparison.held.data.day + ' → Current Day ' + comparison.current.data.day + '. ' + comparison.interval + ' Both drawings use Frame ' + (hive3dFrame + 1) + '/6.';
+          var saveHint = !comparison || !comparison.canSave ? 'No comparable colony reading is available to add.' : append.status === 'full' ? 'Your writing is kept. Make room for ' + append.needed + ' more characters to add this comparison.' : append.status === 'duplicate' ? 'This exact comparison is already in your evidence.' : 'Adds exactly this preview to Beekeeper evidence and clears only its evidence review mark.';
+          return h('section', { 'data-interior-comparison': 'true', className: 'bee-interior-comparison', 'aria-labelledby': 'beehive-interior-comparison-title' },
+            h('h4', { id: 'beehive-interior-comparison-title', tabIndex: -1 }, 'Watch this colony change'),
+            h('p', null, 'Hold the colony’s current readings, make a prediction, then compare after a choice or a modeled day. Changing frames keeps both drawings on the same frame.'),
+            h('button', { type: 'button', 'data-interior-reference-locate': 'true', 'aria-controls': 'beehive-interior-reference', onClick: function(event) {
+              var root = event.currentTarget.closest('[data-beehive-root]');
+              var target = root && root.querySelector('#beehive-interior-reference-title');
+              if (!target) return;
+              target.focus();
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+            } }, 'Manage held reference'),
+            h('p', { id: 'beehive-interior-comparison-status', 'data-interior-comparison-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, !snapshot.available && !comparison ? snapshot.reason : message),
+            h('ol', { 'data-interior-inquiry': 'true', className: 'bee-interior-inquiry', 'aria-label': 'Use your hive comparison in an inquiry' },
+              h('li', null, h('strong', null, '1 · Predict'),
+                h('p', null, 'Which reading do you expect to change, in which direction, and after what choice or interval?'),
+                h('button', { type: 'button', 'data-interior-inquiry-prediction': 'true', onClick: function(event) { openHiveNotebookField('prediction', event); } }, 'Open prediction')),
+              h('li', null, h('strong', null, '2 · Try a choice'),
+                h('p', null, 'Explore a choice, weigh its cost, then use its control if you decide to try it.'),
+                h('button', { type: 'button', 'data-interior-management': 'true', disabled: !colonySurvived, onClick: openHiveManagement }, 'Explore choices')),
+              h('li', null, h('strong', null, '3 · Explain'),
+                h('p', null, comparison && comparison.available ? 'Compare the readings with your prediction. What do they support, and what else could explain the change?' : 'Hold a reference first. Then use the comparison readings to explain what happened.'),
+                h('button', { type: 'button', 'data-interior-inquiry-explanation': 'true', disabled: !comparison || !comparison.available, onClick: function(event) { openHiveNotebookField('explanation', event); } }, 'Explain findings'))),
+            !colonySurvived && h('p', { className: 'bee-interior-note' }, 'The colony run has ended. Its readings remain available for review; management choices are closed.'),
+            comparison && comparison.available && h(React.Fragment, null,
+              h('dl', { className: 'bee-interior-change-rows' }, comparison.rows.map(function(row) {
+                var scale = bhHiveInteriorReadingScale(comparison, row.id);
+                function readingBar(kind, percent) {
+                  return h('svg', { 'data-reading-bar': kind, className: 'bee-interior-reading-rail', viewBox: '0 0 100 10', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                    h('path', { d: 'M0 5H100 M0 1V9 M100 1V9', className: 'bee-interior-reading-axis' }),
+                    h('line', { 'data-reading-bar-fill': 'true', x1: 0, x2: percent, y1: 5, y2: 5, className: kind === 'held' ? 'bee-interior-reading-held' : 'bee-interior-reading-current' }));
+                }
+                return h('div', { key: row.id, 'data-interior-change': row.id, 'data-selected': hiveInteriorTopic === row.id ? 'true' : 'false', 'data-interior-reading-scale': row.id, 'data-scale-available': scale.available ? 'true' : 'false', className: 'bee-interior-change-row' },
+                  h('dt', { className: 'bee-interior-reading-heading' }, h('strong', null, row.label),
+                    h('button', { type: 'button', 'data-interior-reading-inspect': row.id, 'aria-label': 'Inspect ' + row.label + ' inside the hive', 'aria-pressed': hiveInteriorTopic === row.id ? 'true' : 'false', 'aria-controls': 'beehive-interior-detail', onClick: function(event) { inspectHiveReadingTopic(row.id, event); } }, 'Inspect in hive')),
+                  h('dd', null,
+                    h('div', { className: 'bee-interior-change-value' }, h('span', null, 'Held · Day ' + comparison.held.data.day), h('strong', { 'data-change-held': 'true' }, row.before), scale.available && readingBar('held', scale.heldPercent)),
+                    h('div', { className: 'bee-interior-change-value' }, h('span', null, 'Current · Day ' + comparison.current.data.day), h('strong', { 'data-change-current': 'true' }, row.current), scale.available && readingBar('current', scale.currentPercent)),
+                    h('div', { className: 'bee-interior-change-value', 'data-difference': 'true' }, h('span', null, 'Current minus held'), h('strong', { 'data-change-difference': 'true' }, row.difference), h('span', null, row.direction)),
+                    h('p', { 'data-interior-scale-caption': 'true', className: 'bee-interior-scale-caption' }, scale.available ? scale.scaleLabel : scale.reason)));
+              })),
+              h('p', { className: 'bee-interior-note', 'data-interior-scale-guide': 'true' }, 'Bars start at zero and share a scale within each reading. Dashed bars are held readings; solid bars are current readings. Each topic has its own units and scale, so compare the two bars in one row. Exact values and differences remain the evidence.'),
+              h('p', { className: 'bee-interior-note' }, 'These are whole-colony readings. Food includes fed syrup. Small changes can leave the schematic marks unchanged. A difference alone does not identify its cause; explain the choice, timing and other conditions.'),
+              h('details', { 'data-interior-comparison-evidence': 'true', className: 'bee-interior-comparison-evidence' },
+                h('summary', null, 'Save this comparison as evidence'),
+                h('div', null, h('strong', { id: 'beehive-interior-comparison-preview-title' }, 'Exact text to add'),
+                  h('pre', { 'data-interior-comparison-preview': 'true', 'aria-labelledby': 'beehive-interior-comparison-preview-title' }, comparison.text),
+                  h('button', { type: 'button', 'data-interior-comparison-save': 'true', disabled: !comparison.canSave || !append || append.status !== 'added', 'aria-describedby': 'beehive-interior-comparison-notice', onClick: function() { if (comparison.canSave && append && append.status === 'added') appendBeeNotebookEvidence(comparison.text, 'beekeeper'); } }, append && append.status === 'duplicate' ? 'Already in evidence' : 'Add comparison to evidence'),
+                  h('p', { id: 'beehive-interior-comparison-notice', 'data-interior-comparison-notice': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-note' }, saveHint)))));
+        }
+
+
         function renderHiveInterior() {
           var study = bhHiveInteriorEvidence(d, hive3dFrame, hiveInteriorTopic, hiveInteriorRole, false);
           var topic = study.topic, selectedRole = study.role, patternKnown = study.patternKnown;
+          var frameGuide = bhHiveInteriorFrameGuide(d, hive3dFrame, hiveInteriorTopic, hiveInteriorRole);
+          var comparison = hiveInteriorHeld ? bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame) : null;
+          var diagramChanges = hiveInteriorHeld ? bhHiveInteriorDiagramChanges(hiveInteriorHeld, d, hive3dFrame) : null;
+          var changedPositions = Object.create(null);
+          if (diagramChanges && diagramChanges.available) diagramChanges.changes.forEach(function(cell) { changedPositions[cell.row + ':' + cell.col] = cell; });
           function mark(role, x, y, scale) {
             if (role === 'honey') return h('path', { d: 'M' + (x - 3 * scale) + ' ' + y + 'h' + (6 * scale) + ' M' + x + ' ' + (y - 3 * scale) + 'v' + (6 * scale) });
             if (role === 'pollen') return h('path', { d: 'M' + (x - 3 * scale) + ' ' + (y + 3 * scale) + 'l' + (6 * scale) + ' ' + (-6 * scale) });
@@ -29967,17 +30967,200 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('circle', { cx: x, cy: y, r: (role === 'drone_brood' ? 5 : 3) * scale, className: role === 'open_brood' ? 'bee-interior-open-mark' : undefined, fill: role === 'open_brood' ? 'none' : '#55321a' }),
               role !== 'open_brood' && h('path', { className: 'bee-interior-cap-mark', d: 'M' + (x - 1.5 * scale) + ' ' + y + 'h' + (3 * scale) }));
           }
-          var cells = [], selectedShown = false;
-          for (var row = 0; row < 11; row++) for (var col = 0; col < 21; col++) {
-            var u = (col - 10) / 10, v = 1 - row / 5;
-            var role = patternKnown ? bhCombCellRole(u, v, { honeyFill: Math.min(0.5, hive3dHoneyFill), broodFill: hive3dBroodFill, pollenLevel: hive3dPollen, layingRate: hive3dLaying, frameDepth: hive3dFrameDepth }) : 'unavailable';
-            var cellTopic = role === 'honey' ? 'food' : role === 'pollen' ? 'pollen' : /brood/.test(role) ? 'brood' : null;
-            var highlighted = patternKnown && (selectedRole ? (selectedRole.id === 'empty' ? role === 'empty' || role === 'foundation' : role === selectedRole.id) : cellTopic === topic.id);
-            if (highlighted) selectedShown = true;
-            var x = 43 + col * 25 + (row % 2 ? 12.5 : 0), y = 47 + row * 22;
-            var points = Array.from({ length: 6 }, function(_, i) { var angle = (i * 60 + 30) * Math.PI / 180; return (x + 13 * Math.cos(angle)).toFixed(1) + ',' + (y + 13 * Math.sin(angle)).toFixed(1); }).join(' ');
-            cells.push(h('g', { key: row + '-' + col, 'data-interior-cell': role, 'data-highlighted': highlighted ? 'true' : 'false', onClick: patternKnown ? function(id) { return function() { selectHiveInteriorRole(id); }; }(role) : undefined, className: patternKnown ? 'bee-interior-cell bee-interior-cell-pick' : 'bee-interior-cell' },
-              h('polygon', { points: points, fill: patternKnown ? bhCombCellColor(role, u, v, false) : '#cbd5e1' }), mark(role, x, y, 1)));
+          function renderCells(data, held, lens, positionFrame) {
+            var positionStudy = Number.isInteger(positionFrame) && positionFrame >= 0 && positionFrame < 6;
+            var model = bhHiveInteriorFrameModel(data, positionStudy ? positionFrame : hive3dFrame), shown = false;
+            var drawn = (lens ? lens.neighbors : model.cells).map(function(cell) {
+              var role = cell.role, cellTopic = role === 'honey' ? 'food' : role === 'pollen' ? 'pollen' : /brood/.test(role) ? 'brood' : null;
+              var highlighted = model.patternKnown && (selectedRole ? (selectedRole.id === 'empty' ? role === 'empty' || role === 'foundation' : role === selectedRole.id) : cellTopic === topic.id);
+              if (highlighted) shown = true;
+              var x = 43 + cell.col * 25 + (cell.row % 2 ? 12.5 : 0), y = 47 + cell.row * 22;
+              var points = Array.from({ length: 6 }, function(_, i) { var angle = (i * 60 + 30) * Math.PI / 180; return (x + 13 * Math.cos(angle)).toFixed(1) + ',' + (y + 13 * Math.sin(angle)).toFixed(1); }).join(' ');
+              var props = { key: cell.row + '-' + cell.col, 'data-highlighted': highlighted ? 'true' : 'false', onClick: !positionStudy && model.patternKnown ? function(event) { selectHiveInteriorRole(role, { row: cell.row, col: cell.col }); focusHiveInteriorLens(event, true); } : undefined, className: !positionStudy && model.patternKnown ? 'bee-interior-cell bee-interior-cell-pick' : 'bee-interior-cell' };
+              props[positionStudy ? 'data-position-study-cell' : lens ? held ? 'data-lens-held-cell' : 'data-lens-current-cell' : held ? 'data-held-cell' : 'data-interior-cell'] = role;
+              props[positionStudy ? 'data-position-study-cell-position' : lens ? 'data-lens-position' : 'data-interior-cell-position'] = cell.row + ':' + cell.col;
+              var changeOutline = null;
+              if (!positionStudy && hiveInteriorChangesShown && changedPositions[cell.row + ':' + cell.col]) {
+                var outlinePoints = Array.from({ length: 6 }, function(_, i) { var angle = (i * 60 + 30) * Math.PI / 180; return (x + 10.5 * Math.cos(angle)).toFixed(1) + ',' + (y + 10.5 * Math.sin(angle)).toFixed(1); });
+                var outlinePath = 'M' + outlinePoints.join(' L') + 'Z';
+                changeOutline = h('g', { 'data-diagram-changed': held ? 'held' : 'current', 'data-diagram-change-position': cell.row + ':' + cell.col, 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
+                  h('path', { d: outlinePath, className: 'bee-interior-change-halo' }), h('path', { d: outlinePath, className: 'bee-interior-change-line' }));
+              }
+              return h('g', props, h('polygon', { points: points, fill: model.patternKnown ? bhCombCellColor(role, cell.u, cell.v, false) : '#cbd5e1' }), changeOutline, mark(role, x, y, 1));
+            });
+            return { cells: drawn, shown: shown, patternKnown: model.patternKnown };
+          }
+          var currentCells = renderCells(d, false), selectedShown = currentCells.shown;
+          function renderStudySymbols() {
+            var roles = selectedRole ? [selectedRole] : BH_HIVE_INTERIOR_ROLES.filter(function(role) { return role.topic === topic.id; });
+            return h(React.Fragment, null,
+              roles.length > 0 && h('ul', { 'data-interior-symbol-key': 'true', className: 'bee-interior-study-key', 'aria-label': 'Symbols for this study' }, roles.map(function(role) {
+                return h('li', { key: role.id, 'data-interior-symbol-sample': role.id },
+                  h('svg', { viewBox: '0 0 32 32', className: 'bee-interior-key-symbol bee-interior-study-symbol', 'aria-hidden': 'true', focusable: 'false' }, h('polygon', { points: '16,2 28,9 28,23 16,30 4,23 4,9' }), mark(role.id, 16, 16, 1.4)),
+                  h('span', null, role.label));
+              })),
+              h('p', { 'data-interior-symbol-context': 'true' }, roles.length ? 'Symbol examples only; use the status below to check what is drawn in the current frame.' : 'No mapped cell symbol. The queen’s location is not shown in this cutaway.'),
+              !selectedRole && topic.id === 'brood' && h('p', { 'data-interior-symbol-limit': 'true' }, 'These symbols do not measure stage or caste counts.'));
+          }
+          function renderTopicReadings() {
+            var row = comparison && comparison.available ? comparison.rows.find(function(item) { return item.id === topic.id; }) : null;
+            var currentDay = Number.isSafeInteger(d.day) && d.day >= 0 && d.day <= 10000000 ? d.day : 'not recorded';
+            var scope = topic.id === 'queen' ? 'Model health score' : topic.id === 'brood' ? 'Whole-colony total · all modeled brood' : 'Whole-colony total';
+            return h('div', { 'data-interior-topic-readings': 'true', className: 'bee-interior-topic-readings', role: 'group', 'aria-labelledby': 'beehive-interior-topic-readings-title' },
+              h('h5', { id: 'beehive-interior-topic-readings-title' }, 'Readings for this topic'),
+              h('p', { 'data-interior-topic-scope': 'true', className: 'bee-interior-topic-scope' }, scope),
+              h('dl', { className: 'bee-interior-topic-values', 'data-paired': row ? 'true' : 'false' },
+                row && h('div', { 'data-held': 'true' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-interior-topic-held': 'true' }, row.before)),
+                h('div', null, h('dt', null, 'Current · Day ' + currentDay), h('dd', { 'data-interior-reading': 'true' }, study.value)),
+                row && h('div', { className: 'bee-interior-topic-difference' }, h('dt', null, 'Current minus held'),
+                  h('dd', { 'data-interior-topic-difference': 'true' }, row.difference), h('dd', { 'data-interior-topic-direction': 'true', className: 'bee-interior-topic-direction' }, row.direction))),
+              h('p', { id: 'beehive-interior-topic-status', 'data-interior-topic-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, comparison ? comparison.available ? comparison.interval : comparison.reason : 'Current readings only. Hold a reference to compare this topic over time.'),
+              h('p', { className: 'bee-interior-note' }, selectedRole && selectedRole.id === 'empty' ? 'Unmarked comb has no separate colony total. These readings provide colony context.' : topic.id === 'queen' ? 'This model score does not locate the queen.' : 'These readings cover the whole colony; they do not count the marks or measure the selected frame.'),
+              row && h('p', { className: 'bee-interior-note' }, 'Small changes can leave diagram marks unchanged. A difference alone does not identify its cause.'),
+              h('button', { type: 'button', 'data-interior-topic-compare': 'true', 'aria-describedby': 'beehive-interior-topic-status', onClick: function(event) {
+                var root = event.currentTarget.closest('[data-beehive-root]');
+                var target = root && root.querySelector('#beehive-interior-comparison-title');
+                if (!target) return;
+                target.focus();
+                if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+              } }, 'Compare all colony readings'));
+          }
+          function renderDiagramGuide() {
+            if (!comparison || !comparison.available) return null;
+            var canFind = diagramChanges && diagramChanges.available && diagramChanges.changes.length > 0;
+            return h('section', { 'data-interior-diagram-guide': 'true', className: 'bee-interior-diagram-guide', 'aria-label': 'Compare diagram marks' },
+              h('strong', null, 'Find changed marks'),
+              h('p', null, h('svg', { className: 'bee-interior-change-symbol', viewBox: '0 0 32 32', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M16 2L28 9V23L16 30L4 23V9Z M16 7L24 12V20L16 25L8 20V12Z' })), 'An extra inner hexagon outlines a diagram position with a different mark. The dashed circle shows the position you are inspecting.'),
+              h('div', { className: 'bee-interior-change-controls' },
+                h('label', null, h('input', { type: 'checkbox', 'data-interior-changes-toggle': 'true', checked: !!(canFind && hiveInteriorChangesShown), disabled: !canFind, onChange: function(event) { setHiveInteriorChangesShown(event.target.checked); } }), h('span', null, 'Outline changed diagram marks')),
+                h('button', { type: 'button', 'data-interior-change-previous': 'true', disabled: !canFind, onClick: function(event) { inspectHiveDiagramChange(-1, event); } }, 'Previous changed mark'),
+                h('button', { type: 'button', 'data-interior-change-next': 'true', disabled: !canFind, onClick: function(event) { inspectHiveDiagramChange(1, event); } }, 'Next changed mark')),
+              h('p', { 'data-interior-diagram-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, diagramChanges.reason),
+              h('p', null, 'These are schematic categories, not tracked physical cells. Use the whole-colony readings to measure change.'));
+          }
+          function renderStudyFocus() {
+            return h('section', { 'data-interior-focus-controls': 'true', className: 'bee-interior-focus', 'aria-labelledby': 'beehive-interior-focus-title' },
+              h('h4', { id: 'beehive-interior-focus-title' }, 'Choose what to study'),
+              h('div', { className: 'bee-interior-focus-grid' },
+                h('div', { className: 'bee-interior-focus-group' },
+                  h('h5', null, 'Colony readings'),
+                  h('div', { 'data-interior-topic-controls': 'true', role: 'group', 'aria-label': 'Explore hive contents', className: 'bee-interior-topics' }, BH_HIVE_INTERIOR_TOPICS.map(function(item) {
+                    return h('button', { key: item.id, type: 'button', 'data-interior-topic': item.id, 'aria-pressed': topic.id === item.id ? 'true' : 'false', onClick: function() { setHiveInteriorTopic(item.id); setHiveInteriorRole(null); } }, h('span', { 'aria-hidden': 'true', className: 'bee-interior-symbol' }, item.symbol), item.label);
+                  }))),
+                h('div', { 'data-interior-legend': 'true', className: 'bee-interior-key bee-interior-focus-group' },
+                  h('h5', { id: 'beehive-interior-key-title' }, 'Cell marks'),
+                  h('div', { className: 'bee-interior-key-controls', role: 'group', 'aria-labelledby': 'beehive-interior-key-title' }, BH_HIVE_INTERIOR_ROLES.map(function(role) {
+                    return h('button', { key: role.id, type: 'button', 'data-interior-role': role.id, 'aria-pressed': selectedRole && selectedRole.id === role.id ? 'true' : 'false', onClick: function() { selectHiveInteriorRole(role.id); } },
+                      h('svg', { viewBox: '0 0 32 32', className: 'bee-interior-key-symbol', 'aria-hidden': 'true', focusable: 'false' }, h('polygon', { points: '16,2 28,9 28,23 16,30 4,23 4,9' }), mark(role.id, 16, 16, 1.4)), h('span', null, role.label));
+                  })))));
+          }
+          function renderPositionKey() {
+            var keyRoles = selectedRole ? [selectedRole] : BH_HIVE_INTERIOR_ROLES.filter(function(role) { return role.topic === topic.id; });
+            return h('div', { 'data-position-study-key': 'true', className: 'bee-interior-position-key', role: 'group', 'aria-label': 'Symbols for the selected pattern' },
+              h('p', null, 'Selected pattern · ', h('strong', { 'data-position-study-category': 'true' }, frameGuide.label)),
+              keyRoles.length ? h('ul', null, keyRoles.map(function(role) {
+                return h('li', { key: role.id, 'data-position-study-key-role': role.id },
+                  h('svg', { viewBox: '0 0 32 32', className: 'bee-interior-key-symbol', 'aria-hidden': 'true', focusable: 'false' }, h('polygon', { points: '16,2 28,9 28,23 16,30 4,23 4,9' }), mark(role.id, 16, 16, 1.4)), h('span', null, role.label));
+              })) : h('p', { className: 'bee-interior-note' }, 'Queen health is a model score. The queen’s location is not mapped.'),
+              !patternKnown && h('p', { className: 'bee-interior-note' }, 'Key symbols only · the current pattern is unavailable.'));
+          }
+          function renderPositionStudy() {
+            return h('details', { 'data-interior-position-study-disclosure': 'true', className: 'bee-interior-position-disclosure', open: hiveInteriorPositionsOpen,
+              onToggle: function(event) { if (event.currentTarget.open !== hiveInteriorPositionsOpen) setHiveInteriorPositionsOpen(event.currentTarget.open); } },
+              h('summary', { 'data-interior-position-study-toggle': 'true' }, 'Compare current outside and centre frames'),
+              hiveInteriorPositionsOpen && h('div', { 'data-interior-position-study': 'true', className: 'bee-interior-position-study', role: 'group', 'aria-labelledby': 'beehive-interior-position-study-title' },
+                h('h4', { id: 'beehive-interior-position-study-title' }, 'Same current readings · two frame positions'),
+                h('p', { 'data-position-study-day': 'true', className: 'bee-interior-note' }, 'Current · Day ' + (Number.isSafeInteger(d.day) && d.day >= 0 && d.day <= 10000000 ? d.day : 'not recorded')),
+                renderPositionKey(),
+                h('dl', { className: 'bee-interior-position-reading' },
+                  h('dt', null, (topic.id === 'queen' ? 'Shared current model score' : 'Shared whole-colony reading') + ' · ' + topic.label),
+                  h('dd', { 'data-position-study-reading': 'true' }, study.value)),
+                h('p', { 'data-position-study-context': 'true' }, 'Both drawings use the same current readings. Only their frame positions differ. They update when the current model readings change; this pair does not show change over time.'),
+                selectedRole && selectedRole.id === 'empty' && h('p', { className: 'bee-interior-note' }, 'Unmarked comb has no separate colony total. The shared reading is colony context.'),
+                topic.id === 'food' && h('p', { className: 'bee-interior-note' }, 'The food reading includes fed syrup; the drawn food marks do not measure harvestable honey.'),
+                !frameGuide.available ? h('p', { 'data-position-study-unavailable': 'true', role: 'status', className: 'bee-interior-note' }, 'Pattern unavailable. ' + frameGuide.reason) : h(React.Fragment, null,
+                  !frameGuide.mapped && h('p', { className: 'bee-interior-note' }, frameGuide.reason),
+                  h('p', { id: 'beehive-position-inspect-help', 'data-position-study-inspect-help': 'true', className: 'bee-interior-note' }, 'Inspect a frame in Read the comb below. Your study topic, held reference and close-up position stay the same.'),
+                  h('div', { className: 'bee-interior-position-pair' }, [0, 2].map(function(index) {
+                    var item = frameGuide.frames[index], drawn = renderCells(d, false, null, index);
+                    return h('figure', { key: index, 'data-position-study-frame': String(index), 'data-selected': index === hive3dFrame ? 'true' : 'false', className: 'bee-interior-figure bee-interior-position-figure' },
+                      h('div', { className: 'bee-interior-figure-heading' }, h('strong', null, 'Frame ' + (index + 1) + ' · ' + item.frameKind),
+                        h('span', { 'data-position-study-selection': 'true', className: 'bee-interior-position-selection' }, index === hive3dFrame ? 'Selected frame' : 'Not selected')),
+                      h('svg', { 'data-position-study-diagram': String(index), viewBox: '0 0 610 325', role: 'img', 'aria-label': 'Current model pattern. Frame ' + (index + 1) + ' of 6, ' + item.frameKind.toLowerCase() + '. ' + frameGuide.label + ': ' + item.label + '. Both frame drawings use the same current readings. Use the selected-pattern key to read the schematic marks.', preserveAspectRatio: 'xMidYMid meet' },
+                        h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-wood' }),
+                        h('rect', { x: 27, y: 31, width: 556, height: 256, rx: 4, className: 'bee-interior-comb' }),
+                        h('g', { 'aria-hidden': 'true' }, drawn.cells), h('path', { d: 'M12 27H598 M20 310H590', className: 'bee-interior-bar' })),
+                      h('figcaption', null, h('strong', { 'data-position-study-presence': 'true' }, frameGuide.label + ' · ' + item.label), h('span', null, 'Current schematic illustration · not a real-cell count.'),
+                        h('button', { type: 'button', 'data-position-study-inspect': String(index), 'aria-controls': 'beehive-interior-read', 'aria-describedby': 'beehive-position-inspect-help', onClick: function(event) { inspectHivePositionFrame(index, event); } }, 'Inspect Frame ' + (index + 1))));
+                  }))),
+                h('p', { className: 'bee-interior-note' }, 'Compare where the selected marks appear, then use the cell key and whole-colony reading to explain what this illustration can tell you. Real frame arrangements vary.')));
+          }
+
+          function frameFigure(held, closeup) {
+            var sourceData = held ? comparison.held.data : d;
+            var lens = closeup ? bhHiveInteriorLens(sourceData, hive3dFrame, hiveInteriorCell.row, hiveInteriorCell.col) : null;
+            var drawn = lens ? renderCells(sourceData, held, lens) : held ? renderCells(sourceData, true) : currentCells;
+            var props = { viewBox: '0 0 610 325', role: 'img', 'aria-label': (held ? 'Held reference. ' : 'Current colony. ') + 'Frame ' + (hive3dFrame + 1) + ' of 6, ' + study.frameKind.toLowerCase() + ' frame. ' + (!drawn.patternKnown ? 'Pattern unavailable. ' : '') + 'Schematic comb pattern. Plus signs mark food, slashes pollen, hollow circles open brood, small filled circles capped brood, and larger circles drone brood. Blank cells group empty comb and foundation. Use the labeled cell key for the same selection.', preserveAspectRatio: 'xMidYMid meet' };
+            props[lens ? held ? 'data-interior-held-lens' : 'data-interior-current-lens' : held ? 'data-interior-held-diagram' : 'data-hive-interior-diagram'] = 'true';
+            if (lens) { props.viewBox = lens.viewBox; props['aria-label'] = (held ? 'Held reference' : 'Current colony') + ' close-up. Frame ' + (hive3dFrame + 1) + ' of 6. Illustration row ' + (lens.row + 1) + ', column ' + (lens.col + 1) + '. ' + lens.label + '. Diagram coordinates are not measured cell locations. Use the row and column controls to inspect another position.'; }
+            if (hiveInteriorChangesShown && diagramChanges && diagramChanges.available && diagramChanges.changes.length) props['aria-label'] += ' An extra inner hexagon outlines positions with changed diagram marks. Use Previous or Next changed mark to inspect them.';
+            var inspected = bhHiveInteriorLens(sourceData, hive3dFrame, hiveInteriorCell.row, hiveInteriorCell.col);
+            var locatorProps = { cx: inspected.x, cy: inspected.y, r: 16, className: 'bee-interior-lens-ring', 'aria-hidden': 'true' };
+            locatorProps[lens ? 'data-lens-ring' : 'data-interior-lens-locator'] = held ? 'held' : 'current';
+            return h('figure', { className: 'bee-interior-figure', 'data-held': held ? 'true' : 'false' },
+              (lens || comparison && comparison.available) && h('div', { className: 'bee-interior-figure-heading' }, h('strong', null, held ? 'Held reference' : 'Current colony'), h('span', null, 'Day ' + (Number.isSafeInteger(sourceData.day) && sourceData.day >= 0 ? sourceData.day : 'not recorded') + ' · Frame ' + (hive3dFrame + 1))),
+              h('svg', props, h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-wood' }),
+                h('rect', { x: 27, y: 31, width: 556, height: 256, rx: 4, className: 'bee-interior-comb' }), h('g', { 'aria-hidden': 'true' }, drawn.cells), h('path', { d: 'M12 27H598 M20 310H590', className: 'bee-interior-bar' }),
+                hiveInteriorLensOpen && inspected.available && h(React.Fragment, null,
+                  h('circle', { cx: inspected.x, cy: inspected.y, r: 16, className: 'bee-interior-lens-halo', 'aria-hidden': 'true' }), h('circle', locatorProps))),
+              lens ? h('figcaption', null, h('strong', { 'data-lens-mark': held ? 'held' : 'current' }, (held ? 'Held mark: ' : 'Current mark: ') + lens.label), h('span', null, lens.description)) : h('figcaption', null, !drawn.patternKnown ? 'Pattern unavailable: one or more colony readings were not recorded.' : held ? 'A fixed illustration from the held readings. Selecting another frame redraws that same reference.' : 'A model pattern, not a photograph or cell census. Six frames simplify a hive. Their layout and cell marks illustrate structure; real layouts vary.'));
+          }
+          function renderCellLens() {
+            if (!hiveInteriorLensOpen) return null;
+            var lens = bhHiveInteriorLens(d, hive3dFrame, hiveInteriorCell.row, hiveInteriorCell.col);
+            var paired = comparison && comparison.available;
+            var heldLens = paired ? bhHiveInteriorLens(comparison.held.data, hive3dFrame, hiveInteriorCell.row, hiveInteriorCell.col) : null;
+            var canNavigate = lens.available || heldLens && heldLens.available;
+            var changedHere = changedPositions[hiveInteriorCell.row + ':' + hiveInteriorCell.col];
+            var changeStatus = !diagramChanges || !diagramChanges.available ? diagramChanges && diagramChanges.reason : changedHere ? 'Diagram mark changed: ' + changedHere.beforeLabel + ' → ' + changedHere.label + '.' : 'Same diagram mark at this position: ' + lens.label + '.';
+            return h('section', { id: 'beehive-interior-cell-lens', 'data-interior-cell-lens': 'true', className: 'bee-interior-lens', 'aria-labelledby': 'beehive-interior-lens-title' },
+              h('div', { className: 'bee-interior-lens-heading' }, h('h4', { id: 'beehive-interior-lens-title', tabIndex: -1 }, 'Cell close-up'),
+                h('button', { type: 'button', 'data-interior-lens-close': 'true', onClick: function(event) { focusHiveInteriorLens(event, false); } }, 'Close close-up')),
+              h('p', null, 'The dashed ring locates this close-up on the frame. Use the arrows for one step, or choose any row and column. Each direction stops at the edge. These are illustration coordinates, not measured cell locations.'),
+              h('div', { 'data-interior-lens-navigation': 'true', className: 'bee-interior-lens-navigation' },
+                h('figure', { 'data-interior-lens-map': 'true', className: 'bee-interior-lens-map' },
+                  h('h5', null, 'Where this close-up sits'),
+                  h('p', { className: 'bee-interior-map-axis' }, 'Columns: 1 at left → 21 at right'),
+                  h('svg', { 'data-lens-map-diagram': 'true', viewBox: '-20 -10 650 345', role: 'img', 'aria-label': 'Frame ' + (hive3dFrame + 1) + ' of 6. Row ' + (hiveInteriorCell.row + 1) + ' of 11. Column ' + (hiveInteriorCell.col + 1) + ' of 21. The rectangle shows the close-up area; the dashed ring marks the selected illustration position. Position guide only, without biological cell marks.', preserveAspectRatio: 'xMidYMid meet' },
+                    h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-map-frame' }),
+                    h('rect', { x: 27, y: 31, width: 556, height: 256, rx: 4, className: 'bee-interior-map-comb' }),
+                    h('path', { 'data-lens-map-crosshair': 'true', d: 'M27 ' + lens.y + 'H583 M' + lens.x + ' 31V287', className: 'bee-interior-map-crosshair' }),
+                    h('rect', { 'data-lens-map-window': 'true', x: lens.x - 55, y: lens.y - 48, width: 110, height: 96, className: 'bee-interior-map-window' }),
+                    h('circle', { 'data-lens-map-position': 'true', cx: lens.x, cy: lens.y, r: 16, className: 'bee-interior-map-position' })),
+                  h('p', { className: 'bee-interior-map-axis' }, 'Rows: 1 at top → 11 at bottom'),
+                  h('figcaption', null,
+                    h('p', null, h('strong', null, 'Rectangle: '), 'area enlarged below. ', h('strong', null, 'Dashed ring: '), 'selected position.'),
+                    h('p', { 'data-lens-map-context': 'true' }, (paired ? 'Both close-ups use this illustration position. ' : 'The close-up below uses this illustration position. ') + 'Position guide only; it does not show food, brood or the queen.'))),
+              h('div', { className: 'bee-interior-lens-controls' }, [
+                { id: 'row', label: 'Row', value: hiveInteriorCell.row, count: 11, steps: [{ id: 'up', label: 'Row above', symbol: '↑', delta: -1 }, { id: 'down', label: 'Row below', symbol: '↓', delta: 1 }] },
+                { id: 'column', label: 'Column', value: hiveInteriorCell.col, count: 21, steps: [{ id: 'left', label: 'Column left', symbol: '←', delta: -1 }, { id: 'right', label: 'Column right', symbol: '→', delta: 1 }] }
+              ].map(function(axis) {
+                var rangeId = 'beehive-interior-lens-' + axis.id + '-range';
+                function inspect(value) { inspectHiveInteriorCell(axis.id === 'row' ? value : hiveInteriorCell.row, axis.id === 'column' ? value : hiveInteriorCell.col); }
+                var selectProps = { disabled: !canNavigate, value: axis.value, 'aria-describedby': rangeId, onChange: function(event) { inspect(Number(event.target.value)); } };
+                selectProps['data-interior-lens-' + axis.id] = 'true';
+                return h('div', { key: axis.id, 'data-interior-lens-axis': axis.id, className: 'bee-interior-lens-axis' },
+                  h('label', null, axis.label, h('select', selectProps, Array.from({ length: axis.count }, function(_, index) { return h('option', { key: index, value: index }, String(index + 1)); }))),
+                  h('p', { id: rangeId, 'data-interior-lens-range': axis.id, className: 'bee-interior-lens-range' }, axis.label + ' ' + (axis.value + 1) + ' of ' + axis.count),
+                  h('div', { className: 'bee-interior-lens-steps', role: 'group', 'aria-label': 'Move by illustration ' + axis.id }, axis.steps.map(function(step) {
+                    var target = axis.value + step.delta, atEdge = target < 0 || target >= axis.count;
+                    return h('button', { key: step.id, type: 'button', 'data-interior-lens-step': step.id, disabled: !canNavigate, 'aria-disabled': !canNavigate || atEdge ? 'true' : undefined, 'aria-describedby': rangeId,
+                      onClick: function() { if (canNavigate && !atEdge) inspect(target); } }, h('span', { className: 'bee-interior-lens-step-icon', 'aria-hidden': 'true' }, step.symbol), h('span', null, step.label));
+                  })));
+              }))),
+              h('p', { 'data-interior-lens-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Frame ' + (hive3dFrame + 1) + ' · Illustration row ' + (hiveInteriorCell.row + 1) + ', column ' + (hiveInteriorCell.col + 1) + '. ' + (paired ? 'Both close-ups use this same position. ' : '') + (lens.available ? 'Current mark: ' + lens.label + '.' : lens.reason)),
+              paired && h('p', { 'data-interior-lens-change': 'true', className: 'bee-interior-lens-change' }, changeStatus),
+              h('div', { className: 'bee-interior-lens-pair', 'data-paired': paired ? 'true' : 'false' }, paired && frameFigure(true, true), frameFigure(false, true)));
           }
           study = bhHiveInteriorEvidence(d, hive3dFrame, topic.id, selectedRole && selectedRole.id, selectedShown);
           var append = bhAppendNotebookEvidence(d.notebook && d.notebook.beekeeper, study.text);
@@ -29988,60 +31171,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('header', { className: 'bee-interior-heading' },
               h('div', null, h('p', { className: 'bee-interior-kicker' }, 'Beekeeper · Explore this colony'), h('h3', { id: 'beehive-interior-title', tabIndex: -1 }, 'Inside the hive')),
               h('span', { className: 'bee-interior-badge' }, 'Locate · Read · Explain')),
-            h('p', null, 'Choose a frame, use the cell key to read its pattern, then connect what you see with this colony’s recorded values.'),
+            h('p', null, 'Choose a colony reading or cell mark, locate a frame, then connect its pattern with this colony’s recorded values.'),
             h('p', { 'data-interior-clock': 'true', className: 'bee-interior-note' }, 'Day ' + (Number.isSafeInteger(d.day) && d.day >= 0 && d.day <= 10000000 ? d.day : 'not recorded') + ' · ' + clock + '. Exploring does not spend action points or advance a day. Automatic days, if enabled, keep their own clock.'),
-            h('section', { className: 'bee-interior-step', 'aria-labelledby': 'beehive-interior-locate-title' },
+            renderStudyFocus(),
+            h('section', { 'data-interior-locate': 'true', className: 'bee-interior-step', 'aria-labelledby': 'beehive-interior-locate-title' },
               h('h4', { id: 'beehive-interior-locate-title' }, '1 · Locate a frame'),
               h('div', { className: 'bee-interior-position-layout' },
                 h('div', { className: 'bee-interior-position' },
                   h('div', { className: 'bee-interior-position-ends', 'aria-hidden': 'true' }, h('span', null, 'Front · 1'), h('span', null, '6 · Back')),
-                  h('svg', { 'data-interior-position': 'true', viewBox: '0 0 360 145', role: 'img', 'aria-label': 'Model brood box, top view. Frame ' + (hive3dFrame + 1) + ' of 6 selected. Frames run from front, 1, to back, 6. Choose a labeled frame button to change the selection.' },
+                  h('svg', { 'data-interior-position': 'true', viewBox: '0 0 360 145', role: 'img', 'aria-label': 'Model brood box, top view. Frame ' + (hive3dFrame + 1) + ' of 6 selected. Frames run from front, 1, to back, 6. Choose a labeled frame button to change the selection. ' + (frameGuide.available && frameGuide.mapped ? 'Current ' + frameGuide.label.toLowerCase() + ' pattern: dots mean matching marks are drawn; dashes mean no matching marks are drawn.' : frameGuide.available ? 'Queen location is not mapped.' : 'Question marks mean the current pattern is unavailable.') },
                     h('rect', { x: 12, y: 10, width: 336, height: 125, rx: 10, className: 'bee-interior-position-box' }),
-                    h('g', { 'aria-hidden': 'true' }, Array.from({ length: 6 }, function(_, index) {
-                      return h('g', { key: index, 'data-interior-slot': String(index), 'data-selected': index === hive3dFrame ? 'true' : 'false', className: 'bee-interior-slot' },
+                    h('g', { 'aria-hidden': 'true' }, frameGuide.frames.map(function(item) {
+                      var index = item.frame, x = 51 + index * 48;
+                      return h('g', { key: index, 'data-interior-slot': String(index), 'data-selected': index === hive3dFrame ? 'true' : 'false', 'data-interior-pattern': item.status, className: 'bee-interior-slot' },
                         h('rect', { x: 35 + index * 48, y: 30, width: 32, height: 88, rx: 4 }),
-                        h('text', { x: 51 + index * 48, y: 80, textAnchor: 'middle' }, String(index + 1)),
+                        h('text', { x: x, y: 80, textAnchor: 'middle' }, String(index + 1)),
+                        item.status !== 'unmapped' && h('g', { 'data-interior-slot-presence': item.status, className: 'bee-interior-slot-presence' },
+                          item.status === 'shown' ? h('circle', { cx: x, cy: 102, r: 4 }) : item.status === 'absent' ? h('path', { d: 'M' + (x - 5) + ' 102h10' }) : h('text', { x: x, y: 108, textAnchor: 'middle' }, '?')),
                         index === hive3dFrame && h('path', { d: 'M' + (45 + index * 48) + ' 17h12l-6 8z', fill: 'currentColor' }));
                     }))),
                   h('p', null, 'Top view of the model brood box with its cover removed. The selected slot is the comb face shown below. Honey supers sit above this box in the 3D stack.')),
-                h('div', { className: 'bee-interior-frames', role: 'group', 'aria-label': 'Choose a model hive frame' }, Array.from({ length: 6 }, function(_, index) {
-                  var kind = index === 0 || index === 5 ? 'Outside' : index === 1 || index === 4 ? 'Shoulder' : 'Centre';
-                  return h('button', { key: index, type: 'button', 'data-interior-frame': String(index), 'aria-pressed': index === hive3dFrame ? 'true' : 'false', onClick: function() { selectHiveInteriorFrame(index); } }, h('strong', null, 'Frame ' + (index + 1)), h('span', null, kind));
-                })))),
-            h('p', { 'data-interior-frame-note': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-frame-note' }, 'Frame ' + (hive3dFrame + 1) + ' of 6 · ' + study.frameKind + '. ' + (patternKnown ? 'The drawing uses the same model pattern as the 3D frame below.' : 'Pattern unavailable: one or more colony readings were not recorded.')),
-            h('section', { className: 'bee-interior-step', 'aria-labelledby': 'beehive-interior-read-title' },
-              h('h4', { id: 'beehive-interior-read-title' }, '2 · Read the comb'),
-              h('div', { className: 'bee-interior-study' },
-                h('div', null,
-                  h('figure', { className: 'bee-interior-figure' },
-                    h('svg', { 'data-hive-interior-diagram': 'true', viewBox: '0 0 610 325', role: 'img', 'aria-label': 'Frame ' + (hive3dFrame + 1) + ' of 6, ' + study.frameKind.toLowerCase() + ' frame. Schematic comb pattern. Plus signs mark food, slashes pollen, hollow circles open brood, small filled circles capped brood, and larger circles drone brood. Blank cells group empty comb and foundation. Use the labeled cell key for the same selection.', preserveAspectRatio: 'xMidYMid meet' },
-                      h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-wood' }),
-                      h('rect', { x: 27, y: 31, width: 556, height: 256, rx: 4, className: 'bee-interior-comb' }),
-                      h('g', { 'aria-hidden': 'true' }, cells), h('path', { d: 'M12 27H598 M20 310H590', className: 'bee-interior-bar' })),
-                    h('figcaption', null, 'A model pattern, not a photograph or cell census. Six frames simplify a hive. Their layout and cell marks illustrate structure; real layouts vary.')),
-                  h('div', { 'data-interior-legend': 'true', className: 'bee-interior-key' },
-                    h('h4', { id: 'beehive-interior-key-title' }, 'Cell key · Select a mark'),
-                    h('div', { className: 'bee-interior-key-controls', role: 'group', 'aria-labelledby': 'beehive-interior-key-title' }, BH_HIVE_INTERIOR_ROLES.map(function(role) {
-                      return h('button', { key: role.id, type: 'button', 'data-interior-role': role.id, 'aria-pressed': selectedRole && selectedRole.id === role.id ? 'true' : 'false', onClick: function() { selectHiveInteriorRole(role.id); } },
-                        h('svg', { viewBox: '0 0 32 32', className: 'bee-interior-key-symbol', 'aria-hidden': 'true', focusable: 'false' }, h('polygon', { points: '16,2 28,9 28,23 16,30 4,23 4,9' }), mark(role.id, 16, 16, 1.4)), h('span', null, role.label));
-                    })))),
+                h('div', { className: 'bee-interior-frames', role: 'group', 'aria-label': 'Choose a model hive frame' }, frameGuide.frames.map(function(item) {
+                  return h('button', { key: item.frame, type: 'button', 'data-interior-frame': String(item.frame), 'data-interior-pattern': item.status, 'aria-pressed': item.frame === hive3dFrame ? 'true' : 'false', onClick: function() { selectHiveInteriorFrame(item.frame); } },
+                    h('strong', null, 'Frame ' + (item.frame + 1)), h('span', null, item.frameKind),
+                    item.status !== 'unmapped' && h('span', { 'data-interior-frame-presence': 'true', className: 'bee-interior-frame-presence' }, h('span', { 'aria-hidden': 'true' }, item.status === 'shown' ? '● ' : item.status === 'absent' ? '— ' : '? '), item.label));
+                }))),
+              h('div', { 'data-interior-frame-guide': 'true', className: 'bee-interior-frame-guide', role: 'group', 'aria-label': 'Current frame pattern guide' },
+                h('div', { className: 'bee-interior-frame-guide-heading' },
+                  h('p', null, h('strong', null, 'Current frame pattern'), ' · ', h('span', { 'data-interior-frame-guide-category': 'true' }, frameGuide.label)),
+                  h('button', { type: 'button', 'data-interior-next-match': 'true', disabled: !frameGuide.available || frameGuide.nextFrame === null, 'aria-describedby': 'beehive-interior-frame-guide-status', onClick: selectNextHivePatternFrame }, 'Next matching frame')),
+                h('p', { id: 'beehive-interior-frame-guide-status', 'data-interior-frame-guide-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, frameGuide.reason),
+                h('p', { className: 'bee-interior-note' }, 'Dots mean marks shown; dashes mean no matching marks; ? means unavailable. This guide describes only the current model drawing, including when held readings are displayed. It does not count real cells.')),
+              renderPositionStudy()),
+            h('p', { 'data-interior-frame-note': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-frame-note' }, 'Frame ' + (hive3dFrame + 1) + ' of 6 · ' + study.frameKind + '. ' + (patternKnown ? 'The drawing uses the same model pattern as the 3D frame below.' : 'Pattern unavailable: one or more colony readings were not recorded.') + ' Changing frames changes the illustration, not the whole-colony reading.'),
+            renderHiveReference(),
+            h('section', { id: 'beehive-interior-read', className: 'bee-interior-step', 'aria-labelledby': 'beehive-interior-read-title' },
+              h('h4', { id: 'beehive-interior-read-title', tabIndex: -1 }, '2 · Read the comb'),
+              h('div', { className: 'bee-interior-study', 'data-comparing': comparison && comparison.available ? 'true' : 'false' },
+                h('div', { className: 'bee-interior-visuals' },
+                  h('div', { className: 'bee-interior-cell-toolbar' },
+                    h('button', { type: 'button', 'data-interior-lens-toggle': 'true', 'aria-expanded': hiveInteriorLensOpen ? 'true' : 'false', 'aria-controls': hiveInteriorLensOpen ? 'beehive-interior-cell-lens' : undefined, onClick: function(event) { focusHiveInteriorLens(event, !hiveInteriorLensOpen); } }, hiveInteriorLensOpen ? 'Hide cell close-up' : 'Open cell close-up'),
+                    h('p', null, 'Select a drawn cell for a close-up, or use the row and column controls. The cell key moves to a matching current mark when one is drawn.')),
+                  renderDiagramGuide(),
+                  h('div', { className: 'bee-interior-frame-pair' }, comparison && comparison.available && frameFigure(true), frameFigure(false)),
+                  renderCellLens()),
                 h('div', { className: 'bee-interior-explanation' },
-                  h('div', { role: 'group', 'aria-label': 'Explore hive contents', className: 'bee-interior-topics' }, BH_HIVE_INTERIOR_TOPICS.map(function(item) {
-                    return h('button', { key: item.id, type: 'button', 'data-interior-topic': item.id, 'aria-pressed': topic.id === item.id ? 'true' : 'false', onClick: function() { setHiveInteriorTopic(item.id); setHiveInteriorRole(null); } }, h('span', { 'aria-hidden': 'true', className: 'bee-interior-symbol' }, item.symbol), item.label);
-                  })),
-                  h('section', { 'data-interior-detail': topic.id, className: 'bee-interior-detail', 'aria-labelledby': 'beehive-interior-detail-title' },
-                    h('h4', { id: 'beehive-interior-detail-title' }, topic.label), h('p', null, topic.description),
+                  h('section', { id: 'beehive-interior-detail', 'data-interior-detail': topic.id, className: 'bee-interior-detail', 'aria-labelledby': 'beehive-interior-detail-title' },
+                    h('h4', { id: 'beehive-interior-detail-title', tabIndex: -1 }, topic.label), h('p', null, topic.description),
                     h('div', { 'data-interior-cell-detail': 'true', className: 'bee-interior-cell-detail' },
                       h('strong', null, selectedRole ? selectedRole.label + ' · Read this mark' : 'Read the highlighted pattern'),
+                      renderStudySymbols(),
                       selectedRole && h('p', null, selectedRole.description),
                       h('p', { 'data-interior-highlight-note': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-highlight-note' }, highlightNote)),
-                    h('dl', null, h('dt', null, topic.id === 'queen' ? 'Current model score' : topic.id === 'brood' ? 'Colony brood total · all modeled brood' : 'Current colony total'), h('dd', { 'data-interior-reading': 'true' }, study.value)),
+                    renderTopicReadings(),
                     topic.id === 'food' && h('p', null, 'Fed syrup already included: ' + (Number.isFinite(d.syrup) && d.syrup >= 0 && Number.isFinite(d.honey) && d.honey >= d.syrup && d.honey <= 1000000 ? d.syrup.toLocaleString('en-US', { maximumFractionDigits: 3 }) + ' honey-equivalent lb' : 'Not recorded') + '.'),
                     topic.id === 'queen' && h('p', null, season === 3 ? 'The cutaway does not locate a live queen. The 3D queen finder is unavailable in the winter model, when the bees form a cluster.' : hive3dStatus === 'ready' ? 'The cutaway does not locate a live queen. In the 3D view, use Find the queen to inspect the illustrated bee.' : 'The cutaway does not locate a live queen. The 3D queen finder needs graphics support; this reading remains available here.'))))),
+            renderHiveChangeComparison(),
             season === 3 && h('p', { className: 'bee-interior-season-note' }, 'Winter model: study this cutaway without opening a real hive. It shows comb structure, not the position or shape of the winter cluster.'),
             h('section', { className: 'bee-interior-evidence', 'aria-labelledby': 'beehive-interior-evidence-title' },
               h('h4', { id: 'beehive-interior-evidence-title' }, '3 · Explain with evidence'),
-              h('p', null, 'Compare an outside frame with a centre frame. Which marks change, and which whole-colony reading stays the same? Add the record below, then explain why one frame cannot measure the whole colony.'),
+              h('p', null, 'Open Compare current outside and centre frames above. Which marks differ between positions, and which whole-colony reading is shared? Choose a frame for the record below, then explain why one frame cannot measure the whole colony.'),
               h('strong', { id: 'beehive-interior-preview-title' }, 'Exact text to add'),
               h('pre', { 'data-interior-evidence-preview': 'true', 'aria-labelledby': 'beehive-interior-preview-title' }, study.text),
               h('div', { className: 'bee-interior-evidence-actions' },
@@ -32520,6 +33709,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'mt-2 text-sm' }, notebook.honeyStores.explanation),
                 h('details', { className: 'mt-2' }, h('summary', { className: 'min-h-[44px] cursor-pointer py-2 font-bold' }, 'Read the complete investigation record'),
                   h('pre', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', font: 'inherit', fontSize: '1rem' } }, notebook.honeyStores.text))),
+              renderHiveNotebookContext(),
+              renderManagementProjectionNotebookContext(),
               h('h3', { id: 'beehive-notebook-writing-title', tabIndex: -1, className: 'bee-notebook-writing-title' }, roleName + ' writing'),
               h('p', { className: 'bee-notebook-writing-context' }, 'Write what you expect, record what you observe, and explain what the evidence supports. Use the self-review checklist when you are ready.'),
               h('div', { 'data-notebook-fields': 'true', className: 'mt-4 grid gap-3 lg:grid-cols-3' }, fieldMeta.map(function(field) {
@@ -32940,29 +34131,244 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'bee-forecast-muted mt-2' }, 'Model ' + study.context.modelVersion + ' · Run ' + study.context.runSerial + ' · Seed ' + study.context.simulationSeed),
                   h('p', { className: 'bee-forecast-muted' }, 'Stock ' + study.context.stockId + ' · Site ' + study.context.siteId + ' · Garden +' + study.context.gardenBonus + '%')))));
         }
+        function openManagementProjectionNotebook(capture, field, event) {
+          if (!capture || !capture.available || !capture.record) return;
+          var live = _beeStateRef.current || d;
+          var pending = { record: capture.record, lastDay: capture.record.source.day, invalidReason: '' };
+          var checked = bhManagementProjectionContext(pending, live);
+          if (!checked.available) { announceBee(checked.reason + ' Open a current comparison before capturing another projection.', false); return; }
+          if (field === 'evidence') {
+            var ready = bhAppendNotebookEvidence(live.notebook && live.notebook.beekeeper, checked.text);
+            if (ready.status !== 'added') {
+              announceBee(ready.status === 'duplicate' ? 'This exact projection is already in your evidence.' : 'Your writing is kept. Make room in evidence before adding this projection.', false);
+              return;
+            }
+            appendBeeNotebookEvidence(checked.text, 'beekeeper');
+          }
+          setManagementWritingContext({ record: checked.record, lastDay: checked.currentDay, invalidReason: '' });
+          openHiveNotebookField(field, event);
+        }
+        function openCurrentManagementComparison(event) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!root) return;
+          var panel = root.querySelector('[data-management-preview]');
+          // Native details toggles can arrive after a rapid close and return.
+          // Reopen the actual panel so its queued toggle reads the current state.
+          if (panel) panel.open = true;
+          forecastStudyFocusRef.current = { root: root, selector: '[data-preview-timeline-metric]', fallbackSelector: '[data-management-preview-choice]' };
+          setManagementPreviewOpen(true);
+          // Commit even when the controlled open value was already true, then
+          // let the shared focus effect find the newly rendered controls.
+          requestManagementReturnFocus(function(value) { return value + 1; });
+          announceBee('Current management comparison opened. Your saved projection and writing are kept.', false);
+        }
+        function renderManagementProjectionBridge(preview, offset) {
+          var capture = bhManagementProjectionCapture(rawBeeState, preview, managementTimelineMetric, offset, managementPreviewHorizon, { stockId: activeSubspecies.id, siteId: activeSite.id, gardenBonus: gardenBonus });
+          var record = capture.record, append = capture.available ? bhAppendNotebookEvidence(d.notebook && d.notebook.beekeeper, record.text) : null;
+          var status = !capture.available ? capture.reason : append.status === 'duplicate' ? 'This exact projection is already in your evidence.' : append.status === 'full' ? 'Your writing is kept. Make room for ' + append.needed + ' more characters to add this projection.' : 'Adds this exact projection note to Beekeeper evidence and clears only its evidence review mark.';
+          return h('section', { 'data-management-projection-bridge': 'true', className: 'bee-projection-bridge', 'aria-labelledby': 'beehive-projection-bridge-title' },
+            h('h5', { id: 'beehive-projection-bridge-title' }, 'Use this projection in your investigation'),
+            h('p', { className: 'bee-projection-label' }, 'Model projection, not observed colony readings.'),
+            record && h('p', { className: 'bee-projection-prompt' }, 'Predict how ' + record.action.label + ' could change ' + record.metric.label.toLowerCase() + ' by Day ' + record.selected.day + '. Use both projected readings and explain why. Later, compare your prediction with colony observations.'),
+            h('p', null, 'Write a prediction opens your existing writing with this pair for reference.'),
+            record && h('details', { className: 'bee-projection-details' },
+              h('summary', null, 'Preview the projection note'),
+              h('pre', { 'data-management-projection-text': 'true' }, record.text)),
+            h('div', { className: 'bee-projection-actions' },
+              h('button', { type: 'button', className: 'bee-forecast-button', 'data-management-projection-prediction': 'true', disabled: !capture.available, 'aria-describedby': 'beehive-projection-bridge-status', onClick: function(event) { openManagementProjectionNotebook(capture, 'prediction', event); } }, 'Write a prediction'),
+              h('button', { type: 'button', className: 'bee-forecast-button', 'data-management-projection-save': 'true', disabled: !capture.available || append.status !== 'added', 'aria-describedby': 'beehive-projection-bridge-status', onClick: function(event) { openManagementProjectionNotebook(capture, 'evidence', event); } }, 'Add projection to evidence')),
+            h('p', { id: 'beehive-projection-bridge-status', 'data-management-projection-status': 'true', role: 'status' }, status));
+        }
+        function renderManagementProjectionNotebookContext() {
+          if (viewMode !== 'beekeeper' || !managementWritingContext) return null;
+          var context = bhManagementProjectionContext(managementWritingContext, rawBeeState), record = context.record;
+          function reading(value, signed) { return (signed && value > 0 ? '+' : '') + (value === 0 ? 0 : value).toLocaleString('en-US', { maximumFractionDigits: 3 }) + record.metric.suffix; }
+          return h('section', { 'data-notebook-projection-context': 'true', 'data-projection-state': context.available ? 'valid' : 'invalid', className: 'bee-notebook-projection-context', 'aria-labelledby': 'beehive-notebook-projection-title' },
+            h('h4', { id: 'beehive-notebook-projection-title' }, 'Your kept model projection'),
+            h('p', { className: 'bee-projection-label' }, 'Model projection, not observed colony readings.'),
+            h('p', { 'data-notebook-projection-status': 'true', role: 'status' }, context.available ? 'Saved from Day ' + context.sourceDay + ' · Current Day ' + context.currentDay + ' · Projected Day ' + record.selected.day + '.' : context.reason + ' Your notebook writing is kept. Capture a new projection from a current comparison.'),
+            record && h(React.Fragment, null,
+              h('p', null, record.action.label + ' (' + record.action.cost + ' AP) · ' + record.metric.label + ' · ' + record.daysCompared + ' of ' + record.requestedDays + ' projected days compared.'),
+              h('dl', { className: 'bee-projection-readings', 'aria-label': 'Saved projected readings' },
+                h('div', null, h('dt', null, 'Do nothing'), h('dd', { 'data-notebook-projection-reading': 'baseline' }, reading(record.selected.baseline, false))),
+                h('div', null, h('dt', null, record.action.label), h('dd', { 'data-notebook-projection-reading': 'action' }, reading(record.selected.withAction, false))),
+                h('div', null, h('dt', null, 'Choice minus do nothing'), h('dd', { 'data-notebook-projection-reading': 'difference' }, reading(record.selected.delta, true)))),
+              h('p', null, 'This copy is kept for this visit. Later choices and days do not rewrite this projection. A higher reading is not always better.'),
+              h('details', { className: 'bee-projection-details' }, h('summary', null, 'Read the kept projection note'), h('pre', { 'data-notebook-projection-text': 'true' }, record.text))),
+            h('button', { type: 'button', className: 'bee-portfolio-button', 'data-notebook-projection-return': 'true', onClick: openCurrentManagementComparison }, 'Open current comparison'));
+        }
+        function renderManagementTiming(preview) {
+          var timeline = bhManagementPreviewTimeline(preview, managementTimelineMetric);
+          function reading(value) { return Number.isFinite(value) ? (value === 0 ? 0 : value).toLocaleString('en-US', { maximumFractionDigits: 3 }) + timeline.metric.suffix : 'Not recorded'; }
+          function signedReading(value) { return (value > 0 ? '+' : '') + reading(value); }
+          if (!timeline.available) return h('section', { 'data-management-timing': 'true', className: 'bee-management-timing', 'aria-label': 'Explore management timing' }, h('h4', null, 'Explore the timing'), h('p', { role: 'status' }, timeline.reason));
+          var landmarks = bhManagementTimelineLandmarks(timeline);
+          var offset = Math.max(1, Math.min(timeline.points.length, managementTimelineOffset)), selected = timeline.points[offset - 1];
+          var first = timeline.points[0], last = timeline.points[timeline.points.length - 1];
+          function x(point) { return last.day === first.day ? 300 : 16 + (point.day - first.day) / (last.day - first.day) * 568; }
+          function y(value) { return 224 - (value - timeline.min) / (timeline.max - timeline.min) * 208; }
+          function pathFor(key) {
+            var continuous = false, path = '';
+            timeline.points.forEach(function(point) {
+              if (!Number.isFinite(point[key])) { continuous = false; return; }
+              path += (continuous ? ' L' : ' M') + x(point).toFixed(2) + ' ' + y(point[key]).toFixed(2);
+              continuous = true;
+            });
+            return path.trim();
+          }
+          function sample(branch) { return h('svg', { className: 'bee-management-timing-sample', 'data-branch': branch, viewBox: '0 0 32 16', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M0 8H32' }), branch === 'baseline' ? h('circle', { cx: 16, cy: 8, r: 4 }) : h('rect', { x: 12, y: 4, width: 8, height: 8 })); }
+          function renderLandmarks() {
+            var status;
+            if (!landmarks.available) status = timeline.metric.label + ': ' + landmarks.reason;
+            else if (landmarks.allMatch) status = timeline.metric.label + ': displayed readings match on all ' + landmarks.totalDays + ' compared days. Other measures or today’s immediate changes may still differ.';
+            else if (landmarks.differentDays) status = timeline.metric.label + ': a displayed difference on ' + landmarks.differentDays + ' of ' + landmarks.comparedDays + ' paired projected days.';
+            else status = timeline.metric.label + ': no displayed difference in the ' + landmarks.comparedDays + ' paired projected ' + (landmarks.comparedDays === 1 ? 'day.' : 'days.');
+            if (landmarks.missingDays) status += ' ' + landmarks.missingDays + ' projected ' + (landmarks.missingDays === 1 ? 'day cannot' : 'days cannot') + ' be compared because a reading is missing.';
+            return h('section', { 'data-preview-timeline-landmarks': 'true', className: 'bee-timing-landmarks', 'aria-labelledby': 'beehive-management-landmarks-title' },
+              h('h5', { id: 'beehive-management-landmarks-title' }, 'Find where the readings differ'),
+              h('p', { 'data-preview-timeline-landmark-status': 'true' }, status),
+              landmarks.firstDifference && h('div', { className: 'bee-timing-landmark-cards' }, [
+                { id: 'first', title: 'First recorded difference', point: landmarks.firstDifference, button: 'Inspect first difference' },
+                { id: 'largest', title: 'Largest recorded gap', point: landmarks.largestDifference, button: 'Inspect largest gap' }
+              ].map(function(item) {
+                return h('div', { key: item.id, 'data-preview-timeline-landmark': item.id, className: 'bee-timing-landmark-card' },
+                  h('p', { className: 'bee-timing-landmark-title' }, item.title),
+                  h('strong', { id: 'beehive-management-landmark-' + item.id + '-day', 'data-landmark-day': 'true', className: 'bee-timing-landmark-day' }, 'Day ' + item.point.day),
+                  h('dl', null, h('dt', null, 'Choice minus do nothing'), h('dd', { id: 'beehive-management-landmark-' + item.id + '-difference', 'data-landmark-difference': 'true' }, signedReading(item.point.delta))),
+                  item.id === 'largest' && landmarks.largestTieDays > 1 && h('p', { 'data-landmark-ties': 'true' }, 'This gap size occurs on ' + landmarks.largestTieDays + ' projected days; Day ' + item.point.day + ' is the earliest.'),
+                  h('button', { type: 'button', 'data-preview-timeline-jump': item.id, className: 'bee-forecast-button bee-timing-landmark-button', 'aria-describedby': 'beehive-management-landmark-' + item.id + '-day beehive-management-landmark-' + item.id + '-difference', onClick: function() { setManagementTimelineOffset(item.point.offset); } }, item.button));
+              })),
+              landmarks.firstDifference && h('p', { className: 'bee-timing-landmark-note' }, 'Landmarks use the displayed precision within this comparison. A larger gap is not always better.'));
+          }
+          return h('section', { 'data-management-timing': 'true', className: 'bee-management-timing', 'aria-labelledby': 'beehive-management-timing-title' },
+            h('h4', { id: 'beehive-management-timing-title' }, 'Explore the timing'),
+            h('p', null, 'Both scenarios start from this colony and compare one choice today with doing nothing. Projected days start tomorrow; today’s immediate effects are shown above.'),
+            h('div', { className: 'bee-management-timing-controls' },
+              h('label', null, 'Measure', h('select', { 'data-preview-timeline-metric': 'true', value: timeline.metric.id, onChange: function(event) { setManagementTimelineMetric(event.target.value); } }, preview.differences.map(function(metric) { return h('option', { key: metric.key, value: metric.key }, metric.label); }))),
+              h('label', null, 'Projected day', h('select', { 'data-preview-timeline-day': 'true', value: offset, onChange: function(event) { setManagementTimelineOffset(Number(event.target.value)); } }, timeline.points.map(function(point) { return h('option', { key: point.offset, value: point.offset }, 'Day ' + point.day); })))),
+            h('div', { 'data-preview-timeline-day-navigation': 'true', className: 'bee-timing-day-navigation', role: 'group', 'aria-label': 'Step through projected days' },
+              h('p', { id: 'beehive-management-selected-day', 'data-preview-timeline-selected-day': 'true' }, 'Selected: Day ' + selected.day + ' · ' + offset + ' of ' + timeline.points.length),
+              [{ id: 'previous', label: 'Previous projected day', step: -1, atEdge: offset === 1 }, { id: 'next', label: 'Next projected day', step: 1, atEdge: offset === timeline.points.length }].map(function(item) {
+                return h('button', { key: item.id, type: 'button', 'data-preview-timeline-step': item.id, className: 'bee-forecast-button', 'aria-disabled': item.atEdge ? 'true' : 'false', 'aria-describedby': 'beehive-management-selected-day', onClick: function() {
+                  if (!item.atEdge) setManagementTimelineOffset(offset + item.step);
+                } }, item.label);
+              })),
+            h('ul', { className: 'bee-management-timing-legend', 'aria-label': 'Projected scenarios' },
+              h('li', null, sample('baseline'), h('span', null, 'Do nothing · dashed line and circle')),
+              h('li', null, sample('action'), h('span', null, preview.action.label + ' · solid line and square'))),
+            h('figure', { className: 'bee-management-timing-chart' },
+              h('figcaption', null, timeline.metric.label + ' · Same scale for both scenarios'),
+              h('div', { className: 'bee-management-timing-range' }, h('span', null, 'Top: ' + reading(timeline.max)), h('span', null, 'Bottom: ' + reading(timeline.min))),
+              h('svg', { 'data-management-preview-chart': 'true', viewBox: '0 0 600 240', role: 'img', 'aria-label': 'Event-free projection of ' + timeline.metric.label + ' from Day ' + first.day + ' to Day ' + last.day + '. Do nothing is dashed with a circle; ' + preview.action.label + ' is solid with a square. Both use the same scale. Exact projected values for Day ' + selected.day + ' are below.' },
+                h('g', { 'aria-hidden': 'true' },
+                  [16, 120, 224].map(function(at) { return h('path', { key: at, d: 'M16 ' + at + 'H584', className: 'bee-timing-grid' }); }),
+                  h('path', { 'data-preview-timeline-cursor': 'true', d: 'M' + x(selected).toFixed(2) + ' 16V224', className: 'bee-timing-cursor' }),
+                  h('path', { 'data-preview-timeline-series': 'baseline', d: pathFor('baseline'), className: 'bee-timing-baseline' }),
+                  h('path', { 'data-preview-timeline-series': 'action', d: pathFor('withAction'), className: 'bee-timing-action' }),
+                  Number.isFinite(selected.baseline) && h('circle', { 'data-preview-timeline-point': 'baseline', cx: x(selected), cy: y(selected.baseline), r: 6, className: 'bee-timing-point' }),
+                  Number.isFinite(selected.withAction) && h('rect', { 'data-preview-timeline-point': 'action', x: x(selected) - 5, y: y(selected.withAction) - 5, width: 10, height: 10, className: 'bee-timing-point' }))),
+              h('div', { className: 'bee-management-timing-days' }, h('span', null, 'Day ' + first.day), h('span', null, 'Day ' + last.day)),
+              h('p', { 'data-preview-timeline-scale-note': 'true' }, 'The vertical range fits these projections and may not start at zero. Changing the measure or choice can change the scale. Lines can overlap when readings agree; missing values leave gaps.')),
+            h('section', { 'data-preview-timeline-inspector': 'true', className: 'bee-timing-inspector', 'aria-labelledby': 'beehive-management-inspector-title' },
+              h('h5', { id: 'beehive-management-inspector-title' }, 'Read the selected day'),
+              h('p', { 'data-preview-timeline-context': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Projected Day ' + selected.day + ' · ' + selected.offset + ' of ' + timeline.points.length + ' days compared. These are model projections, not observed colony readings.'),
+              h('dl', { className: 'bee-management-timing-readings', 'aria-label': 'Exact projected readings' },
+                h('div', null, h('dt', null, sample('baseline'), h('span', null, 'Do nothing')), h('dd', { 'data-preview-timeline-reading': 'baseline' }, reading(selected.baseline))),
+                h('div', null, h('dt', null, sample('action'), h('span', null, preview.action.label)), h('dd', { 'data-preview-timeline-reading': 'action' }, reading(selected.withAction))),
+                h('div', null, h('dt', null, 'Choice minus do nothing'), h('dd', { 'data-preview-timeline-reading': 'difference' }, signedReading(selected.delta)))),
+              h('p', null, 'Difference uses the displayed readings. A higher value is not always better; consider the cost and timing alongside the other measures. The projection excludes random events and later management choices.')),
+            renderLandmarks(),
+            renderManagementProjectionBridge(preview, offset));
+        }
+
+        function renderManagementHiveContext(preview) {
+          if (!hiveInteriorHeld && !show3dHive) return null;
+          var study = bhHiveInteriorEvidence(d, hive3dFrame, hiveInteriorTopic, hiveInteriorRole, false);
+          var comparison = hiveInteriorHeld ? bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame) : null;
+          var row = comparison && comparison.available ? comparison.rows.find(function(item) { return item.id === study.topic.id; }) : null;
+          var currentDay = Number.isSafeInteger(d.day) && d.day >= 0 && d.day <= 10000000 ? d.day : 'not recorded';
+          var scope = study.topic.label + ' · ' + (study.topic.id === 'queen' ? 'Model health score' : study.topic.id === 'brood' ? 'Whole-colony total · all modeled brood' : 'Whole-colony total');
+          var projection = bhManagementPreviewTimeline(preview, study.topic.key);
+          var canProject = study.available && projection.available;
+          var projectionHelp = !study.available ? 'A recorded day and this topic’s current reading are needed before following its projection.' : !projection.available ? projection.reason :
+            study.role && study.role.id === 'empty' ? 'Unmarked comb has no separate projection. This opens the ' + projection.metric.label.toLowerCase() + ' projection for colony context.' :
+            study.topic.id === 'food' ? 'The projection calls food stores Combined food, including fed syrup. It follows the whole-colony total, not one frame’s marks.' :
+            study.topic.id === 'queen' ? 'The projection calls this Queen health. It uses the same model score, not the queen’s location.' :
+            'Follow this whole-colony reading through projected days. The projection does not count marks or measure the selected frame.';
+          return h('section', { 'data-management-hive-context': 'true', className: 'bee-preview-hive-context', 'aria-labelledby': 'beehive-management-hive-title' },
+            h('div', { className: 'bee-preview-hive-heading' },
+              h('h4', { id: 'beehive-management-hive-title' }, 'From your hive study'),
+              h('button', { type: 'button', 'data-management-return-interior': 'true', className: 'bee-forecast-button', onClick: openHiveInterior }, 'Return inside the hive')),
+            h('p', { id: 'beehive-management-hive-focus', 'data-management-hive-focus': 'true' }, 'Frame ' + (study.frame + 1) + ' of 6 · ' + study.frameKind + ' · ' + (study.role ? study.role.label : study.topic.label)),
+            h('p', { id: 'beehive-management-hive-scope', 'data-management-hive-scope': 'true', className: 'bee-preview-hive-scope' }, scope),
+            h('dl', { id: 'beehive-management-hive-readings', className: 'bee-preview-hive-readings', 'data-paired': row ? 'true' : 'false' },
+              row && h('div', { 'data-held': 'true' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-management-hive-reading': 'held' }, row.before)),
+              h('div', null, h('dt', null, 'Current · Day ' + currentDay), h('dd', { 'data-management-hive-reading': 'current' }, study.value)),
+              row && h('div', { className: 'bee-preview-hive-difference' }, h('dt', null, 'Current minus held'), h('dd', { 'data-management-hive-difference': 'true' }, row.difference))),
+            h('p', { id: 'beehive-management-hive-status', 'data-management-hive-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, comparison ? comparison.available ? comparison.interval : comparison.reason : 'No held reference. Return inside the hive to hold current readings before trying a choice.'),
+            study.role && study.role.id === 'empty' && h('p', null, 'Unmarked comb has no separate colony total. This reading provides colony context.'),
+            study.topic.id === 'food' && h('p', null, 'Food includes fed syrup; it does not measure harvestable honey.'),
+            study.topic.id === 'queen' && h('p', null, 'The model score does not locate the queen.'),
+            h('p', { className: 'bee-preview-hive-note' }, 'Use these recorded readings as your starting evidence. The sections below project possible outcomes. A difference between held and current readings does not identify its cause.'),
+            h('div', { 'data-management-hive-projection-link': 'true', className: 'bee-preview-hive-projection-link' },
+              h('p', { 'data-management-hive-projection-label': 'true', className: 'bee-preview-hive-projection-label' }, 'Projection measure: ' + projection.metric.label),
+              h('p', { id: 'beehive-management-hive-projection-help', 'data-management-hive-projection-help': 'true' }, projectionHelp),
+              h('button', { type: 'button', 'data-management-hive-project': projection.metric.id, className: 'bee-forecast-button', disabled: !canProject, 'aria-describedby': 'beehive-management-hive-projection-help', onClick: function(event) {
+                if (!canProject) return;
+                var root = event.currentTarget.closest('[data-beehive-root]');
+                if (!root) return;
+                forecastStudyFocusRef.current = { root: root, selector: '[data-preview-timeline-metric]', fallbackSelector: '[data-management-preview-choice]' };
+                setManagementTimelineMetric(projection.metric.id);
+                requestManagementReturnFocus(function(value) { return value + 1; });
+              } }, 'Explore ' + projection.metric.label.toLowerCase() + ' over time')));
+        }
+
         function renderManagementPreview() {
           var preview = managementPreviewOpen ? bhPreviewManagementChoice(Object.assign({}, d, bhSnapshot(), { actionPoints: actionPoints }), bhCfg(), managementPreviewChoice, managementPreviewHorizon) : null;
           function reading(value, suffix) { return (Number.isFinite(value) ? (value === 0 ? 0 : value).toLocaleString('en-US') : String(value)) + (suffix || ''); }
-          return h('details', { 'data-management-preview': 'true', onToggle: function(event) { setManagementPreviewOpen(event.currentTarget.open); }, className: 'bee-forecast bee-preview' },
+          return h('details', { 'data-management-preview': 'true', open: managementPreviewOpen, onToggle: function(event) { setManagementPreviewOpen(event.currentTarget.open); }, className: 'bee-forecast bee-preview' },
             h('summary', { className: 'bee-forecast-summary' },
               h('span', { className: 'bee-forecast-chevron', 'aria-hidden': 'true' }, '▸'),
               h('span', { className: 'bee-forecast-heading' }, h('strong', null, 'Compare a management choice'), h('small', null, 'Explore the effect before spending actions'))),
             managementPreviewOpen && h('div', { className: 'bee-forecast-body' },
               h('p', null, 'Compare one action now with doing nothing. Previewing spends no actions and keeps your colony unchanged.'),
+              renderManagementHiveContext(preview),
               h('div', { className: 'bee-preview-controls' },
                 h('label', { className: 'bee-forecast-label' }, 'Management choice',
-                  h('select', { 'data-management-preview-choice': 'true', value: managementPreviewChoice, onChange: function(event) { setManagementPreviewChoice(event.target.value); }, className: 'bee-forecast-control' },
+                  h('select', { 'data-management-preview-choice': 'true', 'aria-describedby': hiveInteriorHeld || show3dHive ? 'beehive-management-hive-focus beehive-management-hive-scope beehive-management-hive-readings beehive-management-hive-status' : undefined, value: managementPreviewChoice, onChange: function(event) { setManagementPreviewChoice(event.target.value); }, className: 'bee-forecast-control' },
                     BEEHIVE_MANAGEMENT_PREVIEW_CHOICES.map(function(choice) { return h('option', { key: choice.id, value: choice.id }, choice.label + ' (' + choice.cost + ' AP)'); }))),
                 h('label', { className: 'bee-forecast-label' }, 'Compare after',
-                  h('select', { 'data-management-preview-horizon': 'true', value: managementPreviewHorizon, onChange: function(event) { setManagementPreviewHorizon(Number(event.target.value)); }, className: 'bee-forecast-control' }, h('option', { value: 7 }, '7 days'), h('option', { value: 30 }, '30 days')))),
-              h('p', { 'data-management-preview-readiness': 'true', role: 'status', 'aria-live': 'polite', className: 'bee-preview-readiness' }, preview.action.eligible ? preview.action.label + ' is ready. Costs ' + preview.action.cost + ' AP; ' + (actionPoints - preview.action.cost) + ' AP would remain today.' : preview.action.label + ' unavailable. ' + preview.action.reason),
+                  h('select', { 'data-management-preview-horizon': 'true', value: managementPreviewHorizon, onChange: function(event) { var horizon = Number(event.target.value); setManagementPreviewHorizon(horizon); setManagementTimelineOffset(Math.min(managementTimelineOffset, horizon)); }, className: 'bee-forecast-control' }, h('option', { value: 7 }, '7 days'), h('option', { value: 30 }, '30 days')))),
+              h('div', { 'data-management-preview-handoff': 'true', className: 'bee-preview-handoff' },
+              h('p', { id: 'beehive-management-preview-readiness', 'data-management-preview-readiness': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-preview-readiness' }, preview.action.eligible ? preview.action.label + ' is ready. Costs ' + preview.action.cost + ' AP; ' + (actionPoints - preview.action.cost) + ' AP would remain today.' : preview.action.label + ' unavailable. ' + preview.action.reason),
+                h('p', { id: 'beehive-management-preview-locate-help', 'data-management-preview-locate-help': 'true', className: 'bee-preview-handoff-help' }, preview.action.eligible ? 'Locating the control only moves focus. Activate the colony control separately to apply ' + preview.action.label + ' and spend ' + preview.action.cost + ' AP.' : 'Locating the control only moves focus so you can review its unavailable reason. This choice cannot be applied while unavailable.'),
+              h('button', { type: 'button', 'data-management-preview-locate': 'true', 'aria-describedby': 'beehive-management-preview-readiness beehive-management-preview-locate-help', className: 'bee-forecast-button', onClick: function(event) {
+                var beeRoot = event.currentTarget.closest('[data-beehive-root]');
+                var target = beeRoot && beeRoot.querySelector('[data-management-choice="' + managementPreviewChoice + '"]');
+                if (!target) return;
+                for (var ancestor = target.parentElement; ancestor && ancestor !== beeRoot; ancestor = ancestor.parentElement) if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+                target.focus();
+                if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+              } }, 'Locate ' + (preview.action.label || 'management') + ' control')),
               preview.action.eligible && h(React.Fragment, null,
                 h('div', { 'data-management-preview-immediate': 'true' },
                   h('h4', null, 'Immediate modeled changes'),
-                  h('ul', { className: 'bee-preview-immediate' }, preview.action.changes.map(function(change) { return h('li', { key: change.key }, h('strong', null, change.label), h('span', null, reading(change.before, change.suffix) + ' → ' + reading(change.after, change.suffix))); })),
+                  h('p', { 'data-preview-immediate-context': 'true' }, 'If you apply ' + preview.action.label + ' now on Day ' + day + ', these readings would change immediately. No modeled days pass in this comparison.'),
+                  h('ul', { className: 'bee-preview-immediate' }, preview.action.changes.map(function(change) {
+                    var numeric = Number.isFinite(change.before) && Number.isFinite(change.after);
+                    var delta = numeric ? Math.round((change.after - change.before) * 1000) / 1000 : null;
+                    var deltaSuffix = change.key === 'queenHealth' ? ' points' : change.suffix;
+                    return h('li', { key: change.key, 'data-preview-immediate-change': change.key },
+                      h('h5', null, change.label),
+                      h('dl', { className: 'bee-preview-immediate-readings' },
+                        h('div', null, h('dt', null, 'Current'), h('dd', { 'data-preview-immediate-value': 'before' }, reading(change.before, change.suffix))),
+                        h('div', null, h('dt', null, 'If applied now'), h('dd', { 'data-preview-immediate-value': 'after' }, reading(change.after, change.suffix)))),
+                      h('p', { 'data-preview-immediate-difference': 'true' }, numeric ? 'Change now: ' + (delta > 0 ? '+' : '') + reading(delta, deltaSuffix) : 'Status changes'));
+                  })),
                   managementPreviewChoice === 'feed_bees' && h('p', { className: 'mt-2' }, 'Added syrup is food the colony consumes first. It is not newly made nectar honey and cannot be harvested.'),
                   managementPreviewChoice === 'add_super' && h('p', { className: 'mt-2' }, 'A super lowers modeled crowding and swarm risk. Random swarms are excluded here, so that protection may not appear in these numbers.'),
                   (managementPreviewChoice === 'requeen' || managementPreviewChoice === 'split_colony') && h('p', { className: 'mt-2' }, 'Existing brood keeps its ages and can emerge during the laying pause. Queen timing is a model simplification.')),
+                renderManagementTiming(preview),
                 h('div', { 'data-management-preview-results': 'true' },
                   h('h4', null, 'Event-free comparison after ' + preview.daysCompared + ' days · Day ' + (day + preview.daysCompared)),
                   preview.daysCompared < managementPreviewHorizon && h('p', { className: 'bee-outlook-shortened mt-2' }, 'Stopped after ' + preview.daysCompared + ' of ' + managementPreviewHorizon + ' days: a branch reached the model’s collapse threshold. Both scenarios use Day ' + (day + preview.daysCompared) + '.'),
@@ -32976,15 +34382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'bee-preview-difference' }, h('span', null, 'Difference'), h('strong', { 'data-preview-difference': change.key }, (change.delta > 0 ? '+' : '') + reading(change.delta, change.suffix)), h('small', null, change.delta === 0 ? 'No difference between scenarios' : (change.delta > 0 ? 'Higher' : 'Lower') + ' with ' + preview.action.label))));
                   }))),
                 h('p', null, 'Difference means ' + preview.action.label + ' minus doing nothing. A higher value is not always better; weigh the cost, timing, and other readings.')),
-              h('p', { className: 'bee-forecast-muted' }, 'Model limits: includes seasonal biology; excludes random events, later management choices, and action-point refresh. These projections do not guarantee survival.'),
-              h('button', { type: 'button', 'data-management-preview-locate': 'true', className: 'bee-forecast-button', onClick: function(event) {
-                var beeRoot = event.currentTarget.closest('[data-beehive-root]');
-                var target = beeRoot && beeRoot.querySelector('[data-management-choice="' + managementPreviewChoice + '"]');
-                if (!target) return;
-                for (var ancestor = target.parentElement; ancestor && ancestor !== beeRoot; ancestor = ancestor.parentElement) if (ancestor.tagName === 'DETAILS') ancestor.open = true;
-                target.focus();
-                if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
-              } }, 'Locate ' + (preview.action.label || 'management') + ' control')));
+              h('p', { className: 'bee-forecast-muted' }, 'Model limits: includes seasonal biology; excludes random events, later management choices, and action-point refresh. These projections do not guarantee survival.')));
         }
         function renderManagementEvidence() {
           var ev = d.lastManagement;
@@ -34258,7 +35656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         var pollinationCanvasReading = beeView === 'pollination' ? bhPollinationReading(d.pollinationLab) : null;
-        var beeWorkspace = h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '77', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_beehive_simulations_and_learning_environment', 'Beehive simulations and learning environment'), className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
+        var beeWorkspace = h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '99', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_beehive_simulations_and_learning_environment', 'Beehive simulations and learning environment'), className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
           h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
             h('div', { className: 'flex items-center gap-3 min-w-0' },
@@ -36222,8 +37620,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }).sort(function(a, b) { return b.pct - a.pct; }).slice(0, 3);
             return h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200'),
               role: 'region', 'aria-label': __alloT('stem.beehive.next_badges_to_earn', 'Next badges to earn') },
-              h('div', { className: 'flex items-center justify-between mb-2' },
-                h('div', { className: 'flex items-center gap-2' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                h('div', { className: 'flex flex-wrap min-w-0 items-center gap-2' },
                   h('span', { 'aria-hidden': 'true' }, '🎖️'),
                   h('span', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.next_badges', 'Next Badges')),
                   h('span', { className: 'text-[0.625rem] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, badgeCount + ' / ' + BADGE_DEFS.length + ' earned')
@@ -36231,7 +37629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', {
                   onClick: function() { upd('showBadges', true); },
                   title: __alloT('stem.beehive.see_all_badges_and_their_requirements', 'See all badges and their requirements'),
-                  className: 'text-[0.6875rem] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-amber-400 hover:bg-amber-900/40' : 'transition-colors text-amber-700 hover:bg-amber-100')
+                  className: 'min-h-[44px] min-w-[44px] text-[0.6875rem] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-amber-400 hover:bg-amber-900/40' : 'transition-colors text-amber-700 hover:bg-amber-100')
                 }, __alloT('stem.beehive.see_all', 'See all →'))
               ),
               h('div', { className: 'space-y-1.5' },
@@ -36557,7 +37955,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhQueenNotebookRecord: bhQueenNotebookRecord,
       bhQueenNotebookCapture: bhQueenNotebookCapture,
       bhDroneNotebookCapture: bhDroneNotebookCapture,
-      bhHiveInteriorEvidence: bhHiveInteriorEvidence, BH_HIVE_INTERIOR_ROLES: BH_HIVE_INTERIOR_ROLES,
+      bhHiveInteriorSnapshot: bhHiveInteriorSnapshot, bhHiveInteriorFrameModel: bhHiveInteriorFrameModel, bhHiveInteriorLens: bhHiveInteriorLens, bhHiveInteriorDiagramChanges: bhHiveInteriorDiagramChanges, bhHiveInteriorComparison: bhHiveInteriorComparison,
+      bhHiveInteriorEvidence: bhHiveInteriorEvidence, bhHiveInteriorFrameGuide: bhHiveInteriorFrameGuide, bhHiveInteriorReadingScale: bhHiveInteriorReadingScale, BH_HIVE_INTERIOR_ROLES: BH_HIVE_INTERIOR_ROLES,
       bhAppendNotebookEvidence: bhAppendNotebookEvidence, BH_COLONY_OBSERVATION_LIMIT: BH_COLONY_OBSERVATION_LIMIT,
       BH_FORECAST_STUDY_METRICS: BH_FORECAST_STUDY_METRICS,
       bhNormalizeForecastStudy: bhNormalizeForecastStudy, bhNormalizeForecastDraft: bhNormalizeForecastDraft,
@@ -36566,7 +37965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhForecastStudyView: bhForecastStudyView, bhObserveForecastStudy: bhObserveForecastStudy,
       bhForecastStudyNotice: bhForecastStudyNotice, bhForecastStudyResult: bhForecastStudyResult,
       bhBuildForecastStudyRecord: bhBuildForecastStudyRecord,
-      bhManagementAction: bhManagementAction, bhPreviewManagementChoice: bhPreviewManagementChoice,
+      bhManagementAction: bhManagementAction, bhPreviewManagementChoice: bhPreviewManagementChoice, bhManagementPreviewTimeline: bhManagementPreviewTimeline, bhManagementTimelineLandmarks: bhManagementTimelineLandmarks, bhManagementProjectionCapture: bhManagementProjectionCapture, bhManagementProjectionContext: bhManagementProjectionContext,
       BEEHIVE_MANAGEMENT_PREVIEW_CHOICES: BEEHIVE_MANAGEMENT_PREVIEW_CHOICES,
       bhQueenFieldObjective: bhQueenFieldObjective,
       bhQueenMapInspection: bhQueenMapInspection, QUEEN_LANDSCAPE_PATCHES: QUEEN_LANDSCAPE_PATCHES,

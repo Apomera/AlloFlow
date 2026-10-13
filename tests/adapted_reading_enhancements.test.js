@@ -329,7 +329,7 @@ describe('Novak source-preserving reading', () => {
     mount({ generatedContent: item, isTeacherMode: true, isZenMode: false, isEditingLeveledText: true });
     expect(host.querySelector('textarea')).toBeNull();
     expect(host.querySelector('[data-reading-gloss]').textContent).toContain('Open land');
-    const toggle = Array.from(host.querySelectorAll('input[type="checkbox"]')).find(node => node.parentElement.textContent.includes('Show glosses'));
+    const toggle = Array.from(host.querySelectorAll('input[type="checkbox"]')).find(node => node.parentElement.textContent.includes('Show word help'));
     act(() => toggle.click());
     expect(host.querySelector('[data-original-source]').textContent).toBe(original);
     expect(item.data).toBe(original); expect(api.isSupportedOriginal(item)).toBe(true);
@@ -372,7 +372,7 @@ describe('Paired reader playback and supported original continuity', () => {
     mount({ isCompareMode: true, generatedContent: adapted, history: [original, adapted] });
     expect(host.querySelector('[data-compare-version="source"] [data-reading-gloss]').textContent).toContain('Open land');
     expect(host.querySelector('[data-compare-version="adapted"] [data-reading-gloss]')).toBeNull();
-    const glossToggle = host.querySelector('input[aria-label="Show glosses"]');
+    const glossToggle = host.querySelector('input[aria-label="Show word help"]');
     act(() => glossToggle.click());
     expect(host.querySelector('[data-compare-version="source"]').textContent).toBe(original.data);
     act(() => glossToggle.click());
@@ -415,10 +415,10 @@ describe('Paired reader playback and supported original continuity', () => {
   it('reports unavailable gloss generation without claiming the supports are ready', async () => {
     const { original } = pair();
     mount({ generatedContent: original, isTeacherMode: true, onGenerateReadingSupports: async () => ({ status: 'unavailable', annotations: [] }) });
-    const button = [...host.querySelectorAll('button')].find(node => ['Add word supports', 'Refresh suggested supports'].includes(node.textContent));
+    const button = [...host.querySelectorAll('button')].find(node => ['Add word helps', 'Refresh word help'].includes(node.textContent));
     await act(async () => button.click());
-    expect(host.textContent).toContain('Word supports could not be generated. The original is unchanged.');
-    expect(host.textContent).not.toContain('Word supports are ready.');
+    expect(host.textContent).toContain('Word help could not be generated. The original is unchanged.');
+    expect(host.textContent).not.toContain('Word help is ready.');
   });
 });
 

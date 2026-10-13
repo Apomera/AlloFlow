@@ -91,10 +91,10 @@ describe('teaching-script host boundaries with real core',()=>{
     expect(result.ok).toBe(false);expect(result.error).toContain('Applicable research could not be verified');expect(result.error).toContain('No catalogued public practice guide');expect(result.error).toContain('turn off research');
     expect(h.deps.callText).not.toHaveBeenCalled();expect(h.writes).toEqual([]);
   });
-  it('uses exactly one corrective retry and never appends invalid output',async()=>{
+  it('bounds corrective retries and stops when the first smaller part remains invalid',async()=>{
     const callText=vi.fn().mockResolvedValue('{"title":"Too short"}'),h=setup({callText});
     expect((await h.controller.generate('p',settings())).ok).toBe(false);
-    expect(callText).toHaveBeenCalledTimes(2);expect(callText.mock.calls[1][0]).toContain('failed validation');expect(h.writes).toEqual([]);
+    expect(callText).toHaveBeenCalledTimes(4);expect(callText.mock.calls[1][0]).toContain('failed validation');expect(callText.mock.calls[2][0]).toContain('SMALLER RESPONSE MODE');expect(h.writes).toEqual([]);
   });
   it('prevents overlapping runs and disposal prevents late writes',async()=>{
     const wait=deferred(),h=setup({callText:vi.fn(()=>wait.promise)}),run=h.controller.generate('p',settings());

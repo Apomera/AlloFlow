@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rendererHash": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c",
+  "rendererHash": "06dde2f3c51dcb663101eee53b69a3f365b434db67d96b704289572b842587b1",
   "description": "Generated views of the authored Universe flight highlights at their launch lens and exposure. Procedural teaching scenery.",
   "views": [
     {
@@ -122,8 +122,8 @@
       "file": "nebula-approach.webp",
       "width": 480,
       "height": 300,
-      "bytes": 11590,
-      "hash": "ccfca230b458f1a119ecef9995a47d93021de93dd6acd04accd04fecc45eed0a",
+      "bytes": 11554,
+      "hash": "b584dc30bdcd017844b13a0884ceecc09460abdd081926d2e2dc668a48ee21cc",
       "snapshot": {
         "version": 1,
         "settings": {
@@ -159,8 +159,8 @@
       "file": "nebula-filaments.webp",
       "width": 480,
       "height": 300,
-      "bytes": 10432,
-      "hash": "5fc81cb5edcdde78896f8f7e9563bb400a6d6794f97ea2c78b6b3a7d03bf9e3d",
+      "bytes": 10394,
+      "hash": "cddae64520d9c0f43f38be651e3fa261f1e891bf36707b4b568fe6aec0dcf57c",
       "snapshot": {
         "version": 1,
         "settings": {
@@ -196,8 +196,8 @@
       "file": "nebula-violet.webp",
       "width": 480,
       "height": 300,
-      "bytes": 8768,
-      "hash": "263a0a0db3f70a9f5ec554974e7d0dcc2c2f112989a242ab2b4e33d8743e6161",
+      "bytes": 8730,
+      "hash": "e74082fedc1c9f945179240aea7ab9ac9ad2f3069afd02f1c81e0a86288bb957",
       "snapshot": {
         "version": 1,
         "settings": {
@@ -418,8 +418,8 @@
       "file": "stellar-pale.webp",
       "width": 480,
       "height": 300,
-      "bytes": 11160,
-      "hash": "47a19963f26b78dc48e73629f0d7ae5ce1c2fcf2e91798bf337435526a9e1498",
+      "bytes": 11114,
+      "hash": "92e7a7dc62bc31a2da81530df02e2f09a2ca964e71b823e883febacc6ef1c0ff",
       "snapshot": {
         "version": 1,
         "settings": {
@@ -566,8 +566,8 @@
       "file": "cluster-approach.webp",
       "width": 480,
       "height": 300,
-      "bytes": 12762,
-      "hash": "55b149a803413a5826d0da5b22d1e2e0a1d56d184951640c745f692244b79ef1",
+      "bytes": 12754,
+      "hash": "f4b1138814c0f164ef73dd037f128a3683abf4915e54185c4e60e9db69eb6c1e",
       "snapshot": {
         "version": 1,
         "settings": {
@@ -603,8 +603,8 @@
       "file": "cluster-heart.webp",
       "width": 480,
       "height": 300,
-      "bytes": 12750,
-      "hash": "73aed6e3436cc9c2e223f4b84b822877e3898335c18f4a5ca1fb347a865fa4f1",
+      "bytes": 12704,
+      "hash": "810f6757f4bbb4bc735b5415d1312cf4a309c3972b06e3f459b5cae5d5d89beb",
       "snapshot": {
         "version": 1,
         "settings": {

@@ -148,13 +148,35 @@ function assertMeasurements(env, first, second, mode) {
     ['gravity', worlds.map((world) => world.gravity)],
   ]) {
     const ceiling = mode === 'system' ? SYSTEM_MAXIMA[kind] : Math.max(...values);
-    const meters = [...env.comparison.querySelectorAll(`[data-compare-bars="${kind}"] [role="meter"]`)];
+    const chart = env.comparison.querySelector(`[data-compare-bars="${kind}"]`);
+    const meters = [...chart.querySelectorAll('[role="meter"]')];
+    const earth = kind === 'diameter' ? 12742 : 1;
+    const note = chart.querySelector('[data-earth-reference]');
+    expect(Number(note.dataset.referenceValue)).toBe(earth);
+    expect(note.dataset.referenceVisible).toBe(String(earth <= ceiling));
+    expect(document.querySelectorAll(`[id="${note.id}"]`)).toHaveLength(1);
+    const markers = [...chart.querySelectorAll('[data-earth-reference-marker]')];
+    expect(markers).toHaveLength(earth <= ceiling ? 2 : 0);
+    expect(note.textContent).toContain(earth <= ceiling ? 'Dashed markers show this value.' : 'Above this chart’s range.');
+    markers.forEach((marker) => {
+      expect(parseFloat(marker.style.left)).toBeCloseTo(100 * earth / ceiling, 12);
+      expect(marker.getAttribute('aria-hidden')).toBe('true');
+      expect(marker.parentElement.querySelector('[role="meter"]')).toBeTruthy();
+      expect(marker.closest('[role="meter"]')).toBeNull();
+    });
+    const ratios = [...chart.querySelectorAll('[data-earth-relative-world]')];
+    expect(ratios).toHaveLength(2);
     expect(meters).toHaveLength(2);
     meters.forEach((meter, index) => {
       expect(Number(meter.getAttribute('aria-valuemin'))).toBe(0);
       expect(Number(meter.getAttribute('aria-valuemax'))).toBe(ceiling);
       expect(Number(meter.getAttribute('aria-valuenow'))).toBe(values[index]);
       expect(parseFloat(meter.firstElementChild.style.width)).toBeCloseTo(100 * values[index] / ceiling, 12);
+      expect(meter.getAttribute('aria-describedby')).toBe(note.id);
+      expect(Number(ratios[index].dataset.earthRelativeRatio)).toBeCloseTo(values[index] / earth, 12);
+      expect(ratios[index].dataset.earthRelativeWorld).toBe([first, second][index]);
+      expect(meter.getAttribute('aria-valuetext')).toContain(ratios[index].textContent);
+      expect(ratios[index].textContent).toContain(`${(values[index] / earth).toFixed(2)}× Earth’s`);
     });
   }
   // Fixed measurement bars must not silently change the pair-fit portrait scale.
@@ -201,6 +223,26 @@ describe('Solar System comparison scale and navigation', () => {
       assertMode(env, 'system'); assertMeasurements(env, second, first, 'system');
     }
     expect(env.state.journalEntries).toEqual([]);
+  });
+
+  it.each([
+    ['Mercury', 'Mars'], ['Venus', 'Uranus'], ['Earth', 'Earth'],
+    ['Uranus', 'Neptune'], ['Pluto', 'Jupiter'],
+  ])('positions Earth independently in both charts for %s and %s, without changing evidence', (first, second) => {
+    const seed = { compare1: first, compare2: second,
+      compareReasoningDrafts: { [`${first}:${second}`]: 'Keep my explanation.' },
+      journalEntries: [{ planet: first, observation: 'Keep my evidence.' }] };
+    const env = renderComparison(seed);
+    assertMeasurements(env, first, second, 'pair');
+    expect(env.renderWrites).toBe(0);
+    const before = { ...env.state };
+    env.scale('Fixed across worlds');
+    assertMeasurements(env, first, second, 'system');
+    env.scale('Fit selected pair');
+    assertMeasurements(env, first, second, 'pair');
+    const { compareScaleMode, ...after } = env.state;
+    expect(compareScaleMode).toBe('pair');
+    expect(after).toEqual(before);
   });
 
   it.each([undefined, null, false, true, 'SYSTEM', 'fixed', 1, ['system'], { mode: 'system' }, new String('system')].map((raw) => [raw]))(

@@ -1,11 +1,11 @@
 {
   "slug": "constitution_grade8",
   "version": 1,
-  "revision": "2026-10-04",
+  "revision": "2026-10-11",
   "style": "Watercolor historical scene with authored civics diagrams",
   "provider": "Built-in image generation and authored SVG diagrams",
   "textPolicy": "Text-free raster artwork; captions and labels stay in native editable fields",
-  "note": "Visual review completed when asset status is visual-review-passed; educator review pending.",
+  "note": "Every selected asset visually reviewed on 2026-10-11; educator review pending. Original lesson content preserved.",
   "references": [
     "https://www.nps.gov/inde/learn/historyculture/stories-constitutionalconvention.htm"
   ],
@@ -54,7 +54,18 @@
       "alt": "A blank parchment has rolled corners at opposite ends.",
       "prompt": "Authored text-free SVG diagram: A blank parchment has rolled corners at opposite ends.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "b553d92858d2a02d50868c6329c7b45d0d9b04e47fccae3ae4b02e7b1a3080e7",
+      "optimizedSha256": "25c112acc519187eae39d1b626c5982fedeb61dd327fa99a5e20f385607cfbf0",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 2740,
+      "altSource": "vision",
+      "altHash": "img-2u7-262d50cd",
+      "decorative": false
     },
     {
       "id": "ct-term-legislative",
@@ -65,7 +76,18 @@
       "alt": "A triangular roof rests above four columns and a broad base.",
       "prompt": "Authored text-free SVG diagram: A triangular roof rests above four columns and a broad base.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "f5a3f9ae1e06bb97fa0a754666670ed26ccaa8323e91eed42586f40d6e046522",
+      "optimizedSha256": "bca96851f4fe9be5b388bbb753fa228ecf766edaa7b20556d5a444af72cd2adb",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4150,
+      "altSource": "vision",
+      "altHash": "img-4af-70d12742",
+      "decorative": false
     },
     {
       "id": "ct-term-executive",
@@ -76,7 +98,18 @@
       "alt": "A wood desk holds a blank sheet and a slanted pen.",
       "prompt": "Authored text-free SVG diagram: A wood desk holds a blank sheet and a slanted pen.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "7fa904d3a750bebdf8cef8e810f7bb8234e1493514f92899341aa69b1d5d0eaf",
+      "optimizedSha256": "9aa79660a6b12a7f89bf4195f872c1f408f97fcc3a378d899e7297eec90c5838",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 2370,
+      "altSource": "vision",
+      "altHash": "img-2gf-9aa68488",
+      "decorative": false
     },
     {
       "id": "ct-term-judicial",
@@ -87,7 +120,18 @@
       "alt": "Two balanced pans hang from a horizontal beam on a central post.",
       "prompt": "Authored text-free SVG diagram: Two balanced pans hang from a horizontal beam on a central post.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "7623ffd4d5b5b44309b9046bc4e206969b35dc95994b7b86379a1cbc9ea204dc",
+      "optimizedSha256": "58a5d955d80041a2aa64b08f547c0ab750077ab463607a79a72c09d40f07c9e7",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 5498,
+      "altSource": "vision",
+      "altHash": "img-5ob-570a76de",
+      "decorative": false
     },
     {
       "id": "ct-term-veto",
@@ -98,7 +142,18 @@
       "alt": "An arrow points left toward a blank sheet.",
       "prompt": "Authored text-free SVG diagram: An arrow points left toward a blank sheet.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "7188a66dbc2f95b2879b6480b78a95883d22cdbe5a8455dfb82042c7a558d644",
+      "optimizedSha256": "e625480c3a35867bf9642875f1e8b25425abaabf6a33309a36baee3772e5e525",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 1856,
+      "altSource": "vision",
+      "altHash": "img-1xf-b90858be",
+      "decorative": false
     },
     {
       "id": "ct-term-override",
@@ -109,7 +164,18 @@
       "alt": "Three people stand beside a blank sheet above an arrow moving right.",
       "prompt": "Authored text-free SVG diagram: Three people stand beside a blank sheet above an arrow moving right.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "b09c3783b670b5a195e305c03de6558d8dbbb2f1640da2e9ac491266a0406df3",
+      "optimizedSha256": "007ae9e2a26e861796f8f5cf4962cd6e2d622738fa02037b28e3899aec6367d4",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 6186,
+      "altSource": "vision",
+      "altHash": "img-6dr-c9dda49a",
+      "decorative": false
     },
     {
       "id": "ct-term-federalism",
@@ -120,7 +186,18 @@
       "alt": "Lines connect one larger columned building to three smaller buildings.",
       "prompt": "Authored text-free SVG diagram: Lines connect one larger columned building to three smaller buildings.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "220a672b2c346abf97d331989d2741d75fb95ea0b94bb05863d907f9a7c33c30",
+      "optimizedSha256": "8566892f7db8bdb9cb55ec3c82ac28b9957034359f84c86e9804af135ad4d57f",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 7792,
+      "altSource": "vision",
+      "altHash": "img-81b-3dfcf2d6",
+      "decorative": false
     },
     {
       "id": "ct-term-amendment",
@@ -131,7 +208,18 @@
       "alt": "A blue rectangular slip is attached across the lower portion of a blank document.",
       "prompt": "Authored text-free SVG diagram: A blue rectangular slip is attached across the lower portion of a blank document.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "0045bdf53839ad8baeff429e43b549a72444fc477b292ca4f3f60dede199b278",
+      "optimizedSha256": "80bcd0aff50525a5604aed1cf9eb3a400b2bdd2f8e664461a4e87ef39136483d",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 2012,
+      "altSource": "vision",
+      "altHash": "img-237-a1abf7f0",
+      "decorative": false
     },
     {
       "id": "ct-term-ratify",
@@ -142,7 +230,18 @@
       "alt": "A hand reaches toward the lower corner of a blank parchment.",
       "prompt": "Authored text-free SVG diagram: A hand reaches toward the lower corner of a blank parchment.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "a9ca22d52b0b97782b484267365f032effcc45420aecc53418bb6d630a80160d",
+      "optimizedSha256": "9f5ccae190f29dfcf33d33255353844bb9b42260c2401153a3da201294482e65",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4548,
+      "altSource": "vision",
+      "altHash": "img-4p3-03652926",
+      "decorative": false
     },
     {
       "id": "ct-term-impeach",
@@ -153,7 +252,18 @@
       "alt": "A columned building faces a blank document.",
       "prompt": "Authored text-free SVG diagram: A columned building faces a blank document.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "18479a3ab30a43223b0adf6b44ff7887b1f9504b069c1d7e8c3230bd291f10ec",
+      "optimizedSha256": "c8e08f91249fdcc1744fdb3276ab89d9571fc166e347844cbb574a72c4d9dc1a",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 3832,
+      "altSource": "vision",
+      "altHash": "img-3yn-05b4a267",
+      "decorative": false
     },
     {
       "id": "ct-term-unconstitutional",
@@ -164,7 +274,18 @@
       "alt": "A pair of balanced pans appears beside a blank document.",
       "prompt": "Authored text-free SVG diagram: A pair of balanced pans appears beside a blank document.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "493b14d04b0a061a7a2d503bc978c21be6744532a51b70bfabdf69d02a7bf2c6",
+      "optimizedSha256": "71d3f0de65ed421919af97dbee5c823ca5c27efd7408c5d0fec07369902a893f",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4886,
+      "altSource": "vision",
+      "altHash": "img-51n-561e2f59",
+      "decorative": false
     },
     {
       "id": "ct-term-compromise",
@@ -172,10 +293,22 @@
       "file": "ct-term-compromise.png",
       "webpFile": "ct-term-compromise.webp",
       "vectorFile": "ct-term-compromise.svg",
-      "alt": "Two people face arrows converging on a shared gold rectangle.",
+      "alt": "Two simple figures face each other, joined by a line with a gold rectangle in the middle.",
       "prompt": "Authored text-free SVG diagram: Two people face arrows converging on a shared gold rectangle.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "previousAlt": "Two people face arrows converging on a shared gold rectangle.",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "ec03f5ee256640b67fd01e090a5bed0276b3e0673d55dcf75a1e5d9cd328480d",
+      "optimizedSha256": "1dbc47c46b165d342dd3dc801246310cc32b031502a6a87ff84a891fb2b0171b",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4268,
+      "altSource": "vision",
+      "altHash": "img-4er-9bf057da",
+      "decorative": false
     },
     {
       "id": "ct-context-connected",
@@ -186,7 +319,18 @@
       "alt": "Three linked circular wheels, two blue and one gold, contain small open centers.",
       "prompt": "Authored text-free SVG diagram: Three linked circular wheels, two blue and one gold, contain small open centers.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "4a573adeb9f502dfb2cf22eee566c45b1509878601d7801884a7859138e67ca5",
+      "optimizedSha256": "a4aeba5b81b0728d5b0356817f8d3a8269861224cb90f3184aab969ecaffb313",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 9342,
+      "altSource": "vision",
+      "altHash": "img-9mn-08fd9bc0",
+      "decorative": false
     },
     {
       "id": "ct-context-war",
@@ -197,7 +341,18 @@
       "alt": "Two long weapons cross at an angle.",
       "prompt": "Authored text-free SVG diagram: Two long weapons cross at an angle.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "6b7e03136852a7a815e68fe8e5381ffd1ec23ecd8ad8fd6a1ed5ffda9da82873",
+      "optimizedSha256": "22092be953e2ba4f1953ee37fed17917458c27baf63d569e35eb59c59cc8e7fa",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4974,
+      "altSource": "vision",
+      "altHash": "img-54v-8a015970",
+      "decorative": false
     },
     {
       "id": "ct-context-nomination",
@@ -208,7 +363,18 @@
       "alt": "An arrow connects a blank sheet with a person.",
       "prompt": "Authored text-free SVG diagram: An arrow connects a blank sheet with a person.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "37ee8a42fcec83b048d63d01b6c73443baecabb5611351e8ea9573a5a93d13a5",
+      "optimizedSha256": "567c79b3c8e58caf31eb53e2318716f5bf8439d06ddaf8bf42224f65a4277949",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 3478,
+      "altSource": "vision",
+      "altHash": "img-3lj-036483bb",
+      "decorative": false
     },
     {
       "slug": "constitution_grade8",
@@ -223,7 +389,19 @@
       "kind": "lesson",
       "provider": "Built-in image generation",
       "status": "visual-review-passed",
-      "afterType": "simplified"
+      "afterType": "simplified",
+      "reviewedAt": "2026-10-11",
+      "webpFile": "ct-convention.webp",
+      "sourceSha256": "7734ef029b79c19a8bad563d1fc1b5dd1ba420ee404cf52f9e3061752d8cbe1a",
+      "optimizedSha256": "811f4087a35c80d1d1706d38520847465946e86382f6071fdb36e67096fd6d4f",
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "width": 900,
+      "height": 600,
+      "bytes": 76526,
+      "altSource": "vision",
+      "altHash": "img-26qz-10dcceed",
+      "decorative": false
     },
     {
       "id": "ct-img-checks",
@@ -231,14 +409,46 @@
       "file": "ct-img-checks.png",
       "webpFile": "ct-img-checks.webp",
       "vectorFile": "ct-img-checks.svg",
-      "alt": "Three building and balance symbols form a triangle. Opposing arrows join the top pair, and separate arrows connect each upper symbol with the lower one.",
+      "alt": "A columned building and a desk sit above balanced scales. Opposing arrows join the top symbols; curved arrows connect them with the scales below.",
       "prompt": "Authored text-free SVG diagram: Three building and balance symbols form a triangle. Opposing arrows join the top pair, and separate arrows connect each upper symbol with the lower one.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending",
+      "status": "visual-review-passed",
       "title": "Selected checks on power",
       "afterType": "anchor-chart",
       "caption": "Congress makes laws and may override a veto. The President may veto a bill and nominate judges; the Senate confirms appointments. Courts review laws and executive actions under the Constitution. The diagram shows selected checks, not every power.",
       "labels": [
+        {
+          "text": "Congress",
+          "position": "top-left",
+          "anchorX": 11,
+          "anchorY": 20
+        },
+        {
+          "text": "President",
+          "position": "top-right",
+          "anchorX": 89,
+          "anchorY": 20
+        },
+        {
+          "text": "Courts",
+          "position": "bottom-center",
+          "anchorX": 50,
+          "anchorY": 75
+        }
+      ],
+      "previousAlt": "Three building and balance symbols form a triangle. Opposing arrows join the top pair, and separate arrows connect each upper symbol with the lower one.",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "6b6ba3699c6447353f83ef4f210f6a6905f2887d607f56268a935cf354cebe57",
+      "optimizedSha256": "c239ed0309d86a8d2e77497d025363d8524ba963ac76a35a3df9303d46cd96a1",
+      "sourceWidth": 1100,
+      "sourceHeight": 830,
+      "width": 900,
+      "height": 679,
+      "bytes": 9948,
+      "altSource": "vision",
+      "altHash": "img-a93-355072db",
+      "decorative": false,
+      "previousPlannedLabels": [
         {
           "text": "Congress",
           "position": "center",
@@ -287,7 +497,8 @@
           "anchorX": 50,
           "anchorY": 56
         }
-      ]
+      ],
+      "labelReview": "Dense label lists retained in native captions; remaining labels use distinct positions."
     },
     {
       "id": "ct-context-spending",
@@ -295,10 +506,37 @@
       "file": "ct-context-spending.png",
       "webpFile": "ct-context-spending.webp",
       "vectorFile": "ct-context-spending.svg",
-      "alt": "Three small stacks of plain gold coins sit at different heights.",
+      "alt": "Three gold coin symbols rise diagonally from left to right.",
       "prompt": "Authored text-free SVG diagram: Three small stacks of plain gold coins sit at different heights.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "previousAlt": "Three small stacks of plain gold coins sit at different heights.",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "cecf5c396f962d485233898db8cbb4f0a763149cd465fc4f5388a0f75b562c6f",
+      "optimizedSha256": "c4c0c5e8fc14a76f900541a703913b3fa1f3470923808cb6acb8aafca3f7fcf8",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 3672,
+      "altSource": "vision",
+      "altHash": "img-3sn-cca6eab7",
+      "decorative": false
     }
-  ]
+  ],
+  "reviewed": "2026-10-11",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/constitution_grade8.allopack.json",
+  "sourcePackSha256": "c978fb0fce0505152634da4427b204a8251a7424b08b3a168f2c8d796e976bf4",
+  "illustratedPack": "allopacks/illustrated/constitution_grade8.allopack.json",
+  "illustratedPackSha256": "fc63cbc3f0f84e99f69cd97b503741348f4ac24bfe9d4f1ee40061dfad11a2fc",
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "productionArtifactEnvelope": true,
+    "productionAltHashes": true,
+    "uniqueAssets": 18,
+    "imagePlacements": 29
+  }
 }

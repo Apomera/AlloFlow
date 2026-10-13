@@ -1003,7 +1003,7 @@ describe('Universe landmark camera distance controls', () => {
         visited++;
       }
     }
-    expect(visited).toBe(18);
+    expect(visited).toBe(21);
   });
 
   it('clips native steps exactly at the minimum landmark range and the world boundary', () => {
@@ -1786,8 +1786,8 @@ describe('Universe flight Halo flyby', () => {
       expect(catalog.slice(0, oldIds[region].length).map(item => item.id)).toEqual(oldIds[region]);
       return catalog;
     });
-    expect(all).toHaveLength(18);
-    expect(new Set(all.map(item => item.id)).size).toBe(18);
+    expect(all).toHaveLength(21);
+    expect(new Set(all.map(item => item.id)).size).toBe(21);
     const clusters = flight.landmarks('galaxy').filter(item => item.id.startsWith('halo-cluster-'));
     expect(clusters.map(item => item.id)).toEqual(Array.from({ length: 6 }, (_, i) => 'halo-cluster-' + (i + 1)));
     expect(new Set(clusters.map(item => JSON.stringify(item.position))).size).toBe(6);
@@ -2084,7 +2084,7 @@ describe('Universe flight Halo flyby', () => {
     launch(); advance(100); advance(100);
     const saved = scene.snapshot(), expected = structuredClone(saved);
     expect(Object.keys(saved).sort()).toEqual(['settings', 'state', 'targetId', 'version']);
-    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'exposure', 'fov', 'mode', 'quality', 'region']);
+    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'dust', 'exposure', 'fov', 'mode', 'quality', 'region']);
     expect(saved.version).toBe(1);
     saved.state.position[0] = 1e20; saved.settings.mode = 'relativity';
     expect(scene.snapshot()).toEqual(expected);
@@ -2147,9 +2147,9 @@ describe('Universe flight Nebula passage', () => {
 
   it('returns independent region-specific route catalogs and preserves the original Halo metadata', () => {
     const catalog = flight.flybys(), neighborhood = flight.flybys('neighborhood'), galaxy = flight.flybys('galaxy');
-    expect(catalog).toHaveLength(5);
-    expect(new Set(catalog.map(item => item.id)).size).toBe(5);
-    expect(neighborhood).toHaveLength(2);
+    expect(catalog).toHaveLength(6);
+    expect(new Set(catalog.map(item => item.id)).size).toBe(6);
+    expect(neighborhood).toHaveLength(3);
     expect(galaxy).toMatchObject([haloMetadata, DISK_METADATA]);
     expect(neighborhood[0]).toMatchObject({
       id: 'nebula', name: 'Nebula passage', region: 'neighborhood', durationSeconds: 40,
@@ -2166,7 +2166,7 @@ describe('Universe flight Nebula passage', () => {
     }
     expect(flight.flybys()).toEqual(original);
     const local = flight.landmarks('neighborhood');
-    expect(local.map(item => item.id)).toEqual(['amber-star', 'blue-star', 'pale-star', 'blue-nebula', 'violet-nebula']);
+    expect(local.map(item => item.id)).toEqual(['amber-star', 'blue-star', 'pale-star', 'blue-nebula', 'violet-nebula', 'local-cluster-1', 'local-cluster-2', 'local-cluster-3']);
     expect(local.find(item => item.id === 'blue-nebula')).toMatchObject({ position: [9, -2, 34], arrivalRadiusLy: 20 });
     expect(local.find(item => item.id === 'violet-nebula')).toMatchObject({ position: [-22, 11, 83], arrivalRadiusLy: 32 });
     for (const item of local.slice(3)) {
@@ -2422,7 +2422,7 @@ describe('Universe flight galaxy group flyby', () => {
   it('adds one detached cosmic route while retaining every existing generated galaxy', () => {
     const routes = flight.flybys('cosmic'), original = structuredClone(routes);
     expect(routes).toHaveLength(1);
-    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group', 'stellar', 'disk']);
+    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group', 'stellar', 'disk', 'cluster']);
     expect(routes[0]).toMatchObject({
       id: 'group', name: 'Galaxy group flyby', region: 'cosmic', durationSeconds: 48,
       position: launchPosition, aim: [0, 0, 0], fov: 60, targetId: 'near-galaxy',
@@ -2714,7 +2714,7 @@ describe('Universe flight galaxy group flyby', () => {
     const saved = scene.snapshot(), expected = structuredClone(saved);
     expect(saved.version).toBe(1);
     expect(Object.keys(saved).sort()).toEqual(['settings', 'state', 'targetId', 'version']);
-    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'exposure', 'fov', 'mode', 'quality', 'region']);
+    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'dust', 'exposure', 'fov', 'mode', 'quality', 'region']);
     expect(saved.settings.region).toBe('cosmic');
     expect(saved.targetId).toBe('golden-elliptical');
     saved.state.position[0] = 1e20; saved.settings.region = 'galaxy';
@@ -2966,7 +2966,7 @@ describe('Universe flight Stellar close pass', () => {
     const saved = scene.snapshot(), expected = structuredClone(saved);
     expect(saved.version).toBe(1);
     expect(Object.keys(saved).sort()).toEqual(['settings', 'state', 'targetId', 'version']);
-    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'exposure', 'fov', 'mode', 'quality', 'region']);
+    expect(Object.keys(saved.settings).sort()).toEqual(['beta', 'compareRest', 'dust', 'exposure', 'fov', 'mode', 'quality', 'region']);
     expect(saved.targetId).toBe('pale-star'); expect(saved.settings.region).toBe('neighborhood');
     saved.state.position[0] = 1e20; saved.settings.region = 'cosmic';
     expect(scene.snapshot()).toEqual(expected);
@@ -3042,7 +3042,7 @@ describe('Universe flight scenic highlights', () => {
     const routes = flight.flybys(), original = structuredClone(routes);
     expect(routes.map(route => route.highlights.map(highlight => highlight.id))).toEqual([
       ['arm', 'cluster', 'panorama'], ['approach', 'filaments', 'violet'], ['spiral', 'elliptical', 'panorama'],
-      ['amber', 'blue', 'pale'], ['arms', 'crossing', 'panorama'],
+      ['amber', 'blue', 'pale'], ['arms', 'crossing', 'panorama'], ['approach', 'heart', 'reveal'],
     ]);
     expect(routes.map(route => route.highlights.map(highlight => highlight.targetId))).toEqual([
       ['galactic-center', 'halo-cluster-2', 'galactic-center'],
@@ -3050,6 +3050,7 @@ describe('Universe flight scenic highlights', () => {
       ['near-galaxy', 'golden-elliptical', 'golden-elliptical'],
       ['amber-star', 'blue-star', 'pale-star'],
       ['inner-arm', 'inner-arm', 'galactic-center'],
+      ['local-cluster-1', 'local-cluster-1', 'local-cluster-1'],
     ]);
     for (const route of routes) {
       let previous = 0;

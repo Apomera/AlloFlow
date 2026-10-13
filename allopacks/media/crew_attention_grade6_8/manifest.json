@@ -1,0 +1,581 @@
+{
+  "slug": "crew_attention_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_attention_grade6_8.allopack.json",
+  "sourcePackSha256": "bdad796705fa867f5db4ff64c04ad5b0f9d7844ba80c328d7ccdd65e3da9d35a",
+  "illustratedPack": "allopacks/illustrated/crew_attention_grade6_8.allopack.json",
+  "illustratedPackSha256": "11d48aa0ddea940641a0347ad39a80bbc318e346f5ceaa592a8c11f748736e66",
+  "plan": "allopacks/media/crew_attention_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "cd-term-attention",
+      "kind": "term",
+      "term": "Attention",
+      "title": "Attention",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student at a desk with a single soft beam of light from their eyes to an open notebook. Constraints: no phone in frame. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "file": "cd-term-attention.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-070fe334-b7dd-4117-946c-84991ebdb091.png",
+      "alt": "A student rests her head on one hand while writing in an open notebook under a desk lamp.",
+      "optimizedFile": "optimized/cd-term-attention.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "c767937e21e1e158c882a884a99942f118a5909b0b2223c1266cb6200d6e8cc4",
+      "optimizedSha256": "43a5660b7593cc54bc090bb6ffe5225e3d34665e30fca03638c730da3faf668c",
+      "bytes": 27270,
+      "altSource": "vision",
+      "altHash": "img-s2n-894ccf5d",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 0,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-pull",
+      "kind": "term",
+      "term": "Pull",
+      "title": "Pull",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A phone on a desk with a small magnet shape hovering above it and faint curved lines toward a student. Constraints: no screen content. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "file": "cd-term-pull.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-58dfdd13-1a84-42c1-a4da-06b8ab09779c.png",
+      "alt": "A student looks toward a phone on the desk, with a floating magnet and curved lines between the phone and her head.",
+      "optimizedFile": "optimized/cd-term-pull.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "a0db3d8afcc601f6455da7cf396476e3823135798d8693073603d63481ab1aa5",
+      "optimizedSha256": "348573ff0b64273b155a38926c4294612b82e0af4e4698747b48755ebc096028",
+      "bytes": 27164,
+      "altSource": "vision",
+      "altHash": "img-ryr-0b5e870b",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 1,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cd-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "THE PULLS",
+          "field": "iconUrl",
+          "reason": "The phone and magnet show an attention pull."
+        }
+      ]
+    },
+    {
+      "id": "cd-term-boundary",
+      "kind": "term",
+      "term": "Boundary",
+      "title": "Boundary",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A closed backpack on the floor beside a desk, zipper shut, phone shape faintly visible inside. Constraints: bag closed. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "file": "cd-term-boundary.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-6568e3b6-3505-4bda-b0db-1e8c0a7538d0.png",
+      "alt": "A zipped teal backpack stands beside a classroom desk, with a faint phone outline visible inside its front pocket.",
+      "optimizedFile": "optimized/cd-term-boundary.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "e924368d8780ddb193b078e3bf521d96eecd350d434769c593088e5ad7ed0fba",
+      "optimizedSha256": "e2f5be8652a12b6e677eaf3cea7e00a7104c858b3990db03cb336ef471c2810d",
+      "bytes": 24402,
+      "altSource": "vision",
+      "altHash": "img-p4f-36260590",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 2,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cd-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "BOUNDARY, NOT BAN",
+          "field": "iconUrl",
+          "reason": "A phone inside a closed bag matches the stated boundary."
+        }
+      ]
+    },
+    {
+      "id": "cd-term-streak",
+      "kind": "term",
+      "term": "Streak",
+      "title": "Streak",
+      "prompt": "Edit this calendar classroom illustration. Keep the square framing, warm flat storybook style, two middle-school students, coral and mustard hoodies, calendar with six coral squares then one empty square, all artwork text-free. Correct TWO details. 1. Give the student on the LEFT one coherent short rounded natural curly bob around her head, ending just below her ears, with a clear natural hairline. REMOVE the bun, headband, ponytail and all trailing hair behind her shoulder; no stacked or disconnected hair masses. Her arms stay relaxed at her sides. 2. Student on the RIGHT in mustard hoodie should naturally point at the empty square with ONE hand. Turn her torso slightly toward the calendar so the raised near arm has a completely visible continuous silhouette from its OWN shoulder at the outer top of her torso through a normal upper arm, bent elbow, forearm, wrist and pointing index finger. Elbow below shoulder, forearm rises diagonally toward calendar, normal proportions. The raised sleeve MUST join the shoulder of the hoodie, never originate from neck, chest or opposite shoulder. Her other arm hangs naturally by her side. Exactly two arms and two hands per person. Hands anatomically plausible and unambiguous. Leave some clear space around pointing arm so its connection to her body can be read. Keep dark-haired student's long hair tucked behind her shoulder so it does not obscure that arm. No text, labels, numerals, logos.",
+      "file": "cd-term-streak.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-5cdf6ab1-0da1-4d33-9f95-f2bf3c43682b.png",
+      "alt": "A student with short curls watches another student point to the empty square after six filled calendar squares.",
+      "optimizedFile": "optimized/cd-term-streak.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "774ef5f6add6d9c33ea18d450ed3be8be0d94e6b9b410292c9b6f683ecf8009c",
+      "optimizedSha256": "141791b18d67707bd112c7e5b7cf6f6fd2fd2857d9c93152796566a7b46468fa",
+      "bytes": 18866,
+      "altSource": "vision",
+      "altHash": "img-jff-d3d7fbd9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 5,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-autoplay",
+      "kind": "term",
+      "term": "Autoplay",
+      "title": "Autoplay",
+      "prompt": "Redesign this square educational illustration to fix its awkward anatomy and impossible laptop viewing arrangement. Keep the warm flat storybook illustration, muted teal coral mustard navy palette, and middle-school age audience. Use a clear over-the-shoulder composition: one red-haired student in a teal hoodie seated naturally at a desk, seen from behind and slightly to the side, looking toward an open laptop. The student and viewer both see the SAME front of the screen. Both hands rest naturally on the desk beside the laptop, no pointing, no hand overlaps the screen. Laptop is large and visually dominant with plausible hinge, keyboard and screen perspective. On screen show only two plain colored rectangular cards, the first fading/sliding out and the second sliding in, plus a small curved arrow indicating automatic advance. No video content, no letters, no words, no numerals, no logos. Simplify the background to a softly colored classroom wall with one blank noticeboard. No extra students. Clean uncluttered readable silhouette; ordinary anatomically sound hands and arms. This is the autoplay glossary image.",
+      "file": "cd-term-autoplay.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-7a42601e-23df-4892-a238-f7a98f7cc8eb.png",
+      "alt": "Seen over a student’s shoulder, a laptop shows two plain cards and a curved arrow for automatic advance. Both hands rest beside the keyboard.",
+      "optimizedFile": "optimized/cd-term-autoplay.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "8e07fff86ceb7d6f8c92aa9601dcd940969e2fdafdcb2182a14822b2d0ad7a40",
+      "optimizedSha256": "ba69056912009cf8de2e1fc3dcc8c9c600663d608e2620245fac6c8ac2e0ef42",
+      "bytes": 24074,
+      "altSource": "vision",
+      "altHash": "img-osb-c0261072",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-mindful",
+      "kind": "term",
+      "term": "Mindful",
+      "title": "Mindful",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student with eyes open, one hand on their chest, looking at a small compass on the desk. Constraints: calm, not meditating. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "file": "cd-term-mindful.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-0fab345e-2318-465c-9427-af0d90707936.png",
+      "alt": "A student sits at a desk with one hand on her chest and looks down at a small compass.",
+      "optimizedFile": "optimized/cd-term-mindful.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "7664805fb5c1c7342860c6571c3a4c46fd661f63bfc3b6154cc489d6b3286e20",
+      "optimizedSha256": "b5aba1e3b01a6228d2e62c717f62cd2cde64317b5b47327eab7b60d43c8c45f5",
+      "bytes": 27998,
+      "altSource": "vision",
+      "altHash": "img-stn-0672b220",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 7,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cd-anchor",
+          "sectionIndex": 3,
+          "sectionLabel": "MINDFUL MEANS",
+          "field": "iconUrl",
+          "reason": "The student and compass support noticing where attention goes."
+        }
+      ]
+    },
+    {
+      "id": "cd-img-buzz",
+      "kind": "lesson",
+      "title": "The buzz Nadia did not answer.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A math classroom; a student looking at the board, one hand resting on a hoodie pocket, a faint vibration mark near the pocket.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "nobody saw her look at a phone; she still lost the minutes.",
+      "plannedLabels": [
+        {
+          "text": "The buzz"
+        },
+        {
+          "text": "Still in the pocket"
+        }
+      ],
+      "afterType": "simplified",
+      "file": "cd-img-buzz.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-dc0451d4-1f3b-4707-b2b6-4b83df7797ac.png",
+      "alt": "A student stands facing the classroom board with one hand in a hoodie pocket; small curved lines beside the pocket suggest a vibration.",
+      "optimizedFile": "optimized/cd-img-buzz.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "72df79a4e5d120aecc67ad7bdbfd2fee07add481224eea63b86fc5f8ef00813c",
+      "optimizedSha256": "b1a106a4244ce76e83ae6e9cdfa76ad8ea2ceb48b3862701e736809b1b22a3fd",
+      "bytes": 48708,
+      "altSource": "vision",
+      "altHash": "img-1e4n-28e4cb2c",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The buzz",
+          "position": "top-left",
+          "anchorX": 40,
+          "anchorY": 70
+        },
+        {
+          "text": "Still in the pocket",
+          "position": "top-right",
+          "anchorX": 40,
+          "anchorY": 70
+        }
+      ],
+      "placement": {
+        "resourceId": "cd-reading-illustrations",
+        "panelId": "cd-img-buzz",
+        "afterResourceId": "cd-reading"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cd-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "THE HIDDEN COST",
+          "field": "iconUrl",
+          "reason": "A buzzing phone in a pocket illustrates the hidden attention cost."
+        }
+      ]
+    },
+    {
+      "id": "cd-img-facedown",
+      "kind": "lesson",
+      "title": "Face down, still there.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A desk with a phone face down and silent; a faint dotted line runs from the phone to the student's head.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Show the student looking sideways toward the phone, distracted from their notebook. NO thought bubble. NO vibration, glow, rays, motion marks, or notifications around the phone: it is silent and still. Only one faint dotted conceptual line connects phone to student's head.",
+      "caption": "out of sight does more than out of hand.",
+      "plannedLabels": [
+        {
+          "text": "Silent"
+        },
+        {
+          "text": "A little attention"
+        }
+      ],
+      "afterType": "anchor-chart",
+      "file": "cd-img-facedown.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-15f11930-c700-4ea3-b093-2e27f2ec87f4.png",
+      "alt": "A student pauses over an open notebook and looks toward a face-down phone; a dotted line runs from the phone toward her head.",
+      "optimizedFile": "optimized/cd-img-facedown.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "555b41576a73e8ab12dee2ded41f99c07231d10525bda5bbd5a8ff3503920449",
+      "optimizedSha256": "74b5901a72066479081fb2fda91f79fe909a3314754503cc64667fab5e5affa7",
+      "bytes": 46016,
+      "altSource": "vision",
+      "altHash": "img-1bcz-dd43932d",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Silent",
+          "position": "top-left",
+          "anchorX": 17,
+          "anchorY": 77
+        },
+        {
+          "text": "A little attention",
+          "position": "top-right",
+          "anchorX": 58,
+          "anchorY": 27
+        }
+      ],
+      "placement": {
+        "resourceId": "cd-anchor-illustrations",
+        "panelId": "cd-img-facedown",
+        "afterResourceId": "cd-anchor"
+      }
+    },
+    {
+      "id": "cd-img-tally",
+      "kind": "lesson",
+      "title": "Three days of marks.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A sticky note with three clusters of tally marks of different sizes and small icons beside each: a phone, a person, a sandwich.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "the biggest pull is not always the one you expected.",
+      "plannedLabels": [
+        {
+          "text": "Phone"
+        },
+        {
+          "text": "Person"
+        },
+        {
+          "text": "Hungry"
+        }
+      ],
+      "afterType": "faq",
+      "file": "cd-img-tally.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-2d47b851-b292-4d2d-9439-b2536ea28d5a.png",
+      "alt": "Four students look at a yellow note held by one student, showing phone, person and sandwich icons beside different groups of tally marks.",
+      "optimizedFile": "optimized/cd-img-tally.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "d873ff1ef93e04768eaf53ed2dd58c61cbe658a0a34ebeb90b6f49f9b1d33bd1",
+      "optimizedSha256": "01ddc99f0c613c87a3b88a2d8868124afc2840baa0d72b4faa51b6162ced4f80",
+      "bytes": 60200,
+      "altSource": "vision",
+      "altHash": "img-1pyb-dd5f0649",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Phone",
+          "position": "bottom-left",
+          "anchorX": 49,
+          "anchorY": 30
+        },
+        {
+          "text": "Person",
+          "position": "bottom-center",
+          "anchorX": 49,
+          "anchorY": 37
+        },
+        {
+          "text": "Hungry",
+          "position": "bottom-right",
+          "anchorX": 49,
+          "anchorY": 46
+        }
+      ],
+      "placement": {
+        "resourceId": "cd-faq-illustrations",
+        "panelId": "cd-img-tally",
+        "afterResourceId": "cd-faq"
+      }
+    },
+    {
+      "id": "cd-term-ban",
+      "kind": "term",
+      "term": "Ban",
+      "scene": "A simple classroom phone storage caddy hanging beside a doorway. A large plain red circle with a single diagonal slash surrounding the silhouette of a phone on a separate small sign above it. No people. Explain a phone ban visually without any words.",
+      "alt": "A crossed-out phone symbol hangs above a classroom phone storage caddy.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A simple classroom phone storage caddy hanging beside a doorway. A large plain red circle with a single diagonal slash surrounding the silhouette of a phone on a separate small sign above it. No people. Explain a phone ban visually without any words. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cd-term-ban.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-9213d74f-9236-4577-8073-a6d8aafd8397.png",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cd-term-ban.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "40edef71152f12769b03fa7e39600fd85f64c1c6f608afa544a3458f98f6c64c",
+      "optimizedSha256": "b879845b76996c0953e91c502b34a685397ff030f34f8a678bd99b38d4915511",
+      "bytes": 23324,
+      "altSource": "vision",
+      "altHash": "img-o0j-15d96bca",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 3,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-notification",
+      "kind": "term",
+      "term": "Notification",
+      "scene": "One plain modern smartphone seen front-on on an uncluttered desk. Screen contains a single clear bell icon inside an otherwise empty notification banner; one small bright coral dot in its corner draws the eye. No writing, numbers, logos, busy app grid or fingers.",
+      "alt": "A phone screen shows a bell inside a notification banner with a small bright dot.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. One plain modern smartphone seen front-on on an uncluttered desk. Screen contains a single clear bell icon inside an otherwise empty notification banner; one small bright coral dot in its corner draws the eye. No writing, numbers, logos, busy app grid or fingers. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cd-term-notification.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-9854af52-a007-408e-b7e8-b15dfc5c98c9.png",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cd-term-notification.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "4168bc6d318db098aedfeecacd021ff6a7c6fc5d9e6a62f2a11eac5d2f63fff6",
+      "optimizedSha256": "909c8726f5b826259875e0a0700d557464835c665cf9df5726f837e44c40e12d",
+      "bytes": 20306,
+      "altSource": "vision",
+      "altHash": "img-kwr-d347a776",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 4,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-catchup",
+      "kind": "term",
+      "term": "Catch up",
+      "scene": "Two middle school students at a classroom table with one open notebook. One student calmly shows the current page with a relaxed open hand resting alongside it; the other has just set aside a face-down phone and turns back toward the notebook. Both students have naturally connected arms, modest poses, clear shoulders and wrists. No pointing.",
+      "alt": "A student turns from a face-down phone toward an open notebook shared by a classmate.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Two middle school students at a classroom table with one open notebook. One student calmly shows the current page with a relaxed open hand resting alongside it; the other has just set aside a face-down phone and turns back toward the notebook. Both students have naturally connected arms, modest poses, clear shoulders and wrists. No pointing. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cd-term-catchup.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-f83efcc7-f32b-4d13-97d0-3d29d5129db1.png",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cd-term-catchup.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "e631e81945ec52712d2e10ce3a9234f3ac6b50b8f3bb80e7c40d75e72ed3bcd0",
+      "optimizedSha256": "b9e87d3d548204f0344918c56b163e76501213e786dc5e35a75431a6e72b17b8",
+      "bytes": 33544,
+      "altSource": "vision",
+      "altHash": "img-yj3-2517ee48",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-choice",
+      "kind": "term",
+      "term": "Choice",
+      "scene": "One middle school student seated at a desk deliberately picks up a sketchbook with both hands, while a phone remains face-down to the side. Quiet focused expression, coherent hairstyle, clearly connected shoulders and two relaxed arms. No arrows or words.",
+      "alt": "A student picks up a sketchbook while a phone stays face-down on the desk.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. One middle school student seated at a desk deliberately picks up a sketchbook with both hands, while a phone remains face-down to the side. Quiet focused expression, coherent hairstyle, clearly connected shoulders and two relaxed arms. No arrows or words. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cd-term-choice.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-2589a1cb-9571-405c-ae02-b8ff7098c646.png",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cd-term-choice.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "1537bfbe78a1b92585b77d3aa947c2cd616d94c9aceea05c6940d532e51f35dd",
+      "optimizedSha256": "5cef8e24e7b0727c03428d0bec79a5271858d55ba34526e1b5d54bc69b253e17",
+      "bytes": 34434,
+      "altSource": "vision",
+      "altHash": "img-zfz-ed75995e",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cd-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "scene": "Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cd-term-howl.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cd-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 11,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cd-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cd-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cd-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cd-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 15,
+  "imagePlacementCount": 19,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_attention_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 19,
+    "uniqueImageCount": 15,
+    "anchorSectionImages": 4,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

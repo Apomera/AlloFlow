@@ -2145,6 +2145,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   };
   const incorrectPlacedCount = isChecked ? items.filter((i) => i.currentContainer !== "deck" && i.currentContainer !== i.categoryId).length : 0;
   const renderCard = (item) => {
+    const imageDescription = item.image ? matchingImageDescription(item) : "";
+    const cardDescription = imageDescription && imageDescription !== item.content ? `${item.content}. ${imageDescription}` : item.content;
     let statusClass = `${pastelColors[item.colorIdx % pastelColors.length]} border-2`;
     if (isChecked && item.currentContainer !== "deck") {
       if (item.currentContainer === item.categoryId) {
@@ -2180,7 +2182,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         tabIndex: isChecked || locked ? -1 : 0,
         role: "button",
         "aria-pressed": keyboardSelectedItemId === item.id,
-        "aria-label": locked ? `${item.content}. ${t("concept_sort.locked_aria") || "Correct and locked in place."}` : `${item.content}. ${item.currentContainer === "deck" ? t("concept_sort.unsorted_aria") : t("concept_sort.sorted_aria")}. ${t("concept_sort.move_aria")}`,
+        "aria-label": locked ? `${cardDescription}. ${t("concept_sort.locked_aria") || "Correct and locked in place."}` : `${cardDescription}. ${item.currentContainer === "deck" ? t("concept_sort.unsorted_aria") : t("concept_sort.sorted_aria")}. ${t("concept_sort.move_aria")}`,
         className: `
             relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all transform hover:scale-105 mb-2 animate-in motion-reduce:animate-none zoom-in duration-200
             ${statusClass} ${isChecked ? "cursor-default" : ""} ${draggedItem && draggedItem.id === item.id ? "opacity-30 scale-95" : ""}
@@ -2192,7 +2194,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         {
           loading: "lazy",
           src: item.image,
-          alt: item.content || "",
+          alt: item.imageDecorative ? "" : imageDescription || item.content || "",
           className: "object-contain rounded bg-white/50",
           style: { width: _imgPx + "px", height: _imgPx + "px" },
           decoding: "async"

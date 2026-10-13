@@ -204,6 +204,7 @@ const OSS_CREDITS = [
       { name: "globe.gl", use: "interactive 3D globe", license: "MIT", url: "https://github.com/vasturiano/globe.gl" },
       { name: "Leaflet", use: "interactive maps", license: "BSD-2-Clause", url: "https://leafletjs.com" },
       { name: "world-atlas", use: "country-boundary map data (from Natural Earth, public domain)", license: "ISC", url: "https://github.com/topojson/world-atlas" },
+      { name: "Natural Earth populated places", use: "99 selected city coordinates from version 5.1.2 for Moon Mission; light brightness and spread are illustrative, not measured 1969 illumination", license: "Public domain", url: "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-populated-places/" },
       { name: "A-Frame", use: "WebXR / virtual reality", license: "MIT", url: "https://aframe.io" },
       { name: "html2canvas", use: "exporting on-screen charts as images", license: "MIT", url: "https://html2canvas.hertzen.com" },
       { name: "ffmpeg.wasm", use: "in-browser video/audio export", license: "MIT wrapper; FFmpeg LGPL-2.1/GPL", url: "https://ffmpegwasm.netlify.app" }

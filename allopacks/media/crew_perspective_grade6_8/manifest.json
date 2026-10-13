@@ -1,0 +1,628 @@
+{
+  "slug": "crew_perspective_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_perspective_grade6_8.allopack.json",
+  "sourcePackSha256": "27d6baf2abac86b376220de82e3747e659e436125c9bf3ef89fe18a4724b9d9a",
+  "illustratedPack": "allopacks/illustrated/crew_perspective_grade6_8.allopack.json",
+  "illustratedPackSha256": "5fb1e5d4634ff184397806ec0e977c431a252c97503c9da10c0cc4f8830ae2b5",
+  "plan": "allopacks/media/crew_perspective_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "cp-term-story",
+      "kind": "term",
+      "term": "Story",
+      "title": "Story",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student looking at a phone with a large thought bubble above, the bubble holding only a tangled line. Constraints: no words in the bubble. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-4618ba9b-07fe-4367-b92d-fdb902910f1b.png",
+      "file": "cp-term-story.png",
+      "alt": "A worried student looks at a phone beneath a thought bubble containing a tangled line.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-term-story.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "24148312fbef5f9c1c071a97a7ed4b19f9fe6df8534ea1ba154ab39c584127c3",
+      "optimizedSha256": "e37c6cad80bfad17e1f45f74d61ad84da92bc1657b0188da67ec3a60eb979617",
+      "bytes": 32620,
+      "altSource": "vision",
+      "altHash": "img-xkv-9cdb7c37",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 0,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cp-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "A STORY",
+          "field": "iconUrl",
+          "reason": "The thought bubble represents an interpretation of the phone event."
+        }
+      ]
+    },
+    {
+      "id": "cp-term-fact",
+      "kind": "term",
+      "term": "Fact",
+      "title": "Fact",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A plain camera on a table, viewfinder open, nothing dramatic in frame. Constraints: no screen text. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-cb79501a-f403-4092-b97b-cca2577a27b2.png",
+      "file": "cp-term-fact.png",
+      "alt": "A plain camera with its flash raised sits on a classroom table, with students talking in the background.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-term-fact.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "4ea79c0e3c928e0aa5d3263295665abf4166d416d084f08da87ba8d6e266f66a",
+      "optimizedSha256": "6037b5f2145d5763ca2cc2050b5d6531c58c7d16a14d20ccf8b0e04e2f730c24",
+      "bytes": 32294,
+      "altSource": "vision",
+      "altHash": "img-x8r-99dcb114",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 1,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cp-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "A FACT",
+          "field": "iconUrl",
+          "reason": "A camera represents an observable event."
+        }
+      ]
+    },
+    {
+      "id": "cp-term-perspective",
+      "kind": "term",
+      "term": "Perspective",
+      "title": "Perspective",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two students on opposite sides of one table looking at the same object, each seeing a different side of it. Constraints: object simple. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-5d8e3d20-99bc-4741-b915-b2f0bb87fed4.png",
+      "file": "cp-term-perspective.png",
+      "alt": "Two students on different sides of a table look at the yellow and teal faces of one geometric object.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-term-perspective.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "d2c741eb82a293251fadc9a02f8a37ffdf3655357eb1974cd021d5faddf04a36",
+      "optimizedSha256": "141c58aa89af24e3ae2329243f347dc1003b546900b7169566742a59683eab6b",
+      "bytes": 26876,
+      "altSource": "vision",
+      "altHash": "img-ro3-412524d9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 3,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cp-term-openq",
+      "kind": "term",
+      "term": "Open question",
+      "title": "Open question",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student with an open palm turned up, leaning slightly toward a friend, friend relaxed. Constraints: not pointing. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-535a72f3-63d0-4bae-8afb-6c3a780f727f.png",
+      "file": "cp-term-openq.png",
+      "alt": "A student extends an open palm while talking with a relaxed classmate seated beside them.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-term-openq.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "38febcada770b990515259db26e7424287b5b513fcd3c5fd0f0892384a72441f",
+      "optimizedSha256": "c454caacd8c600322ac35be4ffd0ef1cc9c6f63651ec2a6fdcfbde5a36f4a7f5",
+      "bytes": 28252,
+      "altSource": "vision",
+      "altHash": "img-t33-de53f963",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 5,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cp-anchor",
+          "sectionIndex": 3,
+          "sectionLabel": "NOTICE, HOLD, ASK",
+          "field": "iconUrl",
+          "reason": "An open-hand conversation supports asking an open question."
+        }
+      ]
+    },
+    {
+      "id": "cp-term-swap",
+      "kind": "term",
+      "term": "Viewpoint swap",
+      "title": "Viewpoint swap",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two chairs facing each other with a curved arrow between them. Constraints: chairs empty. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-1b82e315-a8a5-49f2-b88a-16718e1d35a4.png",
+      "file": "cp-term-swap.png",
+      "alt": "Two empty armchairs face each other with a curved, two-ended arrow between them; students watch behind them.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-term-swap.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "af1f44421772c6a665809247d938bfbc4253ab48a892c73024148097f194d117",
+      "optimizedSha256": "b062b2e7787278bdbe4f7366c2c83905bed5e7496151696704d55a182015a3bb",
+      "bytes": 27428,
+      "altSource": "vision",
+      "altHash": "img-s8j-65ef6059",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cp-term-hold",
+      "kind": "term",
+      "term": "Hold loosely",
+      "title": "Hold loosely",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two hands cupped loosely around a small paper bird, fingers open. Constraints: not gripping. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-18303271-6c5a-43c9-b05c-1b71861a415d.png",
+      "file": "cp-term-hold.png",
+      "alt": "Two open hands gently support a small folded paper bird without gripping it.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-term-hold.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "c66acb71678472554c213a2ab87728c3eeef0fa76d9134df58a66c7f82a1dbfe",
+      "optimizedSha256": "79b6338987a63f3608064f7abca0521f0c315a5bee1884160b8302d987f30a61",
+      "bytes": 20652,
+      "altSource": "vision",
+      "altHash": "img-l9j-547957f5",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cp-img-chat",
+      "kind": "lesson",
+      "title": "The missing reaction.",
+      "prompt": "Use case: precise-object-edit. Edit the supplied wide lesson illustration to correct the phone screen. Preserve the warm flat classroom illustration and foreground phone. The screen must clearly show a COMPLETE science ball-and-stick model in the photo, then a separate white UI strip BELOW the photo containing exactly three small coral heart reaction icons in a row, followed by one empty outlined circle representing the missing fourth reaction. These reaction marks must be separate from the science model; there must not be a missing ball in the model. Simplify the surrounding scene as needed to make the phone screen the clear focus and leave open space around it for native app callouts. No words, letters, numerals, counters, labels, logos or watermark anywhere.",
+      "caption": "by morning Dev has decided what the silence meant.",
+      "plannedLabels": [
+        {
+          "text": "Three reactions",
+          "position": "top-left",
+          "anchorX": 48,
+          "anchorY": 78
+        },
+        {
+          "text": "The one that did not come",
+          "position": "top-right",
+          "anchorX": 55,
+          "anchorY": 78
+        }
+      ],
+      "afterType": "simplified",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-59ee-7743-913a-92e7105dba47\\exec-6f06d8b2-5cc6-4e64-96cf-eb4293eeea1f.png",
+      "file": "cp-img-chat-v2.png",
+      "alt": "A phone displays a science model; three reaction symbols appear below the picture beside an empty fourth position.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "previousFile": "cp-img-chat.png",
+      "previousPrompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A phone screen showing a photo of a science model with three small reaction marks and one empty space where a fourth would go.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "referenceImages": [
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/crew_perspective_grade6_8/cp-img-chat.png"
+      ],
+      "optimizedFile": "optimized/cp-img-chat.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "4448db78c5bfe0e61a7c661e8675963420bee01a560ed3b86b2f20f6d3c7ae86",
+      "optimizedSha256": "c84d5953a8c316a079072e796570db011a5ca9d16cf3fa8adc99f61679ea77f7",
+      "bytes": 46160,
+      "altSource": "vision",
+      "altHash": "img-1bib-db54fca7",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Three reactions",
+          "position": "top-left",
+          "anchorX": 48,
+          "anchorY": 78
+        },
+        {
+          "text": "The one that did not come",
+          "position": "top-right",
+          "anchorX": 55,
+          "anchorY": 78
+        }
+      ],
+      "placement": {
+        "resourceId": "cp-reading-illustrations",
+        "panelId": "cp-img-chat",
+        "afterResourceId": "cp-reading"
+      }
+    },
+    {
+      "id": "cp-img-twosides",
+      "kind": "lesson",
+      "title": "Two sides, one moment.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A split panel: on the left Dev at his desk looking at his phone with a dark thought bubble; on the right Priya at a kitchen table with her phone face down in an adult's hand.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "two stories, one fact, nobody asked.",
+      "plannedLabels": [
+        {
+          "text": "Dev's side",
+          "position": "top-left",
+          "anchorX": 25,
+          "anchorY": 57
+        },
+        {
+          "text": "Priya's side",
+          "position": "top-right",
+          "anchorX": 62,
+          "anchorY": 54
+        }
+      ],
+      "afterType": "anchor-chart",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-a5d5e8bc-fbd5-4777-ae55-e97e0e17a4b5.png",
+      "file": "cp-img-twosides.png",
+      "alt": "Dev looks worried at his phone under a dark thought bubble. In the other panel, an adult picks up Priya’s phone at the kitchen table.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-img-twosides.webp",
+      "width": 900,
+      "height": 450,
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "sourceSha256": "dd46d71cff92525be1e1d204ef0daceb08f88bcb87ec10b56c08cd90701cb952",
+      "optimizedSha256": "7c502d884b9528919798b0f975f387b3d8afce196642ca5a551d7ebc4489fa87",
+      "bytes": 48674,
+      "altSource": "vision",
+      "altHash": "img-1e3f-b47f2426",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Dev's side",
+          "position": "top-left",
+          "anchorX": 25,
+          "anchorY": 57
+        },
+        {
+          "text": "Priya's side",
+          "position": "top-right",
+          "anchorX": 62,
+          "anchorY": 54
+        }
+      ],
+      "placement": {
+        "resourceId": "cp-anchor-illustrations",
+        "panelId": "cp-img-twosides",
+        "afterResourceId": "cp-anchor"
+      }
+    },
+    {
+      "id": "cp-img-ask",
+      "kind": "lesson",
+      "title": "The five-second question.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: The next morning, Dev leaning over to Priya in the hallway with an open palm, Priya starting to smile.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "notice, hold, ask.",
+      "plannedLabels": [
+        {
+          "text": "The question",
+          "position": "top-left",
+          "anchorX": 40,
+          "anchorY": 76
+        },
+        {
+          "text": "The answer",
+          "position": "top-right",
+          "anchorX": 65,
+          "anchorY": 37
+        }
+      ],
+      "afterType": "faq",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-f1ea20de-df97-4989-b580-1168b27954ef.png",
+      "file": "cp-img-ask.png",
+      "alt": "Dev uses an open-hand gesture while speaking with Priya, who smiles and holds books beside hallway lockers.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cp-img-ask.webp",
+      "width": 900,
+      "height": 450,
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "sourceSha256": "b46b5f069268777c91e5215649a606083a8f7434cd4afcb8fa1cef1ad8a914ad",
+      "optimizedSha256": "c9cb5301f155cdfdb363053bc3110ec85f8a86433c58d7864b0eb246d6f36fa6",
+      "bytes": 40074,
+      "altSource": "vision",
+      "altHash": "img-158v-d0de2f53",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The question",
+          "position": "top-left",
+          "anchorX": 40,
+          "anchorY": 76
+        },
+        {
+          "text": "The answer",
+          "position": "top-right",
+          "anchorX": 65,
+          "anchorY": 37
+        }
+      ],
+      "placement": {
+        "resourceId": "cp-faq-illustrations",
+        "panelId": "cp-img-ask",
+        "afterResourceId": "cp-faq"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cp-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cp-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cp-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cp-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cp-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cp-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 11,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two middle-school students carrying one long classroom table together from opposite ends, both lifting it, feet on the floor.",
+      "alt": "Two students lift a classroom table from opposite ends.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-d9bf064c-57c2-40c5-afa1-a4068cb93c1c.png",
+      "provider": "Built-in image generation",
+      "id": "cp-term-cooperate",
+      "kind": "term",
+      "term": "Cooperate",
+      "file": "cp-term-cooperate.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-cooperate",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-cooperate.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cp-term-cooperate.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "da7061625ee78a47a6a273493c5f0f8085d8b7fd830bc0848a29eb3c060b2863",
+      "optimizedSha256": "751f94b1fe8d79d9b28974035dfa7e38239aba756cd531d0e38b157971710431",
+      "bytes": 23618,
+      "altSource": "vision",
+      "altHash": "img-obf-383a48d9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cp-term-assume",
+      "kind": "term",
+      "term": "Assume",
+      "title": "Assume",
+      "file": "cp-term-assume.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: A middle-school student looks at a silent phone and folds their free arm across their body. Above them, a simple outlined thought bubble contains a small neutral friend's face with turned-away eyes. A small CLOSED padlock attached to the edge of the thought bubble is a conceptual symbol for treating a guess as settled. Make the phone blank and the imagined face clearly inside the bubble. Not angry, just prematurely certain. Exactly two anatomically correct arms and hands.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e35-39cc-7082-9c61-a33b2a7370f4\\exec-39e3f872-8617-429d-af6c-b584b9050c9b.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "A student looks at a silent phone while a thought bubble shows a friend looking away; a closed padlock on the bubble symbolizes treating the guess as settled.",
+      "optimizedFile": "optimized/cp-term-assume.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "9f6818237797e4f1490cb6403c491847ea7e84a180a4ef002069e2e484f29f7d",
+      "optimizedSha256": "5788608b28474e54f26c24612e06a68e3b36fc47b5c3b12872c76eb63abfa556",
+      "bytes": 30732,
+      "altSource": "vision",
+      "altHash": "img-vmv-5cc1558e",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 4,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cp-term-attribution",
+      "kind": "term",
+      "term": "Attribution",
+      "title": "Attribution",
+      "file": "cp-term-attribution.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: In a school hallway a student watches a classmate hurry past without noticing them. Above the observer is a single thought bubble containing a small image of the hurried classmate with a frowning face, representing the observer's guess about the reason. Make clear the thought-bubble image is imagined: the actual walking classmate has a neutral expression and carries schoolbooks. Only two actual people, natural arms, no pointing.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e35-39cc-7082-9c61-a33b2a7370f4\\exec-baef2d86-c3e7-4de8-ad80-c23762c30417.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "A student watches a neutral classmate hurry past and imagines that classmate frowning in a thought bubble, guessing why they did not stop.",
+      "optimizedFile": "optimized/cp-term-attribution.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "c09c4d41da050165a4c724642e58a4283291e65db47b68232cb7950467ba8d90",
+      "optimizedSha256": "6498f3cbb60b2e185ca417662bbb6b134dafe17eaf4b366b9b3ed423d5dc6057",
+      "bytes": 29608,
+      "altSource": "vision",
+      "altHash": "img-uhb-90b4b136",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 2,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cp-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "THE GAP",
+          "field": "iconUrl",
+          "reason": "The imagined explanation for a passing classmate matches the attribution gap."
+        }
+      ]
+    },
+    {
+      "id": "cp-term-misunderstanding",
+      "kind": "term",
+      "term": "Misunderstanding",
+      "title": "Misunderstanding",
+      "file": "cp-term-misunderstanding.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: Two middle-school students face one another across a small classroom table, each puzzled but calm. An empty speech bubble between them contains only a simple gray circle. Above the left student's head a separate thought bubble contains a blue square; above the right student's head a thought bubble contains a coral triangle. These abstract mismatched shapes represent different interpretations of the same conversation. All hands rest naturally on the table. Only two students, clear separated bubbles, no text.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e35-39cc-7082-9c61-a33b2a7370f4\\exec-c25793d5-d39e-4fe9-8a2e-1700c2e0384d.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "Two puzzled students share a conversation, but their thought bubbles contain different shapes, showing that they understand the same moment differently.",
+      "optimizedFile": "optimized/cp-term-misunderstanding.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "117dd038eb08764f9823cfc277c46ff490044494f75b12d618089747809ec4d5",
+      "optimizedSha256": "cf9035585981929a508dd552e57d6ae982ab0a94f93f350fcc854f272cc9784b",
+      "bytes": 29886,
+      "altSource": "vision",
+      "altHash": "img-urj-66eba55f",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cp-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 15,
+  "imagePlacementCount": 19,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_perspective_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 19,
+    "uniqueImageCount": 15,
+    "anchorSectionImages": 4,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

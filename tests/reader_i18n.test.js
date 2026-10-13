@@ -82,12 +82,12 @@ describe('the Novak reading parts show translated text', () => {
     const supports = api.validateReadingSupports(item, [{ id: 'f', start: 8, end: 12, quote: 'foul', text: 'Very bad.', priority: 'essential', origin: 'generated', pinned: false, kind: 'gloss' }]);
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
     act(() => root.render(React.createElement(View.ReadingGlossEditor, { item, supports, onUpdate: vi.fn(), disabled: false })));
-    const toggle = [...host.querySelectorAll('button')].find(b => b.textContent.includes('[xx] Review word supports'));
+    const toggle = [...host.querySelectorAll('button')].find(b => b.textContent.includes('[xx] Review word help'));
     expect(toggle).toBeTruthy();
     act(() => toggle.click());
     expect(host.textContent).toContain('[xx] Essential');
-    const edit = [...host.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '').startsWith('[xx] Edit gloss for'));
-    expect(edit.getAttribute('aria-label')).toMatch(/^\[xx\] Edit gloss for \[xx\] foul, text position 9–12: /);
+    const edit = [...host.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '').startsWith('[xx] Edit word help for'));
+    expect(edit.getAttribute('aria-label')).toMatch(/^\[xx\] Edit word help for \[xx\] foul, text position 9–12: /);
   });
   it('fills in placeholders in the English fallback too', () => {
     window.__alloT = () => undefined;
@@ -96,9 +96,9 @@ describe('the Novak reading parts show translated text', () => {
     const supports = api.validateReadingSupports(item, [{ id: 'f', start: 8, end: 12, quote: 'foul', text: 'Very bad.', priority: 'helpful', origin: 'generated', pinned: false, kind: 'gloss' }]);
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
     act(() => root.render(React.createElement(View.ReadingGlossEditor, { item, supports, onUpdate: vi.fn(), disabled: false })));
-    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.includes('Review word supports')).click());
-    const edit = [...host.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '').startsWith('Edit gloss for'));
-    expect(edit.getAttribute('aria-label')).toMatch(/^Edit gloss for foul, text position 9–12: /);
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.includes('Review word help')).click());
+    const edit = [...host.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '').startsWith('Edit word help for'));
+    expect(edit.getAttribute('aria-label')).toMatch(/^Edit word help for foul, text position 9–12: /);
   });
   it('shows English when a key has no translation', () => {
     window.__alloT = () => undefined;

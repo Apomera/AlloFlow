@@ -101,7 +101,7 @@ describe('what a student sees', () => {
   });
   it('the teacher\'s side-by-side view keeps the review note', () => {
     const { adapted, original } = pair();
-    mount({ isTeacherMode: true, isCompareMode: true, history: [original, adapted] });
+    mount({ isTeacherMode: true, isZenMode: false, isCompareMode: true, history: [original, adapted] });
     expect(host.textContent).toMatch(/Word counts/);
   });
 });

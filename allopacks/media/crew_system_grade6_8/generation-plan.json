@@ -1,0 +1,274 @@
+{
+  "slug": "crew_system_grade6_8",
+  "sourceShotList": "allopacks/crew_system_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "cs-term-system",
+      "term": "System",
+      "kind": "term",
+      "scene": "Three simple gears meshing, each a different color",
+      "constraints": "no labels on gears",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Three simple gears meshing, each a different color. no labels on gears.",
+      "file": "cs-term-system.png",
+      "alt": "Three students hold three colorful gears together so their teeth mesh.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-b3ee0d00-3d65-4cc5-8415-417ad6c041d1.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cs-term-capture",
+      "term": "Capture",
+      "kind": "term",
+      "scene": "One open notebook with an arrow from a speech bubble (empty) into the page",
+      "constraints": "single notebook only",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. One open notebook with an arrow from a speech bubble (empty) into the page. single notebook only.",
+      "file": "cs-term-capture.png",
+      "alt": "A student writes in one notebook as an arrow leads from an empty speech bubble to its page.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-de9514d1-8cb8-4979-b6eb-b6369ab1ea07.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cs-term-launch",
+      "term": "Launch",
+      "kind": "term",
+      "scene": "A backpack being zipped, a small clock beside it, a doorway behind",
+      "constraints": "daytime, end of school",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A backpack being zipped, a small clock beside it, a doorway behind. daytime, end of school.",
+      "file": "cs-term-launch.png",
+      "alt": "A student zips a backpack beside a clock as classmates leave the classroom.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-f260d236-06b5-430e-a926-14c74ac72a9c.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cs-term-reset",
+      "term": "Reset",
+      "kind": "term",
+      "scene": "A blank week grid with one block split into three smaller blocks",
+      "constraints": "no numbers",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A blank week grid with one block split into three smaller blocks. no numbers.",
+      "file": "cs-term-reset.png",
+      "alt": "Students examine a blank weekly grid with three smaller blocks inside one day.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-3d4ad293-02d3-4d85-9ab2-69aabba1b5a5.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cs-term-willpower",
+      "term": "Willpower",
+      "kind": "term",
+      "scene": "A phone battery icon nearly empty, red sliver",
+      "constraints": "no percentage text",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A phone battery icon nearly empty, red sliver. no percentage text.",
+      "file": "cs-term-willpower.png",
+      "alt": "A tired-looking student holds a phone beneath a nearly empty battery symbol while classmates offer support.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-af6e3812-a62e-4694-9730-b7942144b33d.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cs-term-chunk",
+      "term": "Chunk",
+      "kind": "term",
+      "scene": "A large block being cut into three pieces by a plain line",
+      "constraints": "pieces equal-ish",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A large block being cut into three pieces by a plain line. pieces equal-ish.",
+      "file": "cs-term-chunk.png",
+      "alt": "A student divides a large block into smaller pieces as two classmates watch.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-92e1de91-aa37-46fa-9930-eede7c72f191.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "cs-img-marcus-before",
+      "kind": "lesson",
+      "title": "Three places, no system.",
+      "scene": "A student with writing on the back of his hand, sticky notes on a laptop lid, and a loose paper falling from a bag.",
+      "caption": "three places means the assignment can be in the one you did not check.",
+      "plannedLabels": [
+        {
+          "text": "Hand",
+          "position": "bottom-left",
+          "anchorX": 57,
+          "anchorY": 51
+        },
+        {
+          "text": "Sticky notes",
+          "position": "bottom-center",
+          "anchorX": 45,
+          "anchorY": 61
+        },
+        {
+          "text": "Falling paper",
+          "position": "bottom-right",
+          "anchorX": 80,
+          "anchorY": 82
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student with plain abstract ink bars on the back of his hand, sticky notes on a laptop lid, and a loose paper falling from a bag. All labels and captions will be editable native fields outside the artwork.",
+      "file": "cs-img-marcus-before.png",
+      "alt": "A student carries a laptop with sticky notes, ink bars on his hand, and a loose page hanging from his backpack.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-307055e9-6de7-40c1-a4d4-b9cdb78ca80c.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "simplified"
+    },
+    {
+      "id": "cs-img-marcus-after",
+      "kind": "lesson",
+      "title": "One capture spot.",
+      "scene": "The same student typing into a single notes window on a laptop, the sticky notes gone, the hand clean.",
+      "caption": "nothing about his brain changed; his system did.",
+      "plannedLabels": [
+        {
+          "text": "One place",
+          "position": "top-right",
+          "anchorX": 75,
+          "anchorY": 53
+        }
+      ],
+      "prompt": "Use case: identity-preserve. Edit image 1, preserving its warm simple educational style, tidy desk, single laptop with one notes window, over-the-shoulder camera, and two hands naturally typing. Change the student to match the student in the CENTER of reference image 2: the boy Marcus with short tousled dark brown hair, medium tan skin, dark green hoodie over an ivory shirt. Keep Marcus visibly the same boy as reference image 2. Remove the bun and long hair entirely. His two arms must emerge naturally from his shoulders and bend at the elbows; both clean unmarked hands reach the keyboard from his side of the laptop. No sticky notes. No words, letters, numbers, logos, watermarks, or labels. The laptop screen has only plain abstract horizontal bars. Wide landscape composition.",
+      "file": "cs-img-marcus-after-v2.png",
+      "alt": "Marcus types into one notes window on a laptop, with clean hands and no sticky notes on the tidy desk.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-3d47-7c01-8b65-899fba5f796f\\exec-a46cdd10-c0dc-4997-b5e0-0c51be1d555c.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "anchor-chart",
+      "editReferences": [
+        "cs-img-marcus-after.png",
+        "cs-img-marcus-before.png"
+      ]
+    },
+    {
+      "id": "cs-img-launch",
+      "kind": "lesson",
+      "title": "The launch check.",
+      "scene": "The student at his desk in the last minutes of the day, laptop open to tomorrow, sliding a notebook into a bag.",
+      "caption": "not in your locker at 8:04.",
+      "plannedLabels": [
+        {
+          "text": "Look at tomorrow",
+          "position": "top-left",
+          "anchorX": 26,
+          "anchorY": 64
+        },
+        {
+          "text": "Pack tonight",
+          "position": "top-right",
+          "anchorX": 68,
+          "anchorY": 60
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The student at his desk in the last minutes of the day, laptop open to tomorrow, sliding a notebook into a bag. All labels and captions will be editable native fields outside the artwork.",
+      "file": "cs-img-launch.png",
+      "alt": "A student packs a notebook in his backpack beside a laptop showing a simple plan.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-9befd38f-0e36-4f71-a527-b1568904757a.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "faq"
+    },
+    {
+      "id": "cs-term-prepared",
+      "kind": "term",
+      "term": "Prepared",
+      "scene": "A middle-school student sits ready at the beginning of class with an open notebook, pencil, closed plain textbook and water bottle neatly within reach. Their backpack is beside their chair. A calm attentive posture and hands resting naturally on the desk. Square composition.",
+      "file": "cs-term-prepared.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. A middle-school student sits ready at the beginning of class with an open notebook, pencil, closed plain textbook and water bottle neatly within reach. Their backpack is beside their chair. A calm attentive posture and hands resting naturally on the desk. Square composition.",
+      "alt": "A student sits ready for class with a notebook, pencil, textbook, water bottle, and backpack within reach.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-3d47-7c01-8b65-899fba5f796f\\exec-9aed0798-2327-481f-9cb5-cfe3a04d02c5.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "id": "cs-term-deadline",
+      "kind": "term",
+      "term": "Deadline",
+      "scene": "A simple assignment folder placed beside an analog clock with plain ticks but no numerals. Behind them a blank calendar grid has one day prominently circled in muted orange. The clock and circled date indicate when the assignment is due. Objects only, no people. Square composition, clean uncluttered shapes.",
+      "file": "cs-term-deadline.png",
+      "prompt": "Use case: precise-object-edit. Edit this educational illustration with one small correction only: remove the orange ring that crosses multiple calendar cells, and replace it with a SMALL orange circle entirely INSIDE the single calendar cell at row 3, column 5. The circle must be smaller than that cell, leave visible margin on all four sides, and never cross any grid lines. Keep the entire calendar grid, clock, assignment folder, colors, watercolor paper texture, plant, pencils and composition unchanged. No text, numerals or labels.",
+      "alt": "An assignment folder sits beside a clock and a calendar with one day circled.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-ce15a30f-aaed-4fbe-90b3-518bcbfb5851.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "editReferences": [
+        "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-3d47-7c01-8b65-899fba5f796f\\exec-178aec36-6439-4bdb-853b-f55dae5037f1.png"
+      ]
+    },
+    {
+      "id": "cs-term-thoughtful",
+      "kind": "term",
+      "term": "Thoughtful",
+      "scene": "A middle-school student carefully revises a paper design model at a desk, comparing it with a simple reference sketch of the same model. The student is focused, one hand holds a pencil and the other steadies the paper. A few erased construction lines and a neatly strengthened edge show careful attention to work. No writing on the papers, only a geometric design sketch. Square composition.",
+      "file": "cs-term-thoughtful.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. A middle-school student carefully revises a paper design model at a desk, comparing it with a simple reference sketch of the same model. The student is focused, one hand holds a pencil and the other steadies the paper. A few erased construction lines and a neatly strengthened edge show careful attention to work. No writing on the papers, only a geometric design sketch. Square composition.",
+      "alt": "A focused student compares a paper design model with its sketch and carefully revises the drawing.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-08178058-23b5-4fc9-9818-27605d775dcc.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "id": "cs-term-habit",
+      "kind": "term",
+      "term": "Habit",
+      "scene": "Three small side-by-side vignettes of the SAME middle-school student entering the same classroom on different mornings and placing a notebook in the same desk tray. Same student, clothing and connected simple anatomy in each scene. A small sun at the top of each scene suggests repeated days; no numbers, no clocks, no arrows crossing people. Clearly one repeated action done routinely. Square overall composition.",
+      "file": "cs-term-habit.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Three small side-by-side vignettes of the SAME middle-school student entering the same classroom on different mornings and placing a notebook in the same desk tray. Same student, clothing and connected simple anatomy in each scene. A small sun at the top of each scene suggests repeated days; no numbers, no clocks, no arrows crossing people. Clearly one repeated action done routinely. Square overall composition.",
+      "alt": "Three scenes show the same student entering class and putting a notebook in the same desk tray as a daily routine.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-71e192bc-422e-4119-a6bf-03636c359f2e.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cs-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cs-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cs-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cs-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    }
+  ],
+  "style": "Warm, simple educational illustration in a muted earth palette",
+  "review": "All selected artwork visually inspected, including anatomy and hair; educator review pending"
+}

@@ -37,27 +37,39 @@
       "kind": "term",
       "term": "Expedition",
       "title": "Expedition",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A school hallway exhibit of student panels with a small crowd looking, panels showing only shapes and images. Constraints: no readable text. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. In a school hallway, a student work exhibition consists of three large wall panels showing only simple pictures: a leaf with roots, an abstract geometric arrangement, and a sun over hills. Exactly three diverse middle-school students stand in a small group looking at the panels. View students from rear or gentle side angle; faces minimally visible. Comfortable balanced postures, relaxed arms at sides, hands separated and attached naturally to wrists, exactly two arms per person, clear silhouettes. One student has neat short curls, one a coherent bob hairstyle, one a simple ponytail attached at back of scalp. Warm simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on pale warm cream; gentle paper texture. Square composition, generous margin and uncluttered hallway. No words, letters, numerals, labels, captions, school names, logos or watermark. The exhibit panels contain pictures only.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-821321c0-6fba-44af-9b23-14f4fc5500cd.png",
+      "file": "cteam-term-expedition.png",
+      "alt": "Three students with backpacks view a hallway exhibition of plant, geometric, and landscape illustrations.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-term-depend",
       "kind": "term",
       "term": "Depend",
       "title": "Depend",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two puzzle pieces, one with an arrow pointing into a gap in the other. Constraints: plain arrow. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Two large simple puzzle pieces on empty warm ivory background. Teal piece at left has one obvious semicircular socket facing right. Coral piece at right has one matching round tab facing left, lined up precisely to fit into the socket. A small mustard arrow in the clear space between the pieces points left, from the coral tab toward the teal socket. Pieces remain separated by a generous narrow gap so the connection is clear. Only these two pieces and one arrow, no people, hands, faces or other objects. Warm simple flat illustration with rounded forms, muted coral, mustard, teal, navy, very light paper texture. Square composition, centered objects with generous margin. No text, words, letters, numerals, labels, logos, captions or watermark.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-3ace688b-d37a-4a71-9906-2e216f30edaa.png",
+      "file": "cteam-term-depend.png",
+      "alt": "A mustard arrow points from a coral puzzle piece toward the matching gap in a teal piece.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-term-askearly",
       "kind": "term",
       "term": "Ask early",
       "title": "Ask early",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A phone with a single short message bubble going out, a calendar behind it with early days marked. Constraints: no words in bubble. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Isolated objects on warm ivory background: one teal smartphone upright in foreground, with a plain cream screen containing exactly one outgoing coral speech bubble, entirely empty inside. Behind phone sits a small desk calendar, slightly offset so its grid is clearly visible. Calendar has blank grid cells, with the first two cells in the top row highlighted mustard to suggest early days. No numerals or weekday names. No people, hands, faces, plants or other objects. Warm simple flat educational illustration, clean rounded forms, muted coral, mustard, teal, navy, subtle paper texture. Square central composition, generous margin. No words, letters, numbers, readable writing, labels, captions, logos or watermark. Keep speech bubble empty, no dots or fake text.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-a2726fd5-0832-4d54-beca-b50ef871c883.png",
+      "file": "cteam-term-askearly.png",
+      "alt": "A phone shows an empty message bubble beside a calendar with the first two cells highlighted.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-img-trap",
       "kind": "lesson",
       "title": "Thursday night.",
-      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A dim kitchen, one student at a laptop late, three empty chairs; a calendar with the last square before a flag.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "prompt": "Use case: illustration-story. Asset type: wide landscape lesson panel for a Grade 6–8 Crew SEL learning pack. A dim home kitchen at night, warm lamp over a rectangular table. Exactly one middle-school girl with neatly coherent dark bob hair and a coral sweater sits working at an open laptop. Three clearly visible empty chairs occupy the other sides of the table, conveying absent teammates. Girl is mildly tired but focused. Show laptop from a side three-quarter angle with a physically coherent screen and keyboard, plain screen with no writing. Her two forearms extend naturally from their own shoulders toward keyboard, elbows bent low and wrists resting, both hands separate and anatomically clear. Small blank calendar on the wall: its final adjacent two grid cells contain a coral circle followed by a small navy flag, no dates or words. Dark window suggests late evening. Clean uncomplicated composition with generous room for chairs. Warm simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on pale warm cream with gentle paper texture. Landscape framing. No extra people, words, letters, numerals, readable writing, labels, captions, logos or watermarks.",
       "caption": "worse than any one of them could have made alone.",
       "plannedLabels": [
         {
@@ -67,13 +79,17 @@
           "text": "Three empty chairs"
         }
       ],
-      "afterType": "simplified"
+      "afterType": "simplified",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-cbc01b33-51c5-43f4-bb82-9cac3f336104.png",
+      "file": "cteam-img-trap.png",
+      "alt": "A student works alone at a laptop in a kitchen at night, surrounded by three empty chairs; a calendar marks a day just before a flag.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-img-sentence",
       "kind": "lesson",
       "title": "Monday, out loud.",
-      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: The same group on Monday in daylight, one student speaking with a finger on a shared screen showing four labelled shapes.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "prompt": "Use case: illustration-story. Asset type: wide landscape lesson panel for a Grade 6–8 Crew SEL learning pack. A daylight classroom teamwork discussion. Exactly four middle-school students: dark-skinned boy with short curls and mustard hoodie; girl with dark bob and coral sweater; boy with neat short straight black hair and navy hoodie; girl with a coherent brown ponytail and teal sweater. Three students sit listening behind the left side of a table, with their hands resting on table or laps. The ponytailed girl stands at the right side of the table beside a large desktop monitor, talking and gently pointing with one index finger at one of four blank colored rectangular shapes on its screen. Monitor faces the viewer enough to see all four simple shapes with NO text or labels. The pointing girl's arm is fully visible and anatomically connected: upper arm comes from the shoulder of the teal sweater nearest the screen, elbow bends naturally at waist height, forearm extends outward toward screen, wrist straight, exactly one hand with a single extended index finger. Her opposite arm hangs relaxed at her other side. No arms cross her torso, no disconnected limbs, exactly two arms per person. Leave space between people and monitor. Coherent hairstyles rooted on scalp. Warm simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on pale warm cream; subtle paper texture. Landscape composition, friendly focused expressions. No words, letters, numerals, readable writing, labels, captions, logos or watermark.",
       "caption": "a plan instead of a hope.",
       "plannedLabels": [
         {
@@ -86,13 +102,17 @@
           "text": "By when"
         }
       ],
-      "afterType": "anchor-chart"
+      "afterType": "anchor-chart",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-af17a9c5-b485-4068-aed4-d691f344dbd5.png",
+      "file": "cteam-img-sentence.png",
+      "alt": "A student points to one of four blank colored shapes on a shared screen while three teammates listen in a bright classroom.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-img-baton",
       "kind": "lesson",
       "title": "The hand out early.",
-      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A relay track: one runner mid-stride and the next already reaching back with an open hand before the baton arrives.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "prompt": "Use case: illustration-story. Asset type: wide landscape lesson panel for a Grade 6–8 Crew SEL learning pack. Side-view illustration of exactly two middle-school runners practicing a relay on a simple outdoor track, both moving toward the right, ample space separating their bodies. Trailing runner on left: a boy with short dark curls, mustard athletic shirt and navy shorts, one foot on track and other leg bent in running stride. His near arm extends forward from his natural shoulder, elbow gently bent, hand holding one short coral relay baton horizontally. His other arm bends back at his side. Leading runner on right: a girl with a neat brown ponytail, teal athletic shirt and navy shorts, mid-stride. Her near arm reaches backward from its own shoulder with a small natural elbow bend; an open hand faces back toward the approaching baton. Her other arm bends forward naturally. Small clear gap between baton and receiving palm, handoff has not occurred yet. Exactly two arms and two legs per runner, shoulders elbows wrists anatomically connected, normal joints, distinct non-overlapping silhouettes, hands on correct wrists, coherent hair connected to heads. Simple parallel curved track lines, no lane numbers. Warm simple flat educational illustration, clean rounded shapes, muted coral, mustard, teal and navy, pale warm cream background, subtle paper texture. Wide landscape composition with whole bodies visible. No text, words, letters, numerals, labels, captions, logos, watermark or extra runners.",
       "caption": "waiting with your hands down is how relays get dropped.",
       "plannedLabels": [
         {
@@ -102,7 +122,107 @@
           "text": "Hand out early"
         }
       ],
-      "afterType": "faq"
+      "afterType": "faq",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfc-52e7-7273-979b-1c1a8a7a4d50\\exec-9c08f33c-cb7a-4040-b507-4cc4a04e8660.png",
+      "file": "cteam-img-baton.png",
+      "alt": "Two students run on a relay track; the leading runner reaches an open hand backward while the trailing runner brings a baton toward it.",
+      "status": "visual-review-passed"
+    },
+    {
+      "slug": "crew_teamwork_grade6_8",
+      "id": "cteam-term-quality",
+      "kind": "term",
+      "term": "Quality",
+      "scene": "Two small wooden model bridges side by side on an uncluttered tabletop: one neatly aligned with straight evenly spaced rails and clean joins; the other wobbly with misaligned rails and visible messy glue blobs. Same size and design, inspectable craftsmanship without people, grades or checkmarks.",
+      "alt": "Two model bridges show contrasting craftsmanship: neat aligned rails and uneven rails with messy glue.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Two small wooden model bridges side by side on an uncluttered tabletop: one neatly aligned with straight evenly spaced rails and clean joins; the other wobbly with misaligned rails and visible messy glue blobs. Same size and design, inspectable craftsmanship without people, grades or checkmarks. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cteam-term-quality.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12dbf-0e2f-76b2-be80-e5442163a116\\exec-08fe13ee-ea85-4509-84a4-86f9cfb5f19d.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "slug": "crew_teamwork_grade6_8",
+      "id": "cteam-term-hope",
+      "kind": "term",
+      "term": "Hope",
+      "scene": "A group project planning board standing on a classroom table. Several completely blank sticky notes and empty name-card slots sit beneath a small picture of an unfinished cardboard building model. No people assigned, no words, letters, question marks or arrows. Clear empty responsibility spaces.",
+      "alt": "Blank task notes and empty name slots sit beneath a picture of an unfinished group model.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A group project planning board standing on a classroom table. Several completely blank sticky notes and empty name-card slots sit beneath a small picture of an unfinished cardboard building model. No people assigned, no words, letters, question marks or arrows. Clear empty responsibility spaces. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cteam-term-hope.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12dbf-0e2f-76b2-be80-e5442163a116\\exec-707a54b7-5a7b-4676-8106-f20c513a2288.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "slug": "crew_teamwork_grade6_8",
+      "id": "cteam-term-visible",
+      "kind": "term",
+      "term": "Visible",
+      "scene": "Three middle school students sit facing a large shared project board placed clearly in front of all of them. Board contains colored blank task cards and three different simple student portrait cards, all visible to everyone. View from behind students, hands resting in laps, no pointing or text.",
+      "alt": "Three students face a shared project board with task cards and student portrait cards.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Three middle school students sit facing a large shared project board placed clearly in front of all of them. Board contains colored blank task cards and three different simple student portrait cards, all visible to everyone. View from behind students, hands resting in laps, no pointing or text. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "cteam-term-visible.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12dbf-0e2f-76b2-be80-e5442163a116\\exec-43b72253-9749-4696-9127-a7d287ce5120.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cteam-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cteam-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cteam-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cteam-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: precise-object-edit. Edit this educational illustration with one small correction only: remove the orange ring that crosses multiple calendar cells, and replace it with a SMALL orange circle entirely INSIDE the single calendar cell at row 3, column 5. The circle must be smaller than that cell, leave visible margin on all four sides, and never cross any grid lines. Keep the entire calendar grid, clock, assignment folder, colors, watercolor paper texture, plant, pencils and composition unchanged. No text, numerals or labels.",
+      "alt": "An assignment folder sits beside a clock and a calendar with one day circled.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-ce15a30f-aaed-4fbe-90b3-518bcbfb5851.png",
+      "provider": "Built-in image generation",
+      "id": "cteam-term-deadline",
+      "kind": "term",
+      "term": "Deadline",
+      "file": "cteam-term-deadline.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_system_grade6_8",
+        "assetId": "cs-term-deadline",
+        "file": "allopacks/media/crew_system_grade6_8/cs-term-deadline.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
     }
   ]
 }

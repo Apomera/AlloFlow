@@ -6,63 +6,84 @@
       "kind": "term",
       "scene": "A modest civic building with steps, an accessible ramp, a blank noticeboard, a bike rack and open doors. No columns, no flags, no readable signs.",
       "alt": "A modest public building has open doors, steps, a ramp, a bike rack and a blank noticeboard.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. A modest civic building with steps, an accessible ramp, a blank noticeboard, a bike rack and open doors. No columns, no flags, no readable signs. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. A modest civic building with steps, an accessible ramp, a blank noticeboard, a bike rack and open doors. No columns, no flags, no readable signs. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every visible arm connects naturally at the shoulder, bends at the elbow, and ends at its own wrist; natural relaxed hands and coherent hair silhouettes. Keep clothing simple, simple poses, no tiny decorative marks that resemble writing.",
       "file": "lg-term-government.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-80a653ca-449c-4e78-85e0-ebf512587bcc.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed for natural anatomy, coherent hair, everyday civic setting, and absence of raster text or national symbols."
     },
     {
       "id": "lg-term-local",
       "kind": "term",
       "scene": "Aerial view of a few neighborhood streets, a green park, small houses and a short shopping street; small enough to walk across, no text.",
       "alt": "Several neighborhood streets surround homes, a park and a short row of shops.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. Aerial view of a few neighborhood streets, a green park, small houses and a short shopping street; small enough to walk across, no text. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Aerial view of a few neighborhood streets, a green park, small houses and a short shopping street; small enough to walk across, no text. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every visible arm connects naturally at the shoulder, bends at the elbow, and ends at its own wrist; natural relaxed hands and coherent hair silhouettes. Keep clothing simple, simple poses, no tiny decorative marks that resemble writing.",
       "file": "lg-term-local.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-d79f5d80-fe39-4c2a-8a75-918786e4197c.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed for natural anatomy, coherent hair, everyday civic setting, and absence of raster text or national symbols."
     },
     {
       "id": "lg-term-council",
       "kind": "term",
       "scene": "Seven adults of varied ages and everyday clothing seated at one long plain table, facing rows of folding chairs in a modest public meeting room; not corporate boardroom.",
       "alt": "Seven adults in everyday clothing sit at a long table facing rows of folding chairs.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. Seven adults of varied ages and everyday clothing seated at one long plain table, facing rows of folding chairs in a modest public meeting room; not corporate boardroom. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Seven adults of varied ages and everyday clothing seated at one long plain table, facing rows of folding chairs in a modest public meeting room; not corporate boardroom. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every visible arm connects naturally at the shoulder, bends at the elbow, and ends at its own wrist; natural relaxed hands and coherent hair silhouettes. Keep clothing simple, simple poses, no tiny decorative marks that resemble writing.",
       "file": "lg-term-council.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-75321bd7-39a7-4e5f-a08b-7bf2d567be40.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed for natural anatomy, coherent hair, everyday civic setting, and absence of raster text or national symbols."
     },
     {
       "id": "lg-term-mayor",
       "kind": "term",
       "scene": "One adult standing at center of a plain long table, speaking calmly with an open hand; other adults seated listening, low-ceiling public meeting room, no podium or ceremonial symbols.",
       "alt": "One adult stands and speaks at the center of a long table while seated adults listen.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. One adult standing at center of a plain long table, speaking calmly with an open hand; other adults seated listening, low-ceiling public meeting room, no podium or ceremonial symbols. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. One adult standing at center of a plain long table, speaking calmly with an open hand; other adults seated listening, low-ceiling public meeting room, no podium or ceremonial symbols. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every arm connects naturally at the shoulder, bends at one elbow, and ends at its own wrist; anatomically natural hands with five fingers, coherent hair silhouettes. Keep clothing simple and poses relaxed. Any sheets of paper must be completely blank.",
       "file": "lg-term-mayor.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-12e1ea5c-7114-4628-bfd6-b273cf3b5e64.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed: natural connected arms and hands, coherent hair, everyday civic setting, no raster text or national symbols."
     },
     {
       "id": "lg-term-citizen",
       "kind": "term",
       "scene": "Ordinary resident in work clothes holding a blank note while speaking at an aisle microphone, modest room of folding chairs, respectful listeners.",
       "alt": "A resident holding a blank note speaks into an aisle microphone before people in folding chairs.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. Ordinary resident in work clothes holding a blank note while speaking at an aisle microphone, modest room of folding chairs, respectful listeners. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Ordinary resident in work clothes holding a blank note while speaking at an aisle microphone, modest room of folding chairs, respectful listeners. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every arm connects naturally at the shoulder, bends at one elbow, and ends at its own wrist; anatomically natural hands with five fingers, coherent hair silhouettes. Keep clothing simple and poses relaxed. Any sheets of paper must be completely blank.",
       "file": "lg-term-citizen.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-c0b78e65-8fc1-461c-91cc-29a222f239cc.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed: natural connected arms and hands, coherent hair, everyday civic setting, no raster text or national symbols."
     },
     {
       "id": "lg-term-vote",
       "kind": "term",
       "scene": "Close view of a hand posting a folded blank sheet into a slot in a plain unmarked cardboard box; no seal, no ballot design.",
       "alt": "A hand lowers folded blank paper into a slot in an unmarked box.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. Close view of a hand posting a folded blank sheet into a slot in a plain unmarked cardboard box; no seal, no ballot design. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: precise-object-edit. Edit the supplied voting illustration. Remove every person and all background furniture, windows and wall decoration from behind the foreground voter and ballot box. Replace that entire background with softly textured plain ivory paper. Retain the single adult forearm with its connected natural hand, folded completely blank white paper entering the slot and plain unmarked cardboard box. Crop above the adult hand so the image contains only that adult hand, forearm, blank folded paper, and box. Maintain the warm watercolor and fine ink illustration style. No letters, numbers, words, symbols, seals or watermark.",
       "file": "lg-term-vote.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "reviewNotes": "Revised to remove background people; visually reviewed final hand, folded blank paper and unmarked box with no eligibility ambiguity.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-b6c45005-bc4f-4fdb-a6c0-fbb359799607.png",
+      "generator": "built-in image_gen"
     },
     {
       "id": "lg-term-ordinance",
       "kind": "term",
       "scene": "A noticeboard outside a modest public building with a single entirely blank sheet pinned in its center; no words or characters.",
-      "alt": "A blank sheet is pinned to a noticeboard outside a modest building.",
-      "prompt": "Use case: illustration-story. Asset: square glossary picture. A noticeboard outside a modest public building with a single entirely blank sheet pinned in its center; no words or characters. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "alt": "Adults and children gather beside a noticeboard with one blank sheet outside a modest public building.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. A noticeboard outside a modest public building with a single entirely blank sheet pinned in its center; no words or characters. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square. Warm paper texture, muted colors and clear fine ink contours. All public buildings have plain unmarked facades. Papers and noticeboards completely blank. No decorative marks that could be mistaken for writing.",
       "file": "lg-term-ordinance.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-92ac4121-d854-4934-a963-85eae18e8033.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed: clear subject, natural anatomy where shown, coherent hair, no raster text or national flags."
     },
     {
       "id": "lg-img-three-levels",
@@ -77,9 +98,12 @@
         "State",
         "National"
       ],
-      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. One wide deep landscape: foreground crosswalk, park bench and small modest town hall with open doors; middle distance a larger regional public building; far horizon a grand domed building hazy and very small. Distance clearly separates levels; no flags. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. One wide deep landscape: foreground crosswalk, park bench and small modest town hall with open doors; middle distance a larger regional public building; far horizon a grand domed building hazy and very small. Distance clearly separates levels; no flags. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: wide landscape 3:2. Warm paper texture, muted colors and clear fine ink contours. All public buildings have plain unmarked facades. Papers and noticeboards completely blank. No decorative marks that could be mistaken for writing.",
       "file": "lg-img-three-levels.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-9c3c2dc2-f7a7-498b-af42-242aaa252f77.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed: clear subject, natural anatomy where shown, coherent hair, no raster text or national flags."
     },
     {
       "id": "lg-img-what-local-does",
@@ -97,15 +121,22 @@
         "Parks",
         "Street lights"
       ],
-      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide grid exactly six small vignettes, three across two rows: worker painting a crosswalk; library doors opening with book shelves visible; rubbish collection truck; modest fire station with parked fire engine; park slide; street lamp. No signs or text. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
-      "file": "lg-img-what-local-does.png",
-      "status": "awaiting-generation"
+      "prompt": "Use case: precise-object-edit. Edit the supplied educational watercolor illustration. Preserve its exact 3-column by 2-row six-panel composition, people, anatomy, facial expressions, architecture, vehicles, muted colors and ink-on-ivory style. Make a single focused cleanup: REMOVE every tiny badge, insignia, logo, crest, and pictographic emblem from the firefighter's shirt in the bottom-left panel, the rubbish truck in the top-right panel, and any other clothing or vehicles. Replace those marks with plain fabric or plain painted vehicle surfaces that match surrounding colors. Retain natural buttons and seams. No readable text or letters anywhere. Preserve the crosswalk, open library, rubbish truck, fire station, park slide, and street lamp; no added objects, no altered poses.",
+      "file": "lg-img-what-local-does-v2.png",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-9e2cc3e6-3f5f-4b7f-9771-095ec40a14ad.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed final edit: removed insignia from vehicle and uniform while preserving six service scenes, natural anatomy, coherent hairstyles, and text-free illustration.",
+      "originalGenerationPrompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide grid exactly six small vignettes, three across two rows: worker painting a crosswalk; library doors opening with book shelves visible; rubbish collection truck; modest fire station with parked fire engine; park slide; street lamp. No signs or text. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: wide landscape 3:2. Warm paper texture, restrained muted colors and clear fine ink contours. Every person has a coherent hairstyle and exactly two naturally connected arms with clear shoulder-elbow-wrist continuity. Natural unstrained hands; keep poses simple and seated hands in laps if practical. In voting scenes show only an adult hand and plain box. Any paper contains no letters, names, signatures or numbers: only blank space or blank straight ruled lines when a clipboard is requested. No insignia or pictographic emblems. Preserve exact number and arrangement of panels where specified.",
+      "originalGeneratedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-fe564093-172e-4170-883b-ff4423b684d2.png",
+      "editTarget": "lg-img-what-local-does.png",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-9e2cc3e6-3f5f-4b7f-9771-095ec40a14ad.png"
     },
     {
       "id": "lg-img-open-meeting",
       "kind": "lesson",
       "scene": "Wide plain low-ceiling meeting room, elected members at long table, rows of folding chairs about half occupied by varied ages including teenager, parent with pushchair, person using wheelchair, work clothes. An aisle microphone accessible to everyone. Not formal boardroom; no flags.",
-      "alt": "Residents of varied ages sit in folding chairs facing a long table; a parent has a pushchair and an aisle microphone stands ready.",
+      "alt": "Residents in folding chairs, a parent with a pushchair and a wheelchair user face a long table as a woman speaks into the aisle microphone.",
       "title": "The room is open",
       "caption": "Public meetings often set aside time for residents to speak.",
       "afterType": "anchor-chart",
@@ -114,9 +145,12 @@
         "Residents’ seats",
         "Public comment"
       ],
-      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide plain low-ceiling meeting room, elected members at long table, rows of folding chairs about half occupied by varied ages including teenager, parent with pushchair, person using wheelchair, work clothes. An aisle microphone accessible to everyone. Not formal boardroom; no flags. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide plain low-ceiling meeting room, elected members at long table, rows of folding chairs about half occupied by varied ages including teenager, parent with pushchair, person using wheelchair, work clothes. An aisle microphone accessible to everyone. Not formal boardroom; no flags. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: wide landscape 3:2. Warm paper texture, restrained muted colors and clear fine ink contours. Every person has a coherent hairstyle and exactly two naturally connected arms with clear shoulder-elbow-wrist continuity. Natural unstrained hands; keep poses simple and seated hands in laps if practical. In voting scenes show only an adult hand and plain box. Any paper contains no letters, names, signatures or numbers: only blank space or blank straight ruled lines when a clipboard is requested. No insignia or pictographic emblems. Preserve exact number and arrangement of panels where specified.",
       "file": "lg-img-open-meeting.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-044ec795-8b1c-4b2f-b359-4b4b6ea3d919.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed natural anatomy, clear hairstyles and text-free paper; no national flags."
     },
     {
       "id": "lg-img-three-tools",
@@ -131,9 +165,12 @@
         "Petition",
         "Vote"
       ],
-      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide exactly three equal panels: ordinary resident speaking at aisle microphone; resident handing over clipboard covered only in blank ruled lines; hand posting folded blank paper into plain box. No writing, seals or logos. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide exactly three equal panels: ordinary resident speaking at aisle microphone; resident handing over clipboard covered only in blank ruled lines; hand posting folded blank paper into plain box. No writing, seals or logos. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: wide landscape 3:2. Warm paper texture, restrained muted colors and clear fine ink contours. Every person has a coherent hairstyle and exactly two naturally connected arms with clear shoulder-elbow-wrist continuity. Natural unstrained hands; keep poses simple and seated hands in laps if practical. In voting scenes show only an adult hand and plain box. Any paper contains no letters, names, signatures or numbers: only blank space or blank straight ruled lines when a clipboard is requested. No insignia or pictographic emblems. Preserve exact number and arrangement of panels where specified.",
       "file": "lg-img-three-tools.png",
-      "status": "awaiting-generation"
+      "status": "generated-reviewed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-b050ec75-1c4a-4bf5-b818-96c378b6273d.png",
+      "generator": "built-in image_gen",
+      "reviewNotes": "Visually reviewed natural anatomy, clear hairstyles and text-free paper; no national flags."
     },
     {
       "id": "lg-img-who-showed-up",
@@ -148,9 +185,192 @@
         "A busy night",
         "Same decision-making role"
       ],
-      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide paired image of identical plain meeting room and chair arrangement. Left nearly empty with four scattered residents. Right many seats occupied by about twenty varied residents. Council table same in both. Keep ordinary low ceiling no national symbols. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide paired image of identical plain meeting room and chair arrangement. Left nearly empty with four scattered residents. Right many seats occupied by about twenty varied residents. Council table same in both. Keep ordinary low ceiling no national symbols. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: wide landscape, two clearly separated equal panels. Match the camera position, council table, and seating layout across both views of this ordinary local meeting room. Left has only four scattered residents in mostly empty rows. Right has about twenty seated residents filling many of the same seats. Diverse adult residents in ordinary clothes, simple natural seated poses. Anatomically coherent shoulders, arms, hands, and hair silhouettes. No pointing needed. No text anywhere.",
       "file": "lg-img-who-showed-up.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-a5b84a16-09bb-4176-a322-e05cb754fe2e.png",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "lg-term-budget",
+      "kind": "term",
+      "term": "Budget",
+      "scene": "A simple tabletop still life of three plain envelopes, each with a different small pile of identical round unmarked coins laid in front. A blank planner sheet and pencil beside them. Make it clear money is being allocated into different groups, no scales or mathematics.",
+      "alt": "Three envelopes each have a separate pile of coins beside a blank planner and pencil.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A simple tabletop still life of three plain envelopes, each with a different small pile of identical round unmarked coins laid in front. A blank planner sheet and pencil beside them. Make it clear money is being allocated into different groups, no scales or mathematics. Style: Warm everyday watercolor and fine ink educational illustration on ivory paper, restrained muted colors. Clear uncluttered square glossary image. Diverse ordinary adults when people appear. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "lg-term-budget.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-2186e744-586f-4ea2-a95f-7219f2e04362.png",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "lg-term-petition",
+      "kind": "term",
+      "term": "Petition",
+      "scene": "Two adult neighbors stand side by side at a small public table. One writes on a clipboard with a pen; the other waits with hands relaxed. The page shows a column of empty horizontal signature lines, no letters. Natural connected arms and coherent simple hair.",
+      "alt": "A neighbor writes on a clipboard of signature lines while another neighbor waits beside the table.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Two adult neighbors stand side by side at a small public table. One writes on a clipboard with a pen; the other waits with hands relaxed. The page shows a column of empty horizontal signature lines, no letters. Natural connected arms and coherent simple hair. Style: Warm everyday watercolor and fine ink educational illustration on ivory paper, restrained muted colors. Clear uncluttered square glossary image. Diverse ordinary adults when people appear. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "lg-term-petition.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-b62d7a05-dbde-4c9f-843c-f56976cb19a2.png",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "lg-term-service",
+      "kind": "term",
+      "term": "Service",
+      "scene": "Exterior of a modest public library with wide open double doors, shelves of books clearly visible inside, accessible low ramp, and a bench. No people, signs, letters, flags, columns or governmental seals.",
+      "alt": "An open public library has visible bookshelves, a low entrance ramp and a bench.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exterior of a modest public library with wide open double doors, shelves of books clearly visible inside, accessible low ramp, and a bench. No people, signs, letters, flags, columns or governmental seals. Style: Warm everyday watercolor and fine ink educational illustration on ivory paper, restrained muted colors. Clear uncluttered square glossary image. Diverse ordinary adults when people appear. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "lg-term-service.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-83db0c60-dbbd-4eec-b531-df6772bbd2ef.png",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "lg-sort-crosswalk",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg1",
+      "scene": "A road-maintenance worker in a plain reflective vest uses a long-handled paint roller to paint one white stripe of a pedestrian crosswalk. A few cones guard the work area on a quiet neighborhood street. No vehicles moving close by, no text or insignia. Anatomically simple side view.",
+      "alt": "A worker paints a white crosswalk stripe inside a line of safety cones.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A road-maintenance worker in a plain reflective vest uses a long-handled paint roller to paint one white stripe of a pedestrian crosswalk. A few cones guard the work area on a quiet neighborhood street. No vehicles moving close by, no text or insignia. Anatomically simple side view. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-crosswalk.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-c5da5057-1cab-4cb1-bab4-2f2346fa9dbf.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-rubbish",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg3",
+      "scene": "A plain green rubbish collection truck parked along a residential street beside two wheeled bins. One worker in a simple reflective vest stands beside a bin with hands on its handle. No logos, emblems or text.",
+      "alt": "A rubbish truck and worker stand beside wheeled bins on a residential street.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain green rubbish collection truck parked along a residential street beside two wheeled bins. One worker in a simple reflective vest stands beside a bin with hands on its handle. No logos, emblems or text. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-rubbish.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-a730196a-06b0-4011-9ffd-8bfc8ade50e7.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-driving",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg4",
+      "scene": "A plain small car in a quiet driving-practice area. Through its side windows an older teenager sits properly in the driver seat wearing a visible seat belt, hands naturally on the steering wheel; an adult instructor sits in the front passenger seat with a seat belt. No written learner sign, paperwork or road rules. No additional arms.",
+      "alt": "A learner driver and adult instructor wear seat belts in a small car.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain small car in a quiet driving-practice area. Through its side windows an older teenager sits properly in the driver seat wearing a visible seat belt, hands naturally on the steering wheel; an adult instructor sits in the front passenger seat with a seat belt. No written learner sign, paperwork or road rules. No additional arms. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-driving.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-2e99f786-3835-496e-86b7-6b9af6437a01.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-schoolyear",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg5",
+      "scene": "A classroom wall calendar with a neat blank grid beside a school backpack, an open notebook and pencil on a desk. A window and classroom chair in background establish school setting. No circled dates, checkmarks, readable text or numerals.",
+      "alt": "A blank classroom calendar hangs above a desk with a notebook and backpack.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A classroom wall calendar with a neat blank grid beside a school backpack, an open notebook and pencil on a desk. A window and classroom chair in background establish school setting. No circled dates, checkmarks, readable text or numerals. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-schoolyear.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-251abe4f-e01d-4ab5-a144-479822b5483c.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-highway",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg6",
+      "scene": "A divided intercity highway curving through countryside toward distant buildings, with a few ordinary cars traveling in correct lanes and a plain roadside speed sign containing no words or numbers. Broad calm view, road lanes clearly connected. No government buildings or jurisdiction clues.",
+      "alt": "Cars travel on a divided highway through the countryside past a roadside sign.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A divided intercity highway curving through countryside toward distant buildings, with a few ordinary cars traveling in correct lanes and a plain roadside speed sign containing no words or numbers. Broad calm view, road lanes clearly connected. No government buildings or jurisdiction clues. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-highway.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-80b51b1b-0e9c-4d65-8083-39f1f0e6a1a8.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-armed-forces",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg7",
+      "scene": "A respectful group of three adult service members in plain muted olive uniforms standing together outside a simple barracks-style building. No weapons, combat, flags, rank insignia, badges, emblems, saluting or text. Relaxed standing postures and neutral expressions. Do not imply a specific country.",
+      "alt": "Three service members in plain uniforms stand outside a simple building.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A respectful group of three adult service members in plain muted olive uniforms standing together outside a simple barracks-style building. No weapons, combat, flags, rank insignia, badges, emblems, saluting or text. Relaxed standing postures and neutral expressions. Do not imply a specific country. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-armed-forces.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-9278f78b-f2e4-4405-841a-0582c18a521b.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-money",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg8",
+      "scene": "A close-up tabletop still life of several unmarked banknotes and round coins, arranged clearly with visible paper edges and metallic coin surfaces. Banknotes have subtle simple decorative borders but no faces, emblems, text or numerals. No budget envelopes or calculator.",
+      "alt": "Plain banknotes and round coins lie on a tabletop.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A close-up tabletop still life of several unmarked banknotes and round coins, arranged clearly with visible paper edges and metallic coin surfaces. Banknotes have subtle simple decorative borders but no faces, emblems, text or numerals. No budget envelopes or calculator. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-money.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-638dd697-65c3-453c-88de-9d685db68b8b.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-sort-post",
+      "kind": "sort",
+      "resourceId": "lg-sort",
+      "itemId": "lg9",
+      "scene": "A plain white postal delivery van parked beside a curbside mailbox. An adult postal worker in simple blue everyday uniform holds two closed unmarked envelopes beside the mailbox, relaxed natural hands. No brand, postal seal, flags, badges or text.",
+      "alt": "A postal worker holds envelopes beside a mailbox and a plain delivery van.",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain white postal delivery van parked beside a curbside mailbox. An adult postal worker in simple blue everyday uniform holds two closed unmarked envelopes beside the mailbox, relaxed natural hands. No brand, postal seal, flags, badges or text. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "file": "lg-sort-post.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-d6ae0f1c-ca92-4380-b0e3-d19ffac4a98f.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-anchor-national",
+      "kind": "anchor",
+      "resourceId": "lg-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "NATIONAL",
+      "maxEdge": 180,
+      "alt": "A large domed civic building stands far beyond a broad lawn and rows of trees.",
+      "scene": "A generic large civic building with a broad central dome and balanced wings seen from far away across a broad quiet lawn. Rows of simple trees create clear depth. The building is small but unmistakable on the horizon, fully visible. No real landmark, country, jurisdiction, flag, seal, emblem or lettering. No people or cars. Readable simple silhouette.",
+      "prompt": "Use case: illustration-story. Asset type: small classroom reference-chart illustration. A generic large civic building with a broad central dome and balanced wings seen from far away across a broad quiet lawn. Rows of simple trees create clear depth. The building is small but unmistakable on the horizon, fully visible. No real landmark, country, jurisdiction, flag, seal, emblem or lettering. No people or cars. Readable simple silhouette. Style: warm watercolor and fine ink educational illustration on ivory paper, muted natural greens and soft stone colors, clear simple shapes and generous margins. Square composition designed to remain readable at 180 pixels wide. Soft daylight. No words, letters, numbers, labels, logos, watermark, decorative symbols or visual category badges. The native app supplies the heading.",
+      "file": "lg-anchor-national.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c5-c1d3-70d0-ac97-bb86baabf85f\\exec-73954bd6-81b7-4131-bde0-9d7ba5b0df81.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "lg-anchor-state",
+      "kind": "anchor",
+      "resourceId": "lg-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "STATE",
+      "maxEdge": 180,
+      "alt": "A mid-sized civic building with a small central dome stands across a short lawn and path.",
+      "scene": "A generic mid-sized capitol-like civic building seen at middle distance across a short lawn and simple path, with a restrained low central dome, columns at the entrance and two balanced wings. Building fills the middle half of the square so its entrance and whole roof are clearly readable. No real landmark, country, jurisdiction, flag, seal, emblem or lettering. No people or cars. Readable simple silhouette.",
+      "prompt": "Use case: illustration-story. Asset type: small classroom reference-chart illustration. A generic mid-sized capitol-like civic building seen at middle distance across a short lawn and simple path, with a restrained low central dome, columns at the entrance and two balanced wings. Building fills the middle half of the square so its entrance and whole roof are clearly readable. No real landmark, country, jurisdiction, flag, seal, emblem or lettering. No people or cars. Readable simple silhouette. Style: warm watercolor and fine ink educational illustration on ivory paper, muted natural greens and soft stone colors, clear simple shapes and generous margins. Square composition designed to remain readable at 180 pixels wide. Soft daylight. No words, letters, numbers, labels, logos, watermark, decorative symbols or visual category badges. The native app supplies the heading.",
+      "file": "lg-anchor-state.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c5-c1d3-70d0-ac97-bb86baabf85f\\exec-f3d6be72-9c0b-4004-80ea-d3063cbd6af1.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12"
     }
-  ]
+  ],
+  "webpQuality": 80
 }

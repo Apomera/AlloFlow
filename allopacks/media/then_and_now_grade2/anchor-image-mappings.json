@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Use complete reviewed artwork only where it directly supports the reference-chart section.",
+  "mappings": [
+    {
+      "resourceId": "tw-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "STAYED THE SAME",
+      "assetId": "tw-term-same",
+      "maxEdge": 180,
+      "reason": "The reviewed comparison shows the same game across different periods, directly supporting the continuing activity of children playing."
+    },
+    {
+      "resourceId": "tw-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "HOW WE KNOW",
+      "assetId": "tw-img-clue-box",
+      "maxEdge": 180,
+      "reason": "The photograph and old tool support using surviving objects as evidence; the adjacent chair suggests the person whose memories can be heard."
+    }
+  ]
+}

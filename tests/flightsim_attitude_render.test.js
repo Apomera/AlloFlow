@@ -1,5 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+let FS;
+beforeAll(() => {
+  resetStemLab();
+  window.__RR_TEST_EXPORTS__ = window.__RR_TEST_EXPORTS__ || {};
+  loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  FS = window.__RR_TEST_EXPORTS__.flightSim;
+});
 
 /**
  * Guards a bug that hid in plain sight for a long time: the 3D aircraft never
@@ -29,7 +38,7 @@ describe('flightsim 3D attitude', () => {
         .not.toMatch(/var pitchRad = \(state\.pitch \|\| 0\)/);
       expect(source, `${path}: attitude reads state.bank with no fallback`)
         .not.toMatch(/var bankRad = \(state\.bank \|\| 0\)/);
-      expect(source).toContain('var pitchRad = (state.pitch != null ? state.pitch : (ctrl.pitch || 0))');
+      expect(source).toContain('var pitchRad = (state.pitch != null ? getAircraftPitchDeg({ pitch: state.pitch }, currentAC, state) : (ctrl.pitch || 0))');
       expect(source).toContain('var bankRad = (state.bank != null ? state.bank : (ctrl.bank || 0))');
     });
   });
@@ -86,5 +95,38 @@ describe('flightsim 3D attitude', () => {
         .toContain('acMesh.userData.gimbal.rotation.x = Math.max(-gLimit, Math.min(gLimit, pitchRad));');
       expect(source).toContain('acMesh.userData.gimbal.rotation.z = Math.max(-gLimit, Math.min(gLimit, -bankRad));');
     });
+  });
+});
+
+
+describe('rotorcraft contact attitude', () => {
+  it.each(['rescue_heli', 'drone'])('keeps %s level while supported on the ground', (id) => {
+    const aircraft = FS.AIRCRAFT.find((candidate) => candidate.id === id);
+    for (const pitch of [-20, 20]) {
+      const controls = { pitch };
+      expect(FS.getAircraftPitchDeg(controls, aircraft, { onGround: true })).toBe(0);
+      expect(controls.pitch).toBe(pitch);
+    }
+  });
+
+  it.each(['rescue_heli', 'drone'])('restores %s cyclic tilt immediately after liftoff', (id) => {
+    const aircraft = FS.AIRCRAFT.find((candidate) => candidate.id === id);
+    expect(FS.getAircraftPitchDeg({ pitch: 12 }, aircraft, { onGround: false })).toBe(-12);
+    expect(FS.getAircraftPitchDeg({ pitch: -12 }, aircraft, { onGround: false })).toBe(12);
+  });
+
+  it('preserves fixed-wing ground rotation', () => {
+    const aircraft = FS.AIRCRAFT.find((candidate) => candidate.id === 'cessna172');
+    expect(FS.getAircraftPitchDeg({ pitch: 10 }, aircraft, { onGround: true })).toBe(10);
+  });
+
+  it('reports the supported rotorcraft pose consistently in telemetry', () => {
+    const aircraft = FS.AIRCRAFT.find((candidate) => candidate.id === 'drone');
+    const state = { speed: 0, altitude: 100, fieldElev: 100, vsi: 0, heading: 0, lat: 43.6, lon: -70.3, onGround: true };
+    const controls = { pitch: 18, bank: 0, throttle: 0 };
+    const ground = FS.computeFlightTelemetry(state, controls, {}, 0, 0, null, null, aircraft);
+    const airborne = FS.computeFlightTelemetry({ ...state, altitude: 101, onGround: false }, controls, {}, 0, 0, null, null, aircraft);
+    expect(ground.pitchDeg).toBe(0);
+    expect(airborne.pitchDeg).toBe(-18);
   });
 });

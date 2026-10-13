@@ -19,13 +19,38 @@ async function snapshot(page,withSkin=true){return page.evaluate(async withSkin=
  if(!p||!n||!uv||!index)throw Error('Native solid frill buffers missing.');
  let invalid=0,outside=0,minNormal=Infinity,maxNormal=0;for(const attribute of [p,n,uv])for(const value of attribute.array)if(!Number.isFinite(value))invalid++;
  for(let i=0;i<p.count;i++){const v=new T.Vector3().fromBufferAttribute(p,i).applyMatrix4(frill.matrixWorld).project(camera);if(!v.toArray().every(Number.isFinite))invalid++;if(Math.max(Math.abs(v.x),Math.abs(v.y),Math.abs(v.z))>1.001)outside++;const len=new T.Vector3().fromBufferAttribute(n,i).length();minNormal=Math.min(minNormal,len);maxNormal=Math.max(maxNormal,len);}
- const axis=new T.Vector3(1,-.6,0).normalize(),depth=(ring,side)=>new T.Vector3().fromBufferAttribute(p,1+ring*64+side).sub(new T.Vector3().fromBufferAttribute(p,578+ring*64+side)).dot(axis);
- const sheet=depth(2,16),collar=depth(5,16),root=depth(5,48),rim=[];for(let side=0;side<64;side++)rim.push(new T.Vector3().fromBufferAttribute(p,1+8*64+side).toArray());
- // Recover the established mid-surface plane from opposite face centers. The
- // outline check is independent of the collar's interior depth callback.
- const center=new T.Vector3().fromBufferAttribute(p,0).add(new T.Vector3().fromBufferAttribute(p,577)).multiplyScalar(.5);
- const height=(rim[16][1]-rim[48][1])/1.455,width=(rim[0][2]-center.z)/1.025;center.x-=height*.024;const bow=rim[0][0]-center.x;
- let outlineError=0;for(let side=0;side<64;side++){const angle=side/64*Math.PI*2,edge=1+.025*Math.cos(angle*14),y=Math.max(-height*.48,Math.sin(angle)*height*edge),expected=new T.Vector3(center.x+y*.6+bow,center.y+y,center.z+Math.cos(angle)*width*edge);outlineError=Math.max(outlineError,expected.distanceTo(new T.Vector3().fromArray(rim[side]))/height);}
+ const metadata=g.userData.dinoDisplayShell,sides=metadata.angularSamples,rings=withSkin?9:7,backOffset=1+rings*sides;
+ if(!Number.isInteger(sides)||sides<4)throw Error('Native frill angular sampling is missing.');
+ const axis=new T.Vector3(1,-.6,0).normalize(),depth=(ring,side)=>new T.Vector3().fromBufferAttribute(p,1+ring*sides+side).sub(new T.Vector3().fromBufferAttribute(p,backOffset+1+ring*sides+side)).dot(axis);
+ const sheet=depth(2,sides/4),collar=depth(5,sides/4),root=depth(5,3*sides/4),rim=[];for(let side=0;side<sides;side++)rim.push(new T.Vector3().fromBufferAttribute(p,1+(rings-1)*sides+side).toArray());
+ // Life and fossil shells have different radial extents. Measure the life
+ // outline analytically, then verify every fossil vertex against its two
+ // corresponding native skin faces captured before the display-mode change.
+ const center=new T.Vector3().fromBufferAttribute(p,0).add(new T.Vector3().fromBufferAttribute(p,backOffset)).multiplyScalar(.5);
+ let height,width,bow,outlineError=null,nesting=null;
+ if(withSkin){
+  height=(rim[sides/4][1]-rim[3*sides/4][1])/1.455;width=(rim[0][2]-center.z)/1.025;center.x-=height*.024;bow=rim[0][0]-center.x;
+  outlineError=0;for(let side=0;side<sides;side++){const angle=side/sides*Math.PI*2,edge=1+.025*Math.cos(angle*14),y=Math.max(-height*.48,Math.sin(angle)*height*edge),expected=new T.Vector3(center.x+y*.6+bow,center.y+y,center.z+Math.cos(angle)*width*edge);outlineError=Math.max(outlineError,expected.distanceTo(new T.Vector3().fromArray(rim[side]))/height);}
+  w.__frillLifeEnvelope={positions:Array.from(p.array),uv:Array.from(uv.array),metadata:{...metadata},height,width,bow,center:center.toArray(),mesh:frill.uuid};
+ }else{
+  const envelope=w.__frillLifeEnvelope;if(!envelope||envelope.metadata.angularSamples!==sides||envelope.positions.length!==(2+17*sides)*3)throw Error('Matching native life envelope was not captured.');
+  height=envelope.height;width=envelope.width;bow=envelope.bow;center.fromArray(envelope.center);
+  const lifeBack=1+9*sides;let maxError=0,uvError=0,checked=0;
+  function compare(boneIndex,sourceIndex,face,weight){
+   const expected=new T.Vector3().fromArray(envelope.positions,sourceIndex*3).lerp(new T.Vector3().fromArray(envelope.positions,(sourceIndex+lifeBack)*3),(1-face*weight)*.5);
+   maxError=Math.max(maxError,expected.distanceTo(new T.Vector3().fromBufferAttribute(p,boneIndex))/height);
+   uvError=Math.max(uvError,Math.abs(uv.getX(boneIndex)-envelope.uv[sourceIndex*2]),Math.abs(uv.getY(boneIndex)-envelope.uv[sourceIndex*2+1]));checked++;
+  }
+  for(const face of [1,-1]){
+   const offset=face===1?0:backOffset;compare(offset,0,face,.58);
+   for(let ring=0;ring<rings;ring++){
+    if(face===-1&&ring===rings-1)continue;
+    const weight=ring===rings-1?0:ring===rings-2?.40:.58;
+    for(let side=0;side<sides;side++)compare(offset+1+ring*sides+side,1+ring*sides+side,face,weight);
+   }
+  }
+  nesting={maxError,uvError,checked,lifeMesh:envelope.mesh,lifeThickness:envelope.metadata.thickness,lifeMaxThickness:envelope.metadata.maxThickness};
+ }
  const ancestry=[];for(let owner=frill.parent;owner;owner=owner.parent)ancestry.push({uuid:owner.uuid,name:owner.name});
  const atlas:any={};
  if(withSkin){
@@ -48,16 +73,21 @@ async function snapshot(page,withSkin=true){return page.evaluate(async withSkin=
  }
  return {model:model.uuid,rig:rig?.uuid??null,rigMatrix:rig?.matrixWorld.elements.slice()??null,pivot:rig?.userData.pivot?.slice()??null,rootCount:rig?.userData.rootCount??null,head:head?.uuid,body:body?.uuid,
   frill:{mesh:frill.uuid,geometry:g.uuid,material:frill.material.uuid,parent:frill.parent.uuid,ancestry,metadata:{...g.userData.dinoDisplayShell},vertices:p.count,triangles:index.length/3,
-   invalid,outside,minNormal,maxNormal,sheet,collar,root,collarOverSheet:collar/sheet,rootOverCollar:root/collar,outlineError,rim,center:center.toArray(),height,width,bow,
+   invalid,outside,minNormal,maxNormal,sheet,collar,root,collarOverSheet:collar/sheet,rootOverCollar:root/collar,outlineError,nesting,rim,center:center.toArray(),height,width,bow,
    position:frill.position.toArray(),quaternion:frill.quaternion.toArray(),scale:frill.scale.toArray(),world:frill.matrixWorld.elements.slice(),relativeToHead:head?new T.Matrix4().copy(head.matrixWorld).invert().multiply(frill.matrixWorld).elements.slice():null,
    opacity:frill.material.opacity,transparent:frill.material.transparent,depthWrite:frill.material.depthWrite},atlas,memory:{...renderer.info.memory},errors:w.__events.errors,lost:w.__glLive().lost,
   shaderFailures:renderer.info.programs.filter(program=>program.diagnostics&&program.diagnostics.runnable===false).length};
  },withSkin);}
 function check(s,withSkin=true){
  expect(s.errors).toEqual([]);expect(s.lost).toBe(false);expect(s.shaderFailures).toBe(0);if(withSkin){expect(s.rig).toBeTruthy();expect(s.pivot).toHaveLength(3);}
- const f=s.frill;expect(f.metadata).toMatchObject({feature:'frill',closed:true,roundedRim:true,thicknessIsInterpretive:true,depthProfile:'solid-caudal-collar'});
- expect(f.vertices).toBe(1090);expect(f.triangles).toBe(2176);expect(f.invalid).toBe(0);expect(f.outside).toBe(0);expect(f.minNormal).toBeCloseTo(1,5);expect(f.maxNormal).toBeCloseTo(1,5);
- expect(f.collarOverSheet).toBeGreaterThan(1.8);expect(f.collarOverSheet).toBeLessThan(2.4);expect(f.rootOverCollar).toBeLessThan(.55);expect(f.sheet).toBeGreaterThan(0);expect(f.outlineError).toBeLessThan(1e-5);
+ const f=s.frill;expect(f.metadata).toMatchObject({feature:'frill',closed:true,roundedRim:true,thicknessIsInterpretive:true,angularSamples:128,depthProfile:withSkin?'solid-caudal-collar':'nested-bony-frill'});
+ expect(f.vertices).toBe(withSkin?2178:1666);expect(f.triangles).toBe(withSkin?4352:3328);expect(f.invalid).toBe(0);expect(f.outside).toBe(0);expect(f.minNormal).toBeCloseTo(1,5);expect(f.maxNormal).toBeCloseTo(1,5);expect(f.sheet).toBeGreaterThan(0);
+ if(withSkin){
+  expect(f.collarOverSheet).toBeGreaterThan(1.8);expect(f.collarOverSheet).toBeLessThan(2.4);expect(f.rootOverCollar).toBeLessThan(.55);expect(f.outlineError).toBeLessThan(1e-5);expect(f.nesting).toBeNull();
+ }else{
+  expect(f.metadata.radialExtent).toBe(.96);expect(f.nesting).not.toBeNull();expect(f.nesting.lifeMesh).not.toBe(f.mesh);expect(f.nesting.checked).toBe(f.vertices);expect(f.nesting.maxError).toBeLessThan(1e-5);expect(f.nesting.uvError).toBe(0);
+  expect(f.metadata.thickness).toBeCloseTo(f.nesting.lifeThickness*.58,10);expect(f.metadata.maxThickness).toBeCloseTo(f.nesting.lifeMaxThickness*.58,10);expect(f.outlineError).toBeNull();
+ }
  if(withSkin){expect(f.parent).toBe(s.rig);expect(f.ancestry.some(owner=>owner.uuid===s.rig&&owner.name==='dinolab-connected-cranial-motion')).toBe(true);}else{expect(f.parent).toBe(s.model);expect(f.ancestry[0]).toEqual({uuid:s.model,name:'dinolab-specimen'});}
  if(withSkin){
   expect(s.atlas.materials).toHaveLength(3);for(const mat of s.atlas.materials){expect(mat.mapping).toBe(true);expect(mat.key).toBe('dinolab-specimen-skin-mottling-v1');expect(mat.maps).toEqual(s.atlas.materials[0].maps);}

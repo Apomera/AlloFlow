@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Use complete reviewed artwork only where it directly supports the reference-chart section.",
+  "mappings": [
+    {
+      "resourceId": "lg-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "LOCAL",
+      "assetId": "lg-term-government",
+      "maxEdge": 180,
+      "reason": "The modest public building with open doors, steps and a ramp directly supports a nearby local government building residents can enter."
+    },
+    {
+      "resourceId": "lg-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "HOW THINGS CHANGE",
+      "assetId": "lg-term-citizen",
+      "maxEdge": 180,
+      "reason": "A resident speaking into an aisle microphone illustrates participating in an open public meeting."
+    },
+    {
+      "resourceId": "lg-anchor",
+      "sectionIndex": 4,
+      "sectionLabel": "THE BUDGET IS THE DECISION",
+      "assetId": "lg-term-budget",
+      "maxEdge": 180,
+      "reason": "Separate groups of coins beside envelopes make allocating a limited budget concrete without inventing service amounts."
+    }
+  ]
+}

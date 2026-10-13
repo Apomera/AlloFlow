@@ -1,0 +1,273 @@
+{
+  "slug": "crew_repair_grade6_8",
+  "sourceShotList": "allopacks/crew_repair_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "crepair-term-steward",
+      "term": "Steward",
+      "kind": "term",
+      "scene": "A student plugging a laptop back into a cart slot",
+      "constraints": "the cart is shared, not personal",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student plugging a laptop back into a cart slot. the cart is shared, not personal.",
+      "file": "crepair-term-steward.png",
+      "alt": "A student returns a laptop to a shared charging cart beside rows of plugged-in laptops.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-51846f79-09cb-46b9-a4aa-47cf4e66221d.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "crepair-term-harm",
+      "term": "Harm",
+      "kind": "term",
+      "scene": "A small speaker with a cracked case sitting on a desk",
+      "constraints": "no text on the speaker",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A small speaker with a cracked case sitting on a desk. no text on the speaker.",
+      "file": "crepair-term-harm.png",
+      "alt": "A small speaker with a cracked case rests on a desk while students look at it.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-63399a10-b49e-43a7-b5e7-2453f40ba069.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "crepair-term-repair",
+      "term": "Repair",
+      "kind": "term",
+      "scene": "Two hands wrapping tape around the cracked speaker case",
+      "constraints": "tape visible",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two hands wrapping tape around the cracked speaker case. tape visible.",
+      "file": "crepair-term-repair.png",
+      "alt": "Two students work together to tape a crack in a speaker case.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-ec8789eb-1c76-4483-880a-2c61caea06a1.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "crepair-term-restorative",
+      "term": "Restorative",
+      "kind": "term",
+      "scene": "A small circle of four chairs with people leaning in, calm faces",
+      "constraints": "no gavel, no desk between",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A small circle of four chairs with people leaning in, calm faces. no gavel, no desk between.",
+      "file": "crepair-term-restorative.png",
+      "alt": "Four students sit in a small circle and talk calmly with no desk between them.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-0e142dfe-6057-4276-ae72-4f1ab8ff330d.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "crepair-term-apology",
+      "term": "Apology",
+      "kind": "term",
+      "scene": "A student with an open hand on their chest facing another, plain expression",
+      "constraints": "first move only",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student with an open hand on their chest facing another, plain expression. first move only.",
+      "file": "crepair-term-apology.png",
+      "alt": "A student rests an open hand on her chest as she speaks to a classmate.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-3dd7523e-e5e4-4543-80a7-bb535e16f8df.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "crepair-term-routine",
+      "term": "Routine",
+      "kind": "term",
+      "scene": "A wall clock showing two minutes shaded and a checklist with three checkmarks",
+      "constraints": "no numbers on clock",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A wall clock showing two minutes shaded and a checklist with three checkmarks. no numbers on clock.",
+      "file": "crepair-term-routine.png",
+      "alt": "Students gather at a desk below a three-item checklist and a clock with a small shaded segment.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-ecfae217-f05e-4d08-8c6e-cefe4207ffac.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "crepair-img-punish-vs-repair",
+      "kind": "lesson",
+      "title": "Two paths.",
+      "scene": "A split panel: left, a student walking away from a cracked speaker with a padlock icon over a calendar; right, the same student taping the speaker while a Crew member watches.",
+      "caption": "one path leaves a cracked speaker; the other gives the Crew its speaker back.",
+      "plannedLabels": [
+        {
+          "text": "Punishment",
+          "position": "top-left",
+          "anchorX": 34,
+          "anchorY": 29
+        },
+        {
+          "text": "Repair",
+          "position": "top-right",
+          "anchorX": 75,
+          "anchorY": 64
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A split panel: left, a student walking away from a cracked speaker with a padlock icon over a calendar; right, the same student taping the speaker while a Crew member watches. All labels and captions will be editable native fields outside the artwork.",
+      "file": "crepair-img-punish-vs-repair.png",
+      "alt": "In the left panel, a student leaves a cracked speaker under a locked-calendar symbol. In the right, the student tapes the speaker while a classmate watches.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-56535912-44d1-4124-9aff-e2b1f8cc31ad.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "simplified"
+    },
+    {
+      "id": "crepair-img-fourquestions",
+      "kind": "lesson",
+      "title": "The four questions.",
+      "scene": "A Crew leader seated with two students, four plain speech bubbles above with icons: a question mark, a group of dots, a heart, a wrench.",
+      "caption": "repair puts responsibility to work.",
+      "plannedLabels": [
+        {
+          "text": "What happened",
+          "position": "top-left",
+          "anchorX": 23,
+          "anchorY": 14
+        },
+        {
+          "text": "Who was affected",
+          "position": "top-center",
+          "anchorX": 41,
+          "anchorY": 13
+        },
+        {
+          "text": "What do they need",
+          "position": "top-right",
+          "anchorX": 63,
+          "anchorY": 12
+        },
+        {
+          "text": "What will you do",
+          "position": "bottom-right",
+          "anchorX": 80,
+          "anchorY": 19
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A Crew leader seated with two students, four plain speech bubbles above with icons: a question mark, a group of dots, a heart, a wrench. All labels and captions will be editable native fields outside the artwork.",
+      "file": "crepair-img-fourquestions.png",
+      "alt": "An adult and two students sit together below four speech bubbles containing a question mark, dots, a heart, and a wrench.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-86f84e81-65c3-479f-9c25-e2fe45fea875.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "anchor-chart"
+    },
+    {
+      "id": "crepair-img-cart",
+      "kind": "lesson",
+      "title": "The quiet version.",
+      "scene": "A laptop cart with every slot filled and a student closing the door; the room otherwise empty and tidy.",
+      "caption": "stewardship is the habit that means nothing needs repairing.",
+      "plannedLabels": [
+        {
+          "text": "Every slot filled",
+          "position": "top-right",
+          "anchorX": 65,
+          "anchorY": 58
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A laptop cart with every slot filled and a student closing the door; the room otherwise empty and tidy. All labels and captions will be editable native fields outside the artwork.",
+      "file": "crepair-img-cart.png",
+      "alt": "A student closes a shared charging cart filled with rows of laptops in a tidy classroom.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-52ba8cbf-9531-4fc0-8263-e3dfbe4d0ff8.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "faq"
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "crepair-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "crepair-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "crepair-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "crepair-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "id": "crepair-term-resource",
+      "kind": "term",
+      "term": "Resource",
+      "scene": "A neatly organized shared classroom shelf holds plain laptops, books, pencils and one small portable speaker. Two diverse middle-school students respectfully take a book and return pencils, showing the objects are shared. Natural simple anatomy. No labels, text or logos on objects. Square composition.",
+      "file": "crepair-term-resource.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm, simple, flat illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students ages 12 to 14 with respectful expressions. Scene: A neatly organized shared classroom shelf holds plain laptops, books, pencils and one small portable speaker. Two diverse middle-school students respectfully take a book and return pencils, showing the objects are shared. Natural simple anatomy. No labels, text or logos on objects. Square composition. Constraints: anatomically coherent people with two arms per person emerging from the correct shoulders, natural elbows, simple well-formed hands, coherent hair attached to each head. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "Students use and return books and pencils at a classroom shelf of shared supplies and equipment.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e36-d0d8-7082-b2e5-13428b440861\\exec-9a57f86e-714d-461d-a1f8-8cd06ed78f8c.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "crepair-term-responsibility",
+      "kind": "term",
+      "term": "Responsibility",
+      "scene": "A middle-school student kneels at a classroom table and uses a cloth to clean water they accidentally spilled from a tipped cup, while another student calmly observes. The student takes action to put right their own mistake. Focus on connected natural arms and one cleaning hand, second hand supporting on knee. No ashamed or mocking expressions, no accusatory pointing. Square composition.",
+      "file": "crepair-term-responsibility.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm, simple, flat illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students ages 12 to 14 with respectful expressions. Scene: A middle-school student kneels at a classroom table and uses a cloth to clean water they accidentally spilled from a tipped cup, while another student calmly observes. The student takes action to put right their own mistake. Focus on connected natural arms and one cleaning hand, second hand supporting on knee. No ashamed or mocking expressions, no accusatory pointing. Square composition. Constraints: anatomically coherent people with two arms per person emerging from the correct shoulders, natural elbows, simple well-formed hands, coherent hair attached to each head. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "A student cleans a water spill with a cloth while a classmate watches calmly.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e36-d0d8-7082-b2e5-13428b440861\\exec-8c25744a-9ce5-4de2-adaa-678ec81c0887.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "crepair-term-affected",
+      "kind": "term",
+      "term": "Affected",
+      "scene": "Three middle-school students sit ready with musical rhythm cards that contain only simple abstract shapes, but their shared small portable speaker on the desk is visibly cracked. They have paused and look disappointed because their group activity cannot start. No student is blamed or singled out. Natural relaxed resting hands, no gestures or raised arms. Square composition.",
+      "file": "crepair-term-affected.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm, simple, flat illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students ages 12 to 14 with respectful expressions. Scene: Three middle-school students sit ready with musical rhythm cards that contain only simple abstract shapes, but their shared small portable speaker on the desk is visibly cracked. They have paused and look disappointed because their group activity cannot start. No student is blamed or singled out. Natural relaxed resting hands, no gestures or raised arms. Square composition. Constraints: anatomically coherent people with two arms per person emerging from the correct shoulders, natural elbows, simple well-formed hands, coherent hair attached to each head. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "Three students pause their group activity beside a cracked speaker, showing how shared damage affects them.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e36-d0d8-7082-b2e5-13428b440861\\exec-2428988e-3dba-4fd0-8d6c-5cd3a6bb03c3.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    },
+    {
+      "id": "crepair-term-standing",
+      "kind": "term",
+      "term": "Standing",
+      "scene": "A diverse group of three middle-school students warmly welcomes a classmate back to their classroom table after a shared speaker has been repaired. A neat strip of tape remains visibly across the speaker case. One student slides an empty chair toward the returning classmate using one naturally connected arm. Respectful expressions, no podium, ranking, prize, or standing-height metaphor. Square composition.",
+      "file": "crepair-term-standing.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a classroom social-emotional learning resource. Style: warm, simple educational illustration, muted earth palette, clean uncluttered shapes on warm ivory. Fictional diverse students in everyday classroom clothing with respectful expressions. Scene: A diverse group of three middle-school students warmly welcomes a classmate back to their classroom table after a shared speaker has been repaired. A neat strip of tape remains visibly across the speaker case. One student slides an empty chair toward the returning classmate using one naturally connected arm. Respectful expressions, no podium, ranking, prize, or standing-height metaphor. Square composition. Constraints: natural simple gestures, anatomically coherent people, natural elbows, well-formed hands, coherent hair. No text, letters, numbers, labels, logos, speech bubbles or watermarks.",
+      "alt": "Classmates welcome a student back to their table beside a repaired speaker.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-e440-7c03-a253-0856b2c2b062\\exec-eb69e007-8fdb-4733-9218-9a73785ff711.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-12"
+    }
+  ],
+  "style": "Warm, simple educational illustration in a muted earth palette",
+  "review": "All selected artwork visually inspected, including anatomy and hair; educator review pending"
+}

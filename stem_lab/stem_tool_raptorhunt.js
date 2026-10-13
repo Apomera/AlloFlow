@@ -1421,10 +1421,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }).filter(Boolean);
   }
 
+  // Feather artwork is shared with BirdLab; the simulator retains its own
+  // species geometry, GPU resources, markings and flight controller.
+  var RAPTOR_MODULE_BASE = (function() {
+    var script = document.currentScript;
+    if (!script || !script.src || script.src.indexOf('stem_tool_raptorhunt') === -1) {
+      script = document.querySelector('script[src*="stem_tool_raptorhunt.js"]');
+    }
+    try {
+      return new URL('./', script && script.src ? script.src : new URL('stem_lab/stem_tool_raptorhunt.js', document.baseURI)).href;
+    } catch (e) { return 'stem_lab/'; }
+  })();
+  var raptorFeatherArtPromise = null;
+  function hasRaptorFeatherArt() {
+    return !!(window.AvianFeatherArt && typeof window.AvianFeatherArt.createFlightFeatherCanvas === 'function' &&
+      typeof window.AvianFeatherArt.createVaneDetailCanvases === 'function');
+  }
+  function ensureRaptorFeatherArt() {
+    if (hasRaptorFeatherArt()) return Promise.resolve();
+    if (raptorFeatherArtPromise) return raptorFeatherArtPromise;
+    raptorFeatherArtPromise = new Promise(function(resolve, reject) {
+      var script = document.createElement('script'), finished = false;
+      var timer = window.setTimeout(function() { finish(new Error('Feather artwork took too long to load.')); }, 20000);
+      function finish(error) {
+        if (finished) return; finished = true;
+        window.clearTimeout(timer); script.onload = script.onerror = null;
+        if (error) { script.remove(); reject(error); } else resolve();
+      }
+      script.src = RAPTOR_MODULE_BASE + 'avian_feather_art.js';
+      script.async = true; script.setAttribute('data-raptor-feather-art', 'true');
+      script.onload = function() { finish(hasRaptorFeatherArt() ? null : new Error('Feather artwork is unavailable.')); };
+      script.onerror = function() { finish(new Error('Feather artwork could not load.')); };
+      document.head.appendChild(script);
+    }).catch(function(error) { raptorFeatherArtPromise = null; throw error; });
+    return raptorFeatherArtPromise;
+  }
+
   // ─── Three.js loader (shared bootstrap) ───
   function ensureThreeJS(onReady, onError) {
     // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
-    window.StemLab.ensureThree({ orbit: false }).then(function () { onReady(); }).catch(function () { console.error('[RaptorHunt] Three.js failed to load'); if (onError) onError(); });
+    var three = window.THREE ? Promise.resolve() : window.StemLab.ensureThree({ orbit: false });
+    Promise.all([three, ensureRaptorFeatherArt()]).then(function () { onReady(); }).catch(function () { console.error('[RaptorHunt] 3D assets failed to load'); if (onError) onError(); });
   }
 
   // ───────────────────────────────────────────────────────────
@@ -9337,7 +9374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
-      var threeLoadState = React.useState(window.THREE ? 'ready' : 'idle');
+      var threeLoadState = React.useState(window.THREE && hasRaptorFeatherArt() ? 'ready' : 'idle');
       var threeLoadStatus = threeLoadState[0];
       var setThreeLoadStatus = threeLoadState[1];
       var threeRetryState = React.useState(0);
@@ -9591,13 +9628,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (enter) enter.call(stage);
         }
       }
-      var threeReady = threeLoadStatus === 'ready' && !!window.THREE;
+      var threeReady = threeLoadStatus === 'ready' && !!window.THREE && hasRaptorFeatherArt();
 
       // Load Three.js as soon as the Hunt section opens. Readiness is ephemeral:
       // persisted tool data must never claim a missing global is ready.
       useEffect(function() {
         if (activeSection !== 'hunt') return;
-        if (window.THREE) {
+        if (window.THREE && hasRaptorFeatherArt()) {
           setThreeLoadStatus('ready');
           return;
         }
@@ -9605,7 +9642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         setThreeLoadStatus('loading');
         ensureThreeJS(
           function() {
-            if (!cancelled) setThreeLoadStatus(window.THREE ? 'ready' : 'error');
+            if (!cancelled) setThreeLoadStatus(window.THREE && hasRaptorFeatherArt() ? 'ready' : 'error');
           },
           function() {
             if (!cancelled) setThreeLoadStatus('error');
@@ -14508,60 +14545,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         wingPlumageTex.wrapS = wingPlumageTex.wrapT = THREE.RepeatWrapping;
         wingPlumageTex.repeat.set(3, 2);
         wingPlumageTex.needsUpdate = true;
-        // Long vanes need a single lengthwise feather, rather than repeating body contour tiles.
-        function paintRaptorFlightFeather(canvas) {
-          var ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
-          var vane=ctx.createLinearGradient(0,0,w,0);
-          vane.addColorStop(0,'#c9c9c9');vane.addColorStop(0.16,'#d9d9d9');vane.addColorStop(0.47,'#eaeaea');
-          vane.addColorStop(0.53,'#e4e4e4');vane.addColorStop(0.84,'#dddddd');vane.addColorStop(1,'#cdcdcd');
-          ctx.fillStyle=vane;ctx.fillRect(0,0,w,h);
-          var lengthShade=ctx.createLinearGradient(0,0,0,h);
-          lengthShade.addColorStop(0,'rgba(30,27,24,0.13)');lengthShade.addColorStop(0.32,'rgba(30,27,24,0)');
-          lengthShade.addColorStop(0.78,'rgba(30,27,24,0.015)');lengthShade.addColorStop(1,'rgba(30,27,24,0.15)');
-          ctx.fillStyle=lengthShade;ctx.fillRect(0,0,w,h);
-          // Broad, low-contrast barbs survive mip filtering without glittering at chase distance.
-          for(var row=-70;row<h+90;row+=7){
-            var variation=Math.sin(row*0.37)*2.2;
-            [-1,1].forEach(function(side){
-              ctx.lineWidth=1.35;ctx.strokeStyle='rgba(48,43,37,0.13)';ctx.beginPath();ctx.moveTo(w*0.5+side*2,row);
-              ctx.bezierCurveTo(w*(0.5+side*0.16),row-13,w*(0.5+side*0.34),row-31+variation,w*(0.5+side*0.52),row-55+variation);ctx.stroke();
-              ctx.lineWidth=0.9;ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.beginPath();ctx.moveTo(w*0.5+side*3,row+2);
-              ctx.bezierCurveTo(w*(0.5+side*0.16),row-11,w*(0.5+side*0.34),row-29+variation,w*(0.5+side*0.52),row-53+variation);ctx.stroke();
-            });
-          }
-          var shaft=ctx.createLinearGradient(w*0.482,0,w*0.518,0);
-          shaft.addColorStop(0,'rgba(45,39,32,0)');shaft.addColorStop(0.36,'rgba(45,39,32,0.22)');
-          shaft.addColorStop(0.54,'rgba(255,255,255,0.32)');shaft.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.fillStyle=shaft;ctx.beginPath();ctx.moveTo(w*0.482,0);ctx.lineTo(w*0.518,0);ctx.lineTo(w*0.503,h);ctx.lineTo(w*0.497,h);ctx.closePath();ctx.fill();
-        }
-        var flightFeatherCanvas=document.createElement('canvas');flightFeatherCanvas.width=256;flightFeatherCanvas.height=512;
-        paintRaptorFlightFeather(flightFeatherCanvas);
+        // Both labs use the same feather painting and relief generator. Raptor
+        // keeps full-feather UVs and applies its own species markings afterward.
+        var flightFeatherCanvas=window.AvianFeatherArt.createFlightFeatherCanvas({variants:1,contourFeather:true});
         var flightFeatherTex=new THREE.CanvasTexture(flightFeatherCanvas);
         flightFeatherTex.name='raptor-flight-vane';flightFeatherTex.encoding=THREE.sRGBEncoding;
         flightFeatherTex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-        // The neutral vane atlas also describes relief, independent of species
-        // pigment and tail bands. Linear data maps let the barbs catch the light
-        // without adding geometry or changing the feather's silhouette.
         function createRaptorVaneDetailMaps(canvas) {
-          var width=canvas.width,height=canvas.height,pixels=canvas.getContext('2d').getImageData(0,0,width,height).data;
-          var normalCanvas=document.createElement('canvas'),roughCanvas=document.createElement('canvas');
-          normalCanvas.width=roughCanvas.width=width;normalCanvas.height=roughCanvas.height=height;
-          var normalContext=normalCanvas.getContext('2d'),roughContext=roughCanvas.getContext('2d');
-          var normals=normalContext.createImageData(width,height),roughness=roughContext.createImageData(width,height);
-          function relief(x,y){return pixels[(Math.max(0,Math.min(height-1,y))*width+Math.max(0,Math.min(width-1,x)))*4]/255;}
-          for(var y=0;y<height;y++)for(var x=0;x<width;x++){
-            // A broad vane curve survives mip filtering; fine barbs emerge only
-            // when close enough to resolve them, avoiding shimmer during flight.
-            var offset=(y*width+x)*4,nx=(relief(x-1,y)-relief(x+1,y))*3+Math.sin((x/(width-1)-0.5)*Math.PI)*0.24,ny=(relief(x,y+1)-relief(x,y-1))*3;
-            var inverse=1/Math.sqrt(nx*nx+ny*ny+1),matte=Math.round(224+(1-relief(x,y))*28);
-            normals.data[offset]=Math.round((nx*inverse*0.5+0.5)*255);
-            // Canvas rows run down; the material's texture V axis runs up.
-            normals.data[offset+1]=Math.round((ny*inverse*0.5+0.5)*255);
-            normals.data[offset+2]=Math.round((inverse*0.5+0.5)*255);normals.data[offset+3]=255;
-            roughness.data[offset]=roughness.data[offset+1]=roughness.data[offset+2]=matte;roughness.data[offset+3]=255;
-          }
-          normalContext.putImageData(normals,0,0);roughContext.putImageData(roughness,0,0);
-          var normal=new THREE.CanvasTexture(normalCanvas),roughnessMap=new THREE.CanvasTexture(roughCanvas);
+          var detail=window.AvianFeatherArt.createVaneDetailCanvases(canvas);
+          var normal=new THREE.CanvasTexture(detail.normal),roughnessMap=new THREE.CanvasTexture(detail.roughness);
           normal.name='raptor-vane-relief';roughnessMap.name='raptor-vane-roughness';
           [normal,roughnessMap].forEach(function(texture){texture.encoding=THREE.LinearEncoding;texture.anisotropy=flightFeatherTex.anisotropy;});
           return {normal:normal,roughness:roughnessMap};

@@ -67,8 +67,8 @@ describe('the editor', () => {
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
     act(() => root.render(React.createElement(Editor, { item, supports, onUpdate: async () => null, disabled: false })));
     const click = node => act(() => { node.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    click([...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Review word supports')));
-    click(host.querySelector('button[aria-label^="Edit word help: "], button[aria-label^="Edit gloss for"]'));
+    click([...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Review word help')));
+    click(host.querySelector('button[aria-label^="Edit word help: "], button[aria-label^="Edit word help for"]'));
   }
   it('shows the sentence with the word marked, and asks for a short meaning', () => {
     mountEditing('spinning');

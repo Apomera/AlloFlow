@@ -59,7 +59,7 @@ describe('measured return save and progression', () => {
   it('hands the selected physical angle to entry exactly once without awarding points', () => {
     const state = app(completed(-5)), begin = state.prop('data-entry-begin', 'true');
     expect(begin.disabled).toBe(false); begin.onClick(); begin.onClick();
-    expect(state.data().missionPhase).toBe(9); expect(state.data().entryRun).toEqual({ version: 1, angle: -5, time: 0, recovery: 0, recorded: false });
+    expect(state.data().missionPhase).toBe(9); expect(state.data().entryRun).toEqual({ version: 2, angle: -5, time: 0, recovery: 0, recorded: false, plan: { version: 2, mode: 'guided', bank: 0 } });
     expect(state.data().missionLog).toHaveLength(1); expect(state.data().missionXP).toBe(0);
   });
   it('retains completion on the same preset and clears it for changed planner controls', () => {

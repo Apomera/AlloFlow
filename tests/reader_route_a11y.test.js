@@ -100,7 +100,7 @@ describe('Original and Both Explain routes', () => {
     const start = text.indexOf('details');
     original.readingSupports = contract.validateReadingSupports(original.sourceSnapshot, [{ id: 'details', start, end: start + 7, quote: 'details', text: 'More information.' }]);
     const other = { ...adapted('Read the guide for details.'), sourceSnapshot: original.sourceSnapshot };
-    const view = mount({ generatedContent: route === 'original' ? original : other, history: [original, other], isCompareMode: route === 'both', isTeacherMode: true, interactionMode: 'explain', onUpdateReadingSupports: vi.fn() });
+    const view = mount({ generatedContent: route === 'original' ? original : other, history: [original, other], isCompareMode: route === 'both', isTeacherMode: true, isZenMode: false, interactionMode: 'explain', onUpdateReadingSupports: vi.fn() });
     const scope = route === 'original' ? $('[data-original-source]') : $('[data-compare-version="source"]');
     expect(scope.querySelector('h2').getAttribute('role')).toBeNull();
     expect(scope.querySelectorAll('[role="button"] a, [role="button"] button, button a, button button')).toHaveLength(0);
@@ -109,8 +109,11 @@ describe('Original and Both Explain routes', () => {
     key(link, 'Enter');
     await click(link);
     expect(view.props.setSelectionMenu).not.toHaveBeenCalled();
+    expect(scope.querySelector('[data-reading-gloss] button')).toBeNull();
+    await click($('[data-reading-gloss-editor] button[aria-expanded]'));
     const edit = scope.querySelector('[data-reading-gloss] button');
     expect(edit).not.toBeNull();
+    expect(scope.querySelectorAll('[role="button"] button, button button')).toHaveLength(0);
     key(edit, ' ');
     await click(edit);
     expect(view.props.setSelectionMenu).not.toHaveBeenCalled();

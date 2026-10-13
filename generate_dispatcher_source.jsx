@@ -7998,7 +7998,7 @@ Return ONLY JSON:
                  content.extensions = [];
              }
          }
-         metaInfo = `${effectiveGrade} - ${isIndependentMode ? t('meta.study_guide') : (isParentMode ? t('meta.family_guide') : t('meta.udl_aligned'))}${usesLocalTextBackend ? ' - Local' : ''}`;
+         metaInfo = `${effectiveGrade} - ${isIndependentMode ? t('meta.study_guide') : (isParentMode ? t('meta.family_guide') : (t('lesson_plan.title') || 'Lesson Plan'))}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'adventure') {
         setGenerationStep(t('status_steps.designing_adventure'));
         let langInstruction = "Language: English.";

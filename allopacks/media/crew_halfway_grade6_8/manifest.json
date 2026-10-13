@@ -1,0 +1,593 @@
+{
+  "slug": "crew_halfway_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_halfway_grade6_8.allopack.json",
+  "sourcePackSha256": "9fc9ef4695c93192e581132437c0fdb53543b005c94d71a28dfe0de97cfb3041",
+  "illustratedPack": "allopacks/illustrated/crew_halfway_grade6_8.allopack.json",
+  "illustratedPackSha256": "5005088975406d705eb9c45d5b3f1704256af5603bcc878a95b84893490e8552",
+  "plan": "allopacks/media/crew_halfway_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "ch-term-review",
+      "kind": "term",
+      "term": "Review",
+      "title": "Review",
+      "prompt": "Use case: illustration-story. Asset type: Square glossary illustration for middle school SEL: one young teenage boy with dark skin and short coherent curly hair seated at a table, open notebook on his left and small tally card on his right, looking between the two. Notebook pages blank except simple ruled lines; card has four simple vertical tally strokes. Both forearms rest naturally on desk, hands relaxed. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-ba1403fd-a5d2-47af-8810-9bf63a25ebcb.png",
+      "alt": "A student looks between an open notebook and a small card with four tally strokes.",
+      "status": "visual-review-passed",
+      "file": "ch-term-review.png",
+      "optimizedFile": "optimized/ch-term-review.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "6918fe54ee5e7e713840a6021f404c83d9f276df834050d786e6d821b2964279",
+      "optimizedSha256": "c2961e9a8d82c83a708b1953b544dfcf9cdf7dea2eae078e7be7df1fa31fb488",
+      "bytes": 27616,
+      "altSource": "vision",
+      "altHash": "img-sfj-63804762",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 0,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ch-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "WHAT DID I SAY I WOULD DO?",
+          "field": "iconUrl",
+          "reason": "A student returns to the written notebook and record."
+        }
+      ]
+    },
+    {
+      "id": "ch-term-checkpoint",
+      "kind": "term",
+      "term": "Checkpoint",
+      "title": "Checkpoint",
+      "prompt": "Use case: illustration-story. Asset type: Square glossary illustration: a large horizontal rounded progress bar filled teal about three quarters of its length, final quarter pale empty outlined space. A small mustard pennant on a vertical pole planted precisely at the boundary where teal fill stops. Simple clear concept of stopping to check progress, generous cream margins. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-2309d74a-5630-4780-a313-8e68435ee9da.png",
+      "alt": "A student sits on a mostly filled progress bar beside a flag at the boundary before its empty section.",
+      "status": "visual-review-passed",
+      "file": "ch-term-checkpoint.png",
+      "optimizedFile": "optimized/ch-term-checkpoint.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "aa781491a051c3d590e4e1570b743fa7c899cf963f8032386f0a84deeab3c0c9",
+      "optimizedSha256": "0c7e5087ee28a1cceb6d4eda1845927dfdeed5f1d7974a2fda91827f7aa0ab58",
+      "bytes": 10972,
+      "altSource": "vision",
+      "altHash": "img-bb3-de37bd30",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 1,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ch-term-count",
+      "kind": "term",
+      "term": "Count",
+      "title": "Count",
+      "prompt": "Use case: illustration-story. Asset type: Square glossary illustration: exactly FIVE separate simple sun icons in a single evenly spaced horizontal row. The first FOUR are solid mustard disks with short plain rays. The fifth is a cream-filled outline-only sun with navy outline and rays. No other icons. Generous cream space around row. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-adb60b49-8c3b-421b-a55f-cd078abfbc25.png",
+      "alt": "Five sun icons form a row; four are filled and the last is outlined.",
+      "status": "visual-review-passed",
+      "file": "ch-term-count.png",
+      "optimizedFile": "optimized/ch-term-count.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "56c9cbd4475e9957ed2b42027f1e8c9c659e369f7fa873a0b5daf46d800a791d",
+      "optimizedSha256": "a26de09b1d7a4db84b8ad91639e4309469d3da56c87001173c210db6c4347e0a",
+      "bytes": 7150,
+      "altSource": "vision",
+      "altHash": "img-7dj-1704b1eb",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 2,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ch-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "WHAT ACTUALLY HAPPENED?",
+          "field": "iconUrl",
+          "reason": "Four filled suns out of five support counting actual mornings."
+        }
+      ]
+    },
+    {
+      "id": "ch-term-revise",
+      "kind": "term",
+      "term": "Revise",
+      "title": "Revise",
+      "prompt": "Use case: illustration-story. Asset type: Square educational illustration: side view of a simple teal bicycle leaning against a pale wall. Rear wheel attached normally. Front wheel removed, front fork visibly empty. A young teen kneels beside it holding a replacement wheel upright with one hand naturally on the tire rim, other arm relaxed. Entire bicycle frame and remaining parts intact. Simplify frame construction but preserve plausible bike geometry. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-75d45c77-9a3b-43e0-8503-0b25b6c981d7.png",
+      "alt": "A student holds a replacement wheel beside a bicycle with its front wheel removed.",
+      "status": "visual-review-passed",
+      "file": "ch-term-revise.png",
+      "optimizedFile": "optimized/ch-term-revise.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "10d6feef6580c42c3177ee78fd33460f210aaa72b8267389b65473777fc3980d",
+      "optimizedSha256": "1fa8d465b3913d2b804237c11e810bc60624d492a5d66e8814a091b27ab08a35",
+      "bytes": 38362,
+      "altSource": "vision",
+      "altHash": "img-13hj-addd5f44",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 3,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ch-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "WHAT IS THE ONE CHANGE?",
+          "field": "iconUrl",
+          "reason": "Replacing one bicycle wheel represents changing one part of a system."
+        }
+      ]
+    },
+    {
+      "id": "ch-term-wish",
+      "kind": "term",
+      "term": "Wish",
+      "title": "Wish",
+      "prompt": "Use case: illustration-story. Asset type: Square educational illustration, close-up of a navy school backpack's open front pocket. A softly worn folded cream card sits near the bottom of the pocket, peeking out enough to show one faint simple mustard star. Emphasize soft folded edges and quiet forgotten wish. No people. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-b084461a-a2d7-4594-905e-8315a6554c52.png",
+      "alt": "A folded card with a faint star peeks from the bottom of a backpack pocket.",
+      "status": "visual-review-passed",
+      "file": "ch-term-wish.png",
+      "optimizedFile": "optimized/ch-term-wish.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "accbb296f9b05407c51ca3001e055b4e21504c06924166c5d01753b0829e43d0",
+      "optimizedSha256": "1b35f947ffd46187ef14092092981e05e09503dde4911b87cfcb587abe703d00",
+      "bytes": 28514,
+      "altSource": "vision",
+      "altHash": "img-tcr-5d7a5844",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 4,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ch-term-collide",
+      "kind": "term",
+      "term": "Collide",
+      "title": "Collide",
+      "prompt": "Use case: illustration-story. Asset type: Square educational concept illustration: a large simple circular navy-rimmed clock with tick marks but no numerals. Both hands aim toward a spot in upper right. At that SAME time position beside clock, two small overlapping icons: a blank checklist with square boxes and simple tick marks, and a coiled coral dog leash with loop handle and clip. Clear sense of two commitments sharing the same time. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-e8858188-88b9-47f4-8463-c2bde90a0220.png",
+      "alt": "A student and dog sit beneath a numberless clock pointing toward checklist and dog leash icons.",
+      "status": "visual-review-passed",
+      "file": "ch-term-collide.png",
+      "optimizedFile": "optimized/ch-term-collide.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "2161f055611f75ed66779a6ff22d8329bbeee0b3f372a44c2eae0fb47bc50021",
+      "optimizedSha256": "df542b57ceb669811bfcd4e2929c4850f2facc98cd910aff2a78df55610d87af",
+      "bytes": 33272,
+      "altSource": "vision",
+      "altHash": "img-y8z-94dd68e0",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 5,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ch-img-puppy",
+      "kind": "lesson",
+      "title": "The check that stopped.",
+      "prompt": "Use case: illustration-story. Asset type: Wide landscape lesson illustration: evening in a simple warm kitchen. A dark-skinned middle school boy with short curly hair, coral top and navy trousers stands by the door holding a looped dog leash at waist level with one naturally bent arm; other arm relaxed by his side. On nearby kitchen counter, clearly visible closed teal laptop and open unpacked school backpack with notebook beside it. Warm evening window light. Calm thoughtful face. Full coherent anatomy. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "caption": "he did not decide to stop; it just stopped.",
+      "plannedLabels": [
+        {
+          "text": "The walk"
+        },
+        {
+          "text": "The launch check"
+        }
+      ],
+      "afterType": "simplified",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-ead110ee-8663-4c7f-86b1-a39faf78bea0.png",
+      "alt": "A student holds a dog's leash by the kitchen door while a closed laptop and open school bag sit on the counter.",
+      "status": "visual-review-passed",
+      "file": "ch-img-puppy.png",
+      "optimizedFile": "optimized/ch-img-puppy.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "2b2c94a83e85fc2c508a9c6fc4cfa269e2826db8149bbb380f846559f5229339",
+      "optimizedSha256": "032e221eb1b2e3c6102a1e55157eab31b570a7f333d87a206fc8c8e2591be405",
+      "bytes": 80902,
+      "altSource": "vision",
+      "altHash": "img-2b93-e0a0a0ca",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The walk",
+          "position": "top-left",
+          "anchorX": 21,
+          "anchorY": 63
+        },
+        {
+          "text": "The launch check",
+          "position": "top-right",
+          "anchorX": 69,
+          "anchorY": 51
+        }
+      ],
+      "placement": {
+        "resourceId": "ch-reading-illustrations",
+        "panelId": "ch-img-puppy",
+        "afterResourceId": "ch-reading"
+      }
+    },
+    {
+      "id": "ch-img-threeq",
+      "kind": "lesson",
+      "title": "Three questions.",
+      "prompt": "Use case: illustration-story. Asset type: Wide landscape lesson illustration: exactly three cream cards evenly arranged in a row on a simple wooden desk. First card shows a small open notebook icon with plain ruled lines. Middle card shows four vertical tally strokes. Third card shows one single large teal gear icon. No surrounding clutter. Space below each icon stays blank. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "caption": "two looks back, one step forward.",
+      "plannedLabels": [
+        {
+          "text": "Said"
+        },
+        {
+          "text": "Happened"
+        },
+        {
+          "text": "Change"
+        }
+      ],
+      "afterType": "anchor-chart",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-156cd32d-815c-4bed-bc7d-7fe3697c32ea.png",
+      "alt": "A student looks at three cards on a desk showing a notebook, tally strokes, and a gear.",
+      "status": "visual-review-passed",
+      "file": "ch-img-threeq.png",
+      "optimizedFile": "optimized/ch-img-threeq.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "0ff9eca09bd6de45f8bc681375dda551148d096b55dafad281348de5e4acffe1",
+      "optimizedSha256": "a21a90e5bcc6fa12a6d1e5e2c28dc37e47dfd93ab2b6c9881d3f49826e93a5ae",
+      "bytes": 31818,
+      "altSource": "vision",
+      "altHash": "img-wr3-6e3cf9ef",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Said",
+          "position": "bottom-left",
+          "anchorX": 24,
+          "anchorY": 65
+        },
+        {
+          "text": "Happened",
+          "position": "bottom-center",
+          "anchorX": 50,
+          "anchorY": 65
+        },
+        {
+          "text": "Change",
+          "position": "bottom-right",
+          "anchorX": 77,
+          "anchorY": 65
+        }
+      ],
+      "placement": {
+        "resourceId": "ch-anchor-illustrations",
+        "panelId": "ch-img-threeq",
+        "afterResourceId": "ch-anchor"
+      }
+    },
+    {
+      "id": "ch-img-moved",
+      "kind": "lesson",
+      "title": "One part, moved.",
+      "prompt": "Use case: illustration-story. Asset type: Wide landscape lesson illustration: evening warm kitchen with a door on right and a coral dog leash hanging from a hook beside it. Dark-skinned middle school boy with short curly hair and coral top sits naturally at table with open teal laptop showing blank screen. Open navy backpack beside him, he places a closed notebook into bag with one bent arm clearly connected to shoulder and visible elbow, other hand rests on table. Dinner plates stacked on counter in background after dinner. Natural simple posture. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "caption": "not a new system, not a new person.",
+      "plannedLabels": [
+        {
+          "text": "After dinner"
+        },
+        {
+          "text": "Before the walk"
+        }
+      ],
+      "afterType": "faq",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-e07cd3cc-63ff-4ddf-a622-1fbb6a27f33e.png",
+      "alt": "A student packs a notebook into a school bag beside an open laptop after dinner; a leash hangs by the door.",
+      "status": "visual-review-passed",
+      "file": "ch-img-moved.png",
+      "optimizedFile": "optimized/ch-img-moved.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "5382b89ba561e6b0fcbcb31bdfb6a3dccdeb3d596754e048220d0f92101a5553",
+      "optimizedSha256": "b83830813b45be649d4590b152842cc056ea65b42d3998eaf775ff307da36783",
+      "bytes": 57656,
+      "altSource": "vision",
+      "altHash": "img-1nc3-fbc67931",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "After dinner",
+          "position": "top-left",
+          "anchorX": 46,
+          "anchorY": 70
+        },
+        {
+          "text": "Before the walk",
+          "position": "top-right",
+          "anchorX": 33,
+          "anchorY": 64
+        }
+      ],
+      "placement": {
+        "resourceId": "ch-faq-illustrations",
+        "panelId": "ch-img-moved",
+        "afterResourceId": "ch-faq"
+      }
+    },
+    {
+      "slug": "crew_halfway_grade6_8",
+      "id": "ch-term-trend",
+      "kind": "term",
+      "term": "Trend",
+      "scene": "A plain notebook page seen flat from above with four neat groups of small identical teal counters in a row from left to right: first group has two counters, next four, next six, last eight. Each group separated by generous empty space. Counts gradually increase across four weeks. No numerals, letters, axes, labels or arrows.",
+      "alt": "Four separated groups of counters grow larger from left to right.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A plain notebook page seen flat from above with four neat groups of small identical teal counters in a row from left to right: first group has two counters, next four, next six, last eight. Each group separated by generous empty space. Counts gradually increase across four weeks. No numerals, letters, axes, labels or arrows. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "ch-term-trend.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-1ba0a35d-e2b9-4b1c-8f23-1ed707ec9018.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ch-term-trend.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "2bfe81195b464dbc49469ae36a76d7b9b2e2f7c4af1ed7532b3960d48c408f09",
+      "optimizedSha256": "9dd559bcb34b3b5e114c714caf44f7e83c506b2041477499ea682a10472de76a",
+      "bytes": 23286,
+      "altSource": "vision",
+      "altHash": "img-nz3-5bf1838e",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "slug": "crew_halfway_grade6_8",
+      "id": "ch-term-timely",
+      "kind": "term",
+      "term": "Timely",
+      "scene": "One middle school student calmly places a completed handmade model bridge into a classroom hand-in tray. A simple analog clock hangs in background with hands but no numerals. Model completed and student relaxed before lesson, natural arms and hands.",
+      "alt": "A student places a finished model bridge in a hand-in tray beneath a classroom clock.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. One middle school student calmly places a completed handmade model bridge into a classroom hand-in tray. A simple analog clock hangs in background with hands but no numerals. Model completed and student relaxed before lesson, natural arms and hands. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "ch-term-timely.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-9f60fcc4-ae06-4454-95f5-95d72d9e601a.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ch-term-timely.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "bfd10923772eaf858fa23bb6385aa82a9b448234fee75051478d8b3e5861be89",
+      "optimizedSha256": "54defda5d33e8c5f6f1120726050d197a5b936289a2056846167be734ecb3fd1",
+      "bytes": 33558,
+      "altSource": "vision",
+      "altHash": "img-yjj-410ac289",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "ch-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ch-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "ch-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ch-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 11,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. A middle-school student sits ready at the beginning of class with an open notebook, pencil, closed plain textbook and water bottle neatly within reach. Their backpack is beside their chair. A calm attentive posture and hands resting naturally on the desk. Square composition.",
+      "alt": "A student sits ready for class with a notebook, pencil, textbook, water bottle, and backpack within reach.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-3d47-7c01-8b65-899fba5f796f\\exec-9aed0798-2327-481f-9cb5-cfe3a04d02c5.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-prepared",
+      "kind": "term",
+      "term": "Prepared",
+      "file": "ch-term-prepared.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_system_grade6_8",
+        "assetId": "cs-term-prepared",
+        "file": "allopacks/media/crew_system_grade6_8/cs-term-prepared.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ch-term-prepared.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "ae0cafa7913a02f5d537fe8b85033aeb5c231d26db887e4375fb801fc4c449b7",
+      "optimizedSha256": "7213be1dccc8bbd87d3be85c662a6a9bbb57ad7d7d6de30e6e12588667fa23e6",
+      "bytes": 35692,
+      "altSource": "vision",
+      "altHash": "img-10qn-7d511197",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Three simple gears meshing, each a different color. no labels on gears.",
+      "alt": "Three students hold three colorful gears together so their teeth mesh.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-b3ee0d00-3d65-4cc5-8415-417ad6c041d1.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-system",
+      "kind": "term",
+      "term": "System",
+      "file": "ch-term-system.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_system_grade6_8",
+        "assetId": "cs-term-system",
+        "file": "allopacks/media/crew_system_grade6_8/cs-term-system.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ch-term-system.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "2afef4ad8a559b55e6f123de34d527aa8ed7a863617e3e3ba653b4df1de00dbd",
+      "optimizedSha256": "e543d9d847a39999094d25bb30073eb54f47df0b38542e13f1df41a7b84efa73",
+      "bytes": 25066,
+      "altSource": "vision",
+      "altHash": "img-pt3-adc2d97d",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ch-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 15,
+  "imagePlacementCount": 18,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_halfway_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 18,
+    "uniqueImageCount": 15,
+    "anchorSectionImages": 3,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

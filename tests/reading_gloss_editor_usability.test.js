@@ -40,15 +40,15 @@ function mount(text = 'Fair is foul. Fair returns.', suppliedEntries) {
   act(render);
   return { item, onUpdate, get props() { return props; }, update(next) { act(() => { props = { ...props, ...next }; render(); }); } };
 }
-const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text || (text === 'Review word supports' && node.textContent.startsWith(text)));
-const editButtons = () => [...host.querySelectorAll('button')].filter(node => /^(Edit gloss for|Edit word help:)/.test(node.getAttribute('aria-label') || ''));
+const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text || (text === 'Review word help' && node.textContent.startsWith(text)));
+const editButtons = () => [...host.querySelectorAll('button')].filter(node => /^(Edit word help for|Edit word help:)/.test(node.getAttribute('aria-label') || ''));
 const click = async node => { await act(async () => { node.dispatchEvent(new MouseEvent('click', { bubbles: true })); }); };
 const change = (node, value) => act(() => {
   const proto = node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : node.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
   Object.getOwnPropertyDescriptor(proto, 'value').set.call(node, value);
   node.dispatchEvent(new Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
 });
-async function openEdit(index = 0) { await click(button('Review word supports')); await click(editButtons()[index]); }
+async function openEdit(index = 0) { await click(button('Review word help')); await click(editButtons()[index]); }
 
 describe('Gloss editor exact occurrences', () => {
   it('matches whole occurrences, not substrings, contractions, or another inflection', () => {
@@ -66,13 +66,13 @@ describe('Gloss editor exact occurrences', () => {
     expect(find('Fair '.repeat(200), 'Fair').truncated).toBe(false);
     expect(find('Fair '.repeat(201), 'Fair')).toHaveLength(200);
     expect(find('Fair '.repeat(201), 'Fair').truncated).toBe(true);
-    mount('Fair '.repeat(201), []); await click(button('Review word supports')); await click(button('Add a word or phrase'));
+    mount('Fair '.repeat(201), []); await click(button('Review word help')); await click(button('Add a word or phrase'));
     change(host.querySelector('input[type=text]'), 'Fair');
     expect(host.textContent).toContain('Showing the first 200 matching occurrences');
     expect(host.querySelectorAll('select')[0].options).toHaveLength(201);
   });
   it('gives repeated-word controls distinct occurrence context', async () => {
-    mount(); await click(button('Review word supports'));
+    mount(); await click(button('Review word help'));
     const names = editButtons().map(node => node.getAttribute('aria-label'));
     expect(new Set(names).size).toBe(2);
     expect(names[0]).toContain('1'); expect(names[1]).toContain('15–18');
@@ -85,14 +85,14 @@ describe('Gloss editor unsaved drafts', () => {
   it('preserves a dirty draft on close, and discards only after local confirmation', async () => {
     mount(); await openEdit();
     change(host.querySelector('textarea'), 'My unsaved meaning.');
-    await click(button('Review word supports'));
+    await click(button('Review word help'));
     expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
     expect(host.querySelector('textarea').value).toBe('My unsaved meaning.');
     await click(button('Keep editing'));
     expect(host.querySelector('textarea').value).toBe('My unsaved meaning.');
-    await click(button('Review word supports')); await click(button('Discard changes'));
+    await click(button('Review word help')); await click(button('Discard changes'));
     expect(host.querySelector('textarea')).toBeNull();
-    expect(button('Review word supports').getAttribute('aria-expanded')).toBe('false');
+    expect(button('Review word help').getAttribute('aria-expanded')).toBe('false');
   });
   it('guards add, edit-switch, and external edit requests while dirty', async () => {
     const h = mount(); await openEdit(); change(host.querySelector('textarea'), 'Unsaved first.');
@@ -112,17 +112,17 @@ describe('Gloss editor unsaved drafts', () => {
     h.update({ request: { ownerId: h.item.id, id: 'first', nonce: 1 } });
     expect(host.querySelector('[role=alertdialog]')).toBeNull();
     expect(host.querySelector('textarea').value).toBe('Saved meaning.');
-    await click(button('Save word support'));
+    await click(button('Save word help'));
     expect(h.onUpdate).toHaveBeenCalledTimes(1);
     await click(button('Done editing'));
     expect(host.querySelector('[role=alertdialog]')).toBeNull();
   });
   it('clears stale save/error feedback when the draft changes', async () => {
     const h = mount(); await openEdit(); change(host.querySelector('textarea'), 'First update.');
-    await click(button('Save word support')); expect(host.textContent).toContain('Word support saved.');
-    change(host.querySelector('textarea'), 'Second update.'); expect(host.textContent).not.toContain('Word support saved.');
+    await click(button('Save word help')); expect(host.textContent).toContain('Word help saved.');
+    change(host.querySelector('textarea'), 'Second update.'); expect(host.textContent).not.toContain('Word help saved.');
     h.update({ onUpdate: vi.fn(async () => { throw new Error('Try again later.'); }) });
-    await click(button('Save word support')); expect(host.querySelector('[role=alert]').textContent).toBe('Try again later.');
+    await click(button('Save word help')); expect(host.querySelector('[role=alert]').textContent).toBe('Try again later.');
     change(host.querySelector('textarea'), 'Third update.'); expect(host.querySelector('[role=alert]')).toBeNull();
   });
 });
@@ -137,7 +137,7 @@ describe('Gloss editor exact-anchor save safety', () => {
     expect(host.querySelector('input[type=text]').readOnly).toBe(true);
     expect(host.querySelector('textarea').value).toBe(explanation);
     change(host.querySelector('textarea'), explanation + 'A revision.');
-    await click(button('Save word support'));
+    await click(button('Save word help'));
     expect(h.onUpdate.mock.calls[0][1].annotation).toMatchObject({ start: 0, end: quote.length, quote, text: (explanation + 'A revision.').trim() });
     expect(h.item.sourceSnapshot.text).toBe(text); expect(h.item.data).toBe(text);
   });
@@ -145,7 +145,7 @@ describe('Gloss editor exact-anchor save safety', () => {
     const h = mount(); await openEdit(); change(host.querySelector('textarea'), 'My first occurrence meaning.');
     const original = h.props.supports.annotations;
     h.update({ supports: contract.validateReadingSupports(h.item, [{ ...original[0], id: 'regenerated-first' }, { ...original[1], id: 'first' }]) });
-    await click(button('Save word support'));
+    await click(button('Save word help'));
     const action = h.onUpdate.mock.calls[0][1];
     expect(action.annotation).toMatchObject({ id: 'regenerated-first', start: 0, quote: 'Fair' });
     expect(h.props.supports.annotations.find(entry => entry.id === 'first')).toMatchObject({ start: 14, text: 'Second meaning.' });
@@ -153,14 +153,14 @@ describe('Gloss editor exact-anchor save safety', () => {
   it('allocates a safe new ID if the edited annotation disappears and its ID is reused', async () => {
     const h = mount(); await openEdit(); change(host.querySelector('textarea'), 'Restore the first meaning.');
     h.update({ supports: contract.validateReadingSupports(h.item, [{ ...h.props.supports.annotations[1], id: 'first' }]) });
-    await click(button('Save word support'));
+    await click(button('Save word help'));
     expect(h.onUpdate.mock.calls[0][1].annotation.id).not.toBe('first');
     expect(h.props.supports.annotations.find(entry => entry.id === 'first').start).toBe(14);
     expect(h.props.supports.annotations.find(entry => entry.start === 0).text).toBe('Restore the first meaning.');
   });
   it('removes the exact occurrence after IDs change during discard confirmation', async () => {
     const h = mount(); await openEdit(); change(host.querySelector('textarea'), 'My unsaved first meaning.');
-    const removeFirst = [...host.querySelectorAll('button')].find(node => /^(Remove gloss for|Remove word help:)/.test(node.getAttribute('aria-label') || ''));
+    const removeFirst = [...host.querySelectorAll('button')].find(node => /^(Remove word help for|Remove word help:)/.test(node.getAttribute('aria-label') || ''));
     await click(removeFirst);
     expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
     const original = h.props.supports.annotations;
@@ -172,7 +172,7 @@ describe('Gloss editor exact-anchor save safety', () => {
     expect(host.querySelector('textarea')).toBeNull();
   });
   it('keeps disabled controls read-only', async () => {
-    const h = mount(); h.update({ disabled: true }); await click(button('Review word supports'));
+    const h = mount(); h.update({ disabled: true }); await click(button('Review word help'));
     expect(editButtons().every(node => node.disabled)).toBe(true);
     expect(button('Add a word or phrase').disabled).toBe(true);
     expect(h.onUpdate).not.toHaveBeenCalled();

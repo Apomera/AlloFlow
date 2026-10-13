@@ -1952,13 +1952,13 @@ describe('space station tool', () => {
       // These pin two properties the model got WRONG, both of which taught
       // something false about the real station.
       //
-      // 1. A nominal orbit must CHARGE the battery. The arrays were modelled at
-      //    132 kW peak, which left a full crew running routine research
-      //    net-negative every orbit — i.e. the ISS could not do science at full
-      //    crew. It does, continuously.
+      // A nominal orbit reaches full charge, then supplies eclipse from finite
+      // storage. It may finish below the initial reserve because excess daylight
+      // cannot be saved beyond capacity; the next cycle is sustainable.
       const fidelityPower = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'power', opsScenario: 'nominal' });
-      expect(fidelityPower).toContain('Net charge +');
-      expect(fidelityPower).not.toContain('Net discharge');
+      expect(fidelityPower).toContain('This setup supplies the full orbit.');
+      expect(fidelityPower).toContain('Battery reaches full');
+      expect(fidelityPower).toContain('RULE ≥ 25% · GO');
 
       // 2. Cabin CO2 must read like a spacecraft, not an office. Real ISS cabin
       //    CO2 runs roughly 2-4 mmHg (~2600-5300 ppm) against Earth's ~420 ppm;
@@ -1967,7 +1967,8 @@ describe('space station tool', () => {
       const fidelityPpm = Number((fidelityEclss.match(/Modeled CO₂ (\d+) ppm/) || [])[1]);
       expect(fidelityPpm).toBeGreaterThan(2000);
       expect(fidelityPpm).toBeLessThan(5300);
-      expect(fidelityEclss).toContain('Earth air is ~420 ppm');
+      expect(fidelityEclss).toContain('highest zone reading during this orbit');
+      expect(fidelityEclss).toContain('classroom comparison');
 
       const comparison = mountWithSeed({ ...BASE, tab: 'operations', opsScenario: 'science', opsResearch: 95 });
       expect(comparison).toContain('Dashed = nominal orbit');
@@ -2058,8 +2059,10 @@ describe('space station tool', () => {
         // 4000 ppm ~= 3 mmHg, the level ISS crews work to stay under. The old
         // 1000 ppm rule was an office-air figure: real cabin CO2 runs 2-4 mmHg.
         expect(live.host.textContent).toContain('RULE < 4000 ppm · CHECK');
-        expect(live.host.textContent).toContain('4 FLIGHT RULES TO CHECK');
-        expect(live.host.textContent).toContain('too little battery reserve after eclipse');
+        // Restricted cooling now heats the cabin beyond 27 C during the orbit.
+        expect(live.host.querySelector('[data-flight-rule=\"thermal\"]').textContent).toContain('CHECK');
+        expect(live.host.textContent).toContain('5 FLIGHT RULES TO CHECK');
+        expect(live.host.textContent).toContain('too little battery reserve during this orbit');
         const powerRule = live.host.querySelector('[data-flight-rule="power"]');
         act(() => { powerRule.click(); });
         expect(live.host.textContent).toContain('Solar generation');
@@ -2322,11 +2325,11 @@ describe('space station tool', () => {
       const issBand = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420 });
       expect(issBand).toContain('CREWED LEO / ISS BAND');
       expect(issBand).toContain('ISS REFERENCE // 420 KM');
-      expect(issBand).toContain('DRAG + REBOOST // 30-DAY TRAINING MODEL');
+      expect(issBand).toContain('ORBIT MAINTENANCE / 30-DAY LAB');
       expect(issBand).toContain('data-iss-drag-model="nominal"');
       expect(issBand).toContain('data-iss-reboost-day="20"');
-      expect(issBand).toContain('Anchored to 75 m/day at 420 km');
-      expect(issBand).toContain('not a reentry forecast');
+      expect(issBand).toContain('calibrated to 75 m/day at 420 km');
+      expect(issBand).toContain('this model does not predict reentry');
     });
 
     it('models solar-driven drag and reboost as synchronized altitude trajectories', () => {
@@ -2610,10 +2613,11 @@ describe('space station tool', () => {
         expect(html, 'system ' + entry.id + ' should not render as NaN/undefined').not.toContain('undefined');
       });
 
-      // The Operations tab pulls three schematics by MEANING, not by position:
+      // The Operations tab pulls schematics by MEANING, not by position:
       // an index lookup silently drew the wrong loop if SYSTEMS was reordered.
       expect(source).toContain("systemById('water')");
-      expect(source).toContain("systemById('thermal')");
+      // Thermal now renders its own coupled heat-path experiment.
+      expect(mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'thermal' })).toContain('data-iss-thermal-lab');
       expect(source).toContain("systemById('body')");
       expect(source).not.toMatch(/renderSystemSchematic\(SYSTEMS\[\d\]\)/);
     });

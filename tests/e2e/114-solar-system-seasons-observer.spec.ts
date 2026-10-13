@@ -212,8 +212,11 @@ test('fractional latitude and orbital position retain unrounded readings, chart 
   await expect(lab).toHaveAttribute('data-season-phase-exact', '25.25');
   await expect(lab.locator('[data-season-phase-label]')).not.toHaveText('Northern summer solstice');
   const chart = explorer.getByRole('img', { name: /Fixed scale: 0 to 24 hours/ });
-  const selectedX = await chart.locator('circle').getAttribute('cx');
-  expect(Number(selectedX)).toBeCloseTo(42 + 25.25 * 4.12, 10);
+  const selectedX = await chart.locator('[data-season-year-cursor]').getAttribute('x1');
+  expect(Number(selectedX)).toBeCloseTo(25.25 * 4.8, 10);
+  await expect(explorer.locator('#solar-season-year-phase')).toHaveValue('25.25');
+  await expect(lab.locator('#solar-season-phase')).toHaveValue('25.25');
+  await expect(explorer.locator('#solar-season-latitude')).toHaveValue('45.25');
   for (const [index, phase] of [0, 25, 50, 75].entries()) {
     const row = explorer.locator('tbody tr').nth(index);
     await expect(row.locator('td').first()).toHaveText(metrics(45.25, phase).hours.toFixed(1));
@@ -458,7 +461,7 @@ for (const dark of [false, true]) {
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(321);
       expect((await observer.locator('svg').boundingBox())!.width).toBeGreaterThanOrEqual(150);
     }
-    for (const [region, minimumWidth] of [[lab.getByRole('region', { name: /Scrollable seasons geometry diagram/ }), 720], [explorer.getByRole('region', { name: 'Scrollable annual daylight chart', exact: true }), 480]] as const) {
+    for (const [region, minimumWidth] of [[lab.getByRole('region', { name: /Scrollable seasons geometry diagram/ }), 720]] as const) {
       await region.focus();
       await expect(region).toBeFocused();
       const original = await region.evaluate((element) => ({ x: element.scrollLeft, width: element.clientWidth, total: element.scrollWidth,
@@ -471,6 +474,26 @@ for (const dark of [false, true]) {
       await region.press('ArrowRight');
       await expect.poll(() => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(original.x);
     }
+    const annualChart = explorer.locator('[data-season-year-chart]');
+    const annualBounds = await annualChart.evaluate(element => ({ width: element.clientWidth, total: element.scrollWidth,
+      svg: element.querySelector('svg')!.getBoundingClientRect().width }));
+    expect(annualBounds.total).toBeLessThanOrEqual(annualBounds.width + 1);
+    expect(annualBounds.svg).toBeLessThan(320);
+    const annualLabels = await annualChart.locator('.solar-season-year-x span').evaluateAll(elements => elements.map(element => {
+      const rect = element.getBoundingClientRect();
+      return { text: element.textContent, left: rect.left, right: rect.right, height: rect.height, lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight) };
+    }));
+    for (const [index, label] of annualLabels.entries()) {
+      expect(label.height, `${label.text} stays on one line`).toBeLessThanOrEqual(label.lineHeight + 1);
+      if (index > 0) expect(label.left, 'Annual axis labels do not overlap').toBeGreaterThanOrEqual(annualLabels[index - 1].right - 1);
+    }
+    const annualPhase = explorer.locator('#solar-season-year-phase');
+    await annualPhase.focus();
+    await annualPhase.press('Home');
+    await expectLatitude(lab, 45, 0);
+    await annualPhase.press('ArrowRight');
+    await expectLatitude(lab, 45, 1);
+    await expect(lab.locator('#solar-season-phase')).toHaveValue('1');
     const phase = lab.locator('#solar-season-phase');
     await phase.focus();
     await phase.press('Home');

@@ -584,6 +584,60 @@
     }
     return { arrivalRadiusLy:radius, remainingLy:remaining, estimatedSeconds:seconds };
   }
+  // A bowed camera approach shares the direct survey standoff and pace law.
+  // Its control point stays inside the scene sphere, so the convex quadratic
+  // stays inside too. This is an illustrative viewing path, not an orbit.
+  function scenicApproachPlan(position, center, baseRadius, multiplier, speed, boundary) {
+    function vector(value) { return Array.isArray(value)&&value.length===3&&value.every(Number.isFinite); }
+    if (!vector(position)||!vector(center)||!Number.isFinite(baseRadius)||baseRadius<=0||
+        (multiplier!==undefined&&!Number.isFinite(multiplier))||!Number.isFinite(speed)||speed<0||!Number.isFinite(boundary)||boundary<=0) return null;
+    if (Math.hypot.apply(Math,position)>boundary||Math.hypot.apply(Math,center)>boundary) return null;
+    var delta=position.map(function(value,i){return value-center[i];}),range=Math.hypot.apply(Math,delta);
+    if (!Number.isFinite(range)) return null;
+    var direct=approachPlan(range,baseRadius,multiplier,speed),radius=direct.arrivalRadiusLy;
+    var start=position.slice(),end=direct.remainingLy?center.map(function(value,i){return value+delta[i]*radius/range;}):start.slice();
+    if (!end.every(Number.isFinite)||Math.hypot.apply(Math,end)>boundary) return null;
+    var radial=range?delta.map(function(value){return value/range;}):[0,0,1];
+    var side=Math.abs(radial[1])<0.9?[-radial[2],0,radial[0]]:[0,radial[2],-radial[1]];
+    var sideLength=Math.hypot.apply(Math,side);side=side.map(function(value){return value/sideLength;});
+    var middle=start.map(function(value,i){return value*0.5+end[i]*0.5;}),bow=direct.remainingLy*0.36,control;
+    function bowed(amount) { return middle.map(function(value,i){return value+side[i]*amount;}); }
+    control=bowed(bow);
+    for(var shrink=0;shrink<24&&Math.hypot.apply(Math,control)>boundary;shrink++){bow*=0.5;control=bowed(bow);}
+    if(bow<Math.max(1e-12,direct.remainingLy*1e-6)||!control.every(Number.isFinite)||Math.hypot.apply(Math,control)>boundary){bow=0;control=middle.slice();}
+    if(Math.hypot.apply(Math,control)>boundary)return null;
+    // Sample once at launch. A bounded inverse arc-length table keeps progress,
+    // distance counters and ETA on this same curve throughout pause/resume.
+    var plan={path:'scenic',start:start,control:control,end:end,bowLy:bow,pathLengthLy:0,
+      arrivalRadiusLy:radius,remainingLy:0,estimatedSeconds:0,samples:[{u:0,distanceLy:0}]};
+    var previous=start,length=0;
+    for(var step=1;step<=256;step++) {
+      var u=step/256,point=scenicApproachPoint(plan,u);
+      length+=Math.hypot.apply(Math,point.map(function(value,i){return value-previous[i];}));
+      plan.samples.push({u:u,distanceLy:bow?length:direct.remainingLy*u});previous=point;
+    }
+    plan.pathLengthLy=plan.remainingLy=bow?length:direct.remainingLy;
+    if(!Number.isFinite(plan.pathLengthLy))return null;
+    plan.estimatedSeconds=approachPlan(plan.pathLengthLy+radius,radius,1,speed).estimatedSeconds;
+    return plan;
+  }
+  function scenicApproachPoint(plan,u) {
+    if(u<=0)return plan.start.slice();if(u>=1)return plan.end.slice();
+    var back=1-u;
+    return plan.start.map(function(value,i){return value*back*back+2*plan.control[i]*back*u+plan.end[i]*u*u;});
+  }
+  function scenicApproachPosition(plan,distance) {
+    if(distance<=0)return plan.start.slice();if(distance>=plan.pathLengthLy)return plan.end.slice();
+    var low=0,high=plan.samples.length-1;
+    while(high-low>1){var middle=Math.floor((low+high)/2);if(plan.samples[middle].distanceLy<distance)low=middle;else high=middle;}
+    var a=plan.samples[low],b=plan.samples[high],fraction=b.distanceLy>a.distanceLy?(distance-a.distanceLy)/(b.distanceLy-a.distanceLy):0;
+    return scenicApproachPoint(plan,a.u+(b.u-a.u)*fraction);
+  }
+  function copyScenicApproachPlan(plan,remaining,speed) {
+    return Object.assign({},plan,{start:plan.start.slice(),control:plan.control.slice(),end:plan.end.slice(),
+      samples:plan.samples.map(function(sample){return {u:sample.u,distanceLy:sample.distanceLy};}),remainingLy:remaining,
+      estimatedSeconds:approachPlan(remaining+plan.arrivalRadiusLy,plan.arrivalRadiusLy,1,speed).estimatedSeconds});
+  }
   function safeBeta(beta) { return clamp(finite(beta, 0), 0, MAX_BETA); }
   function gamma(beta) { var b = safeBeta(beta); return 1 / Math.sqrt((1 - b) * (1 + b)); }
   function doppler(mu, beta) { var b = safeBeta(beta); return gamma(b) * (1 + b * clamp(finite(mu, 0), -1, 1)); }
@@ -1759,6 +1813,9 @@
     '  if (u_galacticBand > 0.5 && isCloud > 0.5 && a_size > 600.0 && a_size < 1600.0) {',
     '    float sourceRadius = length(a_position);',
     '    if (sourceRadius > 16000.0 && sourceRadius < 50000.0) {',
+      // The distant band is behind the same fixed local dust as the stars.
+      // Each record uses its center ray; broad sprites soften the silhouette.
+    '      if (u_dust > 0.5 && distance > 0.00001) v_dustTransmission = stellarDust(n,distance);',
     '      vec3 bandSource = vec3(a_position.x,(0.91*a_position.y+0.42*a_position.z)/1.0045,(-0.42*a_position.y+0.91*a_position.z)/1.0045);',
     '      float longitude = atan(bandSource.z,bandSource.x);',
     '      float latitude = atan(bandSource.y,max(length(bandSource.xz),0.00001));',
@@ -1920,7 +1977,13 @@
     '    if (granuleDetail > 0.0) granules = stellarNoise3(body*16.0,v_stellarDetail.y+0.37);',
     '    float structure = 1.0+0.085*granuleDetail*(granules*2.0-1.0)+0.028*(coarse*2.0-1.0);',
     '    structure -= 0.21*smoothstep(0.88,0.988,patchA)+0.13*smoothstep(0.90,0.992,patchB);',
-    '    structure += 0.045*(smoothstep(0.79,0.90,patchA)-smoothstep(0.90,0.98,patchA));',
+    // Solar-inspired umbrae sit inside the broader penumbrae. Fade the
+    // smaller cores with the existing foreshortened pixel budget.
+    '    structure -= granuleDetail*(0.26*smoothstep(0.979,0.996,patchA)+0.20*smoothstep(0.983,0.998,patchB));',
+    // Facular contrast grows toward the limb; this is an illustrative
+    // contrast profile, not a magnetic model or calibrated stellar spectrum.
+    '    float facularContrast = 0.25+0.75*(1.0-mu)*(1.0-mu);',
+    '    structure += 0.045*facularContrast*(smoothstep(0.79,0.90,patchA)-smoothstep(0.90,0.98,patchA));',
     '    cells = mix(cells,structure,u_stellarStructure);',
     '  }',
     // A lower surface peak spreads roughly the old Gaussian's integrated light
@@ -1930,6 +1993,28 @@
     '  if (disk < 1.0) {',
     '    float angle = atan(p.y, p.x);',
     '    corona = (1.0 - disk) * 0.16 * exp(-max(0.0, radius - 0.35) * 6.0) * (0.88 + 0.12 * cos(angle * 6.0 + phase));',
+    // Broad source-fixed lobes suggest coronal streamers in enhanced contrast.
+    // This is static appearance, not a magnetic-field or plasma simulation.
+    '    if (u_stellarStructure > 0.0 && u_stellarQuad > 0.5) {',
+    '      vec3 rim = (u_stellarRight*p.x-u_stellarUp*p.y)/max(radius,0.000001);',
+    '      vec3 streamerA = normalize(vec3(cos(phase+0.4),0.38+0.22*sin(phase*0.7),sin(phase+0.4)));',
+    '      vec3 streamerB = normalize(vec3(cos(phase+2.1),-0.65,sin(phase+2.1)));',
+    '      vec3 streamerC = normalize(vec3(cos(phase+4.0),0.75,sin(phase+4.0)));',
+    // The ring mean of each fourth-power lobe is 3/8 of its projected
+    // axis length to the fourth power. Subtract it to retain mean light.
+    '      float alongA = dot(rim,streamerA), rightA = dot(u_stellarRight,streamerA), upA = dot(u_stellarUp,streamerA);',
+    '      float alongB = dot(rim,streamerB), rightB = dot(u_stellarRight,streamerB), upB = dot(u_stellarUp,streamerB);',
+    '      float alongC = dot(rim,streamerC), rightC = dot(u_stellarRight,streamerC), upC = dot(u_stellarUp,streamerC);',
+    '      float projectedA = rightA*rightA+upA*upA, projectedB = rightB*rightB+upB*upB, projectedC = rightC*rightC+upC*upC;',
+    '      float lobeA = alongA*alongA*alongA*alongA-0.375*projectedA*projectedA;',
+    '      float lobeB = alongB*alongB*alongB*alongB-0.375*projectedB*projectedB;',
+    '      float lobeC = alongC*alongC*alongC*alongC-0.375*projectedC*projectedC;',
+    // Positive weights sum to one: the profile stays within [0.67,1.23].
+    // A broad radial fade adds no fine angular detail at the disk edge.
+    '      float streamerProfile = 0.88+0.56*smoothstep(0.35,0.65,radius)*(0.55*lobeA+0.30*lobeB+0.15*lobeC);',
+    '      float profile = mix(0.88+0.12*cos(angle*6.0+phase),streamerProfile,u_stellarStructure);',
+    '      corona = (1.0-disk)*0.16*exp(-max(0.0,radius-0.35)*6.0)*profile;',
+    '    }',
     '  }',
     '  float arches = 0.0;',
     // Detail stays near the limb; the closest curve depth is compared with
@@ -2020,6 +2105,7 @@
       return true;
     }
     function manualFlybyLook() { if (flyby.active) flyby.autoLook = false; }
+    function manualNavigationLook() { if (navigation.active&&navigation.path==='scenic') navigation.autoLook=false; }
     function seekFlybyMoment(seconds, highlight) {
       var route=flybyRoute(flyby.id);
       if (disposed || lost || !gl || !program || settings.mode!=='explore' || !route || settings.region!==route.region || (!flyby.active&&!flyby.completed)) return false;
@@ -2176,11 +2262,14 @@
     }
     function navigationTelemetry() {
       var item = getLandmark(navigation.targetId);
-      var plan = item ? approachPlan(toLandmark(item).distance,navigation.arrivalRadiusLy||item.arrivalRadiusLy,1,settings.speed) : null;
-      return { active:navigation.active, targetId:navigation.targetId, completed:!!navigation.completed, alreadyWithin:!!navigation.alreadyWithin,
+      var remaining=navigation.path==='scenic'?Math.max(0,navigation.totalLy-navigation.traveledLy):null;
+      var plan = item ? approachPlan(remaining===null?toLandmark(item).distance:remaining+navigation.arrivalRadiusLy,navigation.arrivalRadiusLy||item.arrivalRadiusLy,1,settings.speed) : null;
+      var result={ active:navigation.active, targetId:navigation.targetId, completed:!!navigation.completed, alreadyWithin:!!navigation.alreadyWithin,
         remainingLy:plan?plan.remainingLy:0, arrivalRadiusLy:plan?plan.arrivalRadiusLy:0,
         estimatedSeconds:plan?plan.estimatedSeconds:0,
         progress:navigation.completed?1:plan&&navigation.totalLy>0?clamp(1-plan.remainingLy/navigation.totalLy,0,1):0 };
+      if(navigation.path==='scenic'){result.path='scenic';result.autoLook=!!navigation.autoLook;result.pathLengthLy=navigation.totalLy;}
+      return result;
     }
     function motionTelemetry() {
       var glide = distanceGlide.active ? distanceGlide : viewpointGlide;
@@ -2195,7 +2284,7 @@
         target = (orbitPath?orbitPath.radiusLy:Math.hypot(state.position[0] - item.position[0], state.position[2] - item.position[2])) * settings.orbitRate * Math.PI / 180;
       } else if (kind === 'approach' && item) {
         var radius = navigation.arrivalRadiusLy || item.arrivalRadiusLy;
-        var remaining = Math.max(0, toLandmark(item).distance - radius);
+        var remaining = navigation.path==='scenic'?Math.max(0,navigation.totalLy-navigation.traveledLy):Math.max(0, toLandmark(item).distance - radius);
         target = Math.min(settings.speed, Math.max(radius * 0.5, remaining * 1.2));
       }
       var moving = settings.running && isVisible() && !lost && !disposed && kind !== 'relativity';
@@ -2523,16 +2612,20 @@
       if (!item) { navigation.active = false; return; }
       var relative = toLandmark(item);
       var radius = navigation.arrivalRadiusLy || item.arrivalRadiusLy;
-      var remaining = Math.max(0, relative.distance - radius);
+      var scenic=navigation.path==='scenic';
+      var remaining = scenic?Math.max(0,navigation.totalLy-navigation.traveledLy):Math.max(0, relative.distance - radius);
       // Slow the approach and limit its last step so a fast traversal setting
       // cannot overshoot the destination's survey standoff.
       var approachSpeed = Math.min(settings.speed, Math.max(radius * 0.5, remaining * 1.2));
       var travel = Math.min(remaining, approachSpeed * clamp(finite(dt, 0), 0, 0.1));
+      if(scenic&&remaining-travel<=Math.max(1e-9,radius*1e-9))travel=remaining;
+      if(scenic)navigation.traveledLy=Math.min(navigation.totalLy,navigation.traveledLy+travel);
       state = {
-        position: state.position.map(function (value, index) { return value + relative.direction[index] * travel; }),
+        position: scenic?scenicApproachPosition(navigation.plan,navigation.traveledLy):state.position.map(function (value, index) { return value + relative.direction[index] * travel; }),
         yaw: state.yaw, pitch: state.pitch, distanceLy: state.distanceLy + travel,
         universeYears: state.universeYears, travelerYears: state.travelerYears
       };
+      if(scenic&&navigation.autoLook)faceTarget(item);
       if (remaining - travel <= Math.max(1e-9, radius * 1e-9)) {
         navigation.active = false; navigation.completed = true;
         pauseWithMessage('Arrived at ' + item.name + '. Travel is paused; look around or choose another destination.',
@@ -2775,6 +2868,7 @@
         if (flyby.active && ((!wasRunning&&settings.running)||previousStops!==settings.pauseAtHighlights)) easedLeg=settings.pauseAtHighlights?nextFlybyLeg(!wasRunning):null;
         if (next.running) cameraMoves = [];
         if (next.running && flyby.completed) clearFlyby();
+        if(next.running&&navigation.path==='scenic'&&navigation.completed)navigation={active:false,targetId:navigation.targetId,arrivalRadiusLy:navigation.arrivalRadiusLy,totalLy:0};
         if (next.running && distanceGlide.completed) clearDistanceGlide();
         if (next.running && viewpointGlide.completed) clearViewpointGlide();
         if (next.running && navigation.completed) navigation = { active:false, targetId:null };
@@ -2802,7 +2896,7 @@
       },
       look: function (yawDelta, pitchDelta) {
         if (disposed) return;
-        clearFraming(); manualFlybyLook();
+        clearFraming(); manualFlybyLook(); manualNavigationLook();
         endInspectionGlides('Manual look ended the camera glide. Travel is paused.');
         endOrbit('Manual look ended the orbit. Travel is paused.');
         state.yaw = ((state.yaw + finite(yawDelta, 0)) % TAU + TAU) % TAU;
@@ -2813,7 +2907,7 @@
         if (disposed) return;
         var views = { forward: [0, 0], back: [Math.PI, 0], left: [-Math.PI / 2, 0], right: [Math.PI / 2, 0], up: [0, Math.PI / 2 - 0.01], down: [0, -Math.PI / 2 + 0.01] };
         if (!views[direction]) return;
-        clearFraming(); manualFlybyLook();
+        clearFraming(); manualFlybyLook(); manualNavigationLook();
         endInspectionGlides('Manual look ended the camera glide. Travel is paused.');
         endOrbit('Manual look ended the orbit. Travel is paused.');
         state.yaw = views[direction][0]; state.pitch = views[direction][1];
@@ -2922,8 +3016,9 @@
         if (!item || !toLandmark(item).distance) return false;
         clearFraming();
         if (targetId !== item.id) { endInspectionGlides('Target changed. Camera glide ended; travel is paused.'); endFlyby('Target changed. Flyby canceled; travel is paused.'); }
-        manualFlybyLook();
+        manualFlybyLook(); manualNavigationLook();
         if (orbitId && orbitId !== item.id) endOrbit();
+        if(navigation.active&&navigation.path==='scenic'&&navigation.targetId===item.id)navigation.autoLook=true;
         targetId = item.id; faceTarget(item); emitTelemetry(true); requestDraw();
         return true;
       },
@@ -2935,7 +3030,7 @@
         var yaw = Math.atan2(direction[0], direction[2]);
         var pitch = clamp(Math.atan2(direction[1], Math.hypot(direction[0], direction[2])), -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01);
         if (!Number.isFinite(yaw) || !Number.isFinite(pitch)) return false;
-        clearFraming(); manualFlybyLook(); endInspectionGlides(); navigation = { active: false, targetId: null }; orbitId = null; orbitPath = null;
+        clearFraming(); manualFlybyLook(); manualNavigationLook(); endInspectionGlides(); navigation = { active: false, targetId: null }; orbitId = null; orbitPath = null;
         state.yaw = yaw; state.pitch = pitch;
         pauseWithMessage('Looking toward the center of this generated scene. Travel is paused.');
         requestDraw(); return true;
@@ -2946,7 +3041,7 @@
         if (!pose) return false;
         endInspectionGlides();
         if (targetId !== item.id) endFlyby('Target changed. Flyby canceled; travel is paused.');
-        manualFlybyLook();
+        manualFlybyLook(); manualNavigationLook();
         frameUndo = { yaw: state.yaw, pitch: state.pitch };
         framePlacement = pose.screen[0] === 1 / 3 ? 'left' : pose.screen[0] === 0.5 ? 'center' : pose.screen[0] === 2 / 3 ? 'right' : null;
         if (navigation.targetId && navigation.targetId !== item.id) navigation = { active: false, targetId: null };
@@ -2958,27 +3053,37 @@
       undoFrame: function () {
         if (disposed || lost || !gl || !program || !frameUndo) return false;
         var pose = frameUndo;
-        endInspectionGlides(); manualFlybyLook();
+        endInspectionGlides(); manualFlybyLook(); manualNavigationLook();
         clearFraming(); state.yaw = pose.yaw; state.pitch = pose.pitch; orbitId = null; orbitPath = null;
         pauseWithMessage('Previous look direction restored. Travel is paused.');
         requestDraw(); return true;
       },
-      planApproach: function (id, multiplier) {
+      planApproach: function (id, multiplier, path) {
+        if(path!==undefined&&path!=='direct'&&path!=='scenic')return null;
         var item = !disposed && getLandmark(id);
-        return item && settings.mode==='explore' ? approachPlan(toLandmark(item).distance,item.arrivalRadiusLy,multiplier,settings.speed) : null;
+        if(!item||settings.mode!=='explore')return null;
+        if(path!=='scenic')return approachPlan(toLandmark(item).distance,item.arrivalRadiusLy,multiplier,settings.speed);
+        if(lost||!gl||!program||(multiplier!==undefined&&!Number.isFinite(multiplier)))return null;
+        var radius=approachPlan(toLandmark(item).distance,item.arrivalRadiusLy,multiplier,settings.speed).arrivalRadiusLy;
+        if(navigation.active&&navigation.path==='scenic'&&navigation.targetId===item.id&&navigation.arrivalRadiusLy===radius)
+          return copyScenicApproachPlan(navigation.plan,Math.max(0,navigation.totalLy-navigation.traveledLy),settings.speed);
+        return scenicApproachPlan(state.position,item.position,item.arrivalRadiusLy,multiplier,settings.speed,REGIONS[settings.region].boundary);
       },
-      navigateTo: function (id, multiplier) {
-        if (disposed || lost || !gl || settings.mode !== 'explore') return false;
+      navigateTo: function (id, multiplier, path) {
+        if (disposed || lost || !gl || settings.mode !== 'explore'||(path!==undefined&&path!=='direct'&&path!=='scenic')) return false;
         var item = getLandmark(id);
         if (!item) return false;
+        var plan=path==='scenic'&&program?scenicApproachPlan(state.position,item.position,item.arrivalRadiusLy,multiplier,settings.speed,REGIONS[settings.region].boundary):null;
+        if(path==='scenic'&&!plan)return false;
         clearFraming();
         clearFlyby();
         cameraMoves = [];
         orbitId = null; orbitPath = null;
         freePace = 0;
         targetId = item.id; faceTarget(item);
-        var plan = approachPlan(toLandmark(item).distance,item.arrivalRadiusLy,multiplier,settings.speed);
+        if(!plan)plan = approachPlan(toLandmark(item).distance,item.arrivalRadiusLy,multiplier,settings.speed);
         navigation = { active:false, targetId:item.id, arrivalRadiusLy:plan.arrivalRadiusLy, totalLy:plan.remainingLy, completed:false };
+        if(path==='scenic'){navigation.path='scenic';navigation.plan=plan;navigation.traveledLy=0;navigation.autoLook=true;}
         if (plan.remainingLy <= plan.arrivalRadiusLy * 1e-9) {
           navigation.completed = true; navigation.alreadyWithin = true;
           pauseWithMessage('Already within the viewing distance of ' + item.name + '. Travel is paused so you can look around.');
@@ -3161,5 +3266,5 @@
     return api;
   }
 
-  global.UniverseFlight = { create: create, landmarks: landmarks, flybys: flybys, dustClouds: dustClouds, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan, targetView: targetView, targetFrame: targetFrame, orbitView: orbitView, rangeView: rangeView, orbitPlane: orbitPlane, easePace: easePace, dustOpticalDepth: dustOpticalDepth, dustTransmission: dustTransmission } };
+  global.UniverseFlight = { create: create, landmarks: landmarks, flybys: flybys, dustClouds: dustClouds, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan, scenicApproachPlan: scenicApproachPlan, targetView: targetView, targetFrame: targetFrame, orbitView: orbitView, rangeView: rangeView, orbitPlane: orbitPlane, easePace: easePace, dustOpticalDepth: dustOpticalDepth, dustTransmission: dustTransmission } };
 })(window);

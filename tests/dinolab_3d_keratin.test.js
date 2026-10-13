@@ -11,7 +11,8 @@ describe('Dino Lab swept keratin surfaces', () => {
       const radius = scale * .09, g = dinoKeratinGeometry(T, direction, radius, kind);
       const p = g.attributes.position, normal = g.attributes.normal, index = g.index;
       expect(direction.equals(original)).toBe(true);
-      expect(p.count).toBe(146); expect(index.count / 3).toBe(288);
+      const density = kind === 'horn' ? 24 : 12;
+      expect(p.count).toBe(kind === 'horn' ? 578 : 146); expect(index.count / 3).toBe(kind === 'horn' ? 1152 : 288);
       expect(new T.Vector3().fromBufferAttribute(p, p.count - 1).length()).toBe(0);
       expect(new T.Vector3().fromBufferAttribute(p, p.count - 2).distanceTo(direction)).toBeLessThan(scale * 1e-6);
       expect([...p.array, ...normal.array].every(Number.isFinite)).toBe(true);
@@ -19,19 +20,19 @@ describe('Dino Lab swept keratin surfaces', () => {
       for (let i = 0; i < index.count; i += 3) {
         const ids = [index.getX(i), index.getX(i + 1), index.getX(i + 2)];
         const [a,b,c] = ids.map(id => new T.Vector3().fromBufferAttribute(p,id));
-        expect(new T.Vector3().crossVectors(b.clone().sub(a), c.clone().sub(a)).length()).toBeGreaterThan(scale * scale * 1e-5);
+        expect(new T.Vector3().crossVectors(b.clone().sub(a), c.clone().sub(a)).length()).toBeGreaterThan(scale * scale * (kind === 'horn' ? 1e-6 : 1e-5));
         volume += a.dot(new T.Vector3().crossVectors(b,c)) / 6;
         for (let e = 0; e < 3; e++) { const key = [ids[e],ids[(e+1)%3]].sort((x,y)=>x-y).join(':'); edges.set(key, (edges.get(key)||0)+1); }
       }
       expect(volume).toBeGreaterThan(0); expect([...edges.values()].every(n=>n===2)).toBe(true);
       for (let i = 0; i < p.count; i++) expect(new T.Vector3().fromBufferAttribute(normal,i).length()).toBeCloseTo(1,5);
       let previous = Infinity;
-      for (let ring = 0; ring < 12; ring++) {
-        const center = new T.Vector3(); for (let j = 0; j < 12; j++) center.add(new T.Vector3().fromBufferAttribute(p,ring*12+j)); center.divideScalar(12);
-        const sectionRadius = new T.Vector3().fromBufferAttribute(p,ring*12+3).distanceTo(center);
+      for (let ring = 0; ring < density; ring++) {
+        const center = new T.Vector3(); for (let j = 0; j < density; j++) center.add(new T.Vector3().fromBufferAttribute(p,ring*density+j)); center.divideScalar(density);
+        const sectionRadius = new T.Vector3().fromBufferAttribute(p,ring*density+density/4).distanceTo(center);
         expect(sectionRadius).toBeLessThan(previous); previous = sectionRadius;
-        expect(center.dot(direction.clone().normalize())).toBeCloseTo(direction.length()*ring/12,5);
-        if (ring === 6) expect(center.distanceTo(direction.clone().multiplyScalar(.5))).toBeCloseTo(direction.length()*(kind==='horn'?.065:.16),5);
+        expect(center.dot(direction.clone().normalize())).toBeCloseTo(direction.length()*ring/density,5);
+        if (ring === density/2) expect(center.distanceTo(direction.clone().multiplyScalar(.5))).toBeCloseTo(direction.length()*(kind==='horn'?.065:.16),5);
       }
       g.dispose();
     });

@@ -1,11 +1,11 @@
 {
   "slug": "american_revolution_causes_grade5",
   "version": 1,
-  "revision": "2026-10-04",
+  "revision": "2026-10-11",
   "style": "Warm watercolor historical scenes with clean civics diagrams",
   "provider": "Built-in image generation and authored SVG diagrams",
   "textPolicy": "Text-free raster artwork; captions and labels stay in native editable fields",
-  "note": "Visual review completed when asset status is visual-review-passed; educator review pending.",
+  "note": "Every selected asset visually reviewed on 2026-10-11; educator review pending. Original lesson content preserved.",
   "references": [
     "https://www.nps.gov/subjects/americanrevolution/timeline.htm"
   ],
@@ -54,7 +54,18 @@
       "alt": "A small house has a steep roof, two windows and a central doorway.",
       "prompt": "Authored text-free SVG diagram: A small house has a steep roof, two windows and a central doorway.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "d6c4f77c2505e17f7a27241fb78fd86a4b6b31df54a9ab5d32e839a0edb95fa5",
+      "optimizedSha256": "a81beae358c101ed74e7ec29d30db2429bf3496d6ff89cd88b030b956f36e0b3",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4516,
+      "altSource": "vision",
+      "altHash": "img-4nz-ac6f5833",
+      "decorative": false
     },
     {
       "id": "ar-term-parliament",
@@ -65,7 +76,18 @@
       "alt": "A triangular roof rests above four columns and a broad base.",
       "prompt": "Authored text-free SVG diagram: A triangular roof rests above four columns and a broad base.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "f5a3f9ae1e06bb97fa0a754666670ed26ccaa8323e91eed42586f40d6e046522",
+      "optimizedSha256": "bca96851f4fe9be5b388bbb753fa228ecf766edaa7b20556d5a444af72cd2adb",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4150,
+      "altSource": "vision",
+      "altHash": "img-4af-70d12742",
+      "decorative": false
     },
     {
       "id": "ar-term-tax",
@@ -73,10 +95,22 @@
       "file": "ar-term-tax.png",
       "webpFile": "ar-term-tax.webp",
       "vectorFile": "ar-term-tax.svg",
-      "alt": "Three small stacks of plain gold coins sit at different heights.",
+      "alt": "Three gold coin symbols rise diagonally from left to right.",
       "prompt": "Authored text-free SVG diagram: Three small stacks of plain gold coins sit at different heights.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "previousAlt": "Three small stacks of plain gold coins sit at different heights.",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "cecf5c396f962d485233898db8cbb4f0a763149cd465fc4f5388a0f75b562c6f",
+      "optimizedSha256": "c4c0c5e8fc14a76f900541a703913b3fa1f3470923808cb6acb8aafca3f7fcf8",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 3672,
+      "altSource": "vision",
+      "altHash": "img-3sn-cca6eab7",
+      "decorative": false
     },
     {
       "id": "ar-term-representation",
@@ -87,7 +121,18 @@
       "alt": "Three people stand together beneath a small columned building.",
       "prompt": "Authored text-free SVG diagram: Three people stand together beneath a small columned building.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "615d22747acbb9bae9008b7c331732490b3cf44f34af8138ae47ac2d8b7bdd0e",
+      "optimizedSha256": "7b39827af935e026e83c76487d00900c9ea8fd20452d7408ee398918a0f083a7",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 6392,
+      "altSource": "vision",
+      "altHash": "img-6lf-9d7db03f",
+      "decorative": false
     },
     {
       "id": "ar-term-boycott",
@@ -98,7 +143,18 @@
       "alt": "An open hand faces a closed package.",
       "prompt": "Authored text-free SVG diagram: An open hand faces a closed package.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "0bf8963b654a8ae1e80c46545e6eb4a0f68d3a53771aaa0476cb8532e5842619",
+      "optimizedSha256": "fb692e886e257135de9d2c6b1206fe9c51a7ec665219309dac1316fe6c5730a6",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 5236,
+      "altSource": "vision",
+      "altHash": "img-5en-ceb9c0c6",
+      "decorative": false
     },
     {
       "id": "ar-term-protest",
@@ -109,7 +165,18 @@
       "alt": "Three people gather beside a raised blank placard.",
       "prompt": "Authored text-free SVG diagram: Three people gather beside a raised blank placard.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "11312ee2899456cb0c46c933e625e94a848c07113a40d20f3a446892f9278024",
+      "optimizedSha256": "24a42eaeae6f6ec1572e3951ddce98e625812175e11e16a7fccea9f61f2122a4",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 5852,
+      "altSource": "vision",
+      "altHash": "img-61f-c1b3739e",
+      "decorative": false
     },
     {
       "id": "ar-term-militia",
@@ -117,10 +184,22 @@
       "file": "ar-term-militia.png",
       "webpFile": "ar-term-militia.webp",
       "vectorFile": "ar-term-militia.svg",
-      "alt": "Three people stand together with two long weapons held upright at the outer edges.",
+      "alt": "Three simple figures stand in a group, flanked by two long weapons held upright.",
       "prompt": "Authored text-free SVG diagram: Three people stand together with two long weapons held upright at the outer edges.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "previousAlt": "Three people stand together with two long weapons held upright at the outer edges.",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "ae49605ba0d1829c0b95a390470d7f7f8f0cc538b7ec66a18bd33f593a0bde60",
+      "optimizedSha256": "edfb4d1da37debeefeff4707c0723d7a5e4c15d01611caf5a2979c8324963418",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 6032,
+      "altSource": "vision",
+      "altHash": "img-683-d415c8a3",
+      "decorative": false
     },
     {
       "id": "ar-term-repeal",
@@ -131,7 +210,18 @@
       "alt": "A blank paper has an arrow moving away to the right.",
       "prompt": "Authored text-free SVG diagram: A blank paper has an arrow moving away to the right.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "eff2b351386fa5035b0846e617b0a8a75eb66117f89e07ce29f078ae0c7bf31b",
+      "optimizedSha256": "4993e763ec40258d6e651fa06bce8af54f84b1fb2219675731ddded6e0dd83a2",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 1860,
+      "altSource": "vision",
+      "altHash": "img-1xj-4c49745d",
+      "decorative": false
     },
     {
       "id": "ar-term-congress",
@@ -142,7 +232,18 @@
       "alt": "Three people gather around a table with blank papers.",
       "prompt": "Authored text-free SVG diagram: Three people gather around a table with blank papers.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "0c596f58caac047e9ed0534403da4e75e9ee7578be07fdd194dee400ce4c853c",
+      "optimizedSha256": "899c5abca2889631c2b16683d32a4675627c30190b7d30990af2841e9cc01374",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 5996,
+      "altSource": "vision",
+      "altHash": "img-66r-3357d9f3",
+      "decorative": false
     },
     {
       "id": "ar-term-liberty",
@@ -153,7 +254,18 @@
       "alt": "A gold padlock has its curved shackle open.",
       "prompt": "Authored text-free SVG diagram: A gold padlock has its curved shackle open.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "b959df244bdfe98106f21382014f4fcde70490291403a52cbbc854090e004b62",
+      "optimizedSha256": "e2eb300d723c44b302a5965a44945b55b29385d859b4da538f32ad6c577a9b77",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 2194,
+      "altSource": "vision",
+      "altHash": "img-29z-dc1ebe0c",
+      "decorative": false
     },
     {
       "id": "ar-term-loyalist",
@@ -164,7 +276,18 @@
       "alt": "A gold crown has three raised points.",
       "prompt": "Authored text-free SVG diagram: A gold crown has three raised points.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "8df0a6823ab7dd2c1b21cfb0df07d591a57d9b42518f9d00530fb8370242ed7b",
+      "optimizedSha256": "3f75323b0c4e5d36690eece0dd5074f105f9d020160efd171452ef7124fbd6e9",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4942,
+      "altSource": "vision",
+      "altHash": "img-53r-c49b40c3",
+      "decorative": false
     },
     {
       "id": "ar-term-patriot",
@@ -175,7 +298,18 @@
       "alt": "Three people gather above a curved line connecting the group.",
       "prompt": "Authored text-free SVG diagram: Three people gather above a curved line connecting the group.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "172a3f265e617348adc2de739b31c06bbf6ccf2e3219edce13c90746dcddadd3",
+      "optimizedSha256": "980c334d6d15c68a6b7ecabce8d999ed33eabe93c841a71c24b1680e842422e4",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 6676,
+      "altSource": "vision",
+      "altHash": "img-6vz-34f5f0a3",
+      "decorative": false
     },
     {
       "id": "ar-context-harbor",
@@ -186,7 +320,18 @@
       "alt": "Two posts hold a barrier across blue water.",
       "prompt": "Authored text-free SVG diagram: Two posts hold a barrier across blue water.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "088b665e1e08e938c24dc87eb7c55e62d1dadd211a8161a0b5ddb30dd4d4b183",
+      "optimizedSha256": "3cb37e04237aba69bbc36f5a0d23e498aff8c46a6dc698235d83ba00224f12a9",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4752,
+      "altSource": "vision",
+      "altHash": "img-4wn-35b5f3d1",
+      "decorative": false
     },
     {
       "id": "ar-context-rope",
@@ -197,7 +342,18 @@
       "alt": "Two hands face opposite ends of a straight rope.",
       "prompt": "Authored text-free SVG diagram: Two hands face opposite ends of a straight rope.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "925427ec19145248ff982b291bc21d3a82a645bfe4d036aae83fa31699a5a255",
+      "optimizedSha256": "f753c0f8c4f5db056d80401097c80d7b67d110a1c8799d384fb98ecec8ace7fc",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 5068,
+      "altSource": "vision",
+      "altHash": "img-58f-8a11259d",
+      "decorative": false
     },
     {
       "id": "ar-context-stamp",
@@ -208,7 +364,18 @@
       "alt": "A plain paper sits beneath a handled stamp.",
       "prompt": "Authored text-free SVG diagram: A plain paper sits beneath a handled stamp.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "8a2e3ff687989a6e828b742103c6cd9e9bcd1978ef1abf47a0797192380f959c",
+      "optimizedSha256": "eea0cdece3edfd338bf49e6f4c90ff813a3b3c181ad10ed4ebde57230dc0bb4c",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 2412,
+      "altSource": "vision",
+      "altHash": "img-2hz-3e496144",
+      "decorative": false
     },
     {
       "id": "ar-context-spinning",
@@ -216,10 +383,22 @@
       "file": "ar-context-spinning.png",
       "webpFile": "ar-context-spinning.webp",
       "vectorFile": "ar-context-spinning.svg",
-      "alt": "A wheel with three spokes stands on legs beside a small bundle.",
+      "alt": "A large wheel with six spokes stands on two legs beside a small gold bundle.",
       "prompt": "Authored text-free SVG diagram: A wheel with three spokes stands on legs beside a small bundle.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "previousAlt": "A wheel with three spokes stands on legs beside a small bundle.",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "2635b943f69304a8a34f3f7a0d6cb71121f14be17cfc65b6e53e7a464ca5c51b",
+      "optimizedSha256": "f3b3ec764008a36f39510efb4806fb0769b3fff1e51b5739eeeac18358656c8f",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 7754,
+      "altSource": "vision",
+      "altHash": "img-7zv-4ffe01b3",
+      "decorative": false
     },
     {
       "id": "ar-context-tea",
@@ -230,7 +409,18 @@
       "alt": "Two wooden boxes sit above blue waves.",
       "prompt": "Authored text-free SVG diagram: Two wooden boxes sit above blue waves.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "acd9a4ceaa0d481556fcb55760d5cb077adb2d7cd4c39d3a2e9c39258825ebda",
+      "optimizedSha256": "8f03d9b2d6ba0760887f1cdd48b89ef7259b443ea194321ca6b4d16c6e1de259",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 4942,
+      "altSource": "vision",
+      "altHash": "img-53r-47026e86",
+      "decorative": false
     },
     {
       "id": "ar-context-council",
@@ -241,7 +431,18 @@
       "alt": "A small columned building stands beside a barrier.",
       "prompt": "Authored text-free SVG diagram: A small columned building stands beside a barrier.",
       "provider": "Authored SVG diagram",
-      "status": "visual-review-pending"
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "sourceSha256": "b3d62d394033c5b910f0f409d1d614fdf28756b575f6fa5da21c373cb4f2d2da",
+      "optimizedSha256": "0e5e280be37d1ccf476ac0bc472037b1dc1be6a9ee3452cbc34f26fc91efe943",
+      "sourceWidth": 480,
+      "sourceHeight": 480,
+      "width": 480,
+      "height": 480,
+      "bytes": 6520,
+      "altSource": "vision",
+      "altHash": "img-6q7-00fc1106",
+      "decorative": false
     },
     {
       "slug": "american_revolution_causes_grade5",
@@ -251,8 +452,25 @@
       "prompt": "Use case: historical-scene. Asset type: one educational timeline illustration for a Grade 5 American Revolution lesson. Create a wide warm watercolor and ink storybook timeline strip, seven clearly separated miniature vignettes evenly spaced in a single row on ivory paper. Left to right ONLY: a folded treaty document and quill with blank pages; blank paper beside a wax stamp; a snowy colonial Boston street with a calm tense crowd and distant red-coated British troops (no firing or injury); wooden tea chests beside an eighteenth-century sailing ship in Boston harbor at dusk; the same harbor with a wooden barrier closing the dock; adult delegates in eighteenth-century clothing around a wooden table with blank papers; colonial civilian militia gathered on a village green with muskets held down safely. Quiet muted earth colors, readable silhouettes, historically plausible clothing and architecture, no modern objects, no exaggerated caricatures. Connect vignettes with a subtle plain horizontal arrow. Keep generous clean space below each vignette for editable labels that will be added by the app. Absolutely NO words, letters, numerals, readable script, dates, captions, seals with characters, flags with text, logos, or watermark in the raster artwork. There must be exactly seven vignettes and no graphic violence.",
       "alt": "Seven scenes show a treaty, a paper stamp, a snowy Boston crowd, tea chests beside a ship, a closed harbor, delegates meeting, and militia gathering.",
       "title": "Selected turning points, 1763–1775",
-      "caption": "Selected events trace an escalating conflict. Use the complete text timeline for the events between these scenes.",
-      "labels": [
+      "caption": "From left to right: 1763, Treaty of Paris; 1765, Stamp Act; 1770, Boston Massacre; 1773, Boston Tea Party; 1774, Boston port closed; 1774, First Continental Congress; 1775, fighting begins. These selected scenes trace escalating conflict. Use the complete text timeline for the events between them.",
+      "labels": [],
+      "kind": "lesson",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "afterType": "timeline",
+      "reviewedAt": "2026-10-11",
+      "webpFile": "ar-timeline.webp",
+      "sourceSha256": "e0faca8b5d95e181314cb1fbae23d8349cb4f1fdb3e5e95c96a8ddf19dbd6d75",
+      "optimizedSha256": "4afc759d5c82bc93267e3eaee4c40f81a570af8e2f863896159a3d475fb6c005",
+      "sourceWidth": 2172,
+      "sourceHeight": 724,
+      "width": 900,
+      "height": 300,
+      "bytes": 39854,
+      "altSource": "vision",
+      "altHash": "img-150r-a7f23640",
+      "decorative": false,
+      "previousPlannedLabels": [
         {
           "text": "1763: Treaty of Paris",
           "position": "bottom-center",
@@ -296,10 +514,7 @@
           "anchorY": 90
         }
       ],
-      "kind": "lesson",
-      "provider": "Built-in image generation",
-      "status": "visual-review-passed",
-      "afterType": "timeline"
+      "labelReview": "Dense label lists retained in native captions; remaining labels use distinct positions."
     },
     {
       "slug": "american_revolution_causes_grade5",
@@ -307,7 +522,7 @@
       "file": "ar-perspectives.png",
       "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-df6d0eec-1ae7-42ac-a40f-985ab89e4ff9.png",
       "prompt": "Use case: historical-scene. Asset: one two-panel educational illustration for Grade 5 explaining different eighteenth-century viewpoints about colonial taxation. Warm watercolor and fine ink storybook style on ivory paper, muted earth colors. Left panel: a serious but humane British official in an eighteenth-century coat, seated at a wooden desk with thick blank ledgers, a quill and a small modest pile of coins; he is considering the cost of war. Right panel: an ordinary colonial family, adults and a school-age child in historically plausible plain clothing, seated together at home reading a blank official sheet by candlelight; their faces show concern and thought, not rage. Balance both viewpoints respectfully, no caricatures or villains. Equal panels separated by clean ivory gutter, generous clean space below for app captions. No modern objects. Absolutely no words, letters, numerals, readable handwriting, thought-bubble text, labels, dates, logos or watermark anywhere. Blank paper only. One combined two-panel image; do not add further scenes.",
-      "alt": "A British official studies blank ledgers and coins; a colonial family studies a blank notice by candlelight.",
+      "alt": "Left: a British official studies a blank paper beside books and coins. Right: a colonial family reads a blank paper by candlelight.",
       "title": "Two viewpoints on taxes",
       "caption": "Britain sought revenue after war. Many colonists objected to taxes imposed without representation. These scenes illustrate viewpoints, not specific people.",
       "labels": [
@@ -327,7 +542,35 @@
       "kind": "lesson",
       "provider": "Built-in image generation",
       "status": "visual-review-passed",
-      "afterType": "simplified"
+      "afterType": "simplified",
+      "previousAlt": "A British official studies blank ledgers and coins; a colonial family studies a blank notice by candlelight.",
+      "reviewedAt": "2026-10-11",
+      "webpFile": "ar-perspectives.webp",
+      "sourceSha256": "c116b9d3ebbcc5246264448efb3343b9a7ee8e887d1c1a91945ddce47fb38461",
+      "optimizedSha256": "1e651169f82e09e8901346da5f99ffe8d482d0a4262fb7aec37612bd626d9d7b",
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "width": 900,
+      "height": 600,
+      "bytes": 90264,
+      "altSource": "vision",
+      "altHash": "img-2kvr-1cf50a9e",
+      "decorative": false
     }
-  ]
+  ],
+  "reviewed": "2026-10-11",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/american_revolution_causes_grade5.allopack.json",
+  "sourcePackSha256": "33d105e5c9b8a8b492849af59149642e67d8383faca4e2a4b82270477452bde5",
+  "illustratedPack": "allopacks/illustrated/american_revolution_causes_grade5.allopack.json",
+  "illustratedPackSha256": "ffd5fe282757fb643aa2751e23219d78f33a1c0c4490728851a7e51af0f23476",
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "productionArtifactEnvelope": true,
+    "productionAltHashes": true,
+    "uniqueAssets": 20,
+    "imagePlacements": 29
+  }
 }

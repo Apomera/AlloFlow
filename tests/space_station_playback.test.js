@@ -74,7 +74,7 @@ function mountPlayback(overrides = {}) {
       ...props,
       React,
       value,
-      onAdvance(next) { updates.push(next); setValue(next); },
+      onAdvance(next) { updates.push(next); if (!props.deferCommits) setValue(next); },
     });
   }
   act(() => root.render(React.createElement(Harness)));
@@ -103,6 +103,21 @@ function mountPlayback(overrides = {}) {
 }
 
 describe('space station experiment playback', () => {
+  it('keeps playing when an earlier emitted frame commits after a newer one was issued', () => {
+    const view = mountPlayback({ deferCommits: true });
+    view.play();
+    advance(350);
+    expect(view.updates.length).toBeGreaterThan(1);
+    // React may defer the parent render while the RAF clock emits another value.
+    // This is an acknowledgement of our own frame, not an external user seek.
+    view.seek(view.updates[0]);
+    expect(view.playing).toBe(true);
+    view.seek(view.updates.at(-1));
+    expect(view.playing).toBe(true);
+    view.seek(12);
+    expect(view.playing).toBe(false);
+  });
+
   it('only advances after an explicit start and resumes without counting paused wall time', () => {
     const view = mountPlayback();
     expect(view.host.querySelector('[data-iss-playback="momentum"]')).not.toBeNull();
@@ -143,6 +158,19 @@ describe('space station experiment playback', () => {
     frame(60000);
     expect(view.value - before).toBeGreaterThanOrEqual(0);
     expect(view.value - before).toBeLessThanOrEqual(0.250001);
+  });
+
+  it('labels accelerated orbital days while preserving simulation seconds', () => {
+    const view = mountPlayback({ id: 'drag', max: 30 * 86400, speeds: [86400, 432000], speedLabels: ['1 day/s', '5 days/s'] });
+    expect([...view.host.querySelectorAll('option')].map(option => option.textContent)).toEqual(['1 day/s', '5 days/s']);
+    view.play();
+    advance(1000);
+    expect(view.value / 86400).toBeCloseTo(1, 1);
+    view.speed(432000);
+    frame(); // establish the new rate's animation-frame origin
+    const before = view.value;
+    advance(1000);
+    expect((view.value - before) / 86400).toBeCloseTo(5, 1);
   });
 
   it('pauses on a hidden document and requires a new start after becoming visible', () => {

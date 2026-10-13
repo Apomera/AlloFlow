@@ -18,6 +18,7 @@ function capture(text) {
 }
 const art = capture(source), oldArt = capture(baselineSource);
 const normal = new THREE.Vector3(1, -.60, 0).normalize();
+const sides = 128, backOffset = 1 + 9 * sides;
 const vec = (x, y, z) => new THREE.Vector3(x, y, z);
 function block(text, startMarker, endMarker) {
   const start = text.indexOf(startMarker), end = text.indexOf(endMarker, start);
@@ -45,9 +46,9 @@ function geometryEqual(actual, old) {
   expect(actual.userData).toEqual(old.userData);
 }
 function vertexLocation(index) {
-  if (index === 0 || index === 577) return { center: true, stationary: true };
-  const front = index > 577 ? index - 577 : index, ring = Math.floor((front - 1) / 64), side = (front - 1) % 64;
-  return { ring, side, stationary: ring === 8 || side === 0 || side >= 32 };
+  if (index === 0 || index === backOffset) return { center: true, stationary: true };
+  const front = index > backOffset ? index - backOffset : index, ring = Math.floor((front - 1) / sides), side = (front - 1) % sides;
+  return { ring, side, stationary: ring === 8 || side === 0 || side >= sides / 2 };
 }
 function manifold(geometry) {
   const p = geometry.attributes.position, index = geometry.index.array, edges = new Map();
@@ -101,7 +102,7 @@ describe('Dino Lab bounded Triceratops frill camber', () => {
     it('forms a bounded closed outward camber at scale ' + scale + ', body depth ' + bodyDepth + ', bow length ' + bowLength, () => {
       const data = setup(scale, bodyDepth, bowLength), [geometry, old] = geometryPair(data);
       try {
-        expect(geometry.attributes.position.count).toBe(1090); expect(geometry.index.count).toBe(6528);
+        expect(geometry.attributes.position.count).toBe(2178); expect(geometry.index.count).toBe(13056);
         expect(geometry.attributes.uv.array).toEqual(old.attributes.uv.array); expect(geometry.index.array).toEqual(old.index.array);
         const p = geometry.attributes.position, n = geometry.attributes.normal, before = old.attributes.position;
         let changed = 0, peak = 0, maxNormalError = 0;
@@ -134,12 +135,12 @@ describe('Dino Lab bounded Triceratops frill camber', () => {
     for (const scale of [.03, 1, 12]) for (const [bodyDepth, bowLength] of [[.60, 4], [1.04, 12]]) {
       const data = setup(scale, bodyDepth, bowLength), [geometry, old] = geometryPair(data), p = geometry.attributes.position, before = old.attributes.position;
       try {
-        for (let index = 0; index <= 512; index++) {
-          const thickness = vec(0, 0, 0).fromBufferAttribute(p, index).sub(vec(0, 0, 0).fromBufferAttribute(p, index + 577));
-          const previous = vec(0, 0, 0).fromBufferAttribute(before, index).sub(vec(0, 0, 0).fromBufferAttribute(before, index + 577));
+        for (let index = 0; index <= 8 * sides; index++) {
+          const thickness = vec(0, 0, 0).fromBufferAttribute(p, index).sub(vec(0, 0, 0).fromBufferAttribute(p, index + backOffset));
+          const previous = vec(0, 0, 0).fromBufferAttribute(before, index).sub(vec(0, 0, 0).fromBufferAttribute(before, index + backOffset));
           expect(thickness.distanceTo(previous)).toBeLessThan(scale * 1e-6); expect(thickness.dot(normal)).toBeGreaterThan(0);
         }
-        for (let index = 513; index <= 576; index++) expect(vec(0, 0, 0).fromBufferAttribute(p, index).toArray()).toEqual(vec(0, 0, 0).fromBufferAttribute(before, index).toArray());
+        for (let index = 1 + 8 * sides; index <= 9 * sides; index++) expect(vec(0, 0, 0).fromBufferAttribute(p, index).toArray()).toEqual(vec(0, 0, 0).fromBufferAttribute(before, index).toArray());
       } finally { geometry.dispose(); old.dispose(); }
     }
   });

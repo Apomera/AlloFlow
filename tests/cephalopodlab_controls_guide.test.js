@@ -13,7 +13,7 @@ function fixture(paused=false){
   const start=source.indexOf("        var guideTitle=document.createElement('h2');"),end=source.indexOf('        function setting(label,key)',start);assert.ok(start>=0&&end>start);
   const open=source.match(/        function openSettings\(\)\{[^\n]*\}/)[0],close=source.match(/        function closeSettings\(\)\{[^\n]*\}/)[0],key=source.match(/        settingsPanel\.onkeydown=function\(e\)\{[^\n]*\};/)[0];
   return new Function('document','stage','settingsPanel','settingsContent','canvasEl','species','capabilities','paused',helper+`
-    var speciesId=species.id||'commonOcto',uiStyle={textContent:''},gameState={paused:paused,gameOver:false},settingsWasPaused=false,pauseCalls=[];
+    var speciesId=species.id||'commonOcto',uiStyle={textContent:''},gameState={paused:paused,gameOver:false},settingsWasPaused=false,pauseCalls=[],diveSetup={mode:'observe',label:'Field study',description:'Explore without health loss or hunger depletion. Prey, predators, stamina and species abilities still behave under the same simplified game rules.'};
     function clearInput(){}function setPaused(value){gameState.paused=value;pauseCalls.push(value);}
     `+source.slice(start,end)+`
     for(var i=0;i<2;i++){var input=document.createElement('input');input.type='checkbox';settingsContent.appendChild(input);}

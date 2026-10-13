@@ -229,7 +229,7 @@ function DirectionsResultView({
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("h1", {
     className: "text-lg font-bold text-slate-800 flex-1"
-  }, directionsResultText(title, text('directions.title', 'Assignment Directions'), 140)), stations.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, directionsResultText(title, text('directions.title', 'Lesson Directions'), 140)), stations.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onToggleMap,
     "aria-pressed": showMap,

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "crepair-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "REPAIR ASKS",
+      "assetId": "crepair-term-repair",
+      "reason": "Repairing the affected shared object shows a concrete helpful action."
+    },
+    {
+      "resourceId": "crepair-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "STEWARDSHIP",
+      "assetId": "crepair-term-steward",
+      "reason": "Returning a laptop to its cart directly matches stewardship."
+    }
+  ]
+}

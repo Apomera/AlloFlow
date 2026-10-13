@@ -1,0 +1,1172 @@
+{
+  "slug": "ancient_egypt_grade6",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/ancient_egypt_grade6.allopack.json",
+  "sourcePackSha256": "371b2a84144b6ffd854ab40fd04c15207270143f52b01f63b16d1eb7ea2f967d",
+  "illustratedPack": "allopacks/illustrated/ancient_egypt_grade6.allopack.json",
+  "illustratedPackSha256": "f0847d5f354c6a9667b806767e4b3d10efd4854243dc76ddd3958b1840a3616b",
+  "plan": "allopacks/media/ancient_egypt_grade6/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "eg-term-nile",
+      "kind": "term",
+      "scene": "A wide calm river seen from a low bank, green reeds along both sides and pale desert beyond; abrupt green-to-sand boundary clearly visible.",
+      "alt": "A calm blue river runs between green reeds, with pale desert just beyond the banks.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A wide calm river seen from a low bank, green reeds along both sides and pale desert beyond; abrupt green-to-sand boundary clearly visible. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-nile.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-533a63c8-0bf5-4471-b831-c9ac88d388b7.png",
+      "optimizedFile": "optimized/eg-term-nile.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "fe72141d616d8587f5d84cdc34f1ce8d84ca60d4f999765a57af70ed193acbf2",
+      "optimizedSha256": "0f4047106b4302b72ccfa48eeecb1904b4ce189dc3ddc7f66b9b2976f1da208c",
+      "bytes": 52064,
+      "altSource": "vision",
+      "altHash": "img-1hkz-982a3161",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Nile",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 0,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-term-silt",
+      "kind": "term",
+      "scene": "Close low view of an ancient Egyptian Nile floodplain after floodwater has receded: a broad smooth layer of fine dark moist sediment covers the flat low ground. A shallow residual pool glints nearby; the river and a pale dry raised bank sit quietly behind. No people, hands, baskets, tools, crops, buildings or vessels. Mud deposited naturally by water, not deliberately spread or mixed.",
+      "alt": "Fine dark mud covers low ground beside a shallow pool, with a pale dry bank beyond.",
+      "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: Close low view of an ancient Egyptian Nile floodplain after floodwater has receded: a broad smooth layer of fine dark moist sediment covers the flat low ground. A shallow residual pool glints nearby; the river and a pale dry raised bank sit quietly behind. No people, hands, baskets, tools, crops, buildings or vessels. Mud deposited naturally by water, not deliberately spread or mixed. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+      "file": "eg-term-silt-v2.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-4d01385c-e41e-4246-b605-95a982d9c459.png",
+      "previousVersions": [
+        {
+          "file": "eg-term-silt.png",
+          "prompt": "Use case: historical-scene. Asset: square glossary picture. Close view of fine dark wet mud spread over pale dry sand, one adult hand pressing gently into it; obvious color difference, not a pile of dirt. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "alt": "A hand presses into dark wet mud spread over pale sand.",
+          "status": "visual-review-passed",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-5f278d85-35a6-477e-ae46-ae01c28da0da.png"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "historicalReviewSources": [
+        "https://www.metmuseum.org/-/media/files/learn/for-educators/publications-for-educators/the-art-of-ancient-egypt.pdf"
+      ],
+      "visualReviewNotes": "Replaced with a boat-free, text-free standalone scene. Original artwork retained.",
+      "optimizedFile": "optimized/eg-term-silt.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "e87c55f04b4d3818e9ad7d5e7fe8c04ba17441ba89635faf4f0f112b9533eb2b",
+      "optimizedSha256": "c3d8e0a6fa4ecc63294a3952b826afa6998a3ee8b9ce21cc3fcfb1c322efde5a",
+      "bytes": 42162,
+      "altSource": "vision",
+      "altHash": "img-17e7-a5cbd41f",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Silt",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 1,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "sort",
+          "resourceId": "eg-sort",
+          "itemId": "eg2",
+          "itemIndex": 1,
+          "field": "image",
+          "reason": "The boat-free sediment scene shows dark mud naturally left across low ground.",
+          "maxEdge": 320,
+          "optimizedFile": "optimized/eg-term-silt-sort-320.webp",
+          "optimizedSha256": "4022ca5b03123975e3dd3135c807b0b61ac77067e4eecc571fa79c49f84a31b5",
+          "width": 320,
+          "height": 320,
+          "bytes": 19090,
+          "altHash": "img-jnr-d002940c",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-term-surplus",
+      "kind": "term",
+      "scene": "A plain mud-brick granary with many sacks of grain stacked well above one household's needs, ordinary abundance, no gold or treasure.",
+      "alt": "Many filled sacks are stacked inside a plain mud-brick storage building.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A plain mud-brick granary with many sacks of grain stacked well above one household's needs, ordinary abundance, no gold or treasure. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-surplus.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-21dbdd37-df30-455e-8b44-df6ac0a0613a.png",
+      "optimizedFile": "optimized/eg-term-surplus.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "bb7e8e06edfea46b8c792a8a79d0604f8e438298e69f2b3096ff2fd46c6887df",
+      "optimizedSha256": "5cf9c9e58485fb387c0c79a3fcde2a3949c70ea664395c17a93aaffb83b3d48b",
+      "bytes": 48140,
+      "altSource": "vision",
+      "altHash": "img-1djn-c20cec0d",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Surplus",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 2,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "eg-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "2 · A SURPLUS",
+          "field": "iconUrl",
+          "reason": "Many grain sacks in storage directly support the surplus section.",
+          "maxEdge": 180,
+          "optimizedFile": "optimized/eg-term-surplus-anchor-180.webp",
+          "optimizedSha256": "e92d2bf2ec1ca2a53aebc2320a0ceb7535f562477534287b09a66972b9b7aee0",
+          "width": 180,
+          "height": 180,
+          "bytes": 7730,
+          "altHash": "img-7yz-4f71639f",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-term-specialist",
+      "kind": "term",
+      "scene": "A skilled Egyptian potter working alone at a simple pottery wheel, rows of finished earthenware behind; clearly practiced, no modern electric wheel.",
+      "alt": "A potter shapes a clay vessel at a simple wheel, with finished pots arranged behind.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A skilled Egyptian potter working alone at a simple pottery wheel, rows of finished earthenware behind; clearly practiced, no modern electric wheel. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-specialist.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-6c36fa59-40dc-49b1-a467-cdcbcef44c48.png",
+      "optimizedFile": "optimized/eg-term-specialist.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "b9d37358acf91423d9f0426eb32636336fadb5607d380cc792884f32162aa657",
+      "optimizedSha256": "ff6b4c64390cb78997d1c2a529f9c4992a6c9432e30aeedba933eee424b2471e",
+      "bytes": 39714,
+      "altSource": "vision",
+      "altHash": "img-14vj-49642a8a",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Specialist",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 3,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "eg-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "3 · SPECIALISTS",
+          "field": "iconUrl",
+          "reason": "The practiced potter is one of the specialist examples named in this section.",
+          "maxEdge": 180,
+          "optimizedFile": "optimized/eg-term-specialist-anchor-180.webp",
+          "optimizedSha256": "75f6917efa68b42d509b459b8dccc70bbcadd91ad42b5c57e2221b749b1b296e",
+          "width": 180,
+          "height": 180,
+          "bytes": 7140,
+          "altHash": "img-7d3-81781fc9",
+          "webpQuality": 76
+        },
+        {
+          "kind": "sort",
+          "resourceId": "eg-sort",
+          "itemId": "eg7",
+          "itemIndex": 6,
+          "field": "image",
+          "reason": "A potter working at one craft gives a focused example of specialized work.",
+          "maxEdge": 320,
+          "optimizedFile": "optimized/eg-term-specialist-sort-320.webp",
+          "optimizedSha256": "f70f9d9ce760899969d78eb508f1fbd8fdb44b9e5ffaf08cbca73bbbe1bd51c0",
+          "width": 320,
+          "height": 320,
+          "bytes": 19584,
+          "altHash": "img-k5z-4fd619ae",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-term-hieroglyph",
+      "kind": "term",
+      "scene": "A weathered limestone wall seen almost edge-on in very shallow focus. Raking light suggests carved recesses but the front surface is so oblique and softly out of focus that no individual sign can be identified. No invented symbols, no visible legible characters.",
+      "alt": "A family examines a weathered stone wall beside the Nile; shallow carvings catch the light but individual signs cannot be read.",
+      "prompt": "Use case: precise-object-edit. Input image is the edit target: an ancient Egyptian family looking at a weathered carved limestone wall. Change ONLY the distant river background: remove every boat, mast and sail, replacing their footprints with uninterrupted calm river water matching the existing light and watercolor texture. Preserve the people, faces, coherent hands and arms, linen clothes, stone wall, soft shallow-focus unreadable carvings, village, palms, desert, square framing and warm palette exactly. Do not add any other objects or any words, dates, symbols, logos or watermarks.",
+      "file": "eg-term-hieroglyph-v2.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-9d5e5630-a040-45e9-89a1-b716199524de.png",
+      "previousVersions": [
+        {
+          "file": "eg-term-hieroglyph.png",
+          "prompt": "Use case: historical-scene. Asset: square glossary picture. A weathered limestone wall seen almost edge-on in very shallow focus. Raking light suggests carved recesses but the front surface is so oblique and softly out of focus that no individual sign can be identified. No invented symbols, no visible legible characters. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "alt": "Raking light catches shallow carvings on a weathered stone wall viewed nearly edge-on; individual signs cannot be read.",
+          "status": "visual-review-passed",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-59c9eaa2-5656-42bd-9df5-81529879857a.png"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "visualReviewNotes": "Removed incidental sailboats; preserved the stone wall and people. Parent agent visually reviewed the edit.",
+      "optimizedFile": "optimized/eg-term-hieroglyph.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "1b7e26d67eaf3ef38b3b4f27aadc61335c748fc7e82c828f4666a9dd9651cae9",
+      "optimizedSha256": "09e293661ff8eee64edd1cfa66dc418bd05cc2b8cb7393fe7ed4bc66bb63b7bf",
+      "bytes": 28916,
+      "altSource": "vision",
+      "altHash": "img-trn-16236243",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Hieroglyph",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 4,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-term-bureaucracy",
+      "kind": "term",
+      "scene": "Three seated Egyptian scribes using angled wooden writing boards with NO visible marks, a queue of ordinary people carrying small sacks waiting in front; queue is the point, plain setting.",
+      "alt": "People carrying sacks wait in a line before three seated officials with angled writing boards.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. Three seated Egyptian scribes using angled wooden writing boards with NO visible marks, a queue of ordinary people carrying small sacks waiting in front; queue is the point, plain setting. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-bureaucracy.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-38eaaffd-8529-4d55-849c-3bd65ae48f51.png",
+      "optimizedFile": "optimized/eg-term-bureaucracy.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "9a4a849b93b6e46577585ae3c8e956ce5057f496cba330bfd0d444c135b09394",
+      "optimizedSha256": "f1be2d5f0d02633b94e1fd6652c96b50ef957488dfdf7d20a458d977faeb88d8",
+      "bytes": 23996,
+      "altSource": "vision",
+      "altHash": "img-opf-577d2ed4",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Bureaucracy",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 5,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "sort",
+          "resourceId": "eg-sort",
+          "itemId": "eg6",
+          "itemIndex": 5,
+          "field": "image",
+          "reason": "People wait before officials with writing boards, a neutral scene of collection and record keeping.",
+          "maxEdge": 320,
+          "optimizedFile": "optimized/eg-term-bureaucracy-sort-320.webp",
+          "optimizedSha256": "56c89f2a53cc1dd16106a0f42b42150af7116d5ca088e88f5667b937fc27ca3b",
+          "width": 320,
+          "height": 320,
+          "bytes": 11952,
+          "altHash": "img-cbb-3cb85139",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-term-pharaoh",
+      "kind": "term",
+      "scene": "A seated Egyptian ruler in formal pose on a plain carved throne, viewed from respectful distance. North African features and brown skin, white linen, restrained royal headdress. Grand but not glittering; no invented glyphs anywhere.",
+      "alt": "A brown-skinned ruler in white linen and a formal headdress sits upright on a carved throne.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A seated Egyptian ruler in formal pose on a plain carved throne, viewed from respectful distance. North African features and brown skin, white linen, restrained royal headdress. Grand but not glittering; no invented glyphs anywhere. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-pharaoh.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-aef50db0-3636-408a-b96f-dc75f26ee6fb.png",
+      "optimizedFile": "optimized/eg-term-pharaoh.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "6c8918d10e951394d75ca343ff6a415ca784b6b92800469ac5d444f65048b2e8",
+      "optimizedSha256": "e1f17c874aa992b121fc27d11a111a79928ad0ea442150e2b80eef12fc734614",
+      "bytes": 33476,
+      "altSource": "vision",
+      "altHash": "img-ygj-576eabe1",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Pharaoh",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-term-irrigation",
+      "kind": "term",
+      "scene": "A shallow ditch carrying blue river water into rows of young green shoots in a dry field. The river and clear continuous path of water visible, no modern pumps.",
+      "alt": "Water flows from a river through a shallow ditch into rows of green shoots.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A shallow ditch carrying blue river water into rows of young green shoots in a dry field. The river and clear continuous path of water visible, no modern pumps. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-irrigation.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-ab9b15e0-5a10-48dd-a316-23972a4d4b7f.png",
+      "optimizedFile": "optimized/eg-term-irrigation.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "0fe9571c996135f92499a301eeb6d3e11e5e6b5bc844e783dd559430fa5c862f",
+      "optimizedSha256": "3e1f908def7d00e728ce620c1b425b7128dcfccd545084593c660e9ad75595ec",
+      "bytes": 65812,
+      "altSource": "vision",
+      "altHash": "img-1vq7-c9ffa707",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Irrigation",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-term-archaeologist",
+      "kind": "term",
+      "scene": "A modern North African researcher in ordinary sun-protective clothing kneels in a shallow excavation square brushing a plain pottery shard; modest object, no treasure or readable field notes.",
+      "alt": "A researcher kneels in an excavation square and brushes a plain pottery fragment.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A modern North African researcher in ordinary sun-protective clothing kneels in a shallow excavation square brushing a plain pottery shard; modest object, no treasure or readable field notes. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-archaeologist.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-3a50cd27-2845-444a-8d86-2262435c6f4a.png",
+      "optimizedFile": "optimized/eg-term-archaeologist.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "ae9369aa3dbb6eae9a4d430aaa3cbac69d0858410142df03f0c0fe05bf32e461",
+      "optimizedSha256": "992ac1db1a203be7302548745d4f7424912127045b3f95c2c4bada6557b2ef15",
+      "bytes": 44436,
+      "altSource": "vision",
+      "altHash": "img-19qf-a24e9726",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Archaeologist",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-term-evidence",
+      "kind": "term",
+      "scene": "Top down: a plain broken earthenware pot, a grain husk and a small bone laid on linen cloth beside a plain unnumbered measuring stick. Mundane finds, not treasures.",
+      "alt": "Broken pottery, a grain husk and a small bone lie on cloth beside an unnumbered measuring stick.",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. Top down: a plain broken earthenware pot, a grain husk and a small bone laid on linen cloth beside a plain unnumbered measuring stick. Mundane finds, not treasures. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-term-evidence.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-ff4cf154-d9e1-48e0-9023-96230c79894c.png",
+      "optimizedFile": "optimized/eg-term-evidence.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "ca961af094bc729cb8e78965ae90addf72c19bb75dfc729ca2821a72592901aa",
+      "optimizedSha256": "ca60db3af9b9458af04ab88c81e163dbf768fcd977e1eea8ead7125ace3fbe4f",
+      "bytes": 43762,
+      "altSource": "vision",
+      "altHash": "img-191j-9da63352",
+      "webpQuality": 76,
+      "decorative": false,
+      "term": "Evidence",
+      "placement": {
+        "resourceId": "eg-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-img-green-strip",
+      "kind": "lesson",
+      "scene": "High oblique aerial view of a gently winding Nile in ancient Egypt, with a very narrow strip of green plants and small fields on BOTH banks. Broad pale dry desert extends far beyond the sharp edges of green land on BOTH sides. Frame wide enough to show the whole valley cross section from desert through green bank, river, green bank, desert. No people, buildings or monuments.",
+      "alt": "A winding river and narrow green banks pass through a broad pale desert.",
+      "title": "A country a few miles wide",
+      "caption": "Egypt is mostly desert. Nearly everyone lived in the green strip.",
+      "afterType": "simplified",
+      "labelTexts": [
+        "The Nile",
+        "Farmland",
+        "Desert"
+      ],
+      "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: High oblique aerial view of a gently winding Nile in ancient Egypt, with a very narrow strip of green plants and small fields on BOTH banks. Broad pale dry desert extends far beyond the sharp edges of green land on BOTH sides. Frame wide enough to show the whole valley cross section from desert through green bank, river, green bank, desert. No people, buildings or monuments. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+      "file": "eg-img-green-strip-v2.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-7edd6e50-3077-4d7f-aad8-409bd1d70958.png",
+      "previousVersions": [
+        {
+          "file": "eg-img-green-strip.png",
+          "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide aerial view along the river in ancient Egypt: a narrow band of dark green cultivated fields hugging the calm river with sharp edges, pale desert filling the rest in every direction. No monuments. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "alt": "A narrow strip of green fields follows a winding river through a broad pale desert.",
+          "status": "visual-review-passed",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-463f057c-8956-428d-8cb4-914420e0fe94.png"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "historicalReviewSources": [
+        "https://www.metmuseum.org/-/media/files/learn/for-educators/publications-for-educators/the-art-of-ancient-egypt.pdf"
+      ],
+      "visualReviewNotes": "Replaced with a boat-free, text-free standalone scene. Original artwork retained. Narrow green banks and desert on both sides are clear. Native label anchors reviewed against the new composition.",
+      "plannedLabels": [
+        {
+          "text": "The Nile",
+          "position": "bottom-left",
+          "anchorX": 55,
+          "anchorY": 65
+        },
+        {
+          "text": "Farmland",
+          "position": "bottom-center",
+          "anchorX": 81,
+          "anchorY": 72
+        },
+        {
+          "text": "Desert",
+          "position": "bottom-right",
+          "anchorX": 81,
+          "anchorY": 37
+        }
+      ],
+      "optimizedFile": "optimized/eg-img-green-strip.webp",
+      "width": 900,
+      "height": 900,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "1becda2b96cef555ed859c40e19ae174c1df67d1ef64e385340efc534baba3bd",
+      "optimizedSha256": "a2edb923a7db5b892c40419ce144c7881bda199d4f610f2d163475c2a038fcbd",
+      "bytes": 122534,
+      "altSource": "vision",
+      "altHash": "img-3i2z-cd0fbd1b",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The Nile",
+          "position": "bottom-left",
+          "anchorX": 55,
+          "anchorY": 65
+        },
+        {
+          "text": "Farmland",
+          "position": "bottom-center",
+          "anchorX": 81,
+          "anchorY": 72
+        },
+        {
+          "text": "Desert",
+          "position": "bottom-right",
+          "anchorX": 81,
+          "anchorY": 37
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-reading-illustrations",
+        "panelId": "eg-img-green-strip",
+        "afterResourceId": "eg-reading"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "sort",
+          "resourceId": "eg-sort",
+          "itemId": "eg3",
+          "itemIndex": 2,
+          "field": "image",
+          "reason": "The revised boat-free aerial scene clearly shows green banks between desert on both sides.",
+          "maxEdge": 320,
+          "optimizedFile": "optimized/eg-img-green-strip-sort-320.webp",
+          "optimizedSha256": "467dbf763c2bacb5147fbb4447eea76a781de0f3692035489ec98e17f87ca2b3",
+          "width": 320,
+          "height": 320,
+          "bytes": 17876,
+          "altHash": "img-ier-bfa229ab",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-img-flood-silt",
+      "kind": "lesson",
+      "scene": "Wide two-panel comparison of the same field: left, swollen river spreads water across low ground; right, water has receded leaving dark mud and young green shoots in matching field. Panels equally lit. No words.",
+      "alt": "Left, floodwater covers a low field. Right, the same field has dark mud and new green shoots after the water recedes.",
+      "title": "What the flood left",
+      "caption": "The flood came at about the same time each year, which is what made it useful.",
+      "afterType": "simplified",
+      "labelTexts": [
+        "Flood",
+        "Silt left behind",
+        "New crop"
+      ],
+      "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide two-panel comparison of the same field: left, swollen river spreads water across low ground; right, water has receded leaving dark mud and young green shoots in matching field. Panels equally lit. No words. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-img-flood-silt.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-598501e5-56a5-46e1-932f-d63db5141f41.png",
+      "optimizedFile": "optimized/eg-img-flood-silt.webp",
+      "width": 900,
+      "height": 450,
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "sourceSha256": "f2e8bc3d77a061565f1f9e39911a16915ca96e682cfc5631e20a1ff982bf04a2",
+      "optimizedSha256": "86f56f7d080d655ca969e3858187d830a59126f6704a20c9318d2aca95fce850",
+      "bytes": 106192,
+      "altSource": "vision",
+      "altHash": "img-319r-a87bcfe1",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Flood",
+          "position": "bottom-left",
+          "anchorX": 26,
+          "anchorY": 52
+        },
+        {
+          "text": "Silt left behind",
+          "position": "bottom-center",
+          "anchorX": 74,
+          "anchorY": 45
+        },
+        {
+          "text": "New crop",
+          "position": "bottom-right",
+          "anchorX": 88,
+          "anchorY": 68
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-reading-illustrations",
+        "panelId": "eg-img-flood-silt",
+        "afterResourceId": "eg-reading"
+      }
+    },
+    {
+      "id": "eg-img-chain",
+      "kind": "lesson",
+      "scene": "Wide strip with exactly four equal panels, left to right: river flooding a field; plain granary stacked with grain sacks; potter and weaver at their crafts; scribe with angled blank writing board beside those same sacks. Plain small arrows between panels. No readable marks.",
+      "alt": "Four panels show a flooded field, stored grain sacks, a potter and weaver, and a scribe beside sacks, joined in that order by arrows.",
+      "title": "Four links",
+      "caption": "Each link is only possible because of the one before it.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "Predictable flood",
+        "Surplus",
+        "Specialists",
+        "Records"
+      ],
+      "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide strip with exactly four equal panels, left to right: river flooding a field; plain granary stacked with grain sacks; potter and weaver at their crafts; scribe with angled blank writing board beside those same sacks. Plain small arrows between panels. No readable marks. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-img-chain.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-82dd5d19-dc88-47e4-a37b-5a3274bb9fbc.png",
+      "optimizedFile": "optimized/eg-img-chain.webp",
+      "width": 900,
+      "height": 327,
+      "sourceWidth": 2079,
+      "sourceHeight": 756,
+      "sourceSha256": "7a0176632812bc8382b8dd93a42eb3e4cd1b62d3a0cdeaab2dc84319e705bd3f",
+      "optimizedSha256": "8b55e0323a8686cfa81aca7fb47f4ae3d4356ccd98d98b8c5ae20ace2d5cde35",
+      "bytes": 59648,
+      "altSource": "vision",
+      "altHash": "img-1pdv-875752ec",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Predictable flood",
+          "position": "top-left",
+          "anchorX": 12,
+          "anchorY": 55
+        },
+        {
+          "text": "Surplus",
+          "position": "top-right",
+          "anchorX": 38,
+          "anchorY": 55
+        },
+        {
+          "text": "Specialists",
+          "position": "bottom-left",
+          "anchorX": 63,
+          "anchorY": 55
+        },
+        {
+          "text": "Records",
+          "position": "bottom-right",
+          "anchorX": 87,
+          "anchorY": 55
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-anchor-illustrations",
+        "panelId": "eg-img-chain",
+        "afterResourceId": "eg-anchor"
+      }
+    },
+    {
+      "id": "eg-img-irrigation",
+      "kind": "lesson",
+      "scene": "Wide field with shallow irrigation ditches in a grid. Ordinary workers using simple wooden hoes open a connecting channel; water flows from the river toward dry ground. No pyramids, no whips, no modern tools.",
+      "alt": "Workers use angled wooden hoes beside irrigation channels, where water flows through an opening into a lower field.",
+      "title": "Past where the flood reached",
+      "caption": "The flood was the gift; the ditches were the work.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "River",
+        "Ditch",
+        "Ground the flood never covered"
+      ],
+      "prompt": "Use case: precise-object-edit. Edit target: this ancient Egyptian irrigation illustration. Change ONLY the digging tools and the hands needed to hold them correctly. The tools now look like long straight paddles. Replace all such tools with clearly bent ancient wooden hoes. Each hoe is a short thick wooden handle joined at its top to a broad tapered wooden blade: in side view the two wooden pieces form an inverted V, with the blade extending DOWNWARD AND BACK TOWARD THE WORKER, at a sharp 55-degree angle to the handle. A cord braces the open V. The worker grips the handle with two hands and draws the angled blade toward their feet through the soil. Make the bend unmistakable; the blade must NOT be a straight continuation of the handle. No metal parts, no shovel shapes. Preserve the exact workers, faces, linen clothing, landscape, boat-free river, channels, palms, huts, watercolor palette and composition. Preserve water cascading from the channel into the lower foreground field. Hands and arms anatomically natural, exactly two arms per person. No extra people, objects, text, labels or watermarks.",
+      "file": "eg-img-irrigation-v3.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7772d2cb-1198-47c5-9206-f0b328bfcb59.png",
+      "previousVersions": [
+        {
+          "file": "eg-img-irrigation.png",
+          "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide field with shallow irrigation ditches in a grid. Ordinary workers using simple wooden hoes open a connecting channel; water flows from the river toward dry ground. No pyramids, no whips, no modern tools. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "generatedSource": "C:/Users/cabba/.codex/generated_images/01a123a0-d1f1-7610-98b4-74d037121ad8/exec-16d16dba-b4bf-467d-9bde-07555fcc24f0.png",
+          "alt": "Workers open a ditch with hoes so water can move from a river through a grid of channels into dry ground.",
+          "status": "visual-review-passed"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "editTarget": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+      "editHistory": [
+        {
+          "prompt": "Use case: precise-object-edit. Input image is the edit target: a warm watercolor and fine-ink ancient Egyptian irrigation scene. Make only these historical and functional corrections while preserving the landscape composition, palette, North African workers and simple linen clothes, and coherent natural anatomy. REMOVE ALL boats and all sails from the river, leaving calm uninterrupted water. Replace every straight modern metal spade/shovel with a simple ancient wooden hoe: two clearly connected wooden parts, a short handle and a broad tapered wooden blade angled toward the handle with a small rope tie, held naturally in the worker's two hands. No metal shovel blades or modern tools. Show a clear break in the near earthen bank where water in the irrigation channel visibly flows into a slightly lower previously dry field; retain the grid of low earthen channels and fields, avoiding water pouring out of the field into the channel. Keep the river behind, muted ivory paper texture, no pyramid, no whips, no writing, symbols, captions, words, numerals, labels, logo, or watermark. Arms must connect normally to shoulders with hands gripping their tools, no extra limbs.",
+          "editTarget": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-irrigation.png",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+          "selected": false
+        },
+        {
+          "prompt": "Use case: precise-object-edit. Edit target: this ancient Egyptian irrigation illustration. Change ONLY the digging tools and the hands needed to hold them correctly. The tools now look like long straight paddles. Replace all such tools with clearly bent ancient wooden hoes. Each hoe is a short thick wooden handle joined at its top to a broad tapered wooden blade: in side view the two wooden pieces form an inverted V, with the blade extending DOWNWARD AND BACK TOWARD THE WORKER, at a sharp 55-degree angle to the handle. A cord braces the open V. The worker grips the handle with two hands and draws the angled blade toward their feet through the soil. Make the bend unmistakable; the blade must NOT be a straight continuation of the handle. No metal parts, no shovel shapes. Preserve the exact workers, faces, linen clothing, landscape, boat-free river, channels, palms, huts, watercolor palette and composition. Preserve water cascading from the channel into the lower foreground field. Hands and arms anatomically natural, exactly two arms per person. No extra people, objects, text, labels or watermarks.",
+          "editTarget": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7772d2cb-1198-47c5-9206-f0b328bfcb59.png",
+          "selected": true
+        }
+      ],
+      "historicalReviewSources": [
+        "https://exploration.marinersmuseum.org/watercraft/egyptian-ships/",
+        "https://www.metmuseum.org/art/collection/search/555919"
+      ],
+      "visualReviewNotes": "Boat-free river; clearly angled wooden hoe blades; channel water falls into a lower field; natural connected arms and hands.",
+      "optimizedFile": "optimized/eg-img-irrigation.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "0d7705d0720b3c597c5609104ed8cbe3c0d35c841679307e96ba804a2712a45f",
+      "optimizedSha256": "a12f506cb19009add195c36507888c217574d44d623b4b17ce939773efcbb897",
+      "bytes": 126130,
+      "altSource": "vision",
+      "altHash": "img-3ls7-b0372ae6",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "River",
+          "position": "bottom-left",
+          "anchorX": 25,
+          "anchorY": 23
+        },
+        {
+          "text": "Ditch",
+          "position": "bottom-center",
+          "anchorX": 48,
+          "anchorY": 65
+        },
+        {
+          "text": "Ground the flood never covered",
+          "position": "bottom-right",
+          "anchorX": 85,
+          "anchorY": 33
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-anchor-illustrations",
+        "panelId": "eg-img-irrigation",
+        "afterResourceId": "eg-anchor"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "sort",
+          "resourceId": "eg-sort",
+          "itemId": "eg4",
+          "itemIndex": 3,
+          "field": "image",
+          "reason": "Reviewed workers and connected water channels show irrigation ditches; use the corrected version with ancient wooden hoes.",
+          "maxEdge": 320,
+          "optimizedFile": "optimized/eg-img-irrigation-sort-320.webp",
+          "optimizedSha256": "75a437ceac829f3a66237b1dc817a37f7b6d9e55103963681d15a77b4cbb46ac",
+          "width": 320,
+          "height": 213,
+          "bytes": 18818,
+          "altHash": "img-jdn-3b1dc6a4",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-img-receipt",
+      "kind": "lesson",
+      "scene": "Wide scene of Egyptian scribe seated holding a wooden writing board steeply angled away from viewer, grain sacks carried into a granary past him. His hand marks the board but surface is hidden so NO individual symbols or writing visible.",
+      "alt": "A seated scribe holds an angled wooden board while workers carry grain sacks past large stone columns into a storehouse.",
+      "title": "Writing begins with counting",
+      "caption": "Much early writing recorded supplies, deliveries and accounts.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "Grain in",
+        "Tally kept"
+      ],
+      "prompt": "Use case: precise-object-edit. Asset type: ancient Egyptian classroom lesson illustration. Input image is the edit target. Remove only the incidental boats and their sails on the distant river, replacing them with calm uninterrupted water that matches the existing watercolor and fine-ink rendering. Preserve every other part of the image: the seated scribe with his angled wooden writing board, the workers carrying grain sacks, the granary architecture, columns, ox and cart, baskets, landscape, people, faces, limbs, clothing, composition, warm earth colors and paper texture. No boats, sails, new symbols, writing, text, captions, labels, logos or watermarks.",
+      "file": "eg-img-receipt-v2.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-17032e65-696a-4d82-b61a-9471b6f049fc.png",
+      "previousVersions": [
+        {
+          "file": "eg-img-receipt.png",
+          "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide scene of Egyptian scribe seated holding a wooden writing board steeply angled away from viewer, grain sacks carried into a granary past him. His hand marks the board but surface is hidden so NO individual symbols or writing visible. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-70d8c2cb-defd-44bc-a164-6b6743de9b5d.png",
+          "alt": "A seated scribe holds an angled wooden board while workers carry grain sacks past large stone columns into a storehouse.",
+          "status": "visual-review-passed"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "editTarget": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-receipt.png",
+      "editHistory": [
+        {
+          "prompt": "Use case: precise-object-edit. Asset type: ancient Egyptian classroom lesson illustration. Input image is the edit target. Remove only the incidental boats and their sails on the distant river, replacing them with calm uninterrupted water that matches the existing watercolor and fine-ink rendering. Preserve every other part of the image: the seated scribe with his angled wooden writing board, the workers carrying grain sacks, the granary architecture, columns, ox and cart, baskets, landscape, people, faces, limbs, clothing, composition, warm earth colors and paper texture. No boats, sails, new symbols, writing, text, captions, labels, logos or watermarks.",
+          "editTarget": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-receipt.png",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-17032e65-696a-4d82-b61a-9471b6f049fc.png",
+          "selected": true
+        }
+      ],
+      "historicalReviewSources": [
+        "https://exploration.marinersmuseum.org/watercraft/egyptian-ships/"
+      ],
+      "visualReviewNotes": "Incidental boats and sails removed; scribe, workers and granary composition retained.",
+      "optimizedFile": "optimized/eg-img-receipt.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "db68a732dfdfc26d53ac998a24d9535bd0f103c0f8bb3f3ff0098a5557362a71",
+      "optimizedSha256": "d532fcb8aef0d55e40748e450c44caa1dd36840916b5dac4a94a066b9abe57cd",
+      "bytes": 74750,
+      "altSource": "vision",
+      "altHash": "img-24x7-b20358b5",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Grain in",
+          "position": "top-left",
+          "anchorX": 72,
+          "anchorY": 45
+        },
+        {
+          "text": "Tally kept",
+          "position": "top-right",
+          "anchorX": 27,
+          "anchorY": 44
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-anchor-illustrations",
+        "panelId": "eg-img-receipt",
+        "afterResourceId": "eg-anchor"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "eg-anchor",
+          "sectionIndex": 3,
+          "sectionLabel": "4 · WRITING AND OFFICIALS",
+          "field": "iconUrl",
+          "reason": "The scribe beside grain sacks illustrates recording supplies and deliveries.",
+          "maxEdge": 180,
+          "optimizedFile": "optimized/eg-img-receipt-anchor-180.webp",
+          "optimizedSha256": "5614652076412c5249b957ecd69cec2a4a9e9637e4db2f1bea916f3d2df42632",
+          "width": 180,
+          "height": 120,
+          "bytes": 4798,
+          "altHash": "img-4yf-a4a4524c",
+          "webpQuality": 76
+        },
+        {
+          "kind": "sort",
+          "resourceId": "eg-sort",
+          "itemId": "eg5",
+          "itemIndex": 4,
+          "field": "image",
+          "reason": "The revised scribe and grain-store scene shows recording stored grain without readable invented writing.",
+          "maxEdge": 320,
+          "optimizedFile": "optimized/eg-img-receipt-sort-320.webp",
+          "optimizedSha256": "81a1f3639aa7457fae8853d2c55bed964a841fa30b8f8f5dd02285aee2181ce9",
+          "width": 320,
+          "height": 213,
+          "bytes": 12742,
+          "altHash": "img-d4n-d042d902",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-img-two-graves",
+      "kind": "lesson",
+      "scene": "Wide paired archaeological evidence view: left intact elaborate painted tomb wall with only geometric color bands and human figures, NO script or signs; right plain settlement ground with post holes, a bread oven and pottery fragments. Equal importance, no gold.",
+      "alt": "Left, a painted tomb wall shows human figures and geometric bands. Right, low foundations, post holes, an oven and pottery fragments remain at an uninhabited settlement.",
+      "title": "What survived, and what did not",
+      "caption": "Both are evidence. Only one was built to last.",
+      "afterType": "faq",
+      "labelTexts": [
+        "Made for the powerful",
+        "Where most people lived"
+      ],
+      "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide paired archaeological evidence view: left intact elaborate painted tomb wall with only geometric color bands and human figures, NO script or signs; right plain settlement ground with post holes, a bread oven and pottery fragments. Equal importance, no gold. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks. Critical composition: show archaeological remains as they survive today, WITHOUT ANY LIVING PEOPLE in either half. Right side is an uninhabited excavated site with low ruined foundation outlines, empty postholes, a ruined oven and a few pottery fragments. No intact occupied houses, no standing timber posts, no staged ancient villagers. Left side only the preserved painted wall, no people standing in front.",
+      "file": "eg-img-two-graves.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-2b13949a-823a-4b79-9c05-220d141ef5c3.png",
+      "optimizedFile": "optimized/eg-img-two-graves.webp",
+      "width": 900,
+      "height": 450,
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "sourceSha256": "b301cf85654da647ead9e32757c79816c7c63b8471edabf50da0e47ff9086844",
+      "optimizedSha256": "01e9db683d02d5d7ca37f1df900c25d65ba4375de243473be6ae73e40d0cea3f",
+      "bytes": 92210,
+      "altSource": "vision",
+      "altHash": "img-2mvv-65b7a979",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Made for the powerful",
+          "position": "top-left",
+          "anchorX": 25,
+          "anchorY": 50
+        },
+        {
+          "text": "Where most people lived",
+          "position": "top-right",
+          "anchorX": 76,
+          "anchorY": 52
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-faq-illustrations",
+        "panelId": "eg-img-two-graves",
+        "afterResourceId": "eg-faq"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "eg-anchor",
+          "sectionIndex": 4,
+          "sectionLabel": "WHO IS MISSING",
+          "field": "iconUrl",
+          "reason": "The paired surviving tomb wall and ordinary settlement remains support the explicit comparison in this reference section.",
+          "maxEdge": 180,
+          "optimizedFile": "optimized/eg-img-two-graves-anchor-180.webp",
+          "optimizedSha256": "09c6283f1a22895967899cbb566092de41a8266d4b827e5de87c4a57c342c138",
+          "width": 180,
+          "height": 90,
+          "bytes": 4580,
+          "altHash": "img-4qb-1483f22b",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-img-workers-village",
+      "kind": "lesson",
+      "scene": "Wide ancient Egyptian workers settlement, rows of modest mud-brick homes, large bread ovens, ordinary people eating and resting. A pyramid is visible but small and distant in the background. No whipping or anonymous labor crowds. Emphasize houses food ordinary life.",
+      "alt": "People eat and rest beside bread ovens in a mud-brick village, with a small pyramid far in the background.",
+      "title": "The builders had bread ovens",
+      "caption": "Settlement evidence shows organized workers who were fed and supported.",
+      "afterType": "faq",
+      "labelTexts": [
+        "Workers’ village",
+        "Bread ovens",
+        "The pyramid, in the distance"
+      ],
+      "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide ancient Egyptian workers settlement, rows of modest mud-brick homes, large bread ovens, ordinary people eating and resting. A pyramid is visible but small and distant in the background. No whipping or anonymous labor crowds. Emphasize houses food ordinary life. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-img-workers-village.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-d64bd38e-f4e8-4549-9209-1f65ec7964f3.png",
+      "optimizedFile": "optimized/eg-img-workers-village.webp",
+      "width": 900,
+      "height": 450,
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "sourceSha256": "6cdcc1bee1e5c677d4d57116d2899936e28ca8b8757f29bf1b279d2700f40558",
+      "optimizedSha256": "67f5705c07843c47ab3434d1eff7b312450fb0d04ba2520b94f3981156d18a80",
+      "bytes": 88270,
+      "altSource": "vision",
+      "altHash": "img-2itz-237fe1be",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Workers’ village",
+          "position": "bottom-left",
+          "anchorX": 24,
+          "anchorY": 44
+        },
+        {
+          "text": "Bread ovens",
+          "position": "bottom-center",
+          "anchorX": 81,
+          "anchorY": 54
+        },
+        {
+          "text": "The pyramid, in the distance",
+          "position": "bottom-right",
+          "anchorX": 89,
+          "anchorY": 16
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-faq-illustrations",
+        "panelId": "eg-img-workers-village",
+        "afterResourceId": "eg-faq"
+      }
+    },
+    {
+      "id": "eg-img-source-table",
+      "kind": "lesson",
+      "scene": "Wide top-down view of exactly four archaeological items on plain linen: painted tomb fragment showing part of a human figure but no writing; a flat wooden record board face down; bread-oven brick; temple relief fragment showing part of a person with no script. Room near edges for native labels.",
+      "alt": "Four finds lie on linen: a painted tomb fragment, a record board turned face down, an oven brick and a relief fragment.",
+      "title": "One source, three questions",
+      "caption": "Ask of each source: Who made it? Who paid? Who is missing?",
+      "afterType": "faq",
+      "labelTexts": [
+        "Tomb painting",
+        "Record board",
+        "Oven brick",
+        "Temple relief"
+      ],
+      "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide top-down view of exactly four archaeological items on plain linen: painted tomb fragment showing part of a human figure but no writing; a flat wooden record board face down; bread-oven brick; temple relief fragment showing part of a person with no script. Room near edges for native labels. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "file": "eg-img-source-table.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-43399c28-6375-4041-9db5-7a5c0267aa4a.png",
+      "optimizedFile": "optimized/eg-img-source-table.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "75af89f01cfbba76a17f1acf0d52f3aee44133eea9e1c3a0b27e56346a17613c",
+      "optimizedSha256": "e659d0c4107b5b1dd4a577f5953d4280a1195bb4b43d585409ef0864f02c8703",
+      "bytes": 99084,
+      "altSource": "vision",
+      "altHash": "img-2tyf-b5e10413",
+      "webpQuality": 76,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Tomb painting",
+          "position": "top-left",
+          "anchorX": 29,
+          "anchorY": 25
+        },
+        {
+          "text": "Record board",
+          "position": "top-right",
+          "anchorX": 72,
+          "anchorY": 27
+        },
+        {
+          "text": "Oven brick",
+          "position": "bottom-left",
+          "anchorX": 27,
+          "anchorY": 72
+        },
+        {
+          "text": "Temple relief",
+          "position": "bottom-right",
+          "anchorX": 71,
+          "anchorY": 72
+        }
+      ],
+      "placement": {
+        "resourceId": "eg-faq-illustrations",
+        "panelId": "eg-img-source-table",
+        "afterResourceId": "eg-faq"
+      }
+    },
+    {
+      "id": "eg-sort-flood",
+      "itemId": "eg1",
+      "scene": "Ancient Egyptian Nile valley during the annual inundation. A calm swollen river has spread shallow silty water across a wide flat low floodplain. Sparse reeds emerge at the edge; dry pale desert rises gently beyond. Emphasize natural water spreading over low ground, not a destructive rushing wave. No people, buildings, monuments or cultivated grids. No before-and-after comparison.",
+      "alt": "A swollen river spreads shallow water across a low floodplain, with reeds at the edge and dry desert beyond.",
+      "historicalReviewSources": [
+        "https://www.metmuseum.org/-/media/files/learn/for-educators/publications-for-educators/the-art-of-ancient-egypt.pdf"
+      ],
+      "kind": "sort",
+      "resourceId": "eg-sort",
+      "file": "eg-sort-flood.png",
+      "maxEdge": 320,
+      "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: Ancient Egyptian Nile valley during the annual inundation. A calm swollen river has spread shallow silty water across a wide flat low floodplain. Sparse reeds emerge at the edge; dry pale desert rises gently beyond. Emphasize natural water spreading over low ground, not a destructive rushing wave. No people, buildings, monuments or cultivated grids. No before-and-after comparison. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-6cbdf6a2-90b8-4fb7-8b66-eabcda689466.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "optimizedFile": "optimized/eg-sort-flood.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "d3525f468df55e88e4ec9280c7b01b9ca9a5895dcb0f82797c2dcd507b047310",
+      "optimizedSha256": "cedba22dc96baf2cece096d43f8150d6d20be5ebee9e5513d6b8bf6150d6d074",
+      "bytes": 44646,
+      "altSource": "vision",
+      "altHash": "img-19y7-5e5392c9",
+      "webpQuality": 76,
+      "decorative": false,
+      "placement": {
+        "resourceId": "eg-sort",
+        "itemId": "eg1",
+        "itemIndex": 0,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "eg-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "1 · A PREDICTABLE FLOOD",
+          "field": "iconUrl",
+          "reason": "A standalone scene shows river water covering low ground; no causal sequence or calendar is drawn.",
+          "maxEdge": 180,
+          "optimizedFile": "optimized/eg-sort-flood-anchor-180.webp",
+          "optimizedSha256": "f2ac02fd7dd746d42c317193f0e8f4541f32f957c258b494756495d2723478d9",
+          "width": 180,
+          "height": 180,
+          "bytes": 6680,
+          "altHash": "img-6w3-73752eb6",
+          "webpQuality": 76
+        }
+      ]
+    },
+    {
+      "id": "eg-sort-monument",
+      "itemId": "eg8",
+      "scene": "The Great Pyramid of Khufu at Giza as a surviving monument today, viewed from a respectful distance on the rocky pale limestone plateau. Show a single massive square-base pyramid in three-quarter view, with its familiar straight triangular silhouette and rough exposed horizontal courses of weathered limestone blocks. Most smooth outer casing is absent; no white capped tip and no golden tip. Include the entire pyramid and a modest amount of bare ground and pale sky. No people, vehicles, other monuments, camels, trees or river. No writing, carvings or invented hieroglyphs.",
+      "alt": "A large weathered stone pyramid stands on a bare rocky plateau.",
+      "historicalReviewSources": [
+        "https://egymonuments.gov.eg/monuments/the-great-pyramid/"
+      ],
+      "kind": "sort",
+      "resourceId": "eg-sort",
+      "file": "eg-sort-monument.png",
+      "maxEdge": 320,
+      "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: The Great Pyramid of Khufu at Giza as a surviving monument today, viewed from a respectful distance on the rocky pale limestone plateau. Show a single massive square-base pyramid in three-quarter view, with its familiar straight triangular silhouette and rough exposed horizontal courses of weathered limestone blocks. Most smooth outer casing is absent; no white capped tip and no golden tip. Include the entire pyramid and a modest amount of bare ground and pale sky. No people, vehicles, other monuments, camels, trees or river. No writing, carvings or invented hieroglyphs. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-b352cfca-1e7c-48bd-905e-48e935878a59.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "optimizedFile": "optimized/eg-sort-monument.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "45dda8e19d52578777f8630dabe0f51c9b912b948bc7f5290eaa15ec26048182",
+      "optimizedSha256": "452b8a91b705e4d1bef51c3be39e709eb40a9ca149955d0df99d6661d17b8a48",
+      "bytes": 32414,
+      "altSource": "vision",
+      "altHash": "img-xd7-84a3715f",
+      "webpQuality": 76,
+      "decorative": false,
+      "placement": {
+        "resourceId": "eg-sort",
+        "itemId": "eg8",
+        "itemIndex": 7,
+        "field": "image"
+      }
+    },
+    {
+      "id": "eg-sort-royal-record",
+      "itemId": "eg9",
+      "resourceId": "eg-sort",
+      "kind": "sort",
+      "file": "eg-sort-royal-record.png",
+      "maxEdge": 320,
+      "scene": "A single surviving limestone relief fragment shows the head and shoulders of an ancient Egyptian ruler in profile, wearing a simple tall white crown. The portrait is carved shallowly into the flat face of the stone; it is clearly an archaeological object, not a living person. Warm weathered stone, small chips at the slab edges, plain ivory backdrop. No writing or glyphs remain in this cropped fragment. The relief is a general educational illustration, not a claimed reproduction of a named artifact.",
+      "alt": "A weathered stone relief shows the head and shoulders of a crowned ruler in profile.",
+      "historicalReviewSources": [
+        "https://www.metmuseum.org/art/collection/search/329964",
+        "https://collections.penn.museum/collections/object/232562"
+      ],
+      "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: A single surviving limestone relief fragment shows the head and shoulders of an ancient Egyptian ruler in profile, wearing a simple tall white crown. The portrait is carved shallowly into the flat face of the stone; it is clearly an archaeological object, not a living person. Warm weathered stone, small chips at the slab edges, plain ivory backdrop. No writing or glyphs remain in this cropped fragment. The relief is a general educational illustration, not a claimed reproduction of a named artifact. Style and constraints: Warm grounded watercolor and fine ink educational illustration, muted sandy earth colors, generous margins, square composition readable on a small activity card. One limestone fragment only, no other objects or people. Egyptian profile conventions, natural face proportions, crisp carved contour against the stone surface. No texts, letters, numerals, labels, captions, readable writing, invented hieroglyphs, arrows, timeline, categories, modern objects, logos or watermark. No second scene or comparison. The app supplies the card text.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-af6dfd43-22aa-4dd3-97a2-eed5021181d5.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "optimizedFile": "optimized/eg-sort-royal-record.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "a40a964ca1d3f6e6bb72dc2b194dc9930337fe89a867a22714a7234a78957f63",
+      "optimizedSha256": "d523d80db065e2a715573b0db85f1843ad85a688fa5009d648eb858d95323380",
+      "bytes": 26740,
+      "altSource": "vision",
+      "altHash": "img-rj3-f0b7a0bc",
+      "webpQuality": 76,
+      "decorative": false,
+      "placement": {
+        "resourceId": "eg-sort",
+        "itemId": "eg9",
+        "itemIndex": 8,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 21,
+  "imagePlacementCount": 32,
+  "reuseMappings": {
+    "anchor": "allopacks/media/ancient_egypt_grade6/anchor-image-mappings.json",
+    "sort": "allopacks/media/ancient_egypt_grade6/sort-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 32,
+    "uniqueImageCount": 21,
+    "anchorSectionImages": 5,
+    "conceptSortCardImages": 9,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

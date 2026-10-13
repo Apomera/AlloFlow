@@ -42,3 +42,17 @@ Rebuild with `node _build_word_practice_module.js`. Use `--check` to verify gene
 The targeted `tests/word_practice_*.test.js` tests cover the shared contract, integration, UI, and media behavior. `node dev-tools/word_practice_qa.cjs` runs browser and exported-file checks and writes evidence to `reports/word-practice-2026-10-09`. Its synthetic audio is test data, not instructional recordings.
 
 Browser checks cover actual download controls, offline audio playback without network requests, keyboard navigation, timed pacing, review rounds, narrow-screen layout, and automated accessibility. The PowerPoint archive is checked for slides and embedded recordings, including conversion from browser-recorded WebM to WAV. Desktop PowerPoint playback and visual rendering still require a manual spot-check.
+
+## Troubleshooting Glossary launch failures
+
+If Glossary cannot open Present & Export, use **Copy diagnostics** beneath the error. When an embedded browser blocks clipboard access, the details open and become selected for manual copying. **Retry** attempts to open the presentation tools again. The same record is logged as `[Glossary Present & Export]` for the app's error reporter and is available at `window.__alloLastWordPracticeDiagnostic`.
+
+The record includes the error message/code/stack, launcher and module readiness, module URLs without query strings, app build/surface, connection status, elapsed time, and selected word count. It does not attach the glossary, title, definitions, or recordings. Embedded data and URL query strings are removed from error text. Diagnostics remain available during a retry and clear after a successful launch; obsolete requests after navigation do not report errors.
+
+- `word-practice-launcher-unavailable` means the app shell lacks the launch function. An older Canvas embed can load a newer glossary module without gaining the updated host code. Save work and reload an updated embed; CDN module updates alone cannot update the embedded host.
+- `allo-lazy-module-failed` or `allo-lazy-module-timeout` identifies a module loading failure. Check connectivity and retry.
+- Known validation failures explain the existing limits of 200 distinct words, 120 characters per word/phrase, and bounded embedded audio directly beside the launch controls, with suggestions to shorten terms or present a smaller filtered list. Other presenter failures retain their specific reason in the diagnostic details.
+
+The October 12 investigation verified the current CDN presenter and hosted browser shell, and successfully opened a sample glossary through the real presenter. It did not reproduce the reported Canvas session, so a stale embedded host remains a hypothesis until its diagnostic record is available.
+
+`tests/glossary_word_practice_launch.test.js` covers the real glossary-to-presenter path, filtering, failures, retry, and stale-request cancellation. `node dev-tools/glossary_word_practice_qa.cjs` checks the launch and diagnostic UI in Chromium at desktop and phone widths, with results under `reports/glossary-word-practice-2026-10-12`.

@@ -798,6 +798,46 @@ function glossaryAiText(value) {
   return '';
 }
 
+// Keep caught launch failures inspectable without attaching the lesson or audio.
+// This also works when a newer glossary view is served to an older app shell.
+function glossaryWordPracticeDiagnostic(error, wordCount, startedAt) {
+  function diagnosticText(value, limit) {
+    return (typeof value === 'string' ? value : '').replace(/data:[^\s"'<>]+/gi, '[embedded data]').replace(/(https?:\/\/[^\s?#"'<>]+)[?#][^\s"'<>)]*/gi, '$1').slice(0, limit);
+  }
+  var entry = window.__alloModuleRegistry?.WordPractice || {};
+  var presenter = window.AlloModules?.WordPractice;
+  var launcherAvailable = typeof window.__alloOpenWordPractice === 'function';
+  var code = diagnosticText(error?.code, 100);
+  return {
+    feature: 'glossary-present-export',
+    timestamp: new Date().toISOString(),
+    phase: !launcherAvailable ? 'launcher' : /^allo-lazy-module-/.test(code) ? 'load-module' : 'open-presenter',
+    error: {
+      name: diagnosticText(error?.name, 100) || 'Error',
+      code: code || 'word-practice-open-failed',
+      message: diagnosticText(typeof error === 'string' ? error : error?.message, 800) || 'Unknown presentation error',
+      stack: diagnosticText(error?.stack, 2400)
+    },
+    launcherAvailable: launcherAvailable,
+    loaderAvailable: typeof window.__alloLazyWordPractice === 'function',
+    ensureAvailable: typeof window.__alloEnsureLazyModule === 'function',
+    build: {
+      hash: diagnosticText(window.__alloBuildStamp?.hash, 100),
+      surface: diagnosticText(window.__alloBuildStamp?.surface, 40)
+    },
+    online: typeof navigator !== 'undefined' ? navigator.onLine !== false : null,
+    wordCount: wordCount,
+    elapsedMs: Math.max(0, Date.now() - startedAt),
+    module: {
+      status: diagnosticText(entry.status, 40) || 'not-requested',
+      registered: !!presenter,
+      openAvailable: typeof presenter?.open === 'function',
+      url: diagnosticText(entry.script?.src || entry.originalUrl, 500),
+      fallbackUrl: diagnosticText(entry.fallbackScript?.src, 500)
+    }
+  };
+}
+
 // Image descriptions are tied to the displayed bytes, so replacing an image cannot
 // accidentally retain the previous picture's description. Matches AltText.hashImage.
 function getGlossaryImageAlt(item) {
@@ -1008,7 +1048,10 @@ var XCircle = _lazyIcon('XCircle');
 // theme change for something purely presentational. A stylesheet is right
 // before the first paint and cannot drift from the theme class.
 var GLOSSARY_HOVER_STYLE_ID = 'allo-glossary-hover-styles';
-var GLOSSARY_HOVER_CSS = ['.allo-vghov-row:hover,.allo-vghov-row:focus-within{background-color:#f1f5f9 !important;}', '.theme-dark .allo-vghov-row:hover,.theme-dark .allo-vghov-row:focus-within{background-color:#334155 !important;}', '.theme-contrast .allo-vghov-row:hover,.theme-contrast .allo-vghov-row:focus-within{background-color:#000000 !important;outline:2px solid #ffff00;outline-offset:-2px;}'].join('\n');
+var GLOSSARY_HOVER_CSS = ['.allo-vghov-row:hover,.allo-vghov-row:focus-within{background-color:#f1f5f9 !important;}', '.theme-dark .allo-vghov-row:hover,.theme-dark .allo-vghov-row:focus-within{background-color:#334155 !important;}', '.theme-contrast .allo-vghov-row:hover,.theme-contrast .allo-vghov-row:focus-within{background-color:#000000 !important;outline:2px solid #ffff00;outline-offset:-2px;}', '[data-glossary-mobile-label]{display:none;}',
+// Keep one set of editing/audio controls. Screen-only rules preserve the
+// printable table; explicit table roles preserve its accessible structure.
+'@media screen and (max-width:639px){', '[data-glossary-word-list] table,[data-glossary-word-list] thead,[data-glossary-word-list] tbody,[data-glossary-word-list] tr{display:block;width:100%;min-width:0;}', '[data-glossary-word-list] thead th:not([data-glossary-selection]){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}', '[data-glossary-word-list] thead th[data-glossary-selection]{display:block;width:100%;padding:12px;}', '[data-glossary-word-list] thead th[data-glossary-selection]>div{flex-direction:row;justify-content:center;gap:8px;}', '[data-glossary-word-list] tbody>tr{border-bottom:6px solid #e2e8f0;}', '[data-glossary-word-list] tbody>tr:last-child{border-bottom:0;}', '[data-glossary-word-list] td{display:block;width:100%;min-width:0;max-width:100%;padding:12px;border:0;overflow-wrap:anywhere;}', '[data-glossary-word-list] td+td:not([data-glossary-term]){border-top:1px solid #e2e8f0;}', '[data-glossary-word-list] td div{min-width:0;max-width:100%;}', '[data-glossary-word-list] td img{max-width:100%;height:auto !important;}', '[data-glossary-word-list] td textarea,[data-glossary-word-list] td select{min-width:0;max-width:100%;}', '[data-glossary-word-list] [data-glossary-mobile-label]{display:block;margin-bottom:8px;font-size:12px;font-weight:700;font-style:normal;}', '[data-glossary-word-list] [data-glossary-selection] [data-glossary-mobile-label]{display:inline;margin-inline-start:8px;}', '}'].join('\n');
 function ensureGlossaryHoverStyles() {
   try {
     if (typeof document === 'undefined' || !document.head) return;
@@ -1256,6 +1299,10 @@ function GlossaryView(props) {
     notice: ''
   });
   var wordPracticeControllerRef = React.useRef(null);
+  var wordPracticeDiagnosticRef = React.useRef(null);
+  var wordPracticeCopyRef = React.useRef(null);
+  var wordPracticeDetailsRef = React.useRef(null);
+  var wordPracticeTextRef = React.useRef(null);
   React.useEffect(function () {
     setWordPracticeStatus({
       busy: false,
@@ -1264,18 +1311,29 @@ function GlossaryView(props) {
     return function () {
       if (wordPracticeControllerRef.current) wordPracticeControllerRef.current.abort();
       wordPracticeControllerRef.current = null;
+      wordPracticeDiagnosticRef.current = null;
+      wordPracticeCopyRef.current = null;
     };
   }, [activityResourceKey, isTeacherMode]);
   async function openGlossaryWordPractice() {
     if (!isTeacherMode || !activityWords.length || wordPracticeControllerRef.current) return;
     var controller = new AbortController();
+    var startedAt = Date.now();
     wordPracticeControllerRef.current = controller;
-    setWordPracticeStatus({
+    wordPracticeCopyRef.current = null;
+    setWordPracticeStatus(prev => ({
+      ...prev,
       busy: true,
+      copying: false,
+      copyNotice: '',
       notice: ''
-    });
+    }));
     try {
-      if (typeof window.__alloOpenWordPractice !== 'function') throw new Error('Presentation tools unavailable');
+      if (typeof window.__alloOpenWordPractice !== 'function') {
+        var unavailable = new Error('The app shell does not provide the word presentation launcher.');
+        unavailable.code = 'word-practice-launcher-unavailable';
+        throw unavailable;
+      }
       var ttsAssets = {};
       (Array.isArray(generatedContent?.data) ? generatedContent.data : []).forEach(function (item) {
         if (item?._ttsAssets && typeof item._ttsAssets === 'object') Object.assign(ttsAssets, item._ttsAssets);
@@ -1292,18 +1350,63 @@ function GlossaryView(props) {
         t: t,
         signal: controller.signal
       });
-      if (!controller.signal.aborted) setWordPracticeStatus({
-        busy: false,
-        notice: ''
-      });
-    } catch (_) {
-      if (!controller.signal.aborted) setWordPracticeStatus({
-        busy: false,
-        notice: activityText('glossary.practice_open_failed', 'Presentation tools could not open. Please try again.')
-      });
+      if (!controller.signal.aborted) {
+        wordPracticeDiagnosticRef.current = null;
+        setWordPracticeStatus({
+          busy: false,
+          notice: ''
+        });
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        var diagnostic = glossaryWordPracticeDiagnostic(error, activityWords.length, startedAt);
+        window.__alloLastWordPracticeDiagnostic = diagnostic;
+        console.error('[Glossary Present & Export]', diagnostic);
+        var notice = activityText('glossary.practice_open_failed_details', 'Presentation tools could not open. Open Presentation diagnostics below for the error details, then try again.');
+        if (!diagnostic.launcherAvailable) notice = activityText('glossary.practice_launcher_unavailable', 'Presentation tools are unavailable in this app version. Save your work, then reload or update AlloFlow.');else if (diagnostic.error.code === 'allo-lazy-module-failed') notice = activityText('glossary.practice_load_failed', 'Presentation tools could not load. Check your connection, then try Present & Export again.');else if (diagnostic.error.code === 'allo-lazy-module-timeout') notice = activityText('glossary.practice_load_timeout', 'Presentation tools took too long to load. Check your connection, then try Present & Export again.');
+        // Match only the presenter's known validation messages, including older
+        // cached versions. Arbitrary exceptions stay in the diagnostic details.
+        else if (/^Use up to 200 (different )?words in one practice set\.$/.test(diagnostic.error.message)) notice = activityText('glossary.practice_word_limit', 'Use up to 200 different words in one practice set. Choose Current filtered words or split the glossary into smaller lists, then retry.');else if (diagnostic.error.message === 'Each word or short phrase must be 120 characters or fewer.') notice = activityText('glossary.practice_term_limit', 'Each word or short phrase must be 120 characters or fewer. Shorten the long terms in Edit, then retry.');else if (diagnostic.error.message === 'This practice set has too much audio. Split it into smaller word lists.') notice = activityText('glossary.practice_audio_limit', 'This practice set has too much audio. Split it into smaller word lists, or choose Current filtered words, then retry.');
+        wordPracticeDiagnosticRef.current = diagnostic;
+        setWordPracticeStatus({
+          busy: false,
+          notice: notice,
+          diagnostic: diagnostic
+        });
+      }
     } finally {
       if (wordPracticeControllerRef.current === controller) wordPracticeControllerRef.current = null;
     }
+  }
+  async function copyGlossaryWordPracticeDiagnostic() {
+    var diagnostic = wordPracticeStatus.diagnostic;
+    if (!diagnostic || wordPracticeStatus.busy || wordPracticeCopyRef.current) return;
+    var request = {};
+    wordPracticeCopyRef.current = request;
+    setWordPracticeStatus(prev => ({
+      ...prev,
+      copying: true,
+      copyNotice: ''
+    }));
+    var copied = false;
+    try {
+      if (typeof navigator.clipboard?.writeText === 'function') {
+        await navigator.clipboard.writeText(JSON.stringify(diagnostic, null, 2));
+        copied = true;
+      }
+    } catch (_error) {/* Embedded browsers may deny clipboard permission. */}
+    if (wordPracticeCopyRef.current !== request || wordPracticeDiagnosticRef.current !== diagnostic) return;
+    wordPracticeCopyRef.current = null;
+    if (!copied) {
+      if (wordPracticeDetailsRef.current) wordPracticeDetailsRef.current.open = true;
+      wordPracticeTextRef.current?.focus();
+      wordPracticeTextRef.current?.select();
+    }
+    setWordPracticeStatus(prev => prev.diagnostic !== diagnostic ? prev : {
+      ...prev,
+      copying: false,
+      copyNotice: copied ? activityText('glossary.practice_diagnostics_copied', 'Diagnostics copied.') : activityText('glossary.practice_diagnostics_copy_manual', 'Automatic copy is unavailable. The details are selected; copy them manually.')
+    });
   }
   function activityData(name) {
     var session = activitySessions[name];
@@ -1648,6 +1751,18 @@ function GlossaryView(props) {
       text = String(text).split('{' + name + '}').join(String(params[name] == null ? '' : params[name]));
     });
     return text;
+  }
+  function glossaryAudioActionLabel(contentId, field, term, lang) {
+    var stopping = playingContentId === contentId;
+    var labels = {
+      term: stopping ? 'Stop reading term: {term}' : 'Read term: {term}',
+      definition: stopping ? 'Stop reading definition for {term}' : 'Read definition for {term}',
+      translation: stopping ? 'Stop reading {lang} translation of {term}' : 'Read {lang} translation of {term}'
+    };
+    return glossaryText('glossary.' + (stopping ? 'stop_' : 'read_') + field + '_aria', labels[field], {
+      term: term,
+      lang: lang
+    });
   }
   React.useEffect(function () {
     setFlashcardSummary(false);
@@ -2409,7 +2524,9 @@ function GlossaryView(props) {
     var text = glossarySpeechText(item, field, spokenText);
     if (!text) return;
     if (playingContentId === contentId) {
-      if (glossarySavedAudioRef.current) stopGlossarySavedAudio(true);else if (typeof stopPlayback === 'function') stopPlayback();
+      // Invalidate pending saved-audio lookups as well as any active playback.
+      stopGlossarySavedAudio(true);
+      if (typeof stopPlayback === 'function') stopPlayback();
       return;
     }
     stopGlossarySavedAudio(false);
@@ -2756,6 +2873,7 @@ function GlossaryView(props) {
   function renderGlossaryToolbar() {
     var toolButton = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
     var secondaryButton = toolButton + ' bg-white text-slate-700 border-slate-300 hover:border-indigo-300 hover:bg-indigo-50';
+    var gameCard = 'grid min-h-[88px] w-full min-w-0 grid-cols-[20px_minmax(0,1fr)] items-start gap-3 rounded-lg border border-slate-300 bg-white p-4 text-start text-sm font-bold leading-5 text-slate-700 break-words transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
     // Skip past the study, game and teacher tools straight to the word list.
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -2853,7 +2971,39 @@ function GlossaryView(props) {
       role: "status",
       "aria-live": "polite",
       className: "mt-1 text-sm text-amber-900"
-    }, wordPracticeStatus.notice))), /*#__PURE__*/React.createElement("div", {
+    }, wordPracticeStatus.notice), wordPracticeStatus.diagnostic && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 flex flex-wrap gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: openGlossaryWordPractice,
+      disabled: wordPracticeStatus.busy || !activityWords.length,
+      "aria-busy": wordPracticeStatus.busy,
+      className: secondaryButton + ' disabled:opacity-60 disabled:cursor-not-allowed'
+    }, activityText('glossary.practice_retry', 'Retry')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: copyGlossaryWordPracticeDiagnostic,
+      disabled: wordPracticeStatus.busy || wordPracticeStatus.copying,
+      "aria-busy": !!wordPracticeStatus.copying,
+      className: secondaryButton + ' disabled:opacity-60 disabled:cursor-not-allowed'
+    }, activityText('glossary.practice_copy_diagnostics', 'Copy diagnostics'))), /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "aria-live": "polite",
+      className: "mt-1 text-sm text-slate-700"
+    }, wordPracticeStatus.copyNotice), /*#__PURE__*/React.createElement("details", {
+      ref: wordPracticeDetailsRef,
+      className: "mt-2 min-w-0 text-sm text-slate-700"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "cursor-pointer rounded font-semibold focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, activityText('glossary.practice_diagnostics', 'Presentation diagnostics')), /*#__PURE__*/React.createElement("p", {
+      className: "my-2"
+    }, activityText('glossary.practice_diagnostics_help', 'Copy these details when reporting the problem.')), /*#__PURE__*/React.createElement("textarea", {
+      ref: wordPracticeTextRef,
+      readOnly: true,
+      rows: 10,
+      "aria-label": activityText('glossary.practice_diagnostics', 'Presentation diagnostics'),
+      value: JSON.stringify(wordPracticeStatus.diagnostic, null, 2),
+      className: "w-full min-w-0 rounded border border-slate-400 bg-white p-2 font-mono text-xs text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }))))), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-start gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -2899,7 +3049,7 @@ function GlossaryView(props) {
       id: "glossary-games-tools-title",
       className: "mb-2 text-xs font-black tracking-wider text-indigo-800"
     }, t('common.start_game')), /*#__PURE__*/React.createElement("div", {
-      className: "my-3 flex flex-wrap items-end gap-3",
+      className: "my-3 grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] items-end gap-3",
       "data-glossary-activity-settings": "true"
     }, /*#__PURE__*/React.createElement("label", {
       className: "flex min-w-0 flex-col gap-1 text-sm font-semibold"
@@ -2925,7 +3075,23 @@ function GlossaryView(props) {
     }, activityText('glossary.activities.standard_size', 'Standard')), [4, 6, 8].map(size => /*#__PURE__*/React.createElement("option", {
       key: size,
       value: String(size)
-    }, size, " ", activityText('glossary.activities.pairs', 'pairs')))))), /*#__PURE__*/React.createElement("p", {
+    }, size, " ", activityText('glossary.activities.pairs', 'pairs'))))), glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("label", {
+      className: "flex min-w-0 flex-col gap-1 text-sm font-semibold"
+    }, activityText('glossary.activities.word_search_language', 'Word Search language'), /*#__PURE__*/React.createElement("select", {
+      "aria-label": activityText('glossary.activities.word_search_language', 'Word Search language'),
+      "data-help-key": "glossary_puzzle_lang",
+      value: wordSearchLang,
+      onChange: e => {
+        setWordSearchLang(e.target.value);
+        if (gameMode === 'wordsearch') startScopedWordSearch(e.target.value);
+      },
+      className: "min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "English"
+    }, t('common.english')), glossaryLanguages.map(lang => /*#__PURE__*/React.createElement("option", {
+      key: lang,
+      value: lang
+    }, lang))))), /*#__PURE__*/React.createElement("p", {
       id: "glossary-activity-pool",
       role: "status",
       className: "mb-2 text-sm text-slate-700"
@@ -2936,51 +3102,46 @@ function GlossaryView(props) {
       onClick: () => setActivityScope('all'),
       className: "min-h-11 rounded px-2 font-bold text-indigo-700 underline focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, activityText('glossary.activities.use_all', 'Use all glossary words'))), /*#__PURE__*/React.createElement("div", {
-      className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "inline-flex items-stretch rounded-lg border border-slate-300 bg-white"
-    }, glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("select", {
-      "aria-label": t('common.target_language_selector'),
-      "data-help-key": "glossary_puzzle_lang",
-      value: wordSearchLang,
-      onChange: e => {
-        setWordSearchLang(e.target.value);
-        if (gameMode === 'wordsearch') startScopedWordSearch(e.target.value);
-      },
-      className: "min-h-11 rounded-l-lg border-0 border-r border-slate-300 bg-transparent px-3 text-sm font-bold text-teal-800 focus:ring-2 focus:ring-indigo-600"
-    }, /*#__PURE__*/React.createElement("option", {
-      value: "English"
-    }, t('common.english')), glossaryLanguages.map(lang => /*#__PURE__*/React.createElement("option", {
-      key: lang,
-      value: lang
-    }, lang))), /*#__PURE__*/React.createElement("button", {
+      className: "grid auto-rows-fr grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-3",
+      "data-glossary-game-grid": true
+    }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": (gameMode === 'wordsearch' ? t('common.regenerate') : t('common.start_game')) + ' ' + t('glossary.word_search'),
       "data-help-key": "glossary_word_search",
       disabled: !activityWords.length,
       onClick: () => startScopedWordSearch(wordSearchLang),
-      className: "min-h-11 inline-flex items-center gap-2 px-3 py-2 text-sm font-bold text-teal-800 hover:bg-teal-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      "aria-describedby": "glossary-activity-wordsearch-help",
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Gamepad2, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
-    }), " ", gameMode === 'wordsearch' ? t('common.regenerate') : t('glossary.word_search'))), /*#__PURE__*/React.createElement("button", {
+    }), " ", /*#__PURE__*/React.createElement("span", {
+      className: "min-w-0 space-y-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block"
+    }, gameMode === 'wordsearch' ? t('common.regenerate') + ' ' + t('glossary.word_search') : t('glossary.word_search')), /*#__PURE__*/React.createElement("span", {
+      id: "glossary-activity-wordsearch-help",
+      className: "block text-xs font-normal leading-5 text-slate-600"
+    }, activityText('glossary.activities.word_search_help', 'Find hidden words in the letter grid')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": detectiveLabel,
       "data-help-key": "glossary_definition_detective",
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('detective', () => setDetectiveOpen(true)),
       "aria-describedby": "glossary-activity-detective-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Search, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, detectiveLabel), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-detective-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, activityText('glossary.activities.detective_help', 'Match a word to its meaning')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.memory_game'),
@@ -2988,17 +3149,18 @@ function GlossaryView(props) {
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('memory', handleSetIsMemoryGameToTrue),
       "aria-describedby": "glossary-activity-memory-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Brain, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, t('glossary.memory_game')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-memory-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, Math.min(activityMemoryCount, activityBoardSize === 'standard' ? 10 : Number(activityBoardSize)), " ", activityText('glossary.activities.memory_help', 'pairs: remember words, pictures, or meanings')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.crossword'),
@@ -3006,17 +3168,18 @@ function GlossaryView(props) {
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('crossword', handleSetIsCrosswordGameToTrue),
       "aria-describedby": "glossary-activity-crossword-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Gamepad2, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, t('glossary.crossword')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-crossword-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, activityText('glossary.activities.crossword_help', 'Solve clues and spell the words')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.matching'),
@@ -3024,17 +3187,18 @@ function GlossaryView(props) {
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('matching', handleSetIsMatchingGameToTrue),
       "aria-describedby": "glossary-activity-matching-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(GitMerge, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, t('glossary.matching')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-matching-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, Math.min(activityMatchingCount, activityBoardSize === 'standard' ? 8 : Number(activityBoardSize)), " ", activityText('glossary.activities.matching_help', 'pairs: connect words with meanings or pictures')))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.bingo'),
@@ -3042,17 +3206,18 @@ function GlossaryView(props) {
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('bingo', handleSetIsBingoGameToTrue),
       "aria-describedby": "glossary-activity-bingo-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Gamepad2, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, t('glossary.bingo')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-bingo-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, activityText('glossary.activities.bingo_help', 'Create cards for group play')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.play_bingo'),
@@ -3060,17 +3225,18 @@ function GlossaryView(props) {
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('studentBingo', handleSetIsStudentBingoGameToTrue),
       "aria-describedby": "glossary-activity-studentBingo-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Gamepad2, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, t('glossary.play_bingo')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-studentBingo-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, activityText('glossary.activities.studentBingo_help', 'Mark the words you hear')))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.scramble'),
@@ -3078,17 +3244,18 @@ function GlossaryView(props) {
       disabled: !activityWords.length,
       onClick: () => startGlossaryActivity('scramble', handleSetIsWordScrambleGameToTrue),
       "aria-describedby": "glossary-activity-scramble-help",
-      className: secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'
+      className: gameCard
     }, /*#__PURE__*/React.createElement(Shuffle, {
-      size: 16,
+      size: 20,
+      className: "shrink-0",
       "aria-hidden": "true"
     }), " ", /*#__PURE__*/React.createElement("span", {
-      className: "min-w-0 text-left"
+      className: "min-w-0 space-y-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block"
     }, t('glossary.scramble')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-scramble-help",
-      className: "block text-xs font-normal text-slate-600"
+      className: "block text-xs font-normal leading-5 text-slate-600"
     }, activityText('glossary.activities.scramble_help', 'Unscramble letters to practice spelling')))))), isTeacherMode && glossaryToolsOpen.teacher && /*#__PURE__*/React.createElement("div", {
       role: "group",
       id: "glossary-teacher-tools",
@@ -4093,20 +4260,27 @@ function GlossaryView(props) {
     "data-help-key": "glossary_terms_table",
     className: "overflow-hidden rounded-lg border border-slate-400 shadow-sm"
   }, /*#__PURE__*/React.createElement("p", {
-    id: "glossary-table-scroll-hint",
+    id: "glossary-table-layout-hint",
     className: "px-3 py-2 text-xs text-slate-600 bg-slate-50 sm:hidden print:hidden"
-  }, t('glossary.table_scroll_hint')), /*#__PURE__*/React.createElement("div", {
+  }, glossaryText('glossary.table_stacked_hint', 'Definitions and translations follow each word.')), /*#__PURE__*/React.createElement("div", {
     "data-glossary-word-list": true,
     className: "overflow-x-auto focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600",
     role: "region",
     "aria-label": t('glossary.table_label'),
-    "aria-describedby": "glossary-table-scroll-hint",
+    "aria-describedby": "glossary-table-layout-hint",
     tabIndex: 0
   }, /*#__PURE__*/React.createElement("table", {
+    role: "table",
     className: "w-full text-center text-sm"
   }, /*#__PURE__*/React.createElement("thead", {
+    role: "rowgroup",
     className: "bg-slate-100 text-slate-600 font-semibold"
-  }, /*#__PURE__*/React.createElement("tr", null, isEditingGlossary && /*#__PURE__*/React.createElement("th", {
+  }, /*#__PURE__*/React.createElement("tr", {
+    role: "row"
+  }, isEditingGlossary && /*#__PURE__*/React.createElement("th", {
+    role: "columnheader",
+    scope: "col",
+    "data-glossary-selection": true,
     className: "p-4 border-b border-slate-200 w-12 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-1"
@@ -4120,13 +4294,20 @@ function GlossaryView(props) {
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-normal leading-none text-slate-600"
   }, t('glossary.highlight_label')))), /*#__PURE__*/React.createElement("th", {
+    role: "columnheader",
+    scope: "col",
     className: "p-4 border-b border-slate-200 min-w-[150px]"
   }, t('glossary.table_term')), /*#__PURE__*/React.createElement("th", {
+    role: "columnheader",
+    scope: "col",
     className: "p-4 border-b border-slate-200 min-w-[200px]"
   }, t('glossary.table_def')), displayLanguages.map(lang => /*#__PURE__*/React.createElement("th", {
+    role: "columnheader",
+    scope: "col",
     key: lang,
     className: "p-4 border-b border-slate-200 min-w-[150px] text-indigo-600 text-center"
   }, lang)))), /*#__PURE__*/React.createElement("tbody", {
+    role: "rowgroup",
     className: "divide-y divide-slate-100"
   }, filteredGlossaryData.map(item => {
     const idx = item._originalIdx;
@@ -4134,9 +4315,12 @@ function GlossaryView(props) {
     const isTier2 = item.tier === 'Academic';
     const isTier3 = item.tier === 'Domain-Specific';
     return /*#__PURE__*/React.createElement("tr", {
+      role: "row",
       key: getGlossaryEntryKey(item, idx),
       className: "group/row allo-vghov-row"
     }, isEditingGlossary && /*#__PURE__*/React.createElement("td", {
+      role: "cell",
+      "data-glossary-selection": true,
       className: "p-4 border-b border-slate-100 text-center align-top"
     }, /*#__PURE__*/React.createElement("input", {
       "aria-label": glossaryText('glossary.include_term_aria', 'Include {term}', {
@@ -4147,7 +4331,12 @@ function GlossaryView(props) {
       checked: item.isSelected !== false,
       onChange: () => handleGlossarySelectionChange(idx),
       title: t('glossary.tooltips.select_highlight')
-    })), /*#__PURE__*/React.createElement("td", {
+    }), /*#__PURE__*/React.createElement("span", {
+      "data-glossary-mobile-label": true,
+      "aria-hidden": "true"
+    }, t('glossary.highlight_label'))), /*#__PURE__*/React.createElement("td", {
+      role: "cell",
+      "data-glossary-term": true,
       className: "p-4 font-bold text-slate-800 align-top min-w-[200px]"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2 items-center"
@@ -4276,20 +4465,22 @@ function GlossaryView(props) {
       className: "flex items-center gap-1  mt-1"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": glossaryText('glossary.read_term_aria', 'Read term: {term}', {
-        term: item.term
-      }),
+      "aria-label": glossaryAudioActionLabel(`term-${idx}`, 'term', item.term),
+      title: glossaryAudioActionLabel(`term-${idx}`, 'term', item.term),
       onClick: () => handleGlossarySpeak(item, 'term', item.term, `term-${idx}`, item.termLanguage || 'English'),
       disabled: isGeneratingAudio && playingContentId !== `term-${idx}`,
       className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `term-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
       "data-help-key": "glossary_speak_term"
     }, playingContentId === `term-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin motion-reduce:animate-none"
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
     }) : playingContentId === `term-${idx}` ? /*#__PURE__*/React.createElement(StopCircle, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement(Volume2, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     })),
     // Pronounce button — opens the same phonics popup the simplified view uses
     // (phonetic spelling + IPA + syllables + audio playback). Only rendered if
@@ -4305,18 +4496,27 @@ function GlossaryView(props) {
       "aria-label": glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', {
         term: item.term
       }),
+      title: glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', {
+        term: item.term
+      }),
       onClick: () => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`),
       disabled: downloadingContentId === `dl-term-${idx}`,
       className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors",
       "data-help-key": "glossary_download_audio"
     }, downloadingContentId === `dl-term-${idx}` ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin motion-reduce:animate-none"
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement(Download, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }))))), /*#__PURE__*/React.createElement("td", {
+      role: "cell",
       className: "p-4 text-slate-600 align-top"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("span", {
+      "data-glossary-mobile-label": true,
+      "aria-hidden": "true"
+    }, t('glossary.table_def')), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2 items-center"
     }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
       "aria-label": t('glossary.edit_definition') || 'Edit definition',
@@ -4332,22 +4532,27 @@ function GlossaryView(props) {
       className: "flex items-center gap-1 "
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": glossaryText('glossary.read_definition_aria', 'Read definition for {term}', {
-        term: item.term
-      }),
+      "aria-label": glossaryAudioActionLabel(`def-${idx}`, 'definition', item.term),
+      title: glossaryAudioActionLabel(`def-${idx}`, 'definition', item.term),
       onClick: () => handleGlossarySpeak(item, 'definition', item.def, `def-${idx}`, item.definitionLanguage || 'English'),
       disabled: isGeneratingAudio && playingContentId !== `def-${idx}`,
       className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
     }, playingContentId === `def-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin motion-reduce:animate-none"
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
     }) : playingContentId === `def-${idx}` ? /*#__PURE__*/React.createElement(StopCircle, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement(Volume2, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": glossaryText('glossary.download_definition_audio_aria', 'Download definition audio for {term}', {
+        term: item.term
+      }),
+      title: glossaryText('glossary.download_definition_audio_aria', 'Download definition audio for {term}', {
         term: item.term
       }),
       onClick: () => handleDownloadAudio(glossarySpeechText(item, 'definition', item.def), `def-${idx}-audio`, `dl-def-${idx}`),
@@ -4355,9 +4560,11 @@ function GlossaryView(props) {
       className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors"
     }, downloadingContentId === `dl-def-${idx}` ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin motion-reduce:animate-none"
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement(Download, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }))), item.etymology ? /*#__PURE__*/React.createElement("details", {
       className: "mt-2 text-xs w-full",
       "data-help-key": "glossary_etymology_info"
@@ -4452,9 +4659,13 @@ function GlossaryView(props) {
       size: 12,
       className: "animate-spin motion-reduce:animate-none"
     }), " ", t('glossary.actions.generating_etymology') || 'Finding roots…') : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", t('glossary.actions.show_etymology') || 'Show word roots')) : null)), displayLanguages.map(lang => /*#__PURE__*/React.createElement("td", {
+      role: "cell",
       key: lang,
       className: "p-4 text-slate-600 italic border-l border-slate-50 align-top"
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("span", {
+      "data-glossary-mobile-label": true,
+      "aria-hidden": "true"
+    }, lang), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2",
       dir: isRtlLang(lang) ? 'rtl' : 'ltr'
     }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
@@ -4470,23 +4681,28 @@ function GlossaryView(props) {
       dir: "ltr"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": glossaryText('glossary.read_translation_aria', 'Read {lang} translation of {term}', {
-        lang: lang,
-        term: item.term
-      }),
+      "aria-label": glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
+      title: glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
       onClick: () => handleGlossarySpeak(item, 'translation', item.translations[lang], `trans-${idx}-${lang}`, lang),
       disabled: isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`,
       className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
     }, playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin motion-reduce:animate-none"
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
     }) : playingContentId === `trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(StopCircle, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement(Volume2, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
+        lang: lang,
+        term: item.term
+      }),
+      title: glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
         lang: lang,
         term: item.term
       }),
@@ -4495,9 +4711,11 @@ function GlossaryView(props) {
       className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors"
     }, downloadingContentId === `dl-trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 14,
-      className: "animate-spin motion-reduce:animate-none"
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement(Download, {
-      size: 14
+      size: 14,
+      "aria-hidden": "true"
     }))), item.translations?.[lang] && (() => {
       const etyLangProse = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang[lang] : null;
       const hasOwnProse = typeof etyLangProse === 'string' && etyLangProse.trim() && etyLangProse.trim() !== 'NONE';
@@ -5027,7 +5245,10 @@ function GlossaryView(props) {
       }
       return null;
     })()))));
-  }), filteredGlossaryData.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }), filteredGlossaryData.length === 0 && /*#__PURE__*/React.createElement("tr", {
+    role: "row"
+  }, /*#__PURE__*/React.createElement("td", {
+    role: "cell",
     colSpan: 2 + displayLanguages.length + (isEditingGlossary ? 1 : 0),
     className: "p-10 text-center text-slate-600"
   }, /*#__PURE__*/React.createElement("div", {

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "ch-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "WHAT DID I SAY I WOULD DO?",
+      "assetId": "ch-term-review",
+      "reason": "A student returns to the written notebook and record."
+    },
+    {
+      "resourceId": "ch-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "WHAT ACTUALLY HAPPENED?",
+      "assetId": "ch-term-count",
+      "reason": "Four filled suns out of five support counting actual mornings."
+    },
+    {
+      "resourceId": "ch-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "WHAT IS THE ONE CHANGE?",
+      "assetId": "ch-term-revise",
+      "reason": "Replacing one bicycle wheel represents changing one part of a system."
+    }
+  ]
+}

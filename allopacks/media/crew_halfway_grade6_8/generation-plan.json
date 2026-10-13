@@ -121,6 +121,106 @@
       "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-e07cd3cc-63ff-4ddf-a622-1fbb6a27f33e.png",
       "alt": "A student packs a notebook into a school bag beside an open laptop after dinner; a leash hangs by the door.",
       "status": "visual-review-passed"
+    },
+    {
+      "slug": "crew_halfway_grade6_8",
+      "id": "ch-term-trend",
+      "kind": "term",
+      "term": "Trend",
+      "scene": "A plain notebook page seen flat from above with four neat groups of small identical teal counters in a row from left to right: first group has two counters, next four, next six, last eight. Each group separated by generous empty space. Counts gradually increase across four weeks. No numerals, letters, axes, labels or arrows.",
+      "alt": "Four separated groups of counters grow larger from left to right.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. A plain notebook page seen flat from above with four neat groups of small identical teal counters in a row from left to right: first group has two counters, next four, next six, last eight. Each group separated by generous empty space. Counts gradually increase across four weeks. No numerals, letters, axes, labels or arrows. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "ch-term-trend.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-1ba0a35d-e2b9-4b1c-8f23-1ed707ec9018.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "slug": "crew_halfway_grade6_8",
+      "id": "ch-term-timely",
+      "kind": "term",
+      "term": "Timely",
+      "scene": "One middle school student calmly places a completed handmade model bridge into a classroom hand-in tray. A simple analog clock hangs in background with hands but no numerals. Model completed and student relaxed before lesson, natural arms and hands.",
+      "alt": "A student places a finished model bridge in a hand-in tray beneath a classroom clock.",
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. One middle school student calmly places a completed handmade model bridge into a classroom hand-in tray. A simple analog clock hangs in background with hands but no numerals. Model completed and student relaxed before lesson, natural arms and hands. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "file": "ch-term-timely.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-772c-7c40-b4d0-00df8d7e3827\\exec-9f60fcc4-ae06-4454-95f5-95d72d9e601a.png",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11"
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "ch-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "ch-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. A middle-school student sits ready at the beginning of class with an open notebook, pencil, closed plain textbook and water bottle neatly within reach. Their backpack is beside their chair. A calm attentive posture and hands resting naturally on the desk. Square composition.",
+      "alt": "A student sits ready for class with a notebook, pencil, textbook, water bottle, and backpack within reach.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-3d47-7c01-8b65-899fba5f796f\\exec-9aed0798-2327-481f-9cb5-cfe3a04d02c5.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-prepared",
+      "kind": "term",
+      "term": "Prepared",
+      "file": "ch-term-prepared.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_system_grade6_8",
+        "assetId": "cs-term-prepared",
+        "file": "allopacks/media/crew_system_grade6_8/cs-term-prepared.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Three simple gears meshing, each a different color. no labels on gears.",
+      "alt": "Three students hold three colorful gears together so their teeth mesh.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-b3ee0d00-3d65-4cc5-8415-417ad6c041d1.png",
+      "provider": "Built-in image generation",
+      "id": "ch-term-system",
+      "kind": "term",
+      "term": "System",
+      "file": "ch-term-system.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_system_grade6_8",
+        "assetId": "cs-term-system",
+        "file": "allopacks/media/crew_system_grade6_8/cs-term-system.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved."
     }
   ]
 }

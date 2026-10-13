@@ -84,8 +84,9 @@ describe('wave-3 host handler extraction', () => {
     const create = window.AlloModules[MODULE_KEY];
     expect(typeof create).toBe('function');
     const handlers = create(deps);
-    expect(Object.keys(handlers).sort()).toEqual([...MANIFEST.handlers].sort());
-    for (const name of MANIFEST.handlers) expect(typeof handlers[name], name).toBe('function');
+    const exported = [...MANIFEST.handlers, ...(MANIFEST.compatibilityHandlers || [])];
+    expect(Object.keys(handlers).sort()).toEqual(exported.sort());
+    for (const name of exported) expect(typeof handlers[name], name).toBe('function');
     expect(touched).toEqual([]);
   });
 

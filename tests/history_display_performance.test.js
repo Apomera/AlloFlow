@@ -10,11 +10,34 @@ const start = source.indexOf('// HISTORY_DISPLAY_FORMAT_START'), end = source.in
 if (start < 0 || end < 0) throw Error('History display helpers missing');
 const block = source.slice(start, end);
 function display(getDefaultTitle = type => type, intl = Intl) {
-  return Function('getDefaultTitle', 'Intl', block + '\nreturn { getSafeRowDate, formatHistoryDate, getResourceTypeLabel };')(getDefaultTitle, intl);
+  return Function('getDefaultTitle', 'Intl', block + '\nreturn { getSafeRowDate, formatHistoryDate, getResourceTypeLabel, getHistoryDisplayTitle, getHistoryDisplayMeta };')(getDefaultTitle, intl);
 }
 const options = { month: 'short', day: 'numeric', year: 'numeric' };
 afterEach(() => vi.restoreAllMocks());
 describe('history display formatting', () => {
+  it('localizes only generic saved lesson and directions titles while preserving custom names', () => {
+    const labels = { 'lesson-plan': 'Plan de leçon', directions: 'Consignes de la leçon' }, helpers = display(type => labels[type] || type);
+    for (const type of ['lesson-plan', 'directions']) {
+      for (const title of ['UDL Lesson Plan', 'Lesson Plan', 'Assignment Directions']) expect(helpers.getHistoryDisplayTitle(type, title, 'Fallback')).toBe(labels[type]);
+      expect(helpers.getHistoryDisplayTitle(type, 'Lesson Plan: Fractions', 'Fallback')).toBe('Lesson Plan: Fractions');
+      expect(helpers.getHistoryDisplayTitle(type, 'Our UDL Lesson Plan', 'Fallback')).toBe('Our UDL Lesson Plan');
+    }
+    expect(helpers.getHistoryDisplayTitle('quiz', 'Lesson Plan', 'Fallback')).toBe('Lesson Plan');
+  });
+  it('updates the generic UDL metadata label without removing grade or custom wording', () => {
+    const helpers = display(() => 'Plan de leçon');
+    expect(helpers.getHistoryDisplayMeta('lesson-plan', '4th Grade • UDL Aligned')).toBe('4th Grade • Plan de leçon');
+    expect(helpers.getHistoryDisplayMeta('lesson-plan', 'UDL-Aligned | 5th Grade')).toBe('Plan de leçon | 5th Grade');
+    for (const separator of [' - ', ' – ', ' — ', '–', '—']) {
+      expect(helpers.getHistoryDisplayMeta('lesson-plan', `4th Grade${separator}UDL Aligned`)).toBe(`4th Grade${separator}Plan de leçon`);
+      expect(helpers.getHistoryDisplayMeta('lesson-plan', `UDL-Aligned${separator}5th Grade`)).toBe(`Plan de leçon${separator}5th Grade`);
+      expect(helpers.getHistoryDisplayMeta('lesson-plan', `4th Grade${separator}UDL-Aligned${separator}Fractions`)).toBe(`4th Grade${separator}Plan de leçon${separator}Fractions`);
+    }
+    expect(helpers.getHistoryDisplayMeta('lesson-plan', 'UDL aligned with our class goals')).toBe('UDL aligned with our class goals');
+    expect(helpers.getHistoryDisplayMeta('lesson-plan', 'Custom-UDL Aligned')).toBe('Custom-UDL Aligned');
+    expect(helpers.getHistoryDisplayMeta('lesson-plan', 'UDL Aligned-custom')).toBe('UDL Aligned-custom');
+    expect(helpers.getHistoryDisplayMeta('directions', 'UDL Aligned')).toBe('UDL Aligned');
+  });
   it.each(['en-US', 'fr-FR', 'ar-EG', 'ja-JP'])('matches native date labels in %s while constructing one formatter', locale => {
     const make = vi.fn(function(_, opts) { return new Intl.DateTimeFormat(locale, opts); });
     const helpers = display(undefined, { DateTimeFormat: make });

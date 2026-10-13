@@ -87,6 +87,32 @@ describe('karaoke access after generating reading supports', () => {
   });
 });
 
+describe('the Practice panel', () => {
+  it('closes with Escape, restores focus, and leaves Display and practice controls intact', () => {
+    mount();
+    const practiceToggle = host.querySelector('[data-reader-practice]');
+    const practicePanel = host.querySelector('[data-reader-practice-panel]');
+    const record = practicePanel.querySelector('[data-help-key="simplified_read_along"]');
+    expect(practicePanel.hidden).toBe(true);
+    expect(practiceToggle.getAttribute('aria-controls')).toBe(practicePanel.id);
+    act(() => toggle().click());
+    act(() => practiceToggle.click());
+    expect(practiceToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(practicePanel.hidden).toBe(false);
+    act(() => record.focus());
+    const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    act(() => record.dispatchEvent(escape));
+    expect(escape.defaultPrevented).toBe(true);
+    expect(practicePanel.hidden).toBe(true);
+    expect(practicePanel.style.display).toBe('none');
+    expect(practiceToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(practiceToggle);
+    expect(panel().hidden).toBe(false);
+    act(() => practiceToggle.click());
+    expect(practicePanel.querySelector('[data-help-key="simplified_read_along"]')).toBe(record);
+  });
+});
+
 describe('the Display (Aa) panel', () => {
   it('holds Immersive Reader, the reading theme and the reading width, closed at first', () => {
     mount();
@@ -96,6 +122,15 @@ describe('the Display (Aa) panel', () => {
     expect(panel().style.display).toBe('none');
     expect(panel().querySelector('[data-help-key="simplified_immersive_reader"]')).not.toBeNull();
     expect(panel().querySelector('[data-adapted-theme-picker]')).not.toBeNull();
+    const themePicker = panel().querySelector('[data-adapted-theme-picker]');
+    const themeScope = host.querySelector('#' + themePicker.getAttribute('aria-describedby'));
+    expect(themeScope.textContent).toBe('Changes the reading area. Your app theme stays the same.');
+    expect(panel().contains(themeScope)).toBe(true);
+    const preview = panel().querySelector('[data-adapted-theme-preview]');
+    expect(preview.textContent).toBe('Aa');
+    expect(preview.getAttribute('aria-hidden')).toBe('true');
+    expect(preview.style.backgroundColor).toContain('--adapted-paper');
+    expect(preview.style.color).toContain('--adapted-ink');
     expect(panel().querySelector('input[aria-label="Reading width"]')).not.toBeNull();
     act(() => toggle().click());
     expect(toggle().getAttribute('aria-expanded')).toBe('true');

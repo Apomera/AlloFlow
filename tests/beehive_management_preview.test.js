@@ -131,6 +131,26 @@ describe('Beehive management decision preview', () => {
     expect(state.broodCohorts).toEqual(original);
   });
 
+  it('exposes pollen stores from each existing forecast at the shared endpoint without adding an immediate pollen effect', () => {
+    for (const choice of BH.BEEHIVE_MANAGEMENT_PREVIEW_CHOICES) {
+      for (const horizon of [7, 30]) {
+        const state = colony(choice.id === 'winterize' ? { day: 65 } : {}), saved = structuredClone(state), options = cfg();
+        const preview = BH.bhPreviewManagementChoice(state, options, choice.id, horizon);
+        expect(preview.action.eligible).toBe(true);
+        const common = preview.daysCompared - 1;
+        const baseline = preview.baseline.timeline[common].pollen, withAction = preview.withAction.timeline[common].pollen;
+        expect(preview.differences.filter(entry => entry.key === 'pollen')).toEqual([{
+          key: 'pollen', label: 'Pollen stores', baseline, withAction,
+          delta: Math.round((withAction - baseline) * 10) / 10, suffix: ' lb'
+        }]);
+        expect(preview.differences.map(entry => entry.key).slice(4, 7)).toEqual(['syrup', 'pollen', 'varroaLevel']);
+        expect(preview.action.patch).not.toHaveProperty('pollen');
+        expect(preview.immediate.pollen).toBe(state.pollen);
+        expect(state).toEqual(saved); expect(options.rand).not.toHaveBeenCalled();
+      }
+    }
+  });
+
   it('compares early collapse branches at the same simulated day', () => {
     const preview = BH.bhPreviewManagementChoice(colony({ day: 95, workers: 510, honey: 0, pollen: 0, brood: 0, broodCohorts: null }), cfg(), 'feed_bees', 30);
     expect(preview.daysCompared).toBeLessThan(30);
@@ -138,6 +158,9 @@ describe('Beehive management decision preview', () => {
     const workers = preview.differences.find((entry) => entry.key === 'workers');
     expect(workers.baseline).toBe(preview.baseline.timeline[common].workers);
     expect(workers.withAction).toBe(preview.withAction.timeline[common].workers);
+    const pollen = preview.differences.find((entry) => entry.key === 'pollen');
+    expect(pollen.baseline).toBe(preview.baseline.timeline[common].pollen);
+    expect(pollen.withAction).toBe(preview.withAction.timeline[common].pollen);
   });
 
   it('opening, selecting and locating remains a local UI-only exploration', async () => {

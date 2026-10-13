@@ -2666,6 +2666,11 @@ if (dryRun) {
         'stem_lab/stem_lumen_evidence.js',
         'stem_lab/stem_lumen_documents.js',
         'stem_lab/stem_lumen_study.js',
+        // BirdLab and Raptor Lab load these shared 3D companions on demand.
+        'stem_lab/avian_feather_art.js',
+        'stem_lab/birdlab_3d_bird.js',
+        'stem_lab/birdlab_3d_habitat.js',
+        'stem_lab/birdlab_3d_engine.js',
         // Lazy-loaded visual coding runtime (self-hosted for offline/CSP use)
         'stem_lab/blockly_runtime.bundle.js'
     ];

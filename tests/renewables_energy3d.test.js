@@ -79,7 +79,7 @@ describe('Individual energy mechanism calculations',()=>{
   });
   it('sanitizes saved settings, unknown IDs, and nonfinite inputs without mutating them',()=>{
     const input={speed:Infinity,radius:-100,cp:'100',rating:NaN},copy={...input};
-    expect(model.settings('wind',input)).toEqual({speed:8,radius:10,cp:40,rating:3000});
+    expect(model.settings('wind',input)).toEqual({speed:8,radius:10,cp:40,rating:3000,airDensity:1.225});
     expect(input).toEqual(copy);expect(model.simulate('unknown',{}).id).toBe('solarPv');
   });
 });

@@ -97,8 +97,8 @@ async function run(url) {
   };
   try {
     await page.goto(url); await open(); await inspectViewer();
-    await check('six physical bays render and the new corner and tile objects are ray-pickable', async () => {
-      assert.equal(await page.locator('[data-walk-activity]').count(), 6);
+    await check('ten physical bays render and the corner and tile objects remain ray-pickable', async () => {
+      assert.equal(await page.locator('[data-walk-activity]').count(), 10);
       await click('[data-walk-activity="contour"]');
       assert.deepEqual((await state()).player, { x: 36, z: 6.5, yaw: 0, pitch: 0 });
       await page.locator('[data-walk-stage]').scrollIntoViewIfNeeded();
@@ -193,7 +193,7 @@ async function run(url) {
       await click('[data-walk-reset]'); assert.deepEqual((await state()).context, { selected: [], neutral: false });
       assert.equal((await state()).notes.context, before.notes.context);
     });
-    await check('mobile scenes, six-station navigation, new controls, and waypoints fit at 390 and 320 pixels', async () => {
+    await check('mobile scenes, ten-station navigation, new controls, and waypoints fit at 390 and 320 pixels', async () => {
       for (const width of [390, 320]) {
         await page.setViewportSize({ width, height: 844 });
         for (const activity of ['contour', 'context']) {

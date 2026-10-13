@@ -74,7 +74,7 @@ function renderSeasons(seed = {}, overrides = {}, siblings = {}) {
   }, createElement(type, props, ...children) {
     if (type === 'style') return null;
     if (typeof type === 'string' && props &&
-        ['onClick', 'onChange'].some((name) => typeof props[name] === 'function')) {
+        ['onClick', 'onChange', 'onKeyDown'].some((name) => typeof props[name] === 'function')) {
       const id = String(renderingCallbacks.size);
       const element = React.createElement(type, { ...props, 'data-season-callback': id }, ...children);
       renderingCallbacks.set(id, { ...element.props, ref: element.ref });
@@ -626,6 +626,88 @@ describe('Solar System seasons observer workbench', () => {
       expect(env.state.journalEntries[2].investigation.id).toBe('seasons');
     });
   }
+
+  it.each([[0, 0], [45.25, 25.25], [70, 75], [80, 100]])('keeps the responsive annual curves and markers on one physical scale at latitude %s and position %s', (latitude, phase) => {
+    const env = renderSeasons({ seasonsLatitude: latitude, seasonsPhase: phase });
+    const chart = env.lab.querySelector('[data-season-year-chart]'), svg = chart.querySelector('svg');
+    expect(svg.getAttribute('viewBox')).toBe('0 0 480 192');
+    expect(svg.getAttribute('preserveAspectRatio')).toBe('none');
+    expect(svg.getAttribute('aria-label')).toContain('Fixed scale: 0 to 24 hours');
+    expect(svg.querySelectorAll('text')).toHaveLength(0);
+    expect(chart.hasAttribute('tabindex')).toBe(false);
+    expect(chart.querySelector('#solar-season-year-phase').value).toBe(String(phase));
+    expect(chart.querySelector('#solar-season-year-phase').getAttribute('step')).toBe('any');
+    expect(env.phase.getAttribute('step')).toBe('any'); expect(env.latitude.getAttribute('step')).toBe('any');
+    expect(Number(chart.querySelector('[data-season-year-cursor]').getAttribute('x1'))).toBeCloseTo(phase * 4.8, 10);
+    for (const [hemisphere, signed] of [['north', latitude], ['south', -latitude]]) {
+      const path = chart.querySelector(`[data-season-year-curve="${hemisphere}"]`);
+      expect(path.getAttribute('vector-effect')).toBe('non-scaling-stroke');
+      const points = [...path.getAttribute('d').matchAll(/[ML]([\d.]+),([\d.]+)/g)].map(match => ({ x: +match[1], y: +match[2] }));
+      expect(points.length).toBe(phase % 1 ? 102 : 101);
+      expect(points[0].x).toBe(0); expect(points.at(-1).x).toBe(480);
+      points.forEach(point => {
+        expect(point.x).toBeGreaterThanOrEqual(0); expect(point.x).toBeLessThanOrEqual(480);
+        expect(point.y).toBeGreaterThanOrEqual(0); expect(point.y).toBeLessThanOrEqual(192);
+        expect(point.y).toBeCloseTo(192 - metrics('Earth', point.x / 4.8, signed).hours * 8, 3);
+      });
+      const exact = points.find(point => Math.abs(point.x - phase * 4.8) < 1e-6);
+      expect(exact).toBeTruthy(); expect(exact.y).toBeCloseTo(192 - metrics('Earth', phase, signed).hours * 8, 3);
+      const dot = chart.querySelector(`[data-season-year-point="${hemisphere}"]`), expected = metrics('Earth', phase, signed).hours;
+      expect(parseFloat(dot.style.left)).toBe(phase);
+      expect(parseFloat(dot.style.top)).toBeCloseTo(100 - expected / 24 * 100, 10);
+      expect(Number(dot.dataset.hours)).toBeCloseTo(expected, 10);
+      expect(chart.querySelector(`[data-season-year-reading="${hemisphere}"]`).textContent).toContain(expected.toFixed(1) + ' h daylight');
+    }
+    if (latitude === 0) {
+      expect(chart.querySelector('[data-season-year-curve="north"]').getAttribute('d')).toBe(chart.querySelector('[data-season-year-curve="south"]').getAttribute('d'));
+      expect(chart.textContent).toContain('curves and markers overlap');
+    }
+    expect(env.renderWrites).toBe(0);
+  });
+
+  it('synchronizes the local year slider and exact checkpoints without changing saved writing or captured evidence', () => {
+    const guide = readyGuide(), journal = [{ observation: 'Keep this prior evidence' }];
+    const env = renderSeasons({ seasonsGuide: guide, journalEntries: journal, seasonsLatitudeExplanation: 'Keep this explanation',
+      seasonsPrediction: { world: 'Earth', phase: 25, choice: 'north' }, seasonsEvidenceSaved: true });
+    env.change(env.lab.querySelector('#solar-season-year-phase'), '75.125');
+    expect(env.phase.value).toBe('75.125'); assertLatitude(env, 75.125, 45);
+    expect(env.state.seasonsPrediction).toBeNull(); expect(env.state.seasonsEvidenceSaved).toBe(false);
+    expect(env.state.seasonsGuide).toBe(guide); expect(env.state.journalEntries).toBe(journal);
+    expect(env.state.seasonsLatitudeExplanation).toBe('Keep this explanation');
+    expect(env.lab.querySelectorAll('[data-season-year-checkpoint][aria-pressed="true"]')).toHaveLength(0);
+    for (const phase of [0, 25, 50, 75]) {
+      env.click(env.lab.querySelector(`[data-season-year-checkpoint="${phase}"]`));
+      expect(env.phase.value).toBe(String(phase)); assertLatitude(env, phase, 45);
+      expect([...env.lab.querySelectorAll('[data-season-year-checkpoint][aria-pressed="true"]')].map(n => +n.dataset.seasonYearCheckpoint)).toEqual([phase]);
+    }
+    env.setPhase('100');
+    expect(env.lab.querySelector('[data-season-year-checkpoint="0"]').getAttribute('aria-pressed')).toBe('true');
+    expect(env.lab.querySelector('[data-season-year-cursor]').getAttribute('x1')).toBe('480');
+    expect(env.lab.querySelector('#solar-season-year-phase').value).toBe('100');
+  });
+
+  it('retains one-unit arrow-key changes while allowing fractional restored slider positions', () => {
+    const env = renderSeasons({ seasonsPhase: 25.25, seasonsLatitude: 45.25 });
+    function key(control, value) { const preventDefault = vi.fn(); env.handler(control, 'onKeyDown')({ key: value, preventDefault }); env.render(); return preventDefault; }
+    expect(key(env.lab.querySelector('#solar-season-year-phase'), 'ArrowRight')).toHaveBeenCalledOnce();
+    expect(env.state.seasonsPhase).toBe(26.25); expect(env.phase.value).toBe('26.25');
+    key(env.phase, 'ArrowLeft'); expect(env.state.seasonsPhase).toBe(25.25);
+    key(env.latitude, 'ArrowUp'); expect(env.state.seasonsLatitude).toBe(46.25);
+    key(env.latitude, 'ArrowDown'); expect(env.state.seasonsLatitude).toBe(45.25);
+    env.setPhase('100'); key(env.lab.querySelector('#solar-season-year-phase'), 'ArrowRight'); expect(env.state.seasonsPhase).toBe(100);
+    env.setLatitude('0'); key(env.latitude, 'ArrowLeft'); expect(env.state.seasonsLatitude).toBe(0);
+    expect(key(env.phase, 'Home')).not.toHaveBeenCalled();
+  });
+
+  it('guards removed annual controls after world changes, closing, or returning to the prediction gate', () => {
+    for (const change of ['world', 'close', 'guide']) {
+      const env = renderSeasons(), control = env.lab.querySelector('[data-season-year-checkpoint="75"]'), action = env.handler(control);
+      if (change === 'world') env.world('Mars');
+      else { env.rootState.solarSystem = { ...env.state, ...(change === 'close' ? { showSeasonsLab: false } : { seasonsGuideActive: true, seasonsGuide: {} }) }; env.render(); }
+      const before = env.state; action(env.event(control));
+      expect(env.state).toBe(before); expect(env.state.seasonsPhase).toBe(25);
+    }
+  });
 
   it('preserves unrelated learning and historical journal evidence while rejecting invalid current hub progress', () => {
     const prior = { planet: 'Earth', observation: 'Keep earlier orbit evidence.' };

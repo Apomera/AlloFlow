@@ -374,6 +374,7 @@ POST_MODULES=(
   view_share_session_surfaces_module.js
   view_sidebar_panels_module.js
   view_video_ref_player_module.js
+  word_practice_module.js
 )
 GENERATED_ROOTS=(desktop/web-app/public app "${POST_MODULES[@]}")
 _af_generated_dirty() {

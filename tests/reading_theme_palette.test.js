@@ -2,14 +2,10 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-// The reading themes are an ACCESSIBILITY feature (visual stress, Irlen,
-// dyslexia), so their colours are a contract, not decoration. Before this pass:
-//   · every theme painted the SAME accent hexes on its own background, so the
-//     yellow-200 highlight sat at 1.0:1 on warm/sepia (invisible), success ran
-//     2.7-3.1:1 and error 3.9-4.5:1 — all below AA;
-//   · five theme pairs were within dE 10 (dyslexia vs default was 5.3), and the
-//     whole set spanned 8 L* points, so the picker offered near-identical tints.
-// These tests re-derive the numbers from the shipped source.
+// Reading themes offer optional comfort colors while preserving accessible
+// text, controls and focus. The reader now uses white by default and pale
+// optional paper colors; the named swatches identify those subtle choices.
+// These tests re-derive contrast and swatch parity from the shipped source.
 
 const repo = path.resolve(import.meta.dirname, '..');
 const ANTI = fs.readFileSync(path.join(repo, 'AlloFlowANTI.txt'), 'utf8');
@@ -20,16 +16,6 @@ const hex = (h) => { const s = h.replace('#', ''); return [0, 2, 4].map((i) => p
 const lin = (c) => { const x = c / 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
 const lum = (h) => { const [r, g, b] = hex(h).map(lin); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
 const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-function lab(h) {
-  const [R, G, B] = hex(h).map(lin);
-  let X = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047;
-  let Y = (R * 0.2126 + G * 0.7152 + B * 0.0722);
-  let Z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883;
-  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
-  [X, Y, Z] = [f(X), f(Y), f(Z)];
-  return [116 * Y - 16, 500 * (X - Y), 200 * (Y - Z)];
-}
-const dE = (a, b) => { const [l1, a1, b1] = lab(a); const [l2, a2, b2] = lab(b); return Math.hypot(l1 - l2, a1 - a2, b1 - b2); };
 
 // Parse the custom-property block straight out of the shipped CSS.
 function parseThemes() {
@@ -67,9 +53,7 @@ function parseHeaderSwatches() {
 
 const ALL = parseThemes();
 const FULL = parseFullThemeTokens();
-// dark / highContrast carry the same accent tokens but are excluded from the
-// perceptual-spacing and lightness checks — they are deliberately far from the
-// light set, and comparing them would make those assertions meaningless.
+// Dark and high contrast deliberately offer a different luminance range.
 const DARKISH = ['dark', 'highContrast'];
 const THEMES = Object.fromEntries(Object.entries(ALL).filter(([n]) => !DARKISH.includes(n)));
 const NAMES = Object.keys(THEMES);
@@ -147,21 +131,18 @@ describe('reading theme palette', () => {
     }
   });
 
-  it('no two themes are confusable at a glance', () => {
-    const withDefault = { ...THEMES, default: { bg: '#ffffff' } };
-    const names = Object.keys(withDefault);
-    for (let i = 0; i < names.length; i++) {
-      for (let j = i + 1; j < names.length; j++) {
-        const d = dE(withDefault[names[i]].bg, withDefault[names[j]].bg);
-        expect(d, `${names[i]} vs ${names[j]} perceptual distance`).toBeGreaterThanOrEqual(15);
-      }
+  it('offers white by default and pale optional paper colors', () => {
+    expect(SWATCHES.default.bg).toBe('#ffffff');
+    for (const name of ['warm', 'sepia', 'blue', 'green', 'rose', 'dyslexia']) {
+      expect(lum(THEMES[name].bg), `${name} pale paper`).toBeGreaterThanOrEqual(0.8);
+      expect(THEMES[name].bg, `${name} remains a tint`).not.toBe('#ffffff');
+      expect(HEADER, `${name} has a text label`).toMatch(new RegExp(`id: '${name}', label:`));
     }
   });
 
-  it('spans a real lightness range, not seven near-whites', () => {
-    const Ls = NAMES.map((n) => lab(THEMES[n].bg)[0]).concat([100]); // include default
-    const spread = Math.max(...Ls) - Math.min(...Ls);
-    expect(spread, 'lightness spread across the picker').toBeGreaterThan(20);
+  it('retains the lower-light dim option alongside the pale paper colors', () => {
+    expect(lum(THEMES.dim.bg)).toBeLessThan(0.6);
+    expect(ratio(THEMES.dim.bg, THEMES.dim.fg)).toBeGreaterThanOrEqual(7);
   });
 
   it('registers dim in the theme lists so it can be selected and cycled', () => {

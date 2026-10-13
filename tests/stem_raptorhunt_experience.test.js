@@ -40,7 +40,7 @@ function expectNearWhite(color) {
 describe('Raptor Hunt resilient engine startup and mission flow', () => {
   it('uses the live Three runtime with an explicit visible retry state', () => {
     const text = source();
-    expect(text).toMatch(/useState\(window\.THREE \? 'ready' : 'idle'\)/);
+    expect(text).toMatch(/useState\(window\.THREE && hasRaptorFeatherArt\(\) \? 'ready' : 'idle'\)/);
     expect(text).toMatch(/threeLoadStatus === 'ready' && !!window\.THREE/);
     expect(text).toContain("'data-raptor-engine-state': threeLoadStatus");
     expect(text).toMatch(/threeLoadStatus === 'error'[\s\S]{0,1100}setThreeLoadStatus\('idle'\)/);
@@ -67,6 +67,7 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
   // is a scheduling fact about this machine and not a regression in the tool.
   it('renders both a visible engine state and the ready responsive flight shell', { timeout: 20000 }, () => {
     const previousThree = window.THREE;
+    const previousFeatherArt = window.AvianFeatherArt;
     const toolData = {
       raptorHunt: {
         activeSection: 'hunt',
@@ -78,6 +79,7 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     };
     try {
       delete window.THREE;
+      delete window.AvianFeatherArt;
       resetStemLab();
       loadTool(CANONICAL, 'raptorHunt');
       const loadingHtml = renderTool('raptorHunt', toolData);
@@ -86,6 +88,10 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
       expect(loadingHtml).toContain('data-raptor-active-flight="true"');
 
       window.THREE = {};
+      const waitingForFeathers = renderTool('raptorHunt', toolData);
+      expect(waitingForFeathers).toContain('data-raptor-engine-state="idle"');
+      expect(waitingForFeathers).not.toContain('data-raptor-flight-stage="true"');
+      window.AvianFeatherArt = { createFlightFeatherCanvas() {}, createVaneDetailCanvases() {} };
       const readyHtml = renderTool('raptorHunt', toolData);
       expect(readyHtml).toContain('data-raptor-flight-stage="true"');
       expect(readyHtml).toContain('data-raptor-flight-readout="true"');
@@ -98,6 +104,8 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     } finally {
       if (previousThree === undefined) delete window.THREE;
       else window.THREE = previousThree;
+      if (previousFeatherArt === undefined) delete window.AvianFeatherArt;
+      else window.AvianFeatherArt = previousFeatherArt;
       resetStemLab();
     }
   });

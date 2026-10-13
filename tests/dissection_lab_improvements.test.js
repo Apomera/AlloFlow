@@ -3999,7 +3999,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Ventral surface centered with the limbs stabilized symmetrically.');
     expect(html).toContain('Protected landmarks');
     expect(html).toContain('View aligned to procedure recommendation');
-    expect(html).toContain('Heart (3-chamber), Liver (3 lobes), Lungs');
+    expect(Array.from(new DOMParser().parseFromString(html, 'text/html').querySelectorAll('.diss-protocol__landmarks li'), node => node.textContent)).toEqual(['Heart (3-chamber)', 'Liver (3 lobes)', 'Lungs']);
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('Scalpel');
     expect(html).toContain('Active tool: Scalpel');
@@ -4100,7 +4100,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     });
     expect(wormHtml).toContain('Earthworm dorsal longitudinal access');
     expect(wormHtml).toContain('shallow dorsal longitudinal corridor');
-    expect(wormHtml).toContain('Aortic Arches (5 pairs), Cerebral Ganglia, Intestine');
+    expect(Array.from(new DOMParser().parseFromString(wormHtml, 'text/html').querySelectorAll('.diss-protocol__landmarks li'), node => node.textContent)).toEqual(['Aortic Arches (5 pairs)', 'Cerebral Ganglia', 'Intestine']);
     expect(wormHtml).toContain('Stabilize ends');
     expect(wormHtml).toContain('Place the first body-wall anchor');
     expect(wormHtml).toContain('Extend lengthwise');
@@ -4461,7 +4461,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("'POOLING \u00B7 REDUCE DOSE'");
       expect(source).toContain('observationQuality: currentObservationField.quality');
       expect(source).toContain('observationQuality: observationField.quality');
-      expect(source).toContain('observationDelta: current.observationQuality');
+      expect(source).toContain('observationDelta: techniqueComparisonDelta(current.observationQuality, previous.observationQuality)');
       expect(source).toContain("label: 'Observation', previous:");
       expect(source).toContain("report += 'Observation field: '");
       expect(source).toContain('"aria-label": "Observation field quality "');
@@ -4487,9 +4487,10 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Observation field');
     expect(html).toContain('Observation quality');
     expect(html).toContain('Limiting factor:');
-    expect(html).toContain('Aperture 72%');
-    expect(html).toContain('Clarity 88%');
-    expect(html).toContain('Stability 76%');
+    expect(html).toContain('<dt>Opening size</dt><dd>72%</dd>');
+    expect(html).toContain('<dt>Surface clarity</dt><dd>88%</dd>');
+    expect(html).toContain('<dt>Field stability</dt><dd>76%</dd>');
+    expect(html).toContain('<dt>Handling risk</dt><dd>12%</dd>');
     expect(html).toContain('aria-label="Observation field quality');
   });
 
@@ -4540,7 +4541,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Optical inspection');
     expect(html).toContain('Dorsal Skin');
     expect(html).toContain('pigment and mucous texture');
-    expect(html).toContain('Ideal focus: surface');
+    expect(html).toContain('data-optical-reading="focus"><dt>Recommended focus</dt><dd>surface</dd>');
     expect(html).toContain('Resolved');
     expect(html).toContain('aria-label="Inspection focus depth"');
     expect(html).toContain('aria-pressed="true">Surface');
@@ -4867,7 +4868,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
   it('implements the ARIA radio keyboard pattern for procedural instruments', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
-      expect(source).toContain('function prepareNextProcedureStep()');
+      expect(source).toContain('function prepareNextProcedureStep(focusTarget)');
       expect(source).toContain("focusDissectionTarget('diss-instrument-' + nextTool)");
       expect(source).toContain('No setup was changed automatically.');
       expect(source).not.toContain("selectProcedureInstrument(nextTool, 'next-step planner')");
@@ -4889,7 +4890,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain('Latest tissue response metric changes');
       expect(source).toContain('var fieldReadinessChecks =');
       expect(source).toContain('function runFieldReadinessCheck()');
-      expect(source).toContain('function resolveFieldReadinessIssue()');
+      expect(source).toContain('function resolveFieldReadinessIssue(checkId, event)');
       expect(source).toContain('function showProcedureLastResponse()');
       expect(source).toContain('function selectProcedureTimelineEntry(entry)');
       expect(source).toContain('selectedProcedureActionAt');
@@ -5339,7 +5340,8 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('id="diss-light-intensity-range"');
     expect(html).toContain('value="96"');
     expect(html).toContain('glare risk');
-    expect(html).toContain('Illumination: Glare limited at 96%');
+    expect(html).toContain('data-optical-reading="light"><dt>Light intensity</dt><dd>96%</dd>');
+    expect(html).toContain('data-optical-reading="illumination"><dt>Illumination status</dt><dd>Glare limited</dd>');
   });
 
   it('keeps the fullscreen dock visible and escapable in CSS fallback mode', () => {

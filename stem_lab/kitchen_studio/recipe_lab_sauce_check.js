@@ -6,12 +6,12 @@
   function start(p){return point(p)&&p.x>=-.58&&p.x<=-.3&&Math.abs(p.z)<=.28?{start:p.x,x:p.x,z:p.z,last:p.x,progress:0,invalid:false}:null;}
   function move(g,p){if(!g)return null;var n=Object.assign({},g);if(!point(p)){n.invalid=true;return n;}n.invalid=g.invalid||Math.abs(p.z-g.z)>.18||Math.abs(p.z)>.5||p.x<-.62||p.x>.62||p.x<g.last-.08;n.x=Math.max(g.start,Math.min(.42,p.x));n.last=Math.max(g.last,p.x);n.progress=Math.max(0,Math.min(1,(p.x-g.start)/(.42-g.start)));return n;}
   function complete(g){return !!g&&!g.invalid&&g.progress>=1;}
-  function available(s,locked){return {ready:!locked&&!s.plated&&s.time<3600&&s.log.length<1200&&s.pan.combined&&!R.serving(s).started,detail:locked||s.plated?'Recorded or finished kitchen. Sauce checks are read-only.':R.serving(s).started?'Return every spoonful to the pan before checking the sauce.':!s.pan.combined?'Combine the pasta and sauce before checking the final coating.':'Start at the left side of the pan. Draw steadily right, then release to inspect.'};}
+  function available(s,locked){return {ready:!locked&&!s.plated&&!s.submitted&&s.time<3600&&s.log.length<1200&&s.pan.combined&&!R.serving(s).started,detail:locked||s.plated||s.submitted?'Recorded or finished kitchen. Sauce checks are read-only.':R.serving(s).started?'Return every spoonful to the pan before checking the sauce.':!s.pan.combined?'Combine the pasta and sauce before checking the final coating.':'Start at the left side of the pan. Draw steadily right, then release to inspect.'};}
   function reading(s){var checks=R.inspections(s).filter(function(c){return c.kind==='sauce';}),last=checks[checks.length-1];return last?Object.assign({},last,{stale:!s.pan.tasted,previous:checks[checks.length-2]||null}):null;}
   function cues(r){if(!r)return null;var thin=r.type==='watery'||r.type==='unmixed';return {track:r.closureSeconds===0?'Stays open':r.closureSeconds<1?'Closes quickly':'Closes gradually',coating:r.type==='scorched'?'Dark patches cling':r.type==='dry'?'Thick patches cling':thin?'Thin liquid runs off':'An even layer stays',seconds:r.closureSeconds,thin:thin,patches:r.type==='dry'||r.type==='scorched'};}
   function mountPanel(h){
     var panel=document.createElement('section');panel.id='sceneSauceResult';panel.className='sauce-reading-panel';panel.hidden=true;panel.setAttribute('aria-labelledby','sceneSauceTitle');
-    panel.innerHTML='<p class="eyebrow">DRAW · WATCH · DECIDE</p><h3 id="sceneSauceTitle">Read the sauce trail</h3><div role="status" aria-live="polite" aria-atomic="true"><strong id="sceneSauceLabel"></strong><dl class="sauce-reading-cues"><div><dt>Track in the pan</dt><dd id="sceneSauceTrack"></dd></div><div><dt>Coating on the spoon</dt><dd id="sceneSauceCoating"></dd></div></dl><p id="sceneSauceObservation"></p><small id="sceneSaucePrevious"></small></div><p id="sceneSaucePrompt" class="sample-reading-note"></p><button type="button" id="sceneSauceDetails">Open coating close-up & keyboard check</button>';
+    panel.innerHTML='<p class="eyebrow">DRAW · WATCH · DECIDE</p><h3 id="sceneSauceTitle">Read the sauce trail</h3><div role="status" aria-live="polite" aria-atomic="true"><strong id="sceneSauceLabel"></strong><dl class="sauce-reading-cues"><div><dt>Track in the pan</dt><dd id="sceneSauceTrack"></dd></div><div><dt>Coating on the spoon</dt><dd id="sceneSauceCoating"></dd></div></dl><p id="sceneSauceObservation"></p><small id="sceneSaucePrevious"></small></div><p id="sceneSaucePrompt" class="sample-reading-note"></p><button type="button" id="sceneSauceDetails">Open trail replay & keyboard check</button>';
     h.container.append(panel);var $=function(id){return panel.querySelector('#'+id);},button=$('sceneSauceDetails'),open=function(){h.open();};button.addEventListener('click',open);
     function text(id,value){if($(id).textContent!==value)$(id).textContent=value;}
     function clock(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');}
@@ -22,8 +22,11 @@
     h.pan.add(group);group.userData.sceneDecoration=true;group.visible=false;
     function mesh(geometry,color,x,y,z,parent){var o=h.mesh(geometry,color,x,y,z,parent||group,{roughness:.55});o.userData.sceneDecoration=true;return o;}
     var spoon=new T.Group();group.add(spoon);spoon.rotation.y=Math.PI/2;
-    mesh(new T.BoxGeometry(.05,.025,.4),'#9b6b3e',0,.015,.2,spoon);
-    var bowl=mesh(new T.SphereGeometry(.105,20,12),'#b68b55',0,0,-.055,spoon);bowl.scale.set(.85,.22,1.25);
+    var grip=new T.Shape();grip.moveTo(-.025,0);grip.lineTo(-.032,.34);grip.quadraticCurveTo(-.03,.4,0,.4);grip.quadraticCurveTo(.03,.4,.032,.34);grip.lineTo(.025,0);grip.closePath();
+    var gripMesh=mesh(new T.ExtrudeGeometry(grip,{depth:.014,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.004,bevelThickness:.004}),'#9b6b3e',0,.025,0,spoon);gripMesh.rotation.x=Math.PI/2;
+    for(var grain=0;grain<3;grain++){var line=mesh(new T.BoxGeometry(.002,.001,.24),'#c29863',-.012+grain*.012,.029,.19+grain*.01,spoon);line.rotation.y=(grain-1)*.018;}
+    var hole=mesh(new T.SphereGeometry(.006,10,8),'#664629',0,.03,.362,spoon);hole.scale.y=.2;
+    var bowl=mesh(new T.SphereGeometry(.105,20,12),'#b68b55',0,0,-.055,spoon);bowl.scale.set(.85,.22,1.25);var rim=mesh(new T.TorusGeometry(.084,.004,6,28),'#d7aa70',0,.012,-.055,spoon);rim.rotation.x=-Math.PI/2;rim.scale.set(.95,1.4,1);
     var layer=mesh(new T.SphereGeometry(.095,20,12),'#a67b40',0,.018,-.055,spoon);layer.scale.set(.8,.11,1.23);
     var patches=[];for(var i=0;i<4;i++){var patch=mesh(new T.SphereGeometry(.027,12,8),'#9f713f',Math.cos(i*2.4)*.044,.026,-.055+Math.sin(i*2.4)*.054,spoon);patch.scale.y=.2;patches.push(patch);}
     var drip=mesh(new T.SphereGeometry(.021,12,8),'#bb9655',0,-.035,-.15,spoon);drip.scale.set(.65,1.5,.65);

@@ -54,7 +54,7 @@ beforeEach(() => {
     let report = () => {}, layout = () => {};
     const viewer = { attach: vi.fn(() => report('ready')), push: vi.fn(), dispose: vi.fn(), status: () => 'ready',
       onStatusChange: fn => { report = fn; }, report: value => report(value), pick: vi.fn(() => null), interact: vi.fn(() => null),
-      blockCoordinate: vi.fn(() => null), onLayout: fn => { layout = fn; return vi.fn(); }, layout: value => layout(value) };
+      blockCoordinate: vi.fn(() => null), continuationCoordinate: vi.fn(() => null), onLayout: fn => { layout = fn; return vi.fn(); }, layout: value => layout(value) };
     viewers.push(viewer); return viewer;
   });
 });
@@ -122,14 +122,23 @@ describe('first-person perception models', () => {
     }
   });
 
-  it('extends the walkable bounds through the sixth bay without changing existing spawns', () => {
+  it('extends the walkable bounds through the eighteenth bay without changing existing spawns', () => {
     expect(walk.spawn('parallax')).toEqual({ x: 24, z: 9, yaw: 0, pitch: 0 });
-    expect(walk.normalizePlayer({ x: 99, z: 9, yaw: 0, pitch: 0 }).x).toBe(55.3);
+    expect(walk.normalizePlayer({ x: 999, z: 9, yaw: 0, pitch: 0 }).x).toBe(199.3);
     expect(walk.normalizePlayer({ x: -99, z: 9, yaw: 0, pitch: 0 }).x).toBe(-19.3);
     expect(walk.movePlayer({ x: 24, z: 9, yaw: 0, pitch: 0 }, 'right', 2, -1).x).toBeCloseTo(26);
     expect(walk.spawn('scale')).toEqual({ x: 0, z: 9, yaw: 0, pitch: 0 });
     expect(walk.spawn('contour')).toEqual({ x: 36, z: 6.5, yaw: 0, pitch: 0 });
     expect(walk.spawn('context')).toEqual({ x: 48, z: 7, yaw: 0, pitch: 0 });
+    expect(walk.spawn('continuity')).toEqual({ x: 60, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('shadow')).toEqual({ x: 72, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('change')).toEqual({ x: 84, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('rotation')).toEqual({ x: 96, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('relief')).toEqual({ x: 108, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('shape')).toEqual({ x: 120, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('motion')).toEqual({ x: 132, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('frame')).toEqual({ x: 144, z: 9, yaw: 0, pitch: 0 });
+    expect(walk.spawn('weave')).toEqual({ x: 156, z: 9, yaw: 0, pitch: 0 });
   });
 
   it('keeps the camera outside each parallax sphere during movement and saved-state recovery', () => {
@@ -191,7 +200,7 @@ describe('first-person perception models', () => {
     expect(Object.values(state.player).every(Number.isFinite)).toBe(true);
     expect(state.notes.ring.length).toBeLessThanOrEqual(1000);
     expect(walk.normalize({ blockZ: -10 }).blockZ).toBe(-1);
-    expect(Object.keys(walk.normalize(null).progress)).toEqual(['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context']);
+    expect(Object.keys(walk.normalize(null).progress)).toEqual(['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length']);
   });
 
   it('normalizes puzzle rotations and matching choices without retaining invalid saved values', () => {
@@ -271,6 +280,130 @@ describe('first-person perception models', () => {
     expect(seed).toEqual(before);
   });
 
+  it('normalizes the hidden-line offset and keeps its saved work independent', () => {
+    const raw = { activity: 'continuity', continuityOffset: '-0.25', player: walk.spawn('continuity'),
+      progress: { continuity: { hints: 2, solved: true } }, notes: { continuity: 'Follow the diagonal.' } };
+    const before = structuredClone(raw), normalized = walk.normalize(raw);
+    expect(normalized.activity).toBe('continuity');
+    expect(normalized.continuityOffset).toBe(-0.25);
+    expect(normalized.progress.continuity).toEqual({ hints: 2, solved: true, assisted: false });
+    expect(normalized.notes.continuity).toBe('Follow the diagonal.');
+    expect(walk.normalize(normalized)).toEqual(normalized);
+    expect(raw).toEqual(before);
+    for (const value of [undefined, null, '', 'bad', NaN, Infinity]) {
+      expect(walk.normalize({ continuityOffset: value }).continuityOffset).toBe(0.8);
+    }
+    expect(walk.normalize({ continuityOffset: -999 }).continuityOffset).toBe(-1.2);
+    expect(walk.normalize({ continuityOffset: 999 }).continuityOffset).toBe(1.2);
+  });
+
+  it('only moves the continuation from its reachable front side without changing other work', () => {
+    const seed = walk.normalize({ activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0.8,
+      blockZ: 3, notes: { continuity: 'Keep the observation.' }, progress: { ring: { solved: true } } });
+    const before = structuredClone(seed), moved = walk.moveContinuation(seed, 0.25);
+    expect(walk.canMoveContinuation(seed)).toBe(true);
+    expect(moved.continuityOffset).toBe(0.25);
+    expect(moved.player).toEqual(seed.player);
+    expect(moved.blockZ).toBe(seed.blockZ);
+    expect(moved.notes).toEqual(seed.notes);
+    expect(moved.progress).toEqual(seed.progress);
+    expect(moved.progress.continuity.solved).toBe(false);
+    expect(seed).toEqual(before);
+    expect(walk.moveContinuation(seed, 999).continuityOffset).toBe(1.2);
+    expect(walk.moveContinuation(seed, -999).continuityOffset).toBe(-1.2);
+    expect(walk.moveContinuation(moved, 'bad').continuityOffset).toBe(0.25);
+    for (const patch of [{ activity: 'context' }, { player: { x: 60, z: -2, yaw: 180, pitch: 0 } },
+      { player: { x: 48, z: 7, yaw: 0, pitch: 0 } }]) {
+      const unreachable = walk.normalize({ ...seed, ...patch });
+      expect(walk.canMoveContinuation(unreachable)).toBe(false);
+      expect(walk.moveContinuation(unreachable, 0)).toEqual(unreachable);
+    }
+    const depthAtReach = Math.sqrt(12 ** 2 - (2.995 + seed.continuityOffset - 1.65) ** 2);
+    expect(walk.canMoveContinuation({ ...seed, player: { x: 61.7, z: depthAtReach, yaw: 0, pitch: 0 } })).toBe(true);
+    expect(walk.canMoveContinuation({ ...seed, player: { x: 61.7, z: depthAtReach + 0.001, yaw: 0, pitch: 0 } })).toBe(false);
+  });
+
+  it('keeps every marked observation position reachable throughout the rod height range', () => {
+    for (const x of [59.4, 59.6, 59.8, 60, 60.2, 60.4, 60.6]) {
+      for (const z of [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11]) {
+        for (const continuityOffset of [-1.2, -0.8, 0, 0.8, 1.2]) {
+          const state = { activity: 'continuity', player: { x, z, yaw: 0, pitch: 0 }, continuityOffset };
+          expect(walk.canMoveContinuation(state)).toBe(true);
+          expect(walk.evidence(state).continuityFacing).toBe(true);
+          expect(walk.moveContinuation(state, -1.2).continuityOffset).toBe(-1.2);
+          expect(walk.moveContinuation(state, 1.2).continuityOffset).toBe(1.2);
+        }
+      }
+    }
+  });
+
+  it('rejects a height change that would take an otherwise reachable rod beyond reach', () => {
+    const seed = walk.normalize({ activity: 'continuity', player: { x: 61.7, z: 11.8, yaw: 0, pitch: 0 }, continuityOffset: 0.8,
+      notes: { continuity: 'Keep this edge-of-reach observation.' } });
+    const before = structuredClone(seed);
+    expect(walk.canMoveContinuation(seed)).toBe(true);
+    expect(walk.canMoveContinuation({ ...seed, continuityOffset: 1.2 })).toBe(false);
+    expect(walk.moveContinuation(seed, 1.2)).toEqual(seed);
+    const closer = walk.moveContinuation(seed, 0);
+    expect(closer.continuityOffset).toBe(0);
+    expect(walk.canMoveContinuation(closer)).toBe(true);
+    expect(closer.player).toEqual(seed.player);
+    expect(closer.notes).toEqual(seed.notes);
+    expect(seed).toEqual(before);
+  });
+
+  it('requires physical line alignment and a straight-ahead observation viewpoint', () => {
+    const answer = { activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0 };
+    expect(walk.checkAnswer(answer)).toBe(true);
+    expect(walk.evidence(answer)).toMatchObject({ continuityFacing: true, continuityOffset: 0 });
+    for (const offset of [-0.06, 0.06]) expect(walk.checkAnswer({ ...answer, continuityOffset: offset })).toBe(true);
+    for (const offset of [-0.060001, 0.060001, 0.8]) expect(walk.checkAnswer({ ...answer, continuityOffset: offset })).toBe(false);
+    for (const patch of [{ x: 60.61 }, { x: 59.39 }, { z: 6.99 }, { z: 11.01 }, { z: -2 }, { yaw: 180 }, { pitch: 25 }]) {
+      const state = { ...answer, player: { ...answer.player, ...patch } };
+      expect(walk.evidence(state).continuityFacing).toBe(false);
+      expect(walk.checkAnswer(state)).toBe(false);
+    }
+    for (const patch of [{ x: 60.59 }, { x: 59.41 }, { z: 7 }, { z: 11 }]) {
+      expect(walk.checkAnswer({ ...answer, player: { ...answer.player, ...patch } })).toBe(true);
+    }
+    const faced = walk.faceExhibit({ ...answer, player: { ...answer.player, yaw: 120, pitch: 25 } });
+    expect(faced).toEqual(walk.spawn('continuity'));
+  });
+
+  it('renders two equal-slope rods that share a line only at zero continuation offset', () => {
+    const rods = scene.continuationObjects(0);
+    expect(rods.map(rod => rod.id)).toEqual(['continuity-fixed', 'continuity-rod']);
+    expect(rods.map(rod => [rod.from.x, rod.to.x])).toEqual([[57.2, 59.4], [60.6, 62.8]]);
+    for (const rod of rods) for (const point of [rod.from, rod.to]) {
+      expect(point.z).toBe(0);
+      expect(point.y).toBeCloseTo(2.4 + 0.35 * (point.x - 60));
+    }
+    const offset = scene.continuationObjects(0.8);
+    expect(offset[0]).toEqual(rods[0]);
+    for (const endpoint of ['from', 'to']) {
+      expect(offset[1][endpoint].y - rods[1][endpoint].y).toBeCloseTo(0.8);
+      expect(offset[1][endpoint].x).toBe(rods[1][endpoint].x);
+    }
+    const slope = rod => (rod.to.y - rod.from.y) / (rod.to.x - rod.from.x);
+    expect(slope(offset[0])).toBeCloseTo(0.35);
+    expect(slope(offset[1])).toBeCloseTo(0.35);
+    expect(scene.continuationObjects(NaN)).toEqual(offset);
+    expect(scene.continuationObjects(999)[1].from.y - rods[1].from.y).toBeCloseTo(1.2);
+    expect(scene.continuationObjects(-999)[1].from.y - rods[1].from.y).toBeCloseTo(-1.2);
+    rods[1].from.y = 99;
+    expect(scene.continuationObjects(0)[1].from.y).not.toBe(99);
+  });
+
+  it('allows inspecting behind the hidden-line panel only by walking around its edge', () => {
+    let player = walk.spawn('continuity');
+    player = walk.movePlayer(player, 'right', 4, -1);
+    player = walk.movePlayer(player, 'forward', 10, -1);
+    expect(player.x).toBeCloseTo(64);
+    expect(player.z).toBeLessThan(-0.5);
+    expect(walk.canMoveContinuation({ activity: 'continuity', player })).toBe(false);
+    expect(walk.checkAnswer({ activity: 'continuity', player, continuityOffset: 0 })).toBe(false);
+  });
+
   it('moves relative to heading while keeping movement and turn controls finite', () => {
     const origin = { x: 0, z: 9, yaw: 0, pitch: 0 };
     const forward = walk.movePlayer(origin, 'forward', 1, 3);
@@ -321,7 +454,7 @@ describe('first-person perception models', () => {
   });
 
   it('computes a facing direction independently of player position and saved work', () => {
-    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context']) {
+    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture']) {
       const seed = walk.normalize({ activity, player: { x: 4, z: 11, yaw: 160, pitch: 20 }, blockZ: 2 });
       const before = structuredClone(seed), faced = walk.faceExhibit(seed);
       expect(faced.x).toBe(seed.player.x); expect(faced.z).toBe(seed.player.z); expect(faced.pitch).toBe(0);
@@ -362,7 +495,8 @@ describe('first-person perception models', () => {
       { player: { x: 0.95, z: 3, yaw: 0, pitch: 0 }, blockZ: 3, bounds: [0.35, 1.55, 2.4, 3.6] },
       { player: { x: 36, z: 0, yaw: 0, pitch: 0 }, blockZ: 3, bounds: [32.75, 39.25, -0.65, 0.35] },
       { player: { x: 48, z: 0, yaw: 0, pitch: 0 }, blockZ: 3, bounds: [45.3, 50.7, -0.4, 0.4] },
-      { player: { x: 46.5, z: 4, yaw: 0, pitch: 0 }, blockZ: 3, bounds: [46.15, 46.85, 3.65, 4.35] }
+      { player: { x: 46.5, z: 4, yaw: 0, pitch: 0 }, blockZ: 3, bounds: [46.15, 46.85, 3.65, 4.35] },
+      { player: { x: 60, z: 0, yaw: 0, pitch: 0 }, blockZ: 3, bounds: [56.85, 63.15, -0.5, 0.6] }
     ];
     for (const example of examples) {
       const normalized = walk.normalize(example), p = normalized.player, b = example.bounds;
@@ -373,7 +507,7 @@ describe('first-person perception models', () => {
   });
 
   it('prevents a large movement step from tunnelling through either new display or its switch stand', () => {
-    for (const [x, startZ, minimumZ] of [[36, 3, 0.35], [48, 3, 0.4], [46.5, 6, 4.35]]) {
+    for (const [x, startZ, minimumZ] of [[36, 3, 0.35], [48, 3, 0.4], [46.5, 6, 4.35], [60, 3, 0.6]]) {
       let player = { x, z: startZ, yaw: 0, pitch: 0 };
       for (let step = 0; step < 3; step++) player = walk.movePlayer(player, 'forward', 8, -1);
       expect(player.z).toBeGreaterThanOrEqual(minimumZ);
@@ -383,6 +517,103 @@ describe('first-person perception models', () => {
 });
 
 describe('first-person perception interactions', () => {
+  it('adjusts the hidden line with slider and fine-step alternatives without automatically solving', async () => {
+    await mount({ activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0.8 });
+    expect(query('[data-walk-continuity-offset]').disabled).toBe(false);
+    await input('[data-walk-continuity-offset]', 0.5);
+    await click('[data-walk-continuity-up]');
+    expect(latest.perceptionWalk.continuityOffset).toBeCloseTo(0.55);
+    await click('[data-walk-continuity-down]');
+    expect(latest.perceptionWalk.continuityOffset).toBeCloseTo(0.5);
+    await click('[data-walk-precision]'); await click('[data-walk-continuity-up]');
+    expect(latest.perceptionWalk.continuityOffset).toBeCloseTo(0.51);
+    await click('[data-walk-continuity-down]');
+    expect(latest.perceptionWalk.continuityOffset).toBeCloseTo(0.5);
+    await input('[data-walk-continuity-offset]', 0);
+    expect(latest.perceptionWalk.progress.continuity.solved).toBe(false);
+    await click('[data-walk-hint]'); await click('[data-walk-check]');
+    expect(latest.perceptionWalk.progress.continuity).toEqual({ solved: true, assisted: false, hints: 1 });
+    expect(latest.otherTool).toEqual({ preserved: 37 });
+  });
+
+  it('drags the picked continuation by world-coordinate delta without moving the camera', async () => {
+    await mount({ activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0.8 });
+    const viewer = viewers.at(-1), before = structuredClone(latest.perceptionWalk.player);
+    viewer.pick.mockReturnValue({ id: 'continuity-rod', distance: 9 });
+    viewer.continuationCoordinate.mockImplementation((x, y) => 2.4 + (100 - y) / 50);
+    await pointer('pointerdown', 100, 100);
+    expect(latest.perceptionWalk.continuityOffset).toBe(0.8);
+    await pointer('pointermove', 100, 120);
+    expect(latest.perceptionWalk.continuityOffset).toBeCloseTo(0.4);
+    expect(latest.perceptionWalk.player).toEqual(before);
+    await pointer('pointermove', 100, 500);
+    expect(latest.perceptionWalk.continuityOffset).toBe(-1.2);
+    expect(latest.perceptionWalk.player).toEqual(before);
+    await pointer('pointerup', 100, 500);
+    expect(viewer.push.mock.calls.at(-1)[0].continuityOffset).toBe(-1.2);
+  });
+
+  it('cancels a continuation drag after pointer cancellation or renderer failure', async () => {
+    await mount({ activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0.8 });
+    const viewer = viewers.at(-1);
+    viewer.pick.mockReturnValue({ id: 'continuity-rod', distance: 9 });
+    viewer.continuationCoordinate.mockImplementation((x, y) => (100 - y) / 50);
+    await pointer('pointerdown', 100, 100); await pointer('pointercancel', 100, 100); await pointer('pointermove', 100, 140);
+    expect(latest.perceptionWalk.continuityOffset).toBe(0.8);
+    await pointer('pointerdown', 100, 100); await act(async () => viewer.report('failed')); await pointer('pointermove', 100, 140);
+    expect(latest.perceptionWalk.continuityOffset).toBe(0.8);
+    expect(query('[data-walk-continuity-plan]')).toBeTruthy();
+  });
+
+  it('disables continuation adjustments beyond reach and requires returning to the observation area', async () => {
+    await mount({ activity: 'continuity', player: { x: 60, z: 12, yaw: 0, pitch: 0 }, continuityOffset: 0 });
+    for (const selector of ['[data-walk-continuity-offset]', '[data-walk-continuity-up]', '[data-walk-continuity-down]']) {
+      expect(query(selector).disabled).toBe(true);
+    }
+    await click('[data-walk-check]');
+    expect(walk.normalize(latest.perceptionWalk).progress.continuity.solved).toBe(false);
+    await click('[data-walk-home]'); await click('[data-walk-check]');
+    expect(latest.perceptionWalk.player).toEqual(walk.spawn('continuity'));
+    expect(latest.perceptionWalk.progress.continuity.solved).toBe(true);
+  });
+
+  it('preserves hidden-line observations and sibling work across switching and reset', async () => {
+    await mount({ activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0,
+      progress: { context: { solved: true, hints: 2 }, continuity: { solved: true, hints: 1 } },
+      notes: { continuity: 'The two pieces share one slope.', context: 'Keep the gray comparison.' },
+      context: { selected: ['A', 'C'], neutral: true } });
+    await click('[data-walk-activity="context"]'); await click('[data-walk-activity="continuity"]');
+    expect(query('[data-walk-note]').value).toBe('The two pieces share one slope.');
+    expect(latest.perceptionWalk.continuityOffset).toBe(0);
+    await click('[data-walk-reset]');
+    expect(latest.perceptionWalk.continuityOffset).toBe(0.8);
+    expect(latest.perceptionWalk.progress.continuity).toEqual({ solved: false, assisted: false, hints: 0 });
+    expect(latest.perceptionWalk.notes.continuity).toBe('The two pieces share one slope.');
+    expect(latest.perceptionWalk.progress.context).toEqual({ solved: true, assisted: false, hints: 2 });
+    expect(latest.perceptionWalk.context).toEqual({ selected: ['A', 'C'], neutral: true });
+    expect(latest.perceptionGallery).toEqual({ models: { shape: { note: 'Gallery draft' } } });
+  });
+
+  it('keeps reveal-assisted hidden-line work separate and supports the renderer fallback', async () => {
+    await mount({ activity: 'continuity', player: walk.spawn('continuity'), continuityOffset: 0 });
+    await click('[data-walk-reveal]'); await click('[data-walk-check]');
+    expect(latest.perceptionWalk.progress.continuity).toMatchObject({ solved: false, assisted: true });
+    await act(async () => viewers.at(-1).report('failed'));
+    expect(query('[data-walk-continuity-plan]')).toBeTruthy();
+    await input('[data-walk-continuity-offset]', 0.25);
+    expect(latest.perceptionWalk.continuityOffset).toBe(0.25);
+    await click('[data-walk-reset]'); await input('[data-walk-continuity-offset]', 0); await click('[data-walk-check]');
+    expect(latest.perceptionWalk.progress.continuity).toMatchObject({ solved: true, assisted: false });
+  });
+
+  it('enters the new bay naturally when stepping across its boundary', async () => {
+    await mount({ activity: 'context', player: { x: 53.9, z: 9, yaw: 0, pitch: 0 } });
+    await click('[data-walk-move="right"]');
+    expect(latest.perceptionWalk.activity).toBe('continuity');
+    expect(query('[data-walk-activity="continuity"]').getAttribute('aria-pressed')).toBe('true');
+    expect(latest.perceptionWalk.player.x).toBeCloseTo(54.1);
+  });
+
   it('rotates picked physical corners by pointer delta without moving the camera', async () => {
     await mount({ activity: 'contour', player: { x: 36, z: 6.5, yaw: 0, pitch: 0 } });
     const viewer = viewers.at(-1), before = structuredClone(latest.perceptionWalk.player);
@@ -608,7 +839,7 @@ describe('first-person perception interactions', () => {
 
   it('changes activities without overwriting other tools and returns to the gallery', async () => {
     await mount();
-    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context']) {
+    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture']) {
       await click('[data-walk-activity="' + activity + '"]');
       expect(latest.perceptionWalk.activity).toBe(activity);
       expect(query('[data-walk-stage]')).toBeTruthy();

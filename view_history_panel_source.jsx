@@ -635,6 +635,15 @@ function HistoryPanel(props) {
     resourceTypeLabelCache.set(type, label);
     return label;
   };
+  const getHistoryDisplayTitle = (type, title, fallback) => {
+    const safeTitle = getSafeRowText(title, fallback, 240);
+    return ['lesson-plan', 'directions'].includes(type) && /^(?:(?:UDL\s+)?Lesson Plan|Assignment Directions)$/i.test(safeTitle)
+      ? getResourceTypeLabel(type) : safeTitle;
+  };
+  const getHistoryDisplayMeta = (type, meta) => {
+    const safeMeta = typeof meta === 'string' ? meta.trim().slice(0, 500) : '';
+    return type === 'lesson-plan' ? safeMeta.replace(/(^|[|·•–—]\s*|\s+-\s+)UDL[\s-]+Aligned(?=\s*(?:[|·•–—]|$)|\s+-\s+)/gi, (_, prefix) => prefix + getResourceTypeLabel(type)) : safeMeta;
+  };
   // HISTORY_DISPLAY_FORMAT_END
   // Scan each unit at most once per render, stopping as soon as a row matches.
   // Keep the first normalized ID, matching Array.find even for duplicate IDs.
@@ -668,13 +677,12 @@ function HistoryPanel(props) {
     const itemType = getSafeRowText(getSafeArtifactField(item, 'type'), '', 100);
     if (resourceTypeFilter !== 'all' && itemType !== resourceTypeFilter) return false;
     if (!normalizedResourceSearch) return true;
-    const itemTitle = getSafeRowText(
+    const itemTitle = getHistoryDisplayTitle(itemType,
       getSafeArtifactField(item, 'title'),
-      getSafeRowText(getDefaultTitle(itemType), 'Resource', 240),
-      240
+      getSafeRowText(getDefaultTitle(itemType), 'Resource', 240)
     );
     const rawMeta = getSafeArtifactField(item, 'meta');
-    const itemMeta = typeof rawMeta === 'string' ? rawMeta : '';
+    const itemMeta = getHistoryDisplayMeta(itemType, rawMeta);
     return [itemTitle, itemMeta, itemType, getResourceTypeLabel(itemType)]
       .join(' ').toLocaleLowerCase().includes(normalizedResourceSearch);
   });
@@ -1404,12 +1412,12 @@ function HistoryPanel(props) {
                         let rawDefaultItemTitle = 'Resource';
                         try { rawDefaultItemTitle = getDefaultTitle(itemType, item); } catch (_) {}
                         const defaultItemTitle = getSafeRowText(rawDefaultItemTitle, 'Resource', 240);
-                        const safeItemTitle = getSafeRowText(getSafeArtifactField(item, 'title'), defaultItemTitle, 240);
+                        const safeItemTitle = getHistoryDisplayTitle(itemType, getSafeArtifactField(item, 'title'), defaultItemTitle);
                         const itemTitle = (isTeacherMode && !isIndependentMode)
                             ? safeItemTitle
                             : sanitizeString(safeItemTitle);
                         const rawItemMeta = getSafeArtifactField(item, 'meta');
-                        const itemMeta = typeof rawItemMeta === 'string' ? rawItemMeta.trim().slice(0, 500) : '';
+                        const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);
                         const itemTypeLabel = getResourceTypeLabel(itemType);
                         const itemTextBadge = getInstructionalTextBadge(item);
                         const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === 'blue'

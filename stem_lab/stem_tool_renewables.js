@@ -1641,20 +1641,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
   var RN_ENERGY_SPECS=[
     {id:'solarPv',name:'Solar PV',icon:'☀',lesson:'solarPv',tag:'Light → electricity',primary:'irradiance',
       intro:'Aim a photovoltaic array at incoming sunlight. Change the illuminated area and conversion efficiency, then follow DC power through the inverter.',
-      controls:[['irradiance','Direct irradiance',0,1100,50,800,'W/m²'],['area','Panel area',5,100,5,20,'m²'],['efficiency','Module efficiency',10,30,1,20,'%'],['incidence','Angle from the panel normal',0,90,5,20,'°']],
-      components:[['resource','Sunlight','The yellow rays represent the direct beam. The projected collecting area decreases with the cosine of the incidence angle.'],['converter','PV array','Semiconductor cells produce DC electricity. The blue array tilts as the incidence control changes.'],['generator','Inverter','The illustrative inverter delivers 96% of the DC power as AC electricity.']],
-      formula:'P_AC = irradiance × area × cos(angle) × module efficiency × 0.96 / 1,000',
-      limits:'Direct-beam model only: no diffuse sky light, shading, temperature effects, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate.',
+      controls:[['irradiance','Direct irradiance',0,1100,50,800,'W/m²'],['area','Panel area',5,100,5,20,'m²'],['efficiency','Module efficiency at 25°C',10,30,1,20,'%'],['incidence','Angle from the panel normal',0,90,5,20,'°'],['cellTemperature','PV cell temperature',-20,85,5,25,'°C']],
+      components:[['resource','Sunlight','The yellow rays represent the direct beam. The projected collecting area decreases with the cosine of the incidence angle.'],['converter','PV array','Semiconductor cells produce DC electricity. The blue array tilts as the incidence control changes. The selected cell temperature changes DC output by −0.37% per °C relative to 25°C.'],['generator','Inverter','The illustrative inverter delivers 96% of the DC power as AC electricity.']],
+      formula:'P_AC = irradiance × area × cos(angle) × module efficiency at 25°C × [1 − 0.0037 × (cell temperature − 25)] × 0.96 / 1,000',
+      limits:'Direct-beam teaching model with a fixed −0.37%/°C power coefficient, based on the standard crystalline module assumption in SAM/PVWatts. Cell temperature is selected directly, not ambient air temperature or a prediction from weather. No diffuse sky light, shading, thermal dynamics, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate or the complete PVWatts model.',
       prompt:'Save a reading, then turn the array 60° away from normal. Does output halve?',
-      source:'https://www.energy.gov/cmei/systems/how-does-solar-work'},
+      source:'https://samrepo.nlr.gov/help/pvwatts_system_design.html'},
     {id:'wind',name:'Wind',icon:'🌬',lesson:'wind',tag:'Moving air → rotation',primary:'speed',
       intro:'Explore the rotor, drivetrain, and generator. Wind power grows with speed cubed until the generator rating or protective shutdown limits output.',
-      controls:[['speed','Wind speed',0,30,1,8,'m/s'],['radius','Rotor radius',10,80,5,40,'m'],['cp','Rotor power coefficient',10,59,1,40,'%'],['rating','Generator rating',500,8000,500,3000,'kW']],
-      components:[['resource','Air stream','The swept disk contains kinetic power proportional to air density, rotor area, and wind speed cubed.'],['converter','Rotor blades','The rotor extracts only a fraction of the stream power. Its displayed radius changes with your input; motion is illustrative, not calculated RPM.'],['generator','Nacelle & generator','The model assumes 94% drivetrain efficiency, starts at 3 m/s, caps at the selected rating, and shuts down at 25 m/s.']],
-      formula:'P = min(½ × 1.225 × πr² × v³ × Cₚ × 0.94 / 1,000, rating), for 3 ≤ v < 25 m/s',
-      limits:'Uniform wind and a constant selected power coefficient. Cut-in 3 m/s, cut-out 25 m/s, and 94% drivetrain efficiency are teaching assumptions, not a manufacturer power curve. No wakes, gusts, fatigue, or pitch-control dynamics.',
+      controls:[['speed','Wind speed',0,30,1,8,'m/s'],['radius','Rotor radius',10,80,5,40,'m'],['cp','Rotor power coefficient',10,59,1,40,'%'],['rating','Generator rating',500,8000,500,3000,'kW'],['airDensity','Air density',.7,1.4,.025,1.225,'kg/m³']],
+      components:[['resource','Air stream','The swept disk contains kinetic power proportional to the selected air density, rotor area, and wind speed cubed. Higher elevation and warmer air generally reduce density; density is entered directly here.'],['converter','Rotor blades','The rotor extracts only a fraction of the stream power. Its displayed radius changes with your input; motion is illustrative, not calculated RPM.'],['generator','Nacelle & generator','The model assumes 94% drivetrain efficiency, starts at 3 m/s, caps at the selected rating, and shuts down at 25 m/s.']],
+      formula:'P = min(½ × air density × πr² × v³ × Cₚ × 0.94 / 1,000, rating), for 3 ≤ v < 25 m/s',
+      limits:'Uniform wind and a constant selected power coefficient. Air density is prescribed directly; the default 1.225 kg/m³ represents standard sea-level air. It is not inferred from weather or elevation. Cut-in 3 m/s, cut-out 25 m/s, and 94% drivetrain efficiency are teaching assumptions, not a manufacturer power curve. No wakes, gusts, fatigue, or pitch-control dynamics.',
       prompt:'Compare 5 and 10 m/s with a large generator rating. Then test 25 m/s.',
-      source:'https://www.energy.gov/sites/prod/files/2015/05/f22/Enabling%20Wind%20Power%20Nationwide_18MAY2015_FINAL.pdf'},
+      source:'https://www.energy.gov/cmei/systems/windexchange/small-wind-guidebook'},
     {id:'hydro',name:'Hydropower',icon:'💧',lesson:'hydro',tag:'Elevated water → rotation',primary:'flow',
       intro:'Follow water from the upper reservoir through a penstock and turbine into the tailrace. Head and flow are separate ways to change available power.',
       controls:[['head','Water head',5,150,5,30,'m'],['flow','Water flow',0,50,1,5,'m³/s'],['efficiency','Turbine and generator efficiency',50,95,1,90,'%']],
@@ -1722,11 +1722,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     function stage(label,value){stages.push({label:label,value:value,unit:'kW'});}
     if(spec.id==='solarPv'){
       available=s.irradiance*s.area*Math.max(0,Math.cos(s.incidence*Math.PI/180))/1000;
-      if(s.incidence===90)available=0;converted=available*s.efficiency/100;power=converted*.96;
+      if(s.incidence===90)available=0;
+      extra.temperatureFactor=1-.0037*(s.cellTemperature-25);extra.referenceDc=available*s.efficiency/100;
+      extra.effectiveModuleEfficiency=s.efficiency/100*extra.temperatureFactor;
+      converted=extra.referenceDc*extra.temperatureFactor;power=converted*.96;extra.temperaturePowerDelta=power-extra.referenceDc*.96;
       stage('Light intercepted',available);stage('DC electricity',converted);stage('AC electricity',power);
     }else if(spec.id==='wind'||spec.id==='tidal'){
       var wind=spec.id==='wind',speed=Math.abs(s.speed);
-      available=.5*(wind?1.225:1025)*Math.PI*s.radius*s.radius*Math.pow(speed,3)/1000;
+      available=.5*(wind?s.airDensity:1025)*Math.PI*s.radius*s.radius*Math.pow(speed,3)/1000;
       converted=available*s.cp/100;power=Math.min(converted*(wind?.94:.90),s.rating);
       if(wind&&(s.speed<3||s.speed>=25)){power=0;converted=0;status=s.speed<3?'Below cut-in':'Protective shutdown';}
       else if(power>=s.rating)status='At generator rating';
@@ -1908,14 +1911,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     var spec=RN_ENERGY_SPECS.find(function(s){return s.id===id;});
     if(!spec)throw new Error('Unrecognized energy technology.');
     if(!input||typeof input!=='object'||Array.isArray(input)||!input.settings||typeof input.settings!=='object'||Array.isArray(input.settings))throw new Error('Missing saved input settings.');
-    var settings={};spec.controls.forEach(function(c){var value=input.settings[c[0]];
-      if(!Object.prototype.hasOwnProperty.call(input.settings,c[0])||typeof value!=='number'||!Number.isFinite(value)||value<c[2]||value>c[3])throw new Error('Invalid or unsupported '+c[1]+' value.');settings[c[0]]=value;});
+    var settings={},warnings=[],legacyDefaults={solarPv:{cellTemperature:25},wind:{airDensity:1.225}}[id];spec.controls.forEach(function(c){var present=Object.prototype.hasOwnProperty.call(input.settings,c[0]),value=input.settings[c[0]];
+      // Version-1 investigations predating these two optional conditions used
+      // exactly these reference values. Supplied but malformed values still fail.
+      if(!present&&legacyDefaults&&Object.prototype.hasOwnProperty.call(legacyDefaults,c[0])){value=legacyDefaults[c[0]];present=true;warnings.push(c[1]+' was absent in this older reading; used '+value+' '+c[6]+'.');}
+      if(!present||typeof value!=='number'||!Number.isFinite(value)||value<c[2]||value>c[3])throw new Error('Invalid or unsupported '+c[1]+' value.');settings[c[0]]=value;});
     var profile=input.profileId==='steady'?null:rnEnergyProgram(id,input.profileId);
     if(input.profileId!=='steady'&&!profile)throw new Error('Unrecognized operating scenario.');
     var duration=profile?profile.duration:id==='storage'?120:60,phase=input.phase;
     if(typeof phase!=='number'||!Number.isFinite(phase)||phase<0||phase>duration||(profile&&Math.floor(phase)!==phase))throw new Error('Invalid saved timeline position.');
     if(input.name!=null&&typeof input.name!=='string'||input.note!=null&&typeof input.note!=='string')throw new Error('Reading names and observations must be text.');
-    var name=input.name||'',note=input.note||'',warnings=[];if(name.length>60)warnings.push('Reading name shortened to 60 characters.');if(note.length>3000)warnings.push('Observation shortened to 3,000 characters.');
+    var name=input.name||'',note=input.note||'';if(name.length>60)warnings.push('Reading name shortened to 60 characters.');if(note.length>3000)warnings.push('Observation shortened to 3,000 characters.');
     return {id:id,settings:settings,profileId:profile?profile.id:'steady',phase:phase,name:name.slice(0,60),note:note.slice(0,3000),warnings:warnings};
   }
   function rnEnergyImportReadings(payload){
@@ -2122,7 +2128,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     return [headers].concat(rows).map(function(row){return row.map(function(v){return v==null?'':typeof v==='number'?String(v):'"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
   }
 
-  window.StemLab.renewablesEnergyModel={version:1,specs:RN_ENERGY_SPECS,settings:rnEnergySettings,simulate:rnEnergyRun,programs:RN_ENERGY_PROGRAMS,scenario:rnEnergyScenario,resolveReading:rnEnergyResolveReading,importReadings:rnEnergyImportReadings,openImportedReading:rnEnergyOpenImportedReading,compareReadings:rnEnergyCompareReadings,compareScenarios:rnEnergyCompareScenarios,compareInterval:rnEnergyCompareInterval,inputChecks:rnEnergyInputChecks,pathway:rnEnergyPathway,milestones:rnEnergyMilestones,interval:rnEnergyInterval,designMapConfig:rnEnergyMapConfig,designMap:rnEnergyMap,designMapCsv:rnEnergyMapCsv,designMapRules:RN_ENERGY_MAP_RULES,designMapExplanation:rnEnergyMapExplanation,designMapExplanationCsv:rnEnergyMapExplanationCsv,experimentGuides:RN_ENERGY_EXPERIMENTS,sweepConfig:rnEnergySweepConfig,sweep:rnEnergySweep};
+  var RN_OPERATING_RULES='The horizontal axis changes one base input and keeps the other base inputs, scenario, and inspection minute fixed. Scenario resource multipliers and input bounds still apply. Generator curves show power at that minute; battery curves replay charging and discharge history from the initial state. Scheduled batteries report average power over the next one-minute step. Lines join closely spaced calculations, with gaps at abrupt operating changes. Thresholds are teaching-model boundaries, not equipment specifications. Local response compares nearby inputs; it is not a forecast or an optimization.';
+  function rnOperatingContext(id,request){
+    var spec=RN_ENERGY_SPECS.find(function(s){return s.id===id;});if(!spec)return null;
+    request=request||{};var profile=rnEnergyProgram(id,request.profileId),settings=rnEnergySettings(id,request.settings),control=spec.controls.find(function(c){return c[0]===request.key;})||spec.controls.find(function(c){return c[0]===spec.primary;});
+    var minute=rnNumber(request.minute===undefined?request.phase:request.minute,0,0,profile?profile.duration:id==='storage'?120:60);if(profile)minute=Math.floor(minute);
+    return {id:id,spec:spec,profile:profile,settings:settings,control:control,minute:minute,factor:profile&&id!=='storage'?rnEnergyFactor(profile.points,minute):1};
+  }
+  function rnOperatingRegime(run){
+    if(run.id==='storage'&&run.status==='Idle'&&run.settings.power>0&&run.extra.minute>=60&&run.extra.minute<120&&run.extra.stored<=1e-8)return {id:'empty',label:'Empty'};
+    var labels={'Below cut-in':'below-cut-in','Protective shutdown':'shutdown','At generator rating':'rated','Slack water':'slack','No output':'no-resource','Charging':'charging','Discharging':'discharging','Full':'full','Empty':'empty','Waiting':'waiting','Idle':'idle','Demand limited':'limited','Cycle complete':'complete','Scenario complete':'complete'};
+    return {id:labels[run.status]||'converting',label:run.status==='Generating'?'Converting resource':run.status};
+  }
+  function rnOperatingPoint(context,value){
+    var settings=Object.assign({},context.settings),control=context.control;settings[control[0]]=rnNumber(value,settings[control[0]],control[2],control[3]);
+    var raw=Object.assign({},settings),run,clipped=false;
+    if(context.id==='storage'&&context.profile)run=rnEnergyScenario(context.id,settings,context.profile.id).rows[context.minute].run;
+    else{
+      if(context.profile){raw[context.profile.key]=settings[context.profile.key]*context.factor;}
+      run=rnEnergyRun(context.id,raw,context.minute);
+      if(context.profile)clipped=raw[context.profile.key]!==run.settings[context.profile.key];
+    }
+    var storage=context.id==='storage',regime=rnOperatingRegime(run);
+    // Storage remainder is accumulated kWh, so it must never share the power axis.
+    return {x:settings[control[0]],effectiveX:run.settings[control[0]],settings:settings,run:run,power:run.power,available:run.available,remainder:storage?null:run.loss,stored:storage?run.extra.stored:null,delivered:storage?run.extra.delivered:null,status:run.status,regime:regime.id,regimeLabel:regime.label,clipped:clipped,breakBefore:false};
+  }
+  function rnOperatingProbe(id,request,value){var context=rnOperatingContext(id,request);return context?rnOperatingPoint(context,value):null;}
+  function rnOperatingEnvelope(id,request){
+    var context=rnOperatingContext(id,request);if(!context)return null;
+    var control=context.control,key=control[0],minimum=control[2],maximum=control[3],span=maximum-minimum,current=rnOperatingPoint(context,context.settings[key]),thresholds=[],values=[],cache={};
+    function point(x){var k=String(x);if(!cache[k])cache[k]=rnOperatingPoint(context,x);return cache[k];}
+    function addThreshold(x,label,kind,discontinuous,approximate){if(!Number.isFinite(x)||x<minimum||x>maximum)return;
+      if(thresholds.some(function(t){return t.kind===kind&&Math.abs(t.x-x)<span*1e-9;}))return;
+      thresholds.push({x:x,label:label,kind:kind,discontinuous:!!discontinuous,approximate:!!approximate});
+    }
+    function fromEffective(x){return context.profile&&context.profile.key===key?(context.factor===0?NaN:x/context.factor):x;}
+    var active=current.run.settings;
+    if(id==='wind'||id==='tidal'){
+      var wind=id==='wind',density=wind?active.airDensity:1025,eta=wind?.94:.90,speed=Math.abs(active.speed),coefficient=.5*density*Math.PI*eta/1000;
+      if(key==='speed'){
+        var rated=Math.cbrt(active.rating/(coefficient*active.radius*active.radius*active.cp/100));
+        if(!wind||rated>=3&&rated<25)addThreshold(fromEffective(rated),'Generator rating reached','rating',false);
+        if(!wind){addThreshold(fromEffective(-rated),'Generator rating reached in reverse flow','rating',false);addThreshold(fromEffective(0),'Slack water','slack',false);}
+        else{addThreshold(fromEffective(3),'Turbine cut-in','cut-in',true);addThreshold(fromEffective(25),'Protective shutdown','cut-out',true);}
+      }else if(!wind||speed>=3&&speed<25){
+        if(key==='radius')addThreshold(Math.sqrt(active.rating/(coefficient*Math.pow(speed,3)*active.cp/100)),'Generator rating reached','rating',false);
+        if(key==='cp')addThreshold(active.rating*100/(coefficient*active.radius*active.radius*Math.pow(speed,3)),'Generator rating reached','rating',false);
+        if(key==='rating')addThreshold(coefficient*active.radius*active.radius*Math.pow(speed,3)*active.cp/100,'Resource-limited above this rating','rating',false);
+        if(wind&&key==='airDensity')addThreshold(active.rating/(coefficient/density*active.radius*active.radius*Math.pow(speed,3)*active.cp/100),'Generator rating reached','rating',false);
+      }
+    }
+    if(id==='geothermal'&&key==='hot')addThreshold(active.returnTemp,'No extracted heat at or below reinjection temperature','heat',false);
+    if(id==='geothermal'&&key==='returnTemp')addThreshold(active.hot,'No extracted heat at or above produced temperature','heat',false);
+    if(id==='solarPv'&&key==='incidence')addThreshold(90,'Direct beam misses the panel face','beam',false);
+    if(context.profile&&id!=='storage'&&context.profile.key===key&&context.factor!==0){
+      [minimum,maximum].forEach(function(bound){var x=bound/context.factor;if(x>minimum&&x<maximum)addThreshold(x,'Scenario resource reaches the input bound','input-bound',false);});
+    }
+    for(var i=0;i<=96;i++)values.push(minimum+span*i/96);
+    values.push(current.x);thresholds.forEach(function(t){values.push(t.x);if(t.discontinuous){if(t.x>minimum)values.push(Math.max(minimum,t.x-span*1e-8));if(t.x<maximum)values.push(Math.min(maximum,t.x+span*1e-8));}});
+    values.sort(function(a,b){return a-b;});values=values.filter(function(value,index){return index===0||value!==values[index-1];});
+    var points=values.map(point);
+    // Battery boundaries depend on history. Refine observed mode changes without
+    // inventing a closed-form threshold for a sequence with interrupted charging.
+    if(id==='storage'){
+      points.forEach(function(p,index){if(index===0||p.regime===points[index-1].regime)return;var left=points[index-1],right=p,lo=left.x,hi=right.x;
+        for(var j=0;j<26;j++){var mid=(lo+hi)/2;if(point(mid).regime===left.regime)lo=mid;else hi=mid;}
+        var boundary=(lo+hi)/2,abrupt=!context.profile&&(Math.abs(point(lo).power-point(hi).power)>1e-5||Math.abs(point(lo).available-point(hi).available)>1e-5);
+        addThreshold(boundary,left.regimeLabel+' → '+right.regimeLabel,'storage-state',abrupt,true);
+      });
+      thresholds.forEach(function(t){values.push(t.x);if(t.discontinuous){values.push(Math.max(minimum,t.x-span*1e-8));values.push(Math.min(maximum,t.x+span*1e-8));}});
+      values.sort(function(a,b){return a-b;});values=values.filter(function(value,index){return index===0||value!==values[index-1];});points=values.map(point);
+    }
+    thresholds.sort(function(a,b){return a.x-b.x;});
+    points.forEach(function(p,index){if(index===0)return;p.breakBefore=thresholds.some(function(t){return t.discontinuous&&t.x>points[index-1].x&&t.x<=p.x;});});
+    var edges=[minimum,maximum].concat(thresholds.map(function(t){return t.x;})).sort(function(a,b){return a-b;});edges=edges.filter(function(x,index){return index===0||x!==edges[index-1];});
+    var bands=[];for(var b=1;b<edges.length;b++){var middle=point((edges[b-1]+edges[b])/2),last=bands[bands.length-1];
+      if(last&&last.regime===middle.regime)last.to=edges[b];else bands.push({from:edges[b-1],to:edges[b],regime:middle.regime,label:middle.regimeLabel});
+    }
+    var step=Math.max(Math.abs(current.x)*.1,span*.01),lower=point(Math.max(minimum,current.x-step)),upper=point(Math.min(maximum,current.x+step)),delta=upper.power-lower.power;
+    var crosses=lower.regime!==upper.regime||thresholds.some(function(t){return t.discontinuous&&t.x>lower.x&&t.x<=upper.x;}),slope=(upper.power-lower.power)/(upper.x-lower.x),elasticity=current.power>0&&current.x!==0&&!crosses?slope*current.x/current.power:null;
+    var explanations={solarPv:key==='incidence'?'The direct-beam response follows the cosine of the angle; a grazing beam contributes no power.':key==='cellTemperature'?'Each degree above 25°C reduces output by 0.37% of the 25°C output; colder cells increase it by the same linear rule. This is selected cell temperature, not ambient air temperature or a thermal prediction.':'At fixed angle and cell temperature, power scales with irradiance, area, and reference module efficiency.',wind:'Power grows with air density, wind speed cubed, and rotor radius squared until the rating caps output. Less dense air needs a higher wind speed to reach the same rating. Cut-in and shutdown remain fixed teaching assumptions.',hydro:'Head, water flow, and combined efficiency multiply. A larger turbine cannot supply energy when flow is zero.',geothermal:'Increasing produced temperature increases both extracted heat and the ideal heat-engine bound; reinjection temperature reduces the extractable temperature drop.',solarThermal:'The mirror field collects direct-normal sunlight; optical efficiency and the heat engine each reduce the power that reaches electricity.',wave:'Mean wave power grows with significant height squared. Energy period, capture frontage, and conversion efficiency enter linearly.',tidal:'Equal current magnitudes give equal power in either direction. Output rises with speed cubed until the generator reaches its rating.',biomass:'Fuel throughput and as-fired heating value set the chemical input; boiler and cycle efficiencies act in sequence.',storage:'Each point starts from its own initial energy and replays the same cycle to this minute. More power can empty a battery sooner. At a fixed nonzero starting charge percentage, more capacity also means more initial stored energy; otherwise it helps only when charging energy is available.'};
+    return {version:1,id:id,profileId:context.profile?context.profile.id:'steady',profileName:context.profile?context.profile.name:id==='storage'?'Two-hour cycle':'Steady conditions',minute:context.minute,unit:'kW',basis:'base-input',axis:{key:key,label:control[1],unit:control[6],min:minimum,max:maximum,step:control[4],current:current.x},settings:Object.assign({},context.settings),points:points,current:current,thresholds:thresholds,bands:bands,
+      sensitivity:{lower:lower,upper:upper,deltaPower:delta,deltaPercent:lower.power>0?100*delta/lower.power:null,elasticity:Number.isFinite(elasticity)?elasticity:null,crossesBoundary:crosses},insight:explanations[id],rules:RN_OPERATING_RULES};
+  }
+
+  window.StemLab.renewablesEnergyModel={version:1,specs:RN_ENERGY_SPECS,settings:rnEnergySettings,simulate:rnEnergyRun,programs:RN_ENERGY_PROGRAMS,scenario:rnEnergyScenario,resolveReading:rnEnergyResolveReading,importReadings:rnEnergyImportReadings,openImportedReading:rnEnergyOpenImportedReading,compareReadings:rnEnergyCompareReadings,compareScenarios:rnEnergyCompareScenarios,compareInterval:rnEnergyCompareInterval,inputChecks:rnEnergyInputChecks,pathway:rnEnergyPathway,milestones:rnEnergyMilestones,interval:rnEnergyInterval,designMapConfig:rnEnergyMapConfig,designMap:rnEnergyMap,designMapCsv:rnEnergyMapCsv,designMapRules:RN_ENERGY_MAP_RULES,designMapExplanation:rnEnergyMapExplanation,designMapExplanationCsv:rnEnergyMapExplanationCsv,experimentGuides:RN_ENERGY_EXPERIMENTS,sweepConfig:rnEnergySweepConfig,sweep:rnEnergySweep,operatingEnvelope:rnOperatingEnvelope,operatingProbe:rnOperatingProbe,operatingRules:RN_OPERATING_RULES};
 
 
 
@@ -2233,6 +2323,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     return {version:5,settings:s,duration:s.duration,rows:rows,gridSummary:gridSummary,demandSchedule:schedule.summary,totals:total,withoutBattery:without,initialStored:initial,endStored:stored,capacity:capacity,power:power,reserveEnergy:reserve,
       servedPercent:total.demand>0?100*Math.max(0,Math.min(1,(total.demand-total.unserved)/total.demand)):null,firstUnserved:firstUnserved,mostCurtailed:mostCurtailed,lowestStored:lowestStored,unservedMinutes:unservedMinutes,
       avoidedGrid:without.grid-total.grid,avoidedUnserved:without.unserved-total.unserved,avoidedCurtailment:without.curtailed-total.curtailed};
+  }
+
+  function rnMicrogridMoments(run){
+    if(!run||!Number.isInteger(run.duration)||run.duration<1||!Array.isArray(run.rows)||run.rows.length!==run.duration+1)return null;
+    var events=[],byMinute={};
+    function add(row,kind,label){
+      var event=byMinute[row.minute];
+      if(!event){event={minute:row.minute,reasons:[],status:row.batteryRun.status,stored:row.stored,endpoint:row.minute===run.duration};byMinute[row.minute]=event;events.push(event);}
+      event.reasons.push({kind:kind,label:label});
+    }
+    function shortage(row){return row.unserved>Math.max(row.demand,Number.MIN_VALUE)*1e-9;}
+    function surplus(row){return row.curtailed>1e-8;}
+    var first=run.rows[0];
+    add(first,'start','Sequence begins');add(first,'battery',first.batteryRun.status);
+    if(shortage(first))add(first,'shortfall','Unserved demand begins');
+    if(surplus(first))add(first,'surplus','Unused surplus begins');
+    for(var minute=1;minute<run.duration;minute++){
+      var row=run.rows[minute],previous=run.rows[minute-1];
+      if(row.batteryRun.status!==previous.batteryRun.status)add(row,'battery',row.batteryRun.status);
+      if(row.gridAvailable!==previous.gridAvailable)add(row,'grid',row.gridAvailable?'Grid backup returns':'Grid backup becomes unavailable');
+      if(shortage(row)!==shortage(previous))add(row,'shortfall',shortage(row)?'Unserved demand begins':'Demand shortfall ends');
+      if(surplus(row)!==surplus(previous))add(row,'surplus',surplus(row)?'Unused surplus begins':'Unused surplus ends');
+    }
+    // The last row is a boundary, so its zero powers do not imply a recovery.
+    add(run.rows[run.duration],'end','Sequence complete');
+    return {version:1,duration:run.duration,events:events};
   }
 
 
@@ -2480,7 +2596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     return [headers].concat(data).map(function(row){return row.map(function(v){return v==null?'':typeof v==='number'?String(v):'"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
   }
 
-  window.StemLab.renewablesMicrogridModel={version:5,gridStudyPair:function(request,input){return rnGridPair(rnGridStudySetup(request),input);},gridPairPeriods:rnGridPairPeriods,gridPeriodView:rnGridPeriodView,gridPeriodCsv:rnGridPeriodCsv,gridPeriodRules:RN_GRID_PERIOD_RULES,gridPairCsv:rnGridPairCsv,gridPairRules:RN_GRID_PAIR_RULES,gridStudyConfig:rnGridStudyConfig,gridStudyCase:rnGridStudyCase,gridStudy:rnGridStudy,gridStudyCsv:rnGridStudyCsv,gridStudyRules:RN_GRID_STUDY_RULES,gridLimitSettings:rnMicrogridGridLimit,gridLimitRules:RN_GRID_LIMIT_RULES,settings:rnMicrogridSettings,simulate:rnMicrogridRun,loads:RN_MICROGRID_LOADS,policies:RN_MICROGRID_POLICIES,assumptions:RN_MICROGRID_ASSUMPTIONS,outageConfig:rnOutageConfig,outageStudy:rnOutageStudy,outageSignature:rnOutageSignature,designConfig:rnBatteryDesignConfig,designCase:rnBatteryDesignCase,designStudy:rnBatteryDesignStudy,companionSettings:rnMicrogridCompanion,hybridTiming:RN_HYBRID_TIMING,demandShiftSettings:rnDemandShiftSettings,demandSchedule:rnDemandSchedule,demandShiftRules:RN_DEMAND_SHIFT_RULES,supplyGaps:function(input){return rnSupplyGapAnalysis(rnMicrogridRun(input));},supplyGapView:rnSupplyGapView,supplyGapCsv:rnSupplyGapCsv,supplyGapRules:RN_SUPPLY_GAP_RULES};
+  window.StemLab.renewablesMicrogridModel={version:5,moments:rnMicrogridMoments,gridStudyPair:function(request,input){return rnGridPair(rnGridStudySetup(request),input);},gridPairPeriods:rnGridPairPeriods,gridPeriodView:rnGridPeriodView,gridPeriodCsv:rnGridPeriodCsv,gridPeriodRules:RN_GRID_PERIOD_RULES,gridPairCsv:rnGridPairCsv,gridPairRules:RN_GRID_PAIR_RULES,gridStudyConfig:rnGridStudyConfig,gridStudyCase:rnGridStudyCase,gridStudy:rnGridStudy,gridStudyCsv:rnGridStudyCsv,gridStudyRules:RN_GRID_STUDY_RULES,gridLimitSettings:rnMicrogridGridLimit,gridLimitRules:RN_GRID_LIMIT_RULES,settings:rnMicrogridSettings,simulate:rnMicrogridRun,loads:RN_MICROGRID_LOADS,policies:RN_MICROGRID_POLICIES,assumptions:RN_MICROGRID_ASSUMPTIONS,outageConfig:rnOutageConfig,outageStudy:rnOutageStudy,outageSignature:rnOutageSignature,designConfig:rnBatteryDesignConfig,designCase:rnBatteryDesignCase,designStudy:rnBatteryDesignStudy,companionSettings:rnMicrogridCompanion,hybridTiming:RN_HYBRID_TIMING,demandShiftSettings:rnDemandShiftSettings,demandSchedule:rnDemandSchedule,demandShiftRules:RN_DEMAND_SHIFT_RULES,supplyGaps:function(input){return rnSupplyGapAnalysis(rnMicrogridRun(input));},supplyGapView:rnSupplyGapView,supplyGapCsv:rnSupplyGapCsv,supplyGapRules:RN_SUPPLY_GAP_RULES};
 
 
   var RN_ENERGY_VISUALS={solarPv:{color:'#f7ca71',surface:'#344b50'},wind:{color:'#b5e6dc',surface:'#304f4d'},hydro:{color:'#8bcce9',surface:'#304d59'},geothermal:{color:'#f0ac86',surface:'#554941'},solarThermal:{color:'#f6d67d',surface:'#514b3c'},wave:{color:'#8ed7e9',surface:'#294e60'},tidal:{color:'#9ccfef',surface:'#314c5e'},biomass:{color:'#c4d99c',surface:'#465242'},storage:{color:'#b8bbea',surface:'#424958'}};
@@ -2516,12 +2632,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
   function rnEnergyReading(value){return value!==0&&Math.abs(value)<.01?Number(value).toExponential(2):Number(value).toLocaleString(undefined,{maximumFractionDigits:2});}
   function RenewablesEnergyPathway(props){
-    var h=props.React.createElement,pathway=rnEnergyPathway(props.run);
-    var __alloT=rnEnergyT(props);
-    return h('section',{className:'rn-energy-trace','aria-label':__alloT('stem.renewables.interactive_energy_pathway','Interactive energy pathway')},h('div',{className:'rn-energy-trace-heading'},h('strong',null,'Trace the conversion'),h('span',null,'Select a stage to inspect its component')),
-      h('div',{className:'rn-energy-trace-nodes'},pathway.nodes.map(function(node,i){return h('button',{key:node.id,type:'button',className:'rn-energy-trace-node','aria-label':__alloFill(__alloT('stem.renewables.a11y_trace', 'Trace {value1}'), { value1: node.component }),'aria-pressed':props.selected===node.id,onClick:function(){props.onPick(node.id);}},h('span',{className:'rn-energy-trace-step','aria-hidden':true},String(i+1).padStart(2,'0')),h('span',{className:'rn-energy-trace-name'},node.component),h('strong',null,rnEnergyReading(node.value)+' ',h('span',{className:'rn-energy-trace-unit'},node.unit)),h('span',{className:'rn-energy-trace-label'},node.label),node.note&&h('span',{className:'rn-energy-trace-note'},node.note));})),
-      props.run.id==='storage'&&h('p',null,'kW is power flowing in or out; kWh is energy held in the cells. These readings use different units.'));
+    var h=props.React.createElement,pathway=rnEnergyPathway(props.run),before=props.previousRun&&props.previousRun.id===props.run.id?rnEnergyPathway(props.previousRun):null;
+    var __alloT=rnEnergyT(props),storage=props.run.id==='storage',motion=props.motion===true;
+    if(!pathway)return null;
+    var powerMax=0;
+    pathway.nodes.concat(before?before.nodes:[]).forEach(function(node){if(node.unit==='kW')powerMax=Math.max(powerMax,node.value);});
+    function previousNode(node){return before&&before.nodes.find(function(item){return item.id===node.id&&item.unit===node.unit;});}
+    function fraction(value,max){return max>0?Math.max(0,Math.min(1,value/max))*100:0;}
+    function changeText(node,prior){var delta=node.value-prior.value,unit=node.unit==='%'?'percentage points':node.unit;return (delta===0?'Unchanged':(delta>0?'+':'−')+rnEnergyReading(Math.abs(delta))+' '+unit)+' · before '+rnEnergyReading(prior.value)+' '+node.unit;}
+    var css='.rn-energy-trace.rn-energy-trace-clarity{--rf-text:var(--re-text);--rf-muted:var(--re-muted);--rf-bg:var(--re-card);--rf-card:var(--re-bg);--rf-border:var(--re-border);--rf-track:var(--re-alt);--rf-active:var(--re-alt);--rf-power:#208369;--rf-resource:#b78027;--rf-converter:#357ca8;--rf-remainder:#9f783e;--rf-secondary:#768d9c;background:var(--rf-bg);color:var(--rf-text);border-color:var(--rf-border)}'+
+      '.rn-energy-scene .rn-energy-trace-clarity{--rf-text:#eff9f6;--rf-muted:#c1d7dc;--rf-bg:#0d2734;--rf-card:#173945;--rf-border:#63828b;--rf-track:#09232e;--rf-active:#244c55;--rf-power:#88d9b6;--rf-resource:#f7ca71;--rf-converter:#8bcce9;--rf-remainder:#d9ae6f;--rf-secondary:#9eb7c4}'+
+      '.rn-energy-trace-clarity .rn-energy-trace-heading{flex-wrap:wrap;gap:4px 12px;margin-bottom:10px}.rn-energy-trace-clarity .rn-energy-trace-heading>span{color:var(--rf-muted)}'+
+      '.rn-energy-trace-clarity .rn-flow-scale{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--rf-muted);padding:8px 0 12px;border-top:1px solid var(--rf-border)}.rn-energy-trace-clarity .rn-flow-scale strong{color:var(--rf-text);font-weight:650;font-variant-numeric:tabular-nums}'+
+      '.rn-energy-lab .rn-energy-trace-clarity .rn-energy-trace-node{display:flex;flex-direction:column;align-items:stretch;gap:0;background:var(--rf-card);color:var(--rf-text);border-color:var(--rf-border);padding:12px;min-width:0;overflow:visible}.rn-energy-lab .rn-energy-trace-clarity .rn-energy-trace-node:hover{background:var(--rf-active)}.rn-energy-lab .rn-energy-trace-clarity .rn-energy-trace-node[aria-pressed=true]{background:var(--rf-active);color:var(--rf-text);border-color:var(--rf-power);box-shadow:inset 0 0 0 1px var(--rf-power)}'+
+      '.rn-energy-trace-clarity .rn-energy-trace-node:not(:last-child):after{color:var(--rf-muted)}.rn-energy-trace-clarity .rn-energy-trace-name{min-height:32px;margin:4px 0 6px;font-weight:650;line-height:1.45}.rn-energy-trace-clarity .rn-energy-trace-node>strong{font-size:20px;line-height:1.3}.rn-energy-trace-clarity .rn-energy-trace-label{min-height:30px;margin:5px 0 0}.rn-energy-trace-clarity .rn-energy-trace-note{font-size:10px;margin-top:6px;opacity:1;color:var(--rf-muted)}'+
+      '.rn-energy-trace-clarity .rn-flow-meter{display:block;position:relative;width:100%;height:13px;margin:13px 0 8px;border-radius:3px;background:var(--rf-track);outline:1px solid var(--rf-border)}.rn-energy-trace-clarity .rn-flow-meter-fill{display:block;height:100%;position:relative;overflow:hidden;border-radius:3px;background:var(--rf-power)}.rn-energy-trace-clarity [data-flow-stage=resource] .rn-flow-meter-fill{background:var(--rf-resource)}.rn-energy-trace-clarity [data-flow-stage=converter] .rn-flow-meter-fill{background:var(--rf-converter)}'+
+      '.rn-energy-trace-clarity .rn-flow-before-marker{position:absolute;display:block;width:2px;height:21px;top:-4px;transform:translateX(-1px);background:var(--rf-text);box-shadow:0 0 0 1px var(--rf-card)}.rn-energy-trace-clarity .rn-flow-before-marker:before{content:"";display:block;position:absolute;left:-2px;top:-2px;width:6px;height:3px;background:var(--rf-text)}'+
+      '.rn-energy-trace-clarity .rn-flow-meter-caption{font-size:9px;color:var(--rf-muted);line-height:1.5;display:block}.rn-energy-trace-clarity .rn-flow-change{font-size:10px;line-height:1.5;margin-top:8px;padding-top:7px;border-top:1px solid var(--rf-border);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.rn-energy-trace-clarity .rn-flow-state{display:block;font-size:9px;font-weight:650;letter-spacing:.2px;margin-top:6px;color:var(--rf-muted)}'+
+      '.rn-energy-trace-clarity .rn-flow-direction{position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0,transparent 10px,#ffffff6b 10px,#ffffff6b 12px,transparent 12px,transparent 22px);background-size:24px 100%;animation:rnFlowDirection 1.6s linear infinite}.rn-energy-trace-clarity[data-flow-motion=on] .rn-flow-meter-fill{transition:width .2s ease-out}.rn-energy-trace-clarity [data-flow-value="0"] .rn-flow-meter-fill{transition:none}@keyframes rnFlowDirection{from{background-position:0 0}to{background-position:24px 0}}'+
+      '.rn-energy-trace-clarity .rn-flow-partition{margin-top:14px;padding-top:12px;border-top:1px solid var(--rf-border)}.rn-energy-trace-clarity .rn-flow-partition-heading{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11px}.rn-energy-trace-clarity .rn-flow-partition-heading>span{font-size:10px;color:var(--rf-muted);font-variant-numeric:tabular-nums}.rn-energy-trace-clarity .rn-flow-partition-bar{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--rf-track);outline:1px solid var(--rf-border);margin:10px 0}.rn-energy-trace-clarity .rn-flow-partition-bar>span{display:block;height:100%;flex-shrink:0}.rn-energy-trace-clarity .rn-flow-partition-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}.rn-energy-trace-clarity .rn-flow-partition-legend>div{min-width:0}.rn-energy-trace-clarity .rn-flow-partition-legend dt{font-size:9px;line-height:1.5;overflow-wrap:anywhere}.rn-energy-trace-clarity .rn-flow-partition-legend dd{font-size:12px;font-weight:650;line-height:1.5;font-variant-numeric:tabular-nums;margin:3px 0 0}.rn-energy-trace-clarity .rn-flow-swatch{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}.rn-energy-trace-clarity .rn-flow-partition-note,.rn-energy-trace-clarity>p{font-size:10px;line-height:1.6;color:var(--rf-muted);margin:9px 0 0}'+
+      '@media(max-width:600px){.rn-energy-trace-clarity .rn-energy-trace-nodes{gap:14px}.rn-energy-lab .rn-energy-trace-clarity .rn-energy-trace-node{padding:11px 12px}.rn-energy-trace-clarity .rn-energy-trace-name{min-height:0;margin:3px 0 4px}.rn-energy-trace-clarity .rn-energy-trace-label{min-height:0}.rn-energy-trace-clarity .rn-energy-trace-node:not(:last-child):after{bottom:-15px}.rn-energy-trace-clarity .rn-flow-partition-legend{grid-template-columns:1fr}.rn-energy-trace-clarity .rn-flow-partition-legend>div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.rn-energy-trace-clarity .rn-flow-partition-legend dt{font-size:10px}.rn-energy-trace-clarity .rn-flow-partition-legend dd{margin:0;flex-shrink:0}}'+
+      '@media(prefers-reduced-motion:reduce){.rn-energy-trace-clarity .rn-flow-direction{animation-duration:1.6s!important;animation-iteration-count:infinite!important;animation-play-state:paused!important;visibility:hidden!important}.rn-energy-trace-clarity .rn-flow-meter-fill{transition:none!important}}';
+    function segmentColor(segment){return segment.tone==='output'?'var(--rf-power)':segment.tone==='secondary'?'var(--rf-secondary)':'var(--rf-remainder)';}
+    return h('section',{className:'rn-energy-trace rn-energy-trace-clarity','aria-label':__alloT('stem.renewables.interactive_energy_pathway','Interactive energy pathway'),'data-flow-motion':motion?'on':'off','data-flow-scale-kw':powerMax},h('style',null,css),
+      h('div',{className:'rn-energy-trace-heading'},h('strong',null,'Trace the conversion'),h('span',null,'Select a stage to inspect its component')),
+      h('div',{className:'rn-flow-scale'},h('span',null,'Power bars share one scale: ',h('strong',null,'0–'+rnEnergyReading(powerMax)+' kW')),before&&h('span',null,'│ Marker = before your last control change')),
+      h('div',{className:'rn-energy-trace-nodes'},pathway.nodes.map(function(node,i){
+        var prior=previousNode(node),power=node.unit==='kW',percent=node.unit==='%',scale=power?powerMax:percent?100:Math.max(props.run.settings.capacity,props.previousRun&&props.previousRun.settings.capacity||0,node.value,prior?prior.value:0),width=fraction(node.value,scale),attrs={key:node.id,type:'button',className:'rn-energy-trace-node','aria-label':__alloFill(__alloT('stem.renewables.a11y_trace','Trace {value1}'),{value1:node.component}),'aria-pressed':props.selected===node.id,'data-flow-stage':node.id,'data-flow-unit':node.unit,'data-flow-value':node.value,'data-flow-before':prior?prior.value:undefined,onClick:function(){props.onPick(node.id);}};
+        if(power){attrs['data-current-kw']=node.value;attrs['data-previous-kw']=prior?prior.value:undefined;attrs['data-scale-kw']=scale;}
+        else if(percent){attrs['data-current-percent']=node.value;attrs['data-scale-percent']=scale;}
+        else{attrs['data-current-kwh']=node.value;attrs['data-scale-kwh']=scale;}
+        return h('button',attrs,
+          h('span',{className:'rn-energy-trace-step','aria-hidden':true},String(i+1).padStart(2,'0')+' · '+(power?'POWER':percent?'EFFICIENCY':'STORED ENERGY')),
+          h('span',{className:'rn-energy-trace-name'},node.component),h('strong',null,rnEnergyReading(node.value)+' ',h('span',{className:'rn-energy-trace-unit'},node.unit)),
+          h('span',{className:'rn-energy-trace-label'},node.label),
+          h('span',{className:'rn-flow-meter','aria-hidden':true},h('span',{className:'rn-flow-meter-fill',style:{width:width+'%'}},power&&h('span',{className:'rn-flow-direction',style:{visibility:node.value>0?'visible':'hidden',animationPlayState:motion&&node.value>0?'running':'paused'}})),prior&&h('span',{className:'rn-flow-before-marker',style:{left:fraction(prior.value,scale)+'%'}})),
+          h('span',{className:'rn-flow-meter-caption'},power?'0–'+rnEnergyReading(scale)+' kW · shared power scale':percent?'0–100% · efficiency scale':'0–'+rnEnergyReading(scale)+' kWh · energy scale'),
+          power&&h('span',{className:'rn-flow-state','data-flow-state':node.value>0?'flowing':'stopped'},node.value>0?'Positive power':node.id==='generator'?'No electricity delivered':storage?'No charging power':node.id==='resource'?'No resource power':'No power at this stage'),
+          !power&&!percent&&h('span',{className:'rn-flow-state'},'Bank capacity: '+rnEnergyReading(props.run.settings.capacity)+' kWh'),
+          prior&&h('span',{className:'rn-flow-change'},changeText(node,prior)),node.note&&h('span',{className:'rn-energy-trace-note'},node.note));
+      })),
+      !storage&&h('div',{className:'rn-flow-partition','data-power-partition':true},h('div',{className:'rn-flow-partition-heading'},h('strong',null,'Split the original input once'),h('span',null,rnEnergyReading(pathway.budget.total)+' kW input')),
+        h('div',{className:'rn-flow-partition-bar','aria-hidden':true},pathway.budget.segments.map(function(segment){return h('span',{key:segment.key,'data-segment-key':segment.key,'data-segment-kw':segment.value,style:{width:fraction(segment.value,pathway.budget.total)+'%',background:segmentColor(segment)}});})),
+        h('dl',{className:'rn-flow-partition-legend'},pathway.budget.segments.map(function(segment){return h('div',{key:segment.key},h('dt',null,h('span',{className:'rn-flow-swatch','aria-hidden':true,style:{background:segmentColor(segment)}}),segment.label),h('dd',null,rnEnergyReading(segment.value)+' kW'));})),
+        h('p',{className:'rn-flow-partition-note'},pathway.budget.empty?'No input power at these settings; every power bar is empty.':'This strip divides input power into electricity and the labeled remainders. Unextracted resource is not all equipment heat loss.')),
+      storage&&h('p',null,'kW shows charging or delivery power; kWh shows energy held in the cells. Their meters use separate scales.'),
+      before&&h('p',{className:'rn-flow-before-context'},'Before and current use the same timeline position and operating profile. Differences isolate your last control change.'),
+      motion&&h('p',{className:'rn-flow-motion-note'},'Moving bands indicate positive power only; bar length and numbers show quantity. Motion speed is illustrative.'));
   }
+
   function RenewablesEnergyBudget(props){
     var h=props.React.createElement,b=rnEnergyPathway(props.run).budget,storage=props.run.id==='storage';
     var __alloT=rnEnergyT(props);
@@ -2533,9 +2692,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
   }
 
 
+  function RenewablesEnergyAdjustment(props){
+    if(!props.adjustment||!props.previousRun)return null;
+    var h=props.React.createElement,__alloT=rnEnergyT(props),a=props.adjustment,b=props.previousRun,r=props.run,storage=r.id==='storage',delta=r.power-b.power,inputDelta=r.available-b.available,tolerance=Math.max(Number.MIN_VALUE,Math.abs(r.power),Math.abs(b.power))*1e-10,inputTolerance=Math.max(Number.MIN_VALUE,Math.abs(r.available),Math.abs(b.available))*1e-10;
+    function signed(value){return (value>0?'+':'')+rnEnergyReading(value);}
+    var unchanged=Math.abs(delta)<=tolerance,explanation=storage?'Both battery histories are recalculated from their initial charge to the same selected minute. Changing capacity or initial charge can change the starting energy.':r.status==='Protective shutdown'?'Protective shutdown stops the generator while the moving air still contains kinetic power.':r.status==='Below cut-in'?'The wind is below the modeled starting threshold, so the generator delivers no electricity.':unchanged&&r.id==='tidal'&&a.control[0]==='speed'&&b.settings.speed*r.settings.speed<0&&Math.abs(b.settings.speed)===Math.abs(r.settings.speed)?'The current reverses direction; equal speed magnitudes produce the same power.':unchanged&&r.status==='At generator rating'&&Math.abs(inputDelta)>inputTolerance?'The resource changed, but the generator rating keeps delivered electricity at the same limit.':Math.abs(inputDelta)<=inputTolerance&&!unchanged?'The resource input stays the same; '+(delta>0?'more':'less')+' of it reaches electrical output.':unchanged?'Electrical output is unchanged at these conditions. The stage readings show whether resource power or the remaining energy changed.':'Follow the stage markers to see how this adjustment changes resource input and delivered electricity.';
+    var metrics=[['output','Electrical output',b.power,r.power,'kW'],['input',storage?'Charging input':'Resource input',b.available,r.available,'kW'],storage?['stored','Stored energy',b.extra.stored,r.extra.stored,'kWh']:['remainder','Not delivered',b.loss,r.loss,'kW']];
+    return h('section',{className:'rn-energy-adjustment','aria-label':__alloT('stem.renewables.effect_of_last_adjustment','Effect of your last adjustment'),'data-control-key':a.control[0],'data-minute':a.minute,'data-profile-id':a.profileId,'data-before-output-kw':b.power,'data-current-output-kw':r.power,'data-before-input-kw':b.available,'data-current-input-kw':r.available,'data-before-status':b.status,'data-current-status':r.status},
+      h('style',null,'.rn-energy-adjustment{padding:14px 16px;margin:12px 0;background:var(--re-alt);border:1px solid var(--re-border);border-radius:10px;color:var(--re-text)}.rn-energy-scene .rn-energy-adjustment{margin:10px 14px 16px;background:#163744;border-color:#63828b;color:#eff9f6}.rn-energy-adjustment-heading{display:flex;align-items:baseline;justify-content:space-between;gap:6px 16px;flex-wrap:wrap}.rn-energy-adjustment-heading strong{font-size:12px}.rn-energy-adjustment-heading span{font-size:11px}.rn-energy-adjustment dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}.rn-energy-adjustment dt{font-size:10px}.rn-energy-adjustment dd{margin:3px 0 0;font-size:12px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.rn-energy-adjustment dd strong{display:block;font-size:15px}.rn-energy-adjustment p{font-size:11px;line-height:1.6;margin:6px 0 0}.rn-energy-adjustment-context{font-size:10px!important}.rn-energy-adjustment .rn-energy-adjustment-state{font-weight:650}@media(max-width:600px){.rn-energy-adjustment dl{grid-template-columns:1fr;gap:9px}.rn-energy-adjustment dl>div{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.rn-energy-adjustment dd{text-align:right}.rn-energy-scene .rn-energy-adjustment{margin:8px 12px 14px}}'),
+      h('div',{className:'rn-energy-adjustment-heading'},h('strong',null,'Your last adjustment'),h('span',null,a.control[1]+': '+rnEnergyReading(a.before)+' → '+rnEnergyReading(a.after)+' '+a.control[6])),
+      h('dl',null,metrics.map(function(metric){return h('div',{key:metric[0],'data-adjustment-metric':metric[0],'data-before':metric[2],'data-current':metric[3],'data-delta':metric[3]-metric[2]},h('dt',null,metric[1]),h('dd',null,h('span',null,rnEnergyReading(metric[2])+' → '+rnEnergyReading(metric[3])+' '+metric[4]),h('strong',null,Math.abs(metric[3]-metric[2])<=Math.max(Number.MIN_VALUE,Math.abs(metric[2]),Math.abs(metric[3]))*1e-10?'Unchanged':signed(metric[3]-metric[2])+' '+metric[4])));})),
+      h('p',{className:'rn-energy-adjustment-state'},b.status===r.status?r.status:b.status+' → '+r.status),h('p',null,explanation),
+      h('p',{className:'rn-energy-adjustment-context'},'Before markers use the previous '+a.control[1].toLowerCase()+' with every other input held at its current value. '+(a.profileId!=='steady'||storage?'Both runs use '+a.profileName+' at minute '+a.minute+'.':'Both runs use the same steady conditions.')+(!storage?' “Not delivered” includes unextracted resource and conversion losses.':'')));
+  }
+
   var RN_ENERGY_COMPONENT_GUIDES={
-    solarPv:{resource:{inputs:[['irradiance','Changes the direct light reaching each square metre.'],['incidence','Changes the projected collecting area.'],['area','Changes how much of the beam is intercepted.']],question:'Hold irradiance fixed and move the beam from normal incidence toward 90°. How does intercepted power change?'},converter:{inputs:[['efficiency','Sets the fraction of intercepted light converted to DC electricity.'],['area','Changes the collection area while keeping efficiency fixed.']],question:'Increase area, then increase efficiency separately. Which stage readings change in each case?'},generator:{inputs:[],note:'This model fixes inverter efficiency at 96%. Its input comes from the PV array; there is no separate inverter-efficiency control.',question:'Compare DC and AC power in the pathway. How much is lost at the inverter?'}},
-    wind:{resource:{inputs:[['speed','Changes stream power with the cube of wind speed.'],['radius','Changes the swept area.']],question:'Compare 5 and 10 m/s with the same rotor. Does stream power double?'},converter:{inputs:[['cp','Sets the fraction of stream power extracted by the rotor.'],['radius','Changes the swept area without changing the power coefficient.']],question:'Increase the power coefficient at a fixed wind speed. Does rotor extraction always become delivered electricity?'},generator:{inputs:[['rating','Caps delivered electrical power.'],['speed','Also determines cut-in and protective shutdown.']],question:'Find a rating-limited case, then try 25 m/s. Can a larger generator rating prevent protective shutdown?'}},
+    solarPv:{resource:{inputs:[['irradiance','Changes the direct light reaching each square metre.'],['incidence','Changes the projected collecting area.'],['area','Changes how much of the beam is intercepted.']],question:'Hold irradiance fixed and move the beam from normal incidence toward 90°. How does intercepted power change?'},converter:{inputs:[['efficiency','Sets the fraction of intercepted light converted to DC electricity at a cell temperature of 25°C.'],['cellTemperature','Applies a fixed −0.37%/°C power coefficient relative to 25°C. This is the cell temperature, not ambient air.'],['area','Changes the collection area while keeping efficiency fixed.']],question:'Hold sunlight and area fixed, then warm the cells from 25°C to 65°C. Why does intercepted light stay constant while DC output falls?'},generator:{inputs:[],note:'This model fixes inverter efficiency at 96%. Its input comes from the PV array; there is no separate inverter-efficiency control.',question:'Compare DC and AC power in the pathway. How much is lost at the inverter?'}},
+    wind:{resource:{inputs:[['speed','Changes stream power with the cube of wind speed.'],['radius','Changes the swept area.'],['airDensity','Changes stream power in direct proportion to air density; the default is 1.225 kg/m³.']],question:'Hold wind speed and rotor size fixed, then reduce air density. Does the rotor receive the same kinetic power?'},converter:{inputs:[['cp','Sets the fraction of stream power extracted by the rotor.'],['radius','Changes the swept area without changing the power coefficient.']],question:'Increase the power coefficient at a fixed wind speed. Does rotor extraction always become delivered electricity?'},generator:{inputs:[['rating','Caps delivered electrical power.'],['speed','Also determines cut-in and protective shutdown.']],question:'Find a rating-limited case, then try 25 m/s. Can a larger generator rating prevent protective shutdown?'}},
     hydro:{resource:{inputs:[['head','Sets the vertical drop in the hydraulic-power calculation.'],['flow','Sets how much water passes per second.']],question:'Double head or flow separately. Compare the two changes in hydraulic power.'},converter:{inputs:[['flow','Changes hydraulic power through the penstock.'],['efficiency','Represents the combined turbine and generator conversion.']],question:'Keep flow and head fixed while changing combined efficiency. Which reading stays constant?'},generator:{inputs:[['efficiency','Changes the combined hydraulic-to-electrical conversion.']],question:'Use the power balance to compare electricity with the remainder. The model does not resolve separate turbine and generator losses.'}},
     geothermal:{resource:{inputs:[['hot','Sets the produced-fluid temperature.'],['returnTemp','Sets how much cooling occurs before reinjection.'],['flow','Sets the mass of hot fluid supplied each second.']],question:'Bring reinjection temperature closer to produced-fluid temperature. What happens to extracted heat?'},converter:{inputs:[['hot','Together with reinjection temperature, determines extracted heat.'],['returnTemp','Controls the temperature drop used in the heat balance.']],question:'Hold flow fixed and compare two temperature drops. This combined model does not resolve a separate working-fluid power.'},generator:{inputs:[['utilization','Sets the fraction of the ideal Carnot bound used by the model.']],question:'Keep the thermal input fixed and change utilization. Where does the undelivered heat appear in the balance?'}},
     solarThermal:{resource:{inputs:[['dni','Changes the direct sunlight available to the mirrors.'],['area','Changes the collecting aperture.']],question:'Halve DNI, then double mirror area. Does the same thermal input return?'},converter:{inputs:[['optical','Sets the fraction of incident sunlight delivered as usable heat.']],question:'Change optical efficiency while holding sunlight and mirror area fixed. Which remainder changes?'},generator:{inputs:[['cycle','Sets the fraction of delivered heat converted into electricity.']],question:'Improve cycle efficiency at a fixed receiver input. Compare the two remainder terms.'}},
@@ -2642,22 +2815,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('div',{className:'rn-energy-inspector-question'},h('h4',null,'Try this'),h('p',null,guide.question),btn('Record an observation',props.onNote)));
   }
 
+  function RenewablesEnergyControlDock(props){
+    var React=props.React,h=React.createElement,spec=rnEnergySpec(props.id),choice=React.useState(spec.primary),uid=React.useId().replace(/:/g,'')+'scene-',tr=rnEnergyT(props);
+    React.useEffect(function(){choice[1](spec.primary);},[props.id]);
+    var c=spec.controls.find(function(control){return control[0]===choice[0];})||spec.controls.find(function(control){return control[0]===spec.primary;}),control=c.slice();control[1]='Scene '+c[1];
+    var profileNote=props.profile?'Base setting for '+props.profile.name+'. '+(props.profile.key===c[0]?'At minute '+props.phase+': '+rnEnergyReading(props.run.settings[c[0]])+' '+c[6]+'.':'Current sequence minute: '+props.phase+'.'):'Changes apply to the equipment and readings above.';
+    return h('div',{className:'rn-energy-scene-control'},
+      h('style',null,'.rn-energy-scene-control{--re-text:#eff9f6;--re-muted:#c1d7dc;--re-border:#63828b;--re-bg:#102c39;--re-accent:#88d9b6;display:grid;grid-template-columns:minmax(150px,.7fr) minmax(0,1.3fr);gap:10px 18px;padding:14px 16px;background:#102c39;border-top:1px solid #55727c;border-bottom:1px solid #55727c;color:#eff9f6}.rn-energy-scene-control label{color:#eff9f6!important;font-size:12px}.rn-energy-scene-control select{display:block;width:100%;min-height:38px;margin-top:7px;padding:7px;border:1px solid #7997a0;border-radius:6px;background:#173c4a;color:#eff9f6;font:inherit;font-size:12px}.rn-energy-scene-control .rn-energy-control{margin:0;padding:0;border:0;background:transparent}.rn-energy-scene-control .rn-energy-input-limits{color:#c1d7dc!important}.rn-energy-scene-control p{grid-column:1/-1;font-size:11px;line-height:1.6;margin:0!important;color:#c1d7dc}.rn-energy-scene-control input:focus-visible,.rn-energy-scene-control select:focus-visible{outline:3px solid #fff5c9;outline-offset:3px}@media(max-width:500px){.rn-energy-scene-control{grid-template-columns:minmax(0,1fr);padding:12px}.rn-energy-scene-control select{margin-top:5px}}'),
+      h('label',{htmlFor:uid+'control'},'Adjust beside the scene',h('select',{id:uid+'control','aria-label':tr('stem.renewables.control_beside_scene','Control beside scene'),value:c[0],onChange:function(e){choice[1](e.target.value);}},spec.controls.map(function(item){return h('option',{key:item[0],value:item[0]},item[1]);}))),
+      h(RenewablesEnergyInput,{React:React,t:props.t,key:props.id+c[0],uid:uid,control:control,value:props.settings[c[0]],onChange:function(value,previous){props.onChange(c[0],value,previous);}}),
+      h('p',null,profileNote));
+  }
+
   function RenewablesEnergyScene(props){
     var React=props.React,h=React.createElement,mount=React.useRef(null),live=React.useRef(props),api=React.useRef(null);
-    var __alloT=rnEnergyT(props);
-    var statusState=React.useState('loading'),status=statusState[0],retry=React.useState(0),inspectionState=React.useState({id:props.id,layout:'assembled',isolated:false,labels:true,readings:true}),cameraState=React.useState({name:'isometric',yaw:Math.PI/4,pitch:Math.atan(1/Math.sqrt(2))});
-    var cameraReading=cameraState[0],cameraNames={isometric:'Isometric view',front:'Front view',side:'Side view',top:'Top view',custom:'Free orbit'},cameraPresets=[['isometric','Isometric view'],['front','Front view'],['side','Side view'],['top','Top view']];
-    var inspection=inspectionState[0].id===props.id?inspectionState[0]:{id:props.id,layout:'assembled',isolated:false,labels:true,readings:true},selected=rnEnergySpec(props.id).components.find(function(c){return c[0]===props.selected;})||rnEnergySpec(props.id).components[1];
+    var __alloT=rnEnergyT(props),hasGeneratorDetail=['wind','tidal','hydro'].indexOf(props.id)!==-1;
+    var statusState=React.useState('loading'),status=statusState[0],retry=React.useState(0),inspectionState=React.useState({id:props.id,layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false}),cameraState=React.useState({name:'isometric',yaw:Math.PI/4,pitch:Math.atan(1/Math.sqrt(2))});
+    var hoveredState=React.useState(null),hovered=hoveredState[0],cameraReading=cameraState[0],cameraNames={isometric:'Isometric view',front:'Front view',side:'Side view',top:'Top view',custom:'Free orbit'},cameraPresets=[['isometric','Isometric view'],['front','Front view'],['side','Side view'],['top','Top view']];
+    var motionPreference=React.useState(function(){return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}),equipmentMotion=React.useState(function(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);});
+    var motionSpeed=React.useState(1),frameHold=React.useState(false);
+    var sequenceComplete=props.run.status==='Sequence complete'||props.run.status==='Cycle complete'||props.run.status==='Scenario complete';
+    var inspection=inspectionState[0].id===props.id?inspectionState[0]:{id:props.id,layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false},selected=rnEnergySpec(props.id).components.find(function(c){return c[0]===props.selected;})||rnEnergySpec(props.id).components[1];
     function inspect(patch){inspectionState[1](Object.assign({},inspection,patch));}
-    React.useEffect(function(){inspectionState[1]({id:props.id,layout:'assembled',isolated:false,labels:true,readings:true});},[props.id]);
-    live.current=Object.assign({},props,{selected:selected[0],inspection:inspection});
+    React.useEffect(function(){inspectionState[1]({id:props.id,layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false});hoveredState[1](null);frameHold[1](false);},[props.id]);
+    live.current=Object.assign({},props,{selected:selected[0],inspection:inspection,motionSpeed:motionSpeed[0],holdFraming:frameHold[0],animate:equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete});
     React.useEffect(function(){
-      var disposed=false,failed=false,renderer,scene,camera,raf=0,observer,intersection,visible=true,dirty=true,lastProps=null,resize,drag=null;
-      var listeners=[],pickables=[],updaters=[],view={name:'isometric',yaw:Math.PI/4,pitch:Math.atan(1/Math.sqrt(2)),zoom:1,target:[0,1.4,0]},groups={},labels={},leaders={},context,fitView=null,focusTarget=null,fitPending=true,lastInspection=null,container=mount.current;
+      var disposed=false,failed=false,renderer,scene,camera,raf=0,observer,intersection,visible=true,dirty=true,lastProps=null,resize,drag=null,hoverPart=null,lastFrame=0,streamCount=0,pendingMotionStep=0;
+      var motionQuery=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null,reducedMotion=!!(motionQuery&&motionQuery.matches);
+      var listeners=[],pickables=[],updaters=[],markerUpdaters=[],view={name:'isometric',yaw:Math.PI/4,pitch:Math.atan(1/Math.sqrt(2)),zoom:1,target:[0,1.4,0]},viewport={width:700,height:440},groups={},labels={},leaders={},context,generatorFocus=null,fitView=null,focusTarget=null,focusDetail=false,fitPending=true,lastInspection=null,lastDimensions=null,container=mount.current;
       statusState[1]('loading');if(container)container.removeAttribute('data-energy-scene-id');
       function active(){return !disposed&&!failed&&live.current.id===props.id;}
+      function zoomLimit(){return focusDetail&&focusTarget==='generator'?12:4;}
       function fail(){if(!active())return;failed=true;cancelAnimationFrame(raf);statusState[1]('failed');}
       function bind(target,event,handler){target.addEventListener(event,handler);listeners.push([target,event,handler]);}
+      if(motionQuery&&motionQuery.addEventListener)bind(motionQuery,'change',function(event){reducedMotion=event.matches;motionPreference[1](event.matches);if(event.matches)equipmentMotion[1](false);lastFrame=0;dirty=true;});
       function position(){if(!camera)return;
         camera.position.set(view.target[0]+Math.sin(view.yaw)*Math.cos(view.pitch)*20,view.target[1]+Math.sin(view.pitch)*20,view.target[2]+Math.cos(view.yaw)*Math.cos(view.pitch)*20);
         // A camera-relative up vector keeps the exact overhead view stable at the orbit pole.
@@ -2667,13 +2858,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       }
       api.current=function(action){
         if(!active())return;
+        if(action==='cancel-step'){pendingMotionStep=0;return;}
+        if(action==='step'){if(!live.current.animate&&live.current.run.status!=='Sequence complete'&&live.current.run.status!=='Cycle complete'&&live.current.run.status!=='Scenario complete'){pendingMotionStep+=.1;dirty=true;}return;}
+        if(['left','right','up','down','in','out'].indexOf(action)!==-1)frameHold[1](true);
+        if(['fit','home','isometric','front','side','top','inspect-generator'].indexOf(action)!==-1)frameHold[1](false);
         if(action==='left')view.yaw-=.3;if(action==='right')view.yaw+=.3;
         if(action==='up')view.pitch=Math.min(Math.PI/2,view.pitch+.2);if(action==='down')view.pitch=Math.max(0,view.pitch-.2);
         if(['left','right','up','down'].indexOf(action)!==-1)view.name='custom';
-        if(action==='in')view.zoom=Math.min(4,view.zoom*1.2);if(action==='out')view.zoom=Math.max(.15,view.zoom/1.2);
-        if(action==='focus'){focusTarget=live.current.selected;fitPending=true;}
-        if(action==='fit'){focusTarget=null;fitPending=true;}
-        if(action==='home'){action='isometric';focusTarget=null;}
+        if(action==='in')view.zoom=Math.min(zoomLimit(),view.zoom*1.2);if(action==='out')view.zoom=Math.max(.15,view.zoom/1.2);
+        if(action==='focus'){focusTarget=live.current.selected;focusDetail=hasGeneratorDetail&&focusTarget==='generator'&&!!live.current.inspection.cutaway;fitPending=true;}
+        if(action==='inspect-generator'&&hasGeneratorDetail){focusTarget='generator';focusDetail=true;fitPending=true;}
+        if(action==='fit'){focusTarget=null;focusDetail=false;fitPending=true;}
+        if(action==='home'){action='isometric';focusTarget=null;focusDetail=false;}
         var preset={isometric:[Math.PI/4,Math.atan(1/Math.sqrt(2))],front:[0,0],side:[Math.PI/2,0],top:[0,Math.PI/2]}[action];
         if(preset){view.name=action;view.yaw=preset[0];view.pitch=preset[1];fitPending=true;}
         view.yaw=((view.yaw%(Math.PI*2))+Math.PI*2)%(Math.PI*2);position();
@@ -2697,13 +2893,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         function mesh(parent,geometry,color,x,y,z,opacity){var m=new THREE.Mesh(geometry,material(color,opacity));m.position.set(x||0,y||0,z||0);m.castShadow=opacity==null;m.receiveShadow=true;parent.add(m);return m;}
         function box(parent,x,y,z,w,ht,d,color,opacity){return mesh(parent,new THREE.BoxGeometry(w,ht,d),color,x,y,z,opacity);}
         function cylinder(parent,x,y,z,radius,height,color){return mesh(parent,new THREE.CylinderGeometry(radius,radius,height,24),color,x,y,z);}
+        function strut(parent,start,end,radius,color){
+          var m=cylinder(parent,0,0,0,radius,1,color);m.userData.place=function(a,b){var from=new THREE.Vector3(a[0],a[1],a[2]),to=new THREE.Vector3(b[0],b[1],b[2]),delta=to.clone().sub(from);m.position.copy(from).add(to).multiplyScalar(.5);m.scale.y=Math.max(.001,delta.length());m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());};m.userData.place(start,end);return m;
+        }
+        function flange(parent,x,y,z,radius,color){
+          var plate=ring(parent,x,y,z,radius*.90,color||'#9fb9bb',radius*.12);
+          for(var bolt=0;bolt<8;bolt++){var angle=bolt*Math.PI/4,m=cylinder(parent,x+Math.sin(angle)*radius*.79,y+Math.cos(angle)*radius*.79,z+.065,.025,.07,'#d6e0d7');m.rotation.x=Math.PI/2;}
+          return plate;
+        }
+        function valve(parent,x,y,z,color){
+          cylinder(parent,x,y-.11,z,.045,.35,'#bfd2cc');var wheel=ring(parent,x,y+.09,z,.20,color||'#d88a63',.028);wheel.rotation.x=Math.PI/2;
+          for(var spoke=0;spoke<3;spoke++){var angle=spoke*Math.PI/3;strut(parent,[x-Math.sin(angle)*.18,y+.09,z-Math.cos(angle)*.18],[x+Math.sin(angle)*.18,y+.09,z+Math.cos(angle)*.18],.015,color||'#d88a63');}
+          return wheel;
+        }
+        function cabinet(parent,x,y,z,w,ht,d,color){
+          var shell=box(parent,x,y,z,w,ht,d,color);box(parent,x+w*.30,y,z+d/2+.012,.032,ht*.15,.035,'#789493');
+          for(var vent=0;vent<5;vent++)box(parent,x,y-ht*.28+vent*.07,z+d/2+.015,w*.66,.021,.018,'#4c6971');
+          box(parent,x-w*.22,y+ht*.25,z+d/2+.015,w*.27,ht*.11,.03,'#244f5c');return shell;
+        }
         function ball(parent,x,y,z,radius,color){return mesh(parent,new THREE.SphereGeometry(radius,16,10),color,x,y,z);}
         function pipe(parent,points,color,radius){
           var curve=new THREE.CatmullRomCurve3(points.map(function(p){return new THREE.Vector3(p[0],p[1],p[2]);}),false,'centripetal');
           var m=new THREE.Mesh(new THREE.TubeGeometry(curve,40,radius||.085,8,false),material(color));parent.add(m);return curve;
         }
-        function particles(parent,curve,color,enabled,speed){
-          for(var n=0;n<6;n++){(function(index){var dot=ball(parent,0,0,0,.085,color);updaters.push(function(p){dot.visible=enabled(p);dot.position.copy(curve.getPoint(((p.phase*(speed||.025)+index/6)%1+1)%1));});})(n);}
+        function deformTube(object,curve){
+          var geometry=object.geometry,segments=geometry.parameters.tubularSegments,radial=geometry.parameters.radialSegments,radius=geometry.parameters.radius,frames=curve.computeFrenetFrames(segments,false),positions=geometry.attributes.position,normals=geometry.attributes.normal;
+          var point=new THREE.Vector3(),normal=new THREE.Vector3();
+          for(var i=0;i<=segments;i++){
+            curve.getPointAt(i/segments,point);
+            for(var j=0;j<=radial;j++){
+              var angle=j/radial*Math.PI*2,cos=-Math.cos(angle),sin=Math.sin(angle),N=frames.normals[i],B=frames.binormals[i],index=i*(radial+1)+j;
+              normal.set(cos*N.x+sin*B.x,cos*N.y+sin*B.y,cos*N.z+sin*B.z).normalize();
+              normals.setXYZ(index,normal.x,normal.y,normal.z);positions.setXYZ(index,point.x+radius*normal.x,point.y+radius*normal.y,point.z+radius*normal.z);
+            }
+          }
+          positions.needsUpdate=true;normals.needsUpdate=true;geometry.computeBoundingBox();geometry.computeBoundingSphere();
+        }
+        function glow(object,color,intensity){object.userData.energyGlow=true;object.material.emissive.set(color);object.material.emissiveIntensity=intensity;}
+        // Presentation response only: exact model values never pass through this filter.
+        var responses={},responseSettling=false,dimensionSettling=false,wasDimensionSettling=false,lastVisualPhase=null;
+        function response(key,target,p,tau,zeroStops){
+          var dt=p.dt||0,previous=responses[key],snap=previous==null||!p.animate||p.syncResponse||(zeroStops&&target===0);
+          if(snap)previous=target;
+          var alpha=-Math.expm1(-dt/tau),value=previous+(target-previous)*alpha;
+          // Integrate the exponential exactly so equal elapsed time gives equal poses at different frame rates.
+          var delta=target*dt+(previous-target)*tau*alpha;
+          responses[key]=value;
+          if(Math.abs(value-target)>Math.max(Math.abs(value),Math.abs(target),Number.MIN_VALUE)*.001)responseSettling=true;
+          return {value:value,delta:delta,target:target};
+        }
+        function shape(key,target,p,tau){
+          var r=response(key,target,p,tau||.32,false),tolerance=Math.max(1,Math.abs(target))*.0001;
+          // End exactly at the requested drawing dimensions and stop deforming settled geometry.
+          if(Math.abs(r.value-target)<=tolerance){responses[key]=target;return target;}
+          dimensionSettling=true;responseSettling=true;return r.value;
+        }
+        function motion(object,key,target,p,tau){
+          var direction=Math.sign(target),r=response(key,Math.abs(target),p,tau,true);
+          object.rotation.z-=direction*r.delta;object.userData.motionRate=direction*r.value;object.userData.motionTarget=target;
+          return r;
+        }
+        // Signed mechanical motion crosses through rest when selected current reverses.
+        // This is a drawing response only; electrical and resource-flow readings stay exact.
+        function driveMotion(object,key,target,p){
+          var r=response(key,target,p,.42,true);
+          object.rotation.z-=r.delta;object.userData.motionRate=r.value;object.userData.motionTarget=target;
+          return r;
+        }
+        function cue(key,target,p){return response(key,target,p,.26,true).value;}
+        function particles(parent,curve,color,enabled,speed,strength,powerCue){
+          // Stream markers indicate operation, not literal particle speed. Ease only the visual cue; readings stay exact.
+          var dots=[],progress=0,streamId=streamCount++,arrowUp=new THREE.Vector3(0,1,0),arrowTangent=new THREE.Vector3();
+          for(var n=0;n<6;n++){var dot=ball(parent,0,0,0,.065,color);dot.name='energy-stream-'+streamId+'-marker-'+n;glow(dot,color,.5);dot.userData.streamColor=dot.material.color.clone();if(powerCue){dot.material.transparent=true;dot.material.depthWrite=false;}dots.push(dot);}
+          var arrow=mesh(parent,new THREE.ConeGeometry(.105,.28,10),color,0,0,0);glow(arrow,color,.35);
+          arrow.name='energy-stream-'+streamId+'-direction';arrow.userData.streamColor=arrow.material.color.clone();
+          function traceMarker(object,p,scale,intensity){var tracing=!!p.inspection.trace,emphasis=tracing&&object.userData.component===p.selected,muted=tracing&&!emphasis;object.scale.setScalar(scale*(emphasis?1.24:muted?.78:1));object.material.color.copy(object.userData.streamColor).multiplyScalar(muted?.32:1);object.material.emissiveIntensity=muted?.04:emphasis?Math.max(.8,intensity):intensity;object.userData.traceState=tracing?(emphasis?'selected':'context'):'normal';}
+          markerUpdaters.push(function(p){var targetRate=typeof speed==='function'?speed(p):(speed||.025),on=enabled(p)&&p.run.status!=='Sequence complete'&&p.run.status!=='Cycle complete'&&p.run.status!=='Scenario complete',exactPower=powerCue?Math.max(0,powerCue.power(p)):null,powerReference=powerCue?Math.max(.001,powerCue.referencePower):null,targetAmount=powerCue?exactPower/(exactPower+powerReference):strength?Math.max(0,Math.min(1,strength(p))):1;
+            if(powerCue)on=on&&exactPower>0;
+            // Zero flow is immediate. A reversal changes direction immediately; only its magnitude eases.
+            var direction=targetRate<0?-1:targetRate>0?1:0,magnitude=response('stream-rate-'+streamId,on?Math.abs(targetRate):0,p,.22,true),strengthResponse=response('stream-strength-'+streamId,on?targetAmount:0,p,.22,true);
+            var rate=on?direction*magnitude.value:0,amount=on?strengthResponse.value:0;
+            // Integrating the current rate preserves phase through slider changes. Arc-length sampling keeps marks evenly spaced through pipe bends.
+            if(on)progress=((progress+direction*magnitude.delta*5)%1+1)%1;
+            function reading(object){object.userData.flowRate=rate;object.userData.targetFlowRate=on?targetRate:0;object.userData.flowStrength=amount;object.userData.targetFlowStrength=on?targetAmount:0;object.userData.progress=progress;if(powerCue){object.userData.cueMode='power-density';object.userData.power=on?exactPower:0;object.userData.referencePower=powerReference;}}
+            // Electrical marks keep six fixed phases. Extra marks fade in at balanced positions as relative power rises.
+            dots.forEach(function(dot,index){var opacity=on?(powerCue?Math.max(0,Math.min(1,1+5*amount-[0,2,4,1,3,5][index])):1):0;dot.visible=on&&opacity>0;if(powerCue)dot.material.opacity=opacity;dot.userData.markerOpacity=opacity;curve.getPointAt((progress+index/6)%1,dot.position);traceMarker(dot,p,.55+.45*amount,.2+.5*amount);reading(dot);});
+            arrow.visible=on;curve.getPointAt(.72,arrow.position);curve.getTangentAt(.72,arrowTangent);arrow.quaternion.setFromUnitVectors(arrowUp,arrowTangent.normalize().multiplyScalar(targetRate<0?-1:1));reading(arrow);traceMarker(arrow,p,1,.35);
+          });
+          return {dots:dots,arrow:arrow};
+        }
+        function ring(parent,x,y,z,radius,color,tube){return mesh(parent,new THREE.TorusGeometry(radius,tube||.035,8,48),color,x,y,z);}
+        function waveTravelGuide(parent){
+          // A schematic reference at the buoy's wave x-coordinate, clear of its rim and rear tether.
+          var guide=new THREE.Group();guide.name='energy-wave-travel-reference';parent.add(guide);
+          var rail=cylinder(guide,-1,1.06,1.08,.014,2.04,'#87a9ae');rail.name='energy-wave-travel-rail';
+          var foot=cylinder(guide,-1,0,1.08,.12,.14,'#718e96');foot.name='energy-wave-travel-foot';
+          var neutral=box(guide,-1,1.25,1.08,.30,.025,.042,'#e3eee3');neutral.name='energy-wave-travel-neutral';
+          var range=cylinder(guide,-1,1.25,1.08,.026,1,'#ecc875');range.name='energy-wave-travel-range';
+          var low=box(guide,-1,1.25,1.08,.20,.032,.045,'#ecc875'),high=box(guide,-1,1.25,1.08,.20,.032,.045,'#ecc875');low.name='energy-wave-travel-low';high.name='energy-wave-travel-high';
+          var pointer=mesh(guide,new THREE.ConeGeometry(.055,.22,3),'#b8f1e2',-.84,1.25,1.08);pointer.rotation.z=Math.PI/2;pointer.name='energy-wave-travel-pointer';
+          guide.userData.meanHeight=1.25;guide.userData.maximumAmplitude=.78;
+          function place(y,amplitude){
+            range.visible=low.visible=high.visible=amplitude>0;range.scale.y=2*amplitude;low.position.y=1.25-amplitude;high.position.y=1.25+amplitude;pointer.position.y=y;
+            guide.userData.displayAmplitude=amplitude;guide.userData.buoyHeight=y;pointer.userData.displacement=y-1.25;
+          }
+          place(1.25,0);return {group:guide,rail:rail,foot:foot,neutral:neutral,range:range,low:low,high:high,pointer:pointer,place:place};
+        }
+        function generatorDetail(parent,x,y,z,driven){
+          var shell=cylinder(parent,x,y,z,.45,.92,'#a9c7ca');shell.rotation.x=Math.PI/2;shell.material.transparent=true;shell.material.opacity=.28;shell.material.depthWrite=false;
+          var spinning=new THREE.Group();spinning.position.set(x,y,z);parent.add(spinning);spinning.name='energy-generator-shaft';
+          var shaft=cylinder(spinning,0,0,driven?.18:0,.10,driven?1.40:1.2,'#e8f1df');shaft.rotation.x=Math.PI/2;
+          if(driven){
+            cylinder(spinning,0,0,0,.23,.68,'#83aeb6').rotation.x=Math.PI/2;
+            for(var pole=0;pole<4;pole++){var angle=pole*Math.PI/2,core=box(spinning,Math.sin(angle)*.23,Math.cos(angle)*.23,0,.12,.12,.62,pole%2?'#e9ac77':'#79c6d7');core.rotation.z=-angle;}
+            box(spinning,0,.13,.62,.055,.075,.09,'#f5d88f');
+          }
+          shell.name='energy-generator-shell';
+          [-.26,0,.26].forEach(function(offset){ring(parent,x,y,z+offset,driven?.34:.29,'#de9e58',driven?.025:.045);});
+          for(var i=0;i<8;i++){var angle=i*Math.PI/4,stator=box(parent,x+Math.sin(angle)*.35,y+Math.cos(angle)*.35,z,.10,.10,.76,i%2?'#64a5c1':'#d1795e');stator.name='energy-generator-stator-'+i;}
+          return {rotor:spinning,shell:shell};
         }
         function label(text,x,y,z){
           var canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=640;canvas.height=168;
@@ -2712,168 +3020,500 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var key=['resource','converter','generator'][Number(text.charAt(0))-1];sprite.name='energy-label-'+key;sprite.userData.component=key;sprite.userData.origin=[x,y,z];labels[key]=sprite;
           var previous='';
           sprite.userData.updateReading=function(node,showReading,selected){
-            var value=rnEnergyReading(node.value)+' '+node.unit,signature=[showReading,selected,node.component,showReading?value:'',showReading?node.label:''].join('|'),height=showReading?168:88;
+            var value=rnEnergyReading(node.value)+' '+node.unit,signature=[showReading,selected,node.component,showReading?value:'',showReading?node.label:''].join('|'),height=showReading?168:136;
             sprite.scale.set(showReading?5.4:4.6,(showReading?5.4:4.6)*height/640,1);
             if(signature===previous)return;previous=signature;
             if(canvas.height!==height)canvas.height=height;ctx.clearRect(0,0,640,height);
             var background=selected?'#d9f5e8':'#102b36',foreground=selected?'#12392f':'#f0fff8',muted=selected?'#275247':'#d1e9e3';
             ctx.beginPath();ctx.moveTo(16,2);ctx.lineTo(624,2);ctx.quadraticCurveTo(638,2,638,16);ctx.lineTo(638,height-16);ctx.quadraticCurveTo(638,height-2,624,height-2);ctx.lineTo(16,height-2);ctx.quadraticCurveTo(2,height-2,2,height-16);ctx.lineTo(2,16);ctx.quadraticCurveTo(2,2,16,2);ctx.closePath();ctx.fillStyle=background;ctx.fill();ctx.strokeStyle=selected?'#88e4be':'#7699a1';ctx.lineWidth=selected?4:2;ctx.stroke();
-            ctx.fillStyle=RN_ENERGY_VISUALS[props.id].color;ctx.beginPath();ctx.arc(43,showReading?40:44,24,0,Math.PI*2);ctx.fill();ctx.fillStyle='#102b36';ctx.font='700 30px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text.charAt(0),43,showReading?40:44);
-            ctx.textAlign='left';ctx.fillStyle=foreground;ctx.font='600 35px system-ui';ctx.fillText(node.component,84,showReading?39:44,528);
+            ctx.fillStyle=RN_ENERGY_VISUALS[props.id].color;ctx.beginPath();ctx.arc(43,showReading?40:68,24,0,Math.PI*2);ctx.fill();ctx.fillStyle='#102b36';ctx.font='700 30px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text.charAt(0),43,showReading?40:68);
+            ctx.textAlign='left';ctx.fillStyle=foreground;
+            if(showReading){ctx.font='600 35px system-ui';ctx.fillText(node.component,84,39,528);}
+            else{ctx.font='600 52px system-ui';var lines=[''];node.component.split(' ').forEach(function(word){var i=lines.length-1,next=lines[i]?lines[i]+' '+word:word;if(i===0&&ctx.measureText(next).width>520&&lines[i])lines.push(word);else lines[i]=next;});lines.forEach(function(line,index){ctx.fillText(line,84,lines.length===1?68:42+index*52,528);});}
             if(showReading){ctx.font='700 52px system-ui';ctx.fillText(value,26,95,586);ctx.fillStyle=muted;ctx.font='500 28px system-ui';ctx.fillText(node.label,26,139,586);}
             sprite.scale.set(showReading?5.4:4.6,(showReading?5.4:4.6)*height/640,1);texture.needsUpdate=true;
           };
-          var leaderGeometry=new THREE.BufferGeometry();leaderGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
+          var leaderGeometry=new THREE.BufferGeometry();leaderGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(9),3));
           var leader=new THREE.Line(leaderGeometry,new THREE.LineBasicMaterial({color:'#d1ebe5',transparent:true,opacity:.65,depthTest:false}));leader.name='energy-label-leader-'+key;leader.renderOrder=9;leader.visible=false;leaders[key]=leader;scene.add(leader);scene.add(sprite);
         }
         function rotor(parent,x,y,z,size,color){
-          var group=new THREE.Group();group.position.set(x,y,z);parent.add(group);ball(group,0,0,0,.18,color);
+          var group=new THREE.Group();group.position.set(x,y,z);parent.add(group);ball(group,0,0,.06,.21,color);group.userData.blades=[];group.userData.motionRadius=size+.06;
+          var spinner=mesh(group,new THREE.ConeGeometry(.21,.46,24),color,0,0,.27);spinner.rotation.x=Math.PI/2;ring(group,0,0,.045,.235,'#b2c9cc',.025);
           for(var b=0;b<3;b++){var arm=new THREE.Group();arm.rotation.z=b*Math.PI*2/3;group.add(arm);
-            var blade=box(arm,.05,size*.51,0,.22,size,.095,color);blade.rotation.z=-.10;}
+            var profile=new THREE.Shape();profile.moveTo(-.07,.12);profile.lineTo(-.16,size*.34);profile.lineTo(-.09,size*.68);profile.lineTo(.04,size);profile.lineTo(.105,size*.98);profile.lineTo(.15,size*.43);profile.lineTo(.10,.15);profile.closePath();
+            var blade=mesh(arm,new THREE.ExtrudeGeometry(profile,{depth:.065,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.018,bevelThickness:.016}),color,0,0,-.025);blade.rotation.y=-.14;group.userData.blades.push(blade);
+            var cuff=cylinder(arm,.012,.24,.02,.10,.28,'#b7cbcc');cuff.rotation.z=-.05;}
           return group;
         }
 
         function runner(parent,x,y,z,size,color){
-          var group=new THREE.Group();group.position.set(x,y,z);parent.add(group);
+          var group=new THREE.Group();group.position.set(x,y,z);parent.add(group);group.userData.motionRadius=size+.07;
           var rim=new THREE.Mesh(new THREE.TorusGeometry(size,.06,8,32),material(color));group.add(rim);ball(group,0,0,0,size*.23,color);
-          for(var n=0;n<12;n++){var blade=new THREE.Group();blade.rotation.z=n*Math.PI/6;group.add(blade);var fin=box(blade,0,size*.63,0,size*.20,size*.55,.10,color);fin.rotation.z=.35;}return group;
+          for(var n=0;n<12;n++){var blade=new THREE.Group();blade.rotation.z=n*Math.PI/6;group.add(blade);var fin=box(blade,0,size*.63,0,size*.20,size*.55,.10,color);fin.rotation.z=.35;}var phaseMark=new THREE.Group();phaseMark.position.set(0,size,.072);phaseMark.name='energy-runner-phase-mark';group.add(phaseMark);
+          box(phaseMark,0,0,0,.13,.10,.025,'#183f4c');box(phaseMark,0,0,.017,.06,.078,.014,'#f0c66e');
+          phaseMark.userData.kind='shaft-index';group.userData.phaseMarkerName=phaseMark.name;return group;
+        }
+        function runnerReference(parent,driver,radius,addGuard){
+          // The brass tab turns with the wheel; this casing pointer stays fixed at twelve o'clock.
+          var reference=new THREE.Group();reference.position.copy(driver.position);reference.name=driver.name+'-reference';reference.userData.driverName=driver.name;reference.userData.referenceRadius=radius;parent.add(reference);
+          if(addGuard){ring(reference,0,0,-.025,radius,'#597d8b',.03);box(reference,0,-radius-.05,-.11,.15,.16,.22,'#688c99');}
+          box(reference,0,radius+.015,.017,.07,.12,.055,'#416876');
+          var pointer=mesh(reference,new THREE.ConeGeometry(.05,.13,3),'#e7bd69',0,radius+.065,.06);pointer.rotation.z=Math.PI;pointer.name='energy-runner-fixed-pointer';
+          driver.userData.referenceName=reference.name;return reference;
+        }
+        function waveAnnulus(parent,x,y,z,outer,inner,height,color){
+          // A closed ring section leaves a genuine central well, including its inner wall.
+          var profile=[[inner,-height/2],[outer,-height/2],[outer,height/2],[inner,height/2],[inner,-height/2]].map(function(point){return new THREE.Vector2(point[0],point[1]);});
+          var body=mesh(parent,new THREE.LatheGeometry(profile,48),color,x,y,z);body.userData.innerRadius=inner;body.userData.outerRadius=outer;body.userData.height=height;return body;
+        }
+        function waveMechanism(parent){
+          var buoy=waveAnnulus(parent,-1,1.25,0,.75,.29,.75,'#ffc35b');buoy.name='energy-wave-buoy';
+          // A full-stroke fixed spar reacts against the seabed; the float and PTO carriage slide around it.
+          var spar=cylinder(parent,-1,1.49,0,.14,2.82,'#c7d9dd');spar.name='energy-wave-guide-spar';spar.userData.lowerY=.08;spar.userData.upperY=2.90;
+          var base=cylinder(parent,-1,.12,0,.23,.08,'#729aa8');base.name='energy-wave-guide-base';
+          var cap=cylinder(parent,-1,2.95,0,.20,.10,'#819ca6');cap.name='energy-wave-guide-cap';
+          var carriage=new THREE.Group();carriage.name='energy-wave-pto-carriage';parent.add(carriage);
+          var collar=waveAnnulus(carriage,0,0,0,.245,.17,.24,'#83acbc');collar.name='energy-wave-pto-collar';
+          for(var spoke=0;spoke<3;spoke++){var angle=spoke*Math.PI*2/3,arm=box(carriage,Math.sin(angle)*.28,-.09,Math.cos(angle)*.28,.075,.06,.14,'#a5c3cb');arm.rotation.y=angle;arm.name='energy-wave-carriage-spoke-'+spoke;}
+          var rim=ring(parent,-1,1.60,0,.77,'#ffe5a9',.075);rim.name='energy-wave-rim';rim.rotation.x=Math.PI/2;
+          var deck=new THREE.Group();deck.name='energy-wave-deck';parent.add(deck);
+          var deckRing=waveAnnulus(deck,0,.03,0,.53,.29,.08,'#eadcb8');deckRing.name='energy-wave-deck-ring';
+          [-.32,.32].forEach(function(x){strut(deck,[x,.06,-.36],[x,.33,-.36],.027,'#b8c9c6');});strut(deck,[-.32,.33,-.36],[.32,.33,-.36],.027,'#b8c9c6');
+          var mast=cylinder(deck,.36,.39,.24,.042,.73,'#d0d8ce');mast.name='energy-wave-beacon-mast';
+          var beacon=ball(deck,.36,.79,.24,.075,'#f08856');beacon.name='energy-wave-beacon';
+          function place(y){buoy.position.y=y;rim.position.y=y+.35;deck.position.set(-1,y+.39,0);carriage.position.set(-1,y+.58,0);carriage.userData.displayHeave=y-1.25;}
+          place(1.25);return {buoy:buoy,spar:spar,base:base,cap:cap,carriage:carriage,collar:collar,rim:rim,deck:deck,beacon:beacon,mast:mast,place:place};
+        }
+        function hydroDrivetrain(converter,generator,driver){
+          var group=new THREE.Group();group.name='energy-hydro-generator';group.position.set(1,.8,-1.45);generator.add(group);
+          var assembly=generatorDetail(group,0,0,0,true);assembly.rotor.userData.driverName=driver.name;
+          var cover=mesh(group,new THREE.CylinderGeometry(.48,.48,1.02,32,1,true),'#9ebec5',0,0,0);cover.rotation.x=Math.PI/2;cover.name='energy-hydro-generator-cover';cover.material.transparent=true;
+          [-.51,.51].forEach(function(z){ring(group,0,0,z,.45,'#c3d4cf',.035);});
+          var plinth=box(group,0,-.77,0,1.34,.20,1.38,'#7a9699');plinth.name='energy-hydro-generator-plinth';
+          [-.36,.36].forEach(function(x,index){var foot=box(group,x,-.52,0,.16,.30,.84,'#91aaad');foot.name='energy-hydro-generator-foot-'+index;});
+          var shaft=new THREE.Group();shaft.name='energy-hydro-drive-shaft';shaft.position.set(1,.8,.05);converter.add(shaft);shaft.userData.driverName=driver.name;
+          var axle=cylinder(shaft,0,0,0,.10,1.30,'#dce6d5');axle.rotation.x=Math.PI/2;axle.name='energy-hydro-drive-axle';
+          var coupling=cylinder(shaft,0,0,-.69,.17,.12,'#829faa');coupling.rotation.x=Math.PI/2;coupling.name='energy-hydro-drive-coupling';
+          var index=box(shaft,0,.17,-.69,.06,.035,.10,'#efc876');index.name='energy-hydro-coupling-mark';
+          function sync(){[shaft,assembly.rotor].forEach(function(part){part.rotation.z=driver.rotation.z;part.userData.motionRate=driver.userData.motionRate;part.userData.motionTarget=driver.userData.motionTarget;});}
+          sync();return {group:group,assembly:assembly,cover:cover,shaft:shaft,sync:sync};
+        }
+        function hydroElectricalConnections(parent){
+          // Two external cable runs meet visible equipment terminals; the switchgear contains their internal connection.
+          var terminals=[[1.48,.8,-1.45],[1.85,.32,-2.8],[2.4,.32,-2.0],[4.6,.32,2.10]];
+          terminals.forEach(function(point,index){var port=ball(parent,point[0],point[1],point[2],.065,'#edc873');port.name='energy-hydro-electrical-port-'+index;});
+          var incoming=new THREE.Group();incoming.name='energy-hydro-generator-cable';parent.add(incoming);
+          var outgoing=new THREE.Group();outgoing.name='energy-hydro-load-cable';parent.add(outgoing);
+          electricity(incoming,[terminals[0],[1.66,.8,-1.45],[1.66,.32,-1.95],[1.65,.32,-2.8],terminals[1]]);
+          electricity(outgoing,[terminals[2],[2.4,.32,-1.75],[3.4,.32,-1.75],[4.6,.32,.4],terminals[3]]);
+          return {incoming:incoming,outgoing:outgoing};
+        }
+        function storageBus(parent){
+          var group=new THREE.Group();group.name='energy-storage-bus';parent.add(group);var branches=[];
+          function conductor(points,color,name,radius){var curve=pipe(group,points,color,radius),body=group.children[group.children.length-1];body.name=name;return body;}
+          var positive=conductor([[-1.7,3.06,-.38],[.4,3.06,-.38]],'#c5af72','energy-storage-bus-positive',.035);
+          var negative=conductor([[-1.3,3.06,.38],[.8,3.06,.38]],'#789bad','energy-storage-bus-negative',.035);
+          [-1.5,-.45,.6].forEach(function(x,index){[-1,1].forEach(function(sign){var tx=x+sign*.2,z=sign*.38,name=sign<0?'positive':'negative';branches.push(conductor([[tx,2.875,0],[tx,2.98,sign*.10],[tx,3.06,z]],sign<0?'#c5af72':'#789bad','energy-storage-'+name+'-branch-'+index,.028));});});
+          return {group:group,positive:positive,negative:negative,branches:branches};
+        }
+        function storageTransferIndicator(parent,x,index){
+          var group=new THREE.Group();group.name='energy-storage-transfer-'+index;parent.add(group);
+          box(group,x+.38,1.3,.68,.10,2.08,.06,'#294852');var marks=[];
+          for(var n=0;n<2;n++){var mark=mesh(group,new THREE.ConeGeometry(.045,.16,3),'#76e7bd',x+.38,.42,.74);mark.name=group.name+'-marker-'+n;mark.material.transparent=true;mark.material.depthWrite=false;marks.push(mark);}
+          var phase=0;updaters.push(function(p){
+            var complete=['Sequence complete','Cycle complete','Scenario complete'].indexOf(p.run.status)!==-1,charge=complete?0:Math.max(0,p.run.available),discharge=complete?0:Math.max(0,p.run.power),power=charge||discharge,direction=charge?-1:1,color=charge?'#76e7bd':'#f1cf75',strength=cue('storage-transfer-'+index,power/(power+50),p);
+            if(power>0&&p.dt>0)phase=((phase+direction*p.dt*.6)%1+1)%1;
+            group.userData.phase=phase;group.userData.transferPower=power;group.userData.mode=charge?'charging':discharge?'discharging':'idle';group.userData.strength=strength;
+            marks.forEach(function(mark,i){var progress=(phase+i/2)%1,fade=Math.min(1,progress/.12,(1-progress)/.12);mark.visible=power>0;mark.position.y=.42+progress*1.78;mark.rotation.z=charge?Math.PI:0;mark.material.color.set(color).convertSRGBToLinear();mark.material.opacity=(.35+.65*strength)*fade;glow(mark,color,.12+.9*strength);});
+          });return group;
+        }
+        function storageConnections(A,B,C){
+          var ports={},routes=[];
+          function terminal(key,parent,x,y,z){var port=ball(parent,x,y,z,.075,'#edc873');port.name='energy-storage-'+key+'-port';ports[key]=port;return port;}
+          terminal('charge-supply',A,-3.3,.6,0);terminal('charge-bank',B,-1.93,.6,0);terminal('discharge-bank',B,1.03,.6,0);terminal('inverter-input',C,2.2,.6,0);terminal('inverter-output',C,3.4,.4,0);terminal('load',C,4.6,.4,2.1);
+          function connect(name,parent,from,to,points,charging){
+            var group=new THREE.Group();group.name='energy-storage-'+name+'-cable';parent.add(group);
+            var curve=pipe(group,points,'#e8c775',.045),body=group.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=group.name+'-tube';
+            particles(group,curve,'#fff0ac',function(p){return (charging?p.run.available:p.run.power)>0;},.025,null,{power:function(p){return charging?p.run.available:p.run.power;},referencePower:50});
+            routes.push({group:group,body:body,curve:curve,from:from,to:to,update:function(){
+              group.visible=from.parent.visible&&to.parent.visible;
+              from.getWorldPosition(a);parent.worldToLocal(a);to.getWorldPosition(b);parent.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){var t=index/(base.length-1);point.copy(base[index]).addScaledVector(a,1-t).addScaledVector(b,t);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('charge',A,ports['charge-supply'],ports['charge-bank'],[[-3.3,.6,0],[-1.93,.6,0]],true);
+          connect('discharge',C,ports['discharge-bank'],ports['inverter-input'],[[1.03,.6,0],[2.2,.6,0]],false);
+          connect('load',C,ports['inverter-output'],ports.load,[[3.4,.4,0],[3.62,.4,0],[4.6,.4,.65],[4.6,.4,2.1]],false);
+          return {ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function cspOpticalConnections(field,mirrors,receiver,A,B){
+          var routes=[],illuminated=false;
+          mirrors.forEach(function(mirror,index){
+            var offsets=index%3===0?[0,-.30,.30]:[0];
+            offsets.forEach(function(offset,rayIndex){
+              var group=new THREE.Group();group.name='energy-csp-beam-'+index+'-'+rayIndex;field.add(group);
+              var curve=pipe(group,[[0,0,0],[0,1,0]],'#d5ab60',rayIndex?.005:.009),body=group.children[0],start=new THREE.Vector3(),end=new THREE.Vector3(),signature='';body.name=group.name+'-tube';body.material.transparent=true;body.material.depthWrite=false;
+              if(index%3===0&&rayIndex===0)particles(group,curve,'#ffe8a8',function(p){return p.run.settings.dni>0;},.025,function(p){return p.run.settings.dni/1100;});
+              routes.push({mirror:mirror,offset:offset,group:group,body:body,curve:curve,update:function(){
+                group.visible=illuminated&&A.visible&&B.visible;
+                // Start on the displayed reflective face; terminate on the near surface of the receiver.
+                start.set(offset,.065,0);mirror.localToWorld(start);end.copy(start);receiver.worldToLocal(end);
+                end.multiplyScalar(.4/Math.max(Math.abs(end.x),Math.abs(end.y),Math.abs(end.z)));receiver.localToWorld(end);
+                group.worldToLocal(start);group.worldToLocal(end);
+                var next=start.toArray().join(',')+'|'+end.toArray().join(',');if(next===signature)return;signature=next;
+                curve.points[0].copy(start);curve.points[1].copy(end);curve.updateArcLengths();deformTube(body,curve);
+              }});
+            });
+          });
+          updaters.push(function(p){var illumination=cue('csp-sunlight',p.run.settings.dni/1100,p);illuminated=p.run.settings.dni>0;field.userData.illumination=illumination;field.userData.dni=p.run.settings.dni;
+            routes.forEach(function(route){route.body.material.opacity=(route.offset===0?.14:.06)+illumination*(route.offset===0?.64:.28);glow(route.body,'#c9943e',illumination*.45);});
+          });
+          return {routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function cspThermalConnections(B,C,receiver){
+          var group=new THREE.Group();group.name='energy-csp-thermal-loop';B.add(group);var ports={},routes=[];
+          function terminal(key,parent,x,y,z,color){var port=ball(parent,x,y,z,.10,color);port.name='energy-csp-'+key+'-port';ports[key]=port;return port;}
+          terminal('receiver-hot',receiver,.4,-.15,.20,'#df945b');terminal('block-hot',C,1.9,.8,.20,'#df945b');terminal('block-return',C,1.9,.45,-.52,'#87bbc9');terminal('receiver-return',receiver,.4,-.25,-.28,'#87bbc9');
+          function connect(name,from,to,points,weights,color,markerColor){
+            var lane=new THREE.Group();lane.name='energy-csp-'+name+'-pipe';group.add(lane);
+            var curve=pipe(lane,points,color,.065),body=lane.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=lane.name+'-tube';
+            particles(lane,curve,markerColor,function(p){return p.run.stages[1].value>0;},function(p){return .03*Math.sqrt(Math.max(0,p.run.stages[1].value)/5850);},function(p){return Math.sqrt(Math.max(0,p.run.stages[1].value)/5850);});
+            routes.push({group:lane,body:body,curve:curve,from:from,to:to,update:function(){
+              lane.visible=B.visible&&C.visible;from.getWorldPosition(a);lane.worldToLocal(a);to.getWorldPosition(b);lane.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          // Keep the vertical legs beside the tower and the final elbows beside the power block when separated.
+          connect('hot',ports['receiver-hot'],ports['block-hot'],[[.9,4.45,.20],[1.22,4.45,.20],[1.22,.8,.20],[1.60,.8,.20],[1.9,.8,.20]],[0,0,0,1,1],'#dc8b51','#ffdeb2');
+          connect('return',ports['block-return'],ports['receiver-return'],[[1.9,.45,-.52],[1.60,.45,-.52],[1.22,.45,-.52],[1.22,4.35,-.28],[.9,4.35,-.28]],[0,0,1,1,1],'#6d9fae','#bad9e2');
+          updaters.push(function(p){var heat=Math.max(0,p.run.stages[1].value),intensity=cue('csp-loop-heat',Math.min(1.2,.5*Math.sqrt(heat/5850)),p);group.userData.thermalPower=heat;group.userData.heatStrength=intensity;routes.forEach(function(route,index){glow(route.body,index?'#4c8ca3':'#cb662b',intensity*(index?.45:1));route.group.userData.thermalPower=heat;});});
+          return {group:group,ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function pvSunlight(A,B,array){
+          var group=new THREE.Group();group.name='energy-pv-rays';A.add(group);var routes=[],collected=false;
+          [-1.41,-.47,.47,1.41].forEach(function(x,index){
+            var lane=new THREE.Group();lane.name='energy-pv-ray-'+index;group.add(lane);
+            var curve=pipe(lane,[[0,2.7,0],[0,0,0]],'#b58c45',.012),body=lane.children[0],start=new THREE.Vector3(),end=new THREE.Vector3(),signature='';body.name='energy-pv-ray-tube-'+index;body.material.transparent=true;body.material.depthWrite=false;
+            particles(lane,curve,'#ffe69a',function(p){return p.run.stages[0].value>0;},.025,function(p){return p.run.settings.irradiance/1100;});
+            routes.push({group:lane,body:body,curve:curve,x:x,update:function(){
+              end.set(x,.12,-.15);array.localToWorld(end);start.copy(end);start.y+=2.7;lane.worldToLocal(start);lane.worldToLocal(end);
+              var next=start.toArray().join(',')+'|'+end.toArray().join(',');if(next===signature)return;signature=next;
+              curve.points[0].copy(start);curve.points[1].copy(end);curve.updateArcLengths();deformTube(body,curve);
+            }});
+          });
+          updaters.push(function(p){var light=cue('pv-ray-light',p.run.settings.irradiance/1100,p);collected=p.run.stages[0].value>0;group.userData.interceptedPower=p.run.stages[0].value;routes.forEach(function(route){route.body.material.opacity=.18+.67*light;});});
+          return {group:group,routes:routes,update:function(){group.visible=collected&&A.visible&&B.visible;routes.forEach(function(route){route.update();});}};
+        }
+        function pvElectricalConnections(B,C,array,inverter,dcReference,acReference){
+          var ports={},routes=[];
+          function terminal(key,parent,x,y,z){var port=ball(parent,x,y,z,.065,'#edc873');port.name='energy-pv-'+key+'-port';ports[key]=port;return port;}
+          terminal('array',array,1.94,-.045,0);terminal('dc-input',inverter,1.4,.55,0);terminal('ac-output',inverter,2.6,.35,0);terminal('load',C,4.6,.35,2.1);
+          function connect(name,parent,from,to,dc){
+            var group=new THREE.Group();group.name='energy-pv-'+name+'-cable';parent.add(group);
+            var curve=pipe(group,dc?[[0,0,0],[.2,0,0],[.5,-.2,0],[.8,0,0],[1,0,0]]:[[0,0,0],[.2,0,0],[1,0,.5],[1,0,1]],dc?'#e6bd6a':'#f2bf58',.04),body=group.children[0],signature='';body.name=group.name+'-tube';
+            particles(group,curve,'#fff0ac',function(p){return (dc?p.run.stages[1].value:p.run.power)>0;},.025,null,{power:function(p){return dc?p.run.stages[1].value:p.run.power;},referencePower:dc?dcReference:acReference});
+            routes.push({group:group,body:body,curve:curve,from:from,to:to,update:function(){
+              group.visible=C.visible&&(!dc||B.visible);
+              var start=from.getWorldPosition(new THREE.Vector3()),end=to.getWorldPosition(new THREE.Vector3()),lead,approach,points;
+              if(dc){
+                // A short normal lead leaves the moving frame; the low center corridor clears its supports.
+                lead=start.clone().addScaledVector(new THREE.Vector3(1,0,0).transformDirection(array.matrixWorld),.14);
+                approach=end.clone().addScaledVector(new THREE.Vector3(-1,0,0).transformDirection(inverter.matrixWorld),.18);
+                var low=lead.clone().add(approach).multiplyScalar(.5);low.y=Math.min(start.y,end.y)-.25;points=[start,lead,low,approach,end];
+              }else{lead=start.clone().add(new THREE.Vector3(.24,0,0));approach=end.clone();approach.z-=1.45;points=[start,lead,approach,end];}
+              points.forEach(function(point){group.worldToLocal(point);});var next=points.map(function(point){return point.toArray().join(',');}).join('|');if(next===signature)return;signature=next;
+              curve.points.forEach(function(point,index){point.copy(points[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('dc',B,ports.array,ports['dc-input'],true);connect('ac',C,ports['ac-output'],ports.load,false);
+          return {ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
         }
         function electricity(parent,points){
-          var path=pipe(parent,points,'#f2bf58',.04);particles(parent,path,'#fff2ab',function(p){return p.run.power>1e-8;},.045);
+          var path=pipe(parent,points,'#f2bf58',.04);particles(parent,path,'#fff2ab',function(p){return p.run.power>0;},.045,null,{power:function(p){return p.run.power;},referencePower:referencePower});
         }
         ['resource','converter','generator'].forEach(function(id){groups[id]=new THREE.Group();groups[id].name='energy-'+id;groups[id].userData.component=id;scene.add(groups[id]);});
         var A=groups.resource,B=groups.converter,C=groups.generator,id=props.id;
+        var referencePower=Math.max(.001,rnEnergyRun(id,{},id==='storage'?60:0).power);
         var visual=RN_ENERGY_VISUALS[id];
         box(context,0,-.42,0,13.2,.22,8.7,'#152e36');box(context,0,-.23,0,13,.22,8.5,visual.surface);box(context,0,-.095,0,12.85,.05,8.35,visual.surface);
         box(context,0,-.25,4.26,12.5,.025,.025,visual.color);
         var grid=new THREE.GridHelper(8,16,'#789795','#65817e');grid.position.y=-.065;grid.material.transparent=true;grid.material.opacity=.28;context.add(grid);
         // Common generator output load.
-        var load=box(C,4.6,.6,2.6,1.3,1.2,1,'#d7e8de');box(C,4.6,1.28,2.6,1.45,.16,1.15,'#395b60');
+        var load=box(C,4.6,.6,2.6,1.3,1.2,1,'#d7e8de');load.name='energy-output-load';box(C,4.6,1.28,2.6,1.45,.16,1.15,'#395b60');
+        var loadWindows=[];[-.36,0,.36].forEach(function(x){loadWindows.push(box(C,4.6+x,.79,3.11,.21,.31,.035,'#1d566b'));loadWindows.push(box(C,4.6+x,.36,3.11,.21,.20,.035,'#1d566b'));});
+        box(C,4.6,.03,2.6,1.7,.1,1.4,'#587e80');
         var lamp=ball(C,4.6,1.65,2.6,.16,'#e4b34d');
-        updaters.push(function(p){lamp.material.emissive.set(p.run.power>1e-8?'#efb95a':'#000000');lamp.material.emissiveIntensity=.7;});
+        lamp.name='energy-output-lamp';
+        updaters.push(function(p){var output=cue('output-light',p.run.power>0?p.run.power/(p.run.power+referencePower):0,p);glow(lamp,'#efb95a',output*1.8);lamp.userData.outputPower=p.run.power;loadWindows.forEach(function(window){glow(window,'#ffd686',output);});});
         if(id==='solarPv'){
-          ball(A,-4,5,0,.55,'#ffd378');
-          var array=new THREE.Group();array.position.set(-1.5,1.15,0);B.add(array);
+          var solarDisc=ball(A,-1.5,5.2,0,.45,'#ffd378');glow(solarDisc,'#ffd378',.65);
+          var solarHalo=ring(A,-1.5,5.2,0,.66,'#eab860',.018);
+          var array=new THREE.Group(),pvCells=[];array.position.set(-1.5,1.15,0);B.add(array);
+          box(array,0,-.045,0,3.88,.13,2.69,'#bacfd8');
           for(var n=0;n<12;n++){var x=(n%4-1.5)*.94,z=(Math.floor(n/4)-1)*.85;
-            box(array,x,0,z,.88,.10,.79,'#2768ad');box(array,x,.06,z,.025,.015,.78,'#93cef2');box(array,x,.06,z,.86,.015,.025,'#93cef2');}
-          [-2.5,-.5].forEach(function(x){cylinder(B,x,.5,0,.07,1,'#9fb5be');});
-          for(var n=0;n<5;n++){var x=-3+n*.6;pipe(A,[[x,4.4,-.2],[x,2.2,-.2]],'#ffcf65',.025);}
-          box(C,2,1,0,1.2,1.8,.8,'#dce9e3');box(C,2,1.3,.43,.55,.35,.06,'#47ad91');
-          electricity(C,[[-.3,.5,1.5],[2,.3,1.5],[4.6,.3,2.6]]);
-          updaters.push(function(p){array.rotation.z=-p.run.settings.incidence*Math.PI/180;var size=Math.sqrt(p.run.settings.area/20);array.scale.set(size*.75,1,size*.75);sun.intensity=.2+p.run.settings.irradiance/1100;A.visible=p.run.settings.irradiance>0;});
-          label('1  Direct sunlight',-3.8,5.8,0);label('2  PV array',-1.2,.55,2.4);label('3  Inverter',2,2.5,0);
+            var panel=box(array,x,.045,z,.88,.10,.79,'#215da0');panel.material.roughness=.26;panel.material.metalness=.38;pvCells.push(panel);
+            for(var cell=-2;cell<=2;cell++)box(array,x+cell*.15,.101,z,.012,.008,.76,'#79b9d5');
+            [-.23,0,.23].forEach(function(offset){box(array,x,.102,z+offset,.86,.008,.012,'#8ac4dc');});}
+          [-.8,.8].forEach(function(z){box(array,0,-.18,z,3.8,.09,.08,'#8dabb8');});
+          var panelSupports=[],panelFootings=[];[-.8,.8].forEach(function(z,index){var footing=box(B,-1.5,.04,z,1.25,.12,.42,'#92a5a5'),post=strut(B,[-1.5,.1,z],[-1.5,1.1,z],.065,'#b9cbd0');footing.name='energy-pv-footing-'+index;post.name='energy-pv-support-'+index;panelFootings.push(footing);panelSupports.push(post);});
+          var panelActuator=strut(B,[-2.0,.12,.8],[-2.0,1.0,.8],.075,'#89aab3');panelActuator.name='energy-pv-tilt-actuator';array.name='energy-pv-array';
+          var pvOptics=pvSunlight(A,B,array),pvInverter=new THREE.Group();pvInverter.name='energy-pv-inverter';pvInverter.position.x=.85;C.add(pvInverter);
+          var pvInverterBody=box(pvInverter,2,1,0,1.2,1.8,.8,'#dce9e3');pvInverterBody.name='energy-pv-inverter-body';box(pvInverter,2,1.3,.43,.55,.35,.06,'#153d47');
+          var pvInverterLamp=ball(pvInverter,2.39,1.65,.43,.055,'#6ee4b4'),pvPowerBars=[];pvInverterLamp.name='energy-pv-inverter-light';
+          for(var bar=0;bar<5;bar++){var powerBar=box(pvInverter,1.79+bar*.105,1.23+bar*.018,.469,.069,.10+bar*.035,.012,'#50d7a6');powerBar.name='energy-pv-output-bar-'+bar;pvPowerBars.push(powerBar);}
+          for(var vent=0;vent<5;vent++)box(pvInverter,2,.55+vent*.09,.415,.68,.025,.02,'#507780');
+          var pvWiring=pvElectricalConnections(B,C,array,pvInverter,referencePower,referencePower);
+          updaters.push(function(p){var targetAngle=-p.run.settings.incidence*Math.PI/180,targetSize=Math.sqrt(p.run.settings.area/20)*.75,angle=shape('pv-angle',targetAngle,p),size=shape('pv-size',targetSize,p);array.rotation.z=angle;array.scale.set(size,1,size);array.position.y=.65+Math.abs(Math.sin(angle))*1.94*size;array.userData.displayAngle=angle;array.userData.targetAngle=targetAngle;array.userData.displayScale=size;array.userData.targetScale=targetSize;
+            // Attach to the rail in the array's scaled, tilted frame, including the smallest array.
+            function panelPoint(x,y,z){return [-1.5+Math.cos(angle)*x*size-Math.sin(angle)*y,array.position.y+Math.sin(angle)*x*size+Math.cos(angle)*y,z*size];}
+            panelSupports.forEach(function(post,index){var z=index?.8:-.8,head=panelPoint(0,-.18,z);post.userData.place([-1.5,.1,z*size],head);panelFootings[index].position.z=z*size;panelFootings[index].scale.x=Math.min(1,size/.75);});
+            panelActuator.userData.place([-2,.12,.8*size],panelPoint(-1,-.18,.8));
+            var illumination=cue('pv-illumination',p.run.settings.irradiance/1100,p),powerActivity=cue('pv-output',Math.min(1,Math.sqrt(Math.max(0,p.run.power)/37)),p);
+            solarDisc.position.y=array.position.y+Math.abs(Math.sin(angle))*1.94*size+2.2;solarHalo.position.y=solarDisc.position.y;sun.intensity=.55+illumination*.69;glow(solarDisc,'#ffd378',illumination);solarHalo.visible=illumination>0;
+            // Panels remain reflective, not incandescent. Temperature and efficiency affect the actual inverter output cue.
+            pvCells.forEach(function(cell){cell.material.roughness=.34-.12*illumination;});glow(pvInverterLamp,'#59e0aa',p.run.power>0?.3+powerActivity:0);
+            pvPowerBars.forEach(function(bar,index){var level=Math.max(0,Math.min(1,powerActivity*5-index));bar.material.color.set(level>0?'#50d7a6':'#28484b').convertSRGBToLinear();glow(bar,'#50d7a6',level*.75);});});
+          label('1  Direct sunlight',-3.8,5.8,0);label('2  PV array',-1.2,.55,2.4);label('3  Inverter',2.85,2.5,0);
         }else if(id==='wind'||id==='tidal'){
-          var marine=id==='tidal';if(marine){box(context,0,.9,0,12,2,8,'#16506a',.25);box(context,0,-.03,0,12,.07,8,'#587b72');}
-          var tower=cylinder(B,-1.1,1.9,0,.14,3.8,marine?'#f2b553':'#dce9ef');
-          var hub=box(C,-1.1,3.65,-.3,.55,.52,1.1,'#c5dee5'),blade=rotor(B,-1.1,3.65,.35,2.05,marine?'#f0ce77':'#f5f5e6');
-          if(marine){tower.scale.y=.6;tower.position.y=1.1;hub.position.y=2.25;blade.position.y=2.25;}
-          for(var n=0;n<4;n++){var path=pipe(A,[[-4+n*.8,2,3],[-4+n*.8,2,-3]],marine?'#53b8d2':'#6a9cbb',.025);
-            particles(A,path,'#b7f2ff',function(p){return Math.abs(p.run.settings.speed)>0;},.02);}
+          var marine=id==='tidal';if(marine){var waterVolume=box(context,0,1.9,0,12,4,8,'#16506a',.12);waterVolume.material.depthWrite=false;waterVolume.name='energy-tidal-water-volume';box(context,0,-.03,0,12,.07,8,'#587b72');}
+          var tower=mesh(B,new THREE.CylinderGeometry(.10,.22,3.8,24),marine?'#f2b553':'#dce9ef',-1.1,1.9,0);tower.name='energy-rotor-tower';
+          var nacelle=new THREE.Group();nacelle.name='energy-rotor-nacelle';C.add(nacelle);generatorFocus=nacelle;
+          var hub=box(nacelle,-1.1,0,-.35,1.04,.98,1.4,'#c5dee5'),blade=rotor(B,-1.1,marine?2.25:3.65,.35,2.05,marine?'#f0ce77':'#f5f5e6');hub.name='energy-rotor-hub';blade.name='energy-rotor';
+          cylinder(B,-1.1,.1,0,.65,.2,'#778f8e');var generatorAssembly=generatorDetail(nacelle,-1.1,0,-.52,true);generatorAssembly.rotor.userData.driverName='energy-rotor';
+          flange(B,-1.1,.15,.10,.32,'#9fb9bb');var nacelleRoof=box(nacelle,-1.1,.55,-.35,1.12,.1,1.48,'#e3eae5');nacelleRoof.name='energy-generator-roof';hub.material.transparent=true;nacelleRoof.material.transparent=true;
+          for(var nacelleVent=0;nacelleVent<4;nacelleVent++)box(nacelle,-.568,-.12+nacelleVent*.08,-.42,.025,.024,.52,'#658692');
+          var rotorStatusLamp=ball(nacelle,-.545,.29,-.07,.05,'#74d9b2');rotorStatusLamp.name='energy-rotor-status-light';
+          box(nacelle,-1.1,.36,.362,.41,.075,.025,'#284850');var rotorLoadBar=box(nacelle,-1.1,.36,.382,.37,.038,.015,'#66dcaf');rotorLoadBar.name='energy-rotor-generator-load';
+          if(!marine){box(B,-1.1,.42,.211,.13,.53,.035,'#819f9f');strut(nacelle,[-1.1,.60,-.71],[-1.1,.88,-.71],.012,'#bdd1d8');strut(nacelle,[-1.32,.81,-.71],[-.9,.81,-.71],.016,'#dae5de');}
+          else{[-.8,.8].forEach(function(dx){strut(B,[-1.1,.7,0],[-1.1+dx,.13,.65],.065,'#7b9b9f');});}
+          var sweep=ring(B,-1.1,blade.position.y,.30,2.07,marine?'#72cad8':'#83b9c9',.017);sweep.name='energy-rotor-sweep';sweep.material.transparent=true;sweep.material.opacity=.55;
+          var rotorStreams=new THREE.Group();rotorStreams.name='energy-rotor-streams';rotorStreams.position.set(-1.1,blade.position.y,0);A.add(rotorStreams);
+          for(var n=0;n<5;n++){var flowX=(n-2)*.85,path=pipe(rotorStreams,[[flowX,0,3.5],[flowX,0,-3.5]],marine?'#357e97':'#517b91',.012);
+            particles(rotorStreams,path,'#b7f2ff',function(p){return Math.abs(p.run.settings.speed)>0;},function(p){return Math.sign(p.run.settings.speed)*Math.min(.09,Math.abs(p.run.settings.speed)*(marine?.012:.004));});}
           electricity(C,[[-.9,.2,0],[2,.2,0],[4.6,.2,2.6]]);
-          updaters.push(function(p){var size=marine?p.run.settings.radius/5:p.run.settings.radius/40;blade.scale.setScalar(.65+size*.35);
-            blade.rotation.z=p.run.power>1e-8?-p.phase*Math.sign(p.run.settings.speed)*Math.min(1.3,Math.abs(p.run.settings.speed)*.12):0;
-            A.rotation.y=p.run.settings.speed<0?Math.PI:0;});
+          updaters.push(function(p){var targetSize=marine?p.run.settings.radius/5:p.run.settings.radius/40,scale=shape('rotor-scale',.65+targetSize*.35,p),displayRadius=2.07*scale,hubHeight=Math.max(marine?2.25:3.65,displayRadius+.65),shutdown=p.run.status==='Protective shutdown',rated=p.run.status==='At generator rating',operating=p.run.power>0;
+            // The drawing compresses rotor scale; move the complete drivetrain and extend its support together.
+            blade.scale.setScalar(scale);blade.position.y=hubHeight;nacelle.position.y=hubHeight;sweep.scale.setScalar(scale);sweep.position.y=hubHeight;rotorStreams.position.y=hubHeight;
+            // Keep the intercepted stream centered on the hub and proportional to the illustrated swept radius.
+            // Only its width changes: depth, flow direction, speed, and each marker's phase remain unchanged.
+            rotorStreams.scale.x=displayRadius/2.07;rotorStreams.userData.footprintRadius=displayRadius;rotorStreams.userData.footprintCenterX=rotorStreams.position.x;rotorStreams.userData.footprintHalfWidth=1.7*rotorStreams.scale.x;
+            tower.scale.y=(hubHeight-.10)/3.8;tower.position.y=.10+(hubHeight-.10)/2;blade.userData.displayRadius=displayRadius;blade.userData.targetDisplayRadius=2.07*(.65+targetSize*.35);
+            if(marine){var waterHeight=hubHeight+displayRadius+.5;waterVolume.scale.y=waterHeight/4;waterVolume.position.y=waterHeight/2-.03;}
+            // Preserve pose while easing speed. At the same current, a larger radius lowers angular speed.
+            var rotorTarget=operating?Math.sign(p.run.settings.speed)*Math.min(1.8,Math.abs(p.run.settings.speed)*.12*(marine?5:40)/p.run.settings.radius):0;
+            driveMotion(blade,'rotor-speed',rotorTarget,p,.42);
+            // A single mechanical phase drives the shaft and core; no invented gear ratio or independent clock.
+            generatorAssembly.rotor.rotation.z=blade.rotation.z;generatorAssembly.rotor.userData.motionRate=blade.userData.motionRate;generatorAssembly.rotor.userData.motionTarget=blade.userData.motionTarget;
+            var coverTarget=p.inspection.cutaway?.14:1,coverOpacity=response('generator-cover',coverTarget,p,.2,false).value;
+            if(Math.abs(coverOpacity-coverTarget)<.0001){coverOpacity=coverTarget;responses['generator-cover']=coverTarget;}
+            var cutawayFraction=(1-coverOpacity)/.86;hub.material.opacity=coverOpacity;nacelleRoof.material.opacity=coverOpacity;hub.material.depthWrite=coverOpacity===1;nacelleRoof.material.depthWrite=coverOpacity===1;generatorAssembly.shell.material.opacity=.28-.20*cutawayFraction;generatorAssembly.rotor.userData.cutawayFraction=cutawayFraction;
+            generatorAssembly.rotor.userData.reversing=blade.userData.motionRate*rotorTarget<0;
+            var pitch=response('rotor-feather',!marine&&shutdown?Math.PI/2:-.14,p,.22,false).value;
+            blade.userData.blades.forEach(function(foil){foil.rotation.y=pitch;});blade.userData.featherPitch=pitch;
+            var statusColor=shutdown?'#df8a58':rated?'#f0c25e':operating?'#66dcaf':'#65818a',generatorLoad=Math.max(0,Math.min(1,p.run.power/p.run.settings.rating));rotorStatusLamp.material.color.set(statusColor).convertSRGBToLinear();glow(rotorStatusLamp,statusColor,shutdown?.8:operating?.2+generatorLoad*.6:0);
+            var displayedLoad=cue('rotor-load',generatorLoad,p);rotorLoadBar.visible=generatorLoad>0;rotorLoadBar.scale.x=displayedLoad;rotorLoadBar.position.x=-1.1-.185+.185*displayedLoad;rotorLoadBar.userData.displayFraction=displayedLoad;rotorLoadBar.material.color.set(statusColor).convertSRGBToLinear();glow(rotorLoadBar,statusColor,.5);rotorLoadBar.userData.fraction=generatorLoad;
+            hub.material.color.set('#c5dee5').convertSRGBToLinear();rotorStatusLamp.userData.status=p.run.status;
+          });
           label(marine?'1  Reversible current':'1  Wind stream',-3.9,marine?3.3:3.7,2.4);
           label('2  Rotor',-1.2,marine?4.5:6.4,.6);label('3  Generator',1.5,marine?3.4:4.5,-1.4);
         }else if(id==='hydro'){
-          var reservoir=box(A,-3,2,0,3,3.8,4,'#407461');var reservoirWater=box(A,-3,4,0,2.9,.15,3.9,'#3c9dcb',.8);
+          var reservoir=box(A,-3,2,0,3,3.8,4,'#407461');reservoir.name='energy-hydro-reservoir';var reservoirWater=box(A,-3,4,0,2.9,.15,3.9,'#3c9dcb',.8);reservoirWater.name='energy-hydro-water-level';
           var dam=box(B,-1.15,1.8,0,.5,3.5,4.3,'#8b9e9e');
-          var hydroRunner=runner(B,1,.8,.7,.6,'#edc36e');var casing=cylinder(B,1,.8,0,.8,1.15,'#769ea7');casing.rotation.x=Math.PI/2;casing.material.transparent=true;casing.material.opacity=.3;
-          var penstock=pipe(B,[[-2.5,3.7,1.1],[-.8,3,1.1],[.2,.8,1.1],[1,.8,.8]],'#77d0e3',.19);particles(B,penstock,'#d9fbff',function(p){return p.run.settings.flow>0;},.04);
-          box(C,2.2,.65,-.4,1.1,1.25,1.6,'#d1e4d9');box(context,2,.05,1.7,4,.15,1.4,'#368eac',.8);electricity(C,[[2.2,.3,-.4],[3.8,.3,-.4],[4.6,.3,2.6]]);
-          var previousHead=null;updaters.push(function(p){var scale=.70+p.run.settings.head/180;reservoir.scale.y=scale;reservoir.position.y=scale*1.9;reservoirWater.position.y=scale*3.8+.1;dam.scale.y=scale;dam.position.y=scale*1.75;hydroRunner.rotation.z=p.run.power>0?-p.phase*.6:0;
-            if(previousHead!==p.run.settings.head){previousHead=p.run.settings.head;penstock.points[0].y=scale*3.8;penstock.points[1].y=scale*2.8;penstock.updateArcLengths();B.traverse(function(o){if(o.geometry&&o.geometry.type==='TubeGeometry'&&o.geometry.parameters.path===penstock){o.geometry.dispose();o.geometry=new THREE.TubeGeometry(penstock,40,.19,8,false);}});}});
+          var hydroRunner=runner(B,1,.8,.7,.6,'#edc36e');hydroRunner.name='energy-hydro-runner';var casing=cylinder(B,1,.8,0,.8,1.15,'#769ea7');casing.rotation.x=Math.PI/2;casing.material.transparent=true;casing.material.opacity=.3;
+          casing.material.depthWrite=false;ring(B,1,.8,.61,.79,'#b6d4cf',.055);runnerReference(B,hydroRunner,.79,false);var hydroDrive=hydroDrivetrain(B,C,hydroRunner);generatorFocus=hydroDrive.group;
+          flange(B,1,.8,.63,.87,'#b2c3bd');valve(B,.03,1.23,1.12,'#d98957');
+          var damDeck=new THREE.Group();B.add(damDeck);box(damDeck,-1.15,.03,0,.78,.14,4.5,'#a8b6aa');
+          var headGauge=strut(A,[-4.8,.2,2.3],[-4.8,4,2.3],.026,'#f4d68a');headGauge.name='energy-hydro-head';
+          var headTop=box(A,-4.8,4,2.3,.32,.035,.05,'#f4d68a');box(A,-4.8,.2,2.3,.32,.035,.05,'#f4d68a');
+          var flowGate=box(B,-.06,1.07,1.34,.32,.34,.06,'#e7bb65');flowGate.name='energy-hydro-flow-gate';
+          [-2.05,0,2.05].forEach(function(z){strut(damDeck,[-.8,.06,z],[-.8,.47,z],.025,'#d3ddd2');});strut(damDeck,[-.8,.47,-2.1],[-.8,.47,2.1],.025,'#d3ddd2');
+          var penstock=pipe(B,[[-2.5,3.7,1.1],[-.8,3,1.1],[.2,.8,1.1],[1,.8,.8]],'#77d0e3',.19),penstockMesh=B.children[B.children.length-1];penstockMesh.name='energy-hydro-penstock';particles(B,penstock,'#d9fbff',function(p){return p.run.settings.flow>0;},function(p){return .012+p.run.settings.flow*.002;});
+          var tailrace=pipe(B,[[1,.45,.8],[1.4,.2,1.7],[3.7,.2,1.7]],'#4fa3c2',.14);particles(B,tailrace,'#b5edff',function(p){return p.run.settings.flow>0;},function(p){return .012+p.run.settings.flow*.002;});
+          for(var rung=0;rung<9;rung++)box(A,-4.53,.3+rung*.4,2.03,.06,.025,.23,'#c7e2d6');
+          var hydroSwitchgear=cabinet(C,2.4,.65,-2.8,1.1,1.25,1.6,'#d1e4d9');hydroSwitchgear.name='energy-hydro-switchgear';box(context,2,.05,1.7,4,.15,1.4,'#368eac',.8);[.97,2.43].forEach(function(z){box(context,2,.08,z,4.2,.30,.12,'#a3b7ad');});hydroElectricalConnections(C);
+          var previousHead=null;updaters.push(function(p){var displayedHead=shape('hydro-head',p.run.settings.head,p),scale=.70+displayedHead/180;reservoir.scale.y=scale;reservoir.position.y=scale*1.9;reservoirWater.position.y=scale*3.8+.1;dam.scale.y=scale;dam.position.y=scale*1.75;reservoir.userData.displayHead=displayedHead;reservoir.userData.targetHead=p.run.settings.head;reservoirWater.userData.displayHead=displayedHead;reservoirWater.userData.targetHead=p.run.settings.head;
+            var hydraulicRate=p.run.available>0?Math.min(3.2,.9*Math.sqrt(p.run.settings.head/30)*Math.sqrt(p.run.settings.flow/5)):0;motion(hydroRunner,'hydro-runner',hydraulicRate,p,.32);hydroDrive.sync();
+            var coverTarget=p.inspection.cutaway?.14:1,coverOpacity=response('generator-cover',coverTarget,p,.2,false).value;
+            if(Math.abs(coverOpacity-coverTarget)<.0001){coverOpacity=coverTarget;responses['generator-cover']=coverTarget;}
+            var cutawayFraction=(1-coverOpacity)/.86;hydroDrive.cover.material.opacity=coverOpacity;hydroDrive.cover.material.depthWrite=coverOpacity===1;hydroDrive.assembly.shell.material.opacity=.28-.20*cutawayFraction;hydroDrive.assembly.rotor.userData.cutawayFraction=cutawayFraction;
+            headGauge.userData.place([-4.8,.2,2.3],[-4.8,reservoirWater.position.y,2.3]);headTop.position.y=reservoirWater.position.y;
+            var gateFlow=response('hydro-gate',p.run.settings.flow,p,.25,true).value;flowGate.position.y=1.07+.38*gateFlow/50;flowGate.userData.flow=p.run.settings.flow;flowGate.userData.displayFlow=gateFlow;
+            damDeck.position.y=scale*3.5;
+            if(previousHead!==displayedHead){previousHead=displayedHead;penstock.points[0].y=scale*3.8;penstock.points[1].y=scale*2.8;penstock.updateArcLengths();deformTube(penstockMesh,penstock);}penstockMesh.userData.displayHead=displayedHead;penstockMesh.userData.targetHead=p.run.settings.head;});
           label('1  Reservoir & head',-3.2,5,0);label('2  Penstock & runner',0,2.1,2);label('3  Powerhouse',3,2.3,-.6);
         }else if(id==='geothermal'){
           box(A,-2.5,.7,0,5,1.4,4.5,'#aa6249');box(A,-2.5,1.6,0,5,.35,4.5,'#75634c');box(A,-2.5,2,0,5,.35,4.5,'#568371');
+          var geothermalHeat=box(A,-2.5,.35,2.27,4.9,.65,.03,'#d78a51');geothermalHeat.name='energy-geothermal-reservoir-heat';
+          for(var strata=0;strata<4;strata++)pipe(A,[[-4.8,.22+strata*.26,2.30],[-3.4,.32+strata*.26,2.30],[-1.5,.19+strata*.26,2.30],[-.1,.3+strata*.26,2.30]],'#804d40',.022);
           var hot=pipe(A,[[-4,.2,2.4],[-4,3,2.4],[-1,3,2.4],[.2,2,0]],'#f19462',.12);
           var cool=pipe(A,[[.5,1,0],[-2,2.6,2.4],[-2,.2,2.4]],'#55a9d1',.12);
-          particles(A,hot,'#ffd2a5',function(p){return p.run.available>0;},.03);particles(A,cool,'#b4e6ff',function(p){return p.run.available>0;},.03);
-          cylinder(B,.5,1.6,0,.7,2,'#d4a465');for(var n=0;n<4;n++)pipe(B,[[0,1+n*.3,.65],[1,1+n*.3,.65]],'#f2d598',.035);
-          pipe(B,[[1.1,2,0],[2,2,0],[2,1,-1],[1.1,1,-1]],'#d8ba7a',.08);
-          var rotorGeo=runner(C,2.4,1.5,.8,.55,'#d6edf1');box(C,2.4,.7,0,1,1.3,1.4,'#688c99');
-          cylinder(C,3.9,.9,-2,.65,1.7,'#afc7c6');electricity(C,[[2.4,.2,0],[3.5,.2,0],[4.6,.2,2.6]]);
-          updaters.push(function(p){rotorGeo.rotation.z=p.run.power>0?-p.phase*.7:0;});
+          [-4,-2].forEach(function(x){box(A,x,2.21,2.4,.65,.14,.65,'#a8b7ae');var cap=ring(A,x,2.35,2.4,.22,'#bdd1cd',.045);cap.rotation.x=Math.PI/2;valve(A,x,2.55,2.4,x===-4?'#e29462':'#71aec7');});
+          particles(A,hot,'#ffd2a5',function(p){return p.run.settings.flow>0;},function(p){return .015+p.run.settings.flow*.0004;});particles(A,cool,'#b4e6ff',function(p){return p.run.settings.flow>0;},function(p){return .015+p.run.settings.flow*.0004;});
+          var exchanger=cylinder(B,.5,1.6,0,.7,2,'#d4a465');exchanger.name='energy-geothermal-exchanger';exchanger.material.transparent=true;exchanger.material.opacity=.3;exchanger.material.depthWrite=false;
+          var geothermalCoils=[];for(var n=0;n<5;n++){var coil=ring(B,.5,.9+n*.32,0,.47,'#f2c27f',.055);coil.rotation.x=Math.PI/2;geothermalCoils.push(coil);}
+          cylinder(B,.5,1.6,0,.14,2.1,'#9fd4de');
+          [.7,2.48].forEach(function(y){var cap=ring(B,.5,y,0,.71,'#bbcdc2',.05);cap.rotation.x=Math.PI/2;});
+          [-.37,1.37].forEach(function(x){strut(B,[x,.05,0],[x,.9,0],.065,'#9eb3b5');});
+          var workingFluid=new THREE.Group();workingFluid.name='energy-geothermal-working-fluid';B.add(workingFluid);
+          var workingHot=pipe(workingFluid,[[1.1,2,0],[1.8,2,0],[2.4,1.6,.15]],'#d8ba7a',.08);
+          var workingReturn=pipe(workingFluid,[[2.4,1.2,.15],[2.4,.55,-.7],[.6,.55,-.7],[.6,1,-.45]],'#88aeb6',.075);
+          particles(workingFluid,workingHot,'#ffe2ae',function(p){return p.run.available>0;},function(p){return .03*Math.sqrt(p.run.available/18392);});
+          particles(workingFluid,workingReturn,'#bce2ee',function(p){return p.run.available>0;},function(p){return .03*Math.sqrt(p.run.available/18392);});
+          var rotorGeo=runner(C,2.4,1.5,.8,.55,'#d6edf1');rotorGeo.name='energy-geothermal-turbine';box(C,2.4,.7,0,1,1.3,1.4,'#688c99');runnerReference(C,rotorGeo,.68,true);
+          cylinder(C,3.9,.9,-2,.65,1.7,'#afc7c6');var condenserRim=ring(C,3.9,1.78,-2,.53,'#d1ded5',.04);condenserRim.rotation.x=Math.PI/2;
+          var coolingFan=rotor(C,3.9,1.79,-2,.43,'#68888e');coolingFan.name='energy-geothermal-cooling-fan';coolingFan.rotation.x=-Math.PI/2;
+          pipe(C,[[2.9,1.1,-.2],[3.5,1.1,-.2],[3.9,.6,-1.5]],'#88aeb6',.075);electricity(C,[[2.4,.2,0],[3.5,.2,0],[4.6,.2,2.6]]);
+          // Rotation and glow are operation cues; the model does not predict turbine RPM or fluid temperatures.
+          updaters.push(function(p){var heat=p.run.available,rejected=Math.max(0,heat-p.run.power),heatCue=cue('geothermal-heat',Math.min(1.5,.55*Math.sqrt(heat/18392)),p);
+            motion(rotorGeo,'geothermal-runner',.8*Math.sqrt(Math.max(0,p.run.power)/2515),p,.4);motion(coolingFan,'geothermal-fan',.9*Math.sqrt(rejected/15877),p,.4);
+            rotorGeo.userData.outputPower=p.run.power;coolingFan.userData.rejectedHeat=rejected;workingFluid.userData.thermalPower=heat;
+            glow(geothermalHeat,'#ef7b35',cue('geothermal-reservoir',Math.max(0,p.run.settings.hot-40)/300,p));glow(exchanger,'#d87835',heatCue);geothermalCoils.forEach(function(coil){glow(coil,'#dd7b37',heatCue);});});
           label('1  Production / reinjection',-2.7,4,0);label('2  Heat exchanger',.5,3.2,0);label('3  Binary power block',3.5,3,-1.5);
         }else if(id==='solarThermal'){
-          var field=new THREE.Group();A.add(field);
-          for(var n=0;n<12;n++){var x=-4+(n%4)*1.15,z=-2+Math.floor(n/4)*1.6;var mirror=box(field,x,.6,z,.9,.10,.85,'#b5dce3');mirror.rotation.z=-.35;
-            cylinder(field,x,.28,z,.045,.5,'#b0beb9');pipe(field,[[x,.7,z],[.5,4.6,0]],'#efc761',.015);}
-          cylinder(B,.5,2.2,0,.22,4.4,'#b6c7ba');var receiver=box(B,.5,4.6,0,.8,.8,.8,'#e99c46');
-          var thermal=pipe(B,[[.65,4.5,0],[.65,.3,0],[2.5,.6,0]],'#e58b4c',.09);particles(B,thermal,'#ffdeb2',function(p){return p.run.power>0;},.03);
-          box(C,2.6,.9,-.3,1.4,1.7,1.2,'#d6e3d8');electricity(C,[[2.6,.2,0],[3.8,.2,0],[4.6,.2,2.6]]);
-          updaters.push(function(p){field.scale.setScalar(.6+.4*Math.sqrt(p.run.settings.area/10000));receiver.material.emissive.set('#bf5d14');receiver.material.emissiveIntensity=p.run.settings.dni/1100;});
+          var field=new THREE.Group(),mirrors=[];field.name='energy-csp-mirror-field';A.add(field);
+          for(var n=0;n<12;n++){var x=-4+(n%4)*1.15,z=-2+Math.floor(n/4)*1.6;var mirrorGroup=new THREE.Group();mirrorGroup.position.set(x,.6,z);field.add(mirrorGroup);var mirror=box(mirrorGroup,0,0,0,.9,.10,.85,'#b5dce3');
+            var reflectionNormal=new THREE.Vector3(.5-x,4.6-.6,-z).normalize().add(new THREE.Vector3(0,1,0)).normalize();mirrorGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),reflectionNormal);
+            box(mirrorGroup,0,.056,0,.012,.006,.85,'#78989e');box(mirrorGroup,0,.056,0,.9,.006,.012,'#78989e');
+            mirror.material.roughness=.14;mirror.material.metalness=.62;mirrorGroup.name='energy-csp-mirror-'+n;mirrors.push(mirrorGroup);
+            cylinder(field,x,.28,z,.045,.5,'#b0beb9');var pivot=ball(field,x,.6,z,.085,'#879fa3');pivot.name='energy-csp-mirror-pivot-'+n;}
+          cylinder(B,.5,2.2,0,.22,4.4,'#b6c7ba');var receiver=box(B,.5,4.6,0,.8,.8,.8,'#e99c46');receiver.name='energy-csp-receiver';
+          box(B,.5,4.12,0,1.1,.11,1.1,'#a3b7ad');for(var rung=0;rung<12;rung++)box(B,.5,.3+rung*.3,.24,.24,.032,.055,'#a4bbb9');
+          ring(B,.5,4.6,0,.62,'#f5c675',.04);
+          var cspOptics=cspOpticalConnections(field,mirrors,receiver,A,B),cspThermal=cspThermalConnections(B,C,receiver),thermalLoop=cspThermal.group;
+          cabinet(C,2.6,.9,-.3,1.4,1.7,1.2,'#d6e3d8');var solarRunner=runner(C,2.6,1.02,.48,.50,'#e9d6a5');solarRunner.name='energy-csp-turbine';ring(C,2.6,1.02,.42,.61,'#769ca7',.06);runnerReference(C,solarRunner,.61,false);
+          valve(C,1.60,.91,.20,'#e4a769');electricity(C,[[3.3,.3,0],[3.8,.3,0],[4.6,.3,2.1]]);
+          updaters.push(function(p){var targetSize=.6+.4*Math.sqrt(p.run.settings.area/10000),size=shape('csp-mirror-size',targetSize,p),heat=p.run.stages[1].value;field.userData.displaySize=size;field.userData.targetSize=targetSize;mirrors.forEach(function(mirror){mirror.scale.set(size,1,size);});
+            glow(receiver,'#bf5d14',cue('csp-heat',Math.min(1.5,.65*Math.sqrt(heat/5850)),p));receiver.userData.thermalPower=heat;thermalLoop.userData.thermalPower=heat;
+            motion(solarRunner,'csp-runner',.8*Math.sqrt(Math.max(0,p.run.power)/2047.5),p,.4);solarRunner.userData.outputPower=p.run.power;});
           label('1  Heliostat field',-3,2.2,2.5);label('2  Tower receiver',.5,5.7,0);label('3  Power block',3.2,2.5,-.5);
         }else if(id==='wave'){
           var ocean=new THREE.Mesh(new THREE.PlaneGeometry(12,7.6,48,24),new THREE.MeshStandardMaterial({color:'#286e91',roughness:.3,metalness:.25,side:THREE.DoubleSide}));
-          ocean.material.color.convertSRGBToLinear();ocean.rotation.x=-Math.PI/2;ocean.position.y=1;A.add(ocean);
-          var buoy=cylinder(B,-1,1.5,0,.75,.75,'#ffc35b');cylinder(B,-1,.55,0,.14,1.5,'#b8d2d9');box(C,2,1.1,0,1.8,2,1.4,'#accad1');
-          pipe(B,[[-1,.35,0],[-1,.35,2],[2,.35,2],[2,1,0]],'#abcad0',.10);electricity(C,[[2,.25,0],[3.4,.25,0],[4.6,.25,2.6]]);
-          updaters.push(function(p){var array=ocean.geometry.attributes.position;
-            for(var i=0;i<array.count;i++){var x=array.getX(i);array.setZ(i,Math.sin(x*.9-p.phase*2*Math.PI/p.run.settings.period)*p.run.settings.height*.13);}
-            array.needsUpdate=true;ocean.geometry.computeVertexNormals();buoy.position.y=1.5+Math.sin(-.9-p.phase*2*Math.PI/p.run.settings.period)*p.run.settings.height*.13;});
+          ocean.name='energy-wave-ocean';ocean.material.color.convertSRGBToLinear();ocean.rotation.x=-Math.PI/2;ocean.position.y=1;A.add(ocean);
+          var guidedWave=waveMechanism(B),buoy=guidedWave.buoy,floatRim=guidedWave.rim,buoyDeck=guidedWave.deck,beacon=guidedWave.beacon;
+          var waveCabinet=cabinet(C,2,1.1,0,1.8,2,1.4,'#accad1');waveCabinet.name='energy-wave-electrical-cabinet';
+          var mooring=strut(B,[-3,.03,-1.6],[-1.62,.95,-.50],.032,'#758e96');mooring.name='energy-wave-mooring';var mooringCleat=ball(B,-1.62,.95,-.50,.065,'#bacdc8');mooringCleat.name='energy-wave-mooring-cleat';var waveTravel=waveTravelGuide(B);
+          var waveFoundation=cylinder(B,-1,.005,0,.5,.15,'#536e7c');waveFoundation.name='energy-wave-foundation';var wavePowerDisplay=box(C,2,1.52,.73,1.1,.45,.045,'#2d687b');wavePowerDisplay.name='energy-wave-power-display';
+          // A compressed ruler follows the crest frontage; buoy diameter is deliberately unchanged.
+          var frontage=new THREE.Group();frontage.name='energy-wave-frontage';B.add(frontage);
+          var frontageSpan=strut(frontage,[-2.5,1.1,-1],[-2.5,1.1,1],.022,'#ffe0a0'),frontageTicks=[];
+          [-1,1].forEach(function(side){var tick=strut(frontage,[-2.7,1.1,side],[-2.3,1.1,side],.026,'#ffe0a0');frontageTicks.push(tick);});
+          var crests=[];for(var crest=0;crest<5;crest++){var crestGeometry=new THREE.BufferGeometry();crestGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(3*41),3));var crestLine=new THREE.Line(crestGeometry,new THREE.LineBasicMaterial({color:'#9adceb',transparent:true,opacity:.36}));A.add(crestLine);crests.push(crestLine);}
+          pipe(B,[[-1,.35,0],[-1,.35,2],[2,.35,2],[2,3.1,0]],'#abcad0',.10);electricity(C,[[2,.25,0],[3.4,.25,0],[4.6,.25,2.6]]);
+          // Keep electrical equipment on a fixed supported deck above the largest displayed crest.
+          var waveEquipment=new THREE.Group();waveEquipment.name='energy-wave-platform-equipment';
+          C.children.slice().forEach(function(object){waveEquipment.add(object);});C.add(waveEquipment);waveEquipment.position.y=2.1;
+          var serviceDeck=box(C,3.15,2.02,1.2,5,.16,4.5,'#91a6a5');serviceDeck.name='energy-wave-service-deck';
+          box(C,2,2.15,0,1.92,.1,1.52,'#718c92');
+          [[.8,-.9],[5.5,-.9],[.8,3.3],[5.5,3.3]].forEach(function(point,index){var pile=cylinder(C,point[0],.96,point[1],.10,2.1,'#a8bdbb');pile.name='energy-wave-deck-pile-'+index;box(C,point[0],-.03,point[1],.42,.1,.42,'#657f86');});
+          strut(C,[.8,.25,-.9],[5.5,1.94,-.9],.04,'#7e9fa6');strut(C,[5.5,.25,-.9],[.8,1.94,-.9],.04,'#7e9fa6');
+          var wavePhase=0;updaters.push(function(p){var array=ocean.geometry.attributes.position,amplitude=response('wave-amplitude',p.run.settings.height*.13,p,.28,true).value,frequency=response('wave-frequency',2*Math.PI/p.run.settings.period,p,.35,false);wavePhase=(wavePhase+frequency.delta)%(2*Math.PI);ocean.userData.phase=wavePhase;ocean.userData.amplitude=amplitude;ocean.userData.targetAmplitude=p.run.settings.height*.13;ocean.userData.angularRate=frequency.value;ocean.userData.angularTarget=frequency.target;
+            for(var i=0;i<array.count;i++){var x=array.getX(i);array.setZ(i,Math.sin(x*.9-wavePhase)*amplitude);}
+            array.needsUpdate=true;ocean.geometry.computeVertexNormals();guidedWave.place(1.25+Math.sin(-.9-wavePhase)*amplitude);mooringCleat.position.y=buoy.position.y-.30;mooring.userData.place([-3,.03,-1.6],[-1.62,mooringCleat.position.y,-.50]);waveTravel.place(buoy.position.y,amplitude);
+            var halfWidth=shape('wave-frontage',p.run.settings.width*.125,p),frontageY=1.06+Math.sin(-2.25-wavePhase)*amplitude;frontageSpan.userData.place([-2.5,frontageY,-halfWidth],[-2.5,frontageY,halfWidth]);frontageTicks.forEach(function(tick,index){var z=(index?1:-1)*halfWidth;tick.userData.place([-2.7,frontageY,z],[-2.3,frontageY,z]);});frontage.userData.frontage=p.run.settings.width;frontage.userData.displayHalfWidth=halfWidth;frontage.userData.targetHalfWidth=p.run.settings.width*.125;
+            glow(beacon,'#ef8856',p.run.power>0?.45:0);glow(wavePowerDisplay,'#4edcb9',cue('wave-output',Math.min(1.25,.5*Math.sqrt(Math.max(0,p.run.power)/37.68)),p));wavePowerDisplay.userData.outputPower=p.run.power;
+            crests.forEach(function(line,index){var vertices=line.geometry.attributes.position;for(var i=0;i<41;i++){var x=-6+i*.3;vertices.setXYZ(i,x,1.025+Math.sin(x*.9-wavePhase)*amplitude,-3.2+index*1.6);}vertices.needsUpdate=true;line.geometry.computeBoundingSphere();});});
           label('1  Surface waves',-3.6,3,-1);label('2  Heaving buoy',-1,3,1);label('3  Power take-off',2.6,3,-.5);
         }else if(id==='biomass'){
-          var hopper=box(A,-3.7,.75,0,2.1,1.4,2.2,'#96815b');for(var n=0;n<10;n++)ball(A,-4.2+(n%3)*.5,1.4+Math.floor(n/3)*.12,-.6+(n%4)*.4,.20,'#d4b172');
-          var feed=pipe(A,[[-3.7,.8,0],[-2,.8,0],[-1,1.2,0]],'#9caa9f',.20);particles(A,feed,'#f4d999',function(p){return p.run.settings.feed>0;},.04);
-          box(B,-.7,1.45,0,2,2.8,2.1,'#879fa4');var fire=ball(B,-.7,.7,1.1,.45,'#f6a850');cylinder(B,-1,3.5,-.6,.2,2.3,'#859293');
-          var steam=pipe(B,[[0,2.5,0],[1.8,2.5,0],[2.3,1.2,0]],'#d1e3dd',.13);particles(B,steam,'#f8f9e3',function(p){return p.run.power>0;},.035);
-          var steamRotor=runner(C,2.5,1.1,.6,.6,'#d9ede3');box(C,2.5,.6,-.2,1.5,1.1,1.4,'#557f8d');electricity(C,[[2.5,.25,0],[3.5,.25,0],[4.6,.25,2.6]]);
-          updaters.push(function(p){fire.visible=p.run.settings.feed>0;fire.scale.setScalar(.5+p.run.settings.feed/2000);steamRotor.rotation.z=p.run.power>0?-p.phase*.65:0;});
+          var hopper=box(A,-3.7,.75,0,2.1,1.4,2.2,'#96815b');for(var n=0;n<10;n++){var pellet=cylinder(A,-4.2+(n%3)*.5,1.4+Math.floor(n/3)*.12,-.6+(n%4)*.4,.13,.43,n%2?'#c19c62':'#d7b77a');pellet.rotation.z=.65+n*.49;}
+          box(A,-3.7,1.48,-1.09,2.2,.10,.12,'#b6bfa7');box(A,-3.7,1.48,1.09,2.2,.10,.12,'#b6bfa7');[-4.7,-2.7].forEach(function(x){box(A,x,1.48,0,.12,.10,2.2,'#b6bfa7');});
+          var feedStream=new THREE.Group();feedStream.name='energy-biomass-feed-stream';A.add(feedStream);
+          var feed=pipe(feedStream,[[-3.7,.8,0],[-2,.8,0],[-1,1.2,0]],'#9caa9f',.20);particles(feedStream,feed,'#f4d999',function(p){return p.run.settings.feed>0;},function(p){return .04*p.run.settings.feed/500;});
+          box(B,-.7,1.45,0,2,2.8,2.1,'#879fa4');box(B,-.7,.78,1.06,1.45,1.15,.035,'#293d43');var fire=new THREE.Group();fire.name='energy-biomass-fire';fire.position.set(-.7,.47,1.20);B.add(fire);
+          for(var flame=0;flame<3;flame++){var tongue=mesh(fire,new THREE.ConeGeometry(.16,flame===1?.8:.5,8),flame===1?'#ffcc6e':'#ee8c45',(flame-1)*.19,flame===1?.4:.25,0);glow(tongue,'#ed741d',.8);}
+          cylinder(B,-1,3.5,-.6,.2,2.3,'#859293');var chimneyLip=ring(B,-1,4.66,-.6,.22,'#a3b4ae',.035);chimneyLip.rotation.x=Math.PI/2;
+          box(B,-.7,.18,1.11,1.5,.14,.32,'#5b7477');valve(B,.31,1.40,0,'#d9a166');
+          for(var grate=0;grate<5;grate++)box(B,-1.2+grate*.25,.45,1.49,.045,.35,.045,'#607577');
+          var boilerCoils=[];for(var boilerTube=0;boilerTube<4;boilerTube++){var coilPath=pipe(B,[[-1.25,1.5+boilerTube*.25,1.1],[-.7,1.63+boilerTube*.25,1.18],[-.15,1.5+boilerTube*.25,1.1]],'#d2b381',.055);B.children.forEach(function(o){if(o.geometry&&o.geometry.type==='TubeGeometry'&&o.geometry.parameters.path===coilPath)boilerCoils.push(o);});}
+          var steamStream=new THREE.Group();steamStream.name='energy-biomass-steam-stream';B.add(steamStream);
+          var steam=pipe(steamStream,[[0,2.5,0],[1.8,2.5,0],[2.3,1.2,0]],'#d1e3dd',.13);particles(steamStream,steam,'#f8f9e3',function(p){return p.run.stages[1].value>0;},function(p){return .035*Math.sqrt(p.run.stages[1].value/(4000/3));});
+          var steamRotor=runner(C,2.5,1.1,.6,.6,'#d9ede3');steamRotor.name='energy-biomass-turbine';box(C,2.5,.6,-.2,1.5,1.1,1.4,'#557f8d');runnerReference(C,steamRotor,.73,true);electricity(C,[[2.5,.25,0],[3.5,.25,0],[4.6,.25,2.6]]);
+          var flamePhase=0;updaters.push(function(p){var fuel=p.run.available,heat=p.run.stages[1].value,heatCue=cue('biomass-flame',Math.min(2.2,Math.sqrt(fuel/(5000/3))),p),steamCue=cue('biomass-steam',Math.min(1.2,.35*Math.sqrt(heat/(4000/3))),p),dt=p.dt||0;
+            if(fuel>0)flamePhase+=dt*2.3;fire.visible=fuel>0;fire.scale.set(.55+.22*heatCue,(.35+.34*heatCue)*(1+.045*Math.sin(flamePhase)),.4);fire.userData.chemicalPower=fuel;
+            fire.children.forEach(function(tongue){glow(tongue,'#ed741d',Math.min(1.5,.5*heatCue));});boilerCoils.forEach(function(coil){glow(coil,'#c78949',steamCue);});
+            motion(steamRotor,'biomass-runner',.8*Math.sqrt(Math.max(0,p.run.power)/(1000/3)),p,.4);steamRotor.userData.outputPower=p.run.power;steamStream.userData.thermalPower=heat;feedStream.userData.massFlow=p.run.settings.feed;});
           label('1  Fuel hopper',-3.7,2.7,0);label('2  Boiler',-.8,4.9,0);label('3  Steam turbine',2.7,2.7,.6);
         }else{
-          box(A,-4,1,0,1.4,2,1.3,'#a7bace');box(A,-4,1.5,.67,.8,.4,.04,'#5d9eba');
-          for(var n=0;n<3;n++){var x=-1.5+n*1.05;box(B,x,1.3,0,.86,2.6,1.3,'#6c8c94',.45);
-            var fill=box(B,x,.15,.05,.68,.1,1.05,'#55d7a3');(function(m){updaters.push(function(p){var ht=Math.max(.02,p.run.extra.soc/100*2.3);m.scale.y=ht/.1;m.position.y=.15+ht/2;});})(fill);}
-          box(C,2.8,1,0,1.2,1.9,1.4,'#d9e7df');
-          var inPath=pipe(A,[[-4,.4,1.1],[-3,.4,1.1],[-1.4,.4,1.1]],'#e8c775',.055);
-          particles(A,inPath,'#fff0ac',function(p){return p.run.extra.charging;},.025);
-          var outPath=pipe(C,[[.7,.4,1.1],[2.8,.4,1.1],[4.6,.4,2.6]],'#66ddb0',.055);particles(C,outPath,'#b5ffe0',function(p){return p.run.power>0;},.025);
+          var storageSupply=cabinet(A,-4,1,0,1.4,2,1.3,'#a7bace');storageSupply.name='energy-storage-supply';box(A,-4,1.5,.67,.8,.4,.04,'#5d9eba');
+          var chargingLamp=ball(A,-4,1.84,.71,.07,'#9aafa3');chargingLamp.name='energy-storage-charge-lamp';
+          for(var n=0;n<3;n++){var x=-1.5+n*1.05,rack=box(B,x,1.3,0,.86,2.6,1.3,'#6c8c94',.33);rack.name='energy-storage-rack-'+n;rack.material.depthWrite=false;storageTransferIndicator(B,x,n);
+            box(B,x,.08,0,.97,.15,1.48,'#b9cbc3');[-.35,.35].forEach(function(offset){box(B,x+offset,1.3,-.68,.055,2.6,.055,'#b0c7c6');});
+            box(B,x,2.65,0,.92,.12,1.35,'#bbd1d0');var positivePost=box(B,x-.2,2.79,0,.13,.17,.18,'#de9b67'),negativePost=box(B,x+.2,2.79,0,.13,.17,.18,'#a5cadd');positivePost.name='energy-storage-positive-terminal-'+n;negativePost.name='energy-storage-negative-terminal-'+n;
+            [-.2,.2].forEach(function(offset){box(B,x+offset,2.79,.095,.075,.018,.008,'#253c43');});box(B,x-.2,2.79,.095,.018,.075,.008,'#253c43');
+            for(var cellLevel=0;cellLevel<5;cellLevel++){box(B,x,.33+cellLevel*.46,.67,.74,.025,.025,'#adc9c6');box(B,x-.35,.33+cellLevel*.46,.68,.035,.16,.04,'#c7ded8');}
+            var fill=box(B,x,.15,.05,.68,.1,1.05,'#55d7a3');fill.name='energy-storage-fill-'+n;(function(m){updaters.push(function(p){var ht=Math.max(0,p.run.extra.soc)/100*2.3;m.visible=ht>0;m.scale.y=ht/.1;m.position.y=.15+ht/2;m.material.color.set(p.run.extra.soc<20?'#dfb462':'#55d7a3').convertSRGBToLinear();glow(m,p.run.extra.soc<20?'#af7a30':'#23865f',.3);});})(fill);}
+          storageBus(B);
+          var storageInverter=cabinet(C,2.8,1,0,1.2,1.9,1.4,'#d9e7df');storageInverter.name='energy-storage-inverter';
+          var dischargeLamp=ball(C,2.8,1.68,.75,.07,'#9aafa3');dischargeLamp.name='energy-storage-discharge-lamp';
+          updaters.push(function(p){glow(chargingLamp,'#55ddad',cue('storage-charge',p.run.available>0?p.run.available/(p.run.available+50)*1.8:0,p));glow(dischargeLamp,'#f8d784',cue('storage-discharge',p.run.power>0?p.run.power/(p.run.power+50)*1.8:0,p));chargingLamp.userData.power=p.run.available;dischargeLamp.userData.power=p.run.power;});
+          var storageWiring=storageConnections(A,B,C);
           label('1  Charging supply',-4,3,0);label('2  Stored energy',-.4,3.7,0);label('3  Inverter & load',3.4,3,1.1);
         }
         Object.keys(groups).forEach(function(key){groups[key].traverse(function(o){if(o.isMesh){o.userData.component=key;pickables.push(o);}});});
-        fitView=function(key){
-          var bounds=new THREE.Box3();scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);
-          var labelRight=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),labelUp=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
-          Object.keys(groups).forEach(function(k){if(key&&k!==key)return;bounds.union(new THREE.Box3().setFromObject(groups[k]));
-            var label=labels[k];if(label.visible)[-1,1].forEach(function(x){[-1,1].forEach(function(y){bounds.expandByPoint(label.position.clone().addScaledVector(labelRight,x*label.scale.x/2).addScaledVector(labelUp,y*label.scale.y/2));});});});
-          if(bounds.isEmpty())return;var center=bounds.getCenter(new THREE.Vector3());view.target=[center.x,center.y,center.z];view.zoom=1;position();camera.updateMatrixWorld(true);
-          var maxX=0,maxY=0;[bounds.min.x,bounds.max.x].forEach(function(x){[bounds.min.y,bounds.max.y].forEach(function(y){[bounds.min.z,bounds.max.z].forEach(function(z){var point=new THREE.Vector3(x,y,z).project(camera);maxX=Math.max(maxX,Math.abs(point.x));maxY=Math.max(maxY,Math.abs(point.y));});});});
-          view.zoom=Math.max(.15,Math.min(4,.84/Math.max(maxX,maxY,.01)));position();
-        };
-        // Keep billboards inside the viewport and separate overlapping labels in side and overhead views.
-        function placeLabels(){
-          camera.updateMatrixWorld(true);
-          var right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),up=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
-          var halfWidth=(camera.right-camera.left)/(2*camera.zoom),halfHeight=(camera.top-camera.bottom)/(2*camera.zoom),placed=[],gap=.035,margin=.03;
-          var labelPixelLimit=Math.min(live.current.inspection.readings?220:180,(container.clientWidth||700)*.62);
-          var candidates=Object.keys(labels).map(function(key){var label=labels[key];leaders[key].visible=false;
-            var pixelWidth=label.scale.x/(2*halfWidth)*(container.clientWidth||700);if(pixelWidth>labelPixelLimit)label.scale.multiplyScalar(labelPixelLimit/pixelWidth);
-            return {key:key,label:label,origin:label.position.clone(),screen:label.position.clone().project(camera)};}).filter(function(item){return item.label.visible;}).sort(function(a,b){return b.screen.y-a.screen.y;});
-          function overlaps(a,b){return Math.abs(a.x-b.x)<a.w+b.w+gap-.000001&&Math.abs(a.y-b.y)<a.ht+b.ht+gap-.000001;}
-          candidates.forEach(function(item){
-            item.w=item.label.scale.x/(2*halfWidth);item.ht=item.label.scale.y/(2*halfHeight);
-            item.x=Math.max(-1+item.w+margin,Math.min(1-item.w-margin,item.screen.x));
-            var low=-1+item.ht+margin,high=1-item.ht-margin,y=Math.max(low,Math.min(high,item.screen.y));
-            var choices=[y,low,high];placed.forEach(function(other){choices.push(other.y-other.ht-item.ht-gap,other.y+other.ht+item.ht+gap);});
-            choices=choices.filter(function(value){return value>=low&&value<=high;}).sort(function(a,b){return Math.abs(a-y)-Math.abs(b-y);});
-            var available=choices.find(function(value){return placed.every(function(other){return !overlaps({x:item.x,y:value,w:item.w,ht:item.ht},other);});});
-            item.y=available===undefined?y:available;placed.push(item);
-          });
-          // If greedy placement leaves a collision, pack all visible labels together instead of trapping the final label.
-          if(placed.some(function(item,index){return item.w>1-margin||item.ht>1-margin||placed.slice(index+1).some(function(other){return overlaps(item,other);});})){
-            var availableHeight=2-2*margin-gap*Math.max(0,placed.length-1),sumHeight=placed.reduce(function(sum,item){return sum+2*item.ht;},0);
-            var scale=Math.min(1,availableHeight/sumHeight,(1-margin)/Math.max.apply(null,placed.map(function(item){return item.w;})));
-            placed.forEach(function(item){item.label.scale.multiplyScalar(scale);item.w*=scale;item.ht*=scale;});
-            var total=sumHeight*scale+gap*Math.max(0,placed.length-1),center=placed.reduce(function(sum,item){return sum+item.screen.y;},0)/placed.length;
-            var top=Math.max(-1+margin+total,Math.min(1-margin,center+total/2));
-            placed.forEach(function(item){item.x=Math.max(-1+item.w+margin,Math.min(1-item.w-margin,item.screen.x));item.y=top-item.ht;top-=2*item.ht+gap;});
+        // Keep callouts in a screen-space lane so the machinery remains unobscured.
+        // Narrow screens retain the selected reading; the other two stages use compact titles.
+        function labelLayout(){
+          var width=viewport.width,entries=Object.keys(labels).filter(function(key){return labels[key].visible&&(!focusTarget||key===focusTarget);}),narrow=width<660,margin=16,gap=10,readings=live.current.inspection.readings;
+          var rows=[],bottom=margin;
+          if(narrow&&entries.length>1){
+            var selectedKey=entries.indexOf(live.current.selected)!==-1?live.current.selected:entries[0],cardWidth=Math.min(260,width-margin*2),height=cardWidth*(readings?168:136)/640;
+            rows.push({key:selectedKey,x:width/2,y:margin+height/2,width:cardWidth,height:height,reading:readings});bottom+=height+gap;
+            var remaining=entries.filter(function(key){return key!==selectedKey;}),smallWidth=Math.min(230,(width-margin*2-gap*(remaining.length-1))/remaining.length),smallHeight=smallWidth*136/640,total=smallWidth*remaining.length+gap*(remaining.length-1);
+            remaining.forEach(function(key,index){rows.push({key:key,x:(width-total)/2+smallWidth/2+index*(smallWidth+gap),y:bottom+smallHeight/2,width:smallWidth,height:smallHeight,reading:false});});bottom+=smallHeight;
+          }else if(entries.length){
+            var cardWidth=Math.min(260,(width-margin*2-gap*(entries.length-1))/entries.length),height=cardWidth*(readings?168:136)/640,total=cardWidth*entries.length+gap*(entries.length-1);
+            entries.forEach(function(key,index){rows.push({key:key,x:(width-total)/2+cardWidth/2+index*(cardWidth+gap),y:margin+height/2,width:cardWidth,height:height,reading:readings});});bottom+=height;
           }
-          placed.forEach(function(item){
-            var label=item.label;label.position.copy(item.origin).addScaledVector(right,(item.x-item.screen.x)*halfWidth).addScaledVector(up,(item.y-item.screen.y)*halfHeight);
-            var leader=leaders[item.key],points=leader.geometry.attributes.position;
-            points.setXYZ(0,item.origin.x,item.origin.y,item.origin.z);points.setXYZ(1,label.position.x,label.position.y,label.position.z);points.needsUpdate=true;leader.geometry.computeBoundingSphere();leader.visible=label.position.distanceToSquared(item.origin)>.0025;
+          return {rows:rows,bottom:entries.length?bottom+20:18};
+        }
+        // Project each mesh's own bounds, rather than the corners of one oversized world box.
+        // This avoids inventing empty space above short mechanisms or around rotated assemblies.
+        function mechanismPoints(key){
+          var points=[];
+          function visit(object){if(!object.visible)return;
+            if(object.userData.motionRadius){for(var a=0;a<48;a++){var angle=a*Math.PI/24;[-.12,.52].forEach(function(z){points.push(new THREE.Vector3(Math.cos(angle)*object.userData.motionRadius,Math.sin(angle)*object.userData.motionRadius,z).applyMatrix4(object.matrixWorld));});}}
+            if(object.isMesh&&object.geometry){var geometry=object.geometry;if(!geometry.boundingBox||id==='wave'&&object===ocean)geometry.computeBoundingBox();var b=geometry.boundingBox;
+              if(id==='wave'&&object===ocean){var waveEnvelope=Math.max(ocean.userData.amplitude||0,live.current.run.settings.height*.13);b.min.z=-waveEnvelope;b.max.z=waveEnvelope;}
+              var heaving=false,parent=object;while(parent&&parent!==scene){if(['energy-wave-buoy','energy-wave-rim','energy-wave-deck','energy-wave-pto-carriage'].indexOf(parent.name)!==-1)heaving=true;parent=parent.parent;}
+              [b.min.x,b.max.x].forEach(function(x){[b.min.y,b.max.y].forEach(function(y){[b.min.z,b.max.z].forEach(function(z){var point=new THREE.Vector3(x,y,z).applyMatrix4(object.matrixWorld);if(heaving){point.y+=1.25-buoy.position.y;[-1,1].forEach(function(sign){var end=point.clone();end.y+=sign*Math.max(ocean.userData.amplitude||0,live.current.run.settings.height*.13);points.push(end);});}else points.push(point);});});});}
+            object.children.forEach(visit);}
+          // Frame the generator assembly independently of its switchgear and distant load.
+          if(key==='generator'&&focusDetail&&generatorFocus){visit(generatorFocus);return points;}
+          Object.keys(groups).forEach(function(k){if(!key||k===key)visit(groups[k]);});if(!key&&context.visible)visit(context);return points;
+        }
+        fitView=function(key){
+          scene.updateMatrixWorld(true);var points=mechanismPoints(key);if(!points.length)return;
+          var bounds=new THREE.Box3().setFromPoints(points),center=bounds.getCenter(new THREE.Vector3());view.target=[center.x,center.y,center.z];view.zoom=1;position();camera.updateMatrixWorld(true);
+          var projected=points.map(function(point){return point.clone().project(camera);}),minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+          projected.forEach(function(point){minX=Math.min(minX,point.x);maxX=Math.max(maxX,point.x);minY=Math.min(minY,point.y);maxY=Math.max(maxY,point.y);});
+          var width=viewport.width,height=viewport.height,left=-1+36/width,right=1-36/width,top=1-2*labelLayout().bottom/height,bottom=-1+36/height;
+          view.zoom=Math.max(.15,Math.min(zoomLimit(),(right-left)/Math.max(maxX-minX,.01),(top-bottom)/Math.max(maxY-minY,.01)));
+          var cameraRight=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),cameraUp=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+          center.addScaledVector(cameraRight,((minX+maxX)/2-(left+right)/2/view.zoom)*(camera.right-camera.left)/2).addScaledVector(cameraUp,((minY+maxY)/2-(top+bottom)/2/view.zoom)*(camera.top-camera.bottom)/2);
+          view.target=[center.x,center.y,center.z];position();
+        };
+        var componentAnchors={solarPv:[[-1.5,5.2,0],[-1.5,1.2,0],[2.85,1,.45]],wind:[[-3,3.5,2],[-1.1,3.65,.65],[-1.1,3.65,-.7]],tidal:[[-3,2.3,2],[-1.1,2.25,.65],[-1.1,2.25,-.7]],hydro:[[-3,4,0],[1,.8,.7],[1,.8,-1.45]],geothermal:[[-4,2.6,2.4],[.5,1.6,0],[2.4,1.5,.8]],solarThermal:[[-2.7,.7,1.2],[.5,4.6,0],[2.6,.9,-.3]],wave:[[-3,1.1,-1],[-1,1.5,0],[2,3.6,.75]],biomass:[[-3.7,1.5,0],[-.7,1.7,1.1],[2.5,1.1,.6]],storage:[[-4,1.5,.7],[-.45,2.7,0],[2.8,1,.7]]};
+        function placeLabels(){
+          camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);
+          var right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),up=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion),width=viewport.width,height=viewport.height;
+          var halfWidth=(camera.right-camera.left)/(2*camera.zoom),halfHeight=(camera.top-camera.bottom)/(2*camera.zoom),layout=labelLayout(),nodes=rnEnergyPathway(live.current.run).nodes;
+          Object.keys(labels).forEach(function(key){leaders[key].visible=false;if(focusTarget&&key!==focusTarget)labels[key].visible=false;});
+          layout.rows.forEach(function(item){
+            var index=['resource','converter','generator'].indexOf(item.key),label=labels[item.key],anchor=componentAnchors[id][index].slice();
+            if(id==='solarPv'&&index===0)anchor=solarDisc.position.toArray();
+            if(id==='solarPv'&&index===1)anchor=[array.position.x,array.position.y+.12,array.position.z];
+            if((id==='wind'||id==='tidal'))anchor[1]=blade.position.y;
+            if(id==='hydro'&&index===0)anchor[1]=reservoirWater.position.y;
+            if(id==='wave'&&index===1){anchor[0]=buoy.position.x-.48;anchor[1]=buoy.position.y+.35;}
+            var origin=groups[item.key].localToWorld(new THREE.Vector3(anchor[0],anchor[1],anchor[2])),screen=origin.clone().project(camera),x=item.x/width*2-1,y=1-item.y/height*2;
+            label.userData.updateReading(nodes[index],item.reading,live.current.selected===item.key);
+            label.scale.set(item.width/width*2*halfWidth,item.height/height*2*halfHeight,1);
+            label.position.copy(origin).addScaledVector(right,(x-screen.x)*halfWidth).addScaledVector(up,(y-screen.y)*halfHeight);
+            var leader=leaders[item.key],points=leader.geometry.attributes.position,edge=label.position.clone().addScaledVector(up,-label.scale.y/2),elbow=edge.clone().addScaledVector(up,-12/height*2*halfHeight);
+            points.setXYZ(0,edge.x,edge.y,edge.z);points.setXYZ(1,elbow.x,elbow.y,elbow.z);points.setXYZ(2,origin.x,origin.y,origin.z);points.needsUpdate=true;leader.geometry.computeBoundingSphere();leader.visible=screen.x>=-1&&screen.x<=1&&screen.y>=-1&&screen.y<=1;leader.material.opacity=live.current.selected===item.key?.72:.3;
           });
+          container.setAttribute('data-callout-layout',width<660?'compact':'wide');
         }
         var raycaster=new THREE.Raycaster();
         function hitAt(e){
@@ -2885,41 +3525,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           }catch(error){fail();return null;}
         }
         bind(renderer.domElement,'webglcontextlost',function(e){e.preventDefault();fail();});
-        bind(renderer.domElement,'pointerdown',function(e){if(!active()||e.button!==0)return;drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,touch:e.pointerType==='touch',moved:false};if(!drag.touch)renderer.domElement.setPointerCapture(e.pointerId);});
-        bind(renderer.domElement,'pointermove',function(e){if(!active())return;if(!drag){if(e.pointerType!=='touch')renderer.domElement.style.cursor=hitAt(e)?'pointer':'grab';return;}if(drag.touch)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+        function setHovered(part){if(hoverPart===part)return;hoverPart=part;hoveredState[1](part);dirty=true;}
+        bind(renderer.domElement,'pointerdown',function(e){if(!active()||e.button!==0)return;setHovered(null);drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,touch:e.pointerType==='touch',moved:false};if(!drag.touch)renderer.domElement.setPointerCapture(e.pointerId);});
+        bind(renderer.domElement,'pointermove',function(e){if(!active())return;if(!drag){if(e.pointerType!=='touch'){var hit=hitAt(e);setHovered(hit?hit.object.userData.component:null);renderer.domElement.style.cursor=hit?'pointer':'grab';}return;}if(drag.touch)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;
           if(Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>5)drag.moved=true;
-          if(drag.moved){renderer.domElement.style.cursor='grabbing';view.name='custom';view.yaw=((view.yaw-dx*.006)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);view.pitch=Math.max(0,Math.min(Math.PI/2,view.pitch+dy*.006));position();}drag.x=e.clientX;drag.y=e.clientY;});
+          if(drag.moved){frameHold[1](true);renderer.domElement.style.cursor='grabbing';view.name='custom';view.yaw=((view.yaw-dx*.006)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);view.pitch=Math.max(0,Math.min(Math.PI/2,view.pitch+dy*.006));position();}drag.x=e.clientX;drag.y=e.clientY;});
         function pointerEnd(e){if(!active()){drag=null;return;}if(!drag)return;var moved=drag.moved||Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>8;drag=null;renderer.domElement.style.cursor='grab';if(moved||e.type==='pointercancel')return;
           var hit=hitAt(e);if(hit)live.current.onPick(hit.object.userData.component);
         }
-        bind(renderer.domElement,'pointerleave',function(){if(!drag)renderer.domElement.style.cursor='grab';});
+        bind(renderer.domElement,'pointerleave',function(){setHovered(null);if(!drag)renderer.domElement.style.cursor='grab';});
         bind(renderer.domElement,'pointerup',pointerEnd);bind(renderer.domElement,'pointercancel',pointerEnd);
-        resize=function(){if(!active())return;var w=container.clientWidth||700,ht=container.clientHeight||440,aspect=w/ht,halfY=Math.max(5.8,8/aspect);
+        bind(renderer.domElement,'dblclick',function(e){if(!active())return;var hit=hitAt(e);if(!hit)return;e.preventDefault();var part=hit.object.userData.component;live.current.onPick(part);focusTarget=part;focusDetail=hasGeneratorDetail&&part==='generator'&&!!live.current.inspection.cutaway;fitPending=true;dirty=true;});
+        resize=function(){if(!active())return;var w=container.clientWidth||700,ht=container.clientHeight||440,aspect=w/ht,halfY=Math.max(5.8,8/aspect);viewport.width=w;viewport.height=ht;
           camera.left=-halfY*aspect;camera.right=halfY*aspect;camera.top=halfY;camera.bottom=-halfY;camera.updateProjectionMatrix();renderer.setSize(w,ht,false);fitPending=true;dirty=true;};
         if(window.ResizeObserver){observer=new ResizeObserver(resize);observer.observe(container);}else bind(window,'resize',resize);resize();
-        if(window.IntersectionObserver){intersection=new IntersectionObserver(function(entries){visible=entries[0].isIntersecting;});intersection.observe(container);}
-        function frame(){if(disposed||failed)return;raf=requestAnimationFrame(frame);var p=live.current;
+        if(window.IntersectionObserver){intersection=new IntersectionObserver(function(entries){visible=entries[0].isIntersecting;if(visible)dirty=true;});intersection.observe(container);}
+        function frame(timestamp){if(disposed||failed)return;raf=requestAnimationFrame(frame);var p=live.current;
           // A render can publish the next technology's props before the old effect is cleaned up.
-          if(p.id!==id||document.hidden||!visible||(!dirty&&p===lastProps))return;dirty=false;lastProps=p;
+          if(p.animate||p.run.status==='Sequence complete'||p.run.status==='Cycle complete'||p.run.status==='Scenario complete')pendingMotionStep=0;
+          if(p.id!==id||document.hidden||!visible){lastFrame=0;return;}
+          var animate=p.animate&&!reducedMotion,dt=animate&&lastFrame?Math.max(0,Math.min(.12,(timestamp-lastFrame)/1000)):0;lastFrame=timestamp;
+          // Slow motion changes only the illustration clock. Manual steps are explicit visual advances.
+          dt*=p.motionSpeed||1;if(!animate&&pendingMotionStep){dt=pendingMotionStep;pendingMotionStep=0;}
+          if(!dirty&&p===lastProps&&!animate)return;dirty=false;lastProps=p;
           try{
+          // Camera projection and pixel-sized callouts must use the same layout measurement.
+          if(container.clientWidth&&container.clientHeight&&(container.clientWidth!==viewport.width||container.clientHeight!==viewport.height))resize();
           Object.keys(groups).forEach(function(key){groups[key].visible=true;});
-          updaters.forEach(function(update){update(p);});
+          dimensionSettling=false;responseSettling=false;var visualProps=Object.assign({},p,{dt:dt,animate:animate,syncResponse:lastVisualPhase!==p.phase});lastVisualPhase=p.phase;
+          updaters.forEach(function(update){update(visualProps);});
           var inspection=p.inspection,inspectionKey=inspection.layout+'|'+inspection.isolated+'|'+inspection.labels+'|'+p.selected+'|'+inspection.readings;
-          rnEnergyPathway(p.run).nodes.forEach(function(node){labels[node.id].userData.updateReading(node,inspection.readings,p.selected===node.id);});
           Object.keys(groups).forEach(function(key,index){var offset=inspection.layout==='exploded'?(index-1)*3.4:0,lift=inspection.layout==='exploded'&&index===1?.8:0,g=groups[key],label=labels[key];g.position.set(offset,lift,0);g.visible=g.visible&&(!inspection.isolated||key===p.selected);label.position.set(label.userData.origin[0]+offset,label.userData.origin[1]+lift,label.userData.origin[2]);label.visible=inspection.labels&&(!inspection.isolated||key===p.selected);});
           context.visible=!inspection.isolated;
+          if(storageWiring||cspOptics||cspThermal||pvOptics||pvWiring){scene.updateMatrixWorld(true);if(storageWiring)storageWiring.update();if(cspOptics)cspOptics.update();if(cspThermal)cspThermal.update();if(pvOptics)pvOptics.update();if(pvWiring)pvWiring.update();}
+          markerUpdaters.forEach(function(update){update(visualProps);});
+          var dimensionKeys={solarPv:['area','incidence'],wind:['radius'],tidal:['radius'],hydro:['head'],solarThermal:['area'],wave:['height','width'],biomass:['feed','heating']}[id]||[],dimensions=dimensionKeys.map(function(key){return p.run.settings[key];}).join('|');
+          if(dimensions!==lastDimensions){lastDimensions=dimensions;if(!p.holdFraming)fitPending=true;}
+          // Follow the displayed mechanism through a dimensional adjustment, including its final exact pose.
+          if((dimensionSettling||wasDimensionSettling)&&!p.holdFraming)fitPending=true;
+          wasDimensionSettling=dimensionSettling;
           if(lastInspection!==inspectionKey){
             var previous=lastInspection&&lastInspection.split('|');
-            if(previous&&(previous[0]!==inspection.layout||previous[1]!==String(inspection.isolated))){focusTarget=null;fitPending=true;}
-            if(inspection.isolated||focusTarget){focusTarget=p.selected;fitPending=true;}
+            if(previous&&(previous[0]!==inspection.layout||previous[1]!==String(inspection.isolated))){focusTarget=null;focusDetail=false;fitPending=true;}
+            if(inspection.isolated||focusTarget){focusTarget=p.selected;if(focusTarget!=='generator')focusDetail=false;fitPending=true;}
             if(previous&&(previous[2]!==String(inspection.labels)||previous[4]!==String(inspection.readings)))fitPending=true;
             lastInspection=inspectionKey;
           }
           if(fitPending){fitPending=false;fitView(inspection.isolated?p.selected:focusTarget);}
-          placeLabels();container.setAttribute('data-camera-view',view.name);
-          container.setAttribute('data-inspection-layout',inspection.layout);container.setAttribute('data-inspection-isolated',inspection.isolated?p.selected:'none');
+          placeLabels();container.setAttribute('data-camera-view',view.name);container.setAttribute('data-camera-held',String(p.holdFraming));container.setAttribute('data-illustration-speed',String(p.motionSpeed));
+          container.setAttribute('data-inspection-layout',inspection.layout);container.setAttribute('data-generator-cutaway',String(!!inspection.cutaway));container.setAttribute('data-inspection-isolated',inspection.isolated?p.selected:'none');
           container.setAttribute('data-inspection-labels',String(inspection.labels));container.setAttribute('data-inspection-readings',String(inspection.readings));
-          pickables.forEach(function(m){if(m.material.emissive&&m!==lamp){m.material.emissive.set(m.userData.component===p.selected?'#206852':'#000000');m.material.emissiveIntensity=.35;}});
+          container.setAttribute('data-motion-mode',reducedMotion?'reduced':animate?'preview':'paused');container.setAttribute('data-response-state',responseSettling?'settling':'steady');container.setAttribute('data-dimension-response',dimensionSettling?'settling':'steady');container.setAttribute('data-traced-component',inspection.trace?p.selected:'none');
+          pickables.forEach(function(m){if(m.material.emissive&&!m.userData.energyGlow){m.material.emissive.set(m.userData.component===hoverPart?'#497fa3':m.userData.component===p.selected?'#206852':'#000000');m.material.emissiveIntensity=m.userData.component===hoverPart?.45:inspection.trace&&m.userData.component===p.selected?.52:.25;}});
+          container.setAttribute('data-hovered-component',hoverPart||'none');container.setAttribute('data-focused-component',focusTarget||'none');container.setAttribute('data-camera-detail',focusDetail&&focusTarget==='generator'?'generator':'none');
           renderer.render(scene,camera);container.setAttribute('data-energy-scene-id',id);
           }catch(error){fail();}
         }
@@ -2930,10 +3588,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         if(renderer){renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();}
       };
     },[props.id,retry[0]]);
+    var responseGuide={solarPv:'The supports, sunlight and DC cable follow panel area and angle. At grazing incidence, intercepted light and electrical flow stop. Separate gold paths carry DC from the array to the inverter and AC to the load; their marks follow the corresponding power readings. Module efficiency and cell temperature change electrical output without changing incoming light.',wind:'Rotor size follows radius; larger rotors turn more slowly at the same wind speed. The generator strip shows delivered power as a fraction of its rating: amber means the rating is reached; orange marks protective shutdown.',tidal:'Stream arrows follow the selected current immediately; the rotor slows through a change of direction. Larger rotors turn more slowly. Rotor clearance follows radius; the generator strip shows delivered power relative to its rating.',hydro:'The gold bracket follows water head. Flow opens the inlet gate and moves the water; head and flow smoothly change the shared runner and generator rotation. Gold flow marks carry electricity from the generator through the switchgear to the load. Efficiency changes electrical output without changing hydraulic motion.',geothermal:'Well circulation follows fluid flow. Extracted heat drives the separate working-fluid loop and turbine; the cooling fan responds to rejected heat.',solarThermal:'Mirror area changes the collecting surfaces and reflected beam footprint. Sunlight strength changes ray brightness. Orange flow carries heat from the receiver to the power block; blue flow returns to the receiver. The connected pipes brighten with delivered heat, while the turbine and output light follow electricity.',wave:'Height changes the travel range; period changes the motion cycle. The buoy and upper collar slide along the fixed central post. The gold ruler marks selected capture frontage on a compressed scale. Electrical equipment stays on a supported deck above the crests. The unnumbered travel guide shows the illustrated heave range; its pointer follows the buoy. Buoy size stays fixed; frontage and efficiency change mean output.',biomass:'Feed rate moves fuel; feed and heating value change the flame. Boiler efficiency changes useful steam heat, while steam-cycle efficiency changes electrical output.',storage:'The fill is the exact stored fraction at the selected minute. Rack indicators move down while charging and up while discharging; brightness follows actual transfer power. They show the bank direction, not individual rack power. Gold paths connect the supply, bank, inverter and load. Separate positive and negative rails connect all three racks. Preview motion does not charge or empty the battery.'}[props.id];
     return h('div',{className:'rn-energy-scene',style:{'--re-scene-accent':RN_ENERGY_VISUALS[props.id].color}},
+      h('style',null,'.rn-energy-motion-speed{display:flex;align-items:center;gap:7px;color:#c8e3de;font-size:11px}.rn-energy-motion-speed select{min-height:36px;border:1px solid #779297;border-radius:6px;padding:5px;background:#173c4a;color:#eff9f6}.rn-energy-camera button[aria-pressed=true]{background:#d8f4e9;color:#163d35}'),
       h('div',{className:'rn-energy-scene-heading'},h('div',{className:'rn-energy-scene-identity'},rnEnergyIcon(React,props.id),h('div',null,h('span',null,'Interactive mechanism'),h('strong',null,rnEnergySpec(props.id).name))),h('div',{className:'rn-energy-scene-reading','aria-label':__alloT('stem.renewables.scene_electrical_output','Scene electrical output')},h('span',null,props.id==='storage'?'Discharge output':'Electrical output'),h('strong',null,Number(props.run.power).toLocaleString(undefined,{maximumFractionDigits:2})+' ',h('small',null,'kW')))),
-      h('div',{ref:mount,className:'rn-energy-webgl',role:'img','aria-label':rnEnergySpec(props.id).name+' 3D mechanism with live component readings. Select the component buttons below for equivalent readings and explanations.','data-energy-render-status':status}),
-      h(RenewablesEnergyPathway,{React:React,t:props.t,run:props.run,selected:selected[0],onPick:props.onPick}),
+      h('div',{className:'rn-energy-camera rn-energy-motion-controls'},h('button',{type:'button','aria-label':__alloT('stem.renewables.animate_equipment_at_current_conditions','Animate equipment at current conditions'),'aria-pressed':equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete,disabled:status!=='ready'||motionPreference[0]||sequenceComplete,onClick:function(){if(api.current)api.current('cancel-step');equipmentMotion[1](!equipmentMotion[0]);}},equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete?'Pause equipment animation':'Animate equipment'),
+        h('label',{className:'rn-energy-motion-speed'},'Illustration speed',h('select',{'aria-label':__alloT('stem.renewables.illustration_speed','Illustration speed'),value:motionSpeed[0],onChange:function(e){motionSpeed[1](Number(e.target.value));}},[[.25,'Quarter speed'],[.5,'Half speed'],[1,'Normal speed']].map(function(option){return h('option',{key:option[0],value:option[0]},option[1]);}))),
+        h('button',{type:'button',disabled:status!=='ready'||sequenceComplete||equipmentMotion[0]&&!motionPreference[0],onClick:function(){if(api.current)api.current('step');}},'Step illustration'),
+        h('span',{style:{color:'#c8e3de',fontSize:11,alignSelf:'center'}},sequenceComplete?'Sequence complete: no additional energy flows.':motionPreference[0]?'Reduced motion: equipment stays still. Step advances the illustration by 0.1 seconds.':equipmentMotion[0]?'Slow motion helps inspect equipment response. Readings update immediately.':'Paused. Step advances the illustration by 0.1 seconds; controls still update readings.'),h('span',{style:{color:'#c8e3de',fontSize:11,flexBasis:'100%'}},'Speed and stepping apply to the 3D scene; simulation time and stored energy stay unchanged.')),
+      h('div',{className:'rn-energy-camera rn-energy-trace-controls'},h('button',{type:'button',disabled:status!=='ready','aria-pressed':!!inspection.trace,onClick:function(){inspect({trace:!inspection.trace});}},'Emphasize selected stage'),hasGeneratorDetail&&h('button',{type:'button',disabled:status!=='ready','aria-pressed':!!inspection.cutaway,onClick:function(){inspect({cutaway:!inspection.cutaway});}},'Show generator cutaway'),hasGeneratorDetail&&h('button',{type:'button',disabled:status!=='ready',onClick:function(){props.onPick('generator');inspect({cutaway:true});if(api.current)api.current('inspect-generator');}},'Inspect generator'),h('span',{'data-trace-stage':inspection.trace?selected[0]:'none',style:{color:'#c8e3de',fontSize:11,alignSelf:'center',lineHeight:1.6}},inspection.trace?'Emphasizing '+selected[1]+'. Select another stage to follow its equipment and active flow.':'Select a stage, then emphasize its equipment and flow markers.')),
+      h('div',{ref:mount,className:'rn-energy-webgl',role:'group',tabIndex:status==='ready'?0:-1,'aria-label':rnEnergySpec(props.id).name+' interactive 3D mechanism. Arrow keys orbit, plus and minus zoom, Home resets, keys 1 to 3 select a component, Enter focuses it, and period steps the paused illustration. Component and camera buttons provide the same controls.','data-energy-render-status':status,onKeyDown:function(e){var action={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down','+':'in','=':'in','-':'out','_':'out',Home:'home',Enter:'focus','.':'step'}[e.key];if(e.altKey||e.ctrlKey||e.metaKey)return;if(action&&api.current){e.preventDefault();api.current(action);}else if(['1','2','3'].indexOf(e.key)!==-1){e.preventDefault();props.onPick(rnEnergySpec(props.id).components[Number(e.key)-1][0]);}}}),
+      props.onAdjust&&h(RenewablesEnergyControlDock,{React:React,t:props.t,id:props.id,settings:props.controlSettings,run:props.run,profile:props.profile,phase:props.phase,onChange:props.onAdjust}),
+      h('div',{className:'rn-energy-camera',role:'group','aria-label':__alloT('stem.renewables.mechanism_camera_controls','Mechanism camera controls')},[['focus','Focus selected component'],['fit','Fit mechanism'],['left','Rotate left'],['right','Rotate right'],['up','Tilt up'],['down','Tilt down'],['in','Zoom in'],['out','Zoom out'],['home','Reset camera']].map(function(a){return h('button',{type:'button',key:a[0],disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);}),h('button',{type:'button',disabled:status!=='ready','aria-pressed':frameHold[0],onClick:function(){frameHold[1](!frameHold[0]);if(frameHold[0]&&api.current)api.current('fit');}},'Hold camera framing')),
+      h('p',{className:'rn-energy-scene-note','data-component-hover-readout':hovered||'none',style:{paddingTop:10,minHeight:38}},hovered?(function(){var index=['resource','converter','generator'].indexOf(hovered),node=rnEnergyPathway(props.run).nodes[index];return node.component+' · '+rnEnergyReading(node.value)+' '+node.unit+' · Click to select; double-click to focus.';})():'Point at a component to preview its live reading. Click to select; double-click to focus.'),
+      h('p',{className:'rn-energy-scene-note','data-equipment-response-guide':props.id},h('strong',null,props.run.status+'. '),responseGuide,['hydro','geothermal','solarThermal','biomass'].indexOf(props.id)!==-1?' Follow the brass tab against the fixed casing pointer; slow motion and Step illustration make each turn easier to inspect.':null),
+      hasGeneratorDetail&&h('p',{className:'rn-energy-scene-note','data-generator-inspection-note':true},props.id==='hydro'?(inspection.cutaway?'Generator cutaway: the coupling, shaft and colored core turn with the water runner; the outer windings stay fixed. Rotation is illustrative, not a measured generator speed.':'Open the generator cutaway to follow the shaft and core as you change water head or flow.'):(inspection.cutaway?'Generator cutaway: the shaft and colored core turn with the rotor; the outer windings stay fixed. The visual shows a shared shaft phase, not a measured gear ratio or generator speed.':'Open the generator cutaway to follow the shaft and core as you change the resource or rotor size.')),
+      h(RenewablesEnergyAdjustment,{React:React,t:props.t,run:props.run,previousRun:props.previousRun,adjustment:props.adjustment}),
+      h(RenewablesEnergyPathway,{React:React,t:props.t,run:props.run,previousRun:props.previousRun,motion:equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete,selected:selected[0],onPick:props.onPick}),
       status!=='ready'&&h('div',{className:'rn-energy-fallback',role:'status'},status==='loading'?'Preparing the 3D workbench…':'3D is unavailable. Controls, calculations, and the energy-flow view remain available.',
         status==='failed'&&h('button',{type:'button',onClick:function(){retry[1](retry[0]+1);}},'Retry mechanism 3D')),
       h('div',{className:'rn-energy-viewfinder'},
@@ -2943,15 +3614,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             [['X',Math.cos(cameraReading.yaw),Math.sin(cameraReading.yaw)*Math.sin(cameraReading.pitch),'#ffc68e'],['Y',0,-Math.cos(cameraReading.pitch),'#93efc8'],['Z',-Math.sin(cameraReading.yaw),Math.cos(cameraReading.yaw)*Math.sin(cameraReading.pitch),'#acdbff']].map(function(axis){return h('g',{key:axis[0]},h('line',{x1:43,y1:38,x2:43+axis[1]*22,y2:38+axis[2]*22,stroke:axis[3],strokeWidth:2}),h('text',{x:43+axis[1]*32,y:42+axis[2]*32,fill:axis[3],textAnchor:'middle',fontSize:10,fontWeight:700},axis[0]));}),h('circle',{cx:43,cy:38,r:3,fill:'#effdf7'})),
           h('div',null,h('span',{className:'rn-energy-camera-kicker'},'Camera orientation'),h('strong',null,cameraNames[cameraReading.name]),h('span',{className:'rn-energy-camera-angles'},Math.round(cameraReading.yaw*180/Math.PI)%360+'° around · '+Math.round(cameraReading.pitch*180/Math.PI)+'° above'),h('small',null,'Model axes · Y points up'))),
         h('div',{className:'rn-energy-camera rn-energy-presets',role:'group','aria-label':__alloT('stem.renewables.standard_camera_views','Standard camera views')},cameraPresets.map(function(a){return h('button',{type:'button',key:a[0],disabled:status!=='ready','aria-pressed':cameraReading.name===a[0],onClick:function(){if(api.current)api.current(a[0]);}},a[1]);}))),
-      h('div',{className:'rn-energy-camera',role:'group','aria-label':__alloT('stem.renewables.mechanism_camera_controls','Mechanism camera controls')},[['focus','Focus selected component'],['fit','Fit mechanism'],['left','Rotate left'],['right','Rotate right'],['up','Tilt up'],['down','Tilt down'],['in','Zoom in'],['out','Zoom out'],['home','Reset camera']].map(function(a){return h('button',{type:'button',key:a[0],disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})),
       h('div',{className:'rn-energy-camera rn-energy-inspection','aria-label':__alloT('stem.renewables.mechanism_inspection_controls','Mechanism inspection controls')},
         ['assembled','exploded'].map(function(layout){return h('button',{key:layout,type:'button',disabled:status!=='ready','aria-pressed':inspection.layout===layout,onClick:function(){inspect({layout:layout});}},layout==='assembled'?'Assembled view':'Exploded view');}),
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.isolated,onClick:function(){inspect({isolated:!inspection.isolated});}},'Isolate selected component'),
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.labels,onClick:function(){inspect({labels:!inspection.labels});}},'Component labels'),
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.readings,onClick:function(){inspect({readings:!inspection.readings,labels:true});}},'Live readings'),
-        h('button',{type:'button',disabled:status!=='ready',onClick:function(){inspect({layout:'assembled',isolated:false,labels:true,readings:true});if(api.current)api.current('home');}},'Restore full mechanism')),
+        h('button',{type:'button',disabled:status!=='ready',onClick:function(){inspect({layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false});if(api.current)api.current('home');}},'Restore full mechanism')),
       h('p',{className:'rn-energy-inspection-status','aria-live':'polite','aria-atomic':'true'},(inspection.isolated?'Isolated: ':'Selected: ')+selected[1]+'. '+(inspection.layout==='exploded'?'Assemblies are separated for inspection; gaps do not represent operating distances.':'Assemblies are shown together.')),
-      h('p',{className:'rn-energy-scene-note'},'Click a component or its label to inspect it; the buttons above offer the same readings. Live labels follow the current operating conditions. Drag to orbit, or use the camera buttons. Camera angles use the model axes.'));
+      h('p',{className:'rn-energy-scene-note'},'Gold output cables trace electricity; blue paths show fluid or resource flow; amber rays show sunlight and orange indicates heat. Arrows show direction. More gold-path marks indicate higher power on a compressed relative scale; their speed and count do not represent electrons. Equipment and stream motion respond to the selected resource; the output lamp and window brightness respond to electrical power. These are illustrative cues, not measured dimensions, rotor rpm, fluid speed, or light output. Equipment dimensions and angles ease into place during animation; attached supports, resource paths, and automatic framing follow the displayed equipment. These visual transitions do not simulate construction time, mechanical inertia, or thermal storage. Zero-power paths stop immediately. Pausing holds the motion phase and applies new settings directly.'),
+      h('p',{className:'rn-energy-scene-note'},'Click a component or its label to inspect it; double-click to focus. Drag to orbit. With the scene focused, use arrow keys to orbit, + / − to zoom, 1 / 2 / 3 to select a stage, Enter to focus it, period to step the paused illustration, and Home to reset. The buttons provide the same controls. Live labels follow the current conditions; on smaller screens, select a stage to enlarge its reading.'));
 
   }
 
@@ -3316,6 +3987,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('tbody',null,c.rows.map(function(r){return h('tr',{key:r.minute},h('th',{scope:'row'},r.minute),h('td',null,rnEnergyReading(r.baseline[key])),h('td',null,rnEnergyReading(r.current[key])),h('td',null,signed(r.delta[key])));}))))));
   }
 
+  // The response lens uses the same scenario context as the mechanism, including
+  // battery history. Probing is separate from applying an input to the workbench.
+  function RenewablesOperatingEnvelope(props){
+    var React=props.React,h=React.createElement,T=props.theme,spec=rnEnergySpec(props.id),uid=props.uid+'envelope',tr=rnEnergyT(props);
+    var axisState=React.useState(spec.primary),probeState=React.useState(null),resourceState=React.useState(false);
+    var control=spec.controls.find(function(c){return c[0]===axisState[0];})||spec.controls[0];
+    var request={settings:props.settings,profileId:props.profileId||'steady',minute:props.minute,key:control[0]};
+    var signature=JSON.stringify(request),result=React.useMemo(function(){return rnOperatingEnvelope(spec.id,request);},[signature]);
+    var probeX=probeState[0]&&probeState[0].signature===signature?probeState[0].x:result.axis.current;
+    var probe=React.useMemo(function(){return rnOperatingProbe(spec.id,request,probeX);},[signature,probeX]);
+    var current=result.current,showResource=resourceState[0]||spec.id==='storage',storage=spec.id==='storage';
+    var W=700,H=264,L=62,R=20,top=24,bottom=214;
+    var max=Math.max.apply(null,[1,current.power,probe.power].concat(result.points.map(function(p){return Math.max(p.power,showResource?p.available:0);})));
+    function x(v){return L+(v-result.axis.min)/(result.axis.max-result.axis.min)*(W-L-R);}
+    function y(v){return bottom-v/max*(bottom-top);}
+    function fmt(v){return rnEnergyReading(v);}
+    function precise(v){return Number(v).toLocaleString(undefined,{maximumSignificantDigits:12});}
+    function line(key){return result.points.map(function(p,i){return (i===0||p.breakBefore?'M':'L')+x(p.x).toFixed(3)+','+y(p[key]).toFixed(3);}).join(' ');}
+    function select(value){props.onPause();probeState[1]({signature:signature,x:Math.min(result.axis.max,Math.max(result.axis.min,value))});}
+    function button(label,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),label);}
+    function signed(v){return (v>0?'+':'')+fmt(v);}
+    function saveCsv(){
+      var rows=[['Technology','Scenario','Minute','Input','Input unit','Base input','Effective input','Electrical output kW','Resource or charging input kW','Operating state','Stored kWh','Base settings JSON']];
+      result.points.forEach(function(p){rows.push([spec.name,request.profileId,props.minute,control[1],control[6],p.x,p.effectiveX,p.power,p.available,p.regimeLabel,storage?p.stored:'',JSON.stringify(p.settings)]);});
+      var text=rows.map(function(row){return row.map(function(v){return typeof v==='number'?String(v):'"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+      var url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='renewables-'+spec.id+'-response.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);
+    }
+    return h('section',{id:uid,className:'rn-energy-panel rn-energy-envelope','aria-label':tr('stem.renewables.operating_response_lens','Operating response lens')},
+      h('style',null,'.rn-energy-envelope{margin-top:20px!important;border-top:3px solid var(--re-accent)!important}.rn-energy-envelope .rn-energy-kicker{margin-bottom:5px}.rn-energy-envelope h3{font-size:21px!important;margin:0 0 6px!important;letter-spacing:-.4px}.rn-energy-envelope p{font-size:12px}.rn-energy-envelope-tools{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0 10px}.rn-energy-envelope-tools label{font-size:12px;min-width:0}.rn-energy-envelope select{display:block;max-width:100%;min-height:42px;margin-top:5px;padding:8px 30px 8px 10px;border:1px solid var(--re-border);border-radius:8px;color:var(--re-text);background:var(--re-bg);font:inherit}.rn-energy-envelope select:focus-visible{outline:3px solid var(--re-accent);outline-offset:3px}.rn-energy-envelope-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--re-muted);margin:10px 0}.rn-energy-envelope-legend span{display:flex;align-items:center;gap:6px}.rn-energy-envelope-legend i{width:20px;border-top:3px solid var(--re-accent)}.rn-energy-envelope-legend i[data-line=input]{border-top:2px dashed var(--re-muted)}.rn-energy-envelope-legend i[data-line=current]{width:9px;height:9px;border:2px solid var(--re-text);border-radius:50%;background:var(--re-card)}.rn-energy-envelope-plot{background:var(--re-bg);border:1px solid var(--re-border);border-radius:10px;overflow:hidden}.rn-energy-envelope-plot svg{display:block;width:100%;height:auto;touch-action:pan-y}.rn-energy-envelope-readings{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.rn-energy-envelope-readings>div{border:1px solid var(--re-border);padding:13px;border-radius:10px;min-width:0}.rn-energy-envelope-readings>div:last-child{background:var(--re-alt);border-color:var(--re-accent)}.rn-energy-envelope-readings small,.rn-energy-envelope-readings strong,.rn-energy-envelope-readings span{display:block}.rn-energy-envelope-readings strong{font-size:24px;letter-spacing:-.6px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.rn-energy-envelope-readings span{font-size:12px;margin-top:4px}.rn-energy-envelope-probe label{display:flex;justify-content:space-between;gap:10px;font-size:12px}.rn-energy-envelope-probe input{display:block;width:100%;height:30px;accent-color:var(--re-accent)}.rn-energy-envelope-landmarks{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.rn-energy-envelope-landmarks button{font-size:11px!important;padding:7px 9px!important}.rn-energy-envelope-landmarks b{display:block;font-weight:500;color:var(--re-muted)}.rn-energy-envelope-insight{padding:12px 14px;border-left:3px solid var(--re-accent);background:var(--re-alt);margin-top:14px!important}.rn-energy-envelope-check{display:flex;align-items:center;gap:7px;min-height:40px}.rn-energy-envelope-check input{width:17px;height:17px;accent-color:var(--re-accent)}.rn-energy-envelope footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.rn-energy-envelope footer small{flex:1;min-width:140px;font-size:11px}.rn-energy-envelope .rn-energy-table{margin-top:10px}@media(max-width:500px){.rn-energy-envelope-tools>label:first-child{width:100%}.rn-energy-envelope select{width:100%}.rn-energy-envelope-readings{grid-template-columns:1fr}.rn-energy-envelope-plot{overflow-x:auto}.rn-energy-envelope-plot svg{min-width:500px}.rn-energy-envelope footer button{width:100%}.rn-energy-envelope-readings strong{font-size:25px}}'),
+      h('div',{className:'rn-energy-kicker'},'Predict · probe · apply'),h('h3',null,'Explore the operating range'),
+      h('p',{className:'rn-energy-muted'},'Explore one input across its full range. Compare a probe with your current setup, then bring that prediction into the mechanism.'),
+      h('div',{className:'rn-energy-envelope-tools'},h('label',{htmlFor:uid+'axis'},'Change one input',h('select',{id:uid+'axis','aria-label':tr('stem.renewables.response_input','Response input'),value:control[0],onChange:function(e){props.onPause();axisState[1](e.target.value);probeState[1](null);}},spec.controls.map(function(c){return h('option',{key:c[0],value:c[0]},c[1]+' ('+c[6]+')');}))),
+        !storage&&h('label',{className:'rn-energy-envelope-check'},h('input',{type:'checkbox',checked:showResource,'aria-label':tr('stem.renewables.show_resource_input','Show resource input'),onChange:function(e){resourceState[1](e.target.checked);}}),'Show resource input')),
+      h('div',{className:'rn-energy-envelope-legend'},h('span',null,h('i',{'aria-hidden':true}),storage?'Discharging output':'Electrical output'),showResource&&h('span',null,h('i',{'aria-hidden':true,'data-line':'input'}),storage?'Charging input':'Resource input'),h('span',null,h('i',{'aria-hidden':true,'data-line':'current'}),'Current setup')),
+      h('div',{className:'rn-energy-envelope-plot',tabIndex:0,role:'region','aria-label':tr('stem.renewables.operating_response_chart','Operating response chart')},h('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Electrical output in kW versus '+control[1]+'. Circle: current setup. Vertical line: probe. Use the probe slider or the exact data table to inspect values.',onClick:function(e){var bounds=e.currentTarget.getBoundingClientRect(),position=(e.clientX-bounds.left)/bounds.width*W;select(result.axis.min+(position-L)/(W-L-R)*(result.axis.max-result.axis.min));}},
+        h('title',null,spec.name+' operating response'),
+        [0,.25,.5,.75,1].map(function(f){return h('g',{key:f},h('line',{x1:L,x2:W-R,y1:y(max*f),y2:y(max*f),stroke:T.border,strokeDasharray:'3 5'}),h('text',{x:L-9,y:y(max*f)+4,textAnchor:'end',fill:T.muted,fontSize:12},fmt(max*f)));}),
+        (result.bands||[]).map(function(b,i){return h('rect',{key:i,x:x(b.from),y:bottom+1,width:Math.max(0,x(b.to)-x(b.from)),height:5,fill:b.regime==='converting'?T.accentHi:T.muted,opacity:.35},h('title',null,b.label));}),
+        showResource&&h('path',{d:line('available'),fill:'none',stroke:T.muted,strokeWidth:2,strokeDasharray:'6 5','data-response-line':'input'}),
+        h('path',{d:line('power'),fill:'none',stroke:T.accentHi,strokeWidth:3,'data-response-line':'output'}),
+        (result.thresholds||[]).map(function(t,i){return h('line',{key:i,x1:x(t.x),x2:x(t.x),y1:top,y2:bottom,stroke:T.border,strokeDasharray:'3 4'},h('title',null,t.label));}),
+        h('line',{x1:x(probe.x),x2:x(probe.x),y1:top,y2:bottom,stroke:T.text,strokeWidth:1,strokeDasharray:'4 4'}),
+        h('circle',{cx:x(current.x),cy:y(current.power),r:6,fill:T.card,stroke:T.text,strokeWidth:2}),
+        h('circle',{cx:x(probe.x),cy:y(probe.power),r:4,fill:T.accentHi,stroke:T.card,strokeWidth:1.5}),
+        [0,.25,.5,.75,1].map(function(f){var value=result.axis.min+(result.axis.max-result.axis.min)*f;return h('text',{key:f,x:x(value),y:235,textAnchor:'middle',fill:T.muted,fontSize:12},fmt(value));}),h('text',{x:L,y:14,fill:T.muted,fontSize:12},'kW'),h('text',{x:(L+W-R)/2,y:257,textAnchor:'middle',fill:T.muted,fontSize:12},control[1]+' ('+control[6]+')'))),
+      h('p',{className:'rn-energy-muted',style:{fontSize:11,marginTop:8}},'The chart scrolls horizontally on small screens. Use the probe slider or a boundary button to inspect the full range.'),
+      h('div',{className:'rn-energy-envelope-landmarks'},(result.thresholds||[]).map(function(t,i){return button(h(React.Fragment,null,t.label,h('b',null,(t.approximate?'≈ ':'')+fmt(t.x)+' '+control[6])),function(){select(t.x);},{key:i,'aria-label':'Probe '+t.label});})),
+      h('div',{className:'rn-energy-envelope-probe'},h('label',{htmlFor:uid+'probe'},'Probe '+control[1].toLowerCase(),h('strong',null,precise(probe.x)+' '+control[6])),h('input',{id:uid+'probe',type:'range',min:result.axis.min,max:result.axis.max,step:'any',value:probe.x,'aria-label':tr('stem.renewables.probe_input_value','Probe input value'),'aria-valuetext':precise(probe.x)+' '+control[6]+', '+fmt(probe.power)+' kW',onChange:function(e){select(Number(e.target.value));}})),
+      h('div',{className:'rn-energy-envelope-readings','aria-label':tr('stem.renewables.current_and_probe_readings','Current and probe readings')},
+        h('div',null,h('small',null,'Current · '+precise(current.x)+' '+control[6]),h('strong',{'data-response-value':'current'},fmt(current.power)+' kW'),h('span',null,current.regimeLabel),storage&&h('span',null,fmt(current.stored)+' kWh stored')),
+        h('div',null,h('small',null,'Probe · '+precise(probe.x)+' '+control[6]),h('strong',{'data-response-value':'probe'},fmt(probe.power)+' kW'),h('span',null,probe.regimeLabel+' · '+signed(probe.power-current.power)+' kW'),storage&&h('span',null,fmt(probe.stored)+' kWh stored'))),
+      request.profileId!=='steady'&&h('p',{className:'rn-energy-muted'},'At scenario minute '+props.minute+'. The horizontal axis is the base input; scenario conditions are applied to each probe. Effective '+control[1].toLowerCase()+': '+precise(probe.effectiveX)+' '+control[6]+'.'),
+      h('footer',null,button('Apply probe to simulation',function(){props.onApply(control[0],probe.x);probeState[1](null);},{disabled:Math.abs(probe.x-current.x)<1e-10}),button('Return probe to current',function(){select(current.x);},{disabled:Math.abs(probe.x-current.x)<1e-10}),h('small',null,'Applying keeps the same scenario and minute. The input can be undone in Set the conditions.')),
+      h('p',{className:'rn-energy-envelope-insight'},result.insight),
+      h('details',null,h('summary',null,'Read response data and model boundaries'),h('p',{className:'rn-energy-muted'},Array.isArray(result.rules)?result.rules.join(' '):result.rules),button('Export response CSV',saveCsv),
+        h('div',{className:'rn-energy-table',tabIndex:0,role:'region','aria-label':tr('stem.renewables.response_data','Response data')},h('table',null,h('caption',null,'One base input varied; all other settings and the inspected minute are held fixed. Lines join sampled values; discontinuities are separated.'),
+          h('thead',null,h('tr',null,[control[1]+' ('+control[6]+')','Output (kW)',storage?'Charging (kW)':'Resource (kW)','Operating state'].map(function(label){return h('th',{key:label,scope:'col'},label);}))),h('tbody',null,result.points.map(function(p,i){return h('tr',{key:i},h('th',{scope:'row'},precise(p.x)),h('td',null,precise(p.power)),h('td',null,precise(p.available)),h('td',null,p.regimeLabel));}))))));
+  }
+
   function RenewablesEnergyLab(props){
     var React=props.ctx.React,h=React.createElement,T=props.theme,state=props.state||{},spec=rnEnergySpec(state.selected),id=spec.id;
     var __alloT=rnEnergyT(props);
@@ -3335,6 +4065,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     var componentState=React.useState('converter'),selected=componentState[0],playingState=React.useState(false),playing=playingState[0],modeState=React.useState('3d');
     var noticeState=React.useState(''),uid=React.useId().replace(/:/g,''),live=React.useRef(null),inputUndo=React.useState({}),notebookUndo=React.useState({}),fileInput=React.useRef(null),fileTrigger=React.useRef(null);
     var undoEntry=inputUndo[0][id],canUndo=undoEntry&&undoEntry.before!==undoEntry.after&&JSON.stringify(settings)===JSON.stringify(undoEntry.afterSettings),undoControl=canUndo&&spec.controls.find(function(c){return c[0]===undoEntry.key;});
+    var previousSettings=canUndo?Object.assign({},settings):null;if(previousSettings)previousSettings[undoEntry.key]=undoEntry.before;
+    var previousStudy=React.useMemo(function(){return previousSettings&&profile?rnEnergyScenario(id,previousSettings,profile.id):null;},[id,JSON.stringify(previousSettings),profile&&profile.id]);
+    var previousRun=React.useMemo(function(){return previousStudy?previousStudy.rows[phase].run:previousSettings?rnEnergyRun(id,previousSettings,id==='storage'?phase:0):null;},[id,JSON.stringify(previousSettings),previousStudy,phase]);
+    var adjustment=canUndo?{control:undoControl,before:undoEntry.before,after:undoEntry.after,minute:profile||id==='storage'?phase:0,profileId:profile?profile.id:'steady',profileName:profile?profile.name:'Two-hour charge / discharge cycle'}:null;
     live.current={state:state,props:props,phase:phase,id:id,duration:duration,step:profile?Math.max(1,Math.round(duration/120)):1};
     React.useEffect(function(){playingState[1](false);componentState[1]('converter');noticeState[1]('');},[id]);
     React.useEffect(function(){
@@ -3409,7 +4143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         notebooks:RN_ENERGY_SPECS.map(function(c){return {id:c.id,name:c.name,readings:(state.readings&&Array.isArray(state.readings[c.id])?state.readings[c.id]:[]).filter(function(r){return r&&r.settings;}).slice(-3).map(function(r){var resolved=rnEnergyResolveReading(c.id,r);return {name:r.name||'',note:r.note||'',profileId:resolved.profileId,phase:resolved.phase,baseSettings:resolved.baseSettings,result:resolved.run,accumulatedEnergy:resolved.energy,scenarioTotals:resolved.totals};})};})};
       var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='renewables-mechanisms.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);noticeState[1]('Exported this mechanism and all saved technology readings.');
     }
-    function inspectExperiment(inputs,profileId,minute){playingState[1](false);modeState[1]('3d');var next=Object.assign({},state.settings),scenarios=Object.assign({},state.scenarios),phases=Object.assign({},state.phases);next[id]=inputs;scenarios[id]={profileId:profileId,minute:minute};if(profileId==='steady')phases[id]=minute;change({settings:next,scenarios:scenarios,phases:phases});setTimeout(function(){var stage=document.getElementById(uid+'workbench');if(stage){stage.scrollIntoView({block:'start'});stage.focus({preventScroll:true});}},0);}
+    function inspectExperiment(inputs,profileId,minute){playingState[1](false);clearInputUndo();modeState[1]('3d');var next=Object.assign({},state.settings),scenarios=Object.assign({},state.scenarios),phases=Object.assign({},state.phases);next[id]=inputs;scenarios[id]={profileId:profileId,minute:minute};if(profileId==='steady')phases[id]=minute;change({settings:next,scenarios:scenarios,phases:phases});setTimeout(function(){var stage=document.getElementById(uid+'workbench');if(stage){stage.scrollIntoView({block:'start'});stage.focus({preventScroll:true});}},0);}
     function flow(){
       return h('ol',{className:'rn-energy-flow','aria-label':__alloT('stem.renewables.energy_conversion_pathway','Energy conversion pathway')},run.stages.map(function(stage,i){return h('li',{key:stage.label},h('span',null,String(i+1).padStart(2,'0')),h('div',null,h('strong',null,stage.label),h('p',null,fmt(stage.value)+' '+stage.unit)));}));
     }
@@ -3419,7 +4153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       return h('section',{className:'rn-energy-panel rn-energy-operating','aria-label':__alloT('stem.renewables.operating_conditions','Operating conditions')},
         h('div',{className:'rn-energy-toolbar'},h('div',null,h('h3',null,'Test changing conditions'),h('p',{className:'rn-energy-muted'},'Choose a repeatable operating story, then watch the mechanism and energy totals respond.')),
           h('label',{htmlFor:uid+'program'},'Operating scenario',h('select',{id:uid+'program','aria-label':__alloT('stem.renewables.operating_scenario','Operating scenario'),value:profile?profile.id:'steady',onChange:function(e){
-            playingState[1](false);var scenarios=Object.assign({},state.scenarios);scenarios[id]={profileId:e.target.value,minute:0};change({scenarios:scenarios});
+            playingState[1](false);clearInputUndo();var scenarios=Object.assign({},state.scenarios);scenarios[id]={profileId:e.target.value,minute:0};change({scenarios:scenarios});
           }},h('option',{value:'steady'},id==='storage'?'Original two-hour cycle':'Steady conditions'),(RN_ENERGY_PROGRAMS[id]||[]).map(function(p){return h('option',{value:p.id,key:p.id},p.name);})))),
         profile&&h('div',null,h('p',null,profile.prompt),
           h('div',{className:'rn-energy-live-condition','aria-label':__alloT('stem.renewables.current_operating_condition','Current operating condition')},h('strong',null,profile.name+' · minute '+phase+' of '+duration),
@@ -3533,11 +4267,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('div',{style:{minWidth:0}},
           h('div',{className:'rn-energy-toolbar rn-energy-view-heading',style:{marginBottom:10}},h('strong',null,'Look inside the mechanism'),h('div',{className:'rn-energy-toolbar'},
             button('3D mechanism',function(){modeState[1]('3d');},modeState[0]==='3d'),button('Energy flow',function(){modeState[1]('flow');},modeState[0]==='flow'))),
-          modeState[0]==='3d'?h('div',{className:'rn-energy-stage'},h(RenewablesEnergyScene,{React:React,t:rnT,id:id,run:run,phase:phase,selected:selected,onPick:chooseComponent}),h('div',{className:'rn-energy-scene-note'},'Schematic scale · drag to orbit · click a component · gold indicates electricity')):h('div',{className:'rn-energy-panel'},flow(),h('p',{className:'rn-energy-muted'},'Equivalent energy pathway. Select a component below to read how it works.')),
-          h('div',{className:'rn-energy-time'},h('div',{className:'rn-energy-toolbar'},button(playing?'Pause mechanism':'Play mechanism',function(){if(!playing&&phase>=duration)props.onChange(rnEnergyPosition(state,id,0));playingState[1](!playing);},playing),button('Step forward',function(){time(Math.min(duration,phase+1));}),h('small',null,profile?profile.name:storage?'Two-hour charge / discharge cycle':'Motion illustrates the selected steady conditions')),
-            h('div',{className:'rn-energy-control'},h('label',{htmlFor:uid+'phase'},profile?'Scenario minute':storage?'Cycle minute':'Animation position',h('strong',null,phase+(profile||storage?' min':' s'))),
-              h('input',{id:uid+'phase',type:'range',min:0,max:duration,step:1,value:phase,'aria-label':profile?'Scenario minute':storage?'Cycle minute':'Animation position',onChange:function(e){time(Number(e.target.value));}})),
-            h('small',null,profile?'Synthetic conditions change with the selected minute. Playback is accelerated; energy is integrated in one-minute steps.':storage?'0–60 min: charge. 60–120 min: discharge. Playback is accelerated; the calculation uses the labeled minutes.':'Playback starts paused. Rotor speed and flow particles are illustrative, not measured RPM or fluid velocity.')),
+          modeState[0]==='3d'?h('div',{className:'rn-energy-stage'},h(RenewablesEnergyScene,{React:React,t:rnT,id:id,run:run,previousRun:previousRun,adjustment:adjustment,phase:phase,selected:selected,onPick:chooseComponent,controlSettings:settings,profile:profile,onAdjust:update}),h('div',{className:'rn-energy-scene-note'},'Schematic scale · drag to orbit · click a component · gold indicates electricity')):h('div',{className:'rn-energy-panel'},h(RenewablesEnergyAdjustment,{React:React,t:rnT,run:run,previousRun:previousRun,adjustment:adjustment}),h(RenewablesEnergyPathway,{React:React,t:rnT,run:run,previousRun:previousRun,motion:false,selected:selected,onPick:chooseComponent})),
+          (profile||storage)?h('div',{className:'rn-energy-time'},h('div',{className:'rn-energy-toolbar'},button(playing?'Pause timeline':'Play timeline',function(){if(!playing&&phase>=duration)props.onChange(rnEnergyPosition(state,id,0));playingState[1](!playing);},playing),button('Step forward',function(){time(Math.min(duration,phase+1));}),h('small',null,profile?profile.name:'Two-hour charge / discharge cycle')),
+            h('div',{className:'rn-energy-control'},h('label',{htmlFor:uid+'phase'},profile?'Scenario minute':'Cycle minute',h('strong',null,phase+' min')),
+              h('input',{id:uid+'phase',type:'range',min:0,max:duration,step:1,value:phase,'aria-label':profile?'Scenario minute':'Cycle minute',onChange:function(e){time(Number(e.target.value));}})),
+            h('small',null,profile?'Synthetic conditions change with the selected minute. Playback is accelerated; energy is integrated in one-minute steps.':'0–60 min: charge. 60–120 min: discharge. Playback is accelerated; the calculation uses the labeled minutes.')):h('p',{className:'rn-energy-muted',style:{fontSize:12,marginTop:12}},'Steady conditions stay fixed until you change an input. Use the equipment animation control to inspect motion, or choose an operating scenario to explore changes over time.'),
           h(RenewablesEnergyMilestones,{React:React,t:rnT,study:study,phase:phase,onSelect:time,intervalState:intervalState,onIntervalChange:updateInterval,onExport:download}),
           h('div',{className:'rn-energy-parts','aria-label':__alloT('stem.renewables.inspect_mechanism_components','Inspect mechanism components')},spec.components.map(function(c,i){return button((i+1)+'. '+c[1],function(){chooseComponent(c[0]);},selected===c[0],{key:c[0],'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect', 'Inspect {value1}'), { value1: c[1] })});})),
           h(RenewablesEnergyComponentInspector,{React:React,t:rnT,id:id,uid:uid+'inspector',part:component[0],settings:settings,run:run,description:componentText,profile:profile,comparison:comparison,baselineName:readings.length?(readings[0].name||'First saved reading'):'',onSave:function(){playingState[1](false);save();setTimeout(function(){jumpTo('inspector');},0);},onNotebook:function(){jumpTo('notebook');},onSelect:chooseComponent,onControl:jumpTo,onNote:function(){jumpTo('note');}}))),
@@ -3551,13 +4285,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           storage?h('p',null,'Initial '+fmt(run.extra.initial)+' kWh + accepted charge '+fmt(run.extra.charge)+' kWh − delivered '+fmt(run.extra.delivered)+' kWh − conversion losses '+fmt(run.extra.loss)+' kWh = stored '+fmt(run.extra.stored)+' kWh.')
             :h('p',null,'Input '+fmt(run.available)+' kW = electricity '+fmt(run.power)+' kW + '+fmt(run.loss)+' kW not delivered as electricity. This remainder includes unextracted resource energy and conversion losses.'),
           h('div',{className:'rn-energy-formula'},spec.formula),
+          id==='solarPv'&&h('p',{className:'rn-energy-live-condition','data-operating-condition':'cell-temperature'},'At a cell temperature of '+fmt(run.settings.cellTemperature)+'°C, module efficiency is '+fmt(run.extra.effectiveModuleEfficiency*100)+'% ('+fmt(run.settings.efficiency)+'% at 25°C). The temperature multiplier is '+rnEnergyReading(run.extra.temperatureFactor)+'. Cell temperature is an experimental input; it is not the ambient air temperature or a thermal prediction.'),
+          id==='wind'&&h('p',{className:'rn-energy-live-condition','data-operating-condition':'air-density'},'At '+rnEnergyReading(run.settings.airDensity)+' kg/m³, the incoming air carries '+fmt(run.settings.airDensity/1.225*100)+'% of the kinetic power at the 1.225 kg/m³ reference density for the same wind speed and rotor. Generator rating and protective shutdown still limit the electricity delivered.'),
           h('p',{className:'rn-energy-muted',style:{fontSize:12,marginTop:10}},profile?(storage?'Stored energy and losses are accumulated up to the selected minute. Power values are averages for the following minute; the final endpoint has zero power. Rewinding recalculates the same sequence.':'Power is sampled at each minute and held for that one-minute interval. Accumulated electricity is the sum of power × 1/60 hour. These prescribed resource profiles are not weather forecasts.'):storage?'The two phases are recalculated from the initial charge whenever an input changes. Rewinding the timeline does not create energy.':'kW measures power. If these conditions held for exactly one hour, the electrical energy would be '+fmt(run.power)+' kWh. Real resource conditions vary.'))),
+      h(RenewablesOperatingEnvelope,{key:id,React:React,t:rnT,theme:T,id:id,uid:uid,settings:settings,profileId:profile?profile.id:'steady',minute:profile||storage?phase:0,onPause:function(){playingState[1](false);},onApply:function(key,value){update(key,value);modeState[1]('3d');setTimeout(function(){jumpTo('workbench');},0);}}),
       scenarioResults(),
       study&&resolvedReadings.length>0&&h(RenewablesEnergyScenarioComparison,{key:id,React:React,t:rnT,theme:T,uid:uid+'scenarioComparison',comparison:scenarioComparison,intervalState:intervalState,onIntervalChange:updateInterval,onExport:download,study:study,baseline:resolvedReadings[0],name:readings[0].name,minute:phase,onPause:function(){playingState[1](false);},onMinute:time,onNotebook:function(){jumpTo('notebookHeading');},onInspect:function(minute){time(minute);modeState[1]('3d');setTimeout(function(){jumpTo('workbench');},0);}}),
       h(RenewablesEnergyInputChecks,{React:React,t:rnT,id:id,uid:uid+'inputChecks',comparison:scenarioComparison,baselineName:readings[0]&&readings[0].name,phase:phase,intervalState:intervalState,state:state.inputChecks&&state.inputChecks[id],onChange:function(value){playingState[1](false);var checks=Object.assign({},state.inputChecks);checks[id]=value;change({inputChecks:checks});},onInspect:inspectExperiment,onExport:download}),
       h(RenewablesEnergyExperiment,{React:React,t:rnT,id:id,uid:uid+'experiment',settings:settings,profileId:profile?profile.id:'steady',phase:phase,state:state.experiments&&state.experiments[id],onChange:function(value){playingState[1](false);var experiments=Object.assign({},state.experiments);experiments[id]=value;change({experiments:experiments});},onInspect:inspectExperiment}),
       h(RenewablesEnergyDesignMap,{React:React,t:rnT,id:id,uid:uid+'designMap',settings:settings,profileId:profile?profile.id:'steady',phase:phase,state:state.designMaps&&state.designMaps[id],onChange:function(value){playingState[1](false);var maps=Object.assign({},state.designMaps);maps[id]=value;change({designMaps:maps});},onInspect:inspectExperiment}),
-      h('div',{className:study?'rn-energy-scenario-notebook':'rn-energy-study-grid'},!study&&responseChart(),
+      h('div',{className:study||!storage?'rn-energy-scenario-notebook':'rn-energy-study-grid'},!study&&storage&&responseChart(),
         h('section',{id:uid+'notebook',tabIndex:-1,className:'rn-energy-panel','aria-label':__alloT('stem.renewables.mechanism_investigation_notebook','Mechanism investigation notebook')},h('div',{className:'rn-energy-toolbar'},h('h3',{id:uid+'notebookHeading',tabIndex:-1},'Compare readings'),button('Save mechanism reading',save),button('Undo notebook change',undoNotebook,null,{id:uid+'notebookUndo',disabled:!canUndoNotebook,'aria-describedby':uid+'notebookUndoHint'})),
           h('p',{id:uid+'notebookUndoHint',className:'rn-energy-muted',style:{fontSize:12}},canUndoNotebook?'Undo '+notebookUndoEntry.action+' to restore the previous notebook.':'Undo your last save, removal, or baseline change for this technology during this session.'),
           comparisonPanel(),
@@ -3570,7 +4307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('thead',null,h('tr',null,['Reading','Output kW',storage?'Stored kWh':'Input kW','Actions'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
             h('tbody',null,readings.map(function(row,i){var saved=resolvedReadings[i],r=saved.run;return h('tr',{key:i},
               h('th',{scope:'row'},row.name||i+1,i===0&&h('span',{className:'rn-energy-baseline-badge'},'Baseline')),h('td',null,fmt(r.power)),h('td',null,fmt(storage?r.extra.stored:r.available)),
-              h('td',null,button('Restore',function(){playingState[1](false);var next=Object.assign({},state.settings),phases=Object.assign({},state.phases),notes=Object.assign({},state.notes),scenarios=Object.assign({},state.scenarios),names=Object.assign({},state.readingNames);
+              h('td',null,button('Restore',function(){playingState[1](false);clearInputUndo();var next=Object.assign({},state.settings),phases=Object.assign({},state.phases),notes=Object.assign({},state.notes),scenarios=Object.assign({},state.scenarios),names=Object.assign({},state.readingNames);
                 next[id]=saved.baseSettings;phases[id]=saved.profileId==='steady'?saved.phase:phases[id];scenarios[id]={profileId:saved.profileId,minute:saved.profileId==='steady'?0:saved.phase};notes[id]=row.note||'';names[id]=row.name||'';change({settings:next,phases:phases,notes:notes,scenarios:scenarios,readingNames:names});},null,{'aria-label':__alloFill(__alloT('stem.renewables.a11y_restore_mechanism_reading', 'Restore mechanism reading {value1}'), { value1: (i+1) })}),
                 ' ',button('Remove',function(){removeReading(i);},null,{'aria-label':__alloFill(__alloT('stem.renewables.a11y_remove_mechanism_reading', 'Remove mechanism reading {value1}'), { value1: (i+1) })})));})))),
           savedDetails(),button('Export mechanism investigation',download))),
@@ -4014,6 +4751,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
   }
   var RN_GRID_LIMIT_CSS='\n.rn-grid-limit-controls{min-width:0;margin:14px 0;padding:12px;border:1px solid var(--re-border);border-radius:8px}.rn-grid-limit-controls legend{font-size:12px;font-weight:650}.rn-grid-limit-controls .rn-grid-limit-toggle{display:flex;align-items:center;gap:8px;min-height:40px;font-size:12px}.rn-grid-limit-toggle input{width:18px;height:18px;accent-color:var(--re-accent)}.rn-grid-limit-controls label{display:block;font-size:12px}.rn-grid-review>div{padding-top:16px}.rn-grid-review .rn-energy-table{max-height:none}.rn-grid-scroll-hint{display:none}.rn-grid-review p{font-size:12px}.rn-grid-review h4{margin:18px 0 6px}@media(max-width:600px){.rn-grid-scroll-hint{display:block}.rn-grid-review .rn-energy-toolbar button{width:100%}}\n';
 
+  function RenewablesMicrogridFlow(props){
+    var React=props.React,h=React.createElement,r=props.row,result=props.result,s=result.settings,uid=props.uid+'dispatch',pick=React.useState('demand'),selected=pick[0],tr=rnEnergyT(props);
+    var motion=React.useState(function(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}),reduced=React.useState(function(){return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);});
+    React.useEffect(function(){if(!window.matchMedia)return;var query=window.matchMedia('(prefers-reduced-motion: reduce)');function update(){reduced[1](query.matches);if(query.matches)motion[1](false);}update();if(query.addEventListener)query.addEventListener('change',update);return function(){if(query.removeEventListener)query.removeEventListener('change',update);};},[]);
+    var complete=r.minute===result.duration,eta=Math.sqrt(s.battery.roundtrip/100),next=result.rows[Math.min(r.minute+1,result.duration)],soc=result.capacity?100*r.stored/result.capacity:0;
+    var loss=complete?0:r.charge*(1-eta)+r.discharge*(1/eta-1),served=complete?0:r.direct+r.discharge+r.grid;
+    function power(key){return complete?0:r[key];}function fmt(v){return rnEnergyReading(v);}function precise(v){return Number(v).toLocaleString(undefined,{maximumSignificantDigits:9});}
+    var flowKeys=['primaryGeneration','companionGeneration','direct','charge','discharge','grid','curtailed'];
+    var largest=React.useMemo(function(){return result.rows.reduce(function(peak,row){return Math.max(peak,row.generation,row.demand,row.charge,row.discharge,row.grid);},0);},[result]);
+    var activeMotion=motion[0]&&!reduced[0]&&!complete,priorFlows=React.useRef(null),floorPercent=result.capacity?Math.max(0,Math.min(100,100*r.reserve/result.capacity)):0;
+    React.useEffect(function(){var values={};flowKeys.forEach(function(key){values[key]=power(key);});priorFlows.current=values;},[result,r]);
+    function fraction(value){return largest>0?Math.max(0,Math.min(1,value/largest)):0;}
+    function ease(key){return activeMotion&&power(key)>0&&priorFlows.current&&priorFlows.current[key]>0;}
+    function pulseStyle(active){return {animationPlayState:activeMotion&&active?'running':'paused',visibility:active?'visible':'hidden'};}
+    var scaleNote=largest>0?'Power scale: 0–'+fmt(largest)+' kW, fixed across this sequence. Changing the setup recalculates the scale.':'No power anywhere in this sequence; all flow meters are empty.';
+    var nodes=[{id:'source',label:rnEnergySpec(s.source).name,x:20,y:55,w:170,number:power('primaryGeneration'),note:s.sourceUnits+' generation unit'+(s.sourceUnits===1?'':'s'),color:'#92e9c6',scene:'source'},
+      {id:'companion',label:s.companion.enabled?rnEnergySpec(s.companion.source).name:'Second source',x:20,y:180,w:170,number:power('companionGeneration'),note:s.companion.enabled?s.companion.sourceUnits+' generation unit'+(s.companion.sourceUnits===1?'':'s'):'Not connected',color:'#92e9c6',scene:s.companion.enabled?'companion':null},
+      {id:'grid',label:'Grid backup',x:570,y:35,w:170,number:power('grid'),note:complete?'Sequence complete':r.gridAvailable?(s.gridLimit.enabled?'Import limit '+fmt(s.gridLimit.power)+' kW':'Connection available'):(s.grid==='island'?'Islanded':'Outage'),color:'#add4ff'},
+      {id:'demand',label:'Demand',x:570,y:180,w:170,number:power('demand'),note:power('unserved')>0?fmt(power('unserved'))+' kW unserved':'All demand served',color:power('unserved')>0?'#ffd0a7':'#f9e394'},
+      {id:'battery',label:'Battery bank',x:280,y:335,w:205,number:r.stored,unit:'kWh',note:fmt(soc)+'% charged · '+(complete?'Sequence complete':r.batteryRun.status),color:'#b7e9ed',scene:'battery'},
+      {id:'curtailed',label:'Unused surplus',x:20,y:335,w:170,number:power('curtailed'),note:'Not stored or delivered',color:'#c5c9d5'}];
+    var chosen=nodes.find(function(n){return n.id===selected;})||nodes[3];
+    function nodeName(node){return node.id==='source'?'Primary source: '+node.label:node.id==='companion'&&s.companion.enabled?'Second source: '+node.label:node.label;}
+    function choose(id){pick[1](id);props.onPause();}
+    function equipment(node){
+      var color=node.color,parts,frame={fill:'none',stroke:color,strokeWidth:1.3,strokeLinecap:'round',strokeLinejoin:'round'};
+      if(node.id==='source'||node.id==='companion'&&s.companion.enabled)return h('g',{transform:'translate('+(node.x+node.w-43)+' '+(node.y+3)+') scale(.72)',color:color,'aria-hidden':true,pointerEvents:'none'},rnEnergyIcon(React,node.id==='source'?s.source:s.companion.source));
+      if(node.id==='battery')parts=[0,1,2].map(function(index){return h('g',{key:index},h('rect',Object.assign({x:1+index*11,y:4,width:8,height:19,rx:1.2},frame)),h('rect',{x:3+index*11,y:1,width:4,height:3,rx:.5,fill:color}),h('rect',{x:2.5+index*11,y:21-15*soc/100,width:5,height:15*soc/100,fill:'#92e9c6'}));});
+      else if(node.id==='grid')parts=h('path',Object.assign({d:'M16 0 L5 25 M16 0 L27 25 M8 6 H24 M4 13 H28 M9 18 H23 M11 6 L24 13 M21 6 L8 13 M8 13 L24 24 M24 13 L8 24'},frame));
+      else if(node.id==='demand'){
+        var fraction=power('demand')>0?Math.max(0,Math.min(1,served/power('demand'))):0;
+        parts=[h('path',{key:'buildings',d:'M0 24 V9 L9 3 L17 9 V24 M18 24 V1 H31 V24',fill:'#315767',stroke:color,strokeWidth:1})];
+        [5,11,21,27].forEach(function(x,index){[12,18].forEach(function(y){parts.push(h('rect',{key:x+'-'+y,x:x,y:index>1?y-6:y,width:3,height:3,fill:'#ffe7a0',opacity:.12+.88*fraction}));});});
+      }else parts=[h('circle',Object.assign({key:'ring',cx:16,cy:12,r:10},frame)),h('path',Object.assign({key:'stop',d:'M9 19 L23 5'},frame))];
+      return h('g',{transform:'translate('+(node.x+node.w-45)+' '+(node.y+5)+')','aria-hidden':true,pointerEvents:'none'},parts);
+    }
+    var descriptions={source:'This source contributes '+fmt(power('primaryGeneration'))+' kW to the shared renewable supply. The combined generation serves demand first, then charges the battery if there is room and charging power available.',companion:s.companion.enabled?'The second source adds '+fmt(power('companionGeneration'))+' kW at its own scenario time. Both sources combine before the battery and grid dispatch are calculated.':'Enable a second generator in Generation setup to explore complementary resource patterns.',grid:r.gridAvailable?'The grid supplies only the deficit left after generation and permitted battery discharge. It does not charge the battery. '+(s.gridLimit.enabled?'The connection can import at most '+fmt(s.gridLimit.power)+' kW.':'Imports have no configured power limit.'):'Grid imports are zero while the system is '+(s.grid==='island'?'islanded.':'inside its outage window.'),demand:'Demand '+fmt(power('demand'))+' = direct renewable supply '+fmt(power('direct'))+' + battery delivery '+fmt(power('discharge'))+' + grid imports '+fmt(power('grid'))+' + unserved '+fmt(power('unserved'))+' kW. Unserved demand is a shortfall, not an energy source.',battery:'Stored now: '+fmt(r.stored)+' kWh. Discharge floor: '+fmt(r.reserve)+' kWh. '+(s.policy==='backup'&&r.gridAvailable?'The strategy holds the battery for outages while the grid is available.':'Charging and discharge obey both the bank power limit and available energy.')+' Storage shifts energy; its initial charge has no assigned source.',curtailed:'Generation '+fmt(power('generation'))+' = direct supply '+fmt(power('direct'))+' + battery charging '+fmt(power('charge'))+' + unused surplus '+fmt(power('curtailed'))+' kW. This surplus is not exported in the model.'};
+    function path(key,d,color,ends,label,lx,ly){var value=power(key),active=value>0,emphasis=ends.indexOf(selected)>=0;return h('g',{key:key,'data-dispatch-edge':key,'data-flow-kw':value,'data-flow-active':active?'true':'false','data-flow-emphasized':emphasis?'true':'false'},
+      h('path',{className:'rn-dispatch-line',d:d,fill:'none',stroke:color,strokeWidth:active?2+8*fraction(value):1.3,opacity:active?(emphasis?1:.55):.24,style:{transition:ease(key)?'stroke-width 180ms ease-out, opacity 180ms ease-out':'none'},strokeDasharray:active?undefined:'4 5',markerEnd:active?'url(#'+uid+'arrow'+(color==='#add4ff'?'grid':'power')+')':undefined}),
+      h('path',{className:'rn-dispatch-pulse',d:d,fill:'none',stroke:'#fffbea',strokeWidth:2,strokeDasharray:'2 30',strokeLinecap:'round',opacity:emphasis?.95:.45,style:pulseStyle(active),'aria-hidden':true,pointerEvents:'none'}),
+      h('text',{x:lx,y:ly,fill:active?'#eff8f5':'#a9c2c9',fontSize:11,textAnchor:'middle',paintOrder:'stroke',stroke:'#102b39',strokeWidth:5,strokeLinejoin:'round'},label+' '+fmt(value)+' kW'));}
+    function mobileFlow(pair){var key=pair[0],value=power(key),active=value>0,emphasis=pair[3].indexOf(selected)>=0;return h('li',{key:key,'data-inactive':!active?'true':undefined},
+      h('button',{type:'button','data-dispatch-mobile-edge':key,'data-flow-kw':value,'data-flow-unit':'kW','aria-label':'Trace '+pair[1],'aria-pressed':emphasis,onClick:function(){choose(pair[2]);}},
+        h('span',{className:'rn-dispatch-meter-heading'},h('span',null,pair[1]),h('strong',null,fmt(value)+' kW')),
+        h('span',{className:'rn-dispatch-meter','aria-hidden':true},h('span',{className:'rn-dispatch-meter-fill',style:{width:100*fraction(value)+'%',transition:ease(key)?'width 180ms ease-out':'none'}},h('i',{className:'rn-dispatch-mobile-pulse',style:pulseStyle(active)})))));}
+    return h('section',{className:'rn-dispatch-board','data-dispatch-motion':activeMotion?'on':'off','data-power-scale-kw':largest,'aria-label':tr('stem.renewables.live_electricity_dispatch','Live electricity dispatch')},
+      h('style',null,'.rn-dispatch-board{border:1px solid #547780;border-radius:15px;overflow:hidden;background:#102b39;color:#edf7f5;margin-bottom:16px}.rn-dispatch-heading{display:flex;gap:14px;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #3c606d}.rn-dispatch-heading h3{font-size:19px;margin:4px 0!important}.rn-dispatch-heading small{color:#b9d3d9!important;font-size:11px}.rn-dispatch-badge{padding:6px 10px;border:1px solid #779297;border-radius:8px;font-size:11px;text-align:center}.rn-dispatch-diagram{overflow-x:auto}.rn-dispatch-diagram svg{display:block;width:100%;min-width:660px}.rn-dispatch-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:12px 16px}.rn-dispatch-board .rn-dispatch-choices button{background:#193d4b;border-color:#698792;color:#eff8f5;text-align:left;min-width:0;font-size:11px}.rn-dispatch-board .rn-dispatch-choices button[aria-pressed=true]{background:#d8f4e9;color:#163d35;border-color:#d8f4e9}.rn-dispatch-choices strong{display:block;font-size:15px;font-variant-numeric:tabular-nums}.rn-dispatch-note{padding:0 18px 16px}.rn-dispatch-note p{font-size:12px;line-height:1.6;margin-bottom:10px!important}.rn-dispatch-note small{color:#b9d3d9!important;font-size:11px}.rn-dispatch-note button{margin:6px 0 12px;background:#d8f4e9!important;color:#163d35!important;border-color:#d8f4e9!important}.rn-dispatch-coverage{height:6px;background:#66818b;border-radius:5px;overflow:hidden;margin:8px 0}.rn-dispatch-coverage span{display:block;height:100%;background:#f9e394}.rn-dispatch-ledger{padding:13px;border:1px solid #577683;border-radius:9px;background:#0c2430;margin:10px 0;font-size:12px;line-height:1.7}.rn-dispatch-ledger strong{color:#b7e9ed}.rn-dispatch-scroll{font-size:11px;color:#b9d3d9;padding:0 18px;margin:0!important}@media(max-width:500px){.rn-dispatch-heading{padding:14px;flex-wrap:wrap}.rn-dispatch-choices{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}.rn-dispatch-note{padding:0 14px 14px}}'),
+      h('style',null,'.rn-dispatch-node{cursor:pointer;outline:none}.rn-dispatch-node:hover>rect:first-child{stroke:#c7f6e3;stroke-width:2}.rn-dispatch-node:focus-visible>rect:first-child{stroke:#fff5c9;stroke-width:3;stroke-dasharray:5 3}.rn-dispatch-pulse{animation:rn-dispatch-travel 2.4s linear infinite}.rn-dispatch-motion{padding:9px 18px;border-bottom:1px solid #3c606d;display:flex;gap:10px;align-items:center;justify-content:space-between}.rn-dispatch-motion span{font-size:11px;color:#bed6dc}.rn-dispatch-board .rn-dispatch-motion button{font-size:11px;min-height:32px;background:#193d4b;color:#eff8f5;border-color:#779297;white-space:nowrap}@keyframes rn-dispatch-travel{to{stroke-dashoffset:-64}}@media(prefers-reduced-motion:reduce){.rn-dispatch-pulse,.rn-dispatch-mobile-pulse{animation-play-state:paused!important}.rn-dispatch-line,.rn-dispatch-meter-fill{transition:none!important}}@media(max-width:600px){.rn-dispatch-motion{padding:12px 14px;align-items:flex-start;flex-wrap:wrap}.rn-dispatch-motion span{flex:1 1 180px}.rn-dispatch-board .rn-dispatch-motion button{min-height:40px}}'),
+      h('div',{className:'rn-dispatch-heading'},h('div',null,h('small',null,'GENERATION → DISPATCH → DEMAND'),h('h3',null,'One minute of electricity'),h('small',null,complete?'End of sequence · no additional energy':r.minute+'–'+(r.minute+1)+' min · average power')),h('span',{className:'rn-dispatch-badge'},complete?'Sequence complete':power('unserved')>0?'Supply shortfall':power('demand')===0?'No demand':'Demand covered')),
+      h('div',{className:'rn-dispatch-motion'},h('span',null,'Select equipment to trace its connections. '+(reduced[0]?'Reduced-motion preference keeps flow marks still.':complete?'Sequence complete; no power flows.':'Moving marks show direction only. Pausing holds their position.')),h('button',{type:'button','aria-pressed':activeMotion,'aria-label':tr('stem.renewables.animate_electricity_flow','Animate electricity flow'),disabled:reduced[0]||complete,onClick:function(){motion[1](!motion[0]);}},activeMotion?'Pause flow animation':'Animate flow')),
+      h('p',{className:'rn-dispatch-scale','data-dispatch-scale':true},scaleNote),
+      h('div',{className:'rn-dispatch-diagram',tabIndex:0,role:'region','aria-label':tr('stem.renewables.electricity_flow_diagram','Electricity flow diagram')},h('svg',{viewBox:'0 0 760 442',role:'group','aria-label':tr('stem.renewables.interactive_electricity_network','Interactive electricity network. Select equipment with a click, Enter, or Space. Grid backup feeds demand only.')},
+        h('defs',null,['power','grid'].map(function(id){return h('marker',{key:id,id:uid+'arrow'+id,viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:5,markerHeight:5,orient:'auto-start-reverse'},h('path',{d:'M 1 1 L 9 5 L 1 9 Z',fill:id==='grid'?'#add4ff':'#f9e394'}));})),
+        path('primaryGeneration','M190 94 H250 Q300 94 300 172','#f9e394',['source'],'Source',269,70),
+        path('companionGeneration','M190 219 H250 Q300 219 300 172','#f9e394',['companion'],'Second',259,249),
+        path('direct','M300 172 H515 Q535 172 535 209 H570','#f9e394',['source','companion','demand'],'Direct',433,152),
+        path('charge','M300 172 H372 V335','#f9e394',['battery'],'Charge',409,285),
+        path('discharge','M485 374 H525 Q546 374 546 346 V243 H570','#f9e394',['battery','demand'],'Discharge',579,317),
+        path('grid','M655 119 V180','#add4ff',['grid','demand'],'Grid',694,153),
+        path('curtailed','M300 172 H230 V374 H190','#f9e394',['curtailed'],'Unused',218,301),
+        h('circle',{cx:300,cy:172,r:10,fill:'#f9e394',stroke:'#102b39',strokeWidth:3}),
+        nodes.map(function(n){var isSelected=n.id===selected;return h('g',{key:n.id,className:'rn-dispatch-node','data-dispatch-node':n.id,role:'button',tabIndex:0,focusable:true,'aria-pressed':isSelected,'aria-label':'Select '+nodeName(n)+': '+fmt(n.number)+' '+(n.unit||'kW'),onClick:function(){choose(n.id);},onKeyDown:function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(n.id);}}},h('rect',{x:n.x,y:n.y,width:n.w,height:84,rx:10,fill:isSelected?'#244957':'#153744',stroke:isSelected?n.color:'#4c707d',strokeWidth:isSelected?2:1}),equipment(n),h('text',{x:n.x+13,y:n.y+21,fill:'#d5e8eb',fontSize:11},n.label),h('text',{x:n.x+13,y:n.y+45,fill:n.color,fontSize:20,fontWeight:650},fmt(n.number)+' '+(n.unit||'kW')),h('text',{x:n.x+13,y:n.y+65,fill:'#bed6dc',fontSize:9},n.note),n.id==='battery'&&h('g',{'aria-hidden':true},h('rect',{x:n.x+13,y:n.y+74,width:n.w-26,height:3,rx:1.5,fill:'#52717d'}),h('rect',{x:n.x+13,y:n.y+74,width:(n.w-26)*Math.min(100,Math.max(0,soc))/100,height:3,rx:1.5,fill:n.color}),result.capacity>0&&h('line',{x1:n.x+13+(n.w-26)*floorPercent/100,x2:n.x+13+(n.w-26)*floorPercent/100,y1:n.y+71,y2:n.y+80,stroke:'#fff5c9',strokeWidth:2})));}))),
+      h('style',null,'.rn-dispatch-scale{font-size:11px;line-height:1.6;color:#bdd7dd;padding:10px 18px 0;margin:0!important}.rn-dispatch-mobile{display:none}.rn-dispatch-mobile-head{padding:12px;border:1px solid #587b86;border-radius:9px;background:#173b48}.rn-dispatch-mobile strong{font-variant-numeric:tabular-nums}.rn-dispatch-mobile-head strong{display:block;font-size:23px;color:#92e9c6}.rn-dispatch-mobile small{display:block;color:#bdd7dd!important;font-size:11px}.rn-dispatch-mobile ul{list-style:none;padding:0;margin:10px 0}.rn-dispatch-mobile li{margin:7px 0;font-size:12px}.rn-dispatch-board .rn-dispatch-mobile li button{display:block;width:100%;padding:10px;min-height:58px;border:1px solid #4f7580;border-radius:8px;background:#143340;color:#edf7f5;text-align:left;box-sizing:border-box;white-space:normal}.rn-dispatch-board .rn-dispatch-mobile li button[aria-pressed=true]{border-color:#b7e9ed;background:#214956}.rn-dispatch-board button:focus-visible{outline:3px solid #fff5c9;outline-offset:3px}.rn-dispatch-meter-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px;line-height:1.4}.rn-dispatch-meter-heading strong{white-space:nowrap;color:#f9e394}.rn-dispatch-mobile li[data-inactive=true] .rn-dispatch-meter-heading,.rn-dispatch-mobile li[data-inactive=true] strong{color:#b6cdd3}.rn-dispatch-meter{display:block;height:7px;margin-top:9px;border-radius:5px;background:#405f6b;overflow:hidden}.rn-dispatch-meter-fill{display:block;position:relative;overflow:hidden;height:100%;background:#f9e394;border-radius:5px}.rn-dispatch-mobile-pulse{position:absolute;inset:0;display:block;background:repeating-linear-gradient(90deg,transparent 0,transparent 12px,#fffbea 12px,#fffbea 16px,transparent 16px,transparent 32px);animation:rn-dispatch-meter-travel 1.2s linear infinite}.rn-dispatch-mobile-demand{padding:12px;border-left:3px solid #f9e394;background:#173b48;font-size:12px}.rn-dispatch-mobile-demand strong{display:block;font-size:21px;color:#f9e394;margin:4px 0}.rn-dispatch-reserve{margin:8px 18px 14px;padding:12px;border:1px solid #587b86;border-radius:8px;background:#173b48;font-size:11px;color:#d5e8eb}.rn-dispatch-reserve p{margin:0!important;line-height:1.6}.rn-dispatch-reserve strong{color:#b7e9ed;font-variant-numeric:tabular-nums}.rn-dispatch-reserve-track{position:relative;height:8px;background:#52717d;border-radius:4px;margin:10px 2px}.rn-dispatch-reserve-fill{display:block;height:100%;background:#b7e9ed;border-radius:4px}.rn-dispatch-reserve-marker{position:absolute;top:-3px;bottom:-3px;border-left:3px solid #fff5c9;transform:translateX(-1.5px)}@keyframes rn-dispatch-meter-travel{to{background-position:32px 0}}@media(max-width:600px){.rn-dispatch-diagram{display:none}.rn-dispatch-mobile{display:block;padding:14px}.rn-dispatch-reserve{margin:0 14px 14px}.rn-dispatch-scale{padding:10px 14px 0}}'),
+      h('div',{className:'rn-dispatch-mobile','aria-label':tr('stem.renewables.compact_electricity_routing','Compact electricity routing')},
+        h('div',{className:'rn-dispatch-mobile-head'},h('small',null,'RENEWABLE GENERATION'),h('strong',null,fmt(power('generation'))+' kW'),h('small',null,rnEnergySpec(s.source).name+' '+fmt(power('primaryGeneration'))+' kW'+(s.companion.enabled?' + '+rnEnergySpec(s.companion.source).name+' '+fmt(power('companionGeneration'))+' kW':''))),
+        h('ul',null,[['direct','Generation → demand','demand',['source','companion','demand']],['charge','Generation → battery','battery',['battery']],['curtailed','Generation → unused','curtailed',['curtailed']],['discharge','Battery → demand','battery',['battery','demand']],['grid','Grid → demand','grid',['grid','demand']]].map(mobileFlow)),
+        h('div',{className:'rn-dispatch-mobile-demand'},'Demand supplied',h('strong',null,fmt(served)+' / '+fmt(power('demand'))+' kW'),h('span',null,power('unserved')>0?fmt(power('unserved'))+' kW remains unserved':complete?'Sequence complete':power('demand')===0?'No demand in this interval':'Demand fully covered'),h('div',{className:'rn-dispatch-coverage','aria-hidden':true},h('span',{style:{width:power('demand')>0?100*served/power('demand')+'%':'0%'}})),h('small',null,'Battery: '+fmt(r.stored)+' kWh stored · '+fmt(soc)+'% charged'))),
+      h('div',{className:'rn-dispatch-reserve','aria-label':tr('stem.renewables.battery_state_and_discharge_floor','Battery state and discharge floor'),'data-dispatch-reserve':true,'data-stored-kwh':r.stored,'data-floor-kwh':r.reserve,'data-capacity-kwh':result.capacity},
+        h('p',null,h('strong',null,fmt(r.stored)+' / '+fmt(result.capacity)+' kWh stored'),result.capacity>0?' · '+fmt(soc)+'% charged':' · No battery installed'),
+        result.capacity>0&&h('div',{className:'rn-dispatch-reserve-track','aria-hidden':true},h('span',{className:'rn-dispatch-reserve-fill',style:{width:Math.max(0,Math.min(100,soc))+'%'}}),h('i',{className:'rn-dispatch-reserve-marker',style:{left:floorPercent+'%'}})),
+        h('p',null,result.capacity>0?'Discharge floor: '+fmt(r.reserve)+' kWh ('+fmt(floorPercent)+'% of capacity). The pale tick marks the floor set by the current strategy and grid state.':'Set battery units above zero to add storage.'),
+        h('p',null,'Stored energy uses the battery capacity scale in kWh, separate from the flow power scale in kW.')),
+      h('p',{className:'rn-dispatch-scroll'},'Select equipment in the network or use the component buttons for its energy accounting.'),
+      h('div',{className:'rn-dispatch-choices'},nodes.map(function(n){return h('button',{type:'button',key:n.id,'aria-pressed':n.id===selected,'aria-label':'Explain '+nodeName(n),onClick:function(){choose(n.id);}},nodeName(n),h('strong',null,fmt(n.number)+' '+(n.unit||'kW')));})),
+      h('div',{className:'rn-dispatch-note'},h('h3',null,nodeName(chosen)),h('p',null,descriptions[chosen.id]),chosen.scene&&h('button',{type:'button',onClick:function(){props.onInspect(chosen.scene);}},'Inspect '+nodeName(chosen)+' in 3D'),
+        selected==='demand'&&h('div',null,h('div',{className:'rn-dispatch-coverage','aria-hidden':true},h('span',{style:{width:power('demand')>0?100*served/power('demand')+'%':'0%'}})),h('small',null,power('demand')>0?fmt(100*served/power('demand'))+'% of this minute’s demand served.':'No demand to serve in this interval.')),
+        selected==='battery'&&h('div',{className:'rn-dispatch-ledger','data-dispatch-ledger':'battery'},h('strong',null,complete?'Final stored energy':'Storage after this minute'),h('br'),precise(r.stored)+' + '+precise(power('charge')/60)+' − '+precise(power('discharge')/60)+' − '+precise(loss/60)+' = '+precise(next.stored)+' kWh',h('br'),h('small',null,'Start + charging input − electricity delivered − conversion loss = next stored energy.')),
+        h('small',null,'Arrow direction shows electricity routing; wider active paths indicate larger power flows on the sequence scale. Dashed paths and empty mobile meters carry zero power. Moving marks indicate direction, not electrical speed. Values update immediately; positive flow widths ease when animation is enabled. The diagram does not model voltage, frequency, or physical wire lengths.')));
+  }
+
   function RenewablesMicrogridLab(props){
     var React=props.ctx.React,h=React.createElement,T=props.theme,state=props.state||{},s=rnMicrogridSettings(state),uid=React.useId().replace(/:/g,'')+'grid';
     var __alloT=rnEnergyT(props);
@@ -4023,6 +4840,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     var rnT=(props.ctx&&typeof props.ctx.t==='function')?props.ctx.t:null;
     var result=React.useMemo(function(){return rnMicrogridRun(s);},[JSON.stringify(s)]),minute=Math.floor(rnNumber(state.minute,0,0,result.duration)),row=result.rows[minute],spec=rnEnergySpec(s.source),companionSpec=rnEnergySpec(s.companion.source);
     var gapAnalysis=React.useMemo(function(){return rnSupplyGapAnalysis(result);},[result]),gapView=rnSupplyGapView(gapAnalysis,state.gapExplorer);
+    var moments=React.useMemo(function(){return rnMicrogridMoments(result);},[result]);
+    var moment= moments.events.find(function(event){return event.minute===minute;}),nextMoment=moments.events.find(function(event){return event.minute>minute;}),previousMoment=moments.events.filter(function(event){return event.minute<minute;}).slice(-1)[0];
     var unlimitedGrid=React.useMemo(function(){return s.gridLimit.enabled?rnMicrogridRun(Object.assign({},s,{gridLimit:Object.assign({},s.gridLimit,{enabled:false})})):null;},[JSON.stringify(s)]);
     var primaryOnly=React.useMemo(function(){return s.companion.enabled?rnMicrogridRun(Object.assign({},s,{companion:Object.assign({},s.companion,{enabled:false})})):null;},[JSON.stringify(s)]);
     var originalDemand=React.useMemo(function(){return s.flex.enabled?rnMicrogridRun(Object.assign({},s,{flex:Object.assign({},s.flex,{enabled:false})})):null;},[JSON.stringify(s)]);
@@ -4068,16 +4887,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       if(chartMode==='grid')max=Math.max(1,Math.max.apply(null,result.rows.map(function(v){return Math.max(v.gridRequested,v.grid,v.gridCapacity||0);})));
       function x(v){return l+v/result.duration*(w-l-r);}function y(v){return ht-b-v/max*(ht-t-b);}
       var series=chartMode==='grid'?[['grid','var(--re-accent)',''],['gridRequested','var(--re-text)','8 4']].concat(s.gridLimit.enabled?[['gridCapacity','var(--mg-gap)','2 5']]:[]):chartMode==='battery'?[['stored','var(--re-accent)','']]:chartMode==='demand'?[['baselineDemand','var(--re-text)','8 4'],['demand','var(--re-accent)','']]:chartMode==='sources'?[['generation','var(--re-text)',''],['primaryGeneration','var(--re-accent)','8 4'],['companionGeneration','var(--mg-gap)','2 4']]:[['generation','var(--re-accent)',''],['demand','var(--re-text)','7 4'],['unserved','var(--mg-gap)','3 3']];
-      return h('div',{className:'rn-energy-chart-scroll',role:'region',tabIndex:0,'aria-label':__alloT('stem.renewables.storage_and_demand_chart','Storage and demand chart')},h('svg',{viewBox:'0 0 '+w+' '+ht,role:'img','aria-label':chartMode==='grid'?'Actual and requested grid imports, with available import capacity when limited. Exact values are in the minute table.':chartMode==='battery'?'Stored battery energy and reserve through the sequence. Exact values are in the minute table.':chartMode==='demand'?'Original and scheduled demand through the sequence. Exact values are in the minute table.':chartMode==='sources'?'Primary, second-source, and total generation. Exact values are in the minute table.':'Generation, demand, and unmet demand through the sequence. Exact values are in the minute table.'},
+      function points(key){return result.rows.filter(function(r){return chartMode==='battery'||r.minute<result.duration;}).map(function(r){var point=x(r.minute)+','+y(r[key]);return chartMode==='battery'?point:point+' '+x(r.minute+1)+','+y(r[key]);}).join(' ');}
+      return h('div',{className:'rn-energy-chart-scroll',role:'region',tabIndex:0,'aria-label':__alloT('stem.renewables.storage_and_demand_chart','Storage and demand chart')},h('svg',{viewBox:'0 0 '+w+' '+ht,role:'img',onClick:function(e){var box=e.currentTarget.getBoundingClientRect(),px=(e.clientX-box.left)/box.width*w;time(Math.floor((px-l)/(w-l-r)*result.duration));},'aria-label':chartMode==='grid'?'Actual and requested grid imports, with available import capacity when limited. Exact values are in the minute table.':chartMode==='battery'?'Stored battery energy and reserve through the sequence. Exact values are in the minute table.':chartMode==='demand'?'Original and scheduled demand through the sequence. Exact values are in the minute table.':chartMode==='sources'?'Primary, second-source, and total generation. Exact values are in the minute table.':'Generation, demand, and unmet demand through the sequence. Exact values are in the minute table.'},
         s.grid==='outage'&&chartMode!=='demand'&&h('rect',{x:x(s.outageStart),y:t,width:x(s.outageStart+s.outageMinutes)-x(s.outageStart),height:ht-b-t,fill:'var(--mg-gap)',opacity:.08}),
         chartMode==='demand'&&s.flex.enabled&&h('rect',{x:x(s.flex.fromStart),y:t,width:x(s.flex.fromStart+s.flex.fromMinutes)-x(s.flex.fromStart),height:ht-b-t,fill:'var(--mg-gap)',opacity:.1}),
         chartMode==='demand'&&s.flex.enabled&&h('rect',{x:x(s.flex.toStart),y:t,width:x(s.flex.toStart+s.flex.toMinutes)-x(s.flex.toStart),height:ht-b-t,fill:'var(--re-accent)',opacity:.1}),
         [0,.5,1].map(function(f){return h('g',{key:f},h('line',{x1:l,x2:w-r,y1:y(max*f),y2:y(max*f),stroke:'var(--re-border)',strokeDasharray:'3 5'}),h('text',{x:l-9,y:y(max*f)+4,textAnchor:'end',fill:'var(--re-muted)',fontSize:12},fmt(max*f)));}),
-        series.map(function(v){return h('polyline',{key:v[0],'data-series':v[0],points:result.rows.filter(function(r){return chartMode==='battery'||r.minute<result.duration;}).map(function(r){var point=x(r.minute)+','+y(r[v[0]]);return v[0]==='gridCapacity'?point+' '+x(r.minute+1)+','+y(r[v[0]]):point;}).join(' '),fill:'none',stroke:v[1],strokeWidth:2.5,strokeDasharray:v[2]});}),
+        (chartMode==='battery'||chartMode==='power')&&h('polygon',{'data-timeline-area':chartMode==='battery'?'stored':'unserved',points:x(0)+','+y(0)+' '+points(chartMode==='battery'?'stored':'unserved')+' '+x(result.duration)+','+y(0),fill:chartMode==='battery'?'var(--re-accent)':'var(--mg-gap)',opacity:.12}),
+        series.map(function(v){return h('polyline',{key:v[0],'data-series':v[0],points:points(v[0]),fill:'none',stroke:v[1],strokeWidth:2.5,strokeDasharray:v[2]});}),
         chartMode==='battery'&&h('polyline',{points:result.rows.map(function(r,i){var next=result.rows[i+1];return x(r.minute)+','+y(r.reserve)+(next?' '+x(next.minute)+','+y(r.reserve):'');}).join(' '),fill:'none',stroke:'var(--re-text)',strokeDasharray:'6 4'}),
         h('line',{x1:x(minute),x2:x(minute),y1:t,y2:ht-b,stroke:'var(--re-muted)',strokeDasharray:'5 4'}),
+        series.map(function(v){return (chartMode==='battery'||minute<result.duration)&&row[v[0]]!==null?h('circle',{key:v[0],cx:x(minute),cy:y(row[v[0]]),r:4,fill:'var(--re-card)',stroke:v[1],strokeWidth:2}):null;}),
         [0,.25,.5,.75,1].map(function(f){return h('text',{key:f,x:x(result.duration*f),y:ht-b+22,textAnchor:f===0?'start':f===1?'end':'middle',fill:'var(--re-muted)',fontSize:12},Math.round(result.duration*f)+' min');}),
-        h('text',{x:14,y:15,fill:'var(--re-muted)',fontSize:12},chartMode==='battery'?'kWh':'kW')));
+        h('text',{x:14,y:15,fill:'var(--re-muted)',fontSize:12},chartMode==='battery'?'kWh':'kW')),
+        h('p',{className:'rn-energy-muted'},chartMode==='battery'?'Stored energy joins minute boundaries. Select a point on the chart, or use Energy system minute above, to inspect it.':'Power holds constant over each one-minute interval. Select a point on the chart, or use Energy system minute above, to inspect it. The final boundary adds no energy.'));
     }
     var table=React.useMemo(function(){return h('div',{className:'rn-energy-table',tabIndex:0,role:'region','aria-label':__alloT('stem.renewables.minute_by_minute_microgrid_data','Minute-by-minute microgrid data')},h('table',null,h('caption',null,'Power is averaged over the following minute. Stored energy is measured at the start of each minute. Final endpoint powers are zero.'),
       h('thead',null,h('tr',null,['Minute','Generation kW','Demand kW','Direct kW','Charge kW','Discharge kW','Grid kW','Unserved kW','Curtailed kW','Stored kWh','Discharge floor kWh','Grid available','Primary generation kW','Second generation kW','Original demand kW','Shifted out kW','Shifted in kW','Requested grid kW','Connection-limit unserved kW','Grid-unavailable unserved kW','Grid capacity kW','Unused grid capacity kW'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
@@ -4127,12 +4950,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('p',{className:'rn-energy-muted'},'Initial charge: '+fmt(result.initialStored)+' kWh. Configured reserve: '+fmt(result.reserveEnergy)+' kWh.'+(s.policy==='backup'?' Save for outages holds all stored energy while the grid is available; the reserve slider applies only to the other two strategies.':'')+' Set units to zero to remove the battery bank.'))),
         h('div',{style:{minWidth:0}},
           h('div',{className:'rn-energy-toolbar',style:{marginBottom:10}},btn('Source in 3D',function(){partPair[1]('converter');change({scene:'source'});},{'aria-pressed':scene==='source'}),s.companion.enabled&&btn('Second source in 3D',function(){partPair[1]('converter');change({scene:'companion'});},{'aria-pressed':scene==='companion'}),btn('Battery in 3D',function(){partPair[1]('converter');change({scene:'battery'});},{'aria-pressed':scene==='battery'}),btn('Power flow',function(){change({scene:'flow'});},{'aria-pressed':scene==='flow'})),
-          scene!=='flow'&&h('div',{id:uid+'outageScene',className:'rn-energy-stage',tabIndex:-1},h(RenewablesEnergyScene,{React:React,t:props.t,id:scene==='battery'?'storage':scene==='companion'?s.companion.source:s.source,run:scene==='battery'?row.batteryRun:scene==='companion'?row.companionRun:row.sourceRun,phase:minute,selected:partPair[0],onPick:partPair[1]}),
+          scene==='flow'&&h(RenewablesMicrogridFlow,{React:React,t:rnT,uid:uid,result:result,row:row,onPause:function(){playingPair[1](false);},onInspect:function(target){partPair[1]('converter');change({scene:target});}}),
+          scene!=='flow'&&h('div',{id:uid+'outageScene',className:'rn-energy-stage',tabIndex:-1},h(RenewablesEnergyScene,{React:React,t:rnT,id:scene==='battery'?'storage':scene==='companion'?s.companion.source:s.source,run:scene==='battery'?row.batteryRun:scene==='companion'?row.companionRun:row.sourceRun,phase:minute,selected:partPair[0],onPick:partPair[1]}),
             h('div',{className:'rn-energy-scene-note'},scene==='battery'?'Schematic bank of '+s.batteryUnits+' identical units · fill shows bank state of charge':scene==='companion'?(s.companion.sourceUnits?'One of '+s.companion.sourceUnits+' second-source units':'Second-source mechanism preview · zero installed units')+' · '+companionSpec.name:'One of '+s.sourceUnits+' primary generation units · '+spec.name)),
           scene!=='flow'&&h(React.Fragment,null,h('div',{className:'rn-energy-parts'},parts.map(function(p){return btn('Inspect '+p[1],function(){partPair[1](p[0]);},{key:p[0],'aria-pressed':partPair[0]===p[0]});})),h('div',{className:'rn-energy-component','aria-label':__alloT('stem.renewables.microgrid_component_explanation','Microgrid component explanation')},h('h3',null,part[1]),h('p',null,part[2]))),
           h('div',{className:'rn-energy-time'},h('div',{className:'rn-energy-toolbar'},btn(playing?'Pause energy system':'Play energy system',function(){if(!playing&&minute>=result.duration)props.onChange(Object.assign({},state,{minute:0}));playingPair[1](!playing);},{'aria-pressed':playing}),btn('Step energy system',function(){time(minute+1);}),h('strong',null,'Minute '+minute+' / '+result.duration)),
             slider('Energy system minute',minute,0,result.duration,1,'min',time),
             h('small',null,minute===result.duration?'Sequence complete. This endpoint adds no energy.':'Power is averaged over the following minute; stored energy is measured at this boundary. Playback is accelerated.')),
+          h('section',{className:'rn-energy-panel rn-mg-landmarks','aria-label':__alloT('stem.renewables.dispatch_landmarks','Dispatch landmarks')},
+            h('style',null,'.rn-mg-landmarks h3{margin:0 0 6px}.rn-mg-landmarks p{font-size:12px}.rn-mg-landmarks-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.rn-mg-landmarks label{flex:1;min-width:170px;font-size:12px}.rn-mg-landmarks select{display:block;width:100%;max-width:100%;margin-top:4px;min-height:40px;background:var(--re-bg);color:var(--re-text);border:1px solid var(--re-border);border-radius:8px;padding:8px;font:inherit}.rn-mg-landmarks select:focus-visible{outline:3px solid var(--re-accent);outline-offset:3px}.rn-mg-landmarks-note{margin-top:12px!important;padding:10px 12px;background:var(--re-alt);border-left:3px solid var(--re-accent);border-radius:0 7px 7px 0}@media(max-width:500px){.rn-mg-landmarks label{flex-basis:100%}.rn-mg-landmarks-controls button{flex:1}}'),
+            h('h3',null,'Jump to a change in operation'),h('p',{className:'rn-energy-muted'},'Follow when storage changes mode, grid availability changes, or a supply gap or unused surplus begins or ends.'),
+            h('div',{className:'rn-mg-landmarks-controls'},h('label',{htmlFor:uid+'moment'},'Dispatch landmark',h('select',{id:uid+'moment',value:moment?String(minute):'','aria-label':__alloT('stem.renewables.dispatch_landmark','Dispatch landmark'),onChange:function(e){if(e.target.value!=='')time(Number(e.target.value));}},h('option',{value:''},'Choose a turning point'),moments.events.map(function(event){return h('option',{key:event.minute,value:String(event.minute)},event.minute+' min · '+event.reasons.map(function(reason){return reason.label;}).join(' · '));}))),
+              btn('Previous dispatch change',function(){time(previousMoment.minute);},{disabled:!previousMoment}),btn('Next dispatch change',function(){time(nextMoment.minute);},{disabled:!nextMoment})),
+            h('p',{className:'rn-mg-landmarks-note'},moment?'Minute '+minute+': '+moment.reasons.map(function(reason){return reason.label;}).join(' · '):nextMoment?'The next recorded change is at minute '+nextMoment.minute+'. Current readings describe minute '+minute+'.':'All recorded operating changes have been inspected.')),
           h('section',{className:'rn-energy-panel','aria-label':__alloT('stem.renewables.current_electricity_balance','Current electricity balance')},h('div',{className:'rn-energy-toolbar'},h('h3',null,'Where electricity goes'),h('strong',null,minute===result.duration?'Sequence complete':row.gridAvailable?(s.gridLimit.enabled?'Grid available · '+fmt(s.gridLimit.power)+' kW import limit':'Grid backup available'):s.grid==='island'?'Islanded':'Grid outage')),
             h('div',{className:'rn-mg-flow'},[['Generation',row.generation],['Direct to demand',row.direct],['Charging battery',row.charge],['Battery to demand',row.discharge],['Grid to demand',row.grid],['Unserved demand',row.unserved],['Curtailed surplus',row.curtailed]].map(function(v){return h('div',{key:v[0]},h('small',null,v[0]),h('strong',null,fmt(v[1])+' kW'));})),
             s.companion.enabled&&h('p',null,'Primary '+spec.name+': '+fmt(row.primaryGeneration)+' kW + second '+companionSpec.name+': '+fmt(row.companionGeneration)+' kW = '+fmt(row.generation)+' kW combined.'),
@@ -4190,30 +5020,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
       return (value == null) ? (fallback != null ? fallback : key) : value;
     };
-    live.current=props;
+    var routePair=React.useState(true),labelPair=React.useState(true);
+    live.current=Object.assign({},props,{showRoutes:routePair[0],showLabels:labelPair[0]});
     var statusPair=React.useState('loading'),status=statusPair[0],setStatus=statusPair[1],retryPair=React.useState(0);
     React.useEffect(function(){
-      var disposed=false,renderer,scene,camera,raf=0,resize,observer,io,visible=true,meshes=[],rotors=[],links=[],panels=[],last=0,dirty=true,lastProps=null,pickables=[],raycaster,drag=null,onDown,onMove,onUp;
+      var disposed=false,renderer,scene,camera,raf=0,resize,observer,io,visible=true,meshes=[],rotors=[],links=[],panels=[],last=0,dirty=true,lastProps=null,pickables=[],raycaster,drag=null,onDown,onMove,onUp,onDouble,flowTime=0;
       var container=mount.current,reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)');
-      var viewCamera={yaw:.15,pitch:.78,distance:22};setStatus('loading');
+      var viewCamera={yaw:.15,pitch:.78,distance:22,x:0,z:0};setStatus('loading');
       function positionCamera(){
         if(!camera)return;
-        camera.position.set(Math.sin(viewCamera.yaw)*Math.cos(viewCamera.pitch)*viewCamera.distance,Math.sin(viewCamera.pitch)*viewCamera.distance,Math.cos(viewCamera.yaw)*Math.cos(viewCamera.pitch)*viewCamera.distance);
-        camera.lookAt(0,0,0);dirty=true;
+        camera.position.set(viewCamera.x+Math.sin(viewCamera.yaw)*Math.cos(viewCamera.pitch)*viewCamera.distance,Math.sin(viewCamera.pitch)*viewCamera.distance,viewCamera.z+Math.cos(viewCamera.yaw)*Math.cos(viewCamera.pitch)*viewCamera.distance);
+        camera.lookAt(viewCamera.x,0,viewCamera.z);dirty=true;
       }
       api.current=function(action){
         if(action==='left')viewCamera.yaw-=.22;if(action==='right')viewCamera.yaw+=.22;
-        if(action==='in')viewCamera.distance=Math.max(16,viewCamera.distance-3);
+        if(action==='in')viewCamera.distance=Math.max(6,viewCamera.distance-3);
         if(action==='out')viewCamera.distance=Math.min(46,viewCamera.distance+3);
         if(action==='top'){viewCamera.pitch=1.48;viewCamera.yaw=0;}
-        if(action==='home')viewCamera={yaw:.15,pitch:.78,distance:22};
+        if(action==='focus'){var selectedRegion=RN_REGIONS.find(function(r){return r.id===live.current.selected;})||RN_REGIONS[0];viewCamera.x=selectedRegion.x;viewCamera.z=selectedRegion.z;viewCamera.distance=8.5;viewCamera.pitch=.83;}
+        if(action==='home')viewCamera={yaw:.15,pitch:.78,distance:22,x:0,z:0};
         positionCamera();
       };
       var engine=window.THREE?Promise.resolve(window.THREE):window.StemLab.ensureThree?window.StemLab.ensureThree():Promise.reject(new Error('3D unavailable'));
       function release(){
-        if(!scene)return;var geometries=new Set(),materials=new Set();
+        if(!scene)return;var geometries=new Set(),materials=new Set(),textures=new Set();
         scene.traverse(function(o){if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){materials.add(m);});});
-        geometries.forEach(function(g){g.dispose();});materials.forEach(function(m){m.dispose();});
+        geometries.forEach(function(g){g.dispose();});materials.forEach(function(m){Object.keys(m).forEach(function(key){if(m[key]&&m[key].isTexture)textures.add(m[key]);});m.dispose();});textures.forEach(function(texture){texture.dispose();});
       }
       function lost(event){event.preventDefault();cancelAnimationFrame(raf);setStatus('failed');}
       engine.then(function(THREE){
@@ -4234,51 +5066,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var geometry=new THREE.BufferGeometry().setFromPoints(points.map(function(p){return new THREE.Vector3(p[0],p[1],p[2]);}));
           var l=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:color}));scene.add(l);return l;
         }
+        function cylinder(parent,x,y,z,top,bottom,height,color,sides){var m=new THREE.Mesh(new THREE.CylinderGeometry(top,bottom,height,sides||10),new THREE.MeshStandardMaterial({color:color,roughness:.75}));m.position.set(x,y,z);parent.add(m);return m;}
+        function detailLines(parent,points,color){var geometry=new THREE.BufferGeometry().setFromPoints(points.map(function(p){return new THREE.Vector3(p[0],p[1],p[2]);})),mesh=new THREE.LineSegments(geometry,new THREE.LineBasicMaterial({color:color,transparent:true,opacity:.72}));parent.add(mesh);return mesh;}
+        function solarPanel(parent,x,z,idx,ordinal){
+          var rack=new THREE.Group();rack.position.set(x,.27,z);rack.rotation.x=-.32;parent.add(rack);
+          var module=box(rack,0,0,0,.31,.038,.34,'#19466f');module.material.metalness=.3;module.material.roughness=.3;
+          var lines=[[-.155,.022,-.17],[.155,.022,-.17],[.155,.022,-.17],[.155,.022,.17],[.155,.022,.17],[-.155,.022,.17],[-.155,.022,.17],[-.155,.022,-.17]];
+          for(var cell=1;cell<4;cell++){var xx=-.155+cell*.0775;lines.push([xx,.022,-.17],[xx,.022,.17]);}
+          lines.push([-.155,.022,0],[.155,.022,0]);detailLines(rack,lines,'#91b3cf');
+          cylinder(rack,-.10,-.13,0,.012,.012,.23,'#9baeb3',5);cylinder(rack,.10,-.13,0,.012,.012,.23,'#9baeb3',5);
+          panels.push({mesh:module,assembly:rack,index:idx,number:ordinal});
+        }
+        function settlement(parent,idx){
+          var town=new THREE.Group();town.position.set(0,0,-2.15);parent.add(town);
+          box(town,0,.016,0,2.35,.028,.42,'#797e76');box(town,0,.033,0,2.30,.008,.035,'#c9c6af');
+          var windows=[],windowMaterial=new THREE.MeshStandardMaterial({color:'#5c8295',roughness:.4,emissive:'#f4c66a',emissiveIntensity:0});
+          for(var b=0;b<5;b++){
+            var height=[.34,.57,.78,.44,.3][b]+(idx%2)*.06,x=-1.02+b*.51;
+            box(town,x,height/2+.035,-.35,.36,height,.32,['#bdc9c9','#9faab1','#d0cab5'][b%3]);
+            box(town,x,height+.06,-.35,.40,.06,.36,'#627481');
+            for(var floor=0;floor<Math.max(1,Math.floor(height/.15));floor++)for(var col=0;col<2;col++){
+              var windowMesh=new THREE.Mesh(new THREE.PlaneGeometry(.069,.058),windowMaterial);windowMesh.position.set(x-.092+col*.184,.13+floor*.15,-.186);town.add(windowMesh);windows.push(windowMesh);
+            }
+          }
+          town.name='Demand settlement: '+RN_REGIONS[idx].id;return {mesh:town,windows:windows,material:windowMaterial};
+        }
+        function pylon(parent,x,z,height){
+          var points=[],half=.19;for(var side=-1;side<=1;side+=2){points.push([x+side*half,.08,z],[x+side*.065,height,z]);points.push([x+side*half*.72,height*.35,z],[x-side*.065,height*.74,z]);}
+          points.push([x-.35,height*.78,z],[x+.35,height*.78,z],[x-.27,height*.94,z],[x+.27,height*.94,z]);detailLines(parent,points,'#b7c3bc');
+          [-1,1].forEach(function(side){cylinder(parent,x+side*.30,height*.735,z,.028,.028,.10,'#d9d9ba',5);});
+        }
+        function regionLabel(parent,name){
+          var canvas=document.createElement('canvas');canvas.width=512;canvas.height=112;
+          var context=canvas.getContext('2d'),texture=new THREE.CanvasTexture(canvas),sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false,transparent:true}));texture.encoding=THREE.sRGBEncoding;
+          sprite.position.set(0,.15,1.93);sprite.scale.set(3.25,.71,1);sprite.renderOrder=5;parent.add(sprite);
+          return {texture:texture,sprite:sprite,draw:function(state,selected){if(!context)return;context.clearRect(0,0,512,112);context.fillStyle=selected?'#193946':'#112a35';context.fillRect(0,0,512,112);context.fillStyle=selected?'#ffdb88':'#e5f2ed';context.font='bold 37px system-ui, sans-serif';context.textAlign='center';context.fillText(name,256,44);context.font='27px system-ui, sans-serif';context.fillStyle='#d4e9e9';context.fillText(state,256,87);texture.needsUpdate=true;}};
+        }
         function turbine(parent,x,z,idx,ordinal){
           var assembly=new THREE.Group();parent.add(assembly);parent=assembly;
-          var tower=new THREE.Mesh(new THREE.CylinderGeometry(.065,.13,2.7,7),new THREE.MeshStandardMaterial({color:'#dcebe6'}));tower.position.set(x,1.7,z);parent.add(tower);
-          box(parent,x,3.1,z,.35,.22,.5,'#f0f4f1');
-          var rotor=new THREE.Group();rotor.position.set(x,3.12,z+.3);parent.add(rotor);
-          for(var b=0;b<3;b++){var arm=new THREE.Group();box(arm,0,.61,0,.12,1.35,.05,'#f8fbeb');arm.rotation.z=b*Math.PI*2/3;rotor.add(arm);}
+          cylinder(parent,x,.08,z,.19,.22,.14,'#b9beb2');
+          var tower=new THREE.Mesh(new THREE.CylinderGeometry(.045,.095,2.15,10),new THREE.MeshStandardMaterial({color:'#dcebe6',roughness:.5}));tower.position.set(x,1.15,z);parent.add(tower);
+          box(parent,x,2.28,z,.23,.18,.36,'#f0f4f1');
+          var rotor=new THREE.Group();rotor.position.set(x,2.29,z+.23);parent.add(rotor);
+          var bladeShape=new THREE.Shape();bladeShape.moveTo(-.045,.05);bladeShape.lineTo(-.085,.28);bladeShape.lineTo(-.018,.90);bladeShape.quadraticCurveTo(.005,1.03,.028,.90);bladeShape.lineTo(.095,.27);bladeShape.lineTo(.046,.05);bladeShape.closePath();var bladeGeometry=new THREE.ExtrudeGeometry(bladeShape,{depth:.024,bevelEnabled:false}),bladeMaterial=new THREE.MeshStandardMaterial({color:'#f0f2e9',roughness:.4});
+          for(var b=0;b<3;b++){var blade=new THREE.Mesh(bladeGeometry,bladeMaterial);blade.rotation.z=b*Math.PI*2/3;rotor.add(blade);}
+          var hub=new THREE.Mesh(new THREE.SphereGeometry(.095,10,8),new THREE.MeshStandardMaterial({color:'#ecf4ee'}));hub.position.z=.03;rotor.add(hub);
           rotors.push({mesh:rotor,index:idx,assembly:assembly,number:ordinal});
         }
         var outline=[[-10,-4.2],[-6,-4.5],[-2,-4.1],[2,-4.2],[3.1,-3.2],[5,-3.8],[7.4,-4.6],[9.4,-5.4],[9.8,-4],[8.2,-1.2],[7.8,1.8],[6.8,3.4],[7.9,6.2],[6.8,5.6],[5.7,3.6],[3.5,3.8],[1.2,3.6],[.2,5.1],[-1.3,4.7],[-2.2,2.9],[-5,2.6],[-7.2,1.8],[-8.5,-.2],[-9.4,-2.3]];
         var shape=new THREE.Shape();outline.forEach(function(p,i){if(i===0)shape.moveTo(p[0],-p[1]);else shape.lineTo(p[0],-p[1]);});shape.closePath();
         var land=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.45,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.12,bevelThickness:.12}),new THREE.MeshStandardMaterial({color:'#47786b',roughness:1}));
         land.rotation.x=-Math.PI/2;land.position.y=-.1;scene.add(land);
+        var water=box(scene,0,-.55,0,25,.24,15,'#153f53');water.material.roughness=.28;water.material.metalness=.3;
+        // Shallow coastal shelves keep the boundary readable without implying geographic precision.
+        [1.012,1.035].forEach(function(scale){line(outline.concat([outline[0]]).map(function(p){return [p[0]*scale,-.40,p[1]*scale];}),'#447e8b');});
+        line(outline.concat([outline[0]]).map(function(p){return [p[0],.47,p[1]];}),'#8ebdab');
+        // Geography is an illustrative regional cue; equipment is symbolic, not an installation count.
+        [[-8,-2.6,.9],[-6.7,-2.8,1.3],[-5.2,-2.5,1.7],[-4,-2.4,1.4],[-2.7,-2.8,1.1]].forEach(function(p){cylinder(scene,p[0],.44+p[2]/2,p[1],0,.65,p[2],'#769a92',5);cylinder(scene,p[0],.45+p[2]*.9,p[1],0,.22,p[2]*.27,'#d2dfd7',5);});
+        [[-8.3,.9],[-7.8,-1.8],[7.6,-2.5],[7.2,.6],[7.1,3],[4.2,4.7],[5.1,4.6]].forEach(function(p){cylinder(scene,p[0],.66,p[1],.035,.045,.4,'#73594b');cylinder(scene,p[0],.98,p[1],0,.25,.75,'#315f50',6);});
+        for(var field=0;field<5;field++){var crop=box(scene,-1.2+field*.49,.48,-2.35,.36,.025,.8,field%2?'#a2a26b':'#7b9460');crop.rotation.y=.08;}
+        line([[-6,.49,-2.5],[-5.7,.49,-1.9],[-5.9,.49,-1],[-5.3,.49,.2],[-4.9,.49,1.2]],'#70b8c4');
+        line([[2.5,.49,-3.2],[2.8,.49,-2],[2.25,.49,-.8],[2.8,.49,.3],[2.6,.49,2.8],[3.5,.49,3.6]],'#70b8c4');
         RN_REGIONS.forEach(function(r,i){
           var group=new THREE.Group();group.position.set(r.x,.46,r.z);scene.add(group);
-          var marker=box(group,0,-.04,0,2.65,.12,2.6,'#6b9178');meshes.push({marker:marker,index:i});
-          for(var n=0;n<12;n++){var panel=box(group,-1+(n%4)*.48,.22,-1+Math.floor(n/4)*.48,.4,.045,.37,'#183f74');panel.rotation.x=-.32;panels.push({mesh:panel,index:i,number:n});}
-          turbine(group,-.8,1,i,0);turbine(group,.5,.55,i,1);turbine(group,.4,-.8,i,2);
-          box(group,1,.5,-.5,.45,.85,.6,'#cbd9d6');box(group,1,.97,-.5,.52,.08,.65,'#244d50');
-          meshes[i].battery=box(group,.65,.35,1.3,.4,.45,.65,'#4fe0b0');
-          group.traverse(function(o){if(o.isMesh){o.userData.rnRegion=r.id;pickables.push(o);}});
-          links.push({mesh:line([[r.x,.85,r.z],[r.x,.85,1.1],[2.6,.85,1.1]],'#66cbbc'),index:i});
+          var marker=box(group,0,-.04,0,2.85,.12,2.85,['#699584','#9a9472','#8fa26c','#a49873','#638f85','#629475'][i]);
+          var item={marker:marker,index:i,label:regionLabel(group,r.name),baseColor:['#699584','#9a9472','#8fa26c','#a49873','#638f85','#629475'][i]};meshes.push(item);
+          var selection=new THREE.Mesh(new THREE.RingGeometry(1.95,2.03,48),new THREE.MeshBasicMaterial({color:'#ffda87',side:THREE.DoubleSide}));selection.rotation.x=-Math.PI/2;selection.position.y=.08;group.add(selection);item.selection=selection;
+          box(group,-.60,.027,-.27,1.58,.025,1.38,'#77876c');
+          for(var n=0;n<12;n++)solarPanel(group,-1.15+(n%4)*.35,-.75+Math.floor(n/4)*.46,i,n);
+          turbine(group,-.88,1.03,i,0);turbine(group,.68,.60,i,1);turbine(group,.68,-.90,i,2);
+          // Roads and settlements provide a visible demand endpoint, while windows encode the served share.
+          item.town=settlement(group,i);box(group,.12,.045,-.08,.09,.018,2.84,'#b3ad96');
+          // Three recognisable dispatch sources: a dam, containment dome and fossil stack.
+          box(group,-.87,.12,-1.63,.65,.06,.48,'#519bb8');item.hydro=box(group,-.87,.26,-1.62,.67,.28,.13,'#adc9cc');
+          cylinder(group,.05,.28,-1.63,.2,.2,.43,'#d7dce1');var dome=new THREE.Mesh(new THREE.SphereGeometry(.2,12,8,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:'#eee9e1'}));dome.position.set(.05,.49,-1.63);group.add(dome);item.nuclear=dome;
+          item.fossil=box(group,.94,.25,-1.63,.58,.43,.44,'#ba8e61');cylinder(group,1.09,.71,-1.67,.055,.075,.56,'#c3aa90');
+          // A fixed outline makes an empty battery visibly empty and anchors the fill at its base.
+          var batteryShell=box(group,1.15,.51,.92,.49,.92,.55,'#aac9c8');batteryShell.material.transparent=true;batteryShell.material.opacity=.2;batteryShell.material.depthWrite=false;item.batteryShell=batteryShell;
+          box(group,1.15,.05,.92,.55,.1,.61,'#d4e4de');box(group,1.15,.99,.92,.55,.08,.61,'#d4e4de');box(group,1.15,1.06,.92,.2,.08,.3,'#bcd1cd');
+          item.battery=box(group,1.15,.48,.92,.37,.8,.43,'#4fe0b0');item.battery.name='Stored energy: '+r.id;
+          item.batteryArrow=new THREE.Mesh(new THREE.ConeGeometry(.12,.25,8),new THREE.MeshBasicMaterial({color:'#70f3ce'}));item.batteryArrow.position.set(1.15,1.31,.92);group.add(item.batteryArrow);
+          item.shortfall=box(group,1.68,.53,-.38,.11,.78,.11,'#ff786e');item.shortfallDot=box(group,1.68,.06,-.38,.11,.11,.11,'#ff786e');
+          group.traverse(function(o){if(o.isMesh||o.isSprite){o.userData.rnRegion=r.id;pickables.push(o);}});
+          var curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(r.x,.73,r.z),new THREE.Vector3((r.x+2.6)/2,2.6+Math.abs(r.x-2.6)*.08,(r.z+1.1)/2),new THREE.Vector3(2.6,.98,1.1));
+          var route=new THREE.Mesh(new THREE.TubeGeometry(curve,28,.031,5,false),new THREE.MeshBasicMaterial({color:'#528495',transparent:true,opacity:.75}));route.name='Regional link: '+r.id;scene.add(route);
+          var arrows=[];for(var a=0;a<3;a++){var arrow=new THREE.Mesh(new THREE.ConeGeometry(.095,.29,8),new THREE.MeshBasicMaterial({color:'#74f5d6'}));arrow.name='Transfer direction: '+r.id+' '+a;scene.add(arrow);arrows.push(arrow);}
+          var outage=new THREE.Group();var crossA=box(outage,0,0,0,.48,.07,.08,'#ff867c'),crossB=box(outage,0,0,0,.48,.07,.08,'#ff867c');crossA.rotation.z=Math.PI/4;crossB.rotation.z=-Math.PI/4;outage.position.copy(curve.getPoint(.5));scene.add(outage);
+          links.push({mesh:route,index:i,curve:curve,arrows:arrows,outage:outage});
         });
-        box(scene,2.6,.78,1.1,.6,.4,.7,'#f2c879');
-        [-6.1,-4.8].forEach(function(x,i){var mountain=new THREE.Mesh(new THREE.ConeGeometry(.75,1.3,4),new THREE.MeshStandardMaterial({color:'#8dafa4'}));mountain.position.set(x,1,-2.8+i*.2);scene.add(mountain);});
+        // An open-air substation makes the pooled grid endpoint recognisable.
+        box(scene,2.6,.50,1.1,1.15,.10,1.18,'#a4aca6');
+        [2.3,2.85].forEach(function(x){box(scene,x,.77,1.1,.28,.44,.52,'#657b87');for(var fin=0;fin<5;fin++)box(scene,x-.16,.77,.92+fin*.09,.035,.33,.026,'#bdc9c9');[-.15,.15].forEach(function(z){cylinder(scene,x,1.07,1.1+z,.035,.055,.25,'#d1dad2',6);});});
+        pylon(scene,2.6,.40,1.6);pylon(scene,2.6,1.80,1.6);
+        [-.30,.30].forEach(function(offset){var cable=new THREE.QuadraticBezierCurve3(new THREE.Vector3(2.6+offset,1.25,.40),new THREE.Vector3(2.6+offset,.98,1.10),new THREE.Vector3(2.6+offset,1.25,1.80));var conductor=new THREE.Line(new THREE.BufferGeometry().setFromPoints(cable.getPoints(14)),new THREE.LineBasicMaterial({color:'#a3b6ba'}));scene.add(conductor);});
         scene.traverse(function(o){if(o.material&&o.material.color)o.material.color.convertSRGBToLinear();});
         resize=function(){if(!renderer||disposed)return;var w=container.clientWidth||640,ht=container.clientHeight||360;renderer.setSize(w,ht,false);camera.aspect=w/ht;camera.fov=2*Math.atan(Math.max(12,26/camera.aspect)/44)*180/Math.PI;camera.updateProjectionMatrix();dirty=true;};
         if(window.ResizeObserver){observer=new ResizeObserver(resize);observer.observe(container);}else window.addEventListener('resize',resize);
         resize();
         raycaster=new THREE.Raycaster();
+        function pickRegion(e){var rect=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);var hit=raycaster.intersectObjects(pickables,false).find(function(item){var o=item.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});return hit?hit.object.userData.rnRegion:null;}
         onDown=function(e){if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,moved:false,touch:e.pointerType==='touch'};if(!drag.touch)renderer.domElement.setPointerCapture(e.pointerId);};
-        onMove=function(e){if(!drag||drag.touch)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){viewCamera.yaw-=dx*.006;viewCamera.pitch=Math.max(.25,Math.min(1.48,viewCamera.pitch+dy*.006));positionCamera();}drag.x=e.clientX;drag.y=e.clientY;};
-        onUp=function(e){if(!drag)return;var moved=drag.moved||Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>8;drag=null;if(moved||e.type==='pointercancel')return;var rect=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);var hit=raycaster.intersectObjects(pickables,false).find(function(item){var o=item.object;while(o){if(!o.visible)return false;o=o.parent;}return true;});if(hit&&live.current.onPick)live.current.onPick(hit.object.userData.rnRegion);};
+        onMove=function(e){if(!drag){var id=pickRegion(e),region=RN_REGIONS.find(function(r){return r.id===id;});renderer.domElement.style.cursor=id?'pointer':'grab';renderer.domElement.title=region?region.name+' · click to inspect, double-click to focus':'Drag to orbit the landscape';return;}if(drag.touch)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>5)drag.moved=true;if(drag.moved){renderer.domElement.style.cursor='grabbing';viewCamera.yaw-=dx*.006;viewCamera.pitch=Math.max(.25,Math.min(1.48,viewCamera.pitch+dy*.006));positionCamera();}drag.x=e.clientX;drag.y=e.clientY;};
+        onUp=function(e){if(!drag)return;var moved=drag.moved||Math.abs(e.clientX-drag.startX)+Math.abs(e.clientY-drag.startY)>8;drag=null;renderer.domElement.style.cursor='grab';if(renderer.domElement.hasPointerCapture&&renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);if(moved||e.type==='pointercancel')return;var id=pickRegion(e);if(id&&live.current.onPick)live.current.onPick(id);};
+        onDouble=function(e){var id=pickRegion(e),region=RN_REGIONS.find(function(r){return r.id===id;});if(!region)return;if(live.current.onPick)live.current.onPick(id);viewCamera.x=region.x;viewCamera.z=region.z;viewCamera.distance=8.5;viewCamera.pitch=.83;positionCamera();};
         renderer.domElement.style.cursor='grab';
-        renderer.domElement.addEventListener('pointerdown',onDown);renderer.domElement.addEventListener('pointermove',onMove);renderer.domElement.addEventListener('pointerup',onUp);renderer.domElement.addEventListener('pointercancel',onUp);
+        renderer.domElement.addEventListener('pointerdown',onDown);renderer.domElement.addEventListener('pointermove',onMove);renderer.domElement.addEventListener('pointerup',onUp);renderer.domElement.addEventListener('pointercancel',onUp);renderer.domElement.addEventListener('dblclick',onDouble);
         if(window.IntersectionObserver){io=new IntersectionObserver(function(entries){visible=entries[0].isIntersecting;});io.observe(container);}
         function frame(time){
           if(disposed)return;raf=requestAnimationFrame(frame);
           if(document.hidden||!visible||time-last<45)return;
           var dt=Math.min(.1,(time-last)/1000);last=time;var p=live.current,rows=p.hour.regions;
           var animate=p.motion&&!(reduce&&reduce.matches);
-          if(!dirty&&!animate&&lastProps===p)return;dirty=false;lastProps=p;
-          var daylight=rows.reduce(function(n,r){return n+r.sun;},0)/rows.length;ambient.intensity=.35+daylight*.65;light.intensity=.2+daylight*1.3;scene.background.set(daylight>.05?'#102b3a':'#081724');
-          meshes.forEach(function(item){var r=rows[item.index];item.marker.material.color.set(r.id===p.selected?'#f5d487':r.unmet>.01?'#ba6c68':'#6b9178').convertSRGBToLinear();item.battery.scale.y=.15+.85*(r.batteryCapacity?r.battery/r.batteryCapacity:0);});
-          panels.forEach(function(item){item.mesh.material.color.set(rows[item.index].sun>.1?'#174783':'#101e35').convertSRGBToLinear();item.mesh.visible=item.number<Math.min(12,Math.ceil(3*p.capacity.regions[item.index].solar/(240*RN_REGIONS[item.index].solar)));});
-          links.forEach(function(item){var r=rows[item.index];item.mesh.visible=p.network;item.mesh.material.color.set(r.linkOffline?'#fc716b':r.imports>.1?'#f4c55f':r.exports>.1?'#6effd3':'#396679').convertSRGBToLinear();});
+          if(!dirty&&!animate&&lastProps===p)return;var changed=lastProps!==p;dirty=false;lastProps=p;if(animate)flowTime+=dt*.24;
+          var daylight=rows.reduce(function(n,r){return n+r.sun;},0)/rows.length;ambient.intensity=.48+daylight*.5;light.intensity=.3+daylight*1.1;scene.background.set(daylight>.05?'#173b4d':'#0b2032');scene.fog.color.copy(scene.background);
+          var sunAngle=((p.hour.hour%24)/24)*Math.PI*2;light.position.set(Math.sin(sunAngle)*16,12+daylight*8,Math.cos(sunAngle)*12);
+          meshes.forEach(function(item){
+            var r=rows[item.index],soc=Math.max(0,Math.min(1,r.batteryCapacity?r.battery/r.batteryCapacity:0)),charging=r.charge>1e-6,discharging=r.discharge>1e-6;
+            item.marker.material.color.set(r.unmet>.01?'#a66c65':item.baseColor).convertSRGBToLinear();item.selection.visible=r.id===p.selected;item.label.sprite.visible=p.showLabels;
+            var servedFraction=r.demand>0?Math.max(0,Math.min(1,1-r.unmet/r.demand)):1,night=1-Math.min(1,r.sun*3);
+            item.town.material.emissiveIntensity=(.10+night*1.9)*servedFraction;item.town.mesh.userData.rnServedFraction=servedFraction;item.town.mesh.userData.rnSolarResource=r.sun;
+            item.battery.visible=soc>1e-8;item.battery.scale.y=Math.max(1e-8,soc);item.battery.position.y=.09+.4*soc;
+            item.battery.material.color.set(discharging?'#f6ce78':'#4fe0b0').convertSRGBToLinear();item.batteryArrow.visible=charging||discharging;item.batteryArrow.rotation.z=charging?Math.PI:0;item.batteryArrow.material.color.copy(item.battery.material.color);
+            item.shortfall.visible=item.shortfallDot.visible=r.unmet>.01;
+            [item.hydro,item.nuclear,item.fossil].forEach(function(source,k){var value=[r.hydro,r.nuclear,r.fossil][k];source.material.emissive.set(['#206a89','#454674','#895b20'][k]).convertSRGBToLinear();source.material.emissiveIntensity=value>1e-6?.38:0;});
+            if(changed)item.label.draw(r.linkOffline?'LINK OFFLINE':r.unmet>.01?'SHORTFALL '+r.unmet.toFixed(1)+' GW':r.imports>.1?'IMPORT '+r.imports.toFixed(1)+' GW':r.exports>.1?'EXPORT '+r.exports.toFixed(1)+' GW':'LOCAL BALANCE',r.id===p.selected);
+          });
+          panels.forEach(function(item){var sun=rows[item.index].sun;item.mesh.material.color.set(sun>.1?'#205fa1':'#142b47').convertSRGBToLinear();item.mesh.material.emissive.set('#124577').convertSRGBToLinear();item.mesh.material.emissiveIntensity=sun*.4;item.assembly.visible=item.number<Math.min(12,Math.ceil(3*p.capacity.regions[item.index].solar/(240*RN_REGIONS[item.index].solar)));});
+          links.forEach(function(item){
+            var r=rows[item.index],active=!r.linkOffline&&(r.imports>1e-6||r.exports>1e-6),color=r.linkOffline?'#fc867c':r.imports>1e-6?'#f4c55f':r.exports>1e-6?'#6effd3':'#528495',use=r.link?Math.min(1,Math.max(r.imports,r.exports)/r.link):0;
+            item.mesh.visible=!!p.network&&p.showRoutes;item.mesh.material.color.set(color).convertSRGBToLinear();item.mesh.material.opacity=active?.55+use*.45:r.linkOffline?.4:.32;item.outage.visible=!!p.network&&p.showRoutes&&r.linkOffline;
+            item.arrows.forEach(function(arrow,a){arrow.visible=!!p.network&&p.showRoutes&&active;if(!arrow.visible)return;var along=((a+.5)/3+(animate?flowTime:0))%1;if(r.imports>1e-6)along=1-along;arrow.position.copy(item.curve.getPoint(along));var tangent=item.curve.getTangent(along);if(r.imports>1e-6)tangent.negate();arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tangent.normalize());arrow.material.color.copy(item.mesh.material.color);arrow.scale.setScalar(.85+use*.45);});
+          });
           rotors.forEach(function(rotor){rotor.assembly.visible=rotor.number<Math.min(3,Math.ceil(p.capacity.regions[rotor.index].wind/(200*RN_REGIONS[rotor.index].turbines)));if(animate)rotor.mesh.rotation.z-=dt*rows[rotor.index].windFactor*3;});
           renderer.render(scene,camera);
         }
@@ -4288,11 +5206,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         disposed=true;cancelAnimationFrame(raf);api.current=null;
         if(observer)observer.disconnect();if(io)io.disconnect();if(resize)window.removeEventListener('resize',resize);
         release();
-        if(renderer){renderer.domElement.removeEventListener('pointerdown',onDown);renderer.domElement.removeEventListener('pointermove',onMove);renderer.domElement.removeEventListener('pointerup',onUp);renderer.domElement.removeEventListener('pointercancel',onUp);renderer.domElement.removeEventListener('webglcontextlost',lost);renderer.dispose();renderer.forceContextLoss();if(renderer.domElement.parentNode)renderer.domElement.remove();}
+        if(renderer){renderer.domElement.removeEventListener('pointerdown',onDown);renderer.domElement.removeEventListener('pointermove',onMove);renderer.domElement.removeEventListener('pointerup',onUp);renderer.domElement.removeEventListener('pointercancel',onUp);renderer.domElement.removeEventListener('dblclick',onDouble);renderer.domElement.removeEventListener('webglcontextlost',lost);renderer.dispose();renderer.forceContextLoss();if(renderer.domElement.parentNode)renderer.domElement.remove();}
       };
     },[retryPair[0]]);
     // Stage = rn-landscape: the camera buttons under the scene are the keyboard
     // path, and the status line is what says whether 3D came up at all.
+    var selectedInfo=RN_REGIONS.find(function(r){return r.id===props.selected;})||RN_REGIONS[0],selectedRow=props.hour.regions.find(function(r){return r.id===selectedInfo.id;})||props.hour.regions[0];
+    var localHour=((props.hour.hour+selectedInfo.offset)%24+24)%24,storedPercent=selectedRow.batteryCapacity?100*selectedRow.battery/selectedRow.batteryCapacity:0;
+    var generationMix=[['Solar',selectedRow.solar,'#e9c467'],['Wind',selectedRow.wind,'#8dd4d2'],['Hydro',selectedRow.hydro,'#80b8f0'],['Nuclear',selectedRow.nuclear,'#d2b9f1'],['Fossil',selectedRow.fossil,'#dda779']],generationTotal=generationMix.reduce(function(sum,v){return sum+v[1];},0);
+    function reading(value){return Number(value).toLocaleString(undefined,{maximumFractionDigits:1});}
     return h('div',{className:'rn-landscape','data-allo-fs-stage':'true',ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },style:{position:'relative'}},
       h('button', {
         type: 'button',
@@ -4303,9 +5225,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         'data-fs-in': __alloT('stem.renewables.exit_fullscreen', 'Exit fullscreen 3D energy landscape (Escape)'),
         style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
       }, h('span', { 'aria-hidden': 'true' }, '⛶')),
+      h('div',{'aria-hidden':'true',style:{position:'absolute',top:10,left:10,maxWidth:'calc(100% - 62px)',zIndex:2,color:'#e7f4f5',background:'rgba(9,29,43,.9)',border:'1px solid #557b86',borderRadius:8,padding:'6px 10px',fontSize:12,pointerEvents:'none'}},'DAY '+(1+Math.floor(props.hour.hour/24))+' · HOUR '+props.hour.hour),
       h('div',{ref:mount,className:'rn-webgl',role:'img','aria-label':__alloT('stem.renewables.3d_landscape_of_six_illustrative_us_regions','3D landscape of six illustrative US regions. Solar arrays, turbines, batteries, and electricity links reflect the selected hour. Exact readings are in the region inspector.'),'data-render-status':status}),
       status!=='ready'&&h('div',{className:'rn-scene-status',role:'status'},status==='loading'?'Loading the 3D landscape…':'3D is unavailable. The map, chart, and simulation still work.',status==='failed'&&h('button',{type:'button',onClick:function(){retryPair[1](retryPair[0]+1);}},'Retry 3D')),
-      h('div',{className:'rn-camera','aria-label':__alloT('stem.renewables.3d_camera_controls','3D camera controls')},[['left','Rotate left'],['right','Rotate right'],['in','Zoom in'],['out','Zoom out'],['top','Top view'],['home','Reset camera']].map(function(a){return h('button',{key:a[0],type:'button',disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})));
+      h('div',{className:'rn-camera','aria-label':__alloT('stem.renewables.3d_camera_controls','3D camera controls')},[['left','Rotate left'],['right','Rotate right'],['in','Zoom in'],['out','Zoom out'],['top','Top view'],['focus','Focus region'],['home','Reset camera']].map(function(a){return h('button',{key:a[0],type:'button',disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})),
+      h('div',{style:{display:'flex',gap:'8px 20px',padding:'10px 16px',alignItems:'center',flexWrap:'wrap',background:'#102b3b',color:'#dcecf3',borderTop:'1px solid #466375',fontSize:12}},
+        h('label',{style:{display:'flex',gap:7,alignItems:'center',minHeight:32}},h('input',{type:'checkbox',checked:routePair[0],onChange:function(e){routePair[1](e.target.checked);}}),'Transmission routes'),
+        h('label',{style:{display:'flex',gap:7,alignItems:'center',minHeight:32}},h('input',{type:'checkbox',checked:labelPair[0],onChange:function(e){labelPair[1](e.target.checked);}}),'Regional labels'),
+        h('span',{style:{fontSize:11,lineHeight:1.6}},'Click a region to inspect · double-click to focus · drag to orbit. Region and camera controls also work with a keyboard.')),
+      h('section',{'aria-label':__alloT('stem.renewables.3d_landscape_readings','3D landscape readings'),style:{padding:'14px 16px',background:'#102b3b',color:'#e2eff4',borderTop:'1px solid #466375'}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}},h('label',{style:{display:'flex',gap:9,alignItems:'center',flexWrap:'wrap'}},'Inspect region',h('select',{'aria-label':__alloT('stem.renewables.landscape_region','Landscape region'),value:selectedInfo.id,onChange:function(e){if(props.onPick)props.onPick(e.target.value);},style:{background:'#173b4d',color:'#f1f6f7',border:'1px solid #6f94a3',borderRadius:7,padding:'7px 10px',font:'inherit',minHeight:38}},RN_REGIONS.map(function(r){return h('option',{key:r.id,value:r.id},r.name);}))),h('span',{style:{fontSize:12}},'Local model time '+String(localHour).padStart(2,'0')+':00 · '+(selectedRow.sun>0?'solar resource available':'no solar resource'))),
+        h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:12,margin:'13px 0'}},[
+          ['Demand',reading(selectedRow.demand)+' GW',selectedRow.unmet>.01?reading(selectedRow.unmet)+' GW unserved':'All demand served'],
+          ['Stored energy',reading(storedPercent)+'% charged',reading(selectedRow.battery)+' / '+reading(selectedRow.batteryCapacity)+' GWh at hour end'],
+          ['Battery dispatch',selectedRow.charge>1e-6?'Charging '+reading(selectedRow.charge)+' GW':selectedRow.discharge>1e-6?'Discharging '+reading(selectedRow.discharge)+' GW':'Idle',selectedRow.batteryCapacity>0?'Fill shows stored energy':'No storage capacity'],
+          ['Regional link',selectedRow.linkOffline?'Offline':selectedRow.imports>1e-6?'Import '+reading(selectedRow.imports)+' GW':selectedRow.exports>1e-6?'Export '+reading(selectedRow.exports)+' GW':'No transfer',selectedRow.linkOffline?'Transfers stopped':selectedRow.link===0?'Zero transfer capacity':reading(100*Math.max(selectedRow.imports,selectedRow.exports)/selectedRow.link)+'% of '+reading(selectedRow.link)+' GW link'+(selectedRow.linkCongested?' · at capacity':'')]
+        ].map(function(v){return h('div',{key:v[0],style:{minWidth:0}},h('small',{style:{display:'block',color:'#b7d1df',fontSize:11}},v[0]),h('strong',{style:{display:'block',fontSize:16,lineHeight:1.5}},v[1]),h('small',{style:{display:'block',fontSize:11,color:'#d1e2e9'}},v[2]));})),
+        h('div',{'aria-label':'Selected region generation mix: '+generationMix.map(function(v){return v[0]+' '+reading(v[1])+' GW';}).join(', '),role:'img',style:{display:'flex',height:9,borderRadius:5,overflow:'hidden',background:'#48616d'}},generationMix.map(function(v){return h('span',{key:v[0],style:{width:(generationTotal?100*v[1]/generationTotal:0)+'%',background:v[2]}});})),
+        h('div',{style:{display:'flex',gap:'5px 14px',flexWrap:'wrap',marginTop:7,fontSize:11}},generationMix.map(function(v){return h('span',{key:v[0]},h('span',{'aria-hidden':'true',style:{display:'inline-block',width:8,height:8,marginRight:5,borderRadius:2,background:v[2]}}),v[0]+' '+reading(v[1])+' GW');})),
+        h('p',{style:{fontSize:11,lineHeight:1.6,margin:'11px 0 0',color:'#c7dde7'}},'Arrows point toward the receiver: mint exports to the hub; gold imports to a region. Red × means an offline link; red ! means unserved demand. Arrow size shows link use; motion speed is illustrative. Battery fill is end-of-hour energy, and its arrow shows charge or discharge during that hour.'),
+        h('p',{style:{fontSize:11,lineHeight:1.6,margin:'5px 0 0',color:'#b8d0dc'}},'Blue dam = hydro · white dome = nuclear · amber stack = fossil. Building windows brighten as local sunlight fades and dim with unserved demand. Their brightness represents the fraction of demand served, not which buildings have power. Equipment counts and terrain are illustrative. Solar panels and turbines indicate installed capacity; the mix readings report generation.')));
   }
 
 

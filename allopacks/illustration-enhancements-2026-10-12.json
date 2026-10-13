@@ -1,0 +1,859 @@
+{
+  "date": "2026-10-12",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "provider": "Built-in image generation",
+  "enhancedPacks": 15,
+  "newArtwork": 15,
+  "revisedArtwork": 2,
+  "newImagePlacements": 56,
+  "crewReferenceChartPlacements": 39,
+  "illustratedSortingCards": 17,
+  "newAssets": [
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-message",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-message.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain smartphone standing on a small home desk beside a closed envelope. On the phone screen only a simple envelope icon, no text or numbers. Focus on sending a message to someone far away. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A child sits beside a phone with an envelope icon; a globe and a distant friend suggest sending a message far away.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-19190130-16d5-4237-ba68-8fd690dd3314.png"
+    },
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-travel",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-travel.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A modern passenger train with several linked carriages travels through a broad landscape with green fields and distant hills. Gentle three-quarter view, train wheels connected naturally to tracks. No people needed. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A long passenger train travels through green fields with hills behind it.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-1e6caf05-0b7e-4f4a-80cb-d6b21b18ac88.png"
+    },
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-cold-food",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-cold-food.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. An open household refrigerator with neatly spaced vegetables, a plain milk bottle, covered bowl, and eggs on shelves. Clear door gasket and shelves, no packaging words. No frost clouds, arrows or magical effects. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "An open refrigerator holds vegetables, eggs, a milk bottle and a covered bowl.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-0d193fab-b961-4e3f-9c00-be07871aac14.png"
+    },
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-laundry",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-laundry.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A modern front-loading washing machine with colored clothes visible behind the circular glass door, and a woven basket of laundry beside it. Plain controls with no words or numbers. Calm everyday home scene. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "Clothes are visible through a washing-machine door beside a laundry basket.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-4353cfd2-dcb0-4316-8eec-71c7a210484c.png"
+    },
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-games",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-games.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. Two children aged seven or eight sit opposite each other at a low table outdoors, taking turns in a simple wooden block-building game. One child places a block on a low stable stack; the other watches with both hands resting near their own blocks. Simple natural arms and fingers. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "Two children take turns adding wooden blocks to a shared stack.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-4eee5b79-f9df-458e-afdc-7ba6514ec7ea.png"
+    },
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-meal",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-meal.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. Three family members of different generations, one school-age child, one adult, and one older adult, seated around a small round dining table sharing an ordinary meal. Modest plates, bowl of vegetables, plain drinking cups. Warm conversation, relaxed naturally connected arms and simple hands resting on table or holding one utensil. No elaborate gestures. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A child and two adult family members share a meal around a dining table.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-0789d309-7e4c-4a32-bf22-ad6e22229f9d.png"
+    },
+    {
+      "slug": "then_and_now_grade2",
+      "id": "tw-sort-friends",
+      "file": "allopacks/media/then_and_now_grade2/tw-sort-friends.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. Three seven-year-old children on a school playground. Two stand next to a bench, smiling warmly as a third approaches to join them. All arms resting naturally at sides; no pointing or complicated waving. The three form an open welcoming group. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "Two children smile as another child approaches them beside a playground bench.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-47243faf-e3de-45fa-b4d7-aa76b6e00bdd.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-crosswalk",
+      "file": "allopacks/media/local_government_grade4/lg-sort-crosswalk.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A road-maintenance worker in a plain reflective vest uses a long-handled paint roller to paint one white stripe of a pedestrian crosswalk. A few cones guard the work area on a quiet neighborhood street. No vehicles moving close by, no text or insignia. Anatomically simple side view. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A worker paints a white crosswalk stripe inside a line of safety cones.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-c5da5057-1cab-4cb1-bab4-2f2346fa9dbf.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-rubbish",
+      "file": "allopacks/media/local_government_grade4/lg-sort-rubbish.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain green rubbish collection truck parked along a residential street beside two wheeled bins. One worker in a simple reflective vest stands beside a bin with hands on its handle. No logos, emblems or text. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A rubbish truck and worker stand beside wheeled bins on a residential street.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-a730196a-06b0-4011-9ffd-8bfc8ade50e7.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-driving",
+      "file": "allopacks/media/local_government_grade4/lg-sort-driving.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain small car in a quiet driving-practice area. Through its side windows an older teenager sits properly in the driver seat wearing a visible seat belt, hands naturally on the steering wheel; an adult instructor sits in the front passenger seat with a seat belt. No written learner sign, paperwork or road rules. No additional arms. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A learner driver and adult instructor wear seat belts in a small car.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-2e99f786-3835-496e-86b7-6b9af6437a01.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-schoolyear",
+      "file": "allopacks/media/local_government_grade4/lg-sort-schoolyear.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A classroom wall calendar with a neat blank grid beside a school backpack, an open notebook and pencil on a desk. A window and classroom chair in background establish school setting. No circled dates, checkmarks, readable text or numerals. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A blank classroom calendar hangs above a desk with a notebook and backpack.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a130e9-b40e-7033-b365-4e79fcaf58d7\\exec-251abe4f-e01d-4ab5-a144-479822b5483c.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-highway",
+      "file": "allopacks/media/local_government_grade4/lg-sort-highway.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A divided intercity highway curving through countryside toward distant buildings, with a few ordinary cars traveling in correct lanes and a plain roadside speed sign containing no words or numbers. Broad calm view, road lanes clearly connected. No government buildings or jurisdiction clues. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "Cars travel on a divided highway through the countryside past a roadside sign.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-80b51b1b-0e9c-4d65-8083-39f1f0e6a1a8.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-armed-forces",
+      "file": "allopacks/media/local_government_grade4/lg-sort-armed-forces.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A respectful group of three adult service members in plain muted olive uniforms standing together outside a simple barracks-style building. No weapons, combat, flags, rank insignia, badges, emblems, saluting or text. Relaxed standing postures and neutral expressions. Do not imply a specific country. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "Three service members in plain uniforms stand outside a simple building.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-9278f78b-f2e4-4405-841a-0582c18a521b.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-money",
+      "file": "allopacks/media/local_government_grade4/lg-sort-money.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A close-up tabletop still life of several unmarked banknotes and round coins, arranged clearly with visible paper edges and metallic coin surfaces. Banknotes have subtle simple decorative borders but no faces, emblems, text or numerals. No budget envelopes or calculator. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "Plain banknotes and round coins lie on a tabletop.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-638dd697-65c3-453c-88de-9d685db68b8b.png"
+    },
+    {
+      "slug": "local_government_grade4",
+      "id": "lg-sort-post",
+      "file": "allopacks/media/local_government_grade4/lg-sort-post.png",
+      "prompt": "Use case: illustration-story. Asset: classroom sorting-card illustration. A plain white postal delivery van parked beside a curbside mailbox. An adult postal worker in simple blue everyday uniform holds two closed unmarked envelopes beside the mailbox, relaxed natural hands. No brand, postal seal, flags, badges or text. Style: Warm watercolor and fine ink educational illustration on ivory paper, clear simple shapes, muted natural colors, generous margins. Square composition readable on a small activity card. Natural connected shoulders, elbows, wrists and hands; coherent hairstyles. No words, letters, numerals, labels, captions, category clues, arrows, timelines, logos, national symbols or watermarks. The native app supplies the card text. Show one contemporary scene only, not a before-and-after comparison. ",
+      "alt": "A postal worker holds envelopes beside a mailbox and a plain delivery van.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131aa-369d-7603-a8aa-43c5624cb10f\\exec-d6ae0f1c-ca92-4380-b0e3-d19ffac4a98f.png"
+    }
+  ],
+  "revisedAssets": [
+    {
+      "id": "eg-img-irrigation",
+      "kind": "lesson",
+      "scene": "Wide field with shallow irrigation ditches in a grid. Ordinary workers using simple wooden hoes open a connecting channel; water flows from the river toward dry ground. No pyramids, no whips, no modern tools.",
+      "alt": "Workers use angled wooden hoes beside irrigation channels, where water flows through an opening into a lower field.",
+      "title": "Past where the flood reached",
+      "caption": "The flood was the gift; the ditches were the work.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "River",
+        "Ditch",
+        "Ground the flood never covered"
+      ],
+      "prompt": "Use case: precise-object-edit. Edit target: this ancient Egyptian irrigation illustration. Change ONLY the digging tools and the hands needed to hold them correctly. The tools now look like long straight paddles. Replace all such tools with clearly bent ancient wooden hoes. Each hoe is a short thick wooden handle joined at its top to a broad tapered wooden blade: in side view the two wooden pieces form an inverted V, with the blade extending DOWNWARD AND BACK TOWARD THE WORKER, at a sharp 55-degree angle to the handle. A cord braces the open V. The worker grips the handle with two hands and draws the angled blade toward their feet through the soil. Make the bend unmistakable; the blade must NOT be a straight continuation of the handle. No metal parts, no shovel shapes. Preserve the exact workers, faces, linen clothing, landscape, boat-free river, channels, palms, huts, watercolor palette and composition. Preserve water cascading from the channel into the lower foreground field. Hands and arms anatomically natural, exactly two arms per person. No extra people, objects, text, labels or watermarks.",
+      "file": "eg-img-irrigation-v3.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7772d2cb-1198-47c5-9206-f0b328bfcb59.png",
+      "previousVersions": [
+        {
+          "file": "eg-img-irrigation.png",
+          "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide field with shallow irrigation ditches in a grid. Ordinary workers using simple wooden hoes open a connecting channel; water flows from the river toward dry ground. No pyramids, no whips, no modern tools. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "generatedSource": "C:/Users/cabba/.codex/generated_images/01a123a0-d1f1-7610-98b4-74d037121ad8/exec-16d16dba-b4bf-467d-9bde-07555fcc24f0.png",
+          "alt": "Workers open a ditch with hoes so water can move from a river through a grid of channels into dry ground.",
+          "status": "visual-review-passed"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "editTarget": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+      "editHistory": [
+        {
+          "prompt": "Use case: precise-object-edit. Input image is the edit target: a warm watercolor and fine-ink ancient Egyptian irrigation scene. Make only these historical and functional corrections while preserving the landscape composition, palette, North African workers and simple linen clothes, and coherent natural anatomy. REMOVE ALL boats and all sails from the river, leaving calm uninterrupted water. Replace every straight modern metal spade/shovel with a simple ancient wooden hoe: two clearly connected wooden parts, a short handle and a broad tapered wooden blade angled toward the handle with a small rope tie, held naturally in the worker's two hands. No metal shovel blades or modern tools. Show a clear break in the near earthen bank where water in the irrigation channel visibly flows into a slightly lower previously dry field; retain the grid of low earthen channels and fields, avoiding water pouring out of the field into the channel. Keep the river behind, muted ivory paper texture, no pyramid, no whips, no writing, symbols, captions, words, numerals, labels, logo, or watermark. Arms must connect normally to shoulders with hands gripping their tools, no extra limbs.",
+          "editTarget": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-irrigation.png",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+          "selected": false
+        },
+        {
+          "prompt": "Use case: precise-object-edit. Edit target: this ancient Egyptian irrigation illustration. Change ONLY the digging tools and the hands needed to hold them correctly. The tools now look like long straight paddles. Replace all such tools with clearly bent ancient wooden hoes. Each hoe is a short thick wooden handle joined at its top to a broad tapered wooden blade: in side view the two wooden pieces form an inverted V, with the blade extending DOWNWARD AND BACK TOWARD THE WORKER, at a sharp 55-degree angle to the handle. A cord braces the open V. The worker grips the handle with two hands and draws the angled blade toward their feet through the soil. Make the bend unmistakable; the blade must NOT be a straight continuation of the handle. No metal parts, no shovel shapes. Preserve the exact workers, faces, linen clothing, landscape, boat-free river, channels, palms, huts, watercolor palette and composition. Preserve water cascading from the channel into the lower foreground field. Hands and arms anatomically natural, exactly two arms per person. No extra people, objects, text, labels or watermarks.",
+          "editTarget": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7772d2cb-1198-47c5-9206-f0b328bfcb59.png",
+          "selected": true
+        }
+      ],
+      "historicalReviewSources": [
+        "https://exploration.marinersmuseum.org/watercraft/egyptian-ships/",
+        "https://www.metmuseum.org/art/collection/search/555919"
+      ],
+      "visualReviewNotes": "Boat-free river; clearly angled wooden hoe blades; channel water falls into a lower field; natural connected arms and hands."
+    },
+    {
+      "id": "eg-img-receipt",
+      "kind": "lesson",
+      "scene": "Wide scene of Egyptian scribe seated holding a wooden writing board steeply angled away from viewer, grain sacks carried into a granary past him. His hand marks the board but surface is hidden so NO individual symbols or writing visible.",
+      "alt": "A seated scribe holds an angled wooden board while workers carry grain sacks past large stone columns into a storehouse.",
+      "title": "Writing begins with counting",
+      "caption": "Much early writing recorded supplies, deliveries and accounts.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "Grain in",
+        "Tally kept"
+      ],
+      "prompt": "Use case: precise-object-edit. Asset type: ancient Egyptian classroom lesson illustration. Input image is the edit target. Remove only the incidental boats and their sails on the distant river, replacing them with calm uninterrupted water that matches the existing watercolor and fine-ink rendering. Preserve every other part of the image: the seated scribe with his angled wooden writing board, the workers carrying grain sacks, the granary architecture, columns, ox and cart, baskets, landscape, people, faces, limbs, clothing, composition, warm earth colors and paper texture. No boats, sails, new symbols, writing, text, captions, labels, logos or watermarks.",
+      "file": "eg-img-receipt-v2.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-17032e65-696a-4d82-b61a-9471b6f049fc.png",
+      "previousVersions": [
+        {
+          "file": "eg-img-receipt.png",
+          "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide scene of Egyptian scribe seated holding a wooden writing board steeply angled away from viewer, grain sacks carried into a granary past him. His hand marks the board but surface is hidden so NO individual symbols or writing visible. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-70d8c2cb-defd-44bc-a164-6b6743de9b5d.png",
+          "alt": "A seated scribe holds an angled wooden board while workers carry grain sacks past large stone columns into a storehouse.",
+          "status": "visual-review-passed"
+        }
+      ],
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "editTarget": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-receipt.png",
+      "editHistory": [
+        {
+          "prompt": "Use case: precise-object-edit. Asset type: ancient Egyptian classroom lesson illustration. Input image is the edit target. Remove only the incidental boats and their sails on the distant river, replacing them with calm uninterrupted water that matches the existing watercolor and fine-ink rendering. Preserve every other part of the image: the seated scribe with his angled wooden writing board, the workers carrying grain sacks, the granary architecture, columns, ox and cart, baskets, landscape, people, faces, limbs, clothing, composition, warm earth colors and paper texture. No boats, sails, new symbols, writing, text, captions, labels, logos or watermarks.",
+          "editTarget": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-receipt.png",
+          "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-17032e65-696a-4d82-b61a-9471b6f049fc.png",
+          "selected": true
+        }
+      ],
+      "historicalReviewSources": [
+        "https://exploration.marinersmuseum.org/watercraft/egyptian-ships/"
+      ],
+      "visualReviewNotes": "Incidental boats and sails removed; scribe, workers and granary composition retained."
+    }
+  ],
+  "additionalCorrections": [
+    "Perspective illustration title corrected to The missing reaction.",
+    "ConceptSortGame now exposes current saved picture descriptions in image alt text and card accessible names; stale hashes and decorative images are respected."
+  ],
+  "preserved": [
+    "Original lesson and activity text",
+    "Original artwork files",
+    "Approved laptop and calendar scenes"
+  ],
+  "coverage": {
+    "packs": 62,
+    "illustratedEditions": 62,
+    "imagePlacements": 1808,
+    "glossaryTerms": 661,
+    "glossaryImages": 661,
+    "missingGlossaryImages": 0
+  },
+  "validation": {
+    "packs": {
+      "packs": 15,
+      "images": 248,
+      "imagePlacements": 289,
+      "anchorSectionImages": 39,
+      "sortCardImages": 17,
+      "reports": [
+        {
+          "slug": "crew_ask_grade6_8",
+          "images": 15,
+          "imagePlacements": 19,
+          "anchorSectionImages": 4,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_attention_grade6_8",
+          "images": 15,
+          "imagePlacements": 19,
+          "anchorSectionImages": 4,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_feedback_grade6_8",
+          "images": 15,
+          "imagePlacements": 19,
+          "anchorSectionImages": 4,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_halfway_grade6_8",
+          "images": 15,
+          "imagePlacements": 18,
+          "anchorSectionImages": 3,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_norms_grade6_8",
+          "images": 14,
+          "imagePlacements": 18,
+          "anchorSectionImages": 4,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_perspective_grade6_8",
+          "images": 15,
+          "imagePlacements": 19,
+          "anchorSectionImages": 4,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_repair_grade6_8",
+          "images": 15,
+          "imagePlacements": 17,
+          "anchorSectionImages": 2,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_story_grade6_8",
+          "images": 15,
+          "imagePlacements": 19,
+          "anchorSectionImages": 4,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_system_grade6_8",
+          "images": 15,
+          "imagePlacements": 18,
+          "anchorSectionImages": 3,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_teamwork_grade6_8",
+          "images": 15,
+          "imagePlacements": 17,
+          "anchorSectionImages": 2,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_upstander_grade6_8",
+          "images": 15,
+          "imagePlacements": 18,
+          "anchorSectionImages": 3,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "crew_zones_grade6_8",
+          "images": 15,
+          "imagePlacements": 17,
+          "anchorSectionImages": 2,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "then_and_now_grade2",
+          "images": 28,
+          "imagePlacements": 29,
+          "anchorSectionImages": 0,
+          "sortCardImages": 8,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "local_government_grade4",
+          "images": 23,
+          "imagePlacements": 24,
+          "anchorSectionImages": 0,
+          "sortCardImages": 9,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        },
+        {
+          "slug": "ancient_egypt_grade6",
+          "images": 18,
+          "imagePlacements": 18,
+          "anchorSectionImages": 0,
+          "sortCardImages": 0,
+          "sourceContentPreserved": true,
+          "productionAltHashes": true,
+          "exactEmbeddedWebpBytes": true,
+          "uniqueResourceIds": true,
+          "productionArtifactEnvelope": true
+        }
+      ]
+    },
+    "sortingBrowser": {
+      "packs": 2,
+      "cards": 17,
+      "reviewedAltRendered": true,
+      "noHorizontalOverflow": true,
+      "reports": [
+        {
+          "slug": "then_and_now_grade2",
+          "cards": 8,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "sourceCategoriesAndCardTextPreserved": true,
+          "desktop": {
+            "viewport": 1100,
+            "documentWidth": 1100,
+            "noHorizontalOverflow": true,
+            "deckScrollIsContained": true
+          },
+          "mobile": {
+            "viewport": 390,
+            "documentWidth": 390,
+            "noHorizontalOverflow": true,
+            "deckScrollIsContained": true
+          },
+          "offline": true,
+          "networkRequests": 0,
+          "keyboardSort": true,
+          "resetReturnsCardToDeck": true,
+          "reviewedDescriptionsPreservedAfterSorting": true,
+          "perfectRound": {
+            "score": 160,
+            "correctPlacements": 8,
+            "totalItems": 8,
+            "isPerfect": true,
+            "attempts": 2,
+            "bestScore": 160,
+            "incorrectPlacements": []
+          },
+          "errors": [],
+          "rendered": [
+            {
+              "id": "tws1",
+              "expectedAlt": "A child sits beside a phone with an envelope icon; a globe and a distant friend suggest sending a message far away.",
+              "alt": "A child sits beside a phone with an envelope icon; a globe and a distant friend suggest sending a message far away.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How a message gets to someone far away. A child sits beside a phone with an envelope icon; a globe and a distant friend suggest sending a message far away.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws2",
+              "expectedAlt": "A long passenger train travels through green fields with hills behind it.",
+              "alt": "A long passenger train travels through green fields with hills behind it.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How people travel across the country. A long passenger train travels through green fields with hills behind it.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws3",
+              "expectedAlt": "An open refrigerator holds vegetables, eggs, a milk bottle and a covered bowl.",
+              "alt": "An open refrigerator holds vegetables, eggs, a milk bottle and a covered bowl.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How food is kept cold. An open refrigerator holds vegetables, eggs, a milk bottle and a covered bowl.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws4",
+              "expectedAlt": "Clothes are visible through a washing-machine door beside a laundry basket.",
+              "alt": "Clothes are visible through a washing-machine door beside a laundry basket.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How clothes get washed. Clothes are visible through a washing-machine door beside a laundry basket.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws5",
+              "expectedAlt": "Two children take turns adding wooden blocks to a shared stack.",
+              "alt": "Two children take turns adding wooden blocks to a shared stack.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "Children playing games together. Two children take turns adding wooden blocks to a shared stack.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws6",
+              "expectedAlt": "A child and two adult family members share a meal around a dining table.",
+              "alt": "A child and two adult family members share a meal around a dining table.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "Families eating a meal together. A child and two adult family members share a meal around a dining table.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws7",
+              "expectedAlt": "A child with a closed notebook listens as an older adult shares a memory on a porch step.",
+              "alt": "A child with a closed notebook listens as an older adult shares a memory on a porch step.",
+              "width": 900,
+              "height": 600,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "Telling stories out loud. A child with a closed notebook listens as an older adult shares a memory on a porch step.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "tws8",
+              "expectedAlt": "Two children smile as another child approaches them beside a playground bench.",
+              "alt": "Two children smile as another child approaches them beside a playground bench.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "Wanting to have friends. Two children smile as another child approaches them beside a playground bench.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            }
+          ]
+        },
+        {
+          "slug": "local_government_grade4",
+          "cards": 9,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "sourceCategoriesAndCardTextPreserved": true,
+          "desktop": {
+            "viewport": 1100,
+            "documentWidth": 1100,
+            "noHorizontalOverflow": true,
+            "deckScrollIsContained": true
+          },
+          "mobile": {
+            "viewport": 390,
+            "documentWidth": 390,
+            "noHorizontalOverflow": true,
+            "deckScrollIsContained": true
+          },
+          "offline": true,
+          "networkRequests": 0,
+          "keyboardSort": true,
+          "resetReturnsCardToDeck": true,
+          "reviewedDescriptionsPreservedAfterSorting": true,
+          "perfectRound": {
+            "score": 180,
+            "correctPlacements": 9,
+            "totalItems": 9,
+            "isPerfect": true,
+            "attempts": 2,
+            "bestScore": 180,
+            "incorrectPlacements": []
+          },
+          "errors": [],
+          "rendered": [
+            {
+              "id": "lg1",
+              "expectedAlt": "A worker paints a white crosswalk stripe inside a line of safety cones.",
+              "alt": "A worker paints a white crosswalk stripe inside a line of safety cones.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "Where a new crosswalk is painted. A worker paints a white crosswalk stripe inside a line of safety cones.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg2",
+              "expectedAlt": "An open public library has visible bookshelves, a low entrance ramp and a bench.",
+              "alt": "An open public library has visible bookshelves, a low entrance ramp and a bench.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "What hours the public library opens. An open public library has visible bookshelves, a low entrance ramp and a bench.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg3",
+              "expectedAlt": "A rubbish truck and worker stand beside wheeled bins on a residential street.",
+              "alt": "A rubbish truck and worker stand beside wheeled bins on a residential street.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "When rubbish gets collected on your street. A rubbish truck and worker stand beside wheeled bins on a residential street.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg4",
+              "expectedAlt": "A learner driver and adult instructor wear seat belts in a small car.",
+              "alt": "A learner driver and adult instructor wear seat belts in a small car.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How old you must be to drive a car. A learner driver and adult instructor wear seat belts in a small car.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg5",
+              "expectedAlt": "A blank classroom calendar hangs above a desk with a notebook and backpack.",
+              "alt": "A blank classroom calendar hangs above a desk with a notebook and backpack.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How many days a school year must run. A blank classroom calendar hangs above a desk with a notebook and backpack.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg6",
+              "expectedAlt": "Cars travel on a divided highway through the countryside past a roadside sign.",
+              "alt": "Cars travel on a divided highway through the countryside past a roadside sign.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "The speed limit on a highway between cities. Cars travel on a divided highway through the countryside past a roadside sign.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg7",
+              "expectedAlt": "Three service members in plain uniforms stand outside a simple building.",
+              "alt": "Three service members in plain uniforms stand outside a simple building.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "Who is in charge of the armed forces. Three service members in plain uniforms stand outside a simple building.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg8",
+              "expectedAlt": "Plain banknotes and round coins lie on a tabletop.",
+              "alt": "Plain banknotes and round coins lie on a tabletop.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "What money the whole country uses. Plain banknotes and round coins lie on a tabletop.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            },
+            {
+              "id": "lg9",
+              "expectedAlt": "A postal worker holds envelopes beside a mailbox and a plain delivery van.",
+              "alt": "A postal worker holds envelopes beside a mailbox and a plain delivery van.",
+              "width": 480,
+              "height": 480,
+              "renderedWidth": 128,
+              "renderedHeight": 128,
+              "reviewedAltRendered": true,
+              "accessibleLabel": "How the postal service is run. A postal worker holds envelopes beside a mailbox and a plain delivery van.. Unsorted card. Press Enter to choose a category.",
+              "reviewedDescriptionInAccessibleLabel": true
+            }
+          ]
+        }
+      ]
+    },
+    "crewBrowser": {
+      "packs": 12,
+      "anchorImages": 39,
+      "reports": [
+        {
+          "slug": "crew_ask_grade6_8",
+          "anchorImages": 4,
+          "missingUnambiguousMatch": 0,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_attention_grade6_8",
+          "anchorImages": 4,
+          "missingUnambiguousMatch": 0,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_feedback_grade6_8",
+          "anchorImages": 4,
+          "missingUnambiguousMatch": 0,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_halfway_grade6_8",
+          "anchorImages": 3,
+          "missingUnambiguousMatch": 1,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_norms_grade6_8",
+          "anchorImages": 4,
+          "missingUnambiguousMatch": 0,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_perspective_grade6_8",
+          "anchorImages": 4,
+          "missingUnambiguousMatch": 0,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_repair_grade6_8",
+          "anchorImages": 2,
+          "missingUnambiguousMatch": 2,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_story_grade6_8",
+          "anchorImages": 4,
+          "missingUnambiguousMatch": 0,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_system_grade6_8",
+          "anchorImages": 3,
+          "missingUnambiguousMatch": 1,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_teamwork_grade6_8",
+          "anchorImages": 2,
+          "missingUnambiguousMatch": 2,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_upstander_grade6_8",
+          "anchorImages": 3,
+          "missingUnambiguousMatch": 1,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        },
+        {
+          "slug": "crew_zones_grade6_8",
+          "anchorImages": 2,
+          "missingUnambiguousMatch": 2,
+          "imageDecode": true,
+          "reviewedAltRendered": true,
+          "desktopNoHorizontalOverflow": true,
+          "mobileNoHorizontalOverflow": true,
+          "offline": true
+        }
+      ]
+    },
+    "gallery": {
+      "images": {
+        "count": 328,
+        "failed": 0
+      },
+      "brokenLinks": 0,
+      "filterWorks": true,
+      "phoneOverflow": false
+    },
+    "automatedTests": {
+      "passed": 120,
+      "suites": 7,
+      "failed": 0
+    }
+  },
+  "reviewGallery": "allopacks/illustration-review-2026-10-12.html"
+}

@@ -218,20 +218,62 @@ node dev-tools/i18n/merge_cmd_catalog_translations.cjs --lang=french --apply
 `merge_cmd_ui_translations.cjs` performs the complementary recovery pass against
 the main `ui_strings.js` catalog. For each command/palette value that is still
 identical to English, it looks for exactly one placeholder-safe, non-English
-value attached to an identical English UI leaf in the same pack. It updates both
-pack mirrors only with those unique matches, never overwrites an existing
-translation, and leaves ambiguous or context-sensitive fragments in the report:
+value attached to an identical English UI leaf in the same pack. Matching is a
+candidate-finding step, not proof that the translation is current or appropriate
+in the command's context. The report includes each candidate's English text,
+translation and source keys. Writes require an explicit review of that language
+and source-to-command pair:
 
 ```bash
 node dev-tools/i18n/merge_cmd_ui_translations.cjs --quiet
-node dev-tools/i18n/merge_cmd_ui_translations.cjs --apply
+node dev-tools/i18n/merge_cmd_ui_translations.cjs --lang=french --apply --review-file=reviews.json
+node dev-tools/i18n/merge_cmd_ui_translations.cjs --lang=french --key=cmd.example --gate --json
 node dev-tools/i18n/merge_cmd_ui_translations.cjs --gate --quiet
 ```
+
+Repeat `--key=<canonical-command-key>` to audit or apply only those exact keys.
+Blank, padded or unknown keys are rejected; a blank language selector is also
+rejected rather than widening the run to every language. Filtered runs include
+their scope in JSON and text output and write `_summary.scoped.json`, leaving
+the full `_summary.json` intact. A filtered green gate does not certify the
+unselected commands or languages. Omitting selectors retains the full CI gate.
+Approval schema and English bindings are always checked; pack-value checks for
+approvals outside the selected keys or languages are left to their own run.
+
+After checking the translation's meaning and grammatical context, the reviewer
+provides only the approved pairs in a versioned review file. This example shows
+the schema, not an approval of a real repository translation:
+
+```json
+{
+  "version": 1,
+  "approvals": [
+    {
+      "slug": "french",
+      "targetKey": "cmd.example",
+      "sourceKey": "common.example",
+      "english": "Exact current English",
+      "translation": "Exact reviewed translation"
+    }
+  ]
+}
+```
+
+An approval is invalidated by changed English, source translation or target
+values. The tool checks input snapshots and pack mirrors before each pack write.
+If an input changes during an earlier write, later packs are left untouched and
+the error reports the number of values already written. It
+never overwrites an existing different translation, and an approval cannot
+override ambiguity or a context-sensitive exclusion. Only approved unique
+candidates are applied; unapproved candidates remain pending and still fail
+`--gate`, including when `--apply` is supplied. Mirrored pair writes are not a
+cross-file transaction.
 
 The guarded `cmd.read_this_page_of` fragment is intentionally excluded because
 its correct translation depends on the sentence that follows it. The report at
 `dev-tools/i18n/cmd_ui_reuse/_summary.json` records the remaining identities and
-the per-pack reuse decisions.
+the per-pack approved and unreviewed reuse decisions. An absent entry in the
+English staleness baseline is unknown provenance, not evidence of review.
 
 `audit_cmd_hand_sources.cjs` audits the reviewed command/palette hand batches
 themselves. It checks every fixed-slot payload against the current English key

@@ -209,7 +209,7 @@ describe('word support editor', () => {
     host = document.createElement('div'); document.body.append(host); root = createRoot(host);
     const render = () => root.render(React.createElement(View.ReadingGlossEditor, { item, supports, onUpdate, disabled: false }));
     act(render);
-    const toggle = [...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Review word supports'));
+    const toggle = [...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Review word help'));
     if (toggle) act(() => toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   }
   it('keeps its status region mounted, so a save is announced', async () => {

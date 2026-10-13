@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cz-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "YELLOW",
+      "assetId": "cz-term-reset",
+      "reason": "Slow breathing and a hand on the chest match the yellow-zone response."
+    },
+    {
+      "resourceId": "cz-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "BLUE",
+      "assetId": "cz-term-shutdown",
+      "reason": "The tired student with lowered head matches the blue-zone description."
+    }
+  ]
+}

@@ -1,0 +1,686 @@
+{
+  "slug": "crew_ask_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_ask_grade6_8.allopack.json",
+  "sourcePackSha256": "be55f70205d1ed3479cf3df6556db704762b8547912d5dfbcb3bee1625dc7100",
+  "illustratedPack": "allopacks/illustrated/crew_ask_grade6_8.allopack.json",
+  "illustratedPackSha256": "17fd9036bf515a98f0c778ecd3c9a186152bcd064d4eedeb451b11a20dda629b",
+  "plan": "allopacks/media/crew_ask_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "ca-term-advocate",
+      "term": "Advocate",
+      "kind": "term",
+      "scene": "A student standing at a teacher's desk, calm posture, one hand slightly raised",
+      "constraints": "not pleading",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student standing at a teacher's desk, calm posture, one hand slightly raised. not pleading.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-c66ac933-141a-4643-aac8-9cc359196f8c.png",
+      "file": "ca-term-advocate.png",
+      "alt": "A student in a green hoodie speaks calmly to a teacher, with one hand open and the other holding a backpack strap.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ca-term-advocate.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "a53366672a4e24ea6b9272502236f934d3161ae0429685fe09d6d61e23363fa3",
+      "optimizedSha256": "b7321faaed59c25473aae32eb820f62153ac83525007eb627dd11f40ee62dcf2",
+      "bytes": 21440,
+      "altSource": "vision",
+      "altHash": "img-m2r-07fca124",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 0,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ca-term-describe",
+      "term": "Describe",
+      "kind": "term",
+      "scene": "A magnifying glass over a worksheet with plain crossed-out marks",
+      "constraints": "no numbers legible",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A magnifying glass over a worksheet with plain crossed-out marks. no numbers legible.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-8c2eadbc-03d0-4444-b596-dad76c86a9ef.png",
+      "file": "ca-term-describe.png",
+      "alt": "Four students examine a worksheet while one holds a magnifying glass above crossed-out marks.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ca-term-describe.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "09011fade93d3653e58266affe0dec5e0a87b94aaddf5499f953aa5bbe6c90dd",
+      "optimizedSha256": "94bb2aa71fa06e9f7ef902b9a7b279dcdc42ce9caf33ea7a0fc43438bef5655d",
+      "bytes": 29136,
+      "altSource": "vision",
+      "altHash": "img-tzr-33798829",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 1,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ca-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "DESCRIBE",
+          "field": "iconUrl",
+          "reason": "Examining evidence supports describing facts without blame."
+        }
+      ]
+    },
+    {
+      "id": "ca-term-express",
+      "term": "Express",
+      "kind": "term",
+      "scene": "A simple heart outline with a small wavy line inside",
+      "constraints": "plain symbol",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A simple heart outline with a small wavy line inside. plain symbol.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-f258483a-fcf6-40b4-b64c-914e9fbc549f.png",
+      "file": "ca-term-express.png",
+      "alt": "A student speaks with open hands while three classmates listen; a heart containing a wavy line appears above them.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ca-term-express.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "9c26ce9ad9c4ce21ddd03d4b65fc3fa20532e00bc4b88a4b23868b0b26164d88",
+      "optimizedSha256": "a8b4b81d62b04b82c9d011a9628703bff7c69fba0df8592c9b265a40ddab0112",
+      "bytes": 27968,
+      "altSource": "vision",
+      "altHash": "img-ssj-dfd54f2e",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 2,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ca-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "EXPRESS",
+          "field": "iconUrl",
+          "reason": "An open conversation and heart represent expressing an effect or feeling."
+        }
+      ]
+    },
+    {
+      "id": "ca-term-ask",
+      "term": "Ask",
+      "kind": "term",
+      "scene": "An open hand, palm up, at desk height",
+      "constraints": "small, specific gesture",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. An open hand, palm up, at desk height. small, specific gesture.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-025205df-ae8d-41c3-b37f-eb92a29551f3.png",
+      "file": "ca-term-ask.png",
+      "alt": "A seated student extends an open palm toward a classmate beside an open notebook.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ca-term-ask.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "fa76887e42f9a43e7a111cfdb6e926fb217c3f83dbb0eb637601f62726ea62f2",
+      "optimizedSha256": "a0afc2ea9ea5e7a78dcc7eeed20719033b5b9def3303b926f2d21092d20bc2c7",
+      "bytes": 21266,
+      "altSource": "vision",
+      "altHash": "img-lwb-2d013ea8",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 3,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ca-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "ASK",
+          "field": "iconUrl",
+          "reason": "The open-palm request directly supports the clear ask."
+        }
+      ]
+    },
+    {
+      "id": "ca-term-reinforce",
+      "term": "Reinforce",
+      "kind": "term",
+      "scene": "Two arrows from opposite sides meeting at a small circle",
+      "constraints": "plain symbol",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two arrows from opposite sides meeting at a small circle. plain symbol.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-d8bf8b19-d5c5-4273-93d8-03ff90da5368.png",
+      "file": "ca-term-reinforce.png",
+      "alt": "Two arrows point toward one circle, surrounded by four students listening to one another.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ca-term-reinforce.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "3afe032049076ab5dd366bf63933c731c3b6403e9159b9b667890e20a293b370",
+      "optimizedSha256": "2312d7f12dbf4862d2f696c780bc9c4d9c808b3d66a10e72046073d33315287e",
+      "bytes": 23628,
+      "altSource": "vision",
+      "altHash": "img-obr-0b1843d9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 4,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "ca-anchor",
+          "sectionIndex": 3,
+          "sectionLabel": "REINFORCE",
+          "field": "iconUrl",
+          "reason": "Converging arrows represent a shared benefit."
+        }
+      ]
+    },
+    {
+      "id": "ca-term-vague",
+      "term": "Vague",
+      "kind": "term",
+      "scene": "A fogged-over speech bubble, empty",
+      "constraints": "bubble empty",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A fogged-over speech bubble, empty. bubble empty.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-b6be81bf-167d-4370-97c4-ce79ea6cbe09.png",
+      "file": "ca-term-vague.png",
+      "alt": "A student speaks to three classmates beneath a large empty speech bubble.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/ca-term-vague.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "2b6968b55729548c18f18867b8c413c1837d7b89d966a0270a6a8189a0c01878",
+      "optimizedSha256": "9bcc44bca192c5e5fcefed4eb7534ea6ae25dbcffbbe75d30a1f52b670ee2b93",
+      "bytes": 29348,
+      "altSource": "vision",
+      "altHash": "img-u7n-4df17220",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ca-img-stuck",
+      "kind": "lesson",
+      "title": "Three days stuck.",
+      "scene": "A student at a desk with an eraser worn down, a page of half-erased work, a calendar with three days shaded.",
+      "caption": "the question stays inside and the assignment gets harder every day.",
+      "plannedLabels": [
+        {
+          "text": "Erasing",
+          "position": "top-left",
+          "anchorX": 66,
+          "anchorY": 79
+        },
+        {
+          "text": "Guessing",
+          "position": "top-right",
+          "anchorX": 44,
+          "anchorY": 72
+        }
+      ],
+      "prompt": "Use case: precise-object-edit. Image 1 is the edit target, a landscape lesson scene. Image 2 is a character reference: the boy in the green hoodie on the left is Tomas. In image 1 replace only the long-haired student with Tomas from image 2, keeping his recognizable short dark tousled hair, tan skin and green hoodie. Keep the desk, notebook, worn eraser, room and calendar with exactly three shaded squares. Tomas should look uncertain and mildly frustrated at the erased schoolwork, not cheerful. One hand holds the pencil normally over the notebook, the other supports his cheek with the elbow on the desk. Exactly two anatomically connected arms and natural hands, coherent short hairstyle. Preserve the warm flat illustrated style. The notebook must contain only abstract gray strokes and erased patches, no readable text, letters or numerals. No text, logo, watermark or captions.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-59ee-7743-913a-92e7105dba47\\exec-c19a74d3-1fad-4f46-acca-1e58dbb53111.png",
+      "file": "ca-img-stuck-v2.png",
+      "alt": "A student pauses over erased schoolwork beside a worn eraser; three adjacent calendar squares are shaded.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "afterType": "simplified",
+      "previousFile": "ca-img-stuck.png",
+      "previousPrompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student at a desk with an eraser worn down, a page of half-erased work, a calendar with three days shaded. All labels and captions will be editable native fields outside the artwork.",
+      "referenceImages": [
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/crew_ask_grade6_8/ca-img-stuck.png",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/crew_ask_grade6_8/ca-img-fourmoves.png"
+      ],
+      "optimizedFile": "optimized/ca-img-stuck.webp",
+      "width": 900,
+      "height": 600,
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "sourceSha256": "a09395573ef9b98dc1157bac4d3f4c9f0243e4047af034a63ac10258f172c209",
+      "optimizedSha256": "75ad9d9af44ccd6267d2b7e0ec22bf484b9d6138f919297fe2b49a60b749403e",
+      "bytes": 45652,
+      "altSource": "vision",
+      "altHash": "img-1azj-2ce7ae17",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Erasing",
+          "position": "top-left",
+          "anchorX": 66,
+          "anchorY": 79
+        },
+        {
+          "text": "Guessing",
+          "position": "top-right",
+          "anchorX": 44,
+          "anchorY": 72
+        }
+      ],
+      "placement": {
+        "resourceId": "ca-reading-illustrations",
+        "panelId": "ca-img-stuck",
+        "afterResourceId": "ca-reading"
+      }
+    },
+    {
+      "id": "ca-img-fourmoves",
+      "kind": "lesson",
+      "title": "The four-sentence ask.",
+      "scene": "The same student at the teacher's desk, four empty speech bubbles in a vertical row with the four icons (magnifier, heart, open hand, meeting arrows).",
+      "caption": "ninety seconds; the teacher knew exactly what to do.",
+      "plannedLabels": [
+        {
+          "text": "Describe",
+          "position": "top-left",
+          "anchorX": 74,
+          "anchorY": 15
+        },
+        {
+          "text": "Express",
+          "position": "top-center",
+          "anchorX": 74,
+          "anchorY": 38
+        },
+        {
+          "text": "Ask",
+          "position": "top-right",
+          "anchorX": 74,
+          "anchorY": 61
+        },
+        {
+          "text": "Reinforce",
+          "position": "bottom-right",
+          "anchorX": 74,
+          "anchorY": 82
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student at the teacher's desk, four empty speech bubbles in a vertical row with the four icons (magnifier, heart, open hand, meeting arrows). All labels and captions will be editable native fields outside the artwork.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-7e9a0219-55e5-4cb3-a866-e2564fb5c4ba.png",
+      "file": "ca-img-fourmoves.png",
+      "alt": "A student talks to a teacher beside four blank bubbles with a magnifier, heart, hand and connecting-people icons.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "afterType": "anchor-chart",
+      "optimizedFile": "optimized/ca-img-fourmoves.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "eaccdeda96d2b58705f1fb5945be531f7ac73233f63d73e2fa82febe6c0e4091",
+      "optimizedSha256": "701a67672a155f475ed92c2e04b1f8aebbacb86a4ae407baa962ae0bef20e315",
+      "bytes": 39812,
+      "altSource": "vision",
+      "altHash": "img-14z7-abb81bb3",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Describe",
+          "position": "top-left",
+          "anchorX": 74,
+          "anchorY": 15
+        },
+        {
+          "text": "Express",
+          "position": "top-center",
+          "anchorX": 74,
+          "anchorY": 38
+        },
+        {
+          "text": "Ask",
+          "position": "top-right",
+          "anchorX": 74,
+          "anchorY": 61
+        },
+        {
+          "text": "Reinforce",
+          "position": "bottom-right",
+          "anchorX": 74,
+          "anchorY": 82
+        }
+      ],
+      "placement": {
+        "resourceId": "ca-anchor-illustrations",
+        "panelId": "ca-img-fourmoves",
+        "afterResourceId": "ca-anchor"
+      }
+    },
+    {
+      "id": "ca-img-options",
+      "kind": "lesson",
+      "title": "Options after a no.",
+      "scene": "Four small doors in a row with icons: a speech bubble, a second person, a pencil and envelope, a clock.",
+      "caption": "giving up is the only move not on the list.",
+      "plannedLabels": [
+        {
+          "text": "A different way",
+          "position": "top-left",
+          "anchorX": 31,
+          "anchorY": 24
+        },
+        {
+          "text": "A different person",
+          "position": "top-center",
+          "anchorX": 50,
+          "anchorY": 24
+        },
+        {
+          "text": "In writing",
+          "position": "top-right",
+          "anchorX": 70,
+          "anchorY": 24
+        },
+        {
+          "text": "A time to come back",
+          "position": "bottom-right",
+          "anchorX": 90,
+          "anchorY": 24
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. Four small doors in a row with icons: a speech bubble, a second person, a pencil and envelope, a clock. All labels and captions will be editable native fields outside the artwork.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107e9-b3d7-7c42-9e06-4f9c4fcbd919\\exec-9c7a76b3-92a9-4658-9e98-d81e176b02cb.png",
+      "file": "ca-img-options.png",
+      "alt": "Students face four doors bearing a speech bubble, two people, a pencil and envelope, and a clock.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "afterType": "faq",
+      "optimizedFile": "optimized/ca-img-options.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "080627cbb6385fa567e5b041800d4647e4efb961a2247124d27c492b4d0a5cc6",
+      "optimizedSha256": "8ba18dc6b251abc707be280388efa36d6cd7ba052c28476d8108c72a30cea700",
+      "bytes": 39020,
+      "altSource": "vision",
+      "altHash": "img-145v-480590ed",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "A different way",
+          "position": "top-left",
+          "anchorX": 31,
+          "anchorY": 24
+        },
+        {
+          "text": "A different person",
+          "position": "top-center",
+          "anchorX": 50,
+          "anchorY": 24
+        },
+        {
+          "text": "In writing",
+          "position": "top-right",
+          "anchorX": 70,
+          "anchorY": 24
+        },
+        {
+          "text": "A time to come back",
+          "position": "bottom-right",
+          "anchorX": 90,
+          "anchorY": 24
+        }
+      ],
+      "placement": {
+        "resourceId": "ca-faq-illustrations",
+        "panelId": "ca-img-options",
+        "afterResourceId": "ca-faq"
+      }
+    },
+    {
+      "id": "ca-term-persevere",
+      "kind": "term",
+      "term": "Persevere",
+      "title": "Persevere",
+      "file": "ca-term-persevere.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: A middle-school student in a green hoodie at a desk keeps working on a simple wooden block structure after a small earlier attempt collapsed beside it. The student carefully places one block with the right hand while the left steadies the base. A patient teacher sits nearby ready to help, hands resting naturally. Show quiet determination and trying again, not frustration or celebration.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e35-39cc-7082-9c61-a33b2a7370f4\\exec-a45516c6-1e34-47e3-b8c3-879385af311e.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "alt": "A student carefully rebuilds a small block structure beside an earlier collapsed attempt while a teacher sits ready to help.",
+      "optimizedFile": "optimized/ca-term-persevere.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "9aad798c0fe6a61f8f1e6b89413f090bbdb948315f6166aeb371a71704cea809",
+      "optimizedSha256": "2483b26dc37df9b64f519f99a8ac10f90fd0a3c094e81b0f5752dbe80898438b",
+      "bytes": 35276,
+      "altSource": "vision",
+      "altHash": "img-10b7-3d440f08",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ca-term-script",
+      "kind": "term",
+      "term": "Script",
+      "title": "Script",
+      "file": "ca-term-script.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: A middle-school student holds a small plain cue card at waist height in one hand and practices a calm conversation with a seated classmate. The cue card has only three simple horizontal colored bars, not letters. A small empty speech bubble suggests rehearsing words before needing them. The other hand rests naturally at the student's side. Focus on prepared practice, uncluttered classroom corner.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e35-39cc-7082-9c61-a33b2a7370f4\\exec-dfc3ecbd-4134-4732-b076-e8689db31e26.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-11",
+      "alt": "A student practices speaking with a classmate while holding a cue card with three plain bars; an empty speech bubble represents the rehearsed words.",
+      "optimizedFile": "optimized/ca-term-script.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "0336b0ff589c5df1d9feb52ce505d501145aa7eb397c243d50460367b531ddbd",
+      "optimizedSha256": "3b0995699cca0fd7376ac4118def894921c81f8ffa2fb4b0bc156755d7be5acf",
+      "bytes": 40980,
+      "altSource": "vision",
+      "altHash": "img-166f-7c30024e",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "ca-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "ca-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ca-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "ca-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "ca-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ca-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 11,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Two middle-school students at a desk: one speaks with a small open-hand gesture while the other listens with hands resting on the desk. A simple eye icon in a small separate circle above draws attention to this visible action. Calm classroom, coherent arms attached to shoulders. A clear example of an observable agreement: listen while another person speaks. Square composition.",
+      "alt": "One student speaks while a classmate looks toward them and listens; an eye symbol highlights the visible action.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-70e3ca2f-d398-4b03-8597-d90520ae2d94.png",
+      "provider": "Built-in image generation",
+      "id": "ca-term-specific",
+      "kind": "term",
+      "term": "Specific",
+      "file": "ca-term-specific.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-specific",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-specific.png",
+        "reason": "Same learning action or concept; checked against both native definitions."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/ca-term-specific.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "5673e6ce7c954a12812062cccee901622937fbd23b4c0f730c43d234d02bb1e0",
+      "optimizedSha256": "b94436f090ce6ee901ccbf9a9f94658b7486f26db308a08b1d078e087a5f7a91",
+      "bytes": 29222,
+      "altSource": "vision",
+      "altHash": "img-u2z-9f18b513",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 5,
+        "field": "image"
+      }
+    },
+    {
+      "id": "ca-term-option",
+      "kind": "term",
+      "term": "Option",
+      "title": "Option",
+      "file": "ca-term-option.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: A middle-school student sits at a school desk choosing another way to ask a teacher for help. Two clear separate thought bubbles appear above the student: one contains an empty speech bubble, the other a simple pencil beside a blank envelope. The student calmly considers speaking or writing, with both hands resting naturally on the desk. One student only, no pointing and no text.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-1a92-7930-9591-531aaf8a764d\\exec-43610889-54e4-471a-86eb-c1e37b5ea27c.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "A student considers two ways to ask for help: speaking, shown by an empty speech bubble, or writing, shown by a pencil and envelope.",
+      "optimizedFile": "optimized/ca-term-option.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "8afd7b8e2f48ac63d5f0fd94c6d1f04b266ef9d89262274868ea5a9ee55f4756",
+      "optimizedSha256": "a0decca2224b0d4ca29a41ea4c27c4763f8ebe5e40114417758104cad21a43ea",
+      "bytes": 24644,
+      "altSource": "vision",
+      "altHash": "img-pdf-3b188089",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "ca-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 15,
+  "imagePlacementCount": 19,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_ask_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 19,
+    "uniqueImageCount": 15,
+    "anchorSectionImages": 4,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
-const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+const source = readFileSync(process.env.DINO_DISPLAY_SHELL_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 const start = source.indexOf('// DINO_DISPLAY_SHELL_START');
 const end = source.indexOf('// DINO_DISPLAY_SHELL_END', start);
 if (start < 0 || end < start) throw new Error('Dino display shell marker missing');
@@ -14,7 +14,7 @@ const { dinoDisplayShellGeometry, dinoFrillGeometry, dinoPlateGeometry } = new F
 function inspectShell(geometry, scale) {
   const p = geometry.attributes.position, normal = geometry.attributes.normal, uv = geometry.attributes.uv;
   expect(geometry.index).toBeTruthy();
-  expect(p.count).toBeLessThanOrEqual(1200);
+  expect(p.count).toBeLessThanOrEqual(geometry.userData.dinoDisplayShell.feature === 'frill' ? 2200 : 1200);
   expect(normal.count).toBe(p.count); expect(uv.count).toBe(p.count);
   const vertices = [], keys = new Map(), edges = new Map(), used = new Set();
   const tolerance = scale * 1e-7;
@@ -82,9 +82,9 @@ describe('Dino Lab curved skull frill volume', () => {
         const points = new Set(result.vertices.map(v => v.point.toArray().map(x => Math.round(x / (scale * 1e-6))).join(',')));
         for (const { point: v } of result.vertices) expect(points.has([v.x, v.y, -v.z].map(x => Math.round(x / (scale * 1e-6))).join(','))).toBe(true);
         // The common outer rim still follows the established polar outline.
-        const p = shell.attributes.position, outerStart = 1 + 8 * 64;
-        for (let side = 0; side < 64; side++) {
-          const angle = side / 64 * Math.PI * 2, edge = 1 + 0.025 * Math.cos(angle * 14);
+        const sides = 128, p = shell.attributes.position, outerStart = 1 + 8 * sides;
+        for (let side = 0; side < sides; side++) {
+          const angle = side / sides * Math.PI * 2, edge = 1 + 0.025 * Math.cos(angle * 14);
           const y = Math.max(-height * 0.48, Math.sin(angle) * height * edge), i = outerStart + side;
           expect(p.getY(i)).toBeCloseTo(y, 5); expect(p.getZ(i)).toBeCloseTo(Math.cos(angle) * width * edge, 5);
           expect(p.getX(i)).toBeCloseTo(y * 0.60 + bow * scale, 5);

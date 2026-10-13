@@ -69,7 +69,9 @@ describe('flightsim Part 107 ceiling', () => {
       // The heading tape is sized from the space beside the minimap, not a fixed
       // 200px that overran the map on a phone-width canvas.
       expect(source, `${path}: the heading tape is a fixed width again`)
-        .toContain('var hudTapeW = Math.max(96, Math.min(200, W - 296));');
+        .toContain('var hudTapeW = instruments.heading.w;');
+      expect(source, `${path}: the shared heading layout no longer adapts to width`)
+        .toContain('var headingWidth = Math.max(96, Math.min(200, W - 296));');
     });
   });
 

@@ -1,0 +1,10 @@
+{
+  "beforeSHA256": "b580236cb4ec7d7baad7010e163f897eedfdb2be233236c0aa2a9c0f2733deff",
+  "afterSHA256": "a8a3c8449ac396d75833932457ed6b25ec5e40e0e8597ec95e47ebfc23a6c99c",
+  "edits": [
+    {
+      "old": "      fittedNail(patientHand,patientThumb,'fr-patient-'+id+'-thumb-nail');",
+      "new": "      finishPatientFingerNormals(patientThumb.mesh,patientFingerNormalSurface);\n      fittedNail(patientHand,patientThumb,'fr-patient-'+id+'-thumb-nail');"
+    }
+  ]
+}

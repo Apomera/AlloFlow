@@ -4,7 +4,7 @@
   var site={x:-.73,y:1.28,z:.8},pot={x:-1.1,z:-.45};
   function valid(p){return !!p&&[p.x,p.z,p.u,p.v].every(Number.isFinite);}
   function available(s,locked){
-    if(locked||s.plated||s.time>=3600||s.log.length>=1200)return {ready:false,detail:'This recorded or finished cook can be explored, but new checks are locked.'};
+    if(locked||s.submitted||s.plated||s.time>=3600||s.log.length>=1200)return {ready:false,detail:'This recorded or finished cook can be explored, but new checks are locked.'};
     if(s.pot.lid==='covered')return {ready:false,detail:'Lift the lid onto its rest before taking a fork sample.'};
     if(!s.pot.pasta||s.pot.drained)return {ready:false,detail:s.pot.drained?'The pasta is drained. Take a fresh sample from the pot before draining in your next cook.':'Add weighed pasta to boiling water before taking a fork sample.'};
     if(root.KitchenRecipes.serving(s).started)return {ready:false,detail:'Serving is in progress. Return the food to the pan before using cooking tools.'};
@@ -18,6 +18,7 @@
     if(!g)return null;var n=Object.assign({},g);
     if(!valid(p)){n.invalid=true;return n;}
     if(g.invalid)return n;
+    if(g.phase==='done')return release(g,p);
     if(g.phase==='carry'){
       if(Math.hypot(p.x-site.x,p.z-site.z)<.24){n.phase='down';n.anchor={u:p.u,v:p.v};n.last=0;n.settling=true;n.closest=Math.hypot(p.x-site.x,p.z-site.z);}
       return n;
@@ -32,6 +33,11 @@
     return n;
   }
   function complete(g){return !!g&&!g.invalid&&g.phase==='done';}
+  function release(g,p){
+    if(!g)return null;var n=Object.assign({},g);
+    if(!complete(g)||!p||!g.anchor||![p.u,p.v,g.anchor.u,g.anchor.v].every(Number.isFinite)||Math.hypot(p.u-g.anchor.u,p.v-g.anchor.v)>18)n.invalid=true;
+    return n;
+  }
   function reading(s){
     var R=root.KitchenRecipes,all=R.inspections(s).filter(function(r){return r.kind==='pasta';}),last=all[all.length-1];
     if(!last)return null;var previous=all[all.length-2];
@@ -44,19 +50,22 @@
     function cyl(r,b,height,color,x,y,z,parent,extra){return mark(h.cyl(r,b,height,color,x,y,z,parent,extra));}
     function box(w,ht,d,color,x,y,z,parent,extra){return mark(h.box(w,ht,d,color,x,y,z,parent,extra));}
     function mesh(geometry,color,x,y,z,parent,extra){return mark(h.mesh(geometry,color,x,y,z,parent,extra));}
-    cyl(.225,.205,.025,'#eee6cd',0,0,0,saucer);cyl(.19,.19,.008,'#f8f3df',0,.018,0,saucer);
+    cyl(.225,.205,.025,'#eee6cd',0,0,0,saucer,{roughness:.3});cyl(.19,.19,.008,'#f8f3df',0,.018,0,saucer,{roughness:.22});
+    var innerRim=mesh(new T.TorusGeometry(.185,.0025,8,48),'#d3bf87',0,.022,0,saucer),foot=mesh(new T.TorusGeometry(.165,.006,8,40),'#d3c9af',0,-.016,0,saucer);innerRim.rotation.x=foot.rotation.x=Math.PI/2;
     var rim=mesh(new T.TorusGeometry(.211,.007,8,40),'#b79757',0,.018,0,saucer);rim.rotation.x=Math.PI/2;
     function cut(parent,x,z,showCore){
       var g=new T.Group();parent.add(g);g.position.set(x,0,z);
       mesh(new T.CylinderGeometry(.071,.071,.095,32,1,true),'#d4ab57',0,0,0,g,{side:T.DoubleSide});
       mesh(new T.CylinderGeometry(.031,.031,.095,32,1,true),'#b58b41',0,0,0,g,{side:T.DoubleSide});
       var end=mesh(new T.RingGeometry(.031,.071,32),'#e9c977',0,.049,0,g);end.rotation.x=-Math.PI/2;
+      var underside=mesh(new T.RingGeometry(.031,.071,32),'#d4ae5c',0,-.049,0,g);underside.rotation.x=Math.PI/2;
       var core=mesh(new T.RingGeometry(.999,1,32),'#fff5d6',0,.05,0,g);core.rotation.x=-Math.PI/2;core.visible=false;
       for(var i=0;i<12;i++){var a=i*Math.PI/6,ridge=box(.006,.09,.006,'#e2bf68',Math.cos(a)*.072,0,Math.sin(a)*.072,g);ridge.rotation.y=-a;}
       if(showCore)cuts.push({group:g,core:core,base:core.geometry.getAttribute('position').array.slice()});return g;
     }
     cut(sample,-.084,0,true);cut(sample,.083,.018,true);cut(carried,0,0,false);carried.visible=false;
-    box(.037,.016,.42,'#a7b7af',0,0,.25,fork,{metalness:.7,roughness:.3});box(.11,.016,.055,'#bec9c1',0,0,.024,fork,{metalness:.7,roughness:.3});
+    var gripShape=new T.Shape();gripShape.moveTo(-.014,.055);gripShape.bezierCurveTo(-.018,.2,-.025,.36,-.025,.43);gripShape.quadraticCurveTo(-.025,.476,0,.48);gripShape.quadraticCurveTo(.025,.476,.025,.43);gripShape.bezierCurveTo(.025,.36,.018,.2,.014,.055);gripShape.closePath();var grip=mesh(new T.ExtrudeGeometry(gripShape,{depth:.014,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.002,bevelThickness:.002,curveSegments:16}),'#a7b7af',0,.007,0,fork,{metalness:.78,roughness:.24});grip.rotation.x=Math.PI/2;
+    box(.003,.002,.30,'#e7eee2',-.009,.011,.28,fork,{metalness:.65,roughness:.2});box(.004,.002,.30,'#7f9489',.01,.01,.28,fork,{metalness:.7,roughness:.25});box(.11,.016,.055,'#bec9c1',0,0,.024,fork,{metalness:.7,roughness:.3});
     for(var tine=0;tine<4;tine++)box(.012,.014,.13,'#cad4ca',(tine-1.5)*.031,0,-.068,fork,{metalness:.7,roughness:.25});
     fork.visible=false;sample.visible=false;
     function reset(){fork.visible=false;carried.visible=false;if(lastView)update(lastView);}
@@ -72,6 +81,6 @@
     }
     return {update:update,preview:preview,reset:reset,site:site,dispose:function(){h.world.remove(saucer,fork,carried);}};
   }
-  var api={site:site,pot:pot,start:start,move:move,complete:complete,available:available,reading:reading,decorate:decorate};
+  var api={site:site,pot:pot,start:start,move:move,complete:complete,release:release,available:available,reading:reading,decorate:decorate};
   root.KitchenSampling=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dissection.js', toolId: 'dissection', width: 1180, height: 900, layout: 'document', appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'] });
-const out = 'reports/dissection-response-clarity-2026-10-01';
+const out = process.env.DISSECTION_RESPONSE_CLARITY_OUTPUT || 'reports/dissection-response-clarity-2026-10-01';
 const captureStyle = '.diss-next-action { position:static!important; }';
 const tissue = { moisture: 67, tension: 52, exposure: 8, trauma: 0, clarity: 81, stability: 19, risk: 11, salineDrops: 0, variantId: 'firm', variantLabel: 'Firm preservation', lastAction: 'prepared', lastUpdatedAt: Date.now(), consequences: [] };
 const actions = Array.from({ length: 8 }, (_, i) => ({ action: 'inspect', label: `Orientation check ${i + 1}`, at: 100 + i, inputType: ['mouse', 'pen', 'touch', 'keyboard', 'pointer', 'stylus', 'motor-neutral', 'mouse'][i], assistance: i === 6 ? 'motor-neutral' : undefined, outcome: 'ORIENTATION RECORDED', outcomeDetail: 'The recommended view and protected landmarks were checked before contact.', tone: 'success', point: { x: .5, y: .5 }, tissueBefore: { ...tissue, clarity: 70 + i, risk: 20 }, tissueAfter: { ...tissue, clarity: 75 + i, risk: 17 } }));
@@ -177,7 +177,7 @@ test('input methods describe supported and direct actions without guessing missi
   const before = await evidence(page); await openHistory(page);
   const entries = page.locator('.diss-layer-review .diss-procedure__timeline-entry');
   for (let i = 0; i < methods.length; i++) {
-    await entries.nth(i).click(); await expect(page.locator('.diss-layer-review__input-badge')).toHaveText(methods[i].label);
+    await entries.nth(i).click(); await expect(page.locator('#diss-layer-review-response .diss-layer-review__input-badge')).toHaveText(methods[i].label);
     if (i < 8) { await expect(entries.nth(i)).toHaveAttribute('aria-describedby', `diss-procedure-record-input-${i}`); await expect(page.locator(`#diss-procedure-record-input-${i}`)).toHaveText(methods[i].label); }
     else await expect(entries.nth(i)).not.toHaveAttribute('aria-describedby');
     await expect(page.locator('#diss-layer-review')).toContainText('0 of 6 actions have verified plans and explanations.');
@@ -213,8 +213,16 @@ for (const legacy of ['missing timestamps', 'duplicate timestamps']) {
       await expect(page.locator('.diss-layer-review__selection')).toHaveText(`${i === 2 ? 'Latest action' : 'Reviewing action'}: Saved stroke ${i + 1}`);
       await expect(page.locator('.diss-layer-review__delta').first()).toContainText(`${70 + i} → ${75 + i}`);
       await page.getByRole('button', { name: 'Replay reviewed action', exact: true }).click();
-      const pulse = await page.locator('#diss-canvas').evaluate((canvas: any) => canvas._toolContactPulse);
-      expect(pulse.x).toBe(records[i].point.x); expect(pulse.y).toBe(records[i].point.y);
+      const replay = await page.evaluate(() => (window as any).__ctx.toolData.dissection._procedureReplay);
+      expect(replay.paused).toBe(true); expect(replay.actions).toHaveLength(records.length);
+      expect(Math.floor(replay.elapsed / replay.duration * replay.actions.length)).toBe(i);
+      expect(replay.actions[i].point).toEqual(records[i].point); expect(replay.actions[i].label).toBe(records[i].label);
+      expect(replay.actions.map((entry: any) => entry.at)).toEqual(records.map(entry => entry.at));
+      await expect(page.locator('#diss-replay-action')).toHaveValue(String(i));
+      await expect(page.locator('#diss-replay-details')).toContainText('Illustrative path; this action has no saved path.');
+      await page.getByRole('button', { name: 'Stop replay', exact: true }).click();
+      await expect(page.locator('#diss-layer-replay-response')).toBeFocused();
+      await expect(page.locator('#diss-replay-review')).toHaveCount(0);
       expect(await evidence(page)).toEqual(before);
     }
   });
@@ -285,7 +293,7 @@ for (const guided of [false, true]) {
   });
 }
 
-test('replaying an older stroke uses its saved contact rather than a later stroke path', async ({ page }) => {
+test('reviewing an older stroke retains its record and distinguishes a later saved path', async ({ page }) => {
   await mount(page, { instrumentVisuals: true, showProcedureDebrief: true }, 1180, 1180, {
     ...recorded, incisionStarted: true, incisionPath: [{ x: .45, y: .3 }, { x: .45, y: .8 }],
     actionLog: [{ ...actions[0], action: 'scalpel', label: 'Earlier incision', point: { x: .51, y: .6 } }, { ...actions[1], action: 'scalpel', label: 'Later incision', point: { x: .45, y: .8 } }],
@@ -293,8 +301,20 @@ test('replaying an older stroke uses its saved contact rather than a later strok
   const before = await evidence(page);
   await page.locator('.diss-layer-review .diss-procedure__timeline-entry').first().click();
   await page.getByRole('button', { name: 'Replay reviewed action', exact: true }).click();
-  const pulse = await page.locator('#diss-canvas').evaluate((canvas: any) => canvas._toolContactPulse);
-  expect(pulse.x).toBe(.51); expect(pulse.y).toBe(.6); expect(pulse.tool).toBe('scalpel'); expect(pulse.replayPath).toEqual([]);
+  const replay = await page.evaluate(() => (window as any).__ctx.toolData.dissection._procedureReplay);
+  expect(replay.paused).toBe(true); expect(replay.actions).toHaveLength(2);
+  expect(Math.floor(replay.elapsed / replay.duration * replay.actions.length)).toBe(0);
+  expect(replay.actions[0]).toMatchObject({ action: 'scalpel', label: 'Earlier incision', point: { x: .51, y: .6 } });
+  expect(replay.actions[1]).toMatchObject({ action: 'scalpel', label: 'Later incision', point: { x: .45, y: .8 } });
+  const picker = page.locator('#diss-replay-action');
+  const pathDetail = page.locator('#diss-replay-details dl > div').filter({ has: page.locator('dt', { hasText: /^Path$/ }) }).locator('dd');
+  await expect(picker).toHaveValue('0');
+  await expect(pathDetail).toHaveText('Illustrative path; this action has no saved path.');
+  await picker.selectOption('1'); await expect(pathDetail).toHaveText('Saved path');
+  await picker.selectOption('0'); await expect(pathDetail).toHaveText('Illustrative path; this action has no saved path.');
+  await page.getByRole('button', { name: 'Stop replay', exact: true }).click();
+  await expect(page.locator('#diss-layer-replay-response')).toBeFocused();
+  await expect(page.locator('#diss-replay-review')).toHaveCount(0);
   expect(await evidence(page)).toEqual(before);
 });
 

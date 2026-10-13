@@ -1,3 +1,103 @@
+# Enhancement 77 — Centered stellar studies
+
+The inspector's **Centered detail** preset pauses, points toward the selected landmark and opens a 10° lens. It keeps camera position, travel counters, exposure and dust settings, collapses the details panel and returns focus to the canvas. Back restores the original paused view, including its lens, inspector expansion, pace and arrival setting. The collapsed inspector uses a single row of actions on short landscape screens so detour controls stay clear of the flight controls. Existing Wide and Standard presets continue to change only the lens. Coincident landmarks disable the action because there is no direction to center.
+
+Close stellar views now distinguish darker spot cores from their softer surrounds. The smaller cores fade away when resolution or foreshortening would make them difficult to sample. Bright surroundings have stronger contrast toward the limb. The features use the existing fixed source coordinates, so changing viewpoint reveals another part of the same surface; pausing does not animate the texture. There are no new textures, GPU resources or draw calls.
+
+## Scientific scope
+
+These are generated teaching stars with solar-inspired appearance. The Sun's darker spot cores are called umbrae, and their lighter surrounding regions are penumbrae. Bright faculae are more conspicuous near the limb. [NASA's photosphere overview](https://solarscience.msfc.nasa.gov/feature1.shtml) and [NASA's discussion of sunspots and faculae](https://www.nasa.gov/missions/hinode/a-new-look-at-sunspots-is-helping-nasa-scientists-understand-major-flares-and-life-around-other-stars/) explain those observations. The particular patterns and contrast here are illustrative, not measured maps or calibrated models for individual stellar types. The inspector explicitly states this and continues to distinguish enhanced-contrast appearance from magnetic or plasma simulation.
+
+The renderer changes only the spot and facular expressions. Source catalogs, geometry, the rest of the photosphere, corona, dust, navigation, relativistic transforms and physical clocks remain byte-exact outside that block.
+
+## Verification
+
+- **225 tests passed** across nine suites, including four new tests of the actual shader expressions, the complete 146-test navigation suite, existing stellar surfaces and coronal structure, inspector, dust and physics checks. The depth-view source invariant was updated only for the deliberately changed stellar shading; its behavioral assertions remain unchanged.
+- **16 before/after rendering comparisons** across 32 captures. Six views aimed at spot regions show the new structure. All twelve close views retain the corona and surrounding background exactly; distant stars, nebula, galaxy and relativity controls are pixel-exact. Repeated paused captures and snapshots remain stable.
+- **12 browser workflows passed**, with eight accessibility checks reporting no violations, eight control reachability checks and four screenshots. Cases cover keyboard focus, exact Back restoration, orbit interruption, rejected restores, nebula detail, flyby detours, phone, landscape, short landscape, forced colors and coincident targets.
+- **18 authored preview poses preserved**, with 18 byte-exact preview images and 0 changed images. Preview build/check, hashes, desktop mirrors, syntax, reversible changes, and scoped whitespace checks passed. The live preview serves the final files.
+
+The first render check incorrectly required every hemisphere to show a changed spot. Its images and failed result are retained. The completed comparison adds six source-oriented views and retains all original camera poses, including quiet hemispheres. Product code did not change for that adjustment.
+
+The first browser attempts needed fixture corrections: face a landmark before using the contextual landmark browser, and observe the receiver-independent restore API through the scene reference. A later passing run exposed overlapping landscape controls on visual review; the collapsed layout was fixed and the final run explicitly checks the full touch area of the last action and panel separation from flight controls at both 320px and 280px landscape heights. Earlier reports and their executed harnesses are retained.
+
+Rendering used Chromium SwiftShader; hardware GPU behavior was not tested. Nothing was staged or committed.
+
+---
+
+# Enhancement 76 — Stellar reveal
+
+Close stellar views now have broad, uneven coronal streamers tied to each source's existing orientation. This is a restrained refinement: the measured close-view pixel differences are at most four RGB levels. The profile fades in through the existing detail threshold, keeps its angular mean light, and stays fixed when travel is paused. It adds no GPU resources or draw calls.
+
+After looking around manually during a scenic flyby, **Follow route view** appears inside the scene. It restores the guided viewing direction at the current point in the route and returns keyboard focus to the canvas. It works in inline and fullscreen views, including phone and landscape layouts. It yields space to Flight controls and disappears with Hide overlay or when the route ends.
+
+## Scientific scope
+
+The broad halo shapes are inspired by the Sun's uneven corona; real coronal streamers are related to magnetic structure. See [NASA's coronal streamer observation](https://science.nasa.gov/resource/parker-solar-probe-spots-coronal-streamer/). The generated stars use fixed illustrative patterns, not measured fields or a plasma simulation. Their surfaces and coronas are shown together with enhanced contrast, as the inspector now explains. In ordinary solar observations, the bright photosphere overwhelms the faint corona; [NASA explains how coronagraphs reveal it](https://science.nasa.gov/blogs/the-sun-spot/2018/09/21/sneak-a-peek-at-the-suns-mysterious-atmosphere-with-a-coronagraph/).
+
+Source catalogs, geometry, photosphere rendering, dust, navigation, relativistic transforms and physical clocks remain byte-exact outside the isolated corona change. The UI uses the existing follow action.
+
+## Verification
+
+- **217 tests passed**, including five new mathematical and renderer checks for the coronal profile and the complete 146-test navigation suite.
+- **10 before/after render comparisons** across 20 captures: six close stellar views changed, all six photosphere cores stayed exact, and distant stars, nebula, galaxy and relativity views stayed pixel-exact. Paused captures and snapshots stayed stable.
+- **11 browser workflows passed**, with five accessibility checks reporting no violations, five control reachability checks, and four screenshots. Checks cover keyboard focus, paused and moving flight, overlays, Flight controls, route cancellation/completion, phone, landscape and forced colors.
+- **18 authored preview poses preserved**, with 18 byte-exact images and 0 changed images. Build, manifest checks, desktop mirrors, syntax, patch reversibility and scoped whitespace checks passed. The live preview serves the final files.
+
+Browser attempt 1 reached eight workflows before a test compared cached telemetry with a fresh emission during moving flight. The final harness refreshes telemetry through the unchanged selected target, verifies that this leaves the complete snapshot and manual look intact, then compares the follow action at the same instant. Product code did not change for this correction. The original failed report and executed harness are retained.
+
+Rendering checks used Chromium SwiftShader; hardware GPU behavior was not tested. Nothing was staged or committed.
+
+---
+
+# Enhancement 75 — Depth and unobstructed views
+
+The distant stellar band now receives extinction from the existing three fixed local dust clouds. The same finite observer-to-source column used by stars attenuates the band records, giving local clouds a darker background silhouette. Dust behind the observer or beyond a source adds no new veil. The zero-length ray guard prevents a coincident source from entering the column calculation. The existing star dust branch, RGB attenuation ordering, Doppler and exposure transforms remain exact.
+
+Fullscreen arrival and completed-flight cards now open with a compact title, paused status and expandable Arrival actions or View actions. The action list scrolls within the available space, keeping its heading, dismiss button and native disclosure visible. Inspect, Orbit, Save viewpoint and Explore destinations retain their existing behavior. Collapsing the actions returns any focus inside the disclosure to its summary. Hide overlay leaves the scenery and a single Show overlay button; journey state stays intact. Escape on the canvas or Show overlay pauses and restores the overlay and retained checkpoint. Intermediate highlights retain immediate Continue controls; boundary recovery and inline Explore controls remain available.
+
+## Model and visual limits
+
+This is generated teaching scenery. The visible-light idea follows real interstellar extinction: dust obscures background stars and the distant galactic disk, with wavelength-dependent absorption and scattering. [NASA on galactic dust](https://science.nasa.gov/image-article/apod-1999-september-27-our-galaxy-in-stars-gas-and-dust/) and [ESA/Gaia on extinction and reddening](https://www.cosmos.esa.int/web/gaia/gaiadr2_cu8) explain the physical basis. The cloud positions and RGB transmission law are illustrative; they are not an observed dust map or calibrated extinction curve. Each distant-band record samples its center ray, so broad sprite blending softens the silhouette. The blue and violet emission glow remains separate illustrative styling. Gas motion, dust emission and full scattering are not simulated.
+
+Source catalogs, generated positions and sizes, atlases, geometry, camera journeys, physical clocks, relativistic transforms, fragment shader code, draw calls and GPU resources are unchanged. The renderer has one reversible insertion of three lines. UI changes preserve the existing camera and journey state.
+
+## Verification
+
+108 focused tests and 146 existing navigation tests passed on the final source hashes. Browser verification passed 86 workflows across three verified batches, including all 65 prior workflows, 28 accessibility checks with zero violations, and 52 control reachability checks across 60 captured views. Evidence covers compact and expanded arrivals, disclosure focus, real destination actions, overlay removal and Escape restoration, phone and fullscreen landscape, immediate highlights, boundary recovery, and four before/after dust poses. Every dust-off comparison is pixel-exact to Enhancement 74; only the inside-cloud background-band view changes with dust on. Beyond-cloud, rear-facing and coincident-record comparisons remain exact.
+
+All 18 authored preview poses remain exact. Nine galaxy and cosmic preview images remain byte-exact; six neighborhood preview images changed with the band dust refinement. The complete preview build and check passed, and the manifest and desktop image mirrors were checked against their hashes. The live preview serves the final sources.
+
+Rendering used Chromium SwiftShader. Long browser attempts encountered graphics context loss and worker interruptions, so the completed workflow records were verified in three batches on identical final source hashes. The evidence preserves the incomplete status of interrupted runs and records each executed harness separately; the canonical full harness was not completed in a single run. Hardware GPU behavior across devices was not tested. Source mirrors, syntax, reversible changes and scoped whitespace checks passed. Nothing staged or committed.
+
+---
+
+# Enhancement 74 — Scenic destination approaches
+
+Scenic approach adds a gentle sideways camera sweep toward a selected landmark. It reveals foreground and background depth while preserving the starting position and exact radial viewing point. The action is available in the destination controls, fullscreen Explore panel and landmark inspector. The three destination camera journeys use the same sweep from their existing launch views. Ordinary Fly to destination retains its straight path.
+
+The quadratic path has a deterministic sideways direction and a control point constrained to the scene sphere. Its convex hull keeps the curve inside that sphere; the perpendicular bow keeps the camera outside the target viewing radius. A bounded arc-length table tracks travel remaining, progress, distance and the slowdown estimate along the actual curved path. Pause retains the path. Manual look releases automatic gaze; the canvas Find target action restores it for the active destination. Arrival pauses exactly at the original standoff. Departing freely clears completed scenic metadata so a later plan is fresh. Rejected scenic launches pause with usable recovery controls.
+
+These are accelerated camera journeys through generated teaching scenery. Physical clocks do not advance. Source positions, sizes, source data, authored routes, shaders, relativistic transforms, dust and exposure remain exact to Enhancement 73. All 18 highlight images and poses were regenerated and are byte-exact; their manifest now records the updated renderer. Inspector journeys aim for about 20 seconds within existing speed limits. Main scenic actions use the selected camera pace and arrival distance; UI copy distinguishes the prelaunch direct ETA from curved-path progress.
+
+Validation: 90 focused tests and 146 existing navigation tests passed on final source hashes. Browser verification passed 65 workflows, 20 accessibility checks with zero violations and 42 reachability checks across 34 captured views. Chromium SwiftShader was used for rendering. The browser evidence covers side displacement, gaze, pause/resume, exact arrival, ordinary approach regression, inspector Back, rejected launches, phone and fullscreen controls, and the previous scenic-library workflows. Mirrors, syntax, reversible changes and scoped whitespace checks passed. Nothing staged or committed.
+
+Eight existing navigation tests had stale catalog totals, route counts or saved-view dust keys. A separate check against the saved Enhancement 73 renderer proved these expectations were already stale. Only those metadata expectations were updated; movement and lifecycle assertions remain unchanged. The original test bytes and eight reversible hunks are saved with this report.
+
+---
+
+# Enhancement 73 — Visual scenic flight library
+
+The scenic launcher now shows a larger image of a selected, actual route moment. Choose among six authored flights and all 18 highlights without changing the live camera. Route metadata gives the scene, duration at standard pace and highlight count. Each moment has its own name and description. Preview paused view opens a fresh authored journey at that moment; Start flight starts the full route. The three direct destination journeys remain available in an expandable section.
+
+Preview uses the route lens and exposure and replaces the previous journey’s progress with the selected route moment. Neighborhood images explain that the artwork shows dust on while the opened view retains the current dust setting. Missing images keep a visible fallback and usable controls. Both the main library and fullscreen Explore controls use the real catalog. Successful opening returns focus to the canvas and closes the fullscreen controls. A rejected seek stops travel and cancels the route.
+
+Validation: 74 focused tests; 52 browser workflows; 13 accessibility checks with zero violations; 36 control reachability checks; 22 captured views. The browser evidence covers route/moment artwork mapping, browsing without scene changes, paused preview poses, Continue and Start behavior, dust, failure handling, focus, responsive controls and the prior landmark journey workflows. Chromium SwiftShader was used for browser rendering.
+
+The renderer and all 18 preview assets remain exact to Enhancement 72, preserving source positions, scene optics and physics. UI mirrors, syntax, reversible patches and scoped whitespace checks pass. Nothing staged or committed.
+
+---
+
 # Enhancement 72 — Scenic viewpoints and finer nebula emission
 
 Landmark cards now contain expandable scenic viewpoints with larger previews, authored names and descriptions, and an explicit Open paused view action. Opening records the current camera and settings; Back restores the prior pose, lens, counters, destination, pace and arrival setting. Neighborhood previews explain that their images show dust on while opened views keep the current dust setting. Failed preview images retain the viewpoint action. These are authored camera presets in a generated teaching scene.

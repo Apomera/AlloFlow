@@ -205,6 +205,7 @@ uses an open range.
 | [globe.gl](https://github.com/vasturiano/globe.gl) | interactive 3D globe | MIT | Copyright (c) 2019 Vasco Asturiano |
 | [Leaflet](https://leafletjs.com) | interactive maps | BSD-2-Clause | Copyright (c) 2010-present Volodymyr Agafonkin |
 | [world-atlas](https://github.com/topojson/world-atlas) | country-boundary map data (Natural Earth, public domain) | ISC | Copyright 2013-2019 Michael Bostock |
+| [Natural Earth populated places](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-populated-places/) | 99 selected city coordinates from version 5.1.2, 110m populated places (SCALERANK ≤ 2), rounded to four decimal degrees for Moon Mission; light brightness and spread are illustrative, not satellite radiance or 1969 illumination | Public domain — [bundled provenance notice](./licenses/natural-earth-city-lights-PUBLIC-DOMAIN.txt) | Made with Natural Earth; public-domain data |
 | [A-Frame](https://aframe.io) | WebXR / virtual reality | MIT | Copyright (c) 2015-present A-Frame authors |
 | [html2canvas](https://html2canvas.hertzen.com) | exporting on-screen charts as images | MIT | Copyright (c) 2012 Niklas von Hertzen |
 | [ffmpeg.wasm](https://ffmpegwasm.netlify.app) | in-browser video/audio export | MIT wrapper; FFmpeg LGPL-2.1/GPL | @ffmpeg/ffmpeg © Jerome Wu (MIT); @ffmpeg/core = FFmpeg © the FFmpeg developers (GPL-2.0-or-later) |

@@ -702,8 +702,8 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 type: 'lesson-plan',
                 data: content,
-                meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligned'))}`,
-                title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
+                meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : (t('lesson_plan.title') || 'Lesson Plan'))}`,
+                title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : (t('lesson_plan.title') || 'Lesson Plan')),
                 timestamp: new Date(),
                 config: { gradeLevel, language: planLanguage, generationInputs }
             };

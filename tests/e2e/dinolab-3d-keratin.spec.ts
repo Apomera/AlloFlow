@@ -49,7 +49,7 @@ function landmarks(p){return p.sheaths.map(s=>({root:s.root.map(n=>+n.toFixed(5)
 function compact(p){return {sheaths:p.sheaths.map(({meshId,geometryId,materialId,...rest})=>rest),memory:p.memory,render:p.render};}
 for(const species of ['triceratops','styracosaurus','therizinosaurus','velociraptor','microraptor','brachiosaurus'])test(species+' curved keratin and study framing',async({page})=>{
  await mount(page,species);const saved=await page.evaluate(()=>JSON.stringify((window as any).__toolData)),first=await inspect(page);check(first,true);expect(first.sheaths.length).toBeGreaterThan(0);
- if(!baseline){expect(first.sheaths.every(s=>s.kind==='horn'||s.kind==='claw')).toBe(true);expect(new Set(first.sheaths.map(s=>s.materialId)).size).toBe(1);expect(first.sheaths.every(s=>s.castShadow&&s.triangles===288)).toBe(true);}
+ if(!baseline){expect(first.sheaths.every(s=>s.kind==='horn'||s.kind==='claw')).toBe(true);expect(new Set(first.sheaths.map(s=>s.materialId)).size).toBe(1);expect(first.sheaths.every(s=>s.castShadow&&s.triangles===(s.kind==='horn'?1152:288))).toBe(true);}
  await page.locator('.dinolab-3d-controls-disclosure > summary').click();
  const horned=['triceratops','styracosaurus'].includes(species);
  if(horned)await page.getByRole('button',{name:'Study head details',exact:true}).click();

@@ -117,6 +117,12 @@ function AnalysisView(props) {
       authorizeReplacement: adaptedPrimary
     });
   };
+  const readWithSupportsButton = props.onReadOriginal && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-read-original": true,
+    onClick: () => props.onReadOriginal(generatedContent),
+    className: 'min-h-11 max-w-full rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2' + (isTeacherMode ? ' w-full sm:ml-auto sm:w-auto' : '')
+  }, analysisLabel('analysis.read_with_supports', 'Read with supports'));
   const readingRoleControl = /*#__PURE__*/React.createElement("section", {
     "data-source-instructional-role": readingProfile.role,
     className: "rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800"
@@ -149,7 +155,7 @@ function AnalysisView(props) {
     disabled: isProcessing,
     onClick: () => props.onSelectReadingSource(generatedContent),
     className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
-  }, analysisLabel('simplified.role_use_for_activities', 'Use for activities'))));
+  }, analysisLabel('simplified.role_use_for_activities', 'Use for activities')), readWithSupportsButton));
   // Model output can be malformed or from an older save: never dereference it blindly.
   const analysisData = generatedContent && generatedContent.data && typeof generatedContent.data === 'object' ? generatedContent.data : {};
   const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
@@ -164,12 +170,7 @@ function AnalysisView(props) {
   const ignoreTitle = analysisLabel('analysis.ignore_this_error', 'Ignore this error');
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, isTeacherMode && readingRoleControl, props.onReadOriginal && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-read-original": true,
-    onClick: () => props.onReadOriginal(generatedContent),
-    className: "min-h-11 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-  }, analysisLabel('analysis.read_with_supports', 'Read with supports')), isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, isTeacherMode ? readingRoleControl : readWithSupportsButton, isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800",

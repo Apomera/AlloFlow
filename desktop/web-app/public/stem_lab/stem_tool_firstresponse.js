@@ -1699,12 +1699,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       ['upper','lower'].forEach(function (part) {
         surface = surface.concat(eyeSurfaceTriangles(headPivot.getObjectByName('fr-manikin-'+part+'-lid-'+id).geometry,scale));
       });
-      var vertices = [], indices = [], rows = [], intervals = 96;
+      var vertices = [], indices = [], rows = [], intervals = 96, crossIntervals = 12;
       // A shallow tapered crease follows the rendered lids and skin at every sample.
       for (var i = 0; i <= intervals; i++) {
         var t = i/intervals, point = curve.getPoint(t), tangent = curve.getTangent(t);
         var width = .0018*Math.pow(Math.sin(Math.PI*t),.55), row = [];
-        var across = i === 0 || i === intervals ? [0] : [-1,0,1];
+        var across = [0];
+        if (i > 0 && i < intervals) {
+          across = [];
+          for (var j = 0; j <= crossIntervals; j++) across.push(2*j/crossIntervals-1);
+        }
         across.forEach(function (v) {
           var x = point.x-tangent.z*width*v, z = point.z+tangent.x*width*v;
           row.push(vertices.length/3);
@@ -1718,7 +1722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       }
       for (var i = 0; i < intervals; i++) {
         var a = rows[i], b = rows[i+1];
-        for (var j = 0; j < 2; j++) {
+        for (var j = 0; j < crossIntervals; j++) {
           if (a.length === 1) triangle(a[0],b[j],b[j+1]);
           else if (b.length === 1) triangle(a[j],b[0],a[j+1]);
           else { triangle(a[j],b[j],a[j+1]); triangle(a[j+1],b[j],b[j+1]); }
@@ -2036,7 +2040,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var fold = new THREE.Mesh(foldGeometry,skin);
       fold.name = ear.name+'-antihelix'; ear.add(fold);
       var tragusPoint = earPoint(.023,.026,.003);
-      blob(ear,.008,.013,.011,skin,tragusPoint.x,tragusPoint.y,tragusPoint.z).name = ear.name+'-tragus';
+      var tragus = blob(ear,.008,.013,.011,skin,tragusPoint.x,tragusPoint.y,tragusPoint.z);
+      tragus.name = ear.name+'-tragus';
+      var tragusVertices = tragus.geometry.attributes.position, earTriangles = [];
+      var earPositions = earBase.geometry.attributes.position, earIndices = earBase.geometry.index.array;
+      for (var ti = 0; ti < earIndices.length; ti += 3) {
+        var points = [0,1,2].map(function (offset) {
+          return new THREE.Vector3().fromBufferAttribute(earPositions,earIndices[ti+offset]).multiply(earBase.scale);
+        });
+        if (points.some(function (p) { return side*p.x < -1e-8; })) continue;
+        var a = points[0], b = points[1], c = points[2];
+        var denominator = (b.z-c.z)*(a.y-c.y)+(c.y-b.y)*(a.z-c.z);
+        if (Math.abs(denominator) > 1e-12) earTriangles.push({a:a,b:b,c:c,denominator:denominator});
+      }
+      // Tuck the small front fold into the rendered ear instead of a separate bead.
+      for (var ti = 0; ti < tragusVertices.count; ti++) {
+        var front = tragusVertices.getX(ti), y = tragusPoint.y+tragusVertices.getY(ti)*.013;
+        var z = tragusPoint.z+tragusVertices.getZ(ti)*.011, surface = -Infinity;
+        earTriangles.forEach(function (triangle) {
+          var a = triangle.a, b = triangle.b, c = triangle.c;
+          var u = ((b.z-c.z)*(y-c.y)+(c.y-b.y)*(z-c.z))/triangle.denominator;
+          var v = ((c.z-a.z)*(y-c.y)+(a.y-c.y)*(z-c.z))/triangle.denominator;
+          if (u >= -1e-6 && v >= -1e-6 && u+v <= 1+1e-6) surface = Math.max(surface,side*(u*a.x+v*b.x+(1-u-v)*c.x));
+        });
+        if (!isFinite(surface)) surface = earSurfaceX(y,z);
+        var x = side*(surface-.0012+front*(front >= 0 ? .006 : .0012));
+        tragusVertices.setX(ti,(x-tragusPoint.x)/.008);
+      }
+      if (side < 0) {
+        var tragusIndices = tragus.geometry.index.array;
+        for (var ti = 0; ti < tragusIndices.length; ti += 3) {
+          var swap = tragusIndices[ti+1]; tragusIndices[ti+1] = tragusIndices[ti+2]; tragusIndices[ti+2] = swap;
+        }
+      }
+      smoothCoincidentNormals(tragus.geometry);
     });
 
     // The airway step is the whole reason the recovery position exists, and it
@@ -2184,6 +2221,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var patientThumb = roundedDigit(patientHand,[new THREE.Vector3(thumbSide*.060,-.007,.055),
         new THREE.Vector3(thumbSide*.086,-.009,.088),new THREE.Vector3(thumbSide*.101,.002,.115),
         new THREE.Vector3(thumbSide*.104,.009,.137)],.023,'fr-patient-'+id+'-thumb',-1);
+      finishPatientFingerNormals(patientThumb.mesh,patientFingerNormalSurface);
       fittedNail(patientHand,patientThumb,'fr-patient-'+id+'-thumb-nail');
       var palmFold = [[-.048,.077],[-.025,.094],[0,.101],[.025,.103],[.048,.094]]
         .map(function (point) { return [point[0]*(index ? -1 : 1),point[1]]; });

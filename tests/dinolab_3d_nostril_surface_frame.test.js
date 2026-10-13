@@ -60,6 +60,10 @@ function constructNostrils(side, size, normal, isTheropod = true, materialKind =
     faceSide: side, cranialSurface, isTheropod, mouthMat, nostrilMat: null, headMat, headShell: {},
     vec: (x, y, z) => new T.Vector3(x, y, z), faceSurfacePoint,
     dinoEyeSurfaceFrame: frameFor,
+    // Rim projection is covered by real-mesh tests; this fixture isolates frames.
+    dinoNostrilRimGeometry: () => null,
+    dinoNostrilGeometry: (three, radius) => new three.SphereGeometry(radius, 12, 8),
+    dinoNostrilShading: () => {},
     dinoSurfaceAnchor: (...args) => {
       anchorRequests.push(args);
       const requestedSide = -args[3].z;

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cy-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "A CLAIM",
+      "assetId": "cy-term-claim",
+      "reason": "The star in a speech bubble matches a broad claim about oneself."
+    },
+    {
+      "resourceId": "cy-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "EVIDENCE",
+      "assetId": "cy-term-evidence",
+      "reason": "The calendar and tally support a date and count as evidence."
+    },
+    {
+      "resourceId": "cy-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "THE STORY",
+      "assetId": "cy-img-story",
+      "reason": "The three cards and timer match level, evidence, gap and a timed story."
+    },
+    {
+      "resourceId": "cy-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "WHY THE GAP",
+      "assetId": "cy-term-gap",
+      "reason": "The missing step directly represents the gap to work on next."
+    }
+  ]
+}

@@ -45,7 +45,7 @@ describe('Glossary focused UI and UX contract', () => {
   it('uses learner-readable tier labels and contextual select names', () => {
     expect(source).toContain('Academic vocabulary');
     expect(source).toContain('Subject vocabulary');
-    expect(source).toContain("aria-label={t('common.target_language_selector')} data-help-key=\"glossary_puzzle_lang\" value={wordSearchLang}");
+    expect(source).toContain("aria-label={activityText('glossary.activities.word_search_language', 'Word Search language')} data-help-key=\"glossary_puzzle_lang\" value={wordSearchLang}");
     expect(source).toContain("aria-label={t('flashcards.deck_standard')} value={standardDeckLang}");
     expect(source).toContain("aria-label={t('flashcards.deck_language')} value={flashcardLang}");
   });

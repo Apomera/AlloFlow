@@ -11,15 +11,17 @@
   var owns = function (o, k) { return Object.prototype.hasOwnProperty.call(o || {}, k); };
   function object(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
   function text(v, max) { return typeof v === 'string' ? v.replace(/\u0000/g, '').slice(0, max || 4000) : ''; }
-  function blankCase() {
+  function blankCase(caseRecord) {
     var responses = {}; var reflections = {};
     for (var i = 1; i <= 9; i++) responses['Q' + i] = { answer: '', note: '' };
     REFLECTIONS.forEach(function (k) { reflections[k] = ''; });
-    return { findings: {}, responses: responses, reflections: reflections, debriefRevealed: false, checkAnswers: {}, checkSubmitted: false };
+    var work = { findings: {}, responses: responses, reflections: reflections, debriefRevealed: false, checkAnswers: {}, checkSubmitted: false };
+    if (caseRecord && caseRecord.completeRecord && typeof caseRecord.completeRecord.version === 'string') work.recordVersion = caseRecord.completeRecord.version;
+    return work;
   }
   function createState(data) {
     var byCase = {};
-    data.cases.forEach(function (c) { byCase[c.id] = blankCase(); });
+    data.cases.forEach(function (c) { byCase[c.id] = blankCase(c); });
     return { version: 1, activeCase: data.cases[0].id, activeStep: 'case', byCase: byCase };
   }
   function caseRows(data, id) {
@@ -31,7 +33,49 @@
     });
   }
   function contextRows(c) {
-    return (c.narrative || []).map(function (v, i) { return { id: 'context-' + i, label: typeof v === 'string' ? v : v.body || v.text || '', test: 'Case record', value: '', scaleId: 'context' }; });
+    return (c.narrative || []).map(function (v, i) { return { id: 'context-' + i, label: typeof v === 'string' ? v : v.body || v.text || '', test: 'Case record', value: '', scaleId: 'context' }; }).concat((c.evidenceSupplement || []).map(function (v) {
+      return { id: 'supplement-' + v.id, label: v.title + ': ' + v.text, test: 'Case evidence supplement', value: '', scaleId: 'context' };
+    }));
+  }
+  function priorRecordRows(c) {
+    var prior = object(c.previousRecord);
+    return contextRows(prior).concat(prior.extraScoreRows || prior.inlineScores || []).map(function (row) {
+      return { id: row.id, label: text(row.label, 16000), test: text(row.test || 'Case record', 200), value: typeof row.value === 'number' ? row.value : text(row.value, 200), scaleId: text(row.scaleId, 100) };
+    });
+  }
+  function sanitizeCaseWork(from, allowedRows, data, to) {
+    from = object(from); to = to || blankCase();
+    var allowed = allowedRows.map(function (r) { return r.id; });
+    Object.keys(object(from.findings)).slice(0, 80).forEach(function (id) {
+      var f = object(from.findings[id]);
+      if (allowed.indexOf(id) !== -1 && PURPOSES.indexOf(f.purpose) !== -1) to.findings[id] = { purpose: f.purpose, note: text(f.note) };
+    });
+    Object.keys(to.responses).forEach(function (q) {
+      var f = object(object(from.responses)[q]);
+      var choices = q === 'Q9' ? ['sdi', 'general-ed', 'more'] : ['Q1', 'Q2', 'Q3', 'Q4', 'Q7', 'Q8'].indexOf(q) !== -1 ? ['yes', 'no', 'more'] : [];
+      to.responses[q] = { answer: choices.indexOf(f.answer) !== -1 ? f.answer : '', note: text(f.note) };
+    });
+    REFLECTIONS.forEach(function (k) { to.reflections[k] = text(object(from.reflections)[k]); });
+    to.debriefRevealed = from.debriefRevealed === true;
+    (data.knowledgeCheck || []).forEach(function (q) {
+      var index = object(from.checkAnswers)[q.id];
+      if (Number.isInteger(index) && index >= 0 && index < q.options.length) to.checkAnswers[q.id] = index;
+    });
+    to.checkSubmitted = from.checkSubmitted === true && (data.knowledgeCheck || []).every(function (q) { return owns(to.checkAnswers, q.id); });
+    return to;
+  }
+  function hasCaseWork(work) {
+    return Object.keys(work.findings).length > 0 || Object.values(work.responses).some(function (r) { return r.answer || r.note.trim(); }) || Object.values(work.reflections).some(function (v) { return v.trim(); }) || work.debriefRevealed || Object.keys(work.checkAnswers).length > 0;
+  }
+  function sanitizePriorRecord(raw, c, data) {
+    var rows = priorRecordRows(c), prior = sanitizeCaseWork(raw, rows, data);
+    if (!hasCaseWork(prior)) return null;
+    prior.version = c.previousRecord.version;
+    Object.keys(prior.findings).forEach(function (id) {
+      var row = rows.find(function (r) { return r.id === id; });
+      prior.findings[id] = Object.assign({}, prior.findings[id], { label: row.label, test: row.test, value: row.value, scaleId: row.scaleId });
+    });
+    return prior;
   }
   function sanitizeState(raw, data) {
     raw = object(raw); var clean = createState(data); var old = object(raw.byCase);
@@ -39,23 +83,15 @@
     if (STEPS.indexOf(raw.activeStep) !== -1) clean.activeStep = raw.activeStep;
     data.cases.forEach(function (c) {
       var from = object(old[c.id]), to = clean.byCase[c.id];
-      var allowed = caseRows(data, c.id).concat(contextRows(c)).map(function (r) { return r.id; });
-      Object.keys(object(from.findings)).slice(0, 80).forEach(function (id) {
-        var f = object(from.findings[id]);
-        if (allowed.indexOf(id) !== -1 && PURPOSES.indexOf(f.purpose) !== -1) to.findings[id] = { purpose: f.purpose, note: text(f.note) };
-      });
-      Object.keys(to.responses).forEach(function (q) {
-        var f = object(object(from.responses)[q]);
-        var choices = q === 'Q9' ? ['sdi', 'general-ed', 'more'] : ['Q1', 'Q2', 'Q3', 'Q4', 'Q7', 'Q8'].indexOf(q) !== -1 ? ['yes', 'no', 'more'] : [];
-        to.responses[q] = { answer: choices.indexOf(f.answer) !== -1 ? f.answer : '', note: text(f.note) };
-      });
-      REFLECTIONS.forEach(function (k) { to.reflections[k] = text(object(from.reflections)[k]); });
-      to.debriefRevealed = from.debriefRevealed === true;
-      (data.knowledgeCheck || []).forEach(function (q) {
-        var index = object(from.checkAnswers)[q.id];
-        if (Number.isInteger(index) && index >= 0 && index < q.options.length) to.checkAnswers[q.id] = index;
-      });
-      to.checkSubmitted = from.checkSubmitted === true && (data.knowledgeCheck || []).every(function (q) { return owns(to.checkAnswers, q.id); });
+      var revised = c.id === 'samira' && to.recordVersion && c.previousRecord && typeof c.previousRecord.version === 'string';
+      if (revised) {
+        // Earlier evidence IDs must not attach participant reasoning to a changed record.
+        var archived = object(from.priorRecordWork), prior = archived.version === c.previousRecord.version ? sanitizePriorRecord(archived, c, data) : null;
+        if (from.recordVersion !== to.recordVersion) prior = sanitizePriorRecord(from, c, data) || prior;
+        if (prior) to.priorRecordWork = prior;
+        if (from.recordVersion !== to.recordVersion) return;
+      }
+      sanitizeCaseWork(from, caseRows(data, c.id).concat(contextRows(c)), data, to);
     });
     return clean;
   }
@@ -109,5 +145,5 @@
     if (data.cases.some(function (c) { return c.id === caseId; })) url.searchParams.set('case', caseId);
     return url.toString();
   }
-  return { SESSION_KEY: SESSION_KEY, STEPS: STEPS, PURPOSES: PURPOSES, REFLECTIONS: REFLECTIONS, createState: createState, blankCase: blankCase, sanitizeState: sanitizeState, caseRows: caseRows, contextRows: contextRows, filterScores: filterScores, progress: progress, exportWorksheet: exportWorksheet, importWorksheet: importWorksheet, saveSession: saveSession, loadSession: loadSession, shareUrl: shareUrl };
+  return { SESSION_KEY: SESSION_KEY, STEPS: STEPS, PURPOSES: PURPOSES, REFLECTIONS: REFLECTIONS, createState: createState, blankCase: blankCase, sanitizeState: sanitizeState, caseRows: caseRows, contextRows: contextRows, priorRecordRows: priorRecordRows, filterScores: filterScores, progress: progress, exportWorksheet: exportWorksheet, importWorksheet: importWorksheet, saveSession: saveSession, loadSession: loadSession, shareUrl: shareUrl };
 });

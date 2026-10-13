@@ -1928,6 +1928,14 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         arrow.__ptMotionHalo.scale.set(worldPixel * 1.7, shaftLength, worldPixel * 1.7);
         arrow.updateMatrixWorld(true);
       });
+      // Short ruler ticks keep the true depth junctions visible when captions
+      // move away from the face. Their pixel size stays fixed as the block turns.
+      scaleGroup.children.forEach(function (notch) {
+        if (notch.userData.feature !== 'depth-ruler-notch') return;
+        var depth = -notch.position.clone().applyMatrix4(camera.matrixWorldInverse).z;
+        notch.scale.setScalar(Math.max(0.1, depth) * 2 * tanV / hgt);
+        notch.quaternion.copy(camera.quaternion);
+      });
       labelRects = [];
       labelPlacements.forEach(function (item) {
         var screen = item.base.clone().project(camera);
@@ -2088,6 +2096,68 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       });
     }
 
+    // Connect the arc caption to the highest point of the first retained cone.
+    // Triangle crossings keep the target on the actual exposed flank even
+    // when a cut removes the summit; a tangent sliver has no readable edifice.
+    function arcLabelAnchor(cut) {
+      if (!arcGroup) return null;
+      arcGroup.updateMatrixWorld(true);
+      var edifices = arcGroup.children.filter(function (part) {
+        return part.userData.feature === 'volcanic-arc-edifice';
+      }).sort(function (a, b) { return b.position.z - a.position.z; });
+      var a = new T.Vector3(), b = new T.Vector3(), point = new T.Vector3(), best = new T.Vector3();
+      var bounds = new T.Box3(), eps = 0.000001;
+      for (var v = 0; v < edifices.length; v++) {
+        var cone = edifices[v].children.filter(function (part) {
+          return part.isMesh && part.geometry && part.geometry.type === 'LatheGeometry';
+        })[0];
+        if (!cone) continue;
+        var geo = cone.geometry;
+        if (!geo.boundingBox) geo.computeBoundingBox();
+        bounds.copy(geo.boundingBox).applyMatrix4(cone.matrixWorld);
+        if (cut != null && bounds.min.z >= cut - eps) continue;
+        var pos = geo.attributes.position, index = geo.index, hasBest = false;
+        function keep(p) {
+          if (cut != null && p.z > cut + eps) return;
+          if (!hasBest || p.y > best.y + eps || (Math.abs(p.y - best.y) <= eps && p.z > best.z + eps)) {
+            best.copy(p); hasBest = true;
+          }
+        }
+        for (var i = 0; i < pos.count; i++) {
+          point.fromBufferAttribute(pos, i).applyMatrix4(cone.matrixWorld); keep(point);
+        }
+        if (cut != null) {
+          var count = index ? index.count : pos.count;
+          for (var j = 0; j + 2 < count; j += 3) for (var k = 0; k < 3; k++) {
+            a.fromBufferAttribute(pos, index ? index.getX(j + k) : j + k).applyMatrix4(cone.matrixWorld);
+            b.fromBufferAttribute(pos, index ? index.getX(j + (k + 1) % 3) : j + (k + 1) % 3).applyMatrix4(cone.matrixWorld);
+            var da = a.z - cut, db = b.z - cut;
+            if ((da < -eps && db > eps) || (da > eps && db < -eps)) {
+              point.copy(a).lerp(b, -da / (db - da)); keep(point);
+            }
+          }
+        }
+        if (hasBest) return best;
+      }
+      return null;
+    }
+
+    // The ridge fissure and fault trace are straight prisms along strike.
+    // Keep their caption on the retained top surface when the centre is cut
+    // away, and omit it when no length of the physical trace remains.
+    function boundaryLabelAnchor(mode, cut) {
+      var feature = mode === 'divergent' ? 'ridge-fissure' : 'transform-fault-trace';
+      var mesh = arcGroup.children.filter(function (part) { return part.userData.feature === feature; })[0];
+      if (!mesh) return null;
+      arcGroup.updateMatrixWorld(true);
+      if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+      var bounds = mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
+      if (cut != null && bounds.min.z >= cut - 0.000001) return null;
+      var centreZ = (bounds.min.z + bounds.max.z) / 2;
+      return new T.Vector3((bounds.min.x + bounds.max.x) / 2, bounds.max.y,
+        cut == null ? centreZ : Math.min(centreZ, cut));
+    }
+
     function buildScale(m) {
       clearGroup(scaleGroup);
       labelPlacements = [];
@@ -2120,6 +2190,19 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         lab.position.set(axisX + 12, y, faceZ + 4);
         scaleGroup.add(lab);
         trackScaleLabel(lab, new T.Vector3(axisX, y, faceZ), true);
+
+        // A rectangular ruler notch marks the exact leader target. Its dark
+        // backing separates the tick from both pale rock and the dark theme.
+        var notch = new T.Group();
+        notch.position.set(axisX, y, faceZ);
+        notch.userData.feature = 'depth-ruler-notch'; notch.userData.depthKm = t.km;
+        var notchHalo = new T.Mesh(new T.PlaneGeometry(4, 8),
+          new T.MeshBasicMaterial({ color: 0x0f172a, side: T.DoubleSide, depthTest: false, depthWrite: false }));
+        var notchCore = new T.Mesh(new T.PlaneGeometry(2, 6),
+          new T.MeshBasicMaterial({ color: new T.Color(t.hex), side: T.DoubleSide, depthTest: false, depthWrite: false }));
+        notchHalo.userData.depthRulerLayer = 'halo'; notchCore.userData.depthRulerLayer = 'core';
+        notchHalo.renderOrder = 7; notchCore.renderOrder = 8;
+        notch.add(notchHalo); notch.add(notchCore); scaleGroup.add(notch);
 
         // The 70 and 300 km band boundaries, as faint planes, so a violet
         // focus is visibly BELOW the 300 km plane rather than just violet.
@@ -2159,16 +2242,22 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         tl.position.set(-6, 7, faceZ + 4);
         scaleGroup.add(tl);
         trackScaleLabel(tl, new T.Vector3(0, 0, faceZ), false);
-        var al = makeLabel(words.arc || 'volcanic arc', '#fca5a5', 5.5);
-        al.position.set(tectSlabDistKm(100) * TECT_KM + 14, 23, faceZ + 4);
-        scaleGroup.add(al);
-        trackScaleLabel(al, new T.Vector3(tectSlabDistKm(100) * TECT_KM, 4.4, faceZ >= 14 ? 14 : 0), false);
+        var arcTarget = arcLabelAnchor(m.cut);
+        if (arcTarget) {
+          var al = makeLabel(words.arc || 'volcanic arc', '#fca5a5', 5.5);
+          al.position.set(tectSlabDistKm(100) * TECT_KM + 14, 23, faceZ + 4);
+          scaleGroup.add(al);
+          trackScaleLabel(al, arcTarget, false);
+        }
       } else {
         var ridge = m.mode === 'divergent';
-        var feature = makeLabel(ridge ? (words.ridge || 'ridge axis') : (words.fault || 'transform fault'), ridge ? '#fdba74' : '#fef3c7', 5.5);
-        feature.position.set(-6, 16, faceZ + 4);
-        scaleGroup.add(feature);
-        trackScaleLabel(feature, new T.Vector3(0, 1, 0), false);
+        var boundaryTarget = boundaryLabelAnchor(m.mode, m.cut);
+        if (boundaryTarget) {
+          var feature = makeLabel(ridge ? (words.ridge || 'ridge axis') : (words.fault || 'transform fault'), ridge ? '#fdba74' : '#fef3c7', 5.5);
+          feature.position.set(-6, 16, faceZ + 4);
+          scaleGroup.add(feature);
+          trackScaleLabel(feature, boundaryTarget, false);
+        }
       }
     }
 
@@ -2942,10 +3031,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // chamber does.
     var HALO_GLSL = [
       'uniform vec4 uCh; uniform vec4 uCd; uniform float uHeat;',
-      'float halo(vec2 p){',
-      '  vec2 q = (p - uCh.xy) / uCh.zw; float dch = max(0.0, length(q) - 1.0) * min(uCh.z, uCh.w);',
+      // The chamber mesh has z radius 4/5 of its x radius. Account for
+      // slice depth so warm rock follows the actual three-dimensional bodies.
+      'float halo(vec3 p){',
+      '  vec3 q = vec3(p.xy - uCh.xy, p.z) / vec3(uCh.zw, uCh.z * 0.8); float dch = max(0.0, length(q) - 1.0) * min(uCh.z, uCh.w);',
       '  float w = mix(uCd.w * 1.85, uCd.w, clamp((p.y - uCd.y) / max(0.1, uCd.z - uCd.y), 0.0, 1.0));',
-      '  float dcd = (p.y < uCd.y || p.y > uCd.z) ? 99.0 : max(0.0, abs(p.x - uCd.x) - w);',
+      '  float dcd = (p.y < uCd.y || p.y > uCd.z) ? 99.0 : max(0.0, length(vec2(p.x - uCd.x, p.z)) - w);',
       '  return exp(-dch * 0.32) * 0.8 + exp(-dcd * 0.7) * 0.7; }'
     ].join('\n');
     // `over`: painted on top of the rock cap on the SAME plane. Nothing kept by
@@ -2978,7 +3069,9 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         'void main(){ vec2 p = vW.xy; vec3 c;',
         '  if (p.y > 0.0) {',
         '    float n = fbm(p * 0.45);',
-        '    float band = fract((uHpk * fl(abs(p.x) / uR) - p.y) / uThick + n * 0.55);',
+        // Offset slices need both horizontal axes to follow the edifice's
+        // radial profile; using x alone repeats the center section's beds.
+        '    float band = fract((uHpk * fl(length(vW.xz) / uR) - p.y) / uThick + n * 0.55);',
         '    c = mix(uA, uB, smoothstep(0.52, 0.6, band) - smoothstep(0.84, 0.92, band));',
         '    c *= 0.8 + 0.35 * vn(p * vec2(1.6, 3.2));',
         '  } else {',
@@ -2988,7 +3081,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         '    c = base * (0.74 + 0.42 * g + 0.07 * (0.5 + 0.5 * sin(p.y * 5.5 + g * 4.0)));',
         '    c *= 0.97 + 0.06 * vn(p * vec2(4.0, 7.0));',
         '  }',
-        '  float hl = halo(p);',
+        '  float hl = halo(vW);',
         '  c = c * uBright + vec3(1.0, 0.33, 0.07) * hl * uHeat * 0.55 + vec3(0.25, 0.05, 0.0) * min(1.0, hl) * 0.3;',
         '  gl_FragColor = vec4(c, 1.0); }'
       ].join('\n'), {
@@ -3132,12 +3225,49 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       var ln = new T.LineSegments(g, own(new T.LineBasicMaterial({ color: new T.Color(hex), transparent: true, opacity: 0.75, depthTest: false })));
       ln.renderOrder = 998;
       ln.frustumCulled = false;
+      // A narrow dark backing reveals the pale leader over light sky and rock.
+      // Its quad is reused, and its width is set in logical pixels at layout.
+      var backingGeometry = own(new T.BufferGeometry());
+      backingGeometry.setAttribute('position', new T.BufferAttribute(new Float32Array(12), 3));
+      backingGeometry.setIndex([0, 1, 2, 2, 1, 3]);
+      var backing = new T.Mesh(backingGeometry, own(new T.MeshBasicMaterial({
+        color: 0x0f172a, transparent: true, opacity: 0.8, side: T.DoubleSide, depthTest: false, depthWrite: false
+      })));
+      backing.name = 'vent-leader-backing'; backing.visible = false; backing.frustumCulled = false;
+      backing.renderOrder = 997.5;
+      ln.userData.ventLeaderBacking = backing;
+      ln.userData.ventLeaderScratch = [new T.Vector3(), new T.Vector3(), new T.Vector3()];
+      ln.add(backing);
       return ln;
     }
     function setLeader(ln, ax, ay, az, bx, by, bz) {
       var a = ln.geometry.attributes.position.array;
       a[0] = ax; a[1] = ay; a[2] = az; a[3] = bx; a[4] = by; a[5] = bz;
       ln.geometry.attributes.position.needsUpdate = true;
+    }
+
+    function layoutVentLeaderBacking(ln, width, height) {
+      var backing = ln.userData.ventLeaderBacking;
+      if (!backing) return;
+      backing.visible = pending.dark === false;
+      if (!backing.visible) return;
+      ln.updateMatrixWorld(true);
+      var points = ln.userData.ventLeaderScratch, a = points[0], b = points[1], corner = points[2];
+      var source = ln.geometry.attributes.position;
+      a.fromBufferAttribute(source, 0).applyMatrix4(ln.matrixWorld).project(camera);
+      b.fromBufferAttribute(source, 1).applyMatrix4(ln.matrixWorld).project(camera);
+      var dx = (b.x - a.x) * width, dy = (b.y - a.y) * height;
+      var length = Math.sqrt(dx * dx + dy * dy);
+      if (length < 0.001) { backing.visible = false; return; }
+      var ox = -dy / length * 2.5 / width, oy = dx / length * 2.5 / height;
+      var positions = backing.geometry.attributes.position;
+      for (var i = 0; i < 4; i++) {
+        corner.copy(i < 2 ? a : b);
+        corner.x += (i % 2 ? -1 : 1) * ox; corner.y += (i % 2 ? -1 : 1) * oy;
+        corner.unproject(camera); ln.worldToLocal(corner);
+        positions.setXYZ(i, corner.x, corner.y, corner.z);
+      }
+      positions.needsUpdate = true;
     }
 
     // Intersect the actual transformed mesh with the slice. A bounding box is
@@ -3243,6 +3373,14 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       syncInspection();
       camera.updateMatrixWorld(true);
       scene.updateMatrixWorld(true);
+      // Only labels placed in this pass may keep a backing. This also clears
+      // a stale light-theme quad if a crowded layout cannot place its label.
+      [scaleGroup, labelGroup].forEach(function (group) {
+        if (!group) return;
+        group.children.forEach(function (part) {
+          if (part.userData.ventLeaderBacking) part.userData.ventLeaderBacking.visible = false;
+        });
+      });
       var width = canvasEl.clientWidth || 1, height = canvasEl.clientHeight || 1;
       var narrow = width < 600, tanY = Math.tan(camera.fov * DEG / 2), occupied = [];
       ventLabelRects = [];
@@ -3286,6 +3424,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           var worldHeight = Math.max(0.1, depth) * 2 * tanY * labelHeight / height;
           sp.scale.set(worldHeight * data.ventLabelAspect, worldHeight, 1);
           if (data.ventLeader && data.ventAnchor) setLeader(data.ventLeader, sp.position.x, sp.position.y, sp.position.z, data.ventAnchor[0], data.ventAnchor[1], data.ventAnchor[2]);
+          if (data.ventLeader) layoutVentLeaderBacking(data.ventLeader, width, height);
           ventLabelRects.push(Object.assign({ text: data.ventLabelText }, best.rect));
         });
       });

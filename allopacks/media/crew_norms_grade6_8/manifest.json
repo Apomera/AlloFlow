@@ -1,0 +1,608 @@
+{
+  "slug": "crew_norms_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_norms_grade6_8.allopack.json",
+  "sourcePackSha256": "eb2ab77e9047c7d40499d5e7e20146bce4d6a01bc942ce99cef3f56f6058bf53",
+  "illustratedPack": "allopacks/illustrated/crew_norms_grade6_8.allopack.json",
+  "illustratedPackSha256": "94166c31beb072f4c1464583bbb42e684f7e480e95a214fa21340a7710d22244",
+  "plan": "allopacks/media/crew_norms_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "cn-term-norm",
+      "term": "Norm",
+      "kind": "term",
+      "scene": "A circle of chairs with a small handwritten-looking blank card in the center",
+      "constraints": "card blank",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A circle of chairs with a small handwritten-looking blank card in the center. Card blank.",
+      "file": "cn-term-norm.png",
+      "alt": "Eight empty chairs form a circle around a blank card on the floor.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-56471f0b-ba96-4352-be4f-21af80f91abd.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cn-term-norm.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "4efbeecdf5e15f4bec11a4a434a3bb920dac416fecfa22982935394a443dd486",
+      "optimizedSha256": "25eecee4e42f62ff3f83c8ae7c0fd140ae387bab28cfb74ffe4c14614985bba5",
+      "bytes": 16124,
+      "altSource": "vision",
+      "altHash": "img-glv-b7c20484",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 0,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-term-rule",
+      "term": "Rule",
+      "kind": "term",
+      "scene": "A clipboard held by an adult hand, list lines drawn as plain bars",
+      "constraints": "no letters",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A clipboard held by an adult hand, with list lines drawn as plain horizontal bars. No letters.",
+      "file": "cn-term-rule.png",
+      "alt": "An adult holds a clipboard with a list of plain bars while four students listen.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-7b9463be-9210-4fe8-a8b8-cc06bcf285db.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cn-term-rule.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "6497c95e76c31a2d55881c89e42385e156c348e897f49975df9a9f997060502d",
+      "optimizedSha256": "497fecb16ff3a170c1040ecf4aecf0073113a83f613891235488d01b7e5fb90d",
+      "bytes": 28330,
+      "altSource": "vision",
+      "altHash": "img-t5z-548c8f7f",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 1,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cn-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "A RULE",
+          "field": "iconUrl",
+          "reason": "An adult holding a clipboard matches a rule from someone in charge."
+        }
+      ]
+    },
+    {
+      "id": "cn-term-crew",
+      "term": "Crew",
+      "kind": "term",
+      "scene": "Ten students and one adult seated in a circle, relaxed posture",
+      "constraints": "diverse group",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "file": "cn-term-crew.png",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cn-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 2,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-term-pass",
+      "term": "Pass",
+      "kind": "term",
+      "scene": "A student in a circle with one open palm resting on their chest, others still looking at them warmly",
+      "constraints": "no crossed arms",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student seated in a circle with one open palm resting on their chest, other students looking at them warmly. No crossed arms.",
+      "file": "cn-term-pass.png",
+      "alt": "A student rests one hand on her chest while classmates look toward her in a circle.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-6bf6cffa-bb38-4d7d-864a-6da6fd068109.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cn-term-pass.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "47fe9881452455e7e4d92445bea5442dc3a65c1fd65fd5d6175dd35e3a407ac2",
+      "optimizedSha256": "09cae3e5a0a7161311bb4946df0bcabe09907e4276d6bd777fe82ae7b4845d50",
+      "bytes": 28308,
+      "altSource": "vision",
+      "altHash": "img-t53-4c4ba129",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 6,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-term-signal",
+      "term": "Signal",
+      "kind": "term",
+      "scene": "A student holding up one finger while another speaks, small and calm",
+      "constraints": "not a raised whole hand",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student calmly holding up exactly one index finger while another student speaks. Small signal at chest height, not a whole raised hand.",
+      "file": "cn-term-signal.png",
+      "alt": "A student holds up one index finger at chest height while another student speaks.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-a603ebce-ae0d-40f8-90bf-da452f4236e9.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cn-term-signal.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "601a6f5ff5f15a17452897d5507b1047868133ba5ea72bc7eddaaf15a69caaec",
+      "optimizedSha256": "1790088c2dd523847b02a5776ee3ebbf1dd6bf20e025a8feb307a495dd791f4d",
+      "bytes": 25246,
+      "altSource": "vision",
+      "altHash": "img-pzr-48a93c4a",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 9,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cn-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "A NORM",
+          "field": "iconUrl",
+          "reason": "The single raised finger matches the observable group norm."
+        }
+      ]
+    },
+    {
+      "id": "cn-term-cooperate",
+      "term": "Cooperate",
+      "kind": "term",
+      "scene": "Two students carrying one long table together from opposite ends",
+      "constraints": "both lifting",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two middle-school students carrying one long classroom table together from opposite ends, both lifting it, feet on the floor.",
+      "file": "cn-term-cooperate.png",
+      "alt": "Two students lift a classroom table from opposite ends.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-d9bf064c-57c2-40c5-afa1-a4068cb93c1c.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "optimizedFile": "optimized/cn-term-cooperate.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "da7061625ee78a47a6a273493c5f0f8085d8b7fd830bc0848a29eb3c060b2863",
+      "optimizedSha256": "751f94b1fe8d79d9b28974035dfa7e38239aba756cd531d0e38b157971710431",
+      "bytes": 23618,
+      "altSource": "vision",
+      "altHash": "img-obf-383a48d9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-img-sidetalk",
+      "kind": "lesson",
+      "title": "The interrupted share.",
+      "scene": "A student mid-sentence in a circle, two others turned toward each other; the speaker's mouth is half open and her hand is paused.",
+      "caption": "nobody is trying to be mean; the Crew has not decided what it does yet.",
+      "plannedLabels": [
+        {
+          "text": "The speaker",
+          "position": "top-left",
+          "anchorX": 45,
+          "anchorY": 31
+        },
+        {
+          "text": "The side talk",
+          "position": "top-right",
+          "anchorX": 83,
+          "anchorY": 29
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A girl is mid-sentence in a circle of chairs with diverse middle-school classmates. Two others turn toward each other to side-talk. The speaker's mouth is half open and her hand is paused. Nobody threatening or mocking. No labels or text.",
+      "file": "cn-img-sidetalk.png",
+      "alt": "A student speaks in a circle while two classmates turn toward each other to whisper.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-eaeac4b5-ea28-4523-9464-fc0aee0ea280.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "simplified",
+      "optimizedFile": "optimized/cn-img-sidetalk.webp",
+      "width": 900,
+      "height": 540,
+      "sourceWidth": 1619,
+      "sourceHeight": 971,
+      "sourceSha256": "9c13b42ecc3e470c3c372cf28af68a20f5ee3f0bcf9bebe390aacc2876dedd79",
+      "optimizedSha256": "eeaf436c4c2e191b0e03413738fd1f624a090558940fc26d2decc6de09839569",
+      "bytes": 49702,
+      "altSource": "vision",
+      "altHash": "img-1f5j-7a3d50bc",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The speaker",
+          "position": "top-left",
+          "anchorX": 45,
+          "anchorY": 31
+        },
+        {
+          "text": "The side talk",
+          "position": "top-right",
+          "anchorX": 83,
+          "anchorY": 29
+        }
+      ],
+      "placement": {
+        "resourceId": "cn-reading-illustrations",
+        "panelId": "cn-img-sidetalk",
+        "afterResourceId": "cn-reading"
+      }
+    },
+    {
+      "id": "cn-img-signal",
+      "kind": "lesson",
+      "title": "The signal works.",
+      "scene": "The same circle a day later; one student calmly holds up one finger, the two side-talkers are turning back.",
+      "caption": "the norm did the work; nobody had to be told.",
+      "plannedLabels": [
+        {
+          "text": "The signal",
+          "position": "top-left",
+          "anchorX": 28,
+          "anchorY": 32
+        },
+        {
+          "text": "Turning back",
+          "position": "top-right",
+          "anchorX": 50,
+          "anchorY": 44
+        }
+      ],
+      "prompt": "Use case: precise-object-edit. Improve image 1, the warm classroom circle illustration. One student calmly raises exactly one index finger at chest height; the central student speaks. The two students in the foreground who were side-talking must now clearly turn their heads and gazes TOWARD THE CENTRAL SPEAKER, with closed mouths, and stop looking at each other. Use the students and respectful tone of reference image 2 for continuity; preserve the simple warm educational illustration, classroom chairs, muted green, orange, cream and blue palette. Keep all arms attached at correct shoulders, natural elbows, two hands at most per person, coherent hair attached to each head. Wide landscape. No text, letters, numbers, logos, labels, speech bubbles or watermarks.",
+      "file": "cn-img-signal-v2.png",
+      "alt": "A student raises one finger in a classroom circle as two classmates turn toward the central speaker and listen.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-3d47-7c01-8b65-899fba5f796f\\exec-2e4be2e5-1042-4da7-891c-b124c311896d.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "anchor-chart",
+      "editReferences": [
+        "cn-img-signal.png",
+        "cn-img-sidetalk.png"
+      ],
+      "optimizedFile": "optimized/cn-img-signal.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "6a4e12e3fcf973ec2d78bd9fb81e7ea62eab95d0e1be6023dfb80114e8ca0f3a",
+      "optimizedSha256": "765961beb862ed2aad424436d584db4db5be67c72d9ee36a3e0501940ea39f28",
+      "bytes": 49324,
+      "altSource": "vision",
+      "altHash": "img-1erj-d1cd37cf",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "The signal",
+          "position": "top-left",
+          "anchorX": 28,
+          "anchorY": 32
+        },
+        {
+          "text": "Turning back",
+          "position": "top-right",
+          "anchorX": 50,
+          "anchorY": 44
+        }
+      ],
+      "placement": {
+        "resourceId": "cn-anchor-illustrations",
+        "panelId": "cn-img-signal",
+        "afterResourceId": "cn-anchor"
+      }
+    },
+    {
+      "id": "cn-img-threeparts",
+      "kind": "lesson",
+      "title": "Three parts of a norm.",
+      "scene": "Three linked puzzle pieces in a row, each with a plain icon: an eye, a group of three dots, a circular arrow.",
+      "caption": "if one piece is missing, it is a poster.",
+      "plannedLabels": [
+        {
+          "text": "Specific",
+          "position": "bottom-left",
+          "anchorX": 25,
+          "anchorY": 68
+        },
+        {
+          "text": "Shared",
+          "position": "bottom-center",
+          "anchorX": 50,
+          "anchorY": 69
+        },
+        {
+          "text": "Revisited",
+          "position": "bottom-right",
+          "anchorX": 76,
+          "anchorY": 67
+        }
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson diagram. Exactly three linked puzzle pieces in one horizontal row, with a plain icon centered on each: an eye on the first, a group of three dots on the second, a circular arrow on the third. Simple flat shapes. No text, characters, labels or numerals.",
+      "file": "cn-img-threeparts.png",
+      "alt": "Three students hold linked puzzle pieces with an eye, three dots, and a circular arrow.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-1f5168b8-e27b-4977-a7b7-ae378242743e.png",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "provider": "Built-in image generation",
+      "afterType": "faq",
+      "optimizedFile": "optimized/cn-img-threeparts.webp",
+      "width": 900,
+      "height": 450,
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "sourceSha256": "2ee88d7e6a3a0d90e55f5d3d197abe139b083991c740ec4f509938a1824b5b55",
+      "optimizedSha256": "e6afcad1bc699fdb178a4744781ca55cf7a9b14cc3dd28462da96c112510c11f",
+      "bytes": 36112,
+      "altSource": "vision",
+      "altHash": "img-1167-e9b44aa6",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Specific",
+          "position": "bottom-left",
+          "anchorX": 25,
+          "anchorY": 68
+        },
+        {
+          "text": "Shared",
+          "position": "bottom-center",
+          "anchorX": 50,
+          "anchorY": 69
+        },
+        {
+          "text": "Revisited",
+          "position": "bottom-right",
+          "anchorX": 76,
+          "anchorY": 67
+        }
+      ],
+      "placement": {
+        "resourceId": "cn-faq-illustrations",
+        "panelId": "cn-img-threeparts",
+        "afterResourceId": "cn-faq"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cn-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "THREE PARTS OF A GOOD NORM",
+          "field": "iconUrl",
+          "reason": "The eye, shared dots and return arrow match specific, shared and revisited."
+        }
+      ]
+    },
+    {
+      "id": "cn-term-specific",
+      "kind": "term",
+      "term": "Specific",
+      "scene": "Two middle-school students at a desk: one speaks with a small open-hand gesture while the other listens with hands resting on the desk. A simple eye icon in a small separate circle above draws attention to this visible action. Calm classroom, coherent arms attached to shoulders. A clear example of an observable agreement: listen while another person speaks. Square composition.",
+      "file": "cn-term-specific.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Two middle-school students at a desk: one speaks with a small open-hand gesture while the other listens with hands resting on the desk. A simple eye icon in a small separate circle above draws attention to this visible action. Calm classroom, coherent arms attached to shoulders. A clear example of an observable agreement: listen while another person speaks. Square composition.",
+      "alt": "One student speaks while a classmate looks toward them and listens; an eye symbol highlights the visible action.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-70e3ca2f-d398-4b03-8597-d90520ae2d94.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cn-term-specific.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "5673e6ce7c954a12812062cccee901622937fbd23b4c0f730c43d234d02bb1e0",
+      "optimizedSha256": "b94436f090ce6ee901ccbf9a9f94658b7486f26db308a08b1d078e087a5f7a91",
+      "bytes": 29222,
+      "altSource": "vision",
+      "altHash": "img-u2z-9f18b513",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 3,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-term-shared",
+      "kind": "term",
+      "term": "Shared",
+      "scene": "Four diverse middle-school students around a table each place one small colored token on a single blank agreement card in the center. All four are included equally in making a choice. Keep the hands and arms visually separated and naturally connected to each student's own shoulders. Square composition with only these four students.",
+      "file": "cn-term-shared.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Four diverse middle-school students around a table each place one small colored token on a single blank agreement card in the center. All four are included equally in making a choice. Keep the hands and arms visually separated and naturally connected to each student's own shoulders. Square composition with only these four students.",
+      "alt": "Four students each add a token to one agreement card, taking part in the same group choice.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-745fcec2-6a8e-4662-b986-9e5f539d0299.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cn-term-shared.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "d51ee2e8d64f8875de8fa82d42835974f6ace8823390eeb197f1cf88f590d91a",
+      "optimizedSha256": "e4315ddcaaafacdf8994f9ce726554df43e45a584cf6bc5847aecddb3a086511",
+      "bytes": 37312,
+      "altSource": "vision",
+      "altHash": "img-12en-cd09138d",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 4,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-term-revisit",
+      "kind": "term",
+      "term": "Revisit",
+      "scene": "Two middle-school students return to a classroom agreement displayed as three simple blank horizontal bars on a small board. One checks the board against a blank notebook and the other places a small circular-arrow card next to it. No pointing; natural resting arms and clear hands. Show checking an existing agreement again, not replacing the entire board. Square composition.",
+      "file": "cn-term-revisit.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Two middle-school students return to a classroom agreement displayed as three simple blank horizontal bars on a small board. One checks the board against a blank notebook and the other places a small circular-arrow card next to it. No pointing; natural resting arms and clear hands. Show checking an existing agreement again, not replacing the entire board. Square composition.",
+      "alt": "Two students check an existing classroom agreement again, with a notebook and a circular-arrow card.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-832101c3-90e9-4723-ab14-405c6214715f.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cn-term-revisit.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "e07163c8d030b1516f854d42a70ae8cc98d4806cf4e9702e05769a13e85ffed7",
+      "optimizedSha256": "dcb8a84620cc867fc4ba53db69e86d81d3ac9cf10c11186cb21f625943a9351f",
+      "bytes": 34800,
+      "altSource": "vision",
+      "altHash": "img-ztj-192e58e9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 5,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cn-term-participation",
+      "kind": "term",
+      "term": "Participation",
+      "scene": "Four diverse middle-school students engage in the same small group discussion at a round table. One speaks with a small natural open palm, one listens attentively, one writes in a notebook, and one draws a simple shape representing the topic. Give every person two correctly attached arms and coherent hair. Blank notebook pages except plain lines and a simple geometric sketch. Square composition.",
+      "file": "cn-term-participation.png",
+      "prompt": "Use case: illustration-story. Square glossary illustration for a middle-school Crew educational pack. Warm simple flat illustration in a muted earth palette, softly textured ivory background, respectful fictional diverse students ages 12 to 14, no real person likeness. All anatomy coherent, two correctly attached arms per person and natural hands. No text, letters, numerals, readable words, labels, logos or watermarks. Four diverse middle-school students engage in the same small group discussion at a round table. One speaks with a small natural open palm, one listens attentively, one writes in a notebook, and one draws a simple shape representing the topic. Give every person two correctly attached arms and coherent hair. Blank notebook pages except plain lines and a simple geometric sketch. Square composition.",
+      "alt": "Four students take part together by speaking, listening, writing, and drawing.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e34-d0b4-7a22-bea2-7695891231ac\\exec-619b3b03-6f98-4db7-a0fb-5b97182eee3d.png",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cn-term-participation.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "8105e04c76b5609d9404c0922320a8d7fcd98a02942cec63398a2d6efece23d9",
+      "optimizedSha256": "caa073f27295e7a810a05a1fb15521ddeee000ac7b3b450bde048a5ab153c258",
+      "bytes": 38448,
+      "altSource": "vision",
+      "altHash": "img-13kn-c07014b1",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 8,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cn-anchor",
+          "sectionIndex": 3,
+          "sectionLabel": "NORMS PROTECT PARTICIPATION",
+          "field": "iconUrl",
+          "reason": "Multiple ways to take part match protected participation."
+        }
+      ]
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cn-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cn-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cn-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cn-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 14,
+  "imagePlacementCount": 18,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_norms_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 18,
+    "uniqueImageCount": 14,
+    "anchorSectionImages": 4,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

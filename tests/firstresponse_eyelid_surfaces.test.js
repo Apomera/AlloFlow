@@ -66,6 +66,28 @@ function frontSample(mesh, fraction) {
   }
   return best;
 }
+// Intersect the rendered seam triangles with a plane through each eye station.
+// Left and right fractions both run from the inner corner to the outer corner.
+function seamSection(mesh, fraction, side) {
+  mesh.geometry.computeBoundingBox();
+  const box = mesh.geometry.boundingBox;
+  const x = side === 'left' ? box.max.x + (box.min.x - box.max.x) * fraction : box.min.x + (box.max.x - box.min.x) * fraction;
+  const positions = mesh.geometry.attributes.position, indices = mesh.geometry.index?.array || Array.from({ length: positions.count }, (_, i) => i);
+  const intersections = [];
+  for (let i = 0; i < indices.length; i += 3) for (let edge = 0; edge < 3; edge++) {
+    const a = point(mesh, indices[i + edge]), b = point(mesh, indices[i + (edge + 1) % 3]);
+    if (Math.abs(a.x - x) < 1e-10) intersections.push(a);
+    if ((a.x < x && b.x > x) || (a.x > x && b.x < x)) intersections.push(a.lerp(b, (x - a.x) / (b.x - a.x)));
+  }
+  expect(intersections.length, mesh.name + ' actual triangles cross the eye station').toBeGreaterThan(0);
+  const minZ = Math.min(...intersections.map(p => p.z)), maxZ = Math.max(...intersections.map(p => p.z));
+  const minY = Math.min(...intersections.map(p => p.y)), maxY = Math.max(...intersections.map(p => p.y));
+  const width = maxZ - minZ, centre = new THREE.Vector3(x, (minY + maxY) / 2, (minZ + maxZ) / 2);
+  expect([...centre.toArray(), width].every(Number.isFinite), mesh.name + ' finite actual cross-section').toBe(true);
+  expect(width, mesh.name + ' nonzero crease width').toBeGreaterThan(0);
+  return { centre, width };
+}
+
 function vertexKey(position) { return position.toArray().map(value => Math.round(value * 1e8)).join(','); }
 function weldedShell(mesh) {
   const positions = mesh.geometry.attributes.position, normals = mesh.geometry.attributes.normal;
@@ -149,11 +171,12 @@ describe('fitted manikin eyelid surfaces', () => {
     for (const side of sides) {
       const seam = object(fixture.scene, `fr-manikin-eye-${side}`), lids = kinds.map(kind => object(fixture.scene, `fr-manikin-${kind}-lid-${side}`));
       for (const fraction of [.25, .5, .75]) {
-        const local = seam.geometry.parameters.path.getPoint(fraction), world = local.clone().applyMatrix4(seam.matrixWorld);
+        const section = seamSection(seam, fraction, side), local = section.centre, world = local.clone().applyMatrix4(seam.matrixWorld);
         const ray = frontRay(world, fixture.up, fixture.unit), seamHit = ray.intersectObject(seam, false)[0];
         expect(seamHit, side + ' eye seam visible from the face front').toBeTruthy();
         const skinHit = ray.intersectObject(fixture.head, false)[0]; expect(skinHit).toBeTruthy();
-        expect(skinHit.distance - seamHit.distance, side + ' seam above actual skin').toBeGreaterThan(.001 * fixture.unit);
+        // A fitted ribbon has .00075 nominal lift; allow its rendered triangle interpolation.
+        expect(skinHit.distance - seamHit.distance, side + ' seam above actual skin').toBeGreaterThan(.0005 * fixture.unit);
         expect(skinHit.distance - seamHit.distance, side + ' seam stays close to skin').toBeLessThan(.007 * fixture.unit);
         for (const lid of lids) {
           const hit = ray.intersectObject(lid, false)[0];
@@ -163,7 +186,8 @@ describe('fitted manikin eyelid surfaces', () => {
         const upper = point(lids[0], frontSample(lids[0], across)), lower = point(lids[1], frontSample(lids[1], across));
         expect(upper.z, side + ' upper lid stays above the seam along the face').toBeLessThan(local.z);
         expect(lower.z, side + ' lower lid stays below the seam along the face').toBeGreaterThan(local.z);
-        expect(lower.z - upper.z, side + ' seam stays thinner than the lid surface').toBeGreaterThan(seam.geometry.parameters.radius * 3);
+        // The former radius * 3 bound is full crease width * 1.5.
+        expect(lower.z - upper.z, side + ' seam stays thinner than the lid surface').toBeGreaterThan(section.width * 1.5);
       }
     }
   });

@@ -3551,20 +3551,56 @@
       function renderBridgeMomentInsight() {
         var moment = bridgeActiveSceneMoment(bridgeSceneMoments());
         if (!moment || d.seismicPlaying) return null;
+        var energy = moment.id === 'motion' || moment.id === 'acceleration' ? bridgeSeismicOrbitFrame(sceneResponse, sceneSample) : null;
+        var scientific = moment.readingValue !== 0 && Math.abs(moment.readingValue) < 0.001
+          || !!energy && [energy.kineticJPerKg, energy.elasticJPerKg, energy.storedJPerKg].some(function(value) { return value !== 0 && Math.abs(value) < 0.001; });
+        function share(value, other) {
+          if (!(value + other > 0)) return '—';
+          if (value === 0) return '0%';
+          if (other === 0) return '100%';
+          var fraction = value / (value + other);
+          return fraction < 0.001 ? '<0.1%' : fraction > 0.999 ? '>99.9%' : (fraction * 100).toFixed(1) + '%';
+        }
+        var parts = energy ? [
+          { id: 'kinetic', label: __alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic'), value: energy.kineticJPerKg, other: energy.elasticJPerKg, fraction: energy.kineticFraction, color: '#fbbf24' },
+          { id: 'elastic', label: __alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic'), value: energy.elasticJPerKg, other: energy.kineticJPerKg, fraction: energy.elasticFraction, color: '#7dd3fc' }
+        ] : [];
         return h('div', { id: 'bridge-scene-moment-insight', 'data-bridge-moment-insight': moment.id,
           'data-moment-trial': sceneShowsReference ? 'reference' : 'current', 'data-moment-time': moment.time,
-          style: { marginTop: 8, padding: 8, borderLeft: '3px solid #7dd3fc', borderRadius: 4, background: '#1e293b', fontSize: 11 } },
-          h('strong', null, moment.label + ' · ' + moment.time.toFixed(2) + ' s'),
+          style: { marginTop: 8, padding: 9, borderLeft: '3px solid #7dd3fc', borderRadius: 7,
+            background: 'linear-gradient(135deg,#1e293b,#142338)', fontSize: 12, lineHeight: 1.6 } },
+          h('strong', { style: { fontSize: 13 } }, moment.label + ' · ',
+            h('span', { 'data-moment-time-label': true, style: { whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' } }, moment.time.toFixed(3) + ' s')),
           h('div', { style: { color: '#bae6fd', marginTop: 3 } },
             (moment.id === 'motion' || moment.id === 'acceleration' ? __alloT('stem.bridgelab.moment_magnitude', 'Magnitude: ')
               : __alloT('stem.bridgelab.moment_stored', 'Stored energy: ')),
             h('strong', { 'data-moment-reading': true, 'data-moment-value': moment.readingValue,
               'data-moment-unit': moment.readingUnit, 'data-moment-quantity': moment.readingQuantity,
-              style: { fontSize: 12, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, moment.reading)),
-          h('p', { style: { margin: '4px 0 0', lineHeight: 1.5 } }, moment.hint),
-          moment.readingValue !== 0 && Math.abs(moment.readingValue) < 0.001
-            ? h('p', { 'data-moment-scientific-help': true, style: { margin: '4px 0 0', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
-              __alloT('stem.bridgelab.energy_scientific_help', 'Scientific notation: 2.5e-6 means 0.0000025. A reading written with e is still nonzero.')) : null,
+              style: { fontSize: 14, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', overflowWrap: 'anywhere' } }, moment.reading)),
+          h('p', { style: { margin: '4px 0 0', lineHeight: 1.6 } }, moment.hint),
+          energy ? h('div', { 'data-moment-energy-preview': true, 'data-moment-energy-trial': sceneShowsReference ? 'reference' : 'current',
+            'data-moment-energy-time': moment.time, style: { marginTop: 8, padding: 7, minWidth: 0, border: '1px solid #475569', borderRadius: 7, background: '#0f172a', lineHeight: 1.5 } },
+            h('h6', { style: { margin: '0 0 3px', fontSize: 12, color: '#e2e8f0' } }, __alloT('stem.bridgelab.energy_composition_title', 'Share of stored energy now')),
+            h('strong', { 'data-moment-energy-total': energy.storedJPerKg, style: { display: 'inline-block', fontSize: 14, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } }, bridgeRecordedNumberText(energy.storedJPerKg) + ' J/kg'),
+            h('div', { 'data-moment-energy-bar': true, 'aria-hidden': true, style: { display: 'flex', height: 12, marginTop: 6, borderRadius: 4, overflow: 'hidden', background: '#334155' } },
+              parts.map(function(part) { return h('span', { key: part.id, 'data-moment-energy-part': part.id,
+                style: { flexShrink: 0, width: part.fraction * 100 + '%', background: part.color } }); })),
+            h('dl', { style: { margin: '4px 0 0' } }, parts.map(function(part) {
+              return h('div', { key: part.id, 'data-moment-energy-component': part.id, 'data-moment-energy-value': part.value, 'data-moment-energy-fraction': part.fraction,
+                style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', columnGap: 5, padding: '3px 0', borderBottom: '1px solid #334155' } },
+                h('dt', { style: { color: part.color, fontWeight: 700 } }, part.label),
+                h('dd', { style: { margin: 0, color: part.color, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } }, share(part.value, part.other)),
+                h('dd', { style: { gridColumn: '1 / -1', margin: 0, color: '#cbd5e1', fontSize: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } }, bridgeRecordedNumberText(part.value) + ' J/kg'));
+            })),
+            h('p', { 'data-moment-energy-scale-help': true, style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: 11 } },
+              __alloT('stem.bridgelab.moment_energy_split_help', 'Bar = 100% of the stored total now.'))) : null,
+          scientific ? h('p', { 'data-moment-scientific-help': true, style: { margin: '5px 0 0', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+            __alloT('stem.bridgelab.energy_scientific_help', 'Scientific notation: 2.5e-6 means 0.0000025. A reading written with e is still nonzero.')) : null,
+          energy ? h('button', { type: 'button', 'data-moment-energy-route': 'orbit', 'aria-controls': 'bridge-energy-orbit-scene',
+            style: Object.assign({}, bridgeActionStyle, { width: '100%', minWidth: 0, minHeight: 44, marginTop: 8, padding: '7px 8px',
+              fontSize: 12, lineHeight: 1.5, whiteSpace: 'normal', borderColor: '#7dd3fc', background: '#16354a' }),
+            onClick: function() { bridgeOpenEvidence('orbit', true); } },
+            __alloT('stem.bridgelab.moment_energy_orbit', 'Compare elastic and kinetic energy here')) : null,
           moment.id === 'free' || moment.id === 'end' ? h('button', { type: 'button', 'data-moment-energy-route': 'settling',
             'aria-controls': 'bridge-scene-energy-interval',
             style: Object.assign({}, bridgeActionStyle, { width: '100%', minHeight: 44, marginTop: 8, padding: '7px 8px', fontSize: 11, borderColor: '#7dd3fc' }),
@@ -4120,6 +4156,17 @@
           : cycleVisibleEnd <= cycleVisibleStart ? 'outside'
           : cycleIntervalStart < cycleStart || cycleIntervalEnd > cycleEnd ? 'clipped' : 'full';
         function cycleX(time) { return 12 + (time - cycleStart) / (cycleEnd - cycleStart) * 236; }
+        function inspectCycleLane(event, times) {
+          if (!times.length) return;
+          var svg=event.currentTarget.ownerSVGElement, matrix=svg.getScreenCTM();
+          if (!matrix) return;
+          var pointer=svg.createSVGPoint(); pointer.x=event.clientX; pointer.y=event.clientY;
+          var x=pointer.matrixTransform(matrix.inverse()).x;
+          if (!isFinite(x) || x < 12 || x > 248) return;
+          var time=cycleStart+(x-12)/236*(cycleEnd-cycleStart), nearest=times[0];
+          times.forEach(function(candidate){if(Math.abs(candidate-time)<Math.abs(nearest-time))nearest=candidate;});
+          bridgeInspectSeismic(nearest);
+        }
         var previousTurning = chart && chart.turning.filter(function(time) { return time < point.timeS - 1e-7; }).pop();
         var previousCrossing = chart && chart.crossing.filter(function(time) { return time < point.timeS - 1e-7; }).pop();
         var previousCycle = typeof previousTurning !== 'number' ? previousCrossing
@@ -4133,8 +4180,13 @@
           {id:'current', response:seismicResponse, label:__alloT('stem.bridgelab.scene_b', 'B · current'), color:'#67e8f9'}
         ] : [{id:'current',response:response,label:scope,color:'#67e8f9'}];
         var selectedColor = selected === 'reference' ? '#f0abfc' : '#67e8f9';
-        var kineticPercent=Math.round(frame.kineticFraction*100);
-        var elasticPercent=frame.storedJPerKg > 0 ? 100-kineticPercent : 0;
+        function orbitShare(value, other) {
+          if (!(value + other > 0)) return '—';
+          if (value === 0) return '0%';
+          if (other === 0) return '100%';
+          var fraction = value / (value + other);
+          return fraction < 0.001 ? '<0.1%' : fraction > 0.999 ? '>99.9%' : (fraction * 100).toFixed(1) + '%';
+        }
         var intervalTrail = !!d.seismicEnergyInterval;
         var trail = d.seismicEnergyOrbit ? (intervalTrail
           ? bridgeSeismicOrbitTrail(response,cycleIntervalEnd,limit,cycleIntervalStart)
@@ -4208,58 +4260,79 @@
               trail.segments.length ? __alloT('stem.bridgelab.orbit_recent', 'Bright trail: recent motion · ')
                 + trail.startTimeS.toFixed(3) + '–' + trail.timeS.toFixed(3) + ' s'
                 : __alloT('stem.bridgelab.orbit_no_recent', 'No recent motion')) : null,
-            h('div',{'data-orbit-split':selected,style:{marginTop:6}},
-              h('div',{style:{display:'flex',justifyContent:'space-between',gap:6,fontSize:10}},
-                h('strong',null,__alloT('stem.bridgelab.orbit_split', 'Stored energy split')),
-                h('span',null,frame.storedJPerKg > 0 ? kineticPercent+'% / '+elasticPercent+'%'
-                  : __alloT('stem.bridgelab.orbit_no_energy', 'No stored energy'))),
-              h('div',{role:'img','aria-label':__alloT('stem.bridgelab.orbit_split', 'Stored energy split')+': '
-                + __alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic')+' '+kineticPercent+'%, '
-                + __alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic')+' '+elasticPercent+'%',
-                style:{display:'flex',height:9,marginTop:3,border:'1px solid #64748b',borderRadius:5,overflow:'hidden',background:'#0b1729'}},
+            h('div',{'data-orbit-split':selected,style:{marginTop:8,padding:7,minWidth:0,border:'1px solid #475569',borderRadius:7,background:'#0f172a',fontSize:12,lineHeight:1.5}},
+              h('h6',{style:{margin:'0 0 3px',fontSize:12,color:'#e2e8f0'}},__alloT('stem.bridgelab.energy_composition_title', 'Share of stored energy now')),
+              h('div',{'data-orbit-energy':'stored','data-orbit-value':frame.storedJPerKg,style:{fontSize:14,fontWeight:700,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},
+                h('strong',{'data-orbit-energy-total':true},bridgeRecordedNumberText(frame.storedJPerKg)), ' J/kg'),
+              h('div',{role:'img','data-orbit-energy-bar':true,'aria-label':frame.storedJPerKg > 0
+                ? __alloT('stem.bridgelab.orbit_split', 'Stored energy split')+': '
+                  +__alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic')+' '+orbitShare(frame.kineticJPerKg,frame.elasticJPerKg)+', '
+                  +__alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic')+' '+orbitShare(frame.elasticJPerKg,frame.kineticJPerKg)
+                : __alloT('stem.bridgelab.orbit_no_energy', 'No stored energy'),
+                style:{display:'flex',height:12,marginTop:6,borderRadius:4,overflow:'hidden',background:'#334155'}},
                 [{id:'kinetic',fraction:frame.kineticFraction,color:'#fbbf24'},{id:'elastic',fraction:frame.elasticFraction,color:'#7dd3fc'}]
-                  .map(function(part) {return h('span',{key:part.id,'data-orbit-part':part.id,'data-orbit-fraction':part.fraction,
-                    style:{width:(part.fraction*100)+'%',background:part.color}});}))
-            ),
-            h('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:4,marginTop:6,fontVariantNumeric:'tabular-nums'}},[
-              {id:'kinetic',label:__alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic'),value:frame.kineticJPerKg,color:'#fbbf24'},
-              {id:'elastic',label:__alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic'),value:frame.elasticJPerKg,color:'#7dd3fc'},
-              {id:'stored',label:__alloT('stem.bridgelab.flow_stored', 'Stored'),value:frame.storedJPerKg,color:'#e2e8f0'}
-            ].map(function(row){return h('div',{key:row.id,'data-orbit-energy':row.id,'data-orbit-value':row.value,style:{minWidth:0}},h('span',{style:{color:row.color,display:'block'}},row.label),h('strong',{style:{display:'inline-block',whiteSpace:'nowrap'}},bridgeRecordedNumberText(row.value)));})),
+                  .map(function(part){return h('span',{key:part.id,'data-orbit-part':part.id,'data-orbit-fraction':part.fraction,
+                    style:{flexShrink:0,width:part.fraction*100+'%',background:part.color}});})),
+              frame.storedJPerKg > 0 ? null : h('p',{'data-orbit-energy-empty':true,style:{margin:'5px 0',color:'#cbd5e1'}},__alloT('stem.bridgelab.orbit_no_energy', 'No stored energy')),
+              h('dl',{style:{margin:'4px 0 0'}},[
+                {id:'kinetic',label:__alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic'),value:frame.kineticJPerKg,other:frame.elasticJPerKg,color:'#fbbf24'},
+                {id:'elastic',label:__alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic'),value:frame.elasticJPerKg,other:frame.kineticJPerKg,color:'#7dd3fc'}
+              ].map(function(row){return h('div',{key:row.id,'data-orbit-energy':row.id,'data-orbit-value':row.value,
+                style:{display:'grid',gridTemplateColumns:'minmax(0,1fr) auto',columnGap:5,padding:'3px 0',borderBottom:'1px solid #334155'}},
+                h('dt',{style:{color:row.color,fontWeight:700}},row.label),
+                h('dd',{'data-orbit-energy-share':row.id,style:{margin:0,color:row.color,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},orbitShare(row.value,row.other)),
+                h('dd',{style:{gridColumn:'1 / -1',margin:0,color:'#cbd5e1',fontSize:12,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},
+                  h('strong',{style:{fontWeight:400}},bridgeRecordedNumberText(row.value)), ' J/kg'));})),
+              frame.storedJPerKg > 0 ? h('p',{'data-orbit-energy-scale-help':true,style:{margin:'5px 0 0',color:'#cbd5e1',fontSize:11}},
+                __alloT('stem.bridgelab.moment_energy_split_help', 'Bar = 100% of the stored total now.')) : null),
             scientific ? h('p',{'data-orbit-scientific-help':true,style:{margin:'5px 0',color:'#cbd5e1'}},__alloT('stem.bridgelab.energy_scientific_help', 'Scientific notation: 2.5e-6 means 0.0000025. A reading written with e is still nonzero.')) : null,
             h('p',{style:{margin:'5px 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.orbit_energy_scope', 'J/kg · computed from the displayed motion. The bar splits the energy stored now; orbit radius shows its amount. Horizontal displacement is scaled by ω = 2π × natural frequency.')),
             h('div',{'data-orbit-insight':moment||'response',style:{borderLeft:'3px solid '+selectedColor,padding:'5px 7px',margin:'7px 0',background:'#1e293b'}},
               h('p',{'data-orbit-motion-insight':motion.kind,style:{margin:'0 0 5px',fontWeight:700}},motionInsight),explanation,
               moment ? h('p',{'data-orbit-cycle-precision':moment,style:{margin:'4px 0 0'}},__alloT('stem.bridgelab.orbit_cycle_precision', 'Small nonzero readings at a cycle moment can come from numerical precision in the estimated crossing.')) : null),
             h('div',{'data-orbit-cycle-map':selected,style:{minWidth:0,margin:'8px 0',padding:8,border:'1px solid #334155',borderRadius:8,background:'#0b1729'}},
-              h('strong',{style:{display:'block',fontSize:11}},__alloT('stem.bridgelab.orbit_cycle_map_title', 'Free-vibration moments')),
-              h('p',{'data-orbit-cycle-map-status':true,style:{margin:'3px 0 6px',fontSize:10,color:'#cbd5e1',fontVariantNumeric:'tabular-nums'}},
-                scope+' · '+point.timeS.toFixed(3)+' s · '+(point.timeS < cycleStart
-                  ? __alloT('stem.bridgelab.orbit_cycle_map_before', 'Before free vibration')
-                  : __alloT('stem.bridgelab.orbit_cycle_map_free', 'Free vibration'))),
-              h('div',{'data-orbit-cycle-map-legend':true,style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:6,fontSize:10,lineHeight:1.4}},
+              h('div',{'data-orbit-cycle-map-core':true},
+              h('strong',{style:{display:'block',fontSize:13}},__alloT('stem.bridgelab.orbit_cycle_map_title', 'Free-vibration moments')),
+              h('div',{'data-orbit-cycle-map-status':true,style:{margin:'3px 0 6px',fontSize:12,color:'#cbd5e1',lineHeight:1.5,fontVariantNumeric:'tabular-nums'}},
+                h('span',{'data-orbit-cycle-scope':true,style:{display:'block'}},scope),
+                h('div',{style:{display:'flex',flexWrap:'wrap',alignItems:'baseline',gap:'2px 8px'}},
+                  h('strong',{'data-orbit-cycle-time-label':true,style:{fontSize:14,color:'#f8fafc',whiteSpace:'nowrap'}},point.timeS.toFixed(3)+' s'),
+                  h('span',null,point.timeS < cycleStart
+                    ? __alloT('stem.bridgelab.orbit_cycle_map_before', 'Before free vibration')
+                    : __alloT('stem.bridgelab.orbit_cycle_map_free', 'Free vibration'))),
+                moment ? h('span',{'data-orbit-cycle-current':moment,style:{display:'inline-flex',alignItems:'center',gap:5,marginTop:4,padding:'2px 6px',
+                  border:'1px solid '+(moment==='turning'?'#7dd3fc':'#fbbf24'),borderRadius:5,color:moment==='turning'?'#7dd3fc':'#fbbf24',fontWeight:700}},
+                  h('span',{'aria-hidden':true},moment==='turning'?'○':'◇'),
+                  moment==='turning'?__alloT('stem.bridgelab.cycle_energy_turn', 'Turning point'):__alloT('stem.bridgelab.cycle_energy_cross', 'Center crossing')) : null),
+              h('div',{'data-orbit-cycle-map-legend':true,style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:6,fontSize:12,lineHeight:1.5}},
                 h('span',{style:{minWidth:0,color:'#7dd3fc'}},h('span',{'aria-hidden':true},'○ '),__alloT('stem.bridgelab.orbit_cycle_map_turns', 'Turning points')),
                 h('span',{style:{minWidth:0,color:'#fbbf24'}},h('span',{'aria-hidden':true},'◇ '),__alloT('stem.bridgelab.orbit_cycle_map_crossings', 'Center crossings'))),
-              h('svg',{'data-orbit-cycle-timeline':true,'data-orbit-cycle-start':cycleStart,'data-orbit-cycle-end':cycleEnd,viewBox:'0 0 260 88','aria-hidden':true,focusable:'false',style:{display:'block',width:'100%',maxWidth:440,margin:'2px auto'}},
+              h('svg',{'data-orbit-cycle-timeline':true,'data-orbit-cycle-start':cycleStart,'data-orbit-cycle-end':cycleEnd,viewBox:'0 0 260 180','aria-hidden':true,focusable:'false',style:{display:'block',width:'100%',maxWidth:260,margin:'2px auto'}},
+                [{id:'turning',y:8,color:'#7dd3fc'},{id:'crossing',y:76,color:'#fbbf24'}].map(function(row){return h('rect',{key:row.id,x:12,y:row.y,width:236,height:68,rx:5,
+                  fill:row.color,fillOpacity:0.07,stroke:row.color,strokeOpacity:0.3,strokeWidth:0.8});}),
                 pinned && cycleVisibleEnd > cycleVisibleStart ? h('rect',{'data-orbit-cycle-interval':selected,
                   'data-orbit-interval-start':cycleIntervalStart,'data-orbit-interval-end':cycleIntervalEnd,
                   'data-orbit-interval-visible-start':cycleVisibleStart,'data-orbit-interval-visible-end':cycleVisibleEnd,
-                  x:cycleX(cycleVisibleStart),y:8,width:(cycleVisibleEnd-cycleVisibleStart)/(cycleEnd-cycleStart)*236,height:46,fill:'#e2e8f0',opacity:0.13}) : null,
-                [20,44].map(function(y){return h('line',{key:y,x1:12,x2:248,y1:y,y2:y,stroke:'#334155',strokeWidth:1});}),
-                (cycleActive || pinned) && point.timeS >= cycleStart && point.timeS <= cycleEnd ? h('line',{'data-orbit-cycle-cursor':point.timeS,x1:cycleX(point.timeS),x2:cycleX(point.timeS),y1:8,y2:62,stroke:'#f8fafc',strokeWidth:1.5}) : null,
+                  x:cycleX(cycleVisibleStart),y:8,width:(cycleVisibleEnd-cycleVisibleStart)/(cycleEnd-cycleStart)*236,height:136,fill:'#e2e8f0',opacity:0.13}) : null,
+                [42,110].map(function(y){return h('line',{key:y,x1:12,x2:248,y1:y,y2:y,stroke:'#475569',strokeWidth:1.3});}),
+                (cycleActive || pinned) && point.timeS >= cycleStart && point.timeS <= cycleEnd ? h('line',{'data-orbit-cycle-cursor':point.timeS,x1:cycleX(point.timeS),x2:cycleX(point.timeS),y1:8,y2:152,stroke:'#f8fafc',strokeWidth:1.5}) : null,
                 pinned && cyclePinVisible ? h('g',{'data-orbit-cycle-pin':d.seismicIntervalPinS,'data-orbit-cycle-pin-trial':selected},
-                  h('line',{x1:cycleX(d.seismicIntervalPinS),x2:cycleX(d.seismicIntervalPinS),y1:8,y2:62,stroke:'#e2e8f0',strokeWidth:1,strokeDasharray:'3 3'}),
+                  h('line',{x1:cycleX(d.seismicIntervalPinS),x2:cycleX(d.seismicIntervalPinS),y1:8,y2:152,stroke:'#e2e8f0',strokeWidth:1,strokeDasharray:'3 3'}),
                   h('rect',{x:cycleX(d.seismicIntervalPinS)-3,y:2,width:6,height:6,fill:'#0b1729',stroke:'#e2e8f0',strokeWidth:1.5})) : null,
-                [{id:'turning',times:chart.turning,y:20,color:'#7dd3fc'},{id:'crossing',times:chart.crossing,y:44,color:'#fbbf24'}].map(function(row){return row.times.map(function(time){
+                [{id:'turning',times:chart.turning,y:42,color:'#7dd3fc'},{id:'crossing',times:chart.crossing,y:110,color:'#fbbf24'}].map(function(row){return row.times.map(function(time){
                   var x=cycleX(time),current=Math.abs(time-point.timeS)<1e-7;
                   return h('g',{key:row.id+'-'+time,'data-orbit-cycle-marker':row.id,'data-orbit-cycle-time':time,'data-orbit-cycle-selected':current},
-                    current ? h('circle',{cx:x,cy:row.y,r:5,fill:'#0b1729',stroke:'#f8fafc',strokeWidth:1.3}) : null,
-                    row.id==='turning' ? h('circle',{cx:x,cy:row.y,r:2.5,fill:row.color})
-                      : h('path',{d:'M'+x+' '+(row.y-3.3)+' l3.3 3.3 -3.3 3.3 -3.3 -3.3 Z',fill:row.color}));});}),
-                h('line',{x1:12,x2:248,y1:62,y2:62,stroke:'#64748b',strokeWidth:1}),
+                    current ? h('circle',{cx:x,cy:row.y,r:6,fill:'#0b1729',stroke:'#f8fafc',strokeWidth:1.5}) : null,
+                    row.id==='turning' ? h('circle',{cx:x,cy:row.y,r:3.2,fill:row.color})
+                      : h('path',{d:'M'+x+' '+(row.y-4)+' l4 4 -4 4 -4 -4 Z',fill:row.color}));});}),
+                h('line',{x1:12,x2:248,y1:152,y2:152,stroke:'#64748b',strokeWidth:1}),
+                [{id:'turning',times:chart.turning,y:8},{id:'crossing',times:chart.crossing,y:76}].map(function(row){return h('rect',{
+                  key:row.id,'data-orbit-cycle-tap':row.id,x:12,y:row.y,width:236,height:68,fill:'transparent',
+                  style:{cursor:row.times.length?'pointer':'default'},
+                  onClick:row.times.length?function(event){inspectCycleLane(event,row.times);}:undefined});}),
                 [0,0.25,0.5,0.75,1].map(function(fraction){var time=cycleStart+(cycleEnd-cycleStart)*fraction,x=cycleX(time);return h('g',{key:fraction},
-                  h('line',{x1:x,x2:x,y1:62,y2:66,stroke:'#94a3b8'}),
-                  h('text',{x:x,y:80,textAnchor:fraction===0?'start':fraction===1?'end':'middle',fill:'#cbd5e1',fontSize:11},time.toFixed(0)+' s'));})),
+                  h('line',{x1:x,x2:x,y1:152,y2:156,stroke:'#94a3b8'}),
+                  h('text',{x:x,y:174,textAnchor:fraction===0?'start':fraction===1?'end':'middle',fill:'#e2e8f0',fontSize:16},time.toFixed(0)+' s'));}))),
               !cycleActive ? h('p',{'data-orbit-cycle-map-empty':true,style:{margin:'3px 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.orbit_cycle_map_empty', 'No cycle moments recorded.')) : null,
               pinned ? h('div',{'data-orbit-cycle-interval-note':selected,'data-orbit-interval-status':cycleIntervalStatus,
                 style:{margin:'6px 0',padding:'6px 7px',borderLeft:'2px solid #94a3b8',background:'#1e293b',fontSize:10,lineHeight:1.5,fontVariantNumeric:'tabular-nums'}},
@@ -4274,24 +4347,43 @@
                   : cycleIntervalStatus === 'outside' ? __alloT('stem.bridgelab.orbit_interval_outside', 'This interval falls outside the free-vibration view.')
                   : cycleIntervalStatus === 'clipped' ? __alloT('stem.bridgelab.orbit_interval_clipped', 'Only the part within this free-vibration view is shaded.')
                   : __alloT('stem.bridgelab.orbit_interval_shading', 'Shading marks elapsed time in the energy comparison.'))) : null,
-              h('p',{style:{margin:'3px 0 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.orbit_cycle_map_help', 'Time in the experiment (s). The white line marks the inspected time during free vibration. Use the buttons below to inspect the selected trial.'))),
+              h('p',{style:{margin:'3px 0 0',color:'#cbd5e1',fontSize:10}},__alloT('stem.bridgelab.orbit_cycle_map_help', 'Tap the blue row for a turning point or the gold row for a center crossing. The nearest moment is selected. For keyboard access, use the previous/next buttons below. The white line marks the inspected time.'))),
             h('div',{role:'group','data-orbit-cycle-controls':true,'aria-label':__alloT('stem.bridgelab.orbit_controls', 'Inspect free-vibration cycle'),style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:6}},[
               {id:'turning',step:'previous',time:previousTurning,label:__alloT('stem.bridgelab.orbit_previous_turn', 'Previous turning point')},
               {id:'turning',step:'next',time:turning,label:__alloT('stem.bridgelab.orbit_next_turn', 'Next turning point')},
               {id:'crossing',step:'previous',time:previousCrossing,label:__alloT('stem.bridgelab.orbit_previous_cross', 'Previous center crossing')},
               {id:'crossing',step:'next',time:crossing,label:__alloT('stem.bridgelab.orbit_next_cross', 'Next center crossing')}
             ].map(function(moment){
-              var available=typeof moment.time==='number', next=moment.step==='next';
+              var available=typeof moment.time==='number', next=moment.step==='next', isTurning=moment.id==='turning';
               var description='bridge-orbit-'+(inScene?'scene':'fallback')+'-'+moment.step+'-'+moment.id;
-              return h('button',{key:moment.step+'-'+moment.id,type:'button',disabled:!available,'aria-label':moment.label,'aria-describedby':description,
+              var destination=available ? bridgeSeismicOrbitFrame(response,bridgeSeismicSample(response,moment.time)) : null;
+              var preview=destination && destination.storedJPerKg > 0;
+              var color=isTurning ? '#7dd3fc' : '#fbbf24';
+              var primary=preview ? (isTurning ? destination.elasticJPerKg : destination.kineticJPerKg) : 0;
+              var other=preview ? (isTurning ? destination.kineticJPerKg : destination.elasticJPerKg) : 0;
+              return h('button',{key:moment.step+'-'+moment.id,type:'button',disabled:!available,'aria-label':moment.label,
+                'aria-describedby':description+(preview?' '+description+'-energy':''),
                 'data-orbit-step':moment.step,'data-orbit-kind':moment.id,
                 'data-orbit-next':next?moment.id:undefined,'data-orbit-next-time':next?moment.time:undefined,
                 'data-orbit-previous':next?undefined:moment.id,'data-orbit-previous-time':next?undefined:moment.time,
-                style:Object.assign({},bridgeActionStyle,{minWidth:0,minHeight:44,fontSize:11,lineHeight:1.4,padding:'6px 5px'}),
+                style:Object.assign({},bridgeActionStyle,{minWidth:0,minHeight:44,fontSize:12,lineHeight:1.4,padding:'6px 5px',
+                  color:available?'#e2e8f0':'#94a3b8',borderColor:available?color:'#475569',background:available?(isTurning?'#153447':'#362b12'):'#0f172a'}),
                 onClick:function(){if(available)bridgeInspectSeismic(moment.time);}},
-                h('span',{style:{display:'block',minHeight:'2.8em'}},moment.label),
-                h('span',{id:description,'data-orbit-destination':true,style:{display:'block',marginTop:2,fontSize:10,fontWeight:400,fontVariantNumeric:'tabular-nums',color:available?'#bae6fd':'#94a3b8'}},
-                  available?moment.time.toFixed(3)+' s':next?__alloT('stem.bridgelab.orbit_no_later', 'No later moment'):__alloT('stem.bridgelab.orbit_no_earlier', 'No earlier moment')));
+                h('span',{style:{display:'block',minHeight:'2.8em'}},
+                  h('span',{'data-orbit-cycle-symbol':moment.id,'aria-hidden':true,style:{color:available?color:'#94a3b8',marginRight:4}},isTurning?'○':'◇'),moment.label),
+                h('span',{id:description,'data-orbit-destination':true,style:{display:'block',marginTop:2,fontSize:12,fontWeight:400,fontVariantNumeric:'tabular-nums',whiteSpace:available?'nowrap':'normal',color:available?'#e2e8f0':'#94a3b8'}},
+                  available?moment.time.toFixed(3)+' s':next?__alloT('stem.bridgelab.orbit_no_later', 'No later moment'):__alloT('stem.bridgelab.orbit_no_earlier', 'No earlier moment')),
+                preview ? h('span',{id:description+'-energy','data-orbit-target-preview':moment.id,'data-orbit-target-time':moment.time,
+                  'data-orbit-target-trial':selected,'data-orbit-target-stored':destination.storedJPerKg,'data-orbit-target-share':primary/destination.storedJPerKg,
+                  style:{display:'block',marginTop:5,paddingTop:5,borderTop:'1px solid #64748b',fontSize:11,fontWeight:400,lineHeight:1.4}},
+                  h('span',{style:{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:3,color:color}},
+                    h('span',null,isTurning?__alloT('stem.bridgelab.seismic_scene_elastic', 'Elastic'):__alloT('stem.bridgelab.seismic_scene_kinetic', 'Kinetic')),
+                    h('strong',{'data-orbit-target-percent':true,style:{whiteSpace:'nowrap',fontVariantNumeric:'tabular-nums'}},orbitShare(primary,other))),
+                  h('span',{'aria-hidden':true,style:{display:'flex',height:6,marginTop:4,borderRadius:3,overflow:'hidden',background:'#334155'}},
+                    [{id:'kinetic',fraction:destination.kineticFraction,color:'#fbbf24'},{id:'elastic',fraction:destination.elasticFraction,color:'#7dd3fc'}].map(function(part){
+                      return h('span',{key:part.id,'data-orbit-target-part':part.id,'data-orbit-target-fraction':part.fraction,
+                        style:{flexShrink:0,width:part.fraction*100+'%',background:part.color}});
+                    }))) : null);
             })),
             h('button',{type:'button','data-orbit-energy-jump':true,'data-orbit-energy-start':typeof previousCycle==='number'?previousCycle:undefined,
               'data-orbit-energy-origin':typeof previousCycle==='number'?(previousCycle===previousTurning?'turning':'crossing'):undefined,

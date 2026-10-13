@@ -46,7 +46,16 @@ describe('Optional live Hunt camera', () => {
     // This historical capture region includes the approved Pass62 rig squeeze input.
     // Reverse that one exact guarded edit; every other capture/update byte stays protected.
     const squeezeInput = pass62Guards.edits.find(edit => edit.name === 'rig squeeze input');
-    const captureRegion = region(source, 'if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){', '// ─── Moray eel AI');
+    let liveCaptureRegion = region(source, 'if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){', '// ─── Moray eel AI');
+    // Pass73 adds only two visual refuge posture inputs in this guarded capture region.
+    const postureInput='crevice:gameState.crevice, refugeHideBlend:gameState.refugeHideBlend||0, refugePeekBlend:gameState.refugePeekBlend||0,';
+    assert.equal(liveCaptureRegion.split(postureInput).length,2,'Unique approved refuge posture input');
+    liveCaptureRegion=liveCaptureRegion.replace(postureInput,'crevice:gameState.crevice,');
+    // Pass72 adds only the wall metadata consumed by the visual arm pose here.
+    // Guard and reverse that input before applying the older squeeze-input guard.
+    const wallInput = 'squeezeBlend:gameState.squeezeBlend||0, crevice:gameState.crevice,';
+    assert.equal(liveCaptureRegion.split(wallInput).length, 2, 'Unique approved wall-pose input');
+    const captureRegion = liveCaptureRegion.replace(wallInput, 'squeezeBlend:gameState.squeezeBlend||0,');
     assert.equal(captureRegion.split(squeezeInput.after).length, 2, 'Unique approved squeeze-input inverse');
     assert.equal(captureRegion.replace(squeezeInput.after, squeezeInput.before), region(prior, 'if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){', '// ─── Moray eel AI'));
   });

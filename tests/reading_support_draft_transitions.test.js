@@ -24,7 +24,7 @@ function fixture({ image, original = false, asyncNavigation = false } = {}) {
   source.readingSupports = contract.upsertReadingSupport(source, undefined, entry);
   adapted.adaptedReadingSupports = contract.upsertAdaptedReadingSupport(adapted, undefined, entry);
   const sessionRef = { current: window.AlloModules.ReaderSupportDrafts.createSession() };
-  const state = { item: original ? source : adapted, history: [source, adapted], teacher: true, compare: false, editing: false, view: 'simplified', mode: 'read' };
+  const state = { item: original ? source : adapted, history: [source, adapted], teacher: true, compare: false, editing: false, focus: false, view: 'simplified', mode: 'read' };
   const request = work => sessionRef.current.request(work);
   const commit = work => { work(); render(); };
   const navigate = vi.fn((item, compare = false) => request(() => {
@@ -49,7 +49,8 @@ function fixture({ image, original = false, asyncNavigation = false } = {}) {
     setInteractionMode: mode => commit(() => { state.mode = mode; }), setIsCompareMode: compare => request(() => commit(() => { state.compare = compare; })), setIsFluencyMode: noop,
     stopPlayback: noop, closeDefinition: noop, closePhonics: noop, closeRevision: noop, handleToggleIsEditingLeveledText: () => commit(() => { state.editing = !state.editing; }),
     t: key => key, inputText: '', gradeLevel: '5', leveledTextLanguage: 'English', studentInterests: [], selectedVoice: 'Kore', voiceSpeed: 1, isTeacherMode: state.teacher,
-    isEditingLeveledText: state.editing, isImmersiveReaderActive: false, isCompareMode: state.compare, isSideBySide: false, isZenMode: false, isProcessing: false, isPlaying: false,
+    isEditingLeveledText: state.editing, isImmersiveReaderActive: false, isCompareMode: state.compare, isSideBySide: false, isZenMode: state.focus, isProcessing: false, isPlaying: false,
+    onFocusViewChange: focus => commit(() => { state.focus = focus; }),
     interactionMode: state.mode, history: state.history, textEditorRef: React.createRef(), splitTextToSentences: s => pure.splitTextToSentences(s, {}), getSideBySideContent: () => null,
     handleFormatText: noop, handleSimplifiedTextChange: noop, callTTS: noop, handleSpeak: noop, handleWordClick: noop, handleQuickAddGlossary: noop, handlePhonicsClick: noop,
     isLineFocusMode: false, focusedParagraphIndex: null, setFocusedParagraphIndex: noop, cursorStyles: { read: '', define: '', 'add-glossary': '', revise: '' }, getContentDirection: () => 'ltr',
@@ -67,14 +68,18 @@ function fixture({ image, original = false, asyncNavigation = false } = {}) {
     force: patch => act(() => commit(() => { Object.assign(state, patch); })), rerender: () => act(render) };
 }
 const byText = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text);
-const click = node => act(async () => { if (!node) throw new Error('Missing control'); node.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+const click = async node => {
+  if (!node) throw new Error('Missing control');
+  if (node.closest('[data-teacher-setup-panel]')?.hidden) await act(async () => host.querySelector('[data-teacher-setup-toggle]').click());
+  await act(async () => node.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+};
 const draft = () => host.querySelector('[data-gloss-draft]');
 const prompt = () => host.querySelector('[role=alertdialog]');
 const type = (node, value) => act(() => { node.focus(); Object.getOwnPropertyDescriptor(node.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); });
 async function edit() {
-  const toggle = [...host.querySelectorAll('button')].find(node => node.textContent.startsWith('Review word supports'));
+  const toggle = host.querySelector('[data-reading-gloss-editor] button[aria-expanded]');
   if (toggle && toggle.getAttribute('aria-expanded') === 'false') await click(toggle);
-  await click(host.querySelector('button[aria-label^="Edit word help: heron"], button[aria-label^="Edit gloss for heron"]'));
+  await click(host.querySelector('button[aria-label^="Edit word help: heron"], button[aria-label^="Edit word help for heron"]'));
 }
 async function dirtyExplanation() { await edit(); type(draft().querySelector('textarea'), 'My unsaved explanation.'); }
 async function pictureChoice(next = { ...IMAGE, src: 'data:image/png;base64,REVG' }, resize) {
@@ -96,11 +101,198 @@ function replaceHelp(h, help) {
   h.force({ item, history: h.state.history.map(value => value.id === item.id ? item : value) });
 }
 
+describe('deliberate inline support editing', () => {
+  const inlineEdit = () => host.querySelector('[data-reading-gloss] button[aria-label^="Edit explanation for"]');
+  const reviewToggle = () => host.querySelector('[data-reading-gloss-editor] button[aria-expanded]');
+
+  it.each(['original', 'comparison'])('keeps %s reading free of Edit buttons until support review is opened', async layout => {
+    fixture({ original: layout === 'original' });
+    if (layout === 'comparison') await transitions.Both();
+    expect(host.querySelector('[data-reading-gloss]')).not.toBeNull();
+    expect(inlineEdit()).toBeNull();
+    await click(reviewToggle());
+    expect(inlineEdit()).not.toBeNull();
+    await click(inlineEdit());
+    expect(draft().querySelector('textarea').value).toBe('A wading bird.');
+    await click(reviewToggle());
+    expect(prompt()).toBeNull();
+    expect(inlineEdit()).toBeNull();
+  });
+
+  it('keeps support editing active until a dirty close is resolved', async () => {
+    const h = fixture({ original: true });
+    await click(reviewToggle()); await click(inlineEdit());
+    type(draft().querySelector('textarea'), 'My projected explanation.');
+    await click(reviewToggle());
+    expect(prompt()).not.toBeNull(); expect(inlineEdit()).not.toBeNull();
+    await click(byText('Keep editing'));
+    expect(draft().querySelector('textarea').value).toBe('My projected explanation.');
+    await click(reviewToggle()); await click(byText('Save and continue'));
+    expect(inlineEdit()).toBeNull(); expect(draft()).toBeNull();
+    expect(h.state.item.readingSupports.annotations[0].text).toBe('My projected explanation.');
+  });
+
+  it('resets clean support editing between resources, comparison and student views', async () => {
+    const h = fixture({ original: true });
+    await click(reviewToggle()); expect(inlineEdit()).not.toBeNull();
+    await transitions.Both(); expect(inlineEdit()).toBeNull();
+    await click(reviewToggle()); expect(inlineEdit()).not.toBeNull();
+    await h.role(false); expect(inlineEdit()).toBeNull();
+    await h.role(true); expect(inlineEdit()).toBeNull();
+    await transitions.Original(); expect(inlineEdit()).toBeNull();
+    await click(reviewToggle()); await click(inlineEdit()); await click(reviewToggle());
+    await h.open(h.adapted); await h.open(h.source);
+    expect(inlineEdit()).toBeNull(); expect(reviewToggle().getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('original support editing in Focus view', () => {
+  const visible = node => !!node && !node.closest('[hidden], [style*="display: none"]');
+  const focusToggle = () => host.querySelector('[data-reader-focus-view]');
+
+  it('preserves a draft in collapsed setup and reveals its save decision before navigation', async () => {
+    const h = fixture({ original: true });
+    await dirtyExplanation();
+    const editor = host.querySelector('[data-reading-gloss-editor]');
+    const field = draft().querySelector('textarea');
+    const passage = host.querySelector('[data-reading-passage]');
+    await click(host.querySelector('[data-teacher-setup-toggle]'));
+    expect(visible(editor)).toBe(false);
+    expect(host.querySelector('[data-reading-gloss] button[aria-label^="Edit explanation for"]')).toBeNull();
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(prompt()).toBeNull();
+    expect(host.querySelector('[data-reading-passage]')).toBe(passage);
+    await click(host.querySelector('[data-reading-version="both"]'));
+    expect(h.state.compare).toBe(false);
+    expect(visible(prompt())).toBe(true);
+    expect(prompt().contains(document.activeElement)).toBe(true);
+    expect(host.querySelector('[data-reading-gloss-editor]')).toBe(editor);
+    await click(byText('Keep editing'));
+    expect(visible(field)).toBe(true);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(h.persist).not.toHaveBeenCalled();
+  });
+
+  it('hides teacher support tools while preserving the editor draft and reading controls', async () => {
+    const h = fixture({ original: true });
+    await dirtyExplanation();
+    const editor = host.querySelector('[data-reading-gloss-editor]');
+    const field = draft().querySelector('textarea');
+    const passage = host.querySelector('[data-reading-passage]');
+    const focus = focusToggle();
+    expect(host.querySelector('[data-reading-gloss] button[aria-label^="Edit explanation for"]')).not.toBeNull();
+    await click(focus);
+    expect(h.state.focus).toBe(true);
+    for (const selector of ['[data-original-generate-supports]', '[data-auto-word-supports]', '[data-reading-gloss-editor]']) {
+      expect(host.querySelector(selector), selector).not.toBeNull();
+      expect(visible(host.querySelector(selector)), selector).toBe(false);
+    }
+    for (const selector of ['[data-reader-listen]', '[data-reader-listen-supports]', '[data-original-support-settings] input', '[data-original-support-settings] select']) {
+      expect(visible(host.querySelector(selector)), selector).toBe(true);
+    }
+    expect(host.querySelector('[data-reading-gloss] button[aria-label^="Edit explanation for"]')).toBeNull();
+    expect(host.querySelector('[data-reading-gloss-editor]')).toBe(editor);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(host.querySelector('[data-reading-passage]')).toBe(passage);
+    expect(focusToggle()).toBe(focus);
+    expect(prompt()).toBeNull();
+    await click(focus);
+    expect(h.state.focus).toBe(false);
+    expect(visible(editor)).toBe(true);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(host.querySelector('[data-reading-gloss] button[aria-label^="Edit explanation for"]')).not.toBeNull();
+    expect(h.persist).not.toHaveBeenCalled();
+  });
+
+  it('reveals a pending draft confirmation when changing versions from Focus view', async () => {
+    const h = fixture({ original: true });
+    await dirtyExplanation();
+    const field = draft().querySelector('textarea');
+    await click(focusToggle());
+    await click(host.querySelector('[data-reading-version="both"]'));
+    expect(h.state.focus).toBe(false);
+    expect(h.state.item).toBe(h.source);
+    expect(h.state.compare).toBe(false);
+    expect(visible(prompt())).toBe(true);
+    expect(prompt().contains(document.activeElement)).toBe(true);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(h.persist).not.toHaveBeenCalled();
+    await click(byText('Keep editing'));
+    expect(prompt()).toBeNull();
+    expect(visible(field)).toBe(true);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+  });
+});
+
+describe('comparison support editing in Focus view', () => {
+  const visible = node => !!node && !node.closest('[hidden], [style*="display: none"]');
+  const focusToggle = () => host.querySelector('[data-reader-focus-view]');
+
+  it('keeps both passages and a hidden support draft mounted while removing teacher review from Focus', async () => {
+    const h = fixture();
+    await transitions.Both(); await dirtyExplanation();
+    const editor = host.querySelector('[data-reading-gloss-editor]');
+    const field = draft().querySelector('textarea');
+    const sourcePassage = host.querySelector('[data-compare-version="source"]');
+    const adaptedPassage = host.querySelector('[data-compare-version="adapted"]');
+    expect(visible(host.querySelector('[data-comparison-teacher-review]'))).toBe(true);
+    expect(sourcePassage.querySelector('[data-reading-gloss] button')).not.toBeNull();
+    await click(focusToggle());
+    expect(h.state.focus).toBe(true);
+    expect(h.state.compare).toBe(true);
+    expect(visible(editor)).toBe(false);
+    expect(host.querySelector('[data-reading-gloss-editor]')).toBe(editor);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(host.querySelector('[data-compare-version="source"]')).toBe(sourcePassage);
+    expect(host.querySelector('[data-compare-version="adapted"]')).toBe(adaptedPassage);
+    expect(host.querySelector('[data-comparison-teacher-review]')).toBeNull();
+    expect(sourcePassage.querySelector('[data-reading-gloss] button')).toBeNull();
+    for (const pane of ['source', 'adapted']) expect(visible(host.querySelector('[data-comparison-listen="' + pane + '"]'))).toBe(true);
+    expect(prompt()).toBeNull();
+    await click(focusToggle());
+    expect(visible(editor)).toBe(true);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(visible(host.querySelector('[data-comparison-teacher-review]'))).toBe(true);
+    expect(sourcePassage.querySelector('[data-reading-gloss] button')).not.toBeNull();
+    expect(h.persist).not.toHaveBeenCalled();
+  });
+
+  it('exits Focus before asking about an unsaved comparison support on version navigation', async () => {
+    const h = fixture();
+    await transitions.Both(); await dirtyExplanation();
+    const field = draft().querySelector('textarea');
+    await click(focusToggle()); await transitions.Original();
+    expect(h.state.focus).toBe(false);
+    expect(h.state.compare).toBe(true);
+    expect(h.state.item.id).toBe('adapted');
+    expect(visible(prompt())).toBe(true);
+    expect(prompt().contains(document.activeElement)).toBe(true);
+    expect(field.value).toBe('My unsaved explanation.');
+    expect(h.persist).not.toHaveBeenCalled();
+    await click(byText('Keep editing'));
+    expect(prompt()).toBeNull();
+    expect(visible(field)).toBe(true);
+    expect(draft().querySelector('textarea')).toBe(field);
+    expect(field.value).toBe('My unsaved explanation.');
+    await transitions.Original(); await click(byText('Save and continue'));
+    expect(h.state.compare).toBe(false);
+    expect(h.state.item.id).toBe('original');
+    expect(h.state.history.find(item => item.id === 'original').readingSupports.annotations[0].text).toBe('My unsaved explanation.');
+    expect(h.session.hasChanges()).toBe(false);
+  });
+});
+
 describe('current support data across editor transitions', () => {
   it('keeps a confirmed save while parent props acknowledge it later', async () => {
     const h = fixture(); await dirtyExplanation(); let accepted;
     h.onUpdate.mockImplementationOnce(async (owner, action) => { accepted = contract.upsertAdaptedReadingSupport(owner, owner.adaptedReadingSupports, action.annotation); return accepted; });
-    await click(byText('Save word support')); h.rerender();
+    await click(byText('Save word help')); h.rerender();
     expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(h.session.hasChanges()).toBe(false);
     replaceHelp(h, accepted); expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(h.session.hasChanges()).toBe(false);
   });
@@ -135,7 +327,7 @@ describe('current support data across editor transitions', () => {
     it.each(['refreshed', 'removed'])(`resolves a %s deferred edit target after ${decision}`, async change => {
       const h = fixture(); const start = PASSAGE.indexOf('water');
       replaceHelp(h, contract.upsertAdaptedReadingSupport(h.state.item, h.state.item.adaptedReadingSupports, { id: 'water', start, end: start + 5, quote: 'water', text: 'Older water meaning.' }));
-      await dirtyExplanation(); await click(host.querySelector('button[aria-label^="Edit word help: water"], button[aria-label^="Edit gloss for water"]'));
+      await dirtyExplanation(); await click(host.querySelector('button[aria-label^="Edit word help: water"], button[aria-label^="Edit word help for water"]'));
       const saveResult = deferred();
       if (decision === 'Save and continue') { h.persist.mockReturnValueOnce(saveResult.promise); await click(byText(decision)); }
       const help = h.state.item.adaptedReadingSupports;
@@ -146,7 +338,7 @@ describe('current support data across editor transitions', () => {
       expect(prompt()).toBeNull(); expect(h.state.compare).toBe(false);
       if (change === 'refreshed') {
         expect(draft().querySelector('textarea').value).toBe('Current water meaning.');
-        type(draft().querySelector('textarea'), 'My water meaning.'); await click(byText('Save word support'));
+        type(draft().querySelector('textarea'), 'My water meaning.'); await click(byText('Save word help'));
         expect(h.onUpdate.mock.lastCall[1].annotation.id).toBe('refreshed-water');
       } else {
         expect(host.textContent).toContain('no longer available'); expect(draft()?.querySelector('input[type="text"]').value).not.toBe('water');
@@ -213,7 +405,7 @@ describe('deferred reader transitions', () => {
   });
   it('does not apply a stale save after the source changes away and back', async () => {
     const h = fixture(); await dirtyExplanation(); const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise);
-    await click(byText('Save word support'));
+    await click(byText('Save word help'));
     const captured = h.onUpdate.mock.calls[0][1].annotation;
     h.force({ item: { ...h.adapted, data: 'A heron stood in a pond.' } }); h.force({ item: h.adapted });
     type(draft().querySelector('textarea'), 'Newer wording after returning.');
@@ -222,9 +414,9 @@ describe('deferred reader transitions', () => {
   });
   it('does not let an older failure release or overwrite a newer save', async () => {
     const h = fixture(); await dirtyExplanation(); const old = deferred(), latest = deferred();
-    h.persist.mockReturnValueOnce(old.promise).mockReturnValueOnce(latest.promise); await click(byText('Save word support'));
+    h.persist.mockReturnValueOnce(old.promise).mockReturnValueOnce(latest.promise); await click(byText('Save word help'));
     h.force({ item: { ...h.adapted, data: 'A heron stood in a pond.' } }); h.force({ item: h.adapted });
-    type(draft().querySelector('textarea'), 'Newest wording.'); await click(byText('Save word support'));
+    type(draft().querySelector('textarea'), 'Newest wording.'); await click(byText('Save word help'));
     await act(async () => old.reject(new Error('Obsolete failure.')));
     expect(draft().disabled).toBe(true); expect(host.textContent).not.toContain('Obsolete failure.');
     await act(async () => latest.resolve(contract.upsertAdaptedReadingSupport(h.adapted, h.adapted.adaptedReadingSupports, h.onUpdate.mock.calls[1][1].annotation)));
@@ -321,7 +513,7 @@ describe('deferred reader transitions', () => {
   it('preserves the draft and exact occurrence through refreshed suggestion IDs', async () => {
     const h = fixture(); await dirtyExplanation(); await click(host.querySelector('[data-adapted-word-help-generate]'));
     expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
-    await click(byText('Save word support'));
+    await click(byText('Save word help'));
     expect(h.onUpdate.mock.calls[0][1].annotation).toMatchObject({ id: 'refreshed-heron', start: 4, end: 9, quote: 'heron' });
   });
   it('retains valid drafts after passage growth and holds stale drafts for explicit re-anchoring', async () => {
@@ -330,11 +522,11 @@ describe('deferred reader transitions', () => {
     expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(host.textContent).not.toContain('Your draft is retained');
     h.force({ item: { ...h.state.item, data: 'A heron stood in a pond.' } });
     expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.'); expect(host.textContent).toContain('Your draft is retained');
-    await click(byText('Save word support')); expect(h.onUpdate).not.toHaveBeenCalled();
+    await click(byText('Save word help')); expect(h.onUpdate).not.toHaveBeenCalled();
   });
   it('successfully saves a retained draft after valid passage growth', async () => {
     const h = fixture(); await dirtyExplanation(); const grown = { ...h.adapted, data: PASSAGE + ' Another sentence.' };
-    h.force({ item: grown, history: [h.source, grown] }); await click(byText('Save word support'));
+    h.force({ item: grown, history: [h.source, grown] }); await click(byText('Save word help'));
     expect(h.session.hasChanges()).toBe(false);
     expect(h.state.item.adaptedReadingSupports.annotations[0]).toMatchObject({ start: 4, end: 9, text: 'My unsaved explanation.' });
   });
@@ -342,8 +534,8 @@ describe('deferred reader transitions', () => {
     const h = fixture(); await dirtyExplanation(); const changed = { ...h.adapted, data: 'A heron stood in a pond.' };
     changed.adaptedReadingSupports = contract.upsertAdaptedReadingSupport(changed, undefined, { id: 'current-heron', start: 2, end: 7, quote: 'heron', text: 'Current suggestion.' });
     h.force({ item: changed, history: [h.source, changed] });
-    expect(byText('Save word support').disabled).toBe(true);
-    await click(byText('choose the occurrence in the current text')); await click(byText('Save word support'));
+    expect(byText('Save word help').disabled).toBe(true);
+    await click(byText('choose the occurrence in the current text')); await click(byText('Save word help'));
     expect(h.session.hasChanges()).toBe(false);
     expect(h.state.item.adaptedReadingSupports.annotations[0]).toMatchObject({ id: 'current-heron', start: 2, end: 7, text: 'My unsaved explanation.' });
   });
@@ -378,7 +570,7 @@ describe('deferred reader transitions', () => {
     const reload = () => { const event = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(event); return event; };
     expect(reload().defaultPrevented).toBe(false); await dirtyExplanation(); expect(reload().defaultPrevented).toBe(true);
     expect(draft().querySelector('textarea').value).toBe('My unsaved explanation.');
-    await click(byText('Save word support')); expect(reload().defaultPrevented).toBe(false); expect(h.session.hasChanges()).toBe(false);
+    await click(byText('Save word help')); expect(reload().defaultPrevented).toBe(false); expect(h.session.hasChanges()).toBe(false);
   });
   it('does not add a second disclosure or prompt for harmless reader changes', async () => {
     fixture(); await dirtyExplanation();

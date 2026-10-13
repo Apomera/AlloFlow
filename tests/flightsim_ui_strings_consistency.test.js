@@ -47,9 +47,9 @@ const findSection = (o, n) => {
 const source = readFileSync(SRC, 'utf8');
 const section = findSection(JSON.parse(readFileSync(UI, 'utf8')), 'flightsim');
 
-// __alloT('stem.flightsim.KEY', 'FALLBACK' | "FALLBACK")
+// Keys and fallbacks can both use either JavaScript quote style.
 const callSites = () => {
-  const re = /__alloT\(\s*'stem\.flightsim\.([A-Za-z0-9_]+)'\s*,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*\)/g;
+  const re = /__alloT\(\s*['"]stem\.flightsim\.([A-Za-z0-9_]+)['"]\s*,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*\)/g;
   const out = [];
   let m;
   while ((m = re.exec(source))) {

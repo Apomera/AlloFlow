@@ -78,6 +78,30 @@
       specificEnergy: -ISS_GM / (2 * plan.a),
       angularMomentum: Math.sqrt(ISS_GM * plan.a * (1 - e * e)) };
   }
+  function issTransferTelemetry(plan, fraction, phase) {
+    var stage = Math.round(issFlightNumber(phase, 0, 0, 2));
+    var progress = !plan.coastSeconds || stage === 0 ? 0 : stage === 2 ? 1 : fraction;
+    var state = issTransferState(plan, progress);
+    // At either burn the position is continuous, but velocity and energy jump.
+    // Before injection and after circularization use the circular state, not
+    // the speed on the transfer ellipse. All vectors use an Earth-centred frame.
+    if (stage !== 1) {
+      state.speed = stage === 2 ? plan.targetSpeed : plan.startSpeed;
+      state.vx = -state.y / state.radius * state.speed;
+      state.vy = state.x / state.radius * state.speed;
+    }
+    state.radialSpeed = (state.x * state.vx + state.y * state.vy) / state.radius;
+    if (Math.abs(state.radialSpeed) < 1e-12) state.radialSpeed = 0;
+    state.tangentialSpeed = (state.x * state.vy - state.y * state.vx) / state.radius;
+    state.angularMomentum = state.radius * state.tangentialSpeed;
+    state.ax = -ISS_GM * state.x / Math.pow(state.radius, 3);
+    state.ay = -ISS_GM * state.y / Math.pow(state.radius, 3);
+    state.gravity = ISS_GM / (state.radius * state.radius) * 1000; // m/s²
+    state.kineticEnergy = state.speed * state.speed / 2; // MJ/kg
+    state.potentialEnergy = -ISS_GM / state.radius;
+    state.specificEnergy = state.kineticEnergy + state.potentialEnergy;
+    return state;
+  }
   // Secular, nearly-circular decay from dE/dt = -D*v/m and E = -mu/(2r).
   // SI drag D = 1/2 rho Cd A v²; stationary atmosphere, constant Cd and area.
   // NASA: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/
@@ -96,29 +120,773 @@
       dailyLossKm: density * cd * area / mass * Math.sqrt(mu * radius) * 86400 / 1000,
       ballisticCoefficient: mass / (cd * area), area: area, mass: mass, cd: cd };
   }
-  function issDragPropagate(altitude, solarFactor, frontalArea, reboostDay) {
+  function issDragPropagate(altitude, solarFactor, frontalArea, reboostDay, options) {
+    options = options || {};
     var current = issFlightNumber(altitude, ISS_REF_ALT, 180, 2000);
     var boostDay = [10, 20].indexOf(Number(reboostDay)) >= 0 ? Number(reboostDay) : 0;
-    var samples = [{ day: 0, altitude: current }], boostDeltaV = 0, elapsed = 0;
+    var gain = issFlightNumber(options.gain, 5, 1, 20);
+    var initialMass = issFlightNumber(options.mass, 420000, 200000, 600000), mass = initialMass;
+    var factor = issFlightNumber(solarFactor, 1, .1, 5), area = issFlightNumber(frontalArea, 800, 200, 1600);
+    var isp = 300; // illustrative propulsion, not a named spacecraft engine
+    var initial = issDragSnapshot(current, factor, area, mass);
+    var samples = [{ day: 0, altitude: current, mass: mass }], boostDeltaV = 0, elapsed = 0, boostEvent = null, propellant = 0;
     for (var hour = 1; hour <= 720 && current > 180; hour++) {
-      // The +5 km intervention is a completed two-burn circular raise. The
+      // The intervention is a completed two-burn circular raise. The
       // coast (~half an orbit) is unresolved on this 30-day secular chart.
       if (boostDay && hour === boostDay * 24 + 1) {
-        samples.push({ day: boostDay, altitude: current });
-        boostDeltaV = issTransferPlan(current, current + 5).deltaV;
-        current += 5;
-        samples.push({ day: boostDay, altitude: current });
+        boostDeltaV = issTransferPlan(current, current + gain).deltaV;
+        propellant = mass * -Math.expm1(-boostDeltaV / (isp * 9.80665));
+        boostEvent = { day: boostDay, beforeAltitude: current, afterAltitude: current + gain, beforeMass: mass, afterMass: mass - propellant };
+        current += gain;
+        mass -= propellant;
+        samples.push({ day: boostDay, altitude: current, mass: mass });
       }
-      var loss = issDragSnapshot(current, solarFactor, frontalArea).dailyLossKm / 24;
+      var loss = issDragSnapshot(current, factor, area, mass).dailyLossKm / 24;
       var midpoint = Math.max(180, current - loss / 2);
-      current = Math.max(180, current - issDragSnapshot(midpoint, solarFactor, frontalArea).dailyLossKm / 24);
-      elapsed = hour / 24;
-      if (hour % 24 === 0 || current <= 180) samples.push({ day: elapsed, altitude: current });
+      var stepLoss = issDragSnapshot(midpoint, factor, area, mass).dailyLossKm / 24;
+      // Resolve crossing within the final step; do not extend a flat 180 km
+      // trace to a later time or execute a scheduled burn after the model ends.
+      var stepFraction = Math.min(1, (current - 180) / stepLoss);
+      elapsed = (hour - 1 + stepFraction) / 24;
+      current = Math.max(180, current - stepLoss);
+      samples.push({ day: elapsed, altitude: current, mass: mass });
     }
     return { samples: samples, endAltitude: current, endDay: elapsed,
-      stopped: current <= 180, boostDeltaV: boostDeltaV,
-      initial: issDragSnapshot(altitude, solarFactor, frontalArea) };
+      stopped: current <= 180, boostDeltaV: boostDeltaV, boostEvent: boostEvent,
+      boostPropellantKg: propellant, initialMass: initialMass, finalMass: mass,
+      gain: gain, isp: isp, solarFactor: factor, area: area, initial: initial };
   }
+  // Inspect hourly samples without interpolating through the reboost jump.
+  // Both sides of the same event time remain available to the learner.
+  function issDragInspect(model, requestedDay, side) {
+    var requested = issFlightNumber(requestedDay, 0, 0, 30);
+    var day = Math.min(model.endDay, requested), samples = model.samples;
+    var altitude = samples[0].altitude, mass = samples[0].mass;
+    var event = model.boostEvent, atBurn = event && Math.abs(day - event.day) < 1e-9;
+    if (atBurn) {
+      altitude = side === 'before' ? event.beforeAltitude : event.afterAltitude;
+      mass = side === 'before' ? event.beforeMass : event.afterMass;
+    } else {
+      for (var i = 0; i < samples.length; i++) {
+        var sample = samples[i];
+        if (sample.day <= day) { altitude = sample.altitude; mass = sample.mass; continue; }
+        var previous = samples[i - 1];
+        altitude = previous.altitude + (sample.altitude - previous.altitude) * (day - previous.day) / (sample.day - previous.day);
+        break;
+      }
+    }
+    var applied = !!event && (atBurn ? side !== 'before' : day > event.day);
+    return { day: day, altitude: altitude, mass: mass, valid: requested <= model.endDay,
+      boostApplied: applied, propellantKg: model.initialMass - mass,
+      deltaV: applied ? model.boostDeltaV : 0,
+      drag: issDragSnapshot(altitude, model.solarFactor, model.area, mass) };
+  }
+  // Exact constant-power phases; solar serves the load before charging storage.
+  // Never bank curtailed sunlight for a later eclipse. kW × hours = kWh.
+  // NASA: ntrs.nasa.gov/citations/20200000004 (sunlit charge / eclipse discharge).
+  function issPowerState(options, elapsedMinutes) {
+    options = options || {};
+    var duration = 92, minute = issFlightNumber(elapsedMinutes, 0, 0, duration);
+    var generation = issFlightNumber(options.generation, 160 * Math.sin(86 * Math.PI / 180), 0, 320);
+    var load = issFlightNumber(options.load, 92.4, 0, 200);
+    var sunlight = duration - issFlightNumber(options.eclipse, 35, 20, 45);
+    var capacity = issFlightNumber(options.capacity, 210, 1, 1000);
+    var start = capacity * issFlightNumber(options.battery, 76, 0, 100) / 100;
+    // Illustrative conversion efficiencies, not measured ISS specifications.
+    var chargeEfficiency = issFlightNumber(options.chargeEfficiency, .95, .5, 1);
+    var dischargeEfficiency = issFlightNumber(options.dischargeEfficiency, .95, .5, 1);
+    var stored = start, generated = 0, served = 0, losses = 0, curtailed = 0, unserved = 0;
+    function phase(solar, minutes) {
+      var hours = minutes / 60, net = solar - load;
+      generated += solar * hours;
+      if (net >= 0) {
+        var accepted = Math.min(net * hours, Math.max(0, capacity - stored) / chargeEfficiency);
+        stored += accepted * chargeEfficiency;
+        losses += accepted * (1 - chargeEfficiency);
+        curtailed += net * hours - accepted;
+        served += load * hours;
+      } else {
+        var delivered = Math.min(-net * hours, stored * dischargeEfficiency);
+        stored = Math.max(0, stored - delivered / dischargeEfficiency);
+        losses += delivered / dischargeEfficiency - delivered;
+        unserved += -net * hours - delivered;
+        served += solar * hours + delivered;
+      }
+    }
+    phase(generation, Math.min(minute, sunlight));
+    phase(0, Math.max(0, minute - sunlight));
+    var netSun = generation - load;
+    var sunEnd = Math.max(0, Math.min(capacity, start + netSun * sunlight / 60 * (netSun >= 0 ? chargeEfficiency : 1 / dischargeEfficiency)));
+    var fullMinute = netSun > 0 ? (capacity - start) / (netSun * chargeEfficiency) * 60 : null;
+    if (fullMinute !== null && fullMinute > sunlight + 1e-9) fullMinute = null;
+    var emptyMinute = null;
+    if (netSun < 0 && start * dischargeEfficiency / -netSun * 60 <= sunlight) emptyMinute = start * dischargeEfficiency / -netSun * 60;
+    else if (load > 0 && sunlight + sunEnd * dischargeEfficiency / load * 60 <= duration) emptyMinute = sunlight + sunEnd * dischargeEfficiency / load * 60;
+    var lit = minute < sunlight, solarNow = lit ? generation : 0, netNow = solarNow - load;
+    var charging = netNow > 0 && stored < capacity - 1e-8 ? netNow : 0;
+    var discharging = netNow < 0 && stored > 1e-8 ? -netNow : 0;
+    var curtailedNow = Math.max(0, netNow - charging), unservedNow = Math.max(0, -netNow - discharging);
+    return { minute: minute, duration: duration, sunlightMinutes: sunlight, lit: lit,
+      capacity: capacity, startKWh: start, storedKWh: stored, percent: stored / capacity * 100,
+      minimumPercent: Math.min(start, stored) / capacity * 100,
+      generation: generation, solarKW: solarNow, loadKW: load, servedKW: load - unservedNow,
+      chargeKW: charging, dischargeKW: discharging, curtailedKW: curtailedNow, unservedKW: unservedNow,
+      storedRateKW: charging * chargeEfficiency - discharging / dischargeEfficiency,
+      lossKW: charging * (1 - chargeEfficiency) + discharging * (1 / dischargeEfficiency - 1),
+      generatedKWh: generated, requestedKWh: load * minute / 60, servedKWh: served,
+      lossKWh: losses, curtailedKWh: curtailed, unservedKWh: unserved,
+      chargeEfficiency: chargeEfficiency, dischargeEfficiency: dischargeEfficiency,
+      fullMinute: fullMinute, emptyMinute: emptyMinute };
+  }
+  // Two thermal stores: cabin/equipment and external coolant/radiator.
+  // kW = kJ/s; capacities are kJ/K. Radiation uses absolute kelvin.
+  // NASA: ntrs.nasa.gov/citations/20110023292; OpenStax UP2, section 1.6.
+  function issThermalConfig(options) {
+    options = options || {};
+    var power = issPowerState(options.power, 0);
+    return { power: { generation: power.generation, load: power.loadKW, battery: power.percent,
+        eclipse: 92 - power.sunlightMinutes, capacity: power.capacity,
+        chargeEfficiency: power.chargeEfficiency, dischargeEfficiency: power.dischargeEfficiency },
+      area: 320 * issFlightNumber(options.radiator, 82, 30, 100) / 100,
+      conductance: 4 * issFlightNumber(options.cooling, 86, 40, 100) / 100,
+      cabinStart: issFlightNumber(options.cabinStart, 22, 16, 30),
+      radiatorStart: 4, cabinCapacity: 24000, radiatorCapacity: 6000,
+      metabolicKW: .1 * issFlightNumber(options.crew, 7, 3, 11),
+      emissivity: .85, sigma: 5.670374419e-8,
+      stepSeconds: issFlightNumber(options.stepSeconds, 10, .5, 10) };
+  }
+  function issThermalForcing(config, minute) {
+    var power = issPowerState(config.power, minute);
+    return { heatKW: .72 * power.servedKW + config.metabolicKW,
+      absorbedKW: config.area * (.006 + (power.lit ? .025 : 0)),
+      conductance: power.servedKW > 0 ? config.conductance : 0,
+      lit: power.lit, servedKW: power.servedKW };
+  }
+  function issThermalRates(config, state, forcing) {
+    var transfer = forcing.conductance * (state.cabin - state.radiator);
+    var emitted = config.emissivity * config.sigma * config.area * (Math.pow(state.radiator + 273.15, 4) - Math.pow(3, 4)) / 1000;
+    return { cabin: (forcing.heatKW - transfer) / config.cabinCapacity,
+      radiator: (transfer + forcing.absorbedKW - emitted) / config.radiatorCapacity,
+      generated: forcing.heatKW, absorbed: forcing.absorbedKW, radiated: emitted, transferred: transfer };
+  }
+  function issThermalStep(config, state, minute) {
+    var seconds = (minute - state.minute) * 60;
+    if (seconds <= 0) return state;
+    // Each integration interval stops at any electrical/lighting discontinuity.
+    // Mid-interval forcing avoids using the next phase at the old phase's end.
+    var forcing = issThermalForcing(config, (state.minute + minute) / 2);
+    var fields = ['cabin','radiator','generated','absorbed','radiated','transferred'];
+    function shifted(rate, fraction) {
+      var out = {};
+      fields.forEach(function (field) { out[field] = state[field] + rate[field] * seconds * fraction; });
+      return out;
+    }
+    var a = issThermalRates(config, state, forcing);
+    var b = issThermalRates(config, shifted(a, .5), forcing);
+    var c = issThermalRates(config, shifted(b, .5), forcing);
+    var e = issThermalRates(config, shifted(c, 1), forcing);
+    var next = { minute: minute };
+    fields.forEach(function (field) { next[field] = state[field] + seconds * (a[field] + 2 * b[field] + 2 * c[field] + e[field]) / 6; });
+    return next;
+  }
+  var _issThermalRuns = [];
+  function issThermalRun(options) {
+    var config = issThermalConfig(options), key = JSON.stringify(config);
+    for (var cached = 0; cached < _issThermalRuns.length; cached++) if (_issThermalRuns[cached].key === key) return _issThermalRuns[cached].model;
+    var powerEnd = issPowerState(config.power, 92);
+    var boundaries = [powerEnd.sunlightMinutes, powerEnd.emptyMinute, 92].filter(function (time) { return time !== null && time > 0; })
+      .sort(function (a, b) { return a - b; }).filter(function (time, index, all) { return !index || time - all[index - 1] > 1e-9; });
+    var state = { minute: 0, cabin: config.cabinStart, radiator: config.radiatorStart, generated: 0, absorbed: 0, radiated: 0, transferred: 0 };
+    var samples = [state], minCabin = state.cabin, maxCabin = state.cabin;
+    var firstLimitMinute = state.cabin < 18 || state.cabin > 27 ? 0 : null;
+    boundaries.forEach(function (boundary) {
+      while (boundary - state.minute > 1e-9) {
+        var previous = state;
+        state = issThermalStep(config, previous, Math.min(boundary, previous.minute + config.stepSeconds / 60));
+        if (firstLimitMinute === null && (state.cabin < 18 || state.cabin > 27)) {
+          var lo = previous.minute, hi = state.minute, hot = state.cabin > 27;
+          for (var iteration = 0; iteration < 25; iteration++) {
+            var middle = (lo + hi) / 2, trial = issThermalStep(config, previous, middle);
+            if (hot ? trial.cabin > 27 : trial.cabin < 18) hi = middle; else lo = middle;
+          }
+          firstLimitMinute = (lo + hi) / 2;
+        }
+        minCabin = Math.min(minCabin, state.cabin); maxCabin = Math.max(maxCabin, state.cabin);
+        samples.push(state);
+      }
+    });
+    var model = { config: config, samples: samples, minCabin: minCabin, maxCabin: maxCabin, firstLimitMinute: firstLimitMinute, sunlightMinutes: powerEnd.sunlightMinutes };
+    _issThermalRuns.push({ key: key, model: model });
+    if (_issThermalRuns.length > 6) _issThermalRuns.shift();
+    return model;
+  }
+  function issThermalInspect(model, requestedMinute) {
+    var minute = issFlightNumber(requestedMinute, 0, 0, 92), lo = 0, hi = model.samples.length - 1;
+    while (lo < hi) {
+      var middle = Math.ceil((lo + hi) / 2);
+      if (model.samples[middle].minute <= minute) lo = middle; else hi = middle - 1;
+    }
+    var state = issThermalStep(model.config, model.samples[lo], minute);
+    var forcing = issThermalForcing(model.config, minute), rates = issThermalRates(model.config, state, forcing);
+    var cabinStored = model.config.cabinCapacity * (state.cabin - model.config.cabinStart) / 3600;
+    var radiatorStored = model.config.radiatorCapacity * (state.radiator - model.config.radiatorStart) / 3600;
+    return { minute: minute, cabin: state.cabin, radiator: state.radiator, lit: forcing.lit,
+      heatKW: rates.generated, absorbedKW: rates.absorbed, emittedKW: rates.radiated,
+      transferKW: rates.transferred, netRadiatorKW: rates.radiated - rates.absorbed,
+      cabinRate: rates.cabin * 60, radiatorRate: rates.radiator * 60,
+      generatedKWh: state.generated / 3600, absorbedKWh: state.absorbed / 3600,
+      radiatedKWh: state.radiated / 3600, transferredKWh: state.transferred / 3600,
+      cabinStoredKWh: cabinStored, radiatorStoredKWh: radiatorStored, storedKWh: cabinStored + radiatorStored,
+      pumpPowered: forcing.conductance > 0, servedKW: forcing.servedKW };
+  }
+  function issThermalMargin(temperature) { return Math.max(0, Math.min(100, 100 - Math.abs(temperature - 22) * 13)); }
+  // One-axis, ideal CMG rate hold with a finite angular-momentum envelope.
+  // Constant external torque and a finite thruster couple give exact segments.
+  // CMGs redirect spinning-rotor momentum; they do not spin up like reaction wheels.
+  // NASA: ntrs.nasa.gov/citations/20100021932. All aggregate values below are illustrative.
+  function issAttitudeConfig(options) {
+    options = options || {};
+    return { capacity: 19000, initialPercent: issFlightNumber(options.cmg, 28, 0, 100),
+      disturbance: issFlightNumber(options.torque, .35, 0, 4),
+      inertia: issFlightNumber(options.inertia, 80, 40, 160) * 1e6,
+      dump: options.dump === true, burnMinute: issFlightNumber(options.burnMinute, 40, 0, 85),
+      thrust: issFlightNumber(options.thrust, 5, 1, 15),
+      fuel: issFlightNumber(options.fuel, 1.5, 0, 3), arm: 8, isp: 220, g0: 9.80665,
+      targetFraction: .08, duration: 92 * 60 };
+  }
+  function issAttitudeRun(options) {
+    var config = issAttitudeConfig(options), initial = config.initialPercent / 100 * config.capacity;
+    var thrustTorque = 2 * config.thrust * config.arm, flow = 2 * config.thrust / (config.isp * config.g0);
+    var scheduled = config.burnMinute * 60, atBurn = initial + config.disturbance * scheduled;
+    var required = Math.max(0, (atBurn - config.targetFraction * config.capacity) / (thrustTorque - config.disturbance));
+    var fuelSeconds = config.fuel / flow, available = config.duration - scheduled;
+    var burnSeconds = config.dump ? Math.min(required, fuelSeconds, available) : 0;
+    var burnStart = burnSeconds > 0 ? scheduled : null, burnEnd = burnStart === null ? null : scheduled + burnSeconds;
+    var stopReason = !config.dump ? 'disabled' : required <= 0 ? 'not-needed' : config.fuel <= 0 ? 'no-fuel' :
+      burnSeconds >= required - 1e-8 ? 'target' : burnSeconds >= fuelSeconds - 1e-8 ? 'fuel' : 'orbit-end';
+    var time = 0, total = initial, angle = 0, segments = [];
+    function excess(momentum) { return momentum - Math.max(-config.capacity, Math.min(config.capacity, momentum)); }
+    function phase(end, net, burning) {
+      var cuts = [end], start = time, from = total;
+      if (net !== 0) [-config.capacity, config.capacity].forEach(function (limit) {
+        var crossing = start + (limit - from) / net;
+        if (crossing > start + 1e-9 && crossing < end - 1e-9) cuts.push(crossing);
+      });
+      cuts.sort(function (a,b) { return a-b; }).forEach(function (cut) {
+        if (cut - time <= 1e-9) return;
+        segments.push({ start: time, end: cut, total: total, angle: angle, net: net, burning: burning });
+        var next = total + net * (cut - time);
+        angle += (excess(total) + excess(next)) * .5 * (cut - time) / config.inertia;
+        total = next; time = cut;
+      });
+    }
+    if (burnStart !== null) { phase(burnStart, config.disturbance, false); phase(burnEnd, config.disturbance - thrustTorque, true); }
+    phase(config.duration, config.disturbance, false);
+    var peakPercent = config.initialPercent, firstCapacity = initial >= config.capacity ? 0 : null;
+    var firstCaution = initial >= .8 * config.capacity ? 0 : null;
+    segments.forEach(function (segment) {
+      var last = segment.total + segment.net * (segment.end - segment.start);
+      peakPercent = Math.max(peakPercent, Math.min(100, Math.max(Math.abs(segment.total), Math.abs(last)) / config.capacity * 100));
+      if (segment.net > 0) {
+        var capacityTime = segment.start + (config.capacity - segment.total) / segment.net;
+        var cautionTime = segment.start + (.8 * config.capacity - segment.total) / segment.net;
+        if (firstCapacity === null && capacityTime >= segment.start - 1e-8 && capacityTime <= segment.end + 1e-8) firstCapacity = Math.max(0, capacityTime);
+        if (firstCaution === null && cautionTime >= segment.start - 1e-8 && cautionTime <= segment.end + 1e-8) firstCaution = Math.max(0, cautionTime);
+      }
+    });
+    return { config: config, initial: initial, segments: segments, thrustTorque: thrustTorque, massFlow: flow,
+      burnStart: burnStart, burnEnd: burnEnd, burnSeconds: burnSeconds, requiredSeconds: required, stopReason: stopReason,
+      firstCapacity: firstCapacity, firstCaution: firstCaution, peakPercent: peakPercent };
+  }
+  function issAttitudeInspect(model, minute) {
+    var config = model.config, seconds = issFlightNumber(minute, 0, 0, 92) * 60;
+    // Event buttons store minutes; round trips through seconds can land a few
+    // ulps before cutoff. Keep exact event inspection on the event's right side.
+    model.segments.forEach(function (part) {
+      if (Math.abs(seconds - part.start) < 1e-8) seconds = part.start;
+      if (Math.abs(seconds - part.end) < 1e-8) seconds = part.end;
+    });
+    var segment = model.segments[0];
+    for (var index = 1; index < model.segments.length; index++) if (model.segments[index].start <= seconds) segment = model.segments[index]; else break;
+    var elapsed = Math.max(0, seconds - segment.start), total = segment.total + segment.net * elapsed;
+    var gyro = Math.max(-config.capacity, Math.min(config.capacity, total)), body = total - gyro;
+    var bodyStart = segment.total - Math.max(-config.capacity, Math.min(config.capacity, segment.total));
+    var angle = segment.angle + (bodyStart + body) * .5 * elapsed / config.inertia;
+    var burnElapsed = model.burnStart === null ? 0 : seconds >= model.burnEnd ? model.burnSeconds : Math.max(0, seconds - model.burnStart);
+    var burning = model.burnStart !== null && seconds >= model.burnStart && seconds < model.burnEnd;
+    var thrusterTorque = burning ? -model.thrustTorque : 0, net = config.disturbance + thrusterTorque;
+    // While excess momentum still belongs to the rotating station, an
+    // unloading couple brakes the body before gyro storage can decrease.
+    var beyondEnvelope = total > config.capacity + 1e-7 || total < -config.capacity - 1e-7;
+    var pushingOutward = total >= config.capacity - 1e-7 && net > 0 || total <= -config.capacity + 1e-7 && net < 0;
+    var gyroRate = beyondEnvelope || pushingOutward ? 0 : net;
+    var fuelUsed = model.stopReason === 'fuel' && seconds >= model.burnEnd ? config.fuel : Math.min(config.fuel, model.massFlow * burnElapsed);
+    return { minute: seconds / 60, gyro: gyro, body: body, total: total,
+      percent: Math.abs(gyro) / config.capacity * 100, angle: angle, angleDeg: angle * 180 / Math.PI,
+      rate: body / config.inertia, rateDeg: body / config.inertia * 180 / Math.PI,
+      disturbanceTorque: config.disturbance, thrusterTorque: thrusterTorque, cmgTorque: gyroRate ? -gyroRate : 0,
+      bodyTorque: net - gyroRate, disturbanceImpulse: config.disturbance * seconds,
+      thrusterImpulse: -model.thrustTorque * burnElapsed, burning: burning,
+      fuelUsed: fuelUsed, fuelLeft: Math.max(0, config.fuel - fuelUsed),
+      spinEnergy: body * body / (2 * config.inertia),
+      phase: burning ? 'unloading' : Math.abs(body) > 1e-6 ? 'drifting' : 'holding' };
+  }
+  function issAttitudeTimes(model) {
+    var times = [];
+    for (var minute = 0; minute <= 92; minute++) times.push(minute);
+    model.segments.forEach(function (segment) { times.push(segment.start / 60, segment.end / 60); });
+    [model.firstCaution, model.firstCapacity].forEach(function (seconds) { if (seconds !== null) times.push(seconds / 60); });
+    return times.sort(function (a,b) { return a-b; }).filter(function (time,index,all) { return !index || time - all[index-1] > 1e-8; });
+  }
+  function issAttitudeMargin(model, minute) { return Math.max(0, 100 - issAttitudeInspect(model, minute).percent * .65); }
+  // Two well-mixed air volumes exchange equal flows. Ventilation moves CO2;
+  // only the scrubber removes it. Mass is grams; rates are grams per minute.
+  // NASA ventilation rationale: nasa.gov/reference/6-0-natural-and-induced-environments-vol-2/
+  function issAirConfig(options) {
+    options = options || {};
+    var power = issPowerState(options.power, 0);
+    var gasMoles = 101325 / (8.314462618 * 295.15);
+    return { crew: issFlightNumber(options.crew, 7, 3, 11),
+      flow: issFlightNumber(options.flow, 90, 0, 180),
+      scrub: issFlightNumber(options.scrub, 88, 0, 100),
+      activity: issFlightNumber(options.activity, 1, 1, 3),
+      startPpm: issFlightNumber(options.startPpm, 2600, 0, 8000),
+      restore: options.restore === true, restoreMinute: issFlightNumber(options.restoreMinute, 45, 0, 85),
+      localVolume: 12, cabinVolume: 388, restoredFlow: 90, clearAirMax: 70,
+      gramsPerPpmM3: gasMoles * 44.01 / 1e6, investigationPpm: 4000,
+      stepMinutes: issFlightNumber(options.stepSeconds, 10, .5, 10) / 60,
+      power: { generation: power.generation, load: power.loadKW, battery: power.percent,
+        eclipse: 92 - power.sunlightMinutes, capacity: power.capacity,
+        chargeEfficiency: power.chargeEfficiency, dischargeEfficiency: power.dischargeEfficiency } };
+  }
+  function issAirForcing(config, minute) {
+    var powered = issPowerState(config.power, minute).servedKW > 0;
+    var restored = config.restore && config.flow < config.restoredFlow && minute >= config.restoreMinute;
+    return { powered: powered, restored: restored,
+      flow: powered ? (restored ? config.restoredFlow : config.flow) : 0,
+      clearAir: powered ? config.clearAirMax * config.scrub / 100 : 0 };
+  }
+  function issAirRates(config, state, forcing) {
+    var localSource = .7 * config.activity, cabinSource = .7 * (config.crew - 1);
+    var transfer = forcing.flow / 60 * (state.local / config.localVolume - state.cabin / config.cabinVolume);
+    var removed = forcing.clearAir / 60 * state.cabin / config.cabinVolume;
+    return { local: localSource - transfer, cabin: cabinSource + transfer - removed,
+      exhaled: localSource + cabinSource, removed: removed, transferred: transfer, circulated: forcing.flow / 60 };
+  }
+  function issAirStep(config, state, minute) {
+    var dt = minute - state.minute;
+    if (dt <= 0) return state;
+    var forcing = issAirForcing(config, (state.minute + minute) / 2);
+    var fields = ['local','cabin','exhaled','removed','transferred','circulated'];
+    function shift(rate, amount) {
+      var next = {};
+      fields.forEach(function (field) { next[field] = state[field] + rate[field] * dt * amount; });
+      return next;
+    }
+    var a = issAirRates(config, state, forcing), b = issAirRates(config, shift(a,.5), forcing);
+    var c = issAirRates(config, shift(b,.5), forcing), e = issAirRates(config, shift(c,1), forcing);
+    var next = { minute: minute };
+    fields.forEach(function (field) { next[field] = state[field] + dt * (a[field] + 2*b[field] + 2*c[field] + e[field]) / 6; });
+    return next;
+  }
+  var _issAirRuns = [];
+  function issAirRun(options) {
+    var config = issAirConfig(options), key = JSON.stringify(config);
+    for (var cached = 0; cached < _issAirRuns.length; cached++) if (_issAirRuns[cached].key === key) return _issAirRuns[cached].model;
+    var powerEnd = issPowerState(config.power, 92);
+    var restoreMinute = config.restore && config.flow < config.restoredFlow ? config.restoreMinute : null;
+    var boundaries = [restoreMinute, powerEnd.sunlightMinutes, powerEnd.emptyMinute, 92]
+      .filter(function (time) { return time !== null && time > 0; }).sort(function (a,b) { return a-b; })
+      .filter(function (time,index,all) { return !index || time-all[index-1] > 1e-9; });
+    var localFactor = config.gramsPerPpmM3 * config.localVolume, cabinFactor = config.gramsPerPpmM3 * config.cabinVolume;
+    var state = { minute: 0, local: config.startPpm * localFactor, cabin: config.startPpm * cabinFactor, exhaled: 0, removed: 0, transferred: 0, circulated: 0 };
+    var initialMass = state.local + state.cabin, samples = [state];
+    var peakPpm = config.startPpm, peakMinute = 0, firstLimitMinute = config.startPpm >= config.investigationPpm ? 0 : null;
+    function maximum(sample) { return Math.max(sample.local / localFactor, sample.cabin / cabinFactor); }
+    boundaries.forEach(function (boundary) {
+      while (boundary - state.minute > 1e-9) {
+        var previous = state;
+        var nextMinute = Math.min(boundary, previous.minute + config.stepMinutes);
+        if (boundary-nextMinute < 1e-9) nextMinute = boundary;
+        state = issAirStep(config, previous, nextMinute);
+        var ppm = maximum(state);
+        if (ppm > peakPpm) { peakPpm = ppm; peakMinute = state.minute; }
+        if (firstLimitMinute === null && ppm >= config.investigationPpm) {
+          var lo = previous.minute, hi = state.minute;
+          for (var iteration = 0; iteration < 25; iteration++) {
+            var middle = (lo+hi)/2;
+            if (maximum(issAirStep(config, previous, middle)) >= config.investigationPpm) hi = middle; else lo = middle;
+          }
+          firstLimitMinute = (lo+hi)/2;
+        }
+        samples.push(state);
+      }
+    });
+    var model = { config: config, samples: samples, initialMass: initialMass, peakPpm: peakPpm, peakMinute: peakMinute,
+      firstLimitMinute: firstLimitMinute, restoreMinute: restoreMinute, emptyMinute: powerEnd.emptyMinute };
+    _issAirRuns.push({ key: key, model: model });
+    if (_issAirRuns.length > 6) _issAirRuns.shift();
+    return model;
+  }
+  function issAirInspect(model, requestedMinute) {
+    var minute = issFlightNumber(requestedMinute, 0, 0, 92), lo = 0, hi = model.samples.length-1;
+    while (lo < hi) {
+      var middle = Math.ceil((lo+hi)/2);
+      if (model.samples[middle].minute <= minute) lo = middle; else hi = middle-1;
+    }
+    var config = model.config, state = issAirStep(config, model.samples[lo], minute);
+    var forcing = issAirForcing(config, minute), rates = issAirRates(config, state, forcing);
+    var localFactor = config.gramsPerPpmM3 * config.localVolume, cabinFactor = config.gramsPerPpmM3 * config.cabinVolume;
+    return { minute: minute, localPpm: state.local/localFactor, cabinPpm: state.cabin/cabinFactor,
+      averagePpm: (state.local+state.cabin)/(localFactor+cabinFactor),
+      localGrams: state.local, cabinGrams: state.cabin, exhaledGrams: state.exhaled, removedGrams: state.removed,
+      transferredGrams: state.transferred, circulatedM3: state.circulated, initialGrams: model.initialMass,
+      localRate: rates.local/localFactor, cabinRate: rates.cabin/cabinFactor,
+      sourceRate: rates.exhaled, removalRate: rates.removed, transferRate: rates.transferred,
+      flow: forcing.flow, clearAir: forcing.clearAir, powered: forcing.powered, restored: forcing.restored };
+  }
+  // Finite clean/waste stores with piecewise-constant, capacity-limited flows.
+  // Litres of water-equivalent inventory; crew use is an internal transfer.
+  function issWaterConfig(options) {
+    options = options || {};
+    var outageStart = issFlightNumber(options.outageStart, 10, 0, 29);
+    return { crew: issFlightNumber(options.crew, 7, 3, 11), efficiency: issFlightNumber(options.recovery, 98, 70, 99) / 100,
+      cleanStart: issFlightNumber(options.cleanStart, 120, 0, 300), wasteStart: issFlightNumber(options.wasteStart, 25, 0, 100),
+      throughput: issFlightNumber(options.throughput, 36, 0, 60), cleanCapacity: 300, wasteCapacity: 100,
+      outage: options.outage === true, outageStart: outageStart,
+      outageEnd: Math.min(30, outageStart + issFlightNumber(options.outageDays, 6, 1, 15)),
+      delivery: options.delivery === true, deliveryDay: issFlightNumber(options.deliveryDay, 12, 1, 29),
+      deliveryLitres: issFlightNumber(options.deliveryLitres, 100, 0, 300), duration: 30 };
+  }
+  function issWaterRates(config, state, day) {
+    var demand = config.crew * 3.8, offline = config.outage && day >= config.outageStart && day < config.outageEnd;
+    var capacity = offline ? 0 : config.throughput;
+    var process = state.waste > 1e-8 ? capacity : Math.min(capacity, state.clean > 1e-8 ? demand : 0);
+    var served = state.clean > 1e-8 ? demand : Math.min(demand, config.efficiency * process);
+    if (state.clean >= config.cleanCapacity - 1e-8) process = Math.min(process, served / config.efficiency);
+    var returned = config.efficiency * process;
+    var overflow = state.waste >= config.wasteCapacity - 1e-8 ? Math.max(0, served-process) : 0;
+    return { clean: returned-served, waste: served-process-overflow, served: served, unmet: demand-served,
+      processed: process, recovered: returned, loss: (1-config.efficiency)*process, overflow: overflow,
+      accepted: 0, rejected: 0, demand: demand, offline: offline };
+  }
+  function issWaterAdvance(state, rates, day) {
+    var next = { day: day }, elapsed = day-state.day;
+    ['clean','waste','served','unmet','processed','recovered','loss','overflow','accepted','rejected'].forEach(function(field){next[field]=state[field]+rates[field]*elapsed;});
+    return next;
+  }
+  var _issWaterRuns = [];
+  function issWaterRun(options) {
+    var config = issWaterConfig(options), key = JSON.stringify(config);
+    for (var cache=0;cache<_issWaterRuns.length;cache++) if (_issWaterRuns[cache].key===key)return _issWaterRuns[cache].model;
+    var state = {day:0,clean:config.cleanStart,waste:config.wasteStart,served:0,unmet:0,processed:0,recovered:0,loss:0,overflow:0,accepted:0,rejected:0};
+    var boundaries=[30];
+    if(config.outage)boundaries.push(config.outageStart,config.outageEnd);
+    if(config.delivery)boundaries.push(config.deliveryDay);
+    boundaries=boundaries.filter(function(day){return day>0;}).sort(function(a,b){return a-b;}).filter(function(day,index,all){return !index||day-all[index-1]>1e-9;});
+    var segments=[],points=[state],firstEmpty=null,firstShortfall=null,firstOverflow=null,deliveryEvent=null;
+    if(state.clean===0)firstEmpty=0;
+    boundaries.forEach(function(boundary){
+      var guard=0;
+      while(boundary-state.day>1e-9 && guard++<100){
+        var rates=issWaterRates(config,state,state.day), nextDay=boundary;
+        [['clean',config.cleanCapacity],['waste',config.wasteCapacity]].forEach(function(tank){
+          var field=tank[0],rate=rates[field];
+          if(Math.abs(rate)>1e-10){var hit=state.day+((rate>0?tank[1]:0)-state[field])/rate;if(hit>state.day)nextDay=Math.min(nextDay,hit);}
+        });
+        if(firstShortfall===null && rates.unmet>1e-8)firstShortfall=state.day;
+        if(firstOverflow===null && rates.overflow>1e-8)firstOverflow=state.day;
+        if(boundary-nextDay<1e-9)nextDay=boundary;
+        segments.push({start:state.day,end:nextDay,state:state,rates:rates});
+        state=issWaterAdvance(state,rates,nextDay);
+        // Snap only round-off at analytically resolved tank events.
+        [['clean',config.cleanCapacity],['waste',config.wasteCapacity]].forEach(function(tank){if(Math.abs(state[tank[0]])<1e-8)state[tank[0]]=0;if(Math.abs(state[tank[0]]-tank[1])<1e-8)state[tank[0]]=tank[1];});
+        if(firstEmpty===null&&state.clean===0)firstEmpty=state.day;
+        points.push(state);
+      }
+      if(config.delivery && Math.abs(boundary-config.deliveryDay)<1e-9){
+        var before=state, accepted=Math.min(config.deliveryLitres,config.cleanCapacity-state.clean);
+        state=Object.assign({},state,{clean:state.clean+accepted,accepted:accepted,rejected:config.deliveryLitres-accepted});
+        deliveryEvent={day:boundary,before:before,after:state,accepted:accepted,rejected:config.deliveryLitres-accepted};
+        points.push(state);
+      }
+    });
+    var model={config:config,segments:segments,points:points,end:state,initial:config.cleanStart+config.wasteStart,
+      firstEmpty:firstEmpty,firstShortfall:firstShortfall,firstOverflow:firstOverflow,deliveryEvent:deliveryEvent};
+    _issWaterRuns.push({key:key,model:model});if(_issWaterRuns.length>6)_issWaterRuns.shift();return model;
+  }
+  function issWaterInspect(model, requestedDay, side) {
+    var day=issFlightNumber(requestedDay,0,0,30), state=model.end;
+    var event=model.deliveryEvent, beforeDelivery=event&&Math.abs(day-event.day)<1e-9&&side==='before';
+    if(beforeDelivery)state=event.before;
+    else if(day<30){
+      var segment=model.segments[0];
+      for(var index=1;index<model.segments.length;index++)if(model.segments[index].start<=day)segment=model.segments[index];else break;
+      state=issWaterAdvance(segment.state,segment.rates,day);
+    }
+    // Flows are read on the selected side of a delivery jump. Other events
+    // are continuous and use the rates immediately following the event.
+    var rates=issWaterRates(model.config,state,day);
+    return Object.assign({},state,{day:day,side:beforeDelivery?'before':'after',initial:model.initial,
+      requested:rates.demand*day,demand:rates.demand,useRate:rates.served,unmetRate:rates.unmet,
+      processRate:rates.processed,returnRate:rates.recovered,lossRate:rates.loss,overflowRate:rates.overflow,
+      offline:rates.offline,cleanPercent:state.clean/model.config.cleanCapacity*100,wastePercent:state.waste/model.config.wasteCapacity*100});
+  }
+  // Isothermal, well-mixed reservoirs joined by a compressible restriction.
+  // Mass is exchanged conservatively; venting to vacuum is exponential.
+  function issPressureFlow(upstream, downstream, areaCm2, temperature) {
+    if(areaCm2<=0)return {rate:0,regime:'closed'};
+    if(upstream<=0||upstream-downstream<1e-8)return {rate:0,regime:'balanced'};
+    var gamma=1.4, gasR=287.05, ratio=Math.max(0,Math.min(1,downstream/upstream));
+    var critical=Math.pow(2/(gamma+1),gamma/(gamma-1));
+    var factor=ratio<=critical?Math.sqrt(gamma)*Math.pow(2/(gamma+1),(gamma+1)/(2*(gamma-1))):Math.sqrt(2*gamma/(gamma-1)*Math.pow(ratio,2/gamma)*-Math.expm1((gamma-1)/gamma*Math.log(ratio)));
+    return {rate:.72*areaCm2*1e-4*upstream/Math.sqrt(gasR*temperature)*factor,regime:ratio<=critical?'choked':'subsonic'};
+  }
+  function issPressureConfig(options) {
+    options=options||{};var ventEnd=issFlightNumber(options.ventMinutes,6,1,10);
+    return {cabinVolume:388,volume:issFlightNumber(options.volume,12,6,24),temperature:295.15,gasR:287.05,
+      cabinStart:101.325,start:issFlightNumber(options.start,101.3,0,110),cycle:options.cycle!==false,
+      ventArea:issFlightNumber(options.ventArea,3,0,10),fillArea:issFlightNumber(options.fillArea,3,0,10),leakArea:issFlightNumber(options.leakArea,0,0,2),
+      ventEnd:ventEnd,fillStart:ventEnd+issFlightNumber(options.holdMinutes,4,0,8),
+      isolate:options.isolate===true,isolateMinute:issFlightNumber(options.isolateMinute,10,0,20),duration:20,step:issFlightNumber(options.stepSeconds,.5,.05,1)/60};
+  }
+  function issPressureForcing(config,minute) {
+    var isolated=config.isolate&&minute>=config.isolateMinute;
+    var vent=!isolated&&config.cycle&&minute<config.ventEnd;
+    var fill=!isolated&&(!config.cycle||minute>=config.fillStart);
+    return {isolated:isolated,vent:vent,fill:fill,ventArea:(vent?config.ventArea:0)+config.leakArea,fillArea:fill?config.fillArea:0};
+  }
+  function issPressureStep(config,state,minute) {
+    var dt=(minute-state.minute)*60, next=Object.assign({},state,{minute:minute});
+    if(dt<=0)return next;
+    var forcing=issPressureForcing(config,(minute+state.minute)/2), rt=config.gasR*config.temperature;
+    function vent(seconds) {
+      var coefficient=issPressureFlow(1,0,forcing.ventArea,config.temperature).rate*rt/config.volume;
+      var removed=next.lock*-Math.expm1(-coefficient*seconds);
+      next.lock-=removed;next.vented+=removed;next.leaked+=forcing.ventArea>0?removed*config.leakArea/forcing.ventArea:0;
+    }
+    if(forcing.fillArea<=0){vent(dt);return next;}
+    // Symmetric splitting: half vent, conservative implicit-midpoint exchange,
+    // half vent. A transfer can never carry the reservoirs past equilibrium.
+    vent(dt/2);
+    var signedLimit=(next.cabin/config.cabinVolume-next.lock/config.volume)/(1/config.cabinVolume+1/config.volume);
+    var direction=signedLimit<0?-1:1, upper=Math.abs(signedLimit), lower=0;
+    if(upper>1e-12){
+      function transferRate(amount) {
+        var cabinP=(next.cabin-direction*amount/2)*rt/config.cabinVolume;
+        var lockP=(next.lock+direction*amount/2)*rt/config.volume;
+        return issPressureFlow(Math.max(cabinP,lockP),Math.min(cabinP,lockP),forcing.fillArea,config.temperature).rate;
+      }
+      upper=Math.min(upper,dt*transferRate(0));
+      if(upper>dt*transferRate(upper))for(var n=0;n<26;n++){var middle=(lower+upper)/2;if(middle>dt*transferRate(middle))upper=middle;else lower=middle;}
+      var transfer=direction*upper;next.cabin-=transfer;next.lock+=transfer;next.transferred+=transfer;next.circulated+=Math.abs(transfer);
+    }
+    vent(dt/2);return next;
+  }
+  function issPressureReading(config,state) {
+    var rt=config.gasR*config.temperature,cabinP=state.cabin*rt/config.cabinVolume,lockP=state.lock*rt/config.volume;
+    var forcing=issPressureForcing(config,state.minute),fill=issPressureFlow(Math.max(cabinP,lockP),Math.min(cabinP,lockP),forcing.fillArea,config.temperature);
+    var vent=issPressureFlow(lockP,0,forcing.ventArea,config.temperature);
+    return Object.assign({},state,{cabinKPa:cabinP/1000,lockKPa:lockP/1000,differenceKPa:(cabinP-lockP)/1000,
+      innerForceKN:Math.abs(cabinP-lockP)/1000,outerForceKN:lockP/1000,
+      transferRate:fill.rate*(cabinP<lockP?-1:1),ventRate:vent.rate,leakRate:forcing.ventArea>0?vent.rate*config.leakArea/forcing.ventArea:0,commandVentRate:forcing.ventArea>0?vent.rate*(forcing.ventArea-config.leakArea)/forcing.ventArea:0,regime:fill.regime,isolated:forcing.isolated,ventOpen:forcing.vent,fillOpen:forcing.fill});
+  }
+  var _issPressureRuns=[];
+  function issPressureRun(options) {
+    var config=issPressureConfig(options),key=JSON.stringify(config);
+    for(var cached=0;cached<_issPressureRuns.length;cached++)if(_issPressureRuns[cached].key===key)return _issPressureRuns[cached].model;
+    var rt=config.gasR*config.temperature;
+    var state={minute:0,cabin:config.cabinStart*1000*config.cabinVolume/rt,lock:config.start*1000*config.volume/rt,vented:0,leaked:0,transferred:0,circulated:0};
+    var initial=state.cabin+state.lock,samples=[state],plotPoints=[state],events=[20];
+    if(config.cycle)events.push(config.ventEnd,config.fillStart);
+    if(config.isolate)events.push(config.isolateMinute);
+    events=events.sort(function(a,b){return a-b;}).filter(function(t,i,a){return t>0&&(!i||t-a[i-1]>1e-9);});
+    var nearEqualMinute=null,subsonicMinute=null;
+    function refine(before,after,predicate){var lo=before.minute,hi=after.minute;for(var i=0;i<25;i++){var mid=(lo+hi)/2;if(predicate(issPressureReading(config,issPressureStep(config,before,mid))))hi=mid;else lo=mid;}return hi;}
+    events.forEach(function(boundary){
+      while(boundary-state.minute>1e-10){
+        var previous=state,minute=Math.min(boundary,state.minute+config.step,(Math.floor(state.minute*12+1e-7)+1)/12);
+        if(boundary-minute<1e-10)minute=boundary;
+        state=issPressureStep(config,state,minute);samples.push(state);
+        var before=issPressureReading(config,previous),now=issPressureReading(config,state);
+        if(before.fillOpen&&nearEqualMinute===null&&Math.abs(now.differenceKPa)<=.05){nearEqualMinute=Math.abs(before.differenceKPa)<=.05?previous.minute:refine(previous,state,function(v){return Math.abs(v.differenceKPa)<=.05;});}
+        if(subsonicMinute===null&&before.regime==='choked'&&Math.min(now.cabinKPa,now.lockKPa)/Math.max(now.cabinKPa,now.lockKPa)>Math.pow(2/2.4,3.5))subsonicMinute=refine(previous,state,function(v){return Math.min(v.cabinKPa,v.lockKPa)/Math.max(v.cabinKPa,v.lockKPa)>Math.pow(2/2.4,3.5);});
+        if(Math.abs(state.minute*12-Math.round(state.minute*12))<1e-7||Math.abs(state.minute-boundary)<1e-9)plotPoints.push(state);
+      }
+    });
+    var model={config:config,initial:initial,samples:samples,plotPoints:plotPoints,end:issPressureReading(config,state),nearEqualMinute:nearEqualMinute,subsonicMinute:subsonicMinute};
+    _issPressureRuns.push({key:key,model:model});if(_issPressureRuns.length>6)_issPressureRuns.shift();return model;
+  }
+  function issPressureInspect(model,requestedMinute) {
+    var minute=issFlightNumber(requestedMinute,0,0,20),samples=model.samples,lo=0,hi=samples.length-1;
+    while(lo<hi){var middle=Math.ceil((lo+hi)/2);if(samples[middle].minute<=minute)lo=middle;else hi=middle-1;}
+    return Object.assign(issPressureReading(model.config,issPressureStep(model.config,samples[lo],minute)),{initial:model.initial});
+  }
+  // Idealized normal-incidence cloud experiment, not a ballistic-limit equation.
+  // A projectile entrains one cylindrical bumper plug; center momentum is
+  // conserved. A user-selected fraction of the available collision energy
+  // drives a uniform disk's homologous expansion (<v_radial^2> = v_edge^2 / 2).
+  // No fracture law, equation of state or rear-wall response is inferred.
+  function issDebrisModel(options) {
+    var o=options||{}, densities={aluminum:2700,glass:2500,steel:7800};
+    var material=Object.prototype.hasOwnProperty.call(densities,o.material)?o.material:'aluminum';
+    var c={diameter:issFlightNumber(o.diameter,1,.2,12),speed:issFlightNumber(o.speed,12,7,15),
+      gap:issFlightNumber(o.gap,10,2,20),bumper:issFlightNumber(o.bumper,.5,.2,2),
+      spread:issFlightNumber(o.spread,10,0,30),material:material,density:densities[material],bumperDensity:2700,approach:.04};
+    var radius=c.diameter/2000, speed=c.speed*1000, gap=c.gap/100;
+    var projectile=c.density*4*Math.PI*Math.pow(radius,3)/3;
+    var plug=c.bumperDensity*Math.PI*radius*radius*c.bumper/1000, mass=projectile+plug;
+    var momentum=projectile*speed, axial=momentum/mass, incoming=.5*projectile*speed*speed;
+    var translation=.5*mass*axial*axial, available=incoming-translation;
+    var expansion=available*c.spread/100, internal=available-expansion;
+    var radial=Math.sqrt(4*expansion/mass), flightSeconds=gap/axial;
+    var wallRadius=radius+radial*flightSeconds, wallArea=Math.PI*wallRadius*wallRadius;
+    var impactUs=c.approach/speed*1e6, arrivalUs=impactUs+flightSeconds*1e6;
+    return {config:c,radius:radius,projectile:projectile,plug:plug,mass:mass,momentum:momentum,
+      incoming:incoming,translation:translation,expansion:expansion,internal:internal,
+      axial:axial,radial:radial,halfAngle:Math.atan2(radial,axial)*180/Math.PI,
+      wallRadius:wallRadius,wallArea:wallArea,fluence:translation/(wallArea*1e4),
+      impactUs:impactUs,arrivalUs:arrivalUs,flightUs:flightSeconds*1e6};
+  }
+  // A material-following circular probe through a uniform, homologous disk.
+  // Enclosed mass scales as a^2; integrating v_r^2 over area gives a^4.
+  function issDebrisProbe(model,timeUs,percent) {
+    var state=issDebrisInspect(model,timeUs),fraction=issFlightNumber(percent,50,0,100)/100;
+    var massFraction=fraction*fraction,expansionFraction=massFraction*massFraction;
+    var radius=state.radius*fraction,area=Math.PI*radius*radius;
+    return {active:state.after,fraction:fraction,massFraction:massFraction,expansionFraction:expansionFraction,
+      cloudRadius:state.radius,radius:radius,area:area,
+      mass:state.after?model.mass*massFraction:null,
+      forward:state.after?model.translation*massFraction:null,
+      expansion:state.after?model.expansion*expansionFraction:null,
+      edgeSpeed:state.after?model.radial*fraction:null,
+      normalDensity:state.after?model.translation/(Math.PI*state.radius*state.radius*1e4):null};
+  }
+  function issDebrisTracers(model,timeUs) {
+    var state=issDebrisInspect(model,timeUs);if(!state.after)return [];
+    // Equal-area radial shells with symmetric azimuths. Markers sample a
+    // continuous disk; they do not predict real fragments or fragment counts.
+    return Array.from({length:64},function(_,i){
+      var shell=Math.floor(i/8),fraction=Math.sqrt((shell+.5)/8),angle=(i%8)*Math.PI/4+(shell%2)*Math.PI/8;
+      var dx=fraction*Math.cos(angle),dy=fraction*Math.sin(angle);
+      return {fraction:fraction,x:state.radius*dx,y:state.radius*dy,
+        vx:model.radial*dx,vy:model.radial*dy,mass:model.mass/64};
+    });
+  }
+  function issDebrisSweep(model,reference,options) {
+    var o=options||{},metric=['fluence','diameter','flight'].indexOf(o.metric)>=0?o.metric:'fluence';
+    var logarithmic=metric==='fluence'&&o.log!==false;
+    function point(base,gap){
+      var seconds=gap/100/base.axial,radius=base.radius+base.radial*seconds;
+      var p={gap:gap,diameter:radius*2000,flight:seconds*1e6,fluence:base.translation/(Math.PI*radius*radius*1e4)};
+      p.value=p[metric];return p;
+    }
+    var same=!!reference&&['diameter','speed','bumper','spread','material'].every(function(key){return model.config[key]===reference.config[key];});
+    var samples=Array.from({length:73},function(_,i){return point(model,2+i/4);});
+    var referenceSamples=reference&&!same?Array.from({length:73},function(_,i){return point(reference,2+i/4);}):[];
+    var selected=point(model,model.config.gap),saved=reference?point(reference,reference.config.gap):null;
+    var all=samples.concat(referenceSamples,[selected],saved?[saved]:[]);
+    var values=all.map(function(p){return logarithmic?Math.log(p.value):p.value;});
+    var low=Math.min.apply(null,values),high=Math.max.apply(null,values);
+    if(logarithmic){var padding=high-low>1e-10?(high-low)*.1:.5;low-=padding;high+=padding;}
+    else {low=0;high*=1.1;}
+    all.forEach(function(p){p.y=(high-(logarithmic?Math.log(p.value):p.value))/(high-low);});
+    var ticks=[0,.25,.5,.75,1].map(function(y){var value=high-y*(high-low);return {y:y,value:logarithmic?Math.exp(value):value};});
+    return {metric:metric,log:logarithmic,samples:samples,referenceSamples:referenceSamples,selected:selected,reference:saved,sharedCurve:same,ticks:ticks};
+  }
+  // Compare actual elapsed times, or independently inspect each first-contact
+  // event. A completed trial is held at that boundary, never extrapolated.
+  function issDebrisPair(model,reference,timeUs,mode) {
+    var view=mode==='clock'?'clock':'contact',clock=issFlightNumber(timeUs,0,0,model.arrivalUs);
+    var widest=issDebrisModel(Object.assign({},model.config,{gap:20}));
+    var refWidest=reference?issDebrisModel(Object.assign({},reference.config,{gap:20})):widest;
+    // One isotropic scale, fixed across gap changes, time and inspection mode.
+    var scale=Math.min(1600,84/Math.max(widest.wallRadius,refWidest.wallRadius));
+    function shot(base){
+      var target=view==='clock'?clock:base.arrivalUs;
+      return {model:base,state:issDebrisInspect(base,target),held:target>base.arrivalUs};
+    }
+    return {mode:view,clock:clock,scale:scale,current:shot(model),reference:reference?shot(reference):null};
+  }
+  // Two disk intersection area, in square meters. Sector angles use atan2
+  // and the common chord to stay stable at internal/external tangency.
+  // https://mathworld.wolfram.com/Circle-CircleIntersection.html
+  function issDebrisOverlap(R,r,d) {
+    if(d>=R+r)return 0;
+    var cap=Math.PI*Math.min(R,r)*Math.min(R,r);
+    if(d<=Math.abs(R-r))return cap;
+    var chord=Math.sqrt(Math.max(0,(R+r-d)*(d+R-r)*(d-R+r)*(d+R+r)));
+    function segment(radius,dot){
+      var angle=2*Math.atan2(chord,dot),a2=angle*angle;
+      var sector=angle<.01?angle*a2/6*(1-a2/20+a2*a2/840):angle-Math.sin(angle);
+      return radius*radius*sector/2;
+    }
+    return Math.max(0,Math.min(cap,segment(R,d*d+R*R-r*r)+segment(r,d*d+r*r-R*R)));
+  }
+  function issDebrisDetector(model,reference,options) {
+    var o=options||{},radius=issFlightNumber(o.radius,10,.5,30)/1000;
+    var footprintMax=Math.max(model.wallRadius,reference?reference.wallRadius:0),maxOffset=footprintMax+radius;
+    var offsetMm=issFlightNumber(o.offset,0,0,maxOffset*1000),offset=offsetMm>=maxOffset*1000?maxOffset:offsetMm/1000,area=Math.PI*radius*radius;
+    function sample(base){
+      var overlap=issDebrisOverlap(base.wallRadius,radius,offset),fraction=overlap/base.wallArea;
+      return {overlap:overlap,fraction:fraction,coverage:overlap/area,energy:base.translation*fraction,mass:base.mass*fraction,average:base.translation*fraction/(area*1e4)};
+    }
+    var scale=130/Math.max(footprintMax,2*radius),target=60/scale;
+    var power=Math.pow(10,Math.floor(Math.log(target)/Math.LN10)),mantissa=target/power;
+    // A 1/2/5 ruler that always fits the physical view, including tiny clouds.
+    var ruler=(mantissa>=5?5:mantissa>=2?2:1)*power;
+    return {radius:radius,offset:offset,maxOffset:maxOffset,area:area,footprintMax:footprintMax,
+      scale:scale,ruler:ruler,current:sample(model),reference:reference?sample(reference):null};
+  }
+  // First-contact radial traverse of the same physical aperture. Sample the
+  // partial-overlap interval densely, including exact inner/outer tangency.
+  // A uniform global grid could miss a tiny footprint beside a large reference.
+  function issDebrisScan(model,reference,options) {
+    var o=options||{},aperture=issDebrisDetector(model,reference,{radius:o.radius});
+    var metric=o.metric==='mass'?'mass':'energy',unit=metric==='mass'?'mg':'J';
+    function curve(base){
+      var start=Math.abs(base.wallRadius-aperture.radius),end=base.wallRadius+aperture.radius;
+      var offsets=[0,start,base.wallRadius,end,aperture.maxOffset];
+      for(var i=1;i<64;i++)offsets.push(start+(end-start)*i/64);
+      offsets.sort(function(a,b){return a-b;});
+      var total=metric==='mass'?base.mass*1e6:base.translation;
+      var samples=offsets.filter(function(x,i){return i===0||x!==offsets[i-1];}).map(function(offset){
+        return {offset:offset,value:total*issDebrisOverlap(base.wallRadius,aperture.radius,offset)/base.wallArea};
+      });
+      return {samples:samples,start:start,end:end,edge:base.wallRadius,peak:samples[0].value};
+    }
+    var current=curve(model),saved=reference?curve(reference):null,peak=Math.max(current.peak,saved?saved.peak:0);
+    var step=Math.pow(10,Math.floor(Math.log(peak)/Math.LN10))/2,high=Math.ceil(peak/step)*step;
+    return {metric:metric,unit:unit,maxOffset:aperture.maxOffset,high:high,current:current,reference:saved};
+  }
+  function issDebrisSnapshot(model) {
+    var c=model.config;
+    return {version:1,diameter:c.diameter,speed:c.speed,gap:c.gap,bumper:c.bumper,spread:c.spread,material:c.material};
+  }
+  function issDebrisComparison(model,saved) {
+    var fields=['diameter','speed','gap','bumper','spread','material'];
+    var pinned=!!saved&&typeof saved==='object'&&!Array.isArray(saved)&&saved.version===1;
+    var reference=pinned?issDebrisModel(saved):null;
+    // A malformed saved trial must not masquerade as a measured comparison.
+    pinned=pinned&&fields.every(function(key){return saved[key]===reference.config[key];});
+    if(!pinned)reference=issDebrisModel(Object.assign({},model.config,{gap:2}));
+    var changed=fields.filter(function(key){return model.config[key]!==reference.config[key];});
+    return {reference:reference,pinned:pinned,changed:changed,
+      energyRatio:model.incoming/reference.incoming,normalRatio:model.translation/reference.translation,
+      areaRatio:model.wallArea/reference.wallArea,fluenceRatio:model.fluence/reference.fluence,
+      footprintMax:Math.max(model.wallRadius,reference.wallRadius)};
+  }
+
+  function issDebrisInspect(model,timeUs) {
+    var time=issFlightNumber(timeUs,0,0,model.arrivalUs),after=time>=model.impactUs;
+    var flight=Math.max(0,time-model.impactUs)*1e-6;
+    return {time:time,after:after,phase:time>=model.arrivalUs?'contact':after?(time===model.impactUs?'impact':'cloud'):'approach',
+      x:after?Math.min(model.config.gap/100,model.axial*flight):-model.config.approach+model.config.speed*1000*time*1e-6,
+      radius:after?model.radius+model.radial*flight:model.radius,
+      incoming:after?0:model.incoming,translation:after?model.translation:0,
+      expansion:after?model.expansion:0,internal:after?model.internal:0};
+  }
+
   var _issRefOrbit = issOrbit(ISS_REF_ALT);
 
   // Fixed-axis astronaut response to a tool pulse, in SI units and radians.
@@ -129,21 +897,51 @@
       return Math.max(min, Math.min(max, value == null || !isFinite(number) ? fallback : number));
     }
     var torque = bounded(options.torque, 6, 30, 18);
-    var inertia = bounded(options.inertia, 16, 64, 32);
+    var initialInertia = bounded(options.inertia, 16, 64, 32);
+    var targetInertia = bounded(options.targetInertia, 16, 64, initialInertia);
+    var counterRatio = bounded(options.counterRatio, 0, 2, 0);
+    var counterTorque = torque * counterRatio, counterStart = 1.5, counterEnd = 2;
     var time = bounded(elapsed, 0, 2.5, 0), pulse = 0.5;
     var braced = options.braced !== false;
-    var poweredTime = Math.min(time, pulse), coastTime = Math.max(0, time - pulse);
+    var poweredTime = Math.min(time, pulse);
+    var postureStart = .75, postureEnd = 1.25, postureDuration = postureEnd - postureStart;
+    var postureTime = Math.max(0, Math.min(postureDuration, time - postureStart));
+    var inertiaSlope = (targetInertia - initialInertia) / postureDuration;
+    var inertia = initialInertia + inertiaSlope * postureTime;
+    var postureChanged = Math.abs(targetInertia - initialInertia) > 1e-9;
+    var postureActive = postureChanged && time >= postureStart && time < postureEnd;
     // Opposite tool reaction about one body axis. After the pulse, torque is
     // zero but angular momentum persists; the restraint cancels body torque.
     // NASA: www1.grc.nasa.gov/beginners-guide-to-aeronautics/torque-moment/
-    var alpha = braced ? 0 : -torque / inertia;
-    var omega = time === 0 ? 0 : alpha * poweredTime;
-    return { torque: torque, inertia: inertia, braced: braced, time: time,
+    var counterTime = Math.max(0, time - counterStart), counterPowered = Math.min(counterTime, pulse);
+    // Integrate angular impulse first so momentum does not gain rounding error
+    // from dividing by inertia and multiplying back for the readout.
+    var angularMomentum = braced ? 0 : -torque * poweredTime + counterTorque * counterPowered;
+    var omega = angularMomentum / inertia;
+    // During the prescribed posture change, L is constant while I changes
+    // linearly. Integrate omega = L/I analytically, including the log term.
+    // OpenStax: university-physics-volume-1/11-3-conservation-of-angular-momentum
+    var rampIntegral = Math.abs(inertiaSlope) < 1e-8 ? postureTime / initialInertia
+      : Math.log1p(inertiaSlope * postureTime / initialInertia) / inertiaSlope;
+    var firstMomentum = braced ? 0 : -torque * pulse;
+    var coastIntegral = Math.max(0, Math.min(time, postureStart) - pulse) / initialInertia
+      + rampIntegral + Math.max(0, time - postureEnd) / targetInertia;
+    var angle = braced || time === 0 ? 0 : -torque / initialInertia * .5 * poweredTime * poweredTime
+      + firstMomentum * coastIntegral
+      + counterTorque / targetInertia * (.5 * counterPowered * counterPowered + counterPowered * Math.max(0, counterTime - pulse));
+    var postureWork = .5 * firstMomentum * firstMomentum * (1 / inertia - 1 / initialInertia);
+    var toolWork = braced ? 0 : .5 * Math.pow(torque * poweredTime, 2) / initialInertia
+      + (counterPowered > 0 ? .5 * (angularMomentum * angularMomentum - firstMomentum * firstMomentum) / targetInertia : 0);
+    var counterActive = counterRatio > 0 && time >= counterStart && time < counterEnd;
+    return { torque: torque, inertia: inertia, initialInertia: initialInertia, targetInertia: targetInertia, braced: braced, time: time,
+      postureStart: postureStart, postureEnd: postureEnd, postureProgress: postureTime / postureDuration,
+      postureChanged: postureChanged, postureActive: postureActive, postureWork: postureWork, toolWork: toolWork,
+      counterRatio: counterRatio, counterTorque: counterTorque, counterStart: counterStart, counterEnd: counterEnd,
       pulseDuration: pulse, duration: 2.5, omega: omega,
-      angle: time === 0 ? 0 : alpha * (0.5 * poweredTime * poweredTime + poweredTime * coastTime),
-      angularMomentum: inertia * omega, energy: 0.5 * inertia * omega * omega,
-      netTorque: time > 0 && time < pulse ? alpha * inertia : 0,
-      phase: time === 0 ? 'ready' : time < pulse ? 'pulse' : time < 2.5 ? 'coast' : 'complete' };
+      angle: angle,
+      angularMomentum: angularMomentum, energy: 0.5 * inertia * omega * omega,
+      netTorque: braced ? 0 : time > 0 && time < pulse ? -torque : counterActive ? counterTorque : 0,
+      phase: time === 0 ? 'ready' : time < pulse ? 'pulse' : postureActive ? 'posture' : counterActive ? 'counterpulse' : time < 2.5 ? 'coast' : 'complete' };
   }
 
   // Ideal one-dimensional free flight and contact, in SI units. The initial
@@ -159,7 +957,9 @@
     var cargo = bounded(options.cargo, 5, 40, 15);
     var impulse = bounded(options.impulse, 4, 22, 12);
     var drift = bounded(options.drift, -0.1, 0.1, 0.02);
-    var restitution = options.mode === 'elastic' ? 1 : 0;
+    var mode = options.mode === 'elastic' || options.mode === 'cushioned' ? options.mode : 'catch';
+    // e is separation speed / approach speed, not the fraction of energy kept.
+    var restitution = mode === 'elastic' ? 1 : mode === 'cushioned' ? bounded(options.restitution, 0, 1, 0.5) : 0;
     var initialSpeed = impulse / mass;
     var closingSpeed = initialSpeed - drift;
     var contactTime = closingSpeed > 1e-8 ? 2.5 / closingSpeed : Infinity;
@@ -175,29 +975,42 @@
     var crewX = contacted ? contactX + afterCrew * (time - contactTime) : initialSpeed * time;
     var cargoX = contacted ? contactX + afterCargo * (time - contactTime) : 2.5 + drift * time;
     var initialEnergy = 0.5 * mass * initialSpeed * initialSpeed + 0.5 * cargo * drift * drift;
-    var energy = 0.5 * mass * crewV * crewV + 0.5 * cargo * cargoV * cargoV;
+    var crewEnergy = 0.5 * mass * crewV * crewV;
+    var cargoEnergy = 0.5 * cargo * cargoV * cargoV;
+    var contactImpulse = contacted ? mass * cargo / (mass + cargo) * (1 + restitution) * closingSpeed : 0;
+    var energyLost = contacted ? 0.5 * mass * cargo / (mass + cargo) * closingSpeed * closingSpeed * (1 - restitution * restitution) : 0;
     return { mass: mass, cargo: cargo, impulse: impulse, drift: drift, time: time,
-      duration: duration, contactTime: contactTime, contacted: contacted, mode: restitution ? 'elastic' : 'catch',
+      duration: duration, contactTime: contactTime, contacted: contacted, mode: mode, restitution: restitution,
       crewX: crewX, cargoX: cargoX, crewV: crewV, cargoV: cargoV,
       initialSpeed: initialSpeed, momentum: momentum, initialEnergy: initialEnergy,
-      energy: energy, energyLost: Math.max(0, initialEnergy - energy) };
+      closingSpeed: closingSpeed, gap: Math.max(0, cargoX - crewX),
+      centerX: (mass * crewX + cargo * cargoX) / (mass + cargo), centerV: momentum / (mass + cargo),
+      crewImpulse: -contactImpulse, cargoImpulse: contactImpulse,
+      crewEnergy: crewEnergy, cargoEnergy: cargoEnergy, energy: crewEnergy + cargoEnergy, energyLost: energyLost };
   }
 
   // User-started clocks stay local to the mounted experiment. Saved projects
-  // restore their last time, never an autoplaying simulation. The analytic
+  // restore their last time, never an autoplaying simulation. Experiment
   // models receive seconds; display acceleration does not alter their physics.
   function issExperimentPlayback(props) {
     var React = props.React, h = React.createElement;
     var playingState = React.useState(false), playing = playingState[0], setPlaying = playingState[1];
     var rateState = React.useState((props.speeds || [1, 4, 10])[0]), rate = rateState[0], setRate = rateState[1];
-    var latest = React.useRef(props), emitted = React.useRef(props.value);
+    var latest = React.useRef(props), emitted = React.useRef(props.value), pendingFrames = React.useRef([]);
     latest.current = props;
     var t = props.t || function (key, fallback) { return fallback; };
     var canPlay = !props.disabled && props.value < props.max;
-    React.useEffect(function () { setPlaying(false); }, [props.resetKey, props.disabled]);
+    React.useEffect(function () { setPlaying(false); pendingFrames.current = []; }, [props.resetKey, props.disabled]);
     React.useEffect(function () {
-      // A slider, step button, or reset outside this clock pauses playback.
-      if (Math.abs(props.value - emitted.current) > 1e-7) setPlaying(false);
+      // React can commit an earlier emitted frame after the clock has already
+      // issued another one. Recognize all unacknowledged frames, so a delayed
+      // render is not mistaken for a slider/step-button seek.
+      var acknowledged = -1;
+      for (var index = 0; index < pendingFrames.current.length; index++) {
+        if (Math.abs(props.value - pendingFrames.current[index]) <= 1e-7) { acknowledged = index; break; }
+      }
+      if (acknowledged !== -1) pendingFrames.current.splice(0, acknowledged + 1);
+      else if (Math.abs(props.value - emitted.current) > 1e-7) { setPlaying(false); pendingFrames.current = []; }
       emitted.current = props.value;
     }, [props.value]);
     React.useEffect(function () {
@@ -212,7 +1025,7 @@
           sinceCommit += delta;
           time = Math.min(latest.current.max, time + delta * rate);
           if (sinceCommit >= 0.1 || time >= latest.current.max) {
-            emitted.current = time;
+            pendingFrames.current.push(time);
             latest.current.onAdvance(time);
             sinceCommit = 0;
           }
@@ -234,7 +1047,7 @@
         h('select', { id: 'iss-playback-speed-' + props.id, 'data-iss-playback-speed': props.id, value: rate,
           style: { background: '#102538', color: '#e2e8f0', border: '1px solid #58748a', borderRadius: 7, padding: '7px 9px' },
           onChange: function (event) { setRate(Number(event.target.value)); } },
-          (props.speeds || [1, 4, 10]).map(function (speed) { return h('option', { key: speed, value: speed }, speed + '×'); }))),
+          (props.speeds || [1, 4, 10]).map(function (speed, index) { return h('option', { key: speed, value: speed }, props.speedLabels && props.speedLabels[index] || speed + '×'); }))),
       h('span', { style: { flexBasis: '100%', fontSize: 11, color: '#94a3b8' } },
         t('stem.spacestation.playback_hint', 'Playback pauses when you seek, change the setup, or leave this view.')));
   }
@@ -1171,7 +1984,7 @@
             interiorGuided: true, lowGImpulse: 10, lowGResult: null,
             interiorView: '3d', interiorNav: freshInteriorNavigation(),
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
-            opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
+            opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsPowerReference: true, opsCabinStart: 22, opsThermalReference: true, opsThermalFocus: 'loop', opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsAirFlow: 90, opsAirActivity: 1, opsAirStart: 2600, opsAirRestore: false, opsAirRestoreMinute: 45, opsAirReference: true, opsAirFocus: 'zone', opsEclssLab: 'air', opsWaterDay: 0, opsWaterClean: 120, opsWaterWaste: 25, opsWaterThroughput: 36, opsWaterOutage: false, opsWaterOutageStart: 10, opsWaterOutageDays: 6, opsWaterDelivery: false, opsWaterDeliveryDay: 12, opsWaterDeliveryLitres: 100, opsWaterReference: true, opsPressureMinute: 0, opsPressureVolume: 12, opsPressureStart: 101.3, opsPressureCycle: true, opsPressureVent: 3, opsPressureFill: 3, opsPressureLeak: 0, opsPressureVentMinutes: 6, opsPressureHoldMinutes: 4, opsPressureIsolate: false, opsPressureReference: true, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsAttitudeTorque: .35, opsAttitudeInertia: 80, opsAttitudeDump: false, opsAttitudeBurnMinute: 40, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsAttitudeReference: true, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsDebrisBumper: .5, opsDebrisMaterial: 'aluminum', opsDebrisSpread: 10, opsDebrisTime: 0, opsDebrisCompare: true, opsDebrisBaseline: null, opsDebrisVectors: true, opsDebrisProbe: 50, opsDebrisMagnify: false, opsDebrisSweepMetric: 'fluence', opsDebrisSweepLog: true, opsDebrisPairMode: 'contact', opsDebrisDetectorRadius: 10, opsDebrisDetectorOffset: 0, opsDebrisScanMetric: 'energy', opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
             orbitAlt: 420, orbitInc: 51.6,
             orbitPredictRef: 420, orbitPredictPick: null, orbitPredictAlt: null, orbitPredictLog: [],
             orbitChallenge: null, orbitChallengePick: null, orbitChallengeDone: {},
@@ -6183,7 +6996,7 @@
         var completedDockRuns = Math.max(0, Number(d.dockRuns) || 0);
         var completedDockWins = Math.max(0, Number(d.dockWins) || 0);
         // Game state (meters; station docking port at origin, approach along +Y = right)
-        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, propellant: 80, t: 0, over: false, paused: false, timeScale: 4, precision: false, damp: false, deltaV: 0, scenario: 'rendezvous', forecastSeconds: 60, msg: '', trail: [], lastTrail: 0, thrust: { up: false, down: false, fwd: false, back: false } };
+        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, propellant: 80, t: 0, over: false, paused: false, timeScale: 4, precision: false, damp: false, deltaV: 0, scenario: 'rendezvous', forecastSeconds: 60, camera: 'approach', pulseSeconds: .5, lastManeuver: null, msg: '', trail: [], lastTrail: 0, thrust: { up: false, down: false, fwd: false, back: false } };
         var practiceStarts = {
           rendezvous: { x: 26, y: -190, vx: 0, vy: 1, label: __alloT('stem.spacestation.dock_practice_rendezvous', 'Rendezvous') },
           final: { x: .6, y: -25, vx: -.015, vy: .24, label: __alloT('stem.spacestation.dock_practice_final', 'Final approach') },
@@ -6300,8 +7113,8 @@
             if (typeof awardXP === 'function') { try { awardXP(5); } catch (e) {} }
           }
         }
-        function step() {
-          if (st.over || st.paused) return;
+        function step(manualStep) {
+          if (st.over || (st.paused && !manualStep)) return;
           st.t += DT;
           var ux = Number(st.thrust.up) - Number(st.thrust.down), uy = Number(st.thrust.fwd) - Number(st.thrust.back);
           // A rate-hold controller fires the same finite thrusters as the pilot.
@@ -6348,6 +7161,17 @@
             endRun('drift', __alloT('stem.spacestation.dock_drift', 'Drifted out of the approach zone. Notice HOW you drifted — in orbit, thrusting forward raises you and slows you.'));
           }
         }
+        function viewSnapshot() {
+          // Isotropic metre scale: zoom cannot stretch alignment or change the
+          // flight state. Keep the capsule and contact plane below the HUD.
+          var fit = Math.min(14, 440 / Math.max(20, Math.abs(st.y)), 86 / Math.max(8, Math.abs(st.x) + 2.5));
+          if (st.y > 0) fit = Math.min(fit, 65 / Math.max(20, st.y));
+          var scale = st.camera === 'wide' ? Math.min(1.35, fit) : fit;
+          var idealTick = 100 / scale, decade = Math.pow(10, Math.floor(Math.log10(idealTick)));
+          var fraction = idealTick / decade, tick = (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * decade;
+          return { scale: scale, ox: Wc - 90, oy: 208, portX: Wc - 90 - 5 * scale, tick: tick };
+        }
+        cv._dockViewSnapshot = viewSnapshot;
         function draw() {
           if (!ctx2) return;
           var spaceGradient = ctx2.createLinearGradient(0, 0, 0, Hc);
@@ -6366,36 +7190,47 @@
           earthGlow.addColorStop(0, '#2578b8'); earthGlow.addColorStop(.62, '#124b82'); earthGlow.addColorStop(1, '#061a3b');
           ctx2.fillStyle = earthGlow; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 560, 0, Math.PI * 2); ctx2.fill();
           ctx2.strokeStyle = 'rgba(125,211,252,.55)'; ctx2.lineWidth = 3; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 562, Math.PI * 1.12, Math.PI * 1.88); ctx2.stroke();
-          var sc = 1.35;
-          var ox = Wc - 90, oy = Hc / 2;
-          // Approach corridor, centerline, and 50 m range gates.
-          ctx2.fillStyle = 'rgba(14,165,233,.055)'; ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 520, oy - 109); ctx2.lineTo(ox - 520, oy + 109); ctx2.closePath(); ctx2.fill();
+          var view = viewSnapshot(), sc = view.scale, ox = view.ox, oy = view.oy, portFaceX = view.portX;
+          // The cyan contact opening is exactly ±2.5 m about the axis. The
+          // wider approach guide is illustrative; it is not a collision wall.
+          var captureHalf = 2.5 * sc, farHalf = captureHalf + (portFaceX - 30) * .12;
+          ctx2.save(); ctx2.beginPath(); ctx2.rect(15, 120, Wc - 30, 198); ctx2.clip();
+          ctx2.fillStyle = 'rgba(14,165,233,.07)'; ctx2.beginPath(); ctx2.moveTo(portFaceX, oy - captureHalf); ctx2.lineTo(30, oy - farHalf); ctx2.lineTo(30, oy + farHalf); ctx2.lineTo(portFaceX, oy + captureHalf); ctx2.closePath(); ctx2.fill();
           ctx2.lineWidth = 1.2; ctx2.strokeStyle = 'rgba(56,189,248,.48)'; ctx2.setLineDash([7, 7]);
-          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 520, oy - 109); ctx2.stroke();
-          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 520, oy + 109); ctx2.stroke();
-          ctx2.strokeStyle = 'rgba(125,211,252,.25)'; ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(22, oy); ctx2.stroke(); ctx2.setLineDash([]);
+          ctx2.beginPath(); ctx2.moveTo(portFaceX, oy - captureHalf); ctx2.lineTo(30, oy - farHalf); ctx2.stroke();
+          ctx2.beginPath(); ctx2.moveTo(portFaceX, oy + captureHalf); ctx2.lineTo(30, oy + farHalf); ctx2.stroke();
+          ctx2.strokeStyle = 'rgba(125,211,252,.25)'; ctx2.beginPath(); ctx2.moveTo(portFaceX, oy); ctx2.lineTo(22, oy); ctx2.stroke(); ctx2.setLineDash([]);
           ctx2.font = '700 8px ui-monospace, monospace'; ctx2.textAlign = 'center';
-          [50, 100, 150].forEach(function (meters) {
-            var gateX = ox - meters * sc; var halfGate = 4 + meters * .11;
+          for (var meters = view.tick; meters * sc < ox - 25; meters += view.tick) {
+            var gateX = ox - meters * sc; var halfGate = Math.min(76, (2.5 + Math.max(0, meters - 5) * .12) * sc);
             ctx2.strokeStyle = 'rgba(125,211,252,.2)'; ctx2.beginPath(); ctx2.moveTo(gateX, oy - halfGate); ctx2.lineTo(gateX, oy + halfGate); ctx2.stroke();
-            ctx2.fillStyle = 'rgba(186,230,253,.62)'; ctx2.fillText(meters + ' m', gateX, oy + halfGate + 12);
-          });
-          ctx2.textAlign = 'left';
+            ctx2.fillStyle = '#bae6fd'; ctx2.fillText(meters + ' m', gateX, oy + halfGate + 12);
+          }
+          ctx2.restore(); ctx2.textAlign = 'left';
           // Station silhouette with shaded node, truss, arrays, and active port.
+          var hardwareX = portFaceX + 8, nodeHalf = Math.max(13, captureHalf + 5), nodeWidth = Math.max(32, Math.min(86, sc * 8));
           ctx2.shadowColor = 'rgba(226,232,240,.28)'; ctx2.shadowBlur = 12;
-          var nodeGradient = ctx2.createLinearGradient(ox - 7, oy - 12, ox + 26, oy + 12); nodeGradient.addColorStop(0, '#f8fafc'); nodeGradient.addColorStop(.5, '#94a3b8'); nodeGradient.addColorStop(1, '#475569');
-          ctx2.fillStyle = nodeGradient; ctx2.fillRect(ox - 4, oy - 13, 32, 26); ctx2.shadowBlur = 0;
-          ctx2.fillStyle = '#64748b'; ctx2.fillRect(ox + 9, oy - 92, 9, 184);
-          [[oy - 137, '#c28a21'], [oy + 96, '#b77918']].forEach(function (panelInfo) {
-            ctx2.fillStyle = panelInfo[1]; ctx2.fillRect(ox + 1, panelInfo[0], 24, 41);
+          var nodeGradient = ctx2.createLinearGradient(hardwareX - 4, oy - nodeHalf, hardwareX + nodeWidth, oy + nodeHalf); nodeGradient.addColorStop(0, '#f8fafc'); nodeGradient.addColorStop(.5, '#94a3b8'); nodeGradient.addColorStop(1, '#475569');
+          ctx2.fillStyle = nodeGradient; ctx2.fillRect(hardwareX - 4, oy - nodeHalf, nodeWidth, nodeHalf * 2); ctx2.shadowBlur = 0;
+          ctx2.strokeStyle = '#cbd5e1'; ctx2.lineWidth = 1;
+          for (var seam = 12; seam < nodeWidth - 4; seam += 15) { ctx2.beginPath(); ctx2.moveTo(hardwareX + seam, oy - nodeHalf + 3); ctx2.lineTo(hardwareX + seam, oy + nodeHalf - 3); ctx2.stroke(); }
+          ctx2.fillStyle = '#64748b'; ctx2.fillRect(hardwareX + 9, oy - 92, 9, 184);
+          [[oy - 137, '#c28a21'], [oy + 77, '#b77918']].forEach(function (panelInfo) {
+            ctx2.fillStyle = panelInfo[1]; ctx2.fillRect(hardwareX + 1, panelInfo[0], 24, 41);
             ctx2.strokeStyle = 'rgba(254,215,112,.7)'; ctx2.lineWidth = .7;
-            for (var cell = 1; cell < 4; cell++) { ctx2.beginPath(); ctx2.moveTo(ox + 1, panelInfo[0] + cell * 10); ctx2.lineTo(ox + 25, panelInfo[0] + cell * 10); ctx2.stroke(); }
-            ctx2.beginPath(); ctx2.moveTo(ox + 13, panelInfo[0]); ctx2.lineTo(ox + 13, panelInfo[0] + 41); ctx2.stroke();
+            for (var cell = 1; cell < 4; cell++) { ctx2.beginPath(); ctx2.moveTo(hardwareX + 1, panelInfo[0] + cell * 10); ctx2.lineTo(hardwareX + 25, panelInfo[0] + cell * 10); ctx2.stroke(); }
+            ctx2.beginPath(); ctx2.moveTo(hardwareX + 13, panelInfo[0]); ctx2.lineTo(hardwareX + 13, panelInfo[0] + 41); ctx2.stroke();
           });
-          ctx2.shadowColor = '#38bdf8'; ctx2.shadowBlur = 14; ctx2.fillStyle = '#67e8f9'; ctx2.fillRect(ox - 8, oy - 5, 5, 10); ctx2.shadowBlur = 0;
-          ctx2.fillStyle = '#7dd3fc'; ctx2.font = '800 8px ui-monospace, monospace'; ctx2.fillText('IDSS PORT', ox - 50, oy - 13);
+          ctx2.shadowColor = '#38bdf8'; ctx2.shadowBlur = 14; ctx2.fillStyle = '#67e8f9'; ctx2.fillRect(portFaceX, oy - captureHalf, 4, captureHalf * 2); ctx2.shadowBlur = 0;
+          ctx2.strokeStyle = '#e0f2fe'; ctx2.lineWidth = 1.5; ctx2.beginPath(); ctx2.moveTo(portFaceX - 7, oy - captureHalf); ctx2.lineTo(portFaceX + 8, oy - captureHalf); ctx2.moveTo(portFaceX - 7, oy + captureHalf); ctx2.lineTo(portFaceX + 8, oy + captureHalf); ctx2.stroke();
+          ctx2.fillStyle = '#7dd3fc'; ctx2.font = '800 8px ui-monospace, monospace'; ctx2.fillText('CONTACT ±2.5 M', portFaceX - 76, oy - captureHalf - 12);
           // Capsule with glass nose, service body, and RCS plumes.
           var px = ox + st.y * sc, py = oy - st.x * sc;
+          if (st.paused && st.lastManeuver) {
+            var originX = ox + st.lastManeuver.from.y * sc, originY = oy - st.lastManeuver.from.x * sc;
+            ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 2; ctx2.setLineDash([2, 3]); ctx2.beginPath(); ctx2.moveTo(originX, originY); ctx2.lineTo(px, py); ctx2.stroke(); ctx2.setLineDash([]);
+            ctx2.beginPath(); ctx2.arc(originX, originY, 4, 0, Math.PI * 2); ctx2.stroke();
+          }
           // Breadcrumb trail, unpowered relative-motion prediction, braking point, and abort vector.
           if (st.trail && st.trail.length > 1) {
             ctx2.strokeStyle = 'rgba(125,211,252,.34)'; ctx2.lineWidth = 1.4; ctx2.setLineDash([2, 5]); ctx2.beginPath();
@@ -6411,7 +7246,7 @@
             ctx2.strokeStyle = forecastColor; ctx2.lineWidth = 1.5;
             ctx2.beginPath(); ctx2.arc(forecastX, forecastY, 7, 0, Math.PI * 2); ctx2.stroke();
             ctx2.beginPath(); ctx2.moveTo(forecastX - 3, forecastY); ctx2.lineTo(forecastX + 3, forecastY); ctx2.moveTo(forecastX, forecastY - 3); ctx2.lineTo(forecastX, forecastY + 3); ctx2.stroke();
-            var forecastTextX = Math.max(18, Math.min(Wc - 116, forecastX - 38));
+            var forecastTextX = Math.max(18, Math.min(portFaceX - 122, forecastX - 38));
             ctx2.fillStyle = 'rgba(2,6,23,.88)'; ctx2.fillRect(forecastTextX - 4, forecastY + 11, 113, 17);
             ctx2.fillStyle = forecastColor; ctx2.font = '800 8px ui-monospace, monospace';
             ctx2.fillText((forecast.terminal === 'contact' ? 'CONTACT +' : 'COAST +') + forecastEnd.time.toFixed(1) + ' s', forecastTextX, forecastY + 23);
@@ -6427,7 +7262,10 @@
             ctx2.strokeStyle = stopMargin >= 8 ? '#4ade80' : '#f87171'; ctx2.lineWidth = 1.3; ctx2.beginPath(); ctx2.moveTo(stopX - 5, stopY); ctx2.lineTo(stopX + 5, stopY); ctx2.moveTo(stopX, stopY - 5); ctx2.lineTo(stopX, stopY + 5); ctx2.stroke();
           }
           ctx2.strokeStyle = 'rgba(248,113,113,.6)'; ctx2.lineWidth = 1.2; ctx2.setLineDash([4, 4]); ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(px - 68, py); ctx2.stroke(); ctx2.setLineDash([]); ctx2.fillStyle = '#fca5a5'; ctx2.font = '800 7px ui-monospace, monospace'; ctx2.fillText('ABORT', px - 67, py - 5);
-          ctx2.save(); ctx2.translate(px, py); ctx2.shadowColor = 'rgba(125,211,252,.46)'; ctx2.shadowBlur = 11;
+          var capsuleScale = Math.min(1.8, Math.max(1, sc / 5));
+          // Position represents the docking nose, which meets the same -5 m
+          // plane used by collision detection. Hardware icons are schematic.
+          ctx2.save(); ctx2.translate(px - 11 * capsuleScale, py); ctx2.scale(capsuleScale, capsuleScale); ctx2.shadowColor = 'rgba(125,211,252,.46)'; ctx2.shadowBlur = 11;
           var capsuleGradient = ctx2.createLinearGradient(-10, -8, 11, 8); capsuleGradient.addColorStop(0, '#64748b'); capsuleGradient.addColorStop(.45, '#f8fafc'); capsuleGradient.addColorStop(1, '#94a3b8');
           ctx2.fillStyle = capsuleGradient; ctx2.beginPath(); ctx2.moveTo(11, 0); ctx2.lineTo(-7, -7); ctx2.lineTo(-10, -5); ctx2.lineTo(-10, 5); ctx2.lineTo(-7, 7); ctx2.closePath(); ctx2.fill(); ctx2.shadowBlur = 0;
           ctx2.fillStyle = '#0ea5e9'; ctx2.beginPath(); ctx2.arc(4, 0, 2.4, 0, Math.PI * 2); ctx2.fill();
@@ -6450,7 +7288,7 @@
           var vectorX = px + st.vy * sc * 13, vectorY = py - st.vx * sc * 13;
           ctx2.strokeStyle = '#4ade80'; ctx2.lineWidth = 2; ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(vectorX, vectorY); ctx2.stroke();
           ctx2.fillStyle = '#4ade80'; ctx2.beginPath(); ctx2.arc(vectorX, vectorY, 2.5, 0, Math.PI * 2); ctx2.fill();
-          ctx2.strokeStyle = 'rgba(74,222,128,.35)'; ctx2.lineWidth = 1; ctx2.beginPath(); ctx2.arc(ox - 6, oy, 14, 0, Math.PI * 2); ctx2.stroke(); ctx2.beginPath(); ctx2.arc(ox - 6, oy, 21, 0, Math.PI * 2); ctx2.stroke();
+          ctx2.strokeStyle = 'rgba(74,222,128,.35)'; ctx2.lineWidth = 1; ctx2.beginPath(); ctx2.arc(portFaceX, oy, Math.max(10, captureHalf), 0, Math.PI * 2); ctx2.stroke();
           // Compact flight-display telemetry.
           var range = Math.sqrt(st.x * st.x + st.y * st.y), speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
           ctx2.fillStyle = 'rgba(2,6,23,.72)'; ctx2.fillRect(10, 10, 152, 61); ctx2.strokeStyle = 'rgba(125,211,252,.24)'; ctx2.strokeRect(10.5, 10.5, 151, 60);
@@ -6473,27 +7311,32 @@
           // decides capture was drawn over the hardware. Its right edge now
           // stops 14 units short of the array, and the corridor's upper edge is
           // ~100 units below this row, so nothing else is under it.
-          var tapeR = ox - 14, tapeL = tapeR - 128;
+          var tapeR = hardwareX - 14, tapeL = tapeR - 128;
           ctx2.fillStyle = '#94a3b8'; ctx2.font = '700 7px ui-monospace, monospace'; ctx2.fillText('TOTAL RATE  0', tapeL, 48); ctx2.textAlign = 'right'; ctx2.fillText('2 M/S', tapeR, 48); ctx2.textAlign = 'left';
           ctx2.fillStyle = '#16372b'; ctx2.fillRect(tapeL, 53, 38, 5); ctx2.fillStyle = '#543619'; ctx2.fillRect(tapeL + 38, 53, 90, 5); ctx2.strokeStyle = '#64748b'; ctx2.strokeRect(tapeL + .5, 53.5, 127, 4);
           var speedNeedleX = tapeL + Math.min(2, speed) / 2 * 128; ctx2.strokeStyle = '#f8fafc'; ctx2.lineWidth = 1.5; ctx2.beginPath(); ctx2.moveTo(speedNeedleX, 50); ctx2.lineTo(speedNeedleX, 61); ctx2.stroke();
           // Adaptive final-approach inset preserves precision near contact while
           // the main field continues to show the complete rendezvous geometry.
-          if (range < 60 && !st.over) {
+          if (range < 60 && !st.over && st.camera === 'wide') {
             var insetX = 462, insetY = 232, insetW = 164, insetH = 102, portX = insetX + 137, portY = insetY + 53;
             var insetScale = Math.min(5, 108 / Math.max(18, range));
+            var insetContactX = portX - 5 * insetScale, insetCaptureHalf = 2.5 * insetScale;
             ctx2.save(); ctx2.beginPath(); ctx2.rect(insetX, insetY, insetW, insetH); ctx2.clip();
             ctx2.fillStyle = 'rgba(2,6,23,.82)'; ctx2.fillRect(insetX, insetY, insetW, insetH); ctx2.strokeStyle = 'rgba(125,211,252,.32)'; ctx2.strokeRect(insetX + .5, insetY + .5, insetW - 1, insetH - 1);
-            ctx2.fillStyle = 'rgba(14,165,233,.08)'; ctx2.beginPath(); ctx2.moveTo(portX, portY); ctx2.lineTo(insetX + 8, portY - 34); ctx2.lineTo(insetX + 8, portY + 34); ctx2.closePath(); ctx2.fill();
-            ctx2.strokeStyle = 'rgba(125,211,252,.45)'; ctx2.setLineDash([4,4]); ctx2.beginPath(); ctx2.moveTo(insetX + 8, portY); ctx2.lineTo(portX, portY); ctx2.stroke(); ctx2.setLineDash([]);
+            ctx2.fillStyle = 'rgba(14,165,233,.08)'; ctx2.beginPath(); ctx2.moveTo(insetContactX, portY - insetCaptureHalf); ctx2.lineTo(insetX + 8, portY - 34); ctx2.lineTo(insetX + 8, portY + 34); ctx2.lineTo(insetContactX, portY + insetCaptureHalf); ctx2.closePath(); ctx2.fill();
+            ctx2.strokeStyle = 'rgba(125,211,252,.45)'; ctx2.setLineDash([4,4]); ctx2.beginPath(); ctx2.moveTo(insetX + 8, portY); ctx2.lineTo(insetContactX, portY); ctx2.stroke(); ctx2.setLineDash([]);
             var insetCapsuleX = portX + st.y * insetScale, insetCapsuleY = portY - st.x * insetScale;
-            ctx2.strokeStyle = '#67e8f9'; ctx2.lineWidth = 2; ctx2.beginPath(); ctx2.arc(portX, portY, 9, 0, Math.PI * 2); ctx2.stroke();
+            ctx2.strokeStyle = '#67e8f9'; ctx2.lineWidth = 2; ctx2.beginPath(); ctx2.moveTo(insetContactX, portY - insetCaptureHalf); ctx2.lineTo(insetContactX, portY + insetCaptureHalf); ctx2.stroke();
             ctx2.fillStyle = '#f8fafc'; ctx2.beginPath(); ctx2.arc(insetCapsuleX, insetCapsuleY, 4, 0, Math.PI * 2); ctx2.fill();
             ctx2.strokeStyle = '#4ade80'; ctx2.lineWidth = 1.3; ctx2.beginPath(); ctx2.moveTo(insetCapsuleX, insetCapsuleY); ctx2.lineTo(insetCapsuleX + st.vy * insetScale * 8, insetCapsuleY - st.vx * insetScale * 8); ctx2.stroke();
             ctx2.fillStyle = '#bae6fd'; ctx2.font = '800 7px ui-monospace, monospace'; ctx2.fillText('PROXIMITY ×' + (insetScale / sc).toFixed(1), insetX + 8, insetY + 13);
             ctx2.restore();
           }
           ctx2.fillStyle = 'rgba(2,6,23,.66)'; ctx2.fillRect(10, Hc - 31, realMode ? 147 : 220, 21); ctx2.fillStyle = realMode ? '#7dd3fc' : '#fde68a'; ctx2.font = '800 9px ui-monospace, monospace'; ctx2.fillText(realMode ? 'ORBITAL PHYSICS // ON' : 'VIDEO-GAME PHYSICS // ON', 18, Hc - 17);
+          var ruler = view.tick / 2, rulerX = 257, rulerY = Hc - 17;
+          ctx2.strokeStyle = '#cbd5e1'; ctx2.lineWidth = 1.5; ctx2.beginPath(); ctx2.moveTo(rulerX, rulerY); ctx2.lineTo(rulerX + ruler * sc, rulerY); ctx2.moveTo(rulerX, rulerY - 4); ctx2.lineTo(rulerX, rulerY + 4); ctx2.moveTo(rulerX + ruler * sc, rulerY - 4); ctx2.lineTo(rulerX + ruler * sc, rulerY + 4); ctx2.stroke();
+          ctx2.fillStyle = '#e2e8f0'; ctx2.font = '800 8px ui-monospace, monospace'; ctx2.fillText(ruler + ' M', rulerX, rulerY - 9);
+          ctx2.textAlign = 'right'; ctx2.fillStyle = '#bae6fd'; ctx2.fillText(st.camera === 'approach' ? 'APPROACH CAMERA · METRE SCALE' : 'WIDE CAMERA · METRE SCALE', Wc - 16, Hc - 17); ctx2.textAlign = 'left';
           if (st.over) {
             ctx2.fillStyle = 'rgba(2,6,23,0.84)'; ctx2.fillRect(0, 0, Wc, Hc);
             // Soft-capture bloom at the port. One shot: it expands, fades, and
@@ -6508,7 +7351,7 @@
                 ctx2.globalAlpha = Math.max(0, ringFade) * 0.92;
                 ctx2.strokeStyle = '#4ade80'; ctx2.lineWidth = 3;
                 ctx2.shadowColor = '#4ade80'; ctx2.shadowBlur = 18;
-                ctx2.beginPath(); ctx2.arc(ox - 6, oy, ringR, 0, Math.PI * 2); ctx2.stroke();
+                ctx2.beginPath(); ctx2.arc(portFaceX, oy, ringR, 0, Math.PI * 2); ctx2.stroke();
                 ctx2.restore();
               }
             }
@@ -6545,6 +7388,27 @@
             if (dampButton) dampButton.setAttribute('aria-pressed', String(st.damp));
             var precisionButton = controls.querySelector('[data-dock-precision]');
             if (precisionButton) precisionButton.setAttribute('aria-pressed', String(st.precision));
+            ['approach', 'wide'].forEach(function (camera) {
+              var cameraButton = controls.querySelector('[data-dock-camera="' + camera + '"]');
+              if (cameraButton) cameraButton.setAttribute('aria-pressed', String(st.camera === camera));
+            });
+            var viewLabel = controls.querySelector('[data-dock-view-label]');
+            if (viewLabel) viewLabel.textContent = __alloFill(__alloT('stem.spacestation.dock_camera_width', 'View width {width} m · hardware icons schematic'), { width: (Wc / viewSnapshot().scale).toFixed(0) });
+            var maneuverPanel = controls.querySelector('[data-dock-maneuver-panel]');
+            if (maneuverPanel) {
+              ['back', 'up', 'down', 'fwd', 'coast'].forEach(function (direction) {
+                var pulseButton = maneuverPanel.querySelector('[data-dock-maneuver="' + direction + '"]');
+                if (pulseButton) pulseButton.disabled = st.over || (direction !== 'coast' && st.propellant <= 0);
+              });
+              var maneuver = st.lastManeuver, report = maneuverPanel.querySelector('[data-dock-maneuver-report]');
+              if (report) {
+                report.hidden = !maneuver;
+                if (maneuver) {
+                  var values = { elapsed: maneuver.seconds.toFixed(2) + ' s', fuel: maneuver.usedFuel.toFixed(3) + ' kg', radial: (maneuver.dvx >= 0 ? '+' : '') + maneuver.dvx.toFixed(4) + ' m/s', along: (maneuver.dvy >= 0 ? '+' : '') + maneuver.dvy.toFixed(4) + ' m/s', summary: maneuver.summary };
+                  Object.keys(values).forEach(function (name) { var reading = report.querySelector('[data-dock-maneuver-reading="' + name + '"]'); if (reading) reading.textContent = values[name]; });
+                }
+              }
+            }
             Object.keys(practiceStarts).forEach(function (id) {
               var button = controls.querySelector('[data-dock-scenario="' + id + '"]');
               if (button) button.setAttribute('aria-pressed', String(st.scenario === id));
@@ -6596,9 +7460,9 @@
           if (lastHudAt < 0 || (stamp != null && stamp - lastHudAt >= 250)) { updateHudMirror(); lastHudAt = stamp || 0; }
           rafId = requestAnimationFrame(loop);
         }
-        function setThrust(dir, on) { if (Object.prototype.hasOwnProperty.call(st.thrust, dir)) { st.thrust[dir] = on; if (on) st.damp = false; } }
+        function setThrust(dir, on) { if (Object.prototype.hasOwnProperty.call(st.thrust, dir)) { st.thrust[dir] = on; if (on) { st.damp = false; st.lastManeuver = null; } } }
         cv._dockSetThrust = setThrust;
-        cv._dockTogglePause = function () { st.paused = !st.paused; clearThrust(); st.firing = {}; accumulator = 0; lastTimestamp = null; updateHudMirror(); announceToSR(st.paused ? 'Docking paused.' : 'Docking resumed.'); };
+        cv._dockTogglePause = function () { st.paused = !st.paused; if (!st.paused) st.lastManeuver = null; clearThrust(); st.firing = {}; accumulator = 0; lastTimestamp = null; updateHudMirror(); announceToSR(st.paused ? 'Docking paused.' : 'Docking resumed.'); };
         cv._dockSetTimeScale = function (value) { st.timeScale = [1, 4, 8].indexOf(Number(value)) >= 0 ? Number(value) : 1; updateHudMirror(); };
         cv._dockSetPrecision = function () { st.precision = !st.precision; ACCEL = acceleration(); updateHudMirror(); };
         cv._dockSetDamp = function () { st.damp = !st.damp; clearThrust(); updateHudMirror(); announceToSR(st.damp ? 'Rate hold enabled. Thrusters consume propellant to cancel relative velocity.' : 'Rate hold disabled. Capsule coasting.'); };
@@ -6606,12 +7470,38 @@
           if ([30, 60, 120].indexOf(Number(value)) < 0) return;
           st.forecastSeconds = Number(value); updateHudMirror(); draw();
         };
+        cv._dockSetCamera = function (value) {
+          if (value !== 'wide' && value !== 'approach') return;
+          st.camera = value; updateHudMirror(); draw();
+        };
+        cv._dockSetPulseSeconds = function (value) {
+          if ([.25, .5, 1, 2].indexOf(Number(value)) >= 0) st.pulseSeconds = Number(value);
+        };
+        cv._dockManeuver = function (direction) {
+          var coast = direction === 'coast';
+          if (st.over || document.hidden || (!coast && (!Object.prototype.hasOwnProperty.call(st.thrust, direction) || st.propellant <= 0))) return;
+          var before = { x: st.x, y: st.y, vx: st.vx, vy: st.vy, t: st.t, propellant: st.propellant, deltaV: st.deltaV };
+          var duration = coast ? 5 : st.pulseSeconds;
+          st.paused = true; st.damp = false; clearThrust(); accumulator = 0; lastTimestamp = null;
+          if (!coast) st.thrust[direction] = true;
+          // Explicit time steps use exactly the same force, fuel and contact
+          // rules as held thrust. Clock acceleration never changes the impulse.
+          for (var tick = 0; tick < Math.round(duration / DT) && !st.over; tick++) step(true);
+          clearThrust(); st.firing = {};
+          var maneuver = { direction: direction, seconds: st.t - before.t, usedFuel: before.propellant - st.propellant,
+            dvx: st.vx - before.vx, dvy: st.vy - before.vy, thrustDeltaV: st.deltaV - before.deltaV,
+            from: { x: before.x, y: before.y }, startTime: before.t, endTime: st.t };
+          maneuver.summary = __alloFill(__alloT('stem.spacestation.dock_maneuver_result', 'Step {start}–{end} s: thrust delivered {delta} m/s of Δv. Measured changes include orbital drift. Paused after the step.'), { start: before.t.toFixed(2), end: st.t.toFixed(2), delta: maneuver.thrustDeltaV.toFixed(4) });
+          st.lastManeuver = maneuver;
+          updateHudMirror(); draw();
+          announceToSR(__alloFill(__alloT('stem.spacestation.dock_maneuver_sr', 'Step complete: {seconds} seconds, {fuel} kilograms of propellant used. Radial velocity change {radial}; along-track velocity change {along} meters per second. Paused.'), { seconds: maneuver.seconds.toFixed(2), fuel: maneuver.usedFuel.toFixed(3), radial: maneuver.dvx.toFixed(4), along: maneuver.dvy.toFixed(4) }));
+        };
         cv._dockReset = function (mode, scenario, paused) {
           realMode = mode !== false; cv._dockRealMode = realMode;
           st.scenario = Object.prototype.hasOwnProperty.call(practiceStarts, scenario) ? scenario : st.scenario;
           var start = practiceStarts[st.scenario];
           st.x = start.x; st.y = start.y; st.vx = start.vx; st.vy = start.vy; st.fuel = 100; st.t = 0; st.over = false; st.msg = ''; st.trail = []; st.lastTrail = 0; st.overResult = null;
-          st.propellant = PROPELLANT; st.deltaV = 0; st.damp = false; st.paused = paused === true; st.firing = {}; accumulator = 0; lastTimestamp = null; ACCEL = acceleration();
+          st.propellant = PROPELLANT; st.deltaV = 0; st.damp = false; st.paused = paused === true; st.firing = {}; st.lastManeuver = null; accumulator = 0; lastTimestamp = null; ACCEL = acceleration();
           st.thrust = { up: false, down: false, fwd: false, back: false };
           if (cv._dockResetMilestones) cv._dockResetMilestones();
           updateHudMirror(); draw();
@@ -6713,75 +7603,159 @@
           evaLog('🔩 Bolt ' + b + '/4 torqued. Gloved hands tire fast — pace yourself.', 5, { bolts: b });
         }
       }
-      function evaReset() { upd({ evaTorqueTime: 0, evaTorqueSeekToken: !d.evaTorqueSeekToken, eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, toolTorque: 18, bodyInertia: 32, footRestraint: true, reactionTrial: false, done: false, failMsg: '', started: true, log: ['📻 Airlock egress complete. Two tethers, both clipped at Quest. Daylight window open.'] } }); }
+      function evaReset() { upd({ evaTorqueTime: 0, evaTorqueSeekToken: !d.evaTorqueSeekToken, eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, toolTorque: 18, bodyInertia: 32, counterRatio: 0, footRestraint: true, reactionTrial: false, done: false, failMsg: '', started: true, log: ['📻 Airlock egress complete. Two tethers, both clipped at Quest. Daylight window open.'] } }); }
 
       function renderEvaMechanics() {
-        var settings = { torque: evaS.toolTorque, inertia: evaS.bodyInertia, braced: evaS.footRestraint !== false };
-        var response = issEvaReaction(settings, d.evaTorqueTime), end = issEvaReaction(settings, 2.5);
+        var settings = { torque: evaS.toolTorque, inertia: evaS.bodyInertia, targetInertia: evaS.postureChange === true ? evaS.postureInertia : evaS.bodyInertia, counterRatio: evaS.counterRatio, braced: evaS.footRestraint !== false };
+        var response = issEvaReaction(settings, d.evaTorqueTime);
+        var postureEnabled = evaS.postureChange === true, showPostureReference = d.evaPostureReference !== false;
+        var heldSettings = Object.assign({}, settings, { targetInertia: response.initialInertia });
+        var heldResponse = issEvaReaction(heldSettings, response.time);
+        var spread = (response.inertia - 16) / 48;
+        var wristX = 133 + 31 * spread, wristY = 76 - 19 * spread;
         var torque = response.torque, braced = response.braced;
         var rateDegrees = Math.abs(response.omega) * 180 / Math.PI, reactionAngle = response.angle * 180 / Math.PI;
-        var color = braced && torque >= 16 && torque <= 22 ? '#86efac' : '#fbbf24';
+        var spinDirection = Math.abs(response.omega) < 1e-10 ? 'stopped' : response.omega < 0 ? 'original' : 'reverse';
+        var directionText = spinDirection === 'stopped' ? __alloT('stem.spacestation.eva_spin_stopped', 'No rotation')
+          : spinDirection === 'original' ? __alloT('stem.spacestation.eva_spin_original', 'Original reaction direction') : __alloT('stem.spacestation.eva_spin_reverse', 'Reversed rotation');
+        var counterEnabled = response.counterRatio > 0;
+        var arcX = 112 + Math.sin(response.angle) * 66, arcY = 91 - Math.cos(response.angle) * 66;
+        var toolColor = response.phase === 'counterpulse' ? '#67e8f9' : response.phase === 'pulse' ? '#fbbf24' : '#8499ad';
+        var color = (braced && torque >= 16 && torque <= 22) || (counterEnabled && response.time >= response.counterEnd && spinDirection === 'stopped') ? '#86efac' : spinDirection === 'reverse' ? '#67e8f9' : '#fbbf24';
         function setup(patch) { upd({ eva: Object.assign({}, evaS, patch), evaTorqueTime: 0, evaTorqueSeekToken: !d.evaTorqueSeekToken }); }
-        function seek(time) { upd({ evaTorqueTime: time, evaTorqueSeekToken: !d.evaTorqueSeekToken }); }
+        function seek(time) { upd({ evaTorqueTime: Math.round(Math.max(0, Math.min(response.duration, time)) * 100) / 100, evaTorqueSeekToken: !d.evaTorqueSeekToken }); }
+        function pointerSeek(event) { var bounds = event.currentTarget.getBoundingClientRect(); if (event.isPrimary !== false && bounds.width > 0) seek(((event.clientX - bounds.left) / bounds.width * 343 - 4) / 335 * response.duration); }
         function tx(time) { return 45 + time / response.duration * 335; }
-        function ry(rate) { return 98 - Math.abs(rate) * 180 / Math.PI / 60 * 65; }
+        function ry(rate) { return 100 - rate * 180 / Math.PI / 60 * 60; }
+        function ratePathFor(modelSettings) { return Array.from({ length: 101 }, function (_, index) { var time = index * response.duration / 100; return (index ? 'L' : 'M') + tx(time).toFixed(3) + ' ' + ry(issEvaReaction(modelSettings, time).omega).toFixed(3); }).join(' '); }
+        var ratePath = ratePathFor(settings);
+        function signedWork(value) { return (value < -1e-9 ? '−' : value > 1e-9 ? '+' : '') + Math.abs(value).toFixed(3) + ' J'; }
+        function renderEvaClock() {
+          return h(React.Fragment, null,
+          h(issExperimentPlayback, { React: React, id: 'eva', t: __alloT, value: response.time, max: response.duration, speeds: [1, 2, 4],
+            resetKey: [torque, response.initialInertia, response.targetInertia, postureEnabled, braced, response.counterRatio, !!d.evaTorqueSeekToken].join(':'), onAdvance: function (time) { upd({ evaTorqueTime: time }); } }),
+          h('label', { htmlFor: 'iss-eva-time', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_scrub_time', 'Inspect pulse and coast time'), h('strong', null, response.time.toFixed(2) + ' s')),
+            h('input', { id: 'iss-eva-time', type: 'range', min: 0, max: response.duration, step: 0.01, value: response.time, 'aria-describedby': 'iss-eva-time-help', 'aria-valuetext': response.time.toFixed(2) + ' s', onChange: function (e) { seek(Number(e.target.value)); } }))
+          );
+        }
         var phaseText = response.phase === 'ready' ? __alloT('stem.spacestation.eva_pulse_ready', 'Ready. Run a half-second pulse, then watch the coast.')
           : braced ? __alloT('stem.spacestation.eva_pulse_held', 'Restraint holding. The reaction passes into the station; the astronaut stays still.')
           : response.phase === 'pulse' ? __alloT('stem.spacestation.eva_pulse_active', 'Torque on. Angular velocity is increasing.')
+          : response.phase === 'posture' ? __alloT('stem.spacestation.eva_posture_active', 'Changing posture with the tool off. Angular momentum stays constant while the spin rate changes.')
+          : response.phase === 'counterpulse' ? __alloT('stem.spacestation.eva_counter_active', 'Counterpulse on. Opposite torque changes the astronaut’s angular momentum.')
+          : counterEnabled && response.time >= response.counterEnd ? (spinDirection === 'stopped' ? __alloT('stem.spacestation.eva_counter_stopped', 'Spin canceled. The astronaut holds the new orientation. Stopping rotation does not restore the starting angle.')
+            : spinDirection === 'reverse' ? __alloT('stem.spacestation.eva_counter_reversed', 'The stronger counterpulse reversed the spin. Rotation continues in the new direction with the tool off.')
+            : __alloT('stem.spacestation.eva_counter_remaining', 'The weaker counterpulse left some original spin. The astronaut keeps rotating with the tool off.'))
           : __alloT('stem.spacestation.eva_pulse_coast', 'Torque off. Angular velocity stays constant as the astronaut keeps turning.');
-        return h('div', { 'data-iss-eva-mechanics': 'true', 'data-eva-phase': response.phase, style: { margin: '12px 0', padding: 14, border: '1px solid #334d68', borderRadius: 12, color: '#e2e8f0', background: 'linear-gradient(125deg,#08182b,#122033)' } },
+        return h('div', { id: 'iss-eva-reaction', className: 'iss-eva-reaction', 'data-iss-eva-mechanics': 'true', 'data-eva-phase': response.phase, style: { margin: '12px 0', padding: 14, border: '1px solid #334d68', borderRadius: 12, color: '#e2e8f0', background: 'linear-gradient(125deg,#08182b,#122033)' } },
           h('div', { className: 'iss-experiment-heading' },
             h('div', null, h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.eva_reaction_kicker', 'EVA / REACTION LAB')),
               h('h3', null, __alloT('stem.spacestation.eva_reaction_title', 'Turn the wrench. Watch the reaction.'))),
-            h('span', { className: 'iss-model-badge' }, __alloT('stem.spacestation.eva_pulse_badge', '0.5 s pulse + 2 s coast'))),
+            h('span', { className: 'iss-model-badge' }, counterEnabled ? __alloT('stem.spacestation.eva_counter_badge', 'Pulse → coast → counterpulse') : __alloT('stem.spacestation.eva_pulse_badge', '0.5 s pulse + 2 s coast'))),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' } },
-            h('svg', { viewBox: '0 0 230 180', width: 230, height: 180, role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.eva_reaction_diagram', 'At {value1} seconds, astronaut rotation is {value2} degrees opposite the tool and angular speed is {value3} degrees per second.'), { value1: response.time.toFixed(2), value2: Math.abs(reactionAngle).toFixed(1), value3: rateDegrees.toFixed(1) }), style: { flex: '0 1 230px', maxWidth: '100%' } },
-              h('rect', { x: 1, y: 1, width: 228, height: 178, rx: 12, fill: '#06111e', stroke: '#334d68' }),
+            h('svg', { viewBox: '0 0 230 205', width: 290, height: 258, role: 'img', 'data-eva-body-view': 'true', 'aria-label': __alloFill(__alloT('stem.spacestation.eva_reaction_diagram_v3', 'At {value1} seconds, astronaut turn from the starting angle is {value2} degrees and angular speed is {value3} degrees per second. {value4}. Current rotational inertia is {value5} kilogram meters squared.'), { value1: response.time.toFixed(2), value2: Math.abs(reactionAngle).toFixed(1), value3: rateDegrees.toFixed(1), value4: directionText, value5: response.inertia.toFixed(1) }), style: { flex: '0 1 290px', maxWidth: '100%', height: 'auto' } },
+              h('defs', null,
+                h('radialGradient', { id: 'iss-eva-lab-bg', cx: '45%', cy: '70%', r: '80%' }, h('stop', { offset: '0%', stopColor: '#143d58' }), h('stop', { offset: '100%', stopColor: '#030a15' })),
+                h('linearGradient', { id: 'iss-eva-suit', x1: 0, y1: 0, x2: 1, y2: 1 }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '60%', stopColor: '#cbd5e1' }), h('stop', { offset: '100%', stopColor: '#718da5' })),
+                h('linearGradient', { id: 'iss-eva-visor', x1: 0, y1: 0, x2: 1, y2: 1 }, h('stop', { offset: '0%', stopColor: '#fff0b5' }), h('stop', { offset: '45%', stopColor: '#ba851c' }), h('stop', { offset: '100%', stopColor: '#3e2916' }))),
+              h('rect', { x: 1, y: 1, width: 228, height: 203, rx: 12, fill: 'url(#iss-eva-lab-bg)', stroke: '#334d68' }),
+              [[23,37],[208,28],[19,125],[201,139],[34,89],[190,116]].map(function (star, index) { return h('circle', { key: index, cx: star[0], cy: star[1], r: .7, fill: '#bad4ed', opacity: .55 }); }),
               h('circle', { cx: 112, cy: 91, r: 62, fill: 'none', stroke: '#35516b', strokeDasharray: '3 6' }),
+              h('circle', { cx: 112, cy: 91, r: 36 + spread * 16, fill: 'none', stroke: '#c4b5fd', strokeOpacity: .35, strokeWidth: 1.5, 'data-eva-inertia-ring': 'true' }),
+              Array.from({ length: 12 }, function (_, index) { var a = index * Math.PI / 6; return h('line', { key: index, x1: 112 + Math.sin(a) * 62, y1: 91 - Math.cos(a) * 62, x2: 112 + Math.sin(a) * 66, y2: 91 - Math.cos(a) * 66, stroke: '#739bb8', strokeWidth: index % 3 === 0 ? 2 : 1 }); }),
+              Math.abs(response.angle) > .001 ? h('path', { d: 'M112 25 A66 66 0 0 ' + (response.angle > 0 ? 1 : 0) + ' ' + arcX + ' ' + arcY, fill: 'none', stroke: '#fcd34d', strokeWidth: 2.5 }) : null,
               h('path', { d: 'M15 168 H215 M22 175 L42 164 L62 175 L82 164 L102 175 L122 164 L142 175 L162 164 L182 175 L202 164', fill: 'none', stroke: '#64748b', strokeWidth: 2 }),
               h('path', { d: 'M112 95 Q156 143 181 88', fill: 'none', stroke: '#38bdf8', strokeDasharray: '4 3', strokeWidth: 2 }),
               h('rect', { x: 172, y: 48, width: 39, height: 52, rx: 6, fill: '#384457', stroke: '#a3b3c7' }),
-              h('circle', { cx: 183, cy: 71, r: 6, fill: response.phase === 'pulse' ? '#fbbf24' : '#7a8b9e' }),
+              h('circle', { cx: 183, cy: 71, r: 6, fill: toolColor }),
+              h('path', { d: 'M177 57 H203 M178 89 H204', stroke: '#8499ad', strokeWidth: 1 }),
               !braced && response.time > 0 ? h('g', { opacity: .18, fill: 'none', stroke: '#e2e8f0', strokeDasharray: '3 3' }, h('circle', { cx: 111, cy: 51, r: 14 }), h('rect', { x: 93, y: 63, width: 35, height: 35, rx: 12 })) : null,
               h('g', { transform: 'translate(0 18) rotate(' + reactionAngle + ' 112 73)', 'data-eva-body-angle': reactionAngle.toFixed(3) },
-                h('rect', { x: 93, y: 45, width: 35, height: 35, rx: 12, fill: '#e2e8f0', stroke: '#7dd3fc' }),
+                h('rect', { x: 87, y: 47, width: 11, height: 30, rx: 3, fill: '#6f859c', stroke: '#c3d6e5' }),
+                h('rect', { x: 93, y: 45, width: 35, height: 35, rx: 12, fill: 'url(#iss-eva-suit)', stroke: '#7dd3fc' }),
+                h('rect', { x: 106, y: 55, width: 15, height: 10, rx: 2, fill: '#4d677e', stroke: '#b8d7ea', strokeWidth: .7 }),
+                h('path', { d: 'M108 58 H118 M109 62 H113 M96 72 H125', stroke: '#c7e7f4', strokeWidth: 1 }),
                 h('circle', { cx: 111, cy: 33, r: 14, fill: '#f8fafc' }),
-                h('ellipse', { cx: 115, cy: 33, rx: 9, ry: 8, fill: '#c79935' }),
-                h('path', { d: 'M99 80 L98 99 M120 80 L124 99 M127 52 L152 49 L166 53', fill: 'none', stroke: '#e2e8f0', strokeWidth: 8, strokeLinecap: 'round' }),
-                h('path', { d: 'M157 53 H184', stroke: '#fbbf24', strokeWidth: 6, strokeLinecap: 'round' })),
-              braced ? h('g', null, h('path', { d: 'M112 121 L139 165', stroke: '#4ade80', strokeWidth: 5 }), h('rect', { x: 87, y: 119, width: 48, height: 7, rx: 2, fill: '#4ade80' })) : h('path', { d: 'M69 44 Q41 74 63 99 M63 99 L53 96 M63 99 L64 88', fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
-              h('text', { x: 12, y: 18, fill: color, fontSize: 9, fontWeight: 850 }, braced ? __alloT('stem.spacestation.eva_braced_label', 'RESTRAINT LOCKED') : __alloT('stem.spacestation.eva_free_label', 'FREE ROTATION'))),
+                h('ellipse', { cx: 115, cy: 33, rx: 9, ry: 8, fill: 'url(#iss-eva-visor)' }),
+                h('path', { d: 'M109 29 Q113 26 119 30', fill: 'none', stroke: '#fff8dd', strokeWidth: 1.8, opacity: .8 }),
+                h('path', { 'data-eva-limbs': 'true', d: 'M101 80 L' + (103 - 15 * spread) + ' 98 L' + (103 - 24 * spread) + ' 104 M121 80 L' + (121 + 15 * spread) + ' 98 L' + (122 + 24 * spread) + ' 104 M93 56 L' + (90 - 25 * spread) + ' ' + (63 - 10 * spread) + ' L' + (91 - 31 * spread) + ' ' + wristY + ' M128 56 L' + (134 + 20 * spread) + ' ' + (63 - 10 * spread) + ' L' + wristX + ' ' + wristY, fill: 'none', stroke: '#e2e8f0', strokeWidth: 8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                h('path', { d: 'M' + (wristX + 2) + ' ' + (wristY - 3) + ' h19 m-3 -4 v8', stroke: toolColor, strokeWidth: 4, strokeLinecap: 'round' })),
+              braced ? h('g', null, h('path', { d: 'M112 121 L139 165', stroke: '#4ade80', strokeWidth: 5 }), h('rect', { x: 87, y: 119, width: 48, height: 7, rx: 2, fill: '#4ade80' })) : spinDirection !== 'stopped' ? h('path', { d: 'M69 44 Q41 74 63 99 M63 99 L53 96 M63 99 L64 88', transform: spinDirection === 'reverse' ? 'translate(0 182) scale(1 -1)' : undefined, fill: 'none', stroke: spinDirection === 'reverse' ? '#67e8f9' : '#fbbf24', strokeWidth: 2 }) : null,
+              h('text', { x: 12, y: 18, fill: color, fontSize: 9, fontWeight: 850 }, braced ? __alloT('stem.spacestation.eva_braced_label', 'RESTRAINT LOCKED') : __alloT('stem.spacestation.eva_free_body_label', 'UNRESTRAINED')),
+              h('text', { x: 115, y: 193, textAnchor: 'middle', fill: spinDirection === 'reverse' ? '#67e8f9' : '#e0f2fe', fontSize: 9, 'data-eva-spin-direction': spinDirection }, directionText)),
             h('div', { style: { flex: '1 1 230px' } },
               h('label', { htmlFor: 'iss-eva-torque', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_tool_torque', 'Tool torque'), h('strong', null, torque + ' N·m')),
                 h('input', { id: 'iss-eva-torque', type: 'range', min: 6, max: 30, step: 1, value: torque, 'aria-valuetext': torque + ' N·m', onChange: function (e) { setup({ toolTorque: Number(e.target.value) }); } })),
-              h('label', { htmlFor: 'iss-eva-inertia', className: 'iss-experiment-control', style: { marginTop: 12 } }, h('span', null, __alloT('stem.spacestation.eva_inertia', 'Model rotational inertia'), h('strong', null, response.inertia + ' kg·m²')),
-                h('input', { id: 'iss-eva-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.inertia, 'aria-valuetext': response.inertia + ' kg·m²', onChange: function (e) { setup({ bodyInertia: Number(e.target.value) }); } })),
-              h('p', { style: { margin: '5px 0', color: SOFT, fontSize: 11, lineHeight: 1.6 } }, __alloT('stem.spacestation.eva_inertia_hint', 'A more spread-out body has greater rotational inertia. Change it between trials to compare the same pulse.')),
-              h('button', { type: 'button', 'aria-pressed': braced, onClick: function () { setup({ footRestraint: !braced }); }, style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + color, background: 'rgba(2,6,23,.4)', color: color, fontSize: 12, fontWeight: 750, cursor: 'pointer' } }, braced ? __alloT('stem.spacestation.eva_restraint_locked', '✓ Foot restraint locked') : __alloT('stem.spacestation.eva_restraint_free', '○ Astronaut unrestrained')))),
-          h('div', { className: 'iss-flight-telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, marginTop: 12 } },
-            [[__alloT('stem.spacestation.eva_body_rate', 'BODY RATE'), rateDegrees.toFixed(1) + '°/s', 'data-eva-angular-rate'], [__alloT('stem.spacestation.eva_turn_angle', 'TURN ANGLE'), Math.abs(reactionAngle).toFixed(1) + '°', 'data-eva-turn-angle'], [__alloT('stem.spacestation.eva_body_torque', 'BODY NET TORQUE'), Math.abs(response.netTorque).toFixed(1) + ' N·m', 'data-eva-net-torque']].map(function (metric) {
+              h('label', { htmlFor: 'iss-eva-inertia', className: 'iss-experiment-control', style: { marginTop: 12 } }, h('span', null, __alloT('stem.spacestation.eva_initial_inertia', 'Starting rotational inertia'), h('strong', null, response.initialInertia + ' kg·m²')),
+                h('input', { id: 'iss-eva-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.initialInertia, 'aria-valuetext': response.initialInertia + ' kg·m²', onChange: function (e) { setup({ bodyInertia: Number(e.target.value) }); } })),
+              h('p', { style: { margin: '5px 0', color: SOFT, fontSize: 11, lineHeight: 1.6 } }, __alloT('stem.spacestation.eva_initial_inertia_hint', 'A spread-out body has greater rotational inertia. Set the starting shape, then try a posture change during free coast.')),
+              h('button', { type: 'button', 'aria-pressed': braced, onClick: function () { setup({ footRestraint: !braced }); }, style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + color, background: 'rgba(2,6,23,.4)', color: color, fontSize: 12, fontWeight: 750, cursor: 'pointer' } }, braced ? __alloT('stem.spacestation.eva_restraint_locked', '✓ Foot restraint locked') : __alloT('stem.spacestation.eva_restraint_free', '○ Astronaut unrestrained')), renderEvaClock())),
+          h('div', { className: 'iss-eva-counter iss-eva-posture', 'data-eva-posture-controls': 'true' },
+            h('div', { className: 'iss-eva-counter-heading' }, h('h4', null, __alloT('stem.spacestation.eva_posture_title', 'Change shape. Change spin.')), h('span', null, __alloT('stem.spacestation.eva_posture_window', 'Posture change: 0.75–1.25 s'))),
+            h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.eva_posture_presets', 'Body posture experiments') },
+              [[null, 'hold', __alloT('stem.spacestation.eva_posture_hold', 'Hold posture')], [16, 'tuck', __alloT('stem.spacestation.eva_posture_tuck', 'Tuck inward')], [64, 'extend', __alloT('stem.spacestation.eva_posture_extend', 'Extend outward')]].map(function (preset) {
+                return h('button', { key: preset[1], type: 'button', 'data-eva-posture-preset': preset[1], 'aria-pressed': preset[0] === null ? !postureEnabled : postureEnabled && response.targetInertia === preset[0], onClick: function () { setup({ postureChange: preset[0] !== null, postureInertia: preset[0] === null ? response.initialInertia : preset[0], footRestraint: false }); } }, preset[2]);
+              })),
+            h('p', null, __alloT('stem.spacestation.eva_posture_hint', 'Presets release the model restraint and reset time. With no external torque, tucking inward speeds up rotation; extending slows it. Angular momentum stays the same.')),
+            h('label', { htmlFor: 'iss-eva-posture-inertia', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_final_inertia', 'Inertia after the posture change'), h('strong', null, response.targetInertia + ' kg·m²')),
+              h('input', { id: 'iss-eva-posture-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.targetInertia, disabled: !postureEnabled, 'aria-valuetext': response.targetInertia + ' kg·m²', onChange: function (e) { setup({ postureInertia: Number(e.target.value) }); } }))),
+          h('div', { className: 'iss-eva-counter' },
+            h('div', { className: 'iss-eva-counter-heading' }, h('h4', null, __alloT('stem.spacestation.eva_counter_title', 'Can you stop the spin?')),
+              h('span', null, __alloT('stem.spacestation.eva_counter_window', 'Counterpulse: 1.50–2.00 s'))),
+            h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.eva_counter_presets', 'Counterpulse experiments') },
+              [[0, 'coast', __alloT('stem.spacestation.eva_counter_free', 'Free coast')], [1, 'stop', __alloT('stem.spacestation.eva_counter_match', 'Stop spin')], [1.5, 'reverse', __alloT('stem.spacestation.eva_counter_reverse', 'Reverse spin')]].map(function (preset) {
+                return h('button', { key: preset[1], type: 'button', 'data-eva-counter-preset': preset[1], 'aria-pressed': !braced && response.counterRatio === preset[0], onClick: function () { setup({ counterRatio: preset[0], footRestraint: false }); } }, preset[2]);
+              })),
+            h('p', null, __alloT('stem.spacestation.eva_counter_presets_hint', 'Presets release the model restraint and reset the clock. Each pulse lasts 0.5 s. Equal opposite angular impulses stop the spin.')),
+            h('label', { htmlFor: 'iss-eva-counter-ratio', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_counter_strength', 'Counterpulse strength'), h('strong', null, Math.round(response.counterRatio * 100) + '% · ' + response.counterTorque.toFixed(1) + ' N·m')),
+              h('input', { id: 'iss-eva-counter-ratio', type: 'range', min: 0, max: 200, step: 10, value: Math.round(response.counterRatio * 100), 'aria-valuetext': __alloFill(__alloT('stem.spacestation.eva_counter_strength_value', '{value1} percent of the initial torque, {value2} newton meters in the opposite direction'), { value1: Math.round(response.counterRatio * 100), value2: response.counterTorque.toFixed(1) }), onChange: function (e) { setup({ counterRatio: Number(e.target.value) / 100 }); } }))),
+          h('div', { className: 'iss-flight-telemetry iss-eva-readings', style: { display: 'grid', gap: 8, marginTop: 12 } },
+            [[__alloT('stem.spacestation.eva_body_rate', 'BODY RATE'), rateDegrees.toFixed(1) + '°/s', 'data-eva-angular-rate'], [__alloT('stem.spacestation.eva_turn_angle', 'TURN ANGLE'), Math.abs(reactionAngle).toFixed(1) + '°', 'data-eva-turn-angle'], [__alloT('stem.spacestation.eva_body_torque', 'BODY NET TORQUE'), (response.netTorque < 0 ? '−' : response.netTorque > 0 ? '+' : '') + Math.abs(response.netTorque).toFixed(1) + ' N·m', 'data-eva-net-torque'], [__alloT('stem.spacestation.eva_angular_momentum', 'ANGULAR MOMENTUM'), (response.angularMomentum < 0 ? '−' : response.angularMomentum > 0 ? '+' : '') + Math.abs(response.angularMomentum).toFixed(1) + ' kg·m²/s', 'data-eva-angular-momentum']].map(function (metric) {
               var attrs = { key: metric[2], className: 'iss-flight-reading', style: { padding: 9, border: '1px solid #35516b', borderRadius: 8, color: '#e2e8f0' } }; attrs[metric[2]] = 'true';
               return h('div', attrs, h('span', { style: { display: 'block', minHeight: 24, color: SOFT, fontSize: 10 } }, metric[0]), h('strong', { style: { display: 'block', marginTop: 4, fontFamily: 'ui-monospace,monospace', fontWeight: 700, fontSize: 'clamp(12px,2.5vw,15px)', color: color } }, metric[1]));
             })),
-          h('svg', { viewBox: '0 0 400 135', role: 'img', 'aria-label': __alloT('stem.spacestation.eva_rate_plot', 'Angular speed against time. With the restraint released, speed rises during the first half second, then stays constant during the coast.'), style: { display: 'block', width: '100%', maxWidth: '100%', maxHeight: 180, marginTop: 10 } },
-            h('rect', { x: 45, y: 30, width: 67, height: 68, fill: 'rgba(251,191,36,.12)' }),
-            [0, 30, 60].map(function (degrees) { var y = 98 - degrees / 60 * 65; return h('g', { key: degrees }, h('path', { d: 'M45 ' + y + ' H380', fill: 'none', stroke: '#35516b', strokeDasharray: '3 5' }), h('text', { x: 38, y: y + 3, textAnchor: 'end', fill: '#afc4d7', fontSize: 10 }, degrees + '°/s')); }),
-            h('text', { x: 78.5, y: 18, textAnchor: 'middle', fill: '#fcd34d', fontSize: 9 }, __alloT('stem.spacestation.eva_plot_pulse', 'TORQUE PULSE')),
-            h('text', { x: 246, y: 18, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.spacestation.eva_plot_coast', 'COAST — NO TOOL TORQUE')),
-            h('path', { d: 'M45 98 L112 ' + ry(end.omega) + ' H380', fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5 }),
-            h('line', { x1: tx(response.time), x2: tx(response.time), y1: 26, y2: 104, stroke: '#e0f2fe', strokeWidth: 1.5 }),
-            h('circle', { cx: tx(response.time), cy: ry(response.omega), r: 4, fill: '#e0f2fe', stroke: '#07192a' }),
-            [0, .5, 1, 1.5, 2, 2.5].map(function (time) { return h('text', { key: time, x: tx(time), y: 120, textAnchor: 'middle', fill: '#afc4d7', fontSize: 10 }, time + ' s'); })),
-          h(issExperimentPlayback, { React: React, id: 'eva', t: __alloT, value: response.time, max: response.duration, speeds: [1, 2, 4],
-            resetKey: [torque, response.inertia, braced, !!d.evaTorqueSeekToken].join(':'), onAdvance: function (time) { upd({ evaTorqueTime: time }); } }),
-          h('label', { htmlFor: 'iss-eva-time', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_scrub_time', 'Inspect pulse and coast time'), h('strong', null, response.time.toFixed(2) + ' s')),
-            h('input', { id: 'iss-eva-time', type: 'range', min: 0, max: response.duration, step: 0.01, value: response.time, 'aria-valuetext': response.time.toFixed(2) + ' s', onChange: function (e) { seek(Number(e.target.value)); } })),
+          h('div', { className: 'iss-eva-work-readings' },
+            [[__alloT('stem.spacestation.eva_current_inertia', 'Current inertia'), response.inertia.toFixed(1) + ' kg·m²', 'data-eva-current-inertia'], [__alloT('stem.spacestation.eva_posture_work', 'Posture work on spin'), signedWork(response.postureWork), 'data-eva-posture-work'], [__alloT('stem.spacestation.eva_spin_energy', 'Rotational kinetic energy'), response.energy.toFixed(3) + ' J', 'data-eva-rotational-energy']].map(function (metric) {
+              var attrs = { key: metric[2], className: 'iss-flight-reading' }; attrs[metric[2]] = 'true';
+              return h('div', attrs, h('span', null, metric[0]), h('strong', null, metric[1]));
+            })),
+          h('p', { className: 'iss-eva-graph-key', 'data-eva-energy-balance': 'true' }, __alloFill(__alloT('stem.spacestation.eva_work_balance', 'Tool work {value1} + posture work {value2} = rotation energy {value3} J. Changing posture can add or remove rotation energy without an external torque.'), { value1: signedWork(response.toolWork), value2: signedWork(response.postureWork), value3: response.energy.toFixed(3) })),
+          h('div', { className: 'iss-eva-plot-heading' }, h('strong', null, __alloT('stem.spacestation.eva_rate_heading', 'Spin rate (°/s)')),
+            response.postureChanged ? h('button', { type: 'button', 'data-eva-posture-compare': 'true', 'aria-pressed': showPostureReference, onClick: function () { upd({ evaPostureReference: !showPostureReference }); } }, __alloT('stem.spacestation.eva_compare_hold', 'Compare held posture')) : null),
+          h('div', { className: 'iss-eva-plot-grid' },
+            h('div', { className: 'iss-eva-y-axis', 'aria-hidden': 'true' }, [60, 30, 0, -30, -60].map(function (rate) { return h('span', { key: rate }, (rate > 0 ? '+' : '') + rate); })),
+            h('svg', { viewBox: '41 32 343 136', preserveAspectRatio: 'none', role: 'img', 'data-eva-rate-plot': 'true', 'aria-label': __alloT('stem.spacestation.eva_posture_plot_base', 'Spin rate against time. Negative is the original reaction direction; positive is reversed rotation. Cyan follows the selected trial.') + (counterEnabled ? ' ' + __alloT('stem.spacestation.eva_coast_curve', 'Dashed amber: no counterpulse, same posture.') : '') + (response.postureChanged && showPostureReference ? ' ' + __alloT('stem.spacestation.eva_held_curve', 'Dashed violet: original posture, same pulses.') : ''),
+              onPointerDown: function (event) { if (event.isPrimary === false || event.button > 0) return; event.preventDefault(); try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} pointerSeek(event); },
+              onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) pointerSeek(event); },
+              onPointerUp: function (event) { try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} },
+              onPointerCancel: function (event) { try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} } },
+              h('rect', { x: 45, y: 32, width: 67, height: 136, fill: 'rgba(251,191,36,.1)' }),
+              response.postureChanged ? h('rect', { x: tx(response.postureStart), y: 32, width: tx(response.postureEnd) - tx(response.postureStart), height: 136, fill: 'rgba(167,139,250,.14)' }) : null,
+              counterEnabled ? h('rect', { x: tx(response.counterStart), y: 32, width: tx(response.counterEnd) - tx(response.counterStart), height: 136, fill: 'rgba(34,211,238,.1)' }) : null,
+              [-60, -30, 0, 30, 60].map(function (degrees) { return h('path', { key: degrees, d: 'M45 ' + (100 - degrees) + ' H380', fill: 'none', stroke: degrees === 0 ? '#94a3b8' : '#35516b', strokeDasharray: degrees === 0 ? undefined : '3 5', vectorEffect: 'non-scaling-stroke' }); }),
+              [0, .5, 1, 1.5, 2, 2.5].map(function (time) { return h('line', { key: time, x1: tx(time), x2: tx(time), y1: 32, y2: 168, stroke: '#35516b', strokeOpacity: .5, vectorEffect: 'non-scaling-stroke' }); }),
+              response.postureChanged && showPostureReference ? h('path', { d: ratePathFor(heldSettings), fill: 'none', stroke: '#c4b5fd', strokeWidth: 2, strokeDasharray: '7 4', vectorEffect: 'non-scaling-stroke', 'data-eva-held-posture-path': 'true' }) : null,
+              counterEnabled ? h('path', { d: ratePathFor(Object.assign({}, settings, { counterRatio: 0 })), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '3 4', vectorEffect: 'non-scaling-stroke', 'data-eva-free-coast-path': 'true' }) : null,
+              h('path', { d: ratePath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke', 'data-eva-rate-path': 'true' }),
+              h('line', { x1: tx(response.time), x2: tx(response.time), y1: 32, y2: 168, stroke: '#e0f2fe', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
+              h('circle', { cx: tx(response.time), cy: ry(response.omega), r: .01, fill: 'none', stroke: '#e0f2fe', strokeWidth: 7, vectorEffect: 'non-scaling-stroke' }))),
+          h('div', { className: 'iss-eva-x-axis', 'aria-hidden': 'true' }, [0, .5, 1, 1.5, 2, 2.5].map(function (time) { return h('span', { key: time }, time + ' s'); })),
+          h('div', { className: 'iss-eva-phase-key' }, h('span', null, __alloT('stem.spacestation.eva_first_window', 'Tool pulse · 0–0.50 s')), response.postureChanged ? h('span', null, __alloT('stem.spacestation.eva_posture_window', 'Posture change: 0.75–1.25 s')) : null, counterEnabled ? h('span', { style: { borderColor: '#67e8f9' } }, __alloT('stem.spacestation.eva_counter_window', 'Counterpulse: 1.50–2.00 s')) : null),
+          h('p', { className: 'iss-eva-graph-key' }, __alloT('stem.spacestation.eva_signed_rate_key', '− Original reaction direction · + Reversed rotation · 0 No spin.'), ' ', __alloT('stem.spacestation.eva_selected_curve', 'Cyan: selected trial.'), counterEnabled ? ' ' + __alloT('stem.spacestation.eva_coast_curve', 'Dashed amber: no counterpulse, same posture.') : '', response.postureChanged && showPostureReference ? ' ' + __alloT('stem.spacestation.eva_held_curve', 'Dashed violet: original posture, same pulses.') : ''),
+          response.postureChanged && showPostureReference ? h('p', { className: 'iss-eva-posture-comparison', 'data-eva-posture-comparison': 'true' }, __alloFill(__alloT('stem.spacestation.eva_posture_comparison', 'Held posture: {value1}°/s. Selected posture: {value2}°/s. Both receive the same tool pulses.'), { value1: (Math.abs(heldResponse.omega) * 180 / Math.PI).toFixed(1), value2: rateDegrees.toFixed(1) })) : null,
+          h('p', { id: 'iss-eva-time-help', className: 'iss-eva-graph-key' }, __alloT('stem.spacestation.eva_graph_inspect', 'Drag or tap the graph to inspect the motion. Use the time slider with arrow keys for precise steps. Inspection pauses playback.')),
           h('div', { className: 'iss-experiment-actions' },
             h('button', { type: 'button', 'data-eva-pulse-action': 'reset', onClick: function () { seek(0); } }, __alloT('stem.spacestation.eva_reset_pulse', 'Reset pulse')),
             h('button', { type: 'button', 'data-eva-pulse-action': 'pulse-end', onClick: function () { seek(0.5); } }, __alloT('stem.spacestation.eva_end_pulse', 'Inspect torque cutoff')),
+            response.postureChanged ? h('button', { type: 'button', 'data-eva-pulse-action': 'posture-start', onClick: function () { seek(response.postureStart); } }, __alloT('stem.spacestation.eva_start_posture', 'Before posture change')) : null,
+            response.postureChanged ? h('button', { type: 'button', 'data-eva-pulse-action': 'posture-end', onClick: function () { seek(response.postureEnd); } }, __alloT('stem.spacestation.eva_end_posture', 'After posture change')) : null,
+            counterEnabled ? h('button', { type: 'button', 'data-eva-pulse-action': 'counter-end', onClick: function () { seek(response.counterEnd); } }, __alloT('stem.spacestation.eva_end_counter', 'Inspect counterpulse cutoff')) : null,
             h('button', { type: 'button', 'data-eva-pulse-action': 'coast-end', onClick: function () { seek(2.5); } }, __alloT('stem.spacestation.eva_end_coast', 'Inspect end of coast'))),
           h('div', { className: 'iss-experiment-phase', role: 'status', 'aria-live': 'polite' }, phaseText),
-          h('p', { style: { margin: '9px 0 0', fontSize: 11, color: SOFT, lineHeight: 1.6 } }, __alloT('stem.spacestation.eva_reaction_scope', 'Body response: α = −τ/I during the 0.5 s pulse; ω stays constant afterward. Readouts show magnitudes; the astronaut turns opposite to the tool. Inertia stays fixed within each trial. This ideal model ignores tether tension, joint motion and damping. A tether does not replace a rigid work restraint. Teaching fixture target: 16–22 N·m.')));
+          h('details', { className: 'iss-physics-note' }, h('summary', null, __alloT('stem.spacestation.eva_posture_assumptions', 'Posture model and assumptions')),
+            h('p', null, __alloT('stem.spacestation.eva_posture_scope', 'One-axis model: L = Iω and dL/dt = external torque. Inertia changes linearly between 0.75 and 1.25 s; spin rate and angle follow that change analytically. Rotational energy is L²/(2I). Posture work accounts for the change in spin energy; it is not a measure of total muscle energy. Drawn limbs and the inertia ring illustrate the selected inertia, rather than deriving it from body geometry.')),
+            h('p', null, __alloT('stem.spacestation.eva_posture_limits', 'Tool torque is prescribed. Three-dimensional joint dynamics, hand contact, tether tension and damping are omitted. A tether does not replace a rigid work restraint. The separate worksite task still uses a single pulse and its starting inertia. Teaching fixture target: 16–22 N·m.')),
+            h('a', { href: 'https://openstax.org/books/university-physics-volume-1/pages/11-3-conservation-of-angular-momentum', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.spacestation.eva_posture_reference', 'OpenStax · conservation of angular momentum'))));
       }
 
       function renderEvaRouteVisual() {
@@ -7073,6 +8047,10 @@
                   return h('button', { key: scenario[0], type: 'button', 'data-dock-scenario': scenario[0], 'aria-pressed': scenario[0] === 'rendezvous', onClick: function (e) { flightControl(e, '_dockSetScenario', scenario[0]); upd({ dockResult: null, dockMsg: '', dockDebrief: null }); }, style: flightControlStyle }, scenario[1] + ' · ' + scenario[2]);
                 }),
                 h('small', null, __alloT('stem.spacestation.dock_practice_hint', 'Each start resets fuel and pauses the clock.'))),
+              h('div', { className: 'iss-dock-camera-controls', 'data-iss-flight-controls': 'true', role: 'group', 'aria-label': __alloT('stem.spacestation.dock_camera_controls', 'Docking camera') },
+                h('button', { type: 'button', 'data-dock-camera': 'approach', 'aria-pressed': true, onClick: function (e) { flightControl(e, '_dockSetCamera', 'approach'); }, style: flightControlStyle }, __alloT('stem.spacestation.dock_camera_approach', 'Approach camera')),
+                h('button', { type: 'button', 'data-dock-camera': 'wide', 'aria-pressed': false, onClick: function (e) { flightControl(e, '_dockSetCamera', 'wide'); }, style: flightControlStyle }, __alloT('stem.spacestation.dock_camera_wide', 'Wide camera')),
+                h('span', { 'data-dock-view-label': 'true', 'aria-live': 'off' }, __alloT('stem.spacestation.dock_camera_hint', 'Camera follows the approach. Hardware icons are schematic.'))),
               h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
               h('button', {
                 type: 'button',
@@ -7105,6 +8083,22 @@
                 h('button', { type: 'button', 'data-dock-precision': 'true', 'aria-pressed': false, onClick: function (e) { flightControl(e, '_dockSetPrecision'); }, style: flightControlStyle }, '◎ Precision RCS'),
                 h('button', { type: 'button', 'data-dock-damp': 'true', 'aria-pressed': false, onClick: function (e) { flightControl(e, '_dockSetDamp'); }, style: flightControlStyle }, '⊙ Rate hold'),
                 h('label', { style: { display: 'inline-flex', gap: 7, alignItems: 'center', color: SOFT, fontSize: 12 } }, 'Simulation clock', h('select', { defaultValue: '4', 'aria-label': __alloT('stem.spacestation.docking_clock_speed', 'Docking simulation clock speed'), onChange: function (e) { flightControl(e, '_dockSetTimeScale', e.target.value); }, style: flightControlStyle }, [1, 4, 8].map(function (rate) { return h('option', { key: rate, value: rate }, rate + '×'); })))),
+              h('section', { className: 'iss-dock-maneuver', 'data-dock-maneuver-panel': 'true', 'aria-labelledby': 'iss-dock-maneuver-title' },
+                h('div', { className: 'iss-dock-maneuver-heading' },
+                  h('h3', { id: 'iss-dock-maneuver-title' }, __alloT('stem.spacestation.dock_maneuver_title', 'Pause & step a maneuver')),
+                  h('label', null, __alloT('stem.spacestation.dock_pulse_duration', 'Pulse length'), h('select', { 'data-dock-pulse-seconds': 'true', defaultValue: '0.5', 'aria-label': __alloT('stem.spacestation.dock_pulse_duration_aria', 'Thruster pulse length'), onChange: function (e) { flightControl(e, '_dockSetPulseSeconds', e.target.value); }, style: flightControlStyle },
+                    [.25, .5, 1, 2].map(function (seconds) { return h('option', { key: seconds, value: String(seconds) }, seconds + ' s'); })))),
+                h('p', null, __alloT('stem.spacestation.dock_maneuver_help', 'Each action advances time, then stays paused. Other thrusters and Rate hold switch off. Precision RCS also applies to pulses.')),
+                h('div', { className: 'iss-dock-step-actions' },
+                  [['back', __alloT('stem.spacestation.dock_pulse_brake', '← Brake pulse')], ['up', __alloT('stem.spacestation.dock_pulse_out', '↑ Radial out pulse')], ['down', __alloT('stem.spacestation.dock_pulse_in', '↓ Radial in pulse')], ['fwd', __alloT('stem.spacestation.dock_pulse_forward', '→ Forward pulse')], ['coast', __alloT('stem.spacestation.dock_step_coast', 'Coast 5 s')]].map(function (control) {
+                    return h('button', { key: control[0], type: 'button', 'data-dock-maneuver': control[0], onClick: function (e) { flightControl(e, '_dockManeuver', control[0]); }, style: flightControlStyle }, control[1]);
+                  })),
+                h('div', { 'data-dock-maneuver-report': 'true', hidden: true, 'aria-live': 'off' },
+                  h('div', { className: 'iss-dock-forecast-readings' },
+                    [['elapsed', __alloT('stem.spacestation.dock_step_elapsed', 'Time advanced')], ['fuel', __alloT('stem.spacestation.dock_step_fuel', 'Propellant used')], ['radial', __alloT('stem.spacestation.dock_step_radial', 'Radial velocity change')], ['along', __alloT('stem.spacestation.dock_step_along', 'Along-track velocity change')]].map(function (reading) {
+                      return h('div', { key: reading[0], className: 'iss-flight-reading' }, h('span', null, reading[1]), h('strong', { 'data-dock-maneuver-reading': reading[0] }, '—'));
+                    })),
+                  h('p', { 'data-dock-maneuver-reading': 'summary' }))),
               h('div', { id: 'iss-dock-status', 'data-dock-hud': 'true', 'aria-live': 'off', 'aria-atomic': 'true', style: { marginTop: 8, padding: '10px 12px', borderRadius: 10, background: '#061425', border: '1px solid #1e405c', fontSize: 11, fontFamily: 'ui-monospace, monospace', color: '#bae6fd', lineHeight: 1.8 } }, 'Phase far field · range 191.8 m · relative speed 1.00 m/s · stopping margin 176.7 m (estimate) · fuel 100% (80.0 kg) · 4× clock'),
               h('section', { className: 'iss-dock-forecast', 'data-dock-forecast-panel': 'true', 'data-dock-forecast-kind': 'coast', 'aria-label': __alloT('stem.spacestation.dock_coast_forecast', 'Coast forecast'), 'aria-live': 'off' },
                 h('div', { className: 'iss-dock-forecast-header' },
@@ -7165,81 +8159,145 @@
 
       // ── Interior shift: room exploration + learn-by-doing activities ──
       function renderMomentumBench() {
-        var settings = { mass: d.momentumMass, cargo: d.momentumCargo, impulse: d.momentumImpulse, drift: d.momentumDrift, mode: d.momentumMode };
+        var settings = { mass: d.momentumMass, cargo: d.momentumCargo, impulse: d.momentumImpulse, drift: d.momentumDrift, mode: d.momentumMode, restitution: d.momentumRestitution };
         var trial = issMomentumTrial(settings, d.momentumTime);
         var last = issMomentumTrial(settings, trial.duration);
+        var contactInWindow = trial.contactTime <= trial.duration;
+        var impact = contactInWindow ? issMomentumTrial(settings, trial.contactTime) : null;
         var low = Math.min(-0.5, last.crewX - 0.5, last.cargoX - 0.5);
-        var high = Math.max(4, last.crewX + 0.7, last.cargoX + 0.7);
+        var high = Math.max(4, last.crewX + 0.7, last.cargoX + 0.7, impact ? impact.crewX + 0.7 : 0);
         function x(value) { return 40 + (value - low) / (high - low) * 560; }
         function change(field, value) { var patch = { momentumTime: 0, momentumSeekToken: !d.momentumSeekToken }; patch[field] = value; upd(patch); }
         function seek(seconds) { upd({ momentumTime: seconds, momentumSeekToken: !d.momentumSeekToken }); }
+        function signed(value, digits) { if (Math.abs(value) < 0.5 * Math.pow(10, -digits)) value = 0; return (value > 0 ? '+' : '') + value.toFixed(digits); }
         function control(id, label, value, min, max, step, unit, field) {
           return h('label', { className: 'iss-experiment-control', htmlFor: id },
             h('span', null, label, h('strong', null, (step < 1 ? value.toFixed(2) : value) + ' ' + unit)),
             h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value,
               'aria-valuetext': value + ' ' + unit, onChange: function (event) { change(field, Number(event.target.value)); } }));
         }
-        var phase = trial.contacted ? trial.mode === 'catch' ? 'Moving together' : 'Objects separating' : trial.contactTime > trial.duration ? 'No contact in this window' : 'Coasting toward contact';
+        var phase = trial.contacted ? trial.restitution === 0 ? __alloT('stem.spacestation.momentum_together', 'Moving together') : __alloT('stem.spacestation.momentum_separating', 'Objects separating') : !contactInWindow ? __alloT('stem.spacestation.momentum_no_contact', 'No contact in this window') : __alloT('stem.spacestation.momentum_coasting', 'Coasting toward contact');
         function vector(position, y, velocity, color) {
           var length = Math.max(28 - position, Math.min(612 - position, velocity * 220));
           return h('g', null, h('line', { x1: position, y1: y, x2: position + length, y2: y, stroke: color, strokeWidth: 3 }),
             Math.abs(length) > 2 ? h('path', { d: 'M' + (position + length - Math.sign(length) * 6) + ' ' + (y - 4) + ' L' + (position + length) + ' ' + y + ' L' + (position + length - Math.sign(length) * 6) + ' ' + (y + 4), fill: 'none', stroke: color, strokeWidth: 2 }) : null);
         }
-        return h('section', { className: 'iss-momentum-bench', 'data-iss-momentum-bench': 'true', 'aria-labelledby': 'iss-momentum-title' },
+        return h('section', { id: 'iss-momentum-bench', className: 'iss-momentum-bench', 'data-iss-momentum-bench': 'true', 'aria-labelledby': 'iss-momentum-title' },
           h('div', { className: 'iss-experiment-heading' }, h('div', null,
             h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.momentum_kicker', 'UNITY / PHYSICS BENCH')),
             h('h3', { id: 'iss-momentum-title' }, __alloT('stem.spacestation.momentum_title', 'Catch cargo. Feel the momentum.'))),
             h('span', { className: 'iss-model-badge' }, __alloT('stem.spacestation.momentum_badge', '1-D contact model'))),
-          h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.momentum_intro', 'Change the masses and push, then play or scrub through the encounter. Catching cargo slows you down only if its velocity is lower than yours.')),
+          h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.momentum_intro_rebound', 'Push off the rail, drift toward the cargo, and compare a catch with a rebound. Change the masses or contact response, then play or inspect the instant of contact.')),
           h('div', { className: 'iss-experiment-controls' },
             control('iss-momentum-mass', __alloT('stem.spacestation.momentum_crew', 'Crew mass'), trial.mass, 50, 110, 5, 'kg', 'momentumMass'),
             control('iss-momentum-cargo', __alloT('stem.spacestation.momentum_cargo', 'Cargo mass'), trial.cargo, 5, 40, 5, 'kg', 'momentumCargo'),
             control('iss-momentum-impulse', __alloT('stem.spacestation.momentum_push', 'Rail push impulse'), trial.impulse, 4, 22, 1, 'N·s', 'momentumImpulse'),
             control('iss-momentum-drift', __alloT('stem.spacestation.momentum_drift', 'Cargo initial velocity'), trial.drift, -0.1, 0.1, 0.01, 'm/s', 'momentumDrift')),
           h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.momentum_contact_type', 'Contact type') },
-            [['catch', __alloT('stem.spacestation.momentum_catch', 'Catch and hold')], ['elastic', __alloT('stem.spacestation.momentum_elastic', 'Ideal elastic bounce')]].map(function (mode) {
+            [['catch', __alloT('stem.spacestation.momentum_catch', 'Catch and hold')], ['cushioned', __alloT('stem.spacestation.momentum_cushioned', 'Cushioned bounce')], ['elastic', __alloT('stem.spacestation.momentum_elastic', 'Ideal elastic bounce')]].map(function (mode) {
               return h('button', { key: mode[0], type: 'button', 'data-iss-momentum-mode': mode[0], 'aria-pressed': trial.mode === mode[0], onClick: function () { change('momentumMode', mode[0]); } }, mode[1]);
             })),
+          trial.mode === 'cushioned' ? h('div', { className: 'iss-momentum-rebound' },
+            h('label', { className: 'iss-experiment-control', htmlFor: 'iss-momentum-restitution' },
+              h('span', null, __alloT('stem.spacestation.momentum_rebound_ratio', 'Rebound speed / approach speed'), h('strong', null, Math.round(trial.restitution * 100) + '%')),
+              h('input', { id: 'iss-momentum-restitution', type: 'range', min: 0, max: 1, step: 0.05, value: trial.restitution,
+                'aria-describedby': 'iss-momentum-restitution-help', 'aria-valuetext': Math.round(trial.restitution * 100) + '%',
+                onChange: function (event) { change('momentumRestitution', Number(event.target.value)); } })),
+            h('p', { id: 'iss-momentum-restitution-help' }, __alloT('stem.spacestation.momentum_rebound_help', '0% moves together; 100% is an ideal elastic bounce. This ratio describes relative speed. Energy converted to heat also depends on both masses and their approach speed.'))) : null,
           h('div', { className: 'iss-momentum-stage' },
             h('svg', { viewBox: '0 0 640 232', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.momentum_diagram', 'At {value1} seconds, crew velocity is {value2} meters per second and cargo velocity is {value3} meters per second. {value4}.'), { value1: trial.time.toFixed(1), value2: trial.crewV.toFixed(3), value3: trial.cargoV.toFixed(3), value4: phase }) },
-              h('defs', null, h('linearGradient', { id: 'iss-bench-metal', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#c5d7e8' }), h('stop', { offset: '40%', stopColor: '#607d99' }), h('stop', { offset: '100%', stopColor: '#253d57' }))),
+              h('defs', null,
+                h('linearGradient', { id: 'iss-bench-metal', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#c5d7e8' }), h('stop', { offset: '40%', stopColor: '#607d99' }), h('stop', { offset: '100%', stopColor: '#253d57' })),
+                h('linearGradient', { id: 'iss-bench-suit', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f0f9ff' }), h('stop', { offset: '100%', stopColor: '#7697b3' })),
+                h('linearGradient', { id: 'iss-bench-visor', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#91d4e7' }), h('stop', { offset: '50%', stopColor: '#153d60' }), h('stop', { offset: '100%', stopColor: '#091f38' }))),
               h('rect', { x: 1, y: 1, width: 638, height: 230, rx: 14, fill: '#06111e', stroke: '#35516b' }),
               [50, 125, 200, 275, 350, 425, 500, 575].map(function (p) { return h('g', { key: p, opacity: 0.4 }, h('rect', { x: p, y: 30, width: 37, height: 130, rx: 8, fill: '#12263b', stroke: '#47647e' }), h('line', { x1: p + 6, y1: 55, x2: p + 30, y2: 55, stroke: '#7692ac' })); }),
               h('path', { d: 'M20 28 H620 M20 164 H620', fill: 'none', stroke: 'url(#iss-bench-metal)', strokeWidth: 8 }),
               h('path', { d: 'M20 36 H620', fill: 'none', stroke: '#bae6fd', strokeWidth: 2, opacity: 0.65 }),
               h('line', { x1: 35, y1: 104, x2: 605, y2: 104, stroke: '#38bdf8', strokeDasharray: '3 6', opacity: 0.25 }),
               h('text', { x: 22, y: 19, fill: '#91b2d0', fontSize: 9, letterSpacing: 1 }, 'RELATIVE TO THE STATION / METERS'),
+              impact ? h('line', { x1: x(impact.crewX), y1: 38, x2: x(impact.crewX), y2: 162, stroke: '#c4b5fd', strokeDasharray: '5 5', opacity: 0.6 }) : null,
+              [3, 2, 1].map(function (ago) {
+                if (trial.time < ago) return null;
+                var past = issMomentumTrial(settings, trial.time - ago);
+                return h('g', { key: ago, opacity: 0.5 - ago * 0.1 },
+                  h('circle', { cx: x(past.crewX), cy: 99, r: 3, fill: '#7dd3fc' }),
+                  h('circle', { cx: x(past.cargoX), cy: 140, r: 3, fill: '#fcd34d' }));
+              }),
+              trial.contacted && trial.time - trial.contactTime < 0.8 ? h('ellipse', { cx: x(impact.crewX), cy: 108, rx: 28, ry: 52, fill: '#6ee7b7', fillOpacity: 0.06, stroke: '#a7f3d0', strokeWidth: 2, opacity: 1 - (trial.time - trial.contactTime) / 0.8 }) : null,
+              h('g', { 'data-iss-momentum-center': trial.centerX.toFixed(6), transform: 'translate(' + x(trial.centerX).toFixed(2) + ',0)' },
+                h('line', { x1: 0, y1: 41, x2: 0, y2: 165, stroke: '#6ee7b7', strokeDasharray: '1 5', opacity: 0.7 }),
+                h('path', { d: 'M0 33 L5 39 L0 45 L-5 39 Z', fill: '#6ee7b7', stroke: '#042f2e' })),
               h('g', { transform: 'translate(' + x(trial.crewX).toFixed(2) + ',80)' },
-                h('ellipse', { cy: -12, rx: 11, ry: 13, fill: '#dce9f4', stroke: '#7dd3fc', strokeWidth: 2 }),
-                h('rect', { x: -8, y: -17, width: 16, height: 9, rx: 4, fill: '#0b3049' }),
-                h('rect', { x: -12, y: 2, width: 24, height: 30, rx: 8, fill: '#dae7ef', stroke: '#7dd3fc', strokeWidth: 2 }),
-                h('path', { d: 'M-11 8 L-20 22 M11 8 L23 15 M-6 32 L-12 43 M6 32 L13 43', stroke: '#e2e8f0', strokeWidth: 6, strokeLinecap: 'round' }),
-                h('rect', { x: -6, y: 8, width: 12, height: 8, rx: 2, fill: '#1976a3' })),
+                h('rect', { x: -15, y: 0, width: 30, height: 25, rx: 5, fill: '#38546b', stroke: '#7590a7' }),
+                h('ellipse', { cy: -12, rx: 12, ry: 14, fill: 'url(#iss-bench-suit)', stroke: '#7dd3fc', strokeWidth: 1.5 }),
+                h('rect', { x: -9, y: -20, width: 18, height: 13, rx: 6, fill: 'url(#iss-bench-visor)', stroke: '#52788f' }),
+                h('path', { d: 'M-5 -17 L0 -18', stroke: '#e0f2fe', strokeWidth: 2, strokeLinecap: 'round' }),
+                h('rect', { x: -12, y: 2, width: 24, height: 30, rx: 8, fill: 'url(#iss-bench-suit)', stroke: '#7dd3fc' }),
+                h('path', { d: 'M-11 8 L-20 22 M11 8 L23 15 M-6 32 L-12 43 M6 32 L13 43', stroke: '#bdd2e2', strokeWidth: 6, strokeLinecap: 'round' }),
+                h('circle', { cx: 23, cy: 15, r: 3.5, fill: '#edf7ff' }),
+                h('rect', { x: -6, y: 8, width: 12, height: 8, rx: 2, fill: '#1976a3' }),
+                h('path', { d: 'M-7 24 H7 M-10 38 L-15 41 M11 38 L16 41', stroke: '#ef784f', strokeWidth: 2 })),
               h('g', { transform: 'translate(' + x(trial.cargoX).toFixed(2) + ',143)' },
                 h('rect', { x: -15, y: -15, width: 30, height: 25, rx: 4, fill: '#9d703d', stroke: '#fde68a', strokeWidth: 2 }),
-                h('path', { d: 'M-9 -15 V-20 H9 V-15 M-7 -14 V9 M7 -14 V9', fill: 'none', stroke: '#fcd34d', strokeWidth: 2 })),
-              trial.contacted && trial.mode === 'catch' ? h('line', { x1: x(trial.crewX) + 18, y1: 95, x2: x(trial.cargoX) + 10, y2: 126, stroke: '#6ee7b7', strokeWidth: 2, strokeDasharray: '4 3' }) : null,
+                h('path', { d: 'M-9 -15 V-20 H9 V-15 M-7 -14 V9 M7 -14 V9', fill: 'none', stroke: '#fcd34d', strokeWidth: 2 }),
+                h('rect', { x: -5, y: -8, width: 10, height: 7, rx: 1, fill: '#fef3c7' }),
+                h('path', { d: 'M-3 -5 H3 M-3 -3 H1', stroke: '#785324', strokeWidth: 1 })),
+              trial.contacted && trial.restitution === 0 ? h('line', { x1: x(trial.crewX) + 18, y1: 95, x2: x(trial.cargoX) + 10, y2: 126, stroke: '#6ee7b7', strokeWidth: 2, strokeDasharray: '4 3' }) : null,
               vector(x(trial.crewX), 48, trial.crewV, '#7dd3fc'), vector(x(trial.cargoX), 118, trial.cargoV, '#fcd34d'),
               [0, 1, 2, 3, 4, 5].map(function (i) { var pos = low + (high - low) * i / 5; return h('g', { key: i }, h('line', { x1: x(pos), y1: 176, x2: x(pos), y2: 182, stroke: '#91b2d0' }), h('text', { x: x(pos), y: 195, textAnchor: 'middle', fill: '#abc3da', fontSize: 10 }, pos.toFixed(1) + ' m')); }),
               h('text', { x: 22, y: 218, fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, 'CREW ' + trial.crewV.toFixed(3) + ' m/s'),
               h('text', { x: 618, y: 218, textAnchor: 'end', fill: '#fcd34d', fontSize: 11, fontWeight: 700 }, 'CARGO ' + trial.cargoV.toFixed(3) + ' m/s'))),
-          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 9, font: '700 12px ui-monospace,monospace' } },
-            h('span', { style: { color: '#7dd3fc' } }, __alloT('stem.spacestation.momentum_crew_velocity', 'Crew') + ' ' + trial.crewV.toFixed(3) + ' m/s'),
-            h('span', { style: { color: '#fcd34d' } }, __alloT('stem.spacestation.momentum_cargo_velocity', 'Cargo') + ' ' + trial.cargoV.toFixed(3) + ' m/s')),
+          h('div', { className: 'iss-momentum-key' },
+            h('span', { style: { color: '#7dd3fc' } }, __alloT('stem.spacestation.momentum_crew_velocity', 'Crew') + ' ' + signed(trial.crewV, 3) + ' m/s'),
+            h('span', { style: { color: '#fcd34d' } }, __alloT('stem.spacestation.momentum_cargo_velocity', 'Cargo') + ' ' + signed(trial.cargoV, 3) + ' m/s'),
+            h('span', { style: { color: '#6ee7b7' } }, '◇ ' + __alloT('stem.spacestation.momentum_center', 'Center of mass') + ' ' + signed(trial.centerV, 3) + ' m/s'),
+            h('small', null, __alloT('stem.spacestation.momentum_track_key', 'The diamond coasts steadily through contact. Purple dashes mark the contact position; trail dots are 1 s apart. Velocity arrows are schematic.'))),
           h(issExperimentPlayback, { React: React, id: 'momentum', t: __alloT, value: trial.time, max: trial.duration,
-            resetKey: [trial.mass, trial.cargo, trial.impulse, trial.drift, trial.mode, !!d.momentumSeekToken].join(':'),
+            resetKey: [trial.mass, trial.cargo, trial.impulse, trial.drift, trial.mode, trial.restitution, !!d.momentumSeekToken].join(':'),
             onAdvance: function (seconds) { upd({ momentumTime: seconds }); } }),
           h('label', { className: 'iss-experiment-control iss-experiment-timeline', htmlFor: 'iss-momentum-time' },
             h('span', null, __alloT('stem.spacestation.momentum_time', 'Scrub experiment time'), h('strong', null, trial.time.toFixed(1) + ' s')),
             h('input', { id: 'iss-momentum-time', type: 'range', min: 0, max: trial.duration, step: 0.1, value: trial.time, 'aria-valuetext': trial.time.toFixed(1) + ' seconds', onChange: function (event) { seek(Number(event.target.value)); } })),
           h('div', { className: 'iss-experiment-actions' },
             h('button', { type: 'button', onClick: function () { seek(0); } }, __alloT('stem.spacestation.momentum_reset', 'Reset time')),
-            h('button', { type: 'button', disabled: trial.contactTime > trial.duration, 'data-iss-momentum-contact': 'true', onClick: function () { seek(trial.contactTime); } }, __alloT('stem.spacestation.momentum_contact', 'Jump to contact')),
+            h('button', { type: 'button', disabled: !contactInWindow, 'data-iss-momentum-before': 'true', onClick: function () { seek(Math.max(0, trial.contactTime - 0.1)); } }, __alloT('stem.spacestation.momentum_before', 'Just before contact')),
+            h('button', { type: 'button', disabled: !contactInWindow, 'data-iss-momentum-contact': 'true', onClick: function () { seek(trial.contactTime); } }, __alloT('stem.spacestation.momentum_contact', 'Jump to contact')),
+            h('button', { type: 'button', disabled: !contactInWindow || trial.contactTime >= trial.duration, 'data-iss-momentum-after': 'true', onClick: function () { seek(Math.min(trial.duration, trial.contactTime + 2)); } }, __alloT('stem.spacestation.momentum_after', '2 seconds after')),
             h('button', { type: 'button', disabled: trial.time >= trial.duration, onClick: function () { seek(Math.min(trial.duration, trial.time + 5)); } }, __alloT('stem.spacestation.momentum_step', 'Advance 5 seconds'))),
           h('p', { className: 'iss-experiment-phase', role: 'status', 'data-iss-momentum-phase': trial.contacted ? 'contact' : 'coast' }, phase),
           h('div', { className: 'iss-flight-telemetry' },
             [[__alloT('stem.spacestation.momentum_total', 'Total momentum'), trial.momentum.toFixed(2) + ' kg·m/s'], [__alloT('stem.spacestation.momentum_energy', 'Kinetic energy'), trial.energy.toFixed(3) + ' J'], [__alloT('stem.spacestation.momentum_loss', 'Energy to deformation / heat'), trial.energyLost.toFixed(3) + ' J']].map(function (metric) { return h('div', { key: metric[0], className: 'iss-flight-reading' }, h('span', null, metric[0]), h('strong', null, metric[1])); })),
-          h('p', { className: 'iss-physics-note' }, __alloT('stem.spacestation.momentum_note', 'Δv = impulse / mass. Contact conserves total momentum; catching converts some kinetic energy to deformation and heat. Ideal elastic contact also conserves kinetic energy. Point masses begin 2.5 m apart; vertical separation is only for legibility. No walls, air drag, or rotation in this experiment.')));
+          h('div', { className: 'iss-momentum-energy' },
+            h('h4', null, __alloT('stem.spacestation.momentum_energy_account', 'Where did the energy go?')),
+            h('div', { className: 'iss-momentum-energy-bar', 'aria-hidden': 'true' },
+              [[trial.crewEnergy, '#7dd3fc'], [trial.cargoEnergy, '#fcd34d'], [trial.energyLost, '#fb923c']].map(function (part, index) {
+                return h('span', { key: index, style: { width: Math.max(0, Math.min(100, part[0] / trial.initialEnergy * 100)) + '%', background: part[1] } });
+              })),
+            h('div', { className: 'iss-momentum-energy-key' },
+              h('span', null, h('i', { style: { background: '#7dd3fc' }, 'aria-hidden': 'true' }), __alloT('stem.spacestation.momentum_crew_motion', 'Crew motion') + ' ' + trial.crewEnergy.toFixed(3) + ' J'),
+              h('span', null, h('i', { style: { background: '#fcd34d' }, 'aria-hidden': 'true' }), __alloT('stem.spacestation.momentum_cargo_motion', 'Cargo motion') + ' ' + trial.cargoEnergy.toFixed(3) + ' J'),
+              h('span', null, h('i', { style: { background: '#fb923c' }, 'aria-hidden': 'true' }), __alloT('stem.spacestation.momentum_heat_short', 'Deformation / heat') + ' ' + trial.energyLost.toFixed(3) + ' J'))),
+          h('div', { className: 'iss-momentum-contact-report', 'data-iss-momentum-report': impact ? trial.contacted ? 'measured' : 'predicted' : 'unreachable' },
+            h('div', { className: 'iss-momentum-report-heading' },
+              h('h4', { id: 'iss-momentum-report-title' }, impact ? trial.contacted ? __alloT('stem.spacestation.momentum_report', 'Contact report') : __alloT('stem.spacestation.momentum_forecast', 'Contact forecast') : __alloT('stem.spacestation.momentum_no_contact', 'No contact in this window')),
+              impact ? h('span', null, 't = ' + trial.contactTime.toFixed(2) + ' s · e = ' + trial.restitution.toFixed(2)) : null),
+            impact ? h('div', null,
+              h('table', { className: 'iss-momentum-contact-table', 'aria-labelledby': 'iss-momentum-report-title' },
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col' }, __alloT('stem.spacestation.momentum_velocity_units', 'Velocity (m/s)')),
+                  h('th', { scope: 'col' }, __alloT('stem.spacestation.momentum_before_short', 'Before')),
+                  h('th', { scope: 'col' }, __alloT('stem.spacestation.momentum_after_short', 'After')))),
+                h('tbody', null,
+                  [[__alloT('stem.spacestation.momentum_crew_velocity', 'Crew'), trial.initialSpeed, impact.crewV], [__alloT('stem.spacestation.momentum_cargo_velocity', 'Cargo'), trial.drift, impact.cargoV]].map(function (row) {
+                    return h('tr', { key: row[0] }, h('th', { scope: 'row' }, row[0]), h('td', null, signed(row[1], 3)), h('td', null, signed(row[2], 3)));
+                  }))),
+              h('div', { className: 'iss-momentum-impulses' },
+                h('div', { 'data-iss-momentum-crew-impulse': 'true' }, h('span', null, __alloT('stem.spacestation.momentum_crew_impulse', 'Contact impulse on crew')), h('strong', null, signed(impact.crewImpulse, 2) + ' N·s')),
+                h('div', { 'data-iss-momentum-cargo-impulse': 'true' }, h('span', null, __alloT('stem.spacestation.momentum_cargo_impulse', 'Contact impulse on cargo')), h('strong', null, signed(impact.cargoImpulse, 2) + ' N·s'))),
+              h('p', null, __alloT('stem.spacestation.momentum_impulse_help', 'Equal, opposite contact impulses conserve the pair’s momentum. A stronger rebound transfers more impulse. Positive velocity points right.'))) :
+              h('p', null, trial.closingSpeed <= 1e-8 ? __alloT('stem.spacestation.momentum_receding', 'The cargo is moving away at least as fast as the crew. Increase the rail push or reduce the cargo’s initial velocity to make contact.') : __alloFill(__alloT('stem.spacestation.momentum_late_contact', 'Contact would occur at {value1} s, beyond this {value2} s experiment. Increase the rail push or reduce the cargo’s initial velocity to bring it into view.'), { value1: trial.contactTime.toFixed(1), value2: trial.duration.toFixed(0) }))),
+          h('p', { className: 'iss-physics-note' }, __alloT('stem.spacestation.momentum_rebound_note', 'Δv = impulse / mass. The initial rail push is external; later contact conserves the pair’s momentum. Rebound ratio e is separation speed / approach speed; e = 1 also conserves kinetic energy. Contact is instantaneous between point masses starting 2.5 m apart. Vertical separation and body sizes are schematic. Walls, air drag, orbital gradients, and rotation are omitted.')));
       }
 
       function renderInterior() {
@@ -8044,7 +9102,7 @@
           return h('div', { 'data-iss-lowg-sim': 'true', style: { padding: 10, borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px solid #334155' } },
             h('label', { htmlFor: 'iss-lowg-impulse', style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: TEXT, fontSize: 11.5, fontWeight: 800 } }, h('span', null, 'Push impulse'), h('span', { style: { color: room.color }, 'aria-hidden': 'true' }, impulse.toFixed(0) + ' N·s')),
             h('input', { id: 'iss-lowg-impulse', type: 'range', min: 2, max: 22, step: 1, value: impulse, onChange: function (e) { upd({ lowGImpulse: Number(e.target.value), lowGResult: null }); }, 'aria-valuetext': impulse.toFixed(0) + ' newton seconds', 'aria-describedby': 'iss-lowg-explain', style: { width: '100%', accentColor: room.color, margin: '8px 0 5px' } }),
-            h('div', { className: 'iss-learning-visual', 'data-iss-lowg-trajectory': arrivalStatus.toLowerCase().replace(' ', '-'), style: { marginBottom: 8 } },
+            h('div', { className: 'iss-learning-visual', 'data-iss-lowg-trajectory': arrivalStatus.toLowerCase().replace(' ', '-'), tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.lowg_trajectory_scroll', 'Freefall trajectory diagram. Use arrow keys to scroll when needed.'), style: { marginBottom: 8 } },
               h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_microgravity_translation_preview_push_impulse_n', 'Microgravity translation preview. Push impulse {value1} newton seconds gives a constant coast speed of {value2} meters per second, travel time {value3} seconds, predicted arrival {value4}.'), { value1: impulse.toFixed(0), value2: speed.toFixed(2), value3: travelTime.toFixed(1), value4: arrivalStatus.toLowerCase() })},
                 h('defs', null, h('marker', { id: 'iss-lowg-vector-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: arrivalColor })), h('linearGradient', { id: 'iss-lowg-tunnel', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#101b2d' }), h('stop', { offset: '50%', stopColor: '#07101f' }), h('stop', { offset: '100%', stopColor: '#111827' }))),
                 h('rect', { width: 640, height: 150, fill: 'url(#iss-lowg-tunnel)' }),
@@ -8384,10 +9442,11 @@
       // "Cabin temp NaN degrees C. Flight rule 18-27 C. Attention".
       function opsClamp(value, min, max) { return issNum(value, min, max, min); }
       function opsControl(id, label, value, min, max, step, unit, color, field) {
-        var formattedValue = Number(value).toFixed(step < 1 ? 1 : 0) + unit;
+        var precision = (String(step).split('.')[1] || '').length;
+        var formattedValue = Number(value).toFixed(Math.min(6, precision)) + unit;
         return h('div', { className: 'iss-ops-control' },
           h('label', { htmlFor: id }, h('span', null, label), h('strong', { 'aria-hidden': 'true', style: { color: color } }, formattedValue)),
-          h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': formattedValue, onChange: function (e) { var patch = { opsScenario: 'custom' }; patch[field] = Number(e.target.value); upd(patch); }, style: { accentColor: color } }));
+          h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': formattedValue, onChange: function (e) { var patch = { opsScenario: 'custom' }; if (['opsCrew','opsResearch','opsArrayAngle','opsEclipse','opsBattery','opsRadiator','opsCooling','opsCabinStart','opsCmg','opsAttitudeTorque','opsAttitudeInertia','opsAttitudeBurnMinute','opsAttitudeThrust','opsAttitudeFuel','opsScrub','opsAirFlow','opsAirActivity','opsAirStart','opsAirRestoreMinute'].indexOf(field) !== -1) { patch.opsOrbitMinute = 0; patch.opsPowerSeekToken = !d.opsPowerSeekToken; patch.opsThermalSeekToken = !d.opsThermalSeekToken; patch.opsAttitudeSeekToken = !d.opsAttitudeSeekToken; patch.opsAirSeekToken = !d.opsAirSeekToken; } if (['opsCrew','opsRecovery','opsWaterClean','opsWaterWaste','opsWaterThroughput','opsWaterOutageStart','opsWaterOutageDays','opsWaterDeliveryDay','opsWaterDeliveryLitres'].indexOf(field) !== -1) { patch.opsWaterDay = 0; patch.opsWaterSide = 'after'; patch.opsWaterSeekToken = !d.opsWaterSeekToken; } if (['opsPressureVolume','opsPressureStart','opsPressureVent','opsPressureFill','opsPressureLeak','opsPressureVentMinutes','opsPressureHoldMinutes'].indexOf(field) !== -1) { patch.opsPressureMinute = 0; patch.opsPressureIsolate = false; patch.opsPressureSeekToken = !d.opsPressureSeekToken; } if (['opsDebrisSize','opsDebrisSpeed','opsShieldGap','opsDebrisBumper','opsDebrisSpread'].indexOf(field) !== -1) { patch.opsDebrisTime = 0; patch.opsDebrisSeekToken = !d.opsDebrisSeekToken; } patch[field] = Number(e.target.value); upd(patch); }, style: { accentColor: color } }));
       }
       function opsMeter(label, value, color, note) {
         var safe = opsClamp(value, 0, 100);
@@ -8521,114 +9580,95 @@
         var eclipse = opsClamp(d.opsEclipse == null ? 35 : d.opsEclipse, 20, 45);
         var battery = opsClamp(d.opsBattery == null ? 76 : d.opsBattery, 0, 100);
         var recovery = opsClamp(d.opsRecovery == null ? 98 : d.opsRecovery, 70, 99);
-        var scrub = opsClamp(d.opsScrub == null ? 88 : d.opsScrub, 40, 100);
+        var scrub = opsClamp(d.opsScrub == null ? 88 : d.opsScrub, 0, 100);
         var radiator = opsClamp(d.opsRadiator == null ? 82 : d.opsRadiator, 30, 100);
         var cooling = opsClamp(d.opsCooling == null ? 86 : d.opsCooling, 40, 100);
+        var cabinStart = issFlightNumber(d.opsCabinStart, 22, 16, 30);
         var cmg = opsClamp(d.opsCmg == null ? 28 : d.opsCmg, 0, 100);
         var missionDays = opsClamp(d.opsMissionDays == null ? 180 : d.opsMissionDays, 30, 900);
         var exercise = opsClamp(d.opsExercise == null ? 2.5 : d.opsExercise, 0, 3);
-        var debrisSize = opsClamp(d.opsDebrisSize == null ? 1 : d.opsDebrisSize, .2, 12);
-        var shieldGap = opsClamp(d.opsShieldGap == null ? 10 : d.opsShieldGap, 2, 20);
-        var debrisSpeed = opsClamp(d.opsDebrisSpeed == null ? 12 : d.opsDebrisSpeed, 7, 15);
         // ── Model constants ────────────────────────────────────────────────
-        // Named rather than inlined because the battery projection is computed in
-        // FOUR places (headline, per-minute forecast, nominal reference forecast,
-        // scrubber cursor) and they must not drift apart.
+        // Integrated forecasts, power instruments and the cursor share the same
+        // finite-capacity energy model, including conversion losses and curtailment.
         //
-        // ARRAY_PEAK_KW is the arrays' output at perfect pointing while sunlit,
-        // not the orbit average. Over a 92-minute orbit with a 35-minute eclipse
-        // it averages ~99 kW, inside the 84-120 kW NASA cites for the station
-        // since the iROSA upgrades. This was 132, which made the average ~82 kW
-        // and left the NOMINAL configuration net-negative: a full crew running
-        // routine research drained the battery every orbit, implying the real ISS
-        // cannot do science at full crew. It sustains both, so the model must too.
+        // Illustrative aggregate peak output during sunlight, not an orbit
+        // average or a claim about current station hardware specifications.
         var ARRAY_PEAK_KW = 160;
         // Assumed usable battery capacity, so a kWh surplus becomes a percentage
         // of reserve. Previously a bare "/ 2.1" divisor, which is this same
         // assumption (210 kWh) left unstated.
         var BATTERY_KWH = 210;
-        // Cabin CO2 action level, ~3 mmHg. Crews work to stay under this; NASA's
-        // 180-day limit is higher still. The old rule was 1000 ppm, an office-air
-        // number: real ISS cabin CO2 runs roughly 2-4 mmHg (~2600-5300 ppm),
-        // never near ground level, because scrubbing keeps pace with the crew
-        // rather than eliminating CO2.
+        // Shared classroom comparison line, not an exposure limit or a
+        // prediction of crew health. The rule uses the highest modeled zone.
         var CO2_ACTION_PPM = 4000;
 
         var load = 68 + crew * 1.6 + research * .22;
         var generation = ARRAY_PEAK_KW * Math.sin(arrayAngle * Math.PI / 180);
-        var energyIn = generation * (92 - eclipse) / 60;
-        var energyOut = load * 92 / 60;
-        var orbitDelta = (energyIn - energyOut) / (BATTERY_KWH / 100);
-        var projectedBattery = opsClamp(battery + orbitDelta, 0, 100);
+        var powerSettings = { generation: generation, load: load, eclipse: eclipse, battery: battery, capacity: BATTERY_KWH };
+        var powerEnd = issPowerState(powerSettings, 92);
+        var projectedBattery = powerEnd.percent;
+        var orbitDelta = projectedBattery - battery;
         var waterNeed = crew * 3.8;
         var waterReturn = waterNeed * recovery / 100;
         var resupplyWater = waterNeed - waterReturn;
         var oxygenNeed = crew * .84;
-        // Tuned so a nominal 7-crew day with healthy scrubbing lands ~2600 ppm
-        // (~2 mmHg, a good day aboard), perfect scrubbing ~2000 ppm, and a
-        // degraded scrubber with 11 aboard climbs past 5000 ppm. The floor stays
-        // near Earth ambient; the ceiling sits around NASA's long-duration limit.
-        var co2 = opsClamp(425 + crew * 225 + (100 - scrub) * 50, 400, 8000);
-        var wasteHeat = load * .72;
-        var rejectedHeat = radiator * .75 * cooling / 100;
-        var cabinTemp = opsClamp(22 + (wasteHeat - rejectedHeat) / 12, 10, 40);
-        var attitudeDemand = 10 + (90 - arrayAngle) * .25 + research * .08;
-        var nextCmg = opsClamp(cmg + attitudeDemand * .55, 0, 100);
+        var airSettings = { power: powerSettings, crew: crew, scrub: scrub, flow: d.opsAirFlow,
+          activity: d.opsAirActivity, startPpm: d.opsAirStart, restore: d.opsAirRestore, restoreMinute: d.opsAirRestoreMinute };
+        var airModel = issAirRun(airSettings), airEnd = issAirInspect(airModel, 92);
+        var co2 = airModel.peakPpm;
+        var thermalSettings = { power: powerSettings, radiator: radiator, cooling: cooling, cabinStart: cabinStart, crew: crew };
+        var thermalModel = issThermalRun(thermalSettings);
+        var thermalEnd = issThermalInspect(thermalModel, 92);
+        var cabinTemp = thermalEnd.cabin;
+        var thermalComfortable = thermalModel.minCabin >= 18 && thermalModel.maxCabin <= 27;
+        var attitudeSettings = { cmg: cmg, torque: d.opsAttitudeTorque, inertia: d.opsAttitudeInertia, dump: d.opsAttitudeDump, burnMinute: d.opsAttitudeBurnMinute, thrust: d.opsAttitudeThrust, fuel: d.opsAttitudeFuel };
+        var attitudeModel = issAttitudeRun(attitudeSettings), attitudeEnd = issAttitudeInspect(attitudeModel, 92);
+        var nextCmg = attitudeEnd.percent;
         var boneLoss = 1.25 * (missionDays / 30) * (1 - Math.min(exercise, 2.5) / 2.5 * .68);
-        var debrisRadius = debrisSize / 2000;
-        var debrisMass = 2700 * (4 / 3) * Math.PI * Math.pow(debrisRadius, 3);
-        var impactKj = .5 * debrisMass * Math.pow(debrisSpeed * 1000, 2) / 1000;
-        var shieldCapacity = 5 * Math.pow(shieldGap / 10, 1.4);
         var powerScore = projectedBattery;
-        // 100 at a well-scrubbed ~2000 ppm, reaching 0 near the long-duration
-        // limit, so the meter tracks the same scale the flight rule uses.
+        // Teaching margin follows the highest modeled zone through the orbit.
         var airScore = opsClamp(100 - Math.max(0, co2 - 2000) / 50, 0, 100);
-        var thermalScore = opsClamp(100 - Math.abs(cabinTemp - 22) * 13, 0, 100);
-        var attitudeScore = opsClamp(100 - nextCmg * .65, 0, 100);
+        var thermalScore = Math.min(issThermalMargin(thermalModel.minCabin), issThermalMargin(thermalModel.maxCabin));
+        var attitudeScore = opsClamp(100 - attitudeModel.peakPercent * .65, 0, 100);
         var health = Math.round((powerScore + airScore + recovery + thermalScore + attitudeScore) / 5);
         var healthColor = health >= 75 ? '#4ade80' : health >= 50 ? '#fbbf24' : '#f87171';
         var metrics = { power: projectedBattery, co2: co2, co2Action: CO2_ACTION_PPM, recovery: recovery, temp: cabinTemp, cmg: nextCmg };
         var sunlightMinutes = 92 - eclipse;
-        var orbitForecast = [];
-        for (var forecastStep = 0; forecastStep <= 24; forecastStep++) {
-          var minute = forecastStep / 24 * 92;
-          var sunMinutes = Math.min(minute, sunlightMinutes);
-          var darkMinutes = Math.max(0, minute - sunlightMinutes);
-          var batteryAtMinute = opsClamp(battery + ((generation - load) * sunMinutes - load * darkMinutes) / 60 / (BATTERY_KWH / 100), 0, 100);
-          var thermalAtMinute = opsClamp(thermalScore + Math.sin(minute / 92 * Math.PI * 2) * 2 - (minute > sunlightMinutes ? 2 : 0), 0, 100);
-          var cmgAtMinute = cmg + attitudeDemand * .55 * minute / 92;
-          orbitForecast.push({ minute: minute, battery: batteryAtMinute, thermal: thermalAtMinute, attitude: opsClamp(100 - cmgAtMinute * .65, 0, 100) });
+        function powerTimes(settings) {
+          var end = issPowerState(settings, 92), times = [];
+          for (var index = 0; index <= 92; index++) times.push(index);
+          [end.sunlightMinutes, end.fullMinute, end.emptyMinute].forEach(function (event) { if (event !== null) times.push(event); });
+          return times.sort(function (a, b) { return a - b; }).filter(function (minute, index, all) { return index === 0 || minute - all[index - 1] > 1e-9; });
+        }
+        var orbitForecast = [], forecastTimes = powerTimes(powerSettings).concat(issAttitudeTimes(attitudeModel)).sort(function(a,b) { return a-b; }).filter(function(time,index,all) { return !index || time - all[index-1] > 1e-8; });
+        for (var forecastStep = 0; forecastStep < forecastTimes.length; forecastStep++) {
+          var minute = forecastTimes[forecastStep];
+          var batteryAtMinute = issPowerState(powerSettings, minute).percent;
+          var thermalAtMinute = issThermalMargin(issThermalInspect(thermalModel, minute).cabin);
+          orbitForecast.push({ minute: minute, battery: batteryAtMinute, thermal: thermalAtMinute, attitude: issAttitudeMargin(attitudeModel, minute) });
         }
         var nominalForecast = [];
         var nominalLoad = 68 + 7 * 1.6 + 60 * .22;
         var nominalGeneration = ARRAY_PEAK_KW * Math.sin(86 * Math.PI / 180);
-        var nominalSunlight = 57;
-        var nominalWasteHeat = nominalLoad * .72;
-        var nominalRejectedHeat = 82 * .75 * 86 / 100;
-        var nominalCabinTemp = opsClamp(22 + (nominalWasteHeat - nominalRejectedHeat) / 12, 10, 40);
-        var nominalThermalScore = opsClamp(100 - Math.abs(nominalCabinTemp - 22) * 13, 0, 100);
-        var nominalAttitudeDemand = 10 + (90 - 86) * .25 + 60 * .08;
-        for (var nominalStep = 0; nominalStep <= 24; nominalStep++) {
-          var nominalMinute = nominalStep / 24 * 92;
-          var nominalSunMinutes = Math.min(nominalMinute, nominalSunlight);
-          var nominalDarkMinutes = Math.max(0, nominalMinute - nominalSunlight);
-          var nominalCmg = 28 + nominalAttitudeDemand * .55 * nominalMinute / 92;
-          nominalForecast.push({ minute: nominalMinute, battery: opsClamp(76 + ((nominalGeneration - nominalLoad) * nominalSunMinutes - nominalLoad * nominalDarkMinutes) / 60 / (BATTERY_KWH / 100), 0, 100), thermal: opsClamp(nominalThermalScore + Math.sin(nominalMinute / 92 * Math.PI * 2) * 2 - (nominalMinute > nominalSunlight ? 2 : 0), 0, 100), attitude: opsClamp(100 - nominalCmg * .65, 0, 100) });
+        var nominalThermalModel = issThermalRun({});
+        var nominalAttitudeModel = issAttitudeRun({});
+        var nominalPowerSettings = { generation: nominalGeneration, load: nominalLoad, eclipse: 35, battery: 76, capacity: BATTERY_KWH };
+        var nominalTimes = powerTimes(nominalPowerSettings);
+        for (var nominalStep = 0; nominalStep < nominalTimes.length; nominalStep++) {
+          var nominalMinute = nominalTimes[nominalStep];
+          nominalForecast.push({ minute: nominalMinute, battery: issPowerState(nominalPowerSettings, nominalMinute).percent, thermal: issThermalMargin(issThermalInspect(nominalThermalModel, nominalMinute).cabin), attitude: issAttitudeMargin(nominalAttitudeModel, nominalMinute) });
         }        var orbitMinute = opsClamp(d.opsOrbitMinute == null ? 0 : d.opsOrbitMinute, 0, 92);
-        var cursorSunMinutes = Math.min(orbitMinute, sunlightMinutes);
-        var cursorDarkMinutes = Math.max(0, orbitMinute - sunlightMinutes);
-        var cursorCmg = cmg + attitudeDemand * .55 * orbitMinute / 92;
         var orbitCursor = {
-          battery: opsClamp(battery + ((generation - load) * cursorSunMinutes - load * cursorDarkMinutes) / 60 / (BATTERY_KWH / 100), 0, 100),
-          thermal: opsClamp(thermalScore + Math.sin(orbitMinute / 92 * Math.PI * 2) * 2 - (orbitMinute > sunlightMinutes ? 2 : 0), 0, 100),
-          attitude: opsClamp(100 - cursorCmg * .65, 0, 100)
+          battery: issPowerState(powerSettings, orbitMinute).percent,
+          thermal: issThermalMargin(issThermalInspect(thermalModel, orbitMinute).cabin),
+          attitude: issAttitudeMargin(attitudeModel, orbitMinute)
         };        var modes = [['integrated','🛰️','Integrated'],['power','☀️','Power'],['eclss','♻️','Air + water'],['thermal','🌡️','Thermal'],['attitude','🧭','Attitude'],['debris','🛡️','Debris'],['human','🦴','Human'],['emergency','🚨','Emergency'],['rendezvous','🚀','Rendezvous']];
         var scenarioPresets = [
           { id: 'nominal', icon: '✓', label: 'Nominal orbit', note: 'Balanced science day', patch: { opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28 } },
           { id: 'science', icon: '⚗', label: 'Science surge', note: 'Maximum lab demand', patch: { opsCrew: 7, opsResearch: 95, opsArrayAngle: 88, opsEclipse: 35, opsBattery: 78, opsRecovery: 98, opsScrub: 92, opsRadiator: 95, opsCooling: 94, opsCmg: 35 } },
           { id: 'eclipse', icon: '◐', label: 'Long eclipse', note: 'Protect battery reserve', patch: { opsCrew: 7, opsResearch: 25, opsArrayAngle: 84, opsEclipse: 45, opsBattery: 55, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 45 } },
           { id: 'crew', icon: '●●', label: 'Crew surge', note: 'Eleven people aboard', patch: { opsCrew: 11, opsResearch: 70, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 82, opsRecovery: 98.5, opsScrub: 98, opsRadiator: 94, opsCooling: 94, opsCmg: 35 } },
-          { id: 'fault', icon: '!', label: 'Cascading fault', note: 'Recover the station', patch: { opsCrew: 7, opsResearch: 90, opsArrayAngle: 55, opsEclipse: 42, opsBattery: 38, opsRecovery: 84, opsScrub: 55, opsRadiator: 42, opsCooling: 48, opsCmg: 78 } }
+          { id: 'fault', icon: '!', label: 'Cascading fault', note: 'Recover the station', patch: { opsCrew: 7, opsResearch: 90, opsArrayAngle: 55, opsEclipse: 42, opsBattery: 38, opsRecovery: 84, opsScrub: 55, opsAirFlow: 3, opsAirStart: 3200, opsRadiator: 42, opsCooling: 48, opsCmg: 78 } }
         ];
         // Both are PERSISTED. `mode` drives the 8-way ternary below, whose
         // terminator is renderIntegrated() -- so an unknown id rendered the
@@ -8646,29 +9686,29 @@
         var scenarioIds = ['custom'].concat(scenarioPresets.map(function (s0) { return s0.id; }));
         var opsScenario = scenarioIds.indexOf(d.opsScenario) !== -1 ? d.opsScenario : 'custom';
         var flightRules = [
-          { mode: 'power', label: 'Battery reserve', value: projectedBattery.toFixed(0) + '%', rule: '≥ 25%', pass: projectedBattery >= 25, color: projectedBattery >= 25 ? '#4ade80' : '#f87171' },
+          { mode: 'power', label: 'Battery reserve', value: powerEnd.minimumPercent.toFixed(0) + '%', rule: '≥ 25%', pass: powerEnd.minimumPercent >= 25, color: powerEnd.minimumPercent >= 25 ? '#4ade80' : '#f87171' },
           { mode: 'eclss', label: 'Cabin CO₂', value: co2.toFixed(0) + ' ppm', rule: '< ' + CO2_ACTION_PPM + ' ppm', pass: co2 < CO2_ACTION_PPM, color: co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171' },
           { mode: 'eclss', label: 'Water loop', value: recovery.toFixed(1) + '%', rule: '≥ 90%', pass: recovery >= 90, color: recovery >= 90 ? '#38bdf8' : '#fbbf24' },
-          { mode: 'thermal', label: 'Cabin temp', value: cabinTemp.toFixed(1) + ' °C', rule: '18–27 °C', pass: cabinTemp > 18 && cabinTemp < 27, color: cabinTemp > 18 && cabinTemp < 27 ? '#fb923c' : '#f87171' },
-          { mode: 'attitude', label: 'CMG load', value: nextCmg.toFixed(0) + '%', rule: '< 80%', pass: nextCmg < 80, color: nextCmg < 80 ? '#a78bfa' : '#f87171' }
+          { mode: 'thermal', label: 'Cabin temp', value: thermalModel.minCabin.toFixed(1) + '–' + thermalModel.maxCabin.toFixed(1) + ' °C', rule: '18–27 °C', pass: thermalComfortable, color: thermalComfortable ? '#fb923c' : '#f87171' },
+          { mode: 'attitude', label: 'CMG load', value: attitudeModel.peakPercent.toFixed(0) + '%', rule: '< 80%', pass: attitudeModel.peakPercent < 80, color: attitudeModel.peakPercent < 80 ? '#a78bfa' : '#f87171' }
         ];
         var violatedRules = flightRules.filter(function (rule) { return !rule.pass; });
         var primaryRule = violatedRules.length ? violatedRules[0] : null;
         var concernCopy = !primaryRule ? 'All five flight rules are green. Scrub the orbit or load a stress scenario to explore the operating boundary.' :
-          primaryRule.mode === 'power' ? 'Generation and load leave too little battery reserve after eclipse.' :
-          primaryRule.label === 'Cabin CO₂' ? 'Scrubber throughput cannot match the crew carbon-dioxide load.' :
-          primaryRule.label === 'Water loop' ? 'Open-loop water loss is compounding faster than the recovery system can replace it.' :
-          primaryRule.mode === 'thermal' ? 'Waste heat is outrunning radiator and cooling-loop rejection.' :
-          'Control-moment gyroscopes are approaching saturation under the current disturbance load.';
-        function setMode(id) { upd({ opsMode: id, opsEmergencyResult: '' }); }
+          primaryRule.mode === 'power' ? 'Generation and load leave too little battery reserve during this orbit.' :
+          primaryRule.label === 'Cabin CO₂' ? 'A modeled air zone reaches the CO₂ comparison line. Inspect local airflow as well as scrubber throughput.' :
+          primaryRule.label === 'Water loop' ? 'Recovery efficiency is below the comparison target. Inspect losses, finite reserves and your resupply plan.' :
+          primaryRule.mode === 'thermal' ? 'The cabin leaves its comfort band during this orbit. Inspect the heat input and cooling path.' :
+          'Projected momentum storage reaches the caution band. Inspect the disturbance torque and unloading plan.';
+        function setMode(id, lab) { var patch = { opsMode: id, opsEmergencyResult: '' }; if (id === 'eclss' && lab) patch.opsEclssLab = lab; upd(patch); }
         function renderRuleStatus() {
           return h('div', { className: 'iss-rule-status' + (primaryRule ? ' is-check' : ' is-go'), role: 'status', 'aria-live': 'polite' },
             h('span', { className: 'iss-rule-status-icon', 'aria-hidden': 'true' }, primaryRule ? '!' : '✓'),
             h('div', null, h('strong', null, primaryRule ? violatedRules.length + ' FLIGHT RULE' + (violatedRules.length === 1 ? '' : 'S') + ' TO CHECK' : '5 / 5 FLIGHT RULES GO'), h('p', null, concernCopy)),
-            primaryRule ? h('button', { type: 'button', onClick: function () { setMode(primaryRule.mode); } }, 'Inspect ' + primaryRule.label + ' →') : null);
+            primaryRule ? h('button', { type: 'button', onClick: function () { setMode(primaryRule.mode, primaryRule.label === 'Water loop' ? 'water' : 'air'); } }, 'Inspect ' + primaryRule.label + ' →') : null);
         }
         function applyScenario(scenario) {
-          upd(Object.assign({ opsScenario: scenario.id, opsMode: 'integrated', opsOrbitMinute: 0, opsEmergencyResult: '' }, scenario.patch));
+          upd(Object.assign({ opsScenario: scenario.id, opsMode: 'integrated', opsOrbitMinute: 0, opsCabinStart: 22, opsAttitudeTorque: .35, opsAttitudeInertia: 80, opsAttitudeDump: false, opsAttitudeBurnMinute: 40, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsAirFlow: 90, opsAirActivity: 1, opsAirStart: 2600, opsAirRestore: false, opsAirRestoreMinute: 45, opsEclssLab: 'air', opsWaterDay: 0, opsWaterSide: 'after', opsWaterClean: 120, opsWaterWaste: 25, opsWaterThroughput: 36, opsWaterOutage: false, opsWaterOutageStart: 10, opsWaterOutageDays: 6, opsWaterDelivery: false, opsWaterDeliveryDay: 12, opsWaterDeliveryLitres: 100, opsPressureMinute: 0, opsPressureVolume: 12, opsPressureStart: 101.3, opsPressureCycle: true, opsPressureVent: 3, opsPressureFill: 3, opsPressureLeak: 0, opsPressureVentMinutes: 6, opsPressureHoldMinutes: 4, opsPressureIsolate: false, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsDebrisBumper: .5, opsDebrisMaterial: 'aluminum', opsDebrisSpread: 10, opsDebrisTime: 0, opsEmergencyResult: '' }, scenario.patch));
           if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_scenario_loaded', '{value1} mission scenario loaded.'), { value1: scenario.label }));
         }
         function renderScenarioPresets() {
@@ -8692,38 +9732,1082 @@
           return h('div', null, renderOpsNetwork(metrics, d.opsFocus || 'all'), renderOpsForecast(orbitForecast, sunlightMinutes, orbitMinute, orbitCursor, opsScenario === 'nominal' ? null : nominalForecast), h('div', { className: 'iss-ops-grid' },
             opsControl('iss-ops-crew','Crew aboard',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-ops-research','Research load',research,0,100,5,'%','#a78bfa','opsResearch'),
             opsControl('iss-ops-angle','Solar-array alignment',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-ops-battery','Battery state',battery,0,100,1,'%','#4ade80','opsBattery')),
-            h('button', { type: 'button', onClick: function () { var run = (d.opsRuns || 0) + 1; var log = (Array.isArray(d.opsLog) ? d.opsLog : []).concat(['ORBIT ' + run + ' // battery ' + projectedBattery.toFixed(0) + '%, cabin ' + cabinTemp.toFixed(1) + '°C, CMG ' + nextCmg.toFixed(0) + '%']).slice(-5); upd({ opsBattery: projectedBattery, opsCmg: nextCmg, opsRuns: run, opsLog: log, opsLastDebrief: health, opsScenario: 'custom', opsOrbitMinute: 92 }); if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_simulation_complete_station_health_percent', 'Orbit simulation complete. Station health {value1} percent.'), { value1: health })); }, style: { width: '100%', marginTop: 10, padding: '10px 14px', border: '1px solid #4ade80', borderRadius: 10, background: 'rgba(34,197,94,.14)', color: '#86efac', fontWeight: 900, cursor: 'pointer' } }, '▶ Simulate the next 92-minute orbit'), renderMissionReplay());
+            h('button', { type: 'button', onClick: function () { var run = (d.opsRuns || 0) + 1; var log = (Array.isArray(d.opsLog) ? d.opsLog : []).concat(['ORBIT ' + run + ' // battery ' + projectedBattery.toFixed(0) + '%, cabin ' + cabinTemp.toFixed(1) + '°C, CMG ' + nextCmg.toFixed(0) + '%']).slice(-5); upd({ opsRuns: run, opsLog: log, opsLastDebrief: health, opsScenario: 'custom', opsOrbitMinute: 92 }); if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_simulation_complete_station_health_percent', 'Orbit simulation complete. Station health {value1} percent.'), { value1: health })); }, style: { width: '100%', marginTop: 10, padding: '10px 14px', border: '1px solid #4ade80', borderRadius: 10, background: 'rgba(34,197,94,.14)', color: '#86efac', fontWeight: 900, cursor: 'pointer' } }, '▶ Simulate the next 92-minute orbit'), renderMissionReplay());
         }
         function renderPower() {
-          return h('div', null,
-            h('div', { className: 'iss-learning-visual', style: { padding: 12 } }, h('div', { style: { display: 'grid', gridTemplateColumns: (92 - eclipse) + 'fr ' + eclipse + 'fr', height: 44, overflow: 'hidden', borderRadius: 10 } }, h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#7c2d12,#9a3412)', color: '#fff7ed', fontSize: 10, fontWeight: 900 } }, 'SUNLIGHT ' + (92 - eclipse).toFixed(0) + ' MIN'), h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#172554,#020617)', color: '#bfdbfe', fontSize: 10, fontWeight: 900 } }, 'ECLIPSE ' + eclipse.toFixed(0) + ' MIN'))),
-            h('div', { className: 'iss-ops-grid' }, opsControl('iss-power-angle','Array face-on angle',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#818cf8','opsEclipse'), opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#a78bfa','opsResearch'), opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#4ade80','opsBattery'), statusBox('Solar generation',generation.toFixed(1) + ' kW','Face-on arrays maximize incident sunlight.','#fbbf24'), statusBox('Station demand',load.toFixed(1) + ' kW','Life support is the non-negotiable base load.','#7dd3fc')),
-            opsMeter('Battery after one orbit',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%'), opsOrbitCurve('Battery over the next orbit', orbitForecast, 'battery', sunlightMinutes, projectedBattery > 25 ? '#4ade80' : '#f87171', '%'));
+          var current = issPowerState(powerSettings, orbitMinute);
+          var referenceSettings = Object.assign({}, powerSettings, { chargeEfficiency: 1, dischargeEfficiency: 1 });
+          var showReference = d.opsPowerReference !== false;
+          var reference = issPowerState(referenceSettings, orbitMinute);
+          var samples = powerTimes(powerSettings).map(function (minute) { return issPowerState(powerSettings, minute); });
+          var referenceSamples = powerTimes(referenceSettings).map(function (minute) { return issPowerState(referenceSettings, minute); });
+          var stateLabel = current.unservedKW > 0 ? 'Demand exceeds supply' : current.chargeKW > 0 ? 'Charging' : current.dischargeKW > 0 ? 'Discharging' : current.curtailedKW > 0 ? 'Battery full · excess sunlight' : 'Loads supplied directly';
+          var batteryColor = current.percent >= 25 ? '#6ee7b7' : '#fda4af';
+          function seek(minute) { upd({ opsOrbitMinute: opsClamp(minute, 0, 92), opsPowerSeekToken: !d.opsPowerSeekToken }); }
+          function plotSeek(event) {
+            var box = event.currentTarget.getBoundingClientRect();
+            if (box.width) seek(Math.round(opsClamp((event.clientX - box.left) / box.width, 0, 1) * 920) / 10);
+          }
+          function finishPointer(event) {
+            if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+          }
+          function curve(series) {
+            return series.map(function (point, index) { return (index ? 'L' : 'M') + (point.minute / 92 * 1000).toFixed(3) + ' ' + (100 - point.percent).toFixed(4); }).join(' ');
+          }
+          function checkpoint(id, label, minute) {
+            return h('button', { type: 'button', 'data-power-event': id, disabled: minute === null, onClick: function () { seek(minute); } }, label);
+          }
+          function reading(id, label, value, note, color) {
+            return h('div', { className: 'iss-power-reading', 'data-power-reading': id }, h('span', null, label), h('strong', { style: { color: color || '#e0f2fe' } }, value), h('small', null, note));
+          }
+          var panelWidth = Math.max(1.5, 37 * Math.sin(arrayAngle * Math.PI / 180));
+          var presetValues = [
+            ['balanced', 'Balanced orbit', { opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsResearch: 60 }],
+            ['full', 'Battery already full', { opsArrayAngle: 86, opsEclipse: 35, opsBattery: 100, opsResearch: 60 }],
+            ['low', 'Low-reserve eclipse', { opsArrayAngle: 25, opsEclipse: 45, opsBattery: 15, opsResearch: 95 }]
+          ];
+          return h('section', { id: 'iss-power-lab', className: 'iss-power-lab', 'aria-labelledby': 'iss-power-title', 'data-iss-power-lab': true },
+            h('div', { className: 'iss-experiment-heading' }, h('div', null,
+              h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.power_kicker', 'ORBIT / ENERGY LAB')),
+              h('h3', { id: 'iss-power-title' }, __alloT('stem.spacestation.power_title', 'Carry the station through the night.'))),
+              h('span', { className: 'iss-model-badge' }, '92 min orbit · 210 kWh storage')),
+            h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.power_intro', 'Follow sunlight into station loads and battery storage. Change the array angle, then watch the battery take over in Earth’s shadow.')),
+            h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.power_trials', 'Power investigation starting conditions') },
+              presetValues.map(function (preset) { return h('button', { key: preset[0], type: 'button', 'data-power-preset': preset[0], onClick: function () { upd(Object.assign({ opsCrew: 7, opsOrbitMinute: 0, opsScenario: 'custom', opsPowerSeekToken: !d.opsPowerSeekToken }, preset[2])); } }, preset[1]); })),
+            h('div', { className: 'iss-power-workbench' },
+              h('div', { className: 'iss-power-scene', 'data-power-phase': current.lit ? 'sunlight' : 'eclipse' },
+                h('div', { className: 'iss-power-scene-heading' }, h('strong', null, current.lit ? 'SUNLIGHT' : 'ECLIPSE'), h('span', { 'data-power-state': true }, stateLabel)),
+                h('svg', { viewBox: '0 0 500 260', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.power_scene_label', 'Station in {phase}. Array angle {angle} degrees; solar generation {power} kilowatts. Battery {battery} percent.'), { phase: current.lit ? 'sunlight' : 'eclipse', angle: arrayAngle.toFixed(0), power: current.solarKW.toFixed(1), battery: current.percent.toFixed(1) }) },
+                  h('defs', null,
+                    h('linearGradient', { id: 'iss-power-earth', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#2588b1' }), h('stop', { offset: '1', stopColor: '#041324' })),
+                    h('linearGradient', { id: 'iss-power-hull', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0', stopColor: '#567084' }), h('stop', { offset: '.45', stopColor: '#d2e6ec' }), h('stop', { offset: '1', stopColor: '#536e84' })),
+                    h('linearGradient', { id: 'iss-power-panel', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0', stopColor: current.lit ? '#e7ac48' : '#426ba8' }), h('stop', { offset: '1', stopColor: current.lit ? '#604d6e' : '#172c57' }))),
+                  [[45,45],[126,20],[209,30],[294,11],[411,40],[464,94],[26,153],[467,175],[323,187]].map(function (star, index) { return h('circle', { key: index, cx: star[0], cy: star[1], r: index % 3 === 0 ? 1.4 : .7, fill: '#b7d9e7', opacity: .5 }); }),
+                  current.lit ? h('g', { stroke: '#fcd34d', strokeWidth: 2, opacity: .55 },
+                    [54,80,106].map(function (y) { return h('path', { key: y, d: 'M0 ' + y + ' L35 ' + y + ' m-6 -4 6 4 -6 4', fill: 'none' }); })) : null,
+                  h('path', { d: 'M-20 261 Q250 169 520 251 L520 300 L-20 300 Z', fill: 'url(#iss-power-earth)' }),
+                  h('path', { d: 'M-20 261 Q250 169 520 251', fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, opacity: current.lit ? .85 : .35 }),
+                  h('g', { opacity: current.lit ? 1 : .68 },
+                    h('path', { d: 'M70 119 H430 M70 127 H430', stroke: '#a2bacb', strokeWidth: 3 }),
+                    h('path', { d: 'M75 119 L95 127 115 119 135 127 155 119 175 127 195 119 215 127 235 119 255 127 275 119 295 127 315 119 335 127 355 119 375 127 395 119 425 127', fill: 'none', stroke: '#7993a7', strokeWidth: 1.5 }),
+                    h('g', { 'data-power-arrays': arrayAngle },
+                      [80,135,365,420].map(function (x) { return h('g', { key: x },
+                        h('line', { x1: x, y1: 46, x2: x, y2: 202, stroke: '#b7c8d4', strokeWidth: 3 }),
+                        [46,139].map(function (y) { return h('g', { key: y },
+                          h('rect', { x: x - panelWidth / 2, y: y, width: panelWidth, height: 62, fill: 'url(#iss-power-panel)', stroke: '#c5b99b', strokeWidth: .7 }),
+                          [1,2,3,4,5].map(function (row) { return h('line', { key: row, x1: x - panelWidth / 2, x2: x + panelWidth / 2, y1: y + row * 10.3, y2: y + row * 10.3, stroke: '#10273b', opacity: .65 }); }),
+                          h('line', { x1: x, x2: x, y1: y, y2: y + 62, stroke: '#132a43', opacity: .6 })); })); })),
+                    h('rect', { x: 218, y: 63, width: 40, height: 117, rx: 14, fill: 'url(#iss-power-hull)', stroke: '#a7c3d6' }),
+                    h('rect', { x: 177, y: 109, width: 132, height: 30, rx: 10, fill: 'url(#iss-power-hull)', stroke: '#b1c7d4' }),
+                    [191,207,229,247,270,289].map(function (x) { return h('line', { key: x, x1: x, x2: x, y1: 111, y2: 137, stroke: '#5e7a91', strokeWidth: 2 }); }),
+                    h('rect', { x: 227, y: 73, width: 22, height: 20, rx: 3, fill: '#102c44', stroke: '#d2e5eb' }),
+                    h('path', { d: 'M275 142 L289 160 L314 165 L337 151', stroke: '#c0d0d8', strokeWidth: 5, fill: 'none', strokeLinejoin: 'round' }),
+                    h('circle', { cx: 289, cy: 160, r: 4, fill: '#577b93' }),
+                    h('rect', { x: 218, y: 170, width: 40, height: 12, rx: 4, fill: '#34536d', stroke: '#8cb5c7' }))),
+                h('div', { className: 'iss-power-storage-visual' },
+                  h('div', null, h('span', null, 'Battery reserve'), h('strong', { 'data-power-scene-reserve': true, style: { color: batteryColor } }, current.percent.toFixed(1) + '%')),
+                  h('div', { className: 'iss-power-storage-track', role: 'meter', 'aria-label': __alloT('stem.spacestation.power_reserve_meter', 'Battery reserve; 25 percent target'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Number(current.percent.toFixed(3)) },
+                    h('span', { 'data-power-storage-fill': true, style: { width: current.percent + '%', background: batteryColor } }), h('i', { 'aria-hidden': true }))),
+                h('p', null, 'Array width shows projected collecting area: 0° edge-on, 90° face-on. Station and lighting are schematic.')),
+              h('div', { className: 'iss-power-setup' },
+                opsControl('iss-power-angle','Array angle to sunlight',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'),
+                opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#c4b5fd','opsEclipse'),
+                opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#c4b5fd','opsResearch'),
+                opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#6ee7b7','opsBattery'))),
+            h('div', { className: 'iss-power-flows' },
+              reading('solar', 'Solar generation', current.solarKW.toFixed(1) + ' kW', current.lit ? 'Available at the electrical bus' : 'Earth blocks direct sunlight', '#fcd34d'),
+              reading('battery-flow', current.chargeKW > 0 ? 'Into the battery' : current.dischargeKW > 0 ? 'Out of the battery' : 'Battery power', (current.chargeKW || current.dischargeKW).toFixed(1) + ' kW', current.chargeKW > 0 ? 'Bus input; 95% enters storage' : current.dischargeKW > 0 ? 'Delivered to the bus after losses' : 'No charging or discharging', '#6ee7b7'),
+              reading('load', 'Station demand', current.loadKW.toFixed(1) + ' kW', current.unservedKW > 0 ? current.unservedKW.toFixed(1) + ' kW cannot be supplied' : 'All requested load is supplied', current.unservedKW > 0 ? '#fda4af' : '#7dd3fc')),
+            h('div', { className: 'iss-power-clock' },
+              h('div', { className: 'iss-power-clock-heading' }, h('strong', null, 'T+' + orbitMinute.toFixed(1) + ' min'), h('span', null, stateLabel)),
+              h(issExperimentPlayback, { React: React, id: 'power', t: __alloT, value: orbitMinute * 60, max: 92 * 60, speeds: [60,300,600], speedLabels: ['1 min/s','5 min/s','10 min/s'], resetKey: [crew,research,arrayAngle,eclipse,battery,!!d.opsPowerSeekToken].join(':'), onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60 }); } }),
+              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-power-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(1) + ' min')),
+                h('input', { id: 'iss-power-time', type: 'range', min: 0, max: 92, step: .1, value: orbitMinute, 'aria-describedby': 'iss-power-graph-help', 'aria-valuetext': __alloFill(__alloT('stem.spacestation.power_time_value', '{minute} minutes, {phase}, battery {reserve} percent'), { minute: orbitMinute.toFixed(1), phase: current.lit ? __alloT('stem.spacestation.power_sunlight', 'sunlight') : __alloT('stem.spacestation.power_eclipse', 'eclipse'), reserve: current.percent.toFixed(1) }), onChange: function (event) { seek(Number(event.target.value)); } })),
+              h('div', { className: 'iss-power-light-band', 'aria-hidden': true }, h('span', { style: { width: sunlightMinutes / 92 * 100 + '%' } }, 'SUNLIGHT ' + sunlightMinutes + ' MIN'), h('span', { style: { flex: 1 } }, 'ECLIPSE ' + eclipse + ' MIN'), h('i', { style: { left: orbitMinute / 92 * 100 + '%' } }))),
+            h('div', { className: 'iss-power-chart-heading' }, h('h4', null, 'Stored energy · battery reserve'), h('button', { type: 'button', 'data-power-reference': true, 'aria-pressed': showReference, onClick: function () { upd({ opsPowerReference: !showReference }); } }, 'Compare lossless storage')),
+            h('div', { className: 'iss-power-plot-grid' }, h('div', { className: 'iss-power-y-axis', 'aria-hidden': true }, h('span', null, '100%'), h('span', null, '50%'), h('span', null, '0%')),
+              h('svg', { viewBox: '0 -3 1000 106', preserveAspectRatio: 'none', role: 'img', 'data-power-plot': true, 'aria-describedby': 'iss-power-graph-help',
+                'aria-label': __alloFill(__alloT('stem.spacestation.power_plot_label', 'Battery reserve over one orbit. Current {current} percent; end {end} percent.'), { current: current.percent.toFixed(1), end: projectedBattery.toFixed(1) }),
+                onPointerDown: function (event) { if (event.button !== 0 || event.isPrimary === false) return; event.preventDefault(); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); plotSeek(event); },
+                onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) plotSeek(event); },
+                onPointerUp: finishPointer, onPointerCancel: finishPointer },
+                h('rect', { x: 0, y: -3, width: sunlightMinutes / 92 * 1000, height: 106, fill: '#fbbf24', opacity: .09 }),
+                h('rect', { x: sunlightMinutes / 92 * 1000, y: -3, width: eclipse / 92 * 1000, height: 106, fill: '#818cf8', opacity: .15 }),
+                [0,50,100].map(function (value) { return h('line', { key: value, x1: 0, x2: 1000, y1: value, y2: value, stroke: '#385267', strokeDasharray: '4 5', vectorEffect: 'non-scaling-stroke' }); }),
+                h('line', { x1: 0, x2: 1000, y1: 75, y2: 75, stroke: '#fda4af', strokeDasharray: '3 5', vectorEffect: 'non-scaling-stroke' }),
+                showReference ? h('path', { 'data-power-reference-path': true, d: curve(referenceSamples), fill: 'none', stroke: '#c4b5fd', strokeWidth: 2, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }) : null,
+                h('path', { 'data-power-battery-path': true, d: curve(samples), fill: 'none', stroke: '#6ee7b7', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }),
+                h('line', { x1: orbitMinute / 92 * 1000, x2: orbitMinute / 92 * 1000, y1: -3, y2: 103, stroke: '#e0f2fe', vectorEffect: 'non-scaling-stroke' }),
+                h('circle', { cx: orbitMinute / 92 * 1000, cy: 100 - current.percent, r: .01, fill: 'none', stroke: '#6ee7b7', strokeWidth: 7, vectorEffect: 'non-scaling-stroke' }))),
+            h('div', { className: 'iss-power-x-axis', 'aria-hidden': true }, h('span', null, '0 min'), h('span', null, '46 min'), h('span', null, '92 min')),
+            h('div', { className: 'iss-power-chart-key' }, h('span', null, 'Solid mint: selected battery'), showReference ? h('span', null, 'Dashed violet: no conversion losses') : null, h('span', null, 'Dotted rose: 25% reserve target')),
+            showReference ? h('p', { className: 'iss-power-comparison', 'data-power-comparison': true }, 'At this time: selected ' + current.percent.toFixed(1) + '% · lossless ' + reference.percent.toFixed(1) + '%. Both have the same capacity, sunlight and demand.') : null,
+            h('p', { id: 'iss-power-graph-help', className: 'iss-power-help' }, 'Drag or tap the graph to inspect. Use the time slider and arrow keys for 0.1-minute steps. Inspection pauses playback.'),
+            h('div', { className: 'iss-experiment-actions' }, checkpoint('start','Orbit start',0), checkpoint('full','Battery reaches full',powerEnd.fullMinute), checkpoint('eclipse','Enter eclipse',sunlightMinutes), checkpoint('empty','Battery reaches empty',powerEnd.emptyMinute), checkpoint('end','Orbit end',92)),
+            h('div', { className: 'iss-power-readings' },
+              reading('stored', 'Stored energy', current.storedKWh.toFixed(1) + ' kWh', current.percent.toFixed(1) + '% of 210 kWh usable storage', batteryColor),
+              reading('curtailed', 'Unused solar energy', current.curtailedKWh.toFixed(1) + ' kWh', current.curtailedKW.toFixed(1) + (current.curtailedKW > 0 ? ' kW rejected at full charge' : ' kW rejected now'), '#fcd34d'),
+              reading('losses', 'Conversion losses', current.lossKWh.toFixed(1) + ' kWh', current.lossKW.toFixed(1) + ' kW becoming heat now', '#c4b5fd'),
+              reading('unserved', 'Unmet energy demand', current.unservedKWh.toFixed(1) + ' kWh', current.unservedKW > 0 ? 'Supply cannot meet the requested load' : 'Cumulative shortfall since orbit start', current.unservedKWh > 0 ? '#fda4af' : '#7dd3fc')),
+            h('p', { className: 'iss-power-balance', 'data-power-balance': true }, 'Energy accounted for: initial ' + current.startKWh.toFixed(1) + ' + solar ' + current.generatedKWh.toFixed(1) + ' = loads supplied ' + current.servedKWh.toFixed(1) + ' + stored ' + current.storedKWh.toFixed(1) + ' + losses ' + current.lossKWh.toFixed(1) + ' + unused ' + current.curtailedKWh.toFixed(1) + ' kWh. Display values are rounded.'),
+            h('div', { className: 'iss-power-outcome', 'data-power-outcome': powerEnd.unservedKWh > 0 ? 'shortfall' : 'supplied' },
+              h('strong', null, powerEnd.unservedKWh > 0 ? 'This setup runs out of stored energy.' : 'This setup supplies the full orbit.'),
+              h('p', null, powerEnd.unservedKWh > 0 ? 'Battery empty at T+' + powerEnd.emptyMinute.toFixed(1) + ' min. ' + powerEnd.unservedKWh.toFixed(1) + ' kWh of demand goes unmet. Try better array alignment, less research demand, or more starting reserve.' : 'Minimum reserve ' + powerEnd.minimumPercent.toFixed(1) + '%. ' + powerEnd.curtailedKWh.toFixed(1) + ' kWh of available solar energy cannot be stored. Extra sunlight after full charge does not extend the night-time reserve.'),
+              opsMeter('Battery after one orbit',projectedBattery,projectedBattery >= 25 ? '#6ee7b7' : '#fda4af',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%')),
+            h('details', { className: 'iss-physics-note' }, h('summary', null, 'Power model and assumptions'),
+              h('p', null, 'One 92-minute orbit starts in sunlight. Solar power serves station demand first. A 210 kWh usable battery stores surplus at 95% charge efficiency and supplies deficits at 95% discharge efficiency (90.25% round trip). Storage stays between empty and full; rejected sunlight is not saved. These are illustrative aggregate parameters, not measured station hardware specifications.'),
+              h('p', null, 'Sunlit power = 160 kW × sin(array angle). Demand stays constant: 68 kW base + 1.6 kW per crew member + research utilization × 0.22 kW. Phase changes and full/empty events are solved exactly. Battery ageing, temperature, current limits, individual power channels and automatic load shedding are omitted. A shortfall records unmet demand; it does not simulate a station failure.'),
+              h('a', { href: 'https://ntrs.nasa.gov/citations/20200000004', target: '_blank', rel: 'noopener noreferrer' }, 'NASA: storing solar energy for eclipse')));
+        }
+        function renderWater() {
+          var settings={crew:crew,recovery:recovery,cleanStart:d.opsWaterClean,wasteStart:d.opsWaterWaste,throughput:d.opsWaterThroughput,outage:d.opsWaterOutage,outageStart:d.opsWaterOutageStart,outageDays:d.opsWaterOutageDays,delivery:d.opsWaterDelivery,deliveryDay:d.opsWaterDeliveryDay,deliveryLitres:d.opsWaterDeliveryLitres};
+          var model=issWaterRun(settings), config=model.config, day=issFlightNumber(d.opsWaterDay,0,0,30);
+          var current=issWaterInspect(model,day,d.opsWaterSide), end=model.end;
+          var referenceModel=issWaterRun(Object.assign({},settings,{delivery:false})), reference=issWaterInspect(referenceModel,day);
+          var showReference=config.delivery&&d.opsWaterReference!==false;
+          var focus=['clean','crew','waste','processor'].indexOf(d.opsWaterFocus)>=0?d.opsWaterFocus:'clean';
+          var notes={clean:'The clean-water tank supplies the crew. Recovered water and accepted cargo refill it. At full capacity, the processor throttles back and excess cargo stays aboard the delivery vehicle.',crew:'Crew use transfers water into the recoverable wastewater pool. This model groups drinking, food preparation and hygiene into 3.8 litres per person per day. Use alone does not destroy water.',waste:'The wastewater tank buffers the loop when treatment stops. Its 100 L capacity can become the limiting factor during an outage. Water beyond capacity is counted as an unrecoverable loss in this exercise.',processor:'Throughput limits how much wastewater can be treated each day. Recovery efficiency sets the fraction returned as clean water. An outage stops treatment; a repair restores its rate without instantly clearing the backlog.'};
+          var phase=current.unmetRate>1e-8?'SUPPLY SHORTFALL':current.overflowRate>1e-8?'WASTE STORAGE EXCEEDED':current.offline?'PROCESSOR OFFLINE':current.processRate<1e-8?'PROCESSOR IDLE':'WATER CIRCULATING';
+          var phaseColor=current.unmetRate>1e-8||current.overflowRate>1e-8?'#fda4af':current.offline?'#fcd34d':'#6ee7b7';
+          function seek(value,side){upd({opsWaterDay:opsClamp(value,0,30),opsWaterSide:side||'after',opsWaterSeekToken:!d.opsWaterSeekToken});}
+          function changePlan(field,value){var patch={opsScenario:'custom',opsWaterDay:0,opsWaterSide:'after',opsWaterSeekToken:!d.opsWaterSeekToken};patch[field]=value;upd(patch);}
+          function reading(id,label,value,note,color){return h('div',{className:'iss-water-reading','data-water-reading':id},h('span',null,label),h('strong',{style:{color:color||'#e0f2fe'}},value),h('small',null,note));}
+          function eventButton(id,label,value,side){return h('button',{type:'button','data-water-event':id,disabled:value===null,onClick:function(){seek(value,side);}},label);}
+          function plotSeek(event){var box=event.currentTarget.getBoundingClientRect();if(box.width)seek(Math.round(opsClamp((event.clientX-box.left)/box.width,0,1)*300)/10);}
+          function release(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}
+          function path(run,field){return run.points.map(function(point,index){return(index?'L':'M')+(point.day/30*1000).toFixed(4)+' '+(100-point[field]/3).toFixed(5);}).join(' ');}
+          function tank(id,x,y,value,capacity,color){var fill=Math.sqrt(Math.max(0,value/capacity));return h('g',{'data-water-tank':id},
+            h('rect',{x:x-64,y:y-74,width:128,height:148,rx:24,fill:'url(#iss-water-shell)',stroke:focus===id?color:'#51697d',strokeWidth:focus===id?3:1.5}),
+            [-49,49].map(function(offset){return h('line',{key:offset,x1:x+offset,x2:x+offset,y1:y-59,y2:y+59,stroke:'#afc1cf',strokeWidth:5,opacity:.42});}),
+            h('ellipse',{cx:x,cy:y,rx:43,ry:58,fill:'#071825',stroke:'#29465d',strokeWidth:2}),
+            h('ellipse',{'data-water-bladder':id,cx:x,cy:y,rx:43*fill,ry:58*fill,fill:color,opacity:.5}),
+            h('ellipse',{cx:x-8*fill,cy:y-4*fill,rx:27*fill,ry:47*fill,fill:color,opacity:.18}),
+            h('path',{d:'M'+(x-30)+' '+(y-44)+' Q'+(x-46)+' '+y+' '+(x-25)+' '+(y+42),fill:'none',stroke:'#e0f2fe',strokeWidth:2,opacity:.3}),
+            h('rect',{x:x-69,y:y-44,width:138,height:9,rx:3,fill:'#6b8193',opacity:.65}),h('rect',{x:x-69,y:y+35,width:138,height:9,rx:3,fill:'#6b8193',opacity:.65}),
+            h('rect',{x:x-14,y:y-80,width:28,height:9,rx:2,fill:color}),
+            h('circle',{cx:x,cy:y+85,r:7,fill:'#112739',stroke:color,strokeWidth:2}));}
+          function marker(id,amount,active,x1,y1,x2,y2,color){if(!active)return null;return h('g',{'data-water-flow':id},[0,.33,.66].map(function(offset,index){var position=(amount/18+offset)%1;return h('circle',{key:index,cx:x1+(x2-x1)*position,cy:y1+(y2-y1)*position,r:3,fill:color});}));}
+          var presets=[['steady','Steady loop',{opsWaterClean:120,opsWaterWaste:25,opsWaterOutage:false,opsWaterDelivery:false}],['outage','Processor outage',{opsWaterClean:80,opsWaterWaste:10,opsWaterOutage:true,opsWaterDelivery:false}],['bridge','Resupply during outage',{opsWaterClean:80,opsWaterWaste:10,opsWaterOutage:true,opsWaterDelivery:true}]];
+          return h('section',{id:'iss-water-lab',className:'iss-water-lab','data-iss-water-lab':true,'aria-labelledby':'iss-water-title'},
+            h('div',{className:'iss-water-heading'},h('div',null,h('span',{className:'iss-water-eyebrow'},'LIFE SUPPORT / INVENTORY CONTROL'),h('h3',{id:'iss-water-title'},'Every litre has a destination'),h('p',null,'Keep a finite water loop supplied for 30 days. Balance reserves, treatment and cargo arrivals. The Water loop flight rule checks efficiency; this forecast also checks available supplies.')),h('span',{className:'iss-water-phase','data-water-phase':current.unmetRate>1e-8?'shortfall':current.overflowRate>1e-8?'overflow':current.offline?'offline':'online',style:{color:phaseColor}},phase)),
+            h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.water_presets','Water experiment setups')},presets.map(function(preset){return h('button',{key:preset[0],type:'button','data-water-preset':preset[0],onClick:function(){upd(Object.assign({opsScenario:'custom',opsCrew:7,opsRecovery:98,opsWaterThroughput:36,opsWaterOutageStart:10,opsWaterOutageDays:6,opsWaterDeliveryDay:12,opsWaterDeliveryLitres:100,opsWaterDay:0,opsWaterSide:'after',opsWaterSeekToken:!d.opsWaterSeekToken,opsOrbitMinute:0,opsAirSeekToken:!d.opsAirSeekToken},preset[2]));}},preset[1]);})),
+            h('div',{className:'iss-water-workspace'},
+              h('div',{className:'iss-water-scene'},
+                h('div',{className:'iss-water-scene-top'},h('span',null,'WATER RECOVERY BAY'),h('strong',null,'DAY '+day.toFixed(1))),
+                h('svg',{viewBox:'0 0 600 300','aria-hidden':true,focusable:false},
+                  h('defs',null,h('linearGradient',{id:'iss-water-shell',x1:'0',y1:'0',x2:'1',y2:'0'},h('stop',{offset:'0%',stopColor:'#2a4255'}),h('stop',{offset:'34%',stopColor:'#6b7d89'}),h('stop',{offset:'54%',stopColor:'#344b5b'}),h('stop',{offset:'100%',stopColor:'#182c3e'}))),
+                  h('path',{d:'M15 25 H585 V274 H15 Z M30 40 H570 V259 H30 Z',fill:'none',stroke:'#233e53',strokeWidth:2}),
+                  [40,90,140,190,240].map(function(y){return h('line',{key:y,x1:28,x2:572,y1:y,y2:y,stroke:'#1d364b',strokeWidth:1});}),
+                  h('path',{d:'M130 83 V49 H299 V96 M335 121 H470 V84',fill:'none',stroke:'#244e68',strokeWidth:9,strokeLinejoin:'round'}),
+                  h('path',{d:'M470 220 V261 H322 M273 261 H130 V220',fill:'none',stroke:'#244e68',strokeWidth:9,strokeLinejoin:'round'}),
+                  h('path',{d:'M130 83 V49 H299 V96',fill:'none',stroke:'#7dd3fc',strokeWidth:2,strokeDasharray:'4 5',opacity:current.useRate>0?.7:.2}),
+                  h('path',{d:'M335 121 H470 V84 M470 220 V261 H322',fill:'none',stroke:'#fbbf24',strokeWidth:2,strokeDasharray:'4 5',opacity:current.useRate>0?.65:.2}),
+                  h('path',{d:'M273 261 H130 V220',fill:'none',stroke:'#5eead4',strokeWidth:2,strokeDasharray:'4 5',opacity:current.returnRate>0?.75:.2}),
+                  tank('clean',130,140,current.clean,config.cleanCapacity,'#7dd3fc'),tank('waste',470,140,current.waste,config.wasteCapacity,'#fbbf24'),
+                  h('g',{transform:'translate(299 111)'},h('circle',{r:35,fill:'#163148',stroke:focus==='crew'?'#c4b5fd':'#486578',strokeWidth:2}),h('circle',{cy:-9,r:9,fill:'#b4c5d8'}),h('path',{d:'M-17 20 Q-17 2 0 3 Q17 2 17 20',fill:'#8bacc7'})),
+                  h('g',{'data-water-processor':current.offline?'offline':'online'},h('rect',{x:255,y:210,width:86,height:78,rx:9,fill:'#122c40',stroke:focus==='processor'?'#6ee7b7':'#526b80',strokeWidth:2}),
+                    h('rect',{x:266,y:220,width:65,height:18,rx:3,fill:'#04121f'}),[0,1,2,3,4].map(function(i){return h('rect',{key:i,x:273+i*11,y:225,width:5,height:8,rx:1,fill:current.offline?'#fb7185':'#5eead4',opacity:current.processRate>0?1:.35});}),
+                    h('g',{'data-water-rotor':true,transform:'translate(299 262) rotate('+current.processed/2%360+')'},h('circle',{r:17,fill:'#173a4d',stroke:'#638a9c'}),[0,120,240].map(function(angle){return h('path',{key:angle,transform:'rotate('+angle+')',d:'M0 0 C-15 -6 -6 -19 2 -14 L5 -3 Z',fill:current.offline?'#64748b':'#5bbaa9'});}))),
+                  marker('use',current.served,current.useRate>1e-8,145,49,277,49,'#bae6fd'),marker('waste',current.served,current.useRate>1e-8,344,121,456,121,'#fde68a'),marker('process',current.processed,current.processRate>1e-8,457,261,352,261,'#fde68a'),marker('return',current.recovered,current.returnRate>1e-8,247,261,149,261,'#99f6e4')),
+                h('div',{className:'iss-water-tank-readings'},reading('clean','Clean water',current.clean.toFixed(1)+' L',current.cleanPercent.toFixed(1)+'% of 300 L capacity','#7dd3fc'),reading('waste','Wastewater',current.waste.toFixed(1)+' L',current.wastePercent.toFixed(1)+'% of 100 L capacity','#fcd34d')),
+                h('p',{className:'iss-water-scene-caption'},'Schematic bladder inventories; fill area shows each tank’s fraction. Water has no settled surface in microgravity.'),
+                h('div',{className:'iss-water-parts',role:'group','aria-label':__alloT('stem.spacestation.water_parts','Inspect the water loop')},[['clean','Clean tank'],['crew','Crew use'],['waste','Waste tank'],['processor','Processor']].map(function(part){return h('button',{key:part[0],type:'button','data-water-part':part[0],'aria-pressed':focus===part[0],onClick:function(){upd({opsWaterFocus:part[0]});}},part[1]);})),
+                h('p',{'data-water-part-note':true},notes[focus])),
+              h('div',{className:'iss-water-setup'},
+                opsControl('iss-water-crew','Crew members',crew,3,11,1,' people','#c4b5fd','opsCrew'),opsControl('iss-water-recovery','Recovery efficiency',recovery,70,99,.5,'%','#6ee7b7','opsRecovery'),
+                opsControl('iss-water-clean','Starting clean water',config.cleanStart,0,300,5,' L','#7dd3fc','opsWaterClean'),opsControl('iss-water-waste','Starting wastewater',config.wasteStart,0,100,5,' L','#fcd34d','opsWaterWaste'),
+                opsControl('iss-water-throughput','Processor capacity',config.throughput,0,60,1,' L/day','#6ee7b7','opsWaterThroughput'),h('p',{className:'iss-water-help'},'Capacity limits wastewater input. Recovery efficiency sets the clean-water output. Both matter.'))),
+            h('div',{className:'iss-water-plans'},
+              h('div',{className:'iss-water-plan'},h('div',{className:'iss-water-plan-heading'},h('h4',null,'Maintenance window'),h('button',{type:'button','data-water-outage-toggle':true,'aria-pressed':config.outage,onClick:function(){changePlan('opsWaterOutage',!config.outage);}},config.outage?'Outage planned':'Plan an outage')),
+                h('fieldset',{disabled:!config.outage},h('legend',{className:'iss-sr-only'},'Processor outage schedule'),opsControl('iss-water-outage-start','Stop treatment on day',config.outageStart,0,29,1,'','#fcd34d','opsWaterOutageStart'),opsControl('iss-water-outage-days','Outage duration',issFlightNumber(d.opsWaterOutageDays,6,1,15),1,15,1,' days','#fcd34d','opsWaterOutageDays')),
+                h('p',null,config.outage?'Treatment stops on day '+config.outageStart.toFixed(0)+'. '+(config.outageEnd<30?'Repair restores capacity on day '+config.outageEnd.toFixed(0)+'.':'The processor stays off through the remaining mission.'):'Treatment stays available throughout the run.')),
+              h('div',{className:'iss-water-plan'},h('div',{className:'iss-water-plan-heading'},h('h4',null,'Cargo arrival'),h('button',{type:'button','data-water-delivery-toggle':true,'aria-pressed':config.delivery,onClick:function(){changePlan('opsWaterDelivery',!config.delivery);}},config.delivery?'Delivery planned':'Plan a delivery')),
+                h('fieldset',{disabled:!config.delivery},h('legend',{className:'iss-sr-only'},'Clean-water delivery schedule'),opsControl('iss-water-delivery-day','Deliver on day',config.deliveryDay,1,29,1,'','#7dd3fc','opsWaterDeliveryDay'),opsControl('iss-water-delivery-litres','Clean-water cargo',config.deliveryLitres,0,300,10,' L','#7dd3fc','opsWaterDeliveryLitres')),
+                h('p',null,config.delivery?'Up to '+config.deliveryLitres.toFixed(0)+' L arrives on day '+config.deliveryDay.toFixed(0)+'. Only the free clean-tank capacity can be unloaded.':'No additional water enters the station.'))),
+            h('div',{className:'iss-water-flows'},reading('use','Crew supplied',current.useRate.toFixed(1)+' L/day',current.demand.toFixed(1)+' L/day requested',current.unmetRate>1e-8?'#fda4af':'#c4b5fd'),reading('process','Wastewater treated',current.processRate.toFixed(1)+' L/day',current.offline?'Processor is in its outage window':config.throughput.toFixed(0)+' L/day maximum input','#fcd34d'),reading('return','Clean water returned',current.returnRate.toFixed(1)+' L/day',current.lossRate.toFixed(2)+' L/day lost during treatment','#6ee7b7')),
+            h('div',{className:'iss-water-clock'},h('div',{className:'iss-water-clock-heading'},h('strong',null,'Day '+day.toFixed(1)+' / 30'),h('span',null,current.side==='before'?'BEFORE CARGO UNLOAD':phase)),
+              h(issExperimentPlayback,{React:React,id:'water',t:__alloT,value:day*86400,max:30*86400,speeds:[86400,432000,864000],speedLabels:['1 day/s','5 days/s','10 days/s'],resetKey:JSON.stringify(config)+':'+!!d.opsWaterSeekToken,onAdvance:function(seconds){upd({opsWaterDay:seconds/86400,opsWaterSide:'after'});}}),
+              h('label',{className:'iss-experiment-control',htmlFor:'iss-water-time'},h('span',null,'Inspect mission day',h('strong',null,day.toFixed(1)+' days')),h('input',{id:'iss-water-time',type:'range',min:0,max:30,step:.1,value:day,'aria-describedby':'iss-water-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.water_time_value','Day {day}, clean water {clean} litres, wastewater {waste} litres, {side} cargo unload'),{day:day.toFixed(1),clean:current.clean.toFixed(1),waste:current.waste.toFixed(1),side:current.side==='before'?'before':'after or without'}),onChange:function(event){seek(Number(event.target.value));}}))),
+            h('div',{className:'iss-water-chart-heading'},h('h4',null,'Stored water · litres'),h('button',{type:'button','data-water-reference':true,disabled:!config.delivery,'aria-pressed':showReference,onClick:function(){upd({opsWaterReference:!showReference});}},'Compare no delivery')),
+            h('div',{className:'iss-water-plot-grid'},h('div',{className:'iss-water-y-axis','aria-hidden':true},h('span',null,'300 L'),h('span',null,'150 L'),h('span',null,'0 L')),
+              h('svg',{viewBox:'0 -4 1000 108',preserveAspectRatio:'none',role:'img','data-water-plot':true,'aria-describedby':'iss-water-graph-help','aria-label':__alloFill(__alloT('stem.spacestation.water_plot_label','Clean and wastewater reserves over 30 days. At day {day}: clean water {clean} litres, wastewater {waste} litres.'),{day:day.toFixed(1),clean:current.clean.toFixed(1),waste:current.waste.toFixed(1)}),onPointerDown:function(event){if(event.button!==0||event.isPrimary===false)return;event.preventDefault();if(event.currentTarget.setPointerCapture)event.currentTarget.setPointerCapture(event.pointerId);plotSeek(event);},onPointerMove:function(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))plotSeek(event);},onPointerUp:release,onPointerCancel:release},
+                [0,50,100].map(function(y){return h('line',{key:y,x1:0,x2:1000,y1:y,y2:y,stroke:'#345068',strokeDasharray:'3 6',vectorEffect:'non-scaling-stroke'});}),
+                config.outage?h('rect',{x:config.outageStart/30*1000,y:-4,width:(config.outageEnd-config.outageStart)/30*1000,height:108,fill:'#f59e0b',opacity:.12}):null,
+                config.delivery?h('line',{x1:config.deliveryDay/30*1000,x2:config.deliveryDay/30*1000,y1:-4,y2:104,stroke:'#6ee7b7',strokeDasharray:'3 5',vectorEffect:'non-scaling-stroke'}):null,
+                showReference?h('path',{'data-water-reference-path':true,d:path(referenceModel,'clean'),fill:'none',stroke:'#c4b5fd',strokeWidth:2,strokeDasharray:'5 5',vectorEffect:'non-scaling-stroke'}):null,
+                [['clean','#7dd3fc'],['waste','#fbbf24']].map(function(series){return h('path',{key:series[0],'data-water-curve':series[0],d:path(model,series[0]),fill:'none',stroke:series[1],strokeWidth:2.5,vectorEffect:'non-scaling-stroke'});}),
+                h('line',{x1:day/30*1000,x2:day/30*1000,y1:-4,y2:104,stroke:'#e0f2fe',vectorEffect:'non-scaling-stroke'}),[['clean','#7dd3fc'],['waste','#fbbf24']].map(function(series){return h('circle',{key:series[0],cx:day/30*1000,cy:100-current[series[0]]/3,r:.01,fill:'none',stroke:series[1],strokeWidth:7,vectorEffect:'non-scaling-stroke'});})) ),
+            h('div',{className:'iss-water-x-axis','aria-hidden':true},h('span',null,'Day 0'),h('span',null,'Day 15'),h('span',null,'Day 30')),
+            h('div',{className:'iss-water-chart-key'},h('span',null,'Blue: clean water'),h('span',null,'Amber: wastewater'),config.outage?h('span',null,'Shaded: processor outage'):null,config.delivery?h('span',null,'Mint line: delivery'):null,showReference?h('span',null,'Dashed violet: clean water without delivery'):null),
+            showReference?h('p',{className:'iss-water-comparison','data-water-comparison':true},'At this time: selected plan '+current.clean.toFixed(1)+' L clean water · no delivery '+reference.clean.toFixed(1)+' L. Crew, tanks, treatment and outage are identical.'):null,
+            h('p',{className:'iss-water-help',id:'iss-water-graph-help'},'Drag or tap the graph to inspect. Arrow keys on the slider move by 0.1 day. Use the before/after delivery buttons to inspect the exact jump. Inspection pauses playback; setup changes begin a new run.'),
+            h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.water_events','Inspect water mission events')},eventButton('start','Mission start',0),eventButton('outage','Outage begins',config.outage?config.outageStart:null),eventButton('empty','Clean tank empty',model.firstEmpty),eventButton('overflow','Waste storage exceeded',model.firstOverflow),eventButton('before','Before delivery',config.delivery?config.deliveryDay:null,'before'),eventButton('after','After delivery',config.delivery?config.deliveryDay:null),eventButton('repair','Processor repaired',config.outage?config.outageEnd:null),eventButton('end','Day 30',30)),
+            config.delivery?h('p',{className:'iss-water-receipt','data-water-receipt':true},(day<config.deliveryDay||current.side==='before'?'Planned receipt: ':'Delivery receipt: ')+model.deliveryEvent.accepted.toFixed(1)+' L fits in the clean tank; '+model.deliveryEvent.rejected.toFixed(1)+' L stays aboard the delivery vehicle. The inventory ledger includes cargo only after unloading.'):null,
+            h('div',{className:'iss-water-budget'},reading('initial','Initial inventory',current.initial.toFixed(1)+' L','Clean + wastewater','#c4b5fd'),reading('accepted','Cargo accepted',current.accepted.toFixed(1)+' L','Added to the clean tank','#7dd3fc'),reading('loss','Treatment losses',current.loss.toFixed(1)+' L','Not recovered from treatment','#fcd34d'),reading('overflow','Uncontained wastewater',current.overflow.toFixed(1)+' L','Beyond the waste-tank capacity',current.overflow>0?'#fda4af':'#fcd34d'),reading('remaining','Still aboard',(current.clean+current.waste).toFixed(1)+' L','Clean + wastewater','#6ee7b7')),
+            h('p',{className:'iss-water-balance','data-water-balance':true},'Water accounted for: initial '+current.initial.toFixed(1)+' + accepted cargo '+current.accepted.toFixed(1)+' = still aboard '+(current.clean+current.waste).toFixed(1)+' + treatment losses '+current.loss.toFixed(1)+' + uncontained wastewater '+current.overflow.toFixed(1)+' L. Internal circulation is not new water. Display values are rounded.'),
+            h('div',{className:'iss-water-demand'},reading('served','Crew use since start',current.served.toFixed(1)+' L','Transferred into wastewater','#c4b5fd'),reading('unmet','Unmet crew demand',current.unmet.toFixed(1)+' L',current.unmetRate.toFixed(1)+' L/day unsupplied now',current.unmet>1e-8?'#fda4af':'#6ee7b7')),
+            h('div',{className:'iss-water-outcome','data-water-outcome':end.unmet>1e-8?'shortfall':end.overflow>1e-8?'overflow':'supplied'},h('strong',null,end.unmet>1e-8?'This plan leaves some crew demand unmet.':end.overflow>1e-8?'Crew demand is supplied, but waste storage is exceeded.':'This plan supplies all 30 days within the tank capacities.'),h('p',null,'Day 30: '+end.clean.toFixed(1)+' L clean · '+end.waste.toFixed(1)+' L wastewater · '+end.unmet.toFixed(1)+' L unmet demand. '+(model.firstShortfall!==null?'The first shortfall begins on day '+model.firstShortfall.toFixed(2)+'. Later deliveries or repairs do not erase earlier unmet demand.':end.overflow>1e-8?'Resupply can bridge a shortage while filling wastewater storage. Try a shorter outage or lower crew demand.':'Experiment with a longer outage or a smaller starting reserve.'))),
+            h('details',{className:'iss-physics-note'},h('summary',null,'Water model and assumptions'),h('p',null,'An illustrative 30-day water-equivalent budget: 3.8 L per person per day, a 300 L clean tank and a 100 L wastewater tank. All supplied crew use enters the wastewater pool immediately. The processor returns recovery efficiency × treated volume; the remainder is lost. One litre is treated as one kilogram. Capacities, initial stores, processing rates and the maintenance schedule are teaching parameters, not ISS telemetry.'),h('p',null,'Flows are solved between exact tank-empty, tank-full, outage, repair and delivery events. Empty tanks cannot supply unavailable water. A full clean tank throttles treatment; a full waste tank counts excess as unrecoverable inventory. Extra cargo remains outside the station tanks. Demand is constant, and unmet demand is recorded without automatically changing crew activity.'),h('p',null,'This separate planning experiment is not coupled to the 92-minute electrical model. Real water recovery includes humidity condensate, urine processing, water-quality controls and transport delays. These stages, oxygen production, emergency rationing, tank geometry and fluid motion are omitted. The display is a loop schematic; marker motion follows circulated volume.'),h('a',{href:'https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/',target:'_blank',rel:'noopener noreferrer'},'NASA: the 98% water recovery milestone')));
+        }
+        function renderPressure() {
+          var settings={volume:d.opsPressureVolume,start:d.opsPressureStart,cycle:d.opsPressureCycle,ventArea:d.opsPressureVent,fillArea:d.opsPressureFill,leakArea:d.opsPressureLeak,ventMinutes:d.opsPressureVentMinutes,holdMinutes:d.opsPressureHoldMinutes,isolate:d.opsPressureIsolate,isolateMinute:d.opsPressureIsolateMinute};
+          var model=issPressureRun(settings),config=model.config,minute=issFlightNumber(d.opsPressureMinute,0,0,20),current=issPressureInspect(model,minute);
+          var baseline=issPressureRun(Object.assign({},settings,{isolate:false})),reference=issPressureInspect(baseline,minute),showReference=config.isolate&&d.opsPressureReference!==false;
+          var focus=['inner','valve','outer','vent'].indexOf(d.opsPressureFocus)>=0?d.opsPressureFocus:'valve';
+          var phase=current.isolated?'CABIN ISOLATED':current.ventOpen?'VENTING TO VACUUM':!current.fillOpen?'VALVES CLOSED':Math.abs(current.differenceKPa)<=.05?'PRESSURES NEAR EQUAL':'EQUALIZING PRESSURE';
+          var notes={inner:'Both hatches stay closed in this experiment. The inner hatch feels the pressure difference between cabin and airlock. For a 1 m² hatch, each 1 kPa difference produces 1 kN of net force.',valve:'The small equalization valve connects two finite air volumes. Flow follows the pressure difference and reverses if the airlock pressure is higher. It slows toward equilibrium; no new gas is created.',outer:'Vacuum exerts essentially no opposing pressure. The outer hatch therefore carries a load set by airlock pressure × hatch area. Near-equal cabin and airlock pressures do not unload this outer hatch.',vent:'The commanded vent opens only during the venting phase. An outer-seal leak is a separate opening that remains after the valves are isolated. Closing the cabin connection protects cabin gas while the airlock can continue losing air.'};
+          function seek(time){upd({opsPressureMinute:opsClamp(time,0,20),opsPressureSeekToken:!d.opsPressureSeekToken});}
+          function reading(id,label,value,note,color){return h('div',{className:'iss-water-reading','data-pressure-reading':id},h('span',null,label),h('strong',{style:{color:color||'#e0f2fe'}},value),h('small',null,note));}
+          function eventButton(id,label,time){return h('button',{type:'button','data-pressure-event':id,disabled:time===null,onClick:function(){seek(time);}},label);}
+          function plotSeek(event){var box=event.currentTarget.getBoundingClientRect();if(box.width)seek(Math.round(opsClamp((event.clientX-box.left)/box.width,0,1)*200)/10);}
+          function release(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}
+          function path(run,field){return run.plotPoints.map(function(point,index){var pressure=point[field]*config.gasR*config.temperature/(field==='cabin'?config.cabinVolume:config.volume)/1000;return(index?'L':'M')+(point.minute/20*1000).toFixed(3)+' '+(100-pressure/110*100).toFixed(5);}).join(' ');}
+          function dots(x,y,width,height,pressure,color){return Array.from({length:Math.max(0,Math.round(36*pressure/110))},function(_,i){return h('circle',{key:i,cx:x+((i*43+17)%97)/97*width,cy:y+((i*29+11)%89)/89*height,r:2.4,fill:color,opacity:.35+(i%3)*.12});});}
+          function flow(id,amount,rate,x1,y1,x2,y2,color){if(Math.abs(rate)<1e-8)return null;return h('g',{'data-pressure-flow':id},[0,.25,.5,.75].map(function(offset,i){var position=(amount/.5+offset)%1;if(rate<0)position=1-position;return h('circle',{key:i,cx:x1+(x2-x1)*position,cy:y1+(y2-y1)*position,r:3,fill:color});}));}
+          function pressureForce(id,x,y,force){var length=Math.min(1,Math.abs(force)/110)*64,sign=force<0?-1:1;if(length<.08)return null;return h('g',{'data-pressure-force':id},h('path',{d:'M'+x+' '+y+' h'+sign*length,stroke:'#fda4af',strokeWidth:3}),h('path',{d:'M'+(x+sign*length)+' '+y+' l'+(-sign*6)+' -4 v8 Z',fill:'#fda4af'}));}
+          var presets=[['cycle','Vent → hold → refill',{opsPressureCycle:true,opsPressureStart:101.3,opsPressureLeak:0}],['equalize','Two pressures',{opsPressureCycle:false,opsPressureStart:35,opsPressureLeak:0}],['leak','Leaking outer seal',{opsPressureCycle:false,opsPressureStart:35,opsPressureLeak:.6}]];
+          var lossSaved=baseline.end.vented-model.end.vented;
+          return h('section',{id:'iss-pressure-lab',className:'iss-water-lab iss-pressure-lab','data-iss-pressure-lab':true,'aria-labelledby':'iss-pressure-title'},
+            h('div',{className:'iss-water-heading'},h('div',null,h('span',{className:'iss-water-eyebrow'},'LIFE SUPPORT / AIRLOCK PHYSICS'),h('h3',{id:'iss-pressure-title'},'See the force behind a sealed hatch'),h('p',null,'Move air through valves, watch the pressures converge, and isolate the cabin at a chosen time. This 20-minute experiment tracks every kilogram of gas.')),h('span',{className:'iss-water-phase','data-pressure-phase':current.isolated?'isolated':current.ventOpen?'vent':!current.fillOpen?'hold':'fill',style:{color:config.leakArea>0?'#fda4af':'#6ee7b7'}},phase)),
+            h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.pressure_presets','Airlock pressure experiment setups')},presets.map(function(preset){return h('button',{key:preset[0],type:'button','data-pressure-preset':preset[0],onClick:function(){upd(Object.assign({opsScenario:'custom',opsPressureVolume:12,opsPressureVent:3,opsPressureFill:3,opsPressureVentMinutes:6,opsPressureHoldMinutes:4,opsPressureMinute:0,opsPressureIsolate:false,opsPressureSeekToken:!d.opsPressureSeekToken},preset[2]));}},preset[1]);})),
+            h('div',{className:'iss-water-workspace'},h('div',{className:'iss-water-scene iss-pressure-scene'},
+              h('div',{className:'iss-water-scene-top'},h('span',null,'CLOSED HATCHES / CONTROLLED VALVES'),h('strong',null,'T+'+minute.toFixed(1)+' MIN')),
+              h('div',{className:'iss-pressure-hardware'},
+                h('svg',{viewBox:'0 0 720 310','aria-hidden':true,focusable:false},
+                  h('defs',null,h('linearGradient',{id:'iss-pressure-hull',x1:0,y1:0,x2:0,y2:1},h('stop',{offset:'0%',stopColor:'#8ca4b6'}),h('stop',{offset:'15%',stopColor:'#3f5c70'}),h('stop',{offset:'55%',stopColor:'#172e43'}),h('stop',{offset:'100%',stopColor:'#4f6c80'})),h('linearGradient',{id:'iss-pressure-space',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:'0%',stopColor:'#14263b'}),h('stop',{offset:'100%',stopColor:'#030b17'}))),
+                  h('rect',{x:594,y:65,width:115,height:207,rx:8,fill:'url(#iss-pressure-space)'}),[0,1,2,3,4,5,6].map(function(i){return h('circle',{key:i,cx:611+i*13,cy:85+(i*41)%168,r:i%2?1:1.6,fill:'#a7bacb',opacity:.45});}),
+                  h('rect',{x:18,y:78,width:576,height:182,rx:45,fill:'url(#iss-pressure-hull)',stroke:'#81a2b8',strokeWidth:2}),
+                  h('rect',{x:32,y:90,width:256,height:158,rx:29,fill:'#071c2c'}),h('rect',{x:336,y:90,width:218,height:158,rx:22,fill:'#071923'}),
+                  h('rect',{x:32,y:90,width:256,height:158,rx:29,fill:'#38bdf8',opacity:current.cabinKPa/110*.13}),h('rect',{x:336,y:90,width:218,height:158,rx:22,fill:'#5eead4',opacity:current.lockKPa/110*.17}),
+                  h('g',{'data-pressure-density':'cabin'},dots(46,103,224,131,current.cabinKPa,'#7dd3fc')),h('g',{'data-pressure-density':'lock'},dots(350,103,190,131,current.lockKPa,'#99f6e4')),
+                  [48,267,347,539].map(function(x){return h('line',{key:x,x1:x,x2:x,y1:91,y2:247,stroke:'#819aaa',strokeWidth:6,opacity:.42});}),
+                  [304,566].map(function(x){return h('g',{key:x},h('rect',{x:x,y:79,width:21,height:180,rx:7,fill:'#a3b4bf',stroke:'#d7e2ea',strokeWidth:1.5}),h('line',{x1:x+10,x2:x+10,y1:91,y2:247,stroke:'#253e50',strokeWidth:6}),[102,129,155,183,210,237].map(function(y){return h('circle',{key:y,cx:x+10,cy:y,r:3,fill:'#d3e2eb'});}));}),
+                  h('path',{d:'M160 88 V42 H440 V88',fill:'none',stroke:'#365f74',strokeWidth:10,strokeLinejoin:'round'}),h('path',{d:'M160 88 V42 H440 V88',fill:'none',stroke:'#6ee7b7',strokeWidth:2,opacity:current.fillOpen?.85:.2}),
+                  h('g',{'data-pressure-valve':current.fillOpen?'open':'closed'},h('circle',{cx:306,cy:42,r:16,fill:'#102b3d',stroke:current.fillOpen?'#6ee7b7':'#fcd34d',strokeWidth:2}),h('path',{d:current.fillOpen?'M294 42 H318':'M306 30 V54',stroke:current.fillOpen?'#6ee7b7':'#fcd34d',strokeWidth:4})),
+                  h('path',{d:'M450 254 V286 H675',fill:'none',stroke:'#37546a',strokeWidth:9,strokeLinejoin:'round'}),h('path',{d:'M450 254 V286 H675',fill:'none',stroke:'#fdba74',strokeWidth:2,opacity:current.ventOpen?.8:.2}),
+                  h('circle',{cx:563,cy:286,r:13,fill:'#122739',stroke:current.ventOpen?'#fdba74':'#738f9f',strokeWidth:2}),h('path',{d:current.ventOpen?'M553 286 H573':'M563 276 V296',stroke:current.ventOpen?'#fdba74':'#738f9f',strokeWidth:3}),
+                  config.leakArea>0?h('g',{'data-pressure-leak':true},h('path',{d:'M575 110 l8 8 -8 8 8 8',stroke:'#fb7185',strokeWidth:3,fill:'none'}),[0,1,2].map(function(i){return h('path',{key:i,d:'M590 '+(119+i*4)+' L'+(610+i*8)+' '+(114+i*9),stroke:'#fb7185',strokeWidth:1.5,opacity:current.ventRate>1e-8?.6:.15});})):null,
+                  flow('equalize',current.circulated,current.transferRate,179,42,421,42,'#99f6e4'),flow('exhaust',current.vented-current.leaked,current.commandVentRate,470,286,672,286,'#fdba74'),flow('leak',current.leaked,current.leakRate,591,121,683,142,'#fda4af'),
+                  pressureForce('inner',314,196,current.differenceKPa),pressureForce('outer',576,196,current.outerForceKN)),
+                [['inner','Inspect inner hatch',43.7,54],['valve','Inspect equalization valve',42.5,13.5],['outer','Inspect outer hatch',80,54],['vent','Inspect vent and leak',78.2,92.3]].map(function(part){return h('button',{key:part[0],type:'button',className:'iss-pressure-hotspot','data-pressure-hotspot':part[0],'aria-label':__alloT('stem.spacestation.pressure_inspect_'+part[0],part[1]),'aria-pressed':focus===part[0],style:{left:part[2]+'%',top:part[3]+'%'},onClick:function(){upd({opsPressureFocus:part[0]});}},h('span',{'aria-hidden':true},'i'));})),
+              h('div',{className:'iss-water-tank-readings'},reading('cabin','Cabin · 388 m³',current.cabinKPa.toFixed(2)+' kPa','A finite source of replacement air','#7dd3fc'),reading('lock','Airlock · '+config.volume+' m³',current.lockKPa.toFixed(2)+' kPa','External vacuum ≈ 0 kPa','#6ee7b7')),
+              h('p',{className:'iss-water-scene-caption'},'Dots indicate relative gas density. Rose arrows show net hatch force; pipe markers follow transferred mass. Hardware and motion are schematic.'),
+              h('div',{className:'iss-water-parts',role:'group','aria-label':__alloT('stem.spacestation.pressure_parts','Inspect airlock hardware')},[['inner','Inner hatch'],['valve','Equalization valve'],['outer','Outer hatch'],['vent','Vent / leak']].map(function(part){return h('button',{key:part[0],type:'button','data-pressure-part':part[0],'aria-pressed':focus===part[0],onClick:function(){upd({opsPressureFocus:part[0]});}},part[1]);})),h('p',{'data-pressure-part-note':true},notes[focus])),
+              h('div',{className:'iss-water-setup'},opsControl('iss-pressure-volume','Airlock volume',config.volume,6,24,1,' m³','#c4b5fd','opsPressureVolume'),opsControl('iss-pressure-start','Starting airlock pressure',config.start,0,110,.1,' kPa','#6ee7b7','opsPressureStart'),opsControl('iss-pressure-fill','Equalization valve area',config.fillArea,0,10,.1,' cm²','#6ee7b7','opsPressureFill'),opsControl('iss-pressure-vent','Vent valve area',config.ventArea,0,10,.1,' cm²','#fdba74','opsPressureVent'),opsControl('iss-pressure-leak','Outer seal leak area',config.leakArea,0,2,.05,' cm²','#fda4af','opsPressureLeak'),h('p',{className:'iss-water-help'},'Larger openings move gas faster. A leak stays open after the control valves close. Starting pressure can be higher than the cabin to explore reversed flow.'))),
+            h('div',{className:'iss-water-plans'},
+              h('div',{className:'iss-water-plan'},h('div',{className:'iss-water-plan-heading'},h('h4',null,'Plan the pressure cycle'),h('button',{type:'button','data-pressure-cycle-toggle':true,'aria-pressed':config.cycle,onClick:function(){upd({opsPressureCycle:!config.cycle,opsPressureMinute:0,opsPressureIsolate:false,opsPressureSeekToken:!d.opsPressureSeekToken});}},config.cycle?'Vent cycle planned':'Equalize from start')),
+                h('fieldset',{disabled:!config.cycle},h('legend',{className:'iss-sr-only'},'Venting and hold schedule'),opsControl('iss-pressure-vent-time','Venting duration',config.ventEnd,1,10,.5,' min','#fdba74','opsPressureVentMinutes'),opsControl('iss-pressure-hold-time','Hold with valves closed',config.fillStart-config.ventEnd,0,8,.5,' min','#c4b5fd','opsPressureHoldMinutes')),
+                h('p',null,config.cycle?'Vent closes at '+config.ventEnd.toFixed(1)+' min. Equalization begins at '+config.fillStart.toFixed(1)+' min. Both hatches remain closed.':'The cabin connection opens at time zero. The commanded vent stays closed.')),
+              h('div',{className:'iss-water-plan iss-pressure-intervention'},h('h4',null,'Take control at this moment'),h('p',null,'Close both control valves at the selected time. Gas already lost stays lost; an outer-seal leak continues. The earlier trajectory is preserved.'),h('div',{className:'iss-experiment-actions'},h('button',{type:'button','data-pressure-isolate':true,disabled:current.isolated||minute>=20,onClick:function(){upd({opsPressureIsolate:true,opsPressureIsolateMinute:minute,opsPressureSeekToken:!d.opsPressureSeekToken});}},'Isolate valves at T+'+minute.toFixed(1)+' min'),h('button',{type:'button','data-pressure-clear-isolation':true,disabled:!config.isolate,onClick:function(){upd({opsPressureIsolate:false,opsPressureMinute:0,opsPressureSeekToken:!d.opsPressureSeekToken});}},'Reset intervention')),
+                h('p',{'data-pressure-isolation-note':true},config.isolate?'Valve isolation is scheduled at T+'+config.isolateMinute.toFixed(2)+' min. '+(config.leakArea>0?'Cabin gas is then protected, while airlock gas keeps escaping through the seal.':'Both reservoirs keep their trapped gas after isolation.'):'Inspect the timeline, then try isolating the cabin during the leaking-seal scenario.'))),
+            h('div',{className:'iss-water-flows'},reading('transfer','Through the cabin valve',(Math.abs(current.transferRate)*1000).toFixed(1)+' g/s',current.regime==='closed'?'Valve closed':Math.abs(current.transferRate)<1e-8?'No net mass transfer':(current.transferRate<0?'Airlock → cabin':'Cabin → airlock')+' · '+(current.regime==='choked'?'sonic limit at throat':'subsonic restriction'),'#6ee7b7'),reading('vent','Escaping to vacuum',(current.ventRate*1000).toFixed(1)+' g/s',config.leakArea>0?'Includes the persistent outer-seal leak':'Through the commanded vent','#fdba74'),reading('difference','Cabin − airlock',current.differenceKPa.toFixed(2)+' kPa','The sign determines the direction of flow','#c4b5fd')),
+            h('div',{className:'iss-water-demand'},reading('inner-force','Inner hatch load',current.innerForceKN.toFixed(2)+' kN','Net force across a 1 m² closed hatch','#fda4af'),reading('outer-force','Outer hatch load',current.outerForceKN.toFixed(2)+' kN','Airlock pressure against external vacuum','#fda4af')),
+            h('div',{className:'iss-water-clock'},h('div',{className:'iss-water-clock-heading'},h('strong',null,'T+'+minute.toFixed(1)+' / 20 min'),h('span',null,phase)),
+              h(issExperimentPlayback,{React:React,id:'pressure',t:__alloT,value:minute*60,max:20*60,speeds:[15,60,180],speedLabels:['15 sec/s','1 min/s','3 min/s'],resetKey:JSON.stringify(config)+':'+!!d.opsPressureSeekToken,onAdvance:function(seconds){upd({opsPressureMinute:seconds/60});}}),
+              h('label',{className:'iss-experiment-control',htmlFor:'iss-pressure-time'},h('span',null,'Inspect airlock time',h('strong',null,minute.toFixed(1)+' min')),h('input',{id:'iss-pressure-time',type:'range',min:0,max:20,step:.1,value:minute,'aria-describedby':'iss-pressure-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.pressure_time_value','{minute} minutes, cabin {cabin} kilopascals, airlock {lock} kilopascals'),{minute:minute.toFixed(1),cabin:current.cabinKPa.toFixed(2),lock:current.lockKPa.toFixed(2)}),onChange:function(event){seek(Number(event.target.value));}}))),
+            h('div',{className:'iss-water-chart-heading'},h('h4',null,'Pressure histories · absolute kPa'),h('button',{type:'button','data-pressure-reference':true,disabled:!config.isolate,'aria-pressed':showReference,onClick:function(){upd({opsPressureReference:!showReference});}},'Compare no isolation')),
+            h('div',{className:'iss-water-plot-grid'},h('div',{className:'iss-water-y-axis','aria-hidden':true},h('span',null,'110'),h('span',null,'55'),h('span',null,'0')),
+              h('svg',{viewBox:'0 -4 1000 108',preserveAspectRatio:'none',role:'img','data-pressure-plot':true,'aria-describedby':'iss-pressure-graph-help','aria-label':__alloFill(__alloT('stem.spacestation.pressure_plot_label','Cabin and airlock pressure over 20 minutes. Cabin {cabin} kPa, airlock {lock} kPa at the selected time.'),{cabin:current.cabinKPa.toFixed(2),lock:current.lockKPa.toFixed(2)}),onPointerDown:function(event){if(event.button!==0||event.isPrimary===false)return;event.preventDefault();if(event.currentTarget.setPointerCapture)event.currentTarget.setPointerCapture(event.pointerId);plotSeek(event);},onPointerMove:function(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))plotSeek(event);},onPointerUp:release,onPointerCancel:release},
+                [0,50,100].map(function(y){return h('line',{key:y,x1:0,x2:1000,y1:y,y2:y,stroke:'#345068',strokeDasharray:'3 6',vectorEffect:'non-scaling-stroke'});}),
+                config.cycle?h('g',null,h('rect',{x:0,y:-4,width:config.ventEnd/20*1000,height:108,fill:'#fb923c',opacity:.1}),h('rect',{x:config.ventEnd/20*1000,y:-4,width:(config.fillStart-config.ventEnd)/20*1000,height:108,fill:'#a78bfa',opacity:.1})):null,
+                config.isolate?h('line',{x1:config.isolateMinute/20*1000,x2:config.isolateMinute/20*1000,y1:-4,y2:104,stroke:'#fda4af',strokeDasharray:'3 5',vectorEffect:'non-scaling-stroke'}):null,
+                showReference?h('path',{'data-pressure-reference-path':true,d:path(baseline,'cabin'),fill:'none',stroke:'#c4b5fd',strokeWidth:2,strokeDasharray:'5 5',vectorEffect:'non-scaling-stroke'}):null,
+                [['cabin','#7dd3fc'],['lock','#6ee7b7']].map(function(series){return h('path',{key:series[0],'data-pressure-curve':series[0],d:path(model,series[0]),fill:'none',stroke:series[1],strokeWidth:2.5,vectorEffect:'non-scaling-stroke'});}),
+                h('line',{x1:minute/20*1000,x2:minute/20*1000,y1:-4,y2:104,stroke:'#e0f2fe',vectorEffect:'non-scaling-stroke'}),[['cabinKPa','#7dd3fc'],['lockKPa','#6ee7b7']].map(function(series){return h('circle',{key:series[0],cx:minute/20*1000,cy:100-current[series[0]]/110*100,r:.01,fill:'none',stroke:series[1],strokeWidth:7,vectorEffect:'non-scaling-stroke'});})) ),
+            h('div',{className:'iss-water-x-axis','aria-hidden':true},h('span',null,'0 min'),h('span',null,'10 min'),h('span',null,'20 min')),
+            h('div',{className:'iss-water-chart-key iss-pressure-key'},h('span',null,'Blue: cabin'),h('span',null,'Mint: airlock'),config.cycle?h('span',null,'Orange shade: vent · violet shade: hold'):null,config.isolate?h('span',null,'Rose line: valve isolation'):null,showReference?h('span',null,'Dashed violet: cabin without isolation'):null),
+            showReference?h('p',{className:'iss-water-comparison','data-pressure-comparison':true},'At this time: cabin '+current.cabinKPa.toFixed(2)+' kPa with isolation · '+reference.cabinKPa.toFixed(2)+' kPa without it. The initial gas, valve sizes and seal leak are identical.'):null,
+            h('p',{className:'iss-water-help',id:'iss-pressure-graph-help'},'Drag or tap the graph. The time slider supports 0.1-minute arrow-key steps. Inspection pauses playback; setup changes reset the run. Valve isolation acts at the current cursor time.'),
+            h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.pressure_events','Inspect pressure events')},eventButton('start','Start',0),eventButton('vent-end','Vent closes',config.cycle?config.ventEnd:null),eventButton('fill-start','Equalization starts',config.cycle?config.fillStart:0),eventButton('subsonic','Flow leaves sonic limit',model.subsonicMinute),eventButton('equal','Within 0.05 kPa',model.nearEqualMinute),eventButton('isolate','Valve isolation',config.isolate?config.isolateMinute:null),eventButton('end','20 minutes',20)),
+            h('div',{className:'iss-pressure-budget'},reading('initial','Initial gas',model.initial.toFixed(3)+' kg','Cabin + airlock','#c4b5fd'),reading('cabin-mass','Gas in cabin',current.cabin.toFixed(3)+' kg','Decreases when supplying the airlock','#7dd3fc'),reading('lock-mass','Gas in airlock',current.lock.toFixed(3)+' kg','Available for transfer or venting','#6ee7b7'),reading('vented','Gas lost to vacuum',current.vented.toFixed(3)+' kg','Cumulative loss; cannot be refilled by closing a valve','#fdba74')),
+            h('p',{className:'iss-water-balance','data-pressure-balance':true},'Gas accounted for: initial '+model.initial.toFixed(3)+' = cabin '+current.cabin.toFixed(3)+' + airlock '+current.lock.toFixed(3)+' + vented '+current.vented.toFixed(3)+' kg. Equalizing redistributes the remaining gas. Display values are rounded.'),
+            h('div',{className:'iss-water-outcome','data-pressure-outcome':config.isolate?'isolated':config.leakArea>0?'leaking':'planned'},h('strong',null,config.isolate?'Isolation preserves cabin gas from that moment.':config.leakArea>0?'An open cabin connection feeds the leaking airlock.':'Refilling moves cabin gas into the airlock.'),h('p',null,'At 20 minutes: cabin '+model.end.cabinKPa.toFixed(2)+' kPa · airlock '+model.end.lockKPa.toFixed(2)+' kPa · '+model.end.vented.toFixed(2)+' kg lost. '+(config.isolate?'This plan vents '+Math.abs(lossSaved).toFixed(2)+' kg '+(lossSaved>=0?'less':'more')+' than the same run without isolation.':config.leakArea>0?'Try isolating the valves partway through the run. The cabin stops supplying the leak; trapped airlock gas can still escape.':'The final shared pressure is set by the remaining mass and both volumes, so it need not return to the original cabin pressure.'))),
+            h('details',{className:'iss-physics-note'},h('summary',null,'Pressure model and assumptions'),h('p',null,'Two fixed, internally mixed air volumes use pV = mRT at 295.15 K, with R = 287.05 J/(kg·K). The cabin is 388 m³; airlock size is adjustable. Both hatches stay closed. Their illustrative area is 1 m², so net force is pressure difference × area. The 0.05 kPa event is a graph comparison tolerance, not permission to operate a hatch.'),h('p',null,'Each restriction uses the ideal compressible-nozzle relation with specific-heat ratio 1.4 and discharge coefficient 0.72. Flow becomes choked below a downstream/upstream pressure ratio of about 0.528, then slows as pressures equalize. To vacuum, constant-temperature reservoir mass decays exponentially. Exchange conserves mass and cannot overshoot equilibrium; time steps of at most 0.5 seconds split at valve events.'),h('p',null,'Constant reservoir temperature assumes heat exchange with surrounding structure. Actual rapid venting changes temperature. Gas composition, crew respiration, thermal transients, molecular flow at very low pressures, pressure regulation, recovery pumps, makeup gas and detailed valve geometry are omitted. This is an uncrewed physics experiment, not an EVA procedure or a model of Quest hardware. It is separate from the other life-support clocks.'),h('a',{href:'https://www.grc.nasa.gov/www/k-12/BGP/mflchk.html',target:'_blank',rel:'noopener noreferrer'},'NASA Glenn: compressible mass flow and choking'),' · ',h('a',{href:'https://www.nasa.gov/international-space-station/quest-airlock/',target:'_blank',rel:'noopener noreferrer'},'NASA: Quest airlock')));
         }
         function renderEclss() {
-          return h('div', null, renderSystemSchematic(systemById('water')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-eclss-crew','Crew demand',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'), opsControl('iss-eclss-scrub','CO₂ scrubber output',scrub,40,100,1,'%','#34d399','opsScrub'), statusBox('Water recovered',waterReturn.toFixed(1) + ' L/day','Daily potable-water model for the selected crew.','#38bdf8'), statusBox('Water resupply gap',resupplyWater.toFixed(2) + ' L/day','Even a small open-loop loss compounds on Mars.','#fbbf24'), statusBox('Oxygen demand',oxygenNeed.toFixed(2) + ' kg/day','Electrolysis must replace crew consumption.','#34d399')),
-            opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm — Earth air is ~420 ppm; crews work to stay under ' + CO2_ACTION_PPM));
+          var lab = ['water','pressure'].indexOf(d.opsEclssLab) >= 0 ? d.opsEclssLab : 'air';
+          return h('div',null,h('div',{className:'iss-eclss-labs',role:'group','aria-label':__alloT('stem.spacestation.eclss_labs','Life support experiments')},[['air','Cabin air · 92 min'],['water','Water reserves · 30 days'],['pressure','Airlock pressure · 20 min']].map(function(item){return h('button',{key:item[0],type:'button','data-eclss-lab':item[0],'aria-pressed':lab===item[0],onClick:function(){upd({opsEclssLab:item[0]});}},item[1]);})),lab==='water'?renderWater():lab==='pressure'?renderPressure():renderAir());
+        }
+        function renderAir() {
+          var config = airModel.config, current = issAirInspect(airModel, orbitMinute);
+          var referenceModel = issAirRun(Object.assign({}, airSettings, { restore: false }));
+          var reference = issAirInspect(referenceModel, orbitMinute);
+          var canCompare = airModel.restoreMinute !== null, showReference = canCompare && d.opsAirReference !== false;
+          var focus = ['zone','fan','scrubber'].indexOf(d.opsAirFocus) >= 0 ? d.opsAirFocus : 'zone';
+          var notes = {
+            zone: 'One crew member exhales into a 12 m³ zone. Its CO₂ level can differ from the much larger cabin. Increasing local activity raises the source here; the other crew remain in the cabin.',
+            fan: 'Equal air volumes travel each way. Mixing transfers CO₂ from the richer zone to the leaner one, but does not remove it from the station. Clearing a restricted path changes the rate, not the concentration instantly.',
+            scrubber: 'The scrubber removes CO₂ from the larger cabin. Removal depends on both its effective throughput and the CO₂ concentration reaching it. More scrubbing cannot replace adequate circulation near the crew.'
+          };
+          var yMax = Math.max(4000, Math.ceil(Math.max(airModel.peakPpm, canCompare ? referenceModel.peakPpm : 0) / 1000) * 1000);
+          var localHigh = current.localPpm >= config.investigationPpm;
+          var phase = !current.powered ? 'FAN + SCRUBBER UNPOWERED' : current.flow === 0 ? 'NO INTERZONE MIXING' : current.restored ? 'CIRCULATION RESTORED' : current.flow < 30 ? 'RESTRICTED CIRCULATION' : 'CIRCULATION ACTIVE';
+          var phaseColor = !current.powered || localHigh ? '#fda4af' : current.flow < 30 ? '#fcd34d' : '#6ee7b7';
+          function seek(minute) { upd({ opsOrbitMinute: opsClamp(minute,0,92), opsAirSeekToken: !d.opsAirSeekToken }); }
+          function reading(id,label,value,note,color) { return h('div', { className: 'iss-air-reading', 'data-air-reading': id }, h('span',null,label),h('strong',{style:{color:color||'#e0f2fe'}},value),h('small',null,note)); }
+          function eventButton(id,label,minute) { return h('button',{type:'button','data-air-event':id,disabled:minute===null,onClick:function(){seek(minute);}},label); }
+          function plotSeek(event) { var box=event.currentTarget.getBoundingClientRect(); if(box.width)seek(Math.round(opsClamp((event.clientX-box.left)/box.width,0,1)*920)/10); }
+          function release(event) { if(event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId); }
+          function path(model,field) { return model.samples.map(function(sample,index){var ppm=sample[field]/(config.gramsPerPpmM3*(field==='local'?config.localVolume:config.cabinVolume));return(index?'L':'M')+(sample.minute/92*1000).toFixed(4)+' '+(100-ppm/yMax*100).toFixed(5);}).join(' '); }
+          function signed(value) { return (value<-.005?'−':value>.005?'+':'')+Math.abs(value).toFixed(2); }
+          function molecules(zone,count,x,y,width,height,ppm) {
+            return h('g',{'data-air-cloud':zone,opacity:.22+Math.min(1,ppm/8000)*.62},Array.from({length:count},function(_,index){
+              var px=x+((index*47+17)%97)/97*width,py=y+((index*31+7)%89)/89*height;
+              return h('g',{key:index,transform:'translate('+px+' '+py+')'},h('circle',{r:3.1,fill:zone==='local'?'#fb923c':'#7dd3fc'}),h('circle',{cx:-5,r:2,fill:'#e2e8f0',opacity:.7}),h('circle',{cx:5,r:2,fill:'#e2e8f0',opacity:.7}));
+            }));
+          }
+          var presets=[['balanced','Steady circulation',{opsAirFlow:90,opsAirRestore:false}],['pocket','Restricted vent',{opsAirFlow:3,opsAirRestore:false}],['restore','Clear the vent',{opsAirFlow:3,opsAirRestore:true}]];
+          return h('div',null,
+            h('section',{id:'iss-air-lab',className:'iss-air-lab','data-iss-air-lab':true,'aria-labelledby':'iss-air-title'},
+              h('div',{className:'iss-experiment-heading'},h('div',null,h('span',{className:'iss-experiment-kicker'},__alloT('stem.spacestation.air_kicker','LIFE SUPPORT / CABIN AIR LAB')),h('h3',{id:'iss-air-title'},__alloT('stem.spacestation.air_title','Follow the air. Find the hidden buildup.'))),h('span',{className:'iss-model-badge'},'Two air volumes · one mass balance')),
+              h('p',{className:'iss-experiment-intro'},__alloT('stem.spacestation.air_intro','A cabin monitor cannot tell the whole story. Compare CO₂ near a crew member with the larger cabin, then change ventilation, scrubbing and the timing of a recovery.')),
+              h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.air_trials','Cabin air investigation starting conditions')},presets.map(function(preset){return h('button',{key:preset[0],type:'button','data-air-preset':preset[0],onClick:function(){upd(Object.assign({opsCrew:7,opsScrub:88,opsAirActivity:1,opsAirStart:2600,opsAirRestoreMinute:45,opsArrayAngle:86,opsEclipse:35,opsBattery:76,opsResearch:60,opsOrbitMinute:0,opsScenario:'custom',opsAirSeekToken:!d.opsAirSeekToken},preset[2]));}},preset[1]);})),
+              h('div',{className:'iss-air-clock'},h('div',{className:'iss-air-clock-heading'},h('strong',null,'T+'+orbitMinute.toFixed(1)+' min'),h('span',null,phase)),
+                h(issExperimentPlayback,{React:React,id:'air',t:__alloT,value:orbitMinute*60,max:5520,speeds:[60,300,600],speedLabels:['1 min/s','5 min/s','10 min/s'],resetKey:[JSON.stringify(config),!!d.opsAirSeekToken].join(':'),onAdvance:function(seconds){upd({opsOrbitMinute:seconds/60});}}),
+                h('label',{className:'iss-experiment-control',htmlFor:'iss-air-time'},h('span',null,'Inspect orbit time',h('strong',null,orbitMinute.toFixed(1)+' min')),
+                  h('input',{id:'iss-air-time',type:'range',min:0,max:92,step:.1,value:orbitMinute,'aria-describedby':'iss-air-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.air_time_value','{minute} minutes; crew-zone CO₂ {local} ppm; cabin CO₂ {cabin} ppm'),{minute:orbitMinute.toFixed(1),local:current.localPpm.toFixed(0),cabin:current.cabinPpm.toFixed(0)}),onChange:function(event){seek(Number(event.target.value));}}))),
+              h('div',{className:'iss-air-workbench'},
+                h('div',{className:'iss-air-scene','data-air-phase':!current.powered?'unpowered':current.restored?'restored':current.flow<30?'restricted':'circulating'},
+                  h('div',{className:'iss-air-scene-heading'},h('strong',{style:{color:phaseColor}},phase),h('span',null,'Schematic cabin cutaway')),
+                  h('div',{className:'iss-air-instruments'},reading('local','Crew-zone CO₂',current.localPpm.toFixed(0)+' ppm',signed(current.localRate)+' ppm/min',localHigh?'#fda4af':'#fdba74'),reading('cabin','Cabin CO₂',current.cabinPpm.toFixed(0)+' ppm',signed(current.cabinRate)+' ppm/min','#7dd3fc')),
+                  h('svg',{viewBox:'0 0 720 310',role:'img','data-air-scene':true,'aria-label':__alloFill(__alloT('stem.spacestation.air_scene_label','One crew member in a small air zone connected to the cabin and scrubber. Mixing flow {flow} cubic metres per hour. Local CO₂ {local} ppm; cabin {cabin} ppm.'),{flow:current.flow.toFixed(0),local:current.localPpm.toFixed(0),cabin:current.cabinPpm.toFixed(0)})},
+                    h('defs',null,h('linearGradient',{id:'iss-air-hull',x1:'0',y1:'0',x2:'0',y2:'1'},h('stop',{offset:'0',stopColor:'#8ea9ba'}),h('stop',{offset:'.15',stopColor:'#283f53'}),h('stop',{offset:'.85',stopColor:'#162b3d'}),h('stop',{offset:'1',stopColor:'#7894a6'})),
+                      h('linearGradient',{id:'iss-air-rack',x1:'0',x2:'1'},h('stop',{offset:'0',stopColor:'#244657'}),h('stop',{offset:'.5',stopColor:'#456b7a'}),h('stop',{offset:'1',stopColor:'#203a4f'}))),
+                    h('rect',{x:16,y:23,width:688,height:264,rx:48,fill:'url(#iss-air-hull)',stroke:'#647e92',strokeWidth:2}),
+                    h('rect',{x:39,y:48,width:204,height:214,rx:26,fill:'#322b30',stroke:focus==='zone'?'#fdba74':'#526678',strokeWidth:focus==='zone'?3:1}),
+                    h('rect',{x:271,y:48,width:407,height:214,rx:26,fill:'#102638',stroke:'#526678'}),
+                    [53,74,95,116,137,158,179,200,221,242].map(function(y){return h('path',{key:y,d:'M21 '+y+' H34 M686 '+y+' H699',stroke:'#9db3bf',opacity:.45});}),
+                    molecules('local',24,55,63,169,180,current.localPpm),molecules('cabin',31,295,65,352,177,current.cabinPpm),
+                    h('path',{d:'M139 88 H571 V111 M571 210 V238 H139 V213',fill:'none',stroke:current.flow>0?'#5eead4':'#64748b',strokeWidth:5,strokeDasharray:current.flow>0?'none':'5 7',opacity:.7}),
+                    h('path',{d:'M450 81 L464 88 450 95 M260 231 L246 238 260 245',fill:'none',stroke:current.flow>0?'#99f6e4':'#94a3b8',strokeWidth:3}),
+                    current.flow>0?h('g',{'data-air-flow-markers':true},[0,1,2,3].map(function(index){var f=(index/4+current.circulatedM3*.04)%1;return h('g',{key:index},h('circle',{cx:145+f*415,cy:88,r:4,fill:'#a7f3d0'}),h('circle',{cx:560-f*415,cy:238,r:4,fill:'#a7f3d0'}));})):null,
+                    h('g',{transform:'translate(132 146)'},h('circle',{cy:-24,r:16,fill:'#c9d8e2',stroke:'#eef6fc'}),h('path',{d:'M-14 -6 Q-26 15 -20 41 H20 Q26 15 14 -6 Z',fill:'#3f6984',stroke:'#91b9d0',strokeWidth:2}),h('path',{d:'M-19 1 L-32 28 M19 1 L32 28 M-10 41 V61 M10 41 V61',stroke:'#92adc0',strokeWidth:10,strokeLinecap:'round'}),h('path',{d:'M-9 -26 h5 M4 -26 h5',stroke:'#38556b',strokeWidth:2})),
+                    h('g',{transform:'translate(265 88)',stroke:focus==='fan'?'#e0f2fe':'#5eead4'},h('circle',{r:25,fill:'#0b2535',strokeWidth:focus==='fan'?3:1.5}),h('g',{'data-air-fan':true,transform:'rotate('+((current.circulatedM3*30)%360)+')'},[0,120,240].map(function(angle){return h('path',{key:angle,d:'M0 0 Q-9 -10 0 -20 Q15 -20 8 -4 Z',transform:'rotate('+angle+')',fill:current.flow>0?'#5eead4':'#64748b',stroke:'none'});})),h('circle',{r:4,fill:'#e2e8f0',stroke:'none'})),
+                    h('g',{'data-air-scrubber':current.clearAir>0?'active':'off'},h('rect',{x:506,y:111,width:130,height:100,rx:11,fill:'url(#iss-air-rack)',stroke:focus==='scrubber'?'#a7f3d0':'#6e899b',strokeWidth:focus==='scrubber'?3:1}),
+                      [0,1,2,3].map(function(index){return h('g',{key:index},h('rect',{x:518,y:123+index*19,width:75,height:13,rx:3,fill:'#0d2534',stroke:'#5d8495'}),h('circle',{cx:616,cy:129+index*19,r:3.5,fill:current.clearAir>0?'#6ee7b7':'#64748b'}));}),h('path',{d:'M571 211 V273',stroke:'#a7f3d0',strokeWidth:2,strokeDasharray:'4 5',opacity:current.clearAir>0?.8:.2})),
+                    h('path',{d:'M75 278 H218 M301 278 H621',stroke:'#b9cbd5',strokeWidth:2,opacity:.5})),
+                  h('div',{className:'iss-air-scene-key'},h('span',null,'Orange: crew zone · 12 m³'),h('span',null,'Blue: cabin · 388 m³'),h('span',null,'Arrows: equal exchange flows')),
+                  h('div',{className:'iss-air-parts',role:'group','aria-label':__alloT('stem.spacestation.air_parts','Inspect the cabin air system')},[['zone','Crew zone'],['fan','Mixing fan'],['scrubber','Scrubber']].map(function(part){return h('button',{key:part[0],type:'button','data-air-part':part[0],'aria-pressed':focus===part[0],onClick:function(){upd({opsAirFocus:part[0]});}},part[1]);})),
+                  h('p',{className:'iss-air-part-note','data-air-part-note':focus},notes[focus])),
+                h('div',{className:'iss-air-setup'},opsControl('iss-eclss-crew','Crew aboard',crew,3,11,1,' people','#7dd3fc','opsCrew'),opsControl('iss-air-flow','Starting mixing flow',config.flow,0,180,1,' m³/h','#5eead4','opsAirFlow'),opsControl('iss-eclss-scrub','Scrubber throughput',scrub,0,100,1,'%','#6ee7b7','opsScrub'),opsControl('iss-air-activity','Crew-zone metabolic rate',config.activity,1,3,.25,' × baseline','#fdba74','opsAirActivity'),opsControl('iss-air-start','Starting CO₂ in both zones',config.startPpm,0,8000,100,' ppm','#c4b5fd','opsAirStart'))),
+              h('div',{className:'iss-air-restoration'},h('div',{className:'iss-air-chart-heading'},h('h4',null,'Schedule a circulation recovery'),h('button',{type:'button','data-air-restore-toggle':true,'aria-pressed':config.restore,onClick:function(){upd({opsAirRestore:!config.restore,opsOrbitMinute:0,opsScenario:'custom',opsAirSeekToken:!d.opsAirSeekToken});}},config.restore?'Recovery planned':'Plan vent restoration')),
+                h('fieldset',{disabled:!config.restore},h('legend',{className:'iss-sr-only'},'Circulation recovery timing'),opsControl('iss-air-restore-time','Restore flow at',config.restoreMinute,0,85,1,' min','#5eead4','opsAirRestoreMinute')),
+                h('p',{'data-air-recovery-note':true},!config.restore?'Choose a time to return a restricted flow path to 90 m³/h.':!canCompare?'Flow is already at least 90 m³/h; no recovery event is needed.':'At T+'+config.restoreMinute.toFixed(0)+' min, the available mixing flow returns to 90 m³/h. CO₂ already present still takes time to disperse and be removed.')),
+              h('div',{className:'iss-air-flows'},reading('flow','Mixing flow',current.flow.toFixed(0)+' m³/h','Each direction; no net air-volume transfer','#5eead4'),reading('source','Crew CO₂ source',(current.sourceRate*60).toFixed(1)+' g/h','One active zone; remaining crew at baseline','#fdba74'),reading('removal','Scrubber removal',(current.removalRate*60).toFixed(1)+' g/h',current.powered?'Depends on cabin concentration':'No electrical supply','#6ee7b7'),reading('average','Volume-weighted average',current.averagePpm.toFixed(0)+' ppm','Can hide a concentrated local pocket','#c4b5fd')),
+              h('div',{className:'iss-air-chart-heading'},h('h4',null,'Two readings, one connected atmosphere'),h('button',{type:'button','data-air-reference':true,disabled:!canCompare,'aria-pressed':showReference,onClick:function(){upd({opsAirReference:!showReference});}},'Compare no recovery')),
+              h('div',{className:'iss-air-plot-grid'},h('div',{className:'iss-air-y-axis','aria-hidden':true},[yMax,yMax/2,0].map(function(value){return h('span',{key:value},value.toFixed(0));})),
+                h('svg',{viewBox:'0 -4 1000 108',preserveAspectRatio:'none',role:'img','data-air-plot':true,'aria-describedby':'iss-air-graph-help','aria-label':__alloFill(__alloT('stem.spacestation.air_plot_label','CO₂ concentration in ppm over 92 minutes. At {minute} minutes, crew zone {local} ppm and cabin {cabin} ppm. Drag to inspect or use the time slider.'),{minute:orbitMinute.toFixed(1),local:current.localPpm.toFixed(0),cabin:current.cabinPpm.toFixed(0)}),onPointerDown:function(event){if(event.button!==0||event.isPrimary===false)return;event.preventDefault();if(event.currentTarget.setPointerCapture)event.currentTarget.setPointerCapture(event.pointerId);plotSeek(event);},onPointerMove:function(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))plotSeek(event);},onPointerUp:release,onPointerCancel:release},
+                  [0,25,50,75,100].map(function(y){return h('line',{key:y,x1:0,x2:1000,y1:y,y2:y,stroke:'#345068',strokeDasharray:'3 6',vectorEffect:'non-scaling-stroke'});}),
+                  h('line',{x1:0,x2:1000,y1:100-config.investigationPpm/yMax*100,y2:100-config.investigationPpm/yMax*100,stroke:'#fbbf24',strokeDasharray:'4 5',vectorEffect:'non-scaling-stroke'}),
+                  canCompare?h('rect',{x:airModel.restoreMinute/92*1000,y:-4,width:(92-airModel.restoreMinute)/92*1000,height:108,fill:'#2dd4bf',opacity:.08}):null,
+                  canCompare?h('line',{x1:airModel.restoreMinute/92*1000,x2:airModel.restoreMinute/92*1000,y1:-4,y2:104,stroke:'#5eead4',strokeDasharray:'3 4',vectorEffect:'non-scaling-stroke'}):null,
+                  showReference?h('path',{'data-air-reference-path':true,d:path(referenceModel,'local'),fill:'none',stroke:'#b8c8da',strokeWidth:2,strokeDasharray:'5 5',vectorEffect:'non-scaling-stroke'}):null,
+                  [['local','#fdba74'],['cabin','#7dd3fc']].map(function(series){return h('path',{key:series[0],'data-air-curve':series[0],d:path(airModel,series[0]),fill:'none',stroke:series[1],strokeWidth:2.5,vectorEffect:'non-scaling-stroke'});}),
+                  h('line',{x1:orbitMinute/92*1000,x2:orbitMinute/92*1000,y1:-4,y2:104,stroke:'#e0f2fe',vectorEffect:'non-scaling-stroke'}),[['localPpm','#fdba74'],['cabinPpm','#7dd3fc']].map(function(series){return h('circle',{key:series[0],cx:orbitMinute/92*1000,cy:100-current[series[0]]/yMax*100,r:.01,fill:'none',stroke:series[1],strokeWidth:7,vectorEffect:'non-scaling-stroke'});}))),
+              h('div',{className:'iss-air-x-axis','aria-hidden':true},h('span',null,'0 min'),h('span',null,'46 min'),h('span',null,'92 min')),
+              h('div',{className:'iss-air-chart-key'},h('span',null,'Orange: crew zone'),h('span',null,'Blue: cabin'),h('span',null,'Amber: 4000 ppm investigation line'),showReference?h('span',null,'Dashed: crew zone without recovery'):null),
+              showReference?h('p',{className:'iss-air-comparison','data-air-comparison':true},'At this moment: planned recovery '+current.localPpm.toFixed(0)+' ppm near the crew · no recovery '+reference.localPpm.toFixed(0)+' ppm. Both runs use the same crew, starting air and scrubber.'):null,
+              h('p',{className:'iss-air-help',id:'iss-air-graph-help'},'Drag or tap the graph to inspect both sensors. Arrow keys on the time slider move by 0.1 minute. Inspection pauses playback; setup changes start a new run.'),
+              h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.air_events','Inspect cabin air events')},eventButton('start','Orbit start',0),eventButton('limit','4000 ppm crossing',airModel.firstLimitMinute),eventButton('restore','Restore flow',airModel.restoreMinute),eventButton('after','5 min after recovery',canCompare?Math.min(92,airModel.restoreMinute+5):null),eventButton('peak','Highest reading',airModel.peakMinute),eventButton('end','Orbit end',92)),
+              h('div',{className:'iss-air-budget'},reading('initial','CO₂ initially present',current.initialGrams.toFixed(1)+' g','Both air volumes','#c4b5fd'),reading('exhaled','Exhaled since start',current.exhaledGrams.toFixed(1)+' g','Added by the crew','#fdba74'),reading('removed','Removed from air',current.removedGrams.toFixed(1)+' g','Captured by the scrubber','#6ee7b7'),reading('remaining','Still in the air',(current.localGrams+current.cabinGrams).toFixed(1)+' g','Crew zone + larger cabin','#7dd3fc')),
+              h('p',{className:'iss-air-balance','data-air-balance':true},'CO₂ balance: initial '+current.initialGrams.toFixed(1)+' + exhaled '+current.exhaledGrams.toFixed(1)+' − scrubbed '+current.removedGrams.toFixed(1)+' = remaining '+(current.localGrams+current.cabinGrams).toFixed(1)+' g. Mixing only redistributes mass. Display values are rounded.'),
+              h('div',{className:'iss-air-outcome','data-air-outcome':airModel.peakPpm>=config.investigationPpm?'crossed':'below'},h('strong',null,airModel.peakPpm>=config.investigationPpm?'A local reading reaches the investigation line.':'Both zones stay below the investigation line.'),h('p',null,'Highest reading '+airModel.peakPpm.toFixed(0)+' ppm at T+'+airModel.peakMinute.toFixed(1)+' min · final crew zone '+airEnd.localPpm.toFixed(0)+' ppm · final cabin '+airEnd.cabinPpm.toFixed(0)+' ppm. '+(airModel.peakPpm>=config.investigationPpm&&airEnd.localPpm<config.investigationPpm?'Recovery improves the final air; it does not erase the earlier peak.':'Compare ventilation and removal together.'))),
+              h('details',{className:'iss-physics-note'},h('summary',null,'Cabin air model and assumptions'),
+                h('p',null,'Two internally mixed volumes (12 and 388 m³) begin at the same CO₂ concentration, at a fixed 101.325 kPa and 22 °C. One crew member occupies the smaller zone. Baseline production is 42 g/hour per person; the local activity multiplier is an illustrative increase. The ideal-gas relation converts CO₂ mass to ppm by volume. These volumes, flows and activity settings are teaching assumptions, not ISS geometry or telemetry.'),
+                h('p',null,'Equal exchange flows transfer Q(Czone − Ccabin). Effective clean-air throughput is 70 m³/hour × scrubber setting; removal scales with cabin concentration. A recovery raises a restricted mixing flow to 90 m³/hour. Fans and scrubbing stop if the shared power model delivers no electricity; partial electrical supply is assumed sufficient. Pressure regulation, oxygen consumption, molecular diffusion, spatial fluid dynamics, bed cycling/capacity and individual equipment power demands are omitted.'),
+                h('p',null,'CO₂ mass uses fourth-order integration with steps up to 10 seconds, split at recovery, eclipse and power-loss events. Concentrations stay continuous at those events. The 4000 ppm line is a classroom comparison, not a health or exposure limit. Dots, flow markers, fan motion and cabin geometry are schematic; CO₂ is invisible.'),
+                h('a',{href:'https://www.nasa.gov/reference/6-0-natural-and-induced-environments-vol-2/',target:'_blank',rel:'noopener noreferrer'},'NASA: ventilation and local CO₂ pockets'),' · ',h('a',{href:'https://www.jpl.nasa.gov/edu/resources/lesson-plan/the-air-up-there-making-space-breathable/',target:'_blank',rel:'noopener noreferrer'},'NASA JPL: classroom CO₂ mass budget'))),
+            card('Water and oxygen budget',h('div',null,h('button',{type:'button','data-open-water-lab':true,className:'iss-water-launch',onClick:function(){upd({opsEclssLab:'water'});}},'Explore tanks, outages and resupply →'),renderSystemSchematic(systemById('water')),h('div',{className:'iss-ops-grid'},opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'),statusBox('Water recovered',waterReturn.toFixed(1)+' L/day','Daily potable-water model for the selected crew.','#38bdf8'),statusBox('Water resupply gap',resupplyWater.toFixed(2)+' L/day','Open-loop loss accumulates over a mission.','#fbbf24'),statusBox('Oxygen demand',oxygenNeed.toFixed(2)+' kg/day','Daily crew-consumption estimate.','#34d399')),opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for this exploration exercise'),opsMeter('Cabin-air quality',airScore,co2<CO2_ACTION_PPM?'#34d399':'#f87171','Modeled CO₂ '+co2.toFixed(0)+' ppm — highest zone reading during this orbit. The 4000 ppm line is a classroom comparison.')),'#38bdf8'));
         }
         function renderThermal() {
-          return h('div', null, renderSystemSchematic(systemById('thermal')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsOrbitCurve('Thermal margin over the next orbit', orbitForecast, 'thermal', sunlightMinutes, '#fb923c', '%'));
+          var current = issThermalInspect(thermalModel, orbitMinute);
+          var referenceModel = issThermalRun(Object.assign({}, thermalSettings, { radiator: 100, cooling: 100 }));
+          var reference = issThermalInspect(referenceModel, orbitMinute), showReference = d.opsThermalReference !== false;
+          var focus = ['cabin','loop','radiator'].indexOf(d.opsThermalFocus) !== -1 ? d.opsThermalFocus : 'loop';
+          var partNotes = {
+            cabin: 'Equipment and crew add heat. The cabin and its contents have heat capacity, so temperature changes gradually as heat accumulates or leaves.',
+            loop: 'Coolant moves heat from the warmer cabin toward the colder radiator. The loop transfers energy; it does not make that energy disappear.',
+            radiator: 'The exterior panels release infrared radiation into vacuum. Warmer panels radiate more strongly, with a fourth-power dependence on absolute temperature.'
+          };
+          var temperatureColor = current.cabin < 18 || current.cabin > 27 ? '#fda4af' : '#fdba74';
+          var trend = current.cabinRate > .001 ? 'Cabin warming' : current.cabinRate < -.001 ? 'Cabin cooling' : 'Cabin nearly steady';
+          var inBand = thermalModel.minCabin >= 18 && thermalModel.maxCabin <= 27;
+          var yMin = Math.min(-10, Math.floor(Math.min.apply(null, thermalModel.samples.concat(referenceModel.samples).map(function (sample) { return sample.radiator; })) / 10) * 10);
+          var yMax = Math.max(40, Math.ceil(Math.max(thermalModel.maxCabin, referenceModel.maxCabin) / 10) * 10);
+          function y(temperature) { return 100 - (temperature - yMin) / (yMax - yMin) * 100; }
+          function curve(model, field) {
+            return model.samples.map(function (sample, index) {
+              return (index ? 'L' : 'M') + (sample.minute / 92 * 1000).toFixed(3) + ' ' + y(sample[field]).toFixed(4);
+            }).join(' ');
+          }
+          function seek(minute) { upd({ opsOrbitMinute: opsClamp(minute, 0, 92), opsThermalSeekToken: !d.opsThermalSeekToken }); }
+          function pointerSeek(event) { var bounds = event.currentTarget.getBoundingClientRect(); if (bounds.width) seek(Math.round(opsClamp((event.clientX - bounds.left) / bounds.width, 0, 1) * 920) / 10); }
+          function releasePointer(event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }
+          function eventButton(id, label, minute) { return h('button', { type: 'button', 'data-thermal-event': id, disabled: minute === null, onClick: function () { seek(minute); } }, label); }
+          function signed(value, digits) { return (value < -1e-8 ? '−' : value > 1e-8 ? '+' : '') + Math.abs(value).toFixed(digits); }
+          function reading(id, label, value, note, color) {
+            return h('div', { className: 'iss-thermal-reading', 'data-thermal-reading': id }, h('span', null, label), h('strong', { style: { color: color || '#e0f2fe' } }, value), h('small', null, note));
+          }
+          var flowPhase = current.pumpPowered ? -orbitMinute * 80 * cooling / 100 : 0;
+          var radiatorWidth = 178 * radiator / 100;
+          var presets = [
+            ['balanced','Balanced cooling',{ opsRadiator: 82, opsCooling: 86, opsResearch: 60, opsCabinStart: 22 }],
+            ['restricted','Restricted cooling',{ opsRadiator: 30, opsCooling: 40, opsResearch: 95, opsCabinStart: 22 }],
+            ['strong','Strong cooling',{ opsRadiator: 100, opsCooling: 100, opsResearch: 0, opsCabinStart: 20 }]
+          ];
+          return h('section', { id: 'iss-thermal-lab', className: 'iss-thermal-lab', 'aria-labelledby': 'iss-thermal-title', 'data-iss-thermal-lab': true },
+            h('div', { className: 'iss-experiment-heading' }, h('div', null, h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.thermal_kicker', 'ORBIT / HEAT LAB')), h('h3', { id: 'iss-thermal-title' }, __alloT('stem.spacestation.thermal_title', 'Follow the heat. Keep the cabin comfortable.'))), h('span', { className: 'iss-model-badge' }, 'Two heat stores · 92 min orbit')),
+            h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.thermal_intro', 'Watch heat move from equipment to coolant, then radiate into space. Change the cooling setup and explore why entering eclipse does not instantly cool the cabin.')),
+            h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.thermal_trials', 'Thermal investigation starting conditions') },
+              presets.map(function (preset) { return h('button', { type: 'button', key: preset[0], 'data-thermal-preset': preset[0], onClick: function () { upd(Object.assign({ opsCrew: 7, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsOrbitMinute: 0, opsScenario: 'custom', opsThermalSeekToken: !d.opsThermalSeekToken }, preset[2])); } }, preset[1]); })),
+            h('div', { className: 'iss-thermal-workbench' },
+              h('div', { className: 'iss-thermal-scene', 'data-thermal-phase': current.lit ? 'sunlight' : 'eclipse', 'data-thermal-focus': focus },
+                h('div', { className: 'iss-thermal-scene-heading' }, h('strong', null, current.lit ? 'SUNLIGHT' : 'ECLIPSE'), h('span', null, current.pumpPowered ? 'Coolant circulation active' : 'No electrical supply to pump')),
+                h('div', { className: 'iss-thermal-temperatures' },
+                  reading('cabin','Cabin + equipment',current.cabin.toFixed(2) + ' °C',trend,temperatureColor),
+                  reading('radiator','Coolant + radiator',current.radiator.toFixed(2) + ' °C','External thermal store','#7dd3fc')),
+                h('svg', { viewBox: '0 0 660 260', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.thermal_scene_label', 'Heat path from cabin through coolant to an external radiator. Cabin {cabin} degrees Celsius; radiator {radiator} degrees Celsius; coolant carries {heat} kilowatts.'), { cabin: current.cabin.toFixed(2), radiator: current.radiator.toFixed(2), heat: current.transferKW.toFixed(1) }) },
+                  h('defs', null,
+                    h('linearGradient', { id: 'iss-thermal-hull', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#809dab' }), h('stop', { offset: '.22', stopColor: '#d0dfe3' }), h('stop', { offset: '1', stopColor: '#38546e' })),
+                    h('linearGradient', { id: 'iss-thermal-panel', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0', stopColor: '#ecf5f7' }), h('stop', { offset: '1', stopColor: '#749cae' })),
+                    h('radialGradient', { id: 'iss-thermal-heat' }, h('stop', { offset: '0', stopColor: temperatureColor, stopOpacity: .25 }), h('stop', { offset: '1', stopColor: temperatureColor, stopOpacity: 0 }))),
+                  [[19,25],[95,16],[296,28],[382,244],[604,20],[640,225]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: 1, fill: '#b1cde0', opacity: .6 }); }),
+                  h('line', { x1: 322, y1: 10, x2: 322, y2: 250, stroke: '#7594ad', strokeDasharray: '4 6', opacity: .5 }),
+                  h('rect', { x: 28, y: 48, width: 268, height: 169, rx: 32, fill: 'url(#iss-thermal-hull)', stroke: focus === 'cabin' ? '#fdba74' : '#7898ac', strokeWidth: focus === 'cabin' ? 3 : 1 }),
+                  h('rect', { x: 43, y: 62, width: 238, height: 141, rx: 22, fill: '#0b2030' }),
+                  h('ellipse', { cx: 161, cy: 132, rx: 126, ry: 78, fill: 'url(#iss-thermal-heat)' }),
+                  [62,117,172].map(function (x, index) { return h('g', { key: x },
+                    h('rect', { x: x, y: 83, width: 41, height: 84, rx: 4, fill: '#273b4b', stroke: '#6e8ba0' }),
+                    [0,1,2,3].map(function (row) { return h('rect', { key: row, x: x + 5, y: 90 + row * 17, width: 31, height: 10, rx: 2, fill: '#132b3d', stroke: '#476274' }); }),
+                    h('circle', { cx: x + 33, cy: 95, r: 2, fill: current.servedKW > 0 ? '#6ee7b7' : '#64748b' }),
+                    h('path', { d: 'M' + (x + 10) + ' 77 q-6 -6 0 -12 q6 -6 0 -12', fill: 'none', stroke: temperatureColor, opacity: .4 + current.heatKW / 200, strokeWidth: 2 })); }),
+                  h('rect', { x: 239, y: 105, width: 23, height: 45, rx: 5, fill: '#476377', stroke: '#b1cad6' }),
+                  h('path', { d: 'M91 182 H255 V161 H349 V77 H460', fill: 'none', stroke: '#694a3e', strokeWidth: 12, strokeLinejoin: 'round' }),
+                  h('path', { d: 'M460 195 H369 V221 H228 V190 H91', fill: 'none', stroke: '#234964', strokeWidth: 12, strokeLinejoin: 'round' }),
+                  h('path', { d: 'M91 182 H255 V161 H349 V77 H460', fill: 'none', stroke: '#fb923c', strokeWidth: 4, strokeDasharray: current.pumpPowered ? '9 17' : 'none', strokeDashoffset: flowPhase, opacity: current.pumpPowered ? 1 : .25, 'data-thermal-hot-flow': true }),
+                  h('path', { d: 'M460 195 H369 V221 H228 V190 H91', fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, strokeDasharray: current.pumpPowered ? '9 17' : 'none', strokeDashoffset: flowPhase, opacity: current.pumpPowered ? 1 : .25 }),
+                  h('rect', { x: 335, y: 112, width: 51, height: 50, rx: 9, fill: '#173344', stroke: focus === 'loop' ? '#5eead4' : '#7194a8', strokeWidth: focus === 'loop' ? 3 : 1 }),
+                  h('circle', { cx: 360, cy: 137, r: 14, fill: '#29485c', stroke: '#94bdd1', strokeWidth: 2 }),
+                  h('path', { d: 'M350 133 L367 137 350 142 Z', fill: '#b1d7e7' }),
+                  h('rect', { x: 446, y: 43, width: 189, height: 174, rx: 4, fill: '#0d2233', stroke: focus === 'radiator' ? '#7dd3fc' : '#49677d', strokeWidth: focus === 'radiator' ? 3 : 1 }),
+                  [0,1,2,3,4,5].map(function (panel) { return h('g', { key: panel },
+                    h('rect', { x: 452, y: 49 + panel * 27, width: radiatorWidth, height: 23, rx: 2, fill: 'url(#iss-thermal-panel)', stroke: '#b0cbd6' }),
+                    h('path', { d: 'M458 ' + (57 + panel * 27) + ' H' + (448 + radiatorWidth) + ' v8 H458', fill: 'none', stroke: '#608fa9', strokeWidth: 1.4 })); }),
+                  [480,530,580].map(function (x) { return h('path', { key: x, d: 'M' + x + ' 35 q-6 -7 0 -14 q6 -7 0 -14 m-5 6 5 -6 5 6', fill: 'none', stroke: '#fda4af', strokeWidth: 2, opacity: Math.min(1, current.emittedKW / 100) }); }),
+                  current.lit ? h('path', { d: 'M635 5 L625 35 m-5 -7 5 7 7 -5', fill: 'none', stroke: '#fcd34d', strokeWidth: 2 }) : null),
+                h('div', { className: 'iss-thermal-scene-key' }, h('span', null, 'Orange: warmer coolant'), h('span', null, 'Blue: return path'), h('span', null, 'Rose: infrared to space')),
+                h('div', { className: 'iss-thermal-part-buttons', role: 'group', 'aria-label': __alloT('stem.spacestation.thermal_parts', 'Inspect the heat path') },
+                  [['cabin','Cabin'],['loop','Coolant loop'],['radiator','Radiator']].map(function (part) { return h('button', { type: 'button', key: part[0], 'data-thermal-part': part[0], 'aria-pressed': focus === part[0], onClick: function () { upd({ opsThermalFocus: part[0] }); } }, part[1]); })),
+                h('p', { className: 'iss-thermal-part-note', 'data-thermal-part-note': focus }, partNotes[focus])),
+              h('div', { className: 'iss-thermal-setup' },
+                opsControl('iss-thermal-rad','Radiator area available',radiator,30,100,1,'%','#7dd3fc','opsRadiator'),
+                opsControl('iss-thermal-flow','Cooling-loop setting',cooling,40,100,1,'%','#5eead4','opsCooling'),
+                opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#fdba74','opsResearch'),
+                opsControl('iss-thermal-start','Starting cabin temperature',cabinStart,16,30,.5,' °C','#fdba74','opsCabinStart'))),
+            h('div', { className: 'iss-thermal-flows' },
+              reading('heat','Heat generated',current.heatKW.toFixed(1) + ' kW','Powered equipment + crew metabolism','#fdba74'),
+              reading('transfer',current.transferKW >= 0 ? 'Cabin → radiator' : 'Radiator → cabin',Math.abs(current.transferKW).toFixed(1) + ' kW','Energy carried through the loop','#5eead4'),
+              reading('radiated','Radiated to space',current.emittedKW.toFixed(1) + ' kW','Infrared radiation from exterior panels','#fda4af'),
+              reading('absorbed','Absorbed environment',current.absorbedKW.toFixed(1) + ' kW',current.lit ? 'Sunlight + background heating' : 'Background heating remains in eclipse','#fcd34d')),
+            h('div', { className: 'iss-thermal-clock' },
+              h('div', { className: 'iss-thermal-clock-heading' }, h('strong', null, 'T+' + orbitMinute.toFixed(1) + ' min'), h('span', { 'data-thermal-trend': true }, trend + ' · ' + signed(current.cabinRate,3) + ' °C/min')),
+              h(issExperimentPlayback, { React: React, id: 'thermal', t: __alloT, value: orbitMinute * 60, max: 92 * 60, speeds: [60,300,600], speedLabels: ['1 min/s','5 min/s','10 min/s'], resetKey: [crew,research,arrayAngle,eclipse,battery,radiator,cooling,cabinStart,!!d.opsThermalSeekToken].join(':'), onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60 }); } }),
+              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-thermal-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(1) + ' min')),
+                h('input', { id: 'iss-thermal-time', type: 'range', min: 0, max: 92, step: .1, value: orbitMinute, 'aria-describedby': 'iss-thermal-graph-help',
+                  'aria-valuetext': __alloFill(__alloT('stem.spacestation.thermal_time_value', '{minute} minutes; cabin {temperature} degrees Celsius'), { minute: orbitMinute.toFixed(1), temperature: current.cabin.toFixed(2) }),
+                  onChange: function (event) { seek(Number(event.target.value)); } }))),
+            h('div', { className: 'iss-thermal-chart-heading' }, h('h4', null, 'Temperature through one orbit'), h('button', { type: 'button', 'data-thermal-reference': true, 'aria-pressed': showReference, onClick: function () { upd({ opsThermalReference: !showReference }); } }, 'Compare full cooling')),
+            h('div', { className: 'iss-thermal-plot-grid' },
+              h('div', { className: 'iss-thermal-y-axis', 'aria-hidden': true }, [0,1,2,3,4].map(function (index) { var value = yMax - index / 4 * (yMax - yMin); return h('span', { key: index }, value.toFixed(value % 1 ? 1 : 0) + '°'); })),
+              h('svg', { viewBox: '0 -3 1000 106', preserveAspectRatio: 'none', role: 'img', 'data-thermal-plot': true, 'aria-describedby': 'iss-thermal-graph-help',
+                'aria-label': __alloFill(__alloT('stem.spacestation.thermal_plot_label', 'Cabin and radiator temperatures over one orbit. Cabin ranges from {min} to {max} degrees Celsius. Current cabin {cabin}, radiator {radiator}.'), { min: thermalModel.minCabin.toFixed(2), max: thermalModel.maxCabin.toFixed(2), cabin: current.cabin.toFixed(2), radiator: current.radiator.toFixed(2) }),
+                onPointerDown: function (event) { if (event.button !== 0 || event.isPrimary === false) return; event.preventDefault(); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); pointerSeek(event); },
+                onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) pointerSeek(event); },
+                onPointerUp: releasePointer, onPointerCancel: releasePointer },
+                h('rect', { x: 0, y: -3, width: sunlightMinutes / 92 * 1000, height: 106, fill: '#fbbf24', opacity: .06 }),
+                h('rect', { x: sunlightMinutes / 92 * 1000, y: -3, width: eclipse / 92 * 1000, height: 106, fill: '#818cf8', opacity: .12 }),
+                h('rect', { x: 0, y: y(27), width: 1000, height: y(18) - y(27), fill: '#4ade80', opacity: .13 }),
+                [0,25,50,75,100].map(function (value) { return h('line', { key: value, x1: 0, x2: 1000, y1: value, y2: value, stroke: '#36566b', strokeDasharray: '3 6', vectorEffect: 'non-scaling-stroke' }); }),
+                [18,27].map(function (value) { return h('line', { key: value, x1: 0, x2: 1000, y1: y(value), y2: y(value), stroke: '#6ee7b7', strokeDasharray: '3 5', opacity: .7, vectorEffect: 'non-scaling-stroke' }); }),
+                showReference ? h('path', { 'data-thermal-reference-path': true, d: curve(referenceModel,'cabin'), fill: 'none', stroke: '#c4b5fd', strokeWidth: 2, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }) : null,
+                [['cabin','#fdba74'],['radiator','#7dd3fc']].map(function (series) { return h('g', { key: series[0] },
+                  h('path', { 'data-thermal-curve': series[0], d: curve(thermalModel,series[0]), fill: 'none', stroke: series[1], strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }),
+                  h('circle', { cx: orbitMinute / 92 * 1000, cy: y(current[series[0]]), r: .01, fill: 'none', stroke: series[1], strokeWidth: 7, vectorEffect: 'non-scaling-stroke' })); }),
+                h('line', { x1: orbitMinute / 92 * 1000, x2: orbitMinute / 92 * 1000, y1: -3, y2: 103, stroke: '#e0f2fe', vectorEffect: 'non-scaling-stroke' }))),
+            h('div', { className: 'iss-thermal-x-axis', 'aria-hidden': true }, h('span', null, '0 min'), h('span', null, '46 min'), h('span', null, '92 min')),
+            h('div', { className: 'iss-thermal-chart-key' }, h('span', null, 'Orange: cabin'), h('span', null, 'Blue: radiator'), showReference ? h('span', null, 'Dashed: cabin with full cooling') : null, h('span', null, 'Green band: 18–27 °C')),
+            showReference ? h('p', { className: 'iss-thermal-comparison', 'data-thermal-comparison': true }, 'Same heat input and starting temperatures: selected cabin ' + current.cabin.toFixed(2) + ' °C · full-cooling cabin ' + reference.cabin.toFixed(2) + ' °C. More cooling can also take the cabin below its comfort band.') : null,
+            h('p', { className: 'iss-thermal-help', id: 'iss-thermal-graph-help' }, 'Drag or tap the graph to inspect. The time slider supports arrow keys in 0.1-minute steps. Inspecting pauses playback.'),
+            h('div', { className: 'iss-experiment-actions' }, eventButton('start','Orbit start',0), eventButton('eclipse','Enter eclipse',sunlightMinutes), eventButton('limit',thermalModel.firstLimitMinute === 0 ? 'Outside at start' : 'Comfort boundary',thermalModel.firstLimitMinute), eventButton('end','Orbit end',92)),
+            h('div', { className: 'iss-thermal-budget' },
+              reading('generated-energy','Heat generated',current.generatedKWh.toFixed(1) + ' kWh','Equipment and crew since orbit start','#fdba74'),
+              reading('absorbed-energy','Environment added',current.absorbedKWh.toFixed(1) + ' kWh','Absorbed external energy','#fcd34d'),
+              reading('radiated-energy','Radiation removed',current.radiatedKWh.toFixed(1) + ' kWh','Energy emitted to space','#fda4af'),
+              reading('stored-energy','Change in stored heat',signed(current.storedKWh,1) + ' kWh','Both thermal stores; negative means cooling','#7dd3fc')),
+            h('p', { className: 'iss-thermal-balance', 'data-thermal-balance': true }, 'Heat balance: generated ' + current.generatedKWh.toFixed(1) + ' + absorbed ' + current.absorbedKWh.toFixed(1) + ' − radiated ' + current.radiatedKWh.toFixed(1) + ' = stored change ' + signed(current.storedKWh,1) + ' kWh. Coolant transfer is internal to this balance. Display values are rounded.'),
+            h('div', { className: 'iss-thermal-outcome', 'data-thermal-outcome': inBand ? 'comfortable' : 'outside' },
+              h('strong', null, inBand ? 'The cabin stays within the comfort band.' : thermalModel.maxCabin > 27 ? 'Heat builds up faster than the cooling path can remove it.' : 'This setup cools the cabin below its comfort band.'),
+              h('p', null, 'Cabin range ' + thermalModel.minCabin.toFixed(2) + '–' + thermalModel.maxCabin.toFixed(2) + ' °C. ' + (thermalModel.firstLimitMinute === null ? 'The radiator continues to reject heat during eclipse, while both temperatures respond gradually.' : (thermalModel.firstLimitMinute === 0 ? 'The cabin starts outside the comfort band.' : 'The first comfort boundary is reached at T+' + thermalModel.firstLimitMinute.toFixed(1) + ' min.') + ' Adjust area, loop setting or research demand and compare.'))),
+            h('details', { className: 'iss-physics-note' }, h('summary', null, 'Thermal model and assumptions'),
+              h('p', null, 'Two coupled heat stores represent cabin/equipment and external coolant/radiator. Heat capacity makes temperature continuous through sunlight and eclipse. The coolant carries Q = K(Tc − Tr). The radiator emits εσA(Tr⁴ − 3⁴), with absolute temperatures in kelvin; σ = 5.670374419 × 10⁻⁸ W/m²/K⁴.'),
+              h('p', null, 'Illustrative values: 24 MJ/K cabin capacity, 6 MJ/K radiator capacity, radiator starting at 4 °C, emissivity 0.85, up to 320 m² radiating area and up to 4 kW/K loop conductance. The selected loop percentage scales conductance; it is not a fluid-dynamics model. Heat input is 72% of delivered electrical power plus 100 W per crew member. No electrical supply stops the modeled pump; crew heat remains.'),
+              h('p', null, 'Absorbed environmental flux is 6 W/m² throughout the orbit, plus 25 W/m² in sunlight. These are prescribed teaching assumptions, not current ISS telemetry or hardware specifications. Temperatures and energy totals use fourth-order integration in steps of at most 10 seconds, split at eclipse and power-loss events. Graph inspection integrates a partial step; comfort-boundary times are refined within a step. Automatic thermostats, detailed water/ammonia circuits, geometry, contact resistances and temperature-dependent materials are omitted. Flow markers and panel geometry are schematic.'),
+              h('a', { href: 'https://ntrs.nasa.gov/citations/20110023292', target: '_blank', rel: 'noopener noreferrer' }, 'NASA: station coolant loops and radiators'), ' · ',
+              h('a', { href: 'https://openstax.org/books/university-physics-volume-2/pages/1-6-mechanisms-of-heat-transfer', target: '_blank', rel: 'noopener noreferrer' }, 'OpenStax: heat transfer and thermal radiation')));
         }
         function renderAttitude() {
-          var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
-          return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_control_moment_gyroscope_cluster_projected_satu', 'Control Moment Gyroscope cluster, projected saturation {value1} percent.'), { value1: nextCmg.toFixed(0) })}, h('rect', { width: 640, height: 190, fill: '#050b18' }), [125,255,385,515].map(function (x,i) { var tilt = i % 2 ? 18 : -18; return h('g', { key:i, transform:'translate('+x+',92)' }, h('g',{transform:'rotate('+tilt+')'},h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:34,fill:'none',stroke:'#1e1b4b',strokeWidth:5}),h('circle',{r:34,fill:'none',stroke:wheelColor,strokeWidth:5,strokeLinecap:'round',strokeDasharray:(nextCmg/100*213.6).toFixed(1)+' 213.6',transform:'rotate(-90)'}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4})),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1)),h('text',{y:60,textAnchor:'middle',fill:'#a5b4fc',fontSize:8,fontWeight:800,letterSpacing:.6},'GIMBAL '+(tilt>0?'+':'')+tilt+'°')); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'),h('text',{x:620,y:24,textAnchor:'end',fill:wheelColor,fontSize:13,fontWeight:900},nextCmg.toFixed(0)+'%'),h('text',{x:620,y:36,textAnchor:'end',fill:'#94a3b8',fontSize:7.5,fontWeight:800,letterSpacing:.7},'CLUSTER SATURATION · RULE < 80%'),h('text',{x:320,y:176,textAnchor:'middle',fill:'#94a3b8',fontSize:8.5},'Drag torque spins the wheels up; at saturation the wheels can absorb no more and thrusters must desaturate them.'))),
-            h('div', { className: 'iss-ops-grid' }, opsControl('iss-cmg-load','Current CMG saturation',cmg,0,100,1,'%','#a78bfa','opsCmg'), opsControl('iss-cmg-research','Disturbance / operations load',research,0,100,5,'%','#38bdf8','opsResearch'), opsControl('iss-cmg-angle','Array tracking demand',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), statusBox('Next-orbit saturation',nextCmg.toFixed(0) + '%','Above 80%: plan a propulsive desaturation.',wheelColor)),
-            opsMeter('Momentum storage',nextCmg,wheelColor,'CMGs save fuel until their stored momentum must be dumped'),
-            h('button',{type:'button',onClick:function(){opsLogEntry('CMG desaturation burn completed; momentum reset to 8%.',{opsCmg:8,opsRuns:(d.opsRuns||0)+1});},style:{marginTop:9,padding:'8px 12px',borderRadius:9,border:'1px solid #a78bfa',background:'rgba(167,139,250,.14)',color:'#ddd6fe',fontWeight:850,cursor:'pointer'}},'🔥 Perform thruster desaturation'));
+          var current = issAttitudeInspect(attitudeModel, orbitMinute), config = attitudeModel.config;
+          var referenceModel = issAttitudeRun(Object.assign({}, attitudeSettings, { dump: false }));
+          var reference = issAttitudeInspect(referenceModel, orbitMinute);
+          var showReference = config.dump && d.opsAttitudeReference !== false;
+          var focus = ['station','gyros','thrusters'].indexOf(d.opsAttitudeFocus) !== -1 ? d.opsAttitudeFocus : 'station';
+          var notes = {
+            station: 'The station starts with zero angular velocity. After the gyros run out of momentum capacity, external torque changes the station’s angular momentum and it begins to drift.',
+            gyros: 'CMGs steer the spin axes of constant-speed rotors. Their momentum change applies an equal and opposite torque to the station. The illustrated directions show an idealized, paired momentum envelope.',
+            thrusters: 'Two equal, opposite forces form a couple: their net force cancels and their torques add. Propellant carries angular momentum away. Unloading can stop drift without restoring the original pointing angle.'
+          };
+          var phaseText = current.phase === 'unloading' ? 'THRUSTER UNLOADING' : current.phase === 'drifting' ? 'CAPACITY REACHED · DRIFT' : 'GYRO RATE HOLD';
+          var phaseColor = current.phase === 'drifting' ? '#fda4af' : current.phase === 'unloading' ? '#fdba74' : '#a7f3d0';
+          // Fit the rotating hardware and plume envelope without changing its angle.
+          var cameraScale = Math.min(1, 144 / (298 * Math.abs(Math.sin(current.angle)) + 112 * Math.abs(Math.cos(current.angle))));
+          var samples = issAttitudeTimes(attitudeModel).map(function (minute) { return issAttitudeInspect(attitudeModel, minute); });
+          var comparisonSamples = issAttitudeTimes(referenceModel).map(function (minute) { return issAttitudeInspect(referenceModel, minute); });
+          var angleMax = Math.max(1, Math.ceil(Math.max(attitudeEnd.angleDeg, issAttitudeInspect(referenceModel, 92).angleDeg) / 5) * 5);
+          function seek(minute) { upd({ opsOrbitMinute: opsClamp(minute, 0, 92), opsAttitudeSeekToken: !d.opsAttitudeSeekToken }); }
+          function pointerSeek(event) { var bounds = event.currentTarget.getBoundingClientRect(); if (bounds.width) seek(Math.round(opsClamp((event.clientX - bounds.left) / bounds.width, 0, 1) * 920) / 10); }
+          function releasePointer(event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }
+          function signed(value, digits) { return (value < -1e-8 ? '−' : value > 1e-8 ? '+' : '') + Math.abs(value).toFixed(digits); }
+          function reading(id, label, value, note, color) { return h('div', { className: 'iss-attitude-reading', 'data-attitude-reading': id }, h('span', null, label), h('strong', { style: { color: color || '#e0f2fe' } }, value), h('small', null, note)); }
+          function eventButton(id, label, seconds) { return h('button', { type: 'button', 'data-attitude-event': id, disabled: seconds === null, onClick: function () { seek(seconds / 60); } }, label); }
+          function path(points, field, maximum) { return points.map(function (point,index) { return (index ? 'L' : 'M') + (point.minute / 92 * 1000).toFixed(4) + ' ' + (100 - point[field] / maximum * 100).toFixed(5); }).join(' '); }
+          function chart(id, title, field, maximum, color, unit) {
+            return h('div', { className: 'iss-attitude-chart' }, h('h4', null, title),
+              h('div', { className: 'iss-attitude-plot-grid' },
+                h('div', { className: 'iss-attitude-y-axis', 'aria-hidden': true }, [maximum, maximum / 2, 0].map(function (value) { return h('span', { key: value }, value.toFixed(value % 1 ? 1 : 0) + unit); })),
+                h('svg', { viewBox: '0 -4 1000 108', preserveAspectRatio: 'none', role: 'img', 'data-attitude-plot': id, 'aria-describedby': 'iss-attitude-graph-help',
+                  'aria-label': __alloFill(__alloT('stem.spacestation.attitude_plot_label', '{title}. At {minute} minutes the value is {value} {unit}. Drag the plot or use the orbit time slider.'), { title: title, minute: orbitMinute.toFixed(1), value: current[field].toFixed(2), unit: unit }),
+                  onPointerDown: function (event) { if (event.button !== 0 || event.isPrimary === false) return; event.preventDefault(); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); pointerSeek(event); },
+                  onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) pointerSeek(event); },
+                  onPointerUp: releasePointer, onPointerCancel: releasePointer },
+                  [0,25,50,75,100].map(function (value) { return h('line', { key: value, x1: 0, x2: 1000, y1: value, y2: value, stroke: '#345068', strokeDasharray: '3 6', vectorEffect: 'non-scaling-stroke' }); }),
+                  id === 'momentum' ? h('g', null, h('rect', { x: 0, y: 0, width: 1000, height: 20, fill: '#fb7185', opacity: .08 }), h('line', { x1: 0, x2: 1000, y1: 20, y2: 20, stroke: '#fbbf24', strokeDasharray: '4 5', vectorEffect: 'non-scaling-stroke' })) : null,
+                  attitudeModel.burnStart !== null ? h('rect', { x: attitudeModel.burnStart / 5520 * 1000, y: -4, width: attitudeModel.burnSeconds / 5520 * 1000, height: 108, fill: '#fb923c', opacity: .22 }) : null,
+                  showReference ? h('path', { 'data-attitude-reference-path': id, d: path(comparisonSamples, field, maximum), fill: 'none', stroke: '#bacadd', strokeWidth: 2, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }) : null,
+                  h('path', { 'data-attitude-curve': id, d: path(samples, field, maximum), fill: 'none', stroke: color, strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }),
+                  h('line', { x1: orbitMinute / 92 * 1000, x2: orbitMinute / 92 * 1000, y1: -4, y2: 104, stroke: '#e0f2fe', vectorEffect: 'non-scaling-stroke' }),
+                  h('circle', { cx: orbitMinute / 92 * 1000, cy: 100 - current[field] / maximum * 100, r: .01, fill: 'none', stroke: color, strokeWidth: 7, vectorEffect: 'non-scaling-stroke' }))),
+              h('div', { className: 'iss-attitude-x-axis', 'aria-hidden': true }, h('span', null, '0 min'), h('span', null, '46 min'), h('span', null, '92 min')));
+          }
+          var presets = [
+            ['hold','Quiet orbit',{ opsCmg: 28, opsAttitudeTorque: .35, opsAttitudeDump: false, opsAttitudeBurnMinute: 40 }],
+            ['drift','Reach capacity',{ opsCmg: 85, opsAttitudeTorque: 2.4, opsAttitudeDump: false, opsAttitudeBurnMinute: 50 }],
+            ['unload','Prevent the drift',{ opsCmg: 70, opsAttitudeTorque: 2.4, opsAttitudeDump: true, opsAttitudeBurnMinute: 10 }]
+          ];
+          var gimbal = Math.acos(Math.max(-1, Math.min(1, current.gyro / config.capacity))) * 180 / Math.PI;
+          var outcome = attitudeEnd.rateDeg > 1e-7 ? 'drifting' : attitudeEnd.angleDeg > .001 ? 'offset' : 'held';
+          var burnNote = !config.dump ? 'Enable a burn or choose “Prevent the drift” to compare momentum unloading.' :
+            attitudeModel.stopReason === 'no-fuel' ? 'No propellant is available. The scheduled burn cannot fire.' :
+            attitudeModel.stopReason === 'not-needed' ? 'Momentum is already below the 8% target at the scheduled start; this burn is skipped.' :
+            'Burn duration ' + attitudeModel.burnSeconds.toFixed(1) + ' s · ' + (attitudeModel.stopReason === 'target' ? 'stops at the 8% momentum target.' : attitudeModel.stopReason === 'fuel' ? 'stops when the allocated propellant runs out.' : 'continues to the orbit boundary before reaching its target.');
+          return h('section', { id: 'iss-attitude-lab', className: 'iss-attitude-lab', 'data-iss-attitude-lab': true, 'aria-labelledby': 'iss-attitude-title' },
+            h('div', { className: 'iss-experiment-heading' }, h('div', null, h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.attitude_kicker', 'ORBIT / POINTING LAB')), h('h3', { id: 'iss-attitude-title' }, __alloT('stem.spacestation.attitude_title', 'Hold the station steady. Manage its momentum.'))), h('span', { className: 'iss-model-badge' }, 'One rotation axis · 92 min orbit')),
+            h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.attitude_intro', 'Watch the gyros absorb a persistent disturbance. Explore what happens at their momentum limit, then schedule a thruster burn and follow where the momentum goes.')),
+            h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.attitude_trials', 'Attitude investigation starting conditions') }, presets.map(function (preset) { return h('button', { type: 'button', key: preset[0], 'data-attitude-preset': preset[0], onClick: function () { upd(Object.assign({ opsOrbitMinute: 0, opsScenario: 'custom', opsAttitudeInertia: 80, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsAttitudeSeekToken: !d.opsAttitudeSeekToken }, preset[2])); } }, preset[1]); })),
+            h('div', { className: 'iss-attitude-clock' },
+              h('div', { className: 'iss-attitude-clock-heading' }, h('strong', null, 'T+' + orbitMinute.toFixed(1) + ' min'), h('span', null, phaseText)),
+              h(issExperimentPlayback, { React: React, id: 'attitude', t: __alloT, value: orbitMinute * 60, max: 5520, speeds: [60,300,600], speedLabels: ['1 min/s','5 min/s','10 min/s'], resetKey: [cmg,config.disturbance,config.inertia,config.dump,config.burnMinute,config.thrust,config.fuel,!!d.opsAttitudeSeekToken].join(':'), onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60 }); } }),
+              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-attitude-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(1) + ' min')),
+                h('input', { id: 'iss-attitude-time', type: 'range', min: 0, max: 92, step: .1, value: orbitMinute, 'aria-describedby': 'iss-attitude-graph-help',
+                  'aria-valuetext': __alloFill(__alloT('stem.spacestation.attitude_time_value', '{minute} minutes; gyro momentum {percent} percent; pointing change {angle} degrees'), { minute: orbitMinute.toFixed(1), percent: current.percent.toFixed(1), angle: current.angleDeg.toFixed(2) }), onChange: function (event) { seek(Number(event.target.value)); } }))),
+            h('div', { className: 'iss-attitude-workbench' },
+              h('div', { className: 'iss-attitude-scene', 'data-attitude-phase': current.phase, 'data-attitude-focus': focus },
+                h('div', { className: 'iss-attitude-scene-heading' }, h('strong', { style: { color: phaseColor } }, phaseText), h('span', null, 'Actual angle · camera auto-fit')),
+                h('div', { className: 'iss-attitude-instruments' },
+                  reading('angle','Pointing change',current.angleDeg.toFixed(2) + '°','Clockwise from the starting reference','#fdba74'),
+                  reading('rate','Angular velocity',current.rateDeg.toFixed(4) + ' °/s',current.rateDeg > 1e-7 ? 'The station is drifting' : 'No angular drift','#7dd3fc')),
+                h('svg', { viewBox: '0 0 720 330', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.attitude_scene_label', 'Station rotated {angle} degrees from its starting orientation. Gyro momentum {percent} percent. Thruster pair {state}.'), { angle: current.angleDeg.toFixed(2), percent: current.percent.toFixed(1), state: current.burning ? 'firing' : 'off' }) },
+                  h('defs', null,
+                    h('linearGradient', { id: 'iss-attitude-module', x1: '0', x2: '1', y1: '0', y2: '0' }, h('stop', { offset: '0', stopColor: '#48677e' }), h('stop', { offset: '.35', stopColor: '#e4edf1' }), h('stop', { offset: '.65', stopColor: '#b8cbd7' }), h('stop', { offset: '1', stopColor: '#456278' })),
+                    h('linearGradient', { id: 'iss-attitude-array', x1: '0', x2: '1', y1: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#16375c' }), h('stop', { offset: '.5', stopColor: '#294e7e' }), h('stop', { offset: '1', stopColor: '#101f3a' })),
+                    h('linearGradient', { id: 'iss-attitude-plume', x1: '0', x2: '0', y1: '0', y2: '1' }, h('stop', { offset: '0', stopColor: '#fb923c', stopOpacity: 0 }), h('stop', { offset: '1', stopColor: '#fff1c7', stopOpacity: .95 })),
+                    h('radialGradient', { id: 'iss-attitude-space' }, h('stop', { offset: '0', stopColor: '#18334b' }), h('stop', { offset: '1', stopColor: '#06111f' }))),
+                  h('rect', { width: 720, height: 330, fill: 'url(#iss-attitude-space)' }),
+                  [[21,37],[86,251],[142,23],[185,292],[254,55],[305,301],[404,21],[476,294],[571,46],[651,279],[698,61]].map(function (point,index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: index % 3 === 0 ? 1.3 : .7, fill: '#b7d2e4', opacity: .6 }); }),
+                  h('circle', { cx: 360, cy: 165, r: 132, fill: 'none', stroke: '#326078', strokeDasharray: '2 9', opacity: .7 }),
+                  [-30,-15,0,15,30].map(function (angle) { return h('path', { key: angle, d: 'M492 165 h9 M219 165 h9', transform: 'rotate(' + angle + ' 360 165)', stroke: '#7293a8', strokeWidth: angle === 0 ? 2 : 1 }); }),
+                  h('path', { d: 'M54 165 H666 M360 35 V295', fill: 'none', stroke: '#7dd3fc', strokeDasharray: '4 6', opacity: .45 }),
+                  h('g', { transform: 'translate(360 165) scale(' + cameraScale + ') rotate(' + current.angleDeg + ')', 'data-attitude-station': true },
+                    focus === 'station' ? h('ellipse', { rx: 293, ry: 109, fill: 'none', stroke: '#7dd3fc', strokeDasharray: '3 7', opacity: .5 }) : null,
+                    h('rect', { x: -278, y: -7, width: 556, height: 14, rx: 3, fill: '#365269', stroke: '#8ba7b8' }),
+                    [-250,-192,143,201].map(function (x) { return h('g', { key: x }, [-88,18].map(function (y0) { return h('g', { key: y0 },
+                      h('rect', { x: x, y: y0, width: 48, height: 70, fill: 'url(#iss-attitude-array)', stroke: '#ba9b67', strokeWidth: 1.5 }),
+                      [1,2,3].map(function (column) { return h('line', { key: column, x1: x + column * 12, x2: x + column * 12, y1: y0, y2: y0 + 70, stroke: '#789ab6', opacity: .45 }); }),
+                      [1,2,3,4,5,6].map(function (row) { return h('line', { key: row, x1: x, x2: x + 48, y1: y0 + row * 10, y2: y0 + row * 10, stroke: '#6a8497', opacity: .6 }); })); })); }),
+                    h('rect', { x: -18, y: -92, width: 36, height: 170, rx: 16, fill: 'url(#iss-attitude-module)', stroke: '#c4d7e1', strokeWidth: 1.5 }),
+                    [-63,-26,21,49].map(function (y0) { return h('path', { key: y0, d: 'M-17 ' + y0 + ' H17', stroke: '#48657b', strokeWidth: 3 }); }),
+                    h('rect', { x: -74, y: 23, width: 148, height: 28, rx: 12, fill: 'url(#iss-attitude-module)', stroke: '#b1c7d4' }),
+                    h('rect', { x: -34, y: -20, width: 68, height: 35, rx: 5, fill: '#282947', stroke: focus === 'gyros' ? '#e9d5ff' : '#a78bfa', strokeWidth: focus === 'gyros' ? 3 : 1.5 }),
+                    [-20,20].map(function (x) { return h('g', { key: x }, [-8,6].map(function (y0) { return h('circle', { key: y0, cx: x, cy: y0, r: 5, fill: '#b8a4ea', stroke: '#ded3ff' }); })); }),
+                    h('path', { d: 'M54 36 L78 77 103 68', stroke: '#a7bed0', strokeWidth: 5, fill: 'none', strokeLinejoin: 'round' }),
+                    h('rect', { x: -284, y: -11, width: 12, height: 22, rx: 3, fill: '#836f60', stroke: focus === 'thrusters' ? '#fde68a' : '#e7c49f', strokeWidth: focus === 'thrusters' ? 3 : 1 }),
+                    h('rect', { x: 272, y: -11, width: 12, height: 22, rx: 3, fill: '#836f60', stroke: focus === 'thrusters' ? '#fde68a' : '#e7c49f', strokeWidth: focus === 'thrusters' ? 3 : 1 }),
+                    current.burning ? h('g', { 'data-attitude-plumes': true },
+                      h('path', { d: 'M-284 -11 L-296 -65 Q-278 -83 -260 -65 L-272 -11 Z', fill: 'url(#iss-attitude-plume)' }),
+                      h('path', { d: 'M-284 -11 L-296 -65 Q-278 -83 -260 -65 L-272 -11 Z', fill: 'url(#iss-attitude-plume)', transform: 'rotate(180)' }),
+                      h('path', { d: 'M-278 16 v29 m-5 -8 5 8 5 -8 M278 -16 v-29 m-5 8 5 -8 5 8', fill: 'none', stroke: '#fcd34d', strokeWidth: 2 })) : null)),
+                h('div', { className: 'iss-attitude-scene-key' }, h('span', null, 'Cyan: starting reference'), h('span', null, 'Violet: gyro cluster'), h('span', null, 'Orange: thruster exhaust')),
+                h('div', { className: 'iss-attitude-parts', role: 'group', 'aria-label': __alloT('stem.spacestation.attitude_parts', 'Inspect the attitude-control system') }, [['station','Station motion'],['gyros','Gyro storage'],['thrusters','Thruster pair']].map(function (part) { return h('button', { type: 'button', key: part[0], 'data-attitude-part': part[0], 'aria-pressed': focus === part[0], onClick: function () { upd({ opsAttitudeFocus: part[0] }); } }, part[1]); })),
+                h('p', { className: 'iss-attitude-part-note', 'data-attitude-part-note': focus }, notes[focus])),
+              h('div', { className: 'iss-attitude-setup' },
+                opsControl('iss-cmg-load','Starting gyro momentum',cmg,0,100,1,'%','#c4b5fd','opsCmg'),
+                opsControl('iss-attitude-torque','External disturbance torque',config.disturbance,0,4,.05,' N·m','#fdba74','opsAttitudeTorque'),
+                opsControl('iss-attitude-inertia','Station rotational inertia',config.inertia / 1e6,40,160,10,' ×10⁶ kg·m²','#7dd3fc','opsAttitudeInertia'),
+                h('div', { className: 'iss-attitude-storage' },
+                  h('div', null, h('span', null, 'Gyro momentum envelope'), h('strong', { 'data-attitude-load': true }, current.percent.toFixed(1) + '%')),
+                  h('div', { className: 'iss-attitude-storage-track' }, h('span', { style: { width: current.percent + '%', background: current.percent >= 80 ? '#fda4af' : '#c4b5fd' } }), h('i', { title: '80% caution threshold' })),
+                  h('svg', { viewBox: '0 0 320 68', role: 'img', 'aria-label': __alloT('stem.spacestation.attitude_gyro_label', 'Four schematic gyro momentum vectors. Each keeps a fixed magnitude while its direction changes.') },
+                    [40,120,200,280].map(function (x,index) { return h('g', { key: x, transform: 'translate(' + x + ' 34)' },
+                      h('circle', { r: 26, fill: '#161f35', stroke: '#736896' }),
+                      h('path', { d: 'M-29 0 H29', stroke: '#55748b', strokeDasharray: '2 3' }),
+                      h('g', { transform: 'rotate(' + ((index % 2 ? -1 : 1) * gimbal) + ')', 'data-attitude-gimbal': index },
+                        h('ellipse', { rx: 8, ry: 21, fill: '#575276', stroke: '#ded3ff', strokeWidth: 2 }),
+                        h('path', { d: 'M-5 0 H24 m-7 -5 7 5 -7 5', fill: 'none', stroke: '#c4b5fd', strokeWidth: 2 }))); })),
+                  h('p', null, 'Fixed rotor momentum · changing spin-axis direction. The 80% line leaves headroom before the modeled 100% capacity.')))),
+            h('div', { className: 'iss-attitude-burn-plan' },
+              h('div', { className: 'iss-attitude-chart-heading' }, h('h4', null, 'Plan a momentum-unloading burn'), h('button', { type: 'button', 'data-attitude-burn-toggle': true, 'aria-pressed': config.dump, onClick: function () { upd({ opsAttitudeDump: !config.dump, opsOrbitMinute: 0, opsScenario: 'custom', opsAttitudeSeekToken: !d.opsAttitudeSeekToken }); } }, config.dump ? 'Burn planned' : 'Plan unloading burn')),
+              h('fieldset', { disabled: !config.dump, className: 'iss-attitude-burn-controls' }, h('legend', { className: 'iss-sr-only' }, 'Thruster burn setup'),
+                opsControl('iss-attitude-burn-time','Burn start time',config.burnMinute,0,85,1,' min','#fdba74','opsAttitudeBurnMinute'),
+                opsControl('iss-attitude-thrust','Thrust per nozzle',config.thrust,1,15,.5,' N','#fcd34d','opsAttitudeThrust'),
+                opsControl('iss-attitude-fuel','Propellant allocated',config.fuel,0,3,.05,' kg','#a7f3d0','opsAttitudeFuel')),
+              h('p', { className: 'iss-attitude-burn-note', 'data-attitude-burn-note': true }, burnNote)),
+            h('div', { className: 'iss-attitude-torques' },
+              reading('disturbance','External torque',signed(current.disturbanceTorque,2) + ' N·m','Persistent environmental disturbance','#fdba74'),
+              reading('cmg-torque','Gyro torque on station',signed(current.cmgTorque,2) + ' N·m','Equal and opposite to gyro momentum change','#c4b5fd'),
+              reading('thruster-torque','Thruster couple',signed(current.thrusterTorque,2) + ' N·m',current.burning ? 'Two opposing forces; torque adds' : 'No thrust at the inspected moment','#fcd34d'),
+              reading('fuel','Propellant used',current.fuelUsed.toFixed(3) + ' kg',current.fuelLeft.toFixed(3) + ' kg remaining','#a7f3d0')),
+            h('div', { className: 'iss-attitude-chart-heading' }, h('h4', null, 'Follow momentum and pointing together'), h('button', { type: 'button', 'data-attitude-reference': true, disabled: !config.dump, 'aria-pressed': showReference, onClick: function () { upd({ opsAttitudeReference: !showReference }); } }, 'Compare no burn')),
+            h('div', { className: 'iss-attitude-charts' }, chart('momentum','Gyro momentum · % of capacity','percent',100,'#c4b5fd','%'), chart('angle','Station pointing change · degrees','angleDeg',angleMax,'#fdba74','°')),
+            h('div', { className: 'iss-attitude-chart-key' }, h('span', null, 'Amber line: 80% caution'), h('span', null, 'Orange band: thruster burn'), showReference ? h('span', null, 'Dashed: same setup without a burn') : null),
+            showReference ? h('p', { className: 'iss-attitude-comparison', 'data-attitude-comparison': true }, 'At this moment: planned burn ' + current.angleDeg.toFixed(2) + '° pointing change · no burn ' + reference.angleDeg.toFixed(2) + '°. Both runs use the same starting momentum, inertia and disturbance.') : null,
+            h('p', { className: 'iss-attitude-help', id: 'iss-attitude-graph-help' }, 'Drag or tap either graph to inspect. Arrow keys on the time slider move by 0.1 minute. Inspection pauses playback; changing the setup starts a new run.'),
+            h('div', { className: 'iss-experiment-actions' }, eventButton('start','Orbit start',0), eventButton('capacity','Capacity limit',attitudeModel.firstCapacity), eventButton('burn-start','Burn start',attitudeModel.burnStart), eventButton('burn-end','Burn end',attitudeModel.burnEnd), eventButton('end','Orbit end',5520)),
+            h('div', { className: 'iss-attitude-budget' },
+              reading('disturbance-impulse','Disturbance added',signed(current.disturbanceImpulse / 1000,2) + ' kN·m·s','External angular impulse since orbit start','#fdba74'),
+              reading('thruster-impulse','Thrusters removed',Math.abs(current.thrusterImpulse / 1000).toFixed(2) + ' kN·m·s','Angular momentum carried away by exhaust','#fcd34d'),
+              reading('gyro-momentum','In the gyro cluster',signed(current.gyro / 1000,2) + ' kN·m·s','Modeled capacity: ±19 kN·m·s','#c4b5fd'),
+              reading('body-momentum','In station rotation',signed(current.body / 1000,2) + ' kN·m·s',current.spinEnergy.toFixed(3) + ' J of station rotational energy','#7dd3fc')),
+            h('p', { className: 'iss-attitude-balance', 'data-attitude-balance': true }, 'Momentum balance: initial ' + (attitudeModel.initial / 1000).toFixed(2) + ' + disturbance ' + (current.disturbanceImpulse / 1000).toFixed(2) + ' − thrusters ' + Math.abs(current.thrusterImpulse / 1000).toFixed(2) + ' = gyro ' + (current.gyro / 1000).toFixed(2) + ' + station ' + (current.body / 1000).toFixed(2) + ' kN·m·s. Internal gyro torque does not change the total. Display values are rounded.'),
+            h('div', { className: 'iss-attitude-outcome', 'data-attitude-outcome': outcome },
+              h('strong', null, outcome === 'drifting' ? 'Momentum capacity is exhausted. The station continues to drift.' : outcome === 'offset' ? 'The rotation stops, but the pointing offset remains.' : 'The gyros keep the starting orientation throughout this orbit.'),
+              h('p', null, 'Orbit peak ' + attitudeModel.peakPercent.toFixed(1) + '% · final pointing change ' + attitudeEnd.angleDeg.toFixed(2) + '° · propellant used ' + attitudeEnd.fuelUsed.toFixed(3) + ' kg. ' + (outcome === 'offset' ? 'Rate hold stops further rotation; a separate pointing maneuver would be needed to return to the starting orientation.' : outcome === 'drifting' ? 'Try an earlier burn or allocate more propellant, then compare the no-burn curve.' : 'The model continues to accumulate disturbance momentum after a burn.'))),
+            h('details', { className: 'iss-physics-note' }, h('summary', null, 'Attitude model and assumptions'),
+              h('p', null, 'A one-axis ideal rate-hold controller assigns total angular momentum to a ±19,000 N·m·s gyro envelope. Any excess belongs to station rotation: ω = Hstation / I. External angular impulse changes the total; gyro torque only transfers momentum internally. Constant-torque phases are integrated exactly, split at gyro capacity, burn start and cutoff. There is no artificial damping or instant momentum reset.'),
+              h('p', null, 'Illustrative values: station inertia 40–160 million kg·m², a constant 0–4 N·m disturbance, and two 1–15 N thrusters at opposite 8 m moment arms. The couple torque is 2Fr and fuel flow is 2F / (220 s × 9.80665 m/s²). A planned burn stops at 8% gyro momentum, fuel exhaustion or orbit end. The controller can exchange up to the required 240 N·m in this simplified envelope. Thrusters form a pure couple, so translational motion is omitted.'),
+              h('p', null, 'Real station CMGs change the direction of nearly constant-speed rotors. The four direction icons illustrate an ideal paired configuration; they are not a solution of the real gimbal steering law. This model assumes working, electrically supplied actuators and omits gimbal-rate limits, singularities, three-axis coupling, orbital-reference rotation, flexible structures and attitude-restoring feedback. Station geometry, inertia, usable momentum envelope and propulsion values are teaching assumptions, not operational ISS telemetry. The camera automatically fits the rotating station in view; the displayed angle is not magnified.'),
+              h('a', { href: 'https://ntrs.nasa.gov/citations/20100021932', target: '_blank', rel: 'noopener noreferrer' }, 'NASA: control moment gyroscope design and momentum control')));
         }
         function renderDebris() {
-          var survives = impactKj <= shieldCapacity;
-          return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_debris_impact', 'Debris impact test. Particle {value1} millimeters at {value2} kilometers per second.'), { value1: debrisSize.toFixed(1), value2: debrisSpeed.toFixed(1) }) + ' ' + (survives ? __alloT('stem.spacestation.a11y_debris_survives', 'Shield disperses impact.') : __alloT('stem.spacestation.a11y_debris_breach', 'Pressure wall at risk.')) }, h('defs',null,h('filter',{id:'iss-debris-flash',x:'-140%',y:'-140%',width:'380%',height:'380%'},h('feGaussianBlur',{stdDeviation:7,result:'db'}),h('feMerge',null,h('feMergeNode',{in:'db'}),h('feMergeNode',{in:'SourceGraphic'}))),h('radialGradient',{id:'iss-debris-burst'},h('stop',{offset:'0%',stopColor:survives?'#fef3c7':'#fecaca',stopOpacity:.95}),h('stop',{offset:'100%',stopColor:survives?'#f59e0b':'#ef4444',stopOpacity:0}))),h('rect',{width:640,height:190,fill:'#050b18'}),h('line',{x1:110,y1:95,x2:268,y2:95,stroke:'#f87171',strokeWidth:3,strokeDasharray:'8 6'}),h('circle',{cx:96,cy:95,r:Math.max(3,debrisSize),fill:'#f87171',filter:'url(#iss-debris-flash)'}),h('rect',{x:286,y:34,width:8,height:122,fill:'#cbd5e1'}),h('text',{x:290,y:172,textAnchor:'middle',fill:'#94a3b8',fontSize:8},'BUMPER'),
-              // The bumper impact is where the whole Whipple idea happens: the
-              // particle vaporizes into a spreading cloud instead of a slug.
-              h('circle',{cx:294,cy:95,r:26,fill:'url(#iss-debris-burst)'}),
-              h('path',{d:'M294 95 L410 41 M294 95 L410 67 M294 95 L410 95 M294 95 L410 123 M294 95 L410 149',stroke:survives?'#fbbf24':'#f87171',strokeWidth:2,opacity:.7,filter:'url(#iss-debris-flash)'}),h('rect',{x:410,y:26,width:20,height:138,rx:5,fill:survives?'#475569':'#7f1d1d',stroke:survives?'#94a3b8':'#f87171',strokeWidth:3}),h('line',{x1:294,y1:25,x2:410,y2:25,stroke:'#38bdf8',strokeWidth:1.5}),h('text',{x:352,y:18,textAnchor:'middle',fill:'#7dd3fc',fontSize:9,fontWeight:850},shieldGap.toFixed(0)+' cm STANDOFF'),h('text',{x:20,y:24,fill:'#fca5a5',fontSize:10,fontWeight:850,letterSpacing:1.4},'HYPERVELOCITY TEST // WHIPPLE SHIELD'),h('text',{x:520,y:95,textAnchor:'middle',fill:survives?'#4ade80':'#f87171',fontSize:13,fontWeight:900},survives?'DISPERSED':'WALL AT RISK'))),
-            h('div', { className: 'iss-ops-grid' }, opsControl('iss-debris-size','Particle diameter',debrisSize,.2,12,.2,' mm','#f87171','opsDebrisSize'), opsControl('iss-debris-speed','Relative speed',debrisSpeed,7,15,.5,' km/s','#fbbf24','opsDebrisSpeed'), opsControl('iss-shield-gap','Shield standoff',shieldGap,2,20,1,' cm','#38bdf8','opsShieldGap'), statusBox('Impact energy',impactKj < 1 ? impactKj.toFixed(3)+' kJ' : impactKj.toFixed(1)+' kJ','Energy rises with the square of velocity.','#f87171'), statusBox('Shield capacity model',shieldCapacity.toFixed(1)+' kJ','Spacing lets the debris cloud spread.','#38bdf8'), statusBox('Engineering decision',survives?'BUMPER WORKS':debrisSize>=10?'TRACK + MANEUVER':'REDESIGN SHIELD','Large objects are avoided; small ones are armored against.',survives?'#4ade80':'#fbbf24')));
+          var model=issDebrisModel({diameter:d.opsDebrisSize,speed:d.opsDebrisSpeed,gap:d.opsShieldGap,bumper:d.opsDebrisBumper,material:d.opsDebrisMaterial,spread:d.opsDebrisSpread});
+          var c=model.config,current=issDebrisInspect(model,d.opsDebrisTime),comparison=issDebrisComparison(model,d.opsDebrisBaseline),reference=comparison.reference,compare=d.opsDebrisCompare!==false,vectors=d.opsDebrisVectors!==false;
+          var probe=issDebrisProbe(model,current.time,d.opsDebrisProbe),tracers=issDebrisTracers(model,current.time),magnify=d.opsDebrisMagnify===true;
+          var probeRadius=110*(magnify?1:current.radius/model.wallRadius),probeScale=probeRadius/current.radius;
+          var detector=issDebrisDetector(model,reference,{radius:d.opsDebrisDetectorRadius,offset:d.opsDebrisDetectorOffset});
+          var scan=issDebrisScan(model,reference,{radius:d.opsDebrisDetectorRadius,metric:d.opsDebrisScanMetric});
+          var pair=issDebrisPair(model,compare?reference:null,current.time,d.opsDebrisPairMode);
+          var sweep=issDebrisSweep(model,compare?reference:null,{metric:d.opsDebrisSweepMetric,log:d.opsDebrisSweepLog});
+          var sweepMetric={fluence:{label:'Energy / area',unit:'J/cm²'},diameter:{label:'Cloud diameter',unit:'mm'},flight:{label:'Bumper-to-wall time',unit:'µs'}}[sweep.metric];
+          var focus=['projectile','bumper','cloud','wall'].indexOf(d.opsDebrisFocus)>=0?d.opsDebrisFocus:'bumper';
+          var phase=__alloT('stem.spacestation.debris_phase_'+current.phase,{approach:'INBOUND PARTICLE',impact:'BUMPER CONTACT',cloud:'CLOUD EXPANDING',contact:'FIRST WALL CONTACT'}[current.phase]);
+          var notes={projectile:'A spherical particle carries momentum m × v and kinetic energy ½mv². Double its diameter and its mass grows eightfold. Material selection changes density only.',bumper:'The sacrificial aluminum bumper contributes a cylindrical plug of its own material to the cloud. Added mass slows the cloud center while conserving forward momentum. This entrainment is an explicit model assumption.',cloud:'The cloud expands sideways in vacuum. Opposite radial motions cancel, so it keeps its forward momentum. The adjustable spread-energy share sets the expansion; actual fragmentation is not predicted.',wall:'Standoff gives the cloud more time to widen before first contact. The experiment stops here. Local fragments, wall strength, spall and penetration need a different model and impact-test data.'};
+          function seek(time){upd({opsDebrisTime:opsClamp(time,0,model.arrivalUs),opsDebrisSeekToken:!d.opsDebrisSeekToken});}
+          function energy(value){return value>=1000?(value/1000).toFixed(2)+' kJ':value.toFixed(value<1?3:1)+' J';}
+          function factor(value){return (value<.01||value>=1000?value.toExponential(2):value.toFixed(2))+'×';}
+          function fluence(value){return value<.001?value.toExponential(2):value.toFixed(3);}
+          function reading(id,label,value,note,color){return h('div',{className:'iss-water-reading','data-debris-reading':id},h('span',null,label),h('strong',{style:{color:color||'#e0f2fe'}},value),h('small',null,note));}
+          function eventButton(id,label,time){return h('button',{type:'button','data-debris-event':id,onClick:function(){seek(time);}},label);}
+          function plotSeek(event){var box=event.currentTarget.getBoundingClientRect();if(box.width)seek(opsClamp((event.clientX-box.left)/box.width,0,1)*model.arrivalUs);}
+          function release(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}
+          // Fit the full 2-20 cm standoff range once per particle/bumper setup.
+          // Keeping this scale independent of the gap makes dragging literal.
+          var widest=issDebrisModel(Object.assign({},c,{gap:20})),scale=Math.min(1700,100/widest.wallRadius),bx=148,wy=190,wallX=bx+c.gap/100*scale,cx=bx+current.x*scale;
+          var radius=current.radius*scale,wallRadius=model.wallRadius*scale;
+          var forward=current.after?model.axial:c.speed*1000,sideways=current.after?model.radial:0,vectorScale=64/15000;
+          function focusAnchor(event){
+            var target=event.currentTarget.ownerDocument.getElementById(event.currentTarget.getAttribute('href').slice(1));
+            if(target)target.focus({preventScroll:true});
+          }
+          function setGap(gap){upd({opsShieldGap:opsClamp(Math.round(gap),2,20),opsDebrisFocus:'wall',opsDebrisTime:0,opsDebrisSeekToken:!d.opsDebrisSeekToken,opsScenario:'custom'});}
+          function wallDown(event){
+            if(event.button!==0||event.isPrimary===false)return;
+            var node=event.currentTarget,box=node.parentNode.getBoundingClientRect();if(!box.width)return;
+            event.preventDefault();node.focus();node._issDebrisDrag={pointer:event.pointerId,x:event.clientX,gap:c.gap,pixelsPerCm:scale*box.width/680/100};
+            if(node.setPointerCapture)node.setPointerCapture(event.pointerId);node.setAttribute('data-dragging','true');
+            setGap(c.gap);
+          }
+          function wallMove(event){var node=event.currentTarget,drag=node._issDebrisDrag;if(drag&&drag.pointer===event.pointerId&&(!node.hasPointerCapture||node.hasPointerCapture(event.pointerId)))setGap(drag.gap+(event.clientX-drag.x)/drag.pixelsPerCm);}
+          function wallRelease(event){var node=event.currentTarget,drag=node._issDebrisDrag;if(drag&&drag.pointer===event.pointerId){delete node._issDebrisDrag;node.removeAttribute('data-dragging');release(event);}}
+          function wallKey(event){var next;switch(event.key){case 'ArrowRight':case 'ArrowUp':next=c.gap+1;break;case 'ArrowLeft':case 'ArrowDown':next=c.gap-1;break;case 'PageUp':next=c.gap+5;break;case 'PageDown':next=c.gap-5;break;case 'Home':next=2;break;case 'End':next=20;break;}if(next!==undefined){event.preventDefault();setGap(next);}}
+
+          function renderPairedShot(shot,id,label){
+            var m=shot.model,v=shot.state,tone=id==='current'?'#7be4c2':'#f4ce76';
+            var x0=100,y0=130,k=pair.scale,x=x0+v.x*k,wall=x0+m.config.gap/100*k,r=v.radius*k,end=m.wallRadius*k;
+            var status=shot.held?'First contact · held':{approach:'Inbound particle',impact:'Bumper contact',cloud:'Cloud in flight',contact:'First wall contact'}[v.phase];
+            return h('article',{className:'iss-debris-pair-shot','data-debris-pair-shot':id,'data-phase':v.phase,'data-held':shot.held,'data-time':v.time,style:{'--debris-shot':tone}},
+              h('div',{className:'iss-debris-pair-shot-heading'},h('h5',null,label),h('span',null,'T+'+v.time.toFixed(2)+' µs')),
+              h('p',{className:'iss-debris-pair-phase','data-debris-pair-phase':id},h('span',null,status),h('span',null,m.config.gap+' cm standoff')),
+              h('svg',{viewBox:'0 0 520 266','data-debris-pair-scene':id,'data-scale':k,role:'img','aria-label':__alloFill(__alloT('stem.spacestation.debris_pair_scene','{name}. {phase} at {time} microseconds. Both diagrams use the same distance scale.'),{name:label,phase:status,time:v.time.toFixed(2)})},
+                h('defs',null,h('linearGradient',{id:'iss-debris-pair-metal-'+id,x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#405569'}),h('stop',{offset:.5,stopColor:'#c9dce4'}),h('stop',{offset:1,stopColor:'#435f70'}))),
+                h('rect',{x:1,y:1,width:518,height:264,rx:12,fill:'#071924',stroke:'#2a4b5c'}),
+                [32,66,100,134,168,202,236,270,304,338,372,406,440,474,508].map(function(xx){return h('line',{key:xx,x1:xx,x2:xx,y1:38,y2:224,stroke:'#23404d',strokeWidth:.5});}),
+                [46,88,130,172,214].map(function(yy){return h('line',{key:yy,x1:18,x2:502,y1:yy,y2:yy,stroke:'#23404d',strokeWidth:.5});}),
+                h('path',{d:'M'+x0+' '+(y0-m.radius*k)+' L'+wall+' '+(y0-end)+' M'+x0+' '+(y0+m.radius*k)+' L'+wall+' '+(y0+end),stroke:tone,strokeDasharray:'4 5',fill:'none',opacity:.35}),
+                h('line',{x1:22,x2:wall,y1:y0,y2:y0,stroke:'#7596a5',strokeDasharray:'2 7',opacity:.5}),
+                h('rect',{x:x0-8,y:36,width:8,height:188,rx:2,fill:'url(#iss-debris-pair-metal-'+id+')'}),
+                h('rect',{x:wall,y:36,width:12,height:188,rx:2,fill:'url(#iss-debris-pair-metal-'+id+')'}),
+                [50,210].map(function(yy){return h('circle',{key:yy,cx:wall+6,cy:yy,r:2.5,fill:'#173344',stroke:'#9bb4c0'});}),
+                h('path',{d:'M'+x0+' 30 V24 H'+wall+' V30',fill:'none',stroke:'#8ba9b8',strokeWidth:1}),
+                h('text',{x:(x0+wall)/2,y:17,textAnchor:'middle',fill:'#c1dbe4',fontSize:12},m.config.gap+' cm'),
+                v.after?h('g',{'data-debris-pair-front':id,'data-position':v.x,'data-radius':v.radius},
+                  h('path',{d:'M'+x0+' '+(y0-m.radius*k)+' L'+x+' '+(y0-r)+' L'+x+' '+(y0+r)+' L'+x0+' '+(y0+m.radius*k)+' Z',fill:tone,fillOpacity:.07}),
+                  [-1,0,1].map(function(a){return h('line',{key:a,x1:x0,y1:y0+a*m.radius*k,x2:x,y2:y0+a*r,stroke:tone,opacity:.4,strokeWidth:.8});}),
+                  h('ellipse',{cx:x,cy:y0,rx:2,ry:r,fill:tone,fillOpacity:.25,stroke:tone,strokeWidth:2}),
+                  [-.9,-.6,-.3,0,.3,.6,.9].map(function(a){return h('circle',{key:a,cx:x,cy:y0+a*r,r:1.7,fill:tone,opacity:.9});}),
+                  v.phase==='contact'?h('line',{x1:wall-1,x2:wall-1,y1:y0-end,y2:y0+end,stroke:tone,strokeWidth:3}):null)
+                  :h('g',{'data-debris-pair-projectile':id},h('line',{x1:x-18,x2:x,y1:y0,y2:y0,stroke:'#f4aaa2',strokeWidth:2,opacity:.5}),h('circle',{cx:x,cy:y0,r:Math.max(3,m.radius*k),fill:'#ffd7c6',stroke:'#f7b47d'})),
+                h('text',{x:x0-13,y:243,textAnchor:'end',fill:'#a9c6d3',fontSize:10},'BUMPER'),
+                h('text',{x:wall+6,y:243,textAnchor:'middle',fill:'#a9c6d3',fontSize:10},'WALL'),
+                h('path',{d:'M456 245 V249 H'+(456+.01*k)+' V245',fill:'none',stroke:'#b4d4dc'}),
+                h('text',{x:456+.005*k,y:239,textAnchor:'middle',fill:'#a9c6d3',fontSize:10},'10 mm')),
+              h('dl',{className:'iss-debris-pair-values'},h('div',null,h('dt',null,v.after?'Cloud diameter':'Particle diameter'),h('dd',null,probeNumber(v.radius*2000,'mm'))),h('div',null,h('dt',null,'First wall contact'),h('dd',null,'T+'+m.arrivalUs.toFixed(2)+' µs'))),
+              h('p',{className:'iss-debris-pair-config'},m.config.material+' · '+m.config.diameter+' mm · '+m.config.speed+' km/s · '+m.config.bumper+' mm bumper'));
+          }
+          function renderPairedShots(){
+            var clockMode=pair.mode==='clock';
+            return h('div',{className:'iss-debris-pair','data-debris-pair':true,'data-mode':pair.mode},
+              h('p',{className:'iss-debris-pair-intro'},'Two designs, one distance scale. Compare the flight at the same elapsed time, or inspect the footprint when each cloud first reaches its wall.'),
+              h('div',{className:'iss-debris-pair-controls'},h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.debris_pair_modes','Comparison timing')},
+                [['clock','Same elapsed time'],['contact','Each at wall contact']].map(function(item){return h('button',{key:item[0],type:'button','data-debris-pair-mode':item[0],'aria-pressed':pair.mode===item[0],onClick:function(){upd({opsDebrisPairMode:item[0]});}},item[1]);})),
+                h('span',{className:'iss-debris-pair-badge'},clockMode?'SHARED SHOT CLOCK':'FIRST-CONTACT SNAPSHOTS')),
+              h('div',{className:'iss-debris-pair-grid'+(compare?'':' is-single')},renderPairedShot(pair.current,'current','Current design'),pair.reference?renderPairedShot(pair.reference,'reference',comparison.pinned?'Saved reference':'2 cm reference'):null),
+              clockMode?h('div',{className:'iss-debris-pair-clock'},
+                h('div',null,h('label',{htmlFor:'iss-debris-pair-time'},'Inspect both shots'),h('strong',null,'T+'+current.time.toFixed(2)+' µs')),
+                h('input',{id:'iss-debris-pair-time',type:'range',min:0,max:model.arrivalUs,step:'any',value:current.time,'aria-describedby':'iss-debris-pair-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.debris_pair_time','{time} microseconds since both launches'),{time:current.time.toFixed(2)}),onChange:function(event){seek(Number(event.target.value));},onKeyDown:function(event){var next;if(event.key==='ArrowRight'||event.key==='ArrowUp')next=current.time+.05;else if(event.key==='ArrowLeft'||event.key==='ArrowDown')next=current.time-.05;if(next!==undefined){event.preventDefault();seek(next);}}}),
+                h('div',{className:'iss-experiment-actions'},[['start','Launch',0],['impact','Current bumper contact',model.impactUs],['wall','Current wall contact',model.arrivalUs]].map(function(item){return h('button',{key:item[0],type:'button','data-debris-pair-event':item[0],onClick:function(){seek(item[2]);}},item[1]);})),h('a',{href:'#iss-debris-setup',onClick:focusAnchor},'Go to playback controls ↑')):null,
+              h('p',{id:'iss-debris-pair-help',className:'iss-debris-pair-help','data-debris-pair-help':true},clockMode?'Both particles launch at T+0, 4 cm from their bumpers. Scrubbing here updates the main shot and pauses playback. A shot that arrives first is held at its contact snapshot; motion beyond the wall is not modeled. The clock ends at the current design’s contact. Use “Each at wall contact” to inspect a slower reference.':'Each panel shows its own first-contact time. These are separate event snapshots, not simultaneous frames. Switching views leaves the shot clock unchanged.'),
+              h('p',{className:'iss-debris-pair-scale-note'},'Distance and cloud radius share the same scale in both panels, held fixed as spacing changes. Markers and plate thickness are enlarged; the shaded cone traces the cloud’s path. Final footprint measurements below always describe first contact.'));
+          }
+
+          function setDetectorOffset(mm){upd({opsDebrisDetectorOffset:opsClamp(mm,0,detector.maxOffset*1000)});}
+          function detectorKey(event){
+            var next,value=detector.offset*1000;
+            switch(event.key){case 'ArrowRight':case 'ArrowUp':next=value+.5;break;case 'ArrowLeft':case 'ArrowDown':next=value-.5;break;case 'PageUp':next=value+5;break;case 'PageDown':next=value-5;break;case 'Home':next=0;break;case 'End':next=detector.maxOffset*1000;break;}
+            if(next!==undefined){event.preventDefault();setDetectorOffset(next);}
+          }
+          function detectorPick(event,drag){
+            if(drag.scan){
+              var fraction=((event.clientX-drag.left)/drag.width*600-12)/576;
+              setDetectorOffset(fraction<=0?0:fraction>=1?drag.maxOffset*1000:Math.round(fraction*drag.maxOffset*2000)/2);
+            }else setDetectorOffset(Math.round(Math.max(0,(event.clientX-drag.left)/drag.width*550-180)/drag.scale*2000)/2);
+          }
+          function detectorDown(event){
+            if(event.button!==0||event.isPrimary===false)return;
+            var node=event.currentTarget,box=node.querySelector('svg').getBoundingClientRect();if(!box.width)return;
+            event.preventDefault();node.focus({preventScroll:true});
+            var drag={pointer:event.pointerId,left:box.left,width:box.width,scale:detector.scale,scan:node.hasAttribute('data-debris-scan-stage'),maxOffset:detector.maxOffset};node._issDebrisDetectorDrag=drag;
+            if(node.setPointerCapture)node.setPointerCapture(event.pointerId);node.setAttribute('data-dragging','true');detectorPick(event,drag);
+          }
+          function detectorMove(event){var node=event.currentTarget,drag=node._issDebrisDetectorDrag;if(drag&&drag.pointer===event.pointerId&&(!node.hasPointerCapture||node.hasPointerCapture(event.pointerId)))detectorPick(event,drag);}
+          function detectorRelease(event){var node=event.currentTarget,drag=node._issDebrisDetectorDrag;if(drag&&drag.pointer===event.pointerId){delete node._issDebrisDetectorDrag;node.removeAttribute('data-dragging');release(event);}}
+          function renderDetectorScan(){
+            var mass=scan.metric==='mass',label=mass?'Cloud mass':'Forward energy';
+            var value=mass?detector.current.mass*1e6:detector.current.energy,refValue=mass?detector.reference.mass*1e6:detector.reference.energy;
+            var selected=12+detector.offset/scan.maxOffset*576;
+            function x(offset){return 12+offset/scan.maxOffset*576;}
+            function y(value){return 222-value/scan.high*208;}
+            function path(curve){return curve.samples.map(function(p,i){return (i?'L':'M')+x(p.offset)+' '+y(p.value);}).join(' ');}
+            function tick(value){return value===0?'0':value>=10000||value<.01?value.toExponential(1):String(Number(value.toPrecision(3)));}
+            var valueText=__alloFill(__alloT('stem.spacestation.debris_scan_value','{offset} millimeters from center; current {value} {unit}'),{offset:(detector.offset*1000).toFixed(1),value:tick(value),unit:scan.unit});
+            if(compare)valueText+=__alloFill(__alloT('stem.spacestation.debris_scan_reference_value','; reference {value} {unit}'),{value:tick(refValue),unit:scan.unit});
+            return h('div',{className:'iss-debris-scan','data-debris-scan':true,'data-metric':scan.metric,'data-high':scan.high},
+              h('div',{className:'iss-debris-scan-heading'},h('h6',{id:'iss-debris-scan-title',tabIndex:-1,className:'iss-debris-anchor'},'Radial scan'),
+                h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.debris_scan_metrics','Radial scan measurement')},[['energy','Energy'],['mass','Mass']].map(function(item){return h('button',{key:item[0],type:'button','data-debris-scan-metric':item[0],'aria-pressed':scan.metric===item[0],onClick:function(){upd({opsDebrisScanMetric:item[0]});}},item[1]);}))),
+              h('div',{className:'iss-debris-scan-caption'},h('span',{'data-debris-scan-unit':true},label+' / '+scan.unit),h('span',null,'SHARED LINEAR SCALE')),
+              h('div',{className:'iss-debris-scan-chart'},
+                h('div',{className:'iss-debris-scan-y','aria-hidden':true},[0,.25,.5,.75,1].map(function(t){return h('span',{key:t,style:{top:(y(scan.high*(1-t))/240*100)+'%'}},tick(scan.high*(1-t)));})),
+                h('div',{className:'iss-debris-scan-stage',role:'slider',tabIndex:0,'data-debris-scan-stage':true,'aria-label':__alloT('stem.spacestation.debris_scan_offset','Aperture offset on the radial scan'),'aria-valuemin':0,'aria-valuemax':scan.maxOffset*1000,'aria-valuenow':detector.offset*1000,'aria-valuetext':valueText,'aria-orientation':'horizontal','aria-describedby':'iss-debris-detector-help iss-debris-scan-help',onPointerDown:detectorDown,onPointerMove:detectorMove,onPointerUp:detectorRelease,onPointerCancel:detectorRelease,onLostPointerCapture:detectorRelease,onKeyDown:detectorKey},
+                  h('svg',{viewBox:'0 0 600 240',preserveAspectRatio:'none','aria-hidden':true},
+                    h('defs',null,h('linearGradient',{id:'iss-debris-scan-fill',x1:0,y1:0,x2:0,y2:1},h('stop',{offset:0,stopColor:'#7be4c2',stopOpacity:.15}),h('stop',{offset:1,stopColor:'#7be4c2',stopOpacity:0}))),
+                    h('rect',{x:x(scan.current.start),y:14,width:x(scan.current.end)-x(scan.current.start),height:208,fill:'#71d8be',fillOpacity:.05,'data-debris-scan-transition':true}),
+                    [0,.25,.5,.75,1].map(function(t){return h('g',{key:t,stroke:'#294857',strokeWidth:1},h('line',{x1:12,x2:588,y1:14+208*t,y2:14+208*t,vectorEffect:'non-scaling-stroke'}),h('line',{x1:12+576*t,x2:12+576*t,y1:14,y2:222,vectorEffect:'non-scaling-stroke'}));}),
+                    h('path',{d:path(scan.current)+' L588 222 L12 222 Z',fill:'url(#iss-debris-scan-fill)'}),
+                    compare?h('path',{d:path(scan.reference),fill:'none',stroke:'#f5d384',strokeWidth:2,strokeDasharray:'6 5',vectorEffect:'non-scaling-stroke','data-debris-scan-curve':'reference'}):null,
+                    h('path',{d:path(scan.current),fill:'none',stroke:'#8ce6c7',strokeWidth:2.5,vectorEffect:'non-scaling-stroke','data-debris-scan-curve':'current'}),
+                    h('line',{x1:selected,x2:selected,y1:5,y2:231,stroke:'#a7ceff',strokeWidth:1.5,strokeDasharray:'3 4',vectorEffect:'non-scaling-stroke','data-debris-scan-cursor':true})),
+                  compare?h('span',{className:'iss-debris-scan-point is-reference','aria-hidden':true,'data-debris-scan-point':'reference','data-value':refValue,style:{left:(selected/600*100)+'%',top:(y(refValue)/240*100)+'%'}}):null,
+                  h('span',{className:'iss-debris-scan-point','aria-hidden':true,'data-debris-scan-point':'current','data-value':value,style:{left:(selected/600*100)+'%',top:(y(value)/240*100)+'%'}}))),
+              h('div',{className:'iss-debris-scan-x','aria-hidden':true},[0,.25,.5,.75,1].map(function(t){return h('span',{key:t,style:{left:((12+576*t)/600*100)+'%'}},tick(scan.maxOffset*t*1000));})),
+              h('p',{className:'iss-debris-scan-x-title'},'Distance from footprint center / mm'),
+              h('div',{className:'iss-debris-scan-readings'},
+                h('div',null,h('span',null,'― Current'),h('strong',{'data-debris-scan-reading':'current'},probeNumber(value,scan.unit))),
+                compare?h('div',{className:'is-reference'},h('span',null,comparison.pinned?'┄ Saved reference':'┄ 2 cm reference'),h('strong',{'data-debris-scan-reading':'reference'},probeNumber(refValue,scan.unit))):null),
+              h('p',{id:'iss-debris-scan-help',className:'iss-debris-scan-help'},'Drag the profile to move the aperture. Shading marks the current falloff from '+tick(scan.current.start*1000)+' to '+tick(scan.current.end*1000)+' mm. The cloud is uniform; partial overlap at its edge creates this curve.'));
+          }
+          function renderDetector(){
+            var k=detector.scale,R=model.wallRadius*k,refR=reference.wallRadius*k,r=detector.radius*k,x=180+detector.offset*k;
+            var offsetText=__alloFill(__alloT('stem.spacestation.debris_detector_offset_value','{offset} millimeters from the footprint center'),{offset:(detector.offset*1000).toFixed(1)});
+            function result(id,label,value,tone){
+              var status=value.overlap===0?'Outside footprint':value.coverage>=1-1e-10?'Aperture fully inside':value.fraction>=1-1e-10?'Entire footprint sampled':'Partial overlap';
+              return h('div',{className:'iss-debris-detector-result','data-debris-detector-result':id,style:{'--detector-tone':tone}},
+                h('div',null,h('h6',null,label),h('span',{'data-debris-detector-status':id},status)),
+                h('strong',{'data-debris-detector-energy':id},probeNumber(value.energy,'J')),
+                h('span',{className:'iss-debris-detector-energy-label'},'Forward energy through aperture'),
+                h('dl',null,h('div',null,h('dt',null,'Cloud mass'),h('dd',{'data-debris-detector-mass':id},probeNumber(value.mass*1e6,'mg'))),h('div',null,h('dt',null,'Share of footprint'),h('dd',{'data-debris-detector-fraction':id},probeNumber(value.fraction*100,'%')))),
+                h('div',{className:'iss-debris-detector-coverage'},h('span',null,'Aperture area covered'),h('b',null,probeNumber(value.coverage*100,'%')),h('div',{'aria-hidden':true},h('i',{style:{width:(value.coverage*100)+'%'}}))));
+            }
+            return h('section',{className:'iss-debris-detector','data-debris-detector':true,'aria-labelledby':'iss-debris-detector-title'},
+              h('div',{className:'iss-debris-detector-heading'},h('div',null,h('span',{className:'iss-water-eyebrow'},'VIRTUAL APERTURE / FIRST CONTACT'),h('h5',{id:'iss-debris-detector-title',tabIndex:-1,className:'iss-debris-anchor'},'Measure the same patch of space')),
+                h('span',{className:'iss-debris-detector-badge'},'FIXED PHYSICAL SIZE')),
+              h('p',{className:'iss-debris-detector-intro'},'Move the blue aperture on the map or radial scan. Both views measure the mass and forward kinetic energy that would cross the same circular area in each design, at its own first wall contact.'),
+              h('div',{className:'iss-debris-detector-layout'},h('div',{className:'iss-debris-detector-visual'},
+                h('div',{className:'iss-debris-detector-stage',role:'slider',tabIndex:0,'data-debris-detector-stage':true,'aria-label':__alloT('stem.spacestation.debris_detector_offset','Aperture offset from footprint center'),'aria-valuemin':0,'aria-valuemax':detector.maxOffset*1000,'aria-valuenow':detector.offset*1000,'aria-valuetext':offsetText,'aria-orientation':'horizontal','aria-describedby':'iss-debris-detector-help',onPointerDown:detectorDown,onPointerMove:detectorMove,onPointerUp:detectorRelease,onPointerCancel:detectorRelease,onLostPointerCapture:detectorRelease,onKeyDown:detectorKey},
+                  h('svg',{viewBox:'0 0 550 380','aria-hidden':true,'data-debris-footprint':true,'data-debris-detector-scale':k},
+                    h('defs',null,h('radialGradient',{id:'iss-debris-detector-backdrop'},h('stop',{offset:0,stopColor:'#153a45'}),h('stop',{offset:1,stopColor:'#081923'})),h('clipPath',{id:'iss-debris-detector-overlap'},h('circle',{cx:180,cy:190,r:R}))),
+                    h('rect',{x:0,y:0,width:550,height:380,rx:14,fill:'url(#iss-debris-detector-backdrop)'}),
+                    [50,115,180,245,310,375,440,505].map(function(xx){return h('line',{key:xx,x1:xx,x2:xx,y1:46,y2:330,stroke:'#2f5361',strokeWidth:.6});}),
+                    [60,125,190,255,320].map(function(yy){return h('line',{key:yy,x1:25,x2:525,y1:yy,y2:yy,stroke:'#2f5361',strokeWidth:.6});}),
+                    h('circle',{cx:180,cy:190,r:R,fill:'#6ee7b714',stroke:'#6ee7b7',strokeWidth:1.8,'data-debris-current-footprint':true}),
+                    compare?h('circle',{cx:180,cy:190,r:refR,fill:'none',stroke:'#fcd34d',strokeWidth:2,strokeDasharray:'5 4','data-debris-reference-footprint':true}):null,
+                    h('line',{x1:180,x2:180+detector.maxOffset*k,y1:190,y2:190,stroke:'#90bad2',strokeWidth:1,strokeDasharray:'2 5',opacity:.7}),
+                    h('circle',{cx:x,cy:190,r:r,fill:'#60a5fa18',stroke:'#93c5fd',strokeWidth:2,'data-debris-aperture':true}),
+                    h('circle',{cx:x,cy:190,r:r,fill:'#6ee7b738',clipPath:'url(#iss-debris-detector-overlap)'}),
+                    h('path',{d:'M'+(x-13)+' 190 H'+(x+13)+' M'+x+' 177 V203',stroke:'#d5eaff',strokeWidth:1.5}),
+                    h('circle',{cx:x,cy:190,r:Math.max(r+6,20),fill:'none',stroke:'#93c5fd',strokeDasharray:'2 4',opacity:.45}),
+                    h('circle',{cx:180,cy:190,r:2.5,fill:'#d7ebef'}),
+                    h('path',{d:'M430 341 V346 H'+(430+detector.ruler*k)+' V341',stroke:'#a4cadc',fill:'none','data-debris-detector-ruler':true,'data-length':detector.ruler})),
+                  h('span',{className:'iss-debris-map-label is-title','aria-hidden':true},'LOOKING ALONG THE FLIGHT DIRECTION'),
+                  h('span',{className:'iss-debris-map-label is-center','aria-hidden':true},'FOOTPRINT CENTER'),
+                  h('span',{className:'iss-debris-map-label is-ruler','aria-hidden':true,style:{left:((430+detector.ruler*k/2)/550*100)+'%'}},Number((detector.ruler*1000).toPrecision(2))+' mm')),
+
+                h('div',{className:'iss-debris-detector-key'},h('span',null,'― Current footprint'),compare?h('span',null,'┄ '+(comparison.pinned?'Saved reference':'2 cm reference')):null,h('span',null,'⊕ Sampling aperture')),
+                h('p',{className:'iss-debris-detector-scale-note'},'Circles share one distance scale. The blue circle is the physical aperture; its crosshair and dotted grab ring are enlarged.')),
+                renderDetectorScan(),
+                h('div',{className:'iss-debris-detector-controls'},
+                  h('div',{className:'iss-debris-detector-control'},h('label',{htmlFor:'iss-debris-detector-radius'},'Aperture radius'),h('strong',null,(detector.radius*1000).toFixed(1)+' mm'),h('input',{id:'iss-debris-detector-radius',type:'range',min:.5,max:30,step:.5,value:detector.radius*1000,'aria-valuetext':__alloFill(__alloT('stem.spacestation.debris_detector_radius_value','{radius} millimeter aperture radius'),{radius:(detector.radius*1000).toFixed(1)}),onChange:function(event){upd({opsDebrisDetectorRadius:Number(event.target.value)});}})),
+                  h('div',{className:'iss-debris-detector-control'},h('label',{htmlFor:'iss-debris-detector-offset'},'Distance from center'),h('strong',null,(detector.offset*1000).toFixed(1)+' mm'),h('input',{id:'iss-debris-detector-offset',type:'range',min:0,max:detector.maxOffset*1000,step:'any',value:detector.offset*1000,'aria-valuetext':offsetText,onKeyDown:detectorKey,onChange:function(event){setDetectorOffset(Number(event.target.value));}})),
+                  h('div',{className:'iss-experiment-actions'},h('button',{type:'button','data-debris-detector-preset':'center',onClick:function(){setDetectorOffset(0);}},'Center'),h('button',{type:'button','data-debris-detector-preset':'current',onClick:function(){setDetectorOffset(model.wallRadius*1000);}},'Current edge'),compare?h('button',{type:'button','data-debris-detector-preset':'reference',onClick:function(){setDetectorOffset(reference.wallRadius*1000);}},'Reference edge'):null,h('button',{type:'button','data-debris-detector-preset':'outside',onClick:function(){setDetectorOffset(detector.maxOffset*1000);}},'Outside both')),
+                  h('p',{id:'iss-debris-detector-help',className:'iss-debris-detector-help'},'Drag left/right or use the distance slider. Arrow keys move 0.5 mm; Page keys move 5 mm; Home centers, End moves outside. These circular footprints are rotationally symmetric, so one radial traverse covers every direction.'))),
+              h('div',{className:'iss-debris-detector-results'+(compare?'':' is-single')},result('current','Current design',detector.current,'#8ce6c7'),compare?result('reference',comparison.pinned?'Saved reference':'2 cm reference',detector.reference,'#f5d384'):null),
+              h('p',{className:'iss-debris-detector-note'},'Readings integrate the overlap with an ideal uniform disk. This is a virtual sampling area, not an absorbing sensor or a wall-damage prediction. Moving it preserves the shot clock and saved setup; readings always refer to first contact, even during playback.'));
+          }
+
+          function sweepX(gap){return 16+(gap-2)/18*688;}
+          function sweepY(point){return 16+point.y*228;}
+          function sweepPath(points){return points.map(function(point,i){return (i?'L':'M')+sweepX(point.gap)+' '+sweepY(point);}).join(' ');}
+          function sweepPick(event,drag){setGap(2+((event.clientX-drag.left)/drag.width*720-16)/688*18);}
+          function sweepDown(event){
+            if(event.button!==0||event.isPrimary===false)return;
+            var node=event.currentTarget,box=node.querySelector('svg').getBoundingClientRect();if(!box.width)return;
+            event.preventDefault();node.focus({preventScroll:true});var drag={pointer:event.pointerId,left:box.left,width:box.width};node._issDebrisSweepDrag=drag;
+            if(node.setPointerCapture)node.setPointerCapture(event.pointerId);node.setAttribute('data-dragging','true');sweepPick(event,drag);
+          }
+          function sweepMove(event){var node=event.currentTarget,drag=node._issDebrisSweepDrag;if(drag&&drag.pointer===event.pointerId&&(!node.hasPointerCapture||node.hasPointerCapture(event.pointerId)))sweepPick(event,drag);}
+          function sweepRelease(event){var node=event.currentTarget,drag=node._issDebrisSweepDrag;if(drag&&drag.pointer===event.pointerId){delete node._issDebrisSweepDrag;node.removeAttribute('data-dragging');release(event);}}
+          function sweepTick(value){return value===0?'0':value<.01||value>=10000?value.toExponential(1):String(Number(value.toPrecision(3)));}
+          function setProbe(percent){upd({opsDebrisProbe:opsClamp(percent,0,100)});}
+          function probeNumber(value,unit){return value===null?'—':(value===0?'0':value<.01||value>=10000?value.toExponential(2):value.toFixed(value<1?3:2))+' '+unit;}
+          function probeSelect(event,drag){var dx=event.clientX-drag.x,dy=event.clientY-drag.y;setProbe(Math.round(Math.sqrt(dx*dx+dy*dy)/drag.radius*100));}
+          function probeDown(event){
+            if(event.button!==0||event.isPrimary===false)return;
+            var node=event.currentTarget,box=node.querySelector('svg').getBoundingClientRect();if(!box.width||!box.height)return;
+            event.preventDefault();node.focus({preventScroll:true});var drag={pointer:event.pointerId,x:box.left+box.width/2,y:box.top+box.height/2,radius:(probe.active?probeRadius:110)*Math.min(box.width,box.height)/320};
+            node._issDebrisProbeDrag=drag;if(node.setPointerCapture)node.setPointerCapture(event.pointerId);node.setAttribute('data-dragging','true');probeSelect(event,drag);
+          }
+          function probeMove(event){var node=event.currentTarget,drag=node._issDebrisProbeDrag;if(drag&&drag.pointer===event.pointerId&&(!node.hasPointerCapture||node.hasPointerCapture(event.pointerId)))probeSelect(event,drag);}
+          function probeRelease(event){var node=event.currentTarget,drag=node._issDebrisProbeDrag;if(drag&&drag.pointer===event.pointerId){delete node._issDebrisProbeDrag;node.removeAttribute('data-dragging');release(event);}}
+          function probeKey(event){var next,percent=probe.fraction*100;switch(event.key){case 'ArrowRight':case 'ArrowUp':next=percent+1;break;case 'ArrowLeft':case 'ArrowDown':next=percent-1;break;case 'PageUp':next=percent+10;break;case 'PageDown':next=percent-10;break;case 'Home':next=0;break;case 'End':next=100;break;}if(next!==undefined){event.preventDefault();setProbe(next);}}
+          var probeValueText=__alloFill(__alloT('stem.spacestation.debris_probe_value','{radius} percent of cloud radius; {mass} percent of cloud mass enclosed'),{radius:(probe.fraction*100).toFixed(0),mass:(probe.massFraction*100).toFixed(2)});
+          function renderStandoffSweep(){
+            var valueText=__alloFill(__alloT('stem.spacestation.debris_sweep_value','{gap} centimeters standoff; {metric}: {value}'),{gap:c.gap,metric:sweepMetric.label,value:probeNumber(sweep.selected.value,sweepMetric.unit)});
+            return h('section',{className:'iss-debris-sweep','data-debris-sweep':true,'data-metric':sweep.metric,'data-log':sweep.log,'aria-labelledby':'iss-debris-sweep-title'},
+              h('div',{className:'iss-debris-sweep-heading'},h('div',null,h('span',{className:'iss-water-eyebrow'},'03 / DESIGN SWEEP'),h('h4',{id:'iss-debris-sweep-title',tabIndex:-1,className:'iss-debris-anchor'},'Explore shield spacing')),
+                h('div',{className:'iss-debris-sweep-selected','data-debris-sweep-selected':true},h('strong',null,probeNumber(sweep.selected.value,sweepMetric.unit)),h('span',null,sweepMetric.label+' at '+c.gap+' cm'))),
+              h('p',{className:'iss-debris-sweep-intro'},'Each curve varies only the gap between plates. Drag the chart to move the rear wall and see the prediction at first contact.'),
+              h('div',{className:'iss-debris-sweep-controls'},h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.debris_sweep_metrics','Standoff chart measurement')},[['fluence','Energy / area'],['diameter','Cloud diameter'],['flight','Travel time']].map(function(metric){return h('button',{key:metric[0],type:'button','data-debris-sweep-metric':metric[0],'aria-pressed':sweep.metric===metric[0],onClick:function(){upd({opsDebrisSweepMetric:metric[0]});}},metric[1]);})),
+                sweep.metric==='fluence'?h('div',{className:'iss-experiment-actions'},h('button',{type:'button','data-debris-sweep-scale':true,'aria-pressed':sweep.log,onClick:function(){upd({opsDebrisSweepLog:!sweep.log});}},sweep.log?'Log energy scale on':'Use log energy scale')):null),
+              h('div',{className:'iss-debris-sweep-axis-title','data-debris-sweep-axis':true},sweepMetric.unit+' · '+(sweep.log?'LOGARITHMIC':'LINEAR')+' AXIS'),
+              h('div',{className:'iss-debris-sweep-grid'},
+                h('div',{className:'iss-debris-sweep-y','aria-hidden':true},sweep.ticks.map(function(tick,i){return h('span',{key:i,style:{top:((16+tick.y*228)/260*100)+'%'}},sweepTick(tick.value));})),
+                h('div',{className:'iss-debris-sweep-plot',role:'slider',tabIndex:0,'data-debris-sweep-plot':true,'aria-label':__alloT('stem.spacestation.debris_sweep_chart','Shield standoff on design chart'),'aria-orientation':'horizontal','aria-valuemin':2,'aria-valuemax':20,'aria-valuenow':c.gap,'aria-valuetext':valueText,'aria-describedby':'iss-debris-sweep-help',onPointerDown:sweepDown,onPointerMove:sweepMove,onPointerUp:sweepRelease,onPointerCancel:sweepRelease,onLostPointerCapture:sweepRelease,onKeyDown:wallKey},
+                  h('svg',{viewBox:'0 0 720 260',preserveAspectRatio:'none','aria-hidden':true},
+                    h('defs',null,h('linearGradient',{id:'iss-debris-sweep-fill',x1:0,y1:0,x2:0,y2:1},h('stop',{offset:0,stopColor:'#63d9bd',stopOpacity:.22}),h('stop',{offset:1,stopColor:'#63d9bd',stopOpacity:.015}))),
+                    sweep.ticks.map(function(tick,i){return h('line',{key:'y'+i,x1:16,x2:704,y1:16+tick.y*228,y2:16+tick.y*228,stroke:'#315266',strokeWidth:1,vectorEffect:'non-scaling-stroke'});}),
+                    [2,5,10,15,20].map(function(gap){return h('line',{key:'x'+gap,x1:sweepX(gap),x2:sweepX(gap),y1:16,y2:244,stroke:'#315266',strokeWidth:1,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'});}),
+                    h('path',{d:sweepPath(sweep.samples)+' L704 244 L16 244 Z',fill:'url(#iss-debris-sweep-fill)'}),
+                    sweep.referenceSamples.length?h('path',{'data-debris-sweep-reference-curve':true,d:sweepPath(sweep.referenceSamples),fill:'none',stroke:'#fcd34d',strokeWidth:2,strokeDasharray:'6 5',vectorEffect:'non-scaling-stroke'}):null,
+                    h('path',{'data-debris-sweep-curve':true,d:sweepPath(sweep.samples),fill:'none',stroke:'#6ee7b7',strokeWidth:2.5,vectorEffect:'non-scaling-stroke'}),
+                    h('line',{x1:sweepX(c.gap),x2:sweepX(c.gap),y1:16,y2:244,stroke:'#d9f9ef',strokeWidth:1,strokeDasharray:'4 4',opacity:.7,vectorEffect:'non-scaling-stroke'})),
+                  sweep.reference?h('span',{className:'iss-debris-sweep-reference-point','data-debris-sweep-reference-point':true,'data-gap':sweep.reference.gap,'aria-hidden':true,style:{left:(sweepX(sweep.reference.gap)/720*100)+'%',top:(sweepY(sweep.reference)/260*100)+'%'}}):null,
+                  h('span',{className:'iss-debris-sweep-current-point','data-debris-sweep-current-point':true,'aria-hidden':true,style:{left:(sweepX(c.gap)/720*100)+'%',top:(sweepY(sweep.selected)/260*100)+'%'}}))),
+              h('div',{className:'iss-debris-sweep-x','aria-hidden':true},[2,5,10,15,20].map(function(gap){return h('span',{key:gap,style:{left:(sweepX(gap)/720*100)+'%'}},gap);})),
+              h('p',{className:'iss-debris-sweep-x-title'},'STANDOFF / cm'),
+              h('div',{className:'iss-debris-sweep-legend'},h('span',null,'● Current inputs'),compare?h('span',null,comparison.pinned?(sweep.sharedCurve?'◆ Saved standoff · same curve':'┄ Saved inputs · ◆ saved standoff'):'◆ 2 cm reference'):null),
+              h('div',{className:'iss-debris-sweep-range'},h('label',{htmlFor:'iss-debris-sweep-gap'},'Selected standoff'),h('strong',null,c.gap+' cm'),h('input',{id:'iss-debris-sweep-gap',type:'range',min:2,max:20,step:1,value:c.gap,'aria-valuetext':valueText,'aria-describedby':'iss-debris-sweep-help',onChange:function(event){setGap(Number(event.target.value));}})),
+              h('p',{id:'iss-debris-sweep-help',className:'iss-water-help'},'Tap or drag left/right; arrow keys move 1 cm, Home/End choose the limits. Changing the gap resets the shot. Switching measurements or scale preserves time. '+(sweep.log?'On a log axis, equal vertical steps represent equal ratios. ':'')+'These are first-contact predictions, not wall-survival limits.'),
+              h('p',{className:'iss-debris-sweep-note','data-debris-sweep-note':true},model.radial===0?'With spread set to zero, added spacing changes travel time but leaves cloud diameter and energy per area unchanged.':'A longer gap gives the cloud more time to expand. Its total forward energy stays '+energy(model.translation)+'; the same energy is shared over a larger footprint.'),
+              compare&&comparison.pinned?h('p',{className:'iss-debris-sweep-reference-note'},sweep.sharedCurve?'The saved design has the same particle, bumper and spread setting. Its diamond marks the saved '+reference.config.gap+' cm gap on the same curve.':'The dashed curve keeps the saved particle, bumper and spread setting fixed while varying its gap. The diamond marks its actual saved '+reference.config.gap+' cm gap. Your saved setup is unchanged.'):null);
+          }
+          function renderCloudProbe(){
+            return h('section',{className:'iss-debris-probe','data-debris-probe':true,'data-active':probe.active,'aria-labelledby':'iss-debris-probe-title'},
+              h('div',{className:'iss-water-chart-heading'},h('div',null,h('span',{className:'iss-water-eyebrow'},'02 / INSIDE THE CLOUD'),h('h4',{id:'iss-debris-probe-title',tabIndex:-1,className:'iss-debris-anchor'},'Follow the mass. Probe the motion.')),
+                h('span',{className:'iss-debris-probe-clock'},probe.active?'T+'+current.time.toFixed(2)+' µs · '+(current.phase==='contact'?'AT WALL':current.phase==='impact'?'AT BUMPER':'IN FLIGHT'):'AWAITING BUMPER CONTACT')),
+              h('p',{className:'iss-debris-probe-intro'},'Look along the flight direction. Move the amber ring to measure the material inside it; the same selection is highlighted in the side view.'),
+              h('div',{className:'iss-debris-probe-layout'},
+                h('div',{className:'iss-debris-probe-visual'},
+                  h('div',{className:'iss-debris-probe-stage',role:'slider',tabIndex:0,'data-debris-probe-stage':true,'aria-label':__alloT('stem.spacestation.debris_probe_radius','Cloud sampling radius'),'aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':probe.fraction*100,'aria-valuetext':probeValueText,'aria-describedby':'iss-debris-probe-help',onPointerDown:probeDown,onPointerMove:probeMove,onPointerUp:probeRelease,onPointerCancel:probeRelease,onLostPointerCapture:probeRelease,onKeyDown:probeKey},
+                    h('svg',{viewBox:'0 0 320 320','aria-hidden':true},
+                      h('defs',null,h('radialGradient',{id:'iss-debris-probe-glow'},h('stop',{offset:0,stopColor:'#123e46'}),h('stop',{offset:1,stopColor:'#081925'}))),
+                      h('rect',{x:0,y:0,width:320,height:320,rx:15,fill:'url(#iss-debris-probe-glow)'}),
+                      [50,105,160,215,270].map(function(q){return h('path',{key:q,d:'M'+q+' 27 V293 M27 '+q+' H293',stroke:'#31596b',strokeWidth:.5,opacity:.45});}),
+                      h('path',{d:'M20 46 V20 H46 M274 20 H300 V46 M20 274 V300 H46 M274 300 H300 V274',fill:'none',stroke:'#597e8d',strokeWidth:1.5}),
+                      h('circle',{cx:160,cy:160,r:110,fill:'none',stroke:'#87a7b6',strokeDasharray:'3 5',opacity:.65}),
+                      h('path',{d:'M36 160 H284 M160 36 V284',stroke:'#7ca8b2',strokeDasharray:'2 5',opacity:.5}),
+                      probe.active?h('g',null,
+                        h('circle',{cx:160,cy:160,r:probeRadius,fill:'#6ee7b70b',stroke:'#6ee7b7',strokeWidth:1.6,'data-debris-probe-cloud':true}),
+                        [.25,.5,.75].map(function(q){return h('circle',{key:q,cx:160,cy:160,r:Math.sqrt(q)*probeRadius,fill:'none',stroke:'#6da4ab',strokeWidth:.7,strokeDasharray:'2 4',opacity:.55});}),
+                        h('circle',{cx:160,cy:160,r:probeRadius*probe.fraction,fill:'#fbbf241c',stroke:'#fcd34d',strokeWidth:1.8,'data-debris-probe-ring':true}),
+                        tracers.map(function(point,i){return h('circle',{key:i,'data-debris-tracer':i,cx:160+point.x*probeScale,cy:160+point.y*probeScale,r:Math.min(2,probeRadius*.045),fill:point.fraction<=probe.fraction?'#ffe5a3':'#86e7dd',opacity:point.fraction<=probe.fraction?.95:.6});}),
+                        h('line',{x1:160,x2:160+probeRadius*probe.fraction,y1:160,y2:160,stroke:'#fcd34d',strokeWidth:1.5}),
+                        h('circle',{cx:160+probeRadius*probe.fraction,cy:160,r:4,fill:'#fcd34d',stroke:'#071822',strokeWidth:1.5}),
+                        h('circle',{cx:160,cy:160,r:2.5,fill:'#d8f8f2'})):
+                        h('g',null,h('text',{x:160,y:155,textAnchor:'middle',fill:'#c9e5e6',fontSize:12,letterSpacing:1},'NO CLOUD YET'),h('text',{x:160,y:177,textAnchor:'middle',fill:'#9abac7',fontSize:10},'Inspect a flight moment below')),
+                      h('text',{x:160,y:310,textAnchor:'middle',fill:'#b7d5db',fontSize:10,letterSpacing:1},magnify?'MAGNIFIED CROSS-SECTION':'FIXED SCALE · FINAL ENVELOPE'))),
+                  h('p',{className:'iss-debris-probe-scale','data-debris-probe-scale':true},probe.active?'Outer guide radius: '+probeNumber((magnify?current.radius:model.wallRadius)*1000,'mm'):'Cloud forms when the particle reaches the bumper.'),
+                  h('button',{type:'button','data-debris-probe-magnify':true,'aria-pressed':magnify,onClick:function(){upd({opsDebrisMagnify:!magnify});}},magnify?'Magnification on · use fixed scale':'Magnify cross-section')),
+                h('div',{className:'iss-debris-probe-controls'},
+                  h('div',{className:'iss-debris-probe-radius'},h('label',{htmlFor:'iss-debris-probe-radius'},'Sampling radius'),h('strong',null,(probe.fraction*100).toFixed(0)+'% R'),
+                    h('input',{id:'iss-debris-probe-radius',type:'range',min:0,max:100,step:1,value:probe.fraction*100,'aria-valuetext':probeValueText,'aria-describedby':'iss-debris-probe-help',onChange:function(event){setProbe(Number(event.target.value));}})),
+                  h('div',{className:'iss-experiment-actions'},h('button',{type:'button','data-debris-probe-preset':'core',onClick:function(){setProbe(50);}},'Half-radius core'),h('button',{type:'button','data-debris-probe-preset':'all',onClick:function(){setProbe(100);}},'Whole cloud')),
+                  h('div',{className:'iss-debris-probe-readings'},
+                    reading('probe-mass','Mass inside probe',probeNumber(probe.mass===null?null:probe.mass*1e6,'mg'),probe.active?(probe.massFraction*100).toFixed(2)+'% of cloud mass':'Available after bumper contact','#fde68a'),
+                    reading('probe-forward','Forward energy inside',probeNumber(probe.forward,'J'),probe.active?(probe.massFraction*100).toFixed(2)+'% of forward energy':'Available after bumper contact','#7dd3fc'),
+                    reading('probe-sideways','Sideways energy inside',probeNumber(probe.expansion,'J'),!probe.active?'Available after bumper contact':model.expansion>0?(probe.expansionFraction*100).toFixed(2)+'% of sideways energy':'No sideways kinetic energy','#6ee7b7'),
+                    reading('probe-edge','Speed at probe edge',probeNumber(probe.edgeSpeed===null?null:probe.edgeSpeed/1000,'km/s'),'Radial speed · faster toward the rim','#c4b5fd')),
+                  h('div',{className:'iss-debris-probe-fractions','data-debris-probe-fractions':true},
+                    h('div',null,h('span',null,'Mass / forward energy'),h('strong',null,probe.active?(probe.massFraction*100).toFixed(2)+'% inside':'—'),h('div',{'aria-hidden':true},h('i',{style:{width:(probe.active?probe.massFraction*100:0)+'%'}}))),
+                    h('div',null,h('span',null,'Sideways energy'),h('strong',null,probe.active&&model.expansion>0?(probe.expansionFraction*100).toFixed(2)+'% inside':'—'),h('div',{'aria-hidden':true},h('i',{style:{width:(probe.active&&model.expansion>0?probe.expansionFraction*100:0)+'%'}})))),
+                  h('p',{className:'iss-debris-probe-insight','data-debris-probe-insight':true},!probe.active?'Inspect a flight moment below to reveal the cloud.':model.expansion===0?'With spread set to zero, the disk keeps its original radius and has no sideways kinetic energy.':'Outside your probe: '+((1-probe.massFraction)*100).toFixed(2)+'% of the mass carries '+((1-probe.expansionFraction)*100).toFixed(2)+'% of the sideways kinetic energy.'))),
+              h('div',{className:'iss-debris-probe-footer'},h('p',{'data-debris-probe-density':true},probe.active?'Cloud radius '+probeNumber(current.radius*1000,'mm')+' · Selected radius '+probeNumber(probe.radius*1000,'mm')+' · Forward energy / disk area '+probeNumber(probe.normalDensity,'J/cm²'):'The probe setting is ready; cloud measurements begin at bumper contact.'),
+                h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.debris_probe_events','Inspect cloud flight moments')},[['impact','At bumper',model.impactUs],['cloud','Mid-flight',model.impactUs+model.flightUs/2],['wall','At rear wall',model.arrivalUs]].map(function(event){return h('button',{key:event[0],type:'button','data-debris-probe-event':event[0],onClick:function(){seek(event[2]);}},event[1]);}))),
+              h('p',{id:'iss-debris-probe-help',className:'iss-water-help'},'Tap or drag outward from the center; arrow keys change the radius by 1%, Home/End select 0/100%. The ring follows the same fraction of the cloud during playback. Amber is the selected core. Dots are equal-mass samples of a uniform disk, not predicted fragments. Magnification changes only the view.'));
+          }
+          var plotX=current.time/model.arrivalUs*100,impactX=model.impactUs/model.arrivalUs*100;
+          function plotY(r){return 93-r/model.wallRadius*80;}
+          var curve='M0 '+plotY(model.radius)+' L'+impactX+' '+plotY(model.radius)+' L100 '+plotY(model.wallRadius);
+          var ledger=[['incoming','Incoming particle',current.incoming,'#fda4af'],['translation','Forward motion',current.translation,'#7dd3fc'],['expansion','Sideways motion',current.expansion,'#6ee7b7'],['internal','Internal / deformation',current.internal,'#fcd34d']];
+          var presets=[['spaced','Spaced shield',{opsShieldGap:10}],['compact','Compact shield',{opsShieldGap:2}],['dense','Dense fragment',{opsDebrisMaterial:'steel',opsDebrisSize:2,opsShieldGap:10}]];
+          return h('section',{id:'iss-debris-lab',className:'iss-water-lab iss-debris-lab','data-iss-debris-lab':true,'aria-labelledby':'iss-debris-title'},
+            h('div',{className:'iss-water-heading'},h('div',null,h('span',{className:'iss-water-eyebrow'},'HYPERVELOCITY TEST / WHIPPLE SHIELD'),h('h3',{id:'iss-debris-title'},'A split second. A spreading cloud.'),h('p',null,'Follow a particle into a sacrificial bumper. Change the spacing, slow time to microseconds, and see where its momentum and energy go.')),
+              h('span',{className:'iss-water-phase','data-debris-phase':current.phase},phase)),
+            h('nav',{className:'iss-debris-nav','data-debris-nav':true,'aria-label':__alloT('stem.spacestation.debris_navigation','Shield lab sections')},
+              [['setup','Shot setup'],['probe-title','Cloud probe'],['compare-title','Compare designs'],['sweep-title','Standoff map']].map(function(item,index){return h('a',{key:item[0],href:'#iss-debris-'+item[0],onClick:focusAnchor},h('span',{'aria-hidden':true},'0'+(index+1)),item[1]);})),
+            h('div',{id:'iss-debris-setup',tabIndex:-1,className:'iss-experiment-actions iss-debris-anchor',role:'group','aria-label':__alloT('stem.spacestation.debris_presets','Debris experiment setups')},presets.map(function(preset){return h('button',{key:preset[0],type:'button','data-debris-preset':preset[0],onClick:function(){upd(Object.assign({opsScenario:'custom',opsDebrisSize:1,opsDebrisSpeed:12,opsDebrisMaterial:'aluminum',opsDebrisBumper:.5,opsDebrisSpread:10,opsDebrisTime:0,opsDebrisSeekToken:!d.opsDebrisSeekToken},preset[2]));}},preset[1]);})),
+            h('div',{className:'iss-water-workspace iss-debris-workspace'},
+              h('div',{className:'iss-water-scene'},h('div',{className:'iss-water-scene-top'},h('span',null,'01 / IMPACT CROSS-SECTION'),h('strong',null,'T+'+current.time.toFixed(2)+' µs')),
+                h('div',{className:'iss-debris-hardware','data-debris-hardware':true},h('svg',{viewBox:'0 0 680 360',role:'img','aria-label':__alloFill(__alloT('stem.spacestation.a11y_debris_scene','Normal impact in vacuum. {phase}. Standoff {gap} centimeters. Cloud diameter {diameter} millimeters.'),{phase:phase,gap:c.gap,diameter:(current.radius*2000).toFixed(1)}),'data-debris-scene':true},
+                  h('defs',null,h('linearGradient',{id:'iss-debris-metal',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#334c63'}),h('stop',{offset:.45,stopColor:'#d3e3ec'}),h('stop',{offset:1,stopColor:'#49657c'})),h('linearGradient',{id:'iss-debris-cloud',x1:0,y1:0,x2:1,y2:0},h('stop',{offset:0,stopColor:'#ffc782',stopOpacity:.02}),h('stop',{offset:1,stopColor:'#7de6e0',stopOpacity:.23})),h('radialGradient',{id:'iss-debris-glow'},h('stop',{offset:0,stopColor:'#fff4cb',stopOpacity:.8}),h('stop',{offset:1,stopColor:'#fb923c',stopOpacity:0}))),
+                  h('rect',{x:2,y:2,width:676,height:356,rx:12,fill:'#081521',stroke:'#294459'}),
+                  Array.from({length:13},function(_,i){return h('line',{key:'grid'+i,x1:18+i*52,x2:18+i*52,y1:40,y2:314,stroke:'#234459',strokeWidth:.6,opacity:.5});}),
+                  [80,135,190,245,300].map(function(y){return h('line',{key:'row'+y,x1:16,x2:664,y1:y,y2:y,stroke:'#234459',strokeWidth:.6,opacity:.5});}),
+                  h('text',{x:20,y:27,fill:'#91b5cd',fontSize:11,letterSpacing:1.5},'NORMAL INCIDENCE / VACUUM'),
+                  h('text',{x:660,y:27,textAnchor:'end',fill:'#b4cddd',fontSize:11},c.material.toUpperCase()+' · '+c.speed.toFixed(1)+' km/s'),
+                  h('rect',{x:wallX+10,y:62,width:Math.max(35,646-wallX),height:252,fill:'#102b3a',opacity:.6}),
+                  h('path',{d:'M'+bx+' '+(wy-model.radius*scale)+' L'+wallX+' '+(wy-wallRadius)+' M'+bx+' '+(wy+model.radius*scale)+' L'+wallX+' '+(wy+wallRadius),stroke:'#678c99',strokeDasharray:'5 6',fill:'none',opacity:.65}),
+                  h('line',{x1:20,x2:wallX,y1:wy,y2:wy,stroke:'#66859a',strokeDasharray:'3 7',opacity:.5}),
+                  h('rect',{x:bx-5,y:75,width:10,height:232,rx:2,fill:'url(#iss-debris-metal)',stroke:focus==='bumper'?'#fcd34d':'#a0b9ca',strokeWidth:focus==='bumper'?2.5:1}),
+                  h('rect',{x:wallX,y:62,width:16,height:252,rx:3,fill:'url(#iss-debris-metal)',stroke:focus==='wall'?'#fcd34d':'#8daabd',strokeWidth:focus==='wall'?2.5:1}),
+                  [88,288].map(function(y){return h('circle',{key:'bolt'+y,cx:wallX+8,cy:y,r:3,fill:'#152e41',stroke:'#b5c9d7'});}),
+                  current.after?h('g',{'data-debris-cloud':true},
+                    h('path',{d:'M'+bx+' '+(wy-model.radius*scale)+' L'+cx+' '+(wy-radius)+' L'+cx+' '+(wy+radius)+' L'+bx+' '+(wy+model.radius*scale)+' Z',fill:'url(#iss-debris-cloud)'}),
+                    [-1,-.65,0,.65,1].map(function(k){return h('line',{key:'ray'+k,x1:bx,y1:wy+k*model.radius*scale,x2:cx,y2:wy+k*radius,stroke:focus==='cloud'?'#9bf4df':'#73c4c9',strokeWidth:k===0?1.5:1,opacity:.5});}),
+                    h('ellipse',{cx:cx,cy:wy,rx:Math.max(2,radius*.08),ry:Math.max(2,radius),fill:'#a7f3d025',stroke:'#a7f3d0',strokeWidth:2,'data-debris-front':true}),
+                    h('g',{'data-debris-probe-band':true},h('path',{d:'M'+bx+' '+(wy-model.radius*scale*probe.fraction)+' L'+cx+' '+(wy-radius*probe.fraction)+' L'+cx+' '+(wy+radius*probe.fraction)+' L'+bx+' '+(wy+model.radius*scale*probe.fraction)+' Z',fill:'#fbbf2412',stroke:'#fcd34d',strokeWidth:.8,opacity:.65}),h('line',{x1:cx,x2:cx,y1:wy-radius*probe.fraction,y2:wy+radius*probe.fraction,stroke:'#fcd34d',strokeWidth:3})),
+                    Array.from({length:23},function(_,i){var fraction=(i-11)/11;return h('circle',{key:'grain'+i,cx:cx+Math.sin(i*2.4)*Math.min(3,radius*.06),cy:wy+fraction*radius,r:i%3===0?2.1:1.2,fill:i%3===0?'#ffe5a6':'#bdfff1',opacity:.6+.4*Math.cos(fraction)});}),
+                    h('circle',{cx:bx,cy:wy,r:29,fill:'url(#iss-debris-glow)',opacity:Math.exp(-(current.time-model.impactUs)/Math.max(.1,model.flightUs*.1))}),
+                    current.phase==='contact'?h('line',{x1:wallX-1,x2:wallX-1,y1:wy-wallRadius,y2:wy+wallRadius,stroke:'#fcd34d',strokeWidth:4}):null)
+                  :h('g',{'data-debris-projectile':true},h('line',{x1:Math.max(15,cx-45),x2:cx-4,y1:wy,y2:wy,stroke:'#fda4af',strokeWidth:2,opacity:.5}),h('circle',{cx:cx,cy:wy,r:Math.max(4,model.radius*scale),fill:'#ffe3d8',stroke:'#fb923c',strokeWidth:2}),focus==='projectile'?h('circle',{cx:cx,cy:wy,r:Math.max(11,model.radius*scale+5),fill:'none',stroke:'#fcd34d',strokeDasharray:'4 3'}):null),
+                  vectors?h('g',{'data-debris-vectors':true},h('rect',{x:514,y:105,width:144,height:166,rx:9,fill:'#0a202e',stroke:'#426578'}),
+                    h('text',{x:586,y:124,textAnchor:'middle',fill:'#bad4df',fontSize:10,letterSpacing:1.5},'VELOCITY'),
+                    h('line',{x1:537,x2:601,y1:150,y2:150,stroke:'#7a9dac',strokeDasharray:'3 3'}),h('text',{x:608,y:153,fill:'#a5c4d0',fontSize:8},'15 km/s'),
+                    h('path',{'data-debris-vector':'forward','data-speed':forward,d:'M537 190 H'+(537+forward*vectorScale)+' m-5 -4 l5 4 -5 4',stroke:current.after?'#7dd3fc':'#fda4af',strokeWidth:2.5,fill:'none'}),
+                    sideways>0?[-1,1].map(function(sign){var tip=190+sign*sideways*vectorScale;return h('path',{key:sign,'data-debris-vector':sign<0?'radial-up':'radial-down','data-speed':sideways*sign,d:'M537 190 V'+tip+' m-4 '+(-sign*5)+' l4 '+(sign*5)+' 4 '+(-sign*5),stroke:'#6ee7b7',strokeWidth:2,fill:'none'});}):null,
+                    h('circle',{cx:537,cy:190,r:3,fill:'#def3f6'}),h('text',{x:586,y:243,textAnchor:'middle',fill:current.after?'#7dd3fc':'#fda4af',fontSize:11},(current.after?'u':'v')+' = '+(forward/1000).toFixed(2)+' km/s'),
+                    h('text',{x:586,y:258,textAnchor:'middle',fill:'#6ee7b7',fontSize:11},'w = '+(sideways/1000).toFixed(2)+' km/s')):null,
+                  h('line',{x1:bx,x2:wallX,y1:53,y2:53,stroke:'#7dd3fc'}),h('path',{d:'M'+bx+' 48 V58 M'+wallX+' 48 V58',stroke:'#7dd3fc'}),h('text',{x:(bx+wallX)/2,y:45,textAnchor:'middle',fill:'#a8dff3',fontSize:11},c.gap.toFixed(0)+' cm'),
+                  h('text',{x:bx-10,y:329,textAnchor:'end',fill:'#c1d5e2',fontSize:11},'BUMPER'),h('text',{x:wallX+10,y:329,fill:'#c1d5e2',fontSize:11},'REAR WALL'),
+                  h('line',{x1:22,x2:22+.01*scale,y1:340,y2:340,stroke:'#7d9caf',strokeWidth:2}),h('text',{x:30+.01*scale,y:344,fill:'#99b6c9',fontSize:10},'10 mm')),
+                  h('div',{className:'iss-debris-wall-handle',role:'slider',tabIndex:0,'data-debris-wall-handle':true,'aria-label':__alloT('stem.spacestation.debris_wall_handle','Rear wall standoff'),'aria-orientation':'horizontal','aria-valuemin':2,'aria-valuemax':20,'aria-valuenow':c.gap,'aria-valuetext':__alloFill(__alloT('stem.spacestation.debris_wall_value','{gap} centimeters standoff'),{gap:c.gap}),'aria-describedby':'iss-debris-wall-help',style:{left:((wallX+8)/680*100)+'%',top:(287/360*100)+'%'},onPointerDown:wallDown,onPointerMove:wallMove,onPointerUp:wallRelease,onPointerCancel:wallRelease,onLostPointerCapture:wallRelease,onKeyDown:wallKey},h('span',{'aria-hidden':'true'},'↔'))),
+                h('p',{className:'iss-water-scene-caption'},'Gap and cloud share a fixed scale as you adjust standoff. Particle markers and plate thickness are enlarged. Dashed lines show the final envelope.'),
+                h('p',{id:'iss-debris-wall-help',className:'iss-debris-drag-help'},'Drag the ↔ handle to move the rear wall. Arrow keys change the gap by 1 cm; Home/End select its limits. Moving the wall resets the shot.'),
+                h('div',{className:'iss-water-parts iss-debris-vector-controls'},h('button',{type:'button','data-debris-vectors-toggle':true,'aria-pressed':vectors,onClick:function(){upd({opsDebrisVectors:!vectors});}},vectors?'Velocity vectors on':'Show velocity vectors'),h('span',null,current.after?'Blue: forward · mint: opposite radial motion':'Rose: incoming particle velocity')),
+            h('div',{className:'iss-water-clock'},h('div',{className:'iss-water-clock-heading'},h('label',{htmlFor:'iss-debris-time'},h('strong',null,'Inspect T+'+current.time.toFixed(2)+' µs')),h('span',null,'1 µs = ONE MILLIONTH OF A SECOND')),
+              h('input',{id:'iss-debris-time',type:'range',min:0,max:model.arrivalUs,step:'any',value:current.time,'aria-valuetext':__alloFill(__alloT('stem.spacestation.debris_time_value','{time} microseconds; {phase}'),{time:current.time.toFixed(2),phase:phase.toLowerCase()}),'aria-describedby':'iss-debris-time-help',onChange:function(event){seek(Number(event.target.value));},onKeyDown:function(event){var time;if(event.key==='ArrowRight'||event.key==='ArrowUp')time=current.time+.05;else if(event.key==='ArrowLeft'||event.key==='ArrowDown')time=current.time-.05;if(time!==undefined){event.preventDefault();seek(time);}}}),
+              h(issExperimentPlayback,{React:React,id:'debris',t:__alloT,value:current.time,max:model.arrivalUs,speeds:[5,20,80],speedLabels:['5 µs/s','20 µs/s','80 µs/s'],resetKey:JSON.stringify(c)+':'+!!d.opsDebrisSeekToken,onAdvance:function(time){upd({opsDebrisTime:time});}}),
+              h('div',{className:'iss-experiment-actions'},eventButton('start','Restart shot',0),eventButton('impact','Bumper contact',model.impactUs),eventButton('cloud','Mid-flight',model.impactUs+model.flightUs/2),eventButton('wall','First wall contact',model.arrivalUs))),
+                h('div',{className:'iss-water-parts',role:'group','aria-label':__alloT('stem.spacestation.debris_parts','Inspect shield components')},[['projectile','Particle'],['bumper','Bumper'],['cloud','Cloud'],['wall','Rear wall']].map(function(part){return h('button',{key:part[0],type:'button','data-debris-part':part[0],'aria-pressed':focus===part[0],onClick:function(){upd({opsDebrisFocus:part[0]});}},part[1]);})),
+                h('p',{'data-debris-part-note':true,className:'iss-debris-inspector'},notes[focus]),
+                h('div',{className:'iss-water-tank-readings'},reading('mass','Particle mass',(model.projectile*1e6).toFixed(3)+' mg',c.density.toLocaleString()+' kg/m³ assumed density','#fda4af'),reading('energy','Impact energy',energy(model.incoming),'Energy increases with speed squared','#fcd34d'))),
+              h('div',{className:'iss-water-setup'},
+                h('div',{className:'iss-ops-control'},h('label',{htmlFor:'iss-debris-material'},'Particle material'),h('select',{id:'iss-debris-material',value:c.material,onChange:function(event){upd({opsDebrisMaterial:event.target.value,opsDebrisTime:0,opsDebrisSeekToken:!d.opsDebrisSeekToken,opsScenario:'custom'});}},h('option',{value:'aluminum'},'Aluminum · 2,700 kg/m³'),h('option',{value:'glass'},'Glass · 2,500 kg/m³'),h('option',{value:'steel'},'Steel · 7,800 kg/m³'))),
+                opsControl('iss-debris-size','Particle diameter',c.diameter,.2,12,.2,' mm','#fda4af','opsDebrisSize'),
+                opsControl('iss-debris-speed','Relative speed',c.speed,7,15,.5,' km/s','#fcd34d','opsDebrisSpeed'),
+                opsControl('iss-shield-gap','Shield standoff',c.gap,2,20,1,' cm','#7dd3fc','opsShieldGap'),
+                opsControl('iss-debris-bumper','Aluminum bumper thickness',c.bumper,.2,2,.1,' mm','#c4b5fd','opsDebrisBumper'),
+                opsControl('iss-debris-spread','Energy share driving spread',c.spread,0,30,1,' %','#6ee7b7','opsDebrisSpread'),
+                h('p',{className:'iss-water-help'},'Spread uses this share of the energy available after entrainment. It is a sensitivity setting, not a measured material property. Setup changes reset the shot.'),
+                h('div',{className:'iss-debris-reference-card'},h('span',{className:'iss-water-eyebrow'},'EXPERIMENT REFERENCE'),h('h4',null,comparison.pinned?'Your saved setup':'A compact 2 cm shield'),
+                  h('p',{'data-debris-reference-status':true,role:'status'},comparison.pinned?reference.config.material+' · '+reference.config.diameter.toFixed(1)+' mm · '+reference.config.speed.toFixed(1)+' km/s · '+reference.config.gap.toFixed(0)+' cm gap':'The same particle and bumper, with a 2 cm gap. Save a setup to hold every reference setting fixed while you experiment.'),
+                  h('div',{className:'iss-experiment-actions'},h('button',{type:'button','data-debris-pin':true,onClick:function(){upd({opsDebrisBaseline:issDebrisSnapshot(model),opsDebrisCompare:true});}},comparison.pinned?'Replace saved reference':'Save this setup'),
+                    h('button',{type:'button','data-debris-reference-reset':true,disabled:!comparison.pinned,onClick:function(){upd({opsDebrisBaseline:null,opsDebrisCompare:true});}},'Use 2 cm reference')),
+                  h('small',null,'Saving preserves the shot clock. Your reference stays fixed across design changes and presets.')))),
+            h('div',{className:'iss-water-chart-heading'},h('h4',null,'Cloud diameter through time'),h('span',{className:'iss-debris-chart-value','data-debris-diameter':true},(current.radius*2000).toFixed(2)+' mm')),
+            h('div',{className:'iss-water-plot-grid'},h('div',{className:'iss-water-y-axis','aria-hidden':true},h('span',null,(model.wallRadius*2000).toFixed(model.wallRadius*2000<10?1:0)+' mm'),h('span',null,'0')),
+              h('svg',{viewBox:'0 0 100 100',preserveAspectRatio:'none',role:'img','aria-label':__alloT('stem.spacestation.a11y_debris_plot','Cloud diameter history. Use the time slider to inspect.'),'data-debris-plot':true,onPointerDown:function(event){if(event.button!==0||event.isPrimary===false)return;event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);plotSeek(event);},onPointerMove:function(event){if(event.currentTarget.hasPointerCapture&&event.currentTarget.hasPointerCapture(event.pointerId))plotSeek(event);},onPointerUp:release,onPointerCancel:release,onLostPointerCapture:function(){}},
+                [13,53,93].map(function(y){return h('line',{key:y,x1:0,x2:100,y1:y,y2:y,stroke:'#26485c',vectorEffect:'non-scaling-stroke'});}),
+                h('line',{x1:impactX,x2:impactX,y1:0,y2:100,stroke:'#fcd34d',strokeDasharray:'4 4',vectorEffect:'non-scaling-stroke'}),
+                h('path',{d:curve,fill:'none',stroke:'#6ee7b7',strokeWidth:3,vectorEffect:'non-scaling-stroke','data-debris-curve':true}),
+                h('line',{x1:plotX,x2:plotX,y1:0,y2:100,stroke:'#f1f5f9',strokeWidth:2,vectorEffect:'non-scaling-stroke'} ))),
+            h('div',{className:'iss-water-x-axis','aria-hidden':true},h('span',null,'0 µs'),h('span',null,(model.arrivalUs/2).toFixed(2)+' µs'),h('span',null,model.arrivalUs.toFixed(2)+' µs')),
+            h('p',{id:'iss-debris-time-help',className:'iss-water-help'},'Drag or tap the graph to inspect. The slider supports 0.05 µs arrow-key steps. The amber line marks bumper contact at '+model.impactUs.toFixed(2)+' µs; playback stops at first rear-wall contact.'),
+            h('div',{className:'iss-water-flows'},reading('speed','Cloud center speed',(model.axial/1000).toFixed(2)+' km/s','Forward momentum conserved','#7dd3fc'),reading('flight','Bumper-to-wall time',model.flightUs.toFixed(2)+' µs','Longer spacing gives more expansion time','#6ee7b7'),reading('spread','Expansion half-angle',model.halfAngle.toFixed(1)+'°','From the selected energy partition','#c4b5fd')),
+            renderCloudProbe(),
+            h('div',{className:'iss-water-chart-heading'},h('h4',null,'Where the impact energy goes'),h('span',{className:'iss-debris-chart-value'},energy(model.incoming)+' total')),
+            h('div',{className:'iss-debris-energy-bar','aria-hidden':true},ledger.map(function(item){return h('span',{key:item[0],style:{width:(item[2]/model.incoming*100)+'%',background:item[3]}});})),
+            h('div',{className:'iss-debris-budget'},ledger.map(function(item){return reading(item[0],item[1],energy(item[2]),(item[2]/model.incoming*100).toFixed(1)+'% of incoming energy',item[3]);})),
+            h('p',{className:'iss-water-balance','data-debris-balance':true},'Energy stays accounted for: incoming particle + forward motion + sideways motion + internal / deformation = '+energy(model.incoming)+'. After contact, '+(model.projectile*1e6).toFixed(3)+' mg of particle + '+(model.plug*1e6).toFixed(3)+' mg of bumper = '+(model.mass*1e6).toFixed(3)+' mg in the idealized cloud. Forward momentum remains '+model.momentum.toPrecision(4)+' N·s. Display values are rounded.'),
+            h('div',{className:'iss-water-outcome iss-debris-comparison','data-debris-reference-kind':comparison.pinned?'saved':'compact'},
+              h('div',{className:'iss-water-chart-heading'},h('h4',{id:'iss-debris-compare-title',tabIndex:-1,className:'iss-debris-anchor'},'Compare shield designs'),h('button',{type:'button','data-debris-compare':true,'aria-pressed':compare,onClick:function(){upd({opsDebrisCompare:!compare});}},compare?'Hide reference':'Show reference')),
+              renderPairedShots(),
+              renderDetector(),
+                h('div',{className:'iss-debris-footprint-summary'},h('div',{className:'iss-debris-footprint-key'},h('span',null,'Current design'),compare?h('span',null,comparison.pinned?'Saved reference':'2 cm reference'):null),
+                  h('strong',null,(model.wallRadius*2000).toFixed(1)+' mm current footprint diameter'),h('p',null,'Normal kinetic energy per footprint area: '+fluence(model.fluence)+' J/cm² at '+c.gap.toFixed(0)+' cm standoff. This area average cannot resolve individual fragment loads.'),
+                  compare?h('p',{'data-debris-comparison':true},comparison.pinned?'Saved reference: '+(reference.wallRadius*2000).toFixed(1)+' mm diameter and '+fluence(reference.fluence)+' J/cm². The current design has '+Math.abs(100*(comparison.fluenceRatio-1)).toFixed(1)+'% '+(comparison.fluenceRatio<=1?'less':'more')+' normal energy per area. Incoming energy is '+factor(comparison.energyRatio)+' the reference.':'Same particle and bumper, 2 cm gap: '+(reference.wallRadius*2000).toFixed(1)+' mm diameter and '+fluence(reference.fluence)+' J/cm². Your footprint covers '+comparison.areaRatio.toFixed(2)+'× the area; '+(100*(1-comparison.fluenceRatio)).toFixed(1)+'% less normal energy per area. Total energy and momentum are unchanged.'):null,
+                  h('p',{className:'iss-debris-limit'},'Spreading is not a penetration verdict. This model does not decide whether the rear wall survives.')),
+              compare?h('div',{className:'iss-debris-comparison-math','data-debris-comparison-math':true},
+                h('div',null,h('strong',null,factor(comparison.normalRatio)),h('span',null,'Forward energy')),
+                h('b',{'aria-hidden':'true'},'÷'),h('div',null,h('strong',null,factor(comparison.areaRatio)),h('span',null,'Footprint area')),
+                h('b',{'aria-hidden':'true'},'='),h('div',null,h('strong',null,factor(comparison.fluenceRatio)),h('span',null,'Normal energy / area'))):null,
+              compare&&comparison.pinned?h('div',{className:'iss-debris-trial-table'},h('table',null,h('caption',null,'Saved setup stays fixed. An asterisk marks a changed value.'),
+                h('thead',null,h('tr',null,h('th',{scope:'col'},'Setting'),h('th',{scope:'col'},'Current'),h('th',{scope:'col'},'Saved'))),
+                h('tbody',null,[['material','Particle material',''],['diameter','Particle diameter',' mm'],['speed','Impact speed',' km/s'],['gap','Standoff',' cm'],['bumper','Bumper thickness',' mm'],['spread','Spread-energy share','%']].map(function(row){var different=comparison.changed.indexOf(row[0])>=0;return h('tr',{key:row[0],'data-debris-setting':row[0],'data-changed':different},h('th',{scope:'row'},row[1]),h('td',null,c[row[0]]+row[2]+(different?' *':'')),h('td',null,reference.config[row[0]]+row[2]));})))):null),
+            renderStandoffSweep(),
+            h('details',{className:'iss-physics-note'},h('summary',null,'Impact model, assumptions and sources'),
+              h('p',null,'This conservation-based classroom model assumes normal incidence in vacuum, a spherical projectile, an aluminum bumper and complete entrainment of one cylindrical plug with the projectile cross-section. Projectile densities are illustrative constants: aluminum 2,700, glass 2,500 and steel 7,800 kg/m³. Material selection changes density only; material strength and phase changes are not simulated.'),
+              h('p',null,'Let m be projectile mass and M the combined projectile + plug mass. Forward speed u = mv/M. Incoming energy K = ½mv²; forward energy Kf = ½Mu². The selected fraction f of K − Kf drives radial expansion; the remainder is internal energy and deformation. A uniform disk expands with radial velocity proportional to radius, giving edge speed w = √(4f(K − Kf)/M). Opposite radial momenta cancel. Cloud radius at the wall = initial radius + w × standoff/u. No energy disappears when the footprint grows. The velocity inset uses one fixed arrow-length scale for every speed and setup; its dashed guide represents 15 km/s. Its arrows are velocity indicators, not travel distances. Values at first wall contact are the incoming cloud velocities; a collision with the wall is not simulated.'),
+              h('p',null,'The live transverse probe follows a fixed fraction a of the expanding cloud radius R. Uniform mass per disk area gives enclosed mass M a² and forward energy Kf a². Radial speed is w a, so integrating its squared speed gives enclosed sideways energy Kr a⁴. Internal energy is not spatially resolved. Tracers are equal-mass samples of the continuous disk, not individual fragments. All tracers move at the same forward speed. Fixed scale fits the final cloud; magnification fills the cross-section view and changes its physical scale with time. Neither view changes the physics.'),
+              h('p',null,'The virtual aperture is a circular sampling area in the plane of first wall contact. Its overlap A with a uniform footprint of area Aw gives a mass fraction A/Aw and forward kinetic energy Kf × A/Aw. Aperture coverage uses A divided by the aperture’s own area; it is different from the fraction of the cloud sampled. Disk overlap uses the sum of two circular segments, with exact containment and non-overlap limits. The footprint is rotationally symmetric, so a single radial offset describes the full distribution. Both reference and current footprints are center-aligned, independently evaluated at first contact, and share the same fixed aperture radius and offset. No energy absorption, pressure impulse or detector response is simulated.'),
+              h('p',null,'The standoff sweep changes only the distance between plates along each curve, keeping that design’s particle, bumper and spread-energy setting fixed. Travel time is S/u, cloud diameter is 2(r + wS/u), and forward energy per area is Kf/[π(r + wS/u)²]. A saved design with different inputs has its own curve and a marker at its saved standoff. Curves are predictions at first contact, independent of the playback clock. A logarithmic energy axis uses equal spacing for equal ratios; the other views use linear axes. No curve is a wall-survival threshold.'),
+              h('p',null,'The 4 cm approach and instantaneous entrainment are illustrative. All cloud elements have the same forward speed. The thin disk, uniform loading, selected energy partition and entrained plug are assumptions, not a validated Whipple shield response. Shock propagation, irregular debris, ejecta escaping backward, fragment distributions, melting/vaporization, gas pressure, multilayer insulation, oblique impacts and rear-wall deformation are omitted. NASA shield assessments use test-supported ballistic-limit relations; this experiment does not implement them.'),
+              h('p',null,h('a',{href:'https://ntrs.nasa.gov/citations/19930000787',target:'_blank',rel:'noopener noreferrer'},'NASA: standoff and debris-cloud spreading'),' · ',h('a',{href:'https://ntrs.nasa.gov/citations/20090024821',target:'_blank',rel:'noopener noreferrer'},'NASA: impact regimes and Whipple shield performance'),' · ',h('a',{href:'https://mathworld.wolfram.com/Circle-CircleIntersection.html',target:'_blank',rel:'noopener noreferrer'},'MathWorld: circular overlap geometry'))));
         }
         function renderHuman() {
           var exerciseProtection = opsClamp(exercise / 2.5 * 100,0,100);
@@ -8893,9 +10977,9 @@
         }
         var content=mode==='power'?renderPower():mode==='eclss'?renderEclss():mode==='thermal'?renderThermal():mode==='attitude'?renderAttitude():mode==='debris'?renderDebris():mode==='human'?renderHuman():mode==='emergency'?renderEmergency():mode==='rendezvous'?renderRendezvous():renderIntegrated();
         return h('div',{'data-iss-operations':mode},
-          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Every subsystem shares power, heat, mass, and operating margin.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':__alloFill(__alloT('stem.spacestation.a11y_station_health_percent', 'Station health {value1} percent'), { value1: health })},health+'%')),
+          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Explore orbital systems, water reserves, airlock pressure, and microsecond debris impacts.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':__alloFill(__alloT('stem.spacestation.a11y_station_health_percent', 'Station health {value1} percent'), { value1: health })},health+'%')),
           renderScenarioPresets(),
-          h('div',{className:'iss-ops-metrics',role:'list','aria-label':__alloT('stem.spacestation.a11y_station_flight_rules', 'Station flight rules')},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode);},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK'))));})),
+          h('div',{className:'iss-ops-metrics',role:'list','aria-label':__alloT('stem.spacestation.a11y_station_flight_rules', 'Station flight rules')},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode,rule.label==='Water loop'?'water':'air');},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK')+(rule.mode==='power'?' · ORBIT MINIMUM':rule.mode==='thermal'?' · ORBIT RANGE':rule.mode==='attitude'||rule.label==='Cabin CO₂'?' · ORBIT PEAK':rule.label==='Water loop'?' · RECOVERY ONLY':''))));})),
           renderRuleStatus(),
           h('div',{className:'iss-ops-modes',role:'group','aria-label':__alloT('stem.spacestation.a11y_operations_simulation', 'Operations simulation')},modes.map(function(m){var on=mode===m[0];return h('button',{className:'iss-ops-mode',key:m[0],type:'button','aria-pressed':on,onClick:function(){setMode(m[0]);},style:{borderRadius:9,border:'1px solid '+(on?'#38bdf8':'#334155'),background:on?'rgba(14,165,233,.18)':PANEL,color:on?'#bae6fd':TEXT,fontSize:10.5,fontWeight:850,cursor:'pointer'}},m[1]+' '+m[2]);})),content,
           h('div',{className:'iss-ops-debrief'},h('strong',{style:{color:'#7dd3fc',fontSize:11}},'FLIGHT DIRECTOR DEBRIEF'),h('p',{style:{margin:'5px 0 0',color:TEXT,fontSize:11.5,lineHeight:1.55}},health>=75?'All modeled systems retain useful margin. Now increase research load or crew size and find the boundary.':health>=50?'The station is operating with thin margin. Inspect the red or amber subsystem before the next orbit.':'Mission rule violation: one or more life-critical systems require immediate correction.'),(Array.isArray(d.opsLog) ? d.opsLog : []).length?h('div',{className:'iss-ops-log',role:'log'},(Array.isArray(d.opsLog) ? d.opsLog : []).map(function(entry,i){return h('div',{key:i},entry);})):null));
@@ -9380,7 +11464,7 @@
         var tangentX = -Math.sin(theta) * orbitRx, tangentY = Math.cos(theta) * orbitRy;
         var tangentLength = Math.sqrt(tangentX * tangentX + tangentY * tangentY);
         tangentX = tangentX / tangentLength * 65; tangentY = tangentY / tangentLength * 65;
-        return h('div', { className: 'iss-learning-visual iss-orbit-visual' },
+        return h('div', { className: 'iss-learning-visual iss-orbit-visual', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.orbit_profile_scroll', 'Orbital profile diagram. Use arrow keys to scroll when needed.') },
           h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitAnswerVisible ? orbitV.toFixed(2) : 'an amount hidden until you predict', value3: orbitAnswerVisible ? orbitT.toFixed(1) : 'a hidden number of', value4: comparisonText.toLowerCase() })},
             h('defs', null,
               h('radialGradient', { id: 'iss-orbit-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '52%', stopColor: '#1863a0' }), h('stop', { offset: '100%', stopColor: '#071c3b' })),
@@ -9427,12 +11511,12 @@
         var sameDeparture = Number(d.orbitTransferOrigin) === orbitAlt;
         var stage = sameDeparture ? Math.round(issFlightNumber(d.orbitTransferStage, 0, 0, 2)) : 0;
         var progress = stage === 0 ? 0 : stage === 2 ? 1 : issFlightNumber(d.orbitTransferProgress, 0, 0, 1);
-        var flight = issTransferState(plan, progress);
+        var flight = issTransferTelemetry(plan, progress, stage);
         var noTransfer = Math.abs(target - orbitAlt) < .01;
         var ready = stage === 1 && progress >= .999999;
         var status = noTransfer ? 'Already at target altitude' : stage === 2 ? 'Target orbit circularized' : stage === 0 ? 'Departure burn ready' : ready ? 'Arrival burn ready' : 'Coasting without thrust';
-        var currentSpeed = stage === 0 ? plan.startSpeed : stage === 2 ? plan.targetSpeed : flight.speed;
-        var currentEnergy = stage === 0 ? -ISS_GM / (2 * plan.r1) : stage === 2 ? -ISS_GM / (2 * plan.r2) : flight.specificEnergy;
+        var currentSpeed = flight.speed, currentEnergy = flight.specificEnergy;
+        var showVectors = d.orbitTransferVectors !== false, showMarks = d.orbitTransferTimeMarks !== false;
         var scale = 130 / Math.max(plan.r1, plan.r2), cx = 320, cy = 168;
         function point(state) { return { x: cx + state.x * scale, y: cy - state.y * scale }; }
         function flightPath(until) {
@@ -9445,17 +11529,74 @@
         }
         var ship = point(flight), departure = point(issTransferState(plan, 0)), arrival = point(issTransferState(plan, 1));
         var angle = Math.atan2(-flight.vy, flight.vx) * 180 / Math.PI;
-        var vectorX = flight.vx / flight.speed * 34, vectorY = -flight.vy / flight.speed * 34;
+        // Each vector has a fixed display scale, so its length follows the
+        // measured magnitude as well as its direction (6 px per km/s; 5 px per m/s²).
+        var vectorX = flight.vx * 6, vectorY = -flight.vy * 6;
+        var gravityX = flight.ax * 1000 * 5, gravityY = -flight.ay * 1000 * 5;
         function setFlight(nextProgress, nextStage, continuous) {
           var patch = { orbitTransferOrigin: orbitAlt, orbitTransferProgress: nextProgress, orbitTransferStage: nextStage };
           if (!continuous) patch.orbitTransferSeekToken = !d.orbitTransferSeekToken;
           upd(patch);
         }
         function signedBurn(value) { return (value >= 0 ? '+' : '−') + Math.abs(value).toFixed(1) + ' m/s'; }
-        function reading(label, value, color) {
-          return h('div', { className: 'iss-flight-reading', key: label, style: { padding: 10, border: '1px solid #334155', borderRadius: 9, background: 'rgba(2,6,23,.45)' } },
+        function reading(label, value, color, id) {
+          return h('div', { className: 'iss-flight-reading', key: label, 'data-iss-transfer-reading': id, style: { padding: 10, border: '1px solid #334155', borderRadius: 9, background: 'rgba(2,6,23,.45)' } },
             h('div', { style: { color: SOFT, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.04em' } }, label),
             h('strong', { style: { display: 'block', color: color || '#e0f2fe', fontSize: 16, marginTop: 3, fontVariantNumeric: 'tabular-nums' } }, value));
+        }
+        var profileSamples = [];
+        for (var sample = 0; sample <= 64; sample++) profileSamples.push(issTransferState(plan, sample / 64));
+        function seekProfile(event) {
+          if (stage !== 1 || noTransfer || document.hidden) return;
+          var bounds = event.currentTarget.getBoundingClientRect();
+          if (!bounds.width || !isFinite(event.clientX)) return;
+          var fraction = ((event.clientX - bounds.left) / bounds.width * 600 - 8) / 584;
+          setFlight(Math.max(0, Math.min(1, fraction)), 1);
+        }
+        function startProfileDrag(event) {
+          if (stage !== 1 || noTransfer || document.hidden || event.isPrimary === false || (event.button != null && event.button !== 0)) return;
+          var svg = event.currentTarget;
+          svg._issProfilePointer = event.pointerId;
+          if (svg.setPointerCapture) svg.setPointerCapture(event.pointerId);
+          seekProfile(event);
+        }
+        function endProfileDrag(event) {
+          var svg = event.currentTarget;
+          if (svg._issProfilePointer !== event.pointerId) return;
+          svg._issProfilePointer = null;
+          if (svg.hasPointerCapture && svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
+        }
+        function profilePlot(field, label, unit, color, digits) {
+          var values = profileSamples.map(function (entry) { return entry[field]; });
+          if (field === 'speed') values = values.concat([plan.startSpeed, plan.targetSpeed]);
+          var low = Math.min.apply(null, values), high = Math.max.apply(null, values);
+          var spread = Math.max(field === 'speed' ? .01 : 1, high - low);
+          function py(value) { return 75 - (value - low) / spread * 58; }
+          function curve(until) {
+            var parts = [];
+            for (var index = 0; index <= 64; index++) {
+              var part = until * index / 64, value = issTransferState(plan, part)[field];
+              parts.push((index ? 'L' : 'M') + (8 + part * 584).toFixed(2) + ' ' + py(value).toFixed(2));
+            }
+            return parts.join(' ');
+          }
+          var cursorX = 8 + progress * 584;
+          return h('div', { className: 'iss-transfer-profile-lane' },
+            h('div', { className: 'iss-transfer-profile-label' }, h('strong', { style: { color: color } }, label),
+              h('span', null, low.toFixed(digits) + '–' + high.toFixed(digits) + ' ' + unit)),
+            h('svg', { viewBox: '0 0 600 92', preserveAspectRatio: 'none', role: 'img', 'data-iss-transfer-profile': field,
+              'aria-label': __alloFill(__alloT('stem.spacestation.transfer_profile_diagram', '{value1} over coast time. Current reading {value2} {value3}. Use the coast time slider below to inspect the curve.'), { value1: label, value2: flight[field].toFixed(digits), value3: unit }),
+              onPointerDown: startProfileDrag, onPointerMove: function (event) { if (event.currentTarget._issProfilePointer === event.pointerId) seekProfile(event); },
+              onPointerUp: endProfileDrag, onPointerCancel: endProfileDrag, onLostPointerCapture: function (event) { event.currentTarget._issProfilePointer = null; },
+              style: { cursor: stage === 1 && !noTransfer ? 'ew-resize' : 'default', touchAction: 'pan-y' } },
+              [0, .25, .5, .75, 1].map(function (part) { return h('line', { key: part, x1: 8 + part * 584, x2: 8 + part * 584, y1: 8, y2: 83, stroke: '#36516a', strokeDasharray: '2 4', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
+              h('path', { d: curve(1), fill: 'none', stroke: color, strokeWidth: 2, strokeDasharray: '3 4', opacity: .6, vectorEffect: 'non-scaling-stroke' }),
+              stage > 0 ? h('path', { d: curve(progress), fill: 'none', stroke: color, strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }) : null,
+              field === 'speed' ? h('g', { stroke: '#fbbf24', strokeWidth: 3 },
+                h('line', { x1: 8, x2: 8, y1: py(plan.startSpeed), y2: py(plan.departureSpeed), vectorEffect: 'non-scaling-stroke' }),
+                h('line', { x1: 592, x2: 592, y1: py(plan.arrivalSpeed), y2: py(plan.targetSpeed), vectorEffect: 'non-scaling-stroke' })) : null,
+              h('line', { 'data-iss-transfer-profile-cursor': field, x1: cursorX, x2: cursorX, y1: 6, y2: 86, stroke: '#e2e8f0', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }),
+              h('circle', { cx: cursorX, cy: py(flight[field]), r: 4, fill: '#f8fafc', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })));
         }
         return card('🚀 Transfer flight deck', h('div', { className: 'iss-transfer-lab', 'data-iss-transfer-stage': stage },
           h('p', { style: { color: SOFT, fontSize: 12.5, lineHeight: 1.6, marginTop: 0 } }, 'Fly a two-burn transfer from your designed orbit. Fire along the velocity vector to raise an orbit, or against it to lower one. Between burns, gravity alone changes the flight path.'),
@@ -9464,11 +11605,15 @@
             h('input', { id: 'iss-transfer-target', type: 'range', min: 200, max: 2000, step: 10, value: target, 'aria-valuetext': target + ' kilometers', style: { width: '100%', accentColor: '#a78bfa' }, onChange: function (event) { upd({ orbitTransferTarget: Number(event.target.value), orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }),
             h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_flight_presets', 'Transfer flight presets') },
               [{ label: 'Raise 20 km', altitude: Math.min(2000, orbitAlt + 20) }, { label: 'Lower 100 km', altitude: Math.max(200, orbitAlt - 100) }, { label: 'Target 800 km', altitude: 800 }].map(function (preset) { return h('button', { key: preset.label, type: 'button', onClick: function () { upd({ orbitTransferTarget: preset.altitude, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }, preset.label); })),
+            h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_overlay_controls', 'Orbital diagram overlays') },
+              h('button', { type: 'button', 'data-iss-transfer-overlay': 'vectors', 'aria-pressed': showVectors, onClick: function () { upd({ orbitTransferVectors: !showVectors }); } }, __alloT('stem.spacestation.transfer_show_vectors', 'Motion vectors')),
+              h('button', { type: 'button', 'data-iss-transfer-overlay': 'marks', 'aria-pressed': showMarks, onClick: function () { upd({ orbitTransferTimeMarks: !showMarks }); } }, __alloT('stem.spacestation.transfer_show_marks', 'Equal-time markers'))),
             h('div', { className: 'iss-learning-visual iss-transfer-visual' },
               h('svg', { viewBox: '0 0 640 328', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.transfer_orbit_diagram', 'To-scale orbital transfer from {value1} to {value2} kilometers. {value3}. Elapsed {value4} minutes. Current altitude {value5} kilometers. Amber path is the transfer ellipse; Earth lies at its focus.'), { value1: orbitAlt, value2: target, value3: status, value4: (flight.elapsedSeconds / 60).toFixed(1), value5: flight.altitude.toFixed(1) }) },
                 h('defs', null,
                   h('radialGradient', { id: 'iss-transfer-earth', cx: '32%', cy: '25%' }, h('stop', { offset: '0%', stopColor: '#278bb5' }), h('stop', { offset: '65%', stopColor: '#103d70' }), h('stop', { offset: '100%', stopColor: '#061324' })),
-                  h('marker', { id: 'iss-transfer-vector', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#86efac' }))),
+                  h('marker', { id: 'iss-transfer-vector', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#86efac' })),
+                  h('marker', { id: 'iss-transfer-gravity', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#f9a8d4' }))),
                 h('rect', { width: 640, height: 328, fill: '#040d1a' }),
                 [[34,65],[82,238],[153,108],[489,68],[568,236],[592,105],[112,294],[532,292]].map(function (star, i) { return h('circle', { key: i, cx: star[0], cy: star[1], r: i % 2 ? 1 : 1.5, fill: '#7892b0', opacity: .6 }); }),
                 h('text', { x: 18, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 800, letterSpacing: 1.5 }, 'TWO-BODY FLIGHT // EARTH AT FOCUS'),
@@ -9479,6 +11624,10 @@
                 h('circle', { cx: cx, cy: cy, r: plan.r2 * scale, fill: 'none', stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '5 4', opacity: .9 }),
                 h('path', { d: flightPath(1), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 4', opacity: .48 }),
                 stage > 0 ? h('path', { d: flightPath(progress), fill: 'none', stroke: '#fbbf24', strokeWidth: 3 }) : null,
+                showMarks && !noTransfer ? h('g', { 'data-iss-transfer-time-marks': 'true' }, [1,2,3,4,5,6,7,8,9].map(function (index) {
+                  var mark = point(issTransferState(plan, index / 10));
+                  return h('circle', { key: index, cx: mark.x, cy: mark.y, r: 2.6, fill: '#fef3c7', stroke: '#040d1a', strokeWidth: 1 });
+                })) : null,
                 h('text', { x: cx, y: cy - 8, textAnchor: 'middle', fill: '#c8e4f5', fontSize: 11, letterSpacing: 2 }, 'EARTH'),
                 h('text', { x: cx, y: cy + 12, textAnchor: 'middle', fill: '#96b9d0', fontSize: 9 }, 'Distances to scale'),
                 h('circle', { cx: departure.x, cy: departure.y, r: 5, fill: '#38bdf8', stroke: '#e0f2fe' }),
@@ -9487,21 +11636,36 @@
                 h('text', { x: departure.x + 13, y: departure.y + 20, fill: '#94a3b8', fontSize: 9 }, orbitAlt + ' km'),
                 h('text', { x: arrival.x - 13, y: arrival.y + 4, textAnchor: 'end', fill: '#c4b5fd', fontSize: 10, fontWeight: 800 }, '2  ARRIVE'),
                 h('text', { x: arrival.x - 13, y: arrival.y + 20, textAnchor: 'end', fill: '#94a3b8', fontSize: 9 }, target + ' km'),
-                h('line', { x1: ship.x, y1: ship.y, x2: ship.x + vectorX, y2: ship.y + vectorY, stroke: '#86efac', strokeWidth: 2, markerEnd: 'url(#iss-transfer-vector)' }),
+                showVectors ? h('g', { 'data-iss-transfer-vectors': 'true' },
+                  h('line', { 'data-iss-transfer-vector': 'gravity', x1: ship.x, y1: ship.y, x2: ship.x + gravityX, y2: ship.y + gravityY, stroke: '#f9a8d4', strokeWidth: 2, strokeDasharray: '4 2', markerEnd: 'url(#iss-transfer-gravity)' }),
+                  h('line', { 'data-iss-transfer-vector': 'velocity', x1: ship.x, y1: ship.y, x2: ship.x + vectorX, y2: ship.y + vectorY, stroke: '#86efac', strokeWidth: 2, markerEnd: 'url(#iss-transfer-vector)' })) : null,
                 h('g', { transform: 'translate(' + ship.x.toFixed(2) + ',' + ship.y.toFixed(2) + ') rotate(' + angle.toFixed(2) + ')' },
                   h('rect', { x: -4, y: -12, width: 6, height: 24, rx: 1, fill: '#d6a93e', stroke: '#fde68a', strokeWidth: .8 }),
                   h('path', { d: 'M-8 -4 L6 -4 L11 0 L6 4 L-8 4 Z', fill: '#e0f2fe', stroke: '#fff' })),
                 h('text', { x: 18, y: 313, fill: '#fcd34d', fontSize: 9, fontWeight: 800 }, 'AMBER: TRANSFER ARC'),
-                h('text', { x: 622, y: 313, textAnchor: 'end', fill: '#86efac', fontSize: 9 }, 'GREEN: VELOCITY DIRECTION')),
+                showMarks && !noTransfer ? h('text', { x: 622, y: 313, textAnchor: 'end', fill: '#fef3c7', fontSize: 9 }, __alloT('stem.spacestation.transfer_dots_legend', 'DOTS: EQUAL COAST TIME')) : null),
+              showVectors ? h('div', { className: 'iss-transfer-vector-key' },
+                h('span', { style: { color: '#86efac' } }, __alloT('stem.spacestation.transfer_velocity_key', 'Solid green → velocity')),
+                h('span', { style: { color: '#f9a8d4' } }, __alloT('stem.spacestation.transfer_gravity_key', 'Dashed pink → gravity')),
+                h('small', null, __alloT('stem.spacestation.transfer_vector_scale', 'Arrow lengths follow the readings, with a separate scale for each quantity.'))) : null,
               h('div', { className: 'iss-visual-caption' }, h('span', null, 'The tiny gap in low Earth orbit is real. Orbit radii share Earth’s scale.'), h('span', null, 'No plane change · instantaneous burns'))),
             h('div', { className: 'iss-flight-telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 8, margin: '12px 0' } },
-              reading('Altitude now', flight.altitude.toFixed(1) + ' km', '#7dd3fc'), reading('Speed now', currentSpeed.toFixed(3) + ' km/s', '#86efac'), reading('Elapsed coast', (flight.elapsedSeconds / 60).toFixed(1) + ' min', '#fcd34d'), reading('Total burn budget', plan.deltaV.toFixed(1) + ' m/s', '#c4b5fd')),
+              reading('Altitude now', flight.altitude.toFixed(1) + ' km', '#7dd3fc', 'altitude'), reading('Speed now', currentSpeed.toFixed(3) + ' km/s', '#86efac', 'speed'), reading('Elapsed coast', (flight.elapsedSeconds / 60).toFixed(1) + ' min', '#fcd34d', 'elapsed'), reading('Total burn budget', plan.deltaV.toFixed(1) + ' m/s', '#c4b5fd', 'budget'),
+              reading(__alloT('stem.spacestation.transfer_radial_reading', 'Climb / descent'), signedBurn(flight.radialSpeed * 1000), '#7dd3fc', 'radial'), reading(__alloT('stem.spacestation.transfer_gravity_reading', 'Gravity acceleration'), flight.gravity.toFixed(2) + ' m/s²', '#f9a8d4', 'gravity')),
+            h('div', { className: 'iss-transfer-profile' },
+              h('div', { className: 'iss-transfer-profile-heading' },
+                h('h3', null, __alloT('stem.spacestation.transfer_profile_title', 'Inspect the flight profile')),
+                h('span', null, stage === 0 ? __alloT('stem.spacestation.transfer_before_injection', 'Before injection') : stage === 2 ? __alloT('stem.spacestation.transfer_after_circularization', 'After circularization') : __alloT('stem.spacestation.transfer_unpowered_coast', 'Unpowered coast'))),
+              profilePlot('altitude', __alloT('stem.spacestation.transfer_profile_altitude', 'Altitude'), 'km', '#7dd3fc', 1),
+              profilePlot('speed', __alloT('stem.spacestation.transfer_profile_speed', 'Speed'), 'km/s', '#86efac', 3),
+              h('div', { className: 'iss-transfer-profile-axis', 'aria-hidden': 'true' }, h('span', null, '0 min'), h('span', null, (plan.coastSeconds / 120).toFixed(1) + ' min'), h('span', null, (plan.coastSeconds / 60).toFixed(1) + ' min')),
+              h('p', { id: 'iss-transfer-profile-help' }, __alloT('stem.spacestation.transfer_profile_help', 'After injection, drag either curve or use the time slider to inspect the coast. Inspection pauses playback. Amber end bars show the instantaneous burns; the curves show the planned coast.'))),
             h(issExperimentPlayback, { React: React, id: 'transfer', t: __alloT, value: flight.elapsedSeconds, max: plan.coastSeconds,
               speeds: [30, 120, 300], disabled: stage !== 1 || noTransfer || ready,
               resetKey: [orbitAlt, target, stage, !!d.orbitTransferSeekToken].join(':'), onAdvance: function (seconds) { setFlight(seconds / plan.coastSeconds, 1, true); } }),
             h('div', { className: 'iss-transfer-controls' },
               h('label', { htmlFor: 'iss-transfer-time', style: { display: 'flex', justifyContent: 'space-between', color: SOFT, fontSize: 12, gap: 10 } }, h('span', null, 'Scrub coast time'), h('span', null, '0 – ' + (plan.coastSeconds / 60).toFixed(1) + ' minutes')),
-              h('input', { id: 'iss-transfer-time', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(progress * 1000), disabled: stage !== 1 || noTransfer, 'aria-valuetext': (flight.elapsedSeconds / 60).toFixed(1) + ' elapsed minutes', style: { width: '100%', accentColor: '#fbbf24' }, onChange: function (event) { setFlight(Number(event.target.value) / 1000, 1); } }),
+              h('input', { id: 'iss-transfer-time', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(progress * 1000), disabled: stage !== 1 || noTransfer, 'aria-describedby': 'iss-transfer-profile-help', 'aria-valuetext': (flight.elapsedSeconds / 60).toFixed(1) + ' elapsed minutes', style: { width: '100%', accentColor: '#fbbf24' }, onChange: function (event) { setFlight(Number(event.target.value) / 1000, 1); } }),
               h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_flight_controls', 'Transfer flight controls') },
                 h('button', { type: 'button', 'data-iss-transfer-action': 'inject', disabled: stage !== 0 || noTransfer, onClick: function () { setFlight(0, 1); } }, '1 · Inject ' + signedBurn(plan.burn1)),
                 h('button', { type: 'button', 'data-iss-transfer-action': 'coast', disabled: stage !== 1 || ready || noTransfer, onClick: function () { setFlight(Math.min(1, progress + 300 / plan.coastSeconds), 1); } }, 'Coast +5 min'),
@@ -9512,6 +11676,7 @@
               stage === 2 ? 'The second burn changes the transfer ellipse into the target circle.' : ready ? 'You have reached the target radius. A second burn is required to stay in a circular orbit here.' : stage === 1 ? 'No engine is firing. Specific orbital energy remains ' + currentEnergy.toFixed(3) + ' MJ/kg while speed and altitude change.' : noTransfer ? 'Choose a different target to plan a maneuver.' : 'Both burns are ' + (target > orbitAlt ? 'prograde (along motion)' : 'retrograde (against motion)') + '. Coast time is ' + (plan.coastSeconds / 60).toFixed(1) + ' minutes.'),
             h('details', { className: 'iss-physics-note', style: { color: SOFT, fontSize: 11.5, lineHeight: 1.65, marginTop: 10 } },
               h('summary', null, 'Physics and model assumptions'),
+              h('p', { 'data-iss-transfer-energy': 'true' }, __alloFill(__alloT('stem.spacestation.transfer_energy_balance', 'Current energy per kilogram: kinetic {value1} MJ/kg + gravitational potential {value2} MJ/kg = total {value3} MJ/kg. Climb/descent is the radial velocity: positive away from Earth, negative toward it. Gravity points toward Earth even while the spacecraft climbs.'), { value1: flight.kineticEnergy.toFixed(3), value2: flight.potentialEnergy.toFixed(3), value3: currentEnergy.toFixed(3) })),
               h('p', null, 'Speed uses vis-viva: v² = μ(2/r − 1/a). Position uses Kepler’s equation, so equal time steps sweep equal areas. Eccentricity: ' + plan.eccentricity.toFixed(5) + '. Coast energy: ' + (-ISS_GM / (2 * plan.a)).toFixed(3) + ' MJ/kg. Thrust changes orbital energy only at the two burns.'),
               h('p', null, 'This ideal transfer joins circular orbits in one plane around a spherical Earth. It neglects drag, Earth’s oblateness, finite burn duration and rendezvous timing; matching altitude alone does not rendezvous with a station. Small altitude changes correctly look almost circular.'),
               h('a', { href: 'https://science.nasa.gov/learn/basics-of-space-flight/chapter4-1/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA · orbital transfer mechanics')))
@@ -9543,78 +11708,142 @@
       }
       function renderDragReboostVisual() {
         var solarModes = {
-          low: { label: 'QUIET THERMOSPHERE', factor: .6 },
-          nominal: { label: 'NOMINAL SOLAR ACTIVITY', factor: 1 },
-          high: { label: 'SOLAR-ACTIVE ATMOSPHERE', factor: 1.8 }
+          low: { label: __alloT('stem.spacestation.drag_quiet', 'Quiet thermosphere'), factor: .6 },
+          nominal: { label: __alloT('stem.spacestation.drag_nominal', 'Nominal solar activity'), factor: 1 },
+          high: { label: __alloT('stem.spacestation.drag_active', 'Solar-active atmosphere'), factor: 1.8 }
         };
         var solarId = solarModes[d.orbitSolar] ? d.orbitSolar : 'nominal';
         var solar = solarModes[solarId];
         var reboostDay = [0, 10, 20].indexOf(Number(d.orbitReboostDay)) >= 0 ? Number(d.orbitReboostDay) : 20;
-        var reboostGain = reboostDay > 0 ? 5 : 0;
         var frontalArea = issFlightNumber(d.orbitFrontalArea, 800, 200, 1600);
-        var model = issDragPropagate(orbitAlt, solar.factor, frontalArea, reboostDay);
-        var samples = model.samples;
-        var initialDrag = model.initial.dailyLossKm;
-        var endAltitude = model.endAltitude;
-        var netChange = endAltitude - orbitAlt;
-        var floorReached = model.stopped;
-        var trajectoryState = floorReached ? 'MODEL STOPS AT 180 KM' : endAltitude < 200 ? 'RAPID DECAY REGION' : reboostDay > 0 && netChange >= 0 ? 'REBOOST OFFSETS DRAG' : Math.abs(netChange) < 5 ? 'MANAGEABLE TREND' : 'ALTITUDE TREND DOWN';
-        var stateColor = floorReached || endAltitude < 200 ? '#f87171' : netChange < -5 ? '#fbbf24' : '#4ade80';
-        var maxAltitude = Math.max.apply(null, samples.map(function (sample) { return sample.altitude; }).concat([orbitAlt + 2]));
-        var minAltitude = Math.min.apply(null, samples.map(function (sample) { return sample.altitude; }).concat([orbitAlt - 2]));
-        var yMax = Math.ceil(maxAltitude + 3), yMin = Math.floor(minAltitude - 3);
-        if (yMax - yMin < 10) { yMax += 5; yMin -= 5; }
-        var plotLeft = 48, plotRight = 606, plotTop = 42, plotBottom = 172;
-        function plotX(day) { return plotLeft + day / 30 * (plotRight - plotLeft); }
-        function plotY(altitude) { return plotTop + (yMax - altitude) / (yMax - yMin) * (plotBottom - plotTop); }
-        var path = samples.map(function (sample, i) { return (i ? 'L' : 'M') + plotX(sample.day).toFixed(1) + ' ' + plotY(sample.altitude).toFixed(1); }).join(' ');
-        var areaPath = path + ' L' + plotX(model.endDay) + ' ' + plotBottom + ' L' + plotLeft + ' ' + plotBottom + ' Z';
-        var thresholdVisible = yMin <= 200 && yMax >= 200;
-        var thresholdY = plotY(200);
-        var plannedLabel = reboostDay > 0 ? 'DAY ' + reboostDay + ' // +' + reboostGain + ' KM' : 'NO REBOOST';
-        var rateMeters = initialDrag * 1000;
-        var rateLabel = rateMeters < 1 ? '<1' : rateMeters.toFixed(rateMeters < 10 ? 1 : 0);
-        var aria = __alloFill(__alloT('stem.spacestation.a11y_drag_reboost', 'Thirty day simplified altitude model. Start {value1} kilometers. {value2}. {value3}. End altitude {value4} kilometers, net change {value5} {value6} kilometers. {value7}.'), { value1: orbitAlt, value2: solar.label.toLowerCase(), value3: plannedLabel.toLowerCase(), value4: endAltitude.toFixed(1), value5: netChange >= 0 ? __alloT('stem.spacestation.a11y_reboost_plus', 'plus') : __alloT('stem.spacestation.a11y_reboost_minus', 'minus'), value6: Math.abs(netChange).toFixed(1), value7: trajectoryState.toLowerCase() });
-        return h('div', { className: 'iss-learning-visual iss-drag-reboost-visual', 'data-iss-drag-model': solarId, 'data-iss-reboost-day': reboostDay },
-          h('svg', { viewBox: '0 0 640 218', role: 'img', 'aria-label': aria },
-            h('defs', null,
-              h('linearGradient', { id: 'iss-drag-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#03101f' }), h('stop', { offset: '100%', stopColor: '#0a1b31' })),
-              h('linearGradient', { id: 'iss-drag-area', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: .34 }), h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: .02 })),
-              h('filter', { id: 'iss-drag-glow', x: '-100%', y: '-100%', width: '300%', height: '300%' }, h('feGaussianBlur', { stdDeviation: 4, result: 'dg' }), h('feMerge', null, h('feMergeNode', { in: 'dg' }), h('feMergeNode', { in: 'SourceGraphic' })))),
-            h('rect', { width: 640, height: 218, fill: 'url(#iss-drag-bg)' }),
-            [0,.5,1].map(function (fraction, i) { var y = plotTop + fraction * (plotBottom - plotTop); var altitude = yMax - fraction * (yMax - yMin); return h('g', { key: i }, h('line', { x1: plotLeft, y1: y, x2: plotRight, y2: y, stroke: '#334155', strokeWidth: 1 }), h('text', { x: 41, y: y + 3, textAnchor: 'end', fill: '#94a3b8', fontSize: 7.5 }, altitude.toFixed(0))); }),
-            thresholdVisible ? h('g', null, h('line', { x1: plotLeft, y1: thresholdY, x2: plotRight, y2: thresholdY, stroke: '#f87171', strokeWidth: 1.2, strokeDasharray: '5 4' }), h('text', { x: plotRight, y: thresholdY - 5, textAnchor: 'end', fill: '#fca5a5', fontSize: 7.5, fontWeight: 850 }, '200 KM // RAPID DECAY')) : null,
-            h('path', { d: areaPath, fill: 'url(#iss-drag-area)' }),
-            h('path', { d: path, fill: 'none', stroke: stateColor, strokeWidth: 2.8, strokeLinejoin: 'round', filter: 'url(#iss-drag-glow)' }),
-            reboostDay > 0 && model.boostDeltaV > 0 ? h('g', null,
-              h('line', { x1: plotX(reboostDay), y1: plotTop, x2: plotX(reboostDay), y2: plotBottom, stroke: '#e879f9', strokeWidth: 1.4, strokeDasharray: '4 4' }),
-              h('path', { d: 'M' + (plotX(reboostDay) - 5) + ' ' + (plotTop + 8) + ' L' + (plotX(reboostDay) + 5) + ' ' + (plotTop + 8) + ' L' + plotX(reboostDay) + ' ' + plotTop + ' Z', fill: '#e879f9' }),
-              h('text', { x: plotX(reboostDay), y: plotTop + 19, textAnchor: 'middle', fill: '#f0abfc', fontSize: 7.5, fontWeight: 850 }, 'REBOOST +' + reboostGain + ' KM')) : null,
-            h('circle', { cx: plotLeft, cy: plotY(orbitAlt), r: 4, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 }),
-            h('circle', { cx: plotX(model.endDay), cy: plotY(endAltitude), r: 5, fill: stateColor, stroke: '#f8fafc', strokeWidth: 1.2 }),
-            h('text', { x: plotLeft + 6, y: plotY(orbitAlt) - 7, fill: '#bae6fd', fontSize: 8, fontWeight: 850 }, 'START ' + orbitAlt.toFixed(0) + ' KM'),
-            h('text', { x: plotX(model.endDay) - 5, y: plotY(endAltitude) - 8, textAnchor: 'end', fill: stateColor, fontSize: 8.5, fontWeight: 900 }, 'DAY ' + model.endDay.toFixed(floorReached ? 1 : 0) + ' // ' + endAltitude.toFixed(1) + ' KM'),
-            [0,10,20,30].map(function (day) { return h('g', { key: day }, h('line', { x1: plotX(day), y1: plotBottom, x2: plotX(day), y2: plotBottom + 5, stroke: '#64748b' }), h('text', { x: plotX(day), y: 189, textAnchor: day === 0 ? 'start' : day === 30 ? 'end' : 'middle', fill: '#94a3b8', fontSize: 7.5 }, 'DAY ' + day)); }),
-            h('text', { x: 20, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'DRAG + REBOOST // 30-DAY TRAINING MODEL'),
-            h('text', { x: 620, y: 23, textAnchor: 'end', fill: stateColor, fontSize: 8.5, fontWeight: 900 }, trajectoryState),
-            h('text', { x: 48, y: 207, fill: '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, solar.label + ' // INITIAL DECAY ' + rateLabel + ' M/DAY'),
-            h('text', { x: 606, y: 207, textAnchor: 'end', fill: '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, plannedLabel + ' // NET ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' KM')),
-          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_solar_activity_for_the_drag_model', 'Select solar activity for the drag model') }, Object.keys(solarModes).map(function (id) { var on = id === solarId; return h('button', { key: id, type: 'button', 'data-iss-solar-mode': id, 'aria-pressed': on, onClick: function () { upd({ orbitSolar: id }); } }, solarModes[id].label.toLowerCase()); })),
-          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_a_reboost_plan', 'Select a reboost plan') }, [{ day: 0, label: 'No reboost' }, { day: 10, label: 'Reboost day 10' }, { day: 20, label: 'Reboost day 20' }].map(function (plan) { var on = plan.day === reboostDay; return h('button', { key: plan.day, type: 'button', 'data-iss-reboost-plan': plan.day, 'aria-pressed': on, onClick: function () { upd({ orbitReboostDay: plan.day }); } }, plan.label); })),
-          h('div', { style: { padding: '8px 12px' } },
-            h('label', { htmlFor: 'iss-drag-frontal-area', style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: SOFT, fontSize: 12 } }, h('span', null, 'Frontal area exposed to thin air'), h('strong', { style: { color: '#7dd3fc' } }, frontalArea + ' m²')),
-            h('input', { id: 'iss-drag-frontal-area', type: 'range', min: 200, max: 1600, step: 50, value: frontalArea, 'aria-valuetext': frontalArea + ' square meters', style: { width: '100%', accentColor: '#38bdf8' }, onChange: function (event) { upd({ orbitFrontalArea: Number(event.target.value) }); } })),
-          h('div', { className: 'iss-flight-telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8, padding: '0 12px 8px', color: SOFT, fontSize: 11.5, lineHeight: 1.8 } },
-            h('span', null, 'Density: ', h('strong', { style: { color: '#e0f2fe' } }, model.initial.density.toExponential(2) + ' kg/m³')),
-            h('span', null, 'Drag force: ', h('strong', { style: { color: '#fcd34d' } }, model.initial.forceN.toPrecision(3) + ' N')),
-            h('span', null, 'Ballistic coefficient: ', h('strong', { style: { color: '#e0f2fe' } }, model.initial.ballisticCoefficient.toFixed(0) + ' kg/m²')),
-            h('span', null, 'Reboost budget: ', h('strong', { style: { color: '#e9d5ff' } }, model.boostDeltaV.toFixed(2) + ' m/s'))),
-          h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, 'Initial modeled decay ' + rateLabel + ' m/day · ' + (floorReached ? 'Model ends on day ' + model.endDay.toFixed(1) + ' at ' : 'Day-30 altitude ') + endAltitude.toFixed(1) + ' km · Net ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' km.' + (floorReached ? ' No reentry prediction is made below 180 km.' : '')),
-          h('details', { className: 'iss-physics-note', style: { padding: '0 12px 10px', color: SOFT, fontSize: 11.5, lineHeight: 1.65 } }, h('summary', null, 'Drag model and assumptions'),
-            h('p', null, 'D = ½ρCᴅAv²; orbital energy loss determines altitude decay. Mass: 420,000 kg; Cᴅ: 2.2; adjustable area: ' + frontalArea + ' m². Density decreases exponentially with a 60 km scale height. Solar settings multiply this illustrative density. The integrator updates once per simulated hour.'),
-            h('p', null, 'The +5 km reboost represents a completed two-burn circular raise, with its Δv computed from orbital mechanics. This model assumes near-circular orbits and ignores atmospheric rotation, winds, changing attitude and space-weather forecasts. Density far from 420 km is an extrapolation, not measured data.'),
-            h('a', { href: 'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA · drag equation')),
-          h('div', { className: 'iss-visual-caption' }, h('span', null, 'Anchored to 75 m/day at 420 km · nominal density, 800 m² area'), h('span', null, 'Illustrative thermosphere · not a reentry forecast')));
+        var mass = issFlightNumber(d.orbitDragMass, 420000, 200000, 600000);
+        var gain = issFlightNumber(d.orbitReboostGain, 5, 1, 20);
+        var options = { mass: mass, gain: gain };
+        var model = issDragPropagate(orbitAlt, solar.factor, frontalArea, reboostDay, options);
+        var baseline = issDragPropagate(orbitAlt, solar.factor, frontalArea, 0, options);
+        var time = issFlightNumber(d.orbitDragTime, 0, 0, model.endDay * 86400);
+        var probe = issDragInspect(model, time / 86400, d.orbitDragSide);
+        var reference = issDragInspect(baseline, probe.day);
+        var showReference = d.orbitDragReference !== false;
+        var burn = model.boostEvent;
+        var values = model.samples.concat(baseline.samples).map(function (sample) { return sample.altitude; });
+        var yMax = Math.ceil(Math.max.apply(null, values) + 2), yMin = Math.floor(Math.min.apply(null, values) - 2);
+        if (yMax - yMin < 8) { yMax += 2; yMin -= 2; }
+        function plotX(day) { return 6 + day / 30 * 588; }
+        function plotY(altitude) { return 8 + (yMax - altitude) / (yMax - yMin) * 164; }
+        function pathFor(samples) { return samples.map(function (sample, index) { return (index ? 'L' : 'M') + plotX(sample.day).toFixed(2) + ' ' + plotY(sample.altitude).toFixed(2); }).join(' '); }
+        function change(patch) { upd(Object.assign({ orbitDragTime: 0, orbitDragSide: 'after', orbitDragSeekToken: !d.orbitDragSeekToken }, patch)); }
+        function seek(day, side) { upd({ orbitDragTime: Math.max(0, Math.min(model.endDay, day)) * 86400, orbitDragSide: side || 'after', orbitDragSeekToken: !d.orbitDragSeekToken }); }
+        function pointerSeek(event) {
+          if (event.isPrimary === false) return;
+          var bounds = event.currentTarget.getBoundingClientRect();
+          if (bounds.width > 0) seek(((event.clientX - bounds.left) / bounds.width * 600 - 6) / 588 * 30);
+        }
+        function setting(id, label, value, min, max, step, display, field, disabled) {
+          return h('label', { className: 'iss-experiment-control', htmlFor: id },
+            h('span', null, label, h('strong', null, display)),
+            h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, disabled: disabled, 'aria-valuetext': display,
+              onChange: function (event) { var patch = {}; patch[field] = Number(event.target.value); change(patch); } }));
+        }
+        var netChange = model.endAltitude - orbitAlt;
+        var plannedLabel = reboostDay ? 'REBOOST +' + gain + ' KM · DAY ' + reboostDay : __alloT('stem.spacestation.drag_no_burn', 'NO REBOOST');
+        var phase = model.stopped && probe.day >= model.endDay ? __alloT('stem.spacestation.drag_limit', 'Model limit reached') : probe.boostApplied ? __alloT('stem.spacestation.drag_after_burn', 'Coasting after reboost') : __alloT('stem.spacestation.drag_before_burn', 'Coasting without a reboost');
+        var aria = __alloFill(__alloT('stem.spacestation.a11y_drag_reboost', 'Thirty day simplified altitude model. Start {value1} kilometers. {value2}. {value3}. End altitude {value4} kilometers, net change {value5} {value6} kilometers. {value7}.'), { value1: orbitAlt, value2: solar.label, value3: plannedLabel, value4: model.endAltitude.toFixed(1), value5: netChange >= 0 ? __alloT('stem.spacestation.a11y_reboost_plus', 'plus') : __alloT('stem.spacestation.a11y_reboost_minus', 'minus'), value6: Math.abs(netChange).toFixed(1), value7: phase });
+        var panelWidth = 28 + frontalArea / 1600 * 44;
+        var rate = probe.drag.dailyLossKm * 1000;
+        var comparison = reference.valid ? __alloFill(__alloT('stem.spacestation.drag_altitude_saved', '{value1} km above the no-reboost orbit at this time.'), { value1: Math.max(0, probe.altitude - reference.altitude).toFixed(2) }) : __alloFill(__alloT('stem.spacestation.drag_reference_ended', 'The no-reboost model reached 180 km on day {value1}; comparison stops there.'), { value1: baseline.endDay.toFixed(2) });
+        return h('section', { id: 'iss-drag-lab', className: 'iss-drag-reboost-visual iss-drag-lab', 'data-iss-drag-model': solarId, 'data-iss-reboost-day': reboostDay, 'aria-labelledby': 'iss-drag-title' },
+          h('div', { className: 'iss-experiment-heading' }, h('div', null,
+            h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.drag_kicker', 'ORBIT MAINTENANCE / 30-DAY LAB')),
+            h('h3', { id: 'iss-drag-title' }, __alloT('stem.spacestation.drag_title', 'Keep an orbit alive.'))),
+            h('span', { className: 'iss-model-badge' }, __alloT('stem.spacestation.drag_badge', 'Drag + propellant model'))),
+          h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.drag_intro', 'Thin air removes orbital energy. Explore the trade-off between mass, exposed area, and reboost size, then inspect how a burn changes the next month.')),
+          h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_solar_activity_for_the_drag_model', 'Select solar activity for the drag model') }, Object.keys(solarModes).map(function (id) {
+            return h('button', { key: id, type: 'button', 'data-iss-solar-mode': id, 'aria-pressed': id === solarId, onClick: function () { change({ orbitSolar: id }); } }, solarModes[id].label);
+          })),
+          h('div', { className: 'iss-experiment-controls' },
+            setting('iss-drag-frontal-area', __alloT('stem.spacestation.drag_area', 'Frontal area exposed to thin air'), frontalArea, 200, 1600, 50, frontalArea + ' m²', 'orbitFrontalArea'),
+            setting('iss-drag-mass', __alloT('stem.spacestation.drag_mass', 'Station mass at start'), mass, 200000, 600000, 20000, (mass / 1000).toFixed(0) + ' t', 'orbitDragMass')),
+          h('div', { className: 'iss-drag-burn-plan' },
+            h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_a_reboost_plan', 'Select a reboost plan') },
+              [[0, __alloT('stem.spacestation.drag_off', 'No reboost')], [10, __alloT('stem.spacestation.drag_day10', 'Reboost day 10')], [20, __alloT('stem.spacestation.drag_day20', 'Reboost day 20')]].map(function (plan) {
+                return h('button', { key: plan[0], type: 'button', 'data-iss-reboost-plan': plan[0], 'aria-pressed': plan[0] === reboostDay, onClick: function () { change({ orbitReboostDay: plan[0] }); } }, plan[1]);
+              })),
+            setting('iss-drag-gain', __alloT('stem.spacestation.drag_gain', 'Completed circular orbit raise'), gain, 1, 20, 1, '+' + gain + ' km', 'orbitReboostGain', !reboostDay),
+            h('p', { 'data-iss-drag-burn-budget': 'true' }, burn ? __alloFill(__alloT('stem.spacestation.drag_budget', 'Two-burn budget: {value1} m/s · {value2} kg propellant at an illustrative Isp of 300 s.'), { value1: model.boostDeltaV.toFixed(2), value2: model.boostPropellantKg.toFixed(1) }) : reboostDay ? __alloT('stem.spacestation.drag_burn_unreachable', 'The model reaches 180 km before this reboost. Try an earlier burn or a higher starting orbit.') : __alloT('stem.spacestation.drag_no_budget', 'No burn scheduled. The station coasts under drag throughout the experiment.'))),
+          h('div', { className: 'iss-drag-chart-heading' },
+            h('strong', null, __alloT('stem.spacestation.drag_altitude_chart', 'Altitude forecast (km)')),
+            h('button', { type: 'button', 'data-iss-drag-reference-toggle': 'true', 'aria-pressed': showReference, onClick: function () { upd({ orbitDragReference: !showReference }); } }, __alloT('stem.spacestation.drag_compare', 'Compare no reboost'))),
+          h('div', { className: 'iss-drag-plot-grid' },
+            h('div', { className: 'iss-drag-y-axis', 'aria-hidden': 'true' }, [yMax, (yMax + yMin) / 2, yMin].map(function (value) { return h('span', { key: value }, value.toFixed(0)); })),
+            h('svg', { viewBox: '0 0 600 180', preserveAspectRatio: 'none', role: 'img', 'aria-label': aria, 'data-iss-drag-plot': 'true',
+              onPointerDown: function (event) { if (event.isPrimary === false || event.button > 0) return; event.preventDefault(); try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} pointerSeek(event); },
+              onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) pointerSeek(event); },
+              onPointerUp: function (event) { try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} },
+              onPointerCancel: function (event) { try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} } },
+              h('defs', null, h('linearGradient', { id: 'iss-drag-area', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#2dd4bf', stopOpacity: .24 }), h('stop', { offset: '100%', stopColor: '#2dd4bf', stopOpacity: 0 }))),
+              [8, 90, 172].map(function (y) { return h('line', { key: y, x1: 0, y1: y, x2: 600, y2: y, stroke: '#2e465e', vectorEffect: 'non-scaling-stroke' }); }),
+              [0, 10, 20, 30].map(function (day) { return h('line', { key: day, x1: plotX(day), y1: 8, x2: plotX(day), y2: 172, stroke: '#243b51', vectorEffect: 'non-scaling-stroke' }); }),
+              h('path', { d: pathFor(model.samples) + ' L' + plotX(model.endDay) + ' 172 L6 172 Z', fill: 'url(#iss-drag-area)' }),
+              showReference ? h('path', { 'data-iss-drag-reference': 'true', d: pathFor(baseline.samples), fill: 'none', stroke: '#aebace', strokeWidth: 2, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }) : null,
+              burn ? h('line', { x1: plotX(burn.day), y1: 8, x2: plotX(burn.day), y2: 172, stroke: '#e879f9', strokeDasharray: '3 5', vectorEffect: 'non-scaling-stroke' }) : null,
+              h('path', { d: pathFor(model.samples), fill: 'none', stroke: '#5eead4', strokeWidth: 2.5, strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+              h('line', { x1: plotX(probe.day), y1: 5, x2: plotX(probe.day), y2: 175, stroke: '#e0f2fe', strokeOpacity: .7, vectorEffect: 'non-scaling-stroke' }),
+              h('circle', { cx: plotX(probe.day), cy: plotY(probe.altitude), r: 4, fill: '#f8fafc', stroke: '#0f766e', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }),
+              model.stopped ? h('path', { d: 'M' + (plotX(model.endDay) - 4) + ' ' + (plotY(180) - 4) + ' l8 8 m-8 0 l8 -8', stroke: '#fb923c', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }) : null)),
+          h('div', { className: 'iss-drag-x-axis', 'aria-hidden': 'true' }, [0, 10, 20, 30].map(function (day) { return h('span', { key: day }, __alloT('stem.spacestation.drag_day', 'Day') + ' ' + day); })),
+          h('div', { className: 'iss-drag-chart-key' }, h('span', null, '━ ' + __alloT('stem.spacestation.drag_selected_plan', 'Selected plan')), showReference ? h('span', null, '┄ ' + __alloT('stem.spacestation.drag_baseline', 'No reboost')) : null, h('span', null, plannedLabel)),
+          h('p', { id: 'iss-drag-inspect-help', className: 'iss-drag-help' }, __alloT('stem.spacestation.drag_inspect_help', 'Drag or tap the graph to inspect a day. The time slider also works with arrow keys. Each trajectory ends at 180 km; this model does not predict reentry.')),
+          h(issExperimentPlayback, { React: React, id: 'drag', t: __alloT, value: probe.day * 86400, max: model.endDay * 86400,
+            speeds: [86400, 432000, 864000], speedLabels: [__alloT('stem.spacestation.drag_rate1', '1 day/s'), __alloT('stem.spacestation.drag_rate5', '5 days/s'), __alloT('stem.spacestation.drag_rate10', '10 days/s')],
+            resetKey: [orbitAlt, solarId, frontalArea, mass, gain, reboostDay, !!d.orbitDragSeekToken].join(':'),
+            onAdvance: function (seconds) { upd({ orbitDragTime: seconds, orbitDragSide: 'after' }); } }),
+          h('label', { className: 'iss-experiment-control', htmlFor: 'iss-drag-day' },
+            h('span', null, __alloT('stem.spacestation.drag_inspect_day', 'Inspect experiment time'), h('strong', null, __alloT('stem.spacestation.drag_day', 'Day') + ' ' + probe.day.toFixed(2))),
+            h('input', { id: 'iss-drag-day', type: 'range', min: 0, max: model.endDay, step: 'any', value: probe.day, 'aria-describedby': 'iss-drag-inspect-help',
+              'aria-valuetext': __alloFill(__alloT('stem.spacestation.drag_day_value', 'Day {value1} of {value2}'), { value1: probe.day.toFixed(2), value2: model.endDay.toFixed(2) }),
+              onChange: function (event) { seek(Number(event.target.value)); } })),
+          h('div', { className: 'iss-experiment-actions' },
+            [[__alloT('stem.spacestation.drag_restart', 'Restart time'), 'reset', 0, 'after', false], [__alloT('stem.spacestation.drag_inspect_before', 'Before reboost'), 'before', reboostDay, 'before', !burn], [__alloT('stem.spacestation.drag_inspect_after', 'After reboost'), 'after', reboostDay, 'after', !burn], [__alloT('stem.spacestation.drag_inspect_end', 'Jump to end'), 'end', model.endDay, 'after', false]].map(function (button) {
+              return h('button', { key: button[1], type: 'button', 'data-iss-drag-action': button[1], disabled: button[4], onClick: function () { seek(button[2], button[3]); } }, button[0]);
+            })),
+          h('div', { className: 'iss-drag-inspector', 'data-iss-drag-phase': probe.boostApplied ? 'after' : 'before' },
+            h('div', { className: 'iss-drag-inspector-heading' }, h('strong', null, __alloT('stem.spacestation.drag_day', 'Day') + ' ' + probe.day.toFixed(2)), h('span', { role: 'status' }, phase)),
+            h('div', { className: 'iss-flight-telemetry iss-drag-readings' },
+              [['altitude', __alloT('stem.spacestation.drag_current_altitude', 'Current altitude'), probe.altitude.toFixed(2) + ' km'], ['decay', __alloT('stem.spacestation.drag_current_decay', 'Current altitude loss rate'), (rate < .01 ? rate.toExponential(2) : rate.toFixed(1)) + ' m/day'], ['force', __alloT('stem.spacestation.drag_current_force', 'Drag force'), probe.drag.forceN.toPrecision(3) + ' N'], ['fuel', __alloT('stem.spacestation.drag_fuel_used', 'Propellant used'), probe.propellantKg.toFixed(1) + ' kg']].map(function (metric) {
+                return h('div', { key: metric[0], className: 'iss-flight-reading', 'data-iss-drag-reading': metric[0] }, h('span', null, metric[1]), h('strong', null, metric[2]));
+              })),
+            h('div', { className: 'iss-drag-scene' },
+              h('svg', { viewBox: '0 0 600 160', role: 'img', 'aria-label': __alloT('stem.spacestation.drag_force_diagram', 'Schematic station above Earth. Orbital motion is rightward and drag acts leftward. Solar panel width illustrates the selected exposed area.') },
+                h('defs', null,
+                  h('linearGradient', { id: 'iss-drag-earth', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#26789b' }), h('stop', { offset: '24%', stopColor: '#143e68' }), h('stop', { offset: '100%', stopColor: '#061525' })),
+                  h('linearGradient', { id: 'iss-drag-hull', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f1f5f9' }), h('stop', { offset: '45%', stopColor: '#9cbbd2' }), h('stop', { offset: '100%', stopColor: '#2c4b69' }))),
+                h('ellipse', { cx: 280, cy: 415, rx: 550, ry: 302, fill: 'none', stroke: '#67e8f9', strokeWidth: 4, opacity: .16 }),
+                h('ellipse', { cx: 280, cy: 415, rx: 550, ry: 298, fill: 'url(#iss-drag-earth)', stroke: '#7dd3fc', strokeWidth: 1.5 }),
+                [28, 56, 84].map(function (y) { return h('path', { key: y, d: 'M555 ' + y + ' h-88 l8 -3 m-8 3 l8 3', fill: 'none', stroke: '#7dd3fc', opacity: .28, strokeWidth: 1 }); }),
+                h('g', { transform: 'translate(295,63)' },
+                  h('path', { d: 'M-136 0 H136 M-90 -8 H90 M-90 8 H90', stroke: '#718ba5', strokeWidth: 3 }),
+                  [-1, 1].map(function (side) { return h('g', { key: side, transform: 'translate(' + (side * 95) + ',0)' },
+                    h('rect', { x: -panelWidth / 2, y: -37, width: panelWidth, height: 74, rx: 1, fill: '#192e61', stroke: '#e5b777', strokeWidth: 1.4 }),
+                    [-25, -13, 0, 13, 25].map(function (y) { return h('line', { key: y, x1: -panelWidth / 2, x2: panelWidth / 2, y1: y, y2: y, stroke: '#a78bfa', strokeOpacity: .5, strokeWidth: .8 }); }),
+                    h('path', { d: 'M0 -37 V37', stroke: '#e2cda0', strokeWidth: 2 })); }),
+                  h('rect', { x: -55, y: -11, width: 110, height: 22, rx: 9, fill: 'url(#iss-drag-hull)', stroke: '#cbd5e1' }),
+                  [-33, 0, 33].map(function (x) { return h('path', { key: x, d: 'M' + x + ' -11 V11', stroke: '#375b7a', strokeWidth: 2 }); }),
+                  h('rect', { x: -12, y: -28, width: 24, height: 57, rx: 9, fill: 'url(#iss-drag-hull)', stroke: '#d6e4ef' }),
+                  h('circle', { cx: 0, cy: 28, r: 5, fill: '#0d3c57', stroke: '#d6e4ef' })),
+                h('path', { d: 'M150 110 H72 l9 -5 m-9 5 l9 5', fill: 'none', stroke: '#fb923c', strokeWidth: 2.5 }),
+                h('path', { d: 'M405 110 H481 l-9 -5 m9 5 l-9 5', fill: 'none', stroke: '#7dd3fc', strokeWidth: 2.5 })),
+              h('div', { className: 'iss-drag-scene-key' }, h('span', null, '← ' + __alloT('stem.spacestation.drag_direction', 'Drag')), h('span', null, __alloT('stem.spacestation.drag_motion', 'Orbital motion') + ' →')),
+              h('p', { className: 'iss-drag-help' }, __alloT('stem.spacestation.drag_scene_help', 'Direction schematic; body size, Earth distance, and arrow lengths are not to scale. Panel width illustrates exposed area.'))),
+            h('p', { className: 'iss-drag-comparison', 'data-iss-drag-comparison': reference.valid ? 'valid' : 'ended' }, comparison),
+            h('div', { className: 'iss-drag-details' },
+              h('span', null, __alloT('stem.spacestation.drag_density', 'Density') + ': ' + probe.drag.density.toExponential(2) + ' kg/m³'),
+              h('span', null, __alloT('stem.spacestation.drag_mass_now', 'Current mass') + ': ' + (probe.mass / 1000).toFixed(2) + ' t'),
+              h('span', null, __alloT('stem.spacestation.drag_beta', 'Ballistic coefficient') + ': ' + probe.drag.ballisticCoefficient.toFixed(0) + ' kg/m²'))),
+          h('details', { className: 'iss-physics-note' }, h('summary', null, __alloT('stem.spacestation.drag_assumptions', 'Drag model and assumptions')),
+            h('p', null, __alloT('stem.spacestation.drag_model_note', 'D = ½ρCᴅAv². Orbital energy loss determines altitude decay. Cᴅ = 2.2; density follows an illustrative 60 km scale height, calibrated to 75 m/day at 420 km for 420 t and 800 m². Solar settings scale density. Hourly midpoint integration updates drag as altitude and mass change; the time inspector interpolates between those samples.')),
+            h('p', null, __alloT('stem.spacestation.drag_burn_note', 'A reboost is a completed two-burn circular raise. Its coast is unresolved here and appears as a jump at the selected day. Propellant = starting mass × (1 − exp(−Δv / (300 × 9.80665))); consumed propellant reduces subsequent station mass. This near-circular model omits atmospheric rotation, winds, changing attitude, and space-weather forecasts.')),
+            h('a', { href: 'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.spacestation.drag_reference_link', 'NASA · drag equation'))));
       }
       function renderSystems() {
         var idx = issIndex(d.sysIdx, SYSTEMS.length, 0);
@@ -9723,7 +11952,7 @@
         var landShare = issLandShareWithin(inc);
         var westShift = 360 * (orbitT * 60) / SIDEREAL_DAY_S;
         var blockedPads = LAUNCH_SITES.filter(function (s) { return inc < s.lat - 0.05; });
-        return h('div', { className: 'iss-learning-visual', 'data-iss-ground-track': inc.toFixed(1) },
+        return h('div', { className: 'iss-learning-visual', 'data-iss-ground-track': inc.toFixed(1), tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.ground_track_scroll', 'Ground track diagram. Use arrow keys to scroll when needed.') },
           h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_ground_track', 'World map with the station ground track at {value1} degrees inclination. The track reaches {value1} degrees north and south, crossing {value2} percent of Earth’s land area. Each orbit shifts {value3} degrees west.'), { value1: inc.toFixed(1), value2: Math.round(landShare * 100), value3: westShift.toFixed(1) }) + ' ' + (blockedPads.length ? __alloFill(__alloT('stem.spacestation.a11y_ground_track_blocked', '{value1} cannot reach this orbit directly; the other launch sites can.'), { value1: blockedPads.map(function (s) { return s.name; }).join(' and ') }) : // ★Derived, not "five". The readout below this map already computes
 // `(LAUNCH_SITES.length - blocked.length) + ' of ' + LAUNCH_SITES.length`,
 // so the count had two derivations and one of them was a literal. It happens
@@ -9993,7 +12222,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
                 h('span', { style: { color: '#7dd3fc', fontWeight: 800 }, 'aria-hidden': 'true' }, orbitAlt + ' km')),
               h('input', {
                 id: 'iss-orbit-alt', type: 'range', min: 200, max: 2000, step: 10, value: orbitAlt,
-                onChange: function (e) { upd({ orbitAlt: parseInt(e.target.value, 10), orbitTouched: true, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: null }); },
+                onChange: function (e) { upd({ orbitAlt: parseInt(e.target.value, 10), orbitTouched: true, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: null, orbitDragTime: 0, orbitDragSide: 'after', orbitDragSeekToken: !d.orbitDragSeekToken }); },
                 'aria-valuetext': orbitAlt + ' kilometers', 'aria-describedby': 'iss-orbit-tradeoff',
                 style: { width: '100%', accentColor: '#38bdf8' }
               }),
@@ -10338,13 +12567,32 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
 
       function enhancementStyles() {
         return h('style', null, [
+          '.iss-eva-posture{border-color:#655489!important;background:linear-gradient(115deg,#20243e,#101f32)!important}.iss-eva-posture .iss-eva-counter-heading h4{color:#ddd6fe}.iss-eva-posture input:disabled{opacity:.45;cursor:not-allowed}.iss-eva-work-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}.iss-eva-work-readings .iss-flight-reading{padding:10px;border:1px solid #514967;border-radius:9px;background:#111c30}.iss-eva-work-readings strong{color:#ddd6fe!important}.iss-eva-work-readings span{line-height:1.55}.iss-eva-plot-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin:16px 0 9px;font-size:12px}.iss-eva-plot-heading button{min-height:38px;padding:8px 10px;border-radius:8px;border:1px solid #6e638c;background:#1b263d;color:#e0d8fa;font:700 11px Inter,system-ui,sans-serif;cursor:pointer}.iss-eva-plot-heading button[aria-pressed="true"]{background:#393052;border-color:#c4b5fd}.iss-eva-plot-grid{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;min-width:0;user-select:none}.iss-eva-y-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:6px 0;font:10px/12px ui-monospace,monospace;color:#bfd0e1}.iss-eva-plot-grid svg{display:block;width:100%;height:200px;border-radius:7px;background:#061320;cursor:crosshair;touch-action:pan-y;overflow:hidden}.iss-eva-x-axis{display:flex;justify-content:space-between;gap:2px;margin:7px 4px 0 42px;font:10px ui-monospace,monospace;color:#bfd0e1}.iss-eva-phase-key{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:14px;color:#bdd3e7;font:10.5px/1.6 ui-monospace,monospace}.iss-eva-phase-key span{border-left:2px solid #c4b5fd;padding-left:7px}.iss-eva-phase-key span:first-child{border-color:#fbbf24}.iss-eva-posture-comparison{border-left:2px solid #c4b5fd;background:rgba(167,139,250,.08);padding:9px 12px;font-size:12px;line-height:1.6;color:#ddd6fe}.iss-eva-reaction .iss-physics-note a{color:#b9abff}.iss-eva-reaction .iss-experiment-actions button{min-height:40px}@media(max-width:600px){.iss-eva-work-readings{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-eva-work-readings>div:last-child{grid-column:1/-1}}@media(forced-colors:active){.iss-eva-posture,.iss-eva-work-readings .iss-flight-reading,.iss-eva-plot-heading button,.iss-eva-posture-comparison{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-eva-work-readings strong,.iss-eva-y-axis,.iss-eva-x-axis,.iss-eva-phase-key,.iss-eva-reaction .iss-physics-note a{color:CanvasText!important}.iss-eva-plot-heading button[aria-pressed="true"]{background:Highlight!important;color:HighlightText!important}}',
+          ".iss-water-lab.iss-debris-lab{background:radial-gradient(ellipse at 0 0,#163b46 0,transparent 50%),#091724}.iss-debris-lab .iss-debris-workspace{grid-template-columns:minmax(0,1.6fr) minmax(250px,.85fr)}.iss-debris-lab .iss-water-scene{align-self:start;background:linear-gradient(135deg,#102c3a,#0a1928)}.iss-debris-lab .iss-water-scene-top{flex-wrap:wrap;line-height:1.5}.iss-debris-lab .iss-water-phase{white-space:normal;line-height:1.5;color:#a7f3d0;border-color:#457e78}.iss-debris-lab .iss-ops-control select{display:block;width:100%;margin-top:9px;min-height:38px;border:1px solid #57768c;background:#0b2032;color:#d4e7ef;border-radius:8px;padding:8px;font:inherit;font-size:12px}.iss-debris-lab .iss-debris-inspector{min-height:65px;border-left:2px solid #62b7af;padding-left:12px;margin:13px 0 18px;color:#c1d8e3}.iss-debris-chart-value{font:600 13px ui-monospace,monospace;color:#a7f3d0}.iss-debris-energy-bar{display:flex;height:12px;overflow:hidden;border-radius:8px;background:#193143;margin:10px 0 12px}.iss-debris-energy-bar span{height:100%}.iss-debris-budget{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.iss-debris-budget .iss-water-reading strong{font-size:18px}.iss-debris-comparison .iss-water-chart-heading{margin:0 0 10px}.iss-debris-footprint-row{display:grid;grid-template-columns:170px minmax(0,1fr);gap:20px;align-items:center}.iss-root .iss-debris-footprint-row svg{display:block;width:100%;height:auto;min-width:0}.iss-debris-footprint-row p.iss-debris-limit{font-size:11px;color:#e7d7af;border-left:2px solid #b69a5b;padding-left:10px}.iss-debris-lab .iss-water-setup .iss-water-help{margin:0;font-size:11px}.iss-debris-lab .iss-water-chart-heading{flex-wrap:wrap}.iss-debris-lab .iss-water-x-axis{font-size:10px;gap:6px}.iss-debris-lab .iss-water-x-axis span:last-child{text-align:right}.iss-debris-lab .iss-water-clock-heading{flex-wrap:wrap}@media(max-width:900px){.iss-debris-lab .iss-debris-workspace{grid-template-columns:1fr}.iss-debris-lab .iss-water-setup{grid-template-columns:1fr 1fr}.iss-debris-lab .iss-water-setup .iss-water-help{align-self:center}.iss-debris-budget{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.iss-debris-lab .iss-water-setup{grid-template-columns:1fr}.iss-debris-footprint-row{grid-template-columns:1fr;gap:8px}.iss-root .iss-debris-footprint-row svg{max-width:180px;margin:0 auto}.iss-debris-lab .iss-debris-inspector{min-height:0}.iss-debris-chart-value{font-size:12px}.iss-debris-lab .iss-water-x-axis{font-size:9px}.iss-debris-budget .iss-water-reading strong{font-size:16px}}@media(forced-colors:active){.iss-debris-lab .iss-ops-control select{color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important}.iss-debris-energy-bar,.iss-debris-footprint-row svg{forced-color-adjust:none}}",
+          ".iss-debris-nav{position:sticky;top:8px;z-index:6;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:22px 0 18px;padding:7px;border:1px solid #3e6877;border-radius:12px;background:#0c2432;box-shadow:0 10px 24px #020b1570}.iss-root .iss-debris-nav a{display:flex;align-items:center;gap:9px;min-height:38px;padding:7px 10px;border:1px solid transparent;border-radius:7px;color:#cce6ee;font-size:12px;font-weight:650;line-height:1.4;text-decoration:none}.iss-debris-nav a span{font:500 10px ui-monospace,SFMono-Regular,Consolas,monospace;color:#6db7bb}.iss-root .iss-debris-nav a:hover{color:#e1fff5;background:#184047;border-color:#538780}.iss-root .iss-debris-nav a:focus-visible,.iss-debris-pair a:focus-visible{outline:3px solid #fcd34d;outline-offset:2px}.iss-debris-anchor{scroll-margin-top:124px}.iss-debris-lab .iss-debris-comparison{margin-top:25px;padding:22px;background:linear-gradient(130deg,#112c38,#0a1b29 70%);border-color:#426474}.iss-debris-lab .iss-debris-comparison>.iss-water-chart-heading h4{font-size:22px;color:#e0f4f3;line-height:1.4}.iss-debris-pair{margin-bottom:25px}.iss-debris-lab .iss-debris-pair-intro{font-size:13px;line-height:1.8;color:#b8d2de;margin:12px 0 18px;max-width:760px}.iss-debris-pair-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.iss-debris-pair-controls .iss-experiment-actions{margin:0}.iss-debris-pair-controls button{min-height:38px}.iss-debris-pair-badge{font:500 10px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px;color:#b1d2d8;border:1px solid #3a5a69;border-radius:5px;padding:6px 9px}.iss-debris-pair-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.iss-debris-pair-grid.is-single{grid-template-columns:minmax(0,1fr);max-width:610px;margin:0 auto}.iss-debris-pair-shot{min-width:0;border:1px solid #3b5e6b;border-top:2px solid var(--debris-shot);border-radius:12px;padding:16px;background:#091d2b;overflow:hidden}.iss-debris-pair-shot[data-debris-pair-shot=reference]{border-top-style:dashed}.iss-debris-pair-shot-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}.iss-debris-lab .iss-debris-pair-shot h5{font-size:17px;line-height:1.4;color:var(--debris-shot);margin:0}.iss-debris-pair-shot-heading>span{font:500 12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d0e8ed}.iss-debris-lab .iss-debris-pair-phase{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 8px;font-size:11px;line-height:1.6;color:#a5c5d4;margin:8px 0 13px}.iss-debris-pair-shot[data-held=true] .iss-debris-pair-phase{color:#f4ce76}.iss-root .iss-debris-pair-shot svg{display:block;width:100%;height:auto;margin:0}.iss-debris-pair-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:17px 0 13px}.iss-debris-pair-values dt{font-size:10px;line-height:1.6;color:#abc7d7;margin-bottom:5px}.iss-debris-pair-values dd{font:600 17px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--debris-shot);margin:0;overflow-wrap:anywhere}.iss-debris-lab .iss-debris-pair-config{border-top:1px solid #2f505f;padding-top:11px;font-size:10px;line-height:1.8;color:#a2bfcc;margin:0}.iss-debris-pair-clock{padding:17px;margin-top:16px;border:1px solid #3f6573;border-radius:10px;background:#102d3b}.iss-debris-pair-clock>div:first-child{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;color:#d6ebf1;font-size:12px}.iss-debris-lab .iss-debris-pair-clock strong{font:600 16px ui-monospace,SFMono-Regular,Consolas,monospace;color:#a7f3d0}.iss-debris-pair-clock input{width:100%;margin:12px 0 0;min-height:28px;accent-color:#7be4c2}.iss-debris-pair-clock .iss-experiment-actions{margin:10px 0 12px}.iss-root .iss-debris-pair-clock>a{display:inline-block;color:#a6dce9;font-size:12px;line-height:1.6;padding:7px 0;text-underline-offset:4px}.iss-debris-lab .iss-debris-pair-help{font-size:12px;line-height:1.8;color:#c1d9e3;margin:17px 0 10px;padding-left:12px;border-left:2px solid #72aeb0}.iss-debris-lab .iss-debris-pair-scale-note{font-size:11px;line-height:1.8;color:#9bb9c9;margin:10px 0}.iss-debris-lab .iss-debris-footprint-row{padding-top:20px;border-top:1px solid #365666}@media(max-width:900px){.iss-root .iss-debris-nav a{font-size:11px;padding:7px;gap:6px}.iss-debris-pair-grid{gap:11px}.iss-debris-pair-shot{padding:13px}.iss-debris-pair-values dd{font-size:15px}}@media(max-width:650px){.iss-debris-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;padding:5px;top:5px}.iss-root .iss-debris-nav a{min-height:38px;font-size:11px}.iss-debris-lab .iss-debris-comparison{padding:16px 12px}.iss-debris-lab .iss-debris-comparison>.iss-water-chart-heading h4{font-size:20px}.iss-debris-pair-grid{grid-template-columns:1fr;gap:16px}.iss-debris-pair-shot{padding:14px 10px}.iss-debris-pair-shot-heading>span{font-size:11px}.iss-debris-lab .iss-debris-pair-shot h5{font-size:16px}.iss-debris-pair-values dd{font-size:16px}.iss-debris-pair-controls button{min-height:40px}.iss-debris-pair-clock{padding:13px 10px}.iss-debris-pair-clock .iss-experiment-actions{gap:7px}.iss-debris-pair-clock button{min-height:40px}}@media(forced-colors:active){.iss-debris-nav,.iss-debris-pair-shot,.iss-debris-pair-clock{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-root .iss-debris-nav a{color:LinkText}.iss-root .iss-debris-nav a:focus-visible,.iss-debris-pair a:focus-visible{outline-color:Highlight}.iss-debris-pair-shot svg{forced-color-adjust:none}}",
+          ".iss-debris-detector{margin:25px 0 22px;padding:23px 0 0;border-top:1px solid #3f6472}.iss-debris-detector-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}.iss-debris-lab .iss-debris-detector h5{margin:8px 0 0;font-size:21px;line-height:1.4;color:#deedf8}.iss-debris-detector-badge{padding:6px 8px;border:1px solid #4c6c8a;border-radius:5px;color:#b8d4ef;font:500 10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-debris-lab .iss-debris-detector-intro{font-size:12px;line-height:1.85;margin:15px 0 20px;color:#bcd2e0;max-width:790px}.iss-debris-detector-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}.iss-debris-detector-controls{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}.iss-debris-detector-controls .iss-experiment-actions,.iss-debris-detector-help{grid-column:1/-1}.iss-debris-detector-visual,.iss-debris-detector-controls{min-width:0}.iss-debris-detector-stage{position:relative;border:1px solid #426b84;border-radius:13px;overflow:hidden;touch-action:none;cursor:ew-resize;user-select:none}.iss-root .iss-debris-detector-stage svg{display:block;width:100%;height:auto;margin:0}.iss-debris-detector-stage:focus-visible{outline:3px solid #fcd34d;outline-offset:4px}.iss-debris-detector-stage[data-dragging]{border-color:#acd4ff}.iss-debris-map-label{position:absolute;pointer-events:none;color:#adcad5;font:500 10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}.iss-debris-map-label.is-title{top:4%;left:4.5%;font-size:9px;letter-spacing:.5px}.iss-debris-map-label.is-center{left:32.727%;bottom:5.5%;transform:translateX(-50%);font-size:9px}.iss-debris-map-label.is-ruler{bottom:1.5%;transform:translateX(-50%)}.iss-debris-detector-key{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px;line-height:1.6;margin:13px 0;color:#8ce6c7}.iss-debris-detector-key span:nth-child(2){color:#f5d384}.iss-debris-detector-key span:last-child{color:#b5d5fb}.iss-debris-lab .iss-debris-detector-scale-note{font-size:10px;line-height:1.8;color:#9fbccf;margin:12px 0 0}.iss-debris-detector-control{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;color:#d2e5ee;font-size:12px;padding:0 0 14px;border:0}.iss-debris-detector-control:first-child{border-top:0;padding-top:0}.iss-debris-lab .iss-debris-detector-control strong{font:600 16px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b7d9ff}.iss-debris-detector-control input{width:100%;accent-color:#93c5fd;min-height:28px;margin:0}.iss-debris-detector-controls .iss-experiment-actions{margin:13px 0}.iss-debris-detector-controls button{min-height:38px}.iss-debris-lab .iss-debris-detector-help{font-size:11px;line-height:1.85;color:#b8d1df;margin:13px 0 0}.iss-debris-detector-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:21px}.iss-debris-detector-results.is-single{grid-template-columns:1fr}.iss-debris-detector-result{padding:17px;border:1px solid #3d626e;border-radius:11px;background:#081d29;min-width:0}.iss-debris-detector-result>div:first-child{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}.iss-debris-lab .iss-debris-detector-result h6{font-size:14px;line-height:1.5;color:var(--detector-tone);margin:0}.iss-debris-detector-result>div>span{font-size:10px;line-height:1.6;color:#b6cdda}.iss-debris-lab .iss-debris-detector-result>strong{display:block;margin-top:15px;font:700 25px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--detector-tone);overflow-wrap:anywhere}.iss-debris-detector-energy-label{display:block;font-size:11px;line-height:1.7;color:#b9d2e0;margin-top:5px}.iss-debris-detector-result dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:17px 0}.iss-debris-detector-result dt{font-size:10px;line-height:1.6;color:#a5c3d3;margin-bottom:6px}.iss-debris-detector-result dd{font:500 15px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#d8e8f2;margin:0;overflow-wrap:anywhere}.iss-debris-detector-coverage{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid #2e4d60;padding-top:12px;font-size:11px}.iss-debris-detector-coverage b{color:var(--detector-tone);font:600 11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}.iss-debris-detector-coverage>div{width:100%;height:5px;background:#284758;border-radius:4px;overflow:hidden}.iss-debris-detector-coverage i{display:block;height:100%;background:var(--detector-tone)}.iss-debris-lab .iss-debris-detector-note{font-size:11px;line-height:1.85;color:#a9c3d3;border-left:2px solid #6e91b0;padding-left:12px;margin:17px 0 0}.iss-debris-footprint-summary{border-top:1px solid #365666;padding-top:20px;margin-top:20px}.iss-debris-lab .iss-debris-footprint-summary>strong{font-size:18px;line-height:1.6;color:#d7eee7}.iss-debris-lab .iss-debris-footprint-summary p.iss-debris-limit{font-size:11px;color:#e0d1ad;border-left:2px solid #b69a5b;padding-left:10px}@media(max-width:900px){.iss-debris-detector-layout{grid-template-columns:1fr;gap:20px}.iss-debris-detector-visual{max-width:560px;width:100%;margin:0 auto}.iss-debris-detector-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}.iss-debris-detector-control{border-top:0;padding:0}.iss-debris-detector-controls .iss-experiment-actions,.iss-debris-detector-help{grid-column:1/-1}}@media(max-width:650px){.iss-debris-lab .iss-debris-detector h5{font-size:19px}.iss-debris-detector-controls{grid-template-columns:1fr;gap:15px}.iss-debris-detector-results{grid-template-columns:1fr;gap:12px}.iss-debris-detector-result{padding:16px 12px}.iss-debris-detector-controls .iss-experiment-actions{margin:0;gap:7px}.iss-debris-detector-controls button{min-height:40px}.iss-debris-lab .iss-debris-detector-help{margin:0}.iss-debris-detector-key{font-size:10px;gap:6px 10px}.iss-debris-detector-result dd{font-size:14px}}@media(forced-colors:active){.iss-debris-detector-stage,.iss-debris-detector-coverage{forced-color-adjust:none}.iss-debris-detector-result{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-debris-detector-stage:focus-visible{outline-color:Highlight}}",
+          ".iss-debris-scan{min-width:0;border:1px solid #3d6275;border-radius:13px;padding:15px 14px 13px;background:linear-gradient(135deg,#0c2532,#071923)}.iss-debris-scan-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}.iss-debris-lab .iss-debris-scan h6{font-size:17px;line-height:1.5;margin:0;color:#dcecf7}.iss-debris-scan-heading .iss-experiment-actions{margin:0;gap:5px}.iss-debris-scan-heading button{min-height:36px;padding:6px 12px;font-size:11px}.iss-debris-scan-heading button[aria-pressed=true]{background:#264c61;border-color:#9acaf0;color:#eaf6ff}.iss-debris-scan-caption{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px 10px;margin:20px 0 8px;color:#bad5e4;font-size:11px}.iss-debris-scan-caption span:last-child{font:500 9px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#92b2c9;letter-spacing:.6px}.iss-debris-scan-chart{position:relative;padding-left:55px}.iss-debris-scan-y{position:absolute;left:0;top:0;bottom:0;width:47px;color:#a9c7d6;font:500 10px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right}.iss-debris-scan-y span{position:absolute;right:0;transform:translateY(-50%)}.iss-debris-scan-stage{position:relative;height:230px;cursor:ew-resize;touch-action:none;user-select:none;border-radius:4px}.iss-root .iss-debris-scan-stage svg{display:block;width:100%;height:100%;margin:0}.iss-debris-scan-stage:focus-visible{outline:3px solid #fcd34d;outline-offset:4px}.iss-debris-scan-stage[data-dragging]{box-shadow:0 0 0 1px #7ab5d8}.iss-debris-scan-point{position:absolute;width:9px;height:9px;border:2px solid #09202d;border-radius:50%;background:#8ce6c7;box-shadow:0 0 0 1px #8ce6c7;transform:translate(-50%,-50%);pointer-events:none}.iss-debris-scan-point.is-reference{border-radius:1px;background:#f5d384;box-shadow:0 0 0 1px #f5d384;transform:translate(-50%,-50%) rotate(45deg)}.iss-debris-scan-x{position:relative;height:20px;margin-left:55px;color:#a9c7d6;font:500 10px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace}.iss-debris-scan-x span{position:absolute;transform:translateX(-50%)}.iss-debris-scan-x span:first-child{transform:none}.iss-debris-scan-x span:last-child{transform:translateX(-100%)}.iss-debris-lab .iss-debris-scan-x-title{font-size:10px;line-height:1.6;text-align:center;color:#aac9d7;margin:1px 0 15px}.iss-debris-scan-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 15px;border-top:1px solid #31515f;padding-top:12px}.iss-debris-scan-readings>div{color:#8ce6c7;min-width:0}.iss-debris-scan-readings>div.is-reference{color:#f5d384}.iss-debris-scan-readings span{display:block;font-size:10px;line-height:1.7}.iss-debris-lab .iss-debris-scan-readings strong{display:block;font:600 17px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;color:inherit;overflow-wrap:anywhere}.iss-debris-lab .iss-debris-scan-help{font-size:10px;line-height:1.8;color:#adc8d7;margin:12px 0 0}@media(max-width:900px){.iss-debris-scan{max-width:560px;width:100%;box-sizing:border-box;margin:0 auto}.iss-debris-scan-stage{height:210px}}@media(max-width:650px){.iss-debris-scan{padding:13px 10px}.iss-debris-scan-heading button{min-height:40px}.iss-debris-scan-chart{padding-left:50px}.iss-debris-scan-y{width:42px}.iss-debris-scan-x{margin-left:50px}.iss-debris-scan-stage{height:200px}.iss-debris-scan-readings{gap:10px}.iss-debris-lab .iss-debris-scan-readings strong{font-size:15px}}@media(forced-colors:active){.iss-debris-scan{background:Canvas;border-color:CanvasText}.iss-debris-scan-stage{forced-color-adjust:none;background:#071923}.iss-debris-scan-stage:focus-visible{outline-color:Highlight}}",
+          ".iss-debris-sweep{padding:20px;margin:14px 0 24px;border:1px solid #426675;border-radius:14px;background:linear-gradient(135deg,#102e3b,#081a2a 65%)}.iss-debris-sweep-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:15px}.iss-debris-lab .iss-debris-sweep h4{font-size:21px;color:#daf7ee;margin:7px 0 0;line-height:1.35}.iss-debris-sweep-selected{text-align:right}.iss-debris-lab .iss-debris-sweep-selected strong{display:block;font:700 24px ui-monospace,SFMono-Regular,Consolas,monospace;color:#9af0d0;overflow-wrap:anywhere}.iss-debris-sweep-selected span{display:block;font-size:11px;line-height:1.6;margin-top:5px;color:#bbd7e1}.iss-debris-sweep-intro{font-size:12px;line-height:1.8;color:#b9d4df;margin:14px 0}.iss-debris-sweep-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 15px}.iss-debris-sweep-controls .iss-experiment-actions{margin:0}.iss-debris-sweep-controls button{min-height:36px}.iss-debris-sweep-axis-title{font:600 10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px;color:#a7c9d7;margin-bottom:7px}.iss-debris-sweep-grid{display:grid;grid-template-columns:70px minmax(0,1fr)}.iss-debris-sweep-y{position:relative;height:260px;min-width:0}.iss-debris-sweep-y span{position:absolute;right:9px;transform:translateY(-50%);font:500 10px ui-monospace,SFMono-Regular,Consolas,monospace;color:#b2cedb;white-space:nowrap}.iss-debris-sweep-plot{height:260px;position:relative;min-width:0;border:1px solid #36596e;border-radius:9px;background:#071825;touch-action:none;cursor:ew-resize;user-select:none}.iss-root .iss-debris-sweep-plot svg{display:block;width:100%;height:100%;margin:0}.iss-debris-sweep-plot:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.iss-debris-sweep-plot[data-dragging]{border-color:#9af0d0}.iss-debris-sweep-current-point,.iss-debris-sweep-reference-point{position:absolute;pointer-events:none}.iss-debris-sweep-current-point{width:12px;height:12px;transform:translate(-50%,-50%);border:2px solid #e9fff7;border-radius:50%;background:#38ac95;box-shadow:0 0 0 5px #6ee7b719}.iss-debris-sweep-reference-point{width:10px;height:10px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid #fcd34d;background:#574d25}.iss-debris-sweep-x{position:relative;height:25px;margin-left:70px;color:#b2cedb;font:500 10px ui-monospace,SFMono-Regular,Consolas,monospace}.iss-debris-sweep-x span{position:absolute;top:7px;transform:translateX(-50%)}.iss-debris-sweep-x-title{text-align:center;margin:0 0 10px 70px;font:600 10px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#9ebfcf;letter-spacing:1px}.iss-debris-sweep-legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:10px 0 18px 70px;color:#8eebc6;font-size:11px;line-height:1.6}.iss-debris-sweep-legend span:nth-child(2){color:#efd68b}.iss-debris-sweep-range{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:7px 15px;border-top:1px solid #2c4d61;padding-top:14px;color:#cfe5ed;font-size:12px}.iss-debris-lab .iss-debris-sweep-range strong{font:600 16px ui-monospace,SFMono-Regular,Consolas,monospace;color:#a7f3d0}.iss-debris-sweep-range input{width:100%;margin:0;min-height:26px;accent-color:#6ee7b7}.iss-debris-sweep .iss-water-help{font-size:11px;line-height:1.8;margin:13px 0}.iss-debris-sweep-note{font-size:12px!important;line-height:1.8!important;border-left:2px solid #5fae99;padding-left:12px;color:#c9e7dc!important;margin:13px 0 0!important}.iss-debris-sweep-reference-note{font-size:11px!important;color:#ded3ae!important;line-height:1.8!important;margin-bottom:0!important}@media(max-width:650px){.iss-debris-sweep{padding:15px 11px}.iss-debris-lab .iss-debris-sweep h4{font-size:19px}.iss-debris-sweep-selected{text-align:left}.iss-debris-lab .iss-debris-sweep-selected strong{font-size:22px}.iss-debris-sweep-grid{grid-template-columns:56px minmax(0,1fr)}.iss-debris-sweep-y,.iss-debris-sweep-plot{height:230px}.iss-debris-sweep-y span{right:7px;font-size:9px}.iss-debris-sweep-x,.iss-debris-sweep-x-title{margin-left:56px}.iss-debris-sweep-legend{margin-left:0}.iss-debris-sweep-controls button{min-height:40px}.iss-debris-sweep-controls .iss-experiment-actions{gap:7px}}@media(forced-colors:active){.iss-debris-sweep{color:CanvasText;background:Canvas;border-color:CanvasText}.iss-debris-sweep-plot{forced-color-adjust:none}.iss-debris-sweep-plot:focus-visible{outline-color:Highlight}}",
+          ".iss-debris-probe{margin:24px 0;padding:22px;border:1px solid #416877;border-radius:16px;background:linear-gradient(125deg,#11333d,#0a1b2b 70%)}.iss-debris-probe .iss-water-chart-heading{margin:0 0 10px}.iss-debris-lab .iss-debris-probe .iss-water-chart-heading h4{font-size:21px;margin:6px 0 0;color:#def8f0}.iss-debris-probe-clock{font:600 11px ui-monospace,monospace;letter-spacing:.5px;line-height:1.7;color:#a2d9d4}.iss-debris-probe-intro{font-size:12px;line-height:1.7;color:#bad5df;margin:10px 0 18px;max-width:760px}.iss-debris-probe-layout{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(0,1.15fr);gap:25px;align-items:center}.iss-debris-probe-visual{text-align:center;min-width:0}.iss-debris-probe-stage{width:100%;max-width:340px;margin:0 auto;border:1px solid #426874;border-radius:16px;overflow:hidden;touch-action:none;cursor:crosshair;user-select:none}.iss-root .iss-debris-probe-stage svg{display:block;width:100%;height:auto;margin:0}.iss-debris-probe-stage:focus-visible{outline:3px solid #fcd34d;outline-offset:4px}.iss-debris-probe-stage[data-dragging]{border-color:#fcd34d}.iss-debris-probe-scale{font:500 11px ui-monospace,monospace;color:#accdd6;margin:10px 0 13px;line-height:1.6}.iss-debris-probe-visual>button{padding:9px 12px;border:1px solid #527687;border-radius:8px;background:#102c3e;color:#c4e5e8;font:600 11px/1.5 ui-sans-serif,system-ui,sans-serif;cursor:pointer}.iss-debris-probe-visual>button[aria-pressed=true]{background:#1a4748;border-color:#6bbda8;color:#c8f3e3}.iss-debris-probe-visual>button:hover{border-color:#a7eee0}.iss-debris-probe-visual>button:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.iss-debris-probe-controls{min-width:0}.iss-debris-probe-radius{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;color:#d4edf0;font-size:13px}.iss-debris-probe-radius strong{font:600 16px ui-monospace,monospace;color:#fde68a}.iss-debris-probe-radius input{width:100%;accent-color:#fcd34d;min-height:26px;margin:0}.iss-debris-probe-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}.iss-debris-probe-readings .iss-water-reading{min-width:0;padding:13px;background:#091d2a}.iss-debris-probe-readings .iss-water-reading strong{font-size:19px;overflow-wrap:anywhere}.iss-debris-probe-readings .iss-water-reading small{font-size:10px;line-height:1.6}.iss-debris-probe-fractions{display:grid;gap:13px;margin:20px 0 15px}.iss-debris-probe-fractions>div{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:11px;color:#bfd8e0}.iss-debris-probe-fractions strong{font-family:ui-monospace,monospace;color:#fde68a}.iss-debris-probe-fractions>div>div{width:100%;height:7px;background:#396c73;border-radius:4px;overflow:hidden}.iss-debris-probe-fractions i{display:block;height:100%;background:#fcd34d}.iss-debris-probe-insight{border-left:2px solid #cdb36b;padding-left:12px;color:#e1d6b2;font-size:12px;line-height:1.8;margin:0}.iss-debris-probe-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #365660;padding-top:15px;margin-top:20px}.iss-debris-probe-footer>p{font:500 11px/1.8 ui-monospace,monospace;color:#c2dce5;flex:1 1 230px;margin:0}.iss-debris-probe-footer .iss-experiment-actions{margin:0}.iss-debris-probe .iss-water-help{font-size:11px;line-height:1.8;margin:15px 0 0}.iss-debris-probe button{min-height:36px}@media(max-width:900px){.iss-debris-probe-layout{grid-template-columns:minmax(210px,.85fr) minmax(0,1.15fr);gap:18px}}@media(max-width:650px){.iss-debris-probe{padding:15px 12px}.iss-debris-lab .iss-debris-probe .iss-water-chart-heading h4{font-size:19px}.iss-debris-probe-layout{grid-template-columns:1fr;gap:22px}.iss-debris-probe-stage{max-width:320px}.iss-debris-probe-readings .iss-water-reading strong{font-size:17px}.iss-debris-probe-readings .iss-water-reading{padding:11px 9px}.iss-debris-probe button{min-height:40px}.iss-debris-probe-footer .iss-experiment-actions{width:100%}}@media(forced-colors:active){.iss-debris-probe{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-debris-probe-stage{forced-color-adjust:none}.iss-debris-probe-stage:focus-visible{outline-color:Highlight}.iss-debris-probe-fractions{forced-color-adjust:none}}",
+          ".iss-debris-hardware{position:relative;min-width:0}.iss-root .iss-debris-hardware svg{margin:0}.iss-debris-wall-handle{position:absolute;display:grid;place-items:center;min-width:44px;min-height:38px;transform:translate(-50%,-50%);background:#113b4a;border:1px solid #91e7e4;border-radius:10px;color:#dbfffb;font:700 22px ui-monospace,monospace;box-shadow:0 0 0 4px #73e2df16;cursor:ew-resize;touch-action:none;user-select:none;z-index:1}.iss-debris-wall-handle:hover,.iss-debris-wall-handle[data-dragging]{background:#1b5361;border-color:#ddfff8;box-shadow:0 0 0 5px #73e2df24}.iss-debris-wall-handle:focus-visible{outline:3px solid #fde68a;outline-offset:3px}.iss-water-scene .iss-debris-drag-help{font-size:11px;color:#bddce4;margin:8px 0}.iss-debris-vector-controls{align-items:center}.iss-debris-vector-controls>span{font-size:10px;line-height:1.5;color:#b7d6dd;flex:1 1 160px}.iss-debris-reference-card{border:1px solid #52736b;border-radius:12px;padding:15px;background:linear-gradient(140deg,#173a40,#102532);margin-top:6px}.iss-debris-reference-card h4{color:#d4f8e9;font-size:16px;margin:8px 0}.iss-debris-reference-card p,.iss-debris-reference-card small{display:block;font-size:11px;line-height:1.7;color:#bbd8d5;margin:8px 0}.iss-debris-reference-card .iss-experiment-actions{margin:12px 0}.iss-debris-reference-card [data-debris-pin]{background:#174544;border-color:#62b59d;color:#d1fae5}.iss-debris-footprint-key{display:flex;flex-wrap:wrap;gap:9px 16px;margin:0 0 10px;font-size:11px;font-weight:700;color:#6ee7b7}.iss-debris-footprint-key span:before{content:\"―\";padding-right:6px}.iss-debris-footprint-key span:nth-child(2){color:#fcd34d}.iss-debris-comparison-math{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;padding:15px 12px;margin:16px 0 0;background:#0b2430;border:1px solid #42666c;border-radius:10px;text-align:center}.iss-debris-comparison-math strong{display:block;font:700 22px ui-monospace,monospace;overflow-wrap:anywhere;color:#adede0}.iss-debris-comparison-math span{display:block;font-size:11px;line-height:1.45;color:#c0d7df;margin-top:7px}.iss-debris-comparison-math b{font:400 22px ui-monospace,monospace;color:#92afb9}.iss-debris-trial-table{margin-top:14px;min-width:0}.iss-debris-trial-table table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;color:#c7dce5}.iss-debris-trial-table caption{text-align:left;font-size:11px;line-height:1.6;margin:0 0 10px;color:#afc9d5}.iss-debris-trial-table th,.iss-debris-trial-table td{text-align:left;padding:10px 9px;border-bottom:1px solid #315864;overflow-wrap:anywhere}.iss-debris-trial-table th:first-child{width:40%}.iss-debris-trial-table thead{color:#d9f2f0;background:#0b2533}.iss-debris-trial-table tr[data-changed=true] td:first-of-type{background:#1a4549;color:#b3f6da;font-weight:700}.iss-debris-trial-table td:last-child{color:#eedba3}@media(max-width:900px){.iss-debris-reference-card{grid-column:1/-1}}@media(max-width:650px){.iss-debris-wall-handle{min-height:40px;min-width:44px;font-size:21px}.iss-debris-comparison-math{gap:4px;padding:13px 6px}.iss-debris-comparison-math strong{font-size:15px}.iss-debris-comparison-math span{font-size:10px}.iss-debris-trial-table th,.iss-debris-trial-table td{padding:9px 5px;font-size:11px}.iss-debris-reference-card{padding:12px}}@media(forced-colors:active){.iss-debris-wall-handle,.iss-debris-reference-card,.iss-debris-comparison-math,.iss-debris-trial-table thead,.iss-debris-trial-table tr[data-changed=true] td:first-of-type{color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important}.iss-debris-wall-handle:focus-visible{outline-color:Highlight}}",
+          ".iss-water-lab.iss-pressure-lab{background:radial-gradient(ellipse at 12% 0%,#153449 0,transparent 55%),#091724}.iss-pressure-hardware{position:relative;min-width:0}.iss-root .iss-pressure-hardware svg{margin:8px 0;min-width:0}.iss-pressure-hotspot{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;min-height:32px;min-width:32px;padding:0;border:1px solid #83b1c6;border-radius:50%;background:transparent;color:#e2f4fb;font-size:19px;font-weight:600;cursor:pointer}.iss-root .iss-pressure-hotspot,.iss-root .iss-pressure-hotspot:not(:disabled):hover,.iss-root .iss-pressure-hotspot:not(:disabled):active{transform:translate(-50%,-50%)}.iss-pressure-hotspot[aria-pressed=true]{border-color:#99f6e4;background:#99f6e410;color:#99f6e4;box-shadow:0 0 0 4px #5eead418}.iss-pressure-hotspot>span{position:absolute;right:-5px;top:-7px;display:grid;place-items:center;width:15px;height:15px;border:1px solid #648da4;border-radius:50%;background:#0c2639;font:700 11px ui-monospace,monospace}.iss-pressure-intervention h4{font-size:14px;color:#e0f2fe;margin:0 0 12px}.iss-pressure-intervention [data-pressure-isolate]{border-color:#fb7185;color:#fecdd3;background:#42242c}.iss-pressure-budget{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}.iss-pressure-budget .iss-water-reading strong{font-size:18px}.iss-pressure-lab .iss-pressure-key span:nth-child(2){color:#6ee7b7}.iss-pressure-lab .iss-water-outcome[data-pressure-outcome=leaking]{background:#2d2525;border-color:#b17e53}.iss-pressure-lab .iss-water-scene-top{flex-wrap:wrap;line-height:1.6}.iss-pressure-lab .iss-water-heading p{max-width:690px}.iss-pressure-lab .iss-water-phase{white-space:normal;line-height:1.4}@media(max-width:900px){.iss-pressure-budget{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.iss-pressure-hotspot{min-height:30px;min-width:30px;font-size:17px}.iss-pressure-budget .iss-water-reading strong{font-size:16px}}@media(forced-colors:active){.iss-pressure-hotspot,.iss-pressure-intervention [data-pressure-isolate]{color:CanvasText!important;background:Canvas!important;border-color:CanvasText!important}.iss-pressure-hotspot[aria-pressed=true]{color:HighlightText!important;background:Highlight!important}}",
+          ".iss-eclss-labs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.iss-eclss-labs button,.iss-water-launch{border:1px solid #4c738c;border-radius:10px;padding:11px 15px;background:#102b40;color:#cfebf8;font:inherit;font-size:13px;font-weight:750;cursor:pointer}.iss-eclss-labs button[aria-pressed=true]{background:#16485b;color:#baf3f4;border-color:#65cedb;box-shadow:inset 0 -2px #65cedb}.iss-water-launch{margin:0 0 12px}.iss-water-lab{padding:22px;border:1px solid #36596f;border-radius:20px;background:radial-gradient(ellipse at 8% 0%,#123346 0,transparent 55%),#091724;color:#d4e4ef;min-width:0}.iss-water-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:16px}.iss-water-eyebrow{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#7dd3fc}.iss-water-heading h3{margin:8px 0;color:#edfaff;font-size:clamp(22px,2.3vw,30px);line-height:1.2}.iss-water-heading p,.iss-water-scene p,.iss-water-plan p,.iss-water-help,.iss-water-comparison,.iss-water-balance,.iss-water-receipt{font-size:12px;line-height:1.65;color:#b5c9d8;margin:8px 0}.iss-water-phase{flex-shrink:0;border:1px solid #405c6e;border-radius:30px;background:#0c2030;padding:8px 11px;font-size:10px;letter-spacing:.5px;font-weight:800}.iss-water-workspace{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,1fr);gap:16px;margin:16px 0}.iss-water-scene{min-width:0;overflow:hidden;border:1px solid #355064;border-radius:14px;background:radial-gradient(ellipse at 50% 25%,#193b51,transparent 72%),#081523;padding:14px}.iss-water-scene-top{display:flex;justify-content:space-between;gap:8px;font:700 10px ui-monospace,monospace;letter-spacing:1px;color:#91b5cd}.iss-water-scene-top strong{color:#d0f6ff}.iss-root .iss-water-scene svg{display:block;width:100%;height:auto;min-width:0;margin:5px 0}.iss-water-tank-readings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.iss-water-scene .iss-water-scene-caption{font-size:10px;color:#99b6cb;margin:10px 0}.iss-water-parts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px}.iss-water-parts button,.iss-water-chart-heading button,.iss-water-plan-heading button{font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border:1px solid #4d6a7f;border-radius:8px;padding:8px 10px;min-height:36px;color:#c6ddeb;background:#122c40}.iss-water-parts button{font-size:11px}.iss-water-parts button[aria-pressed=true],.iss-water-chart-heading button[aria-pressed=true],.iss-water-plan-heading button[aria-pressed=true]{color:#a7f3d0;background:#153d3e;border-color:#4c9c8c}.iss-water-setup{display:grid;gap:10px;align-content:start}.iss-water-setup .iss-ops-control,.iss-water-plan .iss-ops-control{background:#11293b;border:1px solid #2e4a61;box-shadow:none;padding:12px;border-radius:10px}.iss-water-lab .iss-ops-control label{font-size:12px;color:#c6dcea;gap:9px}.iss-water-lab .iss-ops-control strong{font-size:13px;font-variant-numeric:tabular-nums}.iss-water-lab input[type=range]{width:100%;margin-top:10px}.iss-water-plans{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:15px 0}.iss-water-plan{min-width:0;background:#0d2233;border:1px solid #34516a;border-radius:12px;padding:14px}.iss-water-plan-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.iss-water-plan-heading h4,.iss-water-chart-heading h4{font-size:14px;color:#deeffa;margin:0}.iss-water-plan fieldset{min-width:0;border:0;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}.iss-water-plan fieldset[disabled]{opacity:.55}.iss-water-reading{min-width:0;border:1px solid #314d64;border-radius:10px;padding:12px;background:#102638}.iss-water-reading span,.iss-water-reading small{display:block;font-size:11px;line-height:1.5;color:#b6cbdc}.iss-water-reading strong{display:block;font:700 21px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:-.5px;margin:6px 0;line-height:1.3;overflow-wrap:anywhere}.iss-water-reading small{font-size:10px;color:#9bb5c8}.iss-water-flows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.iss-water-budget{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0}.iss-water-budget .iss-water-reading strong{font-size:18px}.iss-water-demand{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}.iss-water-clock{border:1px solid #46677e;border-radius:12px;padding:14px;background:#0c2233;margin:18px 0}.iss-water-clock-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 0 10px}.iss-water-clock-heading strong{font-size:17px;color:#e0f2fe;font-variant-numeric:tabular-nums}.iss-water-clock-heading span{font-size:10px;letter-spacing:.5px;color:#b6d4e7}.iss-water-chart-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:18px 0 12px}.iss-water-plot-grid{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;min-width:0}.iss-water-y-axis{display:flex;flex-direction:column;justify-content:space-between;text-align:right;color:#b8cee0;font:11px ui-monospace,monospace;padding:5px 0}.iss-root .iss-water-plot-grid svg{display:block;width:100%;height:190px;min-width:0;touch-action:none;background:#091b2b;border:1px solid #35546e;border-radius:8px;cursor:crosshair}.iss-water-x-axis{display:flex;justify-content:space-between;margin:7px 0 0 52px;font:11px ui-monospace,monospace;color:#b8cee0}.iss-water-chart-key{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:10px;color:#bfdae9;margin:12px 0}.iss-water-chart-key span:before{content:'—';margin-right:5px}.iss-water-chart-key span:nth-child(1){color:#7dd3fc}.iss-water-chart-key span:nth-child(2){color:#fcd34d}.iss-water-comparison,.iss-water-receipt{padding:10px 13px;border-left:2px solid #73baa9;background:#0d2a36}.iss-water-outcome{padding:16px;border:1px solid #4e817c;border-radius:12px;background:#102c34;margin:15px 0}.iss-water-outcome[data-water-outcome=shortfall],.iss-water-outcome[data-water-outcome=overflow]{border-color:#b17e53;background:#2d2525}.iss-water-outcome strong{color:#dcf6f3;font-size:15px}.iss-water-outcome p{font-size:12px;line-height:1.7;color:#c5dbe6;margin:8px 0 0}.iss-water-lab .iss-physics-note{margin-top:16px;font-size:12px;line-height:1.7;color:#b4cbdc}.iss-water-lab .iss-physics-note summary{color:#d5eafa}.iss-water-lab .iss-physics-note a{color:#7dd3fc}.iss-water-lab button:disabled{cursor:default;opacity:.5}.iss-water-lab button:focus-visible,.iss-eclss-labs button:focus-visible,.iss-water-launch:focus-visible{outline:3px solid #bae6fd;outline-offset:3px}@media(max-width:900px){.iss-water-budget{grid-template-columns:repeat(3,minmax(0,1fr))}.iss-water-plan fieldset{grid-template-columns:1fr}.iss-water-heading{flex-wrap:wrap}.iss-water-phase{font-size:9px}}@media(max-width:650px){.iss-water-lab{padding:14px;border-radius:14px}.iss-water-workspace,.iss-water-plans{grid-template-columns:1fr}.iss-water-flows,.iss-water-budget{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-water-flows .iss-water-reading:last-child{grid-column:1/-1}.iss-water-scene{padding:10px}.iss-water-reading{padding:10px}.iss-water-reading strong{font-size:18px}.iss-water-plan-heading{align-items:flex-start}.iss-water-clock-heading{flex-wrap:wrap}.iss-water-chart-heading{align-items:flex-start}.iss-water-plot-grid{grid-template-columns:36px minmax(0,1fr);gap:5px}.iss-water-x-axis{margin-left:41px}.iss-root .iss-water-plot-grid svg{height:150px}.iss-water-budget .iss-water-reading strong{font-size:17px}}@media(forced-colors:active){.iss-water-lab,.iss-water-scene,.iss-water-reading,.iss-water-plan,.iss-water-lab .iss-ops-control,.iss-water-clock,.iss-water-outcome,.iss-water-parts button,.iss-water-chart-heading button,.iss-water-plan-heading button,.iss-eclss-labs button,.iss-water-launch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-water-lab strong,.iss-water-lab small,.iss-water-lab p,.iss-water-lab span,.iss-water-lab .iss-physics-note a{color:CanvasText!important}.iss-water-parts button[aria-pressed=true],.iss-eclss-labs button[aria-pressed=true],.iss-water-chart-heading button[aria-pressed=true],.iss-water-plan-heading button[aria-pressed=true]{background:Highlight!important;color:HighlightText!important}.iss-water-scene svg,.iss-water-plot-grid svg{forced-color-adjust:none}}",
+          ".iss-air-lab{margin:0 0 16px;padding:16px;border:1px solid #3f5669;border-radius:16px;background:linear-gradient(140deg,#102437 0%,#0b1c2b 45%,#111f34 100%);color:#e2e8f0;min-width:0}.iss-air-workbench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px}.iss-air-scene{min-width:0;border:1px solid #496477;border-radius:13px;overflow:hidden;background:#091c2a;display:flex;flex-direction:column}.iss-air-scene[data-air-phase=restricted],.iss-air-scene[data-air-phase=unpowered]{border-color:#92633c}.iss-air-scene-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:12px;font-size:10px;letter-spacing:.4px}.iss-air-scene-heading span{color:#b9cbd8;font-size:10px;letter-spacing:0}.iss-air-instruments{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 10px}.iss-air-scene>svg{display:block;width:100%;height:auto;min-width:0;max-width:100%;flex:1;min-height:140px;background:radial-gradient(ellipse at 45% 30%,#17394c,#07131f)}.iss-air-reading{min-width:0;padding:12px;border:1px solid #365569;border-radius:10px;background:#0b2232}.iss-air-reading>span{display:block;color:#c5d5df;font-size:11px;line-height:1.5}.iss-air-reading strong{display:block;margin:5px 0;font:800 18px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.iss-air-reading small{display:block;color:#b9cbd9;font-size:10px;line-height:1.55}.iss-air-scene-key{display:flex;flex-wrap:wrap;gap:7px 14px;padding:10px 12px;color:#b9cbd9;font-size:10px;line-height:1.5}.iss-air-scene-key span:first-child{color:#fdba74}.iss-air-scene-key span:nth-child(2){color:#7dd3fc}.iss-air-parts{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px}.iss-air-parts button,.iss-air-chart-heading button{min-height:38px;padding:8px 12px;border:1px solid #4c697e;border-radius:8px;background:#132c40;color:#e0edf7;font-size:11px;font-weight:750;cursor:pointer}.iss-air-parts button[aria-pressed=true],.iss-air-chart-heading button[aria-pressed=true]{border-color:#5eead4;background:#164439;color:#ccfbf1}.iss-air-chart-heading button:disabled{opacity:.5;cursor:not-allowed}.iss-air-part-note{margin:0;padding:12px;color:#d0dce5;font-size:11px;line-height:1.7;min-height:70px}.iss-air-setup{display:grid;gap:8px;min-width:0}.iss-air-setup .iss-ops-control{min-width:0;padding:12px;background:#0c2334;border:1px solid #3b566c;border-radius:11px}.iss-air-setup .iss-ops-control label{font-size:11px}.iss-air-clock{margin:12px 0;padding:13px;border:1px solid #446476;border-radius:11px;background:#112f40}.iss-air-clock-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:9px}.iss-air-clock-heading strong{color:#d1fae5;font:800 15px ui-monospace,Consolas,monospace}.iss-air-clock-heading span{color:#c3d9e3;font-size:10px}.iss-air-clock .iss-experiment-control{margin-bottom:0}.iss-air-restoration{padding:13px;margin:14px 0;border:1px solid #426b65;border-radius:12px;background:linear-gradient(110deg,#163239,#112534)}.iss-air-restoration fieldset{padding:0;margin:10px 0 0;border:0;min-width:0}.iss-air-restoration fieldset:disabled{opacity:.55}.iss-air-restoration .iss-ops-control{border:0;background:transparent;padding:0}.iss-air-restoration p{font-size:11px;color:#c2d7dd;line-height:1.6;margin:9px 0 0}.iss-air-flows,.iss-air-budget{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}.iss-air-flows .iss-air-reading strong,.iss-air-budget .iss-air-reading strong{font-size:15px}.iss-air-chart-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px}.iss-air-chart-heading h4{margin:0;font-size:13px;color:#e2e8f0}.iss-air-restoration .iss-air-chart-heading{margin-top:0}.iss-air-plot-grid{display:grid;grid-template-columns:43px minmax(0,1fr);gap:7px;margin-top:15px}.iss-air-y-axis{display:flex;flex-direction:column;justify-content:space-between;padding:5px 0;font:10px ui-monospace,Consolas,monospace;color:#bcd3e2;text-align:right}.iss-air-plot-grid svg{display:block;min-width:0;width:100%;height:174px;max-width:100%;touch-action:none;cursor:crosshair;background:#071b28;border-radius:7px}.iss-air-x-axis{display:flex;justify-content:space-between;gap:8px;margin:7px 0 0 50px;font:10px ui-monospace,Consolas,monospace;color:#bcd3e2}.iss-air-chart-key{display:flex;flex-wrap:wrap;gap:8px 15px;margin:13px 0;color:#b8c8da;font-size:10px;line-height:1.5}.iss-air-chart-key span:first-child{color:#fdba74}.iss-air-chart-key span:nth-child(2){color:#7dd3fc}.iss-air-chart-key span:nth-child(3){color:#fcd34d}.iss-air-help,.iss-air-comparison,.iss-air-balance{color:#c3d4df;font-size:11px;line-height:1.65;margin:10px 0}.iss-air-comparison{padding:10px 12px;border-left:3px solid #5eead4;background:#12333d}.iss-air-outcome{padding:13px;border:1px solid #408271;border-radius:10px;background:#133b35}.iss-air-outcome[data-air-outcome=crossed]{border-color:#936449;background:#382c2d}.iss-air-outcome strong{font-size:13px}.iss-air-outcome p{font-size:11px;line-height:1.7;margin:7px 0 0;color:#d2dce6}.iss-air-lab .iss-physics-note{margin-top:14px;border-top:1px solid #365569;padding-top:12px}.iss-air-lab .iss-physics-note p{font-size:11px;line-height:1.7;color:#bcd1dd}.iss-air-lab .iss-physics-note a{color:#99f6e4}.iss-air-lab button:focus-visible,.iss-air-lab input:focus-visible,.iss-air-lab summary:focus-visible{outline:3px solid #e0f2fe;outline-offset:3px}@media(max-width:900px){.iss-air-workbench{grid-template-columns:1fr}.iss-air-setup{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-air-flows,.iss-air-budget{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.iss-air-lab{padding:11px}.iss-air-setup{grid-template-columns:1fr}.iss-air-reading{padding:9px}.iss-air-reading strong{font-size:15px}.iss-air-clock{padding:10px}.iss-air-scene-key{font-size:10px}.iss-air-parts{padding:0 9px}.iss-air-parts button{flex:1;padding:7px 4px}.iss-air-chart-heading{align-items:flex-start}.iss-air-plot-grid{grid-template-columns:36px minmax(0,1fr);gap:5px}.iss-air-x-axis{margin-left:41px}.iss-air-plot-grid svg{height:150px}.iss-air-flows .iss-air-reading strong,.iss-air-budget .iss-air-reading strong{font-size:14px}}@media(forced-colors:active){.iss-air-lab,.iss-air-scene,.iss-air-reading,.iss-air-setup .iss-ops-control,.iss-air-clock,.iss-air-outcome,.iss-air-restoration,.iss-air-parts button,.iss-air-chart-heading button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-air-lab strong,.iss-air-lab small,.iss-air-lab p,.iss-air-lab span,.iss-air-lab .iss-physics-note a{color:CanvasText!important}.iss-air-parts button[aria-pressed=true],.iss-air-chart-heading button[aria-pressed=true]{background:Highlight!important;color:HighlightText!important}.iss-air-scene svg,.iss-air-plot-grid svg{forced-color-adjust:none}}",
+          ".iss-attitude-lab{min-width:0;padding:16px;border:1px solid #645a86;border-radius:15px;background:radial-gradient(ellipse at 95% 0,rgba(139,92,246,.09),transparent 48%),#091a29;color:#e2e8f0}.iss-attitude-workbench{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:stretch}.iss-attitude-scene{min-width:0;border:1px solid #426479;border-radius:12px;background:#0b1e2d;overflow:hidden}.iss-attitude-scene[data-attitude-phase=\"drifting\"]{border-color:#ad677e}.iss-attitude-scene[data-attitude-phase=\"unloading\"]{border-color:#be9367}.iss-attitude-scene-heading{padding:13px;display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap;color:#b9d4e4;font-size:11px}.iss-attitude-scene-heading strong{letter-spacing:.8px}.iss-attitude-instruments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 12px}.iss-attitude-reading{min-width:0;padding:12px;border:1px solid #365468;border-radius:9px;background:#0c2031}.iss-attitude-reading>span{display:block;color:#bfd2e3;font-size:11px;line-height:1.5}.iss-attitude-reading strong{display:block;margin:6px 0;font:700 18px ui-monospace,monospace;overflow-wrap:anywhere}.iss-attitude-reading small{display:block;color:#b9cddd;font-size:11px;line-height:1.6}.iss-attitude-scene svg,.iss-attitude-storage svg{display:block;min-width:0!important;width:100%;height:auto}.iss-attitude-scene-key{display:flex;gap:7px 15px;flex-wrap:wrap;margin:9px 13px 13px;font-size:10px;color:#bbd5e6}.iss-attitude-scene-key span:nth-child(2){color:#d4c7fa}.iss-attitude-scene-key span:nth-child(3){color:#fdba74}.iss-attitude-parts{display:flex;gap:7px;flex-wrap:wrap;padding:0 13px}.iss-attitude-parts button,.iss-attitude-chart-heading button{min-height:39px;padding:9px 11px;border:1px solid #62788c;border-radius:8px;background:#132c40;color:#e0ecf4;font-size:11px;cursor:pointer}.iss-attitude-parts button[aria-pressed=\"true\"],.iss-attitude-chart-heading button[aria-pressed=\"true\"]{background:#342b50;border-color:#b8a1f0;color:#ede9fe}.iss-attitude-chart-heading button:disabled{cursor:default;opacity:.65}.iss-attitude-part-note{font-size:12px;line-height:1.65;color:#c9d8e4;padding:0 13px;margin:13px 0}.iss-attitude-setup{display:grid;gap:8px}.iss-attitude-setup .iss-ops-control,.iss-attitude-burn-controls .iss-ops-control{padding:12px;background:#0c2233;border-color:#37566e}.iss-attitude-lab .iss-ops-control label{font-size:12px;gap:8px;flex-wrap:wrap}.iss-attitude-lab input[type=\"range\"]{min-height:28px}.iss-attitude-storage{padding:13px;border:1px solid #665682;border-radius:10px;background:linear-gradient(120deg,#24243c,#0f2232)}.iss-attitude-storage>div:first-child{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;color:#d0d9e8}.iss-attitude-storage strong{font:700 19px ui-monospace,monospace;color:#e0d4ff}.iss-attitude-storage-track{position:relative;height:13px;border:1px solid #88789e;border-radius:4px;background:#091624;overflow:hidden;margin:9px 0}.iss-attitude-storage-track>span{display:block;height:100%}.iss-attitude-storage-track>i{position:absolute;left:80%;top:0;bottom:0;border-left:2px dashed #fff}.iss-attitude-storage p{font-size:10px;line-height:1.6;color:#c3cfdf;margin:5px 0 0}.iss-attitude-burn-plan{margin:14px 0;padding:13px;border:1px solid #79614e;border-radius:11px;background:linear-gradient(120deg,#252330,#102438)}.iss-attitude-chart-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:17px 0 10px}.iss-attitude-chart-heading h4{margin:0;font-size:13px}.iss-attitude-burn-plan .iss-attitude-chart-heading{margin:0 0 12px}.iss-attitude-burn-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;min-width:0;margin:0;padding:0;border:0}.iss-attitude-burn-controls legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.iss-attitude-burn-controls:disabled{opacity:.65}.iss-attitude-burn-note{font-size:12px;line-height:1.6;color:#d9c7b7;margin:10px 0 0}.iss-attitude-torques,.iss-attitude-budget{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:13px 0}.iss-attitude-budget strong{font-size:15px}.iss-attitude-clock{margin:12px 0;padding:13px;border:1px solid #47647c;border-radius:11px;background:#11293c}.iss-attitude-clock-heading{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#c5d7e6;font-size:11px}.iss-attitude-clock-heading strong{font:700 18px ui-monospace,monospace;color:#e0f2fe}.iss-attitude-charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.iss-attitude-chart{min-width:0}.iss-attitude-chart h4{font-size:12px;color:#d0dfee;margin:5px 0 11px}.iss-attitude-plot-grid{display:grid;grid-template-columns:38px minmax(0,1fr);gap:6px}.iss-attitude-y-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:6px 0;color:#c1d6e4;font:10px ui-monospace,monospace}.iss-attitude-plot-grid svg{min-width:0!important;display:block;width:100%;height:170px;background:#061522;border-radius:8px;touch-action:pan-y;cursor:crosshair;overflow:hidden}.iss-attitude-x-axis{display:flex;justify-content:space-between;margin:7px 0 0 44px;font:10px ui-monospace,monospace;color:#bfd2e3}.iss-attitude-chart-key{display:flex;flex-wrap:wrap;gap:8px 15px;margin:14px 0;font-size:11px;color:#d2deeb}.iss-attitude-chart-key span:first-child{color:#fcd34d}.iss-attitude-chart-key span:nth-child(2){color:#fdba74}.iss-attitude-help,.iss-attitude-balance{font-size:11px;line-height:1.65;color:#c1d2e1}.iss-attitude-comparison{padding:10px 12px;border-left:2px solid #b6a0ed;background:rgba(139,92,246,.09);font-size:11px;line-height:1.7;color:#ddd6fe}.iss-attitude-outcome{padding:13px;border:1px solid #447965;border-radius:10px;background:#102a2c;font-size:13px}.iss-attitude-outcome[data-attitude-outcome=\"drifting\"]{border-color:#ac6b83;background:#322132}.iss-attitude-outcome[data-attitude-outcome=\"offset\"]{border-color:#b5935d;background:#2d2930}.iss-attitude-outcome p{font-size:12px;line-height:1.7;color:#d0dce5;margin:8px 0 0}.iss-attitude-lab .iss-physics-note{margin-top:15px}.iss-attitude-lab .iss-physics-note a{color:#7dd3fc}.iss-attitude-lab .iss-experiment-actions button{min-height:40px}@media(max-width:900px){.iss-attitude-workbench{grid-template-columns:1fr}.iss-attitude-setup{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-attitude-torques,.iss-attitude-budget{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.iss-attitude-charts{grid-template-columns:1fr}.iss-attitude-burn-controls{grid-template-columns:1fr}.iss-attitude-plot-grid svg{height:150px}}@media(max-width:480px){.iss-attitude-lab{padding:11px}.iss-attitude-setup{grid-template-columns:1fr}.iss-attitude-reading{padding:10px}.iss-attitude-reading strong{font-size:15px}.iss-attitude-budget strong{font-size:13px}.iss-attitude-clock,.iss-attitude-burn-plan{padding:10px}.iss-attitude-scene-heading{font-size:10px}.iss-attitude-scene-key{font-size:10px}}@media(forced-colors:active){.iss-attitude-lab,.iss-attitude-scene,.iss-attitude-reading,.iss-attitude-storage,.iss-attitude-burn-plan,.iss-attitude-clock,.iss-attitude-outcome,.iss-attitude-lab .iss-ops-control,.iss-attitude-parts button,.iss-attitude-chart-heading button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-attitude-lab strong,.iss-attitude-lab span,.iss-attitude-lab p,.iss-attitude-lab small,.iss-attitude-lab h4,.iss-attitude-lab a{color:CanvasText!important}.iss-attitude-parts button[aria-pressed=\"true\"],.iss-attitude-chart-heading button[aria-pressed=\"true\"]{background:Highlight!important;color:HighlightText!important}.iss-attitude-scene svg,.iss-attitude-storage svg,.iss-attitude-plot-grid svg{forced-color-adjust:none}}",
+          '.iss-thermal-lab{min-width:0;padding:16px;border:1px solid #6c5361;border-radius:15px;background:radial-gradient(ellipse at 0 0,rgba(251,146,60,.065),transparent 60%),#0b1b2b;color:#e2e8f0}.iss-thermal-workbench{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;align-items:stretch}.iss-thermal-scene{min-width:0;border:1px solid #446579;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#142b3b,#081624)}.iss-thermal-scene[data-thermal-phase="eclipse"]{background:linear-gradient(145deg,#102037,#070f1f)}.iss-thermal-scene-heading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:13px;font-size:11px;color:#b7cede}.iss-thermal-scene-heading strong{color:#fde68a;letter-spacing:1px}.iss-thermal-scene[data-thermal-phase="eclipse"] .iss-thermal-scene-heading strong{color:#c4b5fd}.iss-thermal-scene svg{display:block;width:100%;height:auto;min-width:0!important}.iss-thermal-temperatures{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 12px}.iss-thermal-reading{min-width:0;padding:12px;border:1px solid #39566b;border-radius:9px;background:#0b2030}.iss-thermal-reading>span{display:block;color:#bfd1de;font-size:11px}.iss-thermal-reading strong{display:block;margin:6px 0;font:700 18px ui-monospace,monospace}.iss-thermal-reading small{display:block;color:#b8cbdb;font-size:11px;line-height:1.5}.iss-thermal-scene-key{display:flex;flex-wrap:wrap;gap:6px 13px;margin:0 13px 12px;font-size:10.5px;color:#b8cbdb}.iss-thermal-scene-key span:first-child{color:#fdba74}.iss-thermal-scene-key span:nth-child(2){color:#7dd3fc}.iss-thermal-scene-key span:last-child{color:#fda4af}.iss-thermal-part-buttons{display:flex;gap:7px;flex-wrap:wrap;padding:0 12px}.iss-thermal-part-buttons button,.iss-thermal-chart-heading button{min-height:38px;padding:8px 11px;border:1px solid #60788c;border-radius:8px;background:#122a3b;color:#dceef8;font:700 11px Inter,system-ui,sans-serif;cursor:pointer}.iss-thermal-part-buttons button[aria-pressed="true"]{border-color:#5eead4;background:#17433d;color:#b4fff0}.iss-thermal-part-note{margin:10px 13px 13px;min-height:3.2em;font-size:12px;line-height:1.6;color:#c6d8e6}.iss-thermal-setup{display:grid;gap:8px}.iss-thermal-setup .iss-ops-control{background:#0d2234;border-color:#3c586c;padding:12px}.iss-thermal-setup .iss-ops-control label{font-size:12px}.iss-thermal-lab input[type="range"]{min-height:28px}.iss-thermal-flows,.iss-thermal-budget{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:13px 0}.iss-thermal-clock{padding:13px;border:1px solid #496176;border-radius:11px;background:#132a3c}.iss-thermal-clock-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;color:#b9d1e2;font-size:12px}.iss-thermal-clock-heading strong{color:#e0f2fe;font:700 18px ui-monospace,monospace}.iss-thermal-chart-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:17px 0 10px}.iss-thermal-chart-heading h4{margin:0;font-size:13px}.iss-thermal-chart-heading button[aria-pressed="true"]{background:#332d50;border-color:#c4b5fd;color:#ede9fe}.iss-thermal-plot-grid{display:grid;grid-template-columns:35px minmax(0,1fr);gap:8px;min-width:0}.iss-thermal-y-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:6px 0;color:#bdd1e0;font:10px ui-monospace,monospace}.iss-thermal-plot-grid svg{display:block;width:100%;min-width:0!important;height:200px;overflow:hidden;border-radius:8px;background:#051420;touch-action:pan-y;cursor:crosshair}.iss-thermal-x-axis{display:flex;justify-content:space-between;gap:5px;margin:6px 0 0 43px;color:#bdd1e0;font:10px ui-monospace,monospace}.iss-thermal-chart-key{display:flex;flex-wrap:wrap;gap:7px 15px;margin:12px 0;color:#d4c4fb;font-size:11px}.iss-thermal-chart-key span:first-child{color:#fdba74}.iss-thermal-chart-key span:nth-child(2){color:#7dd3fc}.iss-thermal-chart-key span:last-child{color:#6ee7b7}.iss-thermal-comparison,.iss-thermal-help,.iss-thermal-balance{color:#b9cede;font-size:11px;line-height:1.65}.iss-thermal-comparison{border-left:2px solid #c4b5fd;background:rgba(167,139,250,.07);padding:9px 11px;color:#e0d7f8}.iss-thermal-outcome{border:1px solid #427a6c;border-radius:10px;padding:12px;background:#102b2c;font-size:13px}.iss-thermal-outcome[data-thermal-outcome="outside"]{border-color:#a96f7e;background:#302231}.iss-thermal-outcome p{font-size:12px;line-height:1.65;margin:7px 0;color:#cfdae5}.iss-thermal-lab .iss-physics-note{margin-top:15px}.iss-thermal-lab .iss-physics-note a{color:#7dd3fc}.iss-thermal-lab .iss-experiment-actions button{min-height:40px}@media(max-width:850px){.iss-thermal-workbench{grid-template-columns:1fr}.iss-thermal-setup{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-thermal-flows,.iss-thermal-budget{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.iss-thermal-lab{padding:11px}.iss-thermal-setup{grid-template-columns:1fr}.iss-thermal-reading{padding:10px}.iss-thermal-reading strong{font-size:16px}.iss-thermal-part-buttons button{flex:1;padding:7px 5px}.iss-thermal-temperatures{margin:0 8px}.iss-thermal-scene-key{font-size:10px}.iss-thermal-clock{padding:10px}}@media(forced-colors:active){.iss-thermal-lab,.iss-thermal-scene,.iss-thermal-reading,.iss-thermal-setup .iss-ops-control,.iss-thermal-clock,.iss-thermal-outcome,.iss-thermal-chart-heading button,.iss-thermal-part-buttons button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-thermal-lab strong,.iss-thermal-lab small,.iss-thermal-lab p,.iss-thermal-lab span,.iss-thermal-y-axis,.iss-thermal-x-axis,.iss-thermal-lab .iss-physics-note a{color:CanvasText!important}.iss-thermal-part-buttons button[aria-pressed="true"],.iss-thermal-chart-heading button[aria-pressed="true"]{background:Highlight!important;color:HighlightText!important}.iss-thermal-scene svg,.iss-thermal-plot-grid svg{forced-color-adjust:none}}',
+          '.iss-power-lab{min-width:0;padding:16px;border:1px solid #396574;border-radius:15px;background:radial-gradient(ellipse at 90% 0,rgba(250,204,21,.065),transparent 50%),#091a29;color:#e2e8f0}.iss-power-workbench{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;align-items:stretch}.iss-power-scene{border:1px solid #426277;border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 0 0,#37404a,#081725 65%)}.iss-power-scene[data-power-phase="eclipse"]{background:radial-gradient(ellipse at 100% 100%,#11294d,#06101e 80%)}.iss-power-scene-heading{padding:13px;display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap;font-size:11px;color:#b9d4e4}.iss-power-scene-heading strong{color:#fde68a;letter-spacing:1px}.iss-power-scene[data-power-phase="eclipse"] strong{color:#c4b5fd}.iss-power-scene svg{display:block;width:100%;height:auto;min-width:0!important}.iss-power-scene p{padding:0 13px;color:#b4c7d9;font-size:11px;line-height:1.6}.iss-power-storage-visual{margin:0 13px 12px;padding:10px;border:1px solid #38596e;border-radius:8px;background:rgba(5,18,30,.85)}.iss-power-storage-visual>div:first-child{display:flex;justify-content:space-between;gap:8px;color:#bfd2e3;font-size:11px;align-items:baseline;margin-bottom:7px}.iss-power-storage-visual strong{font:700 16px ui-monospace,monospace}.iss-power-storage-track{position:relative;height:14px;border:1px solid #58748a;border-radius:4px;background:#081626;overflow:hidden}.iss-power-storage-track>span{display:block;height:100%}.iss-power-storage-track>i{position:absolute;left:25%;top:0;bottom:0;border-left:2px dotted #fff;opacity:.8}.iss-power-setup{display:grid;gap:8px}.iss-power-setup .iss-ops-control{background:#0c2132;border-color:#365366;padding:12px}.iss-power-setup .iss-ops-control label{font-size:12px}.iss-power-lab input[type="range"]{min-height:28px}.iss-power-flows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:13px 0}.iss-power-reading{min-width:0;border:1px solid #355269;padding:12px;border-radius:9px;background:#0c2031}.iss-power-reading>span{display:block;color:#bbcede;font-size:11px}.iss-power-reading strong{display:block;margin:6px 0;font:700 19px ui-monospace,monospace}.iss-power-reading small{display:block;color:#b4c7d9;font-size:11px;line-height:1.5}.iss-power-clock{padding:13px;border:1px solid #3c586f;border-radius:11px;background:#11273b}.iss-power-clock-heading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:#b9d4e4}.iss-power-clock-heading strong{font:700 18px ui-monospace,monospace;color:#e0f2fe}.iss-power-light-band{display:flex;position:relative;min-height:34px;overflow:hidden;border-radius:6px;margin-top:10px;font:700 10px ui-monospace,monospace}.iss-power-light-band span{display:grid;place-items:center;padding:5px;background:#624417;color:#fff1b4}.iss-power-light-band span+span{background:#252749;color:#ddd6fe}.iss-power-light-band i{position:absolute;top:0;bottom:0;width:3px;transform:translateX(-1.5px);background:#fff;box-shadow:0 0 4px #fff}.iss-power-chart-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:17px 0 10px}.iss-power-chart-heading h4{margin:0;font-size:13px}.iss-power-chart-heading button{min-height:38px;padding:8px 10px;background:#10283b;border:1px solid #607487;border-radius:8px;color:#e2e8f0;font-size:11px;cursor:pointer}.iss-power-chart-heading button[aria-pressed="true"]{background:#342d50;border-color:#c4b5fd;color:#ede9fe}.iss-power-plot-grid{display:grid;grid-template-columns:36px minmax(0,1fr);gap:7px}.iss-power-y-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:6px 0;color:#bfd2e3;font:10px ui-monospace,monospace}.iss-power-plot-grid svg{display:block;min-width:0!important;width:100%;height:190px;touch-action:pan-y;cursor:crosshair;overflow:hidden;background:#05131f;border-radius:8px}.iss-power-x-axis{display:flex;justify-content:space-between;margin:6px 0 0 43px;font:10px ui-monospace,monospace;color:#bfd2e3}.iss-power-chart-key{display:flex;gap:8px 15px;flex-wrap:wrap;margin:12px 0;color:#d1dce6;font-size:11px}.iss-power-chart-key span:first-child{color:#6ee7b7}.iss-power-chart-key span:last-child{color:#fda4af}.iss-power-help,.iss-power-balance,.iss-power-comparison{font-size:11px;line-height:1.65;color:#b4c7d9}.iss-power-comparison{padding:9px 11px;border-left:2px solid #c4b5fd;background:rgba(167,139,250,.08);color:#e0d6fa}.iss-power-readings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.iss-power-readings strong{font-size:16px}.iss-power-outcome{padding:12px;border:1px solid #367768;border-radius:10px;background:#0b292a;font-size:13px}.iss-power-outcome[data-power-outcome="shortfall"]{border-color:#ad6c7d;background:#302030}.iss-power-outcome p{color:#c7dce1;font-size:12px;line-height:1.65;margin:8px 0}.iss-power-lab .iss-physics-note{margin-top:15px}.iss-power-lab .iss-physics-note a{color:#7dd3fc}.iss-power-lab .iss-experiment-actions button{min-height:40px}@media(max-width:800px){.iss-power-workbench{grid-template-columns:1fr}.iss-power-setup{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-power-readings{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.iss-power-lab{padding:11px}.iss-power-setup,.iss-power-flows{grid-template-columns:1fr}.iss-power-reading{padding:10px}.iss-power-flows .iss-power-reading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:baseline}.iss-power-flows .iss-power-reading strong{font-size:17px;margin:0}.iss-power-flows .iss-power-reading small{grid-column:1/-1}.iss-power-clock{padding:10px}.iss-power-light-band{font-size:9px}.iss-power-scene-heading{font-size:10px}}@media(forced-colors:active){.iss-power-lab,.iss-power-scene,.iss-power-setup .iss-ops-control,.iss-power-reading,.iss-power-clock,.iss-power-outcome,.iss-power-chart-heading button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-power-lab strong,.iss-power-lab small,.iss-power-lab p,.iss-power-lab span,.iss-power-y-axis,.iss-power-x-axis,.iss-power-lab .iss-physics-note a{color:CanvasText!important}.iss-power-chart-heading button[aria-pressed="true"]{background:Highlight!important;color:HighlightText!important}.iss-power-plot-grid svg,.iss-power-scene svg,.iss-power-light-band{forced-color-adjust:none}}',
+          '.iss-drag-lab{min-width:0;margin:16px 0;padding:16px;border:1px solid #376575;border-radius:15px;color:#e2e8f0;background:radial-gradient(ellipse at 90% 0,rgba(20,184,166,.1),transparent 65%),#091a2a}.iss-drag-lab input[type="range"]{min-height:30px}.iss-drag-lab input:disabled{opacity:.45;cursor:not-allowed}.iss-drag-lab .iss-experiment-actions button{min-height:40px}.iss-drag-burn-plan{padding:12px;margin:12px 0;border:1px solid #55466f;border-radius:10px;background:#151e33}.iss-drag-burn-plan .iss-experiment-actions{margin:0 0 10px}.iss-drag-burn-plan p,.iss-drag-help{color:#b4c7d9;font-size:11px;line-height:1.65;margin:8px 0}.iss-drag-chart-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:7px;margin:16px 0 9px;font-size:12px}.iss-drag-chart-heading button{background:#12283b;border:1px solid #48637c;border-radius:8px;min-height:36px;padding:7px 10px;color:#d9eaf5;font:700 11px Inter,system-ui,sans-serif;cursor:pointer}.iss-drag-chart-heading button[aria-pressed="true"]{background:#154237;color:#b7fff0;border-color:#5eead4}.iss-drag-plot-grid{display:grid;grid-template-columns:36px minmax(0,1fr);min-width:0;gap:6px}.iss-drag-y-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:5px 0;font:10px ui-monospace,monospace;color:#b4c7d9}.iss-drag-plot-grid svg{display:block;min-width:0!important;width:100%;height:180px;border-radius:8px;background:#061320;cursor:crosshair;touch-action:pan-y;overflow:hidden}.iss-drag-x-axis{display:flex;justify-content:space-between;gap:4px;margin:6px 6px 0 48px;color:#b4c7d9;font:10px ui-monospace,monospace}.iss-drag-chart-key{display:flex;flex-wrap:wrap;gap:7px 16px;margin:12px 0;font-size:10.5px;color:#d0d9e8}.iss-drag-chart-key span:first-child{color:#5eead4}.iss-drag-chart-key span:last-child{color:#e9b6fa}.iss-drag-inspector{margin-top:13px;padding:12px;border:1px solid #385976;border-radius:12px;background:linear-gradient(120deg,#10263b,#0d1d2d)}.iss-drag-inspector-heading{display:flex;justify-content:space-between;align-items:baseline;gap:7px;flex-wrap:wrap}.iss-drag-inspector-heading strong{color:#e0f2fe;font:700 16px ui-monospace,monospace}.iss-drag-inspector-heading span{font-size:11px;color:#a7f3d0}.iss-drag-lab .iss-drag-readings{grid-template-columns:repeat(4,minmax(0,1fr))}.iss-drag-scene{overflow:hidden;border:1px solid #29485f;border-radius:10px;background:#061320}.iss-drag-scene svg{display:block;min-width:0!important;width:100%;height:auto;max-height:180px}.iss-drag-scene-key{display:flex;justify-content:space-between;gap:10px;padding:0 13px;font-size:11px;font-weight:700;color:#7dd3fc}.iss-drag-scene-key span:first-child{color:#fdba74}.iss-drag-scene .iss-drag-help{padding:0 13px}.iss-drag-comparison{border-left:2px solid #5eead4;padding:7px 10px;margin:10px 0;color:#c5f5e8;background:rgba(20,184,166,.06);font-size:12px;line-height:1.6}.iss-drag-details{display:flex;flex-wrap:wrap;gap:6px 16px;font:10.5px/1.6 ui-monospace,monospace;color:#b4c7d9}.iss-drag-lab .iss-physics-note a{color:#7dd3fc}@media(max-width:700px){.iss-drag-lab .iss-drag-readings{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-drag-lab{padding:12px}}@media(forced-colors:active){.iss-drag-lab,.iss-drag-burn-plan,.iss-drag-inspector,.iss-drag-scene,.iss-drag-chart-heading button{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-drag-burn-plan p,.iss-drag-help,.iss-drag-y-axis,.iss-drag-x-axis,.iss-drag-chart-key span,.iss-drag-inspector-heading strong,.iss-drag-inspector-heading span,.iss-drag-scene-key span,.iss-drag-comparison,.iss-drag-details,.iss-drag-lab .iss-physics-note a{color:CanvasText!important}.iss-drag-chart-heading button[aria-pressed="true"]{background:Highlight;color:HighlightText}.iss-drag-plot-grid svg,.iss-drag-scene svg{forced-color-adjust:none}}',
+          '.iss-momentum-bench input[type="range"]{min-height:28px}.iss-momentum-bench .iss-experiment-actions button{min-height:40px}.iss-momentum-rebound{padding:12px;border:1px solid #426178;border-radius:10px;background:#0e2535}.iss-momentum-rebound p,.iss-momentum-contact-report p{color:#b4c7d9;font-size:11px;line-height:1.65;margin:8px 0 0}.iss-momentum-key{display:flex;flex-wrap:wrap;gap:7px 14px;margin:10px 0;font:700 11px ui-monospace,monospace}.iss-momentum-key small{flex-basis:100%;font:400 11px/1.6 Inter,system-ui,sans-serif;color:#b4c7d9}.iss-momentum-energy{margin:12px 0;padding:12px;border:1px solid #364a61;border-radius:10px;background:#0b1b2b}.iss-momentum-energy h4,.iss-momentum-contact-report h4{font-size:13px;color:#e0f2fe;margin:0 0 9px}.iss-momentum-energy-bar{display:flex;overflow:hidden;height:13px;border:1px solid #638099;border-radius:5px;background:#09131e}.iss-momentum-energy-bar>span{display:block;flex-shrink:0}.iss-momentum-energy-key{display:flex;flex-wrap:wrap;gap:7px 15px;margin-top:9px;color:#d3e1ec;font-size:10.5px;line-height:1.5;font-variant-numeric:tabular-nums}.iss-momentum-energy-key i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}.iss-momentum-contact-report{padding:13px;border:1px solid #506480;border-radius:11px;background:linear-gradient(135deg,#132940,#101d31)}.iss-momentum-report-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}.iss-momentum-report-heading>span{font:10.5px ui-monospace,monospace;color:#c4b5fd}.iss-momentum-contact-table{width:100%;border-collapse:collapse;margin:5px 0 10px;font-size:11px;color:#cbdbea}.iss-momentum-contact-table th,.iss-momentum-contact-table td{padding:8px 4px;border-bottom:1px solid #334d67;text-align:right}.iss-momentum-contact-table th:first-child{text-align:left}.iss-momentum-contact-table thead th{font-size:10px;font-weight:500;color:#b4c7d9}.iss-momentum-contact-table td{font:700 13px ui-monospace,monospace;color:#edf7ff}.iss-momentum-impulses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.iss-momentum-impulses>div{padding:10px;border:1px solid #3a5973;border-radius:8px;background:#0b1b2a}.iss-momentum-impulses span{display:block;font-size:10px;line-height:1.5;color:#bfd2e3}.iss-momentum-impulses strong{display:block;margin-top:5px;font:700 14px ui-monospace,monospace;color:#7dd3fc}.iss-momentum-impulses>div+div strong{color:#fcd34d}@media(forced-colors:active){.iss-momentum-rebound,.iss-momentum-energy,.iss-momentum-contact-report,.iss-momentum-impulses>div{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-momentum-key span,.iss-momentum-key small,.iss-momentum-rebound p,.iss-momentum-contact-report p,.iss-momentum-energy h4,.iss-momentum-energy-key,.iss-momentum-contact-report h4,.iss-momentum-report-heading>span,.iss-momentum-contact-table th,.iss-momentum-contact-table td,.iss-momentum-impulses span,.iss-momentum-impulses strong{color:CanvasText!important}.iss-momentum-energy-bar{forced-color-adjust:none}}',
           '.iss-transfer-visual>svg{width:100%;height:auto;min-width:0!important}.iss-interior-layout>*{min-width:0}.iss-momentum-bench{min-width:0;max-width:100%}.iss-momentum-stage{max-width:100%}.iss-momentum-stage>svg{min-width:0!important}',
+          '.iss-transfer-vector-key{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 12px;border-top:1px solid #294259;font-size:11px;line-height:1.5}.iss-transfer-vector-key small{flex-basis:100%;color:#b4c7d9;font-size:10.5px}.iss-transfer-profile{min-width:0;margin:12px 0;padding:12px;border:1px solid #35526a;border-radius:12px;background:linear-gradient(130deg,#0b1d30,#101b2c)}.iss-transfer-profile-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}.iss-transfer-profile-heading h3{font-size:14px;color:#e0f2fe;margin:0}.iss-transfer-profile-heading>span{color:#fde68a;font-size:10px;border:1px solid #66583b;border-radius:5px;padding:4px 6px}.iss-transfer-profile-label{display:flex;justify-content:space-between;gap:8px;font-size:11px;line-height:1.5;margin:8px 0 3px}.iss-transfer-profile-label>span{color:#b4c7d9;font-variant-numeric:tabular-nums}.iss-transfer-profile-lane svg{display:block;width:100%;height:88px;overflow:hidden;border-radius:6px;background:#071422}.iss-transfer-profile-axis{display:flex;justify-content:space-between;color:#b4c7d9;font:10px ui-monospace,monospace;margin-top:6px}.iss-transfer-profile p{color:#b4c7d9;font-size:11px;line-height:1.6;margin:10px 0 0}.iss-transfer-lab #iss-transfer-time{min-height:32px}@media(forced-colors:active){.iss-transfer-profile{background:Canvas;border-color:CanvasText}.iss-transfer-profile-heading h3,.iss-transfer-profile-heading>span,.iss-transfer-profile-label strong,.iss-transfer-profile-label>span,.iss-transfer-profile-axis,.iss-transfer-profile p,.iss-transfer-vector-key span,.iss-transfer-vector-key small{color:CanvasText!important}.iss-transfer-profile-lane svg{forced-color-adjust:none}}',
           '.iss-root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}.iss-hero{padding:12px 5px 0}.iss-title{max-width:850px;line-height:1.15}.iss-status-item{border-radius:8px;border-top:2px solid #365d79;padding:10px 12px;background:linear-gradient(120deg,rgba(15,35,54,.8),rgba(3,13,24,.7))}.iss-status-value{font-size:15px;margin-top:5px;font-variant-numeric:tabular-nums}.iss-status-label{color:#a7bdd1}.iss-panel{background:linear-gradient(150deg,rgba(14,28,45,.9),rgba(4,13,25,.9))}.iss-tab{min-height:46px}.iss-hero-emblem{width:154px;height:110px;opacity:.95}',
           '.iss-launch-routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}.iss-launch-route{display:flex;align-items:center;gap:12px;min-width:0;padding:13px;text-align:left;border:1px solid #35506b;border-radius:12px;color:#e7eef8;background:linear-gradient(125deg,#132c43,#0c1a2c);cursor:pointer}.iss-launch-route:nth-child(2){background:linear-gradient(125deg,#182844,#0e182a)}.iss-launch-route:nth-child(3){background:linear-gradient(125deg,#103a39,#0b2028)}.iss-launch-number{font:700 23px ui-monospace,monospace;color:#6598bd}.iss-launch-route strong,.iss-launch-route small{display:block}.iss-launch-route strong{font-size:13px;line-height:1.4}.iss-launch-route small{font-size:11px;font-weight:400;color:#b3c6d8;margin-top:3px;line-height:1.5}.iss-launch-arrow{margin-left:auto;color:#7dd3fc;font-size:22px}',
           '.iss-momentum-bench{margin-top:18px;padding:16px;border:1px solid #356779;border-radius:15px;background:radial-gradient(ellipse at 100% 0,rgba(20,184,166,.1),transparent 65%),#0a1928;color:#e2e8f0}.iss-experiment-heading{display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:8px}.iss-experiment-kicker{font:700 10px ui-monospace,monospace;letter-spacing:1.5px;color:#6ee7b7}.iss-experiment-heading h3{margin:6px 0;font-size:19px;line-height:1.25}.iss-model-badge{font:600 10px ui-monospace,monospace;color:#bbd9e7;border:1px solid #365567;border-radius:20px;padding:5px 8px}.iss-experiment-intro{font-size:12px;line-height:1.65;color:#b6cadb;margin:5px 0 14px}.iss-experiment-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.iss-experiment-control{display:block;min-width:0;color:#bfd2e3;font-size:11px}.iss-experiment-control>span{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px}.iss-experiment-control strong{font:700 12px ui-monospace,monospace;color:#ecf8ff}.iss-experiment-control input{display:block;width:100%;margin:6px 0;accent-color:#5eead4;cursor:pointer}.iss-experiment-timeline{margin-top:14px}.iss-experiment-actions{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.iss-experiment-actions button{border:1px solid #48637c;border-radius:8px;padding:8px 11px;background:#12283b;color:#d9eaf5;font-size:11px;font-weight:700;min-height:36px;cursor:pointer}.iss-experiment-actions button[aria-pressed="true"]{color:#b7fff0;border-color:#5eead4;background:#154237}.iss-experiment-actions button:disabled{opacity:.45;cursor:not-allowed}.iss-momentum-stage{margin-top:13px}.iss-momentum-stage svg{display:block;width:100%;height:auto}.iss-experiment-phase{font-size:12px;color:#a7f3d0;padding:8px 10px;border-left:2px solid #5eead4;background:rgba(16,185,129,.08)}',
           '.iss-flight-telemetry{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin:12px 0}.iss-flight-reading{min-width:0;padding:10px;border:1px solid #314d65;border-radius:9px;background:#0a1728}.iss-flight-reading span{display:block;color:#b4c7d9;font-size:10px;line-height:1.45}.iss-flight-reading strong{display:block;color:#e2f5ff;font:700 14px ui-monospace,monospace;margin-top:5px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.iss-physics-note{font-size:11px!important;color:#b4c7d9!important;line-height:1.65!important;margin:12px 0 0;padding-top:10px;border-top:1px solid #2a4359}.iss-transfer-lab input[type="range"]{accent-color:#5eead4}.iss-interior-hud span,.iss-interior-help,.iss-interior-route-hud{font-size:10px;letter-spacing:.2px}.iss-interior-speed{font-variant-numeric:tabular-nums}.iss-hud-chip{font-size:10px}.iss-ops-control label{font-size:12px}.iss-map-controls button{min-height:38px;font-size:11px}.iss-root [data-iss-flight-controls] button[aria-pressed="true"]{background:#164e63!important;color:#e0f2fe!important;border-color:#67e8f9!important;box-shadow:inset 0 -2px #67e8f9}',
           '.iss-dock-practice{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px;margin-bottom:12px;border:1px solid #314d65;border-radius:11px;background:#091829}.iss-dock-practice>span{color:#bae6fd;font:750 10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.7px;margin-right:4px}.iss-dock-practice>small{flex-basis:100%;color:#b4c7d9;font-size:11px;line-height:1.5}.iss-dock-forecast{min-width:0;margin-top:10px;padding:12px;border:1px solid #574369;border-radius:12px;background:linear-gradient(120deg,#10192c,#151c32);color:#e2e8f0}.iss-dock-forecast-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}.iss-dock-forecast-kicker{display:block;color:#e9b6fa;font:750 10px ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}.iss-dock-forecast-header strong{display:block;color:#f0abfc;font-size:14px;line-height:1.45}.iss-dock-forecast-header label{display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd5e1}.iss-dock-forecast-readings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}.iss-dock-forecast-readings .iss-flight-reading{padding:9px}.iss-dock-forecast-readings .iss-flight-reading strong{white-space:nowrap;overflow-wrap:normal}.iss-dock-forecast-footer{color:#b4c7d9;font-size:11px;line-height:1.6;margin:10px 0 0}.iss-dock-forecast[data-dock-forecast-kind="capture"]{border-color:#327759}.iss-dock-forecast[data-dock-forecast-kind="capture"] .iss-dock-forecast-header strong{color:#86efac}.iss-dock-forecast[data-dock-forecast-kind="contact"] .iss-dock-forecast-header strong,.iss-dock-forecast[data-dock-forecast-kind="exit"] .iss-dock-forecast-header strong{color:#fde68a}@media(max-width:600px){.iss-dock-forecast-readings{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-dock-practice>span{flex-basis:100%}}@media(forced-colors:active){.iss-dock-practice,.iss-dock-forecast{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-dock-practice>span,.iss-dock-practice>small,.iss-dock-forecast-kicker,.iss-dock-forecast-header strong,.iss-dock-forecast-header label,.iss-dock-forecast-footer{color:CanvasText!important}}',
           '@media(min-width:1100px){.iss-tablist{grid-template-columns:repeat(9,minmax(0,1fr))}.iss-tab{font-size:11px!important;padding:9px 5px!important}.iss-tab-icon{display:block;margin:0 0 5px;font-size:17px}}@media(max-width:760px){.iss-hero-emblem{display:none}.iss-launch-routes{grid-template-columns:1fr;gap:7px}.iss-launch-route{padding:10px 12px}.iss-launch-number{font-size:18px}.iss-launch-route small{margin-top:0}.iss-status-value{font-size:13px}.iss-interior-hud{grid-template-columns:minmax(0,1fr) auto}.iss-experiment-heading h3{font-size:17px}}@media(max-width:420px){.iss-momentum-bench{padding:11px}.iss-experiment-controls{grid-template-columns:1fr}.iss-flight-telemetry{grid-template-columns:1fr}.iss-momentum-stage{overflow-x:auto}.iss-momentum-stage svg{min-width:450px}.iss-status-value{font-size:12px}}',
+          '.iss-dock-camera-controls{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 0 9px}.iss-dock-camera-controls>span{color:#b4c7d9;font-size:11px;line-height:1.5}.iss-dock-maneuver{min-width:0;margin:10px 0;padding:12px;border:1px solid #645638;border-radius:12px;background:linear-gradient(125deg,#182333,#131e2e);color:#e2e8f0}.iss-dock-maneuver-heading{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}.iss-dock-maneuver-heading h3{margin:0;color:#fde68a;font-size:14px}.iss-dock-maneuver-heading label{display:flex;align-items:center;gap:8px;font-size:12px}.iss-dock-maneuver p{font-size:11px;line-height:1.6;color:#b4c7d9;margin:8px 0}.iss-dock-step-actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.iss-dock-step-actions button{min-height:40px!important;padding:8px!important}.iss-dock-step-actions button:disabled{opacity:.4;cursor:not-allowed}.iss-dock-maneuver [hidden]{display:none!important}.iss-dock-maneuver .iss-flight-reading strong{font-size:12px}@media(max-width:600px){.iss-dock-step-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-dock-step-actions button:last-child{grid-column:1/-1}.iss-dock-camera-controls>span{flex-basis:100%}}@media(forced-colors:active){.iss-dock-maneuver{background:Canvas;border-color:CanvasText}.iss-dock-maneuver-heading h3,.iss-dock-maneuver-heading label,.iss-dock-maneuver p,.iss-dock-camera-controls>span{color:CanvasText}}',
+          '.iss-eva-counter{min-width:0;padding:12px;margin:12px 0;border:1px solid #326178;border-radius:10px;background:linear-gradient(115deg,#102a3a,#102031)}.iss-eva-counter-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:7px}.iss-eva-counter-heading h4{margin:0;color:#a5f3fc;font-size:14px}.iss-eva-counter-heading>span{color:#b4c7d9;font:10px ui-monospace,monospace}.iss-eva-counter p,.iss-eva-graph-key{color:#b4c7d9;font-size:11px;line-height:1.65;margin:9px 0}.iss-eva-counter .iss-experiment-actions{margin:9px 0}.iss-eva-counter .iss-experiment-control strong{font-size:12px}.iss-eva-readings{grid-template-columns:repeat(4,minmax(0,1fr))}.iss-eva-reaction input[type="range"]{min-height:28px}.iss-eva-reaction [data-eva-body-view]{min-width:0}.iss-eva-reaction [data-eva-rate-plot]{min-width:0}@media(max-width:600px){.iss-eva-readings{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-eva-counter .iss-experiment-control>span{flex-wrap:wrap;gap:4px}.iss-eva-counter .iss-experiment-actions button{flex:1 1 72px;padding:8px 5px}}@media(forced-colors:active){.iss-eva-counter{background:Canvas;border-color:CanvasText}.iss-eva-counter-heading h4,.iss-eva-counter-heading>span,.iss-eva-counter p,.iss-eva-graph-key{color:CanvasText}.iss-eva-reaction [data-eva-body-view],.iss-eva-reaction [data-eva-rate-plot]{forced-color-adjust:none}}',
           '@media(forced-colors:active){.iss-momentum-bench,.iss-flight-reading,.iss-launch-route,.iss-status-item,.iss-experiment-actions button{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-momentum-stage{forced-color-adjust:none}.iss-experiment-kicker,.iss-experiment-intro,.iss-experiment-control,.iss-experiment-control strong,.iss-model-badge,.iss-experiment-phase,.iss-flight-reading span,.iss-flight-reading strong,.iss-launch-route small,.iss-launch-number,.iss-launch-arrow,.iss-physics-note{color:CanvasText!important}.iss-experiment-actions button[aria-pressed="true"]{color:HighlightText;background:Highlight}.iss-model-badge{border-color:CanvasText}}'
         ].join(''));
       }

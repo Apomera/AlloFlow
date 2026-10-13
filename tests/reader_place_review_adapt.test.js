@@ -98,6 +98,37 @@ describe('long readings: outline and bookmark', () => {
     expect($('[data-reading-place-notice]').textContent).toBe('Moved to your bookmark.');
   });
 
+  it('closes the outline by button or Escape, restores its opener, and keeps the bookmark', async () => {
+    Element.prototype.scrollIntoView = () => {};
+    mount(item());
+    focusParagraph(3);
+    const toggle = $('[data-reading-outline-toggle]');
+    await click(toggle);
+    await click($('[data-reading-bookmark]'));
+    const saved = localStorage.getItem('alloflow_reading_places_v1');
+    expect(saved).not.toBeNull();
+    expect($('[data-reading-outline] h3').textContent).toBe('Sections & bookmark');
+
+    await click($('[data-reading-outline-close]'));
+    expect($('[data-reading-outline]')).toBeNull();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(toggle);
+    expect(localStorage.getItem('alloflow_reading_places_v1')).toBe(saved);
+
+    await click(toggle);
+    const bookmark = $('[data-reading-bookmark-open]');
+    act(() => bookmark.focus());
+    await act(async () => { bookmark.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    expect($('[data-reading-outline]')).toBeNull();
+    expect(document.activeElement).toBe(toggle);
+    expect(localStorage.getItem('alloflow_reading_places_v1')).toBe(saved);
+
+    await click(toggle);
+    await click($('[data-reading-bookmark-open]'));
+    expect(document.activeElement).toBe(paragraph(3));
+    expect($('[data-reading-place-notice]').textContent).toBe('Moved to your bookmark.');
+  });
+
   it('keeps nothing on the device for a student the host has not named', async () => {
     mount(item(), { readingLearnerKey: '' });
     focusParagraph(3);

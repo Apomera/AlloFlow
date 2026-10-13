@@ -60,7 +60,7 @@ function host(history, active = history[0], inputText = '', queued = false) {
     useCallback, _resourceMutationStateRef: ref,
     setHistory: set('history'), setGeneratedContent: set('generatedContent'), setInputText: set('inputText')
   };
-  const onUpdateResource = extracted('onUpdateResource', scope);
+  const onUpdateResource = actual('onUpdateResource', '  const handleNoteUpdate =', scope);
   const h = { state, ref, scope, onUpdateResource, flush: () => { while (pending.length) pending.shift()(); } };
   h.correct = (evidence = { language: 'English', targetGrade: '5', instructionalText: { text: 'Fresh text' } }) => {
     const fresh = vi.fn();
@@ -447,15 +447,19 @@ describe('main resource host: learner studio boundaries and Notebook wiring', ()
   }
   // Runs the real handleSubmitAssignment and reads the payload it hands to the download lane
   // (no mailbox or live session here), so both response aliases are checked where they leave.
-  async function submissionParts(history, studentResponses, studio = null) {
+  function submissionHarness(history, studentResponses, studio = null) {
     if (studio) window.AlloModules.StudioResponse = studio; else delete window.AlloModules.StudioResponse;
-    const downloadSubmissionBackup = vi.fn();
+    const downloadSubmissionBackup = vi.fn(), addToast = vi.fn();
     const submit = extracted('handleSubmitAssignment', {
       history, studentResponses, sanitizeSubmissionData: items => structuredClone(items),
       studentProjectSettings: {}, pasteEvents: [], globalPoints: 0, adventureState: { level: 1 }, gameCompletions: {},
       _alloCheckpointRecordsRef: { current: [] }, _alloLedgerRef: { current: null }, alloStableAssignmentId: () => 'assignment-a',
-      downloadSubmissionBackup, addToast: vi.fn(), setIsSaveActionPulsing: vi.fn(), warnLog: vi.fn(), t: key => key
+      downloadSubmissionBackup, addToast, setIsSaveActionPulsing: vi.fn(), warnLog: vi.fn(), t: key => key
     });
+    return { submit, downloadSubmissionBackup, addToast };
+  }
+  async function submissionParts(history, studentResponses, studio = null) {
+    const { submit, downloadSubmissionBackup } = submissionHarness(history, studentResponses, studio);
     expect(await submit('Learner', {})).toMatchObject({ ok: true, delivery: 'download' });
     expect(downloadSubmissionBackup).toHaveBeenCalledOnce();
     const payload = downloadSubmissionBackup.mock.calls[0][0];
@@ -503,14 +507,15 @@ describe('main resource host: learner studio boundaries and Notebook wiring', ()
     expect(setGeneratedContent).toHaveBeenCalledTimes(1);
   });
 
-  it('does not export raw studio responses through either submission lane when the module is unavailable', async () => {
+  it('keeps learner work available for retry instead of exporting an incomplete submission while studio tools are unavailable', async () => {
     const history = [...entries(), quiz];
     const responses = Object.fromEntries(history.map(item => [item.id, item.type === 'quiz' ? { 0: 'Quiz answer' } : { studio: { notes: 'PRIVATE raw work', image: 'data:image/png;base64,big' } }]));
-    const result = await submissionParts(history, responses);
-    expect(result.cleanContent).toEqual([quiz]);
-    expect(result.submissionResponses.quiz).toEqual({ 0: 'Quiz answer' });
-    expect(JSON.stringify(result)).not.toContain('PRIVATE');
-    expect(JSON.stringify(result)).not.toContain('data:image');
+    const before = structuredClone({ history, responses });
+    const { submit, downloadSubmissionBackup, addToast } = submissionHarness(history, responses);
+    expect(await submit('Learner', {})).toEqual({ ok: false, retryable: true, reason: 'studio-tools-not-ready' });
+    expect(downloadSubmissionBackup).not.toHaveBeenCalled();
+    expect(addToast).toHaveBeenCalledExactlyOnceWith('toasts.export_tools_still_loading_try', 'error');
+    expect({ history, responses }).toEqual(before);
   });
 
   it('routes studio submission content and response aliases through the bounded adapter', async () => {

@@ -137,9 +137,9 @@ describe('Maine SLD reviewed fixture: complete data and meaningful contrasts', (
   });
 });
 
-describe('Maine SLD extended practice: explicit legacy compatibility and five-case isolation', () => {
+describe('Maine SLD extended practice: explicit legacy compatibility and seven-case isolation', () => {
   const originalCases = ['alex', 'alex-general-ed-adequate', 'jordan'];
-  const addedCases = ['marisol', 'taylor'];
+  const addedCases = ['marisol', 'taylor', 'samira', 'avery'];
   function originalCaseWork() {
     const state = empty();
     originalCases.forEach((id, index) => {
@@ -156,18 +156,21 @@ describe('Maine SLD extended practice: explicit legacy compatibility and five-ca
   function legacyTransfer(caseWork = originalCaseWork()) {
     return { format: 'alloflow-maine-sld-practice', schemaVersion: 1, moduleVersion: '1.0.0', activeCase: 'jordan', caseWork };
   }
-  it('imports explicitly compatible original worksheets without losing notes and creates two blank added cases', () => {
-    expect(data.metadata.version).toBe('1.1.0');
+  it('imports explicitly compatible original worksheets without losing notes and creates blank added cases', () => {
+    expect(data.metadata.version).toBe('1.3.0');
+    expect(data.metadata.caseCount).toBe(7);
+    expect(data.cases).toHaveLength(data.metadata.caseCount);
     expect(data.metadata.compatibleWorksheetVersions).toContain('1.0.0');
+    expect(data.metadata.compatibleWorksheetVersions).toContain('1.1.0');
     const previous = originalCaseWork(), imported = core.importWorksheet(JSON.stringify(legacyTransfer(previous)), data);
     expect(imported.activeCase).toBe('jordan');
     expect(Object.keys(imported.byCase).sort()).toEqual([...originalCases, ...addedCases].sort());
     for (const id of originalCases) expect(imported.byCase[id]).toEqual(previous[id]);
-    for (const id of addedCases) expect(imported.byCase[id]).toEqual(core.blankCase());
+    for (const id of addedCases) expect(imported.byCase[id]).toEqual(core.blankCase(data.cases.find(c => c.id === id)));
     const current = core.exportWorksheet(imported, data);
-    expect(current.moduleVersion).toBe('1.1.0');
+    expect(current.moduleVersion).toBe(data.metadata.version);
     for (const id of originalCases) expect(current.caseWork[id]).toEqual(previous[id]);
-    for (const id of addedCases) expect(current.caseWork[id]).toEqual(core.blankCase());
+    for (const id of addedCases) expect(current.caseWork[id]).toEqual(core.blankCase(data.cases.find(c => c.id === id)));
   });
   it('loads compatible sessions and saves the current version while retaining the expiry and unknown-version protections', () => {
     const values = new Map(), storage = { setItem: (key, value) => values.set(key, value), getItem: key => values.get(key) || null, removeItem: key => values.delete(key) };
@@ -176,9 +179,9 @@ describe('Maine SLD extended practice: explicit legacy compatibility and five-ca
     const loaded = core.loadSession(storage, data);
     expect(loaded.activeCase).toBe('jordan');expect(loaded.activeStep).toBe('reasoning');
     for (const id of originalCases) expect(loaded.byCase[id]).toEqual(previous[id]);
-    for (const id of addedCases) expect(loaded.byCase[id]).toEqual(core.blankCase());
+    for (const id of addedCases) expect(loaded.byCase[id]).toEqual(core.blankCase(data.cases.find(c => c.id === id)));
     expect(core.saveSession(storage, loaded, data)).toBe(true);
-    expect(JSON.parse(values.get(core.SESSION_KEY)).moduleVersion).toBe('1.1.0');
+    expect(JSON.parse(values.get(core.SESSION_KEY)).moduleVersion).toBe(data.metadata.version);
     for (const change of [{ at: Date.now() - 43200001 }, { at: Date.now() + 120000 }, { moduleVersion: '999.0.0' }]) {
       values.set(core.SESSION_KEY, JSON.stringify({ ...legacy, ...change }));
       expect(core.loadSession(storage, data)).toEqual(empty());
@@ -200,7 +203,7 @@ describe('Maine SLD extended practice: explicit legacy compatibility and five-ca
     for (const key of ['aiVerdict', 'unknown-score', 'Q99', 'unknownCase']) expect(JSON.stringify(imported)).not.toContain(key);
     expect(imported.byCase.alex.findings[scoreId].note).toContain('<b>literal</b>');
   });
-  it('round trips independent work in all five cases and resets one case without clearing the others', () => {
+  it('round trips independent work in all seven cases and resets one case without clearing the others', () => {
     const state = empty();
     expect(Object.keys(state.byCase).sort()).toEqual([...originalCases, ...addedCases].sort());
     for (const fixture of data.cases) {
@@ -216,6 +219,6 @@ describe('Maine SLD extended practice: explicit legacy compatibility and five-ca
     restored.byCase.marisol = core.blankCase();
     const afterReset = core.importWorksheet(core.exportWorksheet(restored, data), data);
     expect(afterReset.byCase.marisol).toEqual(core.blankCase());
-    for (const id of [...originalCases, 'taylor']) expect(afterReset.byCase[id]).toEqual(state.byCase[id]);
+    for (const id of [...originalCases, ...addedCases].filter(id => id !== 'marisol')) expect(afterReset.byCase[id]).toEqual(state.byCase[id]);
   });
 });

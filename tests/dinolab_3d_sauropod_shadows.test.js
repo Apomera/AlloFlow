@@ -25,7 +25,7 @@ function materialRig(isSauropod, phong, opacity = 100) {
     integument: { pattern: 'subtle' }, props: { showBody: true },
     // Exercise both body-derived clones, even when a species has no feather coat.
     surfaceHypothesis: { filamentCoverage: 0.4 },
-    dinoSkinMapping: noOp, dinoIrisShading: noOp, dinoKeratinShading: noOp, dinoCoatShading: noOp,
+    dinoSkinMapping: noOp, dinoIrisShading: noOp, dinoGlintShading: noOp, dinoKeratinShading: noOp, dinoCoatShading: noOp,
     visualMaterialsRef, bodyOpacityRef, setBodyOpacity: noOp,
     requestSceneRender: noOp, statusRef: { current: null }
   };

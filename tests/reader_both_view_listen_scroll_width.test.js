@@ -51,7 +51,7 @@ describe('Both view read-aloud in place', () => {
     act(() => find('[data-comparison-listen="source"]').click());
     const [text, id, start, restart, language] = props.handleSpeak.mock.calls.at(-1);
     expect([id, start, restart, language]).toEqual(['simplified-source', 0, true, 'English']);
-    expect(units(text)).toEqual(['Hail to thee, thane of Cawdor!', 'Word support for "thane": A Scottish lord.', 'Thou shalt be king hereafter.', 'So foul and fair a day I have not seen.']);
+    expect(units(text)).toEqual(['Hail to thee, thane of Cawdor!', 'Word help for "thane": A Scottish lord.', 'Thou shalt be king hereafter.', 'So foul and fair a day I have not seen.']);
     rerender({ isPlaying: true, playingContentId: 'simplified-source', playbackState: { currentIdx: 2, sentences: units(text) } });
     expect(marked('source')).toBe('Thou shalt be king hereafter.');
     expect(marked('adapted')).toBe('');
@@ -74,7 +74,7 @@ describe('Both view read-aloud in place', () => {
 
   it('reads the original pane without supports when glosses are hidden', () => {
     mount();
-    const glosses = Array.from(host.querySelectorAll('label')).find(label => label.textContent.includes('simplified.compare_show_glosses') || label.textContent.includes('Show glosses')).querySelector('input');
+    const glosses = Array.from(host.querySelectorAll('label')).find(label => label.textContent.includes('simplified.compare_show_glosses') || label.textContent.includes('Show word help')).querySelector('input');
     act(() => glosses.click());
     act(() => find('[data-comparison-listen="source"]').click());
     expect(props.handleSpeak.mock.calls.at(-1)[0]).toBe(SOURCE);

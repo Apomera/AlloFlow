@@ -34,6 +34,32 @@ function startDraft(p = props()) { mount(p); expand(); click('Edit script'); cha
 function record() { return JSON.parse(sessionStorage.getItem(storageKey())); }
 
 describe('scoped teaching-script recovery', () => {
+  it.each([
+    ['detected defaults', {}, { subject: true, topic: true }],
+    ['custom subject', { subject: 'science' }, { subject: false, topic: true }],
+    ['custom topic', { topic: 'Teacher-selected focus' }, { subject: true, topic: false }],
+    ['custom subject and topic', { subject: 'science', topic: 'Teacher-selected focus' }, { subject: false, topic: false }],
+    ['explicit overrides matching defaults', { inferContext: { subject: false, topic: false } }, { subject: false, topic: false }],
+    ['explicit automatic fields differing from defaults', { subject: 'science', topic: 'Updated AI focus', inferContext: { subject: true, topic: true } }, { subject: true, topic: true }]
+  ])('migrates recovered %s without losing field choices', async (_label, settings, expected) => {
+    const p = props(); mount(p); openSettings(); change('Teaching time', 25);
+    const saved = record(); unmount(); delete saved.settings.inferContext;
+    Object.assign(saved.settings, settings); sessionStorage.setItem(storageKey(), JSON.stringify(saved));
+    mount(p); openSettings();
+    await act(async () => host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    expect(p.onGenerateTeachingScript.mock.calls[0][0]).toMatchObject({
+      subject: saved.settings.subject, topic: saved.settings.topic, inferContext: expected
+    });
+    change('Relevant prior learning', 'Remember the previous model.');
+    expect(record().settings.inferContext).toEqual(expected);
+  });
+  it('recovers independent subject and topic override choices', async () => {
+    const p = props(); mount(p); openSettings(); change('Lesson topic', 'Teacher-selected focus');
+    expect(record().settings.inferContext).toEqual({ subject: true, topic: false });
+    unmount(); mount(p); openSettings();
+    await act(async () => host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    expect(p.onGenerateTeachingScript.mock.calls[0][0]).toMatchObject({ topic: 'Teacher-selected focus', inferContext: { subject: true, topic: false } });
+  });
   it('recovers generation settings after unmount/remount without opting research back in', () => {
     const p = props(); mount(p); openSettings();
     change('Learning goal', 'Compare fractions with equal numerators'); change('Relevant prior learning', 'We used paper strips yesterday.');

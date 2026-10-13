@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cp-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "A FACT",
+      "assetId": "cp-term-fact",
+      "reason": "A camera represents an observable event."
+    },
+    {
+      "resourceId": "cp-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "A STORY",
+      "assetId": "cp-term-story",
+      "reason": "The thought bubble represents an interpretation of the phone event."
+    },
+    {
+      "resourceId": "cp-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "THE GAP",
+      "assetId": "cp-term-attribution",
+      "reason": "The imagined explanation for a passing classmate matches the attribution gap."
+    },
+    {
+      "resourceId": "cp-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "NOTICE, HOLD, ASK",
+      "assetId": "cp-term-openq",
+      "reason": "An open-hand conversation supports asking an open question."
+    }
+  ]
+}

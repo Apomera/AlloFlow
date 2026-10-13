@@ -31,6 +31,7 @@ const { eyelidGeometry, updateEyelid } = new Function(
 const radians = degrees => degrees * Math.PI / 180;
 const axisFor = side => new T.Vector3(0, 0, side);
 const closeVector = (a, b, tolerance = 1e-9) => expect(a.distanceTo(b)).toBeLessThan(tolerance);
+const speciesCases = ['tyrannosaurus', 'triceratops', 'microraptor', 'brachiosaurus', 'stegosaurus'];
 
 // Execute the actual six-mesh construction and in-place transform section. The
 // surface hit is a controlled math fixture, with the production frame helper.
@@ -38,7 +39,7 @@ const eyeStart = source.indexOf('                var eyePos = head.clone().add('
 const eyeEnd = source.indexOf('                idleMotion.eyes.push(', eyeStart);
 if (eyeStart < 0 || eyeEnd < 0) throw Error('Missing actual eye construction block.');
 const eyeBlock = source.slice(eyeStart, eyeEnd);
-function constructEyes(side, size, normal, species = 'tyrannosaurus') {
+function constructEyes(side, size, normal, species = 'tyrannosaurus', headShell = {}) {
   const material = new T.MeshBasicMaterial();
   const model = new T.Group();
   const facialStrips = [];
@@ -49,14 +50,17 @@ function constructEyes(side, size, normal, species = 'tyrannosaurus') {
     surfaceHeadLength: 2 * size, surfaceHeadHeight: .8 * size,
     surfaceHeadDepth: .6 * size, faceSide: side, eyeRadius: .1 * size,
     cranialSurface: { eyeForwardScale: 1, eyeHeightScale: 1, browScale: 1 },
-    props: { species: { id: species } }, headShell: {},
+    props: { species: { id: species } }, headShell,
     vec: (x, y, z) => new T.Vector3(x, y, z),
-    faceSurfacePoint: (p, s, inset) => p.clone().add(new T.Vector3(0, 0, s * inset)),
+    faceSurfacePoint: (p, s, inset) => headShell ? p.clone().add(new T.Vector3(0, 0, s * inset)) : p,
     dinoSurfaceAnchor: () => {
+      if (!headShell) throw Error('A missing head surface must not be queried.');
       anchorCalls++;
       return normal ? { point: new T.Vector3(1.6, 3.24, side * .564).multiplyScalar(size), normal } : null;
     },
     dinoEyeSurfaceFrame: frameFor, dinoEyeGeometry: eyeGeometry, dinoEyelidGeometry: eyelidGeometry,
+    // Surface seating has its own real-mesh tests; this fixture isolates rigid frames.
+    dinoSeatEyelids: () => false,
     addFacialStrip: points => { facialStrips.push(points.map(point => point.clone())); return null; }, model,
     eyeMat: material, eyePupilMat: material, eyeGlintMat: material,
     corneaMat: material, headMat: material
@@ -128,10 +132,10 @@ describe('Dino Lab bounded eye surface frame', () => {
 });
 
 describe('Dino Lab fixed eye stack and moving lids in a local surface frame', () => {
-  for (const size of [.003, 1, 24]) for (const side of [-1, 1]) {
-    it('preserves rigid six-part offsets and fixed globe transforms through each blink at size ' + size + ', side ' + side, () => {
-      const original = constructEyes(side, size, null);
-      const oriented = constructEyes(side, size, new T.Vector3(-.45, .12, side * .89));
+  for (const species of speciesCases) for (const size of [.003, 1, 24]) for (const side of [-1, 1]) {
+    it('preserves ' + species + ' rigid six-part offsets and fixed globe transforms through each blink at size ' + size + ', side ' + side, () => {
+      const original = constructEyes(side, size, null, species);
+      const oriented = constructEyes(side, size, new T.Vector3(-.45, .12, side * .89), species);
       try {
         expect(original.model.children.length).toBe(6);
         expect(oriented.model.children.length).toBe(6);
@@ -186,24 +190,72 @@ describe('Dino Lab fixed eye stack and moving lids in a local surface frame', ()
       } finally { original.dispose(); oriented.dispose(); }
     });
   }
-  for (const species of ['triceratops', 'microraptor', 'brachiosaurus', 'stegosaurus']) {
-    it('keeps the actual non-target ' + species + ' construction on its original lateral frame', () => {
-      const eyes = constructEyes(1, 1, new T.Vector3(-.45, .12, .89), species);
+  for (const species of speciesCases) for (const side of [-1, 1]) {
+    it('seats the actual ' + species + ' construction in its bounded frame on side ' + side, () => {
+      // Deliberately exceed the display cap so routing cannot silently bypass
+      // the bounded helper for a newly supported species.
+      const normal = new T.Vector3(-Math.sin(radians(70)), .12, side * Math.cos(radians(70))).normalize();
+      const expectedFrame = frameFor(T, normal, side, radians(35));
+      const eyes = constructEyes(side, 1, normal, species);
       try {
-        expect(eyes.anchorCalls).toBe(0);
+        expect(eyes.anchorCalls).toBe(1);
         expect(eyes.model.children.length).toBe(6);
-        expect(eyes.parts.every(part => !part.userData.dinoSurfaceSeatedEye)).toBe(true);
-        closeVector(new T.Vector3(0, 0, 1).applyQuaternion(eyes.eye.quaternion), new T.Vector3(0, 0, 1));
+        expect(eyes.parts.every(part => part.userData.dinoSurfaceSeatedEye)).toBe(true);
+        expect(eyes.parts.every(part => part.userData.dinoEyeSide === side)).toBe(true);
+        for (const part of eyes.parts) {
+          expect(part.quaternion.length()).toBeCloseTo(1, 12);
+          expect(part.quaternion.angleTo(expectedFrame)).toBeLessThan(1e-7);
+          expect(part.userData.dinoEyeFrame).toEqual(expectedFrame.toArray());
+        }
+        const eyeAxis = axisFor(side).applyQuaternion(eyes.eye.quaternion);
+        closeVector(eyeAxis, axisFor(side).applyQuaternion(expectedFrame));
+        expect(eyeAxis.angleTo(axisFor(side))).toBeCloseTo(radians(35), 10);
+        expect(eyeAxis.z * side).toBeGreaterThan(0);
+        // Seat along the rotated frame, not world Z. New supported species
+        // tuck the stack into the skin; preserve Tyrannosaurus's established seat.
+        const hitPoint = new T.Vector3(1.6, 3.24, side * .564);
+        const inset = .1 * (species === 'tyrannosaurus' ? .14 : .28);
+        const seatDelta = eyes.eyePos.clone().sub(hitPoint);
+        expect(seatDelta.dot(eyeAxis)).toBeCloseTo(-inset, 12);
+        closeVector(seatDelta.clone().addScaledVector(eyeAxis, inset), new T.Vector3());
+        closeVector(eyes.eyePos, hitPoint.clone().addScaledVector(eyeAxis, -inset));
         expect(eyes.upperLid.quaternion.toArray()).toEqual(eyes.lowerLid.quaternion.toArray());
       } finally { eyes.dispose(); }
     });
+    it('keeps the actual ' + species + ' stack lateral when the head surface is absent on side ' + side, () => {
+      const eyes = constructEyes(side, 1, new T.Vector3(-.45, .12, side * .89), species, null);
+      try {
+        expect(eyes.anchorCalls).toBe(0);
+        expect(eyes.model.children.length).toBe(6);
+        closeVector(eyes.eyePos, new T.Vector3(1.6, 3.24, side * .564));
+        for (const part of eyes.parts) {
+          expect(part.userData.dinoSurfaceSeatedEye).toBeUndefined();
+          expect(part.userData.dinoEyeFrame).toBeUndefined();
+          expect(part.quaternion.angleTo(new T.Quaternion())).toBeLessThan(1e-7);
+          expect([...part.position.toArray(), ...part.quaternion.toArray(), ...part.scale.toArray()].every(Number.isFinite)).toBe(true);
+        }
+        closeVector(axisFor(side).applyQuaternion(eyes.eye.quaternion), axisFor(side));
+        expect(eyes.upperLid.quaternion.toArray()).toEqual(eyes.lowerLid.quaternion.toArray());
+      } finally { eyes.dispose(); }
+    });
+    for (const fallback of ['unsupported hit', 'no hit']) {
+      it('keeps the actual ' + species + ' stack on its original frame after ' + fallback + ' on side ' + side, () => {
+        const normal = fallback === 'unsupported hit' ? new T.Vector3(.4, 0, side * .9) : null;
+        const eyes = constructEyes(side, 1, normal, species);
+        try {
+          expect(eyes.anchorCalls).toBe(1);
+          expect(eyes.model.children.length).toBe(6);
+          closeVector(eyes.eyePos, new T.Vector3(1.6, 3.24, side * .55));
+          for (const part of eyes.parts) {
+            expect(part.userData.dinoSurfaceSeatedEye).toBeUndefined();
+            expect(part.userData.dinoEyeFrame).toBeUndefined();
+            expect(part.quaternion.angleTo(new T.Quaternion())).toBeLessThan(1e-7);
+            expect([...part.position.toArray(), ...part.quaternion.toArray(), ...part.scale.toArray()].every(Number.isFinite)).toBe(true);
+          }
+          closeVector(axisFor(side).applyQuaternion(eyes.eye.quaternion), axisFor(side));
+          expect(eyes.upperLid.quaternion.toArray()).toEqual(eyes.lowerLid.quaternion.toArray());
+        } finally { eyes.dispose(); }
+      });
+    }
   }
-  it('keeps the actual Tyrannosaurus stack on its original frame after an unsupported hit', () => {
-    const eyes = constructEyes(-1, 1, new T.Vector3(.4, 0, -.9));
-    try {
-      expect(eyes.anchorCalls).toBe(1);
-      expect(eyes.parts.every(part => !part.userData.dinoSurfaceSeatedEye)).toBe(true);
-      closeVector(new T.Vector3(0, 0, -1).applyQuaternion(eyes.eye.quaternion), new T.Vector3(0, 0, -1));
-    } finally { eyes.dispose(); }
-  });
 });

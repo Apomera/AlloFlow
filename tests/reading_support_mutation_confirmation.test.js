@@ -35,12 +35,12 @@ function fixture(adapted = false) {
   act(render);
   return { initial, item, session, persist, get supports() { return supports; }, changeOwner: next => act(() => { item = next; render(); }) };
 }
-const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text || (text === 'Review word supports' && node.textContent.startsWith(text)));
+const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text || (text === 'Review word help' && node.textContent.startsWith(text)));
 const click = async node => act(async () => { expect(node).toBeTruthy(); node.click(); });
 const draft = () => host.querySelector('[data-gloss-draft]');
 const entryPin = () => host.querySelector('input[aria-label^="Always show in lighter view:"]');
-const remove = () => host.querySelector('button[aria-label^="Remove word help: "], button[aria-label^="Remove gloss for"]');
-async function edit() { await click(button('Review word supports')); await click(host.querySelector('button[aria-label^="Edit word help: "], button[aria-label^="Edit gloss for"]')); }
+const remove = () => host.querySelector('button[aria-label^="Remove word help: "], button[aria-label^="Remove word help for"]');
+async function edit() { await click(button('Review word help')); await click(host.querySelector('button[aria-label^="Edit word help: "], button[aria-label^="Edit word help for"]')); }
 function type(value) { act(() => { const node = draft().querySelector('textarea'); node.focus(); Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); }); }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
 
@@ -65,17 +65,17 @@ describe('save confirmation source and owner', () => {
   for (const field of ['_artifactInstanceId', 'sourceFamilyId', 'unitId']) {
     it.each(['success', 'failure'])(`ignores a late save %s after ${field} changes with identical ID and text`, async outcome => {
       const h = fixture(); await edit(); type('Belongs to the previous owner.');
-      const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise); await click(button('Save word support'));
+      const pending = deferred(); h.persist.mockReturnValueOnce(pending.promise); await click(button('Save word help'));
       const accepted = contract.upsertReadingSupport(h.item, h.initial, h.persist.mock.calls[0][1].annotation);
       h.changeOwner({ ...h.item, [field]: 'new-owner' }); expect(draft()).toBeNull();
       await act(async () => outcome === 'success' ? pending.resolve(accepted) : pending.reject(new Error('Previous owner save failed.')));
-      expect(draft()).toBeNull(); expect(host.textContent).not.toContain('Word support saved.'); expect(host.textContent).not.toContain('Previous owner save failed.');
+      expect(draft()).toBeNull(); expect(host.textContent).not.toContain('Word help saved.'); expect(host.textContent).not.toContain('Previous owner save failed.');
       h.changeOwner(h.item); expect(draft().querySelector('textarea').value).toBe('Belongs to the previous owner.'); expect(h.session.hasChanges()).toBe(true);
     });
   }
   it.each(['success', 'failure'])('ignores an obsolete %s after owner A → B → A', async outcome => {
     const h = fixture(); await edit(); type('Earlier unsaved wording.'); const pending = deferred();
-    h.persist.mockReturnValueOnce(pending.promise); await click(button('Save word support'));
+    h.persist.mockReturnValueOnce(pending.promise); await click(button('Save word help'));
     const accepted = contract.upsertReadingSupport(h.item, h.initial, h.persist.mock.calls[0][1].annotation);
     h.changeOwner({ ...h.item, _artifactInstanceId: 'temporary-owner' }); h.changeOwner(h.item); type('Newer wording after returning.');
     await act(async () => outcome === 'success' ? pending.resolve(accepted) : pending.reject(new Error('Obsolete failure.')));

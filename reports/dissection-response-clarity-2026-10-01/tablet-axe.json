@@ -13,8 +13,8 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-10-01T22:55:28.113Z",
-  "url": "http://127.0.0.1:51871/__harness",
+  "timestamp": "2026-10-11T03:31:55.051Z",
+  "url": "http://127.0.0.1:56796/__harness",
   "toolOptions": {
     "runOnly": {
       "type": "tag",
@@ -992,6 +992,138 @@
             }
           ],
           "impact": null,
+          "html": "<section class=\"diss-investigation-progress\" aria-labelledby=\"diss-investigation-progress-title\">",
+          "target": [
+            ".diss-investigation-progress"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"6\" aria-labelledby=\"diss-investigation-technique\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-technique\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-inspected\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-inspected\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-recorded\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-recorded\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
           "html": "<p class=\"diss-layer-review__selection\" role=\"status\" aria-live=\"polite\">Latest action: Orientation check 8</p>",
           "target": [
             ".diss-layer-review__selection"
@@ -1058,9 +1190,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -1124,9 +1256,42 @@
             }
           ],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -1508,6 +1673,78 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<section class=\"diss-investigation-progress\" aria-labelledby=\"diss-investigation-progress-title\">",
+          "target": [
+            ".diss-investigation-progress"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"6\" aria-labelledby=\"diss-investigation-technique\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-technique\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-inspected\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-inspected\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-recorded\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-recorded\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<p class=\"diss-layer-review__selection\" role=\"status\" aria-live=\"polite\">Latest action: Orientation check 8</p>",
           "target": [
             ".diss-layer-review__selection"
@@ -1544,9 +1781,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -1580,9 +1817,27 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -2400,6 +2655,78 @@
             }
           ],
           "impact": null,
+          "html": "<section class=\"diss-investigation-progress\" aria-labelledby=\"diss-investigation-progress-title\">",
+          "target": [
+            ".diss-investigation-progress"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"6\" aria-labelledby=\"diss-investigation-technique\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-technique\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-inspected\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-inspected\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-recorded\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-recorded\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
           "html": "<p class=\"diss-layer-review__selection\" role=\"status\" aria-live=\"polite\">Latest action: Orientation check 8</p>",
           "target": [
             ".diss-layer-review__selection"
@@ -2418,9 +2745,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -2454,9 +2781,27 @@
             }
           ],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -2852,6 +3197,134 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<section class=\"diss-investigation-progress\" aria-labelledby=\"diss-investigation-progress-title\">",
+          "target": [
+            ".diss-investigation-progress"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"6\" aria-labelledby=\"diss-investigation-technique\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-technique\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-inspected\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-inspected\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-recorded\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-recorded\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<p class=\"diss-layer-review__selection\" role=\"status\" aria-live=\"polite\">Latest action: Orientation check 8</p>",
           "target": [
             ".diss-layer-review__selection"
@@ -2916,9 +3389,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -2980,9 +3453,41 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -3354,6 +3859,78 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<section class=\"diss-investigation-progress\" aria-labelledby=\"diss-investigation-progress-title\">",
+          "target": [
+            ".diss-investigation-progress"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"6\" aria-labelledby=\"diss-investigation-technique\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-technique\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-inspected\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-inspected\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-recorded\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-recorded\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<p class=\"diss-layer-review__selection\" role=\"status\" aria-live=\"polite\">Latest action: Orientation check 8</p>",
           "target": [
             ".diss-layer-review__selection"
@@ -3390,9 +3967,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -3426,9 +4003,27 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -3647,9 +4242,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -3683,9 +4278,27 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "button-has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Element has inner text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -4007,6 +4620,181 @@
             {
               "id": "color-contrast",
               "data": {
+                "fgColor": "#0f172a",
+                "bgColor": "#ffffff",
+                "contrastRatio": 17.85,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 17.85"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<h4 id=\"diss-investigation-progress-title\" tabindex=\"-1\">Investigation progress</h4>",
+          "target": [
+            "#diss-investigation-progress-title"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#123b67",
+                "bgColor": "#ffffff",
+                "contrastRatio": 11.36,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 11.36"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<strong id=\"diss-investigation-technique\">Verified technique: 0 of 6</strong>",
+          "target": [
+            "#diss-investigation-technique"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#1e293b",
+                "bgColor": "#ffffff",
+                "contrastRatio": 14.62,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.62"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span>Actions with a confirmed plan and explanation.</span>",
+          "target": [
+            "div[data-progress-kind=\"technique\"] > span"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#123b67",
+                "bgColor": "#ffffff",
+                "contrastRatio": 11.36,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 11.36"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<strong id=\"diss-investigation-inspected\">Structures inspected: 0 of 4</strong>",
+          "target": [
+            "#diss-investigation-inspected"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#1e293b",
+                "bgColor": "#ffffff",
+                "contrastRatio": 14.62,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.62"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span>Structures viewed across this layer’s anatomical views.</span>",
+          "target": [
+            "div[data-progress-kind=\"inspected\"] > span"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#123b67",
+                "bgColor": "#ffffff",
+                "contrastRatio": 11.36,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 11.36"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<strong id=\"diss-investigation-recorded\">Evidence recorded: 0 of 4</strong>",
+          "target": [
+            "#diss-investigation-recorded"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#1e293b",
+                "bgColor": "#ffffff",
+                "contrastRatio": 14.62,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.62"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span>Inspected structures with a note and confidence rating.</span>",
+          "target": [
+            "div[data-progress-kind=\"recorded\"] > span"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
                 "fgColor": "#475569",
                 "bgColor": "#f8fafc",
                 "contrastRatio": 7.24,
@@ -4099,7 +4887,7 @@
           "impact": null,
           "html": "<span class=\"diss-layer-review__input-badge\" data-input-kind=\"direct\">Mouse input</span>",
           "target": [
-            ".diss-layer-review__input-badge"
+            ".diss-layer-review__input > .diss-layer-review__input-badge[data-input-kind=\"direct\"]"
           ]
         },
         {
@@ -4799,7 +5587,7 @@
           "impact": null,
           "html": "<dt>Risk</dt>",
           "target": [
-            "div:nth-child(4) > dt"
+            ".diss-layer-review__metric-help > dl > div:nth-child(4) > dt"
           ]
         },
         {
@@ -4824,7 +5612,7 @@
           "impact": null,
           "html": "<dd>The model’s handling-risk measure. Lower values are better.</dd>",
           "target": [
-            "div:nth-child(4) > dd"
+            ".diss-layer-review__metric-help > dl > div:nth-child(4) > dd"
           ]
         },
         {
@@ -4857,6 +5645,31 @@
             {
               "id": "color-contrast",
               "data": {
+                "fgColor": "#1e293b",
+                "bgColor": "#ffffff",
+                "contrastRatio": 14.62,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 14.62"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p id=\"diss-layer-replay-help\" class=\"diss-replay-launch-hint\">Opens paused on this saved action. Resume to continue through the attempt.</p>",
+          "target": [
+            "#diss-layer-replay-help"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
                 "fgColor": "#0f172a",
                 "bgColor": "#ffffff",
                 "contrastRatio": 17.85,
@@ -4872,9 +5685,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -4900,6 +5713,31 @@
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-procedure-record-7\">Return to history</button>",
           "target": [
             "button[aria-controls=\"diss-procedure-record-7\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#0f172a",
+                "bgColor": "#ffffff",
+                "contrastRatio": 17.85,
+                "fontSize": "11.4pt (15.2px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 17.85"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
           ]
         },
         {
@@ -4999,7 +5837,32 @@
           "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#1e293b",
+                "bgColor": "#f8fafc",
+                "contrastRatio": 13.98,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 13.98"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>About technique feedback</summary>",
+          "target": [
+            ".diss-layer-review__feedback-help > summary"
           ]
         },
         {
@@ -6161,7 +7024,7 @@
           "impact": null,
           "html": "<dt>Risk</dt>",
           "target": [
-            "div:nth-child(4) > dt"
+            ".diss-layer-review__metric-help > dl > div:nth-child(4) > dt"
           ]
         },
         {
@@ -6179,7 +7042,7 @@
           "impact": null,
           "html": "<dd>The model’s handling-risk measure. Lower values are better.</dd>",
           "target": [
-            "div:nth-child(4) > dd"
+            ".diss-layer-review__metric-help > dl > div:nth-child(4) > dd"
           ]
         }
       ]
@@ -6240,6 +7103,78 @@
           "any": [
             {
               "id": "duplicate-id-aria",
+              "data": "diss-investigation-progress-title",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<h4 id=\"diss-investigation-progress-title\" tabindex=\"-1\">Investigation progress</h4>",
+          "target": [
+            "#diss-investigation-progress-title"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "diss-investigation-technique",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<strong id=\"diss-investigation-technique\">Verified technique: 0 of 6</strong>",
+          "target": [
+            "#diss-investigation-technique"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "diss-investigation-inspected",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<strong id=\"diss-investigation-inspected\">Structures inspected: 0 of 4</strong>",
+          "target": [
+            "#diss-investigation-inspected"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "diss-investigation-recorded",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<strong id=\"diss-investigation-recorded\">Evidence recorded: 0 of 4</strong>",
+          "target": [
+            "#diss-investigation-recorded"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
               "data": "diss-layer-review-response",
               "relatedNodes": [],
               "impact": "critical",
@@ -6270,6 +7205,24 @@
           "html": "<h4 id=\"diss-layer-response-title\" tabindex=\"-1\">What changed</h4>",
           "target": [
             "#diss-layer-response-title"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "diss-layer-replay-help",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p id=\"diss-layer-replay-help\" class=\"diss-replay-launch-hint\">Opens paused on this saved action. Resume to continue through the attempt.</p>",
+          "target": [
+            "#diss-layer-replay-help"
           ]
         },
         {
@@ -6485,6 +7438,60 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<progress value=\"0\" max=\"6\" aria-labelledby=\"diss-investigation-technique\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-technique\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-inspected\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-inspected\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress value=\"0\" max=\"4\" aria-labelledby=\"diss-investigation-recorded\"></progress>",
+          "target": [
+            "progress[aria-labelledby=\"diss-investigation-recorded\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<summary>What do these measures mean?</summary>",
           "target": [
             ".diss-layer-review__metric-help > summary"
@@ -6503,9 +7510,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-canvas\">Replay reviewed action</button>",
+          "html": "<button id=\"diss-layer-replay-response\" type=\"button\" class=\"diss-layer-review__action\" aria-describedby=\"diss-layer-replay-help\">Replay reviewed action</button>",
           "target": [
-            ".diss-layer-review__action[aria-controls=\"diss-canvas\"][type=\"button\"]"
+            "#diss-layer-replay-response"
           ]
         },
         {
@@ -6539,9 +7546,45 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Return to explanation</button>",
+          "target": [
+            ".diss-layer-review__response-actions > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<button type=\"button\" class=\"diss-layer-review__action\" aria-controls=\"diss-learning-check-title\">Explain the response</button>",
           "target": [
-            "button[aria-controls=\"diss-learning-check-title\"]"
+            ".diss-layer-review__next > .diss-layer-review__action[aria-controls=\"diss-learning-check-title\"][type=\"button\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>About technique feedback</summary>",
+          "target": [
+            ".diss-layer-review__feedback-help > summary"
           ]
         },
         {
@@ -6760,6 +7803,24 @@
           "html": "<summary>What do these measures mean?</summary>",
           "target": [
             ".diss-layer-review__metric-help > summary"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>About technique feedback</summary>",
+          "target": [
+            ".diss-layer-review__feedback-help > summary"
           ]
         },
         {

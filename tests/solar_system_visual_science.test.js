@@ -107,7 +107,7 @@ describe('solar system visual science model', () => {
     expect(source).toContain('.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr))');
     expect(source).toContain('.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}');
     expect(source).toContain('.solar-cosmos .solar-world-card-name{min-height:25px;line-height:1.2;overflow-wrap:anywhere}');
-    expect(source).toContain('.solar-cosmos .solar-world-spotlight-stat-value{margin-top:3px;color:#f8fafc;font-size:12px');
+    expect(source).toContain('.solar-cosmos .solar-world-spotlight-stat-value{margin-top:5px;color:#f8fafc;font-size:15px');
     expect(source).toContain('.solar-cosmos .solar-model-note strong{display:block;font-size:10px');
     expect(source).toContain('.solar-cosmos .solar-model-note span{display:block;margin-top:3px;font-size:11px');
     expect(source).not.toContain('className: "mt-1 truncate text-[11px] font-black" }, p.name');
@@ -325,7 +325,7 @@ describe('solar system visual science model', () => {
   });
 
   it('compares worlds on a disclosed common scale without confusing mass and weight', () => {
-    expect(source).toContain('function buildSolarPlanetComparison(p1, p2)');
+    expect(source).toContain('function buildSolarPlanetComparison(p1, p2, contextKey)');
     expect(source).toContain('data-solar-planet-comparison');
     expect(source).toContain('shown on one shared diameter scale');
     expect(source).toContain('Bodies below 3 px use a visibility floor');

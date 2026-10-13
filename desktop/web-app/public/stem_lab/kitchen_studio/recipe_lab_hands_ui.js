@@ -3,7 +3,7 @@
   'use strict';
   function mount(host){
     var H=root.KitchenHands,R=root.KitchenRecipes,$=function(id){return document.getElementById(id);};
-    var view=null,zone='prep',locked=false,selected=null,drag=null,tilt=0,pouring=false,frame=null,lastTime=0,remainder=0,poured=0,session=null,dialCancels=[];
+    var view=null,zone='prep',locked=false,selected=null,drag=null,dialCancels=[],jugStudio=null,applyingJug=false;
     function element(tag,text,cls){var e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;}
     var panel=element('section',null,'hands-workbench');panel.setAttribute('aria-labelledby','handsTitle');
     panel.innerHTML='<div class="hands-heading"><div><p class="eyebrow">MOVE · OBSERVE · ADJUST</p><h4 id="handsTitle">Work with your ingredients</h4></div><span class="hands-badge">Hands-on bench</span></div><p id="handsHelp">Drag an ingredient or tool onto cookware. Or select it, then choose its destination. Escape puts it down.</p><div id="handsShelf" class="hands-shelf" role="group" aria-label="Ingredients and tools"></div><div id="handsTargets" class="hands-targets" role="group" aria-label="Cookware destinations"></div><p id="handsFeedback" role="status" aria-live="polite" aria-atomic="true">Choose what to move. Preparation and heat still matter.</p><p class="hands-note">The clock pauses while you handle an item. Run the kitchen between actions to watch both vessels cook.</p>';
@@ -70,7 +70,7 @@
     }
     function cancel(){
       if(drag){var d=drag;drag=null;if(d.node.hasPointerCapture(d.id))d.node.releasePointerCapture(d.id);}
-      ghost.hidden=true;Object.values(targetNodes).forEach(function(t){t.classList.remove('hands-over');});pick(null);dialCancels.forEach(function(stop){stop();});stopPour();
+      ghost.hidden=true;Object.values(targetNodes).forEach(function(t){t.classList.remove('hands-over');});pick(null);dialCancels.forEach(function(stop){stop();});if(jugStudio&&!applyingJug)jugStudio.cancel();
     }
     panel.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();cancel();say('Item put down.');}});
     // Quick actions remain a complete alternative, kept below the work surface.
@@ -92,32 +92,11 @@
       dial.addEventListener('keydown',function(e){var value=host.getState()[v].heat;if(e.key==='ArrowRight'||e.key==='ArrowUp')value++;else if(e.key==='ArrowLeft'||e.key==='ArrowDown')value--;else if(e.key==='Home')value=0;else if(e.key==='End')value=3;else return;e.preventDefault();set(Math.min(3,Math.max(0,value)),'keyboard');});
     });
     var dialHelp=element('p','Turn a dial, or focus it and use the arrow keys. Heat changes gradually.','hands-note');dialHelp.id='handsDialHelp';dials.after(dialHelp);
-    // Tilt controls transfer actual doses while held; letting go never rolls back water.
-    var pour=element('div',null,'hands-pour');pour.innerHTML='<p class="eyebrow">CONTROL THE FLOW</p><p id="handsPourHelp">Hold the jug handle and drag right to tilt. More tilt pours faster. Return left or release to stop. With a keyboard, hold Space; arrows adjust the tilt.</p><button id="handsJug" class="hands-jug" type="button" aria-describedby="handsPourHelp"><svg viewBox="0 0 320 190" aria-hidden="true"><ellipse cx="232" cy="157" rx="66" ry="22" fill="#526b58"/><path id="handsStream" d="M180 70Q218 86 230 149" fill="none" stroke="#7b9b93" stroke-width="7" stroke-dasharray="5 4"/><g id="handsJugShape"><path d="M124 44H145Q170 44 170 70T145 96H124" fill="none" stroke="#496354" stroke-width="9"/><path d="M51 25H129V137H63Z" fill="#f6f7e9" stroke="#496354" stroke-width="4"/><rect id="handsJugWater" x="65" y="50" width="59" height="82" fill="#a9b8a0"/><path d="M68 70H84M68 92H84M68 114H84" stroke="#496354" stroke-width="2"/></g><text x="92" y="176" text-anchor="middle" fill="#304b3d">HOLD &amp; TILT →</text></svg><span id="handsPourReading">Upright · no flow</span></button><p id="handsPourResult" role="status" aria-live="polite" aria-atomic="true"></p>';
-    $('pourPanel').querySelector('.pour-heading').after(pour);
-    function paintPour(){
-      $('handsJugShape').setAttribute('transform','rotate('+tilt+' 129 110)');$('handsStream').style.visibility=pouring&&tilt>=20?'visible':'hidden';
-      var radians=tilt*Math.PI/180,tipX=129+85*Math.sin(radians),tipY=110-85*Math.cos(radians);$('handsStream').setAttribute('d','M'+tipX+' '+tipY+'Q232 '+tipY+' 232 149');
-      var s=view||host.getState(),height=82*Math.min(1,s.pot.reserve/(200*s.servings/2));$('handsJugWater').setAttribute('height',height);$('handsJugWater').setAttribute('y',132-height);
-      $('handsPourReading').textContent=Math.round(tilt)+'° tilt · '+s.pot.reserve+' mL left · '+poured+' mL poured this hold';
-    }
-    function tick(now){
-      if(!pouring)return;
-      if(locked||document.hidden||$('pourPanel').hidden||session!==host.getState().log[0]){stopPour();return;}
-      var dose=H.pourStep(remainder,tilt,lastTime?now-lastTime:0,host.getState().pot.reserve);lastTime=now;remainder=dose.remainder;
-      if(dose.amount){var before=host.getState().pan.waterAdded;host.apply('pour',dose.amount,'tilt');session=host.getState().log[0];poured+=host.getState().pan.waterAdded-before;}
-      paintPour();if(host.getState().pot.reserve<10){stopPour();return;}frame=requestAnimationFrame(tick);
-    }
-    function startPour(){if(locked||!host.getState().pan.produce||host.getState().pot.reserve<10)return false;host.pause();pouring=true;session=host.getState().log[0];poured=0;remainder=0;lastTime=0;frame=requestAnimationFrame(tick);return true;}
-    function stopPour(){var id=jugPointer;jugPointer=null;if(id!==null&&id!==undefined&&$('handsJug').hasPointerCapture(id))$('handsJug').releasePointerCapture(id);if(frame!==null)cancelAnimationFrame(frame);frame=null;if(pouring)$('handsPourResult').textContent=poured?poured+' mL added. Water already poured stays in the sauce. Mix through, then check the coating.':'No water poured. Tilt farther to start the flow.';pouring=false;tilt=0;remainder=0;lastTime=0;if($('handsJug'))paintPour();}
-    var jugPointer=null,jugStart=0;
-    $('handsJug').addEventListener('pointerdown',function(e){if(e.button!==0||!e.isPrimary||pouring||!startPour())return;jugPointer=e.pointerId;jugStart=e.clientX;this.setPointerCapture(e.pointerId);e.preventDefault();});
-    $('handsJug').addEventListener('pointermove',function(e){if(jugPointer!==e.pointerId||!pouring)return;tilt=Math.min(80,Math.max(0,(e.clientX-jugStart)*320/this.getBoundingClientRect().width));paintPour();});
-    ['pointerup','pointercancel','lostpointercapture'].forEach(function(type){$('handsJug').addEventListener(type,function(e){if(jugPointer!==e.pointerId)return;jugPointer=null;stopPour();if(this.hasPointerCapture(e.pointerId))this.releasePointerCapture(e.pointerId);});});
-    $('handsJug').addEventListener('keydown',function(e){if(e.code==='Space'){e.preventDefault();if(!pouring&&!e.repeat&&startPour()){tilt=45;paintPour();}}else if(pouring&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();tilt=Math.max(0,Math.min(80,tilt+(e.key==='ArrowRight'?5:-5)));paintPour();}else if(e.key==='Escape'){e.preventDefault();stopPour();}});
-    $('handsJug').addEventListener('keyup',function(e){if(e.code==='Space'){e.preventDefault();stopPour();}});$('handsJug').addEventListener('blur',stopPour);
+    // Carry and deliberate tilt share the same model as the native jug.
+    var jugHost=element('div');jugHost.id='handsJugStudioHost';$('pourPanel').querySelector('.pour-heading').after(jugHost);
+    jugStudio=root.KitchenJugStudio.mount({container:jugHost,getState:host.getState,pause:host.pause,apply:function(action,value,method){applyingJug=true;try{return host.apply(action,value,method);}finally{applyingJug=false;}},cancelNative:host.cancelNative,fold:host.fold,check:host.check});
     window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',function(){if(document.hidden)cancel();});window.addEventListener('pagehide',cancel);
-    function render(next,nextZone,historical){
+    function render(next,nextZone,historical,jugActive){
       // A lid change invalidates an in-flight carry while leaving pan tools and burner dials usable.
       var lidChanged=view&&((view.pot.lid==='covered')!==(next.pot.lid==='covered')),changed=nextZone!==zone||lidChanged||(view&&view.log.length>0&&next.log[0]!==view.log[0]);view=next;zone=nextZone;locked=historical||host.ended()||R.serving(next).started;
       if(changed||locked)cancel();
@@ -132,7 +111,7 @@
       panel.querySelector('[data-pot-liquid]').style.opacity=p.water?1:0;panel.querySelector('[data-pan-food]').style.opacity=n.produce&&!view.plated?1:n.oil&&!view.plated?.35:0;panel.querySelector('[data-pan-food]').setAttribute('fill',n.damage>=1?'#513b2e':view.id==='tomato'?'#be664b':n.brown>=.7?'#a87943':'#d4bf91');panel.querySelector('[data-plate-food]').style.opacity=view.plated?1:0;
       panel.querySelector('[data-mushroom-art]').style.display=view.id==='mushroom'?'':'none';panel.querySelector('[data-tomato-art]').style.display=view.id==='tomato'?'':'none';
       ['pot','pan'].forEach(function(k){var dial=$('handsDial'+k),heat=view[k].heat;dial.setAttribute('aria-valuenow',heat);dial.setAttribute('aria-valuetext',['Off','Low','Medium','High'][heat]);dial.setAttribute('aria-disabled',String(locked));dial.querySelector('.hands-dial-needle').setAttribute('transform','rotate('+(-135+heat*90)+' 80 65)');dial.nextSibling.textContent=['Off','Low','Medium','High'][heat]+' · '+Math.round(view[k].temp)+'°C';});
-      $('handsJug').disabled=locked||!n.produce||p.reserve<10;if(!pouring)paintPour();
+      jugStudio.render(next,historical||host.ended(),!!jugActive);
       if(historical)say('Recorded kitchen. Direct tools are locked during replay.');else if(view.plated)say('Dish served. Review how your actions shaped it.');else if(covered&&zone==='pot')say('Lift the lid onto its rest before sampling, adding ingredients, saving water, or draining. Pan tools and burner dials remain usable.');else if(changed)say('Choose what to move. Preparation and heat still matter.');
     }
     return {render:render,cancel:cancel};

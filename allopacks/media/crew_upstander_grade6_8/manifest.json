@@ -1,0 +1,618 @@
+{
+  "slug": "crew_upstander_grade6_8",
+  "reviewed": "2026-10-12",
+  "provider": "Built-in image generation",
+  "status": "illustrated-draft",
+  "educatorReview": "pending",
+  "sourcePack": "allopacks/crew_upstander_grade6_8.allopack.json",
+  "sourcePackSha256": "9ebe93ff21c210e7676f985abfcf74814f39a730a6e18ee577bb572efe124634",
+  "illustratedPack": "allopacks/illustrated/crew_upstander_grade6_8.allopack.json",
+  "illustratedPackSha256": "ffb671aaf72d0e9c3dcb2472a8fde11950cdfd43ab1b79b83905c0836ba6cd84",
+  "plan": "allopacks/media/crew_upstander_grade6_8/generation-plan.json",
+  "textPolicy": "Original artwork retained; native editable labels and captions",
+  "assets": [
+    {
+      "id": "cu-term-bystander",
+      "kind": "term",
+      "term": "Bystander",
+      "title": "Bystander",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A ring of students standing with arms at their sides looking toward an empty center. Constraints: no one moving. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-a8896ae1-5d36-4645-aced-7b1db4cbd543.png",
+      "file": "cu-term-bystander.png",
+      "alt": "Eight students stand still in a circle, looking toward its empty center.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-term-bystander.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "0eed6fbba3838606963e7bb4d3fff2c347d443a20feff47076467ca6e3947800",
+      "optimizedSha256": "0e496e408c4f7afa72a20956a9257a2bd86f37b881a2520b6fcca8d44e22884e",
+      "bytes": 32130,
+      "altSource": "vision",
+      "altHash": "img-x2n-fe744bb9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 0,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cu-anchor",
+          "sectionIndex": 0,
+          "sectionLabel": "THE RING",
+          "field": "iconUrl",
+          "reason": "The unmoving circle represents the waiting ring."
+        }
+      ]
+    },
+    {
+      "id": "cu-term-upstander",
+      "kind": "term",
+      "term": "Upstander",
+      "title": "Upstander",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: The same ring with one student taking a half step forward, hand slightly raised. Constraints: not pointing. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-acaa0de3-8ac5-4a6c-9a63-6ec512eebfd0.png",
+      "file": "cu-term-upstander.png",
+      "alt": "One student steps into a circle of classmates with a hand gently raised.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-term-upstander.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "7727a663250c0676fbbe1f0a1c297a7450b33e522e7a9c010628af73cad8d9fa",
+      "optimizedSha256": "2bece2dbae1c282295a379ca70a3e775ba1a4f764371c4d249e9e26071cff3d9",
+      "bytes": 28668,
+      "altSource": "vision",
+      "altHash": "img-tif-f7eea117",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 1,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-term-smallmove",
+      "kind": "term",
+      "term": "Small move",
+      "title": "Small move",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student at a lunch table leaning slightly toward a quieter classmate, mouth just open, others still eating. Constraints: ordinary, no drama. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-72eb5d70-14a1-4033-ab30-bdb73c68cc5a.png",
+      "file": "cu-term-smallmove.png",
+      "alt": "At lunch, one student leans toward a quieter classmate while neighboring students continue eating.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-term-smallmove.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "e0b991250627f85e513ac2ffe297fcd0b9428daa9bbbd15ad33d59f516dd35c3",
+      "optimizedSha256": "6985e5a7dc6b5a25665006c9b58a6386b090ac26bfbcd1e82cbb3c3602145cc0",
+      "bytes": 28770,
+      "altSource": "vision",
+      "altHash": "img-tm7-492a8a2e",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 3,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cu-anchor",
+          "sectionIndex": 1,
+          "sectionLabel": "A SMALL MOVE",
+          "field": "iconUrl",
+          "reason": "An ordinary lunch conversation represents a small redirecting move."
+        }
+      ]
+    },
+    {
+      "id": "cu-term-redirect",
+      "kind": "term",
+      "term": "Redirect",
+      "title": "Redirect",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A curved arrow on a table surface turning back toward a seated figure. Constraints: plain arrow. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-ad5dde9c-c6a3-4b4e-87f6-2319e9d990f0.png",
+      "file": "cu-term-redirect.png",
+      "alt": "A curved arrow on a table turns back toward a seated student who looks up attentively.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-term-redirect.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "b565e2a11690b1a2973d2b0450338e5650d4b145a1288ccb2873601bbbb75efa",
+      "optimizedSha256": "64701a0af1287012d0f272481649677716704b2d763edb9d18acd1a5a922fabe",
+      "bytes": 24982,
+      "altSource": "vision",
+      "altHash": "img-ppz-5ff153ab",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 5,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-term-checkin",
+      "kind": "term",
+      "term": "Check in",
+      "title": "Check in",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two students in a hallway, one with a hand near the other's shoulder, both calm. Constraints: private, not a crowd. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-deb71f59-1700-45c1-a7db-eb3f02d965ec.png",
+      "file": "cu-term-checkin.png",
+      "alt": "Two students talk calmly in a quiet hallway; one rests a hand gently on the other’s shoulder.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-term-checkin.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "066a8ba42155dd39844dbef9ca0658dff9bbeef9ddd89a47b833732de5b76d5d",
+      "optimizedSha256": "50cc0fed8e45f446f457f1cafc6cb0b227ef1a85a8b0b5663426c9b9781d8bbe",
+      "bytes": 24302,
+      "altSource": "vision",
+      "altHash": "img-p0r-5dd31baf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 8,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-term-community",
+      "kind": "term",
+      "term": "Community",
+      "title": "Community",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A wide lunchroom with many small tables, warm light, students of many backgrounds. Constraints: no faces of real people. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-0709b49a-ba5e-4d71-a7bf-9157505266f1.png",
+      "file": "cu-term-community.png",
+      "alt": "Students with varied backgrounds, including a wheelchair user, eat and talk at small tables in a bright lunchroom.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-term-community.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "4c7db68816c6347fece6c8735aec011b5e84cc3c9b8573fc7a69b830e04c77b3",
+      "optimizedSha256": "c54884668d2a201c5008363ada1c4cd5d0655a90cd1cee78254028406b79cd3c",
+      "bytes": 49026,
+      "altSource": "vision",
+      "altHash": "img-1egf-a1d459ca",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 9,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-img-table",
+      "kind": "lesson",
+      "title": "The table before the move.",
+      "prompt": "Use case: precise-object-edit. Edit this wide lunch-table lesson illustration, preserving the exact five students, cafeteria setting, seating, clothing, food and warm flat style. The boy in the BLUE hoodie in the center-right is Tomas. Change only his expression and posture so he has just stopped speaking: closed mouth, slightly lowered eyes, subdued disappointed expression, shoulders settling, hands resting naturally. Keep the student in the GREEN hoodie beside him as the animated joke-teller with open hands, and the other three classmates laughing. Convey a small ordinary interruption, not dramatic bullying. All hair coherent and every person has exactly two arms anatomically connected at the shoulders with natural elbows and hands. No letters, words, numerals, labels, logos or watermark.",
+      "caption": "nobody at the table thinks of themselves as unkind.",
+      "plannedLabels": [
+        {
+          "text": "Tomas",
+          "position": "top-left",
+          "anchorX": 59,
+          "anchorY": 39
+        },
+        {
+          "text": "The jokes",
+          "position": "top-right",
+          "anchorX": 40,
+          "anchorY": 44
+        }
+      ],
+      "afterType": "simplified",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12d72-59ee-7743-913a-92e7105dba47\\exec-3d3b02f7-2b1c-4c4a-a2d6-91967d0cbb12.png",
+      "file": "cu-img-table-v2.png",
+      "alt": "At a lunch table, Tomas grows quiet while another student jokes with raised hands and classmates laugh.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "previousFile": "cu-img-table.png",
+      "previousPrompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A lunch table: one student mid-story with his mouth closing, another mid-joke with hands up, others laughing.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Only include people if they are explicitly requested in the subject.",
+      "referenceImages": [
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/crew_upstander_grade6_8/cu-img-table.png"
+      ],
+      "optimizedFile": "optimized/cu-img-table.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "9327368266efe09d444a98e9770326b78e176a94e3595ce2ef2e44ed82289704",
+      "optimizedSha256": "b12ddd1d72316fbe88eca741cfa4da6fe9852e662be5390b54a600216625dafd",
+      "bytes": 66692,
+      "altSource": "vision",
+      "altHash": "img-1wmr-60cb3aef",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Tomas",
+          "position": "top-left",
+          "anchorX": 59,
+          "anchorY": 39
+        },
+        {
+          "text": "The jokes",
+          "position": "top-right",
+          "anchorX": 40,
+          "anchorY": 44
+        }
+      ],
+      "placement": {
+        "resourceId": "cu-reading-illustrations",
+        "panelId": "cu-img-table",
+        "afterResourceId": "cu-reading"
+      }
+    },
+    {
+      "id": "cu-img-move",
+      "kind": "lesson",
+      "title": "One sentence.",
+      "prompt": "Use case: precise-object-edit. Create the next moment of the supplied lunch-table illustration. Preserve the exact five students, their seating positions, clothes, hair, cafeteria, food, bottles and warm flat style. The student at far left in purple with a hair clip is Jae; Jae now leans forward slightly and opens one hand gently toward Tomas, the boy in the BLUE hoodie center-right. Her arm must follow a natural shoulder-to-elbow-to-wrist path; her other hand rests on the tabletop. Tomas looks up at Jae, beginning to smile and resume his story. The joke-teller in the GREEN hoodie pauses with both hands lowered naturally to the table and mouth closed. The other two classmates stop laughing and listen. Do not change to a classroom; preserve all lunch items and the exact cast. Exactly two coherent arms per person and natural hairstyles. No words, letters, numerals, labels, logos or watermark.",
+      "caption": "the table changed shape by one sentence.",
+      "plannedLabels": [
+        {
+          "text": "Jae's move",
+          "position": "top-left",
+          "anchorX": 22,
+          "anchorY": 50
+        },
+        {
+          "text": "Tomas",
+          "position": "top-right",
+          "anchorX": 59,
+          "anchorY": 39
+        }
+      ],
+      "afterType": "anchor-chart",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e35-39cc-7082-9c61-a33b2a7370f4\\exec-6b5f73bd-9ebb-4ef0-8015-9505c45c514b.png",
+      "file": "cu-img-move-v2.png",
+      "alt": "At the same lunch table, Jae in purple opens a hand toward Tomas in blue. He looks up as the joking student pauses and the classmates listen.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "previousFile": "cu-img-move.png",
+      "previousPrompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: The same table a second later: a student on the far side leaning in with an open palm toward Tomas; the joker paused; Tomas looking up.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Only include people if they are explicitly requested in the subject.",
+      "referenceImages": [
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/crew_upstander_grade6_8/cu-img-table-v2.png"
+      ],
+      "optimizedFile": "optimized/cu-img-move.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "96353b0f97651b6533a7cbe8d55e399e3ee2e67261e6f03426cfcc4c37a75653",
+      "optimizedSha256": "eabd6fbd64fd0fb9ac81eb2acbcc25f5a7cc22971096e766ee347e5798bdf3d1",
+      "bytes": 68842,
+      "altSource": "vision",
+      "altHash": "img-1yuf-1d95014e",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "Jae's move",
+          "position": "top-left",
+          "anchorX": 22,
+          "anchorY": 50
+        },
+        {
+          "text": "Tomas",
+          "position": "top-right",
+          "anchorX": 59,
+          "anchorY": 39
+        }
+      ],
+      "placement": {
+        "resourceId": "cu-anchor-illustrations",
+        "panelId": "cu-img-move",
+        "afterResourceId": "cu-anchor"
+      }
+    },
+    {
+      "id": "cu-img-domino",
+      "kind": "lesson",
+      "title": "The first domino.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A row of dominoes on a cafeteria table; the first one tipping, the second just beginning to lean.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Only include people if they are explicitly requested in the subject.",
+      "caption": "the second move is usually easier than the first.",
+      "plannedLabels": [
+        {
+          "text": "First move",
+          "position": "top-left",
+          "anchorX": 37,
+          "anchorY": 78
+        },
+        {
+          "text": "Second move",
+          "position": "top-right",
+          "anchorX": 42,
+          "anchorY": 77
+        }
+      ],
+      "afterType": "faq",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-5ab03423-1547-449d-b6d4-297aa611da30.png",
+      "file": "cu-img-domino.png",
+      "alt": "A student tips the first tile in a row of plain dominoes; the second begins to lean while three classmates watch.",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "reviewedAt": "2026-10-11",
+      "optimizedFile": "optimized/cu-img-domino.webp",
+      "width": 900,
+      "height": 507,
+      "sourceWidth": 1672,
+      "sourceHeight": 941,
+      "sourceSha256": "1cb07b4a9a4ea190c10559110e75ece12101a5c7462f392be7c65be29e26112b",
+      "optimizedSha256": "3de560389d22d5c0126b52d639c101323109166dd32c350c0ee4aa24a4e5fef6",
+      "bytes": 46958,
+      "altSource": "vision",
+      "altHash": "img-1cbv-5ef589ab",
+      "webpQuality": 86,
+      "decorative": false,
+      "labels": [
+        {
+          "text": "First move",
+          "position": "top-left",
+          "anchorX": 37,
+          "anchorY": 78
+        },
+        {
+          "text": "Second move",
+          "position": "top-right",
+          "anchorX": 42,
+          "anchorY": 77
+        }
+      ],
+      "placement": {
+        "resourceId": "cu-faq-illustrations",
+        "panelId": "cu-img-domino",
+        "afterResourceId": "cu-faq"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages12-14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Exactly ten diverse middle-school students and one adult seated on chairs in a relaxed circle, comfortable postures, no extra people.",
+      "alt": "Ten students and one adult sit in a classroom circle, listening to a student speak.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a1075d-8498-7243-9c38-6fee8ad517cc\\exec-24e9127d-ab2a-47ab-823b-34b7cf470fd8.png",
+      "provider": "Built-in image generation",
+      "id": "cu-term-crew",
+      "kind": "term",
+      "term": "Crew",
+      "file": "cu-term-crew.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_norms_grade6_8",
+        "assetId": "cn-term-crew",
+        "file": "allopacks/media/crew_norms_grade6_8/cn-term-crew.png",
+        "reason": "Identical advisory-group meaning across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cu-term-crew.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "94e42875e7159857d67336a02659552497cb352b3ed09ab831362b440ec0a940",
+      "optimizedSha256": "658511672e243fef05a31d141acfe220ffe972a5d490a5dd92277c86aea60eac",
+      "bytes": 43164,
+      "altSource": "vision",
+      "altHash": "img-18fb-efac6da2",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 10,
+        "field": "image"
+      }
+    },
+    {
+      "prompt": "Use case: illustration-story. Asset: square glossary illustration. Exactly three equal educational vignettes within one square composition, with soft white space separating them. First: two middle school students listen respectfully to each other with relaxed hands. Second: a student arrives with an organized backpack and notebook. Third: a student patiently rebuilds a small collapsed block model. Depict respect, responsibility, and perseverance as habits of work and learning. No academic grades, scores, letters, written words or labels. Natural coherent hairstyles; every visible arm attached to its own shoulder with one elbow and wrist; simple relaxed poses. Style: Warm clean editorial educational illustration, soft painterly texture on ivory background, muted teal, coral and ochre accents. Ages 11–14 when students are included. Clear uncluttered square composition, generous margins, suitable as a glossary thumbnail. Coherent anatomy and hair. No readable text, letters, numerals, logos or watermarks. Native app supplies the term and definition.",
+      "alt": "Three scenes show students listening respectfully, arriving prepared and patiently rebuilding a block model.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-035b68d4-d280-4e2f-838b-dba12b950688.png",
+      "provider": "Built-in image generation",
+      "id": "cu-term-howl",
+      "kind": "term",
+      "term": "HOWL",
+      "file": "cu-term-howl.png",
+      "status": "visual-review-passed",
+      "reusedFrom": {
+        "slug": "crew_attention_grade6_8",
+        "assetId": "cd-term-howl",
+        "file": "allopacks/media/crew_attention_grade6_8/cd-term-howl.png",
+        "reason": "Identical Respect, Responsibility, and Perseverance definition across Crew lessons."
+      },
+      "reviewNotes": "Reviewed selected source illustration and confirmed meaning matches this glossary definition. Native term and definition are preserved.",
+      "optimizedFile": "optimized/cu-term-howl.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "30aac4cf5f914c7da65d8a0f16395dcfc7a890a12f06470996e4f03c583319d4",
+      "optimizedSha256": "a9015feeeda54fe8cae0b03b0f6e8496d986d5bc51169f3e34d2930685c863ea",
+      "bytes": 41186,
+      "altSource": "vision",
+      "altHash": "img-16e3-07f3ebcf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 11,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-term-bystander-effect",
+      "kind": "term",
+      "term": "Bystander effect",
+      "title": "Bystander effect",
+      "file": "cu-term-bystander-effect.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: A middle-school student crouches to gather three dropped notebooks in a hallway. Six nearby classmates stand in a loose semicircle with hands at their sides, looking sideways at each other rather than stepping forward, each waiting for someone else. Ordinary mild hesitation, no cruel laughing or pointing. The crouching student is unhurt. Simple coherent body poses and hairstyles, limited objects and ample space between figures.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-1a92-7930-9591-531aaf8a764d\\exec-26d0056b-91b4-476f-b07d-93e95a839ee0.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "A student gathers dropped notebooks while six nearby classmates glance at one another and wait instead of stepping forward to help.",
+      "optimizedFile": "optimized/cu-term-bystander-effect.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "9d637fdf81aecacc30d9dba57b4ad116d86cc0579ea5f97bb834b4c43781dcc4",
+      "optimizedSha256": "08e4caeb59c42642006f6ff90e91e57d386291e8dc8f81cca0985210593d27bf",
+      "bytes": 34070,
+      "altSource": "vision",
+      "altHash": "img-z2j-5eb71adf",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 2,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-term-exclude",
+      "kind": "term",
+      "term": "Exclude",
+      "title": "Exclude",
+      "file": "cu-term-exclude.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: At a school lunch table three students sit close together, turned inward to talk. A fourth student stands a short distance away holding a lunch tray, looking uncertain and left out. An empty chair near the group is blocked by a backpack. No one laughs or points at the standing student. Show the ordinary small act of leaving someone out with calm respectful expressions and natural arms.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-1a92-7930-9591-531aaf8a764d\\exec-4128bca6-ff71-4f26-b1f0-e9db2826cf3b.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "Three students talk in a close group at lunch while another stands apart holding a tray; a backpack blocks the nearby empty chair.",
+      "optimizedFile": "optimized/cu-term-exclude.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "6815e8a7ce54321bad8a8f63b14e5d1773b5f93ab5310e3fad19c69a7d7adc1a",
+      "optimizedSha256": "f6f83040c5494b70944068c1228cffb9ce4a22ddfc8374b03dc3d25ebd272b75",
+      "bytes": 42100,
+      "altSource": "vision",
+      "altHash": "img-17bz-311289e9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 4,
+        "field": "image"
+      }
+    },
+    {
+      "id": "cu-term-low-risk",
+      "kind": "term",
+      "term": "Low risk",
+      "title": "Low risk",
+      "file": "cu-term-low-risk.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: At a quiet lunch table one student discreetly slides a backpack off an empty chair with one hand and gives a nearby student carrying a tray a small friendly nod. Both remain calm, other students continue eating normally in the softly simplified background. This is a small safe helpful action with no big speech, confrontation, spotlight, dramatic rescue, or pointing. Natural attached arms and coherent hair.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-1a92-7930-9591-531aaf8a764d\\exec-fec4eacf-c2c6-4ef8-80a4-d810d63488ac.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "A student quietly clears a backpack from an empty lunch chair and nods to a classmate holding a tray while others keep eating.",
+      "optimizedFile": "optimized/cu-term-low-risk.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "3017f8a6d6e930cd2415b6f8aab9fb77cab1040e1141a41d81c93068db33e108",
+      "optimizedSha256": "dfc56acf7fb93e5b7a496cf4d05fd04b8ccf3b8a3c6e0a03207b15cc1ba3a197",
+      "bytes": 33184,
+      "altSource": "vision",
+      "altHash": "img-y5r-9e0f15d9",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 6,
+        "field": "image"
+      },
+      "additionalPlacements": [
+        {
+          "kind": "anchor",
+          "resourceId": "cu-anchor",
+          "sectionIndex": 2,
+          "sectionLabel": "WHY SMALL WORKS",
+          "field": "iconUrl",
+          "reason": "Quietly clearing a seat supports an ordinary low-risk intervention."
+        }
+      ]
+    },
+    {
+      "id": "cu-term-spectacle",
+      "kind": "term",
+      "term": "Spectacle",
+      "title": "Spectacle",
+      "file": "cu-term-spectacle.png",
+      "prompt": "Use case: illustration-story. Asset type: square glossary illustration for a middle-school Crew SEL pack. Style: warm simple flat illustration with muted earth colors, clean uncluttered shapes, softly textured paper and respectful expressions. Fictional diverse students ages 12 to 14. No words, letters, numerals, captions, labels, logos or watermarks. Every person must have exactly two naturally attached arms and coherent hair. Scene: In a school hallway an uncomfortable student stands in the middle with hands lightly clasped, while five classmates have stopped and turned their attention toward them. Everyone's expression is neutral or concerned, never mocking. One nearby peer is speaking with an overly broad but anatomically natural open-arm gesture, unintentionally drawing everyone's attention to the middle student. Show why unwanted public attention can feel awkward. No pointing, no phones recording, no spotlight or stage, no humiliating details.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12e47-1a92-7930-9591-531aaf8a764d\\exec-bed8c85d-ee9b-40ae-bb56-01b9b5b58cdd.png",
+      "status": "visual-review-passed",
+      "provider": "Built-in image generation",
+      "reviewedAt": "2026-10-12",
+      "alt": "A student looks uncomfortable as classmates stop and watch; another student's broad gesture draws unwanted attention to the moment.",
+      "optimizedFile": "optimized/cu-term-spectacle.webp",
+      "width": 480,
+      "height": 480,
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "1734f4254fa1d6385a2cf67ea4204e58c4de494904df8c72d7f32dfd327ee767",
+      "optimizedSha256": "21d90a7b89a7ffc92ba83e809cf8051b4fbcc19841cbabb0bacf1f1a6d391714",
+      "bytes": 38024,
+      "altSource": "vision",
+      "altHash": "img-134z-eacb3126",
+      "webpQuality": 86,
+      "decorative": false,
+      "placement": {
+        "resourceId": "cu-glossary",
+        "termIndex": 7,
+        "field": "image"
+      }
+    }
+  ],
+  "uniqueImageCount": 15,
+  "imagePlacementCount": 18,
+  "reuseMappings": {
+    "anchor": "allopacks/media/crew_upstander_grade6_8/anchor-image-mappings.json"
+  },
+  "validation": {
+    "allAssetsUsed": true,
+    "sourceContentPreserved": true,
+    "originalSha256Unchanged": true,
+    "embeddedImageCount": 18,
+    "uniqueImageCount": 15,
+    "anchorSectionImages": 3,
+    "conceptSortCardImages": 0,
+    "originalResourceCount": 10,
+    "addedImageResourceCount": 3
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "sourceSHA256": "b0eead4432bd2e80ca579ac358d528905d28d9faafe05441f13ae97c31ea275e",
+  "vendorSHA256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+  "samples": [
+    {
+      "scale": 0.03,
+      "bow": 0,
+      "solid": false,
+      "position": "93e2a542503175660f06bc6d6b2a8080d34ebd0ff80af4084030afbd755a78cc",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe"
+    },
+    {
+      "scale": 0.03,
+      "bow": 0,
+      "solid": true,
+      "position": "6ebf883b3b3bd15948248854d581a74a9e29931d7bf7c1f3c8a47df45c31705c",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe",
+      "bonePosition": "bb2efed10950179279d790b62cdae92c6f9fde66abab9c97e60902b39124491c",
+      "boneUV": "e788988e26685e7c287b1ff8c6efd41e461c0a0c9604f813e65df48304533dc7"
+    },
+    {
+      "scale": 0.03,
+      "bow": 0.13,
+      "solid": false,
+      "position": "98d36b52ffc865f03cf3f00f9e8fd47abc8c9fe1f523532c1578ef77530cf0a2",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe"
+    },
+    {
+      "scale": 0.03,
+      "bow": 0.13,
+      "solid": true,
+      "position": "af1b6c5d58fc4f43f9ddefddb4cac27c177f496eada3293600843ae8bf15a164",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe",
+      "bonePosition": "a88bcc029370551cd7e545d691285dccd701021c66bda7970944e599649d15b7",
+      "boneUV": "e788988e26685e7c287b1ff8c6efd41e461c0a0c9604f813e65df48304533dc7"
+    },
+    {
+      "scale": 1,
+      "bow": 0,
+      "solid": false,
+      "position": "dff3f6cc889c5fe29bd808a844ecf61d7706cae8413d07947cdb3a85236bfe12",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe"
+    },
+    {
+      "scale": 1,
+      "bow": 0,
+      "solid": true,
+      "position": "c757fcb51722ed6313b69c081a0cd1a06ce196bf0c4ca4b548616c5abdf95686",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe",
+      "bonePosition": "38fed471d3e7adce834670d1032f4faa1bff4c62567dee81105ad946cdfda2d3",
+      "boneUV": "e788988e26685e7c287b1ff8c6efd41e461c0a0c9604f813e65df48304533dc7"
+    },
+    {
+      "scale": 1,
+      "bow": 0.13,
+      "solid": false,
+      "position": "de95992540b1e97438aca2cddcd96c84140a0308401304c6c311ce5eae7d0679",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe"
+    },
+    {
+      "scale": 1,
+      "bow": 0.13,
+      "solid": true,
+      "position": "349c7079035edde2491f3d7cff67558621ff79fce4d34d9daee95f71ef1f4d93",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe",
+      "bonePosition": "26f68adf87573d377010c160581b8c49c291219322bc46a39eea7f564eb21a47",
+      "boneUV": "e788988e26685e7c287b1ff8c6efd41e461c0a0c9604f813e65df48304533dc7"
+    },
+    {
+      "scale": 12,
+      "bow": 0,
+      "solid": false,
+      "position": "cc7df2f304aae312493bb749465abbedec23381101b3e176d7c446e299cf1d4a",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe"
+    },
+    {
+      "scale": 12,
+      "bow": 0,
+      "solid": true,
+      "position": "16ca4c26992f4988935344b1431419ca3850993a87d3ad788afb3663bed2fc08",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe",
+      "bonePosition": "5aa4a3d459faac51a3569c29318490b1d85586e9a6438ed4af0c41ec933223d1",
+      "boneUV": "e788988e26685e7c287b1ff8c6efd41e461c0a0c9604f813e65df48304533dc7"
+    },
+    {
+      "scale": 12,
+      "bow": 0.13,
+      "solid": false,
+      "position": "cd0078c64de8f36b063d5b27f34f8ee48773dac4772cf4d894c6f96d9847acf3",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe"
+    },
+    {
+      "scale": 12,
+      "bow": 0.13,
+      "solid": true,
+      "position": "2f68c63c97ea0da0f6e7e29ba9aec58079b5974a937bd954edfdaa5f21919421",
+      "uv": "230e5a7ca869eb8a47ed4914121648f7853614efd1c7a9bf8b51df01269846fe",
+      "bonePosition": "3fdf7bf28dad448e4d874c29060a36863a41ce7ae0e64f78394e6ebabefe2bca",
+      "boneUV": "e788988e26685e7c287b1ff8c6efd41e461c0a0c9604f813e65df48304533dc7"
+    }
+  ]
+}

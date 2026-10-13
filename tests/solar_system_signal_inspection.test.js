@@ -98,9 +98,12 @@ function renderSignal(seed = {}, overrides = {}) {
     get receipt() { return [...(lab()?.querySelectorAll('[role="status"]') || [])].find((item) =>
       /^Ping sent[.]/.test(item.textContent.trim())); },
     get journey() { return document.getElementById('solar-signal-journey'); },
+    get timeSlider() { return document.getElementById('solar-signal-inspect-time'); },
+    get timeReading() { return lab()?.querySelector('[data-signal-inspection-reading]'); },
     button, click, change, handler, event, render,
     target(key) { click(lab().querySelector(`[data-signal-target-option="${key}"]`)); },
     setAngle(value) { change(document.getElementById('solar-signal-angle'), value); },
+    inspect(value) { change(document.getElementById('solar-signal-inspect-time'), String(value)); },
     write(value) { change(document.getElementById('solar-signal-explanation'), value); },
     predict(value) { click(button({ increase: 'Increases', decrease: 'Decreases', same: 'Stays same' }[value])); },
   };
@@ -435,5 +438,90 @@ describe('Solar System signal inspection bench', () => {
     expect([...env.lab.querySelectorAll('a')].map((link) => link.href)).toEqual(expect.arrayContaining([
       'https://science.nasa.gov/mars/mars-relay-network/', 'https://physics.nist.gov/cuu/Constants/Value/c.html',
     ]));
+  });
+
+  it.each([['Mercury', 0], ['Mars', 90], ['Pluto', 180], ['Neptune', 90]])('links %s at %s degrees to a linear round-trip clock and a returning packet', (target, angle) => {
+    const env = renderSignal({ signalTarget: target, signalAngle: angle });
+    const expected = observation(target, angle);
+    expect(env.timeReading.dataset.phase).toBe('uninspected');
+    expect(env.lab.querySelector('[data-signal-time-cursor]')).toBeNull();
+    expect(env.timeSlider.closest('[role="img"]')).toBeNull();
+    const phases = ['At departure', 'Command outbound', 'Command arrives · reply begins', 'Reply returning', 'Reply arrives at Earth'];
+    [0, 25, 50, 75, 100].forEach((progress, index) => {
+      env.inspect(progress);
+      const fraction = progress / 100, position = fraction <= .5 ? 2 * fraction : 2 * (1 - fraction);
+      expect(Number(env.timeReading.dataset.elapsedSeconds)).toBeCloseTo(expected.oneWaySeconds * 2 * fraction, 8);
+      expect(Number(env.timeReading.dataset.travelledAu)).toBeCloseTo(expected.distanceAU * 2 * fraction, 8);
+      expect(env.timeReading.dataset.phase).toBe(phases[index]);
+      expect(env.timeSlider.getAttribute('aria-valuetext')).toContain(phases[index]);
+      expect(parseFloat(env.lab.querySelector('[data-signal-time-cursor]').style.left)).toBe(progress);
+      const packet = env.lab.querySelector('[data-signal-route-packet]');
+      expect(Number(packet.dataset.position)).toBe(position);
+      expect(packet.dataset.leg).toBe(progress > 50 ? 'return' : 'outbound');
+      expect(parseFloat(packet.style.left)).toBeCloseTo(8 + 84 * position, 8);
+      const start = env.lab.querySelector('[data-signal-world-dot="Earth"]'), end = env.lab.querySelector(`[data-signal-world-dot="${target}"]`);
+      const transform = env.lab.querySelector('[data-signal-map-packet]').getAttribute('transform');
+      const [x, y] = transform.match(/-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/gi).map(Number);
+      expect(x).toBeCloseTo(+start.getAttribute('cx') + (+end.getAttribute('cx') - +start.getAttribute('cx')) * position, 8);
+      expect(y).toBeCloseTo(+start.getAttribute('cy') + (+end.getAttribute('cy') - +start.getAttribute('cy')) * position, 8);
+      expect(env.lab.querySelector('[data-signal-map-packet] circle').getAttribute('fill')).toBe('none');
+      expect(env.lab.querySelector('[data-signal-map-packet] path').getAttribute('d')).toMatch(y < 90 ? /^M0 17/ : /^M0 -17/);
+      assertJourney(env, target, angle);
+    });
+    expect(env.lab.textContent).toContain('Orbits stay fixed during this preview');
+    expect(env.lab.textContent).toContain('Numerical distance comes from the model, not screen length');
+    if (angle === 180) expect(env.lab.textContent).toContain('Solar-conjunction caution');
+  });
+
+  it('provides exact milestones and changes only the viewing state while inspecting', () => {
+    const saved = { target: 'Mars', angle: 0, oneWaySeconds: observation('Mars', 0).oneWaySeconds };
+    const env = renderSignal({ signalPrediction: 'increase', signalEvidenceSaved: true, signalLastPing: saved,
+      signalNotebooks: { Mars: { observations: [observation('Mars', 0)], explanation: EXPLANATION } },
+      journalEntries: [{ planet: 'Mars', observation: 'Keep this evidence' }], researchPoints: 75 });
+    const before = { ...env.state };
+    for (const progress of [0, 50, 100]) {
+      env.click(env.lab.querySelector(`[data-signal-milestone="${progress}"]`));
+      expect(env.state.signalJourneyInspection).toEqual({ target: 'Mars', angle: 0, progress });
+      const pressed = [...env.lab.querySelectorAll('[data-signal-milestone][aria-pressed="true"]')];
+      expect(pressed.map(n => Number(n.dataset.signalMilestone))).toEqual([progress]);
+      expect(env.save.disabled).toBe(true);
+      for (const key of Object.keys(before)) expect(env.state[key]).toBe(before[key]);
+    }
+    env.inspect(25);
+    expect(env.lab.querySelectorAll('[data-signal-milestone][aria-pressed="true"]')).toHaveLength(0);
+  });
+
+  it('resets inspection on setup changes and ping replay while keeping historical receipts anchored', () => {
+    const env = renderSignal(); env.click(env.button('Send a light-speed ping')); env.inspect(75);
+    expect(env.lab.querySelector('.solar-signal-pulse').style.visibility).toBe('hidden');
+    env.setAngle('90');
+    expect(env.state.signalJourneyInspection).toBeNull(); expect(env.timeReading.dataset.phase).toBe('uninspected');
+    expect(env.receipt.textContent).toContain('At 0°');
+    expect(env.lab.querySelector('.solar-signal-pulse').style.visibility).toBe('hidden');
+    env.inspect(75); env.click(env.button('Send a light-speed ping'));
+    expect(env.state.signalJourneyInspection).toBeNull(); expect(env.timeReading.dataset.phase).toBe('uninspected');
+    expect(env.receipt.textContent).toContain('At 90°'); expect(env.lab.querySelector('.solar-signal-pulse')).not.toBeNull();
+    env.inspect(50); env.target('Mercury');
+    expect(env.state.signalJourneyInspection).toBeNull(); expect(env.timeReading.dataset.phase).toBe('uninspected');
+    expect(env.lab.querySelector('[data-signal-map-packet]')).toBeNull(); expect(env.receipt).toBeUndefined();
+  });
+
+  it('projects malformed and stale restored inspection read-only without attaching a misleading cursor', () => {
+    const valid = { target: 'Mars', angle: 0, progress: 75 };
+    for (const raw of [null, [], 'inspection', Object.create(valid), { ...valid, target: 'Jupiter' },
+      { ...valid, angle: 90 }, { ...valid, angle: '0' }, ...['75', null, [], {}, NaN, Infinity].map(progress => ({ ...valid, progress }))]) {
+      const env = renderSignal({ signalJourneyInspection: raw });
+      expect(env.state.signalJourneyInspection).toBe(raw);
+      expect(env.timeReading.dataset.phase).toBe('uninspected'); expect(env.timeSlider.value).toBe('0');
+      expect(env.lab.querySelector('[data-signal-time-cursor]')).toBeNull();
+      expect(env.lab.querySelector('[data-signal-map-packet]')).toBeNull();
+      expect(env.lab.textContent).not.toMatch(/NaN|undefined|\[object Object\]/);
+    }
+    for (const [raw, bounded] of [[-20, 0], [160, 100], [12.5, 13]]) {
+      const record = { ...valid, progress: raw }, env = renderSignal({ signalJourneyInspection: record });
+      expect(env.timeSlider.value).toBe(String(bounded));
+      expect(env.state.signalJourneyInspection).toBe(record);
+      expect(Number(env.timeReading.dataset.elapsedSeconds)).toBeCloseTo(observation('Mars', 0).oneWaySeconds * 2 * bounded / 100, 8);
+    }
   });
 });

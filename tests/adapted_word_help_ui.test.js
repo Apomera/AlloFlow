@@ -211,7 +211,7 @@ describe('word help controls for teachers on an adapted text', () => {
     expect(panel.open, 'collapsed until needed').toBe(false);
     expect(panel.querySelector('[data-adapted-word-help-show]').disabled).toBe(true); // nothing to show yet
     // One disclosure level: the editor sits inside the panel with no second toggle.
-    expect(byText('Review word supports')).toBeUndefined();
+    expect(byText('Review word help')).toBeUndefined();
     expect(panel.querySelector('summary').textContent).toBe('Word help · No supports yet');
     await click(byText('Add a word or phrase'));
     expect(panel.textContent).toContain('Word or phrase from the adapted text');
@@ -219,7 +219,7 @@ describe('word help controls for teachers on an adapted text', () => {
     await typeInto(panel.querySelector('[data-gloss-draft] input[type=text]'), 'shallow');
     expect(panel.querySelector('[data-gloss-context]').textContent).toContain('in the shallow water');
     await typeInto(panel.querySelector('[data-gloss-draft] textarea'), 'Not deep.');
-    await click(byText('Save word support'));
+    await click(byText('Save word help'));
     expect(view.onUpdateReadingSupports.mock.calls[0][1]).toMatchObject({ type: 'upsert', annotation: { start: PASSAGE.indexOf('shallow'), quote: 'shallow', text: 'Not deep.' } });
     expect(view.item.adaptedReadingSupports.annotations.map(entry => entry.quote)).toEqual(['shallow']);
     expect(panel.querySelector('[data-reading-gloss-editor] li').textContent).toContain('Not deep.');
@@ -338,10 +338,10 @@ describe('one teacher section for adapted word help', () => {
     expect(items()).toEqual(SIX);
     await typeInto(panel.querySelector('[data-gloss-filter] input[type=search]'), 'meaning of wa');
     expect(items()).toEqual(['walked', 'water']);
-    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toBe('Showing 2 of 6 word supports.');
+    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toBe('Showing 2 of 6 explanations.');
     await typeInto(panel.querySelector('[data-gloss-filter] input[type=search]'), 'zebra');
     expect(items()).toEqual([]);
-    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toMatch(/No word supports match/);
+    expect(panel.querySelector('[data-gloss-filter-count]').textContent).toMatch(/No explanations match/);
     await click(byText('Show all'));
     expect(items()).toEqual(SIX);
     expect(panel.querySelector('[data-gloss-filter-count]').textContent).toBe('');

@@ -1,0 +1,122 @@
+{
+  "slug": "then_and_now_grade2",
+  "assets": [
+    {
+      "id": "tw-tl-telephone",
+      "kind": "timeline",
+      "file": "tw-tl-telephone.png",
+      "prompt": "Use case: historical-scene. Asset type: text-free landscape educational timeline illustration for age seven. Depict Alexander Graham Bell's 1876 large box telephone as a simple museum-object illustration, based on the Smithsonian object nmah_704159: a low rectangular oak wooden base, a vertical oak board rising at the front carrying a black circular iron diaphragm with a small circular speaking opening, a pair of small pale electromagnet coils immediately behind the diaphragm, and a dark horseshoe magnet lying horizontally along the base behind them. Two thin wire leads extend from the back of the base. Three-quarter side view clearly showing the wood support and exposed apparatus. Center the single object on a light cream ground with generous margins and a soft teal shadow. Bright simple flat children's storybook art, clean large shapes, warm mustard oak, coral and teal accents, dark navy outlines. This is a very early experimental desk telephone, not a wall-mounted crank telephone. No hand crank, separate earpiece, handset, rotary dial or keypad. No people. No words, letters, numerals, labels, logos, watermarks or captions anywhere. No sepia treatment. One object, clear silhouette, no decoration.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-93484765-6b6d-4c9f-8e01-33bf66b212b6.png",
+      "alt": "An early wooden telephone has a large round speaking opening, pale coils, a horseshoe-shaped magnet and two wires.",
+      "status": "visual-review-passed",
+      "references": [
+        "https://americanhistory.si.edu/collections/object/nmah_704159"
+      ],
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "tw-tl-car",
+      "kind": "timeline",
+      "file": "tw-tl-car.png",
+      "prompt": "Use case: historical-scene. Asset type: text-free landscape timeline illustration for seven-year-olds. A historically accurate simplified 1886 Benz Patent-Motorwagen No. 1: an open three-wheeled motor carriage on a tubular metal frame, a simple two-person dark upholstered bench seat, brass and iron engine behind the seat, exactly TWO large thin wire-spoked rear wheels and ONE smaller thin wire-spoked front wheel. Steering uses one upright central tiller with short horizontal handle, NOT a circular steering wheel. NO roof, no hood, no radiator, no headlights. Three-quarter front side view with all THREE wheels distinctly visible and separated, one front wheel forward at left, the two rear wheels behind at right. No human driver. Center the single carriage with generous margins on a light cream ground, soft teal ground shadow. Bright simple flat friendly children's storybook art, clean large shapes, warm coral, mustard, teal and navy palette; only details necessary for recognition, crisp consistent outlines, no photorealism. Never sepia or grey antique treatment. No words, letters, numerals, dates, labels, captions, logos, watermarks or decorative symbols.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-48b9cbd3-4095-4387-a28b-20ea419c1baf.png",
+      "alt": "An open motor carriage has one front wheel, two large rear wheels, a bench seat and a steering tiller.",
+      "status": "visual-review-passed",
+      "references": [
+        "https://group.mercedes-benz.com/company/tradition/company-history/1885-1886.html"
+      ],
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "tw-tl-flight",
+      "kind": "timeline",
+      "file": "tw-tl-flight.png",
+      "prompt": "Use case: historical-scene. Asset type: landscape educational timeline picture for seven-year-olds. The Wright brothers' 1903 Flyer making its first low flight over flat pale sand at Kitty Hawk. Historically essential geometry: TWO large parallel fabric wings, one above the other with light wooden struts; a small horizontal double-surface ELEVATOR on booms projecting well AHEAD of the main wings in the direction of flight; twin vertical rudders at the REAR; two wooden pusher propellers behind the main wings; curved landing skids, NO wheels. A single pilot lies flat PRONE, belly down on the lower wing, head facing forward, his forearms low on the controls. One other adult man in plain shirt and trousers runs naturally on the sand alongside the near wingtip, both his arms attached correctly at his own shoulders with believable bent elbows, exactly two legs. Plane airborne only a few feet above sand. Three-quarter side view: flight direction to left, front elevator at far left, large wings across center, rear rudders to right; show the entire plane and both figures without cropping. Simple pale blue sky, no buildings or crowds. Bright simple flat children's storybook illustration, large clean shapes, limited details, warm cream fabric, mustard wood, teal shadows, coral clothing accent; full color and cheerful tone. No sepia, no labels, words, letters, numerals, captions, logos or watermarks. Clear natural human anatomy and coherent aircraft structure.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-f01057b5-c1c3-4959-9f6c-149d1b01174f.png",
+      "alt": "A biplane with a small elevator ahead of its wings flies low over sand. One person lies flat at the controls while another runs beside it.",
+      "status": "visual-review-passed",
+      "references": [
+        "https://www.nps.gov/articles/wrightflyer.htm",
+        "https://www.nps.gov/places/7-getting-off-the-ground.htm"
+      ],
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "tw-tl-television",
+      "kind": "timeline",
+      "file": "tw-tl-television.png",
+      "prompt": "Use case: scientific-educational. Asset type: text-free landscape educational timeline illustration for seven-year-olds about the first electronic television picture in 1927. A close straight-on view of a small very early experimental cathode-ray display: deep nearly black rounded screen surface, showing EXACTLY ONE bright straight horizontal white line centered on the screen. The white line is the only image on the screen. A narrow simple warm wooden housing edge is visible framing the screen; crop closely so only the screen and plain housing edge show. Keep it a simple experimental display with NO knobs, buttons, antenna, speaker, legs or recognizable later television product styling. The line is bold and easy to identify with a tiny soft glow. Bright simple flat friendly children's educational illustration, large clean shapes, cream outer ground, subtle teal screen rim and mustard wood edge, consistent dark outlines, very few details. No people, no living room, no color bars, no picture on screen, no static patterns, no extra lines. No words, letters, numerals, dates, symbols, labels, logos, watermarks or captions.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-b81082b5-4f23-40bf-996a-b55edd8a93de.png",
+      "alt": "A dark screen inside a plain wooden edge shows a single bright horizontal white line.",
+      "status": "visual-review-passed",
+      "references": [
+        "allopacks/then_and_now_grade2.IMAGES.md",
+        "https://avpreservation.si.edu/spotlight/1927"
+      ],
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "tw-tl-moon",
+      "kind": "timeline",
+      "file": "tw-tl-moon.png",
+      "prompt": "Use case: historical-scene. Asset type: text-free landscape educational timeline illustration for seven-year-olds. One Apollo-era astronaut standing on the Moon's pale gray rocky ground, a short trail of clear bootprints behind. The astronaut wears a bulky WHITE one-piece Apollo A7L-style lunar spacesuit, white gloves, sturdy gray-soled boots, a large square white life-support backpack and round bubble helmet with gold visor. Exactly two arms connected naturally to the shoulders, elbows slightly bent, both gloved hands relaxed beside the body, exactly two legs, calm secure stance. No colored identification bands on the limbs. Black space sky above with a very small blue-and-white crescent Earth high at upper right. Entire astronaut visible with generous margins. Keep the composition simple: one astronaut, a few low rocks, bootprints and distant Earth. Bright simple FLAT children's storybook illustration, large clean shapes with crisp dark navy outlines, a few solid areas of teal-gray shading, cheerful mustard visor. No photographic texture, no complex machinery, no gradients. No flag, logos, patches, writing, words, letters, numerals, dates, captions or watermarks. Friendly awe and discovery.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-c71dae09-1bb0-4344-b9c5-146f973ac2d9.png",
+      "alt": "A person in a white spacesuit stands on gray ground with bootprints behind. A small blue-and-white crescent Earth appears in the black sky.",
+      "status": "visual-review-passed",
+      "references": [
+        "https://www.nasa.gov/humans-in-space/astronauts/spacesuits/",
+        "https://www.nasa.gov/missions/apollo/apollo-11/apollo-11-mission-overview/"
+      ],
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "tw-tl-web",
+      "kind": "timeline",
+      "file": "tw-tl-web.png",
+      "prompt": "Use case: historical-scene. Asset type: text-free landscape educational timeline illustration for seven-year-olds. A generic EARLY 1990s desktop computer sitting on a simple wooden desktop: beige boxy CRT monitor with a thick casing, small curved screen and broad bezel, beige horizontal desktop computer case below the monitor, separate beige keyboard in front with completely blank keycaps, simple wired mouse beside it. A single cable curves down and off the edge of the desk, showing connection beyond the picture. The small dark screen contains only three simple solid colored shapes: coral square, teal circle and mustard triangle, widely spaced. These are abstract shapes, not a rendered interface; no browser chrome, menus, symbols or writing. Three-quarter view with entire computer visible and generous cream background margins. Bright simple flat children's storybook illustration, clean large shapes, few details, warm cream and mustard with coral teal navy accents, crisp dark outlines, subtle solid-color shadows. No people, no laptops, no modern thin monitors, no wireless symbols. No words, letters, numerals, dates, labels, captions, logos, watermarks or brand marks anywhere, including keycaps.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-44ad8f36-00df-4067-9672-9ffebb65220a.png",
+      "alt": "A boxy beige computer shows three colored shapes on its small screen. A cable runs down from the desk.",
+      "status": "visual-review-passed",
+      "references": [
+        "allopacks/then_and_now_grade2.IMAGES.md",
+        "https://home.cern/science/computing/the-birth-of-the-web/"
+      ],
+      "provider": "Built-in image generation",
+      "historicalNote": "Generic period computer following the shot list; not presented as the original NeXT server."
+    },
+    {
+      "id": "tw-tl-phone",
+      "kind": "timeline",
+      "file": "tw-tl-phone.png",
+      "prompt": "Use case: illustration-story. Asset type: text-free landscape timeline illustration for seven-year-olds. Close-up of ONE natural brown-skinned human hand holding ONE flat rectangular touchscreen smartphone upright. The phone has softly rounded corners, a black front with a thin silver edge, a substantial upper and lower bezel typical of a 2007 smartphone, a tiny plain speaker slot at the top and one small round plain button at bottom. The screen shows ONLY a simple evenly spaced grid of nine solid colored squares, three rows and three columns, in coral, teal and mustard. All squares are blank and have no symbols, letters or numbers inside. No camera notch, no modern edge-to-edge screen. The hand enters from the lower left, wrist naturally connected; thumb rests along the left bezel without covering the screen, four fingers curl naturally around the back and right edge. Clear normal hand anatomy, exactly one thumb and four fingers, no duplicate hands, fingers or impossible joints. Entire phone visible with generous cream background margins, no other objects or people. Bright simple flat friendly children's storybook art, large clean shapes, crisp dark outlines and a few solid shadow areas. No words, letters, numerals, dates, interface text, captions, logos, watermarks or brand marks anywhere.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-4ce3af25-b909-4ec0-b11b-436159e15efb.png",
+      "alt": "One hand holds a flat rectangular phone whose screen shows a grid of nine colored squares.",
+      "status": "visual-review-passed",
+      "references": [
+        "allopacks/then_and_now_grade2.IMAGES.md",
+        "allopacks/then_and_now_grade2.allopack.json"
+      ],
+      "provider": "Built-in image generation"
+    },
+    {
+      "id": "tw-img-stairs",
+      "kind": "lesson",
+      "title": "Change builds in steps",
+      "afterType": "memory-aid",
+      "caption": "A timeline puts changes in order, one step after another.",
+      "file": "tw-img-stairs.png",
+      "prompt": "Use case: illustration-story. Make one NEW wide landscape educational illustration for seven-year-olds: a plain flight of EXACTLY FIVE broad stairs rising from lower left to upper right, side view, each tread holding EXACTLY ONE small model of an invention. Use the five supplied images ONLY as object-design references, in the same order. Do not reproduce their separate backgrounds. On step 1 at far left and lowest: the early wooden telephone apparatus from reference 1, with horizontal wooden base, vertical wooden board with black round speaking opening, two pale coils and dark horseshoe magnet; no hand crank, handset, separate receiver or wall telephone. On step 2: the open THREE-WHEELED motor carriage from reference 2, with one front wheel and two large rear wheels, bench seat and tiller; no steering wheel. On step 3: a small scale model of the 1903 Wright Flyer from reference 3, with two large main wings, a visibly smaller double elevator well ahead of the main wings on booms, and twin rudders behind; use the distinctive airplane SHAPE in the reference. No pilot, no people, no front propeller, no conventional airplane nose or fuselage, no wheels. On step 4: the plain wood-rimmed dark screen from reference 4 with EXACTLY ONE straight white horizontal line. On step 5 at far right and highest: the flat phone from reference 5 with a grid of blank colored squares, standing alone WITHOUT any hand. Objects are scaled to each occupy one broad tread, spaced apart and fully visible, one small object per step, none overlapping another object or the next riser. Exactly five steps and five objects total. Stair risers in alternating soft teal, coral, mustard tones. Plain cream backdrop, generous margins around entire staircase. Bright simple flat friendly children's storybook drawing, coherent clean shapes, consistent outline, same full color and brightness on every step. No gradients, no photographic texture. No words, letters, numbers, labels, captions, arrows, logos, watermarks, people or detached body parts.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-b5fa-7ce3-9e15-900a181bd925\\exec-a0ff3921-566a-4a71-9853-98f824fe2fb4.png",
+      "alt": "Five steps rise from left to right, holding a wooden box telephone, three-wheel car, biplane with a forward elevator, single-line television and flat phone in order.",
+      "status": "visual-review-passed",
+      "references": [
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/then_and_now_grade2/tw-tl-telephone.png",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/then_and_now_grade2/tw-tl-car.png",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/then_and_now_grade2/tw-tl-flight.png",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/then_and_now_grade2/tw-tl-television.png",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/then_and_now_grade2/tw-tl-phone.png"
+      ],
+      "provider": "Built-in image generation"
+    }
+  ]
+}

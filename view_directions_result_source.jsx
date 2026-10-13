@@ -256,7 +256,7 @@ function DirectionsResultView({
       <div className="bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-5">
         <div className="flex items-center gap-2 mb-3">
           <ClipboardList size={20} className="text-amber-600" aria-hidden="true" />
-          <h1 className="text-lg font-bold text-slate-800 flex-1">{directionsResultText(title, text('directions.title', 'Assignment Directions'), 140)}</h1>
+          <h1 className="text-lg font-bold text-slate-800 flex-1">{directionsResultText(title, text('directions.title', 'Lesson Directions'), 140)}</h1>
           {stations.length > 0 && (
             <button
               type="button"

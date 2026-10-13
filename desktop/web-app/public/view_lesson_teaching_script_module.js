@@ -481,7 +481,7 @@ function _ltsSessionKey(scope, planId) {
   return _ltsBoundedString(scope, 2048) && scope.trim() && _ltsBoundedString(planId, 160) && planId ? 'alloflow:lesson-script-session:v1:' + encodeURIComponent(scope) + ':' + encodeURIComponent(planId) : '';
 }
 function _ltsSessionSettings(value) {
-  return _ltsRecord(value) && [['goal', 1200], ['grade', 200], ['subject', 80], ['topic', 200], ['priorKnowledge', 2000], ['standard', 4000]].every(([key, limit]) => _ltsBoundedString(value[key], limit)) && ['segment', 'lesson'].includes(value.scope) && typeof value.researchEnabled === 'boolean' && (value.durationMinutes === '' || typeof value.durationMinutes === 'number' && Number.isFinite(value.durationMinutes) && Math.abs(value.durationMinutes) <= 1000000) && Array.isArray(value.materialIds) && value.materialIds.length <= 500 && value.materialIds.every(id => _ltsBoundedString(id, 160));
+  return _ltsRecord(value) && [['goal', 1200], ['grade', 200], ['subject', 80], ['topic', 200], ['priorKnowledge', 2000], ['standard', 4000]].every(([key, limit]) => _ltsBoundedString(value[key], limit)) && (value.inferContext == null || _ltsRecord(value.inferContext) && ['subject', 'topic'].every(key => typeof value.inferContext[key] === 'boolean')) && ['segment', 'lesson'].includes(value.scope) && typeof value.researchEnabled === 'boolean' && (value.durationMinutes === '' || typeof value.durationMinutes === 'number' && Number.isFinite(value.durationMinutes) && Math.abs(value.durationMinutes) <= 1000000) && Array.isArray(value.materialIds) && value.materialIds.length <= 500 && value.materialIds.every(id => _ltsBoundedString(id, 160));
 }
 function _ltsSessionSteps(steps) {
   return Array.isArray(steps) && steps.length > 0 && steps.length <= 24 && steps.every(step => _ltsRecord(step) && _ltsBoundedString(step.id, 160) && _ltsBoundedString(step.title, 1000) && (step.phase == null || _ltsBoundedString(step.phase, 100)) && (step.minutes === '' || ['string', 'number'].includes(typeof step.minutes) && String(step.minutes).length <= 32 && Number.isFinite(Number(step.minutes))) && _LTS_TEXT_FIELDS.every(key => _ltsBoundedString(step[key], 20000)) && ['resourceIds', 'recommendationIds'].every(key => Array.isArray(step[key]) && step[key].length <= 500 && step[key].every(id => _ltsBoundedString(id, 160))));
@@ -627,6 +627,12 @@ function LessonTeachingScriptPanel(props) {
   const [grade, setGrade] = React.useState(restored?.settings.grade ?? initialGrade);
   const [subject, setSubject] = React.useState(() => restored?.settings.subject ?? detectedDefaults.subject);
   const [topic, setTopic] = React.useState(restored?.settings.topic ?? detectedDefaults.topic);
+  // Older recovery copies predate explicit overrides. Treat their unchanged detected
+  // defaults as automatic, while retaining any teacher-edited subject or topic.
+  const [inferContext, setInferContext] = React.useState(() => restored?.settings.inferContext || {
+    subject: !restored || restored.settings.subject === restored.defaults.subject,
+    topic: !restored || restored.settings.topic === restored.defaults.topic
+  });
   const [scope, setScope] = React.useState(restored?.settings.scope || 'segment');
   const [durationMinutes, setDurationMinutes] = React.useState(() => restored?.settings.durationMinutes ?? (Number(suggested.segment) || 15));
   const [priorKnowledge, setPriorKnowledge] = React.useState(restored?.settings.priorKnowledge || '');
@@ -698,7 +704,7 @@ function LessonTeachingScriptPanel(props) {
   })));
   const subjectLabel = value => (subjectOptions.find(([key]) => key === value) || [])[1] || _ltsText(value);
   const scopeLabel = item => item && item.schemaVersion !== 1 && item.scope === 'lesson' ? tr('scope_lesson', 'Whole lesson') : tr('scope_segment', 'Direct-instruction segment');
-  const formReady = !!goal.trim() && !!grade && !!subject && (subject !== 'other' || !!topic.trim()) && durationValid && selectedMaterials.length > 0 && unavailableMaterialIds.length === 0;
+  const formReady = !!goal.trim() && !!grade && (inferContext.subject || !!subject) && (inferContext.topic || subject !== 'other' || !!topic.trim()) && durationValid && selectedMaterials.length > 0 && unavailableMaterialIds.length === 0;
   React.useEffect(() => {
     mounted.current = true;
     return () => {
@@ -715,7 +721,9 @@ function LessonTeachingScriptPanel(props) {
   React.useEffect(() => {
     if (busy || saving || JSON.stringify(previousDefaults.current) === defaultsKey) return;
     const previous = previousDefaults.current;
-    [[setGoal, 'goal'], [setGrade, 'grade'], [setSubject, 'subject'], [setTopic, 'topic'], [setStandard, 'standard']].forEach(([setValue, key]) => setValue(current => current === previous[key] ? detectedDefaults[key] : current));
+    [[setGoal, 'goal'], [setGrade, 'grade'], [setStandard, 'standard']].forEach(([setValue, key]) => setValue(current => current === previous[key] ? detectedDefaults[key] : current));
+    if (inferContext.subject) setSubject(detectedDefaults.subject);
+    if (inferContext.topic) setTopic(detectedDefaults.topic);
     previousDefaults.current = detectedDefaults;
     setDefaultsChanged(true);
     refreshDefaultsRecord(revision => revision + 1);
@@ -743,6 +751,10 @@ function LessonTeachingScriptPanel(props) {
     setGrade(detectedDefaults.grade);
     setSubject(detectedDefaults.subject);
     setTopic(detectedDefaults.topic);
+    setInferContext({
+      subject: true,
+      topic: true
+    });
     setStandard(detectedDefaults.standard);
     setDefaultsChanged(false);
   };
@@ -755,6 +767,7 @@ function LessonTeachingScriptPanel(props) {
       grade,
       subject,
       topic,
+      inferContext,
       scope,
       durationMinutes,
       priorKnowledge,
@@ -822,6 +835,9 @@ function LessonTeachingScriptPanel(props) {
         grade,
         subject,
         topic: topic.trim(),
+        inferContext: {
+          ...inferContext
+        },
         scope,
         durationMinutes: Number(durationMinutes),
         priorKnowledge: priorKnowledge.trim(),
@@ -830,6 +846,11 @@ function LessonTeachingScriptPanel(props) {
         language: _ltsText(defaultSettings.language) || 'English',
         standard: standard.trim()
       });
+      if (result?.ok && mounted.current && owner === requestOwner.current) {
+        const resolved = result.version?.inputSnapshot?.settings;
+        if (inferContext.subject && subjectOptions.some(([value]) => value === resolved?.subject)) setSubject(resolved.subject);
+        if (inferContext.topic && typeof resolved?.topic === 'string') setTopic(resolved.topic);
+      }
       if (result?.ok === false && mounted.current && owner === requestOwner.current) setLocalError(_ltsText(result.error?.message || result.error) || tr('generate_failed', 'The script could not be generated. Your lesson plan is still available.'));
     } catch (failure) {
       if (mounted.current && owner === requestOwner.current) setLocalError(_ltsText(failure?.message) || tr('generate_failed', 'The script could not be generated. Your lesson plan is still available.'));
@@ -1088,7 +1109,14 @@ function LessonTeachingScriptPanel(props) {
     retrieved: tr('research_fresh', 'Research sources retrieved')
   };
   const phaseLabel = phase => phase && _LTS_PHASES[phase] ? tr('phase_' + phase, _LTS_PHASES[phase]) : '';
-  const detectedNote = [defaultSettings.subjectDetected ? tr('context_subject_detected', 'Subject detected from the saved plan') : tr('context_subject_unknown', 'Subject could not be detected; choose it below'), defaultSettings.gradeSource === 'plan' ? tr('context_grade_plan', 'Grade from the saved plan') : tr('context_grade_missing', 'The saved plan has no grade; choose one below'), Array.isArray(defaultSettings.phases) && defaultSettings.phases.length ? tr('context_phases', 'Plan phases:') + ' ' + defaultSettings.phases.map(phaseLabel).filter(Boolean).join(', ') : ''].filter(Boolean);
+  const detectedNote = [defaultSettings.subjectDetected ? tr('context_subject_detected', 'Subject detected from the saved plan') : tr('context_subject_ai', 'Subject could not be detected yet; AI will identify it when you generate'), defaultSettings.gradeSource === 'plan' ? tr('context_grade_plan', 'Grade from the saved plan') : tr('context_grade_missing', 'The saved plan has no grade; choose one below'), Array.isArray(defaultSettings.phases) && defaultSettings.phases.length ? tr('context_phases', 'Plan phases:') + ' ' + defaultSettings.phases.map(phaseLabel).filter(Boolean).join(', ') : ''].filter(Boolean);
+  const progressLabel = {
+    context: tr('progress_context', 'Identifying the lesson subject and topic…'),
+    research: tr('progress_research', 'Finding research for this lesson…'),
+    generating: tr('progress_generating', 'Writing the teaching script…'),
+    validating: tr('progress_validating', 'Checking and improving the script…'),
+    chunking: tr('progress_chunking', 'Writing the script in smaller sections…') + (Number.isInteger(hostRun.totalChunks) && hostRun.totalChunks > 0 ? ' ' + Math.min(hostRun.totalChunks, Math.max(0, Number(hostRun.completedChunks) || 0)) + '/' + hostRun.totalChunks : '')
+  }[hostRun.stage] || _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…');
   if (spokenOnly && version) return /*#__PURE__*/React.createElement(LessonSpokenDirections, {
     key: JSON.stringify([version.id, runtime?.spokenSegments?.({
       ...version,
@@ -1150,7 +1178,7 @@ function LessonTeachingScriptPanel(props) {
   }, tr('saved_script', 'Saved script:'), " ", _ltsText(version.title) || tr('title', 'Teaching script'), " · ", version.durationMinutes, " ", tr('minutes', 'minutes')), busy && !expanded && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-2 text-sm text-indigo-900"
-  }, _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…')), busy && !expanded && typeof onCancelTeachingScript === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, progressLabel), busy && !expanded && typeof onCancelTeachingScript === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass + ' mt-2 no-print',
     onClick: cancel
@@ -1198,7 +1226,21 @@ function LessonTeachingScriptPanel(props) {
     className: "mt-1 list-disc space-y-0.5 pl-5"
   }, detectedNote.map((line, index) => /*#__PURE__*/React.createElement("li", {
     key: index
-  }, line)))), /*#__PURE__*/React.createElement("div", {
+  }, line))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2"
+  }, tr('context_ai_hint', 'AI determines the subject and topic from this lesson when you generate. Edit either field below to keep your own choice.')), (!inferContext.subject || !inferContext.topic) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass + ' mt-2',
+    disabled: busy || saving,
+    onClick: () => {
+      setInferContext({
+        subject: true,
+        topic: true
+      });
+      setSubject(detectedDefaults.subject);
+      setTopic(detectedDefaults.topic);
+    }
+  }, tr('context_use_ai', 'Use AI for subject and topic'))), /*#__PURE__*/React.createElement("div", {
     className: "grid gap-4 sm:grid-cols-2"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: id + '-subject',
@@ -1209,7 +1251,13 @@ function LessonTeachingScriptPanel(props) {
     className: fieldClass,
     value: subject,
     disabled: busy || saving,
-    onChange: event => setSubject(event.target.value)
+    onChange: event => {
+      setSubject(event.target.value);
+      setInferContext(previous => ({
+        ...previous,
+        subject: false
+      }));
+    }
   }, subjectOptions.map(([value, label]) => /*#__PURE__*/React.createElement("option", {
     key: value,
     value: value
@@ -1222,8 +1270,14 @@ function LessonTeachingScriptPanel(props) {
     className: fieldClass,
     value: topic,
     disabled: busy || saving,
-    required: subject === 'other',
-    onChange: event => setTopic(event.target.value),
+    required: subject === 'other' && !inferContext.topic,
+    onChange: event => {
+      setTopic(event.target.value);
+      setInferContext(previous => ({
+        ...previous,
+        topic: false
+      }));
+    },
     placeholder: tr('topic_hint', 'For example: blending CVC words, photosynthesis, causes of the French Revolution')
   }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: id + '-goal',
@@ -1389,7 +1443,7 @@ function LessonTeachingScriptPanel(props) {
     role: "status",
     "aria-live": "polite",
     className: "text-sm font-bold text-indigo-950"
-  }, busy ? _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…') : notice), busy && typeof onCancelTeachingScript === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, busy ? progressLabel : notice), busy && typeof onCancelTeachingScript === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass + ' no-print',
     onClick: cancel

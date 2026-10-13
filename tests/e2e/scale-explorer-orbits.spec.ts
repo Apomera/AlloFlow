@@ -1,105 +1,85 @@
-import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
-import { test, expect } from '@playwright/test';
-import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
-import { mkdirSync } from 'node:fs';
+import {test,expect,type Page} from '@playwright/test';
+import {GlHarness,looksBlank} from './helpers/stem_gl_harness';
+import {showScaleExplorerTools} from './helpers/scale_explorer_workspace';
+import {readPng} from './helpers/png_pixels';
+import {mkdirSync,writeFileSync,appendFileSync,readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import vm from 'node:vm';
 import path from 'node:path';
 
-test.describe.configure({mode:'serial',retries:0,timeout:180000});
-test.use({video:'off',trace:'off'});
-const out=path.resolve('reports/scale-explorer-orbits');
-const harness=new GlHarness({toolFile:'stem_lab/stem_tool_scaleexplorer.js',toolId:'scaleExplorer',width:1400,height:1100,layout:'document',preScripts:['stem_lab/stem_lab_module.js'],extraScripts:['vendor/three-r128/GLTFLoader.js'],probes:`const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=new Proxy(Original,{construct(target,args){const r=Reflect.construct(target,args),render=r.render;r.render=function(s,c){const f=window.__orbitFrames;if(f&&f.length<300)f.push(Number(r.domElement.dataset.atlasZoom||1));return render.apply(this,arguments);};return r;}});`});
+test.describe.configure({mode:'serial',retries:0,timeout:360000});
+test.use({video:'off',trace:'off',hasTouch:true});
+const out=path.resolve(process.env.SCALE_ORBITS_REPORT_DIR||'reports/scale-explorer-solar-orbits');
+const source=readFileSync('stem_lab/stem_tool_scaleexplorer.js','utf8'),sourceSha256=createHash('sha256').update(source).digest('hex');
+const sandbox:any={window:{StemLab:{registerTool(){}}},console:{log(){}}};
+vm.runInNewContext(source.replace("  window.StemLab.registerTool('scaleExplorer', {","  window.__orbitSites=atlasDetails('solar-system',function(key,fallback){return fallback;});\n  window.StemLab.registerTool('scaleExplorer', {"),sandbox);
+const views=JSON.parse(JSON.stringify(sandbox.window.__orbitSites));
+const cv=(p:Page)=>p.locator('[data-atlas-ready]');
+const study=(p:Page)=>p.getByRole('region',{name:'Planetary orbit atlas',exact:true});
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_scaleexplorer.js',toolId:'scaleExplorer',width:1400,height:1000,layout:'document',preScripts:['stem_lab/stem_lab_module.js'],probes:`window.__orbitDrawState=function(scene){let result=null;scene.traverse(function(n){if(n.visible&&n.userData.itemId==='solar-system'){const d=n.userData.model.userData.solarSystem;result=[d.state.years,d.state.detail,d.state.comparison];}});return JSON.stringify(result);};const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=new Proxy(Original,{construct(target,args){const r=Reflect.construct(target,args),render=r.render;window.__orbitRenderer=r;r.render=function(scene,camera){const result=render.apply(this,arguments);if(!r.getRenderTarget()){window.__orbitScene=scene;window.__orbitCamera=camera;window.__orbitLastDraw={camera:camera.matrixWorld.elements.slice(),projection:camera.projectionMatrix.elements.slice(),width:r.domElement.width,height:r.domElement.height,detail:window.__orbitDrawState(scene)};}return result;};return r;}});`});
 test.beforeAll(async()=>{mkdirSync(out,{recursive:true});await harness.start();});
-test.afterAll(async()=>{await harness.stop();});
-test.afterEach(async({page})=>{await harness.unmount(page);expect(await harness.leakedAfterUnmount(page)).toEqual([]);});
-async function mount(page:any){
-  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1400,height:1100});
-  await harness.mount(page,{},'!!document.querySelector("[data-atlas-ready]")'); await showScaleExplorerTools(page);
-  await page.addStyleTag({content:'#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}'});
-}
-async function fly(page:any,id:string){
-  await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption(id);
-  const canvas=page.locator('[data-atlas-ready]');await expect(canvas).toHaveAttribute('data-atlas-objects',id);
-  await expect.poll(()=>canvas.evaluate((c:HTMLElement)=>Math.abs(Number(c.dataset.atlasExponent)-Number(c.dataset.atlasTarget)))).toBeLessThan(.002);
-}
-async function system(page:any){return page.evaluate(()=>{
-  const w=window as any,T=w.THREE,r=w.__glRecorder.records.find((r:any)=>!r.ctx.isContextLost());let root:any;
-  r.scene.traverse((o:any)=>{if(o.userData.itemId==='solar-system')root=o;});const g=root.userData.model,n=g.userData.solarSystem;
-  return {span:g.localToWorld(new T.Vector3(.5,0,0)).distanceTo(g.localToWorld(new T.Vector3(-.5,0,0))),
-    positions:n.bodies.map((b:any)=>({id:b.userData.planetId,p:b.position.toArray(),scale:b.scale.x})),
-    paths:n.paths.map((l:any)=>({id:l.userData.planetId,au:l.userData.orbitAU,points:Array.from(l.geometry.attributes.position.array)})),
-    belt:n.belt.geometry.attributes.position.count,rotation:g.rotation.toArray(),
-    ray:n.measureLine.visible?Array.from(n.measureLine.geometry.attributes.position.array):null,context:r.type};
-});}
-async function shot(page:any,name:string){
-  expect(looksBlank(await harness.glPixels(page))).toBe(false);
-  await page.locator('.sx-stage').screenshot({path:path.join(out,name+'.png')});
-}
-test('eight orbital radii keep their measured ratios through deep inspection',async({page})=>{
-  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
-  await mount(page);await fly(page,'solar-system');const before=await system(page),canvas=page.locator('[data-atlas-ready]');
-  expect(before.span).toBeCloseTo(3,8);expect(before.paths).toHaveLength(8);expect(before.belt).toBe(1600);
-  const earthRadius=Math.hypot(...before.positions[2].p);
-  for(let i=0;i<8;i++){const p=before.positions[i],orbit=before.paths[i];expect(Math.hypot(...p.p)/earthRadius).toBeCloseTo(orbit.au/1.00000261,8);
-    expect(Math.hypot(...orbit.points.slice(0,3) as number[])).toBeCloseTo(Math.hypot(...p.p),7);}
-  expect(Math.hypot(...before.positions[7].p)).toBeCloseTo(.5,8);await shot(page,'system-overview');
-  const controls=page.getByRole('region',{name:'Explore the planetary system',exact:true});
-  await controls.getByRole('button',{name:'Explore inner planets',exact:true}).click();await expect(canvas).toHaveAttribute('data-atlas-zoom','24.00');
-  const inner=await system(page);expect(inner.paths).toEqual(before.paths);expect(inner.positions.map(p=>p.p)).toEqual(before.positions.map(p=>p.p));expect(inner.span).toBe(before.span);
-  await expect(page.getByRole('slider',{name:'Inspection magnification',exact:true})).toHaveAttribute('max','32');
-  await shot(page,'inner-planets');
-  for(const [id,label] of [['earth-orbit','Earth'],['saturn-orbit','Saturn'],['asteroid-belt','The asteroid belt']] as const){
-    await page.locator('.sx-details').getByRole('button',{name:label,exact:true}).click();await expect(canvas).toHaveAttribute('data-atlas-detail',id);
-    if(id==='earth-orbit'){await expect(canvas).toHaveAttribute('data-atlas-zoom','32.00');const earth=await system(page);expect(earth.ray!.slice(3)).toEqual(earth.positions[2].p.map(Math.fround));}
-    await shot(page,id);
-  }
-  await controls.getByRole('button',{name:'Whole system',exact:true}).click();await expect(canvas).toHaveAttribute('data-atlas-zoom','1.00');expect((await system(page)).paths).toEqual(before.paths);expect(errors).toEqual([]);
-});
-test('phone keyboard exploration restores deep observations and enters a detailed world',async({page})=>{
-  await mount(page);await page.setViewportSize({width:320,height:780});await fly(page,'solar-system');const canvas=page.locator('[data-atlas-ready]');
-  const earth=page.locator('.sx-details').getByRole('button',{name:'Earth',exact:true});await earth.focus();await earth.press('Enter');
-  await expect(canvas).toHaveAttribute('data-atlas-zoom','32.00');await shot(page,'phone-earth-orbit');
-  const book=page.getByRole('region',{name:'Field notebook',exact:true});await book.getByRole('textbox').fill('All the rocky planets fit near the Sun.');
-  await book.getByRole('button',{name:'Save observation',exact:true}).click();
-  const controls=page.getByRole('region',{name:'Explore the planetary system',exact:true});
-  await controls.getByRole('button',{name:'Whole system',exact:true}).click();
-  await book.locator('[data-observation="solar-system:earth-orbit"]').getByRole('button',{name:/^Return to/}).click();
-  await expect(canvas).toHaveAttribute('data-atlas-detail','earth-orbit');await expect(canvas).toHaveAttribute('data-atlas-zoom','32.00');
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-  await controls.getByRole('button',{name:'Explore Earth at its own scale',exact:true}).click();
-  await expect(canvas).toHaveAttribute('data-atlas-objects','earth');await expect(canvas).toHaveAttribute('data-atlas-zoom','1.00');
-  await expect(page.getByRole('slider',{name:'Inspection magnification',exact:true})).toHaveAttribute('max','2.5');
-  await fly(page,'solar-system');await controls.getByRole('button',{name:'Visit the Sun',exact:true}).click();await expect(canvas).toHaveAttribute('data-atlas-objects','sun');
-});
-test('orbital system comparisons preserve physical dimensions after close inspection',async({page})=>{
-  await mount(page);await fly(page,'solar-system');await page.getByRole('button',{name:'Explore inner planets',exact:true}).click();
-  const panel=page.locator('.sx-comparison-workbench');await panel.locator(':scope > summary').click();
-  await panel.getByRole('combobox',{name:'First thing',exact:true}).selectOption('solar-system');
-  await panel.getByRole('combobox',{name:'Second thing',exact:true}).selectOption('sun');await panel.getByRole('button',{name:'Compare them',exact:true}).click();
-  const canvas=page.locator('[data-atlas-ready]');await expect(canvas).toHaveAttribute('data-atlas-projection','orthographic');
-  const ratio=await page.evaluate(()=>{const r=(window as any).__glRecorder.records.find((r:any)=>!r.ctx.isContextLost()),roots:any={};r.scene.traverse((o:any)=>{if(o.userData.itemId)roots[o.userData.itemId]=o;});return roots['solar-system'].scale.x/roots.sun.scale.x;});
-  expect(ratio).toBeCloseTo(9e12/1.392e9,6);expect((await system(page)).ray).toBeNull();await shot(page,'system-sun-comparison');
-});
-test('the orbital scene works in WebGL 1 without shader errors',async({page})=>{
-  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;(HTMLCanvasElement.prototype as any).getContext=function(type:string,...args:any[]){if(type==='webgl2')return null;return original.apply(this,[type,...args] as any);};});
-  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
-  await mount(page);await fly(page,'solar-system');expect((await system(page)).context).toBe('webgl');
-  await page.locator('.sx-details').getByRole('button',{name:'Saturn',exact:true}).click();await shot(page,'saturn-webgl1');expect(errors).toEqual([]);
-});
+test.afterAll(async()=>{await harness.stop();expect(createHash('sha256').update(readFileSync('stem_lab/stem_tool_scaleexplorer.js')).digest('hex')).toBe(sourceSha256);});
+test.afterEach(async({page})=>harness.destroy(page));
+const save=(name:string,value:any)=>writeFileSync(path.join(out,name+'.json'),JSON.stringify({sourceSha256,...value},null,2));
 
-test('deep approaches remain smooth with ambience paused and stop drawing when settled',async({page})=>{
-  await mount(page);await fly(page,'solar-system');await page.emulateMedia({reducedMotion:'no-preference'});
-  await page.getByRole('button',{name:'Pause ambience',exact:true}).click();const canvas=page.locator('[data-atlas-ready]');
-  await page.evaluate(()=>{(window as any).__orbitFrames=[];});
-  await page.getByRole('button',{name:'Explore inner planets',exact:true}).click();
-  await expect(canvas).toHaveAttribute('data-atlas-zoom','24.00');
-  await expect.poll(()=>page.evaluate(()=>{const f=(window as any).__orbitFrames;return f.length;})).toBeGreaterThan(10);
-  // The displayed zoom rounds to two decimals before the camera finishes settling.
-  const renders=()=>page.evaluate(()=>(window as any).__glRecorder.records.find((r:any)=>!r.ctx.isContextLost()).renders);
-  await expect.poll(async()=>{const count=await renders();await page.waitForTimeout(250);return(await renders())===count;},{timeout:8000}).toBe(true);
-  const frames=await page.evaluate(()=>(window as any).__orbitFrames as number[]);
-  expect(frames.filter(v=>v>1&&v<23.99).length).toBeGreaterThan(8);
-  for(let i=1;i<frames.length;i++)expect(frames[i]).toBeGreaterThanOrEqual(frames[i-1]);
-  const count=await renders();await page.waitForTimeout(300);expect(await renders()).toBe(count);
-  await page.getByRole('region',{name:'Explore the planetary system',exact:true}).getByRole('button',{name:'Whole system',exact:true}).click();
-  await expect(canvas).toHaveAttribute('data-atlas-zoom','1.00');
+async function mount(page:Page,phone=false,regularMotion=false){
+ const diagnostic=path.join(out,(regularMotion?'motion':phone?'phone':'desktop')+'-diagnostics.txt'),errors:string[]=[];
+ writeFileSync(diagnostic,'Mount '+new Date().toISOString()+'\n');
+ page.on('console',m=>{if(m.type()==='error'||m.type()==='warning'||/context.*lost|WebGL/i.test(m.text()))appendFileSync(diagnostic,new Date().toISOString()+' '+m.type()+': '+m.text()+'\n');if(m.type()==='error')errors.push(m.text());});
+ page.on('pageerror',e=>{appendFileSync(diagnostic,new Date().toISOString()+' pageerror: '+e.message+'\n');errors.push(e.message);});
+ await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;(HTMLCanvasElement.prototype as any).getContext=function(type:string,...args:any[]){return type==='webgl2'?null:original.apply(this,[type,...args] as any);};});
+ await page.emulateMedia({reducedMotion:regularMotion?'no-preference':'reduce'});await page.setViewportSize({width:phone?360:1400,height:phone?900:1000});
+ await harness.mount(page,{_scaleExplorer:{ambient:false}},'!!document.querySelector("[data-atlas-ready]")');
+ await showScaleExplorerTools(page);await page.addStyleTag({content:'#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}'});return errors;
+}
+async function frames(page:Page,count=12){await page.evaluate(count=>new Promise<void>(resolve=>{let n=0;function next(){if(++n>=count)resolve();else requestAnimationFrame(next);}requestAnimationFrame(next);}),count);}
+async function settle(page:Page){
+ await cv(page).evaluate(el=>el.scrollIntoView({block:'center'}));
+ await expect.poll(()=>page.evaluate(async()=>{const c=(window as any).__orbitCamera,p=c.position.clone(),q=c.quaternion.clone();await new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r())));return Math.max(p.distanceTo(c.position),...q.toArray().map((v:number,i:number)=>Math.abs(v-c.quaternion.toArray()[i])));})).toBeLessThan(1e-8);
+ await expect.poll(()=>page.evaluate(()=>{const w=window as any,c=w.__orbitCamera,r=w.__orbitRenderer,d=w.__orbitLastDraw;return !!d&&d.width===r.domElement.width&&d.height===r.domElement.height&&d.detail===w.__orbitDrawState(w.__orbitScene)&&d.camera.every((x:number,i:number)=>Math.abs(x-c.matrixWorld.elements[i])<1e-8)&&d.projection.every((x:number,i:number)=>Math.abs(x-c.projectionMatrix.elements[i])<1e-8);})).toBe(true);
+}
+async function fly(page:Page,id:string){await page.getByRole('combobox',{name:'Choose a destination',exact:true}).selectOption(id);await expect(cv(page)).toHaveAttribute('data-atlas-objects',id);await settle(page);}
+async function chooseView(page:Page,id:string){const view=views.find((d:any)=>d.id===id),b=viewButton(page,view);await b.focus();await b.press('Enter');await settle(page);await expect(cv(page)).toHaveAttribute('data-atlas-detail',id);await expect(b).toHaveAttribute('aria-pressed','true');}
+async function shot(page:Page,name:string){await settle(page);const clip=await cv(page).evaluate(el=>{const r=el.getBoundingClientRect(),x=Math.max(0,r.left),y=Math.max(0,r.top);return{x,y,width:Math.min(innerWidth,r.right)-x,height:Math.min(innerHeight,r.bottom)-y};});await page.screenshot({path:path.join(out,name+'.jpg'),type:'jpeg',quality:74,clip});}
+async function canvasPixels(page:Page){const clip=await cv(page).evaluate(el=>{const r=el.getBoundingClientRect(),x=Math.max(0,r.left),y=Math.max(0,r.top);return{x,y,width:Math.min(innerWidth,r.right)-x,height:Math.min(innerHeight,r.bottom)-y};});return readPng(await page.screenshot({clip,type:'png',style:'body *{visibility:hidden!important}[data-atlas-ready]{visibility:visible!important;background:#ff00ff!important;background-image:none!important}'}));}
+function changedShare(a:ReturnType<typeof readPng>,b:ReturnType<typeof readPng>){expect([a.width,a.height]).toEqual([b.width,b.height]);let changed=0,total=0;for(let y=0;y<a.height;y+=3)for(let x=0;x<a.width;x+=3){const p=a.at(x,y),q=b.at(x,y);total++;if(Math.max(...p.map((v,i)=>Math.abs(v-q[i])))>12)changed++;}return changed/total;}
+async function compare(page:Page,a:string,b:string){const box=page.locator('.sx-comparison-workbench');if(await box.getAttribute('open')===null)await box.locator(':scope > summary').click();await box.getByRole('combobox',{name:'First thing',exact:true}).selectOption(a);await box.getByRole('combobox',{name:'Second thing',exact:true}).selectOption(b);await box.getByRole('button',{name:'Compare them',exact:true}).click();await expect(cv(page)).toHaveAttribute('data-atlas-comparison',a+':'+b);await settle(page);}
+
+const viewButton=(page:Page,view:any)=>study(page).locator(/-orbit$/.test(view.id)?'.sx-solar-worlds':'.sx-solar-overviews').getByRole('button',{name:new RegExp('^'+view.label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')});
+async function stats(page:Page){return page.evaluate(()=>{
+ const w=window as any,T=w.THREE,scene=w.__orbitScene,camera=w.__orbitCamera,renderer=w.__orbitRenderer;let root:any;scene.traverse((n:any)=>{if(n.userData.itemId==='solar-system'&&n.visible)root=n;});if(!root)throw new Error('Solar System model is not visible');
+ const g=root.userData.model,d=g.userData.solarSystem;let finite=true;
+ const sample=(geo:any)=>{const p=geo?.attributes?.position;if(!p)return null;let sum=0,weighted=0;for(let i=0;i<p.array.length;i++){finite=finite&&Number.isFinite(p.array[i]);sum+=p.array[i];weighted+=p.array[i]*(i%101+1);}return{uuid:geo.uuid,count:p.count,version:p.version,sum,weighted};};
+ const paths=d.paths.map((p:any)=>({id:p.userData.planetId,geometry:sample(p.geometry)})),geometry:any[]=[];d.bodies.forEach((body:any)=>body.traverse((n:any)=>{if(n.geometry)geometry.push(sample(n.geometry));}));
+ const bodies=d.bodies.map((n:any)=>({id:n.userData.planetId,position:n.position.toArray(),scale:n.scale.toArray(),projected:n.getWorldPosition(new T.Vector3()).project(camera).toArray()}));
+ const detail=renderer.domElement.dataset.atlasDetail,selected=bodies.find((b:any)=>b.id+'-orbit'===detail),roots:any={};scene.traverse((n:any)=>{if(n.userData.itemId&&n.visible)roots[n.userData.itemId]=n.scale.x;});
+ const marker=document.querySelector('[data-scale-marker="'+detail+'"]') as HTMLElement,canvasRect=renderer.domElement.getBoundingClientRect(),markerRect=marker?.getBoundingClientRect();const markerProjection=selected&&markerRect?{visible:!marker.hidden,x:markerRect.left+markerRect.width/2-canvasRect.left,y:markerRect.top+markerRect.height/2-canvasRect.top,expectedX:(selected.projected[0]+1)*canvasRect.width/2,expectedY:(1-selected.projected[1])*canvasRect.height/2,offset:marker.dataset.offset==='true'?44:0}:null;
+ return{...d.state,canvasDetail:detail,finite,paths,geometry,bodies,selected,markerProjection,scale:g.scale.toArray(),extent:g.userData.extent,measureCenter:g.userData.measureCenter,bounds:d.bounds.getSize(new T.Vector3()).toArray(),boundCenter:d.bounds.getCenter(new T.Vector3()).toArray(),comparisonBounds:root.userData.comparisonBodyBounds?.getSize(new T.Vector3()).toArray(),expectedComparisonBounds:d.bounds.clone().applyMatrix4(g.matrixWorld).getSize(new T.Vector3()).toArray(),worldScale:root.scale.x,roots,
+ ray:d.measureLine.visible?Array.from(d.measureLine.geometry.attributes.position.array):null,camera:{position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),near:camera.near,far:camera.far},programs:renderer.info.programs.map((p:any)=>({runnable:p.diagnostics?.runnable!==false})),glError:renderer.getContext().getError(),frame:renderer.info.render.frame};
+});}
+function check(state:any,whole:any,follow=true){expect(state.finite).toBe(true);expect(state.paths).toEqual(whole.paths);expect(state.geometry).toEqual(whole.geometry);expect(state.scale).toEqual([1,1,1]);expect(state.extent).toBe(1);expect(state.measureCenter).toBe(0);expect(state.bounds).toEqual(whole.bounds);expect(state.bounds[0]).toBe(1);expect(state.boundCenter).toEqual(whole.boundCenter);expect(state.programs.every((p:any)=>p.runnable)).toBe(true);expect(state.glError).toBe(0);expect([...state.camera.position,state.camera.near,state.camera.far].every(Number.isFinite)).toBe(true);if(follow&&state.selected){expect(Math.abs(state.selected.projected[0])).toBeLessThan(.15);expect(Math.abs(state.selected.projected[1])).toBeLessThan(.35);expect(Math.abs(state.selected.projected[2])).toBeLessThan(1);expect(state.ray!.slice(3)).toEqual(state.selected.position.map(Math.fround));expect(state.markerProjection?.visible).toBe(true);expect(Math.abs(state.markerProjection.x-state.markerProjection.expectedX)).toBeLessThan(2);expect(Math.abs(state.markerProjection.y-state.markerProjection.expectedY-state.markerProjection.offset)).toBeLessThan(2);}}
+async function time(page:Page,years:number){const slider=study(page).getByRole('slider',{name:'Elapsed Earth years',exact:true});await slider.evaluate((el,value)=>{const input=el as HTMLInputElement;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(input,String(value));input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));},years);await settle(page);await expect.poll(async()=>(await stats(page)).years).toBeCloseTo(years,8);}
+async function disposal(page:Page){await page.evaluate(()=>{const w=window as any,resources=new Set<any>();w.__orbitScene.traverse((n:any)=>{if(n.userData.itemId==='solar-system')for(const r of n.userData.resources||[])resources.add(r);});w.__orbitDisposal={resources:resources.size,disposed:0};for(const r of resources)r.addEventListener('dispose',()=>w.__orbitDisposal.disposed++);});await harness.unmount(page);expect(await harness.leakedAfterUnmount(page)).toEqual([]);const result=await page.evaluate(()=>(window as any).__orbitDisposal);expect(result.resources).toBeGreaterThan(10);expect(result.disposed).toBe(result.resources);return result;}
+
+if(process.env.ORBITS_VISUAL_ONLY==='1')for(const phone of [false,true])test((phone?'phone':'desktop')+' preliminary orbital framing',async({page})=>{
+ const prefix=phone?'phone':'desktop',errors=await mount(page,phone);await fly(page,'solar-system');const states=[];
+ for(const id of ['system-overview','inner-orbits','mercury-orbit','saturn-orbit','orbital-plane']){await chooseView(page,id);await shot(page,prefix+'-'+id);states.push(await stats(page));}
+ await study(page).screenshot({path:path.join(out,prefix+'-controls.jpg'),type:'jpeg',quality:74});save(prefix+'-preview',{states,errors});expect(errors).toEqual([]);
 });
+else {
+for(const phone of [false,true])test((phone?'phone':'desktop')+' orbital destinations, elapsed time, saved views and physical comparison',async({page})=>{
+ const prefix=phone?'phone':'desktop',errors=await mount(page,phone);await fly(page,'solar-system');await expect(study(page)).toBeVisible();await study(page).screenshot({path:path.join(out,prefix+'-controls.jpg'),type:'jpeg',quality:74});
+ const whole=await stats(page),destinations:any[]=[],epochs:any[]=[];check(whole,whole,false);expect(whole.paths).toHaveLength(8);
+ for(const view of views){const b=viewButton(page,view),rect=await b.boundingBox();expect(rect!.height).toBeGreaterThanOrEqual(44);if(phone){expect(rect!.x).toBeGreaterThanOrEqual(0);expect(rect!.x+rect!.width).toBeLessThanOrEqual(360);}await chooseView(page,view.id);const state=await stats(page);destinations.push(state);save(prefix+'-progress',{destinations});check(state,whole);await shot(page,prefix+'-'+view.id);}
+ await chooseView(page,'earth-orbit');for(const years of [.25,.5,1]){await time(page,years);const state=await stats(page);check(state,whole);epochs.push(state);}expect(epochs[0].bodies.map((b:any)=>b.position)).not.toEqual(whole.bodies.map((b:any)=>b.position));await shot(page,prefix+'-earth-one-year');
+ await chooseView(page,'neptune-orbit');await study(page).getByRole('button',{name:'12 years',exact:true}).click();await time(page,12);epochs.push(await stats(page));await study(page).getByRole('button',{name:'Neptune year',exact:true}).click();for(const years of [82.39566,164.79132]){await time(page,years);const state=await stats(page);check(state,whole);epochs.push(state);}await expect(study(page).getByRole('button',{name:'Advance one day',exact:true})).toBeDisabled();await shot(page,prefix+'-neptune-year');
+ await chooseView(page,'mercury-orbit');const apsides:any[]=[];for(const name of ['Go to closest approach','Go to farthest approach']){await study(page).getByRole('button',{name,exact:true}).click();await settle(page);const state=await stats(page);check(state,whole);apsides.push(state);}expect(Math.hypot(...apsides[0].selected.position)*9e12/149597870700).toBeCloseTo(.3074977516112289,10);expect(Math.hypot(...apsides[1].selected.position)*9e12/149597870700).toBeCloseTo(.46670078838877105,10);await chooseView(page,'earth-orbit');
+ await study(page).getByRole('button',{name:'Reset to J2000',exact:true}).click();await settle(page);expect((await stats(page)).years).toBe(0);await study(page).getByRole('button',{name:'Advance one day',exact:true}).click();await settle(page);const oneDay=await stats(page);expect(oneDay.years).toBeCloseTo(1/365.25,10);check(oneDay,whole);
+ const book=page.getByRole('region',{name:'Field notebook',exact:true});await book.getByRole('textbox',{name:'What do you notice?',exact:true}).fill('Earth moved along its ellipse while every orbit kept one scale.');await book.getByRole('button',{name:'Save observation',exact:true}).click();await settle(page);const saved=await stats(page);await time(page,.75);await fly(page,'rice');await book.locator('[data-observation="solar-system:earth-orbit"]').getByRole('button',{name:/^Return to/}).click();await settle(page);const restored=await stats(page);expect(restored.years).toBe(saved.years);expect(restored.canvasDetail).toBe('earth-orbit');expect(restored.bodies.map((b:any)=>({id:b.id,position:b.position,scale:b.scale}))).toEqual(saved.bodies.map((b:any)=>({id:b.id,position:b.position,scale:b.scale})));for(let k=0;k<3;k++)expect(restored.camera.position[k]).toBeCloseTo(saved.camera.position[k],7);check(restored,whole);await shot(page,prefix+'-restored-earth');
+ await compare(page,'solar-system','sun');const compared=await stats(page);check(compared,whole,false);expect(compared.comparison).toBe(true);expect(compared.ray).toBeNull();expect(compared.worldScale/compared.roots.sun).toBeCloseTo(9e12/1.392e9,6);expect(compared.comparisonBounds).toBeDefined();for(let i=0;i<3;i++)expect(compared.comparisonBounds[i]).toBeCloseTo(compared.expectedComparisonBounds[i],6);await shot(page,prefix+'-comparison');
+ await fly(page,'solar-system');await chooseView(page,'earth-orbit');await study(page).getByRole('button',{name:'Explore Earth at its own scale',exact:true}).click();await expect(cv(page)).toHaveAttribute('data-atlas-objects','earth');await fly(page,'solar-system');await chooseView(page,'system-overview');const returned=await stats(page);check(returned,whole,false);expect(looksBlank((await harness.glPixels(page))!)).toBe(false);expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);expect(errors).toEqual([]);const disposed=await disposal(page);save(prefix+'-geometry',{whole,destinations,epochs,apsides,oneDay,saved,restored,compared,returned,disposed});
+});
+test('ordinary motion approaches a moving orbital target and settles while ambience is paused',async({page})=>{
+ const errors=await mount(page,false,true);await fly(page,'solar-system');const whole=await stats(page);await chooseView(page,'mercury-orbit');await time(page,.04);const after=await stats(page);check(after,whole);await frames(page,12);const still=await stats(page);expect(still.years).toBe(after.years);expect(still.bodies).toEqual(after.bodies);expect(still.camera).toEqual(after.camera);await shot(page,'ordinary-mercury');await page.emulateMedia({reducedMotion:'reduce'});await settle(page);expect((await stats(page)).years).toBe(after.years);expect(errors).toEqual([]);const disposed=await disposal(page);save('motion',{whole,after,still,disposed});
+});
+}

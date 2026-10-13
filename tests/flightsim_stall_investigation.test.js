@@ -156,8 +156,8 @@ describe('SkySchool guided stall investigation', () => {
     await click('Record observation');
     expect(record().observations[0]).toMatchObject({ airspeed: 200, altitude: 10000, aoa: 20, state: 'stall' });
     await click('Change speed only');
-    expect(record()).toMatchObject({ airspeed: 80, altitude: 10000, aoa: 20 });
-    expect(host.querySelector('#trial-airspeed').value).toBe('80');
+    expect(record()).toMatchObject({ airspeed: 150, altitude: 10000, aoa: 20 });
+    expect(host.querySelector('#trial-airspeed').value).toBe('150');
     expect(host.querySelector('#trial-altitude').value).toBe('10000');
   });
 
@@ -205,6 +205,145 @@ describe('SkySchool guided stall investigation', () => {
     expect(button('Continue to explanation').disabled).toBe(false);
   });
 
+  it('keeps completion while exploring trial controls but clears it when the explanation changes', async () => {
+    await mount(completeRecord());
+    const completedAt = record().completedAt;
+    await click('Review trials');
+    await change(host.querySelector('[aria-label="Airspeed (kts) number"]'), 200);
+    await change(host.querySelector('[aria-label="Altitude (ft) number"]'), 10000);
+    await change(host.querySelector('[aria-label="Angle of attack (°) number"]'), 20);
+    await click('Reference conditions');
+    await click('Change angle only');
+    await click('Change speed only');
+    expect(record().completedAt).toBe(completedAt);
+    expect(record().observations).toHaveLength(3);
+    await click('Continue to explanation');
+    await change(host.querySelector('#stall-explanation'), 'I revised my explanation using the recorded comparisons.');
+    expect(record().completedAt).toBeNull();
+    expect(record().transferAnswer).toBe('stall');
+  });
+
+  it('invalidates completion when a new observation changes the submitted evidence', async () => {
+    await mount(completeRecord());
+    await click('Review trials');
+    await click('Record observation');
+    expect(record().completedAt).toBeNull();
+    expect(record().observations).toHaveLength(4);
+  });
+
+  it('moves keyboard focus to the review heading when completion replaces the transfer controls', async () => {
+    await mount(completeRecord({ phase: 'transfer', completedAt: null }));
+    button('Complete investigation').focus();
+    await click('Complete investigation');
+    await act(async () => { vi.advanceTimersByTime(0); });
+    expect(currentPhase()).toBe('Review');
+    expect(document.activeElement).toBe(host.querySelector('#stall-phase-title'));
+    expect(document.activeElement.textContent).toBe('5. Review');
+  });
+
+  it('recovers an active guided practice on reopen without discarding its recorded evidence', async () => {
+    await mount(completeRecord({ phase: 'transfer', completedAt: null, flight: {
+      status: 'active', sawStall: true, recoverySeconds: 2, samples: [
+        { time: 1, aoa: 20, airspeed: 95, altitude: 4990, state: 'normal' },
+        { time: 3, aoa: 8, airspeed: 100, altitude: 4700, state: 'stall' },
+        { time: NaN, aoa: 8, airspeed: 100, altitude: 4700 },
+      ],
+    } }), { view: 'flying', selectedChallenge: 'stall_investigation', showHelp: true });
+    expect(latest.view).toBe('stallHunt');
+    expect(latest.selectedChallenge).toBeNull();
+    expect(latest.showHelp).toBe(false);
+    expect(currentPhase()).toBe('Transfer');
+    expect(record().flight).toMatchObject({ status: 'interrupted', sawStall: true, recovered: false, recoverySeconds: 2 });
+    expect(record().flight.samples).toEqual([
+      { time: 1, aoa: 20, airspeed: 95, altitude: 4990, state: 'stall' },
+      { time: 3, aoa: 8, airspeed: 100, altitude: 4700, state: 'normal' },
+    ]);
+    expect(record().observations).toHaveLength(3);
+    expect(record().explanation).toContain('Trials 1 and 2');
+    expect(window.__testHooks.flightSim.flyingRef.current).toBe(false);
+    expect(latest.lastDebrief).toBeUndefined();
+    await act(async () => { vi.advanceTimersByTime(50); });
+    expect(document.getElementById('skyschool-a11y-live').textContent).toContain('recorded evidence is saved');
+    await click('Try flight practice again');
+    expect(latest.view).toBe('flying');
+    expect(record().flight).toMatchObject({ status: 'active', sawStall: false, samples: [] });
+    expect(window.__testHooks.flightSim.flyingRef.current).toBe(true);
+  });
+
+  it.each([false, true])('does not schedule an unsolicited flight frame while recovering a saved cockpit (guided: %s)', async guided => {
+    const frames = [], cancelled = new Set();
+    vi.mocked(requestAnimationFrame).mockImplementation(callback => {
+      const id = frames.length + 1;
+      frames.push({ id, callback });
+      return id;
+    });
+    vi.mocked(cancelAnimationFrame).mockImplementation(id => cancelled.add(id));
+    const previousReview = { flightTime: 25, reflection: 'Keep my previous review.' };
+    const saved = completeRecord({ phase: 'transfer', completedAt: null,
+      flight: { status: 'active', sawStall: true, samples: [{ time: 1, aoa: 20, airspeed: 95, altitude: 4900 }] } });
+    await mount(saved, { view: 'flying', selectedChallenge: guided ? 'stall_investigation' : null,
+      totalFlightTime: 80, lastDebrief: previousReview, geoDiscovered: { paris: true }, earnedBadges: { first_flight: true } });
+    expect(latest.view).toBe(guided ? 'stallHunt' : 'menu');
+    // The first browser frame after mount must not start a default aircraft or
+    // produce discoveries before the recovery update replaces the cockpit.
+    expect(frames).toHaveLength(0);
+    await act(async () => {
+      for (const frame of frames.filter(item => !cancelled.has(item.id))) frame.callback(1000);
+      vi.advanceTimersByTime(50);
+    });
+    expect(window.__testHooks.flightSim.flyingRef.current).toBe(false);
+    expect(window.__testHooks.flightSim.timeRef.current).toBe(0);
+    expect(latest.totalFlightTime).toBe(80);
+    expect(latest.lastDebrief).toEqual(previousReview);
+    expect(latest.geoDiscovered).toEqual({ paris: true });
+    expect(latest.earnedBadges).toEqual({ first_flight: true });
+    expect(document.getElementById('skyschool-a11y-live').textContent).toContain(guided ? 'recorded evidence is saved' : 'previous flight stopped');
+    expect(document.getElementById('skyschool-a11y-live').textContent).not.toContain('Discovered');
+    if (guided) await click('Try flight practice again');
+    else await click('Free Flight');
+    expect(latest.view).toBe('flying');
+    expect(window.__testHooks.flightSim.flyingRef.current).toBe(true);
+    expect(frames).toHaveLength(1);
+  });
+
+  it.each(['complete', 'ended', 'time-limit', 'landed'])('keeps a truthful %s guided result when reopening the cockpit', async status => {
+    const flight = { status, sawStall: true, recoverySeconds: status === 'complete' ? 5 : 2,
+      recovered: status === 'complete', samples: [{ time: 8, aoa: 8, airspeed: 100, altitude: 4500 }] };
+    await mount(completeRecord({ phase: 'transfer', completedAt: null, flight }), { view: 'flying', selectedChallenge: 'stall_investigation' });
+    expect(latest.view).toBe('stallHunt');
+    expect(record().flight.status).toBe(status);
+    expect(record().flight.recovered).toBe(status === 'complete');
+    expect(record().flight.samples).toHaveLength(1);
+    expect(record().explanation).toContain('Trials 1 and 2');
+  });
+
+  it('normalizes legacy guided evidence into an interrupted review rather than an idle cockpit', async () => {
+    const legacy = completeRecord({ phase: 'transfer', completedAt: null,
+      flight: { status: 'old-status', sawStall: true, samples: [{ time: 12, aoa: 20, airspeed: 90, altitude: 4600 }] } });
+    await mount({}, { view: 'flying', selectedChallenge: 'stall_investigation', stallInvestigation: undefined, stallHunt: legacy });
+    expect(latest.view).toBe('stallHunt');
+    expect(record().flight).toMatchObject({ status: 'interrupted', sawStall: true, recovered: false });
+    expect(record().flight.samples[0]).toMatchObject({ time: 12, state: 'stall' });
+    expect(record().explanation).toBe(legacy.explanation);
+  });
+
+  it.each([{}, { selectedChallenge: 'geography_sprint' }, { selectedChallenge: 'unknown-old-flight' }])('returns an unresumable ordinary cockpit to the menu without awarding flight credit: %j', async extra => {
+    const lastDebrief = { flightTime: 25, reflection: 'Keep my previous review.' };
+    const olderInvestigation = completeRecord({ flight: { status: 'ended', sawStall: false, samples: [] } });
+    await mount(olderInvestigation, { view: 'flying', totalFlightTime: 80, lastDebrief,
+      earnedBadges: { first_flight: true }, showHelp: true, ...extra });
+    expect(latest.view).toBe('menu');
+    expect(latest.selectedChallenge).toBeNull();
+    expect(latest.showHelp).toBe(false);
+    expect(latest.totalFlightTime).toBe(80);
+    expect(latest.lastDebrief).toEqual(lastDebrief);
+    expect(latest.earnedBadges).toEqual({ first_flight: true });
+    expect(record()).toEqual(olderInvestigation);
+    expect(window.__testHooks.flightSim.flyingRef.current).toBe(false);
+    await act(async () => { vi.advanceTimersByTime(50); });
+    expect(document.getElementById('skyschool-a11y-live').textContent).toContain('previous flight stopped');
+  });
+
   it('starts optional practice airborne in the trainer and preserves an honest unfinished session on return', async () => {
     await mount(completeRecord({ phase: 'transfer', completedAt: null }), { aircraft: 'drone' });
     await click('Try flight practice');
@@ -231,7 +370,7 @@ describe('SkySchool guided stall investigation', () => {
 
   it('starts fresh sessions when moving from guided practice to a sprint and back', async () => {
     const addToast = vi.fn();
-    await mount(completeRecord({ phase: 'transfer', completedAt: null }), { aircraft: 'glider', menuSections: { sprints: true } }, { addToast });
+    await mount(completeRecord({ phase: 'transfer', completedAt: null }), { aircraft: 'glider', railCollapsed: false, menuSections: { sprints: true } }, { addToast });
     await click('Try flight practice');
     expect(addToast.mock.calls.some(call => String(call[0]).includes('Aerotow'))).toBe(false);
     await click('Return to investigation');

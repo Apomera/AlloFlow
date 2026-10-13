@@ -57,7 +57,7 @@ describe('spoken word-support label', () => {
   it('introduces a French support in French, and an English support in English', () => {
     expect(mountReading('French', 'Le chevalier arrive au château.', 'chevalier', 'un noble à cheval.')).toContain('Aide pour le mot « chevalier » : un noble à cheval.');
     act(() => root.unmount()); host.remove(); root = null;
-    expect(mountReading('English', 'The knight rode on.', 'knight', 'a noble soldier.')).toContain('Word support for "knight": a noble soldier.');
+    expect(mountReading('English', 'The knight rode on.', 'knight', 'a noble soldier.')).toContain('Word help for "knight": a noble soldier.');
   });
 
   it('falls back to the interface string for a language without a label', () => {

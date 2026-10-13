@@ -1,0 +1,190 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+
+const source = readFileSync('stem_lab/avian_feather_art.js', 'utf8');
+
+// Canvas is the boundary here, not the implementation under test. Vector
+// painting is recorded for deterministic ownership checks; the data-texture
+// tests below use actual input and output pixels without a GPU dependency.
+function canvasBoundary() {
+  const created = [];
+  const document = {
+    createElement(tag) {
+      if (tag !== 'canvas') throw new Error(`Unexpected DOM allocation: ${tag}`);
+      const commands = createHash('sha256');
+      let pixels;
+      const canvas = { width: 300, height: 150 };
+      const record = (operation, args) => commands.update(JSON.stringify([operation, args]));
+      const context = {
+        canvas,
+        createImageData(width, height) {
+          return { width, height, data: new Uint8ClampedArray(width * height * 4) };
+        },
+        getImageData(x, y, width, height) {
+          if (x || y || width !== canvas.width || height !== canvas.height) {
+            throw new Error('Fixture expects a complete image read');
+          }
+          return { width, height, data: pixels ? pixels.slice() : new Uint8ClampedArray(width * height * 4) };
+        },
+        putImageData(image, x, y) {
+          if (x || y || image.width !== canvas.width || image.height !== canvas.height) {
+            throw new Error('Fixture expects a complete image write');
+          }
+          pixels = image.data.slice();
+        },
+      };
+      for (const operation of ['save', 'restore', 'translate', 'rotate', 'beginPath', 'closePath', 'rect', 'clip',
+        'fillRect', 'clearRect', 'moveTo', 'lineTo', 'bezierCurveTo', 'quadraticCurveTo', 'stroke', 'fill']) {
+        context[operation] = (...args) => record(operation, args);
+      }
+      for (const operation of ['createLinearGradient', 'createRadialGradient']) {
+        context[operation] = (...args) => {
+          const gradient = { operation, args, stops: [] };
+          record(operation, args);
+          gradient.addColorStop = (offset, color) => {
+            gradient.stops.push([offset, color]);
+            record('addColorStop', [offset, color]);
+          };
+          return gradient;
+        };
+      }
+      const recordedContext = new Proxy(context, {
+        set(target, property, value) {
+          record(`set:${property}`, value);
+          target[property] = value;
+          return true;
+        },
+      });
+      canvas.getContext = (kind) => {
+        if (kind !== '2d') throw new Error(`Unexpected graphics context: ${kind}`);
+        return recordedContext;
+      };
+      canvas.commandDigest = () => commands.copy().digest('hex');
+      created.push(canvas);
+      return canvas;
+    },
+  };
+  const window = {};
+  new Function('window', 'document', source)(window, document);
+  return { api: window.AvianFeatherArt, window, document, created };
+}
+
+function fixtureCanvas(document, width, height, valueAt) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+  const image = context.createImageData(width, height);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const offset = (y * width + x) * 4;
+    image.data.fill(valueAt(x, y), offset, offset + 3);
+    image.data[offset + 3] = 255;
+  }
+  context.putImageData(image, 0, 0);
+  return canvas;
+}
+
+const pixelsOf = (canvas) => canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+const digest = (data) => createHash('sha256').update(data).digest('hex');
+
+describe('Shared avian feather artwork', () => {
+  it('loads independently of Three.js and allocates graphics only when requested', () => {
+    const { api, window, created } = canvasBoundary();
+    expect(Object.keys(window)).toEqual(['AvianFeatherArt']);
+    expect(typeof api.createFlightFeatherCanvas).toBe('function');
+    expect(typeof api.createVaneDetailCanvases).toBe('function');
+    expect(created).toHaveLength(0);
+  });
+
+  it('gives each consumer fresh canvases and supports both atlas and single-feather UVs', () => {
+    const { api } = canvasBoundary();
+    const atlas = api.createFlightFeatherCanvas();
+    const anotherAtlas = api.createFlightFeatherCanvas();
+    const singleFeather = api.createFlightFeatherCanvas({ variants: 1 });
+    expect([atlas.width, atlas.height]).toEqual([1024, 512]);
+    expect([singleFeather.width, singleFeather.height]).toEqual([256, 512]);
+    expect(atlas).not.toBe(anotherAtlas);
+    atlas.width = 1;
+    expect(anotherAtlas.width).toBe(1024);
+    expect(singleFeather.width).toBe(256);
+  });
+
+  it('repaints deterministically after other consumers request different feather types', () => {
+    const { api } = canvasBoundary();
+    const first = api.createFlightFeatherCanvas().commandDigest();
+    const tail = api.createFlightFeatherCanvas({ tail: true }).commandDigest();
+    const contour = api.createFlightFeatherCanvas({ contourFeather: true }).commandDigest();
+    api.createFlightFeatherCanvas({ variants: 1, tail: true });
+    expect(api.createFlightFeatherCanvas().commandDigest()).toBe(first);
+    expect(new Set([first, tail, contour]).size).toBe(3);
+  });
+
+  it('does not sample neighboring atlas tiles while constructing normals', () => {
+    const { api, document } = canvasBoundary();
+    const canvas = fixtureCanvas(document, 8, 5, (x) => x < 4 ? 0 : 255);
+    const detail = api.createVaneDetailCanvases(canvas, { tileWidth: 4, curveStrength: 0 });
+    const normal = pixelsOf(detail.normal);
+    // A stark seam between two individually flat vanes must not become a
+    // false ridge at either side of their boundary.
+    for (let offset = 0; offset < normal.length; offset += 4) {
+      expect([...normal.subarray(offset, offset + 4)]).toEqual([128, 128, 255, 255]);
+    }
+    const changedNeighbor = fixtureCanvas(document, 8, 5, (x, y) => x < 4 ? 0 : ((x + y) % 2) * 255);
+    const changed = pixelsOf(api.createVaneDetailCanvases(changedNeighbor, { tileWidth: 4, curveStrength: 0 }).normal);
+    for (let y = 0; y < 5; y++) {
+      const start = y * 8 * 4;
+      expect(changed.subarray(start, start + 16)).toEqual(normal.subarray(start, start + 16));
+    }
+  });
+
+  it('encodes signed, normalized vectors directly in linear data channels', () => {
+    const { api, document } = canvasBoundary();
+    const ramp = fixtureCanvas(document, 9, 9, (x, y) => 16 * x + 8 * y);
+    const normal = pixelsOf(api.createVaneDetailCanvases(ramp, { tileWidth: 9, curveStrength: 0 }).normal);
+    const center = (4 * 9 + 4) * 4;
+    expect(normal[center]).toBeLessThan(128);
+    expect(normal[center + 1]).toBeGreaterThan(128);
+    for (let offset = 0; offset < normal.length; offset += 4) {
+      const decoded = [...normal.subarray(offset, offset + 3)].map((value) => value / 255 * 2 - 1);
+      expect(Math.hypot(...decoded)).toBeCloseTo(1, 2);
+      expect(decoded[2]).toBeGreaterThan(0);
+      expect(normal[offset + 3]).toBe(255);
+    }
+  });
+
+  it('produces opaque, matte roughness with bounded and configurable values', () => {
+    const { api, document } = canvasBoundary();
+    const source = fixtureCanvas(document, 256, 1, (x) => x);
+    const defaults = pixelsOf(api.createVaneDetailCanvases(source).roughness);
+    expect([...defaults.subarray(0, 4)]).toEqual([252, 252, 252, 255]);
+    expect([...defaults.subarray(255 * 4)]).toEqual([230, 230, 230, 255]);
+    for (let offset = 0; offset < defaults.length; offset += 4) {
+      expect(defaults[offset]).toBeGreaterThanOrEqual(230);
+      expect(defaults[offset]).toBeLessThanOrEqual(252);
+      expect(defaults[offset + 1]).toBe(defaults[offset]);
+      expect(defaults[offset + 2]).toBe(defaults[offset]);
+      expect(defaults[offset + 3]).toBe(255);
+    }
+    const configured = pixelsOf(api.createVaneDetailCanvases(source, { roughnessBase: 20, roughnessRange: 50 }).roughness);
+    expect([...configured.subarray(0, 4)]).toEqual([70, 70, 70, 255]);
+    expect([...configured.subarray(255 * 4)]).toEqual([20, 20, 20, 255]);
+  });
+
+  it('creates independent detail maps without modifying source art or previous results', () => {
+    const { api, document } = canvasBoundary();
+    const source = fixtureCanvas(document, 8, 8, (x, y) => x * 15 + y * 9);
+    const before = digest(pixelsOf(source));
+    const first = api.createVaneDetailCanvases(source, { tileWidth: 4 });
+    const repeated = api.createVaneDetailCanvases(source, { tileWidth: 4 });
+    expect(new Set([source, first.normal, first.roughness, repeated.normal, repeated.roughness]).size).toBe(5);
+    expect(digest(pixelsOf(first.normal))).toBe(digest(pixelsOf(repeated.normal)));
+    expect(digest(pixelsOf(first.roughness))).toBe(digest(pixelsOf(repeated.roughness)));
+    const previousNormal = digest(pixelsOf(first.normal));
+    const previousRoughness = digest(pixelsOf(first.roughness));
+    api.createVaneDetailCanvases(source, { tileWidth: 4, reliefStrength: 0, curveStrength: 0, roughnessBase: 5 });
+    expect(digest(pixelsOf(first.normal))).toBe(previousNormal);
+    expect(digest(pixelsOf(first.roughness))).toBe(previousRoughness);
+    expect(digest(pixelsOf(source))).toBe(before);
+  });
+});

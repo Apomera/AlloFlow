@@ -11,7 +11,7 @@
     var a=g.anchor,along=p.x*a.x+p.z*a.z,side=Math.abs(p.x*a.z-p.z*a.x);if(r>.72||side>.19||along<-.16||along>a.r+.12){n.invalid=true;return n;}n.inward=clamp((a.r-along)/(a.r-.12));n.progress=.65+.35*n.inward;n.phase=along<=.12&&r<=.19?'release':'fold';return n;
   }
   function complete(g){return !!g&&!g.invalid&&g.phase==='release';}
-  function available(s,locked){return !locked&&!s.plated&&s.time<3600&&s.log.length<1200&&s.pan.produce&&!R.serving(s).started;}
+  function available(s,locked){return !locked&&!s.plated&&!s.submitted&&s.time<3600&&s.log.length<1200&&s.pan.produce&&!R.serving(s).started;}
   function lastMix(s){var water=0,juice=0,last=null;s.log.forEach(function(e){if(!e.accepted)return;if(e.action==='water'||e.action==='pour')water+=e.action==='water'?50:e.value;if(e.action==='crushTomato'&&e.transfer)juice+=e.transfer.amount;if(['stirPan','stirSweep','combine'].includes(e.action)){last={water:water,juice:juice,time:e.time,observation:e.observation};water=0;juice=0;}});return last;}
   function lift(g){return g&&g.fold&&g.phase!=='sweep'&&!g.invalid?.16*Math.sin(clamp(g.inward)*Math.PI/2):0;}
   function foodPose(p,index,g){var n={x:p.x,y:p.y,z:p.z};if(!g||!g.fold||g.phase==='sweep'||g.invalid||!g.anchor)return n;var a=g.anchor,along=p.x*a.x+p.z*a.z,side=Math.abs(p.x*a.z-p.z*a.x),weight=clamp((along+.1)/.5)*clamp(1-side/.32),f=g.inward*weight;n.x+=(g.point.x-p.x)*f;n.z+=(g.point.z-p.z)*f;n.y+=lift(g)*weight;return n;}

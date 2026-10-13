@@ -35,7 +35,7 @@ beforeEach(async () => {
   document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
   function App() {
-    const [data, updateData] = React.useState({ flightSim: { view: 'flying', railCollapsed: false } });
+    const [data, updateData] = React.useState({ flightSim: { view: 'menu', railCollapsed: false } });
     latest = data;
     setData = updateData;
     return tool.render(makeCtx({
@@ -46,6 +46,7 @@ beforeEach(async () => {
     }));
   }
   await act(async () => { root.render(React.createElement(App)); });
+  await act(async () => { host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click(); });
   deck = host.querySelector('[data-flightsim-flight-deck]');
   cockpit = deck.querySelector('canvas[role="application"]');
 });

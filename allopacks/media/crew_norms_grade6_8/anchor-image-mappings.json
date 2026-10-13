@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "cn-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "A RULE",
+      "assetId": "cn-term-rule",
+      "reason": "An adult holding a clipboard matches a rule from someone in charge."
+    },
+    {
+      "resourceId": "cn-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "A NORM",
+      "assetId": "cn-term-signal",
+      "reason": "The single raised finger matches the observable group norm."
+    },
+    {
+      "resourceId": "cn-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "THREE PARTS OF A GOOD NORM",
+      "assetId": "cn-img-threeparts",
+      "reason": "The eye, shared dots and return arrow match specific, shared and revisited."
+    },
+    {
+      "resourceId": "cn-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "NORMS PROTECT PARTICIPATION",
+      "assetId": "cn-term-participation",
+      "reason": "Multiple ways to take part match protected participation."
+    }
+  ]
+}

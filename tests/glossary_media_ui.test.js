@@ -21,13 +21,134 @@ function mount(overrides) {
   const root = ReactDOMClient.createRoot(container);
   act(() => root.render(React.createElement(window.AlloModules.GlossaryView, props)));
   cleanups.push(() => { act(() => root.unmount()); container.remove(); });
-  return { container, props };
+  return {
+    container, props,
+    rerender: extra => {
+      Object.assign(props, extra);
+      act(() => root.render(React.createElement(window.AlloModules.GlossaryView, props)));
+    },
+  };
 }
 async function click(container, label) {
   const button = container.querySelector('[aria-label="' + label + '"]');
   expect(button).toBeTruthy();
   await act(async () => button.click());
 }
+
+describe('glossary audio icon labels', () => {
+  const labels = [
+    'Read term: Leaf', 'Download audio for term: Leaf',
+    'Read definition for Leaf', 'Download definition audio for Leaf',
+    'Read French translation of Leaf', 'Download French translation audio for Leaf',
+  ];
+  it.each([
+    ['idle', {}],
+    ['downloading audio', { downloadingContentId: 'dl-term-0' }],
+  ])('gives each %s icon a contextual accessible name and matching tooltip', (_state, extra) => {
+    const { container } = mount(extra);
+    for (const label of labels) {
+      const control = [...container.querySelectorAll('[data-glossary-word-list] button')].find(button => button.getAttribute('aria-label') === label);
+      expect(control, label).toBeTruthy();
+      expect(control.title).toBe(label);
+      expect(control.type).toBe('button');
+      expect(control.getAttribute('aria-label')).not.toMatch(/^glossary\./);
+    }
+  });
+
+  const playbackControls = [
+    ['term-0', 'Read term: Leaf', 'Stop reading term: Leaf'],
+    ['def-0', 'Read definition for Leaf', 'Stop reading definition for Leaf'],
+    ['trans-0-French', 'Read French translation of Leaf', 'Stop reading French translation of Leaf'],
+  ];
+  describe.each([
+    ['playing', false],
+    ['preparing', true],
+  ])('%s audio', (_state, isGeneratingAudio) => {
+    it.each(playbackControls)('changes %s to an enabled Stop action and restores Read afterward', async (playingContentId, readLabel, stopLabel) => {
+      const stopPlayback = vi.fn(), handleSpeak = vi.fn();
+      const setPlayingContentId = vi.fn(), setIsGeneratingAudio = vi.fn();
+      const { container, rerender } = mount({ stopPlayback, handleSpeak, setPlayingContentId, setIsGeneratingAudio });
+      const button = [...container.querySelectorAll('button')].find(control => control.getAttribute('aria-label') === readLabel);
+      button.focus();
+      rerender({ playingContentId, isGeneratingAudio });
+      expect(button.getAttribute('aria-label')).toBe(stopLabel);
+      expect(button.title).toBe(stopLabel);
+      expect(button.disabled).toBe(false);
+      expect(document.activeElement).toBe(button);
+      expect(button.hasAttribute('aria-pressed')).toBe(false);
+      for (const [otherId, otherLabel] of playbackControls) {
+        if (otherId === playingContentId) continue;
+        const otherButton = [...container.querySelectorAll('button')].find(control => control.getAttribute('aria-label') === otherLabel);
+        expect(otherButton.disabled).toBe(isGeneratingAudio);
+      }
+      await click(container, stopLabel);
+      expect(stopPlayback).toHaveBeenCalledOnce();
+      expect(setPlayingContentId).toHaveBeenCalledWith(null);
+      expect(setIsGeneratingAudio).toHaveBeenCalledWith(false);
+      expect(handleSpeak).not.toHaveBeenCalled();
+      rerender({ playingContentId: null, isGeneratingAudio: false });
+      expect(button.getAttribute('aria-label')).toBe(readLabel);
+      expect(button.title).toBe(readLabel);
+      expect(document.activeElement).toBe(button);
+    });
+  });
+
+  it.each([null, 'blob:prepared-audio'])('does not restart stopped audio when a pending saved-audio lookup returns %s', async resolvedAudio => {
+    let finishLookup;
+    window.__alloResolveGlossaryAudio = vi.fn(() => new Promise(resolve => { finishLookup = resolve; }));
+    const audioConstructor = vi.spyOn(globalThis, 'Audio');
+    const handleSpeak = vi.fn(), stopPlayback = vi.fn();
+    const { container, rerender } = mount({ handleSpeak, stopPlayback });
+    await click(container, 'Read term: Leaf');
+    expect(window.__alloResolveGlossaryAudio).toHaveBeenCalledOnce();
+    rerender({ playingContentId: 'term-0', isGeneratingAudio: true });
+    stopPlayback.mockClear();
+    await click(container, 'Stop reading term: Leaf');
+    expect(stopPlayback).toHaveBeenCalledOnce();
+    rerender({ playingContentId: null, isGeneratingAudio: false });
+    await act(async () => { finishLookup(resolvedAudio); });
+    expect(audioConstructor).not.toHaveBeenCalled();
+    expect(handleSpeak).not.toHaveBeenCalled();
+    expect(container.querySelector('[aria-label="Read term: Leaf"]').title).toBe('Read term: Leaf');
+  });
+
+  it('uses translated labels with the actual term and translation language in both name and tooltip', () => {
+    const translations = {
+      'glossary.read_term_aria': 'Lire le terme : {term}',
+      'glossary.download_term_audio_aria': 'Télécharger le son du terme : {term}',
+      'glossary.read_definition_aria': 'Lire la définition de {term}',
+      'glossary.download_definition_audio_aria': 'Télécharger la définition audio de {term}',
+      'glossary.read_translation_aria': 'Lire la traduction {lang} de {term}',
+      'glossary.download_translation_audio_aria': 'Télécharger la traduction audio {lang} de {term}',
+    };
+    const { container } = mount({ t: key => translations[key] || key });
+    for (const template of Object.values(translations)) {
+      const label = template.replace('{term}', 'Leaf').replace('{lang}', 'French');
+      const control = [...container.querySelectorAll('[data-glossary-word-list] button')].find(button => button.getAttribute('aria-label') === label);
+      expect(control, label).toBeTruthy();
+      expect(control.title).toBe(label);
+    }
+  });
+
+  it('identifies the download icon next to each word as an audio action', async () => {
+    const handleDownloadAudio = vi.fn();
+    const { container } = mount({ handleDownloadAudio });
+    await click(container, 'Download audio for term: Leaf');
+    expect(handleDownloadAudio).toHaveBeenCalledWith('Leaf', 'term-0-audio', 'dl-term-0');
+  });
+
+  it.each([
+    ['term-0', 'glossary.stop_term_aria', 'Arrêter la lecture du terme : {term}'],
+    ['def-0', 'glossary.stop_definition_aria', 'Arrêter la lecture de la définition de {term}'],
+    ['trans-0-French', 'glossary.stop_translation_aria', 'Arrêter la lecture de la traduction {lang} de {term}'],
+  ])('uses the translated Stop label for %s', (playingContentId, key, template) => {
+    const { container } = mount({ playingContentId, t: requestedKey => requestedKey === key ? template : requestedKey });
+    const expected = template.replace('{term}', 'Leaf').replace('{lang}', 'French');
+    const button = [...container.querySelectorAll('button')].find(control => control.getAttribute('aria-label') === expected);
+    expect(button).toBeTruthy();
+    expect(button.title).toBe(expected);
+  });
+});
 
 describe('glossary definition speech', () => {
   it('starts live fallback speech and downloads with the term', async () => {

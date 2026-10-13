@@ -163,9 +163,10 @@ describe('SkySchool debrief and exit integration', () => {
     expect(exportedBlob.type).toBe('text/csv');
     const rows = exportedBlob.testContents.split('\n');
     expect(rows).toHaveLength(6);
-    expect(rows[0]).toBe('Time(s),Lat,Lon,Alt(ft),Speed(kts),Heading');
-    expect(rows[1]).toBe('0,43.6460,-70.3090,5000,110,90');
-    expect(rows[5]).toBe('40,43.6540,-70.2970,5400,130,90');
+    expect(rows[0]).toBe('Time(s),Lat,Lon,Alt(ft),Speed(kts),Heading,HeightAboveField(ft),VerticalSpeed(fpm),AoA(deg),BankInput(deg),ThrottleInput(0-1),OnGround,Stalling,LowAirspeed,PitchInput(deg)');
+    expect(rows[1].split(',').slice(0, 6).join(',')).toBe('0,43.6460,-70.3090,5000,110,90');
+    expect(rows[5].split(',').slice(0, 6).join(',')).toBe('40,43.6540,-70.2970,5400,130,90');
+    expect(rows[1].split(',').slice(6)).toEqual(Array(9).fill(''));
   });
 
   it('shows two applicable milestones for airborne starts and does not score a missing takeoff', async () => {

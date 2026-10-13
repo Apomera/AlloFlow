@@ -44,7 +44,7 @@ describe('the overview list coerces at the point of render', () => {
       .split(/\r?\n/)
       .find((line) => line.includes('sections.map(([title, items])'));
     expect(overview, 'the overview list render should exist').toBeTruthy();
-    expect(overview).toContain('<li key={index}>{_lessonPlanText(item)}</li>');
+    expect(overview).toContain('<li key={index}><BilingualFieldRenderer text={_lessonPlanText(item)} /></li>');
     expect(overview).not.toContain('<li key={index}>{item}</li>');
   });
 

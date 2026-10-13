@@ -381,7 +381,9 @@ function LessonPlanListEditor({
 }
 function LessonPlanOverview({
   plan,
-  t
+  t,
+  BilingualFieldRenderer,
+  normalizeMaterialItem
 }) {
   const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
   const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).map(_lessonPlanText).filter(text => text.trim());
@@ -391,7 +393,7 @@ function LessonPlanOverview({
   const timed = latestWhole && Number.isInteger(latestWhole.durationMinutes) && latestWhole.durationMinutes > 0 && latestWhole.durationMinutes <= 240 && Array.isArray(latestWhole.steps) && latestWhole.steps.length && latestWhole.steps.every(step => Number.isInteger(step?.minutes) && step.minutes > 0 && step.minutes <= 60) && latestWhole.steps.reduce((sum, step) => sum + step.minutes, 0) === latestWhole.durationMinutes ? latestWhole : null;
   const criteria = Array.isArray(data.successCriteria) ? data.successCriteria : data.successCriteria == null ? [] : [data.successCriteria];
   const assessment = list(data.assessmentIdeas).concat(criteria.map(_lessonPlanCriterionText).filter(text => text.trim()));
-  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
+  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded).map(normalizeMaterialItem)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
   return /*#__PURE__*/React.createElement("details", {
     className: "mb-4 rounded-xl border border-indigo-200 bg-white text-slate-900",
     "data-lesson-overview": true
@@ -408,7 +410,9 @@ function LessonPlanOverview({
     className: "list-disc space-y-1 pl-5 text-sm"
   }, items.map((item, index) => /*#__PURE__*/React.createElement("li", {
     key: index
-  }, _lessonPlanText(item)))) : /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
+    text: _lessonPlanText(item)
+  })))) : /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, tr('overview_not_recorded', 'Not recorded in this plan.')))), /*#__PURE__*/React.createElement("section", {
     className: "min-w-0 break-words"
@@ -521,7 +525,7 @@ function LessonPlanView(props) {
     className: "flex flex-wrap justify-between items-start gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl font-bold text-indigo-900 mb-1"
-  }, t('lesson_plan.header_title')), generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && /*#__PURE__*/React.createElement("div", {
+  }, t('lesson_plan.title') || 'Lesson Plan'), generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && /*#__PURE__*/React.createElement("div", {
     className: "mb-1 inline-flex flex-wrap items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800",
     "data-unit-path-node": generatedContent.data.unitPath.nodeId
   }, /*#__PURE__*/React.createElement("span", null, "🗺️ ", t('lesson_plan.unit_path_label') || 'Unit Path'), /*#__PURE__*/React.createElement("span", {
@@ -558,7 +562,9 @@ function LessonPlanView(props) {
     "aria-hidden": "true"
   }), " ", t('lesson_plan.print_pdf_button') || 'Print / PDF'))), !audienceView && /*#__PURE__*/React.createElement(LessonPlanOverview, {
     plan: generatedContent,
-    t: t
+    t: t,
+    BilingualFieldRenderer: BilingualFieldRenderer,
+    normalizeMaterialItem: normalizeMaterialItem
   }), !audienceView && /*#__PURE__*/React.createElement(PlanningInputsSummary, {
     resource: generatedContent,
     history: history,

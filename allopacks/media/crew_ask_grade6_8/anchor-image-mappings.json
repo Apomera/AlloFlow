@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "reusePolicy": "Reuse complete reviewed artwork where it directly supports the section; leave ambiguous matches unassigned.",
+  "mappings": [
+    {
+      "resourceId": "ca-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "DESCRIBE",
+      "assetId": "ca-term-describe",
+      "reason": "Examining evidence supports describing facts without blame."
+    },
+    {
+      "resourceId": "ca-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "EXPRESS",
+      "assetId": "ca-term-express",
+      "reason": "An open conversation and heart represent expressing an effect or feeling."
+    },
+    {
+      "resourceId": "ca-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "ASK",
+      "assetId": "ca-term-ask",
+      "reason": "The open-palm request directly supports the clear ask."
+    },
+    {
+      "resourceId": "ca-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "REINFORCE",
+      "assetId": "ca-term-reinforce",
+      "reason": "Converging arrows represent a shared benefit."
+    }
+  ]
+}

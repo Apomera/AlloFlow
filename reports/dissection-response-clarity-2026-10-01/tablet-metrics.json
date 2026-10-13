@@ -10,18 +10,28 @@
     },
     {
       "height": 48,
-      "scroll": 325,
-      "client": 325
+      "scroll": 213,
+      "client": 213
     },
     {
       "height": 48,
-      "scroll": 325,
-      "client": 325
+      "scroll": 213,
+      "client": 213
+    },
+    {
+      "height": 48,
+      "scroll": 213,
+      "client": 213
     },
     {
       "height": 48,
       "scroll": 175,
       "client": 175
+    },
+    {
+      "height": 48,
+      "scroll": 695,
+      "client": 695
     },
     {
       "height": 48,
@@ -87,6 +97,41 @@
     },
     {
       "text": "Explanation needed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Investigation progress",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Verified technique: 0 of 6",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Actions with a confirmed plan and explanation.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Structures inspected: 0 of 4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Structures viewed across this layer’s anatomical views.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence recorded: 0 of 4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Inspected structures with a note and confidence rating.",
       "size": 14,
       "clipped": false
     },
@@ -261,12 +306,22 @@
       "clipped": false
     },
     {
+      "text": "Opens paused on this saved action. Resume to continue through the attempt.",
+      "size": 16,
+      "clipped": false
+    },
+    {
       "text": "Replay reviewed action",
       "size": 15.2,
       "clipped": false
     },
     {
       "text": "Return to history",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Return to explanation",
       "size": 15.2,
       "clipped": false
     },
@@ -287,6 +342,26 @@
     },
     {
       "text": "Explain the response",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "About technique feedback",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The technique score summarizes protocol progress, stroke values, calibration, tissue condition, and decisions in this simulation. Supported controls can contribute to this score. Verified plans and explanations are listed above.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "No scored stroke saved",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Complete a scalpel or scissors action to generate stroke feedback.",
       "size": 15.2,
       "clipped": false
     },

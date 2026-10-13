@@ -75,7 +75,7 @@ describe('the reader replays queued steps onto the saved item', () => {
 
   it('keeps an explanation saved through "Save and continue" before Undo re-level', async () => {
     const view = mount();
-    await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help for heron"]'));
     type(host.querySelector('[data-gloss-draft] textarea'), 'A tall bird that wades in water.');
     expect(view.session.hasChanges()).toBe(true);
     await click(byText('simplified.relevel_undo'));
@@ -105,7 +105,7 @@ describe('the reader replays queued steps onto the saved item', () => {
     await click(host.querySelector('[data-adapt-option="shorterSentences"]'));
     await click(host.querySelector('[data-apply-complexity]'));
     expect(host.querySelector('[data-adaptation-apply]')).toBeTruthy();
-    await click(host.querySelector('button[aria-label^="Edit gloss for heron"]'));
+    await click(host.querySelector('button[aria-label^="Edit word help for heron"]'));
     type(host.querySelector('[data-gloss-draft] textarea'), 'A tall bird that wades in water.');
     await click(host.querySelector('[data-adaptation-apply]'));
     expect(host.querySelector('[role=alertdialog]')).toBeTruthy();

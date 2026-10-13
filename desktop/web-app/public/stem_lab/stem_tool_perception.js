@@ -2898,7 +2898,7 @@
       setLoading('loading');
       if (typeof lab.loadScriptResilient !== 'function') { setLoading('failed'); return; }
       var files = walk ? [['perception_walk_scene.js', 'PerceptionWalkScene'], ['perception_walk.js', 'PerceptionWalk']] : [['perception_gallery_scene.js', 'PerceptionGalleryScene'], ['perception_gallery.js', 'PerceptionGallery']];
-      Promise.all(files.map(function (file) { return lab.loadScriptResilient([galleryBase + file[0] + '?v=20261010-2'], { cacheKey: file[1], check: function () { return !!lab[file[1]]; }, timeoutMs: 12000 }); })).then(function () { if (active) setLoading('ready'); }, function () { if (active) setLoading('failed'); });
+      Promise.all(files.map(function (file) { return lab.loadScriptResilient([galleryBase + file[0] + '?v=' + (walk ? '20261012-13' : '20261010-2')], { cacheKey: file[1], check: function () { return !!lab[file[1]]; }, timeoutMs: 12000 }); })).then(function () { if (active) setLoading('ready'); }, function () { if (active) setLoading('failed'); });
       return function () { active = false; };
     }, [gallery, walk, retry]);
     React.useEffect(function () {

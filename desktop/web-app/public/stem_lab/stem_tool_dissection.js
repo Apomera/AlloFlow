@@ -936,6 +936,17 @@
 [data-dissection-root][data-text-size="large"] .diss-capture-options select { font-size: 1.125rem; }
 [data-dissection-root][data-high-contrast="true"] .diss-capture-options { border: 2px solid #000; background: #fff; color: #000; }
 @media (forced-colors: active) { .diss-capture-options, .diss-capture-options select { border-color: CanvasText; background: Canvas; color: CanvasText; } }
+.diss-replay-specimen { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem; margin: 0 0 .65rem; padding: .8rem; border: 1px solid #77a5b4; border-radius: .8rem; background: #edf8fa; color: #153f50; scroll-margin-top: 1rem; }
+.diss-replay-specimen__context { flex: 1 1 15rem; min-width: 0; }
+.diss-replay-specimen__context strong, .diss-replay-specimen__context span { display: block; font-size: 1rem; line-height: 1.5; overflow-wrap: anywhere; }
+.diss-replay-specimen__context span { margin-top: .15rem; }
+.diss-replay-jump { min-height: 48px; max-width: 100%; padding: .65rem .85rem; border: 1px solid #426a83; border-radius: .6rem; background: #fff; color: #174d68; font-size: 1rem; font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; cursor: pointer; scroll-margin: 1rem; }
+.diss-replay-jump:hover { background: #dceef4; }
+.diss-replay-jump:focus-visible { outline: 3px solid #174d86; outline-offset: 3px; }
+.diss-replay-review__navigation { display: flex; flex-wrap: wrap; }
+[data-dissection-root][data-text-size="large"] :is(.diss-replay-specimen__context strong, .diss-replay-specimen__context span, .diss-replay-jump) { font-size: 1.125rem !important; }
+[data-dissection-root][data-high-contrast="true"] :is(.diss-replay-specimen, .diss-replay-jump) { border: 2px solid #000; background: #fff; color: #000; }
+@media (forced-colors: active) { .diss-replay-specimen, .diss-replay-jump { border-color: CanvasText; background: Canvas; color: CanvasText; } .diss-replay-jump:focus-visible { outline-color: Highlight; } }
 .diss-canvas-layout { display: grid; gap: .65rem; }
 .diss-canvas-layout[data-split="true"] { grid-template-columns: minmax(0, 1fr) minmax(11rem, .56fr); align-items: stretch; }
 .diss-canvas-frame { overflow: hidden; padding: .55rem; border: 1px solid #9fb8ba; border-radius: 1rem; background: linear-gradient(135deg, #eaf2f1, #d8e5e5 55%, #c8d9da); box-shadow: inset 0 1px 0 #fff, 0 5px 16px rgba(24,63,67,.10); }
@@ -1168,6 +1179,33 @@
 .diss-calibration[data-tone="adjust"] .diss-calibration__status b { background: #fef3c7; color: #92400e; }
 .diss-calibration[data-tone="caution"] .diss-calibration__status b { background: #ffe4e6; color: #9f1239; }
 @media (max-width: 520px) { .diss-calibration { grid-template-columns: 1fr auto; } .diss-calibration__title { grid-column: 1 / -1; } }
+/* Keep the chosen setting separate from its simulated quality score. */
+[data-dissection-root] #diss-calibration-panel.diss-calibration { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; padding: .9rem; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration :is(strong, b, p, span, label, output, button, summary) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration > * { min-width: 0; grid-column: 1 / -1; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration p { margin: 0; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__current { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; justify-content: space-between; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration output { font-size: 1.5rem !important; padding: .3rem .7rem; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__guidance { padding: .65rem; border: 1px solid #91b6af; border-radius: .5rem; background: #fff; color: #173f3c; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__slider input { min-height: 3rem; display: block; margin: 0; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__ends { display: flex; justify-content: space-between; gap: .5rem; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration button { min-height: 3rem; padding: .65rem; border: 1px solid #426e68; border-radius: .5rem; background: #fff; color: #134e4a; font-weight: 750; cursor: pointer; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration button[aria-disabled="true"] { color: #52665f; border-style: dashed; background: #f1f5f3; cursor: default; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__status { display: grid; grid-template-columns: minmax(0, 1fr); gap: .4rem; padding-top: .65rem; border-top: 1px solid #91b6af; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__status b { justify-self: start; padding: .25rem .6rem; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__help { border-top: 1px solid #91b6af; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration summary { min-height: 3rem; padding: .65rem .1rem; font-weight: 750; cursor: pointer; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration details[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-calibration-panel.diss-calibration :is(input, button, summary):is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-calibration-panel.diss-calibration :is(strong, b, p, span, label, output, button, summary) { font-size: 1.125rem !important; }
+[data-dissection-root][data-text-size="large"] #diss-calibration-panel.diss-calibration output { font-size: 1.625rem !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-calibration-panel.diss-calibration, [data-dissection-root][data-high-contrast="true"] #diss-calibration-panel.diss-calibration :is(div, details, strong, b, p, span, label, output, button, summary) { background: #fff !important; color: #000 !important; border-color: #111827 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-calibration-panel.diss-calibration, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-calibration-panel.diss-calibration :is(div, details, strong, b, p, span, label, output, button, summary) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+  [data-dissection-root] #diss-calibration-panel.diss-calibration :is(input, button, summary):is(:focus, :focus-visible) { outline-color: Highlight !important; }
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-calibration-panel.diss-calibration button[aria-disabled="true"] { color: GrayText !important; border-color: GrayText !important; }
+}
 .diss-procedure__feedback { margin: .55rem 0 0; padding: .5rem .6rem; border-left: 4px solid #0f766e; border-radius: .45rem; background: #fff; color: #355754; font-size: .7rem; line-height: 1.4; }
 [data-dissection-root] :is(.diss-stage__gesture, .diss-procedure__feedback) { font-size: 1rem; font-weight: 600; line-height: 1.55; }
 [data-dissection-root][data-text-size="large"] :is(.diss-stage__gesture, .diss-procedure__feedback) { font-size: 1.125rem !important; }
@@ -1192,18 +1230,59 @@
 .diss-procedure__timeline-label { font-weight: 900; letter-spacing: .02em; text-transform: uppercase; }
 .diss-procedure__timeline-outcome { color: currentColor; font-size: .56rem; font-weight: 850; opacity: .86; }
 .diss-advanced-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .4rem; margin-top: .6rem; }
+.diss-replay-launch-hint { margin: .5rem 0; font-size: 1rem !important; line-height: 1.5; overflow-wrap: anywhere; }
+[data-dissection-root][data-text-size="large"] .diss-replay-launch-hint { font-size: 1.125rem !important; }
 .diss-replay-review { display: grid; gap: .6rem; min-width: 0; margin: .65rem 0; padding: .85rem; border: 2px solid #0e7490; border-radius: .8rem; background: #ecfeff; color: #164e63; }
-.diss-replay-review > strong, .diss-replay-review p, .diss-replay-review button { font-size: 1rem !important; line-height: 1.5; }
+.diss-replay-review > strong, .diss-replay-review p, .diss-replay-review label, .diss-replay-review select, .diss-replay-review button { font-size: 1rem !important; line-height: 1.5; }
 .diss-replay-review > strong { font-weight: 850; }
 .diss-replay-review p { margin: 0; overflow-wrap: anywhere; }
+.diss-replay-review__picker { display: grid; gap: .3rem; min-width: 0; }
+.diss-replay-review__picker label { font-weight: 750; }
+.diss-replay-review select { width: 100%; max-width: 100%; min-width: 0; min-height: 44px; padding: .55rem .7rem; border: 1px solid #0e7490; border-radius: .55rem; background: #fff; color: #164e63; font-family: inherit; text-overflow: ellipsis; cursor: pointer; }
+.diss-replay-response { min-width: 0; border: 1px solid #7ab6c5; border-radius: .55rem; background: #fff; color: #164e63; }
+.diss-replay-response summary { min-height: 48px; padding: .65rem .8rem; cursor: pointer; border-radius: .5rem; }
+.diss-replay-response summary:focus-visible { outline: 3px solid #0369a1; outline-offset: -4px; }
+.diss-replay-response[open] summary { border-bottom: 1px solid #7ab6c5; border-radius: .5rem .5rem 0 0; }
+.diss-replay-response__title { font-weight: 750; }
+.diss-replay-response__count { display: block; margin-top: .15rem; }
+.diss-replay-response summary, .diss-replay-response p, .diss-replay-response span, .diss-replay-response dt, .diss-replay-response dd, .diss-replay-response b { font-size: 1rem !important; line-height: 1.5; overflow-wrap: anywhere; }
+.diss-replay-response__body { padding: .75rem; }
+.diss-replay-response__body > p { margin: 0 0 .65rem; }
+.diss-replay-response__body > p:last-child { margin-bottom: 0; }
+.diss-replay-response__metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: .65rem; margin: 0; }
+.diss-replay-response__metric { min-width: 0; padding: .65rem; border: 1px solid #b9cdd3; border-radius: .45rem; background: #f8fafc; }
+.diss-replay-response__metric dt { font-weight: 750; }
+.diss-replay-response__metric dd { margin: .4rem 0 0; }
+.diss-replay-response__metric[data-direction="improve"] { color: #14532d; border-color: #86b99b; background: #f0fdf4; }
+.diss-replay-response__metric[data-direction="caution"] { color: #78350f; border-color: #d6ad73; background: #fffbeb; }
+.diss-replay-response__reading { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr) 2rem; gap: .5rem; align-items: center; }
+.diss-replay-response__reading b { text-align: right; font-variant-numeric: tabular-nums; }
+.diss-replay-response__track { display: block; height: .5rem; border: 1px solid currentColor; border-radius: .2rem; overflow: hidden; }
+.diss-replay-response__fill { display: block; height: 100%; background: currentColor; }
+.diss-replay-response__reading[data-phase="before"] .diss-replay-response__fill { background: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 4px); }
+.diss-replay-response__change { display: block; margin-top: .4rem; font-weight: 700; }
+[data-dissection-root][data-text-size="large"] .diss-replay-response :is(summary,p,span,dt,dd,b) { font-size: 1.125rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-replay-response, [data-dissection-root][data-high-contrast="true"] .diss-replay-response__metric { color: #000; border-color: #000; background: #fff; }
+@media (forced-colors: active) { .diss-replay-response, .diss-replay-response__metric { color: CanvasText !important; border-color: CanvasText !important; background: Canvas !important; } .diss-replay-response summary:focus-visible { outline-color: Highlight; } .diss-replay-response__fill { background: CanvasText !important; forced-color-adjust: none; } }
+.diss-replay-details { min-width: 0; padding: .7rem; border: 1px solid #7ab6c5; border-radius: .55rem; background: #fff; color: #164e63; }
+.diss-replay-details > strong, .diss-replay-details dt, .diss-replay-details dd { font-size: 1rem !important; line-height: 1.5; overflow-wrap: anywhere; }
+.diss-replay-details > strong { display: block; font-weight: 750; }
+.diss-replay-details dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .6rem 1rem; margin: .55rem 0 0; }
+.diss-replay-details dl > div { min-width: 0; }
+.diss-replay-details [data-wide="true"] { grid-column: 1 / -1; }
+.diss-replay-details dt { font-weight: 700; }
+.diss-replay-details dd { margin: .1rem 0 0; }
+[data-dissection-root][data-text-size="large"] .diss-replay-details > strong, [data-dissection-root][data-text-size="large"] .diss-replay-details dt, [data-dissection-root][data-text-size="large"] .diss-replay-details dd { font-size: 1.125rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-replay-details { color: #000; border-color: #000; }
+@media (forced-colors: active) { .diss-replay-details { background: Canvas; color: CanvasText; border-color: CanvasText; } }
 .diss-replay-review__buttons { display: flex; flex-wrap: wrap; gap: .5rem; }
 .diss-replay-review button { flex: 1 1 8rem; min-width: 0; min-height: 44px; padding: .55rem .7rem; border: 1px solid #0e7490; border-radius: .55rem; background: #fff; color: #164e63; font-weight: 750; cursor: pointer; }
 .diss-replay-review button:disabled { color: #475569; border-color: #94a3b8; background: #f1f5f9; cursor: default; }
-.diss-replay-review button:focus-visible { outline: 3px solid #0e7490; outline-offset: 3px; }
-[data-dissection-root][data-text-size="large"] .diss-replay-review p, [data-dissection-root][data-text-size="large"] .diss-replay-review button, [data-dissection-root][data-text-size="large"] .diss-replay-review > strong { font-size: 1.125rem !important; }
+.diss-replay-review button:focus-visible, .diss-replay-review select:focus-visible { outline: 3px solid #0e7490; outline-offset: 3px; }
+[data-dissection-root][data-text-size="large"] .diss-replay-review p, [data-dissection-root][data-text-size="large"] .diss-replay-review label, [data-dissection-root][data-text-size="large"] .diss-replay-review select, [data-dissection-root][data-text-size="large"] .diss-replay-review button, [data-dissection-root][data-text-size="large"] .diss-replay-review > strong { font-size: 1.125rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-replay-review { background: #fff; color: #000; border-color: #000; }
-[data-dissection-root][data-high-contrast="true"] .diss-replay-review button { color: #000; border-color: #000; }
-@media (forced-colors: active) { .diss-replay-review { background: Canvas; color: CanvasText; border-color: CanvasText; } .diss-replay-review button { background: ButtonFace; color: ButtonText; border-color: ButtonText; } .diss-replay-review button:focus-visible { outline-color: Highlight; } }
+[data-dissection-root][data-high-contrast="true"] .diss-replay-review button, [data-dissection-root][data-high-contrast="true"] .diss-replay-review select { color: #000; border-color: #000; }
+@media (forced-colors: active) { .diss-replay-review { background: Canvas; color: CanvasText; border-color: CanvasText; } .diss-replay-review button, .diss-replay-review select { background: ButtonFace; color: ButtonText; border-color: ButtonText; } .diss-replay-review button:focus-visible, .diss-replay-review select:focus-visible { outline-color: Highlight; } }
 #diss-replay-evidence-help { flex-basis: 100%; margin: .5rem 0; font-size: 1rem !important; line-height: 1.55; color: #334155; overflow-wrap: anywhere; }
 [data-dissection-root][data-text-size="large"] #diss-replay-evidence-help { font-size: 1.125rem !important; }
 [data-dissection-root][data-high-contrast="true"] #diss-replay-evidence-help { color: #000; }
@@ -1218,6 +1297,26 @@
 .diss-tissue-meter span { display: flex; justify-content: space-between; gap: .25rem; color: #52647d; font-size: .56rem; font-weight: 800; }
 .diss-tissue-meter progress { display: block; width: 100%; height: .42rem; margin-top: .18rem; accent-color: #0f8f86; }
 .diss-tissue-meter[data-risk="true"] progress { accent-color: #e11d48; }
+/* The detailed readings share a full row so labels and values remain readable. */
+[data-dissection-root] .diss-tissue-monitor { grid-column: 1 / -1; padding: .85rem; }
+[data-dissection-root] .diss-tissue-monitor :is(strong, b, p, span) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .65rem; margin-top: .75rem; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter { padding: .65rem; border: 1px solid #8ebbb3; border-radius: .55rem; background: #fff; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter[data-risk="true"] { border: 2px dashed #b45309; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter > span { flex-wrap: wrap; align-items: baseline; gap: .2rem .5rem; color: #173f3c; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter > span > span { display: block; min-width: 0; flex: 1 1 6rem; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter b { flex-shrink: 0; margin-inline-start: auto; color: #173f3c; }
+[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter progress { height: .55rem; margin-top: .4rem; }
+[data-dissection-root][data-text-size="large"] .diss-tissue-monitor :is(strong, b, p, span) { font-size: 1.125rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-tissue-monitor, [data-dissection-root][data-high-contrast="true"] .diss-tissue-monitor :is(div, strong, b, p, span) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+@media (forced-colors: active) { [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) .diss-tissue-monitor, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) .diss-tissue-monitor :is(div, strong, b, p, span) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } }
+[data-dissection-root] .diss-tissue-monitor progress { appearance: none; --diss-tissue-track: #e2e8f0; --diss-tissue-fill: #0f766e; border: 1px solid #547b77; border-radius: 999px; overflow: hidden; background: var(--diss-tissue-track) !important; color: var(--diss-tissue-fill) !important; }
+[data-dissection-root] .diss-tissue-monitor [data-risk="true"] progress { --diss-tissue-fill: #a65305; }
+[data-dissection-root] .diss-tissue-monitor progress::-webkit-progress-bar { background: var(--diss-tissue-track) !important; }
+[data-dissection-root] .diss-tissue-monitor progress::-webkit-progress-value { background: var(--diss-tissue-fill) !important; }
+[data-dissection-root] .diss-tissue-monitor progress::-moz-progress-bar { background: var(--diss-tissue-fill) !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-tissue-monitor progress { --diss-tissue-track: #fff; --diss-tissue-fill: #000; border-color: #000 !important; }
+@media (forced-colors: active) { [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) .diss-tissue-monitor progress { --diss-tissue-track: Canvas; --diss-tissue-fill: Highlight; border-color: CanvasText !important; forced-color-adjust: none; } }
 .diss-tissue-consequence { margin: .45rem 0 0; padding: .4rem .48rem; border-left: 3px solid #0f8f86; border-radius: .35rem; background: rgba(255,255,255,.76); color: #36506f; font-size: .61rem; line-height: 1.4; }
 .diss-advanced-card p { margin: .2rem 0 0; font-size: .66rem; line-height: 1.4; }
 .diss-field-quality { border-color: #7dd3fc; background: linear-gradient(145deg, #f0f9ff, #fff); }
@@ -1228,7 +1327,139 @@
 .diss-field-quality[data-tone="restricted"] progress { accent-color: #e11d48; }
 .diss-field-quality__metrics { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .4rem; }
 .diss-field-quality__metrics span { padding: .2rem .34rem; border-radius: 999px; background: rgba(255,255,255,.82); color: #36506f; font-size: .56rem; font-weight: 800; }
+/* Observation quality describes the field; the current protocol still guides contact. */
+[data-dissection-root] #diss-observation-field { grid-column: 1 / -1; min-width: 0; padding: .9rem; color: #173f5b; border-width: 2px; }
+[data-dissection-root] #diss-observation-field :is(strong, p, span, dt, dd, summary, button) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-observation-field p { margin: .6rem 0; }
+[data-dissection-root] #diss-observation-field .diss-field-quality__header { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .5rem 1rem; }
+[data-dissection-root] #diss-observation-field .diss-field-quality__score { font-size: 2rem !important; line-height: 1.2; font-weight: 850; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-observation-field .diss-field-quality__state { display: block; margin-top: .35rem; font-weight: 700; }
+[data-dissection-root] #diss-observation-field[data-tone="restricted"] { border-style: dashed; }
+[data-dissection-root] #diss-observation-field .diss-observation-meter { margin-top: .75rem; height: .75rem; border: 1px solid currentColor; border-radius: 999px; overflow: hidden; background: #e2e8f0; }
+[data-dissection-root] #diss-observation-field .diss-observation-meter__fill { display: block; height: 100%; background: #0369a1; }
+[data-dissection-root] #diss-observation-field .diss-observation-meter__ends { display: flex; justify-content: space-between; gap: .5rem; margin-top: .2rem; }
+[data-dissection-root] #diss-observation-field .diss-field-quality__metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem; margin: .75rem 0; }
+[data-dissection-root] #diss-observation-field .diss-field-quality__metrics > div { min-width: 0; padding: .65rem; border: 1px solid #91b5ca; border-radius: .6rem; background: #fff; }
+[data-dissection-root] #diss-observation-field dt { font-weight: 700; }
+[data-dissection-root] #diss-observation-field dd { margin: .25rem 0 0; font-weight: 850; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-observation-field .diss-field-quality__explanation { margin-top: .75rem; border-top: 1px solid currentColor; }
+[data-dissection-root] #diss-observation-field summary { min-height: 3rem; padding: .65rem .15rem; cursor: pointer; font-weight: 750; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-observation-field details[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-observation-field button { min-height: 3rem; max-width: 100%; padding: .65rem .9rem; margin-top: .6rem; border: 2px solid #0369a1; border-radius: .55rem; background: #fff; color: #075985; font-weight: 750; cursor: pointer; }
+[data-dissection-root] #diss-observation-field :is(button, summary):is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-observation-field :is(strong, p, span, dt, dd, summary, button) { font-size: 1.125rem !important; }
+[data-dissection-root][data-text-size="large"] #diss-observation-field .diss-field-quality__score { font-size: 2.125rem !important; }
+@container dissection (max-width: 760px) { [data-dissection-root] #diss-observation-field .diss-field-quality__metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container dissection (max-width: 380px) { [data-dissection-root] #diss-observation-field .diss-field-quality__metrics { grid-template-columns: minmax(0, 1fr); } }
+[data-dissection-root][data-high-contrast="true"] #diss-observation-field, [data-dissection-root][data-high-contrast="true"] #diss-observation-field :is(div, details, strong, p, span, dt, dd, summary, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-observation-field .diss-observation-meter__fill { background: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-observation-field, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-observation-field :is(div, details, strong, p, span, dt, dd, summary, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; }
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-observation-field .diss-observation-meter__fill { background: Highlight !important; forced-color-adjust: none; }
+  [data-dissection-root] #diss-observation-field :is(button, summary):is(:focus, :focus-visible) { outline-color: Highlight !important; }
+}
+/* Exposure, sequence progress, and decision quality have different meanings. */
+[data-dissection-root] #diss-exposure-readings { grid-column: 1 / -1; min-width: 0; padding: 1rem; --diss-exposure-track: #e0e7ff; --diss-exposure-fill: #4338ca; }
+[data-dissection-root] #diss-exposure-readings :is(strong, b, p, span, dt, dd, summary, button) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem 1rem; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__state { display: block; margin-top: .2rem; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__score { font-size: 1.5rem !important; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__meter { margin-top: .85rem; height: 1rem; border: 1px solid #4338ca; border-radius: 999px; overflow: hidden; background: var(--diss-exposure-track); }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__fill { display: block; height: 100%; background: var(--diss-exposure-fill); }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__ends { display: flex; justify-content: space-between; margin-top: .2rem; }
+[data-dissection-root] #diss-exposure-guidance { margin: .8rem 0; padding: .7rem; border-left: 4px solid #4338ca; background: #fff; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__readings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin: .8rem 0; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__readings > div { min-width: 0; padding: .75rem; border: 1px solid #8f9fc6; border-radius: .55rem; background: #fff; }
+[data-dissection-root] #diss-exposure-readings dt { font-weight: 750; }
+[data-dissection-root] #diss-exposure-readings dd { margin: .25rem 0 0; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-exposure-readings .diss-exposure__explanation { border-top: 1px solid #8f9fc6; margin-top: .8rem; padding-top: .4rem; }
+[data-dissection-root] #diss-exposure-readings summary { min-height: 3rem; padding: .65rem .15rem; cursor: pointer; font-weight: 750; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-exposure-readings details[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-exposure-readings details p { margin: .45rem 0; }
+[data-dissection-root] #diss-exposure-review-protocol { min-height: 3rem; margin-top: .8rem; padding: .65rem .85rem; border: 1px solid #4338ca; border-radius: .5rem; background: #fff; color: #312e81; font-weight: 750; cursor: pointer; }
+[data-dissection-root] #diss-exposure-readings :is(summary, button):is(:focus, :focus-visible), [data-dissection-root] #diss-protocol:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-exposure-readings :is(strong, b, p, span, dt, dd, summary, button) { font-size: 1.125rem !important; }
+[data-dissection-root][data-text-size="large"] #diss-exposure-readings .diss-exposure__score { font-size: 1.625rem !important; }
+@container dissection (max-width: 640px) { [data-dissection-root] #diss-exposure-readings .diss-exposure__readings { grid-template-columns: minmax(0, 1fr); } }
+[data-dissection-root][data-high-contrast="true"] #diss-exposure-readings { --diss-exposure-track: #fff; --diss-exposure-fill: #000; }
+[data-dissection-root][data-high-contrast="true"] #diss-exposure-readings, [data-dissection-root][data-high-contrast="true"] #diss-exposure-readings :is(strong, b, p, dt, dd, summary, button, .diss-exposure__readings > div) { color: #000 !important; background: #fff !important; border-color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-exposure-readings { --diss-exposure-track: Canvas; --diss-exposure-fill: Highlight; }
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-exposure-readings, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-exposure-readings :is(strong, b, p, dt, dd, summary, button, .diss-exposure__readings > div) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; }
+  [data-dissection-root] #diss-exposure-readings .diss-exposure__meter { border-color: CanvasText; forced-color-adjust: none; }
+  [data-dissection-root] #diss-exposure-readings :is(summary, button):is(:focus, :focus-visible), [data-dissection-root] #diss-protocol:is(:focus, :focus-visible) { outline-color: Highlight !important; }
+}
+/* Material resistance is distinct from current calibration and action readiness. */
+[data-dissection-root] #diss-material-readings { grid-column: 1 / -1; min-width: 0; padding: 1rem; background: #fff !important; color: #123b4a !important; --diss-material-track: #e0e7ff; --diss-material-fill: #4338ca; }
+[data-dissection-root] #diss-material-readings :is(strong, b, p, span, dt, dd, summary, button) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-material-readings .diss-material__header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem 1rem; }
+[data-dissection-root] #diss-material-readings .diss-material__state { display: block; margin-top: .2rem; }
+[data-dissection-root] #diss-material-readings .diss-material__score { font-size: 1.5rem !important; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-material-readings .diss-material__meter { margin-top: .85rem; height: 1rem; border: 1px solid #4338ca; border-radius: 999px; overflow: hidden; background: var(--diss-material-track); }
+[data-dissection-root] #diss-material-readings .diss-material__fill { display: block; height: 100%; background: var(--diss-material-fill); }
+[data-dissection-root] #diss-material-readings .diss-material__ends { display: flex; justify-content: space-between; margin-top: .2rem; }
+[data-dissection-root] #diss-material-guidance { margin: .8rem 0; padding: .7rem; border-left: 4px solid #4338ca; background: #fff; }
+[data-dissection-root] #diss-material-readings .diss-material__readings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; margin: .8rem 0; }
+[data-dissection-root] #diss-material-readings .diss-material__readings > div { min-width: 0; padding: .75rem; border: 1px solid #8f9fc6; border-radius: .55rem; background: #fff; }
+[data-dissection-root] #diss-material-readings dt { font-weight: 750; }
+[data-dissection-root] #diss-material-readings dd { margin: .25rem 0 0; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-material-readings .diss-material__explanation { border-top: 1px solid #8f9fc6; margin-top: .8rem; padding-top: .4rem; }
+[data-dissection-root] #diss-material-readings summary { min-height: 3rem; padding: .65rem .45rem; cursor: pointer; font-weight: 750; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-material-readings details[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-material-readings details p { margin: .45rem 0; }
+[data-dissection-root] #diss-material-review-calibration { min-height: 3rem; margin-top: .8rem; padding: .65rem .85rem; border: 1px solid #4338ca; border-radius: .5rem; background: #fff; color: #312e81; font-weight: 750; cursor: pointer; }
+[data-dissection-root] #diss-material-readings :is(summary, button):is(:focus, :focus-visible), [data-dissection-root] #diss-calibration-range:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-material-readings :is(strong, b, p, span, dt, dd, summary, button) { font-size: 1.125rem !important; }
+[data-dissection-root][data-text-size="large"] #diss-material-readings .diss-material__score { font-size: 1.625rem !important; }
+@container dissection (max-width: 640px) { [data-dissection-root] #diss-material-readings .diss-material__readings { grid-template-columns: minmax(0, 1fr); } }
+[data-dissection-root][data-high-contrast="true"] #diss-material-readings { --diss-material-track: #fff; --diss-material-fill: #000; }
+[data-dissection-root][data-high-contrast="true"] #diss-material-readings, [data-dissection-root][data-high-contrast="true"] #diss-material-readings :is(strong, b, p, dt, dd, summary, button, .diss-material__readings > div) { color: #000 !important; background: #fff !important; border-color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-material-readings { --diss-material-track: Canvas; --diss-material-fill: Highlight; }
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-material-readings, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-material-readings :is(strong, b, p, dt, dd, summary, button, .diss-material__readings > div) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; }
+  [data-dissection-root] #diss-material-readings .diss-material__meter { border-color: CanvasText; forced-color-adjust: none; }
+  [data-dissection-root] #diss-material-readings :is(summary, button):is(:focus, :focus-visible), [data-dissection-root] #diss-calibration-range:is(:focus, :focus-visible) { outline-color: Highlight !important; }
+}
+[data-dissection-root] #diss-material-readings .diss-material__tool { margin: .55rem 0 0; }
+[data-dissection-root] #diss-material-readings .diss-material__caution { margin: .8rem 0; padding: .75rem; border: 1px solid #8f9fc6; border-radius: .55rem; }
 [data-dissection-root] .diss-optics { grid-column: 1 / -1; padding: 14px; border-color: #8b5cf6; background: #f5f3ff; color: #334155; }
+/* Read optical settings and their interpretation as separate, labeled readings. */
+[data-dissection-root] #diss-optical-inspection.diss-optics { min-width: 0; padding: 1rem; }
+[data-dissection-root] #diss-optical-inspection.diss-optics :is(strong, b, p, span, dt, dd, button, summary) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem 1rem; }
+[data-dissection-root] #diss-optical-inspection.diss-optics .diss-optics__score { font-size: 1.5rem !important; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__readings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; margin: .8rem 0; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__readings > div { min-width: 0; padding: .7rem; border: 1px solid #a69abb; border-radius: .55rem; background: #fff; }
+[data-dissection-root] #diss-optical-inspection dt { font-weight: 750; color: #493969; }
+[data-dissection-root] #diss-optical-inspection dd { margin: .25rem 0 0; color: #253449; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__meter { grid-template-columns: minmax(0, 1fr); }
+[data-dissection-root] #diss-optical-inspection .diss-optics__meter progress { height: 1rem; appearance: none; --diss-optical-track: #ede9fe; --diss-optical-fill: #6d28d9; border: 1px solid #6d28d9; border-radius: 999px; overflow: hidden; background: var(--diss-optical-track) !important; color: var(--diss-optical-fill) !important; }
+[data-dissection-root] #diss-optical-inspection progress::-webkit-progress-bar { background: var(--diss-optical-track) !important; }
+[data-dissection-root] #diss-optical-inspection progress::-webkit-progress-value { background: var(--diss-optical-fill) !important; }
+[data-dissection-root] #diss-optical-inspection progress::-moz-progress-bar { background: var(--diss-optical-fill) !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-optical-inspection .diss-optics__meter progress { --diss-optical-track: #fff; --diss-optical-fill: #000; border-color: #000; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-optical-inspection .diss-optics__meter progress { --diss-optical-track: Canvas; --diss-optical-fill: Highlight; border-color: CanvasText; forced-color-adjust: none; }
+}
+[data-dissection-root] #diss-optics-suggestion { padding: .7rem; border-left: 4px solid #6d28d9; background: #fff; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__explanation { margin-top: .85rem; padding-top: .5rem; border-top: 1px solid #a69abb; }
+[data-dissection-root] #diss-optical-inspection :is(summary, button) { min-height: 3rem; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__options button { flex: 1 1 auto; min-width: max-content; overflow-wrap: normal; }
+[data-dissection-root] #diss-optical-inspection summary { padding: .65rem .15rem; font-weight: 750; cursor: pointer; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-optical-inspection details[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__lighting { margin-top: .85rem; padding: .8rem; border: 1px solid #a69abb; border-radius: .55rem; background: #fff; }
+[data-dissection-root] #diss-optical-inspection .diss-optics__lighting p { margin-top: 0; }
+[data-dissection-root] #diss-optics-review-light { margin-top: .65rem; padding: .65rem .85rem; border: 1px solid #6d28d9; border-radius: .5rem; color: #3b0764; background: #fff; font-weight: 750; cursor: pointer; }
+[data-dissection-root] #diss-optical-inspection :is(summary, button):is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-optical-inspection.diss-optics :is(strong, b, p, span, dt, dd, button, summary) { font-size: 1.125rem !important; }
+[data-dissection-root][data-text-size="large"] #diss-optical-inspection.diss-optics .diss-optics__score { font-size: 1.625rem !important; }
+@container dissection (max-width: 640px) { [data-dissection-root] #diss-optical-inspection .diss-optics__readings { grid-template-columns: minmax(0, 1fr); } }
+[data-dissection-root][data-high-contrast="true"] #diss-optical-inspection, [data-dissection-root][data-high-contrast="true"] #diss-optical-inspection :is(div, details, p, span, dt, dd, strong, b, button, summary) { background: #fff !important; color: #000 !important; border-color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-optical-inspection, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-optical-inspection :is(div, details, p, span, dt, dd, strong, b, button, summary) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+  [data-dissection-root] #diss-optical-inspection :is(summary, button):is(:focus, :focus-visible) { outline-color: Highlight !important; }
+}
+
 [data-dissection-root] .diss-optics[data-tone="usable"] { border-color: #0284c7; background: #f0f9ff; }
 [data-dissection-root] .diss-optics[data-tone="soft"] { border-color: #b45309; background: #fffbeb; }
 [data-dissection-root] .diss-optics[data-tone="unresolved"] { border-color: #be123c; background: #fff1f2; }
@@ -1312,8 +1543,11 @@
 [data-dissection-root] .diss-scenario-console__state[data-state="not-started"] { border-style: dashed; }
 [data-dissection-root] .diss-scenario-console :is(.diss-scenario-console__purpose, .diss-scenario-console__objective, .diss-scenario-console__help, .diss-scenario-console__detail) { margin: .75rem 0 0; color: #3b1d68; }
 [data-dissection-root] .diss-scenario-console__objective { font-weight: 750; }
+[data-dissection-root] .diss-scenario-console__playback { margin: .85rem 0 0; padding: .75rem; border: 1px solid #75a9b8; border-left: 4px solid #0e7490; border-radius: .6rem; background: #ecfeff; color: #164e63; }
+[data-dissection-root] .diss-scenario-console__playback strong { display: block; margin-bottom: .25rem; color: inherit; font-size: inherit !important; font-weight: 850; }
 [data-dissection-root] .diss-scenario-console__progress { margin-top: .75rem; height: .8rem; }
 [data-dissection-root] .diss-scenario-console__timer { display: block; margin-top: .75rem; padding: .65rem .75rem; border: 2px solid #7c3aed; border-radius: .55rem; background: #fff; color: #3b1d68; font-weight: 850; }
+[data-dissection-root] #diss-scenario-time:focus { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }
 [data-dissection-root] .diss-scenario-console__timer[data-state="expired"] { border-style: dashed; border-color: #b91c1c; color: #991b1b; }
 [data-dissection-root] .diss-scenario-console__controls, [data-dissection-root] .diss-scenario-console__review-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: .65rem; margin-top: .85rem; }
 [data-dissection-root] .diss-scenario-console__controls label { grid-column: 1 / -1; min-width: 0; margin: 0; gap: .35rem; }
@@ -1324,6 +1558,13 @@
 [data-dissection-root] .diss-scenario-console__restart-review { margin-top: .85rem; padding: .85rem; border: 2px solid #b45309; border-radius: .65rem; background: #fffbeb; color: #78350f; }
 [data-dissection-root] .diss-scenario-console__restart-review :is(h5, p) { color: #78350f; }
 [data-dissection-root] .diss-scenario-console__restart-review p { margin: .65rem 0 0; }
+[data-dissection-root] .diss-scenario-console__effects { margin: .75rem 0 0; font-size: 1rem !important; }
+[data-dissection-root] .diss-scenario-console__effect { display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr); gap: .25rem 1rem; padding-top: .65rem; margin-top: .65rem; border-top: 1px solid currentColor; }
+[data-dissection-root] .diss-scenario-console__effect:first-child { padding-top: 0; margin-top: 0; border-top: 0; }
+[data-dissection-root] .diss-scenario-console__effects :is(dt, dd) { min-width: 0; margin: 0; color: inherit; font-size: inherit !important; line-height: 1.55; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-scenario-console__effects dt { font-weight: 850; }
+[data-dissection-root][data-text-size="large"] .diss-scenario-console__effects { font-size: 1.125rem !important; }
+@container dissection (max-width: 640px) { [data-dissection-root] .diss-scenario-console__effect { grid-template-columns: minmax(0, 1fr); } }
 [data-dissection-root] .diss-scenario-console__restart-review button[data-confirm="true"] { border-color: #b45309; color: #78350f; }
 [data-dissection-root][data-text-size="large"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer) { font-size: 1.125rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-scenario-console, [data-dissection-root][data-high-contrast="true"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review) { border-color: #111827; background: #fff; color: #000; }
@@ -1335,11 +1576,47 @@
   [data-dissection-root] .diss-scenario-console__progress > span { background: Highlight !important; }
   [data-dissection-root] .diss-scenario-console select { appearance: none !important; forced-color-adjust: none !important; padding-right: 2.25rem !important; }
   [data-dissection-root] .diss-scenario-console__select-wrap::after { display: block; }
-  [data-dissection-root] .diss-scenario-console :is(button, select):is(:focus, :focus-visible) { outline-color: Highlight !important; }
+  [data-dissection-root] #diss-scenario-time:focus, [data-dissection-root] .diss-scenario-console :is(button, select):is(:focus, :focus-visible) { outline-color: Highlight !important; }
 }
 @media print { [data-dissection-root] .diss-scenario-console { display: none !important; } }
 
 .diss-attempt-comparison { grid-column: 1 / -1; border-color: #c4b5fd; background: linear-gradient(135deg, rgba(245,243,255,.96), rgba(253,242,248,.9)); }
+[data-dissection-root] #diss-attempt-comparison { grid-column: 1 / -1; min-width: 0; padding: 1rem; background: #fff !important; color: #263451 !important; }
+[data-dissection-root] #diss-attempt-comparison :is(h4, h5, p, span, b, dt, dd, summary, button, label, output) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; color: inherit; text-transform: none; }
+[data-dissection-root] #diss-attempt-comparison h4 { margin: 0; font-size: 1.125rem !important; }
+[data-dissection-root] #diss-attempt-comparison p { margin: .6rem 0; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__context { padding: .75rem; border-left: 3px solid #7565ac; background: #f5f3ff; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__metric { min-width: 0; padding: .8rem; background: #fff; border: 1px solid #a49abb; }
+[data-dissection-root] #diss-attempt-comparison h5 { margin: 0 0 .55rem; font-weight: 800; }
+[data-dissection-root] #diss-attempt-comparison dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 0; }
+[data-dissection-root] #diss-attempt-comparison dl > div { min-width: 0; }
+[data-dissection-root] #diss-attempt-comparison dt { font-weight: 500; }
+[data-dissection-root] #diss-attempt-comparison dd { margin: .1rem 0 0; font-weight: 750; font-variant-numeric: tabular-nums; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__change { border-top: 1px solid #d6d1e4; padding-top: .5rem; margin: .65rem 0 0; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__change :is(span, b) { display: block; }
+[data-dissection-root] #diss-attempt-comparison [data-tone="improved"] .diss-attempt-comparison__change { color: #166534; }
+[data-dissection-root] #diss-attempt-comparison [data-tone="declined"] .diss-attempt-comparison__change { color: #9a3412; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__legend { display: grid; gap: .5rem; margin: 1rem 0; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__legend-item { display: flex; align-items: center; gap: .6rem; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__scrub { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .65rem; padding-top: .75rem; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__scrub :is(label, input, output) { grid-column: 1 / -1; }
+[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__scrub output { text-align: left; }
+[data-dissection-root] #diss-attempt-comparison input[type="range"] { width: 100%; min-width: 0; min-height: 3rem; margin: 0; accent-color: #5b21b6; }
+[data-dissection-root] #diss-attempt-comparison button { min-width: 0; min-height: 3rem; padding: .65rem; background: #fff; color: #4c1d95; border: 1px solid #8b78ae; border-radius: .5rem; }
+[data-dissection-root] #diss-attempt-comparison button:disabled { color: #566176; border-style: dashed; opacity: 1; }
+[data-dissection-root] #diss-attempt-comparison details { border-top: 1px solid #a49abb; padding-top: .4rem; }
+[data-dissection-root] #diss-attempt-comparison summary { min-height: 3rem; padding: .65rem .4rem; cursor: pointer; font-weight: 750; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-attempt-comparison details[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-attempt-comparison :is(summary, button, input):is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-attempt-comparison :is(h4, h5, p, span, b, dt, dd, summary, button, label, output) { font-size: 1.125rem !important; }
+@container dissection (max-width: 640px) { [data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__grid { grid-template-columns: minmax(0, 1fr); } }
+@container dissection (max-width: 400px) { [data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__scrub { grid-template-columns: minmax(0, 1fr); } }
+[data-dissection-root][data-high-contrast="true"] #diss-attempt-comparison, [data-dissection-root][data-high-contrast="true"] #diss-attempt-comparison :is(section, p, b, span, button, label, output) { color: #000 !important; background: #fff !important; border-color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-attempt-comparison, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-attempt-comparison :is(section, p, b, span, button, label, output) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; }
+  [data-dissection-root] #diss-attempt-comparison :is(summary, button, input):is(:focus, :focus-visible) { outline-color: Highlight !important; }
+}
 .diss-attempt-comparison__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.2rem, 1fr)); gap: .35rem; margin-top: .45rem; }
 .diss-attempt-comparison__metric { padding: .4rem .45rem; border: 1px solid #ddd6fe; border-radius: .5rem; background: rgba(255,255,255,.78); }
 .diss-attempt-comparison__metric span { display: block; color: #6d5b8c; font-size: .57rem; font-weight: 850; text-transform: uppercase; }
@@ -1360,6 +1637,33 @@
 .diss-debrief strong { color: #123b67; }
 .diss-instructor { margin-top: .55rem; border-top: 1px solid #b9d8d2; padding-top: .45rem; }
 .diss-instructor summary { cursor: pointer; color: #315b58; font-size: .68rem; font-weight: 850; }
+[data-dissection-root] #diss-scenario-thresholds { grid-column: 1 / -1; min-width: 0; margin-top: 1rem; padding: .35rem; border: 1px solid #93aba8; border-radius: .75rem; background: #fff; color: #173f3b; }
+[data-dissection-root] #diss-scenario-thresholds :is(h4, p, span, strong, label, select, summary) { color: inherit; font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-scenario-thresholds summary { min-height: 3rem; padding: .7rem; cursor: pointer; list-style: disclosure-closed inside; font-weight: 750; }
+[data-dissection-root] #diss-scenario-thresholds[open] > summary { list-style-type: disclosure-open; border-bottom: 1px solid #93aba8; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__snapshot { display: block; margin-top: .4rem; font-weight: 500; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__body { min-width: 0; padding: .75rem; }
+[data-dissection-root] #diss-scenario-thresholds h4 { margin: 0; font-weight: 800; }
+[data-dissection-root] #diss-scenario-thresholds p { margin: .65rem 0; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__current { padding: .8rem; border-left: 3px solid #167467; background: #effaf6; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__current p { margin-bottom: 0; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin-top: .8rem; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__control { min-width: 0; padding: .75rem; border: 1px solid #93aba8; border-radius: .6rem; background: #fff; }
+[data-dissection-root] #diss-scenario-thresholds label { display: block; font-weight: 800; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__scope { display: block; margin: .4rem 0; }
+[data-dissection-root] #diss-scenario-thresholds [data-applies="true"] .diss-thresholds__scope { font-weight: 750; color: #086350; }
+[data-dissection-root] #diss-scenario-thresholds select { width: 100%; min-width: 0; max-width: 100%; min-height: 3rem; padding: .6rem .5rem; border: 1px solid #527f76; border-radius: .45rem; background: #fff; color: #173f3b; font-weight: 750; appearance: auto; }
+[data-dissection-root] #diss-scenario-thresholds option { font-size: 1rem; }
+[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__investigation { padding-top: .7rem; border-top: 1px solid #93aba8; }
+[data-dissection-root] #diss-scenario-thresholds :is(summary, select):is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] #diss-scenario-thresholds :is(h4, p, span, strong, label, select, option, summary) { font-size: 1.125rem !important; }
+@container dissection (max-width: 800px) { [data-dissection-root] #diss-scenario-thresholds .diss-thresholds__grid { grid-template-columns: minmax(0, 1fr); } }
+[data-dissection-root][data-high-contrast="true"] #diss-scenario-thresholds, [data-dissection-root][data-high-contrast="true"] #diss-scenario-thresholds :is(div, p, span, select, summary) { color: #000 !important; background: #fff !important; border-color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-scenario-thresholds, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-scenario-thresholds :is(div, p, span, select, summary) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; }
+  [data-dissection-root] #diss-scenario-thresholds :is(summary, select):is(:focus, :focus-visible) { outline-color: Highlight !important; }
+}
+
 .diss-zoom-bar { min-height: 2.7rem; margin-top: .6rem !important; background: #edf4fb !important; }
 /* Keep specimen context and camera controls consistent with the lab action shelves. */
 [data-dissection-root] .diss-stage__header { min-width: 0; align-items: start; }
@@ -2094,6 +2398,35 @@
   overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; line-height: 1.45;
 }
 .diss-field-monitor__summary { grid-template-columns: minmax(0, 1fr) auto; }
+/* Tissue scales describe current conditions; their guides stay available by keyboard. */
+[data-dissection-root] .diss-field-monitor__summary, [data-dissection-root] .diss-field-monitor__summary :is(strong, span, small) { font-size: 1rem !important; line-height: 1.5; overflow-wrap: anywhere; overflow: visible; text-overflow: clip; white-space: normal; }
+[data-dissection-root] #diss-field-tissue { min-width: 0; padding: .85rem; gap: .75rem; }
+[data-dissection-root] #diss-field-tissue :is(strong, b, p, span, summary, button) { font-size: 1rem !important; line-height: 1.5; overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; opacity: 1; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric { min-width: 0; padding: .75rem; border-width: 2px; background: #fff; color: #173f5b; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric[data-risk="true"] { border-style: dashed; border-color: #b45309; background: #fffbeb; color: #78350f; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric-head { gap: .35rem .75rem; align-items: baseline; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric-head b { font-size: 1.375rem !important; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric-note { display: block; margin: .35rem 0; font-weight: 800; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric-direction { margin: .35rem 0 .6rem; }
+[data-dissection-root] .diss-field-meter { height: .65rem; overflow: hidden; border: 1px solid currentColor; border-radius: 999px; background: #e2e8f0; }
+[data-dissection-root] .diss-field-meter__fill { display: block; height: 100%; background: #236a88; }
+[data-dissection-root] [data-risk="true"] .diss-field-meter__fill { background: #a65305; }
+[data-dissection-root] .diss-field-meter__ends { display: flex; justify-content: space-between; gap: .5rem; margin: .2rem 0; }
+[data-dissection-root] #diss-field-tissue .diss-metric-reading { margin-top: .6rem; border-top: 1px solid currentColor; }
+[data-dissection-root] #diss-field-tissue .diss-metric-reading > summary { min-height: 3rem; padding: .65rem .15rem; cursor: pointer; font-weight: 750; list-style: disclosure-closed inside; }
+[data-dissection-root] #diss-field-tissue .diss-metric-reading[open] > summary { list-style-type: disclosure-open; }
+[data-dissection-root] #diss-field-tissue .diss-metric-reading > p { margin: .25rem 0 0; }
+[data-dissection-root] #diss-tissue-monitor-help { margin: 0; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-foot { gap: .65rem; }
+[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-priority { text-align: start; }
+[data-dissection-root] .diss-metric-reading > summary:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -3px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] .diss-field-monitor__summary, [data-dissection-root][data-text-size="large"] #diss-field-tissue :is(strong, p, span, summary, button), [data-dissection-root][data-text-size="large"] .diss-field-monitor__summary :is(strong, span, small) { font-size: 1.125rem !important; }
+[data-dissection-root][data-text-size="large"] #diss-field-tissue .diss-stage__telemetry-metric-head b { font-size: 1.5rem !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-field-tissue, [data-dissection-root][data-high-contrast="true"] #diss-field-tissue :is(div, details, p, span, strong, b, summary, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-field-tissue .diss-field-meter__fill { background: #000 !important; }
+@container dissection (max-width: 760px) { [data-dissection-root] #diss-field-tissue .diss-stage__telemetry-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (forced-colors: active) { [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-field-tissue, [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-field-tissue :is(div, details, p, span, strong, b, summary, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) #diss-field-tissue .diss-field-meter__fill { background: Highlight !important; } [data-dissection-root]:is([data-high-contrast="true"], [data-high-contrast="false"], :not([data-high-contrast])) .diss-metric-reading > summary:is(:focus, :focus-visible) { outline-color: Highlight !important; } }
 .diss-field-monitor__summary small { grid-column: 1 / -1; white-space: normal; overflow: visible; font-size: .75rem; line-height: 1.45; }
 .diss-field-monitor__summary span { max-width: 100%; white-space: normal; text-align: end; }
 .diss-field-readiness__header { flex-wrap: wrap; }
@@ -2104,9 +2437,51 @@
 .diss-field-readiness__check-head b { width: 1.5em; height: 1.5em; font-size: .7rem; }
 .diss-field-readiness__actions { gap: .5rem; }
 .diss-field-readiness__action { min-height: 2.75rem; padding: .45rem .6rem; }
+/* Each pre-contact check states its result and offers its own review route. */
+[data-dissection-root] .diss-field-readiness { padding: .85rem; gap: .75rem; }
+[data-dissection-root] .diss-field-readiness :is(strong, p, span, button) { font-size: 1rem !important; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-field-readiness__header { align-items: flex-start; gap: .5rem 1rem; }
+[data-dissection-root] .diss-field-readiness__score { display: block; border: 1px solid currentColor; border-radius: .45rem; padding: .25rem .5rem; }
+[data-dissection-root] .diss-field-readiness__help { margin: 0; }
+[data-dissection-root] .diss-field-readiness__checks { margin: 0; padding: 0; list-style: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+[data-dissection-root] .diss-field-readiness__check { display: flex; flex-direction: column; gap: .5rem; padding: .75rem; border-width: 2px; }
+[data-dissection-root] .diss-field-readiness__check[data-ready="false"] { border-style: dashed; }
+[data-dissection-root] .diss-field-readiness__check-head { flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem .65rem; }
+[data-dissection-root] .diss-field-readiness__check-status { font-weight: 750; }
+[data-dissection-root] .diss-field-readiness__check-detail { flex: 1; margin: 0; }
+[data-dissection-root] .diss-field-readiness .diss-field-readiness__action { min-height: 3rem !important; max-width: 100%; padding: .6rem .75rem; border: 2px solid currentColor; background: #fff; text-align: start; }
+[data-dissection-root] .diss-field-readiness__action:is(:focus, :focus-visible), [data-dissection-root] #diss-field-tissue:focus { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }
+[data-dissection-root][data-text-size="large"] .diss-field-readiness :is(strong, p, span, button) { font-size: 1.125rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-field-readiness, [data-dissection-root][data-high-contrast="true"] .diss-field-readiness :is(div, li, strong, p, span, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+@container dissection (max-width: 760px) { [data-dissection-root] .diss-field-readiness__checks { grid-template-columns: minmax(0, 1fr); } }
+@media (forced-colors: active) { [data-dissection-root] .diss-field-readiness, [data-dissection-root] .diss-field-readiness :is(div, li, strong, p, span, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } [data-dissection-root] .diss-field-readiness__action:is(:focus, :focus-visible), [data-dissection-root] #diss-field-tissue:focus { outline-color: Highlight !important; } }
 .diss-protocol dt { font-size: .75rem; line-height: 1.45; }
 .diss-protocol dd { font-size: .82rem; line-height: 1.5; }
 .diss-protocol__align { min-height: 2.75rem !important; font-size: .75rem; }
+/* Make preparation recommendations readable without losing the alignment control. */
+[data-dissection-root] .diss-protocol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; color: #173f3c; }
+[data-dissection-root] .diss-protocol > div { min-width: 0; padding: .85rem; border: 1px solid #9ebdb6; border-radius: .7rem; background: #f4faf7; }
+[data-dissection-root] .diss-protocol > div:first-child { grid-column: 1 / -1; }
+[data-dissection-root] .diss-protocol > div[data-aligned="false"] { border: 2px solid #b45309; background: #fffbeb; }
+[data-dissection-root] .diss-protocol :is(dt, dd, p, span, strong, li, button) { font-size: 1rem !important; line-height: 1.55; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-protocol dt { color: #173f3c; font-weight: 850; letter-spacing: normal; text-transform: none; }
+[data-dissection-root] .diss-protocol dd { margin: .4rem 0 0; color: #173f3c; font-weight: 400; }
+[data-dissection-root] .diss-protocol__orientation { margin: 0; }
+[data-dissection-root] .diss-protocol__views { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin: .75rem 0; }
+[data-dissection-root] .diss-protocol__views > span { display: block; min-width: 0; padding: .55rem .7rem; border: 1px solid #9ebdb6; border-radius: .5rem; background: #fff; }
+[data-dissection-root] .diss-protocol__views strong { display: block; color: inherit; font-weight: 850; }
+[data-dissection-root] .diss-protocol__state { margin: .65rem 0 .4rem; color: #0f6656; font-weight: 850; }
+[data-dissection-root] .diss-protocol > div[data-aligned="false"] .diss-protocol__state { color: #92400e; }
+[data-dissection-root] .diss-protocol__help { margin: .65rem 0 0; }
+[data-dissection-root] .diss-protocol .diss-protocol__align { min-height: 3rem !important; max-width: 100%; margin: 0; padding: .6rem .85rem; border: 2px solid #0f766e; border-radius: .55rem; background: #0f766e; color: #fff; white-space: normal; text-align: start; }
+[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
+[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }
+[data-dissection-root] .diss-protocol__landmarks { margin: 0; padding-left: 1.25rem; list-style: disc; }
+[data-dissection-root] .diss-protocol__landmarks li + li { margin-top: .35rem; }
+[data-dissection-root][data-text-size="large"] .diss-protocol :is(dt, dd, p, span, strong, li, button) { font-size: 1.125rem !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+@container dissection (max-width: 760px) { [data-dissection-root] .diss-protocol, [data-dissection-root] .diss-protocol__views { grid-template-columns: minmax(0, 1fr); } }
+@media (forced-colors: active) { [data-dissection-root] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } [data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline-color: Highlight !important; } }
 .diss-selection-header { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .55rem .75rem; margin-bottom: .5rem; }
 .diss-selection-header__name { flex: 1 1 9rem; min-width: 0; overflow-wrap: anywhere; }
 .diss-selection-nav { flex: 0 0 auto; margin-inline-start: auto; }
@@ -5576,6 +5951,23 @@ var d = labToolData.dissection || {};
             if (score >= 60) return { score: score, label: 'Adjust', tone: 'adjust', detail: 'Close to the safe working range. ' + control.ideal };
             return { score: score, label: 'Caution', tone: 'caution', detail: 'This setting increases simulated tissue risk. ' + control.ideal };
           }
+          function calibrationValueText(control, value, spoken) {
+            if (!control) return String(value);
+            if (control.unit === ' drop') return value + (Number(value) === 1 ? ' drop' : ' drops');
+            if (spoken && control.unit === '%') return value + ' percent';
+            if (spoken && control.unit === '\u00B0') return value + (Number(value) === 1 ? ' degree' : ' degrees');
+            return value + control.unit;
+          }
+          function stepInstrumentCalibration(direction) {
+            if (!activeCalibrationControl || (direction !== -1 && direction !== 1)) return;
+            var control = activeCalibrationControl;
+            var value = toolCalibration[control.key];
+            var nextValue = Math.max(control.min, Math.min(control.max, value + direction * control.step));
+            if (nextValue === value) return;
+            var nextCalibration = Object.assign({}, toolCalibration);
+            nextCalibration[control.key] = nextValue;
+            upd('toolCalibration', normalizeToolCalibration(nextCalibration));
+          }
           function calibratedActionPatch(toolId, patch) {
             var scoreMap = Object.assign({}, currentProcedure.calibrationScores || {});
             scoreMap[toolId] = toolCalibrationScore(toolId, toolCalibration);
@@ -5711,8 +6103,23 @@ var d = labToolData.dissection || {};
             var tissue = normalizeTissueState(state);
             var preservation = tissuePreservationScore(tissue);
             var label = tissue.trauma >= 60 ? 'Compromised' : (tissue.risk >= 55 ? 'At risk' : (tissue.moisture < 38 ? 'Drying' : (tissue.tension > 82 ? 'High tension' : (preservation >= 82 ? 'Well preserved' : 'Stable'))));
-            var priority = tissue.moisture < 38 ? 'Restore surface moisture before further manipulation.' : (tissue.tension > 82 ? 'Reduce handling and avoid adding tension near the flap edge.' : (tissue.trauma > 42 ? 'Use gentler pressure and protect the current access corridor.' : (tissue.stability < 45 && tissue.exposure > 35 ? 'Stabilize the retracted tissue before probing.' : 'The field is ready for the next controlled action.')));
+            var priority = tissue.moisture < 38 ? 'Restore surface moisture before further manipulation.' : (tissue.tension > 82 ? 'Reduce handling and avoid adding tension near the flap edge.' : (tissue.trauma > 42 ? 'Use gentler pressure and protect the current access corridor.' : (tissue.stability < 45 && tissue.exposure > 35 ? 'Stabilize the retracted tissue before probing.' : (tissue.risk >= 55 ? 'Pause manipulation and protect the current corridor.' : (tissue.clarity < 45 ? 'Review surface clarity before the next controlled action.' : 'Continue with the current protocol and pre-contact checks.')))));
             return { label: label, preservation: preservation, priority: priority };
+          }
+
+          function tissueMonitorMetrics(state) {
+            var tissue = normalizeTissueState(state);
+            var unstableOpening = tissue.stability < 45 && tissue.exposure > 35;
+            return [
+              { id: 'exposure', label: 'Exposure', value: tissue.exposure, note: 'Opening size', risk: false, direction: 'Follow the protocol',
+                meaning: 'Exposure measures how much the tissue field is open. A larger opening can reveal more anatomy. Use the current protocol and protected landmarks to judge how far to open it.' },
+              { id: 'clarity', label: 'Clarity', value: tissue.clarity, note: tissue.clarity < 45 ? 'Low clarity' : 'No clarity alert', risk: tissue.clarity < 45, direction: 'Higher means clearer',
+                meaning: 'Clarity describes the visible tissue surface. This monitor flags values below 45%. Overall observation quality also depends on exposure, stability, and risk.' },
+              { id: 'stability', label: 'Stability', value: tissue.stability, note: unstableOpening ? 'Needs stabilization' : (tissue.exposure <= 35 ? 'Recheck after opening' : 'No stability alert'), risk: unstableOpening, direction: 'Higher means steadier',
+                meaning: 'Stability describes how steady the tissue field is. This monitor flags stability below 45% once exposure is above 35%. Recheck stability as the opening widens.' },
+              { id: 'risk', label: 'Risk', value: tissue.risk, note: tissue.risk >= 55 ? 'Elevated risk' : 'Below risk alert', risk: tissue.risk >= 55, direction: 'Lower is better',
+                meaning: 'Risk is a simulation score for tissue handling. This monitor flags 55% or higher. A lower reading is better; review the tissue priority and the pre-contact checks before acting.' }
+            ];
           }
 
           function tissuePhysicsData(state) {
@@ -5789,7 +6196,8 @@ var d = labToolData.dissection || {};
             else if (condition === 'preserved') resistance += 7;
             else if (condition === 'swollen') resistance += 5;
             resistance = Math.max(0, Math.min(100, resistance));
-            var calibration = toolCalibrationScore(toolId, (state && state.toolCalibration) || toolCalibration);
+            // Material previews and contact gates follow the current controls; recorded settings stay in action evidence.
+            var calibration = toolCalibrationScore(toolId, toolCalibration);
             var margin = calibration - Math.round(54 + resistance * 0.28);
             var label = resistance >= 76 ? 'High-resistance material' : (resistance >= 48 ? 'Moderate-resistance material' : 'Low-resistance material');
             var response = toolId === 'scalpel' || toolId === 'scissors'
@@ -6030,7 +6438,7 @@ var d = labToolData.dissection || {};
             var toolState = procedureInstrumentStatus(toolId);
             var next = nextProcedureInfo();
             var learningGate = procedureLearningGateFor(next.action, state);
-            var calibration = instrumentCalibrationAssessment(toolId, (state && state.toolCalibration) || toolCalibration);
+            var calibration = instrumentCalibrationAssessment(toolId, toolCalibration);
             var material = procedureMaterialInteractionData(toolId, state);
             var field = observationFieldData(state);
             var tissue = normalizeTissueState(state.tissueState);
@@ -6125,19 +6533,28 @@ var d = labToolData.dissection || {};
             });
             setProcedureFeedback('Reviewing ' + (entry.label || procedureActionLabel(entry.action)) + '. The response panel now reflects this recorded step.', 'working');
           }
+          function procedureReplayHistoryIndex(actions, timeline, index) {
+            if (!Array.isArray(actions) || !Array.isArray(timeline) || !timeline.length || timeline.length > actions.length ||
+              typeof index !== 'number' || !isFinite(index) || Math.floor(index) !== index || index < 0 || index >= timeline.length) return null;
+            var offset = actions.length - timeline.length;
+            for (var position = 0; position < timeline.length; position++) {
+              var entry = timeline[position];
+              if (!Object.prototype.hasOwnProperty.call(timeline, position) || !Object.prototype.hasOwnProperty.call(actions, offset + position) ||
+                !entry || typeof entry !== 'object' || entry !== actions[offset + position]) return null;
+            }
+            return offset + index;
+          }
+          function reviewSelectedProcedureAction(returnFocusId) {
+            var entries = currentProcedure.actionLog || [];
+            var index = procedureReplayHistoryIndex(entries, procedureTimelineEntries, selectedTechniqueActionIndex);
+            if (index == null) { setProcedureFeedback('Choose an available action in the history before opening its replay.'); return; }
+            if (!startProcedureReplay(true, index, returnFocusId)) return;
+            var entry = entries[index];
+            setProcedureFeedback((selectedTechniqueActionIsLatest ? 'Last response replay started: ' : 'Selected response replay started: ') +
+              (entry.outcome || procedureActionLabel(entry.action)) + '. This saved action is paused for review. Resume continues through the attempt.', 'working');
+          }
           function showProcedureLastResponse() {
-            var entries = (currentProcedure.actionLog || []).slice();
-            var entry = selectedTechniqueAction || (entries.length ? entries[entries.length - 1] : null);
-            if (!entry) { setProcedureFeedback('Complete at least one technique action before replaying a response.'); return; }
-            var action = entry.action || 'inspect';
-            var replayTool = action === 'mistake' ? activeInstrument : procedureInstrumentForAction(action);
-            var options = {};
-            var lastMatchingAction = entries.filter(function (candidate) { return candidate.action === action; }).slice(-1)[0];
-            var replayPath = entry === lastMatchingAction ? (action === 'scalpel' ? currentProcedure.incisionPath : (action === 'scissors' ? currentProcedure.extensionPath : null)) : null;
-            if (Array.isArray(replayPath) && replayPath.length) options.path = replayPath;
-            else { options.point = entry.point || procedureOutcomePoint(action, currentProcedure); options.path = []; }
-            queueProcedureInstrumentReplay(replayTool, options);
-            setProcedureFeedback((!selectedTechniqueActionIsLatest ? 'Selected response replay started: ' : 'Last response replay started: ') + (entry.outcome || procedureActionLabel(action)) + '. Watch the contact point and compare it with the recorded tissue response.', 'working');
+            reviewSelectedProcedureAction('diss-monitor-response');
           }
           function procedureReplayEvidence(state, actions, index) {
             state = state || {}; actions = actions || [];
@@ -6162,6 +6579,59 @@ var d = labToolData.dissection || {};
             var value = calibration && Object.prototype.hasOwnProperty.call(calibration, key) ? calibration[key] : null;
             var minimum = key === 'salineDose' ? 1 : 0, maximum = key === 'salineDose' ? 3 : 100;
             return typeof value === 'number' && isFinite(value) && value >= minimum && value <= maximum ? value : null;
+          }
+          function procedureReplayDetails(state, actions, index) {
+            if (!Array.isArray(actions) || typeof index !== 'number' || !isFinite(index) || Math.floor(index) !== index || index < 0 || index >= actions.length) return [];
+            var entry = actions[index];
+            if (!entry || typeof entry !== 'object') return [];
+            var rows = [], control = calibrationControlDefinition(entry.action);
+            if (control) {
+              var setting = procedureReplaySetting(entry, control.key);
+              var unit = control.key === 'salineDose' ? (setting === 1 ? ' drop' : ' drops') : control.unit;
+              rows.push({ label: control.label, value: setting == null ? 'Not recorded' : setting + unit });
+            }
+            if (entry.action === 'scalpel' || entry.action === 'scissors') {
+              var evidence = procedureReplayEvidence(state, actions, index);
+              rows.push({ label: 'Path', value: evidence.pathLabel === 'SAVED PATH' ? 'Saved path' :
+                (evidence.pathLabel === 'SUPPORTED PATH' ? 'Supported path' : 'Illustrative path; this action has no saved path.') });
+              rows.push({ label: 'Pressure samples', value: evidence.pressureRecorded ? 'Recorded along this path' : 'Not recorded' });
+            }
+            rows.push({ label: 'Recorded result', value: typeof entry.outcome === 'string' && entry.outcome.trim() ? entry.outcome.trim() : 'No result recorded for this action.' });
+            return rows;
+          }
+          function procedureReplayResponseData(actions, index) {
+            if (!Array.isArray(actions) || typeof index !== 'number' || !isFinite(index) || Math.floor(index) !== index || index < 0 || index >= actions.length || !Object.prototype.hasOwnProperty.call(actions, index)) return null;
+            var entry = actions[index];
+            if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+            var metrics = procedureReviewMetricData(entry);
+            return { explanation: typeof entry.outcomeDetail === 'string' ? entry.outcomeDetail.trim() : '', metrics: metrics,
+              availableCount: metrics.filter(function (metric) { return metric.available; }).length };
+          }
+          function renderProcedureReplayResponse(actions, index) {
+            var response = procedureReplayResponseData(actions, index);
+            if (!response) return null;
+            return React.createElement('details', { id: 'diss-replay-response', className: 'diss-replay-response' },
+              React.createElement('summary', { id: 'diss-replay-response-summary' },
+                React.createElement('span', { className: 'diss-replay-response__title' }, 'Recorded tissue response'),
+                React.createElement('span', { className: 'diss-replay-response__count' }, response.availableCount + ' of 4 measures recorded')
+              ),
+              React.createElement('div', { className: 'diss-replay-response__body' },
+                response.explanation && React.createElement('p', { className: 'diss-replay-response__explanation' }, response.explanation),
+                response.availableCount ? React.createElement('p', null, 'Before and after this action · simulation values out of 100. Lower risk is better.') : null,
+                response.availableCount ? React.createElement('dl', { className: 'diss-replay-response__metrics', 'aria-label': 'Saved tissue changes for this replay action' }, response.metrics.map(function (metric) {
+                  return React.createElement('div', { key: metric.key, className: 'diss-replay-response__metric', 'data-metric': metric.key, 'data-direction': metric.direction || 'neutral', 'data-available': metric.available ? 'true' : 'false' },
+                    React.createElement('dt', null, metric.label),
+                    React.createElement('dd', null, metric.available ? React.createElement(React.Fragment, null,
+                      ['before', 'after'].map(function (phase) { return React.createElement('div', { key: phase, className: 'diss-replay-response__reading', 'data-phase': phase },
+                        React.createElement('span', null, phase === 'before' ? 'Before' : 'After'),
+                        React.createElement('span', { className: 'diss-replay-response__track', 'aria-hidden': 'true' }, React.createElement('span', { className: 'diss-replay-response__fill', style: { width: metric[phase] + '%' } })),
+                        React.createElement('b', null, metric[phase])); }),
+                      React.createElement('span', { className: 'diss-replay-response__change' }, (metric.delta > 0 ? '+' : '') + metric.delta + ' points · ' + metric.changeLabel)
+                    ) : 'Before/after not recorded')
+                  );
+                })) : React.createElement('p', { className: 'diss-replay-response__empty' }, 'No complete before-and-after tissue measures were saved for this action.')
+              )
+            );
           }
           function procedureReplayPosition(replay, now) {
             var empty = { active: false, elapsed: 0, progress: 0, index: 0, localProgress: 0 };
@@ -6201,7 +6671,15 @@ var d = labToolData.dissection || {};
           function returnProcedureReplayFocus(replay) {
             var root = currentDissectionRootNode();
             var techniquePanel = scopedDissectionQuery(root, '#diss-procedure-panel');
-            var targetId = techniquePanel && !techniquePanel.open ? 'diss-procedure-summary' : replay.returnFocusId || 'diss-replay-attempt';
+            var returnId = replay.returnFocusId || 'diss-replay-attempt';
+            var origin = scopedDissectionQuery(root, '#' + returnId);
+            var targetId = techniquePanel && !techniquePanel.open && origin && techniquePanel.contains(origin) ? 'diss-procedure-summary' : returnId;
+            if (returnId === 'diss-monitor-response') {
+              var monitor = scopedDissectionQuery(root, '.diss-field-monitor');
+              var response = scopedDissectionQuery(root, '.diss-stage__telemetry-detail');
+              if (monitor && !monitor.open) targetId = 'diss-field-monitor-summary';
+              else if (response && !response.open) targetId = 'diss-monitor-response-summary';
+            }
             focusDissectionTarget(targetId, null, root);
           }
           function stopProcedureReplay(restoreFocus, quiet) {
@@ -6235,14 +6713,21 @@ var d = labToolData.dissection || {};
             upd('_procedureReplay', next);
             if (!next.paused) scheduleProcedureReplayFinish(next);
           }
+          function holdProcedureReplayAction(index) {
+            var replay = liveProcedureReplay();
+            if (!replay) return null;
+            var next = procedureReplayReviewStep(replay, index);
+            if (!next) return null;
+            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');
+            upd('_procedureReplay', next);
+            return next;
+          }
           function reviewProcedureReplayAction(direction) {
             var replay = liveProcedureReplay();
             if (!replay) return;
             var position = procedureReplayPosition(replay, Date.now());
-            var next = procedureReplayReviewStep(replay, position.index + direction);
+            var next = holdProcedureReplayAction(position.index + direction);
             if (!next) return;
-            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');
-            upd('_procedureReplay', next);
             var nextIndex = procedureReplayPosition(next, Date.now()).index;
             if (direction < 0 && nextIndex === 0) focusProcedureReplayControl(next.actions.length > 1 ? 'diss-replay-next' : 'diss-replay-toggle');
             else if (direction > 0 && nextIndex === next.actions.length - 1) focusProcedureReplayControl(next.actions.length > 1 ? 'diss-replay-previous' : 'diss-replay-toggle');
@@ -6253,6 +6738,21 @@ var d = labToolData.dissection || {};
           var activeReplayContactLabel = activeReplayEntry && ['scalpel', 'scissors'].indexOf(activeReplayEntry.action) < 0 ? procedureReplayContactLabel(activeReplayEntry, procedureReplayContact(activeReplayEntry)) : null;
           // Keep focused controls mounted until the owned completion timer clears the review.
           var replayReviewVisible = activeReplayPosition.active || activeReplayPosition.elapsed > 0;
+          function focusProcedureReplaySurface(showSpecimen) {
+            var replay = liveProcedureReplay(), root = currentDissectionRootNode();
+            var latest = canvasRefNode && canvasRefNode._drawD || d;
+            if (!replay || !replay.paused || latest.quizMode || !root || !root.isConnected) return;
+            setTimeout(function () {
+              var current = canvasRefNode && canvasRefNode._drawD || d;
+              if (!root.isConnected || currentDissectionRootNode() !== root || liveProcedureReplay() !== replay || !replay.paused || current.quizMode) return;
+              var target = scopedDissectionQuery(root, showSpecimen ? '#diss-replay-return' : '#diss-replay-view-specimen');
+              var surface = showSpecimen ? scopedDissectionQuery(root, '#diss-replay-specimen') : target;
+              if (!target || !surface) return;
+              if (surface.scrollIntoView) surface.scrollIntoView({ block: showSpecimen ? 'start' : 'center', behavior: 'auto' });
+              if (target.focus) target.focus({ preventScroll: true });
+            }, 0);
+          }
+
           function focusProcedureReplayControl(targetId, showSpecimen) {
             var root = currentDissectionRootNode(), attempts = 2;
             function focusWhenReady() {
@@ -6270,7 +6770,7 @@ var d = labToolData.dissection || {};
           function showProcedureReplay() {
             startProcedureReplay(false);
           }
-          function startProcedureReplay(reviewOnly) {
+          function startProcedureReplay(reviewOnly, selectedIndex, returnFocusId) {
             var actions = (currentProcedure.actionLog || []).slice();
             if (!actions.length) actions = (currentProcedure.history || []).map(function (action, idx) {
               return { action: action, label: procedureActionLabel(action), at: idx };
@@ -6282,12 +6782,14 @@ var d = labToolData.dissection || {};
             clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');
             clearDissectionCanvasTimer(canvasRefNode, 'procedureDemo');
             var replay = { specimen: specimen, layer: activeLayer, startedAt: replayStartedAt, duration: duration, actions: actions,
-              paused: review, elapsed: 0, returnFocusId: review ? 'diss-review-actions' : 'diss-replay-attempt' };
-            if (review) replay = procedureReplayReviewStep(replay, 0);
+              paused: review, elapsed: 0, returnFocusId: returnFocusId || (review ? 'diss-review-actions' : 'diss-replay-attempt') };
+            if (review) replay = procedureReplayReviewStep(replay, selectedIndex == null ? 0 : selectedIndex);
+            if (!replay) return null;
             updMany({ _procedureReplay: replay, _procedureDemo: null });
             if (!review) scheduleProcedureReplayFinish(replay);
             focusProcedureReplayControl('diss-replay-toggle', true);
-            setProcedureFeedback(review ? 'Attempt review opened. The first action is held on the specimen. Use Previous and Next to inspect each action.' : 'Attempt replay started. Follow the saved action order. Labels distinguish saved paths from teaching illustrations; pressure and settings appear only when recorded.');
+            setProcedureFeedback(review ? 'Attempt review opened. The selected action is held on the specimen. Choose an action or use Previous and Next to inspect it.' : 'Attempt replay started. Follow the saved action order. Labels distinguish saved paths from teaching illustrations; pressure and settings appear only when recorded.');
+            return replay;
           }
 
           function procedureActionComplete(state, action) {
@@ -6369,6 +6871,36 @@ var d = labToolData.dissection || {};
           function currentScenarioDefinition() {
             return ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === procedureScenario; }) || ADVANCED_SCENARIOS[0];
           }
+          function scenarioThresholdControlData() {
+            var scenarioId = currentScenarioDefinition().id;
+            return [
+              { key: 'instructorTarget', id: 'diss-instructor-target', label: 'Target score', value: instructorTarget, choices: [60, 65, 70, 75, 80, 85, 90, 95], unit: ' / 100', applies: scenarioId === 'precision-access' || scenarioId === 'preservation', help: 'Precision access uses this minimum technique score. Preservation uses it as minimum control; its preservation minimum is ' + Math.max(65, instructorTarget - 10) + '%.' },
+              { key: 'instructorMaxCautions', id: 'diss-instructor-cautions', label: 'Maximum cautions', value: instructorMaxCautions, choices: [0, 1, 2], unit: '', applies: scenarioId === 'preservation', help: 'Preservation allows up to this many cautions. This limit also informs technique feedback. Zero requires an attempt with no cautions.' },
+              { key: 'instructorRequiredStructures', id: 'diss-instructor-structures', label: 'Required structures', value: instructorRequiredStructures, choices: [1, 2, 3, 4, 5], unit: '', applies: scenarioId === 'structure-trace', help: 'Structure trace counts exposed structures inspected in the current layer. This setting also sets the investigation’s verified-identification goal, capped by the specimen’s total structure count.' }
+            ].map(function (control) {
+              control.options = control.choices.slice();
+              if (control.options.indexOf(control.value) < 0) control.options.push(control.value);
+              control.options.sort(function (a, b) { return a - b; });
+              return control;
+            });
+          }
+          function scenarioThresholdRequirements() {
+            var scenarioId = currentScenarioDefinition().id;
+            if (scenarioId === 'precision-access') return 'Finish all protocol steps and reach a technique score of at least ' + instructorTarget + '/100.';
+            if (scenarioId === 'preservation') return 'Finish all protocol steps with control at least ' + instructorTarget + '%, preservation at least ' + Math.max(65, instructorTarget - 10) + '%, and no more than ' + instructorMaxCautions + ' caution' + (instructorMaxCautions === 1 ? '' : 's') + '.';
+            if (scenarioId === 'structure-trace') return 'Inspect at least ' + instructorRequiredStructures + ' exposed structure' + (instructorRequiredStructures === 1 ? '' : 's') + ' in the current layer.';
+            return 'This challenge uses its own completion rules. These settings remain available for other challenges and lab feedback.';
+          }
+          function updateScenarioThreshold(key, value) {
+            if (!advancedWorkspace || d.quizMode || d.practicalMode) return false;
+            if (typeof value !== 'number' && typeof value !== 'string') return false;
+            if (typeof value === 'string' && !value.trim()) return false;
+            var control = scenarioThresholdControlData().find(function (item) { return item.key === key; });
+            var numeric = Number(value);
+            if (!control || !Number.isFinite(numeric) || control.choices.indexOf(numeric) < 0 || numeric === control.value) return false;
+            upd(key, numeric);
+            return true;
+          }
           function formatScenarioTime(seconds) {
             seconds = Math.max(0, Math.round(Number(seconds) || 0));
             return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
@@ -6443,7 +6975,13 @@ var d = labToolData.dissection || {};
           function activateProcedureScenario(scenario, restartAttempt) {
             scenario = scenario || ADVANCED_SCENARIOS[0];
             delete _disScenarioRestartReviews[dissectionSaveOwner];
+            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');
+            clearDissectionCanvasTimer(canvasRefNode, 'procedureDemo');
+            clearDissectionCanvasTimer(canvasRefNode, 'compareReplay');
             var patch = {
+              _procedureReplay: null,
+              _procedureDemo: null,
+              compareReplayPlaying: false,
               procedureScenario: scenario.id,
               scenarioStartedAt: Date.now(),
               scenarioTimeRemaining: scenario.id === 'timed-practical' ? 240 : 0,
@@ -6492,6 +7030,35 @@ var d = labToolData.dissection || {};
             }
             updMany(patch);
             setProcedureFeedback((restartAttempt ? 'Scenario restarted: ' : 'Scenario selected: ') + scenario.label + '. ' + scenario.prompt, 'working');
+            return patch.scenarioStartedAt;
+          }
+          function startProcedureScenarioTimer(event) {
+            var root = currentDissectionRootNode();
+            var origin = event && event.currentTarget;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || !origin || !root.contains(origin) || !canvas) return;
+            var latest = canvas._drawD || d;
+            function sameChallenge(data) {
+              var latestMode = data.workspaceMode === 'advanced' || data.workspaceMode === 'essentials' ? data.workspaceMode : workspaceMode;
+              return (data.specimen || 'frog') === specimen && (data.activeLayer || activeLayer) === activeLayer &&
+                latestMode === 'advanced' && !data.quizMode && !data.practicalMode && data.procedureScenario === 'timed-practical';
+            }
+            if (!sameChallenge(latest) || latest.scenarioStartedAt || currentScenarioDefinition().id !== 'timed-practical') return;
+            var startedAt = activateProcedureScenario(currentScenarioDefinition(), false);
+            var attempts = 2;
+            function focusStartedTimer() {
+              if (!root.isConnected || currentDissectionRootNode() !== root || scopedDissectionQuery(root, '[data-diss-canvas]') !== canvas) return;
+              var current = canvas._drawD || d;
+              if (!sameChallenge(current) || current.scenarioStartedAt !== startedAt) return;
+              var target = scopedDissectionQuery(root, '#diss-scenario-time');
+              var doc = origin.ownerDocument;
+              if (doc && doc.activeElement && doc.activeElement !== origin && doc.activeElement !== doc.body && doc.activeElement !== target) return;
+              if (!target && attempts-- > 0) { setTimeout(focusStartedTimer, 0); return; }
+              if (!target) return;
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+              if (target.focus) target.focus({ preventScroll: true });
+            }
+            setTimeout(focusStartedTimer, 0);
           }
           function procedureScenarioStatus(procedureState, inspectedOrgans) {
             procedureState = procedureState || currentProcedure;
@@ -6749,6 +7316,38 @@ var d = labToolData.dissection || {};
               tissueState: normalizeTissueState(state.tissueState)
             };
           }
+          function techniqueComparisonValue(value, count) {
+            if (typeof value !== 'number' && typeof value !== 'string') return null;
+            if (typeof value === 'string' && !value.trim()) return null;
+            var number = Number(value);
+            if (!Number.isFinite(number) || number < 0) return null;
+            if (count ? !Number.isInteger(number) : number > 100) return null;
+            return number;
+          }
+          function techniqueComparisonDelta(current, previous, count) {
+            current = techniqueComparisonValue(current, count);
+            previous = techniqueComparisonValue(previous, count);
+            return current === null || previous === null ? null : Number((current - previous).toFixed(2));
+          }
+          function techniqueComparisonMetricData(metric) {
+            var count = metric.kind === 'count';
+            var previous = techniqueComparisonValue(metric.previous, count);
+            var current = metric.pending ? null : techniqueComparisonValue(metric.current, count);
+            var delta = techniqueComparisonDelta(current, previous, count);
+            var suffix = metric.kind === 'score' ? '/100' : count ? '' : '%';
+            var magnitude = Math.abs(delta);
+            var unit = metric.kind === 'score' ? 'point' : 'percentage point';
+            var changeText = delta === null ? 'Change unavailable' : delta === 0 ? 'No change' : count
+              ? magnitude + (delta < 0 ? ' fewer caution' : ' more caution') + (magnitude === 1 ? '' : 's')
+              : magnitude + ' ' + unit + (magnitude === 1 ? '' : 's') + (delta > 0 ? ' higher' : ' lower');
+            return {
+              previous: previous, current: current, delta: delta,
+              previousText: previous === null ? 'Not recorded' : previous + suffix,
+              currentText: metric.pending ? 'No scored stroke yet' : current === null ? 'Not recorded' : current + suffix,
+              changeText: changeText,
+              tone: delta === null ? 'unavailable' : delta === 0 ? 'unchanged' : (count ? delta < 0 : delta > 0) ? 'improved' : 'declined'
+            };
+          }
           function techniqueComparisonData() {
             var entries = (((d.attemptArchive || {})[activeLayer]) || []).slice();
             if (!entries.length) return null;
@@ -6757,17 +7356,19 @@ var d = labToolData.dissection || {};
             if (priorIndex < 0) return null;
             var previous = entries[priorIndex];
             var current = procedureMetricSnapshot(currentProcedure);
+            var strokeRecorded = !!(currentProcedure.extensionMetrics || currentProcedure.incisionMetrics);
             return {
               previous: previous,
               current: current,
-              scoreDelta: current.score - (Number(previous.score) || 0),
-              precisionDelta: current.precision - (Number(previous.precision) || 0),
-              coverageDelta: current.coverage - (Number(previous.coverage) || 0),
-              controlDelta: current.control - (Number(previous.control) || 0),
-              angleDelta: current.angleControl - (Number(previous.angleControl) || 0),
-              cautionDelta: current.cautions - (Number(previous.cautions) || 0),
-              preservationDelta: current.preservation - (Number(previous.preservation) || 0),
-              observationDelta: current.observationQuality - (Number(previous.observationQuality) || 0)
+              strokeRecorded: strokeRecorded,
+              scoreDelta: techniqueComparisonDelta(current.score, previous.score),
+              precisionDelta: techniqueComparisonDelta(strokeRecorded ? current.precision : null, previous.precision),
+              coverageDelta: techniqueComparisonDelta(strokeRecorded ? current.coverage : null, previous.coverage),
+              controlDelta: techniqueComparisonDelta(strokeRecorded ? current.control : null, previous.control),
+              angleDelta: techniqueComparisonDelta(strokeRecorded ? current.angleControl : null, previous.angleControl),
+              cautionDelta: techniqueComparisonDelta(current.cautions, previous.cautions, true),
+              preservationDelta: techniqueComparisonDelta(current.preservation, previous.preservation),
+              observationDelta: techniqueComparisonDelta(current.observationQuality, previous.observationQuality)
             };
           }
           function stopTechniqueCompareReplay(canvas) {
@@ -6907,7 +7508,7 @@ var d = labToolData.dissection || {};
             if (metrics.coverage < 70) return coaching('Path coverage', 'Begin closer to the first endpoint and carry the stroke through the second endpoint.');
             if ((metrics.angleControl || 0) < 72) return coaching('Instrument angle', 'Use steadier pointer pressure and a more consistent stroke direction.');
             if ((metrics.control || metrics.smoothness || 0) < 72) return coaching('Tool control', 'Use one continuous, even-paced motion instead of several abrupt corrections.');
-            if (comparison && comparison.scoreDelta <= 0) return coaching('Strategy change', 'Review the saved comparison, then choose one deliberate correction for the next attempt.', 'Review saved comparison', 'diss-compare-replay-progress', 'comparison');
+            if (comparison && comparison.scoreDelta !== null && comparison.scoreDelta <= 0) return coaching('Strategy change', 'Review the saved comparison, then choose one deliberate correction for the next attempt.', 'Review saved comparison', 'diss-compare-replay-progress', 'comparison');
             return coaching('Independent refinement', 'Review independent mode or the instructor target before choosing your next challenge.');
           }
           function focusAdaptiveCoaching() {
@@ -8752,7 +9353,7 @@ var d = labToolData.dissection || {};
                 if (id === 'scale') canvas._scaleHudBox = box;
                 if (id === 'orientation') canvas._orientationHudBox = box;
               }
-              function placeCanvasHudPanel(x, y, width, height, additionalBoxes) {
+              function placeCanvasHudPanel(x, y, width, height, additionalBoxes, keepHudClear) {
                 var obstacles = canvas._guidanceBoxes.concat(canvas._canvasHudBoxes, additionalBoxes || []);
                 var candidates = [[x, y], [14, 14], [W - width - 14, 14],
                   [14, H - height - 14], [W - width - 14, H - height - 14]];
@@ -8766,16 +9367,23 @@ var d = labToolData.dissection || {};
                 candidates.forEach(function (candidate) {
                   var left = Math.max(14, Math.min(W - width - 14, candidate[0]));
                   var top = Math.max(14, Math.min(H - height - 14, candidate[1]));
-                  var score = Math.hypot(left - x, top - y) * 0.15;
+                  var score = Math.hypot(left - x, top - y) * 0.15, clearanceOverlap = 0, hudOverlap = 0;
                   obstacles.forEach(function (box) {
                     var overlapW = Math.min(left + width + 6, box.x + box.width) - Math.max(left - 6, box.x);
                     var overlapH = Math.min(top + height + 6, box.y + box.height) - Math.max(top - 6, box.y);
                     if (overlapW > 0 && overlapH > 0) {
+                      if (box.keepClear) clearanceOverlap += overlapW * overlapH;
+                      if (keepHudClear && canvas._canvasHudBoxes.indexOf(box) !== -1) hudOverlap += overlapW * overlapH;
                       score += overlapW * overlapH * (box.priority || 1);
                       if (box.priority >= 8) score += W * H * 100;
                     }
                   });
-                  if (!placement || score < placement.score) placement = { x: left, y: top, score: score };
+                  // Keep the replay contact visible before balancing the remaining HUD panels.
+                  if (!placement || clearanceOverlap < placement.clearanceOverlap ||
+                    (clearanceOverlap === placement.clearanceOverlap && (hudOverlap < placement.hudOverlap ||
+                      (hudOverlap === placement.hudOverlap && score < placement.score)))) {
+                    placement = { x: left, y: top, score: score, clearanceOverlap: clearanceOverlap, hudOverlap: hudOverlap };
+                  }
                 });
                 return placement;
               }
@@ -13865,7 +14473,8 @@ var d = labToolData.dissection || {};
                 replayCaption = {
                   title: 'STEP ' + (replayIndex + 1) + '/' + replayActions.length + ' \u00B7 ' + (replayEntry.label || procedureActionLabel(replayEntry.action)).toUpperCase(),
                   detail: replayMeasureText, status: replayStatusText, accessible: replayAccessible,
-                  progress: replayProgress, anchor: canvasScreenBox(replayMarkerX, replayMarkerY, 0, 0)
+                  progress: replayProgress, anchor: canvasScreenBox(replayMarkerX, replayMarkerY, 0, 0),
+                  contactBounds: canvasScreenBox(replayMarkerX - 24, replayMarkerY - 24, 48, 48)
                 };
               }
               var liveInstrument = d.activeInstrument || 'probe';
@@ -16011,21 +16620,38 @@ var d = labToolData.dissection || {};
                 ctx.font = 'bold ' + (12 * replayTypeScale) + 'px Inter, system-ui';
                 var replayLabelWidth = Math.min(canvasDisplayWidth < 480 ? W * 0.48 : W - 28, Math.max(180, Math.ceil(Math.max(ctx.measureText(replayCaption.title).width,
                   ctx.measureText(replayCaption.detail).width, ctx.measureText(replayCaption.status).width)) + 2 * replayInset));
-                var replayTextWidth = replayLabelWidth - 2 * replayInset;
-                var replayTitleLines = wrapTextToWidth(replayCaption.title, replayTextWidth, 2);
-                var replayDetailLines = wrapTextToWidth(replayCaption.detail, replayTextWidth, 2);
-                var replayStatusLines = wrapTextToWidth(replayCaption.status, replayTextWidth, 3);
                 var replayLineHeight = 15 * replayTypeScale;
-                var replayLabelHeight = (replayTitleLines.length + replayDetailLines.length + replayStatusLines.length) * replayLineHeight + 12 * replayTypeScale;
                 var replayAnchor = replayCaption.anchor || { x: W / 2, y: H / 2 };
-                var replayPlacement = placeCanvasHudPanel(replayAnchor.x + 14, replayAnchor.y - replayLabelHeight,
-                  replayLabelWidth, replayLabelHeight, sharedHudReservations.filter(function (box) {
-                    // Independent replay has no next-step card occupying this corner.
-                    return box.id !== 'procedure-handoff' || (procedureMode === 'guided' && instrumentVisuals);
-                  }).concat(canvas._guidanceBoxes.map(function (box) {
-                    return { x: box.x, y: box.y, width: box.width, height: box.height, priority: 8 };
-                  })));
-                var replayLabelX = replayPlacement.x, replayLabelY = replayPlacement.y;
+                var replayObstacles = sharedHudReservations.filter(function (box) {
+                  // Independent replay has no next-step card occupying this corner.
+                  return box.id !== 'procedure-handoff' || (procedureMode === 'guided' && instrumentVisuals);
+                }).concat(canvas._guidanceBoxes.map(function (box) {
+                  return { x: box.x, y: box.y, width: box.width, height: box.height, priority: 8 };
+                })).concat(replayCaption.contactBounds ? [Object.assign({ priority: 12, keepClear: true }, replayCaption.contactBounds)] : []);
+                function measureReplayCaption(width) {
+                  var textWidth = width - 2 * replayInset;
+                  var titleLines = wrapTextToWidth(replayCaption.title, textWidth, 2);
+                  var detailLines = wrapTextToWidth(replayCaption.detail, textWidth, 2);
+                  var statusLines = wrapTextToWidth(replayCaption.status, textWidth, 3);
+                  var height = (titleLines.length + detailLines.length + statusLines.length) * replayLineHeight + 12 * replayTypeScale;
+                  return { width: width, height: height, titleLines: titleLines, detailLines: detailLines, statusLines: statusLines,
+                    placement: placeCanvasHudPanel(replayAnchor.x + 14, replayAnchor.y - height, width, height, replayObstacles, true) };
+                }
+                var replayLayout = measureReplayCaption(replayLabelWidth);
+                if (replayLayout.placement.clearanceOverlap > 0 || replayLayout.placement.score >= W * H * 100) {
+                  // Reflow a crowded caption before allowing it to cover another fixed panel.
+                  [Math.min(W - 28, W * 0.75), W - 28].forEach(function (width) {
+                    if (width <= replayLabelWidth) return;
+                    var candidate = measureReplayCaption(width), best = replayLayout.placement, next = candidate.placement;
+                    if (next.clearanceOverlap < best.clearanceOverlap ||
+                      (next.clearanceOverlap === best.clearanceOverlap && (next.hudOverlap < best.hudOverlap ||
+                        (next.hudOverlap === best.hudOverlap && next.score < best.score)))) replayLayout = candidate;
+                  });
+                }
+                replayLabelWidth = replayLayout.width;
+                var replayLabelHeight = replayLayout.height;
+                var replayTitleLines = replayLayout.titleLines, replayDetailLines = replayLayout.detailLines, replayStatusLines = replayLayout.statusLines;
+                var replayLabelX = replayLayout.placement.x, replayLabelY = replayLayout.placement.y;
                 rememberCanvasHudBox('replay', replayLabelX, replayLabelY, replayLabelWidth, replayLabelHeight);
                 ctx.fillStyle = replayCaption.accessible ? '#000000' : 'rgba(15,23,42,0.96)';
                 ctx.strokeStyle = replayCaption.accessible ? '#ffffff' : '#67e8f9'; ctx.lineWidth = 1.2;
@@ -18055,12 +18681,7 @@ var d = labToolData.dissection || {};
           var selectedTechniqueAction = procedureTimelineEntries[selectedTechniqueActionIndex] || null;
           var selectedTechniqueActionIsLatest = !!selectedTechniqueAction && selectedTechniqueActionIndex === procedureTimelineEntries.length - 1;
           var stageTelemetryTone = currentTissueState.trauma >= 60 ? 'danger' : ((currentTissueState.risk >= 55 || currentTissueState.moisture < 38 || currentTissueState.tension > 82) ? 'caution' : 'stable');
-          var stageTelemetryMetrics = [
-            { id: 'exposure', label: 'Exposure', value: currentTissueState.exposure, note: 'Field aperture', risk: false },
-            { id: 'clarity', label: 'Clarity', value: currentTissueState.clarity, note: currentObservationField.label, risk: currentTissueState.clarity < 45 },
-            { id: 'stability', label: 'Stability', value: currentTissueState.stability, note: currentTissuePhysics.label, risk: currentTissueState.stability < 45 && currentTissueState.exposure > 35 },
-            { id: 'risk', label: 'Risk', value: currentTissueState.risk, note: currentTissueStatus.label, risk: currentTissueState.risk >= 55 }
-          ];
+          var stageTelemetryMetrics = tissueMonitorMetrics(currentTissueState);
           var latestActionBefore = selectedTechniqueAction && selectedTechniqueAction.tissueBefore ? normalizeTissueState(selectedTechniqueAction.tissueBefore) : null;
           var latestActionAfter = selectedTechniqueAction && selectedTechniqueAction.tissueAfter ? normalizeTissueState(selectedTechniqueAction.tissueAfter) : null;
           var latestActionDeltaMetrics = latestActionBefore && latestActionAfter ? [
@@ -18101,7 +18722,13 @@ var d = labToolData.dissection || {};
                   : (scenarioDefinition.id === 'restricted-tray'
                     ? 'Choosing Restricted tray makes dropper and wick unavailable and selects an allowed instrument if needed.'
                     : 'Choosing a scenario applies its objective to the current attempt. Technique records and inspected structures are kept.'))));
-          var scenarioRestartEffects = 'Restart resets the technique attempt for ' + currentLayerDef.name + ' and clears inspected-structure progress across the current ' + spec.name + ' specimen. Notes, confidence ratings, captured frames, and archived attempts remain.';
+          var scenarioPlaybackActive = !d.quizMode && !!((activeProcedureReplay && replayReviewVisible) || (d._procedureDemo && d._procedureDemo.layer === activeLayer) || d.compareReplayPlaying);
+          var scenarioRestartEffects = [
+            { label: 'Current layer', detail: 'Restart resets the technique attempt for ' + currentLayerDef.name + '.' },
+            { label: 'This specimen', detail: 'Restart clears inspected-structure progress across the current ' + spec.name + ' specimen.' },
+            { label: 'Saved work', detail: 'Notes, confidence ratings, captured frames, and archived attempts remain.' }
+          ];
+          if (scenarioPlaybackActive) scenarioRestartEffects.push({ label: 'Playback', detail: 'Active playback also ends.' });
           var scenarioRestartReview = currentProcedureScenarioRestartReview();
           var procedureDebrief = procedureDebriefData();
           var attemptEntries = (((d.attemptArchive || {})[activeLayer]) || []);
@@ -18114,6 +18741,7 @@ var d = labToolData.dissection || {};
           var currentExposure = procedureExposureData(currentProcedure);
           var currentDecisionScore = procedureDecisionScore(currentProcedure);
           var currentMaterialInteraction = procedureMaterialInteractionData(activeInstrument, currentProcedure);
+          var materialCuttingTool = activeInstrument === 'scalpel' || activeInstrument === 'scissors';
           var currentToolReadiness = procedureToolReadinessData(activeInstrument, currentProcedure);
           var nextToolReadiness = procedureNext.action === 'complete' ? null : procedureToolReadinessData(procedureNext.instrument, currentProcedure);
           var readinessForField = nextToolReadiness || currentToolReadiness;
@@ -18121,14 +18749,16 @@ var d = labToolData.dissection || {};
             { id: 'view', label: 'View', ready: anatomicalView === procedureProtocol.recommendedView, detail: anatomicalView === procedureProtocol.recommendedView ? 'Aligned to ' + procedureProtocol.recommendedView : 'Align to ' + procedureProtocol.recommendedView + ' view' },
             { id: 'optics', label: 'Optics', ready: currentOpticalInspection.quality >= 65 && currentIllumination.glareRisk < 58, detail: currentOpticalInspection.quality >= 65 && currentIllumination.glareRisk < 58 ? 'Focus ' + currentOpticalInspection.quality + '% · glare ' + currentIllumination.glareRisk + '%' : currentOpticalInspection.suggestion },
             { id: 'tissue', label: 'Tissue', ready: currentTissueState.trauma < 60 && currentTissueState.risk < 55 && currentTissueState.moisture >= 38, detail: currentTissueState.trauma < 60 && currentTissueState.risk < 55 && currentTissueState.moisture >= 38 ? currentTissueStatus.label + ' · preserve the corridor' : currentTissueStatus.priority },
-            { id: 'tool', label: 'Tool', ready: !!readinessForField.safeToAct, detail: readinessForField.label + ' · ' + readinessForField.score + '%' }
+            { id: 'tool', label: 'Tool', ready: !!readinessForField.safeToAct, detail: ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === procedureNext.instrument; }) || {}).label || procedureNext.instrument || activeInstrument) + ' · ' + readinessForField.label + ' · ' + readinessForField.score + '%' }
           ];
+          // Drawing may normalize its local data; review controls keep their rendered context.
+          var fieldReadinessContext = Object.assign({}, d, { specimen: specimen, activeLayer: activeLayer });
           var fieldReadinessScore = Math.round(fieldReadinessChecks.reduce(function (sum, check) { return sum + (check.ready ? 25 : 0); }, 0));
           var fieldReadinessTone = readinessForField.tone === 'restricted' ? 'restricted' : (fieldReadinessScore === 100 ? 'ready' : 'caution');
           var fieldReadinessLabel = fieldReadinessTone === 'ready' ? 'Ready for controlled contact' : (fieldReadinessTone === 'restricted' ? 'Contact restricted' : 'Adjust before contact');
           var firstFieldReadinessIssue = fieldReadinessChecks.find(function (check) { return !check.ready; }) || null;
           var fieldReadinessCue = fieldReadinessScore === 100 ? 'All four pre-contact checks pass. Make one deliberate contact and monitor the response.' : (firstFieldReadinessIssue || {}).detail || 'Review the current tool and field state before contact.';
-          var fieldReadinessActionLabel = !firstFieldReadinessIssue ? 'All checks pass' : (firstFieldReadinessIssue.id === 'view' ? 'Align view' : (firstFieldReadinessIssue.id === 'optics' ? 'Tune optics' : (firstFieldReadinessIssue.id === 'tool' ? 'Prepare tool' : 'Review tissue')));
+          var fieldReadinessCountLabel = (fieldReadinessScore / 25) + ' of ' + fieldReadinessChecks.length + ' checks ready';
           var activeInstrumentDefinition = PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || { label: activeInstrument };
           var stageProcedureStepTotal = Math.max(1, (procedureProtocol.order || []).length);
           var stageProcedureStepDisplay = procedureNext.action === 'complete' ? stageProcedureStepTotal : Math.min(stageProcedureStepTotal, procedureStageIdx + 1);
@@ -18877,8 +19507,9 @@ var d = labToolData.dissection || {};
                     React.createElement('dl', null, reviewMetrics.map(function (metric) { return React.createElement('div', { key: metric.key }, React.createElement('dt', null, metric.label), React.createElement('dd', null, metric.meaning)); })),
                     React.createElement('p', { className: 'diss-layer-review__note' }, 'These are simulation values for the saved action. Compare them with the current setup before deciding what to do next.')
                   ),
+                  selectedTechniqueAction && React.createElement('p', { id: 'diss-layer-replay-help', className: 'diss-replay-launch-hint' }, 'Opens paused on this saved action. Resume to continue through the attempt.'),
                   selectedTechniqueAction && React.createElement('div', { className: 'diss-layer-review__response-actions' },
-                    React.createElement('button', { type: 'button', className: 'diss-layer-review__action', onClick: showProcedureLastResponse, 'aria-controls': 'diss-canvas' }, 'Replay reviewed action'),
+                    React.createElement('button', { id: 'diss-layer-replay-response', type: 'button', className: 'diss-layer-review__action', onClick: function () { reviewSelectedProcedureAction('diss-layer-replay-response'); }, 'aria-controls': !d.quizMode && activeProcedureReplay && replayReviewVisible ? 'diss-replay-review' : undefined, 'aria-describedby': 'diss-layer-replay-help' }, 'Replay reviewed action'),
                     React.createElement('button', { type: 'button', className: 'diss-layer-review__action', onClick: returnToProcedureReviewHistory, 'aria-controls': 'diss-procedure-record-' + selectedTechniqueActionIndex }, 'Return to history'),
                     procedureLearningCheckpointVisible() && currentLearningGate.phase === 'reflect' && React.createElement('button', { type: 'button', className: 'diss-layer-review__action', 'aria-controls': 'diss-learning-check-title', onClick: function () { focusDissectionTarget('diss-learning-check-title'); } }, 'Return to explanation')
                   )
@@ -19426,36 +20057,187 @@ var d = labToolData.dissection || {};
             focusResetControl('diss-reset-specimen');
           }
 
+          function reviewMaterialCalibration(event) {
+            var origin = event && event.currentTarget;
+            var root = origin && origin.closest ? origin.closest('[data-dissection-root]') : null;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || root !== currentDissectionRootNode() || !root.contains(origin) || !origin.getClientRects().length || !canvas) return;
+            var latest = canvas._drawD || fieldReadinessContext;
+            if (latest.quizMode || latest.practicalMode || (latest.specimen || 'frog') !== fieldReadinessContext.specimen || (latest.activeLayer || fieldReadinessContext.activeLayer) !== fieldReadinessContext.activeLayer || latest.workspaceMode !== fieldReadinessContext.workspaceMode || (latest.activeInstrument || 'probe') !== (fieldReadinessContext.activeInstrument || 'probe')) return;
+            var target = scopedDissectionQuery(root, '#diss-calibration-range');
+            if (!target || !target.getClientRects().length) return;
+            if (target.focus) target.focus({ preventScroll: true });
+            var view = origin.ownerDocument && origin.ownerDocument.defaultView;
+            var previousMargin = null;
+            if (target.style && view && view.getComputedStyle) {
+              var nextAction = scopedDissectionQuery(root, '.diss-next-action');
+              var nextStyle = nextAction && view.getComputedStyle(nextAction);
+              if (nextStyle && (nextStyle.position === 'sticky' || nextStyle.position === 'fixed')) {
+                previousMargin = { value: target.style.getPropertyValue('scroll-margin-top'), priority: target.style.getPropertyPriority('scroll-margin-top') };
+                var margin = Math.max(parseFloat(view.getComputedStyle(target).scrollMarginTop) || 0, nextAction.getBoundingClientRect().height + (parseFloat(nextStyle.top) || 0) + 12);
+                target.style.setProperty('scroll-margin-top', margin + 'px', 'important');
+              }
+            }
+            try {
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' });
+            } finally {
+              if (previousMargin) {
+                if (previousMargin.value) target.style.setProperty('scroll-margin-top', previousMargin.value, previousMargin.priority);
+                else target.style.removeProperty('scroll-margin-top');
+              }
+            }
+          }
+
+          function reviewExposureProtocol(event) {
+            var origin = event && event.currentTarget;
+            var root = origin && origin.closest ? origin.closest('[data-dissection-root]') : null;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || root !== currentDissectionRootNode() || !root.contains(origin) || !origin.getClientRects().length || !canvas) return;
+            var latest = canvas._drawD || fieldReadinessContext;
+            if (latest.quizMode || latest.practicalMode || (latest.specimen || 'frog') !== fieldReadinessContext.specimen || (latest.activeLayer || fieldReadinessContext.activeLayer) !== fieldReadinessContext.activeLayer || latest.workspaceMode !== fieldReadinessContext.workspaceMode) return;
+            var target = scopedDissectionQuery(root, '#diss-protocol');
+            if (!target || !target.getClientRects().length) return;
+            if (target.focus) target.focus({ preventScroll: true });
+            var view = origin.ownerDocument && origin.ownerDocument.defaultView;
+            var previousMargin = null;
+            if (target.style && view && view.getComputedStyle) {
+              var nextAction = scopedDissectionQuery(root, '.diss-next-action');
+              var nextStyle = nextAction && view.getComputedStyle(nextAction);
+              if (nextStyle && (nextStyle.position === 'sticky' || nextStyle.position === 'fixed')) {
+                previousMargin = { value: target.style.getPropertyValue('scroll-margin-top'), priority: target.style.getPropertyPriority('scroll-margin-top') };
+                var margin = Math.max(parseFloat(view.getComputedStyle(target).scrollMarginTop) || 0, nextAction.getBoundingClientRect().height + (parseFloat(nextStyle.top) || 0) + 12);
+                target.style.setProperty('scroll-margin-top', margin + 'px', 'important');
+              }
+            }
+            try {
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' });
+            } finally {
+              if (previousMargin) {
+                if (previousMargin.value) target.style.setProperty('scroll-margin-top', previousMargin.value, previousMargin.priority);
+                else target.style.removeProperty('scroll-margin-top');
+              }
+            }
+          }
+
+          function reviewOpticalIllumination(event) {
+            var origin = event && event.currentTarget;
+            var root = origin && origin.closest ? origin.closest('[data-dissection-root]') : null;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || root !== currentDissectionRootNode() || !root.contains(origin) || !origin.getClientRects().length || !canvas) return;
+            var contextKeys = ['workspaceMode', 'selectedOrgan', 'lensPinnedOrganId', 'lensFocusDepth', 'lensMagnification', 'lightIntensity'];
+            function sameContext(data) {
+              return !data.quizMode && !data.practicalMode && (data.specimen || 'frog') === fieldReadinessContext.specimen && (data.activeLayer || fieldReadinessContext.activeLayer) === fieldReadinessContext.activeLayer &&
+                !contextKeys.some(function (key) { return data[key] !== fieldReadinessContext[key]; });
+            }
+            if (!sameContext(canvas._drawD || fieldReadinessContext)) return;
+            updMany({ toolbarViewOpen: true, toolbarToolsOpen: false, toolbarStudyOpen: false });
+            var attempts = 2;
+            function focusWhenReady() {
+              if (!root.isConnected || !root.contains(origin) || !origin.getClientRects().length || currentDissectionRootNode() !== root || scopedDissectionQuery(root, '[data-diss-canvas]') !== canvas || !sameContext(canvas._drawD || fieldReadinessContext)) return;
+              var target = scopedDissectionQuery(root, '#diss-light-intensity-range');
+              var doc = origin.ownerDocument;
+              if (doc && doc.activeElement && doc.activeElement !== origin && doc.activeElement !== target && doc.activeElement !== doc.body) return;
+              if (!target && attempts-- > 0) { scheduleDissectionCanvasTimer(canvas, 'opticalIlluminationFocus', focusWhenReady, 0); return; }
+              if (!target || target.disabled || !target.getClientRects().length) return;
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+              if (target.focus) target.focus({ preventScroll: true });
+            }
+            scheduleDissectionCanvasTimer(canvas, 'opticalIlluminationFocus', focusWhenReady, 0);
+          }
+
+          function reviewObservationField(event) {
+            var origin = event && event.currentTarget;
+            var root = origin && origin.closest ? origin.closest('[data-dissection-root]') : null;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || root !== currentDissectionRootNode() || !root.contains(origin) || !canvas) return;
+            var latest = canvas._drawD || fieldReadinessContext;
+            if (latest.quizMode || latest.practicalMode || (latest.specimen || 'frog') !== fieldReadinessContext.specimen || (latest.activeLayer || fieldReadinessContext.activeLayer) !== fieldReadinessContext.activeLayer) return;
+            var target = scopedDissectionQuery(root, '#diss-field-tissue');
+            var monitor = target && target.closest ? target.closest('details.diss-field-monitor') : null;
+            if (!target || !monitor || !root.contains(monitor)) return;
+            // Both panels already exist. Native disclosure navigation needs no deferred focus or saved state.
+            monitor.open = true;
+            if (target.focus) target.focus({ preventScroll: true });
+            var view = origin.ownerDocument && origin.ownerDocument.defaultView;
+            var previousMargin = null;
+            if (target.style && view && view.getComputedStyle) {
+              var nextAction = scopedDissectionQuery(root, '.diss-next-action');
+              var nextStyle = nextAction && view.getComputedStyle(nextAction);
+              if (nextStyle && (nextStyle.position === 'sticky' || nextStyle.position === 'fixed')) {
+                previousMargin = { value: target.style.getPropertyValue('scroll-margin-top'), priority: target.style.getPropertyPriority('scroll-margin-top') };
+                var margin = Math.max(parseFloat(view.getComputedStyle(target).scrollMarginTop) || 0, nextAction.getBoundingClientRect().height + (parseFloat(nextStyle.top) || 0) + 12);
+                target.style.setProperty('scroll-margin-top', margin + 'px', 'important');
+              }
+            }
+            try {
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' });
+            } finally {
+              if (previousMargin) {
+                if (previousMargin.value) target.style.setProperty('scroll-margin-top', previousMargin.value, previousMargin.priority);
+                else target.style.removeProperty('scroll-margin-top');
+              }
+            }
+          }
+
           function runFieldReadinessCheck() {
             var failedChecks = fieldReadinessChecks.filter(function (check) { return !check.ready; });
-            var message = 'Field check: ' + fieldReadinessLabel + ' (' + fieldReadinessScore + '/100). ' + (failedChecks.length ? failedChecks.map(function (check) { return check.label + ': ' + check.detail; }).join(' ') : fieldReadinessCue);
+            var message = 'Field check: ' + fieldReadinessLabel + ' (' + fieldReadinessCountLabel + '). ' + (failedChecks.length ? failedChecks.map(function (check) { return check.label + ': ' + check.detail; }).join(' ') : fieldReadinessCue);
             setProcedureFeedback(message, fieldReadinessTone === 'ready' ? 'success' : 'caution');
           }
-          function resolveFieldReadinessIssue() {
-            var issue = fieldReadinessChecks.find(function (check) { return !check.ready; });
-            if (!issue) { setProcedureFeedback('Field check passed. The current setup is ready for one deliberate contact.', 'success'); return; }
+          function resolveFieldReadinessIssue(checkId, event) {
+            var root = currentDissectionRootNode();
+            var origin = event && event.currentTarget;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || !origin || !root.contains(origin) || !canvas || !stageHandoffUsesTool) return;
+            var latest = canvas._drawD || fieldReadinessContext;
+            if (latest.quizMode || latest.practicalMode || (latest.specimen || 'frog') !== fieldReadinessContext.specimen || (latest.activeLayer || fieldReadinessContext.activeLayer) !== fieldReadinessContext.activeLayer) return;
+            var contextKeys = ['anatomicalView', 'procedureByLayer', 'revealedLayers', 'procedureScenario', 'procedureMode', 'activeInstrument', 'toolCalibration', 'workspaceMode', 'selectedOrgan', 'lensFocusDepth', 'lensMagnification', 'lightIntensity', 'specimenCondition'];
+            function sameContext(data) {
+              return !data.quizMode && !data.practicalMode && (data.specimen || 'frog') === fieldReadinessContext.specimen && (data.activeLayer || fieldReadinessContext.activeLayer) === fieldReadinessContext.activeLayer &&
+                !contextKeys.some(function (key) { return data[key] !== fieldReadinessContext[key]; });
+            }
+            if (!sameContext(latest)) return;
+            function focusFieldTarget(targetId, message) {
+              if (message) setProcedureFeedback(message, 'working');
+              var attempts = 2;
+              function focusWhenReady() {
+                if (!root.isConnected || currentDissectionRootNode() !== root || scopedDissectionQuery(root, '[data-diss-canvas]') !== canvas || !sameContext(canvas._drawD || fieldReadinessContext)) return;
+                var target = scopedDissectionQuery(root, '#' + targetId);
+                var doc = origin.ownerDocument;
+                if (doc && doc.activeElement && doc.activeElement !== origin && doc.activeElement !== target && doc.activeElement !== doc.body) return;
+                if (!target && attempts-- > 0) { scheduleDissectionCanvasTimer(canvas, 'fieldReadinessFocus', focusWhenReady, 0); return; }
+                if (!target) return;
+                if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+                if (target.focus) target.focus({ preventScroll: true });
+              }
+              scheduleDissectionCanvasTimer(canvas, 'fieldReadinessFocus', focusWhenReady, 0);
+            }
+            var issue = fieldReadinessChecks.find(function (check) { return check.id === checkId; });
+            if (!issue) return;
             if (issue.id === 'view') {
               updMany({ toolbarViewOpen: true, toolbarToolsOpen: false, toolbarStudyOpen: false });
-              focusDissectionTarget('diss-view-cycle', 'Choose the ' + procedureProtocol.recommendedView + ' view yourself, using the specimen landmarks as evidence.');
+              focusFieldTarget('diss-view-cycle', 'Review the recommended ' + procedureProtocol.recommendedView + ' view using the specimen landmarks. Choose the view when ready.');
               return;
             }
             if (issue.id === 'optics') {
               updMany({ toolbarViewOpen: true, toolbarToolsOpen: false, toolbarStudyOpen: false });
-              focusDissectionTarget('diss-view-tools', 'Adjust focus and illumination yourself. ' + currentOpticalInspection.suggestion);
+              var opticsTarget = currentIllumination.glareRisk >= 58 || currentIllumination.score < 72 ? 'diss-light-intensity-range' : 'diss-lens-focus-depth';
+              focusFieldTarget(opticsTarget, 'Review focus and illumination. ' + currentOpticalInspection.suggestion);
               return;
             }
             if (issue.id === 'tool') {
-              prepareNextProcedureStep();
+              prepareNextProcedureStep(focusFieldTarget);
               return;
             }
-            setProcedureFeedback('Tissue needs attention before contact. Decide which intervention matches this evidence: ' + issue.detail, 'caution');
+            focusFieldTarget('diss-field-tissue', 'Review the tissue evidence before deciding on an intervention. ' + issue.detail);
           }
-          function prepareNextProcedureStep() {
+          function prepareNextProcedureStep(focusTarget) {
+            var prepareFocus = typeof focusTarget === 'function' ? focusTarget : focusDissectionTarget;
             var next = nextProcedureInfo();
             if (next.action === 'complete') {
               var completionLearningGate = procedureLearningGateFor(next.action, currentProcedure);
               if (completionLearningGate.required) {
-                focusDissectionTarget('diss-learning-checkpoint', 'Explain the final observed response before completing this layer.');
+                prepareFocus('diss-learning-checkpoint', 'Explain the final observed response before completing this layer.');
                 return;
               }
               setProcedureFeedback('This layer protocol is complete. Review the debrief or continue to the next layer.', 'success');
@@ -19463,14 +20245,14 @@ var d = labToolData.dissection || {};
             }
             var nextLearningGate = procedureLearningGateFor(next.action, currentProcedure);
             if (nextLearningGate.required) {
-              focusDissectionTarget('diss-learning-checkpoint', nextLearningGate.phase === 'reflect' ? 'Explain the observed response before preparing another tool.' : 'Choose a safe plan before preparing the instrument.');
+              prepareFocus('diss-learning-checkpoint', nextLearningGate.phase === 'reflect' ? 'Explain the observed response before preparing another tool.' : 'Choose a safe plan before preparing the instrument.');
               return;
             }
             var nextTool = procedureInstrumentForAction(next.action);
             var tool = PROCEDURE_INSTRUMENTS.find(function (entry) { return entry.id === nextTool; }) || { label: nextTool };
             upd('techniquePanelOpen', true);
             setProcedureFeedback('Planner opened. Choose ' + tool.label + ', verify the view and calibration, then demonstrate ' + next.label.toLowerCase() + '. No setup was changed automatically.', 'working');
-            focusDissectionTarget('diss-instrument-' + nextTool);
+            prepareFocus('diss-instrument-' + nextTool);
           }
           function selectProcedureInstrument(toolId, inputMethod) {
             var tool = PROCEDURE_INSTRUMENTS.find(function (entry) { return entry.id === toolId; });
@@ -19688,6 +20470,18 @@ var d = labToolData.dissection || {};
                 )
               )
             );
+          }
+
+          function alignProcedureView(event) {
+            var root = currentDissectionRootNode();
+            var origin = event && event.currentTarget;
+            var canvas = scopedDissectionQuery(root, '[data-diss-canvas]');
+            if (!root || !root.isConnected || !origin || !root.contains(origin) || !canvas) return;
+            var latest = canvas._drawD || d;
+            var currentView = latest.anatomicalView || 'dorsal';
+            if ((latest.specimen || 'frog') !== specimen || (latest.activeLayer || activeLayer) !== activeLayer || latest.quizMode || latest.practicalMode ||
+              currentView !== anatomicalView || currentView === procedureProtocol.recommendedView) return;
+            changeAnatomicalView(procedureProtocol.recommendedView, 'procedure alignment');
           }
 
           // View changes retain spatial context with a specimen-aware turn cue and an equivalent spoken announcement.
@@ -20314,7 +21108,7 @@ var d = labToolData.dissection || {};
                   React.createElement("button", { "aria-describedby": "diss-view-quality-help", "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality))), !d.quizMode && React.createElement("p", { id: "diss-view-quality-help", className: "diss-view-help diss-view-help--after diss-advanced-only" }, 'Quality balances animation smoothness with device load.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "inspection", role: "group", "aria-labelledby": "diss-view-subgroup-inspection" }, React.createElement("h5", { id: "diss-view-subgroup-inspection", className: "diss-view-subgroup__title" }, 'Local inspection'), React.createElement("p", { id: "diss-view-inspection-help", className: "diss-view-help" }, advancedWorkspace ? 'Magnify a local area and choose its tissue depth. Specimen zoom stays separate.' : 'Local lens inspection is available in Advanced workspace.'), React.createElement("div", { className: "diss-view-control-grid" }, !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
                   !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help diss-view-pin-help", "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
                   !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
-                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth)), React.createElement("p", { id: "diss-view-pin-help", className: "diss-view-help diss-view-help--after" }, 'Select a structure or move over the specimen before pinning.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "scene", role: "group", "aria-labelledby": "diss-view-subgroup-scene" }, React.createElement("h5", { id: "diss-view-subgroup-scene", className: "diss-view-subgroup__title" }, 'Scene and landmarks'), React.createElement("p", { id: "diss-view-scene-help", className: "diss-view-help" }, advancedWorkspace ? 'Choose instrument, landmark, and depth cues for the specimen.' : 'Essentials uses the default scene display. Select Advanced workspace to adjust depth and landmark cues.'), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { id: "diss-lens-focus-depth", "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth)), React.createElement("p", { id: "diss-view-pin-help", className: "diss-view-help diss-view-help--after" }, 'Select a structure or move over the specimen before pinning.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "scene", role: "group", "aria-labelledby": "diss-view-subgroup-scene" }, React.createElement("h5", { id: "diss-view-subgroup-scene", className: "diss-view-subgroup__title" }, 'Scene and landmarks'), React.createElement("p", { id: "diss-view-scene-help", className: "diss-view-help" }, advancedWorkspace ? 'Choose instrument, landmark, and depth cues for the specimen.' : 'Essentials uses the default scene display. Select Advanced workspace to adjust depth and landmark cues.'), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
                   !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
@@ -20458,7 +21252,7 @@ var d = labToolData.dissection || {};
                   if (currentProcedure.dropperDragMetrics) report += 'Direct dropper hydration: ' + currentProcedure.dropperDragMetrics.contactPercent + '% contact; ' + currentProcedure.dropperDragMetrics.flowAlignment + '% flow alignment; ' + currentProcedure.dropperDragMetrics.control + '% control; dose ' + currentProcedure.dropperDragMetrics.dose + '; pooling risk ' + currentProcedure.dropperDragMetrics.poolingRisk + '/100; input ' + currentProcedure.dropperDragMetrics.inputType + '\n';
                   if (currentProcedure.wickDragMetrics) report += 'Direct wick recovery: ' + currentProcedure.wickDragMetrics.recoveryPercent + '% recovery; ' + currentProcedure.wickDragMetrics.edgeAlignment + '% edge alignment; ' + currentProcedure.wickDragMetrics.contactPercent + '% contact; ' + currentProcedure.wickDragMetrics.control + '% control; input ' + currentProcedure.wickDragMetrics.inputType + '\n';
                   report += 'Saved attempts for current layer: ' + attemptEntries.length + '\n';
-                  if (techniqueComparison) report += 'Attempt score change: ' + (techniqueComparison.scoreDelta >= 0 ? '+' : '') + techniqueComparison.scoreDelta + ' points\n';
+                  if (techniqueComparison) report += 'Attempt score change: ' + techniqueComparisonMetricData({ kind: 'score', previous: techniqueComparison.previous.score, current: techniqueComparison.current.score }).changeText + '\n';
                   report += 'Adaptive coaching: ' + adaptiveCoach.focus + ' — ' + adaptiveCoach.suggestion + '\n';
                   report += 'Caution history: ' + ((currentProcedure.cautionLog || []).map(function (entry) { return entry.message; }).join(' | ') || 'None') + '\n';
                       report += 'Tissue preservation: ' + currentTissueStatus.preservation + '/100; state: ' + currentTissueStatus.label + '; preparation: ' + currentTissueState.variantLabel + '\n';
@@ -20613,7 +21407,7 @@ var d = labToolData.dissection || {};
                     ),
                     React.createElement("div", { className: "diss-field-monitor__body" },
                   React.createElement("section", {
-                    className: "diss-stage__telemetry",
+                    id: "diss-field-tissue", tabIndex: -1, className: "diss-stage__telemetry",
                     "data-tone": stageTelemetryTone,
                     role: "group",
                     "aria-label": __alloT('stem.dissection.a11y_live_specimen_response_monitor', 'Live specimen response monitor')
@@ -20625,15 +21419,24 @@ var d = labToolData.dissection || {};
                       ),
                       React.createElement("span", { className: "diss-stage__telemetry-phase" }, 'Phase · ' + nextActionModel.phase)
                     ),
+                    React.createElement("p", { id: "diss-tissue-monitor-help" }, 'Live simulation readings. Open a scale guide to understand what each value means.'),
                     React.createElement("div", { className: "diss-stage__telemetry-grid" },
                       stageTelemetryMetrics.map(function (metric) {
-                        return React.createElement("div", { className: "diss-stage__telemetry-metric", "data-risk": metric.risk ? "true" : "false", key: metric.id },
+                        return React.createElement("div", { className: "diss-stage__telemetry-metric", "data-metric": metric.id, "data-risk": metric.risk ? "true" : "false", key: specimen + '|' + activeLayer + '|' + metric.id },
                           React.createElement("div", { className: "diss-stage__telemetry-metric-head" },
-                            React.createElement("span", null, metric.label),
+                            React.createElement("span", { id: 'diss-tissue-metric-' + metric.id }, metric.label),
                             React.createElement("b", null, metric.value + '%')
                           ),
-                          React.createElement("progress", { max: 100, value: metric.value, "aria-label": metric.label + ' ' + metric.value + ' percent' }),
-                          React.createElement("span", { className: "diss-stage__telemetry-metric-note" }, metric.note)
+                          React.createElement("div", { className: "diss-field-meter", role: "meter", "aria-labelledby": 'diss-tissue-metric-' + metric.id, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": metric.value, "aria-valuetext": metric.value + ' percent. ' + metric.note + '. ' + metric.direction + '.' },
+                            React.createElement("span", { className: "diss-field-meter__fill", "aria-hidden": "true", style: { width: metric.value + '%' } })
+                          ),
+                          React.createElement("div", { className: "diss-field-meter__ends", "aria-hidden": "true" }, React.createElement("span", null, '0%'), React.createElement("span", null, '100%')),
+                          React.createElement("span", { className: "diss-stage__telemetry-metric-note" }, metric.note),
+                          React.createElement("p", { className: "diss-stage__telemetry-metric-direction" }, metric.direction),
+                          React.createElement("details", { className: "diss-metric-reading" },
+                            React.createElement("summary", { id: 'diss-metric-reading-' + metric.id }, 'How to read ' + metric.label.toLowerCase()),
+                            React.createElement("p", null, metric.meaning)
+                          )
                         );
                       })
                     ),
@@ -20653,7 +21456,7 @@ var d = labToolData.dissection || {};
                     )
                   ),
                   selectedTechniqueAction && React.createElement("details", { className: "diss-stage__telemetry-detail", open: !!(selectedTechniqueAction && !selectedTechniqueActionIsLatest), "aria-label": selectedTechniqueActionIsLatest ? "Inspect the latest tissue response" : "Inspect the selected tissue response" },
-                    React.createElement("summary", null, selectedTechniqueActionIsLatest ? 'Inspect last response · why did the field change?' : 'Inspect selected response · why did the field change?'),
+                    React.createElement("summary", { id: "diss-monitor-response-summary" }, selectedTechniqueActionIsLatest ? 'Inspect last response · why did the field change?' : 'Inspect selected response · why did the field change?'),
                     React.createElement("div", { className: "diss-stage__telemetry-detail-body" },
                       React.createElement("p", null, (selectedTechniqueAction.label || procedureActionLabel(selectedTechniqueAction.action)) + ' produced ' + (selectedTechniqueAction.outcome || 'a recorded response') + (selectedTechniqueAction.outcomeDetail ? '. ' + selectedTechniqueAction.outcomeDetail + '.' : '.')),
                       latestActionDeltaMetrics.length
@@ -20667,29 +21470,31 @@ var d = labToolData.dissection || {};
                           })
                         )
                         : React.createElement("p", null, 'This older action record does not include before-and-after tissue metrics. New actions show the exact state change here.'),
-                      React.createElement("button", { type: "button", className: "diss-stage__telemetry-replay", onClick: showProcedureLastResponse, "aria-label": selectedTechniqueActionIsLatest ? "Replay the latest technique response" : "Replay the selected technique response" }, (selectedTechniqueActionIsLatest ? 'Replay last response' : 'Replay selected response'))
+                      React.createElement("p", { id: "diss-monitor-replay-help", className: "diss-replay-launch-hint" }, 'Opens paused on this saved action. Resume to continue through the attempt.'),
+                      React.createElement("button", { id: "diss-monitor-response", type: "button", className: "diss-stage__telemetry-replay", onClick: showProcedureLastResponse, "aria-controls": !d.quizMode && activeProcedureReplay && replayReviewVisible ? "diss-replay-review" : undefined, "aria-describedby": "diss-monitor-replay-help", "aria-label": selectedTechniqueActionIsLatest ? "Replay the latest technique response" : "Replay the selected technique response" }, (selectedTechniqueActionIsLatest ? 'Replay last response' : 'Replay selected response'))
                     )
                   ),
-                  stageHandoffUsesTool && React.createElement("section", { className: "diss-field-readiness", "data-tone": fieldReadinessTone, role: "group", "aria-label": __alloT('stem.dissection.a11y_pre_contact_field_readiness', 'Pre-contact field readiness') },
+                  stageHandoffUsesTool && React.createElement("section", { id: "diss-field-readiness", className: "diss-field-readiness", "data-tone": fieldReadinessTone, role: "group", "aria-label": __alloT('stem.dissection.a11y_pre_contact_field_readiness', 'Pre-contact field readiness') },
                     React.createElement("div", { className: "diss-field-readiness__header" },
                       React.createElement("strong", null, 'Pre-contact check · ' + fieldReadinessLabel),
-                      React.createElement("span", { className: "diss-field-readiness__score" }, fieldReadinessScore + '/100')
+                      React.createElement("span", { className: "diss-field-readiness__score" }, fieldReadinessCountLabel)
                     ),
                     React.createElement("p", { className: "diss-field-readiness__cue" }, fieldReadinessCue),
-                    React.createElement("div", { className: "diss-field-readiness__checks" },
+                    React.createElement("p", { id: "diss-field-readiness-help", className: "diss-field-readiness__help" }, 'Review a check to open its controls or evidence. Settings change only when you adjust them.'),
+                    React.createElement("ul", { className: "diss-field-readiness__checks", role: "list" },
                       fieldReadinessChecks.map(function (check) {
-                        return React.createElement("div", { className: "diss-field-readiness__check", "data-ready": check.ready ? "true" : "false", key: check.id },
+                        return React.createElement("li", { className: "diss-field-readiness__check", "data-check": check.id, "data-ready": check.ready ? "true" : "false", key: check.id },
                           React.createElement("div", { className: "diss-field-readiness__check-head" },
-                            React.createElement("b", { "aria-hidden": "true" }, check.ready ? '✓' : '!'),
-                            React.createElement("span", null, check.label)
+                            React.createElement("strong", null, check.label),
+                            React.createElement("span", { id: 'diss-field-status-' + check.id, className: "diss-field-readiness__check-status" }, check.ready ? 'Ready' : 'Needs attention')
                           ),
-                          React.createElement("span", { className: "diss-field-readiness__check-detail" }, check.detail)
+                          React.createElement("p", { id: 'diss-field-detail-' + check.id, className: "diss-field-readiness__check-detail" }, check.detail),
+                          React.createElement("button", { id: 'diss-field-review-' + check.id, type: "button", className: "diss-field-readiness__action", "aria-describedby": 'diss-field-status-' + check.id + ' diss-field-detail-' + check.id, onClick: function (event) { resolveFieldReadinessIssue(check.id, event); } }, 'Review ' + check.label.toLowerCase())
                         );
                       })
                     ),
                     React.createElement("div", { className: "diss-field-readiness__actions" },
-                      React.createElement("button", { type: "button", className: "diss-field-readiness__action", onClick: runFieldReadinessCheck, "aria-label": __alloT('stem.dissection.a11y_run_pre_contact_field_check', 'Run pre-contact field check') }, 'Run field check'),
-                      React.createElement("button", { type: "button", className: "diss-field-readiness__action", onClick: resolveFieldReadinessIssue, disabled: !firstFieldReadinessIssue, "aria-label": firstFieldReadinessIssue ? 'Fix first readiness issue: ' + firstFieldReadinessIssue.label : 'All readiness checks pass' }, fieldReadinessActionLabel)
+                      React.createElement("button", { type: "button", className: "diss-field-readiness__action", onClick: runFieldReadinessCheck, "aria-label": __alloT('stem.dissection.a11y_run_pre_contact_field_check', 'Run pre-contact field check') }, 'Run field check')
                     )
                   ),
                     )
@@ -20718,6 +21523,13 @@ var d = labToolData.dissection || {};
                         (d.annotateMode || d.rulerMode) && React.createElement("button", { type: "button", "data-diss-point-exit": true, onClick: function () { setObservationPointMode(null, true); } }, 'Return to instruments')
                       )
                     ) : null
+                  ),
+                  !d.quizMode && activeProcedureReplay && activeProcedureReplay.paused && replayReviewVisible && React.createElement("section", { id: "diss-replay-specimen", className: "diss-replay-specimen", "aria-label": "Held replay action", onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
+                    React.createElement("div", { className: "diss-replay-specimen__context" },
+                      React.createElement("strong", null, 'Held action ' + (activeReplayPosition.index + 1) + ' of ' + activeProcedureReplay.actions.length + ' · ' + (activeReplayEntry.label || procedureActionLabel(activeReplayEntry.action))),
+                      React.createElement("span", null, 'Paused on the specimen below.')
+                    ),
+                    React.createElement("button", { id: "diss-replay-return", type: "button", className: "diss-replay-jump", "aria-controls": "diss-replay-review", onClick: function () { focusProcedureReplaySurface(false); } }, 'Back to action review')
                   ),
                   React.createElement("div", { className: "diss-canvas-layout", "data-split": !d.quizMode && splitComparison && referenceEvidence ? "true" : "false" },
                     React.createElement("div", { className: "diss-canvas-frame", "data-diss-fullscreen-stage": true },
@@ -21060,13 +21872,31 @@ var d = labToolData.dissection || {};
                       : 'Playing replay · ' + activeProcedureReplay.actions.length + ' actions. Pause to inspect an action.'),
                     activeProcedureReplay.paused && activeReplayContactLabel && React.createElement("p", { id: "diss-replay-contact-detail" },
                       activeReplayContactLabel === 'SAVED POSITION' ? 'Saved action position.' : (activeReplayContactLabel === 'SUPPORTED POSITION' ? 'Supported action position.' : 'Illustrative position; contact not recorded.')),
+                    React.createElement("div", { className: "diss-replay-review__picker" },
+                      React.createElement("label", { htmlFor: "diss-replay-action" }, 'Review action'),
+                      React.createElement("select", { id: "diss-replay-action", value: activeProcedureReplay.paused ? String(activeReplayPosition.index) : '', "aria-describedby": "diss-replay-picker-help", onChange: function (event) { if (event.target.value !== '') holdProcedureReplayAction(Number(event.target.value)); } },
+                        React.createElement("option", { value: "", disabled: true }, 'Choose an action to pause'),
+                        activeProcedureReplay.actions.map(function (entry, index) { return React.createElement("option", { key: index, value: String(index) }, (index + 1) + ' · ' + (entry.label || procedureActionLabel(entry.action))); })
+                      )
+                    ),
                     React.createElement("div", { className: "diss-replay-review__buttons" },
                       React.createElement("button", { id: "diss-replay-toggle", type: "button", onClick: toggleProcedureReplayPause }, activeProcedureReplay.paused ? 'Resume replay' : 'Pause replay'),
                       React.createElement("button", { id: "diss-replay-previous", type: "button", disabled: !!activeProcedureReplay.paused && activeReplayPosition.index === 0, onClick: function () { reviewProcedureReplayAction(-1); } }, 'Previous action'),
                       React.createElement("button", { id: "diss-replay-next", type: "button", disabled: !!activeProcedureReplay.paused && activeReplayPosition.index === activeProcedureReplay.actions.length - 1, onClick: function () { reviewProcedureReplayAction(1); } }, 'Next action'),
                       React.createElement("button", { id: "diss-replay-stop", type: "button", onClick: function () { stopProcedureReplay(true); } }, 'Stop replay')
                     ),
-                    React.createElement("p", { className: "diss-replay-review__help" }, 'Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.')
+                    activeProcedureReplay.paused && React.createElement("div", { className: "diss-replay-review__navigation" },
+                      React.createElement("button", { id: "diss-replay-view-specimen", type: "button", className: "diss-replay-jump", "aria-controls": "diss-replay-specimen", onClick: function () { focusProcedureReplaySurface(true); } }, 'View action on specimen')
+                    ),
+                    activeProcedureReplay.paused && React.createElement("div", { id: "diss-replay-details", className: "diss-replay-details" },
+                      React.createElement("strong", { id: "diss-replay-details-title" }, 'Recorded action details'),
+                      React.createElement("dl", { "aria-labelledby": "diss-replay-details-title" }, procedureReplayDetails(currentProcedure, activeProcedureReplay.actions, activeReplayPosition.index).map(function (detail) {
+                        return React.createElement("div", { key: detail.label, "data-wide": detail.label === 'Recorded result' ? 'true' : undefined },
+                          React.createElement("dt", null, detail.label), React.createElement("dd", null, detail.value));
+                      }))
+                    ),
+                    activeProcedureReplay.paused && renderProcedureReplayResponse(activeProcedureReplay.actions, activeReplayPosition.index),
+                    React.createElement("p", { id: "diss-replay-picker-help", className: "diss-replay-review__help" }, 'Choose an action, or use Previous and Next, to hold it on the specimen. Resume continues from there. Escape ends review.')
                   ),
                   React.createElement("p", { id: "diss-canvas-status", className: "diss-stage__live", "data-tool-status": "true", "data-tone": stageHandoffTone, role: "status", "aria-live": "polite" },
                     d.quizMode
@@ -21175,14 +22005,22 @@ var d = labToolData.dissection || {};
                         })
                       )
                     ),
-                    React.createElement("dl", { className: "diss-protocol", "aria-label": __alloT('stem.dissection.a11y_specimen_specific_procedure_protocol', 'Specimen-specific procedure protocol') },
+                    React.createElement("dl", { id: "diss-protocol", className: "diss-protocol", tabIndex: -1, "aria-label": __alloT('stem.dissection.a11y_specimen_specific_procedure_protocol', 'Specimen-specific procedure protocol') },
                       React.createElement("div", { "data-aligned": anatomicalView === procedureProtocol.recommendedView ? "true" : "false" },
                         React.createElement("dt", null, 'Orientation'),
                         React.createElement("dd", null,
-                          procedureProtocol.orientation + ' Recommended view: ' + procedureProtocol.recommendedView + '. Current view: ' + anatomicalView + '.',
-                          anatomicalView !== procedureProtocol.recommendedView
-                            ? React.createElement("button", { type: "button", className: "diss-protocol__align", onClick: function () { changeAnatomicalView(procedureProtocol.recommendedView, 'procedure alignment'); }, "aria-label": 'Align specimen to recommended ' + procedureProtocol.recommendedView + ' view' }, 'Align to ' + procedureProtocol.recommendedView + ' view')
-                            : React.createElement("span", { className: "diss-sr-only" }, 'View aligned to procedure recommendation')
+                          React.createElement("p", { className: "diss-protocol__orientation" }, procedureProtocol.orientation),
+                          React.createElement("p", { className: "diss-protocol__views" },
+                            React.createElement("span", null, 'Current view', React.createElement("strong", null, anatomicalView)),
+                            React.createElement("span", null, 'Recommended view', React.createElement("strong", null, procedureProtocol.recommendedView))
+                          ),
+                          React.createElement("p", { id: "diss-protocol-view-state", className: "diss-protocol__state" }, anatomicalView === procedureProtocol.recommendedView ? 'View aligned to procedure recommendation' : 'Alignment needed'),
+                          React.createElement("button", { id: "diss-protocol-align", type: "button", className: "diss-protocol__align", onClick: alignProcedureView,
+                            "aria-disabled": anatomicalView === procedureProtocol.recommendedView,
+                            "aria-describedby": "diss-protocol-view-state diss-protocol-view-help",
+                            "aria-label": anatomicalView === procedureProtocol.recommendedView ? 'Specimen aligned to recommended ' + procedureProtocol.recommendedView + ' view' : 'Align specimen to recommended ' + procedureProtocol.recommendedView + ' view'
+                          }, anatomicalView === procedureProtocol.recommendedView ? 'View aligned' : 'Align to ' + procedureProtocol.recommendedView + ' view'),
+                          React.createElement("p", { id: "diss-protocol-view-help", className: "diss-protocol__help" }, 'Aligning the view does not record the Inspect step.')
                         )
                       ),
                       React.createElement("div", null,
@@ -21191,7 +22029,9 @@ var d = labToolData.dissection || {};
                       ),
                       React.createElement("div", null,
                         React.createElement("dt", null, 'Protected landmarks'),
-                        React.createElement("dd", null, protectedLandmarkNames.join(', ') || 'Underlying anatomy')
+                        React.createElement("dd", null, React.createElement("ul", { className: "diss-protocol__landmarks" },
+                          (protectedLandmarkNames.length ? protectedLandmarkNames : ['Underlying anatomy']).map(function (name) { return React.createElement("li", { key: name }, name); })
+                        ))
                       )
                     ),
                     React.createElement("section", { className: "diss-instrument-preparation", "data-instrument-preparation": true, "aria-labelledby": "diss-instrument-heading" },
@@ -21267,7 +22107,7 @@ var d = labToolData.dissection || {};
                       })
                     ),
                     activeCalibrationControl && React.createElement("div", {
-                      className: "diss-calibration",
+                      id: "diss-calibration-panel", className: "diss-calibration",
                       "data-tone": activeCalibrationAssessment.tone,
                       role: "group",
                       "aria-labelledby": "diss-calibration-label",
@@ -21277,11 +22117,17 @@ var d = labToolData.dissection || {};
                         React.createElement("strong", null, 'Instrument calibration \u00B7 ' + activeCalibrationControl.label),
                         React.createElement("span", null, 'Adjust before contact; this setting changes tissue response and scoring.')
                       ),
-                      React.createElement("input", {
+                      React.createElement("div", { className: "diss-calibration__current" },
+                        React.createElement("strong", null, 'Current setting'),
+                        React.createElement("output", { id: "diss-calibration-value", htmlFor: "diss-calibration-range" }, calibrationValueText(activeCalibrationControl, toolCalibration[activeCalibrationControl.key], false))
+                      ),
+                      React.createElement("p", { id: "diss-calibration-guidance", className: "diss-calibration__guidance" }, 'Recommended setting: ' + activeCalibrationControl.ideal),
+                      React.createElement("div", { className: "diss-calibration__slider" }, React.createElement("input", {
                         id: "diss-calibration-range", type: "range",
                         min: activeCalibrationControl.min, max: activeCalibrationControl.max, step: activeCalibrationControl.step,
                         value: toolCalibration[activeCalibrationControl.key],
-                        "aria-valuetext": toolCalibration[activeCalibrationControl.key] + activeCalibrationControl.unit + ', ' + activeCalibrationAssessment.label,
+                        "aria-describedby": "diss-calibration-guidance diss-calibration-keyboard-help diss-calibration-status",
+                        "aria-valuetext": calibrationValueText(activeCalibrationControl, toolCalibration[activeCalibrationControl.key], true) + ', ' + activeCalibrationAssessment.label,
                         onChange: function (event) {
                           var nextCalibration = Object.assign({}, toolCalibration);
                           nextCalibration[activeCalibrationControl.key] = Number(event.target.value);
@@ -21292,10 +22138,24 @@ var d = labToolData.dissection || {};
                           setProcedureFeedback(((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).label || activeInstrument) + ' calibration: ' + result.label + '. ' + result.detail, result.tone === 'ready' ? 'success' : 'caution');
                         }
                       }),
-                      React.createElement("output", { htmlFor: "diss-calibration-range" }, toolCalibration[activeCalibrationControl.key] + activeCalibrationControl.unit + (activeInstrument === 'dropper' && toolCalibration.salineDose !== 1 ? 's' : '')),
+                      React.createElement("div", { className: "diss-calibration__ends", "aria-hidden": "true" },
+                        React.createElement("span", null, calibrationValueText(activeCalibrationControl, activeCalibrationControl.min, false)),
+                        React.createElement("span", null, calibrationValueText(activeCalibrationControl, activeCalibrationControl.max, false))
+                      )),
+                      React.createElement("div", { className: "diss-calibration__steps" },
+                        React.createElement("button", { id: "diss-calibration-decrease", type: "button", "aria-label": 'Decrease ' + activeCalibrationControl.label, "aria-describedby": "diss-calibration-value", "aria-disabled": toolCalibration[activeCalibrationControl.key] <= activeCalibrationControl.min, onClick: function () { stepInstrumentCalibration(-1); } }, '\u2212 Decrease'),
+                        React.createElement("button", { id: "diss-calibration-increase", type: "button", "aria-label": 'Increase ' + activeCalibrationControl.label, "aria-describedby": "diss-calibration-value", "aria-disabled": toolCalibration[activeCalibrationControl.key] >= activeCalibrationControl.max, onClick: function () { stepInstrumentCalibration(1); } }, '+ Increase')
+                      ),
+                      React.createElement("p", { id: "diss-calibration-keyboard-help" }, 'Each button changes the setting by ' + (activeCalibrationControl.unit === '%' ? activeCalibrationControl.step + ' percentage point' : calibrationValueText(activeCalibrationControl, activeCalibrationControl.step, true)) + '. On the slider, use arrow keys to adjust, Home for the minimum, or End for the maximum.'),
                       React.createElement("p", { className: "diss-calibration__status", id: "diss-calibration-status" },
+                        React.createElement("strong", null, 'Calibration quality'),
                         React.createElement("b", null, activeCalibrationAssessment.label + ' ' + activeCalibrationAssessment.score + '%'),
                         React.createElement("span", null, activeCalibrationAssessment.detail)
+                      ),
+                      React.createElement("details", { className: "diss-calibration__help", key: specimen + '|' + activeLayer + '|' + activeInstrument },
+                        React.createElement("summary", { id: "diss-calibration-help-toggle" }, 'How calibration affects the specimen'),
+                        React.createElement("p", null, 'Current setting controls the instrument. Calibration quality describes how that setting compares with the recommended range in this simulation. A higher quality score is better; increasing the setting does not always improve it.'),
+                        React.createElement("p", null, 'Calibration alone does not make an action ready. Follow the current protocol and complete the view, tissue, and learning checks before contact.')
                       )
                     ),
                     ),
@@ -21354,33 +22214,69 @@ var d = labToolData.dissection || {};
                         ),
                         latestTissueConsequence && React.createElement("p", { className: "diss-tissue-consequence" }, latestTissueConsequence.message)
                       ),
-                      React.createElement("div", {
-                        className: "diss-advanced-card diss-field-quality",
+                      React.createElement("section", {
+                        id: "diss-observation-field", className: "diss-advanced-card diss-field-quality",
                         "data-tone": currentObservationField.tone,
                         role: "group",
                         "aria-label": "Observation field quality " + currentObservationField.quality + " percent"
                       },
-                        React.createElement("strong", null, 'Observation field \u00B7 ' + currentObservationField.label),
-                        React.createElement("p", null, 'Limiting factor: ' + currentObservationField.limiter + '. ' + currentObservationField.guidance),
-                        React.createElement("progress", { max: 100, value: currentObservationField.quality, "aria-label": "Observation quality " + currentObservationField.quality + " percent" }),
-                        React.createElement("div", { className: "diss-field-quality__metrics" },
-                          React.createElement("span", null, 'Aperture ' + currentObservationField.aperture + '%'),
-                          React.createElement("span", null, 'Clarity ' + currentObservationField.clarity + '%'),
-                          React.createElement("span", null, 'Stability ' + currentObservationField.stability + '%')
-                        )
+                        React.createElement("div", { className: "diss-field-quality__header" },
+                          React.createElement("div", null,
+                            React.createElement("strong", null, 'Observation field'),
+                            React.createElement("span", { className: "diss-field-quality__state" }, currentObservationField.label)
+                          ),
+                          React.createElement("strong", { className: "diss-field-quality__score" }, currentObservationField.quality + '%')
+                        ),
+                        React.createElement("div", { className: "diss-observation-meter", role: "meter", "aria-label": "Observation quality", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentObservationField.quality, "aria-valuetext": currentObservationField.quality + ' percent. ' + currentObservationField.label },
+                          React.createElement("span", { className: "diss-observation-meter__fill", "aria-hidden": "true", style: { width: currentObservationField.quality + '%' } })
+                        ),
+                        React.createElement("div", { className: "diss-observation-meter__ends", "aria-hidden": "true" }, React.createElement("span", null, '0%'), React.createElement("span", null, '100%')),
+                        React.createElement("p", { className: "diss-field-quality__guidance" }, 'Limiting factor: ' + currentObservationField.limiter + '. ' + currentObservationField.guidance),
+                        React.createElement("dl", { className: "diss-field-quality__metrics", "aria-label": "Readings contributing to observation quality" },
+                          [
+                            { id: 'exposure', label: 'Opening size', value: currentObservationField.aperture },
+                            { id: 'clarity', label: 'Surface clarity', value: currentObservationField.clarity },
+                            { id: 'stability', label: 'Field stability', value: currentObservationField.stability },
+                            { id: 'risk', label: 'Handling risk', value: currentTissueState.risk }
+                          ].map(function (metric) {
+                            return React.createElement("div", { key: metric.id, "data-contributor": metric.id },
+                              React.createElement("dt", null, metric.label), React.createElement("dd", null, metric.value + '%')
+                            );
+                          })
+                        ),
+                        React.createElement("details", { className: "diss-field-quality__explanation", key: specimen + '|' + activeLayer },
+                          React.createElement("summary", { id: "diss-observation-explanation" }, 'How this reading works'),
+                          React.createElement("p", null, 'This simulation combines surface clarity, opening size, field stability, and lower handling risk. Clarity and opening size have the greatest influence. A recorded probe step adds a small bonus.'),
+                          React.createElement("p", null, 'Use the current protocol and protected landmarks to judge how far to open the field. Review pre-contact checks before acting on this reading.')
+                        ),
+                        React.createElement("button", { id: "diss-observation-field-review", type: "button", "aria-controls": "diss-field-tissue", onClick: reviewObservationField }, 'Review live field readings')
                       ),
                       !d.quizMode && (inspectionLens || macroInset || lensPinned) && React.createElement("div", {
-                        className: "diss-advanced-card diss-optics",
+                        id: "diss-optical-inspection", className: "diss-advanced-card diss-optics",
                         "data-tone": currentOpticalInspection.tone,
                         role: "group",
                         "aria-label": "Optical inspection quality " + currentOpticalInspection.quality + " percent"
                       },
+                        React.createElement("div", { className: "diss-optics__header" },
                         React.createElement("strong", null, 'Optical inspection \u00B7 ' + currentOpticalInspection.label),
+                          React.createElement("b", { className: "diss-optics__score" }, currentOpticalInspection.quality + '%')
+                        ),
                         React.createElement("p", { className: "diss-optics__scope" }, 'The lens and magnified inset show local detail. Use Specimen view to move or zoom the whole specimen.'),
-                        React.createElement("p", null, currentOpticalInspection.targetName + '. Detail: ' + currentOpticalInspection.detail + '. Ideal focus: ' + currentOpticalInspection.idealDepth + '. Illumination: ' + currentIllumination.label + ' at ' + lightIntensity + '%; glare risk ' + currentIllumination.glareRisk + '%. ' + currentOpticalInspection.suggestion),
+                        React.createElement("dl", { className: "diss-optics__readings", "aria-label": "Current optical readings" },
+                          [
+                            { id: 'target', label: 'Inspection target', value: currentOpticalInspection.targetName },
+                            { id: 'detail', label: 'Detail at current focus', value: currentOpticalInspection.detail },
+                            { id: 'focus', label: 'Recommended focus', value: currentOpticalInspection.idealDepth + (currentInspectionTarget ? '' : ' (field default)') },
+                            { id: 'light', label: 'Light intensity', value: lightIntensity + '%' },
+                            { id: 'illumination', label: 'Illumination status', value: currentIllumination.label },
+                            { id: 'glare', label: 'Glare risk', value: currentIllumination.glareRisk + '%' }
+                          ].map(function (reading) {
+                            return React.createElement("div", { key: reading.id, "data-optical-reading": reading.id }, React.createElement("dt", null, reading.label), React.createElement("dd", null, reading.value));
+                          })
+                        ),
+                        React.createElement("p", { id: "diss-optics-suggestion" }, currentOpticalInspection.suggestion),
                         React.createElement("div", { className: "diss-optics__meter" },
-                          React.createElement("progress", { max: 100, value: currentOpticalInspection.quality, "aria-label": "Optical focus quality " + currentOpticalInspection.quality + " percent" }),
-                          React.createElement("b", null, currentOpticalInspection.quality + '%')
+                          React.createElement("progress", { max: 100, value: currentOpticalInspection.quality, "aria-label": "Optical focus quality " + currentOpticalInspection.quality + " percent" })
                         ),
                         opticalPlaneMapActive && React.createElement("div", { className: "diss-optics__plane-key", role: "group", "aria-label": "Optical plane visual key: " + opticalPlaneCounts.resolved + " resolved, " + opticalPlaneCounts.soft + " soft, and " + opticalPlaneCounts.unresolved + " unresolved structures" },
                           React.createElement("strong", null, 'Focus plane'),
@@ -21413,6 +22309,15 @@ var d = labToolData.dissection || {};
                             } }, level + 'x');
                           })
                           ))
+                        ),
+                        React.createElement("details", { className: "diss-optics__explanation", key: specimen + '|' + activeLayer + '|' + (currentInspectionTarget ? currentInspectionTarget.id : 'field') },
+                          React.createElement("summary", { id: "diss-optics-explanation" }, 'How inspection quality works'),
+                          React.createElement("p", null, 'This simulation combines focus depth, magnification, field condition, target selection, pinning, and illumination. A higher quality score is better; more magnification or brighter light does not always improve it.'),
+                          React.createElement("p", null, 'Focus-plane counts compare each visible structure with the selected depth. They describe depth alignment, not the overall quality score. Without a selected or pinned structure, the recommended focus defaults to surface.')
+                        ),
+                        React.createElement("div", { className: "diss-optics__lighting" },
+                          React.createElement("p", { id: "diss-optics-light-guidance" }, currentIllumination.suggestion),
+                          React.createElement("button", { id: "diss-optics-review-light", type: "button", "aria-controls": d.toolbarViewOpen ? "diss-light-intensity-range" : undefined, "aria-describedby": "diss-optics-light-guidance", onClick: reviewOpticalIllumination }, 'Review illumination')
                         )
                       ),
                       React.createElement("section", { id: "diss-scenario-console", className: "diss-scenario-console", role: "region", "aria-labelledby": "diss-scenario-title", "aria-describedby": "diss-scenario-purpose" },
@@ -21426,22 +22331,31 @@ var d = labToolData.dissection || {};
                           React.createElement("span", { style: { width: scenarioStatus.progress + '%' } })
                         ),
                         React.createElement("p", { className: "diss-scenario-console__detail" }, scenarioDisplayDetail + '. ' + scenarioDisplayGuidance),
-                        scenarioIsTimed && scenarioDisplayState !== 'not-started' && React.createElement("output", { id: "diss-scenario-time", className: "diss-scenario-console__timer", role: "timer", "aria-live": "off", "aria-atomic": "true", "data-state": scenarioDisplayState }, (scenarioDisplayState === 'complete' ? 'Completed with ' : 'Challenge time: ') + formatAccessibleDuration(scenarioDisplayRemaining)),
+                        scenarioIsTimed && scenarioDisplayState !== 'not-started' && React.createElement("output", { id: "diss-scenario-time", className: "diss-scenario-console__timer", tabIndex: -1, role: "timer", "aria-live": "off", "aria-atomic": "true", "data-state": scenarioDisplayState }, (scenarioDisplayState === 'complete' ? 'Completed with ' : 'Challenge time: ') + formatAccessibleDuration(scenarioDisplayRemaining)),
+                        scenarioPlaybackActive && React.createElement("p", { id: "diss-scenario-playback-note", className: "diss-scenario-console__playback" },
+                          React.createElement("strong", null, 'Playback on the specimen'),
+                          'Choosing a scenario, starting its timer, or confirming restart ends active playback.'
+                        ),
                         React.createElement("div", { className: "diss-scenario-console__controls" },
                           React.createElement("label", null,
                             React.createElement("span", null, 'Choose scenario'),
-                            React.createElement("span", { className: "diss-scenario-console__select-wrap" }, React.createElement("select", { "aria-describedby": "diss-scenario-purpose diss-scenario-effects diss-scenario-objective", id: "diss-scenario-select", value: scenarioDefinition.id, onChange: function (event) { var chosen = ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === event.target.value; }); activateProcedureScenario(chosen, false); }, "aria-label": __alloT('stem.dissection.a11y_choose_procedure_scenario', 'Choose procedure scenario') },
+                            React.createElement("span", { className: "diss-scenario-console__select-wrap" }, React.createElement("select", { "aria-describedby": "diss-scenario-purpose diss-scenario-effects diss-scenario-objective" + (scenarioPlaybackActive ? " diss-scenario-playback-note" : ""), id: "diss-scenario-select", value: scenarioDefinition.id, onChange: function (event) { var chosen = ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === event.target.value; }); activateProcedureScenario(chosen, false); }, "aria-label": __alloT('stem.dissection.a11y_choose_procedure_scenario', 'Choose procedure scenario') },
                               ADVANCED_SCENARIOS.map(function (scenario) { return React.createElement("option", { key: scenario.id, value: scenario.id }, scenario.label + ' \u00B7 ' + scenario.difficulty); })
                             ))
                           ),
-                          scenarioIsTimed && scenarioDisplayState === 'not-started' && React.createElement("button", { id: "diss-scenario-start", type: "button", "aria-describedby": "diss-scenario-purpose diss-scenario-effects", onClick: function () { activateProcedureScenario(scenarioDefinition, false); } }, 'Start timer on current attempt'),
-                          React.createElement("button", { id: "diss-scenario-restart", type: "button", onClick: requestProcedureScenarioRestart, "aria-label": "Restart scenario: review changes for " + scenarioDefinition.label, "aria-describedby": "diss-scenario-restart-help", "aria-expanded": !!scenarioRestartReview, "aria-controls": "diss-scenario-restart-review" }, '\u21BB Restart scenario')
+                          scenarioIsTimed && scenarioDisplayState === 'not-started' && React.createElement("button", { id: "diss-scenario-start", type: "button", "aria-describedby": "diss-scenario-purpose diss-scenario-effects" + (scenarioPlaybackActive ? " diss-scenario-playback-note" : ""), onClick: startProcedureScenarioTimer }, 'Start timer on current attempt'),
+                          React.createElement("button", { id: "diss-scenario-restart", type: "button", onClick: requestProcedureScenarioRestart, "aria-label": "Restart scenario: review changes for " + scenarioDefinition.label, "aria-describedby": "diss-scenario-restart-help" + (scenarioPlaybackActive ? " diss-scenario-playback-note" : ""), "aria-expanded": !!scenarioRestartReview, "aria-controls": "diss-scenario-restart-review" }, '\u21BB Restart scenario')
                         ),
                         React.createElement("p", { id: "diss-scenario-effects", className: "diss-scenario-console__help" }, scenarioSelectionEffects),
                         React.createElement("p", { id: "diss-scenario-restart-help", className: "diss-scenario-console__help" }, 'Restart opens a review of the changes before starting a fresh attempt.'),
                         scenarioRestartReview && React.createElement("div", { id: "diss-scenario-restart-review", className: "diss-scenario-console__restart-review", role: "group", tabIndex: -1, "aria-labelledby": "diss-scenario-restart-title", "aria-describedby": "diss-scenario-restart-effects", onKeyDown: function (event) { handleProcedureScenarioRestartKey(event, scenarioRestartReview); } },
                           React.createElement("h5", { id: "diss-scenario-restart-title" }, 'Restart ' + scenarioDefinition.label + '?'),
-                          React.createElement("p", { id: "diss-scenario-restart-effects" }, scenarioRestartEffects),
+                          React.createElement("dl", { id: "diss-scenario-restart-effects", className: "diss-scenario-console__effects" }, scenarioRestartEffects.map(function (effect) {
+                            return React.createElement("div", { key: effect.label, className: "diss-scenario-console__effect" },
+                              React.createElement("dt", null, effect.label),
+                              React.createElement("dd", null, effect.detail)
+                            );
+                          })),
                           React.createElement("div", { className: "diss-scenario-console__review-actions" },
                             React.createElement("button", { id: "diss-scenario-restart-confirm", type: "button", "data-confirm": "true", "aria-describedby": "diss-scenario-restart-effects", onClick: function () { confirmProcedureScenarioRestart(scenarioRestartReview); } }, 'Confirm restart'),
                             React.createElement("button", { id: "diss-scenario-restart-cancel", type: "button", onClick: function () { cancelProcedureScenarioRestart(scenarioRestartReview); } }, 'Keep current attempt')
@@ -21452,13 +22366,50 @@ var d = labToolData.dissection || {};
                         React.createElement("strong", null, anatomicalView + ' view \u00B7 ' + specimenCondition),
                         React.createElement("p", null, specimenConditionDescription() + '. ' + visibleOrgansInView.length + '/' + organs.length + ' structures directly visible in this orientation. Material model: ' + activeMaterialProfile.label + '. Contact response: ' + activeMaterialProfile.response + '. Light: ' + lightDirection + '; focus isolation ' + (focusMode ? 'on' : 'off') + '.')
                       ),
-                      React.createElement("div", { className: "diss-advanced-card", "data-tone": currentExposure.score >= 58 ? "clear" : "developing" },
-                        React.createElement("strong", null, 'Progressive exposure \u00B7 ' + currentExposure.label + ' ' + currentExposure.score + '%'),
-                        React.createElement("p", null, currentExposure.next + ' Protocol progress ' + currentExposure.protocolProgress + '%. Decision quality ' + currentDecisionScore + '/100.')
+                      React.createElement("section", { id: "diss-exposure-readings", className: "diss-advanced-card diss-exposure-readings", "data-tone": currentExposure.score >= 58 ? "clear" : "developing", role: "group", "aria-label": "Progressive exposure readings" },
+                        React.createElement("div", { className: "diss-exposure__header" },
+                          React.createElement("div", null, React.createElement("strong", null, 'Progressive exposure'), React.createElement("span", { className: "diss-exposure__state" }, currentExposure.label)),
+                          React.createElement("b", { className: "diss-exposure__score" }, currentExposure.score + '/100')
+                        ),
+                        React.createElement("div", { className: "diss-exposure__meter", role: "meter", "aria-label": "Exposure score", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentExposure.score, "aria-valuetext": currentExposure.score + ' out of 100. ' + currentExposure.label },
+                          React.createElement("span", { className: "diss-exposure__fill", "aria-hidden": "true", style: { width: currentExposure.score + '%' } })
+                        ),
+                        React.createElement("div", { className: "diss-exposure__ends", "aria-hidden": "true" }, React.createElement("span", null, '0'), React.createElement("span", null, '100')),
+                        React.createElement("p", { id: "diss-exposure-guidance" }, currentExposure.next),
+                        React.createElement("dl", { className: "diss-exposure__readings", "aria-label": "Protocol and decision readings" },
+                          React.createElement("div", { "data-exposure-reading": "protocol" }, React.createElement("dt", null, 'Protocol progress'), React.createElement("dd", null, currentExposure.protocolProgress + '%')),
+                          React.createElement("div", { "data-exposure-reading": "decision" }, React.createElement("dt", null, 'Decision quality'), React.createElement("dd", null, currentDecisionScore + '/100'))
+                        ),
+                        React.createElement("details", { className: "diss-exposure__explanation", key: specimen + '|' + activeLayer },
+                          React.createElement("summary", { id: "diss-exposure-explanation" }, 'How these readings work'),
+                          React.createElement("p", null, 'Exposure is a simulation score, not a count of visible structures. It combines recorded access steps, opening size, clarity, stability, lower handling risk, view alignment, illumination, and protocol progress.'),
+                          React.createElement("p", null, 'Protocol progress tracks consecutive completed actions in the required order. Decision quality combines exposure with alignment, protocol deviations, tissue preservation, and learning checks.'),
+                          React.createElement("p", null, 'Structure visibility also depends on anatomical view and depth. Follow the current protocol and pre-contact checks before manipulating tissue.')
+                        ),
+                        React.createElement("button", { id: "diss-exposure-review-protocol", type: "button", "aria-controls": "diss-protocol", "aria-describedby": "diss-exposure-guidance", onClick: reviewExposureProtocol }, 'Review access protocol')
                       ),
-                      React.createElement("div", { className: "diss-advanced-card", "data-tone": currentMaterialInteraction.margin >= 0 ? "clear" : "caution" },
-                        React.createElement("strong", null, 'Material response \u00B7 resistance ' + currentMaterialInteraction.resistance + '/100'),
-                        React.createElement("p", null, currentMaterialInteraction.label + '. ' + currentMaterialInteraction.response + ' Risk if control is lost: ' + currentMaterialInteraction.failureMode)
+                      React.createElement("section", { id: "diss-material-readings", className: "diss-advanced-card diss-material-readings", "data-tone": materialCuttingTool ? (currentMaterialInteraction.margin >= 0 ? "clear" : "caution") : "neutral", role: "group", "aria-label": "Material response readings" },
+                        React.createElement("div", { className: "diss-material__header" },
+                          React.createElement("div", null, React.createElement("strong", null, 'Material response'), React.createElement("span", { className: "diss-material__state" }, currentMaterialInteraction.label)),
+                          React.createElement("b", { className: "diss-material__score" }, currentMaterialInteraction.resistance + '/100')
+                        ),
+                        React.createElement("p", { className: "diss-material__tool" }, 'Selected instrument: ' + activeInstrumentDefinition.label),
+                        React.createElement("div", { className: "diss-material__meter", role: "meter", "aria-label": "Material resistance", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentMaterialInteraction.resistance, "aria-valuetext": currentMaterialInteraction.resistance + ' out of 100. ' + currentMaterialInteraction.label }, React.createElement("span", { className: "diss-material__fill", "aria-hidden": "true", style: { width: currentMaterialInteraction.resistance + '%' } })),
+                        React.createElement("div", { className: "diss-material__ends", "aria-hidden": "true" }, React.createElement("span", null, '0'), React.createElement("span", null, '100')),
+                        React.createElement("p", { id: "diss-material-guidance" }, currentMaterialInteraction.response),
+                        materialCuttingTool && React.createElement("dl", { className: "diss-material__readings", "aria-label": "Current cutting calibration readings" },
+                          React.createElement("div", { "data-material-reading": "calibration" }, React.createElement("dt", null, 'Current calibration quality'), React.createElement("dd", null, currentMaterialInteraction.calibration + '/100')),
+                          React.createElement("div", { "data-material-reading": "required" }, React.createElement("dt", null, 'Required cutting quality'), React.createElement("dd", null, (currentMaterialInteraction.calibration - currentMaterialInteraction.margin) + '/100')),
+                          React.createElement("div", { "data-material-reading": "margin" }, React.createElement("dt", null, 'Calibration margin'), React.createElement("dd", null, (currentMaterialInteraction.margin > 0 ? '+' : '') + currentMaterialInteraction.margin + ' points'))
+                        ),
+                        React.createElement("p", { className: "diss-material__caution" }, React.createElement("strong", null, 'Protocol caution: '), currentMaterialInteraction.failureMode),
+                        React.createElement("details", { className: "diss-material__explanation", key: specimen + '|' + activeLayer + '|' + activeInstrument },
+                          React.createElement("summary", { id: "diss-material-explanation" }, 'How material response works'),
+                          React.createElement("p", null, 'Resistance describes the specimen material in this simulation. It depends on the access protocol and specimen condition. A higher resistance score means more resistance, not better technique.'),
+                          React.createElement("p", null, 'For scalpel and scissors, calibration margin is current calibration quality minus the required cutting quality. A negative margin blocks cutting. A margin of zero or more clears this material check; calibration, view, depth, sequence, field, and learning checks still apply.'),
+                          React.createElement("p", null, 'Current readings follow the instrument settings now. Settings saved with earlier actions remain unchanged. Other instruments use their own contact and readiness checks.')
+                        ),
+                        activeCalibrationControl && React.createElement("button", { id: "diss-material-review-calibration", type: "button", "aria-controls": "diss-calibration-range", "aria-describedby": "diss-material-guidance", onClick: reviewMaterialCalibration }, 'Review instrument calibration')
                       ),
                       currentProcedure.forcepsDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.forcepsDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": __alloT('stem.dissection.a11y_recorded_direct_forceps_lift_evidence', 'Recorded direct forceps lift evidence') },
                         React.createElement("strong", null, 'Direct lift evidence \u00B7 ' + currentProcedure.forcepsDragMetrics.liftPercent + '% lift'),
@@ -21494,9 +22445,10 @@ var d = labToolData.dissection || {};
                         React.createElement("button", { type: "button", disabled: !selectedRelationships.some(function (item) { return item.visible; }), onClick: traceNextAnatomicalRelationship }, 'Trace next exposed connection')
                       )
                     ),
-                    !d.quizMode && d.compareTechniqueAttempts && techniqueComparison && React.createElement("div", { className: "diss-advanced-card diss-attempt-comparison", role: "region", "aria-label": __alloT('stem.dissection.a11y_technique_attempt_comparison', 'Technique attempt comparison') },
-                      React.createElement("strong", null, 'Previous attempt vs current attempt'),
-                      React.createElement("p", null, 'Saved baseline: ' + (techniqueComparison.previous.view || anatomicalView) + ' view, ' + (techniqueComparison.previous.inputType || 'input not recorded') + '. Positive values indicate improvement.'),
+                    !d.quizMode && d.compareTechniqueAttempts && techniqueComparison && React.createElement("div", { id: "diss-attempt-comparison", className: "diss-advanced-card diss-attempt-comparison", role: "region", "aria-label": __alloT('stem.dissection.a11y_technique_attempt_comparison', 'Technique attempt comparison') },
+                      React.createElement("h4", null, 'Previous attempt vs current attempt'),
+                      React.createElement("p", null, 'Saved baseline: ' + (techniqueComparison.previous.view ? techniqueComparison.previous.view + ' view' : 'view not recorded') + ', ' + (techniqueComparison.previous.inputType || 'input not recorded') + '.'),
+                      React.createElement("p", { className: "diss-attempt-comparison__context" }, 'Completed steps · Saved: ' + (techniqueComparisonValue(techniqueComparison.previous.completedSteps, true) === null ? 'not recorded' : techniqueComparison.previous.completedSteps) + ' · Current: ' + techniqueComparison.current.completedSteps + '. Progress affects scores; compare attempts at the same stage.'),
                       React.createElement("div", { className: "diss-attempt-comparison__legend", role: "list", "aria-label": __alloT('stem.dissection.a11y_technique_path_comparison_legend', 'Technique path comparison legend') },
                         React.createElement("span", { className: "diss-attempt-comparison__legend-item", role: "listitem" }, React.createElement("i", { className: "diss-attempt-comparison__swatch", "aria-hidden": "true" }), 'Current attempt · solid cyan path'),
                         React.createElement("span", { className: "diss-attempt-comparison__legend-item", role: "listitem" }, React.createElement("i", { className: "diss-attempt-comparison__swatch", "data-style": "saved", "aria-hidden": "true" }), 'Saved baseline · dashed magenta path'),
@@ -21504,27 +22456,39 @@ var d = labToolData.dissection || {};
                       ),
                       React.createElement("div", { className: "diss-attempt-comparison__scrub", role: "group", "aria-label": __alloT('stem.dissection.a11y_comparison_replay_controls', 'Comparison replay controls') },
                         React.createElement("label", { htmlFor: "diss-compare-replay-progress" }, 'Replay point'),
-                        React.createElement("input", { id: "diss-compare-replay-progress", type: "range", min: 0, max: 100, step: 1, value: compareReplayPercent, onChange: function (event) { setTechniqueCompareReplayProgress(Number(event.target.value) / 100); }, "aria-label": __alloT('stem.dissection.a11y_scrub_comparison_replay', 'Scrub comparison replay'), "aria-valuetext": compareReplayLabel, "data-diss-compare-progress": true }),
+                        React.createElement("input", { id: "diss-compare-replay-progress", type: "range", min: 0, max: 100, step: 1, value: compareReplayPercent, onChange: function (event) { setTechniqueCompareReplayProgress(Number(event.target.value) / 100); }, "aria-label": __alloT('stem.dissection.a11y_scrub_comparison_replay', 'Scrub comparison replay'), "aria-valuetext": compareReplayLabel, "aria-describedby": "diss-compare-replay-help", "data-diss-compare-progress": true }),
                         React.createElement("output", { htmlFor: "diss-compare-replay-progress" }, compareReplayPercent + '% · ' + compareReplayLabel),
                         React.createElement("button", { type: "button", onClick: toggleTechniqueCompareReplay, "aria-pressed": !!d.compareReplayPlaying, "aria-label": d.compareReplayPlaying ? "Pause comparison replay" : "Play comparison replay" }, d.compareReplayPlaying ? 'Pause compare replay' : 'Play compare replay'),
                         React.createElement("button", { type: "button", onClick: function () { setTechniqueCompareReplayProgress(1); }, disabled: compareReplayPercent >= 100, "aria-label": __alloT('stem.dissection.a11y_show_full_comparison_paths', 'Show full comparison paths') }, 'Show full paths')
                       ),
+                      React.createElement("p", { id: "diss-compare-replay-help" }, "Use arrow keys to move through the paths. Home returns to the start; End shows the full paths."),
                       React.createElement("div", { className: "diss-attempt-comparison__grid" },
                         [
-                          { label: 'Score', previous: techniqueComparison.previous.score, current: techniqueComparison.current.score, delta: techniqueComparison.scoreDelta, unit: '' },
-                          { label: 'Precision', previous: techniqueComparison.previous.precision, current: techniqueComparison.current.precision, delta: techniqueComparison.precisionDelta, unit: '%' },
-                          { label: 'Coverage', previous: techniqueComparison.previous.coverage, current: techniqueComparison.current.coverage, delta: techniqueComparison.coverageDelta, unit: '%' },
-                          { label: 'Control', previous: techniqueComparison.previous.control, current: techniqueComparison.current.control, delta: techniqueComparison.controlDelta, unit: '%' },
-                          { label: 'Angle', previous: techniqueComparison.previous.angleControl, current: techniqueComparison.current.angleControl, delta: techniqueComparison.angleDelta, unit: '%' },
-                          { label: 'Cautions', previous: techniqueComparison.previous.cautions, current: techniqueComparison.current.cautions, delta: techniqueComparison.cautionDelta, unit: '' },
-                          { label: 'Preservation', previous: techniqueComparison.previous.preservation || 0, current: techniqueComparison.current.preservation, delta: techniqueComparison.preservationDelta, unit: '%' },
-                          { label: 'Observation', previous: techniqueComparison.previous.observationQuality || 0, current: techniqueComparison.current.observationQuality, delta: techniqueComparison.observationDelta, unit: '%' }
+                          { label: 'Score', previous: techniqueComparison.previous.score, current: techniqueComparison.current.score, kind: 'score' },
+                          { label: 'Cautions', previous: techniqueComparison.previous.cautions, current: techniqueComparison.current.cautions, kind: 'count' },
+                          { label: 'Preservation', previous: techniqueComparison.previous.preservation, current: techniqueComparison.current.preservation, kind: 'percentage' },
+                          { label: 'Observation', previous: techniqueComparison.previous.observationQuality, current: techniqueComparison.current.observationQuality, kind: 'percentage' },
+                          { label: 'Precision', previous: techniqueComparison.previous.precision, current: techniqueComparison.current.precision, kind: 'percentage', pending: !techniqueComparison.strokeRecorded },
+                          { label: 'Coverage', previous: techniqueComparison.previous.coverage, current: techniqueComparison.current.coverage, kind: 'percentage', pending: !techniqueComparison.strokeRecorded },
+                          { label: 'Control', previous: techniqueComparison.previous.control, current: techniqueComparison.current.control, kind: 'percentage', pending: !techniqueComparison.strokeRecorded },
+                          { label: 'Angle control', previous: techniqueComparison.previous.angleControl, current: techniqueComparison.current.angleControl, kind: 'percentage', pending: !techniqueComparison.strokeRecorded }
                         ].map(function (metric) {
-                          return React.createElement("div", { className: "diss-attempt-comparison__metric", key: metric.label },
-                            React.createElement("span", null, metric.label),
-                            React.createElement("strong", null, metric.previous + metric.unit + ' \u2192 ' + metric.current + metric.unit + ' (' + (metric.delta > 0 ? '+' : '') + metric.delta + metric.unit + ')')
+                          var reading = techniqueComparisonMetricData(metric);
+                          return React.createElement("section", { className: "diss-attempt-comparison__metric", key: metric.label, "aria-label": metric.label + ' comparison', "data-comparison-reading": metric.label, "data-tone": reading.tone },
+                            React.createElement("h5", null, metric.label),
+                            React.createElement("dl", null,
+                              React.createElement("div", null, React.createElement("dt", null, 'Saved'), React.createElement("dd", null, reading.previousText)),
+                              React.createElement("div", null, React.createElement("dt", null, 'Current'), React.createElement("dd", null, reading.currentText))
+                            ),
+                            React.createElement("p", { className: "diss-attempt-comparison__change" }, React.createElement("span", null, 'Change'), React.createElement("b", null, reading.changeText))
                           );
                         })
+                      ),
+                      React.createElement("details", { className: "diss-attempt-comparison__explanation", key: specimen + '|' + activeLayer + '|' + techniqueComparison.previous.id },
+                        React.createElement("summary", { id: "diss-compare-explanation" }, 'How to read this comparison'),
+                        React.createElement("p", null, 'Higher score, preservation, observation and stroke-quality readings are better. Fewer cautions is better. Changes use points for score and percentage points for percentage readings.'),
+                        React.createElement("p", null, 'Score combines workflow progress, both scored strokes, decisions, calibration and tissue condition. Precision, coverage, control and angle control describe the latest scored stroke: extension when available, otherwise incision. Angle control is a percentage, not an angle in degrees.'),
+                        React.createElement("p", null, 'Current readings change as you work. Before a scored stroke, its readings are unavailable. Older saved attempts may contain zero for unmeasured stroke readings; an absent reading is shown as Not recorded. Replay moves the paths without changing these whole-attempt readings.')
                       )
                     ),
                     React.createElement("div", { className: "diss-procedure__controls" },
@@ -21534,8 +22498,8 @@ var d = labToolData.dissection || {};
                         equivalentProcedureCheckpointAvailable && React.createElement("button", { id: "diss-equivalent-checkpoint-link", type: "button", "aria-controls": "diss-learning-checkpoint", "aria-describedby": "diss-equivalent-technique-note", onClick: function () { focusDissectionTarget('diss-learning-check-title'); } }, currentLearningGate.phase === 'reflect' ? 'Explain result' : 'Review plan')
                       ),
                       React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": __alloT('stem.dissection.a11y_show_a_generalized_safe_technique_demonstration', 'Show a generalized safe-technique demonstration on the specimen') }, '\u25B6 Show technique'),
-                      React.createElement("button", { id: "diss-replay-attempt", type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-controls": "diss-replay-review", "aria-describedby": "diss-replay-evidence-help", "aria-label": __alloT('stem.dissection.a11y_replay_the_recorded_technique_attempt_on_the_sp', 'Replay the recorded technique attempt on the specimen') }, '\u21BB Replay attempt'),
-                      React.createElement("button", { id: "diss-review-actions", type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: function () { startProcedureReplay(true); }, "aria-controls": "diss-replay-review", "aria-describedby": "diss-replay-evidence-help" }, 'Review actions'),
+                      React.createElement("button", { id: "diss-replay-attempt", type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-controls": !d.quizMode && activeProcedureReplay && replayReviewVisible ? "diss-replay-review" : undefined, "aria-describedby": "diss-replay-evidence-help", "aria-label": __alloT('stem.dissection.a11y_replay_the_recorded_technique_attempt_on_the_sp', 'Replay the recorded technique attempt on the specimen') }, '\u21BB Replay attempt'),
+                      React.createElement("button", { id: "diss-review-actions", type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: function () { startProcedureReplay(true); }, "aria-controls": !d.quizMode && activeProcedureReplay && replayReviewVisible ? "diss-replay-review" : undefined, "aria-describedby": "diss-replay-evidence-help" }, 'Review actions'),
                       React.createElement("p", { id: "diss-replay-evidence-help" }, 'Replay follows the saved action order. Missing stroke data uses an illustrative teaching path. Pressure and instrument settings appear only when recorded.'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_save_this_technique_attempt_as_a_comparison_bas', 'Save this technique attempt as a comparison baseline') }, '\u25A3 Save attempt'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
@@ -21547,13 +22511,30 @@ var d = labToolData.dissection || {};
                       activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": __alloT('stem.dissection.a11y_wick_excess_saline_from_the_visible_pool_edge', 'Wick excess saline from the visible pool edge') }, '\u25A7 Wick excess saline'),
                       React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action')
                     ),
-                    React.createElement("details", { className: "diss-instructor" },
-                      React.createElement("summary", null, 'Scenario thresholds'),
-                      React.createElement("p", { className: "diss-procedure__notice" }, 'These controls tune procedure scenarios. Verified investigation completion also requires the objective, evidence, observation, technique, and first-attempt assessment targets.'),
-                      React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_scenario_assessment_thresholds', 'Scenario assessment thresholds') },
-                        React.createElement("button", { type: "button", onClick: function () { upd('instructorTarget', instructorTarget >= 90 ? 70 : instructorTarget + 5); } }, 'Target score: ' + instructorTarget),
-                        React.createElement("button", { type: "button", onClick: function () { upd('instructorMaxCautions', instructorMaxCautions >= 2 ? 0 : instructorMaxCautions + 1); } }, 'Max cautions: ' + instructorMaxCautions),
-                        React.createElement("button", { type: "button", onClick: function () { upd('instructorRequiredStructures', instructorRequiredStructures >= 4 ? 1 : instructorRequiredStructures + 1); } }, 'Required structures: ' + instructorRequiredStructures)
+                    React.createElement("details", { id: "diss-scenario-thresholds", className: "diss-instructor" },
+                      React.createElement("summary", { id: "diss-scenario-thresholds-summary" },
+                        React.createElement("strong", null, 'Scenario thresholds'),
+                        React.createElement("span", { className: "diss-thresholds__snapshot" }, 'Target score: ' + instructorTarget + ' · Max cautions: ' + instructorMaxCautions + ' · Required structures: ' + instructorRequiredStructures)
+                      ),
+                      React.createElement("div", { className: "diss-thresholds__body" },
+                        React.createElement("div", { className: "diss-thresholds__current" },
+                          React.createElement("h4", null, 'Current challenge: ' + currentScenarioDefinition().label),
+                          React.createElement("p", { id: "diss-thresholds-requirements" }, scenarioThresholdRequirements())
+                        ),
+                        React.createElement("p", { id: "diss-thresholds-change-help" }, 'Choose a value directly. Changes apply immediately wherever a setting is used. Recorded actions and saved attempts are kept.'),
+                        React.createElement("div", { className: "diss-thresholds__grid", role: "group", "aria-label": __alloT('stem.dissection.a11y_scenario_assessment_thresholds', 'Scenario assessment thresholds') },
+                          scenarioThresholdControlData().map(function (control) {
+                            return React.createElement("div", { className: "diss-thresholds__control", key: control.key, "data-threshold": control.key, "data-applies": control.applies ? 'true' : 'false' },
+                              React.createElement("label", { htmlFor: control.id }, control.label),
+                              React.createElement("span", { className: "diss-thresholds__scope" }, control.applies ? 'Used by this challenge' : 'Used elsewhere in the lab'),
+                              React.createElement("select", { id: control.id, value: control.value, disabled: !advancedWorkspace || !!d.quizMode || !!d.practicalMode, "aria-describedby": control.id + '-help diss-thresholds-change-help', onChange: function (event) { updateScenarioThreshold(control.key, event.target.value); } },
+                                control.options.map(function (value) { return React.createElement("option", { key: value, value: value }, value + control.unit); })
+                              ),
+                              React.createElement("p", { id: control.id + '-help' }, control.help)
+                            );
+                          })
+                        ),
+                        React.createElement("p", { className: "diss-thresholds__investigation" }, 'Verified investigation completion also requires the objective, evidence, observation, technique, and first-attempt assessment targets.')
                       )
                     ),
                     React.createElement("p", { className: "diss-procedure__feedback", "data-diss-tool-status": true, "data-tone": (d.procedureFeedback || {}).tone || 'success', role: "status", "aria-live": "polite", "aria-atomic": "true" },

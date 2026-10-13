@@ -1,0 +1,13 @@
+Moon Mission selected city coordinates
+
+Source: Natural Earth vector data, version 5.1.2
+Dataset: ne_110m_populated_places.geojson
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_110m_populated_places.geojson
+https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-populated-places/
+
+Selection: the 99 records with SCALERANK <= 2. City names and longitude/latitude are retained; coordinates are rounded to four decimal degrees. Brightness and display light spread are authored visual choices, not satellite radiance data or population estimates. The selection is illustrative and is not a reconstruction of 1969 illumination.
+
+Natural Earth data are in the public domain.
+https://www.naturalearthdata.com/about/terms-of-use/
+
+Made with Natural Earth. Free vector and raster map data at naturalearthdata.com.

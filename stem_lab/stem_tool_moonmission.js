@@ -46,6 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // AUDIO SYSTEM — Immersive mission sounds
   // ═══════════════════════════════════════════════════════════════
   var _mmAnimPaused = false;   // live pause flag read by every 2D phase loop (see the header toggle)
+  var _mmAtlasSite = 11;
   var _mmMoonLabels = false;   // lunar-orbit map labels (the phase 4 toggle), read per frame
   var _mmTrueScale = false;    // trans-lunar coast drawn at true scale (the phase 3 toggle)
   var _mmEntryAngle = -6.5;    // the entry-corridor slider, drawn live on the trans-Earth canvas
@@ -3009,9 +3010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     p.samples.forEach(function(row,i){var q=point(row.x,row.y);if(i)ctx.lineTo(q[0],q[1]);else ctx.moveTo(q[0],q[1]);});ctx.stroke();ctx.setLineDash([]);
     ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.beginPath();var start=true;
     p.samples.forEach(function(row){if(row.time>s.time)return;var q=point(row.x,row.y);if(start){ctx.moveTo(q[0],q[1]);start=false;}else ctx.lineTo(q[0],q[1]);});ctx.lineTo(scx,scy);ctx.stroke();
-    var g=ctx.createRadialGradient(cx+mr*ux*.4,cy-mr*uy*.4,mr*.04,cx,cy,mr);g.addColorStop(0,'#b5b8ba');g.addColorStop(1,'#505965');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.fill();
-    ctx.save();ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.clip();ctx.translate(cx,cy);ctx.rotate(-theta);ctx.fillStyle='rgba(2,6,23,.79)';ctx.fillRect(-mr,-mr,mr,mr*2);ctx.restore();
+    mmDrawLunarOrbitLight(ctx,cx,cy,mr,p.sunAngle);
     ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.stroke();
     ctx.fillStyle='#e2e8f0';ctx.textAlign='center';ctx.font='bold 10px system-ui';ctx.fillText('MOON',cx,cy+4);
     var end=s.earth.hit||s.earth.target,radioEnd=point(end.x,end.y);
@@ -3020,7 +3019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if(s.earth.hit){ctx.fillStyle='#fb7185';ctx.beginPath();ctx.arc(radioEnd[0],radioEnd[1],3,0,Math.PI*2);ctx.fill();}
     ctx.strokeStyle='#fde68a';ctx.lineWidth=1;ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(scx,scy);var sunRay=mmSegmentMoon(s.x,s.y,s.x+s.sun.directionX*MM_LUNAR_ENV.sunDistance,s.y+s.sun.directionY*MM_LUNAR_ENV.sunDistance),sunEnd=sunRay.hit?point(sunRay.hit.x,sunRay.hit.y):[scx+s.sun.directionX*W*2,scy-s.sun.directionY*W*2];ctx.lineTo(sunEnd[0],sunEnd[1]);ctx.stroke();ctx.setLineDash([]);
     var vscale=26/s.speed;mmAscentVector(ctx,scx,scy,s.vx*vscale,-s.vy*vscale,'#67e8f9');
-    mmDrawLOIStack(ctx,scx,scy,.63,Math.atan2(-s.vy,s.vx),s);ctx.restore();
+    var stack = mmDrawLOIStack(ctx,scx,scy,.63,Math.atan2(-s.vy,s.vx),{time:s.time,engineOn:s.engineOn,thrust:s.thrust,sunlight:s.sun});ctx.restore();
     ctx.textAlign='left';ctx.font='10px system-ui';ctx.fillStyle='#6ee7b7';ctx.fillText('← Earth',14,62);
     ctx.textAlign='right';ctx.fillStyle='#fde68a';ctx.fillText('Sun '+p.sunAngle+'° '+(p.sunAngle===45?'↗':p.sunAngle===90?'↑':'↖'),W-14,62);
     var tx=26,tw=W-52,ty=H-94;
@@ -3028,7 +3027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.fillStyle=index===0?(interval.radio?'#10b981':'#7f1d1d'):interval.sun==='sunlit'?'#fde68a':interval.sun==='partial'?'#f59e0b':'#334155';ctx.fillRect(x,row[1],Math.max(.7,w),12);});});
     var cursor=tx+tw*s.time/p.orbit.period;ctx.strokeStyle='#f8fafc';ctx.beginPath();ctx.moveTo(cursor,ty-3);ctx.lineTo(cursor,ty+58);ctx.stroke();
     ctx.textAlign='left';ctx.fillStyle='#e2e8f0';ctx.font='10px system-ui';ctx.fillText('0 min',tx,H-12);ctx.textAlign='right';ctx.fillText((p.orbit.period/60).toFixed(1)+' min',W-tx,H-12);ctx.restore();
-    return {scaleX:scale,scaleY:scale,moonRadius:mr,spacecraftX:scx,spacecraftY:scy,radioEndX:radioEnd[0],radioEndY:radioEnd[1],plumeVisible:false};
+    return {scaleX:scale,scaleY:scale,moonRadius:mr,spacecraftX:scx,spacecraftY:scy,radioEndX:radioEnd[0],radioEndY:radioEnd[1],plumeVisible:false,craftSunlight:stack.sunlight||null};
   }
   function mmRenderLunarEnvironmentCard(h, d, upd, announceToSR, translate) {
     var t = mmAccessibleTranslator(translate);
@@ -3085,7 +3084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       h('h4',{style:{fontSize:'13px',margin:'12px 0 6px'}},'Contact timeline'),
       h('div',{'data-environment-events':true,role:'group','aria-label':t("stem.moonmission.a11y_radio_and_eclipse_contacts", 'Radio and eclipse contacts'),style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,210px),1fr))',gap:'8px'}},profile.events.map(function(event,i){return h('button',{key:event.time,type:'button','data-environment-event':i,style:Object.assign({},button,{textAlign:'left'}),onClick:function(ev){action(ev,'event',i);}},h('span',{style:{display:'block',color:'#f8fafc'}},event.label),h('span',{style:{fontSize:'11px',color:'#cbd5e1'}},(event.time/60).toFixed(2)+' min · inspect just after contact'));})),
       d.lunarEnvironmentResult&&h('p',{'data-environment-result':true,role:'status',style:{padding:'12px',border:'1px solid #10b981',borderRadius:'8px',background:'#064e3b',color:'#ecfdf5',fontSize:'13px',lineHeight:1.6}},resultText(profile)),
-      h('p',{'data-environment-model-note':true,style:{fontSize:'12px',lineHeight:1.6,color:'#cbd5e1',marginBottom:0}},'Model: one Kepler coast in the achieved insertion orbit; mass and fuel stay constant. Earth is fixed 384,400 km away; the receiver is its nearest surface point. Sun direction is a comparison preset, fixed at 1 au in the orbital plane. The finite Sun disc gives partial and total eclipses. A visible disc fraction is illumination, not electrical power or temperature. The shadow sketch uses a small-angle cone; the readouts use angular disc overlap. Radio assumes geometric visibility without antennas, relay satellites or a ground-station network.'));
+      h('p',{'data-environment-model-note':true,style:{fontSize:'12px',lineHeight:1.6,color:'#cbd5e1',marginBottom:0}},'Model: one Kepler coast in the achieved insertion orbit; mass and fuel stay constant. Earth is fixed 384,400 km away; the receiver is its nearest surface point. Sun direction is a comparison preset, fixed at 1 au in the orbital plane. The finite Sun disc gives partial and total eclipses. A visible disc fraction is illumination, not electrical power or temperature. The shadow sketch uses a small-angle cone; the readouts use angular disc overlap. Radio assumes geometric visibility without antennas, relay satellites or a ground-station network. Approximate hull facets follow the Sun; eclipse exposure is raised to keep the craft visible. Exhaust brightness stays illustrative.'));
   }
   try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{drawLunarEnvironment:mmDrawLunarEnvironment});}catch(e){}
 
@@ -3105,7 +3104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       h('label',{style:{display:'block',fontSize:'12px'}},'Ignition offset from reference (seconds)',h('input',{'data-departure-offset':true,'aria-label':t("stem.moonmission.a11y_ignition_offset_from_reference_seconds", 'Ignition offset from reference (seconds)'),type:'range',min:-600,max:600,step:5,value:d.departurePlan.offsetSeconds,style:{width:'100%',minHeight:'44px',accentColor:'#c4b5fd'},onChange:function(ev){action(ev,'plan',planInput('offsetSeconds',ev.target.value));}})),
       h('p',{'data-departure-plan-label':true,style:{fontSize:'12px',color:'#fed7aa'}},d.departurePlan.burnSeconds.toFixed(1)+' s commanded; ignition '+d.departurePlan.offsetSeconds.toFixed(0)+' s from reference'),
       h('label',{style:{fontSize:'12px'}},'Trajectory view ',h('select',{'data-departure-view-control':true,'aria-label':t("stem.moonmission.a11y_departure_trajectory_view", 'Departure trajectory view'),value:d.departureView,style:style,onChange:function(ev){action(ev,'view',ev.target.value);}},h('option',{value:'burn'},'Lunar burn'),h('option',{value:'escape'},'Departure coast'))),
-      h('canvas',{'data-departure-canvas':true,role:'img','aria-label':t("stem.moonmission.a11y_computed_lunar_departure_equal_axis_moon_reference_orbit_finite_burn_and_coast_velocity_ra", 'Computed lunar departure: equal-axis Moon, reference orbit, finite burn and coast, velocity, radio ray and outgoing direction. Measurements and controls follow.'),style:{display:'block',width:'100%',height:'360px',borderRadius:'8px',marginTop:'10px'},ref:function(cv){
+      h('canvas',{'data-departure-canvas':true,role:'img','aria-describedby':'mm-departure-visual-note','aria-label':t("stem.moonmission.a11y_computed_lunar_departure_equal_axis_moon_reference_orbit_finite_burn_and_coast_velocity_ra", 'Computed lunar departure: equal-axis Moon, reference orbit, finite burn and coast, velocity, radio ray and outgoing direction. Measurements and controls follow.'),style:{display:'block',width:'100%',height:'360px',borderRadius:'8px',marginTop:'10px'},ref:function(cv){
         if(!cv||cv._departureInit)return;cv._departureInit=true;var ctx=cv.getContext('2d');if(!ctx)return;
         var profile=p,time=run.time,recorded=run.recorded,paused=!!d.departurePaused,rate=d.departurePlaybackRate,view=d.departureView;
         var width=cv.offsetWidth||500,height=cv.offsetHeight||360,lastTs=null,lastPublish=-Infinity,stamp='',observer;
@@ -3128,14 +3127,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         function paint(ts){if(!document.contains(cv)){if(observer)observer.disconnect();document.removeEventListener('visibilitychange',visibility);cv._departureAction=null;return;}
           var running=!paused&&!_mmAnimPaused&&!document.hidden;if(running&&lastTs!==null)time=Math.min(profile.summary.duration,time+Math.max(0,Math.min(.1,(ts-lastTs)/1000))*rate);lastTs=running&&Number.isFinite(ts)?ts:null;
           var s=mmDepartureSample(profile,time),pic=mmDrawDeparture(ctx,width,height,s,profile,view);
-          cv.dataset.departureTime=String(time);cv.dataset.departureMass=String(s.mass);cv.dataset.departureFuel=String(s.propellant);cv.dataset.departureSpeed=String(s.speed);cv.dataset.departureEnergy=String(s.energy);cv.dataset.departurePlume=pic.plumeVisible?'on':'off';cv.dataset.departurePhase=s.phase;cv.dataset.departureRadio=!s.earth.visible?'blocked':'contact';cv.dataset.departureScale=String(pic.scale);
-          var values={time:time.toFixed(1)+' s',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',escapeSpeed:(s.escapeSpeed/1000).toFixed(3)+' km/s',energy:(s.energy/1e6).toFixed(3)+' MJ/kg',mass:s.mass.toFixed(1)+' kg',fuel:s.propellant.toFixed(1)+' kg',thrust:(s.thrust/1000).toFixed(2)+' kN',delta:s.idealDeltaV.toFixed(1)+' m/s',radio:!s.earth.visible?'Moon blocks Earth':'Direct link '+s.earth.oneWayDelay.toFixed(3)+' s',direction:time<profile.cutoffTime?'Measured after cutoff':profile.orbit.directionError===null?'Bound orbit':profile.orbit.directionError.toFixed(1)+' degrees',phase:s.phase};
+          cv.dataset.departureTime=String(time);cv.dataset.departureMass=String(s.mass);cv.dataset.departureFuel=String(s.propellant);cv.dataset.departureSpeed=String(s.speed);cv.dataset.departureEnergy=String(s.energy);cv.dataset.departurePlume=pic.plumeVisible?'on':'off';cv.dataset.departurePhase=s.phase;cv.dataset.departureRadio=!s.earth.visible?'blocked':'contact';cv.dataset.departureScale=String(pic.scale);cv.dataset.departureSun=pic.sunlight?pic.sunlight.phase:'unavailable';cv.dataset.departureSunFraction=pic.sunlight?String(pic.sunlight.fraction):'';cv.dataset.departureSunAngle=String(pic.sunAngle);
+          var values={time:time.toFixed(1)+' s',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',escapeSpeed:(s.escapeSpeed/1000).toFixed(3)+' km/s',energy:(s.energy/1e6).toFixed(3)+' MJ/kg',mass:s.mass.toFixed(1)+' kg',fuel:s.propellant.toFixed(1)+' kg',thrust:(s.thrust/1000).toFixed(2)+' kN',delta:s.idealDeltaV.toFixed(1)+' m/s',radio:!s.earth.visible?'Moon blocks Earth':'Direct link '+s.earth.oneWayDelay.toFixed(3)+' s',direction:time<profile.cutoffTime?'Measured after cutoff':profile.orbit.directionError===null?'Bound orbit':profile.orbit.directionError.toFixed(1)+' degrees',phase:s.phase,sun:pic.sunlight?(pic.sunlight.phase==='total'?'Total eclipse':pic.sunlight.phase==='partial'?'Partial eclipse':'Full sunlight')+' · '+(pic.sunlight.fraction*100).toFixed(1)+'%':'Unavailable'};
           var host=cv.closest('[data-departure-workspace]');if(host){host.querySelectorAll('[data-departure-value]').forEach(function(node){node.textContent=values[node.getAttribute('data-departure-value')]||'';});var slider=host.querySelector('[data-departure-seek]');if(slider&&document.activeElement!==slider)slider.value=String(time);var status=host.querySelector('[data-departure-status]');if(status)status.textContent=s.engineOn?'SPS firing: mass falls as orbital energy rises.':s.phase==='preburn'?'Unpowered circular coast before ignition.':s.energy>0?'Engine off: positive lunar escape energy.':'Engine off: the spacecraft remains bound to the Moon.';}
           if(Number.isFinite(ts)&&ts-lastPublish>=250||time>=profile.summary.duration){lastPublish=ts;persist();}requestAnimationFrame(paint);
         }requestAnimationFrame(paint);
       }}),
+      h('p',{id:'mm-departure-visual-note','data-departure-visual-note':true,style:{fontSize:'12px',lineHeight:1.6,color:'#cbd5e1'}},'The white ring marks the computed position; green shows velocity. Columbia is enlarged, with Eagle already jettisoned. The SPS plume points opposite prograde thrust and ends at cutoff. Moon and hull lighting share a fixed 45° teaching Sun. Materials, exhaust brightness and raised eclipse exposure are illustrative.'),
       h('p',{'data-departure-status':true,style:{fontSize:'13px',fontWeight:700,color:'#a5f3fc'}},'Coast before ignition'),
-      h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(116px,1fr))',gap:'10px',margin:'12px 0'}},[['time','Elapsed time'],['altitude','Lunar altitude'],['speed','Lunar speed'],['escapeSpeed','Local escape speed'],['energy','Specific orbital energy'],['mass','CSM mass'],['fuel','SPS fuel remaining'],['thrust','SPS thrust'],['delta','Ideal engine delta-v'],['radio','Earth radio'],['direction','Outgoing direction'],['phase','Flight phase']].map(function(a){return h('div',{key:a[0]},h('dt',{style:{fontSize:'11px',color:'#cbd5e1'}},a[1]),h('dd',{'data-departure-value':a[0],style:{margin:0,minHeight:'22px',color:'#f8fafc',fontSize:'14px',fontWeight:700,fontVariantNumeric:'tabular-nums'}},'—'));})),
+      h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(116px,1fr))',gap:'10px',margin:'12px 0'}},[['time','Elapsed time'],['altitude','Lunar altitude'],['speed','Lunar speed'],['escapeSpeed','Local escape speed'],['energy','Specific orbital energy'],['mass','CSM mass'],['fuel','SPS fuel remaining'],['thrust','SPS thrust'],['delta','Ideal engine delta-v'],['radio','Earth radio'],['direction','Outgoing direction'],['phase','Flight phase'],['sun','Visible solar disc']].map(function(a){return h('div',{key:a[0]},h('dt',{style:{fontSize:'11px',color:'#cbd5e1'}},a[1]),h('dd',{'data-departure-value':a[0],style:{margin:0,minHeight:'22px',color:'#f8fafc',fontSize:'14px',fontWeight:700,fontVariantNumeric:'tabular-nums'}},'—'));})),
       h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px',alignItems:'center'}},h('button',{type:'button','data-departure-pause':true,style:style,onClick:function(ev){action(ev,'pause',!pausedUI);}},pausedUI?'Play departure':'Pause departure'),
         h('label',{style:{fontSize:'12px'}},'Playback speed ',h('select',{'data-departure-rate':true,'aria-label':t("stem.moonmission.a11y_departure_playback_speed", 'Departure playback speed'),value:d.departurePlaybackRate,style:style,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60,240].map(function(n){return h('option',{value:n,key:n},n+'×');}))),
         h('button',{type:'button','data-departure-review':true,style:style,onClick:function(ev){action(ev,'review');}},'Review departure result')),
@@ -3279,7 +3279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 50 ? 'C' : 'D';
     return { total: total, grade: grade, parts: parts };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, descentFrame: mmDescentFrame, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, descentFrame: mmDescentFrame, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnSurfaceNormal: mmSaturnSurfaceNormal, saturnMaterialGradient: mmSaturnMaterialGradient, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
 
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
@@ -3428,19 +3428,326 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     });
     return out;
   }
-  function drawDetailedEarth(ctx, cx, cy, r, tick, sunAng, litFrac) {
+  // A circular footprint on the sphere, including the part visible when its
+  // center is behind the limb. The normal uses Canvas x/right, y/down, z/viewer.
+  function mmEarthCloudCap(u, v, z, rho) {
+    if (![u, v, z, rho].every(Number.isFinite) || rho <= 0 || rho >= Math.PI / 2) return null;
+    var length2 = u * u + v * v + z * z;
+    if (Math.abs(length2 - 1) > 1e-7) return null;
+    var length = Math.sqrt(length2); u /= length; v /= length; z /= length;
+    var sine = Math.sin(rho), cosine = Math.cos(rho);
+    if (z <= -sine) return null;
+    var partial = z < sine, radial = Math.hypot(u, v), start = 0, end = Math.PI * 2, reverse = false, half = 0;
+    if (partial) {
+      var theta = Math.acos(Math.max(-1, Math.min(1, z * cosine / (radial * sine))));
+      half = Math.acos(Math.max(-1, Math.min(1, cosine / radial)));
+      start = z < 0 ? Math.PI - theta : theta;
+      end = z < 0 ? theta - Math.PI : Math.PI * 2 - theta;
+      reverse = z < 0;
+    }
+    return { x: u * cosine, y: v * cosine, across: Math.abs(z) * sine, along: sine,
+      rot: Math.atan2(v, u), z: z, partial: partial, start: start, end: end, reverse: reverse, limbHalfAngle: half };
+  }
+  function mmEarthSphericalClouds(cx, cy, r, tick) {
+    if (tick === undefined) tick = 0;
+    if (![cx, cy, r, tick].every(Number.isFinite) || r <= 0) return [];
+    var D = Math.PI / 180, lam0 = (MM_EARTH_START_LON - tick * MM_EARTH_DEG_PER_TICK) * D;
+    var sP = Math.sin(MM_EARTH_TILT_DEG * D), cP = Math.cos(MM_EARTH_TILT_DEG * D), out = [];
+    mmCloudCells().forEach(function (cell, index) {
+      var dl = cell.lon * D - lam0, sl = Math.sin(cell.lat * D), cl = Math.cos(cell.lat * D), cd = Math.cos(dl);
+      var cap = mmEarthCloudCap(cl * Math.sin(dl), -(cP * sl - sP * cl * cd), sP * sl + cP * cl * cd, cell.size * D);
+      if (!cap) return;
+      cap.x = cx + r * cap.x; cap.y = cy + r * cap.y;
+      cap.across *= r; cap.along *= r; cap.i = index; out.push(cap);
+    });
+    return out;
+  }
+  function mmAppendEarthCloudCap(ctx, cx, cy, r, cap) {
+    if (!ctx || !cap || ![cx, cy, r, cap.x, cap.y, cap.across, cap.along, cap.rot, cap.z,
+      cap.start, cap.end, cap.limbHalfAngle].every(Number.isFinite) || r <= 0 || cap.across < 0 || cap.along <= 0) return false;
+    var c = Math.cos(cap.rot), s = Math.sin(cap.rot), x = cap.across * Math.cos(cap.start), y = cap.along * Math.sin(cap.start);
+    ctx.moveTo(cap.x + x * c - y * s, cap.y + x * s + y * c);
+    if (cap.partial && cap.z === 0) {
+      ctx.lineTo(cx + r * Math.cos(cap.rot - cap.limbHalfAngle), cy + r * Math.sin(cap.rot - cap.limbHalfAngle));
+    } else ctx.ellipse(cap.x, cap.y, cap.across, cap.along, cap.rot, cap.start, cap.end, cap.reverse);
+    // Close along the true horizon, never a straight chord across the globe.
+    // The reversed far-side ellipse arc still yields the same positive winding.
+    if (cap.partial) ctx.arc(cx, cy, r, cap.rot - cap.limbHalfAngle, cap.rot + cap.limbHalfAngle);
+    ctx.closePath(); return true;
+  }
+  // Orthographic sphere under the in-plane Sun used by parking and departure.
+  // Incidence is geometric; the square-root transfer and 8% floor are exposure.
+  function mmEarthSurfaceLight(u, v, sunAngle) {
+    if (![u, v, sunAngle].every(Number.isFinite) || u * u + v * v > 1) return null;
+    var incidence = Math.max(-1, Math.min(1, u * Math.cos(sunAngle) + v * Math.sin(sunAngle)));
+    return { normal: { x: u, y: v, z: Math.sqrt(Math.max(0, 1 - u * u - v * v)) }, incidence: incidence,
+      exposure: 0.08 + 0.92 * Math.sqrt(Math.max(0, incidence)) };
+  }
+  function mmEarthSurfaceGradient(ctx, cx, cy, r, sunAngle) {
+    if (!ctx || typeof ctx.createLinearGradient !== 'function' || ![cx, cy, r, sunAngle].every(Number.isFinite) || r <= 0) return null;
+    var sx = Math.cos(sunAngle), sy = Math.sin(sunAngle);
+    var shade = ctx.createLinearGradient(cx - sx * r, cy - sy * r, cx + sx * r, cy + sy * r);
+    shade.addColorStop(0, 'rgba(0,0,0,0.92)');
+    // Quadratic sample spacing resolves the rapidly changing terminator slope.
+    for (var stop = 0; stop <= 32; stop++) {
+      var q = stop / 32;
+      shade.addColorStop(0.5 + 0.5 * q * q, 'rgba(0,0,0,' + (0.92 * (1 - q)) + ')');
+    }
+    return shade;
+  }
+  // Specular half-vector for the existing in-plane Sun and orthographic viewer.
+  // Exponent and peak opacity are illustrative rough-water exposure choices.
+  function mmEarthOceanGlint(u, v, sunAngle) {
+    var light = mmEarthSurfaceLight(u, v, sunAngle);
+    if (!light) return null;
+    var halfDot = Math.max(0, Math.min(1, (light.incidence + light.normal.z) / Math.SQRT2));
+    return { incidence: light.incidence, halfDot: halfDot,
+      strength: light.incidence > 0 ? 0.42 * Math.pow(halfDot, 64) : 0 };
+  }
+  function mmEarthOceanGlintLayers() {
+    var layers = [], previous = 0;
+    for (var i = 0; i < 32; i++) {
+      var threshold = Math.pow((i + 0.5) / 32, 1 / 64), tangent = Math.sqrt(1 - threshold * threshold);
+      var opacity = 0.42 * (i + 1) / 32;
+      layers.push({ threshold: threshold, center: threshold / Math.SQRT2, radial: tangent / Math.SQRT2,
+        tangential: tangent, alpha: (opacity - previous) / (1 - previous), opacity: opacity });
+      previous = opacity;
+    }
+    return layers;
+  }
+  var _mmEarthGlintLayers = null, _mmEarthGlintSprite = null;
+  function mmDrawEarthOceanGlint(ctx, cx, cy, radius, sunAngle) {
+    if (!ctx || ![cx, cy, radius, sunAngle].every(Number.isFinite) || radius <= 0) return null;
+    if (_mmEarthGlintSprite === null) {
+      _mmEarthGlintSprite = false;
+      try {
+        var sprite = document.createElement('canvas'), size = 512; sprite.width = sprite.height = size;
+        var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
+        if (image && image.data && image.data.length === size * size * 4 && typeof context.putImageData === 'function') {
+          // Sample the analytic reflection once. A single composite avoids the
+          // alpha and color rounding lost through many faint Canvas fills.
+          for (var y = 0; y < size; y++) for (var x = size / 2; x < size; x++) {
+            var glint = mmEarthOceanGlint((x + 0.5) * 2 / size - 1, (y + 0.5) * 2 / size - 1, 0);
+            var alpha = glint ? Math.round(255 * glint.strength) : 0;
+            if (!alpha) continue;
+            var offset = (y * size + x) * 4;
+            image.data[offset] = 236; image.data[offset + 1] = 244;
+            image.data[offset + 2] = 250; image.data[offset + 3] = alpha;
+          }
+          context.putImageData(image, 0, 0); _mmEarthGlintSprite = sprite;
+        }
+      } catch (_earthGlintError) {}
+    }
+    ctx.save();ctx.translate(cx, cy);ctx.rotate(sunAngle);
+    if (_mmEarthGlintSprite) {
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(_mmEarthGlintSprite, -radius, -radius, radius * 2, radius * 2);
+    } else {
+      // Deterministic contour fallback for canvases without pixel buffers.
+      if (!_mmEarthGlintLayers) _mmEarthGlintLayers = mmEarthOceanGlintLayers();
+      for (var i = 0; i < _mmEarthGlintLayers.length; i++) {
+        var layer = _mmEarthGlintLayers[i];
+        ctx.fillStyle = 'rgba(236,244,250,' + layer.alpha + ')';ctx.beginPath();
+        // Each spherical cap projects to this shifted ellipse.
+        ctx.ellipse(radius * layer.center, 0, radius * layer.radial, radius * layer.tangential, 0, 0, Math.PI * 2);ctx.fill();
+      }
+    }
+    ctx.restore();return { layers: _mmEarthGlintSprite ? 1 : 32, peakOpacity: 0.42, exponent: 64 };
+  }
+  // Selected city locations from Natural Earth 5.1.2, 110m populated places,
+  // SCALERANK <= 2; public domain: naturalearthdata.com/about/terms-of-use/ .
+  // Coordinates are rounded to 4 decimals. Light spread and brightness are
+  // illustrative display exposure, not urban extent or historical radiance.
+  var MM_EARTH_CITIES = [
+    ["Hanoi",105.8481,21.0353],
+    ["Ankara",32.8624,39.9292],
+    ["Budapest",19.0814,47.502],
+    ["Sanaa",44.2046,15.3567],
+    ["Bucharest",26.098,44.4353],
+    ["Damascus",36.2981,33.502],
+    ["Lisbon",-9.1468,38.7247],
+    ["Khartoum",32.5322,15.59],
+    ["Oslo",10.748,59.9186],
+    ["Warsaw",21.0053,52.2309],
+    ["Pyongyang",125.7527,39.0214],
+    ["Dar es Salaam",39.2664,-6.7981],
+    ["Dublin",-6.257,53.3467],
+    ["Monrovia",-10.7997,6.3146],
+    ["Kuala Lumpur",101.6887,3.1398],
+    ["Havana",-82.3661,23.1339],
+    ["Prague",14.4229,50.087],
+    ["Kuwait City",47.9764,29.3717],
+    ["Santo Domingo",-69.9297,18.4707],
+    ["Accra",-0.2187,5.552],
+    ["Tripoli",13.18,32.8925],
+    ["Tel Aviv-Yafo",34.7681,32.0819],
+    ["Helsinki",24.9325,60.1638],
+    ["Kobenhavn",12.5615,55.6805],
+    ["Abidjan",-4.0202,5.3231],
+    ["Brasilia",-47.918,-15.7814],
+    ["Brussels",4.3314,50.8353],
+    ["Dhaka",90.4066,23.725],
+    ["Luanda",13.2325,-8.8363],
+    ["Algiers",3.0486,36.765],
+    ["Rangoon",96.1647,16.7853],
+    ["San Francisco",-122.3996,37.7843],
+    ["Denver",-104.986,39.7411],
+    ["Houston",-95.3484,29.7413],
+    ["Miami",-80.2261,25.7896],
+    ["Atlanta",-84.3676,33.7395],
+    ["Chicago",-87.6352,41.848],
+    ["Caracas",-66.919,10.5029],
+    ["Kiev",30.5147,50.4353],
+    ["Dubai",55.2869,25.2149],
+    ["Tashkent",69.2688,41.3038],
+    ["Madrid",-3.6853,40.402],
+    ["Geneva",6.14,46.21],
+    ["Stockholm",18.0663,59.3241],
+    ["Bangkok",100.5147,13.7519],
+    ["Lima",-77.052,-12.0461],
+    ["Dakar",-17.4751,14.7178],
+    ["Johannesburg",28.0281,-26.1681],
+    ["Amsterdam",4.9147,52.3519],
+    ["Casablanca",-7.6183,33.6019],
+    ["Seoul",126.9978,37.5683],
+    ["Manila",120.9803,14.6061],
+    ["Monterrey",-100.3319,25.6719],
+    ["Berlin",13.3996,52.5238],
+    ["Urumqi",87.5731,43.807],
+    ["Chengdu",104.0681,30.6719],
+    ["Osaka",135.5038,34.6911],
+    ["Kinshasa",15.313,-4.3278],
+    ["New Delhi",77.2,28.6],
+    ["Bengaluru",77.5581,12.9719],
+    ["Athens",23.7314,37.9853],
+    ["Baghdad",44.3919,33.3406],
+    ["Addis Ababa",38.6981,9.0353],
+    ["Tehran",51.4224,35.6739],
+    ["Vancouver",-123.1236,49.2754],
+    ["Toronto",-79.3895,43.6646],
+    ["Buenos Aires",-58.4325,-34.6107],
+    ["Kabul",69.1813,34.5186],
+    ["Vienna",16.3647,48.202],
+    ["Melbourne",144.9731,-37.8181],
+    ["Taipei",121.5683,25.0358],
+    ["Auckland",174.763,-36.8481],
+    ["Los Angeles",-118.232,34.0492],
+    ["Washington, D.C.",-77.0114,38.9015],
+    ["New York",-73.9957,40.7216],
+    ["London",-0.1187,51.5019],
+    ["Istanbul",28.9743,41.0176],
+    ["Riyadh",46.7205,24.6345],
+    ["Cape Town",18.433,-33.9181],
+    ["Moscow",37.6136,55.7541],
+    ["Mexico City",-99.1329,19.4444],
+    ["Lagos",3.3896,6.4452],
+    ["Rome",12.4813,41.8979],
+    ["Beijing",116.3942,39.9017],
+    ["Nairobi",36.8147,-1.2814],
+    ["Jakarta",106.8275,-6.1725],
+    ["Bogota",-74.0853,4.5984],
+    ["Cairo",31.248,30.0519],
+    ["Shanghai",121.4346,31.2184],
+    ["Tokyo",139.7495,35.687],
+    ["Mumbai",72.8758,19.0684],
+    ["Paris",2.353,48.8581],
+    ["Santiago",-70.6505,-33.4402],
+    ["Kolkata",88.3691,22.5696],
+    ["Rio de Janeiro",-43.2121,-22.9073],
+    ["Sao Paulo",-46.627,-23.5567],
+    ["Sydney",151.2125,-33.8714],
+    ["Singapore",103.8539,1.295],
+    ["Hong Kong",114.1831,22.3069]
+  ];
+  var _mmEarthCitySources = null;
+  function mmEarthCityCatalog() {
+    return MM_EARTH_CITIES.map(function (city) { return { name: city[0], lon: city[1], lat: city[2] }; });
+  }
+  function mmEarthCityCloudTransmission(lon, lat) {
+    if (![lon, lat].every(Number.isFinite) || Math.abs(lat) > 90) return null;
+    var D = Math.PI / 180, sl = Math.sin(lat * D), cl = Math.cos(lat * D), coverage = 0;
+    mmCloudCells().forEach(function (cell) {
+      var angle = Math.acos(Math.max(-1, Math.min(1, sl * Math.sin(cell.lat * D) + cl * Math.cos(cell.lat * D) * Math.cos((lon - cell.lon) * D))));
+      var rho = cell.size * D, edge = Math.max(0, Math.min(1, (rho - angle) / (rho * 0.35)));
+      coverage = Math.max(coverage, edge * edge * (3 - 2 * edge));
+    });
+    // One cloud union: overlapping puffs do not repeatedly multiply extinction.
+    return 1 - 0.72 * coverage;
+  }
+  function mmEarthNightLightResponse(u, v, z, sunAngle) {
+    if (![u, v, z, sunAngle].every(Number.isFinite) || Math.abs(u * u + v * v + z * z - 1) > 1e-7) return null;
+    var incidence = Math.max(-1, Math.min(1, u * Math.cos(sunAngle) + v * Math.sin(sunAngle)));
+    // Gradual display contrast from sunset through nautical twilight (12 degrees).
+    var dusk = Math.max(0, Math.min(1, -incidence / Math.sin(Math.PI / 15)));
+    return { incidence: incidence, night: dusk * dusk * (3 - 2 * dusk), view: Math.max(0, Math.min(1, z)) };
+  }
+  function mmEarthCityLights(cx, cy, r, tick, sunAngle) {
+    if (tick === undefined) tick = 0;
+    if (![cx, cy, r, tick, sunAngle].every(Number.isFinite) || r <= 0) return [];
+    if (!_mmEarthCitySources) _mmEarthCitySources = mmEarthCityCatalog().map(function (city) {
+      city.transmission = mmEarthCityCloudTransmission(city.lon, city.lat); return city;
+    });
+    var D = Math.PI / 180, lam0 = (MM_EARTH_START_LON - tick * MM_EARTH_DEG_PER_TICK) * D;
+    var sP = Math.sin(MM_EARTH_TILT_DEG * D), cP = Math.cos(MM_EARTH_TILT_DEG * D), out = [];
+    _mmEarthCitySources.forEach(function (city) {
+      var dl = city.lon * D - lam0, sl = Math.sin(city.lat * D), cl = Math.cos(city.lat * D), cd = Math.cos(dl);
+      var u = cl * Math.sin(dl), v = -(cP * sl - sP * cl * cd), z = sP * sl + cP * cl * cd;
+      var light = mmEarthNightLightResponse(u, v, z, sunAngle);
+      if (!light || light.view <= 0 || light.night <= 0) return;
+      out.push({ name: city.name, lon: city.lon, lat: city.lat, x: cx + r * u, y: cy + r * v, u: u, v: v, z: z,
+        night: light.night, view: light.view, transmission: city.transmission, opacity: 0.9 * light.night * light.view * city.transmission,
+        radius: 3 * Math.max(0.45, r * 0.0024) });
+    });
+    return out;
+  }
+  function mmDrawEarthCityLights(ctx, cx, cy, r, tick, sunAngle) {
+    if (tick === undefined) tick = 0;
+    if (!ctx || ![cx, cy, r, tick, sunAngle].every(Number.isFinite) || r <= 0) return null;
+    var lights = mmEarthCityLights(cx, cy, r, tick, sunAngle);
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx, cy, r, 0, Math.PI * 2);ctx.clip();
+    var alpha = ctx.globalAlpha;
+    for (var i = 0; i < lights.length; i++) {
+      var light = lights[i], glow = ctx.createRadialGradient(light.x, light.y, 0, light.x, light.y, light.radius);
+      glow.addColorStop(0, 'rgba(255,243,194,0.95)');glow.addColorStop(0.18, 'rgba(255,220,130,0.8)');
+      glow.addColorStop(0.45, 'rgba(255,177,60,0.23)');glow.addColorStop(1, 'rgba(255,177,60,0)');
+      ctx.globalAlpha = alpha * light.opacity;ctx.fillStyle = glow;
+      ctx.beginPath();ctx.arc(light.x, light.y, light.radius, 0, Math.PI * 2);ctx.fill();
+    }
+    ctx.restore();return { lights: lights.length };
+  }
+  function drawDetailedEarth(ctx, cx, cy, r, tick, sunAng, litFrac, opts) {
     if (r < 3) { ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); return; }
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
-    // Ocean base
-    var og = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, 0, cx, cy, r);
-    og.addColorStop(0, '#4a9aea'); og.addColorStop(0.5, '#2563eb'); og.addColorStop(1, '#1e3a6e');
-    ctx.fillStyle = og; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    var surfaceLight = !!(opts && opts.surfaceLight === true && Number.isFinite(sunAng) && typeof litFrac !== 'number');
+    // Uniform ocean albedo receives the same illumination as land and clouds.
+    if (surfaceLight) ctx.fillStyle = '#397fd1';
+    else {
+      var og = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, 0, cx, cy, r);
+      og.addColorStop(0, '#4a9aea'); og.addColorStop(0.5, '#2563eb'); og.addColorStop(1, '#1e3a6e');
+      ctx.fillStyle = og;
+    }
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
     // Continents, deserts and ice from real (coarse) coastlines. They used to be
     // three bezier blobs whose x swung by cos(rot) around the centre: two green
     // lenses that never set behind the limb, so the globe read as an eye, not Earth.
     var FILL = { land: '#3f7d3a', arid: '#b09359', ice: 'rgba(236,244,250,0.92)' };
     var paths = mmEarthLandPaths(cx, cy, r, tick);
+    if (surfaceLight && opts.oceanGlint === true && r >= 16) {
+      ctx.save();
+      // Opaque land covers the reflection below. Exclude each ice polygon
+      // explicitly, since its existing paint is slightly translucent.
+      for (var gi = 0; gi < paths.length; gi++) {
+        if (paths[gi].k !== 'ice') continue;
+        var icePoints = paths[gi].pts;
+        ctx.beginPath();ctx.arc(cx, cy, r, 0, Math.PI * 2);ctx.closePath();
+        ctx.moveTo(icePoints[0][0], icePoints[0][1]);
+        for (var gj = 1; gj < icePoints.length; gj++) ctx.lineTo(icePoints[gj][0], icePoints[gj][1]);
+        ctx.closePath();ctx.clip('evenodd');
+      }
+      mmDrawEarthOceanGlint(ctx, cx, cy, r, sunAng);ctx.restore();
+    }
     for (var pi = 0; pi < paths.length; pi++) {
       var pts = paths[pi].pts;
       ctx.fillStyle = FILL[paths[pi].k];
@@ -3455,17 +3762,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.filter = 'blur(' + Math.max(0.6, r * 0.012).toFixed(2) + 'px)';   // ignored where unsupported
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
       ctx.beginPath();
+      if (surfaceLight && opts.sphericalClouds === true) {
+        mmEarthSphericalClouds(cx, cy, r, tick).forEach(function (cap) { mmAppendEarthCloudCap(ctx, cx, cy, r, cap); });
+      } else {
       mmEarthClouds(cx, cy, r, tick).forEach(function (c) {
         ctx.moveTo(c.x + c.across * Math.cos(c.rot), c.y + c.across * Math.sin(c.rot));
         ctx.ellipse(c.x, c.y, c.across, c.along, c.rot, 0, Math.PI * 2);
       });
+      }
       ctx.fill();
       ctx.restore();
     }
-    // Limb darkening over land as well as sea, so the flat fills read as a sphere.
-    var limb = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.2, r * 0.35, cx, cy, r);
-    limb.addColorStop(0, 'rgba(4,12,40,0)'); limb.addColorStop(0.75, 'rgba(4,12,40,0.12)'); limb.addColorStop(1, 'rgba(4,12,40,0.5)');
-    ctx.fillStyle = limb; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    if (surfaceLight) {
+      // One solar-angle exposure shades ocean, continents, ice and clouds.
+      ctx.fillStyle = mmEarthSurfaceGradient(ctx, cx, cy, r, sunAng);
+      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    } else {
+      // Limb darkening over land as well as sea, so the flat fills read as a sphere.
+      var limb = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.2, r * 0.35, cx, cy, r);
+      limb.addColorStop(0, 'rgba(4,12,40,0)'); limb.addColorStop(0.75, 'rgba(4,12,40,0.12)'); limb.addColorStop(1, 'rgba(4,12,40,0.5)');
+      ctx.fillStyle = limb; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    }
     if (typeof sunAng === 'number') {
       // Night side, away from the Sun (sunAng: the direction the light comes from),
       // with a soft terminator and lights along the night-side coasts.
@@ -3476,11 +3793,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ctx.fillStyle = 'rgba(2,6,23,0.92)';
         mmPhaseShade(ctx, cx, cy, r * 1.03, litFrac, sunAng);
         ctx.restore();
-      } else {
+      } else if (!surfaceLight) {
         var ng = ctx.createLinearGradient(cx + sx * r * 0.15, cy + sy * r * 0.15, cx - sx * r, cy - sy * r);
         ng.addColorStop(0, 'rgba(2,6,23,0)'); ng.addColorStop(0.18, 'rgba(2,6,23,0.8)'); ng.addColorStop(1, 'rgba(2,6,23,0.93)');
         ctx.fillStyle = ng; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
       }
+      if (surfaceLight && opts.urbanLights === true && r >= 16) {
+        // Emission is added after solar shading, with geographic cloud attenuation.
+        mmDrawEarthCityLights(ctx, cx, cy, r, tick, sunAng);
+      } else {
       ctx.fillStyle = 'rgba(253,224,71,0.85)';
       for (var li = 0; li < paths.length; li++) {
         if (paths[li].k !== 'land') continue;
@@ -3493,8 +3814,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           ctx.fillRect(lp[lj][0] - 0.6, lp[lj][1] - 0.6, 1.2, 1.2);
         }
       }
+      }
     }
     ctx.restore();
+    if (opts && opts.thinAtmosphere === true && Number.isFinite(sunAng) && typeof litFrac !== 'number') {
+      mmDrawEarthGlobeAtmosphere(ctx, cx, cy, r, sunAng);
+      return;
+    }
     // Atmosphere glow, outside the disc only. A radial gradient also paints everything
     // inside its inner circle in its first colour, so filling the whole circle laid a 25%
     // blue wash over the globe and no night side ever looked dark. Rings now: the inner
@@ -3511,6 +3837,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.restore();
   }
 
+  // Launch axes: right/downrange, outward/up and toward the map viewer.
+  // The shared fixed Sun gives the launch normal a 17-degree elevation.
+  // Geometry determines daylight; the brightness curve is illustrative.
+  function mmAscentMoonLight(u, v) {
+    if (!Number.isFinite(u) || !Number.isFinite(v) || u * u + v * v > 1) return null;
+    var normal = { x: u, y: v, z: Math.sqrt(Math.max(0, 1 - u * u - v * v)) }, sun = MM_EVA_SUN;
+    var incidence = Math.max(-1, Math.min(1, normal.x * sun.x + normal.y * sun.y + normal.z * sun.z));
+    return { normal: normal, sun: { x: sun.x, y: sun.y, z: sun.z }, incidence: incidence, daylight: incidence > 0,
+      elevationDeg: Math.asin(incidence) * 180 / Math.PI, brightness: 0.055 + 0.945 * Math.pow(Math.max(0, incidence), 0.6) };
+  }
+
+  function mmAscentStageLight(pitch) {
+    if (!Number.isFinite(pitch)) return null;
+    var sun = MM_EVA_SUN, c = Math.cos(pitch), s = Math.sin(pitch), length = Math.hypot(sun.x, sun.y);
+    var x = sun.x * c - sun.y * s, y = -sun.x * s - sun.y * c;
+    return { x: x, y: y, projectionLength: length,
+      gradient: { x0: -11 * x / length, y0: -11 * y / length, x1: 11 * x / length, y1: 11 * y / length } };
+  }
+
+  var _mmAscentMoonLightSprite = null;
+  function mmDrawAscentMoonLight(ctx, cx, cy, radius) {
+    if (!ctx || ![cx, cy, radius].every(Number.isFinite) || radius <= 0) return null;
+    var sun = MM_EVA_SUN;
+    if (_mmAscentMoonLightSprite === null) {
+      _mmAscentMoonLightSprite = false;
+      try {
+        var sprite = document.createElement('canvas'), size = 256; sprite.width = sprite.height = size;
+        var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
+        if (image && image.data && image.data.length === size * size * 4 && typeof context.putImageData === 'function') {
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var light = mmAscentMoonLight((x + 0.5) * 2 / size - 1, 1 - (y + 0.5) * 2 / size), offset = (y * size + x) * 4;
+            if (!light) continue;
+            image.data[offset] = Math.round(190 * light.brightness); image.data[offset + 1] = Math.round(190 * light.brightness);
+            image.data[offset + 2] = Math.round(183 * light.brightness); image.data[offset + 3] = 255;
+          }
+          context.putImageData(image, 0, 0); _mmAscentMoonLightSprite = sprite;
+        }
+      } catch (_ascentLightError) {}
+    }
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#0a0a0a'; ctx.fill();
+    if (_mmAscentMoonLightSprite) ctx.drawImage(_mmAscentMoonLightSprite, cx - radius, cy - radius, radius * 2, radius * 2);
+    else {
+      var step = radius * 2 / 48;
+      for (var row = 0; row < 48; row++) for (var col = 0; col < 48; col++) {
+        var fallback = mmAscentMoonLight((col + 0.5) / 24 - 1, 1 - (row + 0.5) / 24);
+        if (!fallback) continue;
+        ctx.fillStyle = 'rgb(' + Math.round(190 * fallback.brightness) + ',' + Math.round(190 * fallback.brightness) + ',' + Math.round(183 * fallback.brightness) + ')';
+        ctx.fillRect(cx - radius + col * step, cy - radius + row * step, step, step);
+      }
+    }
+    ctx.restore();
+    return { sunX: sun.x, sunY: sun.y, sunZ: sun.z, launchElevationDeg: 17, preset: 'fixed-launch-sun', brightnessFloor: 0.055 };
+  }
+
+  // Convert the finite Sun direction from physical XY into a Canvas body frame.
+  // Fraction is visible solar-disc area. Material response and the 24% exposure
+  // floor are illustrative, keeping an opaque spacecraft readable in eclipse.
+  function mmOrbitalCraftLight(sun, angle) {
+    if (!sun || ![sun.directionX, sun.directionY, sun.fraction, angle].every(Number.isFinite)) return null;
+    var length = Math.hypot(sun.directionX, sun.directionY);
+    if (!Number.isFinite(length) || length <= 0) return null;
+    var sx = sun.directionX / length, sy = sun.directionY / length, c = Math.cos(angle), s = Math.sin(angle);
+    var x = sx * c - sy * s, y = -sx * s - sy * c;
+    return { x: x, y: y, fraction: Math.max(0, Math.min(1, sun.fraction)),
+      gradient: { x0: -11 * x, y0: -11 * y, x1: 11 * x, y1: 11 * y } };
+  }
+
+  function mmOrbitalCraftMaterial(color, light, nx, ny) {
+    nx = nx === undefined ? 0 : nx; ny = ny === undefined ? 0 : ny;
+    if (!light || typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color) ||
+        ![light.x, light.y, light.fraction, nx, ny].every(Number.isFinite)) return color;
+    var level = 0.24 + 0.76 * Math.max(0, Math.min(1, light.fraction)) * Math.max(0, Math.min(1, nx * light.x + ny * light.y));
+    return 'rgb(' + [1, 3, 5].map(function(index) { return Math.round(parseInt(color.slice(index, index + 2), 16) * level); }).join(',') + ')';
+  }
+
   // Lunar Module silhouettes for the ascent recorder. Local up is -Y. These
   // pictures are enlarged; position, attitude and thrust come from the model.
   // NASA LM News Reference: triangular windows, a dorsal docking tunnel, four
@@ -3518,7 +3920,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmDrawLunarAscentStage(ctx, x, y, scale, pitch, opts) {
     opts = opts || {};
     var time = Number.isFinite(opts.time) ? opts.time : 0;
-    var firing = opts.engineOn === true && opts.thrust > 0;
+    var firing = opts.engineOn === true && opts.thrust > 0, orbitLight = opts.orbitLight || null;
+    var lighting = orbitLight || (opts.sunlight === true ? mmAscentStageLight(pitch || 0) : null);
+    function shade(color, nx, ny) { return mmOrbitalCraftMaterial(color, orbitLight, nx, ny); }
+    function lit(base, nx, ny) {
+      var level = orbitLight ? 0.24 + 0.76 * orbitLight.fraction * Math.max(0, Math.min(1, nx * orbitLight.x + ny * orbitLight.y)) : 0.25 + 0.75 * Math.max(0, nx * lighting.x + ny * lighting.y);
+      return 'rgb(' + base.map(function(value) { return Math.round(value * level); }).join(',') + ')';
+    }
     ctx.save(); ctx.translate(x, y); ctx.rotate(pitch || 0); ctx.scale(scale, scale);
     // Faint expanding vacuum exhaust. Its glow is illustrative; ignition and
     // cutoff follow thrust, with no invented flame during the coast.
@@ -3531,46 +3939,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.quadraticCurveTo(0, 57, 21, 49); ctx.bezierCurveTo(16, 37, 6, 23, 3.2, 12); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
     }
     var bell = ctx.createLinearGradient(-4, 7, 4, 12);
-    bell.addColorStop(0, '#29313b'); bell.addColorStop(0.6, '#65707b'); bell.addColorStop(1, '#202731');
+    bell.addColorStop(0, shade('#29313b')); bell.addColorStop(0.6, shade('#65707b')); bell.addColorStop(1, shade('#202731'));
     ctx.fillStyle = bell; ctx.beginPath(); ctx.moveTo(-1.8, 5); ctx.lineTo(1.8, 5);
     ctx.bezierCurveTo(1.9, 8, 2.5, 10, 4, 12); ctx.lineTo(-4, 12); ctx.bezierCurveTo(-2.5, 10, -1.9, 8, -1.8, 5); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(4, 12); ctx.stroke();
+    ctx.strokeStyle = shade('#94a3b8'); ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(4, 12); ctx.stroke();
     // Silvery cabin and black thermal blankets, with side tanks behind it.
-    ctx.fillStyle = '#171d27'; ctx.strokeStyle = '#5c626d'; ctx.lineWidth = 0.55;
+    ctx.fillStyle = lighting ? lit([107, 115, 121], -1, 0) : shade('#171d27'); ctx.strokeStyle = shade('#5c626d'); ctx.lineWidth = 0.55;
     ctx.beginPath(); ctx.moveTo(-13, -6); ctx.lineTo(-17, -3); ctx.lineTo(-16, 5); ctx.lineTo(-9, 8); ctx.lineTo(-7, -5); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#4c535b'; ctx.beginPath(); ctx.moveTo(11, -8); ctx.lineTo(16, -5); ctx.lineTo(17, 3); ctx.lineTo(12, 7); ctx.lineTo(7, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
-    var cabin = ctx.createLinearGradient(-11, -6, 11, 1);
-    cabin.addColorStop(0, '#626c76'); cabin.addColorStop(0.58, '#c4cbd0'); cabin.addColorStop(1, '#edf0ed');
-    ctx.fillStyle = cabin; ctx.strokeStyle = '#98a4b1'; ctx.lineWidth = 0.5;
+    ctx.fillStyle = lighting ? lit([107, 115, 121], 1, 0) : shade('#4c535b'); ctx.beginPath(); ctx.moveTo(11, -8); ctx.lineTo(16, -5); ctx.lineTo(17, 3); ctx.lineTo(12, 7); ctx.lineTo(7, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+    var cabin = lighting ? ctx.createLinearGradient(lighting.gradient.x0, lighting.gradient.y0, lighting.gradient.x1, lighting.gradient.y1) : ctx.createLinearGradient(-11, -6, 11, 1);
+    if (orbitLight) {
+      cabin.addColorStop(0, shade('#dce0df', -orbitLight.x, -orbitLight.y));
+      cabin.addColorStop(0.5, shade('#dce0df')); cabin.addColorStop(1, shade('#dce0df', orbitLight.x, orbitLight.y));
+    } else { cabin.addColorStop(0, '#626c76'); cabin.addColorStop(0.58, '#c4cbd0'); cabin.addColorStop(1, '#edf0ed'); }
+    ctx.fillStyle = cabin; ctx.strokeStyle = shade('#98a4b1'); ctx.lineWidth = 0.5;
     ctx.beginPath(); ctx.moveTo(-9, -9); ctx.lineTo(-4, -14); ctx.lineTo(7, -13); ctx.lineTo(12, -6);
     ctx.lineTo(11, 4); ctx.lineTo(6, 8); ctx.lineTo(-7, 8); ctx.lineTo(-11, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#353e49'; ctx.beginPath(); ctx.moveTo(-9, -9); ctx.lineTo(-4, -14); ctx.lineTo(-3, -1); ctx.lineTo(-11, 2); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#777f80'; ctx.beginPath(); ctx.moveTo(-7, 8); ctx.lineTo(-3, -1); ctx.lineTo(6, 0); ctx.lineTo(11, 4); ctx.lineTo(6, 8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = lighting ? lit([120, 127, 133], -Math.SQRT1_2, -Math.SQRT1_2) : shade('#353e49'); ctx.beginPath(); ctx.moveTo(-9, -9); ctx.lineTo(-4, -14); ctx.lineTo(-3, -1); ctx.lineTo(-11, 2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = lighting ? lit([135, 141, 141], 0, 1) : shade('#777f80'); ctx.beginPath(); ctx.moveTo(-7, 8); ctx.lineTo(-3, -1); ctx.lineTo(6, 0); ctx.lineTo(11, 4); ctx.lineTo(6, 8); ctx.closePath(); ctx.fill();
     // Triangular flight windows and the forward hatch.
-    ctx.fillStyle = '#071b29'; ctx.strokeStyle = '#d1dbe0'; ctx.lineWidth = 0.7;
+    ctx.fillStyle = shade('#071b29'); ctx.strokeStyle = shade('#d1dbe0'); ctx.lineWidth = 0.7;
     ctx.beginPath(); ctx.moveTo(-7.8, -8); ctx.lineTo(-3.5, -11); ctx.lineTo(-3.5, -4); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(2, -11); ctx.lineTo(8.5, -7.8); ctx.lineTo(2, -4); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#568496'; ctx.globalAlpha = 0.55;
+    ctx.fillStyle = shade('#568496'); ctx.globalAlpha = 0.55;
     ctx.beginPath(); ctx.moveTo(2.6, -10); ctx.lineTo(6.7, -8); ctx.lineTo(2.6, -6.5); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = '#28323e'; ctx.lineWidth = 0.7; ctx.strokeRect(-1.8, 0.5, 5.5, 5.8);
-    ctx.fillStyle = '#d7d8d0'; ctx.fillRect(1.8, 2, 1.1, 0.7);
+    ctx.strokeStyle = shade('#28323e'); ctx.lineWidth = 0.7; ctx.strokeRect(-1.8, 0.5, 5.5, 5.8);
+    ctx.fillStyle = shade('#d7d8d0'); ctx.fillRect(1.8, 2, 1.1, 0.7);
     // Dorsal docking tunnel and roof antenna hardware.
-    ctx.fillStyle = '#b7bfc7'; ctx.fillRect(-2.8, -17.8, 5.6, 4.8);
-    ctx.fillStyle = '#4a545e'; ctx.fillRect(-3.4, -19, 6.8, 1.5);
-    ctx.fillStyle = '#dce1e4'; ctx.fillRect(-2.8, -19, 5.6, 0.55);
-    ctx.strokeStyle = '#aeb9c3'; ctx.lineWidth = 0.65;
+    ctx.fillStyle = shade('#b7bfc7'); ctx.fillRect(-2.8, -17.8, 5.6, 4.8);
+    ctx.fillStyle = shade('#4a545e'); ctx.fillRect(-3.4, -19, 6.8, 1.5);
+    ctx.fillStyle = shade('#dce1e4'); ctx.fillRect(-2.8, -19, 5.6, 0.55);
+    ctx.strokeStyle = shade('#aeb9c3'); ctx.lineWidth = 0.65;
     ctx.beginPath(); ctx.moveTo(8, -10); ctx.lineTo(11, -20); ctx.lineTo(14, -20); ctx.moveTo(-9, -8); ctx.lineTo(-13, -17); ctx.stroke();
-    ctx.save(); ctx.translate(11.7, -20); ctx.rotate(-0.6); ctx.fillStyle = '#aeb5b9';
+    ctx.save(); ctx.translate(11.7, -20); ctx.rotate(-0.6); ctx.fillStyle = shade('#aeb5b9');
     ctx.beginPath(); ctx.ellipse(0, 0, 4, 1.8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#687a85'; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(-3.5, 0); ctx.lineTo(3.5, 0); ctx.stroke(); ctx.restore();
+    ctx.strokeStyle = shade('#687a85'); ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(-3.5, 0); ctx.lineTo(3.5, 0); ctx.stroke(); ctx.restore();
     // The near-side RCS quads remain unlit without an explicit RCS command.
     [-1, 1].forEach(function (side) {
-      ctx.fillStyle = '#676e76'; ctx.fillRect(side * 15 - 1.7, -9, 3.4, 3.7); ctx.fillStyle = '#151b24';
+      ctx.fillStyle = shade('#676e76'); ctx.fillRect(side * 15 - 1.7, -9, 3.4, 3.7); ctx.fillStyle = shade('#151b24');
       ctx.beginPath(); ctx.moveTo(side * 16, -8.5); ctx.lineTo(side * 21, -9.5); ctx.lineTo(side * 21, -6.5); ctx.lineTo(side * 16, -7.5); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.moveTo(side * 15 - 0.8, -8); ctx.lineTo(side * 15 - 1.5, -12); ctx.lineTo(side * 15 + 1.5, -12); ctx.lineTo(side * 15 + 0.8, -8); ctx.closePath(); ctx.fill();
     });
     ctx.restore();
-    return { engineVisible: firing, plumeVisible: firing, nozzleX: x - Math.sin(pitch || 0) * 12 * scale, nozzleY: y + Math.cos(pitch || 0) * 12 * scale };
+    var result = { engineVisible: firing, plumeVisible: firing, nozzleX: x - Math.sin(pitch || 0) * 12 * scale, nozzleY: y + Math.cos(pitch || 0) * 12 * scale };
+    if (lighting) result.sunlight = lighting;
+    return result;
   }
 
   function mmDrawLunarDescentRemnant(ctx, x, y, scale) {
@@ -3616,81 +4029,441 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.lineTo(x + dx - 5 * Math.cos(angle + 0.5), y + dy - 5 * Math.sin(angle + 0.5)); ctx.closePath(); ctx.fill(); ctx.restore();
   }
 
-  // The surface view is an equal-axis downrange/altitude plot with automatic
-  // zoom. The orbital map retains the physical angle but enlarges altitude six
-  // times so the initial insertion ellipse is visible on a small screen.
+  // Surface and physical orbit views share equal distance axes. The older
+  // pure-renderer orbit mode retains its sixfold altitude exaggeration for
+  // compatibility; the application uses the physical mode at cutoff.
+  function mmAscentView(value) {
+    return ['auto', 'surface', 'physical'].indexOf(value) >= 0 ? value : 'auto';
+  }
+  // A Moon-centered map and an independent time/altitude chart. Map positions
+  // use one distance scale. The eccentricity vector fixes the cutoff ellipse's
+  // orientation without an acos branch or a singular circular-orbit angle.
+  function mmAscentPhysicalOrbitGeometry(W, H, sample, profile) {
+    var C = MM_ASCENT, wide = W >= 640, end = profile.summary.duration, timeMax = Math.max(1, end);
+    var map = { left: 14, top: 64, width: wide ? W * 0.5 - 22 : W - 28, height: wide ? H - 110 : H * 0.53 - 64 };
+    var chart = { left: wide ? W * 0.53 + 30 : 44, top: wide ? 100 : H * 0.53 + 38, width: wide ? W * 0.47 - 50 : W - 66, height: wide ? H - 156 : H * 0.47 - 90 };
+    var observed = profile.samples.filter(function(row) { return row.time <= sample.time; });
+    var high = Math.max(0, sample.altitude);
+    observed.forEach(function(row) { high = Math.max(high, row.altitude); });
+    var recordedOrbit = !sample.engineOn && sample.time >= end && profile.summary.outcome === 'orbit';
+    var orbit = null, radial = C.radius + sample.altitude, theta = sample.angle;
+    if (recordedOrbit) {
+      var vr = sample.radialSpeed, vt = sample.tangentialSpeed, sin = Math.sin(theta), cos = Math.cos(theta);
+      var eX = radial / C.mu * ((vt * vt - C.mu / radial) * sin - vr * vt * cos);
+      var eY = radial / C.mu * ((vt * vt - C.mu / radial) * cos + vr * vt * sin);
+      var eccentricity = Math.hypot(eX, eY), semilatus = radial * radial * vt * vt / C.mu;
+      orbit = { eX: eX, eY: eY, eccentricity: eccentricity, semilatus: semilatus,
+        periAngle: Math.atan2(eX, eY), perilune: semilatus / (1 + eccentricity) - C.radius, apolune: semilatus / (1 - eccentricity) - C.radius };
+    }
+    var span = Math.max(C.radius + MM_DOCKING.altitude, C.radius + high, orbit ? C.radius + orbit.apolune : 0) * 1.1;
+    var scale = Math.min(map.width, map.height) / (2 * span), cx = map.left + map.width / 2, cy = map.top + map.height / 2;
+    function position(altitude, angle) { var r = (C.radius + altitude) * scale; return { x: cx + Math.sin(angle) * r, y: cy - Math.cos(angle) * r }; }
+    var craft = position(sample.altitude, theta);
+    var trail = observed.filter(function(row, i) { return i % 8 === 0; }).map(function(row) { return position(row.altitude, row.angle); });
+    trail.push(craft);
+    if (orbit) {
+      orbit.points = [];
+      for (var i = 0; i <= 240; i++) { var angle = i / 240 * Math.PI * 2, radius = orbit.semilatus / (1 + orbit.eX * Math.sin(angle) + orbit.eY * Math.cos(angle)); orbit.points.push(position(radius - C.radius, angle)); }
+      orbit.periPoint = position(orbit.perilune, orbit.periAngle); orbit.apoPoint = position(orbit.apolune, orbit.periAngle + Math.PI);
+    }
+    var yMax = Math.max(25000, Math.ceil(high * 1.1 / 5000) * 5000);
+    function chartPoint(row) { return { x: chart.left + chart.width * row.time / timeMax, y: chart.top + chart.height * (1 - row.altitude / yMax) }; }
+    var altitudePoints = observed.filter(function(row, index) { return index % 4 === 0; }).map(chartPoint); altitudePoints.push(chartPoint(sample));
+    return { map: map, chart: chart, scaleX: scale, scaleY: scale, pictureScale: scale, moonX: cx, moonY: cy, moonRadius: C.radius * scale,
+      referenceRadius: (C.radius + MM_DOCKING.altitude) * scale, craftX: craft.x, craftY: craft.y, trail: trail, orbit: orbit,
+      elapsed: sample.time, altitude: sample.altitude, timeMax: timeMax, altitudeMax: yMax, altitudePoints: altitudePoints, chartCurrent: chartPoint(sample),
+      velocityX: sample.radialSpeed * Math.sin(theta) + sample.tangentialSpeed * Math.cos(theta), velocityY: -sample.radialSpeed * Math.cos(theta) + sample.tangentialSpeed * Math.sin(theta),
+      thrustX: Math.sin(theta + sample.pitch), thrustY: -Math.cos(theta + sample.pitch) };
+  }
+  function mmDrawAscentPhysicalOrbit(ctx, W, H, sample, profile) {
+    var g = mmAscentPhysicalOrbitGeometry(W, H, sample, profile), firing = sample.engineOn && sample.thrust > 0;
+    ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'left'; ctx.font = 'bold 12px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('PHYSICAL LUNAR ORBIT', 14, 22);
+    ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('Equal distance axes · enlarged marker', 14, 40);
+    ctx.textAlign = 'right'; ctx.font = 'bold 10px monospace'; ctx.fillStyle = firing ? '#fbbf24' : '#cbd5e1'; ctx.fillText(firing ? 'APS FIRING' : 'APS OFF', W - 14, 22);
+    ctx.save(); ctx.beginPath(); ctx.rect(g.map.left, g.map.top, g.map.width, g.map.height); ctx.clip(); drawStarfield(ctx, W, H, 0, 70);
+    var moonLight = mmDrawAscentMoonLight(ctx, g.moonX, g.moonY, g.moonRadius);
+    // This limb remains at the physical radius, including on the night side.
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(g.moonX, g.moonY, g.moonRadius, 0, Math.PI * 2); ctx.stroke();
+    var sunLength = Math.hypot(moonLight.sunX, moonLight.sunY), sunX = g.map.left + g.map.width - 36, sunY = g.map.top + 38;
+    ctx.textAlign = 'right'; ctx.font = '10px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('Toward Sun', g.map.left + g.map.width - 8, g.map.top + 12);
+    mmAscentVector(ctx, sunX, sunY, moonLight.sunX / sunLength * 22, -moonLight.sunY / sunLength * 22, '#cbd5e1');
+    ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('MOON', g.moonX, g.moonY + 4);
+    ctx.strokeStyle = 'rgba(203,213,225,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(g.moonX, g.moonY, g.referenceRadius, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    function path(points) { ctx.beginPath(); points.forEach(function(p, i) { if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); }); ctx.stroke(); }
+    if (g.orbit) {
+      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); path(g.orbit.points); ctx.setLineDash([]);
+      [[g.orbit.periPoint, 'P'], [g.orbit.apoPoint, 'A']].forEach(function(item) {
+        ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(item[0].x, item[0].y, 2.5, 0, Math.PI * 2); ctx.fill();
+        var dx = item[0].x - g.moonX, dy = item[0].y - g.moonY, length = Math.hypot(dx, dy);
+        ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.strokeStyle = '#020713'; ctx.lineWidth = 3;
+        var labelX = item[0].x + dx / length * 10, labelY = item[0].y + dy / length * 10 + 4;
+        // At a phone-sized lower limb, move the apsis label beside its point.
+        if (labelY > g.map.top + g.map.height - 3) { labelX = item[0].x + 11; labelY = item[0].y + 4; }
+        labelX = Math.max(g.map.left + 7, Math.min(g.map.left + g.map.width - 7, labelX)); labelY = Math.max(g.map.top + 11, Math.min(g.map.top + g.map.height - 3, labelY));
+        ctx.strokeText(item[1], labelX, labelY); ctx.fillText(item[1], labelX, labelY);
+      });
+    }
+    ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.7; path(g.trail);
+    var speed = Math.hypot(g.velocityX, g.velocityY);
+    if (speed > 5) mmAscentVector(ctx, g.craftX, g.craftY, g.velocityX / speed * 28, g.velocityY / speed * 28, '#67e8f9');
+    if (firing) mmAscentVector(ctx, g.craftX, g.craftY, g.thrustX * 22, g.thrustY * 22, '#fbbf24');
+    // The hollow symbol exposes the true position even when clearance is only pixels.
+    ctx.beginPath(); ctx.arc(g.craftX, g.craftY, 4, 0, Math.PI * 2); ctx.strokeStyle = '#020713'; ctx.lineWidth = 4; ctx.stroke(); ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+    var ruler = 500000, rulerX = g.map.left + g.map.width - 10, rulerY = g.map.top + g.map.height - 10;
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(rulerX - ruler * g.pictureScale, rulerY); ctx.lineTo(rulerX, rulerY); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('500 km', rulerX, rulerY - 5);
+    // Different units on the history axes are labeled; this chart is not a map.
+    ctx.textAlign = 'left'; ctx.font = 'bold 12px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('ALTITUDE HISTORY', g.chart.left, g.chart.top - 26);
+    ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('Time (s) · altitude (km)', g.chart.left, g.chart.top - 10);
+    for (var tick = 0; tick <= 2; tick++) {
+      var value = g.altitudeMax * tick / 2, y = g.chart.top + g.chart.height * (1 - tick / 2);
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.chart.left, y); ctx.lineTo(g.chart.left + g.chart.width, y); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.fillStyle = '#cbd5e1'; ctx.fillText((value / 1000).toFixed(value % 1000 ? 1 : 0), g.chart.left - 8, y + 4);
+    }
+    ctx.save(); ctx.beginPath(); ctx.rect(g.chart.left, g.chart.top - 2, g.chart.width + 2, g.chart.height + 4); ctx.clip();
+    ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 2; path(g.altitudePoints);
+    ctx.strokeStyle = 'rgba(248,250,252,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(g.chartCurrent.x, g.chart.top); ctx.lineTo(g.chartCurrent.x, g.chart.top + g.chart.height); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(g.chartCurrent.x, g.chartCurrent.y, 3, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    ctx.textAlign = 'left'; ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui'; ctx.fillText('0 s', g.chart.left, g.chart.top + g.chart.height + 18);
+    ctx.textAlign = 'right'; ctx.fillText(g.timeMax.toFixed(0) + ' s', g.chart.left + g.chart.width, g.chart.top + g.chart.height + 18);
+    ctx.textAlign = 'left'; ctx.fillText('Cyan: flown path. Amber: cutoff orbit.', 14, H - 13); ctx.restore();
+    return Object.assign({ view: 'physical', moonLight: moonLight, engineVisible: firing, thrustVisible: firing, plumeVisible: false }, g);
+  }
+
+  // Launch-tangent Cartesian coordinates preserve lunar curvature. The
+  // rationalized circle sag stays precise when the camera is near liftoff.
+  function mmAscentSurfaceGeometry(W, H, sample, profile) {
+    var R = MM_ASCENT.radius, k = Math.min(1.65, Math.max(1.05, W / 680));
+    var plot = { left: Math.max(56, W * 0.16), right: W - 74, top: 86, bottom: H - 96 };
+    function world(row) {
+      var theta = row.angle, half = Math.sin(theta / 2), radius = R + row.altitude;
+      return { x: radius * Math.sin(theta), y: row.altitude * Math.cos(theta) - 2 * R * half * half,
+        footX: R * Math.sin(theta), footY: -2 * R * half * half };
+    }
+    var current = world(sample), observed = profile.samples.filter(function(row) { return row.time <= sample.time; });
+    var lowX = 0, highX = 0, lowY = 0, highY = 0;
+    observed.concat([sample]).forEach(function(row) {
+      var point = world(row);
+      lowX = Math.min(lowX, point.x, point.footX); highX = Math.max(highX, point.x, point.footX);
+      lowY = Math.min(lowY, point.y, point.footY); highY = Math.max(highY, point.y, point.footY);
+    });
+    var scale = Math.min(2.5, (plot.right - plot.left) / Math.max(1, highX - lowX), (plot.bottom - plot.top) / Math.max(1, highY - lowY));
+    var originX = plot.left - lowX * scale, originY = plot.bottom + lowY * scale;
+    function project(point) { return { x: originX + point.x * scale, y: originY - point.y * scale }; }
+    var craft = project(current), foot = project({ x: current.footX, y: current.footY });
+    var trail = observed.filter(function(row, index) { return index % 8 === 0; }).map(function(row) { return project(world(row)); }); trail.push(craft);
+    var surfacePoints = [], left = Math.max(0, originX - R * scale), right = Math.min(W, originX + R * scale);
+    function surfacePoint(x) {
+      var dx = Math.max(-R, Math.min(R, (x - originX) / scale));
+      var sag = dx * dx / (R + Math.sqrt(Math.max(0, R * R - dx * dx)));
+      return { x: x, y: originY + sag * scale };
+    }
+    for (var screenX = left; screenX < right; screenX += 10) surfacePoints.push(surfacePoint(screenX));
+    surfacePoints.push(surfacePoint(right));
+    var artOffset = 36 * k * Math.exp(-Math.max(0, sample.altitude * scale) / (72 * k)), artX = craft.x + Math.sin(sample.angle) * artOffset, artY = craft.y - Math.cos(sample.angle) * artOffset;
+    var attitude = sample.angle + sample.pitch;
+    return { view: 'surface', projection: 'launch-tangent', plot: plot, scaleX: scale, scaleY: scale, pictureScale: scale,
+      originX: originX, originY: originY, groundAtLaunch: originY, worldX: current.x, worldY: current.y,
+      craftX: craft.x, craftY: craft.y, footX: foot.x, footY: foot.y, craftPitch: attitude,
+      trail: trail, surfacePoints: surfacePoints, artScale: k, artOffset: artOffset, artX: artX, artY: artY,
+      nozzleX: artX - Math.sin(attitude) * 12 * k, nozzleY: artY + Math.cos(attitude) * 12 * k,
+      remnantX: originX, remnantY: originY - 14 * k,
+      velocityX: sample.radialSpeed * Math.sin(sample.angle) + sample.tangentialSpeed * Math.cos(sample.angle),
+      velocityY: -sample.radialSpeed * Math.cos(sample.angle) + sample.tangentialSpeed * Math.sin(sample.angle),
+      thrustX: Math.sin(attitude), thrustY: -Math.cos(attitude) };
+  }
+
+  // Stateless metre grids keep the schematic material fixed in lunar coordinates.
+  // Coarser grids crossfade as the camera pulls back; they depict mottling,
+  // rather than enlarging small rocks into kilometre-sized boulders.
+  function mmAscentTerrainGeometry(W, H, surface) {
+    var result = { view: 'world-terrain', features: [], layers: [], candidateCount: 0 };
+    if (!Number.isFinite(W) || !Number.isFinite(H) || W <= 0 || H <= 109 || !surface ||
+      !Number.isFinite(surface.originX) || !Number.isFinite(surface.originY) ||
+      !Number.isFinite(surface.pictureScale) || surface.pictureScale <= 0) return result;
+    var scale = surface.pictureScale, originX = surface.originX, originY = surface.originY, R = MM_ASCENT.radius;
+    var lowX = -originX / scale, highX = (W - originX) / scale;
+    var lowY = (originY - (H - 55)) / scale, highY = (originY - 54) / scale;
+    if (![lowX, highX, lowY, highY].every(Number.isFinite)) return result;
+    function smooth(value) { value = Math.max(0, Math.min(1, value)); return value * value * (3 - 2 * value); }
+    function hash(level, cellX, cellY, salt) {
+      var bits = Math.imul(cellX, 374761393) ^ Math.imul(cellY, 668265263) ^ Math.imul(level + 1, 1442695041) ^ salt;
+      bits = Math.imul(bits ^ (bits >>> 13), 1274126177); bits ^= bits >>> 16;
+      return (bits >>> 0) / 4294967296;
+    }
+    for (var level = 0; level < 12; level++) {
+      var cellMetres = 4 * Math.pow(4, level), spacing = cellMetres * scale;
+      if (spacing <= 24 || spacing >= 160) continue;
+      var alpha = smooth((spacing - 24) / 16) * (1 - smooth((spacing - 96) / 64));
+      var startX = Math.floor(lowX / cellMetres) - 1, endX = Math.floor(highX / cellMetres) + 1;
+      var startY = Math.floor(lowY / cellMetres) - 1, endY = Math.floor(highY / cellMetres) + 1;
+      if (![startX, endX, startY, endY].every(Number.isSafeInteger)) continue;
+      result.layers.push({ level: level, cellMetres: cellMetres, spacing: spacing, alpha: alpha });
+      for (var cellY = startY; cellY <= endY && result.candidateCount < 6000; cellY++) {
+        for (var cellX = startX; cellX <= endX && result.candidateCount < 6000; cellX++) {
+          result.candidateCount++;
+          var worldX = (cellX + 0.2 + 0.6 * hash(level, cellX, cellY, 17011)) * cellMetres;
+          var worldY = (cellY + 0.2 + 0.6 * hash(level, cellX, cellY, 71019)) * cellMetres;
+          if (Math.hypot(worldX, worldY + R) > R) continue;
+          var radiusMeters = cellMetres * (0.055 + 0.05 * hash(level, cellX, cellY, 29023));
+          var x = originX + worldX * scale, y = originY - worldY * scale, radiusPx = radiusMeters * scale;
+          var margin = radiusPx * 4;
+          if (x < -margin || x > W + margin || y < 54 - margin || y > H - 55 + margin) continue;
+          result.features.push({ id: level + ':' + cellX + ':' + cellY, level: level, cellX: cellX, cellY: cellY,
+            worldX: worldX, worldY: worldY, radiusMeters: radiusMeters, x: x, y: y, radiusPx: radiusPx,
+            kind: radiusMeters <= 2 ? 'rock' : 'mottle', alpha: alpha, shade: hash(level, cellX, cellY, 44017),
+            angle: Math.atan2(worldX, worldY + R) });
+        }
+      }
+    }
+    return result;
+  }
+
+  function mmDrawAscentTerrain(ctx, W, H, surface) {
+    var terrain = mmAscentTerrainGeometry(W, H, surface), contour = surface && surface.surfacePoints;
+    if (!terrain.features.length || !contour || !contour.length) return terrain;
+    ctx.save(); ctx.beginPath();
+    contour.forEach(function(point, index) { if (index) ctx.lineTo(point.x, point.y); else ctx.moveTo(point.x, point.y); });
+    ctx.lineTo(contour[contour.length - 1].x, H); ctx.lineTo(contour[0].x, H); ctx.closePath(); ctx.clip();
+    terrain.features.forEach(function(feature) {
+      var r = feature.radiusPx;
+      if (feature.kind === 'rock') {
+        // A fixed light direction and metre-sized shadow move with the material.
+        ctx.globalAlpha = feature.alpha * 0.4; ctx.fillStyle = '#111820';
+        ctx.beginPath(); ctx.ellipse(feature.x - r * 1.3, feature.y + r * 0.25, r * 2.1, r * 0.4, feature.angle, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = feature.alpha; ctx.fillStyle = feature.shade > 0.5 ? '#aaa79c' : '#918e84';
+        ctx.beginPath(); ctx.ellipse(feature.x, feature.y, r, r * 0.6, feature.angle, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = feature.alpha * 0.35; ctx.fillStyle = '#d3cfc0';
+        ctx.beginPath(); ctx.ellipse(feature.x + r * 0.25, feature.y - r * 0.2, r * 0.4, r * 0.17, feature.angle, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.globalAlpha = feature.alpha * (0.12 + feature.shade * 0.08);
+        ctx.fillStyle = feature.shade > 0.5 ? '#bbb7ac' : '#262d32';
+        ctx.beginPath(); ctx.ellipse(feature.x, feature.y, r, r * 0.45, feature.angle, 0, Math.PI * 2); ctx.fill();
+      }
+    });
+    ctx.restore(); return terrain;
+  }
+
+  // Actual inertial acceleration, resolved in local right/up axes. The local
+  // axes rotate; their speed derivatives include separate geometric terms.
+  function mmAscentAcceleration(sample) {
+    if (!sample || !['altitude', 'mass', 'pitch', 'radialSpeed', 'tangentialSpeed', 'thrust'].every(function(key) { return Number.isFinite(sample[key]); }) ||
+      sample.mass <= 0 || sample.thrust < 0) return null;
+    var radius = MM_ASCENT.radius + sample.altitude;
+    if (!Number.isFinite(radius) || radius <= 0) return null;
+    var firing = sample.engineOn === true && sample.thrust > 0, a = firing ? sample.thrust / sample.mass : 0;
+    var gravity = MM_ASCENT.mu / (radius * radius), right = a * Math.sin(sample.pitch), up = a * Math.cos(sample.pitch);
+    var netUp = up - gravity, magnitude = Math.hypot(right, netUp);
+    var curvatureRadial = sample.tangentialSpeed * sample.tangentialSpeed / radius;
+    var curvatureTangential = sample.radialSpeed * sample.tangentialSpeed / radius;
+    var result = { radius: radius, engineVisible: firing, engineAcceleration: a, gravityMagnitude: gravity, properLoadG: a / MM_ASCENT.g0,
+      basisRotationRate: sample.tangentialSpeed / radius, curvatureRadial: curvatureRadial, curvatureTangential: curvatureTangential,
+      radialSpeedRate: netUp + curvatureRadial, tangentialSpeedRate: right - curvatureTangential,
+      engine: { x: right, y: up, magnitude: a, forceMagnitude: firing ? sample.thrust : 0 },
+      gravity: { x: 0, y: -gravity, magnitude: gravity, forceMagnitude: sample.mass * gravity },
+      net: { x: right, y: netUp, magnitude: magnitude, forceMagnitude: sample.mass * magnitude } };
+    if (![a, gravity, right, up, magnitude, curvatureRadial, curvatureTangential, result.radialSpeedRate,
+      result.tangentialSpeedRate, result.engine.forceMagnitude, result.gravity.forceMagnitude, result.net.forceMagnitude].every(Number.isFinite)) return null;
+    return result;
+  }
+
+  function mmAscentAccelerationGeometry(sample) {
+    var model = mmAscentAcceleration(sample); if (!model) return null;
+    if (!['engine', 'gravity', 'net'].every(function(key) { return Number.isFinite(model[key].magnitude * 20); })) return null;
+    var vectors = {};
+    ['engine', 'gravity', 'net'].forEach(function(key) { vectors[key] = mmEntryDynamicsArrow(model[key], 300, 160, 20); });
+    return { view: 'local-acceleration', width: 600, height: 320, cx: 300, cy: 160, scale: 20, model: model, vectors: vectors };
+  }
+
+  function mmAscentAccelerationValues(model, sample) {
+    function value(vector) { return vector.magnitude.toFixed(2) + ' m/s² · ' + (vector.forceMagnitude / 1000).toFixed(2) + ' kN'; }
+    function signed(number) { var text = number.toFixed(2); if (text === '-0.00') text = '0.00'; return (text[0] === '-' ? '' : '+') + text + ' m/s²'; }
+    return { time: sample.time.toFixed(1) + ' s', engine: value(model.engine), gravity: value(model.gravity), net: value(model.net),
+      up: signed(model.net.y), right: signed(model.net.x), load: model.properLoadG.toFixed(3) + ' g',
+      radialRate: signed(model.radialSpeedRate), tangentialRate: signed(model.tangentialSpeedRate) };
+  }
+
+  function mmAscentAccelerationView(h, translate) {
+    var t = mmAccessibleTranslator(translate), textStyle = { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, margin: '10px 0' };
+    function value(key) { return h('span', { 'data-ascent-acceleration-value': key, style: { fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }, '—'); }
+    function reading(key, label, color) { return h('div', { key: key, style: { minWidth: 0 } },
+      h('dt', { style: { color: color || '#cbd5e1', fontSize: '11px', lineHeight: 1.65 } }, label),
+      h('dd', { style: { margin: 0, color: '#f8fafc', fontSize: '13px', lineHeight: 1.65 } }, value(key))); }
+    function arrow(key, color, width) { return h('g', { key: key, 'data-ascent-acceleration-vector': key, visibility: 'hidden' },
+      h('line', { x1: 300, y1: 160, x2: 300, y2: 160, stroke: color, strokeWidth: width, strokeDasharray: key === 'net' ? '8 5' : null }),
+      h('polygon', { points: '', fill: color })); }
+    var grid = [];
+    for (var tick = 0; tick <= 8; tick++) {
+      grid.push(h('line', { key: 'x' + tick, x1: 140 + tick * 40, y1: 0, x2: 140 + tick * 40, y2: 320, stroke: '#334155', strokeWidth: 1 }));
+      grid.push(h('line', { key: 'y' + tick, x1: 140, y1: tick * 40, x2: 460, y2: tick * 40, stroke: '#334155', strokeWidth: 1 }));
+    }
+    return h('details', { 'data-ascent-acceleration': true, style: { margin: '12px 0', border: '1px solid #475569', borderRadius: '8px', padding: '0 12px', minWidth: 0, background: '#081321' } },
+      h('summary', { 'data-ascent-acceleration-toggle': true, style: { minHeight: '44px', padding: '12px 0', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: '#e2e8f0', boxSizing: 'border-box' } }, 'Explore ascent forces'),
+      h('p', { style: textStyle }, 'Same ascent clock · ', value('time')),
+      h('figure', { style: { margin: 0, minWidth: 0 } },
+        h('figcaption', { style: Object.assign({}, textStyle, { color: '#f8fafc', fontWeight: 700 }) }, 'Acceleration in the flight plane'),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', fontSize: '12px', color: '#cbd5e1' } }, h('span', null, '↑ Local up'), h('span', null, 'Local sideways →')),
+        h('svg', { 'data-ascent-acceleration-diagram': true, 'data-acceleration-scale': 20, viewBox: '0 0 600 320', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+          'aria-describedby': 'mm-ascent-acceleration-note', 'aria-label': t('stem.moonmission.a11y_ascent_acceleration_vectors', 'Engine acceleration, lunar gravity and their net acceleration on equal local up and sideways scales. Measurements follow.'),
+          style: { display: 'block', width: '100%', height: 'auto', maxHeight: '260px', background: '#0b1425', borderRadius: '8px', marginTop: '8px' } },
+          grid, h('line', { x1: 140, y1: 160, x2: 460, y2: 160, stroke: '#64748b', strokeWidth: 2 }),
+          h('line', { x1: 300, y1: 0, x2: 300, y2: 320, stroke: '#64748b', strokeWidth: 2 }),
+          arrow('gravity', '#c4b5fd', 7), arrow('engine', '#fbbf24', 5), arrow('net', '#f8fafc', 3),
+          h('circle', { cx: 300, cy: 160, r: 3, fill: '#e2e8f0' }),
+          h('path', { d: 'M470 274V282M470 278H510M510 274V282', stroke: '#cbd5e1', strokeWidth: 2, fill: 'none' }),
+          h('text', { x: 470, y: 307, fill: '#cbd5e1', fontSize: 20, fontFamily: 'system-ui' }, '2 m/s²')),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '12px', margin: '8px 0' } },
+          h('span', { style: { color: '#fbbf24' } }, 'Amber: engine'), h('span', { style: { color: '#c4b5fd' } }, 'Purple: gravity'), h('span', { style: { color: '#f8fafc' } }, 'White dashed: net')),
+        h('p', { style: textStyle }, 'All arrows use one fixed scale. Each grid interval represents 2 m/s².')),
+      h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,160px),1fr))', gap: '10px', margin: '12px 0' } },
+        reading('engine', 'Engine acceleration · force', '#fbbf24'), reading('gravity', 'Lunar gravity · force', '#c4b5fd'),
+        reading('net', 'Net acceleration · force', '#f8fafc'), reading('load', 'Thrust load (Earth g)'),
+        reading('up', 'Net locally upward'), reading('right', 'Net sideways')),
+      h('p', { id: 'mm-ascent-acceleration-note', style: textStyle }, 'Thrust divided by current mass gives engine acceleration. Lunar gravity points inward. Their vector sum is the change of velocity in a Moon-centered inertial frame, expressed in local up and sideways axes. At cutoff, thrust load is zero while gravity continues accelerating Eagle. This diagram inspects the computed flight.'),
+      h('h4', { style: { color: '#e2e8f0', fontSize: '13px', margin: '12px 0 4px' } }, 'Changes in local speed'),
+      h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: '10px', margin: '8px 0' } },
+        reading('radialRate', 'Rate of radial speed'), reading('tangentialRate', 'Rate of sideways speed')),
+      h('p', { style: textStyle }, 'The local axes turn as Eagle travels. Radial speed changes by net upward acceleration plus sideways speed squared divided by lunar-center distance. Sideways speed changes by net sideways acceleration minus radial speed times sideways speed divided by that distance. These geometric terms come from the rotating axes. They are not extra forces. Circular coasting can keep radial speed constant while gravity curves the velocity.'));
+  }
+
+  function mmPaintAscentAcceleration(host, sample) {
+    var panel = host.querySelector('[data-ascent-acceleration]'); if (!panel || !panel.open) return;
+    var geometry = mmAscentAccelerationGeometry(sample); if (!geometry) return;
+    var model = geometry.model, values = mmAscentAccelerationValues(model, sample);
+    panel.dataset.accelerationTime = String(sample.time); panel.dataset.accelerationEngine = model.engineVisible ? 'on' : 'off';
+    panel.dataset.accelerationMass = String(sample.mass); panel.dataset.accelerationRadius = String(model.radius);
+    panel.dataset.accelerationRadialRate = String(model.radialSpeedRate); panel.dataset.accelerationTangentialRate = String(model.tangentialSpeedRate); panel.dataset.accelerationScale = String(geometry.scale);
+    panel.querySelectorAll('[data-ascent-acceleration-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-ascent-acceleration-value')] || ''; });
+    panel.querySelectorAll('[data-ascent-acceleration-vector]').forEach(function(node) {
+      var vector = geometry.vectors[node.getAttribute('data-ascent-acceleration-vector')];
+      node.dataset.x = String(vector.x); node.dataset.y = String(vector.y); node.dataset.magnitude = String(vector.magnitude); node.dataset.forceMagnitude = String(vector.forceMagnitude);
+      node.setAttribute('visibility', vector.visible ? 'visible' : 'hidden');
+      var line = node.querySelector('line'); line.setAttribute('x1', String(vector.startX)); line.setAttribute('y1', String(vector.startY));
+      line.setAttribute('x2', String(vector.endX)); line.setAttribute('y2', String(vector.endY)); node.querySelector('polygon').setAttribute('points', vector.head);
+    });
+    var diagram = panel.querySelector('[data-ascent-acceleration-diagram]');
+    diagram.setAttribute('aria-label', 'Ascent acceleration at ' + values.time + '. Engine ' + values.engine + '. Lunar gravity ' + values.gravity + '. Net ' + values.net + '. Equal local up and sideways scales; numerical measurements follow.');
+  }
+
+  // Local directions remain independent of the launch camera's rotating frame.
+  function mmAscentFlightDirectorGeometry(W, H, sample) {
+    var speed = Math.hypot(sample.radialSpeed, sample.tangentialSpeed), moving = speed > 1e-8;
+    var axis = { x: Math.sin(sample.pitch), y: -Math.cos(sample.pitch) };
+    var firing = sample.engineOn === true && sample.thrust > 0;
+    return { view: 'local-attitude', cx: 66, cy: 96, radius: 44, pitchDeg: sample.pitch * 180 / Math.PI,
+      speed: speed, pathAngleDeg: moving ? Math.atan2(sample.radialSpeed, sample.tangentialSpeed) * 180 / Math.PI : null,
+      axis: axis, velocity: moving ? { x: sample.tangentialSpeed / speed, y: -sample.radialSpeed / speed } : null,
+      thrust: firing ? { x: axis.x, y: axis.y } : null, engineVisible: firing,
+      axisLength: 40, velocityLength: 32, thrustLength: 24 };
+  }
+
+  function mmAscentDirectionAngle(value) {
+    var text = value.toFixed(1); return (text === '-0.0' ? '0.0' : text) + '°';
+  }
+
+  function mmDrawAscentFlightDirector(ctx, W, H, sample) {
+    var director = mmAscentFlightDirectorGeometry(W, H, sample), cx = director.cx, cy = director.cy, radius = director.radius;
+    ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#081321'; ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'left'; ctx.font = 'bold 12px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('LOCAL ATTITUDE', 14, 18);
+    ctx.textAlign = 'right'; ctx.fillStyle = director.engineVisible ? '#fbbf24' : '#cbd5e1'; ctx.font = '11px system-ui'; ctx.fillText(director.engineVisible ? 'APS firing' : 'APS off', W - 14, 18);
+    ctx.textAlign = 'left'; ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('Local up · downrange right', 14, 35);
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#0c2235'; ctx.fillRect(cx - radius, cy - radius, radius * 2, radius);
+    ctx.fillStyle = '#292b2b'; ctx.fillRect(cx - radius, cy, radius * 2, radius); ctx.restore();
+    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#475569'; ctx.beginPath(); ctx.moveTo(cx - radius, cy); ctx.lineTo(cx + radius, cy); ctx.stroke();
+    ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(cx, cy - radius); ctx.lineTo(cx, cy + radius); ctx.stroke(); ctx.setLineDash([]);
+    for (var ti = 0; ti < 12; ti++) {
+      var angle = ti * Math.PI / 6, inner = radius - (ti % 3 === 0 ? 6 : 3);
+      ctx.beginPath(); ctx.moveTo(cx + Math.sin(angle) * inner, cy - Math.cos(angle) * inner); ctx.lineTo(cx + Math.sin(angle) * radius, cy - Math.cos(angle) * radius); ctx.stroke();
+    }
+    ctx.textAlign = 'center'; ctx.fillStyle = '#cbd5e1'; ctx.font = '9px system-ui'; ctx.fillText('UP', cx, 48);
+    mmAscentVector(ctx, cx, cy, director.axis.x * director.axisLength, director.axis.y * director.axisLength, '#94a3b8');
+    if (director.velocity) mmAscentVector(ctx, cx, cy, director.velocity.x * director.velocityLength, director.velocity.y * director.velocityLength, '#67e8f9');
+    if (director.thrust) mmAscentVector(ctx, cx, cy, director.thrust.x * director.thrustLength, director.thrust.y * director.thrustLength, '#fbbf24');
+    ctx.beginPath(); ctx.arc(cx, cy, 2.3, 0, Math.PI * 2); ctx.fillStyle = '#f8fafc'; ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui'; ctx.fillText('Pitch from up', 142, 64);
+    ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 17px system-ui'; ctx.fillText(mmAscentDirectionAngle(director.pitchDeg), 142, 83);
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui'; ctx.fillText('Path above level', 142, 104);
+    ctx.fillStyle = '#67e8f9'; ctx.font = 'bold 17px system-ui'; ctx.fillText(director.pathAngleDeg === null ? 'At rest' : mmAscentDirectionAngle(director.pathAngleDeg), 142, 123);
+    ctx.font = '11px system-ui';
+    [[14, '#67e8f9', 'Velocity'], [100, '#fbbf24', 'Thrust'], [175, '#94a3b8', 'Axis']].forEach(function(item) {
+      ctx.fillStyle = item[1]; ctx.fillRect(item[0], H - 12, 7, 2); ctx.fillText(item[2], item[0] + 11, H - 8);
+    });
+    ctx.restore(); return director;
+  }
+
   function mmDrawAscentScene(ctx, W, H, sample, profile, opts) {
     opts = opts || {};
     var time = Number.isFinite(opts.time) ? opts.time : sample.time;
+    if (opts.view === 'physical') return mmDrawAscentPhysicalOrbit(ctx, W, H, sample, profile);
     var view = opts.view === 'orbit' ? 'orbit' : 'surface';
     var firing = time >= 0 && sample.engineOn && sample.thrust > 0;
     var k = Math.min(1.65, Math.max(1.05, W / 680));
     var craftX, craftY, craftPitch, pictureScale;
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
-    drawStarfield(ctx, W, H, Math.max(0, time) * 0.3, 85);
-    ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0';
-    ctx.fillText(view === 'orbit' ? 'LUNAR ORBIT MAP' : 'SURFACE TRACK', 16, 23);
-    ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
-    ctx.fillText(view === 'orbit' ? 'Altitude \u00d7 6 \u00b7 craft enlarged' : 'Automatic zoom \u00b7 craft enlarged', 16, 39);
+    // Fixed celestial exposure: this airless ascent view has no animated twinkle.
+    drawStarfield(ctx, W, H, 0, 85);
+    ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, 54);
+    ctx.textAlign = 'left'; ctx.font = view === 'surface' ? 'bold 12px system-ui' : 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0';
+    ctx.fillText(view === 'orbit' ? 'LUNAR ORBIT MAP' : 'CURVED SURFACE TRACK', 16, 23);
+    ctx.font = view === 'surface' ? '11px system-ui' : '10px system-ui'; ctx.fillStyle = '#cbd5e1';
+    ctx.fillText(view === 'orbit' ? 'Altitude \u00d7 6 \u00b7 craft enlarged' : 'Equal scales · ring marks position', 16, 39);
     if (view === 'surface') {
-      var baseX = Math.max(56, W * 0.16), baseY = H * 0.70;
-      pictureScale = Math.min(2.5, (W - baseX - 65) / Math.max(1, sample.downrange), (baseY - 88) / Math.max(1, sample.altitude));
-      var groundY = baseY + 36 * k;
-      var ground = ctx.createLinearGradient(0, groundY, 0, H);
+      var surface = mmAscentSurfaceGeometry(W, H, sample, profile);
+      craftX = surface.craftX; craftY = surface.craftY; craftPitch = surface.craftPitch; pictureScale = surface.pictureScale;
+      var contour = surface.surfacePoints;
+      function limbPath() { ctx.beginPath(); contour.forEach(function(p, index) { if (index) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); }); }
+      var ground = ctx.createLinearGradient(0, surface.originY, 0, H);
       ground.addColorStop(0, '#8c8880'); ground.addColorStop(0.25, '#696863'); ground.addColorStop(1, '#3f4141');
-      ctx.fillStyle = ground; ctx.fillRect(0, groundY, W, H - groundY);
-      var terrain = _seededRand(17011);
-      ctx.save(); ctx.beginPath(); ctx.rect(0, groundY, W, H - groundY); ctx.clip();
-      for (var ri = 0; ri < 28; ri++) {
-        var rockX = terrain.next() * W, rockY = groundY + terrain.next() * (H - groundY);
-        var rockR = 0.7 + terrain.next() * 2.1;
-        ctx.fillStyle = 'rgba(10,14,18,0.45)'; ctx.beginPath(); ctx.ellipse(rockX - rockR * 4, rockY, rockR * 5, rockR * 0.45, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#aaa79c'; ctx.beginPath(); ctx.ellipse(rockX, rockY, rockR, rockR * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+      limbPath(); ctx.lineTo(contour[contour.length - 1].x, H); ctx.lineTo(contour[0].x, H); ctx.closePath(); ctx.fillStyle = ground; ctx.fill();
+      surface.terrainVisible = opts.terrain !== false;
+      surface.terrain = surface.terrainVisible ? mmDrawAscentTerrain(ctx, W, H, surface) : mmAscentTerrainGeometry(W, H, surface);
+      ctx.strokeStyle = '#afb3b4'; ctx.lineWidth = 1; limbPath(); ctx.stroke();
+      // Enlarged remnant feet meet the measured launch surface. The stage's
+      // offset is separate from the white ring that marks physical position.
+      ctx.fillStyle = 'rgba(9,13,18,0.55)'; ctx.beginPath(); ctx.ellipse(surface.originX - 43 * k, surface.originY + 1, 68 * k, 4 * k, 0, 0, Math.PI * 2); ctx.fill();
+      mmDrawLunarDescentRemnant(ctx, surface.remnantX, surface.remnantY, k);
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]); ctx.beginPath();
+      surface.trail.forEach(function(p, index) { if (index) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); }); ctx.stroke(); ctx.setLineDash([]);
+      if (sample.altitude * pictureScale > 3) {
+        ctx.strokeStyle = 'rgba(203,213,225,0.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(surface.footX, surface.footY); ctx.lineTo(craftX, craftY); ctx.stroke();
       }
-      ctx.restore();
-      // The descent stage remains at the launch origin as the camera zooms.
-      ctx.fillStyle = 'rgba(9,13,18,0.55)'; ctx.beginPath(); ctx.ellipse(baseX - 43 * k, groundY + 1, 68 * k, 4 * k, 0, 0, Math.PI * 2); ctx.fill();
-      mmDrawLunarDescentRemnant(ctx, baseX, groundY - 14 * k, k);
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '9px system-ui'; ctx.textAlign = 'left';
-      ctx.fillText('Descent stage stays here', 14, H - 12);
-      // Dust is a short, shallow ballistic sheet at liftoff, with no rolling
-      // smoke in a vacuum. The same time always draws the same particles.
+      if (surface.artOffset > 1) {
+        ctx.strokeStyle = 'rgba(248,250,252,0.4)'; ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(craftX, craftY); ctx.lineTo(surface.artX, surface.artY); ctx.stroke(); ctx.setLineDash([]);
+      }
+      // Clip vacuum exhaust at the actual curved ground. Short-lived dust
+      // follows ballistic launch coordinates; it is not rolling smoke.
+      ctx.save(); limbPath(); ctx.lineTo(contour[contour.length - 1].x, 54); ctx.lineTo(contour[0].x, 54); ctx.closePath(); ctx.clip();
       if (time > 0 && time < 14 && sample.altitude < 150) {
-        var dust = _seededRand(71019);
+        var dust = _seededRand(71019), lunarG = MM_ASCENT.mu / (MM_ASCENT.radius * MM_ASCENT.radius);
         for (var di = 0; di < 36; di++) {
           var launchT = dust.next() * 2, age = time - launchT;
           var dvx = (dust.next() - 0.5) * 17, dvy = 0.4 + dust.next() * 2.2;
-          var dustHeight = dvy * age - 0.81 * age * age;
+          var dustHeight = dvy * age - 0.5 * lunarG * age * age;
           if (age < 0 || dustHeight < 0) continue;
           ctx.globalAlpha = Math.max(0, 0.5 - age * 0.09); ctx.fillStyle = '#c7bda6';
-          ctx.fillRect(baseX + dvx * age * 2, groundY - dustHeight * 2, 1.4, 0.7);
+          ctx.fillRect(surface.originX + dvx * age * pictureScale, surface.originY - dustHeight * pictureScale, 1.4, 0.7);
         }
         ctx.globalAlpha = 1;
       }
-      // Actual integrated trail, clipped at the current playback time.
-      ctx.strokeStyle = 'rgba(56,189,248,0.66)'; ctx.lineWidth = 1.4; ctx.setLineDash([3, 4]); ctx.beginPath();
-      var started = false;
-      for (var pi = 0; pi < profile.samples.length; pi += 12) {
-        var point = profile.samples[pi]; if (point.time > sample.time) break;
-        var px = baseX + point.downrange * pictureScale, py = baseY - point.altitude * pictureScale;
-        if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
-      }
-      craftX = baseX + sample.downrange * pictureScale; craftY = baseY - sample.altitude * pictureScale; craftPitch = sample.pitch;
-      ctx.lineTo(craftX, craftY); ctx.stroke(); ctx.setLineDash([]);
-      // A ruler is tied to the current world scale, never to the readout.
-      var distance = 70 / pictureScale, power = Math.pow(10, Math.floor(Math.log10(distance)));
-      var ruler = (distance / power >= 5 ? 5 : distance / power >= 2 ? 2 : 1) * power;
-      var rulerPx = ruler * pictureScale;
-      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(W - 20 - rulerPx, H - 26); ctx.lineTo(W - 20, H - 26);
-      ctx.moveTo(W - 20 - rulerPx, H - 29); ctx.lineTo(W - 20 - rulerPx, H - 23); ctx.moveTo(W - 20, H - 29); ctx.lineTo(W - 20, H - 23); ctx.stroke();
-      ctx.textAlign = 'right'; ctx.fillStyle = '#cbd5e1'; ctx.font = '9px system-ui';
-      ctx.fillText((ruler >= 1000 ? (ruler / 1000).toFixed(0) + ' km' : ruler.toFixed(0) + ' m') + ' \u00b7 equal axes', W - 20, H - 34);
-      mmDrawLunarAscentStage(ctx, craftX, craftY, k, craftPitch, { time: time, engineOn: firing, thrust: sample.thrust });
-      if (sample.speed > 5) {
-        var velocityScale = Math.min(45 / sample.speed, 0.4);
-        mmAscentVector(ctx, craftX, craftY, sample.tangentialSpeed * velocityScale, -sample.radialSpeed * velocityScale, '#67e8f9');
-      }
+      surface.sunlight = mmDrawLunarAscentStage(ctx, surface.artX, surface.artY, k, craftPitch, { time: time, engineOn: firing, thrust: sample.thrust, sunlight: true }).sunlight; ctx.restore();
+      ctx.beginPath(); ctx.arc(craftX, craftY, 3.5, 0, Math.PI * 2); ctx.strokeStyle = '#020713'; ctx.lineWidth = 3; ctx.stroke(); ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 1.5; ctx.stroke();
+      var velocityMagnitude = Math.hypot(surface.velocityX, surface.velocityY);
+      if (velocityMagnitude > 5) mmAscentVector(ctx, craftX, craftY, surface.velocityX / velocityMagnitude * 38, surface.velocityY / velocityMagnitude * 38, '#67e8f9');
+      surface.thrustVisible = firing;
+      if (firing) mmAscentVector(ctx, craftX, craftY, surface.thrustX * 25, surface.thrustY * 25, '#fbbf24');
+      // Captions and the physical ruler are outside the terrain illustration.
+      ctx.fillStyle = '#020713'; ctx.fillRect(0, H - 55, W, 55);
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui'; ctx.textAlign = 'left'; ctx.fillText('Descent stage stays at launch', 14, H - 36);
+      ctx.fillText('Craft enlarged; ring is measured.', 14, H - 12);
+      ctx.font = '10px system-ui'; ctx.fillStyle = '#67e8f9'; ctx.fillText('Velocity', 14, H - 24); ctx.fillStyle = '#fbbf24'; ctx.fillText('Thrust', 74, H - 24); ctx.fillStyle = '#cbd5e1'; ctx.fillText('directions', 124, H - 24);
+      var distance = 64 / pictureScale, power = Math.pow(10, Math.floor(Math.log10(distance)));
+      var ruler = (distance / power >= 5 ? 5 : distance / power >= 2 ? 2 : 1) * power, rulerPx = ruler * pictureScale;
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(W - 20 - rulerPx, H - 28); ctx.lineTo(W - 20, H - 28); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui'; ctx.fillText(ruler >= 1000 ? (ruler / 1000).toFixed(0) + ' km' : ruler.toFixed(0) + ' m', W - 20, H - 36);
     } else {
       var moonR = Math.min(W * 0.24, H * 0.26), moonX = W * 0.5, moonY = H * 0.55;
       var moonRadius = 1737400, magnify = 6;
@@ -3739,31 +4512,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.textAlign = 'right'; ctx.font = 'bold 10px monospace'; ctx.fillStyle = firing ? '#fbbf24' : '#cbd5e1';
     ctx.fillText(time < 0 ? 'T\u2212' + Math.ceil(-time) : firing ? 'APS FIRING' : 'APS OFF', W - 16, 23);
     ctx.restore();
-    return { view: view, engineVisible: !!firing, plumeVisible: !!firing, craftX: craftX, craftY: craftY, pictureScale: pictureScale };
+    return Object.assign({ view: view, engineVisible: !!firing, plumeVisible: !!firing, craftX: craftX, craftY: craftY, pictureScale: pictureScale }, view === 'surface' ? surface : {});
   }
 
   function mmDrawDockingCSM(ctx, portX, portY, scale, opts) {
+    var orbitLight = opts && opts.orbitLight;
+    function shade(color, nx, ny) { return mmOrbitalCraftMaterial(color, orbitLight, nx, ny); }
     ctx.save(); ctx.translate(portX, portY); ctx.scale(scale, scale);
     // Port at the origin, nose left, service module and SPS bell to the right.
-    ctx.fillStyle = '#3e4856'; ctx.fillRect(0, -2, 4, 4);
-    ctx.fillStyle = '#cbd5dd'; ctx.fillRect(3, -3.5, 3, 7);
+    ctx.fillStyle = shade('#3e4856'); ctx.fillRect(0, -2, 4, 4);
+    ctx.fillStyle = shade('#cbd5dd'); ctx.fillRect(3, -3.5, 3, 7);
     var capsule = ctx.createLinearGradient(0, -12, 0, 12);
-    capsule.addColorStop(0, '#f1f5f9'); capsule.addColorStop(0.5, '#b3c0ce'); capsule.addColorStop(1, '#586676');
+    if (orbitLight) {
+      capsule.addColorStop(0, shade('#e7ebeb', -1 / Math.sqrt(5), -2 / Math.sqrt(5)));
+      capsule.addColorStop(0.5, shade('#e7ebeb', -1 / Math.sqrt(5), 0));
+      capsule.addColorStop(1, shade('#e7ebeb', -1 / Math.sqrt(5), 2 / Math.sqrt(5)));
+    } else { capsule.addColorStop(0, '#f1f5f9'); capsule.addColorStop(0.5, '#b3c0ce'); capsule.addColorStop(1, '#586676'); }
     ctx.fillStyle = capsule; ctx.beginPath(); ctx.moveTo(6, -3.5); ctx.lineTo(23, -12); ctx.lineTo(27, -12);
     ctx.lineTo(27, 12); ctx.lineTo(23, 12); ctx.lineTo(6, 3.5); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#162637'; ctx.beginPath(); ctx.moveTo(13, -4); ctx.lineTo(17, -7); ctx.lineTo(18.7, -3.5); ctx.lineTo(15, -1.8); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#494641'; ctx.fillRect(26, -12.4, 2.3, 24.8);
+    ctx.fillStyle = shade('#162637'); ctx.beginPath(); ctx.moveTo(13, -4); ctx.lineTo(17, -7); ctx.lineTo(18.7, -3.5); ctx.lineTo(15, -1.8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = shade('#494641', 1, 0); ctx.fillRect(26, -12.4, 2.3, 24.8);
     if (!(opts && opts.cmOnly)) {
     var module = ctx.createLinearGradient(0, -11, 0, 11);
-    module.addColorStop(0, '#dae2e8'); module.addColorStop(0.35, '#a8b9c6'); module.addColorStop(1, '#4e5c6b');
+    if (orbitLight) {
+      [0, 0.25, 0.5, 0.75, 1].forEach(function(stop) { module.addColorStop(stop, shade('#c9d1d5', 0, stop * 2 - 1)); });
+    } else { module.addColorStop(0, '#dae2e8'); module.addColorStop(0.35, '#a8b9c6'); module.addColorStop(1, '#4e5c6b'); }
     ctx.fillStyle = module; ctx.fillRect(28.3, -11, 33, 22);
-    ctx.strokeStyle = '#7a8998'; ctx.lineWidth = 0.65;
+    ctx.strokeStyle = shade('#7a8998'); ctx.lineWidth = 0.65;
     for (var panel = 0; panel < 4; panel++) { ctx.strokeRect(30 + panel * 7.5, -9, 5, 18); }
-    ctx.fillStyle = '#d7dfe4'; ctx.fillRect(34, -9, 16, 3); ctx.fillRect(34, 6, 16, 3);
-    ctx.fillStyle = '#68747e'; ctx.fillRect(39, -14.5, 5, 3.5); ctx.fillRect(39, 11, 5, 3.5);
-    ctx.fillStyle = '#29313b'; ctx.beginPath(); ctx.moveTo(61, -4); ctx.lineTo(65, -4); ctx.bezierCurveTo(68, -5, 73, -10, 77, -11);
+    ctx.fillStyle = shade('#d7dfe4', 0, -1); ctx.fillRect(34, -9, 16, 3); if (orbitLight) ctx.fillStyle = shade('#d7dfe4', 0, 1); ctx.fillRect(34, 6, 16, 3);
+    ctx.fillStyle = shade('#68747e'); ctx.fillRect(39, -14.5, 5, 3.5); ctx.fillRect(39, 11, 5, 3.5);
+    ctx.fillStyle = shade('#29313b'); ctx.beginPath(); ctx.moveTo(61, -4); ctx.lineTo(65, -4); ctx.bezierCurveTo(68, -5, 73, -10, 77, -11);
     ctx.lineTo(77, 11); ctx.bezierCurveTo(73, 10, 68, 5, 65, 4); ctx.lineTo(61, 4); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#9aa7b4'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(77, -11); ctx.lineTo(77, 11); ctx.stroke();
+    ctx.strokeStyle = shade('#9aa7b4', 1, 0); ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(77, -11); ctx.lineTo(77, 11); ctx.stroke();
     }
     ctx.restore();
   }
@@ -3842,6 +4623,152 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.fillStyle = '#cbd5e1'; ctx.fillText('Equal scales · outward ↑ · along track →', 16, H - 10);
     ctx.restore(); return g;
   }
+  // Perspective lunar background viewed level from Columbia's reference orbit.
+  // Its angular scale is independent of the enlarged relative-motion overlay.
+  function mmDockingHorizonAt(g, x) {
+    if (!g || ![x, g.centerX, g.eyeY, g.focal, g.tangent].every(Number.isFinite) || g.focal <= 0 || g.tangent < 0) return null;
+    var y = g.eyeY + g.tangent * Math.hypot(g.focal, x - g.centerX);
+    return Number.isFinite(y) ? y : null;
+  }
+
+  function mmDockingHorizonGeometry(W, H) {
+    if (![W, H].every(Number.isFinite) || W <= 0 || H <= 0) return null;
+    var radius = MM_ASCENT.radius, altitude = MM_DOCKING.altitude, focal = H / (2 * Math.tan(Math.PI / 6));
+    if (!Number.isFinite(focal) || focal <= 0) return null;
+    var tangent = Math.sqrt(altitude * (2 * radius + altitude)) / radius;
+    var g = { width: W, height: H, radius: radius, altitude: altitude, centerX: W / 2, eyeY: H / 2,
+      fieldDegrees: 60, focal: focal, tangent: tangent, dipDegrees: Math.atan(tangent) * 180 / Math.PI, points: [] };
+    for (var i = 0; i <= 48; i++) {
+      var x = -10 + (W + 20) * i / 48, y = mmDockingHorizonAt(g, x);
+      if (y === null) return null;
+      g.points.push({ x: x, y: y });
+    }
+    return g;
+  }
+
+  function mmDockingSurfaceRay(g, x, y) {
+    if (!g || ![g.width, g.height, g.centerX, g.eyeY, g.focal, g.radius, g.altitude, x, y].every(Number.isFinite) ||
+        g.width <= 0 || g.height <= 0 || g.focal <= 0 || g.radius <= 0 || g.altitude <= 0) return null;
+    var vx = x - g.centerX, vy = g.focal, vz = g.eyeY - y, length = Math.hypot(vx, vy, vz);
+    if (!Number.isFinite(length) || length <= 0) return null;
+    var ux = vx / length, uy = vy / length, uz = vz / length;
+    // Solve in lunar radii; the factored c and conjugate nearer root avoid
+    // cancellation when the camera is close to the surface.
+    var h = g.altitude / g.radius, d = 1 + h, b = d * uz, c = h * (2 + h);
+    var discriminant = b * b - c, tolerance = 32 * Number.EPSILON * (b * b + c + 1);
+    if (![d, b, c, discriminant, tolerance].every(Number.isFinite) || c <= 0 || b >= 0 || discriminant < -tolerance) return null;
+    var near = c / (-b + Math.sqrt(Math.max(0, discriminant))), range = near * g.radius;
+    var point = { x: ux * range, y: uy * range, z: g.radius * (d + uz * near) };
+    if (![range, point.x, point.y, point.z].every(Number.isFinite) || range <= 0) return null;
+    return { point: point, normal: { x: point.x / g.radius, y: point.y / g.radius, z: point.z / g.radius }, range: range };
+  }
+
+  // Fixed distant Sun in the horizon camera: +X right, +Y forward,
+  // +Z radially outward. It lies in the spacecraft drawing plane.
+  var MM_DOCKING_SUN = { x: -Math.SQRT1_2, y: 0, z: Math.SQRT1_2 };
+  function mmDockingSunlight(normal) {
+    if (!normal || ![normal.x, normal.y, normal.z].every(Number.isFinite)) return null;
+    var length = Math.hypot(normal.x, normal.y, normal.z);
+    if (!Number.isFinite(length) || length <= 0) return null;
+    var sun = MM_DOCKING_SUN;
+    var incidence = Math.max(-1, Math.min(1, (normal.x / length) * sun.x + (normal.y / length) * sun.y + (normal.z / length) * sun.z));
+    return { sun: { x: sun.x, y: sun.y, z: sun.z }, incidence: incidence, daylight: incidence > 0,
+      response: 0.24 + 0.76 * Math.max(0, incidence) };
+  }
+  function mmDockingCraftLight(angle) {
+    return mmOrbitalCraftLight({ directionX: MM_DOCKING_SUN.x, directionY: MM_DOCKING_SUN.z, fraction: 1 }, angle);
+  }
+
+  function mmDockingSurfaceMaterial(normal) {
+    if (!normal || ![normal.x, normal.y, normal.z].every(Number.isFinite)) return null;
+    var length = Math.hypot(normal.x, normal.y, normal.z);
+    if (!Number.isFinite(length) || length <= 0) return null;
+    var nx = normal.x / length, ny = normal.y / length, nz = normal.z / length, radius = MM_ASCENT.radius;
+    var cross = Math.asin(Math.max(-1, Math.min(1, nx))) * radius, along = Math.atan2(ny, nz) * radius;
+    var circumference = 2 * Math.PI * radius;
+    function seed(ix, iy, salt) {
+      var value = Math.imul(ix, 374761393) ^ Math.imul(iy, 668265263) ^ salt;
+      value = Math.imul(value ^ (value >>> 13), 1274126177);
+      return ((value ^ (value >>> 16)) >>> 0) / 4294967296;
+    }
+    function smooth(a, b, value) {
+      var t = Math.max(0, Math.min(1, (value - a) / (b - a)));
+      return t * t * (3 - 2 * t);
+    }
+    function craters(spacing, salt) {
+      // An integer number of cells around the sphere keeps the longitude
+      // boundary continuous. Neighbor cells carry rims across cell edges.
+      var count = Math.round(circumference / spacing), cell = circumference / count;
+      var gx = cross / cell, gy = along / cell, ix = Math.floor(gx), iy = Math.floor(gy), result = 0;
+      for (var i = ix - 1; i <= ix + 1; i++) for (var j = iy - 1; j <= iy + 1; j++) {
+        var wrapped = ((j % count) + count) % count;
+        var cx = i + 0.25 + seed(i, wrapped, salt) * 0.5;
+        var cy = j + 0.25 + seed(i, wrapped, salt + 101) * 0.5;
+        var craterRadius = 0.18 + seed(i, wrapped, salt + 211) * 0.18;
+        var q = Math.hypot(gx - cx, gy - cy) / craterRadius;
+        if (q >= 1.55) continue;
+        var strength = 0.65 + seed(i, wrapped, salt + 307) * 0.35;
+        var floor = -0.085 * (1 - smooth(0.25, 0.87, q));
+        var rim = 0.085 * Math.exp(-Math.pow((q - 1) / 0.14, 2));
+        var ejecta = 0.016 * (1 - smooth(1.05, 1.55, q));
+        result += strength * (floor + rim + ejecta) * (1 - smooth(1.42, 1.55, q));
+      }
+      return result;
+    }
+    // Fixed illustrative albedo markings, not terrain elevation or measured
+    // lunar geography. Shared Sun incidence affects neutral exposure; no crater cast shadows are added.
+    var broad = 0.026 * Math.sin(nx * 27 + ny * 11) * Math.sin(nz * 21 - ny * 13);
+    var fine = 0.011 * Math.sin(nx * 137 - nz * 47) * Math.sin(ny * 113 + nz * 31);
+    var polarFade = Math.sqrt(Math.max(0, 1 - nx * nx));
+    var albedo = Math.max(0.30, Math.min(0.70, 0.50 + broad + fine + polarFade * (craters(48000, 17374) + craters(170000, 11000) * 0.8)));
+    var sunlight = mmDockingSunlight(normal);
+    var brightness = 0.02 + 0.45 * albedo * sunlight.response, channel = Math.round(brightness * 255);
+    return { albedo: albedo, brightness: brightness, rgb: [channel, channel, channel] };
+  }
+
+  // One bounded raster, regenerated only when the viewport changes.
+  var _mmDockingSurfaceRaster = null;
+  function mmDockingSurfaceTexture(g) {
+    var key = g.width + ':' + g.height;
+    if (_mmDockingSurfaceRaster && _mmDockingSurfaceRaster.key === key) return _mmDockingSurfaceRaster.canvas;
+    _mmDockingSurfaceRaster = { key: key, canvas: null };
+    try {
+      var ratio = Math.min(1, 512 / g.width, 384 / g.height);
+      var width = Math.max(1, Math.min(512, Math.ceil(g.width * ratio))), height = Math.max(1, Math.min(384, Math.ceil(g.height * ratio)));
+      var sprite = document.createElement('canvas'); sprite.width = width; sprite.height = height;
+      var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(width, height);
+      if (!image || !image.data || image.data.length !== width * height * 4 || typeof context.putImageData !== 'function') return null;
+      for (var row = 0; row < height; row++) for (var col = 0; col < width; col++) {
+        var hit = mmDockingSurfaceRay(g, (col + 0.5) * g.width / width, (row + 0.5) * g.height / height);
+        if (!hit) continue;
+        var material = mmDockingSurfaceMaterial(hit.normal), offset = (row * width + col) * 4;
+        if (!material) continue;
+        image.data[offset] = material.rgb[0]; image.data[offset + 1] = material.rgb[1]; image.data[offset + 2] = material.rgb[2]; image.data[offset + 3] = 255;
+      }
+      context.putImageData(image, 0, 0); _mmDockingSurfaceRaster.canvas = sprite;
+    } catch (_dockingSurfaceError) {}
+    return _mmDockingSurfaceRaster.canvas;
+  }
+
+  function mmDrawDockingHorizon(ctx, W, H) {
+    var g = mmDockingHorizonGeometry(W, H); if (!ctx || !g) return null;
+    var points = g.points, bottom = Math.max(H + 1, points[0].y + 1, points[points.length - 1].y + 1);
+    function edge() {
+      ctx.beginPath(); points.forEach(function(point, index) { if (index) ctx.lineTo(point.x, point.y); else ctx.moveTo(point.x, point.y); });
+    }
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+    // Neutral exposed material stays below the spherical silhouette. The
+    // crisp edge has no atmospheric halo; this shading is illustrative.
+    var material = ctx.createLinearGradient(0, mmDockingHorizonAt(g, g.centerX), 0, H);
+    material.addColorStop(0, '#64645e'); material.addColorStop(0.2, '#444742'); material.addColorStop(1, '#252d30');
+    edge(); ctx.lineTo(points[points.length - 1].x, bottom); ctx.lineTo(points[0].x, bottom); ctx.closePath();
+    ctx.fillStyle = material; ctx.fill();
+    var surface = mmDockingSurfaceTexture(g);
+    if (surface) { ctx.save(); ctx.clip(); ctx.drawImage(surface, 0, 0, W, H); ctx.restore(); }
+    edge(); ctx.strokeStyle = '#898b83'; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+    return g;
+  }
+
   function mmDrawDockingPractice(ctx, W, H, state, opts) {
     opts = opts || {};
     if (opts.view === 'closeup') return mmDrawDockingCloseup(ctx, W, H, state);
@@ -3853,12 +4780,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var eagleX = eaglePortX - 19 * k, eagleY = eaglePortY;
     var commanded = state.status === 'flying' && state.propellant > 0 && Math.hypot(state.ax || 0, state.ay || 0) > 1e-8;
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020815'; ctx.fillRect(0, 0, W, H);
-    drawStarfield(ctx, W, H, Math.max(0, time || 0) * 0.2, 75);
-    // A distant lunar limb adds depth without an atmosphere or false haze.
-    var limb = ctx.createLinearGradient(0, H * 0.8, 0, H);
-    limb.addColorStop(0, '#333a43'); limb.addColorStop(1, '#141b25');
-    ctx.fillStyle = limb; ctx.beginPath(); ctx.moveTo(0, H); ctx.quadraticCurveTo(W * 0.52, H * 0.7, W, H * 0.9); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    drawStarfield(ctx, W, H, 0, 75);
+    var horizon = mmDrawDockingHorizon(ctx, W, H);
     ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('DOCKING PRACTICE', 16, 24);
+    ctx.textAlign = 'right'; ctx.font = '10px system-ui'; ctx.fillStyle = '#fde68a'; ctx.fillText('SUN \u2196', W - 16, 24); ctx.textAlign = 'left';
     ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8'; ctx.fillText('Local relative motion \u00b7 craft enlarged', 16, 40);
     // The visual corridor uses the same tolerance as the contact gate and
     // shares the same scale on each axis.
@@ -3868,15 +4793,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.beginPath(); ctx.moveTo(corridorStart, portY - halfCorridor); ctx.lineTo(portX, portY - halfCorridor);
     ctx.moveTo(corridorStart, portY + halfCorridor); ctx.lineTo(portX, portY + halfCorridor); ctx.stroke();
     ctx.strokeStyle = 'rgba(148,163,184,0.45)'; ctx.beginPath(); ctx.moveTo(corridorStart, portY); ctx.lineTo(portX, portY); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font = '9px monospace'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+    ctx.font = '9px "Courier New", monospace'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
     [100, 50, 10].forEach(function (mark) {
       var markX = portX - mark * distanceScale;
       if (markX < 16 || markX > W - 16) return;
       ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.beginPath(); ctx.moveTo(markX, portY - 52); ctx.lineTo(markX, portY + 52); ctx.stroke();
       ctx.fillText(mark + ' m', markX, portY + 65);
     });
-    mmDrawDockingCSM(ctx, portX, portY, k);
-    mmDrawLunarAscentStage(ctx, eagleX, eagleY, k, Math.PI / 2, { engineOn: false, thrust: 0, time: time });
+    mmDrawDockingCSM(ctx, portX, portY, k, { orbitLight: mmDockingCraftLight(0) });
+    mmDrawLunarAscentStage(ctx, eagleX, eagleY, k, Math.PI / 2, { engineOn: false, thrust: 0, time: time, orbitLight: mmDockingCraftLight(Math.PI / 2) });
     // Reaction-control jets appear opposite the commanded acceleration.
     if (commanded) {
       var dx = state.ay || 0, dy = -(state.ax || 0), commandLength = Math.hypot(dx, dy);
@@ -3914,13 +4839,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     ctx.restore();
     return { rcsVisible: commanded, engineVisible: false, plumeVisible: false, pictureScale: distanceScale,
-      portX: portX, portY: portY, eaglePortX: eaglePortX, eaglePortY: eaglePortY, corridorHalfWidth: halfCorridor };
+      portX: portX, portY: portY, eaglePortX: eaglePortX, eaglePortY: eaglePortY, corridorHalfWidth: halfCorridor, horizon: horizon };
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    ascentMoonLight: mmAscentMoonLight, ascentStageLight: mmAscentStageLight, drawAscentMoonLight: mmDrawAscentMoonLight,
+    ascentSurfaceGeometry: mmAscentSurfaceGeometry,
+    ascentTerrainGeometry: mmAscentTerrainGeometry, drawAscentTerrain: mmDrawAscentTerrain,
+    ascentAcceleration: mmAscentAcceleration, ascentAccelerationGeometry: mmAscentAccelerationGeometry,
+    ascentFlightDirectorGeometry: mmAscentFlightDirectorGeometry, drawAscentFlightDirector: mmDrawAscentFlightDirector,
+    ascentView: mmAscentView, ascentPhysicalOrbitGeometry: mmAscentPhysicalOrbitGeometry, drawAscentPhysicalOrbit: mmDrawAscentPhysicalOrbit,
     drawAscentScene: mmDrawAscentScene, drawDockingPractice: mmDrawDockingPractice,
+    dockingHorizonGeometry: mmDockingHorizonGeometry, dockingHorizonAt: mmDockingHorizonAt, drawDockingHorizon: mmDrawDockingHorizon,
+    dockingSurfaceRay: mmDockingSurfaceRay, dockingSurfaceMaterial: mmDockingSurfaceMaterial,
+    dockingSunlight: mmDockingSunlight, dockingCraftLight: mmDockingCraftLight,
     dockingCloseupGeometry: mmDockingCloseupGeometry,
     drawLunarAscentStage: mmDrawLunarAscentStage
   }); } catch (e) {}
+
+  // Orbital-plane camera: +X right, +Y up, +Z toward the viewer.
+  // The same finite, in-plane teaching Sun drives the eclipse calculation.
+  // Surface normals are physical; neutral material and exposure are illustrative.
+  function mmLunarOrbitSurfaceLight(u, v, sunAngle) {
+    if (!Number.isFinite(u) || !Number.isFinite(v) || u * u + v * v > 1) return null;
+    var angle = mmEnvironmentAngle(sunAngle), theta = angle * Math.PI / 180;
+    var normal = { x: u, y: v, z: Math.sqrt(Math.max(0, 1 - u * u - v * v)) };
+    var distance = MM_LUNAR_ENV.sunDistance / MM_LOI.radius;
+    var dx = distance * Math.cos(theta) - u, dy = distance * Math.sin(theta) - v, dz = -normal.z;
+    var length = Math.hypot(dx, dy, dz), direction = { x: dx / length, y: dy / length, z: dz / length };
+    var incidence = Math.max(-1, Math.min(1, normal.x * direction.x + normal.y * direction.y + normal.z * direction.z));
+    return { angle: angle, normal: normal, direction: direction, incidence: incidence, daylight: incidence > 0,
+      brightness: 0.055 + 0.945 * Math.pow(Math.max(0, incidence), 0.6) };
+  }
+
+  // Only three presets can enter this cache, independent of viewport and time.
+  var _mmLunarOrbitLightSprites = {};
+  function mmDrawLunarOrbitLight(ctx, cx, cy, radius, sunAngle) {
+    if (!ctx || ![cx, cy, radius].every(Number.isFinite) || radius <= 0) return null;
+    var angle = mmEnvironmentAngle(sunAngle);
+    if (!Object.prototype.hasOwnProperty.call(_mmLunarOrbitLightSprites, angle)) {
+      _mmLunarOrbitLightSprites[angle] = false;
+      try {
+        var sprite = document.createElement('canvas'), size = 256; sprite.width = sprite.height = size;
+        var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
+        if (image && image.data && image.data.length === size * size * 4 && typeof context.putImageData === 'function') {
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var light = mmLunarOrbitSurfaceLight((x + 0.5) * 2 / size - 1, 1 - (y + 0.5) * 2 / size, angle), offset = (y * size + x) * 4;
+            if (!light) continue;
+            image.data[offset] = Math.round(190 * light.brightness); image.data[offset + 1] = Math.round(190 * light.brightness);
+            image.data[offset + 2] = Math.round(183 * light.brightness); image.data[offset + 3] = 255;
+          }
+          context.putImageData(image, 0, 0); _mmLunarOrbitLightSprites[angle] = sprite;
+        }
+      } catch (_orbitLightError) {}
+    }
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#0a0a0a'; ctx.fill();
+    if (_mmLunarOrbitLightSprites[angle]) ctx.drawImage(_mmLunarOrbitLightSprites[angle], cx - radius, cy - radius, radius * 2, radius * 2);
+    else {
+      var step = radius * 2 / 48;
+      for (var row = 0; row < 48; row++) for (var col = 0; col < 48; col++) {
+        var fallback = mmLunarOrbitSurfaceLight((col + 0.5) / 24 - 1, 1 - (row + 0.5) / 24, angle);
+        if (!fallback) continue;
+        ctx.fillStyle = 'rgb(' + Math.round(190 * fallback.brightness) + ',' + Math.round(190 * fallback.brightness) + ',' + Math.round(183 * fallback.brightness) + ')';
+        ctx.fillRect(cx - radius + col * step, cy - radius + row * step, step + 0.3, step + 0.3);
+      }
+    }
+    ctx.restore(); return { angle: angle, radius: radius };
+  }
 
   // Docked CSM/LM during lunar orbit insertion. Local +X points out of the
   // SPS nozzle, so aligning it with velocity gives a retrograde thrust vector.
@@ -3928,7 +4913,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   function mmDrawLOIStack(ctx, x, y, scale, angle, opts) {
     opts = opts || {};
     var burning = opts.engineOn === true && opts.thrust > 0;
-    var time = Number.isFinite(opts.time) ? opts.time : 0;
+    var time = Number.isFinite(opts.time) ? opts.time : 0, lighting = mmOrbitalCraftLight(opts.sunlight, angle);
+    function shade(color, nx, ny) { return mmOrbitalCraftMaterial(color, lighting, nx, ny); }
     ctx.save(); ctx.translate(x, y); ctx.rotate(angle); ctx.scale(scale, scale);
     ctx.translate(-17, 0); // enlarged stack's visual center, not a mass calculation
     if (burning) {
@@ -3940,23 +4926,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.beginPath(); ctx.moveTo(77, -10); ctx.bezierCurveTo(94, -11, 116, -22, 139, -30);
       ctx.quadraticCurveTo(149, 0, 139, 30); ctx.bezierCurveTo(116, 22, 94, 11, 77, 10); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
     }
-    mmDrawDockingCSM(ctx, 0, 0, 1);
-    mmDrawLunarAscentStage(ctx, -19, 0, 1, Math.PI / 2, { time: time, engineOn: false, thrust: 0 });
+    mmDrawDockingCSM(ctx, 0, 0, 1, { orbitLight: lighting });
+    mmDrawLunarAscentStage(ctx, -19, 0, 1, Math.PI / 2, { time: time, engineOn: false, thrust: 0, orbitLight: mmOrbitalCraftLight(opts.sunlight, angle + Math.PI / 2) });
     // Attached descent-stage foil panels and stowed landing struts.
-    var foil = ctx.createLinearGradient(-51, -14, -33, 14);
-    foil.addColorStop(0, '#6e5728'); foil.addColorStop(0.5, '#bca049'); foil.addColorStop(1, '#e9d18a');
-    ctx.fillStyle = foil; ctx.strokeStyle = '#d0b56d'; ctx.lineWidth = 0.6;
+    var foil = lighting ? ctx.createLinearGradient(-42 + lighting.gradient.x0, lighting.gradient.y0, -42 + lighting.gradient.x1, lighting.gradient.y1) : ctx.createLinearGradient(-51, -14, -33, 14);
+    if (lighting) { foil.addColorStop(0, shade('#d4b465', -lighting.x, -lighting.y)); foil.addColorStop(0.5, shade('#d4b465')); foil.addColorStop(1, shade('#d4b465', lighting.x, lighting.y)); }
+    else { foil.addColorStop(0, '#6e5728'); foil.addColorStop(0.5, '#bca049'); foil.addColorStop(1, '#e9d18a'); }
+    ctx.fillStyle = foil; ctx.strokeStyle = shade('#d0b56d'); ctx.lineWidth = 0.6;
     ctx.beginPath(); ctx.moveTo(-33, -13); ctx.lineTo(-47, -13); ctx.lineTo(-52, -8); ctx.lineTo(-52, 8);
     ctx.lineTo(-47, 13); ctx.lineTo(-33, 13); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#26272a'; ctx.fillRect(-47, 2, 11, 8);
-    ctx.fillStyle = '#303741'; ctx.beginPath(); ctx.moveTo(-52, -3); ctx.lineTo(-56, -4.5); ctx.lineTo(-56, 4.5); ctx.lineTo(-52, 3); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#adb6bc'; ctx.lineWidth = 1.1;
+    ctx.fillStyle = shade('#26272a'); ctx.fillRect(-47, 2, 11, 8);
+    ctx.fillStyle = shade('#303741'); ctx.beginPath(); ctx.moveTo(-52, -3); ctx.lineTo(-56, -4.5); ctx.lineTo(-56, 4.5); ctx.lineTo(-52, 3); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = shade('#adb6bc'); ctx.lineWidth = 1.1;
     [-1, 1].forEach(function (side) {
       ctx.beginPath(); ctx.moveTo(-36, side * 12); ctx.lineTo(-48, side * 16); ctx.lineTo(-52, side * 10); ctx.stroke();
-      ctx.fillStyle = '#a69352'; ctx.fillRect(-53, side * 16 - 2, 4, 4);
+      ctx.fillStyle = shade('#a69352'); ctx.fillRect(-53, side * 16 - 2, 4, 4);
     });
     ctx.restore();
-    return { engineVisible: burning, plumeVisible: burning };
+    var result = { engineVisible: burning, plumeVisible: burning };
+    if (lighting) result.sunlight = lighting;
+    return result;
   }
 
   // Moon-centered, equal-axis orbital plane. Earth is treated as distant along
@@ -3975,9 +4964,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var scX = cx + sample.x * physicalScale, scY = cy - sample.y * physicalScale;
     var firing = sample.engineOn === true && sample.thrust > 0;
     var radio = sample.radioVisible === true;
+    var sunAngle = 45, sunlight = mmLunarSunlight(sample, sunAngle);
     var flightAngle = Math.atan2(-sample.vy, sample.vx);
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
-    drawStarfield(ctx, W, H, Math.max(0, time) * 0.2, 80);
+    drawStarfield(ctx, W, H, 0, 80);
     ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('LUNAR ORBIT INSERTION', 16, 22);
     ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
     mmAscentCanvasCaption(ctx, 'Orbit plane \u00b7 equal axes \u00b7 craft enlarged', 16, 39, W - 32, 12);
@@ -3990,11 +4980,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.save(); ctx.beginPath(); ctx.rect(10, plotTop - 8, W - 20, plotHeight + 23); ctx.clip();
     // A physical Moon-radius circle anchors the length scale. Neutral shading
     // avoids presenting a near-side atlas as a view down on the orbital plane.
-    var moonShade = ctx.createRadialGradient(cx - moonR * 0.4, cy - moonR * 0.35, 0, cx, cy, moonR);
-    moonShade.addColorStop(0, '#c6c5bd'); moonShade.addColorStop(0.66, '#858992'); moonShade.addColorStop(1, '#414b5c');
-    ctx.fillStyle = moonShade; ctx.beginPath(); ctx.arc(cx, cy, moonR, 0, Math.PI * 2); ctx.fill();
+    mmDrawLunarOrbitLight(ctx, cx, cy, moonR, sunAngle);
+    ctx.beginPath(); ctx.arc(cx, cy, moonR, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(226,232,240,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = 'rgba(15,23,42,0.7)'; ctx.textAlign = 'center'; ctx.font = 'bold 10px system-ui'; ctx.fillText('MOON', cx, cy + 4);
+    ctx.fillStyle = '#cbd5e1'; ctx.textAlign = 'center'; ctx.font = 'bold 10px system-ui'; ctx.fillText('MOON', cx, cy + 4);
     // Dashed future trajectory is opt-in and explicitly identified as a preview.
     function pathToTime(future) {
       var begun = false;
@@ -4022,7 +5011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.strokeStyle = radio ? 'rgba(52,211,153,0.75)' : 'rgba(251,191,36,0.75)'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(scX, scY); ctx.lineTo(rayEnd, scY); ctx.stroke(); ctx.setLineDash([]);
     var craftScale = Math.min(0.55, Math.max(0.31, W / 1500));
-    mmDrawLOIStack(ctx, scX, scY, craftScale, flightAngle, { time: time, engineOn: firing, thrust: sample.thrust });
+    var stack = mmDrawLOIStack(ctx, scX, scY, craftScale, flightAngle, { time: time, engineOn: firing, thrust: sample.thrust, sunlight: sunlight });
     var speed = Math.hypot(sample.vx, sample.vy);
     if (speed > 0) {
       var motionX = sample.vx / speed, motionY = -sample.vy / speed;
@@ -4049,47 +5038,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     mmAscentCanvasCaption(ctx, opts.preview ? 'Dashed: future preview. Cyan: motion. Amber: thrust.' : 'Cyan: measured path + velocity. Amber: retrograde thrust.', 16, H - 25, W - 32, 13);
     ctx.restore();
     return { engineVisible: firing, plumeVisible: firing, radioVisible: radio, pictureScale: physicalScale,
-      craftX: scX, craftY: scY, radioEndX: rayEnd, moonX: cx, moonY: cy, moonRadius: moonR };
+      craftX: scX, craftY: scY, radioEndX: rayEnd, moonX: cx, moonY: cy, moonRadius: moonR, sunlight: sunlight, sunAngle: sunAngle, craftSunlight: stack.sunlight || null };
   }
 
   // A separate near-side atlas retains the geography lesson without rotating
   // that map into the orbital plane. Light is the Apollo 11 landing-day example.
   function mmDrawLunarAtlas(ctx, W, H, opts) {
     opts = opts || {};
-    var labels = opts.labels !== false;
-    var radius = Math.min((H - 85) / 2, (W - 54) / 2), cx = W / 2, cy = 43 + radius;
+    var labels = opts.labels !== false, selected = mmLunarAtlasSite(opts.site), selectedSite = MM_MOON_SITES.filter(function(s) { return s.m === selected; })[0];
+    var radius = Math.min((H - 100) / 2, (W - 36) / 2), cx = W / 2, cy = H / 2 + 4;
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#030919'; ctx.fillRect(0, 0, W, H);
-    drawStarfield(ctx, W, H, 0, 55); drawDetailedMoon(ctx, cx, cy, radius); mmMoonNight(ctx, cx, cy, radius, MM_TERMINATOR_LON);
-    ctx.textAlign = 'left'; ctx.font = 'bold 11px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('NEAR-SIDE LUNAR ATLAS', 14, 21);
-    ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8'; ctx.fillText('Geographic reference \u00b7 Apollo 11 landing-day light', 14, 36);
+    drawStarfield(ctx, W, H, 0, 55); drawDetailedMoon(ctx, cx, cy, radius, true); mmMoonNight(ctx, cx, cy, radius, MM_TERMINATOR_LON);
+    // Geographic graticule shares the exact orthographic projection of the sites.
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.clip();
+    ctx.strokeStyle = 'rgba(203,213,225,0.18)'; ctx.lineWidth = 0.7;
+    for (var lon = -60; lon <= 60; lon += 30) {
+      ctx.beginPath(); for (var lat = -90; lat <= 90; lat += 3) { var p = mmMoonProject(lon, lat, cx, cy, radius); if (lat === -90) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); } ctx.stroke();
+    }
+    for (var latitude = -60; latitude <= 60; latitude += 30) {
+      ctx.beginPath(); for (var longitude = -90; longitude <= 90; longitude += 3) { var q = mmMoonProject(longitude, latitude, cx, cy, radius); if (longitude === -90) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]); } ctx.stroke();
+    }
+    ctx.restore();
+    ctx.textAlign = 'left'; ctx.font = 'bold 12px system-ui'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('NEAR-SIDE LUNAR ATLAS', 14, 21);
+    ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1'; ctx.fillText('Apollo 11 daylight · geographic reference', 14, 37);
     function outlined(text, x, y, color) {
       ctx.strokeStyle = '#020617'; ctx.lineWidth = 3; ctx.strokeText(text, x, y); ctx.fillStyle = color; ctx.fillText(text, x, y);
     }
+    // Short sea keys keep nearby names legible even on a phone; full names are below.
     if (labels) {
-      ctx.font = 'italic 8px system-ui'; ctx.textAlign = 'center';
-      MM_MOON_MARIA.forEach(function (mare) {
-        if (!mare.label) return;
-        var point = mmMoonProject(mare.at[0], mare.at[1], cx, cy, radius);
-        outlined(mare.label, point[0], point[1] + 3, '#e2e8f0');
+      ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center';
+      mmLunarSeas().forEach(function(mare) {
+        var point = mmMoonProject(mare.lon, mare.lat, cx, cy, radius);
+        outlined(mare.key, point[0], point[1] + 4, '#e2e8f0');
       });
-      MM_MOON_SITES.forEach(function (site) {
+      MM_MOON_SITES.forEach(function(site) {
         var point = mmMoonProject(site.lon, site.lat, cx, cy, radius);
-        ctx.fillStyle = site.m === 11 ? '#6ee7b7' : '#fbbf24'; ctx.beginPath(); ctx.arc(point[0], point[1], 2.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = site.m === 11 ? '#6ee7b7' : '#fbbf24'; ctx.beginPath(); ctx.arc(point[0], point[1], 2.5, 0, Math.PI * 2); ctx.fill();
         if (site.m === 11) return;
-        ctx.font = 'bold 9px system-ui'; ctx.textAlign = site.side < 0 ? 'right' : 'left';
-        outlined(String(site.m), point[0] + (site.side < 0 ? -5 : 5), point[1] + 3, '#fde68a');
+        var dx = site.side < 0 ? -10 : 10, dy = site.m === 14 ? 28 : site.m === 12 || site.m === 16 ? 16 : -10;
+        ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(point[0], point[1]); ctx.lineTo(point[0] + dx * 0.7, point[1] + dy - 4); ctx.stroke();
+        ctx.font = 'bold 11px system-ui'; ctx.textAlign = dx < 0 ? 'right' : 'left';
+        outlined(String(site.m), point[0] + dx, point[1] + dy, '#fde68a');
       });
     }
     var tranquility = mmMoonProject(MM_MOON_SITES[0].lon, MM_MOON_SITES[0].lat, cx, cy, radius);
     ctx.fillStyle = '#6ee7b7'; ctx.beginPath(); ctx.arc(tranquility[0], tranquility[1], 3, 0, Math.PI * 2); ctx.fill();
-    ctx.font = 'bold 9px system-ui'; ctx.textAlign = 'right'; outlined('Tranquility Base', tranquility[0] - 6, tranquility[1] + 4, '#86efac');
-    ctx.textAlign = 'left'; ctx.font = '10px system-ui'; ctx.fillStyle = '#cbd5e1';
-    mmAscentCanvasCaption(ctx, labels ? 'Green: Apollo 11. Numbers: the other Apollo landing sites.' : 'Green: Apollo 11 at Tranquility Base.', 14, H - 27, W - 28, 12);
+    ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'right'; outlined('Tranquility Base', tranquility[0] - 6, tranquility[1] + (labels ? -16 : 4), '#86efac');
+    if (labels) { ctx.strokeStyle = '#86efac'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(tranquility[0], tranquility[1] - 5); ctx.lineTo(tranquility[0] - 6, tranquility[1] - 13); ctx.stroke(); }
+    var focus = mmMoonProject(selectedSite.lon, selectedSite.lat, cx, cy, radius);
+    var openRing = selected === 11 && !labels; // leave room for the adjacent Base label
+    ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(focus[0], focus[1], 7, openRing ? -2 : 0, openRing ? 2 : Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); if (!openRing) { ctx.moveTo(focus[0] - 11, focus[1]); ctx.lineTo(focus[0] - 8, focus[1]); } ctx.moveTo(focus[0] + 8, focus[1]); ctx.lineTo(focus[0] + 11, focus[1]); ctx.stroke();
+    ctx.textAlign = 'left'; ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1';
+    mmAscentCanvasCaption(ctx, labels ? 'Green: Apollo 11. Numbers: other landing sites. Letters: lunar seas.' : 'Green: Apollo 11 at Tranquility Base. White ring: selected site.', 14, H - 42, W - 28, 13);
     ctx.restore();
-    return { siteX: tranquility[0], siteY: tranquility[1], moonX: cx, moonY: cy, moonRadius: radius, labels: labels };
+    return { siteX: tranquility[0], siteY: tranquility[1], moonX: cx, moonY: cy, moonRadius: radius, labels: labels, selectedSite: selected, selectedX: focus[0], selectedY: focus[1], light: mmLunarLight(selectedSite.lon, selectedSite.lat, MM_TERMINATOR_LON) };
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
-    drawLOIScene: mmDrawLOIScene, drawLOIStack: mmDrawLOIStack, drawLunarAtlas: mmDrawLunarAtlas
+    orbitalCraftLight: mmOrbitalCraftLight, orbitalCraftMaterial: mmOrbitalCraftMaterial,
+    lunarOrbitSurfaceLight: mmLunarOrbitSurfaceLight, drawLunarOrbitLight: mmDrawLunarOrbitLight,
+    drawLOIScene: mmDrawLOIScene, drawLOIStack: mmDrawLOIStack, drawLunarAtlas: mmDrawLunarAtlas, lunarLight: mmLunarLight, lunarSurfaceLight: mmLunarSurfaceLight, lunarAtlasSite: mmLunarAtlasSite, lunarSeas: mmLunarSeas, drawLunarLighting: mmMoonNight
   }); } catch (e) {}
 
   var _mmTransitPictureBounds = typeof WeakMap === 'function' ? new WeakMap() : null;
@@ -4117,6 +5125,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // spacecraft glyph is enlarged; its center and velocity remain physical.
   // Earth-centred angular camera. Right is the orbital-plane tangent and up
   // is perpendicular to that plane; this does not model a flown CM attitude.
+  // Match the parallel +Y Sun already used by both Earth cameras. Its fixed
+  // apparent radius is the 1 au value; parallax, limb darkening and atmospheric
+  // refraction are omitted. Disc overlap uses the small solar angular plane.
+  function mmReturnSunlight(sample) {
+    if (!sample || !Number.isFinite(sample.x) || !Number.isFinite(sample.y)) return null;
+    var range = Math.hypot(sample.x, sample.y);
+    if (!Number.isFinite(range) || range <= MM_ENTRY.radius) return null;
+    var sun = Math.asin(MM_LUNAR_ENV.sunRadius / MM_LUNAR_ENV.sunDistance);
+    var earth = Math.asin(MM_ENTRY.radius / range), separation = Math.atan2(Math.abs(sample.x), -sample.y);
+    var partialMargin = separation - (earth + sun), totalMargin = separation - (earth - sun), fraction = 1, phase = 'sunlit';
+    if (earth >= sun && totalMargin <= 0) { fraction = 0; phase = 'total'; }
+    else if (partialMargin < 0) {
+      phase = 'partial';
+      if (sun > earth && separation <= sun - earth) fraction = 1 - earth * earth / (sun * sun);
+      else {
+        var d = separation, r = sun, R = earth;
+        var clamp = function(value) { return Math.max(-1, Math.min(1, value)); };
+        var area = r*r*Math.acos(clamp((d*d+r*r-R*R)/(2*d*r))) + R*R*Math.acos(clamp((d*d+R*R-r*r)/(2*d*R))) -
+          0.5*Math.sqrt(Math.max(0, (-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R)));
+        fraction = Math.max(0, Math.min(1, 1 - area / (Math.PI*r*r)));
+      }
+    }
+    return { fraction: fraction, phase: phase, partialMargin: partialMargin, totalMargin: totalMargin,
+      separation: separation, sunAngularRadius: sun, earthAngularRadius: earth, directionX: 0, directionY: 1 };
+  }
+
+  function mmDrawReturnCraft(ctx, x, y, scale, velocityAngle, cmOnly, sunlight) {
+    if (!ctx || ![x, y, scale, velocityAngle].every(Number.isFinite) || scale <= 0 || !Number.isFinite(38 * scale)) return null;
+    var capsule = cmOnly === true, angle = velocityAngle + (capsule ? 0 : Math.PI);
+    var lighting = mmOrbitalCraftLight(sunlight, angle);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    mmDrawDockingCSM(ctx, (capsule ? -17 : -38) * scale, 0, scale, { cmOnly: capsule, orbitLight: lighting }); ctx.restore();
+    return { centerX: x, centerY: y, scale: scale, angle: angle, cmOnly: capsule, plumeVisible: false, sunlight: lighting };
+  }
+
   function mmReturnCrewGeometry(sample, radiusPx) {
     var r=Math.hypot(sample.x,sample.y),radius=Number.isFinite(radiusPx)?Math.max(1,radiusPx):100;
     var angularRadius=Math.asin(Math.min(1,MM_ENTRY.radius/r))/MM_DEG,tangent=Math.tan(40*MM_DEG);
@@ -4214,7 +5257,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   function mmDrawReturnScene(ctx, W, H, sample, profile, opts) {
     opts = opts || {};
-    if(opts.view==='crew')return mmDrawReturnCrewScene(ctx,W,H,sample);
+    var sunlight = mmReturnSunlight(sample);
+    if(opts.view==='crew')return Object.assign(mmDrawReturnCrewScene(ctx,W,H,sample), { sunlight: sunlight, spacecraft: null });
     var approach = opts.view === 'approach', top = 76, bottom = H - 115;
     var plotHeight = Math.max(100, bottom - top), centerX = W / 2, centerY = (top + bottom) / 2;
     var originX = 0, originY = 0, scale;
@@ -4230,7 +5274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
     drawStarfield(ctx, W, H, 0, 90);
     ctx.font = 'bold 12px system-ui'; ctx.fillStyle = '#f8fafc'; ctx.textAlign = 'left'; ctx.fillText('EARTH RETURN', 16, 22);
-    ctx.font = 'bold 10px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#a5f3fc';
+    ctx.font = 'bold 10px Consolas, Menlo, monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#a5f3fc';
     ctx.fillText(sample.serviceModuleSeparated ? 'CM ONLY / COAST' : 'CM + SM / COAST', W - 16, 22);
     ctx.textAlign = 'left'; ctx.font = '11px system-ui'; ctx.fillStyle = '#cbd5e1';
     mmAscentCanvasCaption(ctx, approach ? 'Earth approach · equal axes · automatic zoom' : 'Earth-centered fixed axes · equal distance scale', 16, 40, W - 32, 13);
@@ -4248,8 +5292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(at.x, at.y, 3, 0, Math.PI * 2); ctx.stroke();
     // Exact velocity direction; glyph length is an illustrative vector scale.
     var travelAngle = Math.atan2(-sample.vy, sample.vx);
-    ctx.save(); ctx.translate(craft.x, craft.y); ctx.rotate(travelAngle + (sample.serviceModuleSeparated ? 0 : Math.PI));
-    mmDrawDockingCSM(ctx, (sample.serviceModuleSeparated ? -17 : -38) * 0.52, 0, 0.52, { cmOnly: sample.serviceModuleSeparated }); ctx.restore();
+    var spacecraft = mmDrawReturnCraft(ctx, craft.x, craft.y, 0.52, travelAngle, sample.serviceModuleSeparated, sunlight);
     ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
     var tipX = craft.x + sample.vx / sample.speed * 38, tipY = craft.y - sample.vy / sample.speed * 38;
     ctx.beginPath(); ctx.moveTo(craft.x, craft.y); ctx.lineTo(tipX, tipY); ctx.lineTo(tipX - Math.cos(travelAngle - 0.5) * 7, tipY - Math.sin(travelAngle - 0.5) * 7);
@@ -4268,15 +5311,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui';
     mmAscentCanvasCaption(ctx, 'Crew view: Earth spans ' + (2 * angularRadius).toFixed(2) + '°', 16, H - 66, W - 104, 14);
     mmAscentCanvasCaption(ctx, 'Fixed Sun preset · phase ' + (sample.view.lit * 100).toFixed(1) + '%' , 16, H - 37, W - 104, 14);
+    mmAscentCanvasCaption(ctx, 'Sun at craft: ' + (sunlight ? (sunlight.fraction * 100).toFixed(1) + '%' : 'unavailable'), 16, H - 14, W - 104, 14);
     ctx.restore();
     return { scaleX: scale, scaleY: scale, originX: originX, originY: originY, earth: earth, craft: craft,
-      earthRadius: earthRadius, velocityAngle: travelAngle, cmOnly: sample.serviceModuleSeparated, plumeVisible: false, angularRadius: angularRadius };
+      earthRadius: earthRadius, velocityAngle: travelAngle, cmOnly: sample.serviceModuleSeparated, plumeVisible: false, angularRadius: angularRadius, sunlight: sunlight, spacecraft: spacecraft };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { drawReturnScene: mmDrawReturnScene,returnCrewGeometry:mmReturnCrewGeometry,returnCrewRay:mmReturnCrewRay,drawReturnCrewScene:mmDrawReturnCrewScene }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { returnSunlight: mmReturnSunlight, drawReturnCraft: mmDrawReturnCraft, drawReturnScene: mmDrawReturnScene,returnCrewGeometry:mmReturnCrewGeometry,returnCrewRay:mmReturnCrewRay,drawReturnCrewScene:mmDrawReturnCrewScene }); } catch (e) {}
+
+  // Uniform solar disc, fixed apparent size at 1 au, along parallel physical +Y.
+  // In this planar model the angular Earth/Moon disc centers are collinear.
+  // Integrate their union inside the Sun: never multiply two exposed fractions.
+  function mmTransitSolarVisibility(sunRadius, bodies) {
+    var circles = [{ x: 0, r: 1 }], cuts = [-1, 1];
+    bodies.forEach(function(body) {
+      var circle = { x: body.angularCenter / sunRadius, r: body.bodyAngularRadius / sunRadius };
+      if (Math.abs(circle.x) >= circle.r + 1) return;
+      circles.push(circle);
+      cuts.push(Math.max(-1, circle.x - circle.r), Math.min(1, circle.x + circle.r));
+    });
+    if (circles.length === 1) return { fraction: 1, phase: 'sunlit' };
+    for (var first = 0; first < circles.length; first++) {
+      for (var second = first + 1; second < circles.length; second++) {
+        var a = circles[first], b = circles[second], delta = a.x - b.x;
+        if (delta === 0) continue;
+        // Equal squared half-heights; the quadratic x terms cancel.
+        var crossing = ((b.r - a.r) * (b.r + a.r) + (a.x - b.x) * (a.x + b.x)) / (2 * delta);
+        if (crossing > -1 && crossing < 1) cuts.push(crossing);
+      }
+    }
+    cuts.sort(function(a, b) { return a - b; });
+    function heightSquared(circle, x) {
+      var offset = x - circle.x;
+      return Math.max(0, (circle.r - offset) * (circle.r + offset));
+    }
+    function integral(circle, x) {
+      if (x <= circle.x - circle.r) return -Math.PI * circle.r * circle.r / 4;
+      if (x >= circle.x + circle.r) return Math.PI * circle.r * circle.r / 4;
+      var offset = Math.max(-circle.r, Math.min(circle.r, x - circle.x));
+      return 0.5 * (offset * Math.sqrt(Math.max(0, (circle.r - offset) * (circle.r + offset))) +
+        circle.r * circle.r * Math.asin(Math.max(-1, Math.min(1, offset / circle.r))));
+    }
+    var area = 0, anyCovered = false, allCovered = true;
+    for (var part = 1; part < cuts.length; part++) {
+      var left = cuts[part - 1], right = cuts[part];
+      if (!(right > left)) continue;
+      var middle = (left + right) / 2, tallest = null, maximum = 0;
+      for (var bodyIndex = 1; bodyIndex < circles.length; bodyIndex++) {
+        var value = heightSquared(circles[bodyIndex], middle);
+        if (value > maximum) { maximum = value; tallest = circles[bodyIndex]; }
+      }
+      if (!tallest) { allCovered = false; continue; }
+      anyCovered = true;
+      if (maximum >= heightSquared(circles[0], middle)) tallest = circles[0];
+      else allCovered = false;
+      area += 2 * Math.max(0, integral(tallest, right) - integral(tallest, left));
+    }
+    return { fraction: allCovered ? 0 : !anyCovered ? 1 : Math.max(0, Math.min(1, 1 - area / Math.PI)),
+      phase: allCovered ? 'total' : anyCovered ? 'partial' : 'sunlit' };
+  }
+
+  function mmTransitSunlight(sample) {
+    if (!sample || sample.phase === 'impact' || ![sample.x, sample.y, sample.moonX, sample.moonY].every(Number.isFinite)) return null;
+    var earthRange = Math.hypot(sample.x, sample.y);
+    var moonDx = sample.moonX - sample.x, moonDy = sample.moonY - sample.y, moonRange = Math.hypot(moonDx, moonDy);
+    if (!Number.isFinite(earthRange) || !Number.isFinite(moonRange) ||
+        earthRange <= MM_TRANSIT.earthRadius || moonRange <= MM_TRANSIT.moonRadius) return null;
+    var sun = Math.asin(MM_LUNAR_ENV.sunRadius / MM_LUNAR_ENV.sunDistance);
+    function body(dx, dy, range, radius) {
+      var center = Math.atan2(dx, dy), angularRadius = Math.asin(radius / range), separation = Math.abs(center);
+      var disc = { angularCenter: center, separation: separation, bodyAngularRadius: angularRadius,
+        sunAngularRadius: sun, partialMargin: separation - (angularRadius + sun),
+        totalMargin: separation - (angularRadius - sun) };
+      return Object.assign(disc, mmTransitSolarVisibility(sun, [disc]));
+    }
+    var earth = body(-sample.x, -sample.y, earthRange, MM_TRANSIT.earthRadius);
+    var moon = body(moonDx, moonDy, moonRange, MM_TRANSIT.moonRadius);
+    return Object.assign({ directionX: 0, directionY: 1, sunAngularRadius: sun, earth: earth, moon: moon },
+      mmTransitSolarVisibility(sun, [earth, moon]));
+  }
 
   function mmDrawTransitScene(ctx, W, H, sample, profile, opts) {
     opts = opts || {};
     var C = MM_TRANSIT, view = opts.view === 'moon' ? 'moon' : 'system';
+    var sunlight = mmTransitSunlight(sample), sunAngle = 90;
     var trueScale = opts.trueScale === true, preview = opts.preview === true;
     var plotTop = 73, plotBottom = H - 56, plotHeight = Math.max(90, plotBottom - plotTop);
     var centerX = W / 2, centerY = (plotTop + plotBottom) / 2;
@@ -4307,9 +5424,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var orientation = firing && Math.hypot(sample.thrustX, sample.thrustY) > 0
       ? Math.atan2(sample.thrustY, -sample.thrustX) : Math.atan2(-sample.vy, sample.vx) + Math.PI;
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020713'; ctx.fillRect(0, 0, W, H);
-    drawStarfield(ctx, W, H, sample.time * 0.001, 90);
+    drawStarfield(ctx, W, H, 0, 90);
     ctx.textAlign = 'left'; ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 11px system-ui'; ctx.fillText('TRANS-LUNAR COAST', 16, 22);
-    ctx.textAlign = 'right'; ctx.fillStyle = firing ? '#fbbf24' : '#cbd5e1'; ctx.font = 'bold 9px monospace'; ctx.fillText(firing ? 'MCC BURN' : 'ENGINE OFF', W - 16, 22);
+    ctx.textAlign = 'right'; ctx.fillStyle = firing ? '#fbbf24' : '#cbd5e1'; ctx.font = 'bold 9px Consolas, Menlo, monospace'; ctx.fillText(firing ? 'MCC BURN' : 'ENGINE OFF', W - 16, 22);
     ctx.textAlign = 'left'; ctx.fillStyle = '#94a3b8'; ctx.font = '10px system-ui';
     ctx.fillText(view === 'moon' ? 'Moon-relative frame \u00b7 equal axes \u00b7 auto zoom' : 'Earth-centered fixed axes \u00b7 equal distance scale', 16, 39);
     mmAscentCanvasCaption(ctx, trueScale ? 'Body sizes at true scale \u00b7 spacecraft enlarged' : 'Body discs and spacecraft enlarged; centers to scale', 16, 55, W - 32, 12);
@@ -4340,11 +5457,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     if (preview) { ctx.strokeStyle = 'rgba(148,163,184,0.48)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); path(true); ctx.setLineDash([]); }
     ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.6; path(false);
-    // Detailed body assets are visual glyphs; only the circles and positions
-    // above define the diagram's distance scale.
+    // Both bodies face the same fixed +Y Sun in this orbital-plane view.
+    // The neutral lunar sphere avoids projecting a near-side atlas into this frame.
     var earthOnScreen = earth.x + drawnEarthRadius > 0 && earth.x - drawnEarthRadius < W && earth.y + drawnEarthRadius > plotTop && earth.y - drawnEarthRadius < plotBottom;
-    if (earthOnScreen) drawDetailedEarth(ctx, earth.x, earth.y, drawnEarthRadius, sample.time * (360 / 86164) / MM_EARTH_DEG_PER_TICK);
-    drawDetailedMoon(ctx, moon.x, moon.y, drawnMoonRadius);
+    if (earthOnScreen) drawDetailedEarth(ctx, earth.x, earth.y, drawnEarthRadius, sample.time * (360 / 86164) / MM_EARTH_DEG_PER_TICK, -Math.PI / 2, 0.5);
+    mmDrawLunarOrbitLight(ctx, moon.x, moon.y, drawnMoonRadius, sunAngle);
     // Small rings locate actual centers even when enlarged discs overlap an
     // early departure or the close lunar encounter.
     ctx.strokeStyle = 'rgba(226,232,240,0.85)'; ctx.lineWidth = 0.9;
@@ -4366,8 +5483,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.strokeStyle = 'rgba(251,191,36,0.75)'; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
       ctx.beginPath(); ctx.moveTo(closestMoon.x, closestMoon.y); ctx.lineTo(closestPoint.x, closestPoint.y); ctx.stroke(); ctx.setLineDash([]);
     }
-    mmDrawLOIStack(ctx, craft.x, craft.y, Math.min(0.48, Math.max(0.28, W / 1700)), orientation,
-      { time: sample.time, engineOn: firing, thrust: sample.thrust });
+    var stack = mmDrawLOIStack(ctx, craft.x, craft.y, Math.min(0.48, Math.max(0.28, W / 1700)), orientation,
+      { time: sample.time, engineOn: firing, thrust: sample.thrust, sunlight: sunlight });
     if (vectorSpeed > 0) mmAscentVector(ctx, craft.x, craft.y, frameVx / vectorSpeed * 34, -frameVy / vectorSpeed * 34, '#67e8f9');
     var forceLength = Math.hypot(sample.thrustX, sample.thrustY);
     if (firing && forceLength > 0) mmAscentVector(ctx, craft.x, craft.y, sample.thrustX / forceLength * 29, -sample.thrustY / forceLength * 29, '#fbbf24');
@@ -4394,9 +5511,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.restore();
     return { view: view, trueScale: trueScale, engineVisible: firing, plumeVisible: firing, pictureScale: scale,
       earthX: earth.x, earthY: earth.y, moonX: moon.x, moonY: moon.y, craftX: craft.x, craftY: craft.y,
-      earthRadius: drawnEarthRadius, moonRadius: drawnMoonRadius, craftAngle: orientation, closestShown: closestShown };
+      earthRadius: drawnEarthRadius, moonRadius: drawnMoonRadius, craftAngle: orientation, closestShown: closestShown,
+      sunlight: sunlight, sunAngle: sunAngle, craftSunlight: stack.sunlight || null };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { drawTransitScene: mmDrawTransitScene }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { drawTransitScene: mmDrawTransitScene, transitSunlight: mmTransitSunlight }); } catch (e) {}
 
   // ── Saturn V, drawn in its real proportions ──
   // Top to bottom: visible height in metres, diameter at the top and bottom of each
@@ -4431,8 +5549,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // tower arm can reach the actual hull.
   //   opts.les  = false once the escape tower has been jettisoned
   //   opts.only = [ids] draws just those sections (a spent stage falling away)
+  // Surface of revolution in local Canvas coordinates (+Y down). The axial
+  // slope gives cones their own light-facing normal; the visible half faces +Z.
+  function mmSaturnSurfaceNormal(u, w0, w1, h) {
+    if (![u, w0, w1, h].every(Number.isFinite) || w0 < 0 || w1 < 0 ||
+        Math.max(w0, w1) <= 0 || h <= 0) return null;
+    var slope = (w1 - w0) / (2 * h);
+    if (!Number.isFinite(slope)) return null;
+    u = Math.max(-1, Math.min(1, u));
+    var length = Math.hypot(1, slope);
+    return { x: u / length, y: -slope / length, z: Math.sqrt(Math.max(0, 1 - u * u)) / length };
+  }
+
+  function mmSaturnMaterialGradient(ctx, cx, y0, y1, w0, w1, color, light) {
+    var normal = mmSaturnSurfaceNormal(0, w0, w1, y1 - y0);
+    if (!normal || ![cx, y0, y1].every(Number.isFinite) || !light ||
+        ![light.x, light.y, light.fraction].every(Number.isFinite) ||
+        !(Math.hypot(light.x, light.y) > 0) || !Number.isFinite(Math.hypot(light.x, light.y))) return color;
+    var slope = (w1 - w0) / (2 * (y1 - y0)), w = Math.max(w0, w1);
+    // A cone's equal-normal lines meet at its apex. An angular gradient follows
+    // those lines at every height, including the narrow end of the CM and SLA.
+    // Older Canvas implementations retain directional light with a linear fallback.
+    var conic = Math.abs(slope) > 1e-6 && typeof ctx.createConicGradient === 'function';
+    var gradient = conic ? ctx.createConicGradient(slope > 0 ? 0 : Math.PI, cx, y0 - w0 / (2 * slope)) : null;
+    if (!gradient || typeof gradient.addColorStop !== 'function') {
+      conic = false;
+      gradient = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
+    }
+    function paint(u) {
+      var n = mmSaturnSurfaceNormal(u, w0, w1, y1 - y0);
+      return mmOrbitalCraftMaterial(color, light, n.x, n.y);
+    }
+    if (conic) gradient.addColorStop(0, paint(slope > 0 ? 1 : -1));
+    for (var i = 0; i <= 16; i++) {
+      var u = conic && slope > 0 ? 1 - i / 8 : i / 8 - 1;
+      var offset = conic ? (Math.PI / 2 - Math.atan(slope * u)) / (2 * Math.PI) : i / 16;
+      gradient.addColorStop(offset, paint(u));
+    }
+    if (conic) gradient.addColorStop(1, paint(slope > 0 ? -1 : 1));
+    return gradient;
+  }
+
   function mmDrawSaturnV(ctx, cx, topY, fullH, stage, opts) {
     opts = opts || {};
+    var orbitLight = opts.orbitLight;
+    if (!orbitLight || ![orbitLight.x, orbitLight.y, orbitLight.fraction].every(Number.isFinite) ||
+        !(Math.hypot(orbitLight.x, orbitLight.y) > 0) || !Number.isFinite(Math.hypot(orbitLight.x, orbitLight.y))) orbitLight = null;
     var k = fullH / MM_SATURN_V_H;
     var y = topY, sections = [];
     for (var i = 0; i < MM_SATURN_V.length; i++) {
@@ -4440,7 +5602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var attached = !(p.drop && stage >= p.drop);
       var y1 = y + p.h * k;
       if (opts.only ? opts.only.indexOf(p.id) !== -1 : attached && !(p.id === 'les' && opts.les === false)) {
-        mmSaturnSection(ctx, cx, y, y1, p.d0 * k, p.d1 * k, p.id);
+        mmSaturnSection(ctx, cx, y, y1, p.d0 * k, p.d1 * k, p.id, orbitLight);
         sections.push({ id: p.id, y0: y, y1: y1, w0: p.d0 * k, w1: p.d1 * k });
       }
       if (!opts.only && !attached) break;   // nothing below a dropped stage is attached
@@ -4456,6 +5618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.fillStyle = '#374151';
       xs.forEach(function (f) {
         var bx = cx + f * last.w1;
+        if (orbitLight) ctx.fillStyle = mmSaturnMaterialGradient(ctx, bx, base, base + bell[0] * k, bell[2] * k, bell[1] * k, '#374151', orbitLight);
         ctx.beginPath();
         ctx.moveTo(bx - bell[2] * k / 2, base);
         ctx.lineTo(bx + bell[2] * k / 2, base);
@@ -4498,7 +5661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return 0;
   }
 
-  function mmSaturnSection(ctx, cx, y0, y1, w0, w1, id) {
+  function mmSaturnSection(ctx, cx, y0, y1, w0, w1, id, orbitLight) {
     var h = y1 - y0, w = Math.max(w0, w1);
     function body(fillStyle) {
       ctx.fillStyle = fillStyle;
@@ -4507,8 +5670,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.lineTo(cx + w1 / 2, y1); ctx.lineTo(cx - w1 / 2, y1);
       ctx.closePath(); ctx.fill();
     }
-    // Sun from the left: a cylinder lit on one side reads as round, not flat.
+    // Keep the established launch/TLI material unless the orbit supplies its Sun.
+    function material(color) {
+      return orbitLight ? mmSaturnMaterialGradient(ctx, cx, y0, y1, w0, w1, color, orbitLight) : color;
+    }
     function shade(light, dark) {
+      if (orbitLight) return material(light);
       var g = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
       g.addColorStop(0, light); g.addColorStop(0.45, light); g.addColorStop(1, dark);
       return g;
@@ -4516,11 +5683,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // Black half-panel across [a, b] of this section's height, on the shadow side:
     // the "roll pattern" that let ground cameras read the vehicle's roll.
     function roll(a, b) {
-      ctx.fillStyle = '#111827';
+      ctx.fillStyle = material('#111827');
       ctx.fillRect(cx, y0 + h * a, w / 2, h * (b - a));
     }
     function ring(frac, thick) {
-      ctx.fillStyle = '#1f2937';
+      ctx.fillStyle = material('#1f2937');
       ctx.fillRect(cx - w / 2, y0 + h * frac, w, Math.max(1, thick));
     }
     if (id === 'les') {
@@ -4602,23 +5769,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // (23.47 E), so the sunrise line was the meridian 10.8 degrees west of it, and from
   // Earth the Moon was a six-day waxing crescent (about 38% lit).
   var MM_TERMINATOR_LON = MM_MOON_SITES[0].lon - 10.8;
-  // Night side of a near-side disc: everything west of the morning terminator, with a
-  // dimmer band just east of it where the Sun is still low. What is left of the map
-  // is the faint earthshine from a gibbous Earth.
+  function mmLunarAtlasSite(value) {
+    return MM_MOON_SITES.some(function(s) { return s.m === value; }) ? value : 11;
+  }
+  function mmLunarSeas() {
+    return MM_MOON_MARIA.filter(function(m) { return !!m.label; }).map(function(m, i) {
+      return { key: String.fromCharCode(65 + i), name: m.n, label: m.label, lon: m.at[0], lat: m.at[1] };
+    });
+  }
+  // Unit surface normal dotted with an equatorial Sun at termLon + 90 degrees.
+  // The elevation is geometric; the display curve below is illustrative photometry.
+  function mmLunarLight(lon, lat, termLon) {
+    termLon = mmNum(termLon) ? termLon : MM_TERMINATOR_LON;
+    var incidence = Math.cos(lat * MM_DEG) * Math.sin((lon - termLon) * MM_DEG);
+    incidence = Math.max(-1, Math.min(1, incidence));
+    return { incidence: incidence, elevation: Math.asin(incidence) / MM_DEG, daylight: incidence > 0 };
+  }
+  function mmLunarSurfaceLight(u, v, termLon) {
+    if (!mmNum(u) || !mmNum(v) || u * u + v * v > 1) return null;
+    termLon = mmNum(termLon) ? termLon : MM_TERMINATOR_LON;
+    var sunLon = (termLon + 90) * MM_DEG;
+    return Math.max(-1, Math.min(1, u * Math.sin(sunLon) + Math.sqrt(Math.max(0, 1 - u * u - v * v)) * Math.cos(sunLon)));
+  }
+  var _mmLunarLightMask = null, _mmLunarLightMaskLon = null;
   function mmMoonNight(ctx, cx, cy, r, termLon) {
-    function band(lonA, lonB) {                           // between two meridians, or from the west limb
-      ctx.beginPath();
-      if (lonA === null) ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
-      else for (var la = 90; la >= -90; la -= 5) { var pa = mmMoonProject(lonA, la, cx, cy, r); ctx.lineTo(pa[0], pa[1]); }
-      for (var lb = -90; lb <= 90; lb += 5) { var pb = mmMoonProject(lonB, lb, cx, cy, r); ctx.lineTo(pb[0], pb[1]); }
-      ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+    if (_mmLunarLightMaskLon !== termLon) {
+      _mmLunarLightMaskLon = termLon; _mmLunarLightMask = false;
+      try {
+        var mask = document.createElement('canvas'); mask.width = mask.height = 512;
+        var mctx = mask.getContext('2d'), pixels = mctx && typeof mctx.createImageData === 'function' && mctx.createImageData(512, 512);
+        if (pixels && pixels.data && pixels.data.length === 512 * 512 * 4 && typeof mctx.putImageData === 'function') {
+          for (var y = 0; y < 512; y++) for (var x = 0; x < 512; x++) {
+            var mu = mmLunarSurfaceLight((x + 0.5 - 256) / 256, (256 - y - 0.5) / 256, termLon), i = (y * 512 + x) * 4;
+            if (mu === null) continue; // one continuous mask avoids an antialiased sunrise seam
+            pixels.data[i] = 4; pixels.data[i + 1] = 7; pixels.data[i + 2] = 18;
+            pixels.data[i + 3] = Math.round(255 * 0.9 * (1 - Math.pow(Math.max(0, mu), 0.55)));
+          }
+          mctx.putImageData(pixels, 0, 0); _mmLunarLightMask = mask;
+        }
+      } catch (e) {}
     }
-    ctx.save();
-    ctx.fillStyle = 'rgba(4,7,18,0.9)';
-    band(null, termLon);
-    for (var k = 1; k <= 10; k++) {                       // the low-Sun band, 16 degrees wide
-      ctx.fillStyle = 'rgba(4,7,18,' + (0.9 * Math.pow(1 - k / 11, 1.6)) + ')';
-      band(termLon + (k - 1) * 1.6, termLon + k * 1.6);
+    if (_mmLunarLightMask) ctx.drawImage(_mmLunarLightMask, cx - r, cy - r, r * 2, r * 2);
+    else {
+    // Retain a little terrain in night as an illustrative earthshine cue.
+    ctx.fillStyle = 'rgba(4,7,18,0.9)'; ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
+    for (var lat = -90; lat <= 90; lat += 3) { var p = mmMoonProject(termLon, lat, cx, cy, r); ctx.lineTo(p[0], p[1]); }
+    ctx.closePath(); ctx.fill();
+      // Deterministic fallback for canvases without pixel buffers. The same normals
+      // control brightness; clipping keeps the coarse cells inside the lunar disc.
+      var step = 2 * r / 48;
+      for (var row = 0; row < 48; row++) for (var col = 0; col < 48; col++) {
+        var muFallback = mmLunarSurfaceLight((col + 0.5) / 24 - 1, 1 - (row + 0.5) / 24, termLon);
+        if (muFallback === null || muFallback <= 0) continue;
+        ctx.fillStyle = 'rgba(4,7,18,' + (0.9 * (1 - Math.pow(muFallback, 0.55))) + ')';
+        ctx.fillRect(cx - r + col * step, cy - r + row * step, step, step);
+      }
     }
     ctx.restore();
   }
@@ -4664,13 +5870,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var l2 = l1 + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
     return [l2 / MM_DEG, p2 / MM_DEG];
   }
-  function mmPaintMoon(ctx, cx, cy, r) {
+  function mmPaintMoon(ctx, cx, cy, r, flatAlbedo) {
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
     // Highlands: bright, old, saturated with craters.
     var hg = ctx.createRadialGradient(cx + r * 0.25, cy - r * 0.2, 0, cx, cy, r);
     hg.addColorStop(0, '#e7e4dc'); hg.addColorStop(0.7, '#cfcbc2'); hg.addColorStop(1, '#a9a59d');
-    ctx.fillStyle = hg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    ctx.fillStyle = flatAlbedo ? '#cfcbc2' : hg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
     // A fine speckle of small highland craters, fixed so it never shimmers.
     var rng = _seededRand(1969);
     for (var s = 0; s < 260; s++) {
@@ -4736,6 +5942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       if (c[3] === 'ray') { oval(1.8, 'rgba(255,253,246,0.45)'); oval(1, 'rgba(255,255,250,0.95)'); oval(0.55, 'rgba(210,206,198,0.9)'); return; }
       oval(1, 'rgba(236,233,226,0.9)'); oval(0.78, 'rgba(160,154,145,0.75)');
     });
+    if (!flatAlbedo) {
     // Limb darkening, and the sun low in the east: it was lunar morning at Tranquility
     // Base, so the western limb is the dim one.
     var lg = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r);
@@ -4744,22 +5951,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var sg = ctx.createLinearGradient(cx - r, cy, cx - r * 0.2, cy);
     sg.addColorStop(0, 'rgba(0,0,0,0.42)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = sg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    }
     ctx.restore();
   }
   // Painted once into a sprite and scaled: every coast frame used to redraw it all.
-  var _mmMoonSprite = null;
-  function drawDetailedMoon(ctx, cx, cy, r) {
+  var _mmMoonSprite = null, _mmMoonAtlasSprite = null;
+  function drawDetailedMoon(ctx, cx, cy, r, flatAlbedo) {
     if (r < 5) { ctx.fillStyle = '#d1d5db'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); return; }
-    if (_mmMoonSprite === null) {
-      _mmMoonSprite = false;
+    var sprite = flatAlbedo ? _mmMoonAtlasSprite : _mmMoonSprite;
+    if (sprite === null) {
+      sprite = false;
       try {
         var sc = document.createElement('canvas'); sc.width = sc.height = 512;
         var sctx = sc.getContext('2d');
-        if (sctx) { mmPaintMoon(sctx, 256, 256, 256); _mmMoonSprite = sc; }
+        if (sctx) { mmPaintMoon(sctx, 256, 256, 256, flatAlbedo); sprite = sc; }
       } catch (e) {}
+      if (flatAlbedo) _mmMoonAtlasSprite = sprite; else _mmMoonSprite = sprite;
     }
-    if (_mmMoonSprite) ctx.drawImage(_mmMoonSprite, cx - r, cy - r, r * 2, r * 2);
-    else mmPaintMoon(ctx, cx, cy, r);
+    if (sprite) ctx.drawImage(sprite, cx - r, cy - r, r * 2, r * 2);
+    else mmPaintMoon(ctx, cx, cy, r, flatAlbedo);
   }
 
   // Circular parking-orbit reference. The wide TLI arc is a classroom timing
@@ -4789,7 +5999,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       nextWindowTime: inWindow ? time : Math.min(MM_ORBIT.maxTime, nextOpening + MM_ORBIT.windowHalfWidth / omega),
       inShadow: inShadow, sunrises: time < firstSunrise ? 0 : 1 + Math.floor((time - firstSunrise) / period) };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { orbit: MM_ORBIT, orbitSnapshot: mmOrbitSnapshot }); } catch (e) {}
+  // Finite-disc eclipse in the same fixed +X Sun frame as the departure scene.
+  // Keep the legacy center-crossing shadow flag/count separate from disc contacts.
+  function mmOrbitIllumination(seconds) {
+    var sample = mmOrbitSnapshot(seconds), r = MM_ORBIT.radius + MM_ORBIT.altitude;
+    var light = mmReturnSunlight({ x: -r * Math.sin(sample.orbAng), y: r * Math.cos(sample.orbAng) });
+    var omega = 2 * Math.PI / sample.period, earth = light.earthAngularRadius, sun = light.sunAngularRadius;
+    function nextTime(angle) {
+      var first = (angle + Math.PI / 2) / omega;
+      var cycle = Math.max(0, Math.floor((sample.time - first + 1e-7) / sample.period) + 1);
+      return first + cycle * sample.period;
+    }
+    var contacts = [
+      ['partial-entry', Math.PI - earth - sun, 'Partial eclipse begins'],
+      ['total-entry', Math.PI - earth + sun, 'Total eclipse begins'],
+      ['total-exit', Math.PI + earth - sun, 'Sun begins to return'],
+      ['partial-exit', Math.PI + earth + sun, 'Full sunlight returns']
+    ].map(function(row) { var time = nextTime(row[1]); return { type: row[0], label: row[2], time: time, seconds: time - sample.time }; });
+    contacts.sort(function(a, b) { return a.time - b.time; });
+    return Object.assign({}, light, { directionX: 1, directionY: 0, nextContact: contacts[0],
+      penumbraSeconds: 2 * sun / omega, timeLimited: sample.time >= MM_ORBIT.maxTime,
+      inspectSunsetAvailable: nextTime(Math.PI - earth) <= MM_ORBIT.maxTime,
+      inspectSunriseAvailable: nextTime(Math.PI + earth) <= MM_ORBIT.maxTime,
+      inspectSunsetTime: Math.min(MM_ORBIT.maxTime, nextTime(Math.PI - earth)),
+      inspectSunriseTime: Math.min(MM_ORBIT.maxTime, nextTime(Math.PI + earth)) });
+  }
+  function mmOrbitLightLabel(light) { return light.phase === 'total' ? 'Earth shadow' : light.phase === 'partial' ? 'Partial sunlight' : 'Sunlit'; }
+  function mmOrbitContactLabel(light) { if (light.timeLimited) return 'Orbit time limit reached'; return light.nextContact.label + ' · ' + light.nextContact.seconds.toFixed(1) + ' model s'; }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { orbit: MM_ORBIT, orbitSnapshot: mmOrbitSnapshot, orbitIllumination: mmOrbitIllumination }); } catch (e) {}
 
   // Finite S-IVB burn from the parking preset. The launch model supplies the
   // remaining tank; the circular reference supplies position and velocity.
@@ -4881,13 +6118,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return {length:length,k:k,topY:-length/2-MM_SATURN_V[0].h*k,fullHeight:MM_SATURN_V_H*k,
       noseY:-length/2,nozzleY:length/2,sections:retained.map(function(p){return p.id;})};
   }
-  function mmDrawTliStack(ctx,x,y,heading,lengthPx,thrust) {
+  // Fixed world +X Sun, shared with parking orbit. Rotate the physical TLI
+  // position into that frame, then reuse the tested Earth/solar-disc overlap.
+  function mmTliSunlight(sample, orbitTime) {
+    if (!sample || ![sample.x, sample.y].every(Number.isFinite)) return null;
+    var angle = mmOrbitSnapshot(orbitTime).orbAng, c = Math.cos(angle), s = Math.sin(angle);
+    var wx = sample.x * c - sample.y * s, wy = sample.x * s + sample.y * c;
+    var light = mmReturnSunlight({ x: -wy, y: wx });
+    return light ? Object.assign({}, light, { directionX: 1, directionY: 0 }) : null;
+  }
+  function mmDrawTliStack(ctx,x,y,heading,lengthPx,thrust,opts) {
+    var lighting=mmOrbitalCraftLight(opts&&opts.sunlight,heading+Math.PI/2);
     var g=mmTliStackGeometry(lengthPx),fraction=Number.isFinite(thrust)?Math.max(0,Math.min(1,thrust/MM_TLI.thrust)):0;
     var plume=fraction>0,plumeLength=plume?g.length*0.64*Math.sqrt(fraction):0;
     var mouth=MM_SATURN_BELLS.s4b[1]*g.k/2,halfWidth=plume?mouth+plumeLength*0.23:0;
     function world(localY){return {x:x-Math.cos(heading)*localY,y:y-Math.sin(heading)*localY};}
     ctx.save();ctx.translate(x,y);ctx.rotate(heading+Math.PI/2);
-    var drawn=mmDrawSaturnV(ctx,0,g.topY,g.fullHeight,3,{les:false}),nozzle=drawn.nozzle;
+    var drawn=mmDrawSaturnV(ctx,0,g.topY,g.fullHeight,3,{les:false,orbitLight:lighting}),nozzle=drawn.nozzle;
     if(plume){
       // Illustrative vacuum expansion, not a measured plume boundary. Constant
       // thrust keeps its appearance steady as falling mass raises acceleration.
@@ -4901,13 +6148,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.lineTo(mouth*1.8,nozzle+plumeLength*0.52);ctx.lineTo(-mouth*1.8,nozzle+plumeLength*0.52);ctx.closePath();ctx.fill();
     }
     ctx.restore();
-    return {length:g.length,k:g.k,nose:world(g.noseY),nozzle:world(nozzle),sections:drawn.sections.map(function(p){return p.id;}),
-      plume:plume,plumeLength:plumeLength,plumeHalfWidth:halfWidth,plumeTip:world(nozzle+plumeLength),thrustFraction:fraction};
+    return Object.assign({length:g.length,k:g.k,nose:world(g.noseY),nozzle:world(nozzle),sections:drawn.sections.map(function(p){return p.id;}),
+      plume:plume,plumeLength:plumeLength,plumeHalfWidth:halfWidth,plumeTip:world(nozzle+plumeLength),thrustFraction:fraction},lighting?{sunlight:lighting}:{});
+  }
+  // Sidereal geography clock shared by parking and departure. Reduce the angle,
+  // not the model clock, so a burn beyond the parking time cap still rotates.
+  function mmEarthRotationTick(seconds) {
+    return Number.isFinite(seconds) && seconds > 0 ? (seconds % 86164) * (360 / 86164) / MM_EARTH_DEG_PER_TICK : 0;
+  }
+  // Thin, locally sunlit atmosphere guide. Density uses an 8.5 km scale height;
+  // opacity/color are illustrative exposure, not integrated light scattering.
+  function mmEarthLimbAtmosphere(height, nx, ny, sunAngle) {
+    if (![height, nx, ny, sunAngle].every(Number.isFinite) || height <= 0 || height > 60000) return null;
+    var length = Math.hypot(nx, ny); if (!Number.isFinite(length) || length === 0) return null;
+    nx /= length; ny /= length;
+    var r = MM_TLI.radius + height, sx = Math.cos(sunAngle), sy = Math.sin(sunAngle);
+    var light = mmReturnSunlight({ x: r * (nx * sy - ny * sx), y: r * (nx * sx + ny * sy) });
+    if (!light) return null;
+    var alpha = 0.68 * Math.exp(-height / 8500) * light.fraction, t = height / 60000;
+    return { height: height, fraction: light.fraction, alpha: alpha,
+      color: 'rgba(' + Math.round(114 - 61 * t) + ',' + Math.round(181 - 76 * t) + ',' + Math.round(242 - 41 * t) + ',' + alpha + ')' };
+  }
+  // The overview uses the same physical altitude model as the close limb.
+  // Its subpixel thickness is retained: no enlarged decorative halo.
+  function mmEarthGlobeAtmosphereGeometry(radius) {
+    if (!Number.isFinite(radius) || radius <= 0) return null;
+    var outerRadius = radius * (1 + 60000 / MM_TLI.radius);
+    if (!Number.isFinite(outerRadius)) return null;
+    return { radius: radius, outerRadius: outerRadius, topHeight: 60000, bands: 8, segments: 128 };
+  }
+  var _mmEarthGlobeAir = null;
+  function mmEarthGlobeAtmosphereBands() {
+    if (_mmEarthGlobeAir) return _mmEarthGlobeAir;
+    var heights = [0, 2000, 4000, 8000, 14000, 22000, 34000, 46000, 60000], layers = [];
+    for (var band = 0; band < heights.length - 1; band++) {
+      var arcs = [], previous = null;
+      for (var segment = 0; segment < 128; segment++) {
+        var a = -Math.PI + 2 * Math.PI * segment / 128, b = -Math.PI + 2 * Math.PI * (segment + 1) / 128;
+        var mid = (a + b) / 2, material = mmEarthLimbAtmosphere((heights[band] + heights[band + 1]) / 2, Math.cos(mid), Math.sin(mid), 0);
+        if (!material || material.alpha < 0.00001) { previous = null; continue; }
+        // Coalesce identical daylight material, avoiding seams between sectors.
+        if (previous && previous.color === material.color) previous.b = b;
+        else { previous = { a: a, b: b, color: material.color }; arcs.push(previous); }
+      }
+      layers.push({ low: heights[band], high: heights[band + 1], arcs: arcs });
+    }
+    _mmEarthGlobeAir = layers;
+    return layers;
+  }
+  function mmDrawEarthGlobeAtmosphere(ctx, cx, cy, radius, sunAngle) {
+    var geometry = mmEarthGlobeAtmosphereGeometry(radius);
+    if (!ctx || !geometry || ![cx, cy, sunAngle].every(Number.isFinite)) return null;
+    var layers = mmEarthGlobeAtmosphereBands();
+    ctx.save();ctx.translate(cx, cy);ctx.rotate(sunAngle);ctx.lineCap = 'butt';ctx.setLineDash([]);
+    // Midline strokes keep fractional-pixel bands even as the Sun rotates.
+    // Their radial bounds are the band edges; a second clip would attenuate
+    // the same subpixel coverage twice.
+    for (var band = 0; band < layers.length; band++) {
+      var layer = layers[band], inner = radius * (1 + layer.low / MM_TLI.radius), outer = radius * (1 + layer.high / MM_TLI.radius);
+      var width = outer - inner;
+      if (!(width > 0)) continue;
+      ctx.lineWidth = width;
+      for (var segment = 0; segment < layer.arcs.length; segment++) {
+        var arc = layer.arcs[segment];ctx.strokeStyle = arc.color;ctx.beginPath();
+        ctx.arc(0, 0, inner + width / 2, arc.a, arc.b);ctx.stroke();
+      }
+    }
+    ctx.restore();return geometry;
+  }
+  function mmDrawEarthLimbAtmosphere(ctx, W, H, cx, cy, scale, sunAngle) {
+    if (!ctx || ![W, H, cx, cy, scale, sunAngle].every(Number.isFinite) || W <= 0 || H <= 0 || scale <= 0) return null;
+    var bands = [0, 2000, 4000, 8000, 14000, 22000, 34000, 46000, 60000];
+    var radius = MM_TLI.radius * scale, outer = (MM_TLI.radius + 60000) * scale;
+    if (!Number.isFinite(outer) || outer <= 0) return null;
+    function edge(x, r) { return Math.asin(Math.max(-1, Math.min(1, (x - cx) / r))); }
+    // Cover both inner and outer intersections at each screen edge, including
+    // an offscreen Earth center. The viewport and solid globe are clipped below.
+    var left = Math.min(edge(0, radius), edge(0, outer)), right = Math.max(edge(W, radius), edge(W, outer));
+    var segments = Math.max(1, Math.min(256, Math.ceil((right - left) * outer / 8)));
+    ctx.save();ctx.beginPath();ctx.rect(0, 0, W, H);ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);ctx.clip('evenodd');
+    for (var band = 0; band < bands.length - 1; band++) {
+      var r0 = (MM_TLI.radius + bands[band]) * scale, r1 = (MM_TLI.radius + bands[band + 1]) * scale;
+      for (var segment = 0; segment < segments; segment++) {
+        var a = left + (right - left) * segment / segments, b = left + (right - left) * (segment + 1) / segments, mid = (a + b) / 2;
+        var material = mmEarthLimbAtmosphere((bands[band] + bands[band + 1]) / 2, Math.sin(mid), -Math.cos(mid), sunAngle);
+        if (!material || material.alpha < 0.00001) continue;
+        ctx.fillStyle = material.color;ctx.beginPath();
+        ctx.moveTo(cx + Math.sin(a) * r0, cy - Math.cos(a) * r0);ctx.lineTo(cx + Math.sin(a) * r1, cy - Math.cos(a) * r1);
+        ctx.arc(cx, cy, r1, a - Math.PI / 2, b - Math.PI / 2);
+        ctx.lineTo(cx + Math.sin(b) * r0, cy - Math.cos(b) * r0);ctx.arc(cx, cy, r0, b - Math.PI / 2, a - Math.PI / 2, true);ctx.closePath();ctx.fill();
+      }
+    }
+    ctx.restore();return { bands: bands.length - 1, segments: segments, topHeight: 60000 };
   }
   function mmDrawTliScene(ctx,W,H,s,profile,opts) {
     opts=opts||{};var C=MM_TLI,whole=opts.view==='orbit',angle=mmOrbitSnapshot(opts.orbitTime||0).orbAng,co=Math.cos(angle),si=Math.sin(angle);
     function rotate(x,y){return{x:x*co-y*si,y:x*si+y*co};}
-    var scale,ox,oy,anchor=0;
+    var earthTick=mmEarthRotationTick(mmOrbitSnapshot(opts.orbitTime).time+(Number.isFinite(s.time)?Math.max(0,s.time):0));
+    var scale,ox,oy,anchor=0,atmosphere=null;
     if(whole){scale=Math.min(W*0.44,H*0.35)/C.moonRadius;ox=W/2;oy=H*0.48;}
     else{
       anchor=Math.atan2(profile.samples[profile.samples.length-1].y,profile.samples[profile.samples.length-1].x)/2;
@@ -4919,11 +6257,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ox=W/2-(minX+maxX)*scale/2;oy=H*0.76;
     }
     function point(x,y){if(whole){var r=rotate(x,y);return{x:ox+r.x*scale,y:oy-r.y*scale};}return{x:ox+(y*Math.cos(anchor)-x*Math.sin(anchor))*scale,y:oy-(x*Math.cos(anchor)+y*Math.sin(anchor)-C.radius)*scale};}
+    var sunlight=mmTliSunlight(s,opts.orbitTime||0);
+    var viewSunlight=sunlight?Object.assign({},sunlight,{directionX:whole?1:-Math.sin(anchor+angle),directionY:whole?0:Math.cos(anchor+angle)}):null;
+    var earthSunAngle=whole?0:Math.atan2(-Math.cos(anchor+angle),-Math.sin(anchor+angle));
     ctx.fillStyle='#071224';ctx.fillRect(0,0,W,H);
     for(var star=0;star<50;star++){ctx.fillStyle='rgba(203,213,225,0.5)';ctx.fillRect((star*157.31)%W,(star*97.53)%H,1,1);}
     ctx.save();ctx.beginPath();ctx.rect(0,35,W,H-75);ctx.clip();
-    if(whole){drawDetailedEarth(ctx,ox,oy,C.radius*scale,0);ctx.strokeStyle='#a78bfa';ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(ox,oy,C.moonRadius*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
-    else{ctx.fillStyle='#153b53';ctx.beginPath();for(var px=-2;px<=W+2;px+=3){var worldX=(px-ox)/scale,limb=C.radius-Math.sqrt(Math.max(0,C.radius*C.radius-worldX*worldX)),py=oy+limb*scale;if(px===-2)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.lineTo(W+2,H);ctx.lineTo(-2,H);ctx.closePath();ctx.fill();ctx.strokeStyle='#7dd3fc';ctx.lineWidth=2;ctx.beginPath();for(var px2=-2;px2<=W+2;px2+=3){var worldX2=(px2-ox)/scale,py2=oy+(C.radius-Math.sqrt(Math.max(0,C.radius*C.radius-worldX2*worldX2)))*scale;if(px2===-2)ctx.moveTo(px2,py2);else ctx.lineTo(px2,py2);}ctx.stroke();}
+    if(whole){drawDetailedEarth(ctx,ox,oy,C.radius*scale,earthTick,earthSunAngle,undefined,{surfaceLight:true,thinAtmosphere:true,oceanGlint:true,sphericalClouds:true,urbanLights:true});
+      // At lunar-distance scale the globe is only a few pixels wide; retain
+      // its night hemisphere even when the detailed renderer uses a tiny dot.
+      if(C.radius*scale<3){ctx.fillStyle='#0b1730';mmPhaseShade(ctx,ox,oy,C.radius*scale,0.5,earthSunAngle);}
+      ctx.strokeStyle='#a78bfa';ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(ox,oy,C.moonRadius*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+    else{
+      // Keep the physical spherical limb. Clip the large globe itself so its
+      // decorative atmosphere glow does not wash over the close camera's sky.
+      ctx.save();ctx.beginPath();ctx.arc(ox,oy+C.radius*scale,C.radius*scale,0,Math.PI*2);ctx.clip();
+      // Transform the same overview globe into the close camera, including
+      // its reflected axes, so geography and illumination change view together.
+      ctx.translate(ox,oy+C.radius*scale);
+      ctx.transform(-Math.sin(anchor+angle),-Math.cos(anchor+angle),-Math.cos(anchor+angle),Math.sin(anchor+angle),0,0);
+      drawDetailedEarth(ctx,0,0,C.radius*scale,earthTick,0,undefined,{surfaceLight:true,oceanGlint:true,sphericalClouds:true,urbanLights:true});ctx.restore();
+      atmosphere=mmDrawEarthLimbAtmosphere(ctx,W,H,ox,oy+C.radius*scale,scale,earthSunAngle);}
     // Dashed forecast: the current osculating conic if thrust stops now.
     if(whole&&s.eccentricity>1e-7){
       var nu=Math.atan2(s.y,s.x)-s.argument;while(nu<0)nu+=2*Math.PI;
@@ -4934,17 +6288,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();profile.samples.forEach(function(row,i){if(row.time>s.time)return;var p=point(row.x,row.y);if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});var ship=point(s.x,s.y);ctx.lineTo(ship.x,ship.y);ctx.stroke();
     ctx.restore();
     var velocity=whole?rotate(s.vx,s.vy):{x:s.vy*Math.cos(anchor)-s.vx*Math.sin(anchor),y:s.vx*Math.cos(anchor)+s.vy*Math.sin(anchor)},heading=Math.atan2(-velocity.y,velocity.x);
-    var stack=mmDrawTliStack(ctx,ship.x,ship.y,heading,Math.min(78,Math.max(54,W*0.17)),s.thrust);
+    // Earth-center annotation sits behind the enlarged foreground spacecraft.
+    if(whole){ctx.save();ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox-20,oy+20);ctx.lineTo(ox-3,oy+3);ctx.stroke();ctx.restore();}
+    var stack=mmDrawTliStack(ctx,ship.x,ship.y,heading,Math.min(78,Math.max(54,W*0.17)),s.thrust,{sunlight:viewSunlight});
     var len=stack.length/2+25;
     ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(heading);ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(stack.length/2+5,0);ctx.lineTo(len,0);ctx.moveTo(len-5,-3);ctx.lineTo(len,0);ctx.lineTo(len-5,3);ctx.stroke();ctx.restore();
     ctx.fillStyle='#e2e8f0';ctx.font='12px system-ui';ctx.fillText(whole?'Orbit if thrust stops here':'Measured S-IVB departure',12,22);
-    if(whole){ctx.fillStyle='#c4b5fd';ctx.fillText('Purple ring: 384,400 km radius',12,42);ctx.fillStyle='#e2e8f0';ctx.fillText('Earth center',Math.max(12,ox-85),oy+28);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox-20,oy+20);ctx.lineTo(ox-3,oy+3);ctx.stroke();}
+    if(whole){ctx.fillStyle='#c4b5fd';ctx.fillText('Purple ring: 384,400 km radius',12,42);ctx.fillStyle='#e2e8f0';ctx.fillText('Earth center',Math.max(12,ox-85),oy+28);}
     if(!whole){ctx.fillStyle='#94a3b8';ctx.fillText('CSM · enclosed LM · S-IVB / J-2',12,42);}
     ctx.fillStyle='#e2e8f0';ctx.fillText('Equal axes · spacecraft enlarged',12,H-12);
     var ruler=whole?100000000:500000;ctx.strokeStyle='#e2e8f0';ctx.beginPath();ctx.moveTo(W-16-ruler*scale,H-37);ctx.lineTo(W-16,H-37);ctx.stroke();ctx.textAlign='right';ctx.fillText((ruler/1000).toLocaleString()+' km',W-16,H-45);ctx.textAlign='left';
-    return {scaleX:scale,scaleY:scale,craftX:ship.x,craftY:ship.y,heading:heading,plume:stack.plume,stack:stack};
+    return {scaleX:scale,scaleY:scale,craftX:ship.x,craftY:ship.y,heading:heading,plume:stack.plume,stack:stack,sunlight:sunlight,viewSunlight:viewSunlight,earthSunAngle:earthSunAngle,earthTick:earthTick,atmosphere:atmosphere};
   }
-  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{tliPhysics:MM_TLI,tliPlan:mmTliPlan,tliInitialState:mmTliInitialState,tliStep:mmTliStep,tliElements:mmTliElements,tliProfile:mmTliProfile,tliSample:mmTliSample,cleanTliPlayback:mmCleanTliPlayback,drawTliScene:mmDrawTliScene,tliStackGeometry:mmTliStackGeometry,drawTliStack:mmDrawTliStack});}catch(e){}
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{tliPhysics:MM_TLI,tliPlan:mmTliPlan,tliInitialState:mmTliInitialState,tliStep:mmTliStep,tliElements:mmTliElements,tliProfile:mmTliProfile,tliSample:mmTliSample,cleanTliPlayback:mmCleanTliPlayback,drawTliScene:mmDrawTliScene,tliStackGeometry:mmTliStackGeometry,drawTliStack:mmDrawTliStack,tliSunlight:mmTliSunlight,earthCityCatalog:mmEarthCityCatalog,earthCityCloudTransmission:mmEarthCityCloudTransmission,earthNightLightResponse:mmEarthNightLightResponse,earthCityLights:mmEarthCityLights,drawEarthCityLights:mmDrawEarthCityLights,earthCloudCap:mmEarthCloudCap,earthSphericalClouds:mmEarthSphericalClouds,drawEarthCloudCap:mmAppendEarthCloudCap,earthOceanGlint:mmEarthOceanGlint,earthOceanGlintLayers:mmEarthOceanGlintLayers,drawEarthOceanGlint:mmDrawEarthOceanGlint,earthGlobeAtmosphereGeometry:mmEarthGlobeAtmosphereGeometry,drawEarthGlobeAtmosphere:mmDrawEarthGlobeAtmosphere,earthSurfaceLight:mmEarthSurfaceLight,earthSurfaceGradient:mmEarthSurfaceGradient,drawEarthGlobe:drawDetailedEarth,earthRotationTick:mmEarthRotationTick,earthLimbAtmosphere:mmEarthLimbAtmosphere,drawEarthLimbAtmosphere:mmDrawEarthLimbAtmosphere});}catch(e){}
 
   function mmRenderTliCard(h, d, upd, announceToSR, translate) {
     var t = mmAccessibleTranslator(translate);
@@ -4957,7 +6313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       h('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',margin:'12px 0'}},
         h('label',{style:{fontSize:'13px'}},'Engine cutoff ',h('select',{'data-tli-plan':true,'aria-label':t("stem.moonmission.a11y_tli_burn_duration", 'TLI burn duration'),value:profile.plan.duration,style:button,onChange:function(ev){action(ev,'plan',Number(ev.target.value));}},[300,342,350].map(function(n){return h('option',{key:n,value:n},n+' s'+(n===342?' · lunar distance':''));}))),
         h('label',{style:{fontSize:'13px'}},'Trajectory view ',h('select',{'data-tli-view':true,'aria-label':t("stem.moonmission.a11y_tli_trajectory_view", 'TLI trajectory view'),value:d.tliView,style:button,onChange:function(ev){action(ev,'view',ev.target.value);}},h('option',{value:'burn'},'Departure close view'),h('option',{value:'orbit'},'Orbit forecast')))),
-      h('canvas',{'data-tli-canvas':true,role:'img','aria-label':t("stem.moonmission.a11y_computed_s_ivb_departure_with_equal_physical_axes_measured_trail_velocity_arrow_and_a_prop", 'Computed S-IVB departure with equal physical axes, measured trail, velocity arrow and a proportioned, enlarged command and service module, closed lunar module adapter, instrument unit and S-IVB aligned with velocity. Exhaust expands from the single J-2 nozzle while thrust is active. The forecast shows the current orbit if the engine stops, and a lunar-distance ring without a Moon position. Instruments and controls follow.'),style:{display:'block',width:'100%',height:'360px',borderRadius:'8px'},ref:function(cv){
+      h('canvas',{'data-tli-canvas':true,role:'img','aria-describedby':'mm-tli-light-note','aria-label':t("stem.moonmission.a11y_computed_s_ivb_departure_with_equal_physical_axes_measured_trail_velocity_arrow_and_a_prop", 'Computed S-IVB departure with equal physical axes, measured trail, velocity arrow and a proportioned, enlarged command and service module, closed lunar module adapter, instrument unit and S-IVB aligned with velocity. Exhaust expands from the single J-2 nozzle while thrust is active. The forecast shows the current orbit if the engine stops, and a lunar-distance ring without a Moon position. Instruments and controls follow.'),style:{display:'block',width:'100%',height:'360px',borderRadius:'8px'},ref:function(cv){
         if(!cv||cv._tliInit)return;cv._tliInit=true;var ctx=cv.getContext('2d');if(!ctx)return;
         var p=profile,time=run.time,recorded=run.recorded,orbitTime=run.orbitTime,paused=d.tliPaused,rate=d.tliPlaybackRate,view=d.tliView;
         var W=cv.offsetWidth||500,H=cv.offsetHeight||360,lastTs=null,lastSave=-Infinity,stamp='',observer;
@@ -4985,14 +6341,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           lastTs=running?ts:null;
           if(time>=p.summary.duration&&!paused){paused=true;upd('tliPaused',true);}
           var s=mmTliSample(p,time),geometry=mmDrawTliScene(ctx,W,H,s,p,{view:view,orbitTime:orbitTime});
-          cv.dataset.tliTime=String(time);cv.dataset.tliAltitude=String(s.altitude);cv.dataset.tliSpeed=String(s.speed);cv.dataset.tliMass=String(s.mass);cv.dataset.tliEnergy=String(s.energy);cv.dataset.tliThrust=String(s.thrust);cv.dataset.tliPlume=String(geometry.plume);cv.dataset.tliRecorded=String(recorded);cv.dataset.tliAcceleration=String(s.properAcceleration);
-          var root=cv.closest('[data-tli-workspace]'),values={time:s.time.toFixed(1)+' s',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',radial:s.radialSpeed.toFixed(1)+' m/s',mass:s.mass.toFixed(0)+' kg',fuel:s.propellant.toFixed(0)+' kg',acceleration:s.properAcceleration.toFixed(2)+' m/s²',deltaV:(s.deltaV/1000).toFixed(3)+' km/s',energy:(s.energy/1e6).toFixed(3)+' MJ/kg',apogee:s.apogee===null?'Open escape path':(s.apogee/1000).toLocaleString(undefined,{maximumFractionDigits:0})+' km altitude'};
+          cv.dataset.tliEarthTick=String(geometry.earthTick);cv.dataset.tliTime=String(time);cv.dataset.tliAltitude=String(s.altitude);cv.dataset.tliSpeed=String(s.speed);cv.dataset.tliMass=String(s.mass);cv.dataset.tliEnergy=String(s.energy);cv.dataset.tliThrust=String(s.thrust);cv.dataset.tliPlume=String(geometry.plume);cv.dataset.tliRecorded=String(recorded);cv.dataset.tliAcceleration=String(s.properAcceleration);cv.dataset.tliSun=geometry.sunlight?geometry.sunlight.phase:'unavailable';cv.dataset.tliSunFraction=geometry.sunlight?String(geometry.sunlight.fraction):'';
+          var root=cv.closest('[data-tli-workspace]'),values={sun:geometry.sunlight?(geometry.sunlight.phase==='total'?'Earth shadow':geometry.sunlight.phase==='partial'?'Partial sunlight':'Full sunlight')+' · '+(geometry.sunlight.fraction*100).toFixed(1)+'%':'Unavailable',time:s.time.toFixed(1)+' s',altitude:(s.altitude/1000).toFixed(1)+' km',speed:(s.speed/1000).toFixed(3)+' km/s',radial:s.radialSpeed.toFixed(1)+' m/s',mass:s.mass.toFixed(0)+' kg',fuel:s.propellant.toFixed(0)+' kg',acceleration:s.properAcceleration.toFixed(2)+' m/s²',deltaV:(s.deltaV/1000).toFixed(3)+' km/s',energy:(s.energy/1e6).toFixed(3)+' MJ/kg',apogee:s.apogee===null?'Open escape path':(s.apogee/1000).toLocaleString(undefined,{maximumFractionDigits:0})+' km altitude'};
           if(root){root.querySelectorAll('[data-tli-value]').forEach(function(el){el.textContent=values[el.dataset.tliValue];});var seek=root.querySelector('[data-tli-seek]');if(seek&&document.activeElement!==seek){seek.max=String(p.summary.duration);seek.value=String(time);}}
           if(!running||ts-lastSave>500){persist();lastSave=ts;}requestAnimationFrame(paint);
         }requestAnimationFrame(paint);
       }}),
+      h('p',{id:'mm-tli-light-note','data-tli-light-note':true,style:{fontSize:'12px',lineHeight:1.6,color:'#cbd5e1',margin:'10px 0'}},'Earth and spacecraft share a fixed Sun: rightward in the orbit view, rotated with the close camera. Earth can hide part or all of the solar disc. Hull shading follows its surfaces; a 24% shade exposure keeps it visible. Continents and clouds keep rotating from the parking-orbit clock. The thin atmospheric limb fades with altitude and local sunlight; its color and exposure are illustrative, using an 8.5 km density scale height. Earth’s ocean, land and clouds share solar-angle shading with 8% night exposure. Ocean reflections follow the Sun and viewing direction. Selected cities glow through twilight and dim under clouds and near the horizon. Locations follow Natural Earth; light spread and brightness are illustrative, not measured 1969 night lights. Globe geography, surface roughness, exposure and exhaust brightness are illustrative.'),
       h('dl',{'data-tli-readouts':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(125px,1fr))',gap:'12px',margin:'14px 0'}},
-        [['time','Time since ignition'],['altitude','Earth altitude'],['speed','Inertial speed'],['radial','Radial speed · up +'],['mass','Attached stack mass'],['fuel','S-IVB propellant left'],['acceleration','Engine acceleration'],['deltaV','Ideal engine Δv'],['energy','Specific orbital energy'],['apogee','If engine stops now']].map(function(item){return h('div',{key:item[0]},h('dt',{style:{fontSize:'12px',color:'#cbd5e1'}},item[1]),h('dd',{'data-tli-value':item[0],style:{margin:0,fontSize:'15px',fontWeight:700,minHeight:'24px'}},'—'));})),
+        [['time','Time since ignition'],['altitude','Earth altitude'],['speed','Inertial speed'],['radial','Radial speed · up +'],['mass','Attached stack mass'],['fuel','S-IVB propellant left'],['acceleration','Engine acceleration'],['deltaV','Ideal engine Δv'],['energy','Specific orbital energy'],['apogee','If engine stops now'],['sun','Sunlight at spacecraft']].map(function(item){return h('div',{key:item[0]},h('dt',{style:{fontSize:'12px',color:'#cbd5e1'}},item[1]),h('dd',{'data-tli-value':item[0],style:{margin:0,fontSize:'15px',fontWeight:700,minHeight:'24px'}},'—'));})),
       h('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center'}},
         h('button',{type:'button','data-tli-pause':true,style:button,onClick:function(ev){action(ev,'pause',!d.tliPaused);}},d.tliPaused?'Play injection':'Pause injection'),
         h('label',{style:{fontSize:'13px'}},'Playback speed ',h('select',{'data-tli-rate':true,'aria-label':t("stem.moonmission.a11y_tli_playback_speed", 'TLI playback speed'),style:button,value:d.tliPlaybackRate,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60].map(function(n){return h('option',{key:n,value:n},n+'×');}))),
@@ -5759,16 +7116,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       (s.excessSpeed===null?'A longer burn is needed to reach positive escape energy.':'Lunar excess speed '+(s.excessSpeed/1000).toFixed(3)+' km/s; outgoing direction '+s.directionError.toFixed(1)+' degrees from the fixed Earth direction.')+
       (s.fuelExhausted?' Fuel exhausted before commanded cutoff.':'');
   }
+  // The enlarged CSM is centered on its drawing bounds, not a calculated CG.
+  // Port and nozzle coordinates describe that illustration; the scene ring
+  // remains at the model's physical spacecraft position.
+  function mmDepartureCraftGeometry(x, y, scale, angle) {
+    if (![x, y, scale, angle].every(Number.isFinite) || scale <= 0) return null;
+    var c = Math.cos(angle), s = Math.sin(angle), offset = 38.5 * scale;
+    var g = { centerX: x, centerY: y, scale: scale, angle: angle,
+      portX: x - offset * c, portY: y - offset * s, nozzleX: x + offset * c, nozzleY: y + offset * s,
+      exhaustX: c, exhaustY: s, thrustX: -c, thrustY: -s };
+    return [g.portX, g.portY, g.nozzleX, g.nozzleY].every(Number.isFinite) ? g : null;
+  }
+
+  function mmDrawDepartureCSM(ctx, x, y, scale, angle, opts) {
+    var g = mmDepartureCraftGeometry(x, y, scale, angle); if (!ctx || !g) return null;
+    opts = opts || {};
+    var firing = opts.engineOn === true && opts.thrust > 0, time = Number.isFinite(opts.time) ? opts.time : 0;
+    var lighting = mmOrbitalCraftLight(opts.sunlight, angle);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle); ctx.scale(scale, scale); ctx.translate(-38.5, 0);
+    // A vacuum expansion begins at the actual drawn bell. Its brightness is
+    // illustrative and independent of the hull's eclipse response.
+    if (firing) {
+      var exhaust = ctx.createLinearGradient(77, 0, 140, 0);
+      exhaust.addColorStop(0, 'rgba(255,243,220,0.54)'); exhaust.addColorStop(0.24, 'rgba(221,211,248,0.17)'); exhaust.addColorStop(1, 'rgba(206,199,243,0)');
+      ctx.fillStyle = exhaust; ctx.globalAlpha = 0.97 + 0.03 * Math.sin(time * 17.1);
+      ctx.beginPath(); ctx.moveTo(77, -10); ctx.bezierCurveTo(94, -11, 116, -22, 139, -30);
+      ctx.quadraticCurveTo(149, 0, 139, 30); ctx.bezierCurveTo(116, 22, 94, 11, 77, 10); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+    }
+    mmDrawDockingCSM(ctx, 0, 0, 1, { orbitLight: lighting }); ctx.restore();
+    return Object.assign(g, { engineVisible: firing, plumeVisible: firing, sunlight: lighting });
+  }
+
   function mmDrawDeparture(ctx,w,h,s,p,view) {
     var escape=view==='escape',pad=28,span=escape?Math.max(2.4e6,p.maximumRadius*1.12):2.8e6;
     var scale=Math.min(w-2*pad,h-110)/(2*span),cx=w/2,cy=(h+25)/2;
     function point(x,y){return {x:cx+x*scale,y:cy-y*scale};}
-    ctx.save();ctx.fillStyle='#07111f';ctx.fillRect(0,0,w,h);
+    var sunAngle=45,sunlight=mmLunarSunlight(s,sunAngle);
+    ctx.save();ctx.fillStyle='#07111f';ctx.fillRect(0,0,w,h);drawStarfield(ctx,w,h,0,65);
     ctx.fillStyle='#cbd5e1';ctx.font='11px monospace';ctx.fillText('MOON FRAME / '+(escape?'DEPARTURE COAST':'BURN VIEW'),14,22);
     ctx.fillStyle='#7dd3fc';ctx.fillText('Earth direction',14,42);ctx.beginPath();ctx.moveTo(150,38);ctx.lineTo(120,38);ctx.lineTo(126,34);ctx.moveTo(120,38);ctx.lineTo(126,42);ctx.strokeStyle='#7dd3fc';ctx.stroke();
-    var mr=MM_LOI.radius*scale;ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.fillStyle='#64748b';ctx.fill();ctx.strokeStyle='#cbd5e1';ctx.stroke();
-    ctx.save();ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.clip();ctx.fillStyle='#475569';
-    [[-.4,.2,.12],[.2,-.4,.18],[.45,.28,.11],[-.1,-.13,.2],[-.55,-.45,.08]].forEach(function(c){ctx.beginPath();ctx.arc(cx+c[0]*mr,cy+c[1]*mr,c[2]*mr,0,Math.PI*2);ctx.fill();});ctx.restore();
+    var mr=MM_LOI.radius*scale;mmDrawLunarOrbitLight(ctx,cx,cy,mr,sunAngle);
+    ctx.beginPath();ctx.arc(cx,cy,mr,0,Math.PI*2);ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.stroke();
     ctx.setLineDash([4,5]);ctx.strokeStyle='#94a3b8';ctx.beginPath();ctx.arc(cx,cy,(MM_LOI.radius+MM_DEPARTURE.altitude)*scale,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
     ctx.save();ctx.beginPath();ctx.rect(pad,55,w-2*pad,h-85);ctx.clip();
     var segments=[{from:0,to:MM_DEPARTURE.preburn,color:'#94a3b8'},{from:MM_DEPARTURE.preburn,to:p.cutoffTime,color:'#fb923c'},{from:p.cutoffTime,to:s.time,color:'#67e8f9'}];
@@ -5777,18 +7165,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if(asymptote!==null){var c=point(p.orbit.asymptoteX,p.orbit.asymptoteY);ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x+Math.cos(asymptote)*span*3*scale,c.y-Math.sin(asymptote)*span*3*scale);ctx.strokeStyle='#c4b5fd';ctx.setLineDash([6,5]);ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([]);}
     var z=point(s.x,s.y),radioEnd=s.earth.hit||s.earth.target,rz=point(radioEnd.x,radioEnd.y);
     ctx.beginPath();ctx.moveTo(z.x,z.y);ctx.lineTo(rz.x,rz.y);ctx.strokeStyle=!s.earth.visible?'#fda4af':'#7dd3fc';ctx.lineWidth=1;ctx.setLineDash([2,5]);ctx.stroke();ctx.setLineDash([]);
-    ctx.translate(z.x,z.y);var heading=-Math.atan2(s.vy,s.vx);ctx.rotate(heading);
-    if(s.engineOn){ctx.beginPath();ctx.moveTo(-19,-4);ctx.lineTo(-40,0);ctx.lineTo(-19,4);ctx.fillStyle='#fdba74';ctx.fill();}
-    ctx.fillStyle='#e2e8f0';ctx.fillRect(-18,-5,17,10);ctx.strokeStyle='#94a3b8';ctx.strokeRect(-18,-5,17,10);ctx.beginPath();ctx.moveTo(-1,-7);ctx.lineTo(12,0);ctx.lineTo(-1,7);ctx.closePath();ctx.fillStyle='#f8fafc';ctx.fill();ctx.restore();
-    z=point(s.x,s.y);var len=26+Math.min(20,s.speed/100),vx=s.vx/s.speed,vy=-s.vy/s.speed;
-    ctx.beginPath();ctx.moveTo(z.x,z.y);ctx.lineTo(z.x+vx*len,z.y+vy*len);ctx.strokeStyle='#86efac';ctx.lineWidth=1.5;ctx.stroke();
+    var craftScale=Math.min(0.62,Math.max(0.42,w/1600)),heading=Math.atan2(-s.vy,s.vx)+Math.PI;
+    var spacecraft=mmDrawDepartureCSM(ctx,z.x,z.y,craftScale,heading,{time:s.time,engineOn:s.engineOn,thrust:s.thrust,sunlight:sunlight});
+    ctx.restore();
+    z=point(s.x,s.y);var speed=Math.hypot(s.vx,s.vy),len=26+Math.min(20,speed/100);
+    if(speed>0)mmAscentVector(ctx,z.x,z.y,s.vx/speed*len,-s.vy/speed*len,'#86efac');
+    ctx.beginPath();ctx.arc(z.x,z.y,2.8,0,Math.PI*2);ctx.strokeStyle='#020713';ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle='#f8fafc';ctx.lineWidth=1;ctx.stroke();
     ctx.fillStyle='#cbd5e1';ctx.font='10px monospace';ctx.fillText('Orange: burn  Cyan: coast',14,h-29);ctx.fillText('Purple: escape asymptote',14,h-14);
     var bar=Math.min(70,w*.2),km=bar/scale/1000;ctx.beginPath();ctx.moveTo(w-14-bar,h-31);ctx.lineTo(w-14,h-31);ctx.strokeStyle='#cbd5e1';ctx.stroke();ctx.textAlign='right';ctx.fillText(km.toFixed(0)+' km',w-14,h-38);ctx.restore();
-    return {scale:scale,scaleX:scale,scaleY:scale,radioEnd:rz,cx:cx,cy:cy,moonRadius:mr,craft:point(s.x,s.y),plumeVisible:s.engineOn,asymptoteVisible:asymptote!==null,radioBlocked:!s.earth.visible};
+    return {scale:scale,scaleX:scale,scaleY:scale,radioEnd:rz,cx:cx,cy:cy,moonRadius:mr,craft:point(s.x,s.y),plumeVisible:spacecraft.plumeVisible,asymptoteVisible:asymptote!==null,radioBlocked:!s.earth.visible,spacecraft:spacecraft,sunlight:sunlight,sunAngle:sunAngle};
   }
   try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{departure:MM_DEPARTURE,departurePlan:mmDeparturePlan,departureFuel:mmDepartureFuel,
     departureStep:mmDepartureStep,departureElements:mmDepartureElements,departureProfile:mmDepartureProfile,departureSample:mmDepartureSample,
-    cleanDeparture:mmCleanDeparture,drawDeparture:mmDrawDeparture});}catch(e){}
+    cleanDeparture:mmCleanDeparture,drawDeparture:mmDrawDeparture,departureCraftGeometry:mmDepartureCraftGeometry,drawDepartureCSM:mmDrawDepartureCSM});}catch(e){}
 
   // Atmospheric entry: planar point-mass dynamics in SI, on a nonrotating sphere.
   // The rounded 122 km / 11.03 km/s interface is an explicit Apollo-like preset;
@@ -9147,6 +10536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       }
       _mmAnimPaused = animPaused;
       _mmMoonLabels = !!d.moonLabels;
+      _mmAtlasSite = mmLunarAtlasSite(d.lunarAtlasSite);
       _mmTrueScale = !!d.trueScale;
       _mmEntryAngle = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
       // Audio control (WCAG 1.4.2): the phase ambience loops indefinitely once a phase
@@ -11266,6 +12656,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       orbitTime = mmOrbitSnapshot(orbitTime, orbitRate).nextWindowTime;
                       orbitPaused = true; upd('orbitPaused', true);
                     }
+                    if (action === 'inspect' && (value === 'sunset' || value === 'sunrise')) {
+                      var eclipse = mmOrbitIllumination(orbitTime);
+                      if (!(value === 'sunset' ? eclipse.inspectSunsetAvailable : eclipse.inspectSunriseAvailable)) return;
+                      orbitTime = value === 'sunset' ? eclipse.inspectSunsetTime : eclipse.inspectSunriseTime;
+                      orbitPaused = true; orbitRate = 1; upd('orbitPaused', true); upd('orbitPlaybackRate', 1);
+                    }
                     orbitLastTs = null; publishOrbit(true);
                   };
                   function orbitVisibilityChanged() { orbitLastTs = null; if (document.contains(cvEl)) publishOrbit(true); }
@@ -11293,19 +12689,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var running = !_mmAnimPaused && !orbitPaused && !document.hidden;
                     if (running && mmNum(ts) && orbitLastTs !== null) orbitTime = Math.min(1e6, orbitTime + Math.min(0.25, Math.max(0, (ts - orbitLastTs) / 1000)) * orbitRate);
                     orbitLastTs = running && mmNum(ts) ? ts : null;
-                    var sample = publishOrbit(orbitWasRunning && !running), inWindow = sample.inWindow;
+                    var sample = publishOrbit(orbitWasRunning && !running), inWindow = sample.inWindow, sunlight = mmOrbitIllumination(sample.time);
                     orbitWasRunning = running;
                     cvEl.dataset.orbitTime = String(sample.time); cvEl.dataset.orbitWindow = sample.state;
                     cvEl.dataset.orbitAltitude = String(sample.altitude); cvEl.dataset.orbitSpeed = String(sample.speed);
                     cvEl.dataset.orbitPeriod = String(sample.period); cvEl.dataset.orbitEngine = 'off';
                     cvEl.dataset.orbitSunrises = String(sample.sunrises); cvEl.dataset.orbitShadow = String(sample.inShadow);
+                    cvEl.dataset.orbitSun = sunlight.phase; cvEl.dataset.orbitSunFraction = String(sunlight.fraction);
                     var workspace = cvEl.closest('[data-orbit-workspace]');
                     if (workspace) {
                       var values = { time: (sample.time / 60).toFixed(1) + ' min', altitude: (sample.altitude / 1000).toFixed(0) + ' km',
                         speed: (sample.speed / 1000).toFixed(3) + ' km/s', period: (sample.period / 60).toFixed(2) + ' min',
                         orbits: sample.orbits.toFixed(2), gravity: sample.gravity.toFixed(2) + ' m/s²',
-                        sunrises: String(sample.sunrises), light: sample.inShadow ? 'Earth shadow' : 'Sunlit', engine: 'Coasting — engine off' };
+                        sunrises: String(sample.sunrises), light: mmOrbitLightLabel(sunlight), solar: (100 * sunlight.fraction).toFixed(1) + '% visible',
+                        contact: mmOrbitContactLabel(sunlight), engine: 'Coasting — engine off' };
                       workspace.querySelectorAll('[data-orbit-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-orbit-value')] || ''; });
+                      var occultor = workspace.querySelector('[data-orbit-occultor]');
+                      if (occultor) occultor.setAttribute('cx', String(50 + (sample.angDiff < 0 ? 1 : -1) * 32 * sunlight.separation / sunlight.sunAngularRadius));
+                      workspace.querySelectorAll('[data-orbit-inspect]').forEach(function(button) { button.disabled = !(button.getAttribute('data-orbit-inspect') === 'sunset' ? sunlight.inspectSunsetAvailable : sunlight.inspectSunriseAvailable); });
                     }
                     ctx.clearRect(0, 0, W, HL); ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, HL);
                     drawStarfield(ctx, W, HL, 0, 100);
@@ -11313,7 +12714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var eR = Math.min(HL * 0.22, W * 0.17), orbR = eR + 28, orbRy = orbR * 0.92;
                     var tilt = -0.12, ct = Math.cos(tilt), st = Math.sin(tilt);
                     // Earth rotation uses the same model seconds as the orbit.
-                    drawDetailedEarth(ctx, eX, eY, eR, sample.time * (360 / 86164) / MM_EARTH_DEG_PER_TICK, 0);
+                    drawDetailedEarth(ctx, eX, eY, eR, mmEarthRotationTick(sample.time), 0, undefined, { surfaceLight: true, thinAtmosphere: true, oceanGlint: true, sphericalClouds: true, urbanLights: true });
                     ctx.strokeStyle = 'rgba(148,163,184,0.45)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
                     ctx.beginPath(); ctx.ellipse(eX, eY, orbR, orbRy, tilt, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
                     var moonX = W - 28, moonY = HL * 0.45, moonR = 10;
@@ -11340,10 +12741,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var inward = Math.atan2(eY - scY, eX - scX);
                     orbitArrow(scX, scY, Math.cos(inward) * 22, Math.sin(inward) * 22, '#fbbf24');
                     ctx.save(); ctx.translate(scX, scY); ctx.rotate(tangent + Math.PI / 2);
-                    ctx.globalAlpha = sample.inShadow ? 0.65 : 1;
+                    // Match the globe's fixed screen-right Sun in the rotating hull frame.
+                    // Earth shadow removes direct light, not the opacity of the spacecraft.
+                    var parkingLight = mmOrbitalCraftLight(sunlight, tangent + Math.PI / 2);
                     var actualStack = MM_SATURN_V.slice(1, 6).reduce(function(total, section) { return total + section.h; }, 0) + MM_SATURN_BELLS.s4b[0];
                     var craftScale = 42 / actualStack, top = -21 - MM_SATURN_V[0].h * craftScale;
-                    mmDrawSaturnV(ctx, 0, top, MM_SATURN_V_H * craftScale, 3, { les: false });
+                    mmDrawSaturnV(ctx, 0, top, MM_SATURN_V_H * craftScale, 3, { les: false, orbitLight: parkingLight });
                     ctx.restore();
                     ctx.fillStyle = 'rgba(15,23,42,0.8)'; ctx.fillRect(8, 8, W - 16, 26);
                     ctx.textAlign = 'center'; ctx.font = 'bold 12px system-ui'; ctx.fillStyle = inWindow ? '#86efac' : '#e2e8f0';
@@ -11361,10 +12764,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.low_earth_orbit', 'Low Earth Orbit')),
               h('p', { id: 'mm-earth-orbit-description', className: 'text-xs text-slate-300' },
-                'Circular reference orbit at 185 km. S-IVB stays attached for the trans-lunar burn; the lunar module is enclosed inside its adapter.')
+                'Circular reference orbit at 185 km. S-IVB stays attached for the trans-lunar burn; the lunar module is enclosed inside its adapter. Sunlight comes from the right. Hull shading follows its curved surfaces. Earth gradually covers the solar disc during eclipse entry and uncovers it at exit. A 24% shade exposure keeps the stack visible. Earth’s ocean, land and clouds share solar-angle shading with 8% night exposure. The thin atmospheric rim follows sunlight at the globe’s scale. Ocean reflections follow the Sun and viewing direction; brightness and surface roughness are illustrative. Selected cities glow through twilight and dim under clouds and near the horizon. Locations follow Natural Earth; light spread and brightness are illustrative, not measured 1969 night lights.')
             ),
             (function() {
-              var sample = mmOrbitSnapshot(d.orbitRun && d.orbitRun.time, d.orbitPlaybackRate);
+              var sample = mmOrbitSnapshot(d.orbitRun && d.orbitRun.time, d.orbitPlaybackRate), sunlight = mmOrbitIllumination(sample.time);
               var paused = d.orbitPaused === true || animPaused;
               function action(name, value, event) {
                 var panel = event && event.currentTarget && event.currentTarget.closest('[data-orbit-workspace]');
@@ -11379,7 +12782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 else if (name === 'pause') { upd('orbitPaused', value); if (!value) upd('animPaused', false); }
               }
               var buttonStyle = 'min-h-[44px] px-3 rounded-lg border border-slate-500 bg-slate-800 text-xs font-bold text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-300';
-              return h('section', { 'data-orbit-instruments': true, className: 'rounded-xl border border-slate-600 bg-slate-900 p-3 mb-3' },
+              return h('div', null, h('section', { 'data-orbit-instruments': true, className: 'rounded-xl border border-slate-600 bg-slate-900 p-3 mb-3' },
                 h('h5', { className: 'text-sm font-bold text-sky-200 mb-3' }, 'Parking orbit instruments'),
                 h('dl', { className: 'gap-3 mb-3 text-xs', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))' } }, [
                   ['time', 'Model elapsed', (sample.time / 60).toFixed(1) + ' min'],
@@ -11388,8 +12791,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['period', 'Orbital period', (sample.period / 60).toFixed(2) + ' min'],
                   ['orbits', 'Orbits completed', sample.orbits.toFixed(2)],
                   ['gravity', 'Gravity', sample.gravity.toFixed(2) + ' m/s\u00b2'],
-                  ['sunrises', 'Sunrises passed', String(sample.sunrises)],
-                  ['light', 'Illumination', sample.inShadow ? 'Earth shadow' : 'Sunlit']
+                  ['sunrises', 'Sun center rises', String(sample.sunrises)],
+                  ['light', 'Illumination', mmOrbitLightLabel(sunlight)]
                 ].map(function(metric) { return h('div', { key: metric[0] }, h('dt', { className: 'text-slate-300' }, metric[1]),
                   h('dd', { className: 'text-white font-bold mt-1', 'data-orbit-value': metric[0] }, metric[2])); })),
                 h('p', { className: 'text-xs text-sky-200 mb-3', 'data-orbit-value': 'engine' }, 'Coasting \u2014 engine off'),
@@ -11408,7 +12811,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('summary', { className: 'min-h-[44px] flex items-center cursor-pointer text-sky-200' }, 'How this orbit model works'),
                   h('p', { className: 'leading-relaxed mb-2' }, 'This separate parking-orbit reference uses a circular path at 185 km around a spherical Earth. Speed follows v = √(μ/r), and period follows T = 2πr/v. Gravity is still about ' + sample.gravity.toFixed(1) + ' m/s\u00b2; the crew feels weightless because the vehicle is in free fall.'),
                   h('p', { className: 'leading-relaxed mb-2' }, 'The orbit height, spacecraft and Moon are enlarged for readability. At true scale, 185 km is only ' + (100 * MM_ORBIT.altitude / MM_ORBIT.radius).toFixed(1) + '% of Earth’s radius. The cyan arrow shows velocity direction; the amber arrow shows gravity direction. Their lengths are illustrative.'),
-                  h('p', { className: 'leading-relaxed' }, 'The ±20° arc and systems check after 1.35 orbits are a teaching exercise, not Apollo mission timing or a lunar targeting solution. The Moon and dashed transfer path are schematic. Commanding TLI opens the finite S-IVB burn model, where thrust, mass and orbital energy are integrated.')));
+                  h('p', { className: 'leading-relaxed' }, 'The ±20° arc and systems check after 1.35 orbits are a teaching exercise, not Apollo mission timing or a lunar targeting solution. The Moon and dashed transfer path are schematic. Commanding TLI opens the finite S-IVB burn model, where thrust, mass and orbital energy are integrated.'))),
+h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', padding: '12px', marginBottom: '12px', border: '1px solid #475569', borderRadius: '10px', background: '#070f20' } },
+                  h('svg', { 'data-orbit-solar-disc': true, 'aria-hidden': 'true', viewBox: '0 0 100 100', style: { width: '90px', height: '90px', flexShrink: 0 } },
+                    h('defs', null, h('clipPath', { id: 'mm-orbit-solar-clip' }, h('circle', { cx: 50, cy: 50, r: 32 }))),
+                    h('circle', { cx: 50, cy: 50, r: 39, fill: 'none', stroke: '#334155', strokeDasharray: '2 4' }),
+                    h('circle', { cx: 50, cy: 50, r: 32, fill: '#fde68a' }),
+                    h('circle', { 'data-orbit-occultor': true, cx: 50 + (sample.angDiff < 0 ? 1 : -1) * 32 * sunlight.separation / sunlight.sunAngularRadius, cy: 50,
+                      r: 32 * sunlight.earthAngularRadius / sunlight.sunAngularRadius, fill: '#070f20', clipPath: 'url(#mm-orbit-solar-clip)' }),
+                    h('circle', { cx: 50, cy: 50, r: 32, fill: 'none', stroke: '#64748b', strokeWidth: 0.6 })),
+                  h('div', { style: { flex: '1 1 160px', minWidth: 0 } },
+                    h('h6', { style: { fontSize: '13px', fontWeight: 700, color: '#fde68a', margin: '0 0 4px' } }, 'Sun seen from the spacecraft'),
+                    h('p', { 'data-orbit-value': 'solar', style: { fontSize: '20px', fontWeight: 700, color: '#f8fafc', margin: '0 0 4px', fontVariantNumeric: 'tabular-nums' } }, (100 * sunlight.fraction).toFixed(1) + '% visible'),
+                    h('p', { 'data-orbit-value': 'contact', style: { fontSize: '12px', color: '#cbd5e1', margin: 0 } }, mmOrbitContactLabel(sunlight))),
+                  h('p', { style: { flexBasis: '100%', fontSize: '12px', lineHeight: 1.6, color: '#cbd5e1', margin: 0 } }, 'Magnified solar disc; dark area is Earth. Each partial transition lasts ' + sunlight.penumbraSeconds.toFixed(1) + ' model seconds. Inspect jumps forward to a half-covered Sun, pauses, and selects 1× playback. Sun center rises counts the center crossing Earth’s limb. Fixed distant Sun; atmosphere and limb darkening omitted.'),
+                  ['sunset', 'sunrise'].map(function(kind) { return h('button', { key: kind, type: 'button', 'data-orbit-inspect': kind, className: buttonStyle,
+                    disabled: !(kind === 'sunset' ? sunlight.inspectSunsetAvailable : sunlight.inspectSunriseAvailable), onClick: function(e) { action('inspect', kind, e); } }, kind === 'sunset' ? 'Inspect sunset' : 'Inspect sunrise'); })));
             })(),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[0.6875rem] text-sky-300 font-bold mb-1' }, t('stem.moonmission.trans_lunar_injection_tli', '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)')),
@@ -11520,7 +12938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '10px 0' } },
                 h('label', { style: { fontSize: '12px' } }, 'View ', h('select', { 'data-transit-view': true, 'aria-label': t("stem.moonmission.a11y_transit_view", 'Transit view'), value: d.transitView, style: buttonStyle, onChange: function(ev) { transitControl(ev, 'view', ev.target.value); } }, h('option', { value: 'system' }, 'Earth\u2013Moon system'), h('option', { value: 'moon' }, 'Moon-relative approach'))),
                 h('button', { type: 'button', 'aria-pressed': !!d.trueScale, 'data-moonmission-true-scale': true, style: buttonStyle, onClick: function(ev) { transitControl(ev, 'scale', !d.trueScale); } }, 'Show true-size Earth and Moon')),
-              h('canvas', { 'data-transit-canvas': true, role: 'img', 'aria-label': t("stem.moonmission.a11y_measured_outbound_spacecraft_trajectory_and_moving_moon_switch_between_earth_centered_and", 'Measured outbound spacecraft trajectory and moving Moon. Switch between Earth-centered and Moon-relative views. Distances, speeds and engine status follow below.'), style: { display: 'block', width: '100%', height: '360px', borderRadius: '8px' }, ref: function(cv) {
+              h('canvas', { 'data-transit-canvas': true, role: 'img', 'aria-describedby': 'mm-transit-light-note', 'aria-label': t("stem.moonmission.a11y_measured_outbound_spacecraft_trajectory_and_moving_moon_switch_between_earth_centered_and", 'Measured outbound spacecraft trajectory and moving Moon. Switch between Earth-centered and Moon-relative views. Distances, speeds and engine status follow below.'), style: { display: 'block', width: '100%', height: '360px', borderRadius: '8px' }, ref: function(cv) {
                 if (!cv || cv._transitInit) return; cv._transitInit = true;
                 var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 360;
                 var profile = tp, plan = Object.assign({}, d.transitPlan), time = tr.time, recorded = tr.recorded, paused = !!d.transitPaused, rate = d.transitPlaybackRate, view = d.transitView, trueScale = !!d.trueScale;
@@ -11554,16 +12972,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cv.dataset.transitTime = String(time); cv.dataset.transitEarthDistance = String(sample.earthDistance); cv.dataset.transitMoonDistance = String(sample.moonDistance);
                   cv.dataset.transitEarthSpeed = String(sample.earthSpeed); cv.dataset.transitMoonSpeed = String(sample.moonSpeed); cv.dataset.transitMass = String(sample.mass);
                   cv.dataset.transitPropellant = String(sample.propellant); cv.dataset.transitThrust = String(sample.thrust); cv.dataset.transitEngine = sample.engineOn ? 'on' : 'off'; cv.dataset.transitPlume = picture && picture.plumeVisible ? 'on' : 'off';
-                  var values = { time: (time / 3600).toFixed(3) + ' h', earthDistance: (sample.earthDistance / 1000).toFixed(0) + ' km', moonDistance: (sample.moonDistance / 1000).toFixed(0) + ' km', earthSpeed: (sample.earthSpeed / 1000).toFixed(3) + ' km/s', moonSpeed: (sample.moonSpeed / 1000).toFixed(3) + ' km/s', mass: (sample.mass / 1000).toFixed(3) + ' t', propellant: sample.propellant.toFixed(1) + ' kg', thrust: (sample.thrust / 1000).toFixed(1) + ' kN' };
+                  cv.dataset.transitSun = picture.sunlight ? picture.sunlight.phase : 'unavailable'; cv.dataset.transitSunFraction = picture.sunlight ? String(picture.sunlight.fraction) : ''; cv.dataset.transitSunAngle = String(picture.sunAngle);
+                  var lightValue = picture.sunlight ? (picture.sunlight.phase === 'sunlit' ? 'Full sunlight' : picture.sunlight.phase === 'total' ? 'Total eclipse' : 'Partial eclipse') + ' · ' + (picture.sunlight.fraction * 100).toFixed(1) + '%' : 'Unavailable';
+                  var values = { sun: lightValue, time: (time / 3600).toFixed(3) + ' h', earthDistance: (sample.earthDistance / 1000).toFixed(0) + ' km', moonDistance: (sample.moonDistance / 1000).toFixed(0) + ' km', earthSpeed: (sample.earthSpeed / 1000).toFixed(3) + ' km/s', moonSpeed: (sample.moonSpeed / 1000).toFixed(3) + ' km/s', mass: (sample.mass / 1000).toFixed(3) + ' t', propellant: sample.propellant.toFixed(1) + ' kg', thrust: (sample.thrust / 1000).toFixed(1) + ' kN' };
                   var host = cv.closest('[data-transit-workspace]'); if (host) { host.querySelectorAll('[data-transit-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-transit-value')] || ''; }); var slider = host.querySelector('[data-transit-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time); var status = host.querySelector('[data-transit-status]'); if (status) status.textContent = sample.engineOn ? 'SPS correction firing' : time >= profile.summary.duration ? 'Trajectory complete' : 'Unpowered coast'; }
                   if (Number.isFinite(ts) && ts - lastPublish >= 250 || time >= profile.summary.duration) { lastPublish = ts; persist(); }
                   requestAnimationFrame(paint);
                 }
                 requestAnimationFrame(paint);
               } }),
+              h('p', { id: 'mm-transit-light-note', style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Earth, Moon and spacecraft share a fixed +Y Sun, upward in both views. The uniform solar disc has its apparent size at 1 au; Earth and Moon can cover it, and overlapping shadows count only once. The neutral Moon shows lighting in the orbital plane. Materials, atmospheric glow and raised eclipse exposure are illustrative; body-to-body eclipses are omitted. Stars stay steady.'),
               h('p', { 'data-transit-status': true, style: { color: '#a5f3fc', fontSize: '13px', fontWeight: 700, margin: '10px 0 4px' } }, 'Unpowered coast'),
               h('p', { 'data-moonmission-true-scale-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Positions and paths share one distance scale. Body icons are enlarged unless true size is selected; the spacecraft is always enlarged. Distances below are measured from each body\u2019s center.'),
-              h('dl', { 'data-transit-readouts': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } }, [['time', 'Time since injection'], ['earthDistance', 'Distance from Earth'], ['moonDistance', 'Distance from Moon'], ['earthSpeed', 'Earth-relative speed'], ['moonSpeed', 'Moon-relative speed'], ['mass', 'Docked stack mass'], ['propellant', 'SPS propellant'], ['thrust', 'SPS thrust']].map(function(item) {
+              h('dl', { 'data-transit-readouts': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } }, [['time', 'Time since injection'], ['earthDistance', 'Distance from Earth'], ['moonDistance', 'Distance from Moon'], ['earthSpeed', 'Earth-relative speed'], ['moonSpeed', 'Moon-relative speed'], ['mass', 'Docked stack mass'], ['propellant', 'SPS propellant'], ['thrust', 'SPS thrust'], ['sun', 'Visible solar disc']].map(function(item) {
                 return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-transit-value': item[0], 'data-transit-time': item[0] === 'time' ? true : undefined, style: { margin: 0, minHeight: '22px', color: '#f8fafc', fontWeight: 700, fontSize: '15px', fontVariantNumeric: 'tabular-nums' } }, '\u2014'));
               })),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' } },
@@ -11622,7 +13043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { role: 'group', 'aria-label': t("stem.moonmission.a11y_lunar_insertion_plans", 'Lunar insertion plans'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' } },
                 [['nominal', 'Nominal plan'], ['flyby', 'Compare no burn'], ['overburn', 'Compare long burn']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-loi-preset': item[0], style: buttonStyle, onClick: function(ev) { loiControl(ev, 'plan', item[0] === 'nominal' ? {} : { ignitionLead: MM_LOI.defaultLead, burnDuration: item[0] === 'flyby' ? 0 : 600 }); } }, item[1]); })),
               h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Reference perilune is the closest approach the incoming spacecraft would reach without an engine burn. The playback begins 900 seconds before that reference point.'),
-              h('canvas', { 'data-loi-canvas': true, role: 'img', 'aria-label': t("stem.moonmission.a11y_lunar_orbit_insertion_in_the_orbital_plane_measured_spacecraft_path_retrograde_engine_thru", 'Lunar orbit insertion in the orbital plane: measured spacecraft path, retrograde engine thrust, velocity, and geometric radio contact with Earth. Readouts follow below.'), style: { display: 'block', width: '100%', height: '340px', borderRadius: '8px' }, ref: function(cv) {
+              h('canvas', { 'data-loi-canvas': true, role: 'img', 'aria-describedby': 'mm-loi-light-note', 'aria-label': t("stem.moonmission.a11y_lunar_orbit_insertion_in_the_orbital_plane_measured_spacecraft_path_retrograde_engine_thru", 'Lunar orbit insertion in the orbital plane: measured spacecraft path, retrograde engine thrust, velocity, and geometric radio contact with Earth. Readouts follow below.'), style: { display: 'block', width: '100%', height: '340px', borderRadius: '8px' }, ref: function(cv) {
                 if (!cv || cv._loiInit) return; cv._loiInit = true;
                 var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 340;
                 var profile = lp, plan = Object.assign({}, d.loiPlan), time = lr.time, recorded = lr.recorded, paused = !!d.loiPaused, rate = d.loiPlaybackRate;
@@ -11657,14 +13078,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cv.dataset.loiMass = String(sample.mass); cv.dataset.loiPropellant = String(sample.propellant); cv.dataset.loiThrust = String(sample.thrust);
                   cv.dataset.loiEnergy = String(elements.energy); cv.dataset.loiPerilune = String(elements.perilune); cv.dataset.loiApolune = elements.apolune === null ? 'open' : String(elements.apolune);
                   cv.dataset.loiEngine = sample.engineOn ? 'on' : 'off'; cv.dataset.loiRadio = sample.radioVisible ? 'contact' : 'blocked'; cv.dataset.loiPlume = picture.plumeVisible ? 'on' : 'off';
-                  var values = { time: (time / 60).toFixed(2) + ' min', altitude: ((Math.abs(sample.altitude) < 0.05 ? 0 : sample.altitude) / 1000).toFixed(1) + ' km', speed: (sample.speed / 1000).toFixed(3) + ' km/s', radial: sample.radialSpeed.toFixed(1) + ' m/s', tangential: sample.tangentialSpeed.toFixed(1) + ' m/s', mass: (sample.mass / 1000).toFixed(2) + ' t', propellant: (sample.propellant / 1000).toFixed(2) + ' t', thrust: (sample.thrust / 1000).toFixed(1) + ' kN', energy: (elements.energy / 1000).toFixed(1) + ' kJ/kg', perilune: (elements.perilune / 1000).toFixed(1) + ' km', apolune: elements.apolune === null ? 'Open trajectory' : (elements.apolune / 1000).toFixed(1) + ' km', radio: sample.radioVisible ? 'Earth in view' : 'Loss of signal' };
+                  cv.dataset.loiSun = picture.sunlight ? picture.sunlight.phase : 'surface'; cv.dataset.loiSunFraction = picture.sunlight ? String(picture.sunlight.fraction) : ''; cv.dataset.loiSunAngle = String(picture.sunAngle);
+                  var values = { time: (time / 60).toFixed(2) + ' min', altitude: ((Math.abs(sample.altitude) < 0.05 ? 0 : sample.altitude) / 1000).toFixed(1) + ' km', speed: (sample.speed / 1000).toFixed(3) + ' km/s', radial: sample.radialSpeed.toFixed(1) + ' m/s', tangential: sample.tangentialSpeed.toFixed(1) + ' m/s', mass: (sample.mass / 1000).toFixed(2) + ' t', propellant: (sample.propellant / 1000).toFixed(2) + ' t', thrust: (sample.thrust / 1000).toFixed(1) + ' kN', energy: (elements.energy / 1000).toFixed(1) + ' kJ/kg', perilune: (elements.perilune / 1000).toFixed(1) + ' km', apolune: elements.apolune === null ? 'Open trajectory' : (elements.apolune / 1000).toFixed(1) + ' km', radio: sample.radioVisible ? 'Earth in view' : 'Loss of signal', sun: !picture.sunlight ? 'At lunar surface' : picture.sunlight.phase === 'total' ? 'Total eclipse' : picture.sunlight.phase === 'partial' ? 'Partial eclipse' : 'Full sunlight', sunFraction: picture.sunlight ? (picture.sunlight.fraction * 100).toFixed(1) + '%' : '\u2014' };
                   var host = cv.closest('[data-loi-workspace]'); if (host) { host.querySelectorAll('[data-loi-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-loi-value')] || ''; }); var slider = host.querySelector('[data-loi-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time); }
                   if (Number.isFinite(ts) && ts - lastPublish >= 250 || time >= profile.summary.duration) { lastPublish = ts; persist(); }
                   requestAnimationFrame(paint);
                 }
                 requestAnimationFrame(paint);
               } }),
-              h('dl', { 'data-loi-instruments': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } }, [['time', 'Encounter time'], ['altitude', 'Altitude'], ['speed', 'Moon-relative speed'], ['radial', 'Radial speed'], ['tangential', 'Tangential speed'], ['mass', 'Docked stack mass'], ['propellant', 'SPS propellant'], ['thrust', 'SPS thrust'], ['energy', 'Specific orbital energy'], ['perilune', 'Low point if cutoff now'], ['apolune', 'High point if cutoff now'], ['radio', 'Radio link']].map(function(item) {
+              h('p', { id: 'mm-loi-light-note', 'data-loi-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Sun ↗ 45° in the orbit plane: a fixed teaching preset. Moon shading follows spherical surface normals. Spacecraft sunlight measures the visible solar disc, including partial and total eclipse; Earth radio contact is calculated separately. Neutral material, brightness and star exposure are illustrative; the enlarged spacecraft is a diagram. Approximate hull facets follow the Sun; eclipse exposure is raised to keep the craft visible. Exhaust brightness stays illustrative.'),
+              h('dl', { 'data-loi-instruments': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } }, [['time', 'Encounter time'], ['altitude', 'Altitude'], ['speed', 'Moon-relative speed'], ['radial', 'Radial speed'], ['tangential', 'Tangential speed'], ['mass', 'Docked stack mass'], ['propellant', 'SPS propellant'], ['thrust', 'SPS thrust'], ['energy', 'Specific orbital energy'], ['perilune', 'Low point if cutoff now'], ['apolune', 'High point if cutoff now'], ['radio', 'Radio link'], ['sun', 'Spacecraft illumination'], ['sunFraction', 'Visible solar disc']].map(function(item) {
                 return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-loi-value': item[0], style: { margin: 0, minHeight: '22px', color: '#f8fafc', fontWeight: 700, fontSize: '15px', fontVariantNumeric: 'tabular-nums' } }, '\u2014'));
               })),
               h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'The low and high points describe the path if thrust stopped now. They change throughout the burn; the recorded result describes the completed plan.'),
@@ -11684,21 +13107,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p', null, 'This is a specified lunar arrival encounter, separate from the outbound navigation trajectory and its remaining SPS propellant. Earth perturbations, uneven lunar gravity, attitude dynamics and engine transients are omitted. Radio visibility uses a distant Earth direction and the physical lunar radius; display scale cannot change signal loss. The orbital-plane diagram and near-side geographic reference are separate views.'),
                 h('p', null, 'Review insertion result inspects the integrated trajectory immediately and awards no points. The later descent uses its own approach preset after undocking and descent-orbit preparation.'),
                 h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA Apollo 11 Mission Report'))),
-            h('section', { style: cardStyle }, h('h4', { style: { color: '#f8fafc', fontSize: '16px', margin: '0 0 8px' } }, 'Near-side landing reference'),
-              h('canvas', { 'data-lunar-atlas': true, role: 'img', 'aria-describedby': 'mm-lunar-orbit-description', 'aria-label': t('stem.moonmission.a11y_lunar_atlas_legacy_overview', 'Near-side lunar atlas: dark lava seas, bright rayed craters, Tranquility Base and optional labels for all six Apollo landing sites. Landing-day sunrise lies west of Tranquility Base.'), style: { display: 'block', width: '100%', height: '260px' }, ref: function(cv) {
+            h('section', { 'data-lunar-atlas-workspace': true, style: cardStyle }, h('h4', { style: { color: '#f8fafc', fontSize: '16px', margin: '0 0 8px' } }, 'Near-side landing reference'),
+              h('canvas', { 'data-lunar-atlas': true, role: 'img', 'aria-describedby': 'mm-lunar-orbit-description mm-lunar-atlas-selection mm-lunar-light-note', 'aria-label': t("stem.moonmission.a11y_near_side_lunar_atlas_under_the_apollo_11_daylight_preset_green_dot_tranquility_base_white", 'Near-side lunar atlas under the Apollo 11 daylight preset. Green dot: Tranquility Base. White ring: selected landing site. Optional numbers identify other Apollo sites and letters identify the lunar seas.'), style: { display: 'block', width: '100%', height: '400px' }, ref: function(cv) {
                 if (!cv || cv._atlasInit) return; cv._atlasInit = true;
-                var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 260, observer, lastLabels = null, dirty = true;
+                var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 400, observer, lastLabels = null, lastSite = null, dirty = true;
                 function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); dirty = true; }
                 resize(); if (typeof ResizeObserver === 'function') { observer = new ResizeObserver(resize); observer.observe(cv); }
-                function paint() { if (!document.contains(cv)) { if (observer) observer.disconnect(); return; } if (dirty || lastLabels !== _mmMoonLabels) { lastLabels = _mmMoonLabels; dirty = false; mmDrawLunarAtlas(ctx, width, height, { labels: _mmMoonLabels }); } requestAnimationFrame(paint); }
+                function paint() { if (!document.contains(cv)) { if (observer) observer.disconnect(); return; } if (dirty || lastLabels !== _mmMoonLabels || lastSite !== _mmAtlasSite) { lastLabels = _mmMoonLabels; lastSite = _mmAtlasSite; dirty = false; var view = mmDrawLunarAtlas(ctx, width, height, { labels: _mmMoonLabels, site: _mmAtlasSite }); cv.dataset.atlasSite = String(view.selectedSite); cv.dataset.atlasElevation = String(view.light.elevation); cv.dataset.atlasRadius = String(view.moonRadius); cv.dataset.atlasX = String(view.moonX); cv.dataset.atlasY = String(view.moonY); } requestAnimationFrame(paint); }
                 requestAnimationFrame(paint);
               } }),
               h('div', { id: 'mm-lunar-orbit-description', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', fontSize: '12px', margin: '8px 0' } },
                 [['Landing site', 'Mare Tranquillitatis'], ['Coordinates', '0.674\u00b0N, 23.473\u00b0E'], ['Docked spacecraft', 'Columbia + Eagle'], ['Crew preparation', 'CDR + LMP transfer to Eagle; CMP remains in Columbia']].map(function(item) { return h('div', { key: item[0] }, h('p', { style: { color: '#cbd5e1' } }, item[0]), h('p', { style: { color: '#f8fafc', fontWeight: 600 } }, item[1])); })),
               h('p', { 'data-moonmission-lunar-morning': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Lunar morning: Apollo 11 landed with the Sun about 11 degrees above the site, so the sunrise line lies just west of it and long shadows show boulders and craters. From Earth that day the Moon was a six-day-old crescent.'),
-              h('button', { type: 'button', 'aria-pressed': !!d.moonLabels, 'data-moonmission-moon-labels': true, style: buttonStyle, onClick: function() { upd('moonLabels', !d.moonLabels); } }, 'Show the seas and every Apollo landing site'),
+              h('label', { htmlFor: 'mm-lunar-atlas-site', style: { display: 'block', color: '#e2e8f0', fontSize: '13px', marginTop: '12px' } }, 'Inspect a landing site'),
+              h('select', { id: 'mm-lunar-atlas-site', 'data-lunar-atlas-select': true, value: _mmAtlasSite, style: { width: '100%', minHeight: '44px', margin: '6px 0', padding: '8px', borderRadius: '8px', background: '#0f172a', border: '1px solid #64748b', color: '#f8fafc', fontSize: '13px' }, onChange: function(e) { upd('lunarAtlasSite', mmLunarAtlasSite(Number(e.target.value))); } },
+                MM_MOON_SITES.map(function(site) { return h('option', { key: site.m, value: site.m }, 'Apollo ' + site.m + ' — ' + site.name); })),
+              (function() { var site = MM_MOON_SITES.filter(function(s) { return s.m === _mmAtlasSite; })[0], light = mmLunarLight(site.lon, site.lat, MM_TERMINATOR_LON);
+                return h('div', { id: 'mm-lunar-atlas-selection', 'data-lunar-atlas-selection': true, 'aria-live': 'polite', 'aria-atomic': true, style: { fontSize: '13px', color: '#f8fafc', lineHeight: 1.7, margin: '8px 0' } },
+                  h('strong', null, 'Apollo ' + site.m + ' — ' + site.name), h('div', null, Math.abs(site.lat).toFixed(3) + '\u00b0' + (site.lat < 0 ? 'S' : 'N') + ', ' + Math.abs(site.lon).toFixed(3) + '\u00b0' + (site.lon < 0 ? 'W' : 'E')),
+                  h('div', null, 'Sun elevation: ' + light.elevation.toFixed(1) + '\u00b0 · ' + (light.daylight ? 'Daylight' : 'Below the horizon') + ' in this preset')); })(),
+              h('p', { id: 'mm-lunar-light-note', 'data-lunar-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Compare every site under the same Apollo 11 daylight preset. Other missions landed on different dates. The Sun lies on the equator in this spherical model; surface normals determine its elevation. Terrain, the brightness curve and the faint earthshine are illustrative.'),
+              h('button', { type: 'button', 'aria-pressed': !!d.moonLabels, 'data-moonmission-moon-labels': true, style: buttonStyle, onClick: function() { upd('moonLabels', !d.moonLabels); } }, d.moonLabels ? 'Hide the sea keys and Apollo site numbers' : 'Show the seas and every Apollo landing site'),
               d.moonLabels && h('div', { 'data-moonmission-moon-sites': true, style: { fontSize: '12px', color: '#e2e8f0', marginTop: '8px' } }, h('p', null, 'All six landings were on the near side, the half that always faces Earth.'),
-                h('ul', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '4px', paddingLeft: '16px' } }, MM_MOON_SITES.map(function(site) { return h('li', { key: site.m }, 'Apollo ' + site.m + ' \u2014 ' + site.name); })))),
+                h('ul', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '4px', paddingLeft: '16px' } }, MM_MOON_SITES.map(function(site) { return h('li', { key: site.m }, 'Apollo ' + site.m + ' \u2014 ' + site.name); }))),
+              d.moonLabels && h('div', { 'data-lunar-atlas-sea-legend': true, style: { fontSize: '12px', color: '#e2e8f0' } }, h('p', { style: { marginTop: '12px' } }, 'Letters on the map identify the lunar seas:'), h('ul', { 'data-lunar-atlas-seas': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '4px', paddingLeft: '16px' } }, mmLunarSeas().map(function(mare) { return h('li', { key: mare.key }, mare.key + ' \u2014 ' + mare.label + ' (' + mare.name + ')'); })))),
             loiReady && h('button', {type:'button', 'data-environment-toggle':true, 'aria-expanded':!!d.lunarEnvironmentOpen, style:buttonStyle, onClick:function(){upd('lunarEnvironmentOpen',!d.lunarEnvironmentOpen);} }, d.lunarEnvironmentOpen ? 'Close radio and sunlight view' : 'Explore radio and sunlight in this orbit'),
             loiReady && d.lunarEnvironmentOpen && mmRenderLunarEnvironmentCard(h, d, upd, announceToSR, t),
             h('button', { type: 'button', 'data-loi-proceed': true, title: t("stem.moonmission.a11y_undock_lunar_module_eagle_from_command_module_columbia_after_a_verified_lunar_insertion_an", 'Undock Lunar Module Eagle from Command Module Columbia after a verified lunar insertion and prepare powered descent'), disabled: eventPending || !loiReady, className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed', onClick: function() {
@@ -15863,10 +17295,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('p', { style: { color: '#7dd3fc', fontSize: '11px', letterSpacing: '0.12em', margin: 0 } }, 'EAGLE / LUNAR ASCENT'),
               h('h3', { style: { color: '#f8fafc', fontSize: '19px', fontWeight: 700, margin: '5px 0' } }, 'From the surface to orbit'),
               h('p', { style: { fontSize: '12px', color: '#cbd5e1' } }, 'Fixed thrust \u00b7 pressure-fed ascent engine \u00b7 no backup engine'),
-              h('canvas', { 'data-ascent-canvas': true, role: 'img', 'aria-label': t("stem.moonmission.a11y_lunar_ascent_computed_altitude_downrange_engine_burn_and_insertion_orbit_measurements_are", 'Lunar ascent: computed altitude, downrange, engine burn and insertion orbit. Measurements are listed below.'), style: { display: 'block', width: '100%', height: '320px', borderRadius: '8px' }, ref: function(cv) {
+              h('label', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '13px', color: '#e2e8f0', margin: '12px 0' } }, 'Ascent view', h('select', { 'data-ascent-view-control': true, 'aria-label': t("stem.moonmission.a11y_ascent_view", 'Ascent view'), value: mmAscentView(d.ascentView), style: buttonStyle, onChange: function(ev) { ascentControl(ev, 'view', ev.target.value); } }, h('option', { value: 'auto' }, 'Automatic view'), h('option', { value: 'surface' }, 'Surface track'), h('option', { value: 'physical' }, 'Physical orbit + altitude'))),
+              h('canvas', { 'data-ascent-canvas': true, role: 'img', 'aria-describedby': 'mm-ascent-view-note', 'aria-label': t("stem.moonmission.a11y_lunar_ascent_computed_altitude_downrange_engine_burn_and_insertion_orbit_measurements_are", 'Lunar ascent: computed altitude, downrange, engine burn and insertion orbit. Measurements are listed below.'), style: { display: 'block', width: '100%', height: '460px', borderRadius: '8px' }, ref: function(cv) {
                 if (!cv || cv._ascentInit) return; cv._ascentInit = true;
-                var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 320;
-                var time = ar.time, recorded = ar.recorded, paused = !!d.ascentPaused, rate = d.ascentPlaybackRate;
+                var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 460;
+                var time = ar.time, recorded = ar.recorded, paused = !!d.ascentPaused, rate = d.ascentPlaybackRate, chosenView = mmAscentView(d.ascentView);
                 var lastTs = null, lastPublish = -Infinity, checkpoint = '', observer;
                 if (!recorded) upd('ascentResult', null);
                 function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); }
@@ -15880,6 +17313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 function visibility() { lastTs = null; persist(); }
                 document.addEventListener('visibilitychange', visibility);
                 cv._ascentAction = function(action, value) {
+                  if (action === 'view') { chosenView = mmAscentView(value); upd('ascentView', chosenView); return; }
                   if (action === 'seek') { time = Math.max(0, Math.min(ap.summary.duration, Number(value) || 0)); paused = true; upd('ascentPaused', true); }
                   if (action === 'result') { time = ap.summary.duration; paused = true; upd('ascentPaused', true); }
                   if (action === 'pause') { paused = !!value; upd('ascentPaused', paused); if (!paused) upd('animPaused', false); }
@@ -15891,20 +17325,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var running = !paused && !_mmAnimPaused && !document.hidden;
                   if (running && lastTs !== null) time = Math.min(ap.summary.duration, time + Math.max(0, Math.min(0.1, (ts - lastTs) / 1000)) * rate);
                   lastTs = running && Number.isFinite(ts) ? ts : null;
-                  var s = mmAscentSample(ap, time), view = mmDrawAscentScene(ctx, width, height, s, ap, { time: time, view: time >= ap.summary.duration ? 'orbit' : 'surface' });
+                  var s = mmAscentSample(ap, time), mode = chosenView === 'auto' ? time >= ap.summary.duration ? 'physical' : 'surface' : chosenView, view = mmDrawAscentScene(ctx, width, height, s, ap, { time: time, view: mode });
+                  cv.dataset.ascentSurfaceScale = mode === 'surface' ? String(view.pictureScale) : ''; cv.dataset.ascentOriginX = mode === 'surface' ? String(view.originX) : ''; cv.dataset.ascentOriginY = mode === 'surface' ? String(view.originY) : ''; cv.dataset.ascentArtX = mode === 'surface' ? String(view.artX) : ''; cv.dataset.ascentArtY = mode === 'surface' ? String(view.artY) : ''; cv.dataset.ascentAttitude = mode === 'surface' ? String(view.craftPitch) : '';
+                  cv.dataset.ascentSunX = mode === 'physical' ? String(view.moonLight.sunX) : ''; cv.dataset.ascentSunY = mode === 'physical' ? String(view.moonLight.sunY) : ''; cv.dataset.ascentSunZ = mode === 'physical' ? String(view.moonLight.sunZ) : ''; cv.dataset.ascentSunElevation = mode === 'physical' ? String(view.moonLight.launchElevationDeg) : ''; cv.dataset.ascentSunPreset = mode === 'physical' ? view.moonLight.preset : '';
+                  cv.dataset.ascentMapScale = mode === 'physical' ? String(view.pictureScale) : ''; cv.dataset.ascentMoonRadius = mode === 'physical' ? String(view.moonRadius) : ''; cv.dataset.ascentCraftX = String(view.craftX); cv.dataset.ascentCraftY = String(view.craftY); cv.dataset.ascentMoonX = mode === 'physical' ? String(view.moonX) : ''; cv.dataset.ascentMoonY = mode === 'physical' ? String(view.moonY) : ''; cv.dataset.ascentOrbitVisible = mode === 'physical' && view.orbit ? 'true' : 'false';
+                  cv.setAttribute('aria-label', mode === 'physical' ? 'Lunar ascent orbital-plane map with equal distance axes, spherical day and night under a fixed Sun preset, enlarged position marker and a separate measured altitude history. The gray dashed circle is Columbia’s 110 km reference orbit; the amber cutoff orbit appears after insertion is observed. Numerical measurements follow.' : 'Curved lunar surface in a launch-tangent plane with equal distance axes, a ring at the measured position, enlarged spacecraft artwork and measured velocity. Numerical measurements follow.');
+                  var direction = mmAscentFlightDirectorGeometry(width, 164, s);
+                  cv.dataset.ascentPitch = String(s.pitch); cv.dataset.ascentFlightPath = direction.pathAngleDeg === null ? '' : String(direction.pathAngleDeg); cv.dataset.ascentSurfaceThrustVisible = mode === 'surface' && view.thrustVisible ? 'true' : 'false';
+                  cv.dataset.ascentTerrainFeatures = String(view.terrain ? view.terrain.features.length : 0); cv.dataset.ascentTerrainCandidates = String(view.terrain ? view.terrain.candidateCount : 0);
+                  cv.dataset.ascentTerrainScale = mode === 'surface' ? String(view.pictureScale) : ''; cv.dataset.ascentTerrainVisible = view.terrainVisible ? 'true' : 'false';
                   cv.dataset.ascentTime = String(time); cv.dataset.ascentAltitude = String(s.altitude); cv.dataset.ascentSpeed = String(s.speed);
                   cv.dataset.ascentVertical = String(s.radialSpeed); cv.dataset.ascentHorizontal = String(s.tangentialSpeed);
                   cv.dataset.ascentMass = String(s.mass); cv.dataset.ascentPropellant = String(s.propellant); cv.dataset.ascentThrust = String(s.thrust);
                   cv.dataset.ascentEngine = s.engineOn ? 'on' : 'off'; cv.dataset.ascentPhase = s.phase; cv.dataset.ascentView = view.view;
-                  var values = { time: time.toFixed(1) + ' s', altitude: (s.altitude / 1000).toFixed(2) + ' km', speed: (s.speed / 1000).toFixed(3) + ' km/s', vertical: s.radialSpeed.toFixed(1) + ' m/s', horizontal: s.tangentialSpeed.toFixed(1) + ' m/s', mass: s.mass.toFixed(0) + ' kg', propellant: s.propellant.toFixed(1) + ' kg', thrust: (s.thrust / 1000).toFixed(2) + ' kN', load: s.loadG.toFixed(3) + ' g', downrange: (s.downrange / 1000).toFixed(1) + ' km' };
+                  var values = { time: time.toFixed(1) + ' s', altitude: (s.altitude / 1000).toFixed(2) + ' km', speed: (s.speed / 1000).toFixed(3) + ' km/s', vertical: s.radialSpeed.toFixed(1) + ' m/s', horizontal: s.tangentialSpeed.toFixed(1) + ' m/s', mass: s.mass.toFixed(0) + ' kg', propellant: s.propellant.toFixed(1) + ' kg', thrust: (s.thrust / 1000).toFixed(2) + ' kN', load: s.loadG.toFixed(3) + ' g', downrange: (s.downrange / 1000).toFixed(1) + ' km', pitch: mmAscentDirectionAngle(direction.pitchDeg), flightPath: direction.pathAngleDeg === null ? '— (at rest)' : mmAscentDirectionAngle(direction.pathAngleDeg) };
                   var host = cv.closest('[data-ascent-workspace]');
-                  if (host) { host.querySelectorAll('[data-ascent-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-ascent-value')] || ''; }); var slider = host.querySelector('[data-ascent-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time); }
+                  if (host) {
+                    mmPaintAscentAcceleration(host, s);
+                    host.querySelectorAll('[data-ascent-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-ascent-value')] || ''; }); var slider = host.querySelector('[data-ascent-seek]'); if (slider && document.activeElement !== slider) slider.value = String(time);
+                    var directionCanvas = host.querySelector('[data-ascent-attitude-canvas]');
+                    if (directionCanvas) {
+                      var directionWidth = directionCanvas.offsetWidth || width, directionHeight = 164, directionContext = directionCanvas.getContext('2d');
+                      if (directionContext) {
+                        if (directionCanvas.width !== directionWidth * 2 || directionCanvas.height !== directionHeight * 2) { directionCanvas.width = directionWidth * 2; directionCanvas.height = directionHeight * 2; }
+                        directionContext.setTransform(2, 0, 0, 2, 0, 0); direction = mmDrawAscentFlightDirector(directionContext, directionWidth, directionHeight, s);
+                        directionCanvas.dataset.directorPitch = String(direction.pitchDeg); directionCanvas.dataset.directorPath = direction.pathAngleDeg === null ? '' : String(direction.pathAngleDeg); directionCanvas.dataset.directorSpeed = String(direction.speed); directionCanvas.dataset.directorEngine = direction.engineVisible ? 'on' : 'off';
+                        directionCanvas.dataset.directorAxisX = String(direction.axis.x); directionCanvas.dataset.directorAxisY = String(direction.axis.y); directionCanvas.dataset.directorVelocityX = direction.velocity ? String(direction.velocity.x) : ''; directionCanvas.dataset.directorVelocityY = direction.velocity ? String(direction.velocity.y) : ''; directionCanvas.dataset.directorThrustX = direction.thrust ? String(direction.thrust.x) : ''; directionCanvas.dataset.directorThrustY = direction.thrust ? String(direction.thrust.y) : '';
+                        directionCanvas.dataset.directorCenterX = String(direction.cx); directionCanvas.dataset.directorCenterY = String(direction.cy); directionCanvas.dataset.directorRadius = String(direction.radius); directionCanvas.dataset.directorAxisLength = String(direction.axisLength); directionCanvas.dataset.directorVelocityLength = String(direction.velocityLength); directionCanvas.dataset.directorThrustLength = String(direction.thrustLength);
+                        directionCanvas.setAttribute('aria-label', 'Local ascent attitude. Pitch from local up ' + values.pitch + '. Flight path above local level ' + values.flightPath + '. Ascent engine ' + (direction.engineVisible ? 'firing' : 'off') + '. Arrow lengths are illustrative.');
+                      }
+                    }
+                  }
                   if (Number.isFinite(ts) && ts - lastPublish >= 250 || time >= ap.summary.duration) { lastPublish = ts; persist(); }
                   requestAnimationFrame(paint);
                 }
                 requestAnimationFrame(paint);
               } }),
-              h('div', { 'data-ascent-instruments': true }, metrics([['time', 'Burn time'], ['altitude', 'Altitude'], ['speed', 'Orbital speed'], ['vertical', 'Vertical speed'], ['horizontal', 'Sideways speed'], ['mass', 'Ascent stage mass'], ['propellant', 'APS propellant'], ['thrust', 'APS thrust'], ['load', 'Thrust load (Earth g)'], ['downrange', 'Downrange']], 'data-ascent-value')),
+              h('p', { id: 'mm-ascent-view-note', 'data-ascent-view-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Automatic view follows the curved surface until engine cutoff, then shows the physical orbit. The surface view uses a fixed launch-tangent plane. Surface texture is schematic and stays anchored to lunar coordinates. Its ring marks the measured position; enlarged spacecraft artwork is shifted above the ground when needed. In the orbit map, distance uses the same scale on both axes and the marker is enlarged. Cyan and amber arrows show velocity and thrust directions; their lengths are illustrative. Altitude history uses time and height on separate axes. Only flown history is shown. P marks perilune; A marks apolune. The gray dashed circle is Columbia’s separate 110 km reference orbit. The amber insertion ellipse appears only after cutoff and comes from the measured position and velocity.'),
+              h('p', { 'data-ascent-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Sunlight uses the same fixed morning preset as the lunar surface, 17° above the launch horizon. Surface normals determine the Moon’s day and night in the orbit view. The Sun direction stays fixed while the enlarged ascent spacecraft pitches. Brightness, faint night exposure and spacecraft highlights are illustrative; this is a flight-plane view, with neutral terrain rather than a geographic atlas.'),
+              h('canvas', { 'data-ascent-attitude-canvas': true, role: 'img', 'aria-describedby': 'mm-ascent-attitude-note', 'aria-label': t('stem.moonmission.a11y_local_ascent_attitude', 'Local ascent attitude and velocity directions. Numerical angles follow.'), style: { display: 'block', width: '100%', height: '164px', borderRadius: '8px', border: '1px solid #334155', boxSizing: 'border-box' } }),
+              h('p', { id: 'mm-ascent-attitude-note', style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Pitch is measured from local up; flight path is measured above local level. Gray shows the spacecraft axis, cyan shows velocity and amber shows thrust while the engine fires. Arrow lengths are illustrative. At rest, velocity has no direction.'),
+              h('div', { 'data-ascent-instruments': true }, metrics([['time', 'Burn time'], ['altitude', 'Altitude'], ['speed', 'Orbital speed'], ['vertical', 'Vertical speed'], ['horizontal', 'Sideways speed'], ['mass', 'Ascent stage mass'], ['propellant', 'APS propellant'], ['thrust', 'APS thrust'], ['load', 'Thrust load (Earth g)'], ['downrange', 'Downrange'], ['pitch', 'Pitch from local up'], ['flightPath', 'Path above local level']], 'data-ascent-value')),
+              mmAscentAccelerationView(h, t),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' } },
                 h('button', { type: 'button', 'data-ascent-pause': true, style: buttonStyle, onClick: function(ev) { ascentControl(ev, 'pause', !aPaused); } }, aPaused ? 'Play ascent' : 'Pause ascent'),
                 h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'aria-label': t("stem.moonmission.a11y_ascent_playback_speed", 'Ascent playback speed'), style: buttonStyle, value: d.ascentPlaybackRate, onChange: function(ev) { ascentControl(ev, 'rate', ev.target.value); } }, [1, 10, 30, 60].map(function(n) { return h('option', { value: n, key: n }, n + '\u00d7'); }))),
@@ -15928,7 +17390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('label', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', margin: '8px 0', fontSize: '13px', color: '#e2e8f0' } }, 'Docking view',
                   h('select', { 'data-docking-view': true, 'aria-label': t("stem.moonmission.a11y_docking_view", 'Docking view'), defaultValue: 'overview', style: buttonStyle, onChange: function(ev) { dockControl(ev, 'view', ev.target.value); } },
                     h('option', { value: 'overview' }, 'Approach overview'), h('option', { value: 'closeup' }, 'Port close-up'))),
-                h('canvas', { 'data-docking-canvas': true, role: 'img', tabIndex: 0, 'aria-label': t("stem.moonmission.a11y_final_docking_approach_focus_this_view_and_use_arrow_keys_for_one_second_precision_thruste", 'Final docking approach. Focus this view and use arrow keys for one-second precision thruster pulses.'), 'aria-describedby': 'mm-docking-instructions', style: { display: 'block', width: '100%', height: '280px', borderRadius: '8px' }, onKeyDown: function(ev) { var key = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'brake', ArrowRight: 'approach' }[ev.key]; if (key) { ev.preventDefault(); if (!ev.repeat) dockControl(ev, 'pulse', key); } }, ref: function(cv) {
+                h('canvas', { 'data-docking-canvas': true, role: 'img', tabIndex: 0, 'aria-label': t("stem.moonmission.a11y_final_docking_approach_focus_this_view_and_use_arrow_keys_for_one_second_precision_thruste", 'Final docking approach. Focus this view and use arrow keys for one-second precision thruster pulses.'), 'aria-describedby': 'mm-docking-instructions mm-docking-horizon-note', style: { display: 'block', width: '100%', height: '280px', borderRadius: '8px' }, onKeyDown: function(ev) { var key = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'brake', ArrowRight: 'approach' }[ev.key]; if (key) { ev.preventDefault(); if (!ev.repeat) dockControl(ev, 'pulse', key); } }, ref: function(cv) {
                   if (!cv || cv._dockingInit) return; cv._dockingInit = true;
                   var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 280;
                   var state = Object.assign({}, d.dockingRun), paused = !!d.dockingPaused, guided = !!d.dockingGuided, view = 'overview';
@@ -15960,22 +17422,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     lastTs = running && Number.isFinite(ts) ? ts : null;
                     var picture = mmDrawDockingPractice(ctx, width, height, state, { time: state.time, view: view });
                     cv.dataset.dockingView = view; cv.dataset.dockingPictureScale = String(picture.pictureScale);
+                    cv.dataset.dockingHorizonAltitude = picture.horizon ? String(picture.horizon.altitude) : ''; cv.dataset.dockingHorizonDip = picture.horizon ? String(picture.horizon.dipDegrees) : ''; cv.dataset.dockingHorizonFov = picture.horizon ? String(picture.horizon.fieldDegrees) : '';
+                    cv.dataset.dockingHorizonEyeY = picture.horizon ? String(picture.horizon.eyeY) : ''; cv.dataset.dockingHorizonFocal = picture.horizon ? String(picture.horizon.focal) : '';
                     cv.dataset.dockingPortX = String(picture.portX); cv.dataset.dockingPortY = String(picture.portY);
                     cv.dataset.dockingEaglePortX = String(picture.eaglePortX); cv.dataset.dockingEaglePortY = String(picture.eaglePortY);
                     cv.dataset.dockingPortVisible = String(picture.portVisible !== false);
                     cv.dataset.dockingIndicatorX = String(picture.indicatorX == null ? picture.eaglePortX : picture.indicatorX);
                     cv.dataset.dockingIndicatorY = String(picture.indicatorY == null ? picture.eaglePortY : picture.indicatorY);
-                    var viewDescription = view === 'closeup' ? 'Docking port close-up. One-metre grid with equal distance scales on both axes. Diamond marks Eagle, ring marks Columbia, and an edge arrow indicates Eagle outside the view. Green band marks plus or minus 0.60 metres of radial alignment.' : 'Final docking approach overview. Spacecraft bodies are enlarged; port positions share the same distance scale on both axes.';
+                    var viewDescription = view === 'closeup' ? 'Docking port close-up. One-metre grid with equal distance scales on both axes. Diamond marks Eagle, ring marks Columbia, and an edge arrow indicates Eagle outside the view. Green band marks plus or minus 0.60 metres of radial alignment.' : 'Final docking approach overview. Spacecraft bodies are enlarged; port positions share the same distance scale on both axes. A separate perspective background shows the spherical lunar horizon from Columbia’s 110 km reference orbit.';
                     cv.setAttribute('aria-label', viewDescription + ' Focus this view and use arrow keys for one-second precision thruster pulses.');
                     cv.dataset.dockingRange = String(Math.hypot(state.x, state.y)); cv.dataset.dockingOffset = String(state.x); cv.dataset.dockingClosingSpeed = String(state.vy); cv.dataset.dockingPropellant = String(state.propellant); cv.dataset.dockingStatus = state.status;
                     var values = { time: state.time.toFixed(1) + ' s', range: Math.hypot(state.x, state.y).toFixed(2) + ' m', offset: state.x.toFixed(2) + ' m', closing: state.vy.toFixed(3) + ' m/s', lateral: state.vx.toFixed(3) + ' m/s', propellant: state.propellant.toFixed(2) + ' kg' };
                     var host = cv.closest('[data-ascent-workspace]'); if (host) host.querySelectorAll('[data-docking-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-docking-value')] || ''; });
+                    cv.setAttribute('aria-describedby', view === 'closeup' ? 'mm-docking-instructions' : 'mm-docking-instructions mm-docking-horizon-note');
+                    var horizonNote = host && host.querySelector('[data-docking-horizon-note]'); if (horizonNote) horizonNote.hidden = view === 'closeup';
                     mmUpdateDockingInstruments(host, state);
                     if (Number.isFinite(ts) && ts - lastPublish >= 250) { lastPublish = ts; persist(); }
                     requestAnimationFrame(paint);
                   }
                   requestAnimationFrame(paint);
                 } }),
+                h('p', { id: 'mm-docking-horizon-note', 'data-docking-horizon-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } },
+                  h('strong', { style: { color: '#e2e8f0' } }, 'Lunar horizon · ' + (MM_DOCKING.altitude / 1000).toFixed(0) + ' km reference orbit · ' + mmDockingHorizonGeometry(500, 280).dipDegrees.toFixed(1) + '° below level. '),
+                  'The background looks level from Columbia through a 60° vertical field of view. The Moon’s radius and reference altitude determine its curved edge. Enlarged spacecraft and port markers form a separate equal-distance diagram. Procedural crater markings follow the curved surface and foreshorten toward the horizon. Surface colors and star exposure are illustrative; terrain height and cast shadows are omitted. A fixed upper-left Sun lights the surface and both spacecraft; shaded materials retain illustrative exposure.'),
                 metrics([['time', 'Approach time'], ['range', 'Port separation'], ['offset', 'Radial offset'], ['closing', 'Closing speed'], ['lateral', 'Radial drift'], ['propellant', 'RCS propellant']], 'data-docking-value'),
                 h('p', { id: 'mm-docking-instructions', style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Contact limits: radial offset within 0.60 m, closing speed at most 0.20 m/s, radial drift at most 0.10 m/s. Thrust changes velocity; releasing it leaves you coasting. Up/down correct radial offset; approach/brake change closing speed. Each click or arrow-key press commands a one-second pulse at 20% average duty.'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
@@ -16030,7 +17499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('label', { style: { fontSize: '12px', display: 'block', margin: '10px 0' } }, 'Trajectory view ',
                 h('select', { 'data-return-view': true, 'aria-label': t("stem.moonmission.a11y_return_trajectory_view", 'Return trajectory view'), value: d.returnView, style: returnButtonStyle, onChange: function(ev) { returnControl(ev, 'view', ev.target.value); } },
                   h('option', { value: 'system' }, 'Whole Earth return'), h('option', { value: 'approach' }, 'Earth approach'), h('option', { value: 'crew' }, 'Crew Earth view'))),
-              h('canvas', { 'data-teicoast-canvas': 'true', role: 'img', 'aria-label': t("stem.moonmission.a11y_measured_curved_earth_return_trajectory_spacecraft_velocity_arrow_and_angular_earth_view_t", 'Measured curved Earth-return trajectory, spacecraft velocity arrow and angular Earth view. The Service Module separates before entry. Physical values and playback controls follow.'),
+              h('canvas', { 'data-teicoast-canvas': 'true', role: 'img', 'aria-describedby': 'mm-return-light-note', 'aria-label': t("stem.moonmission.a11y_measured_curved_earth_return_trajectory_spacecraft_velocity_arrow_and_angular_earth_view_t", 'Measured curved Earth-return trajectory, spacecraft velocity arrow and angular Earth view. The Service Module separates before entry. Physical values and playback controls follow.'),
                 style: { display: 'block', width: '100%', height: '400px', borderRadius: '8px' }, ref: function(cv) {
                   returnCanvas = cv;
                   if (!cv || cv._teiInit) return; cv._teiInit = true;
@@ -16086,12 +17555,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     cv.dataset.returnRadialSpeed = String(sample.radialSpeed); cv.dataset.returnTangentialSpeed = String(sample.tangentialSpeed);
                     cv.dataset.returnAngle = String(sample.gamma); cv.dataset.returnX = String(sample.x); cv.dataset.returnY = String(sample.y);
                     cv.dataset.returnVx = String(sample.vx); cv.dataset.returnVy = String(sample.vy); cv.dataset.returnPlume = picture.plumeVisible ? 'on' : 'off';
+                    cv.dataset.returnSun=picture.sunlight?picture.sunlight.phase:'unavailable';cv.dataset.returnSunFraction=picture.sunlight?String(picture.sunlight.fraction):'';cv.dataset.returnSunAngle='90';
                     cv.dataset.returnCameraView=view;cv.dataset.returnAngularDiameter=String(2*sample.view.angRadiusDeg);cv.dataset.returnCrewClipped=String(sample.view.angRadiusDeg>40);
                     cv.setAttribute('aria-label',view==='crew'?'Earth-centered crew camera with a fixed 80 degree field and angular ticks. Earth spans '+(2*sample.view.angRadiusDeg).toFixed(2)+' degrees and '+(sample.view.angRadiusDeg>40?'extends beyond':'fits within')+' the field. Fixed Sun illumination and coarse rotating geography. Night exposure is lifted and a geometric limb guide marks Earth’s edge. Physical values and playback controls follow.':'Measured curved Earth-return trajectory, spacecraft velocity arrow and angular Earth view. The Service Module separates before entry. Physical values and playback controls follow.');
                     var values = { time: (time / 3600).toFixed(3) + ' h', altitude: (sample.altitude / 1000).toFixed(sample.altitude < 1e7 ? 1 : 0) + ' km',
                       speed: (sample.speed / 1000).toFixed(3) + ' km/s', closing: (sample.closingSpeed / 1000).toFixed(3) + ' km/s',
                       tangential: (sample.tangentialSpeed / 1000).toFixed(3) + ' km/s', angle: sample.gamma.toFixed(2) + '°', remaining: (sample.remainingSeconds / 60).toFixed(2) + ' min',
-                      stage: sample.serviceModuleSeparated ? 'CM only — SM jettisoned' : 'CM + Service Module' };
+                      stage: sample.serviceModuleSeparated ? 'CM only — SM jettisoned' : 'CM + Service Module',
+                      sun: picture.sunlight ? (picture.sunlight.phase === 'total' ? 'Total Earth eclipse' : picture.sunlight.phase === 'partial' ? 'Partial Earth eclipse' : 'Full sunlight') + ' · ' + (picture.sunlight.fraction * 100).toFixed(1) + '%' : 'Unavailable' };
                     var host = cv.closest('[data-return-workspace]');
                     if (host) {
                       host.querySelectorAll('[data-return-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-return-value')] || ''; });
@@ -16103,9 +17574,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   }
                   requestAnimationFrame(paint);
                 } }),
+              h('p', { id: 'mm-return-light-note', 'data-return-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Earth and spacecraft share a parallel +Y Sun, upward in the orbit view. The solar disc has its apparent size at 1 au; Earth can hide part or all of this uniform disc. Hull shading follows the spacecraft orientation and visible sunlight. Materials and raised eclipse exposure are illustrative. The enlarged craft coasts without an engine plume.'),
               h('p', { 'data-return-status': true, style: { color: '#a5f3fc', fontSize: '13px', fontWeight: 700, margin: '10px 0' } }, 'Unpowered return coast'),
               h('dl', { 'data-return-readouts': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } },
-                [['time', 'Coast time'], ['altitude', 'Earth altitude'], ['speed', 'Earth-relative speed'], ['closing', 'Radial closing speed'], ['tangential', 'Tangential speed'], ['angle', 'Flight path angle'], ['remaining', 'Time to interface'], ['stage', 'Spacecraft']].map(function(item) {
+                [['time', 'Coast time'], ['altitude', 'Earth altitude'], ['speed', 'Earth-relative speed'], ['closing', 'Radial closing speed'], ['tangential', 'Tangential speed'], ['angle', 'Flight path angle'], ['remaining', 'Time to interface'], ['stage', 'Spacecraft'], ['sun', 'Visible solar disc']].map(function(item) {
                   return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-return-value': item[0], style: { margin: 0, minHeight: '22px', color: '#f8fafc', fontWeight: 700, fontSize: '14px', fontVariantNumeric: 'tabular-nums' } }, '—'));
                 })),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' } },

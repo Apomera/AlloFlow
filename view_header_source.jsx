@@ -1188,14 +1188,14 @@ function HeaderBar(props) {
                                                 <div className="allo-reading-theme-grid grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
                                                         { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#64748b', focus: '#4f46e5', emoji: '○' },
-                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fdcba5', fg: '#432714', border: '#a85b2f', focus: '#1d4ed8', emoji: '☀️' },
-                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#d1bfa9', fg: '#2a1f13', border: '#7f5e3d', focus: '#174ea6', emoji: '📜' },
+                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fff1e6', fg: '#432714', border: '#a85b2f', focus: '#1d4ed8', emoji: '☀️' },
+                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#f3eadb', fg: '#2a1f13', border: '#7f5e3d', focus: '#174ea6', emoji: '📜' },
                                                         { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#7979ab', focus: '#fbbf24', emoji: '🌙' },
                                                         { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', focus: '#ffff00', emoji: '◼️' },
-                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#b9dbf4', fg: '#16304b', border: '#3b78a5', focus: '#174ea6', emoji: '💧' },
-                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#caeccf', fg: '#123f21', border: '#3b7f4c', focus: '#1455a5', emoji: '🌿' },
-                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#f9c8d8', fg: '#561530', border: '#a7476b', focus: '#174ea6', emoji: '🌸' },
-                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#f4ebbe', fg: '#3f3b31', border: '#8d7621', focus: '#174ea6', emoji: '🔤' },
+                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#eef5fc', fg: '#16304b', border: '#3b78a5', focus: '#174ea6', emoji: '💧' },
+                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#eef7ec', fg: '#123f21', border: '#3b7f4c', focus: '#1455a5', emoji: '🌿' },
+                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#fdf0f4', fg: '#561530', border: '#a7476b', focus: '#174ea6', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#fcf8e4', fg: '#3f3b31', border: '#8d7621', focus: '#174ea6', emoji: '🔤' },
                                                         { id: 'dim', label: t('header.reading_theme_dim') || 'Dim', bg: '#adb3bd', fg: '#000000', border: '#46505d', focus: '#1d4ed8', emoji: '🌫️' },
                                                     ].sort(function(a, b) { return readingThemeOrder.indexOf(a.id) - readingThemeOrder.indexOf(b.id); }).map(function(th) {
                                                         var isActive = readingTheme === th.id;

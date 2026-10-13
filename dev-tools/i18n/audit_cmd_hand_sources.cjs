@@ -215,7 +215,7 @@ const files = fs.readdirSync(LANG_DIR)
   .filter((file) => file.endsWith('.js') && !file.startsWith('.'))
   .sort();
 const slugs = files.map((file) => file.replace(/\.js$/, ''));
-const packs = new Map(slugs.map((slug) => [slug, readJson(path.join(LANG_DIR, `${slug}.js`))]));
+const knownSlugs = new Set(slugs);
 const records = [];
 const sourceStats = {};
 const errors = [];
@@ -234,7 +234,7 @@ for (const source of SOURCE_DEFINITIONS) {
   }
   sourceStats[source.id] = { files: source.files, languageCount: Object.keys(rows).length, records: 0 };
   for (const slug of Object.keys(rows)) {
-    if (!packs.has(slug)) {
+    if (!knownSlugs.has(slug)) {
       errors.push(`${source.id}: unknown language slug ${slug}`);
       continue;
     }
@@ -283,6 +283,20 @@ for (const list of byTarget.values()) {
   });
 }
 
+const recordsBySlug = new Map();
+for (const record of records) {
+  const list = recordsBySlug.get(record.slug) || [];
+  list.push(record);
+  recordsBySlug.set(record.slug, list);
+}
+
+// Retain only reviewed leaves; the rest of each parsed pack can be collected.
+function readReviewedValues(slug) {
+  const pack = readJson(path.join(LANG_DIR, `${slug}.js`));
+  return new Map((recordsBySlug.get(slug) || []).map(({ key }) => [key, getDeep(pack, key)]));
+}
+const packs = new Map(slugs.map((slug) => [slug, readReviewedValues(slug)]));
+
 const missingPacks = [];
 const invalidSource = [];
 const englishPayload = [];
@@ -291,7 +305,7 @@ const recoverable = [];
 const superseded = [];
 for (const record of records) {
   const expected = english[record.key];
-  const current = getDeep(packs.get(record.slug), record.key);
+  const current = packs.get(record.slug).get(record.key);
   if (typeof record.value !== 'string' || !record.value.trim()) {
     invalidSource.push({ ...record, reason: 'blank or non-string' });
     continue;

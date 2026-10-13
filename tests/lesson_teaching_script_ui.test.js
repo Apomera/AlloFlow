@@ -69,6 +69,33 @@ async function submit() { await act(async () => host.querySelector('form').dispa
 function deferred() { let resolve, reject; const promise = new Promise((yes,no) => {resolve=yes;reject=no;}); return {promise,resolve,reject}; }
 
 describe('lesson-aware teaching-script UI', () => {
+  it('lets AI resolve blank defaults and shows the resolved context after generation', async () => {
+    const p = props({ defaultSettings: defaults({ subject: 'other', subjectDetected: false, topic: '' }), onGenerateTeachingScript: vi.fn().mockResolvedValue({ ok: true, version: script('new', { inputSnapshot: { settings: { subject: 'science', topic: 'Energy flow through food webs' } } }) }) });
+    mount(React.createElement(View, p)); expand();
+    expect(button('Generate script').disabled).toBe(false);
+    expect(field('Lesson topic').required).toBe(false);
+    await submit();
+    expect(p.onGenerateTeachingScript.mock.calls[0][0].inferContext).toEqual({ subject: true, topic: true });
+    expect(field('Subject area').value).toBe('science');
+    expect(field('Lesson topic').value).toBe('Energy flow through food webs');
+  });
+  it('preserves each teacher override independently and allows returning to AI context', async () => {
+    const p = props(); mount(React.createElement(View, p)); expand();
+    change('Lesson topic', 'My chosen focus'); await submit();
+    expect(p.onGenerateTeachingScript.mock.calls[0][0]).toMatchObject({ topic: 'My chosen focus', inferContext: { subject: true, topic: false } });
+    change('Subject area', 'science'); await submit();
+    expect(p.onGenerateTeachingScript.mock.calls[1][0]).toMatchObject({ subject: 'science', topic: 'My chosen focus', inferContext: { subject: false, topic: false } });
+    click('Use AI for subject and topic'); await submit();
+    expect(p.onGenerateTeachingScript.mock.calls[2][0].inferContext).toEqual({ subject: true, topic: true });
+  });
+  it('does not apply a late inferred context to another saved plan', async () => {
+    const wait = deferred(), p = props({ onGenerateTeachingScript: vi.fn(() => wait.promise) });
+    mount(React.createElement(View, p)); expand();
+    act(() => host.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    act(() => root.render(React.createElement(View, { ...p, generatedContent: plan('plan-b'), defaultSettings: defaults({ subject: 'arts', topic: 'Watercolor' }) })));
+    await act(async () => { wait.resolve({ ok: true, version: script('new', { inputSnapshot: { settings: { subject: 'science', topic: 'Cells' } } }) }); });
+    expand(); expect(field('Subject area').value).toBe('arts'); expect(field('Lesson topic').value).toBe('Watercolor');
+  });
   it.each([{isTeacherMode:false},{isParentMode:true},{isIndependentMode:true}])('does not expose the feature outside teacher authoring: %j', flags => {
     mount(React.createElement(View, props(flags)));
     expect(host.textContent).toBe('');
@@ -89,7 +116,7 @@ describe('lesson-aware teaching-script UI', () => {
     change('Target standard','5.NF teacher-selected target');
     act(() => field('Fraction comparison check').click());
     await submit();
-    expect(p.onGenerateTeachingScript).toHaveBeenCalledWith({goal:'Compare fractions with equal numerators.',grade:'5th Grade',subject:'mathematics',topic:'Comparing fractions',scope:'segment',durationMinutes:20,priorKnowledge:'Learners can partition equal parts.',researchEnabled:true,materialIds:['fractions-cards'],language:'Spanish',standard:'5.NF teacher-selected target'});
+    expect(p.onGenerateTeachingScript).toHaveBeenCalledWith({goal:'Compare fractions with equal numerators.',grade:'5th Grade',subject:'mathematics',topic:'Comparing fractions',inferContext:{subject:true,topic:true},scope:'segment',durationMinutes:20,priorKnowledge:'Learners can partition equal parts.',researchEnabled:true,materialIds:['fractions-cards'],language:'Spanish',standard:'5.NF teacher-selected target'});
     expect(host.textContent).toContain('Script language: Spanish');
     expect(JSON.stringify(p.generatedContent)).toBe(before);
   });
@@ -101,7 +128,7 @@ describe('lesson-aware teaching-script UI', () => {
     expect(Array.from(field('Grade').options).map(option => option.value)).toEqual(expect.arrayContaining(['Pre-K','Kindergarten','3rd Grade','12th Grade','College','Graduate Level']));
     expect(button('Generate script').disabled).toBe(true);
     change('Grade','Kindergarten');
-    expect(button('Generate script').disabled).toBe(true);
+    expect(button('Generate script').disabled).toBe(false);
     change('Lesson topic','Blending CVC words');
     expect(button('Generate script').disabled).toBe(false);
     act(() => { field('Fraction models').click(); field('Fraction comparison check').click(); });

@@ -195,6 +195,7 @@ function _ltsSessionKey(scope, planId) {
 }
 function _ltsSessionSettings(value) {
   return _ltsRecord(value) && [['goal', 1200], ['grade', 200], ['subject', 80], ['topic', 200], ['priorKnowledge', 2000], ['standard', 4000]].every(([key, limit]) => _ltsBoundedString(value[key], limit))
+    && (value.inferContext == null || _ltsRecord(value.inferContext) && ['subject', 'topic'].every(key => typeof value.inferContext[key] === 'boolean'))
     && ['segment', 'lesson'].includes(value.scope) && typeof value.researchEnabled === 'boolean'
     && (value.durationMinutes === '' || typeof value.durationMinutes === 'number' && Number.isFinite(value.durationMinutes) && Math.abs(value.durationMinutes) <= 1000000)
     && Array.isArray(value.materialIds) && value.materialIds.length <= 500 && value.materialIds.every(id => _ltsBoundedString(id, 160));
@@ -316,6 +317,12 @@ function LessonTeachingScriptPanel(props) {
   const [grade, setGrade] = React.useState(restored?.settings.grade ?? initialGrade);
   const [subject, setSubject] = React.useState(() => restored?.settings.subject ?? detectedDefaults.subject);
   const [topic, setTopic] = React.useState(restored?.settings.topic ?? detectedDefaults.topic);
+  // Older recovery copies predate explicit overrides. Treat their unchanged detected
+  // defaults as automatic, while retaining any teacher-edited subject or topic.
+  const [inferContext, setInferContext] = React.useState(() => restored?.settings.inferContext || {
+    subject: !restored || restored.settings.subject === restored.defaults.subject,
+    topic: !restored || restored.settings.topic === restored.defaults.topic
+  });
   const [scope, setScope] = React.useState(restored?.settings.scope || 'segment');
   const [durationMinutes, setDurationMinutes] = React.useState(() => restored?.settings.durationMinutes ?? (Number(suggested.segment) || 15));
   const [priorKnowledge, setPriorKnowledge] = React.useState(restored?.settings.priorKnowledge || '');
@@ -371,7 +378,7 @@ function LessonTeachingScriptPanel(props) {
   sources.forEach(source => (Array.isArray(source.recommendations) ? source.recommendations : []).filter(recommendation => recommendation && typeof recommendation === 'object').forEach(recommendation => recommendationById.set(String(recommendation.id), { source, recommendation })));
   const subjectLabel = value => (subjectOptions.find(([key]) => key === value) || [])[1] || _ltsText(value);
   const scopeLabel = item => item && item.schemaVersion !== 1 && item.scope === 'lesson' ? tr('scope_lesson', 'Whole lesson') : tr('scope_segment', 'Direct-instruction segment');
-  const formReady = !!goal.trim() && !!grade && !!subject && (subject !== 'other' || !!topic.trim()) && durationValid && selectedMaterials.length > 0 && unavailableMaterialIds.length === 0;
+  const formReady = !!goal.trim() && !!grade && (inferContext.subject || !!subject) && (inferContext.topic || subject !== 'other' || !!topic.trim()) && durationValid && selectedMaterials.length > 0 && unavailableMaterialIds.length === 0;
   React.useEffect(() => {
     mounted.current = true;
     return () => {
@@ -385,7 +392,9 @@ function LessonTeachingScriptPanel(props) {
   React.useEffect(() => {
     if (busy || saving || JSON.stringify(previousDefaults.current) === defaultsKey) return;
     const previous = previousDefaults.current;
-    [[setGoal, 'goal'], [setGrade, 'grade'], [setSubject, 'subject'], [setTopic, 'topic'], [setStandard, 'standard']].forEach(([setValue, key]) => setValue(current => current === previous[key] ? detectedDefaults[key] : current));
+    [[setGoal, 'goal'], [setGrade, 'grade'], [setStandard, 'standard']].forEach(([setValue, key]) => setValue(current => current === previous[key] ? detectedDefaults[key] : current));
+    if (inferContext.subject) setSubject(detectedDefaults.subject);
+    if (inferContext.topic) setTopic(detectedDefaults.topic);
     previousDefaults.current = detectedDefaults;
     setDefaultsChanged(true);
     refreshDefaultsRecord(revision => revision + 1);
@@ -407,11 +416,11 @@ function LessonTeachingScriptPanel(props) {
   }, [deleteCandidate, deleting]);
   const useCurrentDefaults = () => {
     setGoal(detectedDefaults.goal); setGrade(detectedDefaults.grade); setSubject(detectedDefaults.subject);
-    setTopic(detectedDefaults.topic); setStandard(detectedDefaults.standard); setDefaultsChanged(false);
+    setTopic(detectedDefaults.topic); setInferContext({ subject: true, topic: true }); setStandard(detectedDefaults.standard); setDefaultsChanged(false);
   };
   const recoveryValue = {
     schemaVersion: 1, scope: draftScope, planId,
-    settings: { goal, grade, subject, topic, scope, durationMinutes, priorKnowledge, standard, researchEnabled, materialIds },
+    settings: { goal, grade, subject, topic, inferContext, scope, durationMinutes, priorKnowledge, standard, researchEnabled, materialIds },
     defaults: previousDefaults.current, selectedId,
     draft: draft ? { version: draftSnapshot, baseline: draftBase, steps: draft } : null
   };
@@ -458,12 +467,17 @@ function LessonTeachingScriptPanel(props) {
     setLocalBusy(true); setLocalError(''); setNotice('');
     try {
       const result = await onGenerateTeachingScript({
-        goal: goal.trim(), grade, subject, topic: topic.trim(), scope, durationMinutes: Number(durationMinutes),
+        goal: goal.trim(), grade, subject, topic: topic.trim(), inferContext: { ...inferContext }, scope, durationMinutes: Number(durationMinutes),
         priorKnowledge: priorKnowledge.trim(),
         researchEnabled,
         materialIds: selectedMaterials.map(item => item.id),
         language: _ltsText(defaultSettings.language) || 'English', standard: standard.trim()
       });
+      if (result?.ok && mounted.current && owner === requestOwner.current) {
+        const resolved = result.version?.inputSnapshot?.settings;
+        if (inferContext.subject && subjectOptions.some(([value]) => value === resolved?.subject)) setSubject(resolved.subject);
+        if (inferContext.topic && typeof resolved?.topic === 'string') setTopic(resolved.topic);
+      }
       if (result?.ok === false && mounted.current && owner === requestOwner.current) setLocalError(_ltsText(result.error?.message || result.error) || tr('generate_failed', 'The script could not be generated. Your lesson plan is still available.'));
     } catch (failure) {
       if (mounted.current && owner === requestOwner.current) setLocalError(_ltsText(failure?.message) || tr('generate_failed', 'The script could not be generated. Your lesson plan is still available.'));
@@ -628,10 +642,17 @@ function LessonTeachingScriptPanel(props) {
   };
   const phaseLabel = phase => phase && _LTS_PHASES[phase] ? tr('phase_' + phase, _LTS_PHASES[phase]) : '';
   const detectedNote = [
-    defaultSettings.subjectDetected ? tr('context_subject_detected', 'Subject detected from the saved plan') : tr('context_subject_unknown', 'Subject could not be detected; choose it below'),
+    defaultSettings.subjectDetected ? tr('context_subject_detected', 'Subject detected from the saved plan') : tr('context_subject_ai', 'Subject could not be detected yet; AI will identify it when you generate'),
     defaultSettings.gradeSource === 'plan' ? tr('context_grade_plan', 'Grade from the saved plan') : tr('context_grade_missing', 'The saved plan has no grade; choose one below'),
     Array.isArray(defaultSettings.phases) && defaultSettings.phases.length ? tr('context_phases', 'Plan phases:') + ' ' + defaultSettings.phases.map(phaseLabel).filter(Boolean).join(', ') : ''
   ].filter(Boolean);
+  const progressLabel = ({
+    context: tr('progress_context', 'Identifying the lesson subject and topic…'),
+    research: tr('progress_research', 'Finding research for this lesson…'),
+    generating: tr('progress_generating', 'Writing the teaching script…'),
+    validating: tr('progress_validating', 'Checking and improving the script…'),
+    chunking: tr('progress_chunking', 'Writing the script in smaller sections…') + (Number.isInteger(hostRun.totalChunks) && hostRun.totalChunks > 0 ? ' ' + Math.min(hostRun.totalChunks, Math.max(0, Number(hostRun.completedChunks) || 0)) + '/' + hostRun.totalChunks : ''),
+  })[hostRun.stage] || _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…');
   if (spokenOnly && version) return <LessonSpokenDirections key={JSON.stringify([version.id, runtime?.spokenSegments?.({ ...version, steps }), !!draft, props.audioProfile, version.inputSnapshot?.settings?.language, plan.config?.language])} initialStepIndex={spokenPosition?.versionId === String(version.id) ? spokenPosition.index : 0} onStepChange={index => setSpokenPosition({ versionId: String(version.id), index })} planId={planId} version={{ ...version, steps }} draft={!!draft} createAudio={props.createTeachingScriptAudio} t={props.t} audioVoice={props.audioVoice} audioSpeed={props.audioSpeed} audioLanguage={version.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language} onOpenVoiceSettings={props.onOpenVoiceSettings} onBack={() => { setSpokenOnly(false); setTimeout(() => spokenToggle.current?.focus(), 0); }} />;
   return (
     <section className="rounded-xl border border-indigo-200 bg-white shadow-sm" aria-labelledby={id + '-title'} data-teaching-script-plan={planId}>
@@ -646,7 +667,7 @@ function LessonTeachingScriptPanel(props) {
         {(recoveryStatus === 'invalid' || hasSessionWork && ['unavailable', 'large'].includes(recoveryStatus)) && <p role="status" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{recoveryStatus === 'invalid' ? tr('recovery_invalid', 'A recovery copy could not be restored. Your saved lesson and script versions are still available.') : tr('recovery_unavailable', 'This tab could not keep a recovery copy of the latest changes. Save script edits before leaving this lesson; your current edits are still on this page.')}</p>}
         {hasIncompleteVersions && <p role="status" className="mt-2 text-sm text-amber-950">{tr('incomplete_saved', 'A saved script has incomplete data and could not be displayed. Your lesson plan and other script versions are still available.')}</p>}
         {version && <p className="mt-2 break-words text-sm font-semibold text-indigo-900">{tr('saved_script', 'Saved script:')} {_ltsText(version.title) || tr('title', 'Teaching script')} · {version.durationMinutes} {tr('minutes', 'minutes')}</p>}
-        {busy && !expanded && <p role="status" className="mt-2 text-sm text-indigo-900">{_ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…')}</p>}
+        {busy && !expanded && <p role="status" className="mt-2 text-sm text-indigo-900">{progressLabel}</p>}
         {busy && !expanded && typeof onCancelTeachingScript === 'function' && <button type="button" className={buttonClass + ' mt-2 no-print'} onClick={cancel}>{tr('cancel', 'Cancel generation')}</button>}
         {error && !expanded && <p role="alert" className="mt-2 text-sm text-red-900">{error}</p>}
       </div>
@@ -665,17 +686,19 @@ function LessonTeachingScriptPanel(props) {
           <div className="rounded-lg border border-indigo-100 bg-indigo-50/60 p-3 text-sm text-indigo-950" data-teaching-context>
             <p className="font-bold">{tr('context_title', 'Detected lesson context')}</p>
             <ul className="mt-1 list-disc space-y-0.5 pl-5">{detectedNote.map((line, index) => <li key={index}>{line}</li>)}</ul>
+            <p className="mt-2">{tr('context_ai_hint', 'AI determines the subject and topic from this lesson when you generate. Edit either field below to keep your own choice.')}</p>
+            {(!inferContext.subject || !inferContext.topic) && <button type="button" className={buttonClass + ' mt-2'} disabled={busy || saving} onClick={() => { setInferContext({ subject: true, topic: true }); setSubject(detectedDefaults.subject); setTopic(detectedDefaults.topic); }}>{tr('context_use_ai', 'Use AI for subject and topic')}</button>}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor={id + '-subject'} className="mb-1 block text-sm font-bold text-slate-900">{tr('subject', 'Subject area')}</label>
-              <select id={id + '-subject'} required className={fieldClass} value={subject} disabled={busy || saving} onChange={event => setSubject(event.target.value)}>
+              <select id={id + '-subject'} required className={fieldClass} value={subject} disabled={busy || saving} onChange={event => { setSubject(event.target.value); setInferContext(previous => ({ ...previous, subject: false })); }}>
                 {subjectOptions.map(([value, label]) => <option key={value} value={value}>{tr('subject_' + value.replace(/-/g, '_'), label)}</option>)}
               </select>
             </div>
             <div>
               <label htmlFor={id + '-topic'} className="mb-1 block text-sm font-bold text-slate-900">{tr('topic', 'Lesson topic')}</label>
-              <input id={id + '-topic'} maxLength={200} className={fieldClass} value={topic} disabled={busy || saving} required={subject === 'other'} onChange={event => setTopic(event.target.value)} placeholder={tr('topic_hint', 'For example: blending CVC words, photosynthesis, causes of the French Revolution')} />
+              <input id={id + '-topic'} maxLength={200} className={fieldClass} value={topic} disabled={busy || saving} required={subject === 'other' && !inferContext.topic} onChange={event => { setTopic(event.target.value); setInferContext(previous => ({ ...previous, topic: false })); }} placeholder={tr('topic_hint', 'For example: blending CVC words, photosynthesis, causes of the French Revolution')} />
             </div>
           </div>
           <div>
@@ -746,7 +769,7 @@ function LessonTeachingScriptPanel(props) {
         </form>
           </div>
         </div>
-        <div role="status" aria-live="polite" className="text-sm font-bold text-indigo-950">{busy ? (_ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…')) : notice}</div>
+        <div role="status" aria-live="polite" className="text-sm font-bold text-indigo-950">{busy ? progressLabel : notice}</div>
         {busy && typeof onCancelTeachingScript === 'function' && <button type="button" className={buttonClass + ' no-print'} onClick={cancel}>{tr('cancel', 'Cancel generation')}</button>}
         {error && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</p>}
         {version && <div className="space-y-5 border-t border-slate-200 pt-5">

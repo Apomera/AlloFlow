@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "mappings": [
+    {
+      "resourceId": "eg-anchor",
+      "sectionIndex": 0,
+      "sectionLabel": "1 · A PREDICTABLE FLOOD",
+      "assetId": "eg-sort-flood",
+      "reason": "A standalone scene shows river water covering low ground; no causal sequence or calendar is drawn.",
+      "maxEdge": 180
+    },
+    {
+      "resourceId": "eg-anchor",
+      "sectionIndex": 1,
+      "sectionLabel": "2 · A SURPLUS",
+      "assetId": "eg-term-surplus",
+      "reason": "Many grain sacks in storage directly support the surplus section.",
+      "maxEdge": 180
+    },
+    {
+      "resourceId": "eg-anchor",
+      "sectionIndex": 2,
+      "sectionLabel": "3 · SPECIALISTS",
+      "assetId": "eg-term-specialist",
+      "reason": "The practiced potter is one of the specialist examples named in this section.",
+      "maxEdge": 180
+    },
+    {
+      "resourceId": "eg-anchor",
+      "sectionIndex": 3,
+      "sectionLabel": "4 · WRITING AND OFFICIALS",
+      "assetId": "eg-img-receipt",
+      "reason": "The scribe beside grain sacks illustrates recording supplies and deliveries.",
+      "maxEdge": 180
+    },
+    {
+      "resourceId": "eg-anchor",
+      "sectionIndex": 4,
+      "sectionLabel": "WHO IS MISSING",
+      "assetId": "eg-img-two-graves",
+      "reason": "The paired surviving tomb wall and ordinary settlement remains support the explicit comparison in this reference section.",
+      "maxEdge": 180
+    }
+  ]
+}

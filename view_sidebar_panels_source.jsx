@@ -1324,13 +1324,18 @@ function SimplifiedPanel(props) {
     textFormat
   } = props;
   if (!expandedTools || !expandedTools.includes('simplified')) return null;
+  const readingOptionText = (key, fallback) => {
+    const value = typeof t === 'function' ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  };
+  const readingActionClass = 'group flex min-h-12 w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-semibold leading-5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500';
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div id="tour-level-settings" data-help-key="tour-simplified-settings" className={SIDEBAR_PANEL_UI.settingsSurface}>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div>
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-3">
+                        <div className="min-w-0">
                             <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_format')}</label>
-                            <select aria-label={t('common.selection')}
+                            <select aria-label={t('wizard.output_format')}
                                 data-help-key="simplified_format"
                                 value={textFormat}
                                 onChange={(e) => setTextFormat(e.target.value)}
@@ -1347,9 +1352,9 @@ function SimplifiedPanel(props) {
                                 <option value="Narrative Story">{t('simplified.formats.narrative_story')}</option>
                             </select>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <label className={SIDEBAR_PANEL_UI.label}>{t('input.length')}</label>
-                            <select aria-label={t('common.selection')}
+                            <select aria-label={t('input.length')}
                                 data-help-key="simplified_length"
                                 value={leveledTextLength}
                                 onChange={(e) => setLeveledTextLength(e.target.value)}
@@ -1395,17 +1400,28 @@ function SimplifiedPanel(props) {
                         </div>
                         </div>
                 </div>
-                <p className="my-3 text-sm text-slate-700">{t('sidebar.read_original_guidance') || 'Read the original with supports first. An adapted companion can activate background knowledge, build context, preview key concepts, and scaffold students toward the original; it does not replace the grade-level text.'}</p>
-                <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing} className={SIDEBAR_PANEL_UI.primaryAction}>{t('sidebar.read_original_with_supports') || 'Read original with supports'}</button>
-                {!aiTextAvailable && <AiSetupNotice t={t} />}
-                <button type="button"
-                    onClick={() => handleGenerate('simplified')}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
-                    className={SIDEBAR_PANEL_UI.primaryAction}
-                >
-                    <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('sidebar.create_adapted_companion') || 'Create adapted companion'} <Sparkles size={14} className="text-yellow-600"/></span>
-                    <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
-                </button>
+                <div data-reading-options className="space-y-2.5 bg-white p-3.5">
+                    {!hasSourceOrAnalysis && <p className="text-xs leading-5 text-slate-600">{readingOptionText('sidebar.reading_options_add_source', 'Add source text to enable these options.')}</p>}
+                    <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing}
+                        className={`${readingActionClass} border-indigo-200 bg-indigo-50 text-indigo-900 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-100`}>
+                        <BookOpen size={18} aria-hidden="true" className="shrink-0" />
+                        <span className="min-w-0 flex-1">{readingOptionText('sidebar.read_original_with_supports', 'Read original with supports')}</span>
+                        <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
+                    </button>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
+                    <button type="button" data-create-adapted
+                        onClick={() => handleGenerate('simplified')}
+                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        className={`${readingActionClass} border-slate-200 bg-white text-slate-700 enabled:hover:border-indigo-300 enabled:hover:bg-indigo-50 enabled:hover:text-indigo-900`}>
+                        <Sparkles size={18} aria-hidden="true" className="shrink-0" />
+                        <span className="min-w-0 flex-1">{readingOptionText('sidebar.create_adapted_companion', 'Create adapted companion')}</span>
+                        <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
+                    </button>
+                    <details data-reading-options-guidance className="text-xs text-slate-600">
+                        <summary className="min-h-11 cursor-pointer rounded-lg px-1 py-3 leading-5 marker:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{readingOptionText('sidebar.reading_options_about', 'About these reading options')}</summary>
+                        <p className="px-1 pb-2 leading-relaxed">{readingOptionText('sidebar.read_original_guidance', 'Keep the original as the main reading. An adapted companion can build background knowledge and help students understand it.')}</p>
+                    </details>
+                </div>
               </div>
   );
 }

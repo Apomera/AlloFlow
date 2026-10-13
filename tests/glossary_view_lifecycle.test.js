@@ -117,11 +117,11 @@ describe('glossary reading and editing controls', () => {
     expect(view.container.querySelector('[data-help-key="glossary_add_term"]')).toBeTruthy();
     expect(view.container.querySelector('[aria-label="Change image for Leaf"]')).toBeTruthy();
   });
-  it('provides a named keyboard-scrollable table and a mobile scroll hint', () => {
+  it('provides a named word list and explains the mobile reading order', () => {
     const view = mount();
     const region = view.container.querySelector('[role="region"][aria-label="glossary.table_label"]');
     expect(region.tabIndex).toBe(0);
-    expect(document.getElementById(region.getAttribute('aria-describedby')).textContent).toBe('glossary.table_scroll_hint');
+    expect(document.getElementById(region.getAttribute('aria-describedby')).textContent).toBe('Definitions and translations follow each word.');
   });
   it('retains size adjustment and exports without entering edit mode', async () => {
     const view = mount(); await more(view);

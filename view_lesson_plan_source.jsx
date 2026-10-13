@@ -194,7 +194,7 @@ function LessonPlanListEditor({ field, value, onChange, t }) {
     <button ref={add} type="button" className={button} onClick={() => action(-1, 'add')}>{field === 'objectives' ? tr('add_objective', 'Add objective') : tr('add_material', 'Add material')}</button>
   </div>;
 }
-function LessonPlanOverview({ plan, t }) {
+function LessonPlanOverview({ plan, t, BilingualFieldRenderer, normalizeMaterialItem }) {
   const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
   const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).map(_lessonPlanText).filter(text => text.trim());
   const data = plan.data || {};
@@ -205,11 +205,11 @@ function LessonPlanOverview({ plan, t }) {
     && latestWhole.steps.reduce((sum, step) => sum + step.minutes, 0) === latestWhole.durationMinutes ? latestWhole : null;
   const criteria = Array.isArray(data.successCriteria) ? data.successCriteria : data.successCriteria == null ? [] : [data.successCriteria];
   const assessment = list(data.assessmentIdeas).concat(criteria.map(_lessonPlanCriterionText).filter(text => text.trim()));
-  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
+  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded).map(normalizeMaterialItem)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
   return <details className="mb-4 rounded-xl border border-indigo-200 bg-white text-slate-900" data-lesson-overview>
     <summary className="min-h-11 cursor-pointer rounded-xl px-4 py-3 font-bold focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('overview', 'Lesson at a glance')}</summary>
     <div className="grid gap-4 p-4 pt-0 sm:grid-cols-2">
-      {sections.map(([title, items]) => <section key={title} className="min-w-0 break-words"><h3 className="mb-2 font-bold">{title}</h3>{items.length ? <ul className="list-disc space-y-1 pl-5 text-sm">{items.map((item,index) => <li key={index}>{_lessonPlanText(item)}</li>)}</ul> : <p className="text-sm text-slate-700">{tr('overview_not_recorded', 'Not recorded in this plan.')}</p>}</section>)}
+      {sections.map(([title, items]) => <section key={title} className="min-w-0 break-words"><h3 className="mb-2 font-bold">{title}</h3>{items.length ? <ul className="list-disc space-y-1 pl-5 text-sm">{items.map((item,index) => <li key={index}><BilingualFieldRenderer text={_lessonPlanText(item)} /></li>)}</ul> : <p className="text-sm text-slate-700">{tr('overview_not_recorded', 'Not recorded in this plan.')}</p>}</section>)}
       <section className="min-w-0 break-words"><h3 className="mb-2 font-bold">{tr('overview_timing', 'Phase timing')}</h3>{timed ? <><p className="mb-2 text-sm text-slate-700">{tr('overview_timing_source', 'From the latest whole-lesson script; review against the current plan.')} {_lessonPlanText(timed.title)}</p><ol className="space-y-1 text-sm">{timed.steps.map((step,index) => <li key={index}>{_lessonPlanText(step.title)} · {step.minutes} {tr('overview_minutes', 'minutes')}</li>)}</ol><p className="mt-2 text-sm font-bold">{tr('overview_total', 'Total:')} {timed.steps.reduce((sum,step) => sum + step.minutes,0)} {tr('overview_minutes', 'minutes')}</p></> : <p className={'text-sm ' + (latestWhole ? 'text-amber-900' : 'text-slate-700')}>{latestWhole ? tr('overview_invalid_timing', 'The latest whole-lesson script has incomplete or inconsistent timing. Review its step times before teaching.') : tr('overview_no_timing', 'No whole-lesson script timing is recorded. Segment scripts cover only part of the lesson.')}</p>}</section>
     </div>
   </details>;
@@ -282,7 +282,7 @@ function LessonPlanView(props) {
                         <div className="bg-indigo-50 p-4 sm:p-6 rounded-xl border border-indigo-100 shadow-sm">
                              <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
                                  <div>
-                                     <h2 className="text-2xl font-bold text-indigo-900 mb-1">{t('lesson_plan.header_title')}</h2>
+                                     <h2 className="text-2xl font-bold text-indigo-900 mb-1">{t('lesson_plan.title') || 'Lesson Plan'}</h2>
                                      {generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && (
                                          <div className="mb-1 inline-flex flex-wrap items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800" data-unit-path-node={generatedContent.data.unitPath.nodeId}>
                                              <span>🗺️ {t('lesson_plan.unit_path_label') || 'Unit Path'}</span>
@@ -328,7 +328,7 @@ function LessonPlanView(props) {
                                     </button>
                                  </div>
                              </div>
-                             {!audienceView && <LessonPlanOverview plan={generatedContent} t={t} />}
+                             {!audienceView && <LessonPlanOverview plan={generatedContent} t={t} BilingualFieldRenderer={BilingualFieldRenderer} normalizeMaterialItem={normalizeMaterialItem} />}
                                {!audienceView && <PlanningInputsSummary resource={generatedContent} history={history} t={t} onOpen={props.onOpenPlanningResource} />}
                              {!audienceView && typeof props.onGenerateTeachingScript === 'function' && (
                                  <div className="mb-6">
