@@ -8273,10 +8273,11 @@ window.StemLab = window.StemLab || {
         return Object.keys(result).every(function (key) { return finite(result[key]) && result[key] > 0; }) ? result : null;
       }
       function powerPlanningKinds() { return ['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']; }
-      function powerRecordVersion(kind) { return powerRotationKinds().indexOf(kind) >= 0 ? 3 : powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
+      function powerMotionKinds() { return ['effortFromPower', 'loadFromPower']; }
+      function powerRecordVersion(kind) { return powerMotionKinds().indexOf(kind) >= 0 ? 4 : powerRotationKinds().indexOf(kind) >= 0 ? 3 : powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
       function powerKinds(b) {
         return ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime'].concat(
-          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds(), b.id === 'windlass' || b.id === 'screw' ? powerRotationKinds() : []);
+          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds(), b.id === 'windlass' || b.id === 'screw' ? powerRotationKinds() : [], powerMotionKinds());
       }
       function powerRadius(settings, b) { return b.id === 'windlass' ? settings.windlassHandleR : b.id === 'screw' ? settings.screwHandleR : null; }
       function powerFmt(value) { return finite(value) ? value.toLocaleString('en-US', { useGrouping: false, maximumSignificantDigits: 6 }) : '—'; }
@@ -8331,6 +8332,17 @@ window.StemLab = window.StemLab || {
             '(' + String(settings[b.loadKey]) + ' N × ' + String(settings.loadDistance) + ' m) ÷ (' + String(budget) + ' W × ' + String(model.seconds) + ' s) × 100']
         };
         if (planning[kind]) return { unit: planning[kind][0], target: model[kind], title: planning[kind][1], given: planning[kind][2], formula: planning[kind][3], setup: planning[kind][4] };
+        if (powerMotionKinds().indexOf(kind) >= 0) {
+          var inputForce = kind === 'effortFromPower', watts = inputForce ? model.inputPower : model.usefulPower, speed = inputForce ? model.handSpeed : model.loadSpeed;
+          return { unit: 'N', target: watts / speed,
+            title: inputForce ? __alloT('stem.machinelab.force_speed_q_effort', 'Find effort force from power and hand speed') : __alloT('stem.machinelab.force_speed_q_load', 'Find load force from useful power and movement rate'),
+            given: (inputForce ? __alloT('stem.machinelab.power_input', 'Average input power') : __alloT('stem.machinelab.power_useful', 'Average useful power')) + ': ' + p(watts) + ' W · ' +
+              (inputForce ? __alloT('stem.machinelab.power_hand', 'Average hand-path speed') : b.id === 'ramp' ? __alloT('stem.machinelab.power_rise', 'Average vertical rise rate') : __alloT('stem.machinelab.power_load', 'Average load movement rate')) + ': ' + p(speed) + ' m/s',
+            formula: inputForce ? __alloT('stem.machinelab.force_speed_rule_effort', 'Effort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.')
+              : b.id === 'ramp' ? __alloT('stem.machinelab.force_speed_rule_ramp', 'Load force = useful power ÷ vertical rise rate. Use vertical rise per second, not speed along the ramp. Useful power already accounts for efficiency; do not apply it again.')
+              : __alloT('stem.machinelab.force_speed_rule_load', 'Load force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.'),
+            setup: p(watts) + ' W ÷ (' + p(speed) + ' m/s)' };
+        }
         if (powerRotationKinds().indexOf(kind) >= 0) {
           var rotation = powerRotation(model, settings, b);
           if (!rotation) return null;
@@ -8529,6 +8541,49 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'scale', style: Object.assign({}, style, { margin: '12px 0 0', fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.power_visual_scale', 'Longer bars mean more power. All rows use the same scale; the dashed line marks the budget. Small values may be too narrow to see, so compare the numbers too. These time comparisons do not change your settings.'))
           ]);
         }
+        function forceSpeedGuide() {
+          var titleId = prefix + 'force-speed-title-' + bench.id;
+          var inputForce = model.inputPower / model.handSpeed, loadForce = model.usefulPower / model.loadSpeed;
+          var scales = [Math.max(inputForce, loadForce), Math.max(model.handSpeed, model.loadSpeed), Math.max(model.inputPower, model.usefulPower)];
+          var rows = [
+            ['input', __alloT('stem.machinelab.force_speed_input', 'At your hand · input'), T.effort, [
+              ['inputForce', __alloT('stem.machinelab.force_speed_effort', 'Effort force'), inputForce, 'N'],
+              ['handSpeed', __alloT('stem.machinelab.power_hand', 'Average hand-path speed'), model.handSpeed, 'm/s'],
+              ['inputPower', __alloT('stem.machinelab.power_input', 'Average input power'), model.inputPower, 'W']]],
+            ['output', __alloT('stem.machinelab.force_speed_output', 'At the load · useful output'), T.load, [
+              ['loadForce', __alloT('stem.machinelab.force_speed_load', 'Load force'), loadForce, 'N'],
+              ['loadSpeed', bench.id === 'ramp' ? __alloT('stem.machinelab.power_rise', 'Average vertical rise rate') : __alloT('stem.machinelab.power_load', 'Average load movement rate'), model.loadSpeed, 'm/s'],
+              ['usefulPower', __alloT('stem.machinelab.power_useful', 'Average useful power'), model.usefulPower, 'W']]]
+          ];
+          return h('details', { key: 'force-speed', 'data-ml-power-force-speed': bench.id, className: 'ml-force-speed-guide', style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
+            h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.force_speed_title', 'Connect force, speed and power')),
+            h('figure', { key: 'figure', 'aria-labelledby': titleId, style: Object.assign({}, panelStyle, { marginLeft: 0, marginRight: 0 }) }, [
+              h('figcaption', { key: 'title', id: titleId, style: Object.assign({}, style, { fontSize: 17, fontWeight: 850 }) }, __alloT('stem.machinelab.force_speed_equation', 'Force × speed = power')),
+              h('p', { key: 'units', style: style }, __alloT('stem.machinelab.force_speed_units', 'Newtons × metres per second = watts. Compare each quantity between the hand and the load.')),
+              rows.map(function (row) { return h('section', { key: row[0], 'data-ml-power-motion-row': row[0], 'aria-labelledby': titleId + '-' + row[0], style: { marginTop: 18 } }, [
+                h('h3', { key: 'heading', id: titleId + '-' + row[0], style: Object.assign({}, style, { fontSize: 14, fontWeight: 850, margin: '0 0 8px' }) }, row[1]),
+                h('dl', { key: 'metrics', className: 'ml-force-speed-grid', style: { margin: 0 } }, row[3].map(function (metric, index) {
+                  return h('div', { key: metric[0], 'data-ml-power-motion-metric': metric[0], 'data-value': metric[2], style: { minWidth: 0, padding: 10, border: '1px solid ' + T.border, borderTop: '3px solid ' + row[2], borderRadius: 8, background: T.card } }, [
+                    h('dt', { key: 'term', style: Object.assign({}, style, { fontSize: 12 }) }, metric[1]),
+                    h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 18 }) }, powerFmt(metric[2]) + ' ' + metric[3]),
+                    h('dd', { key: 'track', className: 'ml-force-speed-track', 'aria-hidden': 'true', style: { margin: '9px 0 0', height: 10, background: T.bg, outline: '1px solid ' + T.border } },
+                      h('span', { 'data-ml-power-motion-bar': metric[0], 'data-value': metric[2], 'data-pattern': row[0] === 'input' ? 'solid' : 'striped', style: {
+                        display: 'block', height: '100%', width: (metric[2] / scales[index] * 100) + '%', color: row[2],
+                        backgroundColor: row[0] === 'input' ? row[2] : T.card, backgroundImage: row[0] === 'input' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' } }))
+                  ]);
+                })),
+                h('p', { key: 'equation', 'data-ml-power-motion-equation': row[0], style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + row[2], background: T.card, fontVariantNumeric: 'tabular-nums' }) },
+                  powerFmt(row[3][0][2]) + ' N × ' + powerFmt(row[3][1][2]) + ' m/s = ' + powerFmt(row[3][2][2]) + ' W')
+              ]); }),
+              h('p', { key: 'scale', style: Object.assign({}, style, { fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.force_speed_scale', 'Compare force with force, speed with speed, and power with power. Each pair shares a scale starting at zero; different units have separate scales. Solid bars mark input; stripes mark useful output. Read the numbers beside tiny bars.'))
+            ]),
+            h('p', { key: 'balance', style: style }, __alloT('stem.machinelab.force_speed_balance', 'Input power = useful power + power lost: ') + powerFmt(model.inputPower) + ' W = ' + powerFmt(model.usefulPower) + ' W + ' + powerFmt(model.lossPower) + ' W.'),
+            h('p', { key: 'scope', style: style }, __alloT('stem.machinelab.force_speed_scope', 'This model assumes constant force along the motion and steady average rates. The hand speed follows the full hand path, including a turning handle. Input power already includes the selected efficiency; do not apply losses twice.')),
+            bench.id === 'ramp' ? h('p', { key: 'ramp', style: style }, __alloT('stem.machinelab.force_speed_ramp_scope', 'For the ramp, load force acts vertically, so useful power uses vertical rise rate. Hand speed follows the ramp path.')) : null,
+            h('p', { key: 'practice', style: style }, __alloT('stem.machinelab.force_speed_try', 'Try Effort from power and Load from power in the practice menu. Divide matching power by speed to recover force.')),
+            h('style', { key: 'style' }, '.ml-force-speed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-force-speed-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-force-speed-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-force-speed-track span{color:CanvasText!important;background-color:Canvas!important}.ml-force-speed-track [data-pattern=solid]{background-color:CanvasText!important}}')
+          ]);
+        }
         function rotationGuide() {
           var rotation = powerRotation(model, session.settings, bench);
           if (!rotation) return null;
@@ -8697,13 +8752,15 @@ window.StemLab = window.StemLab || {
             angularTravel: __alloT('stem.machinelab.rot_choose_angle', 'Angular travel'),
             omega: __alloT('stem.machinelab.rot_choose_omega', 'Angular speed'),
             rotationalWork: __alloT('stem.machinelab.rot_choose_work', 'Work from torque'),
-            rotationalPower: __alloT('stem.machinelab.rot_choose_power', 'Power from torque')
+            rotationalPower: __alloT('stem.machinelab.rot_choose_power', 'Power from torque'),
+            effortFromPower: __alloT('stem.machinelab.force_speed_choose_effort', 'Effort from power'),
+            loadFromPower: __alloT('stem.machinelab.force_speed_choose_load', 'Load from power')
           };
           function skillMap() {
             var records = {}, checked = 0, solutions = 0;
             saved.forEach(function (record) { records[record.question] = record; if (record.completion === 'checked') checked++; else solutions++; });
             var families = [
-              ['power', __alloT('stem.machinelab.map_power', 'Power and energy'), __alloT('stem.machinelab.map_power_help', 'Follow useful power and losses.'), ['inputPower', 'usefulPower', 'lossPower']],
+              ['power', __alloT('stem.machinelab.map_power', 'Power and energy'), __alloT('stem.machinelab.map_power_help', 'Follow useful power and losses.'), ['inputPower', 'usefulPower', 'lossPower', 'effortFromPower', 'loadFromPower']],
               ['motion', __alloT('stem.machinelab.map_motion', 'Movement rates'), __alloT('stem.machinelab.map_motion_help', 'Connect distance with task time.'), ['handSpeed', 'loadSpeed']],
               ['planning', __alloT('stem.machinelab.map_plan', 'Plan a task'), __alloT('stem.machinelab.map_plan_help', 'Explore time, energy and power limits.'), ['budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']],
               ['rotation', __alloT('stem.machinelab.map_rotation', 'Rotation'), __alloT('stem.machinelab.map_rotation_help', 'Connect turns, torque, work and power.'), ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']]
@@ -8779,8 +8836,10 @@ window.StemLab = window.StemLab || {
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-power-result': result }, result === 'invalid'
                 ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
+                : result === 'unit' && powerMotionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.force_speed_unit_help', 'Use N for force. Watts divided by metres per second gives newtons; torque uses N·m.')
                 : result === 'unit' && powerRotationKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.rot_unit_help', 'Use turns for revolutions, rad for angular travel, rad/s for angular speed, J for work, or W for power. Torque uses N·m; energy uses J.')
                 : result === 'unit' ? __alloT('stem.machinelab.power_planning_unit_help', 'Check the requested unit: W for power, J for energy, N for load, m for movement, % for efficiency, m/s for rate, s for time, N·m for torque, or rpm for rotation rate.')
+                : result === 'incorrect' && powerMotionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.force_speed_retry', 'Not yet. ') + question.formula
                 : result === 'incorrect' && powerRotationKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.rot_retry', 'Not yet. ') + question.formula
                 : result === 'incorrect' ? (draft.question === 'budgetEnergy' ? __alloT('stem.machinelab.power_retry_budget_energy', 'Not yet. Multiply the input-power budget by time in seconds to find joules; do not apply efficiency to input energy.') : draft.question === 'budgetLoad' ? __alloT('stem.machinelab.power_retry_budget_load', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held movement.') : draft.question === 'budgetMovement' ? __alloT('stem.machinelab.power_retry_budget_movement', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held load force.') : draft.question === 'requiredEfficiency' ? __alloT('stem.machinelab.power_retry_required_efficiency', 'Not yet. Divide load × movement by power × seconds, then multiply by 100. Keep a result above 100%; it shows that efficiency alone cannot meet the task.') : __alloT('stem.machinelab.power_retry', 'Not yet. Check the percentage, time conversion and calculation. A hint can help.'))
                 : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) +
@@ -8804,7 +8863,7 @@ window.StemLab = window.StemLab || {
           h('p', { key: 'seconds', 'data-ml-power-seconds': session.seconds, style: style }, __alloT('stem.machinelab.power_time_given', 'Task time: ') + (session.seconds === null ? '—' : powerFmt(session.seconds)) + ' s'),
           input('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), !(budget >= 0.01 && budget <= 100000), prefix + 'ranges-' + bench.id),
           h('p', { key: 'ranges', id: prefix + 'ranges-' + bench.id, style: style }, __alloT('stem.machinelab.power_ranges', 'Efficiency: 1–100%. Duration: 0.01–3600 seconds (up to 60 minutes). Input-power budget: 0.01–100000 W. One minute equals 60 seconds.')),
-          model ? h('div', { key: 'valid' }, [comparison(), rotationGuide(), budgetPlanning(), practice()])
+          model ? h('div', { key: 'valid' }, [comparison(), forceSpeedGuide(), rotationGuide(), budgetPlanning(), practice()])
             : h('p', { key: 'invalid', role: 'status', style: style }, __alloT('stem.machinelab.power_invalid', 'Enter valid assumptions and a working station setup before calculating or checking an answer.')),
           h('p', { key: 'count', 'data-ml-power-count': saved.length, style: style }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),

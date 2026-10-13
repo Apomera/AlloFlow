@@ -18,7 +18,7 @@ const SKILLS = [
 ];
 const LINEAR_KINDS = ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime'];
 const PLANNING_KINDS = ['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'];
-const ROTARY_KINDS = [...LINEAR_KINDS, 'torque', 'rpm', ...PLANNING_KINDS, ...SKILLS.map(q => q.id)];
+const ROTARY_KINDS = [...LINEAR_KINDS, 'torque', 'rpm', ...PLANNING_KINDS, ...SKILLS.map(q => q.id), 'effortFromPower', 'loadFromPower'];
 const CASES = BENCHES.flatMap(b => SKILLS.map(q => ({ b, q, name: `${b.id}/${q.id}` })));
 function expected(b, settings = b.settings, movement = 0.5, percent = 80, seconds = 5) {
   const radius = settings[b.radius], load = settings[b.load];
@@ -100,10 +100,10 @@ describe('Machine Lab: independent rotary geometry and visuals', () => {
     answer(s, SKILLS[3], 50 * target.turns); expect(s.result()).toBe('incorrect'); s.edit('answer', 250); s.click('check'); expect(s.result()).toBe('correct');
     for (const q of [SKILLS[3], SKILLS[4]]) { answer(s, q, target[q.id] / 0.8); expect(s.result()).toBe('incorrect'); s.edit('answer', target[q.id]); s.click('check'); expect(s.result()).toBe('correct'); }
   });
-  it('keeps all four linear stations at ten skills without a rotation guide', () => {
+  it('keeps all four linear stations at twelve skills without a rotation guide', () => {
     for (const bench of ['lever', 'pulley', 'ramp', 'wedge']) {
       const s = session(BENCHES[0], { bench }); expect(s.guide()).toBeUndefined();
-      expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual([...LINEAR_KINDS, ...PLANNING_KINDS]);
+      expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual([...LINEAR_KINDS, ...PLANNING_KINDS, 'effortFromPower', 'loadFromPower']);
     }
   });
   it('shows rotary practice only in middle and high-school bands', () => {
@@ -167,11 +167,11 @@ describe('Machine Lab: rotary practice state integrity', () => {
     const s = session(); answer(s, SKILLS[0], expected(BENCHES[0]).turns); const actions = ['check', 'hint', 'reveal', 'save', 'next'].map(s.action), input = s.byId('answer');
     s.patch(patch); const before = s.state(); actions.forEach(s.invoke); input.props.onChange({ target: { value: '999' } }); expect(s.state()).toBe(before); expect(s.state().benchPowerRecords).toBeUndefined();
   });
-  it('offers seventeen rotary skills and cycles the five new skills back to input power', () => {
+  it('offers nineteen rotary skills and cycles the five rotary skills into force practice', () => {
     for (const b of BENCHES) {
       const s = session(b); expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(ROTARY_KINDS); s.edit('question', 'turns');
       for (let index = 0; index < SKILLS.length; index++) { expect(s.byId('question').props.value).toBe(SKILLS[index].id); s.edit('answer', '123'); s.edit('unit', 'W'); s.click('hint'); s.click('reveal'); s.click('next');
-        expect(s.byId('question').props.value).toBe(SKILLS[index + 1]?.id || 'inputPower'); expect(s.byId('answer').props.value).toBe(''); expect(s.byId('unit').props.value).toBe(''); expect(s.result()).toBeUndefined(); }
+        expect(s.byId('question').props.value).toBe(SKILLS[index + 1]?.id || 'effortFromPower'); expect(s.byId('answer').props.value).toBe(''); expect(s.byId('unit').props.value).toBe(''); expect(s.result()).toBeUndefined(); }
       expect(s.state().benchPowerRecords).toBeUndefined();
     }
   });

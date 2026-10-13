@@ -3,7 +3,7 @@ import { loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widget
 
 const STATIONS = ['lever', 'pulley', 'ramp', 'wedge', 'windlass', 'screw'];
 const FAMILIES = {
-  power: ['inputPower', 'usefulPower', 'lossPower'],
+  power: ['inputPower', 'usefulPower', 'lossPower', 'effortFromPower', 'loadFromPower'],
   motion: ['handSpeed', 'loadSpeed'],
   planning: ['budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'],
   rotation: ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']
@@ -58,7 +58,7 @@ describe('Machine Lab: skill map inventory', () => {
       expect(nodes(section).filter(n => n.props?.['data-ml-power-skill']).map(n => n.props['data-ml-power-skill'])).toEqual(expected);
     }
     const buttons = nodes(map).filter(n => n.props?.['data-ml-power-skill']);
-    expect(buttons).toHaveLength(rotary ? 17 : 10);
+    expect(buttons).toHaveLength(rotary ? 19 : 12);
     expect(new Set(buttons.map(n => n.props['data-ml-power-skill'])).size).toBe(buttons.length);
     expect(buttons.map(n => n.props['data-ml-power-skill']).sort()).toEqual(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value).sort());
     for (const button of buttons) {

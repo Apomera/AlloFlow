@@ -1,0 +1,221 @@
+{
+  "file": "tests/machinelab_force_speed.test.js",
+  "sha256": "4ff47b8af86d36bed084eb974491661da2acc43958f7361aa3f95a2b4c75fa75",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: force speed equations and guide derives six 'lever' quantities and proportional paired bars at legal assumption endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: force speed equations and guide derives six 'pulley' quantities and proportional paired bars at legal assumption endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: force speed equations and guide derives six 'ramp' quantities and proportional paired bars at legal assumption endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: force speed equations and guide derives six 'wedge' quantities and proportional paired bars at legal assumption endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: force speed equations and guide derives six 'windlass' quantities and proportional paired bars at legal assumption endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: force speed equations and guide derives six 'screw' quantities and proportional paired bars at legal assumption endpoints",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: force speed equations and guide separates 'lever' force from rate and rejects mixed-side or repeated-efficiency calculations",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: force speed equations and guide separates 'pulley' force from rate and rejects mixed-side or repeated-efficiency calculations",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: force speed equations and guide separates 'ramp' force from rate and rejects mixed-side or repeated-efficiency calculations",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: force speed equations and guide separates 'wedge' force from rate and rejects mixed-side or repeated-efficiency calculations",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: force speed equations and guide separates 'windlass' force from rate and rejects mixed-side or repeated-efficiency calculations",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: force speed equations and guide separates 'screw' force from rate and rejects mixed-side or repeated-efficiency calculations",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: force speed equations and guide hides the guide and practice when assumptions or station geometry are invalid",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: force speed equations and guide labels ramp output as vertical rise and correctly reverses a sub-one lever force comparison",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'lever/effortFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'lever/loadFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'pulley/effortFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'pulley/loadFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'ramp/effortFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'ramp/loadFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'wedge/effortFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'wedge/loadFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'windlass/effortFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'windlass/loadFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'screw/effortFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: force speed calculation practice checks and saves 'screw/loadFromPower' as a version-4 fixed snapshot with its selected skill card",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: force speed calculation practice requires newtons for 'effortFromPower' and refuses a forged disabled save",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: force speed calculation practice requires newtons for 'loadFromPower' and refuses a forged disabled save",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: force speed calculation practice retains two 'effortFromPower' hints and honest viewed-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 29,
+      "fullName": "Machine Lab: force speed calculation practice retains two 'loadFromPower' hints and honest viewed-solution provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 30,
+      "fullName": "Machine Lab: force speed calculation practice checks one-percent 'effortFromPower' rounding without accepting the neighboring outside value",
+      "executedPassCount": 1
+    },
+    {
+      "index": 31,
+      "fullName": "Machine Lab: force speed calculation practice checks one-percent 'loadFromPower' rounding without accepting the neighboring outside value",
+      "executedPassCount": 1
+    },
+    {
+      "index": 32,
+      "fullName": "Machine Lab: force speed guarded state rejects delayed force handlers after station changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 33,
+      "fullName": "Machine Lab: force speed guarded state rejects delayed force handlers after view changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 34,
+      "fullName": "Machine Lab: force speed guarded state rejects delayed force handlers after geometry changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 35,
+      "fullName": "Machine Lab: force speed guarded state rejects delayed force handlers after assumptions changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 36,
+      "fullName": "Machine Lab: force speed guarded state rejects delayed force handlers after question changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 37,
+      "fullName": "Machine Lab: force speed guarded state appends the two skills across 86 station combinations and wraps from load force to input power",
+      "executedPassCount": 1
+    },
+    {
+      "index": 38,
+      "fullName": "Machine Lab: verifiable force speed records renders v1 through v4 together without changing old version contracts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 39,
+      "fullName": "Machine Lab: verifiable force speed records revalidates 'effortFromPower' saved arithmetic, settings, units and provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 40,
+      "fullName": "Machine Lab: verifiable force speed records revalidates 'loadFromPower' saved arithmetic, settings, units and provenance",
+      "executedPassCount": 1
+    },
+    {
+      "index": 41,
+      "fullName": "Machine Lab: verifiable force speed records retains a fixed saved setup after minute conversion and geometry changes and escapes record input",
+      "executedPassCount": 1
+    },
+    {
+      "index": 42,
+      "fullName": "Machine Lab: verifiable force speed records rejects missing, negative and nonfinite answers for both force calculations",
+      "executedPassCount": 1
+    }
+  ]
+}

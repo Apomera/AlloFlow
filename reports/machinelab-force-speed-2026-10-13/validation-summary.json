@@ -1,0 +1,11 @@
+{
+  "sourceSha256": "301b7f605d71623e58af46454d15bea56b4710ed643191523b69593815ff714f",
+  "onlyPowerRegionChanged": true,
+  "tests": 329,
+  "testFiles": 10,
+  "nativeTestProcesses": 20,
+  "browserChecks": 1024,
+  "browserScenarios": 8,
+  "inspectedScreenshots": 4,
+  "sourceMirrorParity": true
+}

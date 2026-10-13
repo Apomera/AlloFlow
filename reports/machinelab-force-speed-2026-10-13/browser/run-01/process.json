@@ -1,0 +1,103 @@
+{
+  "command": "node dev-tools/ml_force_speed_qa.cjs reports/machinelab-force-speed-2026-10-13/browser/run-01",
+  "startedAt": "2026-10-13T19:20:55.762Z",
+  "finishedAt": "2026-10-13T19:22:13.675Z",
+  "observedExitCode": 0,
+  "signal": null,
+  "error": null,
+  "sourceSha256": "301b7f605d71623e58af46454d15bea56b4710ed643191523b69593815ff714f",
+  "sourceSha256After": "301b7f605d71623e58af46454d15bea56b4710ed643191523b69593815ff714f",
+  "publicMirrorSha256": "301b7f605d71623e58af46454d15bea56b4710ed643191523b69593815ff714f",
+  "publicMirrorSha256After": "301b7f605d71623e58af46454d15bea56b4710ed643191523b69593815ff714f",
+  "sourceExactInNativePage": true,
+  "scenarios": 8,
+  "checks": 1024,
+  "errors": [],
+  "screenshots": [
+    {
+      "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/desktop-windlass-force-speed.png",
+      "sha256": "e14510983a5c9e1159e93905db9fb2914bc376f3e130d17122a6f5489e4d6a0e",
+      "bytes": 39212,
+      "width": 523,
+      "height": 860,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/desktop-ramp-force-speed.png",
+      "sha256": "daab07a3e999839e5af4ae3c91d38909e067eda6bfec9a06efeb759028af0b8e",
+      "bytes": 42120,
+      "width": 523,
+      "height": 895,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/dark-phone-screw-force-speed.png",
+      "sha256": "f3d814ba20d51083221c8ae02d609c12e20a2f274e0f84925e1c5a2c08c7be5a",
+      "bytes": 45982,
+      "width": 258,
+      "height": 1400,
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/forced-colors-windlass-force-speed.png",
+      "sha256": "51e84dc6e3c95b1a94f897d47caf35ea10cccdd8d14879fdc3b54189af24dbaa",
+      "bytes": 39272,
+      "width": 258,
+      "height": 1399,
+      "visuallyInspected": true
+    }
+  ],
+  "harness": {
+    "path": "dev-tools/ml_force_speed_qa.cjs",
+    "sha256": "8417fc26d65ef5e855b79c0d806b48c2fe0a85cb5d8ee9e213f3ab1203d35aff",
+    "bytes": 16170
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/harness-snapshot.cjs",
+    "sha256": "8417fc26d65ef5e855b79c0d806b48c2fe0a85cb5d8ee9e213f3ab1203d35aff",
+    "bytes": 16170
+  },
+  "helperPreamble": {
+    "path": "dev-tools/ml_power_lab_qa.cjs",
+    "sha256": "6aae492c9b2345e20279bc1e215837ce8d82a014744b0bfbf801362d97ff61b1",
+    "bytes": 23260
+  },
+  "baseHarness": {
+    "path": "dev-tools/ml_scene_shots.cjs",
+    "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7",
+    "bytes": 20872
+  },
+  "results": {
+    "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/results.json",
+    "sha256": "ae6d0bae5924fd580027b8f7f3c1dde0d996eb292f73b9bb8e87a74ff9ef5418",
+    "bytes": 159444
+  },
+  "nativePage": {
+    "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/ml-shots.html",
+    "sha256": "64c4687c09f766fee05ffcfd685d1c1126662289c289de80229b6ba3653f202c",
+    "bytes": 2537353
+  },
+  "console": {
+    "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/console.log",
+    "sha256": "157053a6b8766c2e219f96ea404a39563c9d50dc637bfd18f11f843f4c1b1dee",
+    "bytes": 354
+  },
+  "downloadedRecord": {
+    "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/downloaded-record.txt",
+    "sha256": "de62a8ccc540b253d9cc1be785899431b115aa8b40c9faab326d9bf0577a927e",
+    "bytes": 3405
+  },
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ],
+  "wrapperObservedExitCode": 0,
+  "wrapperToolSession": 51479,
+  "visualReview": {
+    "reviewers": [
+      "force_speed_browser",
+      "root"
+    ],
+    "notes": "All four captures inspected: desktop and ramp columns align; dark and forced-color phone layouts fit; text, numbers and equations remain readable; output stripes distinguish the rows; tiny screw bars retain exact numeric labels."
+  }
+}
