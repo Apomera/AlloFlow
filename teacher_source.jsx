@@ -1056,6 +1056,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [groupNameError, setGroupNameError] = useState('');
   const [rosterNotice, setRosterNotice] = useState('');
   const [rosterNoticeTone, setRosterNoticeTone] = useState('info');
+  const [cicoOpen, setCicoOpen] = useState(false);
   const [rosterImportUndo, setRosterImportUndo] = useState(null);
   const [showPrintOptions, setShowPrintOptions] = useState(false);
   const [printLocationPosition, setPrintLocationPosition] = useState('after-name');
@@ -1740,8 +1741,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     </div>
   );
   return (
-    <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="teacher-roster-panel-title" className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-200">
-      <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-2xl w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col border-0 sm:border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 min-w-0">
+    <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={cicoOpen ? "teacher-cico-title" : "teacher-roster-panel-title"} className="fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-200">
+      {cicoOpen && <CicoCardsView rosterKey={rosterKey} onBack={() => setCicoOpen(false)} />}
+      <div style={cicoOpen ? { display: 'none' } : undefined} className="bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-2xl w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col border-0 sm:border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 min-w-0">
         <div className="flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-slate-100">
           <div data-help-key="roster_panel_header">
             <h2 id="teacher-roster-panel-title" className="text-lg font-black text-slate-800 flex items-center gap-2">
@@ -1764,6 +1766,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <button type="button" onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
           </button>
+          {!isParentMode && !isIndependentMode && <button type="button" onClick={() => setCicoOpen(true)} disabled={!rosterKey?.classId || !Object.keys(rosterKey?.learnerIds || {}).length} className="px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors motion-reduce:transition-none disabled:opacity-50 flex items-center gap-1"><Award size={14} /> Daily check-in cards</button>}
           {!isParentMode && !isIndependentMode && <button type="button" onClick={handleStoreRosterExport} disabled={!rosterKey?.classId || !Object.keys(rosterKey?.students || {}).length} aria-describedby="roster-store-export-note" className="px-3 py-1.5 min-h-[44px] bg-purple-50 text-purple-800 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
             <Download size={14} /> Store review file
           </button>}
@@ -8608,7 +8611,264 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
 // to a "Loading…" placeholder forever.
 // ─────────────────────────────────────────────────────────────────────────────
 window.AlloModules = window.AlloModules || {};
+// Daily check-in cards (Tier 2 CICO, 2026-10-13). Ratings stay on this device
+// under their own key: never in rosterKey, roster exports, live sessions or the
+// School Store. The only thing that leaves is an "Individual goal progress" row
+// in the device-local Store recognition worksheet, added when the teacher asks.
+const ALLO_CICO_KEY = 'allo_cico_cards_v1';
+const ALLO_CICO_RECOGNITION_LOG_KEY = 'allo_school_rewards_recognition_log_v1';
+const ALLO_CICO_GOAL_LABEL = 'Individual goal progress';
+const ALLO_CICO_LIMITS = { periods: 12, expectations: 6, students: 60, days: 200, label: 40 };
+const alloCicoDefaults = () => ({ periods: ['Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5'], expectations: ['Be safe', 'Be respectful', 'Be responsible'], goalPct: 80 });
+const alloCicoLabels = (list, max, fallback) => {
+  const out = (Array.isArray(list) ? list : []).map(v => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, ALLO_CICO_LIMITS.label)).filter(Boolean).slice(0, max);
+  return out.length ? out : fallback.slice();
+};
+const alloCicoDate = (value) => {
+  const d = value instanceof Date ? value : new Date(value == null ? Date.now() : value);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+};
+const alloCicoIsDate = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s + 'T00:00:00Z')) && new Date(s + 'T00:00:00Z').toISOString().slice(0, 10) === s;
+const alloCicoNormalizeSettings = (raw) => {
+  const base = alloCicoDefaults(), value = raw && typeof raw === 'object' ? raw : {};
+  const goal = Math.round(Number(value.goalPct));
+  return { periods: alloCicoLabels(value.periods, ALLO_CICO_LIMITS.periods, base.periods), expectations: alloCicoLabels(value.expectations, ALLO_CICO_LIMITS.expectations, base.expectations), goalPct: goal >= 1 && goal <= 100 ? goal : base.goalPct };
+};
+const alloCicoNormalizeDay = (raw) => {
+  const value = raw && typeof raw === 'object' ? raw : {}, ratings = {};
+  Object.keys(value.ratings && typeof value.ratings === 'object' ? value.ratings : {}).forEach(key => {
+    const n = value.ratings[key];
+    if (/^\d{1,2}:\d$/.test(key) && (n === 0 || n === 1 || n === 2)) ratings[key] = n;
+  });
+  const day = { ratings };
+  if (value.checkIn === true) day.checkIn = true;
+  if (value.checkOut === true) day.checkOut = true;
+  if (Number(value.sentAt) > 0) day.sentAt = Number(value.sentAt);
+  return day;
+};
+const alloCicoNormalize = (raw) => {
+  const out = { version: 1, classes: {} }, classes = raw && typeof raw === 'object' && raw.classes && typeof raw.classes === 'object' ? raw.classes : {};
+  Object.keys(classes).slice(0, 50).forEach(classId => {
+    const cls = classes[classId] && typeof classes[classId] === 'object' ? classes[classId] : {}, students = {};
+    Object.keys(cls.students && typeof cls.students === 'object' ? cls.students : {}).slice(0, ALLO_CICO_LIMITS.students).forEach(learnerId => {
+      const s = cls.students[learnerId] && typeof cls.students[learnerId] === 'object' ? cls.students[learnerId] : {}, days = {};
+      Object.keys(s.days && typeof s.days === 'object' ? s.days : {}).filter(alloCicoIsDate).sort().slice(-ALLO_CICO_LIMITS.days).forEach(date => { days[date] = alloCicoNormalizeDay(s.days[date]); });
+      students[learnerId] = { enrolledAt: Number(s.enrolledAt) || 0, days };
+    });
+    out.classes[classId] = { settings: alloCicoNormalizeSettings(cls.settings), students };
+  });
+  return out;
+};
+const alloCicoLoad = () => {
+  try { return alloCicoNormalize(JSON.parse(localStorage.getItem(ALLO_CICO_KEY) || 'null')); } catch (_) { return alloCicoNormalize(null); }
+};
+const alloCicoSave = (store) => {
+  try { localStorage.setItem(ALLO_CICO_KEY, JSON.stringify(store)); return true; } catch (_) { return false; }
+};
+// Percent of points earned out of points possible in the periods actually rated,
+// so an absence or a skipped period does not count against the student.
+const alloCicoScore = (day, settings) => {
+  const ratings = day && day.ratings ? day.ratings : {};
+  let earned = 0, rated = 0;
+  settings.periods.forEach((_, p) => settings.expectations.forEach((__, e) => {
+    const n = ratings[p + ':' + e];
+    if (n === 0 || n === 1 || n === 2) { earned += n; rated += 1; }
+  }));
+  const possible = rated * 2, pct = possible ? Math.round(earned / possible * 100) : null;
+  return { earned, possible, rated, pct, met: pct != null && pct >= settings.goalPct };
+};
+const alloCicoTrend = (student, settings, limit = 10) => Object.keys(student && student.days ? student.days : {}).sort()
+  .map(date => Object.assign({ date }, alloCicoScore(student.days[date], settings))).filter(row => row.rated > 0).slice(-limit);
+// Adds one worksheet row per student per day; a second tap is a no-op.
+const alloCicoAddToStoreWorksheet = (classId, learnerId, codename, date, now = Date.now()) => {
+  let log;
+  try { log = JSON.parse(localStorage.getItem(ALLO_CICO_RECOGNITION_LOG_KEY) || 'null'); } catch (_) { log = null; }
+  if (!log || typeof log !== 'object' || !log.sessions || typeof log.sessions !== 'object') log = { sessions: {} };
+  const key = 'daily-goal-' + date, id = 'daily-goal:' + classId + ':' + learnerId + ':' + date, name = String(codename || 'Student').slice(0, 80);
+  const session = log.sessions[key] && typeof log.sessions[key] === 'object' && log.sessions[key].rows ? log.sessions[key] : { rows: {}, updatedAt: 0 };
+  const row = session.rows[name] || (session.rows[name] = { ids: [], reasons: {}, lastAt: 0 });
+  if (!Array.isArray(row.ids)) row.ids = [];
+  if (!row.reasons || typeof row.reasons !== 'object') row.reasons = {};
+  if (row.ids.indexOf(id) !== -1) return 'already';
+  row.ids.push(id);
+  row.reasons[ALLO_CICO_GOAL_LABEL] = (row.reasons[ALLO_CICO_GOAL_LABEL] || 0) + 1;
+  row.lastAt = Math.max(Number(row.lastAt) || 0, now);
+  session.updatedAt = now;
+  log.sessions[key] = session;
+  try { localStorage.setItem(ALLO_CICO_RECOGNITION_LOG_KEY, JSON.stringify(log)); } catch (_) { return 'failed'; }
+  return 'added';
+};
+const alloCicoCsvCell = (value) => { let out = String(value == null ? '' : value); if (/^[=+\-@]/.test(out)) out = "'" + out; return '"' + out.replace(/"/g, '""') + '"'; };
+const alloCicoStudentCsv = (codename, student, settings) => {
+  const head = ['Date', 'Check-in', 'Check-out'];
+  settings.periods.forEach(p => settings.expectations.forEach(e => head.push(p + ' - ' + e)));
+  const rows = [['Daily check-in card', codename], ['Daily goal', settings.goalPct + '%'], [], head.concat(['Points', 'Possible', 'Percent', 'Goal met'])];
+  Object.keys(student.days).sort().forEach(date => {
+    const day = student.days[date], score = alloCicoScore(day, settings), row = [date, day.checkIn ? 'Yes' : '', day.checkOut ? 'Yes' : ''];
+    settings.periods.forEach((_, p) => settings.expectations.forEach((__, e) => { const n = day.ratings[p + ':' + e]; row.push(n == null ? '' : n); }));
+    rows.push(row.concat([score.earned, score.possible, score.pct == null ? '' : score.pct, score.met ? 'Yes' : '']));
+  });
+  return rows.map(r => r.map(alloCicoCsvCell).join(',')).join('\r\n');
+};
+// MTSS Triage paste rows: codename, average daily percent over the last rated days.
+const alloCicoTriageRows = (cls, codenameByLearner, limit = 10) => {
+  const rows = [['student_code', 'cico_avg_pct']];
+  Object.keys(cls.students).forEach(learnerId => {
+    const trend = alloCicoTrend(cls.students[learnerId], cls.settings, limit);
+    if (!trend.length) return;
+    rows.push([codenameByLearner[learnerId] || learnerId, Math.round(trend.reduce((sum, row) => sum + row.pct, 0) / trend.length)]);
+  });
+  return rows.map(r => r.map(alloCicoCsvCell).join(',')).join('\r\n');
+};
+const alloCicoDownload = (filename, text) => {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url; link.download = filename;
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+const CicoCardsView = ({ rosterKey, onBack }) => {
+  const classId = String(rosterKey?.classId || '');
+  const learnerIds = rosterKey?.learnerIds && typeof rosterKey.learnerIds === 'object' ? rosterKey.learnerIds : {};
+  const codenameByLearner = useMemo(() => { const map = {}; Object.keys(learnerIds).forEach(name => { map[learnerIds[name]] = name; }); return map; }, [learnerIds]);
+  const [store, setStore] = useState(() => alloCicoLoad());
+  const cls = store.classes[classId] || { settings: alloCicoDefaults(), students: {} };
+  const enrolled = Object.keys(cls.students).filter(id => codenameByLearner[id]).sort((a, b) => codenameByLearner[a].localeCompare(codenameByLearner[b]));
+  const [selected, setSelected] = useState(() => enrolled[0] || '');
+  const [date, setDate] = useState(() => alloCicoDate());
+  const [toAdd, setToAdd] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [draft, setDraft] = useState(null);
+  const [notice, setNotice] = useState('');
+  const active = enrolled.indexOf(selected) !== -1 ? selected : (enrolled[0] || '');
+  const update = (mutate) => {
+    const next = alloCicoNormalize(store);
+    if (!next.classes[classId]) next.classes[classId] = { settings: alloCicoDefaults(), students: {} };
+    mutate(next.classes[classId]);
+    const clean = alloCicoNormalize(next);
+    setStore(clean);
+    if (!alloCicoSave(clean)) setNotice('This browser could not save the card. Check that site storage is allowed.');
+  };
+  const student = active ? cls.students[active] : null;
+  const day = student && student.days[date] ? student.days[date] : { ratings: {} };
+  const score = alloCicoScore(day, cls.settings);
+  const trend = student ? alloCicoTrend(student, cls.settings) : [];
+  const metDays = trend.filter(row => row.met).length;
+  const available = Object.keys(learnerIds).filter(name => learnerIds[name] && !cls.students[learnerIds[name]]).sort();
+  const setRating = (p, e, n) => update(c => { const d = c.students[active].days[date] || (c.students[active].days[date] = { ratings: {} }); if (d.ratings[p + ':' + e] === n) delete d.ratings[p + ':' + e]; else d.ratings[p + ':' + e] = n; });
+  const toggle = (field) => update(c => { const d = c.students[active].days[date] || (c.students[active].days[date] = { ratings: {} }); d[field] = !d[field]; });
+  const enroll = () => {
+    const learnerId = learnerIds[toAdd];
+    if (!learnerId) return;
+    update(c => { c.students[learnerId] = { enrolledAt: Date.now(), days: {} }; });
+    setSelected(learnerId); setToAdd(''); setNotice(toAdd + ' now has a daily check-in card.');
+  };
+  const remove = () => {
+    if (!window.confirm('Remove ' + codenameByLearner[active] + "'s card and delete every rating on this device? This cannot be undone.")) return;
+    update(c => { delete c.students[active]; });
+    setSelected(''); setNotice('Card removed and its ratings deleted from this device.');
+  };
+  const sendToWorksheet = () => {
+    const result = alloCicoAddToStoreWorksheet(classId, active, codenameByLearner[active], date);
+    if (result === 'failed') { setNotice('This browser could not save to the Store worksheet.'); return; }
+    update(c => { const d = c.students[active].days[date] || (c.students[active].days[date] = { ratings: {} }); d.sentAt = d.sentAt || Date.now(); });
+    setNotice(result === 'added' ? 'Added to your Store worksheet as "Individual goal progress". Award it in the School Store as usual.' : 'This day is already on your Store worksheet.');
+  };
+  const saveSettings = () => {
+    const lines = (text) => String(text || '').split(/\r?\n|,/);
+    update(c => { c.settings = alloCicoNormalizeSettings({ periods: lines(draft.periods), expectations: lines(draft.expectations), goalPct: draft.goalPct }); });
+    setShowSettings(false); setNotice('Card layout saved. Ratings already entered keep their positions.');
+  };
+  const btn = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-400';
+  return (
+    <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-2xl w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col border-0 sm:border-2 border-indigo-100" data-cico-view>
+      <div className="flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-slate-100">
+        <div>
+          <h2 id="teacher-cico-title" className="text-lg font-black text-slate-800 flex items-center gap-2"><Award size={20} className="text-indigo-500" /> Daily check-in cards</h2>
+          <p className="text-xs text-slate-600 mt-0.5">Check-in/check-out ratings stay on this device. They are not in roster exports, live sessions or the School Store.</p>
+        </div>
+        <button type="button" onClick={onBack} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>Back to roster</button>
+      </div>
+      <div className="overflow-y-auto p-4 sm:p-5 space-y-4">
+        <div role="status" aria-live="polite" className={notice ? 'text-xs font-semibold text-indigo-800 bg-indigo-50 rounded-lg px-3 py-2' : 'sr-only'}>{notice}</div>
+        {!classId ? <p className="text-sm text-slate-700">Save or import a roster with a class ID first.</p> : (<>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="text-xs font-bold text-slate-700 flex flex-col gap-1">Add a student
+            <select value={toAdd} onChange={e => setToAdd(e.target.value)} className="px-2 py-1.5 rounded-lg border border-slate-400 text-sm">
+              <option value="">{available.length ? 'Choose a codename' : 'Everyone on the roster has a card'}</option>
+              {available.map(name => <option key={name} value={name}>{name}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={enroll} disabled={!toAdd} className={btn + ' bg-indigo-700 text-white hover:bg-indigo-800 disabled:opacity-50'}>Start a card</button>
+          <button type="button" onClick={() => { setDraft({ periods: cls.settings.periods.join('\n'), expectations: cls.settings.expectations.join('\n'), goalPct: cls.settings.goalPct }); setShowSettings(v => !v); }} aria-expanded={showSettings} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>Card layout</button>
+          {enrolled.length > 0 && <button type="button" onClick={() => { alloCicoDownload('cico-mtss-triage-rows.csv', alloCicoTriageRows(cls, codenameByLearner)); setNotice('MTSS Triage rows downloaded: each student\'s average over their last 10 rated days. Paste them into MTSS Triage and choose higher is better.'); }} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1'}><Download size={14} /> MTSS Triage rows</button>}
+        </div>
+        {showSettings && draft && (
+          <div className="rounded-xl border border-slate-200 p-3 grid gap-3 sm:grid-cols-3" data-cico-settings>
+            <label className="text-xs font-bold text-slate-700 flex flex-col gap-1">Rating times (one per line)
+              <textarea value={draft.periods} onChange={e => setDraft(Object.assign({}, draft, { periods: e.target.value }))} rows={5} className="px-2 py-1 rounded-lg border border-slate-400 text-sm font-normal" />
+            </label>
+            <label className="text-xs font-bold text-slate-700 flex flex-col gap-1">Expectations (one per line)
+              <textarea value={draft.expectations} onChange={e => setDraft(Object.assign({}, draft, { expectations: e.target.value }))} rows={5} className="px-2 py-1 rounded-lg border border-slate-400 text-sm font-normal" />
+            </label>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-slate-700 flex flex-col gap-1">Daily goal (%)
+                <input type="number" min="1" max="100" value={draft.goalPct} onChange={e => setDraft(Object.assign({}, draft, { goalPct: e.target.value }))} className="px-2 py-1 rounded-lg border border-slate-400 text-sm font-normal" />
+              </label>
+              <button type="button" onClick={saveSettings} className={btn + ' bg-indigo-700 text-white hover:bg-indigo-800'}>Save layout</button>
+            </div>
+          </div>
+        )}
+        {!enrolled.length ? <p className="text-sm text-slate-600">No cards yet. Add a student who has been placed in check-in/check-out by your team.</p> : (<>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Students with a card">
+          {enrolled.map(id => <button key={id} type="button" aria-pressed={id === active} onClick={() => setSelected(id)} className={btn + (id === active ? ' bg-indigo-700 text-white' : ' bg-indigo-50 text-indigo-800 hover:bg-indigo-100')}>{codenameByLearner[id]}</button>)}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="text-xs font-bold text-slate-700 flex flex-col gap-1">Day
+            <input type="date" value={date} max={alloCicoDate()} onChange={e => { if (alloCicoIsDate(e.target.value)) setDate(e.target.value); }} className="px-2 py-1.5 rounded-lg border border-slate-400 text-sm" />
+          </label>
+          <label className="text-sm text-slate-800 flex items-center gap-2"><input type="checkbox" checked={!!day.checkIn} onChange={() => toggle('checkIn')} /> Checked in</label>
+          <label className="text-sm text-slate-800 flex items-center gap-2"><input type="checkbox" checked={!!day.checkOut} onChange={() => toggle('checkOut')} /> Checked out</label>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="text-xs border-collapse" data-cico-grid>
+            <caption className="sr-only">{codenameByLearner[active]} ratings for {date}: 2 met the expectation, 1 partly, 0 not yet. Choose a rating again to clear it.</caption>
+            <thead><tr><th scope="col" className="text-left p-1 text-slate-600">Expectation</th>{cls.settings.periods.map((p, pi) => <th scope="col" key={pi} className="p-1 text-slate-700 font-bold whitespace-nowrap">{p}</th>)}</tr></thead>
+            <tbody>{cls.settings.expectations.map((ex, ei) => (
+              <tr key={ei}><th scope="row" className="text-left p-1 text-slate-800 font-bold whitespace-nowrap">{ex}</th>
+                {cls.settings.periods.map((p, pi) => { const value = day.ratings[pi + ':' + ei]; return (
+                  <td key={pi} className="p-1"><div role="radiogroup" aria-label={ex + ', ' + p} className="flex gap-0.5">
+                    {[2, 1, 0].map(n => <button key={n} type="button" role="radio" aria-checked={value === n} aria-label={n + (n === 1 ? ' point' : ' points')} onClick={() => setRating(pi, ei, n)} className={'w-7 h-7 rounded-md font-black border focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + (value === n ? (n === 2 ? 'bg-emerald-600 text-white border-emerald-700' : n === 1 ? 'bg-amber-400 text-slate-900 border-amber-500' : 'bg-slate-600 text-white border-slate-700') : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')}>{n}</button>)}
+                  </div></td>); })}
+              </tr>))}</tbody>
+          </table>
+        </div>
+        <div className={'rounded-xl p-3 text-sm ' + (score.met ? 'bg-emerald-50 text-emerald-900' : 'bg-slate-50 text-slate-800')} data-cico-score>
+          {score.rated ? <><strong>{score.earned} of {score.possible} points ({score.pct}%)</strong> · daily goal {cls.settings.goalPct}% · {score.met ? 'Goal met' : 'Goal not met yet'}</> : <>No ratings for this day yet. Daily goal {cls.settings.goalPct}%.</>}
+          {score.met && <div className="mt-2"><button type="button" onClick={sendToWorksheet} disabled={!!day.sentAt} className={btn + ' bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-60'}>{day.sentAt ? 'On your Store worksheet' : 'Add to Store worksheet'}</button></div>}
+        </div>
+        <div data-cico-trend>
+          <h3 className="text-sm font-black text-slate-800">Last {trend.length || 10} rated days {trend.length > 0 && <span className="font-semibold text-slate-600">· goal met on {metDays} of {trend.length}</span>}</h3>
+          {trend.length ? <ul className="mt-2 space-y-1">{trend.map(row => (
+            <li key={row.date} className="flex items-center gap-2 text-xs"><span className="w-20 text-slate-700">{row.date}</span>
+              <span className="relative flex-1 h-3 rounded bg-slate-100" aria-hidden="true"><span className={'absolute left-0 top-0 h-3 rounded ' + (row.met ? 'bg-emerald-600' : 'bg-amber-500')} style={{ width: row.pct + '%' }} /><span className="absolute top-0 h-3 border-l-2 border-slate-800" style={{ left: cls.settings.goalPct + '%' }} /></span>
+              <span className="w-24 text-right text-slate-800 font-bold">{row.pct}%{row.met ? ' · met' : ''}</span></li>))}</ul>
+            : <p className="text-xs text-slate-600 mt-1">Ratings you enter will build a trend here.</p>}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => { alloCicoDownload('cico-' + String(codenameByLearner[active]).replace(/[^A-Za-z0-9]+/g, '-') + '.csv', alloCicoStudentCsv(codenameByLearner[active], student, cls.settings)); setNotice('Card history downloaded.'); }} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1'}><Download size={14} /> Download card history</button>
+          <button type="button" onClick={remove} className={btn + ' bg-red-50 text-red-700 hover:bg-red-100'}>Remove card</button>
+        </div>
+        </>)}
+        </>)}
+      </div>
+    </div>
+  );
+};
+
 window.AlloModules.RosterKeyPanel             = RosterKeyPanel;
+window.AlloModules.CicoInternals = { key: ALLO_CICO_KEY, defaults: alloCicoDefaults, normalize: alloCicoNormalize, load: alloCicoLoad, save: alloCicoSave, score: alloCicoScore, trend: alloCicoTrend, addToStoreWorksheet: alloCicoAddToStoreWorksheet, studentCsv: alloCicoStudentCsv, triageRows: alloCicoTriageRows, localDate: alloCicoDate };
 window.AlloModules.normalizeRosterSessionFollowUpPlan = normalizeRosterSessionFollowUpPlan;
 window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
 window.AlloModules.SimpleBarChart             = SimpleBarChart;
