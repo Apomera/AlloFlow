@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "sourceSha256": "fb53d0759f9a101822a0475af19706991fa48a40c23c439d8f7773600944746c",
+  "sourceUnchanged": true,
+  "publicMirrorUnchanged": true,
+  "observedNativeChildExitCode": 0,
+  "observedWrapperExitCode": 0,
+  "wrapperToolSession": 54402,
+  "checks": 396,
+  "scenarios": 4,
+  "screenshots": 4,
+  "process": {
+    "path": "reports/machinelab-practice-flow-2026-10-13/browser/run-02/process.json",
+    "sha256": "70390dea24a6bf1399869f5913d8666283150afd90fb78c76b9fd7bd53323c62"
+  },
+  "results": {
+    "path": "reports/machinelab-practice-flow-2026-10-13/browser/run-02/results.json",
+    "sha256": "c4101ca032a5fc9067c6a7b22da331d73c44398b248a19bce887c8182ab40814"
+  },
+  "visualReview": {
+    "path": "reports/machinelab-practice-flow-2026-10-13/browser/visual-review.json",
+    "sha256": "4b3415c9bc0abb55939ff70f83031b802c20c7a11b8161dc6db589f2dfbf7a00"
+  },
+  "preflight": {
+    "path": "reports/machinelab-practice-flow-2026-10-13/browser/run-01/preflight.json",
+    "sha256": "07f228363cd20685d94b1733375af93937f1503b45df46302eeb2042b8eae9f9"
+  },
+  "harness": {
+    "path": "dev-tools/ml_practice_flow_qa.cjs",
+    "sha256": "502c4f71f5bb335c84100daac32a66691e027666a07352814724cffdb045f067",
+    "bytes": 11906
+  },
+  "wrapper": {
+    "path": "reports/machinelab-practice-flow-2026-10-13/browser/run-native.cjs",
+    "sha256": "0147e4371b6e66c993a1edf01677d444d18f84dae09c380d4fdf46ba3d768086"
+  },
+  "heavySlotReleased": true
+}

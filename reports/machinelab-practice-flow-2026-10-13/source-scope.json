@@ -1,0 +1,12 @@
+{
+  "baselineCommit": "fbd5aa477",
+  "baselineSha256": "301b7f605d71623e58af46454d15bea56b4710ed643191523b69593815ff714f",
+  "sourceSha256": "fb53d0759f9a101822a0475af19706991fa48a40c23c439d8f7773600944746c",
+  "mirrorSha256": "fb53d0759f9a101822a0475af19706991fa48a40c23c439d8f7773600944746c",
+  "onlyStationPowerLabChanged": true,
+  "calculationGradingRecordAndOtherViewHelpersUnchanged": true,
+  "changeAndSaveCallbacksUnchanged": true,
+  "resultFeedbackTextUnchanged": true,
+  "sourceMirrorParity": true,
+  "syntax": true
+}

@@ -1,0 +1,7 @@
+{
+  "command": "node reports/machinelab-practice-flow-2026-10-13/browser/run-native.cjs",
+  "observedWrapperExitCode": 1,
+  "nativeChildLaunched": false,
+  "reason": "The wrapper refused its default output directory because the earlier parse-only bootstrap check had created an empty browser-temp directory there.",
+  "action": "Preserved run-01 and launched the unchanged browser harness in fresh run-02. No source or harness repair was needed."
+}

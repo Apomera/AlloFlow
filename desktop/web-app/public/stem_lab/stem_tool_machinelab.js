@@ -8459,6 +8459,25 @@ window.StemLab = window.StemLab || {
         var panelStyle = { margin: '16px 0', padding: 14, background: T.bg, border: '1px solid ' + T.border, borderRadius: 12, minWidth: 0 };
         var valueStyle = { margin: '6px 0 0', fontSize: 20, lineHeight: 1.3, fontWeight: 850, fontVariantNumeric: 'tabular-nums', color: T.text, overflowWrap: 'anywhere' };
         var prefix = 'ml-power-', roundingId = prefix + 'rounding-' + bench.id;
+        function navigatePractice(ev, destination) {
+          var origin = ev && ev.currentTarget, root = origin && origin.closest && origin.closest('[data-ml-power]');
+          if (!root || !root.isConnected || !root.open || origin.disabled || root.getAttribute('data-ml-power') !== bench.id ||
+            root.getAttribute('data-ml-power-navigation-signature') !== session.signature) return;
+          var target = destination === 'answer' ? root.querySelector('#' + prefix + 'answer-' + bench.id)
+            : root.querySelector('[data-ml-power-' + destination + ']');
+          if (!target || !target.isConnected || !root.contains(target)) return;
+          if (destination !== 'answer') {
+            var heading = target.querySelector(':scope > summary');
+            if (target.tagName !== 'DETAILS' || !heading) return;
+            target.open = true; target = heading;
+          }
+          target.focus({ preventScroll: true });
+          target.scrollIntoView({ block: 'center', behavior: 'auto' });
+        }
+        function returnToCalculation() {
+          return h('button', { key: 'return-calculation', type: 'button', 'data-ml-power-return-calculation': '', style: button,
+            onClick: function (ev) { navigatePractice(ev, 'answer'); } }, __alloT('stem.machinelab.practice_flow_back', 'Back to calculation'));
+        }
         function change(patch) {
           setLabToolData(function (prev) {
             var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
@@ -8557,6 +8576,7 @@ window.StemLab = window.StemLab || {
           ];
           return h('details', { key: 'force-speed', 'data-ml-power-force-speed': bench.id, className: 'ml-force-speed-guide', style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
             h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.force_speed_title', 'Connect force, speed and power')),
+            returnToCalculation(),
             h('figure', { key: 'figure', 'aria-labelledby': titleId, style: Object.assign({}, panelStyle, { marginLeft: 0, marginRight: 0 }) }, [
               h('figcaption', { key: 'title', id: titleId, style: Object.assign({}, style, { fontSize: 17, fontWeight: 850 }) }, __alloT('stem.machinelab.force_speed_equation', 'Force × speed = power')),
               h('p', { key: 'units', style: style }, __alloT('stem.machinelab.force_speed_units', 'Newtons × metres per second = watts. Compare each quantity between the hand and the load.')),
@@ -8590,6 +8610,7 @@ window.StemLab = window.StemLab || {
           var titleId = prefix + 'rotation-title-' + bench.id, scale = Math.max(rotation.handPerTurn, rotation.advance);
           return h('details', { key: 'rotation-guide', 'data-ml-power-rotation': bench.id, className: 'ml-rotation-guide', style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
             h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.rot_guide_title', 'Follow a turn: motion, work and power')),
+            returnToCalculation(),
             h('figure', { key: 'turn', 'aria-labelledby': titleId, style: panelStyle }, [
               h('figcaption', { key: 'caption', id: titleId, style: Object.assign({}, style, { fontWeight: 850, fontSize: 15 }) }, __alloT('stem.machinelab.rot_one_turn', 'One turn → load movement')),
               h('div', { key: 'route', className: 'ml-rotation-route', style: { display: 'grid', gridTemplateColumns: 'minmax(120px,0.7fr) minmax(0,1fr)', alignItems: 'center', gap: 14, marginTop: 12 } }, [
@@ -8667,6 +8688,7 @@ window.StemLab = window.StemLab || {
           ]);
           return h('details', { key: 'comparison', 'data-ml-power-comparison': bench.id, style: { margin: '12px 0' } }, [
             h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_compare', 'Explore power, motion and pace')),
+            returnToCalculation(),
             h('dl', { key: 'values', className: 'ml-power-visual-grid' },
               labels.map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-metric': metric[0], 'data-value': model[metric[0]],
                 style: { border: '1px solid ' + T.border, background: T.bg, padding: 8, borderRadius: 6, minWidth: 0 } }, [
@@ -8705,6 +8727,7 @@ window.StemLab = window.StemLab || {
           ];
           return h('details', { key: 'planning', 'data-ml-power-planning': bench.id, style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
             h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_planning_title', 'Plan a task at this power')),
+            returnToCalculation(),
             h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.power_planning_intro', 'Hold the power budget and task time fixed. Compare the input work the current task needs with the input energy supplied at full budget.')),
             h('figure', { key: 'chart', 'data-ml-power-budget-chart': '', 'aria-labelledby': prefix + 'budget-chart-title-' + bench.id, style: panelStyle }, [
               h('figcaption', { key: 'caption', id: prefix + 'budget-chart-title-' + bench.id, style: Object.assign({}, style, { fontWeight: 800, marginBottom: 10 }) }, __alloT('stem.machinelab.power_planning_energy_title', 'Power × time gives an energy budget')),
@@ -8771,6 +8794,8 @@ window.StemLab = window.StemLab || {
                 style: Object.assign({}, style, { padding: 10, background: T.bg, borderRadius: 8, fontWeight: 750 }) },
                 __alloT('stem.machinelab.map_saved', 'Saved: ') + saved.length + '/' + kinds.length + ' · ' + __alloT('stem.machinelab.map_checked', 'Checked: ') + checked + ' · ' + __alloT('stem.machinelab.map_solutions', 'Solution viewed: ') + solutions),
               h('p', { key: 'help', style: style }, __alloT('stem.machinelab.map_help', 'Choose a tile to practise that skill below. Selecting another skill clears the current draft; save first. Labels describe saved practice, including hints and the setup used.')),
+              h('button', { key: 'go', type: 'button', 'data-ml-power-go-calculation': '', style: button,
+                onClick: function (ev) { navigatePractice(ev, 'answer'); } }, __alloT('stem.machinelab.practice_flow_go', 'Go to calculation')),
               families.map(function (family) {
                 var items = family[3].filter(function (kind) { return kinds.indexOf(kind) >= 0; });
                 if (!items.length) return null;
@@ -8804,12 +8829,27 @@ window.StemLab = window.StemLab || {
               h('style', { key: 'style' }, '.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-power-skill-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}}')
             ]);
           }
+          var guide = powerMotionKinds().indexOf(draft.question) >= 0 ? ['force-speed', __alloT('stem.machinelab.practice_flow_force', 'Open force and speed guide')]
+            : powerRotationKinds().indexOf(draft.question) >= 0 || draft.question === 'torque' || draft.question === 'rpm' ? ['rotation', __alloT('stem.machinelab.practice_flow_rotation', 'Open rotation guide')]
+            : powerPlanningKinds().indexOf(draft.question) >= 0 || draft.question === 'budgetTime' ? ['planning', __alloT('stem.machinelab.practice_flow_planning', 'Open power budget guide')]
+            : ['comparison', __alloT('stem.machinelab.practice_flow_pace', 'Open power and motion guide')];
+          function stepHeading(key, number, label) {
+            return h('h5', { key: key + '-heading', 'data-ml-power-step': key, style: { display: 'flex', alignItems: 'center', gap: 8, margin: '14px 0 6px', fontSize: 13, color: T.text } }, [
+              h('span', { key: 'number', 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 25, height: 25, flex: '0 0 25px', border: '1px solid currentColor', borderRadius: '50%', fontWeight: 800 } }, number),
+              h('span', { key: 'label' }, label)
+            ]);
+          }
           return h('div', { key: 'practice', 'data-ml-power-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
             h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.power_practice', 'Practice a power & motion skill')),
             skillMap(),
             select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, skillLabels[kind]]; })),
             h('h4', { key: 'question-title', 'data-ml-power-question-title': '', style: Object.assign({}, style, { fontSize: 14, fontWeight: 800, margin: '10px 0 6px' }) }, question.title),
             h('p', { key: 'given', 'data-ml-power-given': '', style: Object.assign({}, style, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, question.given),
+            h('div', { key: 'guide-link', 'data-ml-power-guide-link': '', style: { margin: '12px 0', padding: 12, background: T.bg, border: '1px solid ' + T.border, borderRadius: 8 } }, [
+              h('p', { key: 'intro', style: Object.assign({}, style, { margin: '0 0 8px' }) }, __alloT('stem.machinelab.practice_flow_help', 'Need a visual? Open the matching guide, then use Back to calculation. Your draft stays here. Guides include worked values.')),
+              h('button', { key: 'open', type: 'button', 'data-ml-power-open-guide': guide[0], style: button,
+                onClick: function (ev) { navigatePractice(ev, guide[0]); } }, guide[1])
+            ]),
             h('p', { key: 'rounding', id: roundingId, style: style }, __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: style }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
@@ -8832,8 +8872,12 @@ window.StemLab = window.StemLab || {
               action('reveal', __alloT('stem.machinelab.eff_solution', 'Show worked solution'), function () { change({ revealed: true }); }, draft.revealed)
             ]),
             h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, style, result || draft.hint ? { margin: '14px 0', padding: '0 12px', border: '1px solid ' + (result === 'correct' ? T.ok : result === 'incorrect' || result === 'unit' || result === 'invalid' ? T.warn : T.border), borderLeftWidth: 4, borderRadius: 8, background: T.bg } : {}) }, [
+              draft.hint > 0 ? stepHeading('formula', 1, __alloT('stem.machinelab.practice_flow_relationship', 'Choose the relationship')) : null,
               draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-power-hint-level': draft.hint }, question.formula) : null,
+              draft.hint > 1 ? stepHeading('setup', 2, __alloT('stem.machinelab.practice_flow_substitute', 'Substitute the values')) : null,
               draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
+              result ? stepHeading('result', 3, result === 'correct' ? __alloT('stem.machinelab.practice_flow_checked', 'Review your checked answer') : result === 'solution'
+                ? __alloT('stem.machinelab.practice_flow_solution', 'Study the worked solution') : __alloT('stem.machinelab.practice_flow_retry', 'Check the answer and unit')) : null,
               result ? h('p', { key: 'result', 'data-ml-power-result': result }, result === 'invalid'
                 ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
                 : result === 'unit' && powerMotionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.force_speed_unit_help', 'Use N for force. Watts divided by metres per second gives newtons; torque uses N·m.')
@@ -8852,7 +8896,7 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'save-help', style: style }, __alloT('stem.machinelab.power_save_help', 'Save before moving to the next skill. Each station keeps one fixed record per skill; saving that skill again replaces only its record. Hints and viewed solutions stay identified.'))
           ]);
         }
-        return card([h('details', { key: 'lab', className: 'ml-power-lab', 'data-ml-power': bench.id }, [
+        return card([h('details', { key: 'lab', className: 'ml-power-lab', 'data-ml-power': bench.id, 'data-ml-power-navigation-signature': session.signature }, [
           h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_title', 'Power & motion lab')),
           h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.power_intro', 'How quickly is the work done? Explore average power, movement rates and time using this station’s current task. These assumptions are separate from the efficiency practice above.')),
           h('p', { key: 'scope', id: prefix + 'scope-' + bench.id, style: style }, __alloT('stem.machinelab.power_scope', 'Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.')),
