@@ -1835,6 +1835,79 @@ function getSchoolRewardsDistrictSummary(request) {
   };
 }
 
+/**
+ * Tier 1 acknowledgment data for the school's own PBIS/MTSS team. Counts staff
+ * awards and redeemed claim codes, net of reversals, by week, category, grade,
+ * homeroom and staff member. Students with few acknowledgments are a screening
+ * signal; their list exports as "code, score" rows that MTSS Triage reads, under
+ * a stable pseudonymous code. The Store stays tier-blind: nothing here stores or
+ * accepts a tier. School-internal, NOT the district contract (no suppression).
+ */
+var SR_ACK_REPORT_MAX_DAYS = 400;
+var SR_ACK_REPORT_DEFAULT_DAYS = 28;
+function getSchoolRewardsAcknowledgmentReport(request) {
+  requireRole_(['admin']); request = object_(request);
+  var today = reportLocalDate_(now_());
+  var to = reportDateParam_(request.to, 'End date') || today;
+  var from = reportDateParam_(request.from, 'Start date') || reportAddDays_(to, 1 - SR_ACK_REPORT_DEFAULT_DAYS);
+  if (to < from) throw srError_('bad_range', 'The end date must be on or after the start date.');
+  var days = reportDayDiff_(from, to) + 1;
+  if (days > SR_ACK_REPORT_MAX_DAYS) throw srError_('bad_range', 'Choose a date range of 400 days or fewer.');
+  var book = book_(), ledger = ledger_(book), reversed = {};
+  ledger.forEach(function(entry) { if (entry.kind === 'REVERSAL' && entry.reversesId) reversed[entry.reversesId] = true; });
+  var acks = ledger.filter(function(entry) {
+    if (entry.kind !== 'EARN' || reversed[entry.id]) return false;
+    if (entry.referenceType !== 'award' && entry.referenceType !== 'claim_token') return false;
+    entry.localDate = reportLocalDate_(entry.at);
+    return entry.localDate >= from && entry.localDate <= to;
+  });
+  var studentList = students_(book), studentMap = {}, categoryList = categories_(book), categoryMap = {}, staffNames = {};
+  studentList.forEach(function(student) { studentMap[student.id] = student; });
+  categoryList.forEach(function(category) { categoryMap[category.id] = category; });
+  members_(book).forEach(function(member) { staffNames[member.email] = member.displayName || member.email; });
+  var weeks = {}, byCategory = {}, byGrade = {}, byHomeroom = {}, byStaff = {}, perStudent = {}, bySource = { award: 0, claim_token: 0 }, points = 0;
+  for (var week = reportWeekStart_(from); week <= to; week = reportAddDays_(week, 7)) weeks[week] = { weekStart: week, count: 0, points: 0 };
+  function bump(map, key, seed, amount) { if (!map[key]) map[key] = seed; map[key].count += 1; map[key].points += amount; return map[key]; }
+  acks.forEach(function(entry) {
+    var student = studentMap[entry.studentId] || { grade: '', homeroom: '' }, category = categoryMap[entry.categoryId];
+    points += entry.amount; bySource[entry.referenceType] += 1;
+    bump(weeks, reportWeekStart_(entry.localDate), { weekStart: reportWeekStart_(entry.localDate), count: 0, points: 0 }, entry.amount);
+    bump(byCategory, entry.categoryId || 'none', { categoryId: entry.categoryId || '', name: category ? category.name : 'Uncategorized', color: category ? category.color : '', count: 0, points: 0 }, entry.amount);
+    bump(byGrade, student.grade || '', { grade: student.grade || '', count: 0, points: 0 }, entry.amount);
+    bump(byHomeroom, student.homeroom || '', { homeroom: student.homeroom || '', count: 0, points: 0 }, entry.amount);
+    if (entry.referenceType === 'award') { var email = normalizeEmail_(entry.actorEmail); bump(byStaff, email, { name: staffNames[email] || email, count: 0, points: 0 }, entry.amount); }
+    var own = bump(perStudent, entry.studentId, { count: 0, points: 0, lastDate: '' }, entry.amount);
+    if (entry.localDate > own.lastDate) own.lastDate = entry.localDate;
+  });
+  var active = studentList.filter(function(student) { return student.active; });
+  function reach(map, field) {
+    var enrolled = {};
+    active.forEach(function(student) { var key = student[field] || ''; if (!enrolled[key]) enrolled[key] = { students: 0, acknowledged: 0 }; enrolled[key].students += 1; if (perStudent[student.id]) enrolled[key].acknowledged += 1; });
+    Object.keys(enrolled).forEach(function(key) { if (!map[key]) { map[key] = { count: 0, points: 0 }; map[key][field] = key; } });
+    return Object.keys(map).sort().map(function(key) { var row = map[key], group = enrolled[key] || { students: 0, acknowledged: 0 }; row.activeStudents = group.students; row.studentsAcknowledged = group.acknowledged; return row; });
+  }
+  var studentsOut = active.map(function(student) {
+    var own = perStudent[student.id] || { count: 0, points: 0, lastDate: '' };
+    return { studentId: student.id, code: mtssStudentCode_(student), name: student.firstName + (student.lastInitial ? ' ' + student.lastInitial + '.' : ''), grade: student.grade, homeroom: student.homeroom, count: own.count, points: own.points, lastDate: own.lastDate };
+  }).sort(function(a, b) { return a.count - b.count || a.name.localeCompare(b.name) || a.code.localeCompare(b.code); });
+  function sorted(map) { return Object.keys(map).map(function(key) { return map[key]; }).sort(function(a, b) { return b.count - a.count || String(a.name || '').localeCompare(String(b.name || '')); }); }
+  return {
+    ok: true, contractVersion: 'alloflow-rewards-acknowledgments/1', scope: 'SCHOOL_INTERNAL', generatedAt: now_(), from: from, to: to, days: days, timeZone: reportTimeZone_(),
+    totals: { acknowledgments: acks.length, points: points, activeStudents: active.length, studentsAcknowledged: studentsOut.filter(function(item) { return item.count > 0; }).length, staffAcknowledging: Object.keys(byStaff).length },
+    bySource: bySource, byWeek: Object.keys(weeks).sort().map(function(key) { return weeks[key]; }),
+    byCategory: sorted(byCategory), byGrade: reach(byGrade, 'grade'), byHomeroom: reach(byHomeroom, 'homeroom'), byStaff: sorted(byStaff), students: studentsOut
+  };
+}
+// Stable per student, so window-over-window compare in MTSS Triage lines up.
+function mtssStudentCode_(student) { var initials = (String(student.firstName || '').charAt(0) + String(student.lastInitial || '').charAt(0)).toUpperCase().replace(/[^A-Z]/g, ''); return (initials || 'S') + '-' + hash_('mtss-code|' + student.id).replace(/[^A-Za-z0-9]/g, '').slice(0, 5).toUpperCase(); }
+function reportTimeZone_() { try { return Session.getScriptTimeZone() || 'UTC'; } catch (err) { return 'UTC'; } }
+function reportLocalDate_(iso) { var date = new Date(iso); if (!(date.getTime() > 0)) return ''; try { return Utilities.formatDate(date, reportTimeZone_(), 'yyyy-MM-dd'); } catch (err) { return date.toISOString().slice(0, 10); } }
+function reportDateParam_(value, label) { var out = text_(value, 10, ''); if (!out) return ''; if (!/^\d{4}-\d{2}-\d{2}$/.test(out) || reportUtc_(out).toISOString().slice(0, 10) !== out) throw srError_('bad_range', label + ' must be a date like 2026-09-28.'); return out; }
+function reportUtc_(day) { return new Date(day + 'T00:00:00.000Z'); }
+function reportAddDays_(day, count) { var date = reportUtc_(day); date.setUTCDate(date.getUTCDate() + count); return date.toISOString().slice(0, 10); }
+function reportDayDiff_(from, to) { return Math.round((reportUtc_(to).getTime() - reportUtc_(from).getTime()) / 86400000); }
+function reportWeekStart_(day) { return reportAddDays_(day, -((reportUtc_(day).getUTCDay() + 6) % 7)); }
+
 function configureSchoolRewardsEmailSchedule(request) {
   var actor = requireRole_(['admin']); request = object_(request);
   requireMailSchemaV6_(book_());

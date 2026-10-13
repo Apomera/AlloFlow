@@ -1163,7 +1163,21 @@
     "scan_with_your_school_account_or_type_the_code_on_your_sch_1ladyte": "Escanéalo con tu cuenta escolar o escribe el código en tu página de School Rewards.",
     "type_the_code_on_your_school_rewards_page_bj4jfy": "Escribe el código en tu página de School Rewards.",
     "1_unused_claim_code_s_are_still_out_resetting_balances_als_1bqc4qy": "{1} código(s) de canje sin usar siguen en circulación. Reiniciar los saldos también los cancela; conservar los saldos los mantiene válidos.",
-    "1_unused_claim_code_s_cancelled_y7cxmc": "{1} código(s) de canje sin usar cancelado(s)."
+    "1_unused_claim_code_s_cancelled_y7cxmc": "{1} código(s) de canje sin usar cancelado(s).",
+    "acknowledgment_report_downloaded_1i392sz": "Informe de reconocimientos descargado.",
+    "acknowledgment_report_loaded_fhf9aj": "Informe de reconocimientos cargado.",
+    "choose_a_date_range_of_400_days_or_fewer_12yyaya": "Elige un intervalo de fechas de 400 días o menos.",
+    "download_full_report_csv_1dxj480": "Descargar el informe completo en CSV",
+    "download_mtss_triage_rows_1nyiv71": "Descargar filas para MTSS Triage",
+    "from_6s9hn9": "Desde",
+    "how_often_and_where_students_are_recognized_after_correcti_1h4albi": "Con qué frecuencia, y dónde, se reconoce a los estudiantes, después de las correcciones. Los estudiantes menos reconocidos son una señal de detección para tu equipo de MTSS: exporta sus totales con códigos privados y pégalos en MTSS Triage, en el Leadership Hub. La tienda nunca registra niveles ni intervenciones.",
+    "list_students_recognized_at_most_this_many_times_16b6w9k": "Mostrar a los estudiantes reconocidos como máximo esta cantidad de veces",
+    "load_acknowledgments_19lnaoj": "Cargar reconocimientos",
+    "loading_acknowledgments_1ouaaz9": "Cargando reconocimientos…",
+    "mtss_triage_rows_downloaded_in_mtss_triage_paste_them_and__r436fa": "Filas para MTSS Triage descargadas. En MTSS Triage, pégalas y elige que un valor más alto es mejor.",
+    "no_acknowledgment_report_loaded_1yfvf56": "No se ha cargado ningún informe de reconocimientos.",
+    "the_end_date_must_be_on_or_after_the_start_date_7su5cs": "La fecha final debe ser igual o posterior a la fecha inicial.",
+    "tier_1_acknowledgments_1vno3b0": "Reconocimientos de Nivel 1"
   },
   "patterns": {
     "1_available_16n661b": "{1} disponibles",

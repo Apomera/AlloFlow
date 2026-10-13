@@ -1163,7 +1163,21 @@
     "scan_with_your_school_account_or_type_the_code_on_your_sch_1ladyte": "Scan with your school account, or type the code on your School Rewards page.",
     "type_the_code_on_your_school_rewards_page_bj4jfy": "Type the code on your School Rewards page.",
     "1_unused_claim_code_s_are_still_out_resetting_balances_als_1bqc4qy": "{1} unused claim code(s) are still out. Resetting balances also cancels them; carrying balances over keeps them valid.",
-    "1_unused_claim_code_s_cancelled_y7cxmc": "{1} unused claim code(s) cancelled."
+    "1_unused_claim_code_s_cancelled_y7cxmc": "{1} unused claim code(s) cancelled.",
+    "acknowledgment_report_downloaded_1i392sz": "Acknowledgment report downloaded.",
+    "acknowledgment_report_loaded_fhf9aj": "Acknowledgment report loaded.",
+    "choose_a_date_range_of_400_days_or_fewer_12yyaya": "Choose a date range of 400 days or fewer.",
+    "download_full_report_csv_1dxj480": "Download full report CSV",
+    "download_mtss_triage_rows_1nyiv71": "Download MTSS Triage rows",
+    "from_6s9hn9": "From",
+    "how_often_and_where_students_are_recognized_after_correcti_1h4albi": "How often, and where, students are recognized, after corrections. Students recognized least are a screening signal for your MTSS team: export their counts under private codes and paste them into MTSS Triage in the Leadership Hub. The store never records tiers or interventions.",
+    "list_students_recognized_at_most_this_many_times_16b6w9k": "List students recognized at most this many times",
+    "load_acknowledgments_19lnaoj": "Load acknowledgments",
+    "loading_acknowledgments_1ouaaz9": "Loading acknowledgments…",
+    "mtss_triage_rows_downloaded_in_mtss_triage_paste_them_and__r436fa": "MTSS Triage rows downloaded. In MTSS Triage, paste them and choose higher is better.",
+    "no_acknowledgment_report_loaded_1yfvf56": "No acknowledgment report loaded.",
+    "the_end_date_must_be_on_or_after_the_start_date_7su5cs": "The end date must be on or after the start date.",
+    "tier_1_acknowledgments_1vno3b0": "Tier 1 acknowledgments"
   },
   "patterns": {
     "1_available_16n661b": {
