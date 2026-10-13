@@ -1,0 +1,10 @@
+{
+  "sourceSha256": "ac16bdb6579bbe9eb8b60cbc0151e6d0fcf3da9a3062dc5da79b3b8f2d21c5d6",
+  "runnerSha256": "130d06eea3b6fbf694317408fe44af89a6a7c773cac4aaf0a818d13bc4f7a256",
+  "passed": 397,
+  "failed": 0,
+  "files": 12,
+  "processes": 27,
+  "processManifestSha256": "164dc8e0726b3601d411f6d8e27b8844f5b7f763a6a28c454808d35bcd711536",
+  "inventorySha256": "93289084a45117ef21ce973cc9422806b2af4825366b8bb07e4246602c6cfb48"
+}

@@ -1,0 +1,40 @@
+{
+  "reviewer": "coverage_browser_finish",
+  "run": "run-01",
+  "sourceSha256": "ac16bdb6579bbe9eb8b60cbc0151e6d0fcf3da9a3062dc5da79b3b8f2d21c5d6",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/desktop-windlass-practice-coverage.png",
+      "sha256": "39374c837a472b4bf7aa3a383a21ac953ce334679395d3da026b31d38c07f3d2",
+      "name": "desktop-windlass-practice-coverage.png",
+      "visuallyInspected": true,
+      "findings": "The two shortcut buttons show the next skill, checked and viewed totals are distinct, and the coverage strip is solid/striped/empty. The five power-family tiles clearly label checked, viewed or unsaved history and earlier setups; text and controls fit."
+    },
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/desktop-ramp-practice-coverage.png",
+      "sha256": "95e2a85b4c2c6754a2b62db9c95d06dc407f13a1fa396436828e241e1826f82b",
+      "name": "desktop-ramp-practice-coverage.png",
+      "visuallyInspected": true,
+      "findings": "The linear map shows 5 of 18 valid records with explicit category totals; the active Power lost tile is unsaved, matching the invalid-record fixture. Shortcut targets, status labels and the 2/1/2 power-family strip are readable and aligned."
+    },
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/dark-phone-screw-practice-coverage.png",
+      "sha256": "6ad9ef3c811a50942202b742482d2abd5c871e04b26755f822cdee0dd50dbe5f",
+      "name": "dark-phone-screw-practice-coverage.png",
+      "visuallyInspected": true,
+      "findings": "At a 320-pixel viewport, shortcuts and skill tiles stack in one column. Long helper text and category counts wrap cleanly. The bright checked segment, striped viewed segment and empty remainder stay distinct; the active tile and keyboard outline remain visible."
+    },
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/forced-colors-windlass-practice-coverage.png",
+      "sha256": "c6378bc978f14096a74fa96c19c1123645f3b24d9dfd9395ef9f6aada536dbfd",
+      "name": "forced-colors-windlass-practice-coverage.png",
+      "visuallyInspected": true,
+      "findings": "At a 320-pixel forced-colors viewport, solid black checked coverage, black hatching for viewed solutions and the empty remainder are distinguishable. The current-only solution shortcut displays its unavailable reason, and all status text, borders and the active tile remain readable."
+    }
+  ],
+  "limitations": [
+    "Screenshots capture the overview and first complete skill family; automated layout and coverage checks inspect all families.",
+    "Local native Chromium with software WebGL; no deployed host was tested.",
+    "Forced colors was browser emulation; no physical assistive-technology session was performed."
+  ]
+}

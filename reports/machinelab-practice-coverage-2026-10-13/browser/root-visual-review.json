@@ -1,0 +1,31 @@
+{
+  "sourceSha256": "ac16bdb6579bbe9eb8b60cbc0151e6d0fcf3da9a3062dc5da79b3b8f2d21c5d6",
+  "reviewer": "root",
+  "method": "Opened all four native PNGs with view_image and visually inspected the rendered overview and first skill family.",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/desktop-windlass-practice-coverage.png",
+      "sha256": "39374c837a472b4bf7aa3a383a21ac953ce334679395d3da026b31d38c07f3d2",
+      "visuallyInspected": true,
+      "findings": "Desktop windlass: two-column shortcuts and skill tiles are readable; the 2/1/2 strip agrees with the counts; earlier-setup labels remain clear."
+    },
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/desktop-ramp-practice-coverage.png",
+      "sha256": "95e2a85b4c2c6754a2b62db9c95d06dc407f13a1fa396436828e241e1826f82b",
+      "visuallyInspected": true,
+      "findings": "Desktop ramp: current-skill highlight, 2/1/2 strip and checked/solution/unsaved text are readable; control labels fit."
+    },
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/dark-phone-screw-practice-coverage.png",
+      "sha256": "6ad9ef3c811a50942202b742482d2abd5c871e04b26755f822cdee0dd50dbe5f",
+      "visuallyInspected": true,
+      "findings": "Dark 320px screw: shortcuts and tiles stack in one column; long labels wrap; the 1/1/3 strip and current-skill border remain distinguishable."
+    },
+    {
+      "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/forced-colors-windlass-practice-coverage.png",
+      "sha256": "c6378bc978f14096a74fa96c19c1123645f3b24d9dfd9395ef9f6aada536dbfd",
+      "visuallyInspected": true,
+      "findings": "Forced-colors 320px windlass: solid, striped and empty portions remain distinct; counts and disabled revisit reason are readable; keyboard focus and current selection are visible."
+    }
+  ]
+}

@@ -8509,6 +8509,29 @@ window.StemLab = window.StemLab || {
           return h('button', { key: 'return-calculation', type: 'button', 'data-ml-power-return-calculation': '', style: button,
             onClick: function (ev) { navigatePractice(ev, 'answer'); } }, __alloT('stem.machinelab.practice_flow_back', 'Back to calculation'));
         }
+        function practiceTarget(source, current, mode) {
+          if (mode !== 'unsaved' && mode !== 'solution') return null;
+          var records = source.benchPowerRecords && source.benchPowerRecords[bench.id], start = kinds.indexOf(current);
+          for (var offset = 1; offset <= kinds.length; offset++) {
+            var kind = kinds[(start + offset) % kinds.length], record = validPowerRecord(records && records[kind], bench, kind);
+            if (mode === 'unsaved' ? !record : record && record.completion === 'solution') return kind;
+          }
+          return null;
+        }
+        function choosePractice(mode) {
+          setLabToolData(function (prev) {
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = powerSession(source, bench);
+            if (latest.signature !== session.signature || !latest.model) return prev;
+            var target = practiceTarget(source, latest.draft.question, mode);
+            if (!target || target === latest.draft.question) return prev;
+            var next = Object.assign({}, latest.draft, { question: target, answer: '', unit: '', hint: 0, checked: false, revealed: false });
+            var entries = Object.assign({}, source.benchPower || {}); entries[bench.id] = next;
+            next.signature = powerSession(Object.assign({}, source, { benchPower: entries }), bench).signature;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchPower: entries }) });
+          });
+        }
         function change(patch) {
           setLabToolData(function (prev) {
             var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
@@ -8866,13 +8889,38 @@ window.StemLab = window.StemLab || {
               h('p', { key: 'help', style: style }, __alloT('stem.machinelab.map_help', 'Choose a tile to practise that skill below. Selecting another skill clears the current draft; save first. Labels describe saved practice, including hints and the setup used.')),
               h('button', { key: 'go', type: 'button', 'data-ml-power-go-calculation': '', style: button,
                 onClick: function (ev) { navigatePractice(ev, 'answer'); } }, __alloT('stem.machinelab.practice_flow_go', 'Go to calculation')),
+              h('div', { key: 'shortcuts', 'data-ml-power-practice-shortcuts': '', className: 'ml-practice-shortcuts', style: { margin: '12px 0 8px' } }, ['unsaved', 'solution'].map(function (mode) {
+                var target = practiceTarget(d, draft.question, mode); if (target === draft.question) target = null;
+                return h('button', { key: mode, type: 'button', 'data-ml-power-practice-next': mode, 'data-target': target || '', disabled: !target,
+                  onClick: function () { choosePractice(mode); }, style: Object.assign({}, button, { width: '100%', minWidth: 0, textAlign: 'left', padding: 11 }) }, [
+                  h('span', { key: 'label', style: { display: 'block', fontWeight: 800 } }, mode === 'unsaved'
+                    ? __alloT('stem.machinelab.coverage_next_unsaved', 'Next unsaved skill') : __alloT('stem.machinelab.coverage_revisit', 'Revisit a worked solution')),
+                  h('span', { key: 'target', style: { display: 'block', marginTop: 5, fontSize: 12, lineHeight: 1.5, overflowWrap: 'anywhere' } }, target ? skillLabels[target]
+                    : mode === 'unsaved' ? __alloT('stem.machinelab.coverage_no_unsaved', 'No other unsaved skill') : __alloT('stem.machinelab.coverage_no_solution', 'No other saved solution to revisit'))
+                ]);
+              })),
+              h('p', { key: 'shortcut-help', style: style }, __alloT('stem.machinelab.coverage_shortcut_help', 'Shortcuts skip the current skill. Revisiting starts a fresh attempt with this setup; your saved solution stays in the record.')),
+              h('p', { key: 'coverage-help', style: style }, __alloT('stem.machinelab.coverage_history_help', 'Counts include records made with earlier setups. Saved records show practice history, not a score.')),
               families.map(function (family) {
                 var items = family[3].filter(function (kind) { return kinds.indexOf(kind) >= 0; });
                 if (!items.length) return null;
                 var headingId = prefix + 'family-' + family[0] + '-' + bench.id;
+                var familyChecked = items.filter(function (kind) { return records[kind] && records[kind].completion === 'checked'; }).length;
+                var familySolutions = items.filter(function (kind) { return records[kind] && records[kind].completion === 'solution'; }).length;
+                var familyUnsaved = items.length - familyChecked - familySolutions;
                 return h('section', { key: family[0], 'data-ml-power-skill-family': family[0], 'aria-labelledby': headingId, style: { margin: '18px 0' } }, [
                   h('h4', { key: 'heading', id: headingId, style: Object.assign({}, style, { fontSize: 14, margin: '0 0 3px', fontWeight: 850 }) }, family[1]),
                   h('p', { key: 'help', style: Object.assign({}, style, { fontSize: 12, margin: '0 0 9px' }) }, family[2]),
+                  h('p', { key: 'coverage', 'data-ml-power-family-coverage': family[0], 'data-checked': familyChecked, 'data-solution': familySolutions,
+                    'data-unsaved': familyUnsaved, 'data-total': items.length, style: Object.assign({}, style, { margin: '0 0 7px', fontSize: 12, fontWeight: 700 }) },
+                    __alloT('stem.machinelab.map_checked', 'Checked: ') + familyChecked + ' · ' + __alloT('stem.machinelab.map_solutions', 'Solution viewed: ') + familySolutions + ' · ' + __alloT('stem.machinelab.map_unsaved', 'No saved record') + ': ' + familyUnsaved),
+                  h('div', { key: 'track', 'data-ml-power-family-track': family[0], className: 'ml-practice-coverage-track', 'aria-hidden': 'true',
+                    style: { display: 'flex', height: 12, overflow: 'hidden', marginBottom: 10, border: '1px solid ' + T.border, borderRadius: 4, background: T.card } },
+                    [['checked', familyChecked], ['solution', familySolutions], ['unsaved', familyUnsaved]].map(function (part) { return h('span', {
+                      key: part[0], 'data-ml-power-family-segment': part[0], style: { width: part[1] / items.length * 100 + '%', flexShrink: 0, height: '100%',
+                        backgroundColor: part[0] === 'checked' ? T.ok : T.card,
+                        backgroundImage: part[0] === 'solution' ? 'repeating-linear-gradient(135deg,transparent 0,transparent 3px,' + T.warn + ' 3px,' + T.warn + ' 6px)' : 'none' }
+                    }); })),
                   h('div', { key: 'tiles', className: 'ml-power-skill-grid' }, items.map(function (kind) {
                     var record = records[kind], active = kind === draft.question, unit = powerQuestion(kind, model, session.settings, bench, budget).unit;
                     var matches = record && record.percent === _machineMath.parseNum(draft.percent) && record.seconds === session.seconds && record.budget === budget &&
@@ -8896,7 +8944,7 @@ window.StemLab = window.StemLab || {
                   }))
                 ]);
               }),
-              h('style', { key: 'style' }, '.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-power-skill-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}}')
+              h('style', { key: 'style' }, '.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ml-practice-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-power-skill-grid,.ml-practice-shortcuts{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}.ml-practice-coverage-track{border-color:CanvasText!important}.ml-practice-coverage-track [data-ml-power-family-segment]{forced-color-adjust:none;background-color:Canvas!important;background-image:none!important}.ml-practice-coverage-track [data-ml-power-family-segment=checked]{background-color:CanvasText!important}.ml-practice-coverage-track [data-ml-power-family-segment=solution]{background-image:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
             ]);
           }
           var guide = powerConversionKinds().indexOf(draft.question) >= 0 ? ['units', __alloT('stem.machinelab.units_open_guide', 'Open unit conversion guide')]

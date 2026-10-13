@@ -1,0 +1,246 @@
+{
+  "file": "tests/machinelab_practice_coverage.test.js",
+  "sha256": "b2809160550d00fa068074b3b105d725e04877cd060d942c862dfa00e55ae277",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: practice coverage counts shows all 'lever' skills once and all-unsaved family proportions without modifying drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: practice coverage counts shows all 'pulley' skills once and all-unsaved family proportions without modifying drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: practice coverage counts shows all 'ramp' skills once and all-unsaved family proportions without modifying drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: practice coverage counts shows all 'wedge' skills once and all-unsaved family proportions without modifying drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: practice coverage counts shows all 'windlass' skills once and all-unsaved family proportions without modifying drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: practice coverage counts shows all 'screw' skills once and all-unsaved family proportions without modifying drafts",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: practice coverage counts partitions independently verified versions one through five, invalid snapshots and missing skills",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: practice coverage counts counts earlier setups for every station without borrowing other station evidence",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: practice coverage counts rejects malformed evidence with the existing record validator and preserves storage",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: practice coverage counts changes counts only after explicit saves and keeps viewed solutions distinct from checked answers",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: practice coverage navigation visits all 'lever' unsaved skills in calculation order and wraps once",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: practice coverage navigation visits all 'pulley' unsaved skills in calculation order and wraps once",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: practice coverage navigation visits all 'ramp' unsaved skills in calculation order and wraps once",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: practice coverage navigation visits all 'wedge' unsaved skills in calculation order and wraps once",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: practice coverage navigation visits all 'windlass' unsaved skills in calculation order and wraps once",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: practice coverage navigation visits all 'screw' unsaved skills in calculation order and wraps once",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: practice coverage navigation skips ineligible unsaved records, selects the nearest later target and wraps",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: practice coverage navigation skips ineligible solution records, selects the nearest later target and wraps",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: practice coverage navigation disables 'unsaved' on 'lever' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: practice coverage navigation disables 'unsaved' on 'pulley' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: practice coverage navigation disables 'unsaved' on 'ramp' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: practice coverage navigation disables 'unsaved' on 'wedge' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: practice coverage navigation disables 'unsaved' on 'windlass' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: practice coverage navigation disables 'unsaved' on 'screw' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: practice coverage navigation disables 'solution' on 'lever' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: practice coverage navigation disables 'solution' on 'pulley' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: practice coverage navigation disables 'solution' on 'ramp' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: practice coverage navigation disables 'solution' on 'wedge' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: practice coverage navigation disables 'solution' on 'windlass' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 29,
+      "fullName": "Machine Lab: practice coverage navigation disables 'solution' on 'screw' with no other eligible target and preserves the current draft even if invoked",
+      "executedPassCount": 1
+    },
+    {
+      "index": 30,
+      "fullName": "Machine Lab: practice coverage latest draft clears only the selected station practice while retaining current assumptions, other stations and unrelated state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 31,
+      "fullName": "Machine Lab: practice coverage latest draft revisits an earlier worked solution on the current setup without restoring or revealing its saved answer",
+      "executedPassCount": 1
+    },
+    {
+      "index": 32,
+      "fullName": "Machine Lab: practice coverage latest draft recomputes an unsaved target against the latest records even when the button was not rendered again",
+      "executedPassCount": 1
+    },
+    {
+      "index": 33,
+      "fullName": "Machine Lab: practice coverage latest draft recomputes a solution target after a latest checked replacement and skips malformed solution evidence",
+      "executedPassCount": 1
+    },
+    {
+      "index": 34,
+      "fullName": "Machine Lab: practice coverage latest draft keeps identity when latest record replacement removes every other unsaved target",
+      "executedPassCount": 1
+    },
+    {
+      "index": 35,
+      "fullName": "Machine Lab: practice coverage latest draft keeps identity when latest record replacement removes every other solution target",
+      "executedPassCount": 1
+    },
+    {
+      "index": 36,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after view changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 37,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after station changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 38,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after geometry changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 39,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after efficiency changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 40,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after duration changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 41,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after time unit changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 42,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after budget changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 43,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after question changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 44,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after invalid geometry changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 45,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after invalid efficiency changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 46,
+      "fullName": "Machine Lab: practice coverage guarded state ignores delayed navigation after invalid duration changes without mutating state",
+      "executedPassCount": 1
+    },
+    {
+      "index": 47,
+      "fullName": "Machine Lab: practice coverage guarded state rejects captured input, save and repeated navigation handlers after changing the question",
+      "executedPassCount": 1
+    }
+  ]
+}
