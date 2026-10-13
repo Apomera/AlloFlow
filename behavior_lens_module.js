@@ -4227,12 +4227,37 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.BehaviorLensTokenBoard = Object.freeze({ nextEmptyTokenSlot });
 
+    // Store worksheet bridge (2026-10-13): a full token board can add one neutral
+    // "Individual goal progress" row, by codename, to the device-local School Rewards
+    // recognition worksheet. Nothing about the board, behavior or plan goes with it;
+    // staff still award the row in the School Store.
+    const blAddToStoreWorksheet = (codename, id, now) => {
+        let log;
+        try { log = JSON.parse(localStorage.getItem('allo_school_rewards_recognition_log_v1') || 'null'); } catch (_) { log = null; }
+        if (!log || typeof log !== 'object' || !log.sessions || typeof log.sessions !== 'object') log = { sessions: {} };
+        const d = new Date(now), key = 'daily-goal-' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const name = String(codename || 'Student').slice(0, 80), label = 'Individual goal progress';
+        const session = log.sessions[key] && typeof log.sessions[key] === 'object' && log.sessions[key].rows ? log.sessions[key] : { rows: {}, updatedAt: 0 };
+        const row = session.rows[name] || (session.rows[name] = { ids: [], reasons: {}, lastAt: 0 });
+        if (!Array.isArray(row.ids)) row.ids = [];
+        if (!row.reasons || typeof row.reasons !== 'object') row.reasons = {};
+        if (!id) id = 'goal:' + now + ':' + row.ids.length;
+        if (row.ids.indexOf(id) !== -1) return 'already';
+        row.ids.push(id);
+        row.reasons[label] = (row.reasons[label] || 0) + 1;
+        row.lastAt = Math.max(Number(row.lastAt) || 0, now);
+        session.updatedAt = now;
+        log.sessions[key] = session;
+        try { localStorage.setItem('allo_school_rewards_recognition_log_v1', JSON.stringify(log)); } catch (_) { return 'failed'; }
+        return 'added';
+    };
     const TokenBoard = ({ onClose, studentName, studentKey, t, addToast, callGemini }) => {
         const [slots, setSlots] = useState(5);
         // Kept with the student's workspace: closing the board mid-lesson emptied it.
         const [tokens, setTokens] = useDurableToolState('tokenBoardTokens', []);
         const [targetBehavior, setTargetBehavior] = useDurableToolState('tokenBoardTarget', '');
         const [reward, setReward] = useDurableToolState('tokenBoardReward', '');
+        const [storeSentAt, setStoreSentAt] = useDurableToolState('tokenBoardStoreSentAt', 0);
         const [showConfetti, setShowConfetti] = useState(false);
         const tokenEmojis = ['⭐', '🌟', '🏆', '🎯', '💎', '🔥', '🌈', '🦄', '🎵', '💫'];
 
@@ -4491,6 +4516,14 @@ Return ONLY valid JSON:
         };
 
         const earnedCount = tokens.filter(Boolean).length;
+        // A board emptied by Reset (or any path that clears it) can be sent again once refilled.
+        useEffect(() => { if (earnedCount === 0 && storeSentAt) setStoreSentAt(0); }, [earnedCount, storeSentAt]);
+        const sendToStoreWorksheet = () => {
+            const now = Date.now(), result = blAddToStoreWorksheet(studentName, null, now);
+            if (result === 'failed') { if (addToast) addToast(tt('behavior_lens.token.store_failed', 'This browser could not save to the Store worksheet.'), 'error'); return; }
+            setStoreSentAt(now);
+            if (addToast) addToast(tt('behavior_lens.token.store_added', 'Added to your Store worksheet as "Individual goal progress". Award it in the School Store as usual.'), 'success');
+        };
         const fmtTimer = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-6' },
@@ -4670,6 +4703,9 @@ Return ONLY valid JSON:
                     disabled: responseCount === 0 && earnedCount === 0,
                     className: 'px-6 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-all disabled:opacity-40'
                 }, '💾 Save Session'),
+                earnedCount >= slots && studentName && h('button', { type: 'button', onClick: sendToStoreWorksheet, disabled: !!storeSentAt, 'data-store-worksheet': '',
+                    className: 'px-6 py-2 bg-amber-100 text-amber-900 rounded-full text-sm font-bold hover:bg-amber-200 transition-all disabled:opacity-60'
+                }, storeSentAt ? tt('behavior_lens.token.store_sent', 'On your Store worksheet') : tt('behavior_lens.token.store_add', 'Add to Store worksheet')),
                 h('button', { 'aria-expanded': String(showHistory), onClick: () => setShowHistory(!showHistory),
                     className: 'px-6 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold hover:bg-indigo-200 transition-all'
                 }, `📊 History (${sessionHistory.length})`)
