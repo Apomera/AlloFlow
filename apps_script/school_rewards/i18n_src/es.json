@@ -1177,7 +1177,20 @@
     "mtss_triage_rows_downloaded_in_mtss_triage_paste_them_and__r436fa": "Filas para MTSS Triage descargadas. En MTSS Triage, pégalas y elige que un valor más alto es mejor.",
     "no_acknowledgment_report_loaded_1yfvf56": "No se ha cargado ningún informe de reconocimientos.",
     "the_end_date_must_be_on_or_after_the_start_date_7su5cs": "La fecha final debe ser igual o posterior a la fecha inicial.",
-    "tier_1_acknowledgments_1vno3b0": "Reconocimientos de Nivel 1"
+    "tier_1_acknowledgments_1vno3b0": "Reconocimientos de Nivel 1",
+    "could_not_create_unique_claim_codes_try_again_hc1d3t": "No se pudieron crear códigos únicos. Inténtalo de nuevo.",
+    "describe_what_a_student_does_to_earn_this_code_ntt0nb": "Describe lo que hace un estudiante para ganar este código.",
+    "only_the_staff_member_who_printed_a_code_batch_or_an_admin_1gaz6ci": "Solo el miembro del personal que imprimió una hoja de códigos, o un administrador, puede cancelarla.",
+    "read_20_minutes_at_home_n25y6g": "Leyó 20 minutos en casa",
+    "that_code_batch_could_not_be_found_1w5kqyo": "No se encontró esa hoja de códigos.",
+    "that_code_points_at_a_recognition_category_that_no_longer__1uds70a": "Ese código corresponde a una categoría de reconocimiento que ya no existe.",
+    "the_claim_token_row_does_not_match_its_operation_intent_pt7ifp": "El registro del código no coincide con la operación prevista.",
+    "the_expiry_must_be_in_the_future_w7r7wc": "La fecha de vencimiento debe ser futura.",
+    "the_pending_claim_does_not_match_its_token_t0la63": "El canje pendiente no coincide con su código.",
+    "the_pending_claim_references_a_missing_recognition_categor_1vxskut": "El canje pendiente hace referencia a una categoría de reconocimiento que no existe.",
+    "the_pending_claim_student_does_not_match_its_actor_4o8uos": "El estudiante del canje pendiente no coincide con quien lo inició.",
+    "the_pending_claim_token_was_redeemed_by_another_student_6dgoo9": "Otro estudiante ya canjeó el código de este canje pendiente.",
+    "this_request_was_already_used_for_a_different_code_sheet_r_c53p2w": "Esta solicitud ya se usó para otra hoja de códigos. Actualiza la página y vuelve a crear los códigos."
   },
   "patterns": {
     "1_available_16n661b": "{1} disponibles",

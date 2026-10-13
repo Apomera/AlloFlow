@@ -2081,7 +2081,11 @@ describe('School Rewards Print Lab portal', () => {
     expect(PORTAL).toContain('id="statement-mail-run-status" class="empty" role="status" aria-live="polite" tabindex="-1"');
     expect(PORTAL).toContain('id="guardian-mail-run-status" class="empty" role="status" aria-live="polite" tabindex="-1"');
     expect(PORTAL).toContain('id="unresolved-mail-deliveries" class="list" role="region" aria-live="polite"');
-    expect(SCRIPT).not.toMatch(/\.recipientEmail|\.guardianEmail|\.studentName|\.rawError|retry.*whole.*batch/i);
+    // The generated translation packs are data on one long line, so 'retry', 'whole' and 'batch'
+    // from unrelated strings can line up there; check the portal's code, not its dictionary.
+    const code = SCRIPT.replace(/\/\* SR_I18N_DATA_START \*\/[\s\S]*?\/\* SR_I18N_DATA_END \*\//, '');
+    expect(code.length).toBeLessThan(SCRIPT.length);
+    expect(code).not.toMatch(/\.recipientEmail|\.guardianEmail|\.studentName|\.rawError|retry.*whole.*batch/i);
     expect(SCRIPT).toContain("payload={outboxId:outboxId,status:status,note:note}");
     expect(SCRIPT).toContain("payload={outboxId:outboxId}");
   });

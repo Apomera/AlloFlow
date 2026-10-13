@@ -1177,7 +1177,20 @@
     "mtss_triage_rows_downloaded_in_mtss_triage_paste_them_and__r436fa": "MTSS Triage rows downloaded. In MTSS Triage, paste them and choose higher is better.",
     "no_acknowledgment_report_loaded_1yfvf56": "No acknowledgment report loaded.",
     "the_end_date_must_be_on_or_after_the_start_date_7su5cs": "The end date must be on or after the start date.",
-    "tier_1_acknowledgments_1vno3b0": "Tier 1 acknowledgments"
+    "tier_1_acknowledgments_1vno3b0": "Tier 1 acknowledgments",
+    "could_not_create_unique_claim_codes_try_again_hc1d3t": "Could not create unique claim codes. Try again.",
+    "describe_what_a_student_does_to_earn_this_code_ntt0nb": "Describe what a student does to earn this code.",
+    "only_the_staff_member_who_printed_a_code_batch_or_an_admin_1gaz6ci": "Only the staff member who printed a code batch, or an administrator, can cancel it.",
+    "read_20_minutes_at_home_n25y6g": "Read 20 minutes at home",
+    "that_code_batch_could_not_be_found_1w5kqyo": "That code batch could not be found.",
+    "that_code_points_at_a_recognition_category_that_no_longer__1uds70a": "That code points at a recognition category that no longer exists.",
+    "the_claim_token_row_does_not_match_its_operation_intent_pt7ifp": "The claim token row does not match its operation intent.",
+    "the_expiry_must_be_in_the_future_w7r7wc": "The expiry must be in the future.",
+    "the_pending_claim_does_not_match_its_token_t0la63": "The pending claim does not match its token.",
+    "the_pending_claim_references_a_missing_recognition_categor_1vxskut": "The pending claim references a missing recognition category.",
+    "the_pending_claim_student_does_not_match_its_actor_4o8uos": "The pending claim student does not match its actor.",
+    "the_pending_claim_token_was_redeemed_by_another_student_6dgoo9": "The pending claim token was redeemed by another student.",
+    "this_request_was_already_used_for_a_different_code_sheet_r_c53p2w": "This request was already used for a different code sheet. Refresh and create the codes again."
   },
   "patterns": {
     "1_available_16n661b": {
