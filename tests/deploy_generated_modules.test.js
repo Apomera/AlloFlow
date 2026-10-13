@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve, sep } from 'node:path';
 import { parse } from 'acorn';
 import { sliceBetween } from './helpers/anchored_slice.js';
+import desktopSpace from '../dev-tools/check_desktop_build_space.cjs';
 
 const deploy = readFileSync('deploy.sh', 'utf8').replace(/\r\n/g, '\n');
 const build = readFileSync('build.js', 'utf8');
@@ -66,6 +67,71 @@ function between(start, end) {
 }
 
 describe('deploy generated root modules', () => {
+  it.each([
+    ['default with enough space', undefined, 0, true],
+    ['explicitly enabled with enough space', '0', 0, true],
+    ['explicitly skipped', '1', 0, false],
+    ['automatically skipped for low space', undefined, 2, false],
+    ['unable to measure space', undefined, 1, true],
+  ])('keeps the hosted build when desktop is %s', (_label, skipDesktop, spaceStatus, buildDesktop) => {
+    const root = mkdtempSync(join(tmpdir(), 'alloflow-deploy-modules-'));
+    tempRoots.push(root);
+    mkdirSync(join(root, 'desktop/web-app'), { recursive: true });
+    const env = { ...process.env };
+    delete env.SKIP_DESKTOP_BUILD;
+    if (skipDesktop !== undefined) env.SKIP_DESKTOP_BUILD = skipDesktop;
+    const script = [
+      'set -euo pipefail',
+      'npm() { printf "CALL:%s:%s\\n" "${PWD##*/}" "$*"; }',
+      `node() { printf "SPACE_CHECK\\n"; return ${spaceStatus}; }`,
+      between('# ── Step 4: npm run build', '# ── Step 5: Firebase deploy'),
+      'printf "HOSTED_DEPLOY_CONTINUES\\n"',
+    ].join('\n');
+    const output = execFileSync(bash, ['-c', script], {
+      cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const calls = output.split(/\r?\n/).filter(line => line.startsWith('CALL:'));
+    expect(calls).toEqual(buildDesktop ? [
+      'CALL:web-app:run build',
+      'CALL:desktop:run web:build:isolated',
+      'CALL:desktop:run verify:web-build',
+    ] : ['CALL:web-app:run build']);
+    expect(output).toContain('HOSTED_DEPLOY_CONTINUES');
+    expect(output.includes('SPACE_CHECK')).toBe(skipDesktop !== '1');
+    if (!buildDesktop) {
+      expect(output).toContain('existing desktop/app-build was not updated');
+      expect(output).not.toContain('desktop/app-build is current');
+    }
+  });
+
+  it('budgets both temporary copies on a shared volume, using the larger input', () => {
+    const { assessDesktopBuildSpace, RESERVE_BYTES } = desktopSpace;
+    const required = 2000 + RESERVE_BYTES;
+    const check = freeBytes => assessDesktopBuildSpace({
+      publicBytes: 1000, hostedBytes: 500,
+      desktopVolume: { path: 'desktop', device: 1, freeBytes },
+      tempVolume: { path: 'temp', device: 1, freeBytes },
+    });
+    expect(check(required - 1).enough).toBe(false);
+    expect(check(required).enough).toBe(true);
+    expect(check(required).volumes).toHaveLength(1);
+    expect(check(required).volumes[0].requiredBytes).toBe(required);
+  });
+
+  it('requires enough room on each volume when temporary output uses another disk', () => {
+    const { assessDesktopBuildSpace, RESERVE_BYTES } = desktopSpace;
+    const required = 2000 + RESERVE_BYTES;
+    const check = tempFree => assessDesktopBuildSpace({
+      publicBytes: 1000, hostedBytes: 2000,
+      desktopVolume: { path: 'desktop', device: 1, freeBytes: required },
+      tempVolume: { path: 'temp', device: 2, freeBytes: tempFree },
+    });
+    expect(check(required - 1).enough).toBe(false);
+    expect(check(required).enough).toBe(true);
+    expect(check(required).volumes.map(volume => volume.requiredBytes)).toEqual([required, required]);
+    expect(() => check(NaN)).toThrow('Invalid disk-space measurement');
+  });
+
   it('covers every current build.js compile output exactly once', () => {
     const declared = deploy.match(/POST_MODULES=\(([\s\S]*?)\n\)/)?.[1].trim().split(/\s+/);
     expect(declared).toBeTruthy();

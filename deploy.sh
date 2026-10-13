@@ -11,7 +11,7 @@
 #   2.  Pushes source commit to origin (GitHub)
 #   3.  Runs `node build.js --mode=prod --force` (rewrites CDN hash refs)
 #   4.  Runs `npm run build` in desktop/web-app/
-#   4.5 Builds the desktop flavor separately, then atomically stages + verifies it
+#   4.5 Builds + verifies desktop when space permits (SKIP_DESKTOP_BUILD=1 skips)
 #   5.  Runs `firebase deploy --only hosting`
 #   6.  Auto-commits the post-deploy hash refs (the mirror files)
 #   7.  Pushes the post-deploy commit to origin
@@ -63,6 +63,13 @@ WORKFLOW:
 The script handles: source commit, push, hosted + desktop build staging,
 deploy, post-deploy commit (with hash refs), push, and mirror to the
 Codeberg backup.
+
+To deploy the hosted app without rebuilding the local desktop artifact:
+  SKIP_DESKTOP_BUILD=1 ./deploy.sh "Hosted release"
+This skips only Step 4.5 and leaves the existing desktop/app-build unchanged.
+Step 4.5 also skips automatically when free disk space is below its estimate
+for isolated output + staging + a 512 MiB reserve on each affected volume.
+All deployment gates, the hosted build, publishing, and verification still run.
 
 If nothing is staged, the script skips the source commit and just
 runs build + deploy + post-deploy. Useful when re-running a deploy
@@ -425,8 +432,21 @@ echo "  ✓ npm build complete."
 # hashed asset manifest, and service-worker precache all validate.
 echo ""
 echo "=== Step 4.5: Build + verify desktop/app-build ==="
-(cd desktop && npm run web:build:isolated && npm run verify:web-build)
-echo "  ✓ desktop/app-build is current and internally consistent."
+if [[ "${SKIP_DESKTOP_BUILD:-0}" == "1" ]]; then
+  echo "  Skipped via SKIP_DESKTOP_BUILD=1; existing desktop/app-build was not updated."
+else
+  DESKTOP_SPACE_STATUS=0
+  node dev-tools/check_desktop_build_space.cjs || DESKTOP_SPACE_STATUS=$?
+  if [[ "$DESKTOP_SPACE_STATUS" == "2" ]]; then
+    echo "  Skipped: insufficient disk space; existing desktop/app-build was not updated."
+  else
+    if [[ "$DESKTOP_SPACE_STATUS" != "0" ]]; then
+      echo "  ⚠ Disk-space estimate unavailable; continuing the normal desktop build."
+    fi
+    (cd desktop && npm run web:build:isolated && npm run verify:web-build)
+    echo "  ✓ desktop/app-build is current and internally consistent."
+  fi
+fi
 
 # ── Step 5: Firebase deploy ────────────────────────────────────────
 # The public repo deliberately ships with YOUR_PROJECT_ID so a normal deploy
