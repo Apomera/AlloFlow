@@ -1,0 +1,90 @@
+{
+  "command": "node dev-tools/ml_backcheck_qa.cjs reports/machinelab-backcheck-2026-10-13/browser/run-03",
+  "startedAt": "2026-10-13T23:43:30.183Z",
+  "finishedAt": "2026-10-13T23:44:32.996Z",
+  "observedExitCode": 0,
+  "signal": null,
+  "error": null,
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "sourceSha256After": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "publicMirrorSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "publicMirrorSha256After": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "sourceExactInNativePage": true,
+  "scenarios": 4,
+  "checks": 2229,
+  "errors": [],
+  "screenshots": [
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/desktop-lever-rounded-backcheck.png",
+      "sha256": "8a8e3c9c81e416b4b48fc491288b9b9dd761204008345947b3d4ffe26a325880",
+      "bytes": 22874,
+      "width": 493,
+      "height": 509,
+      "visuallyInspected": false
+    },
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/desktop-screw-rotation-backcheck.png",
+      "sha256": "6dbd03e07191bb79c9083fb08e9d0b4889c088b1aa0248db64ee82430b9775c9",
+      "bytes": 23199,
+      "width": 493,
+      "height": 509,
+      "visuallyInspected": false
+    },
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/dark-phone-ramp-rise-backcheck.png",
+      "sha256": "0303ca203570e64c3c65f14dcaa3f6cc5524a3b86554ddc71db358bfff371092",
+      "bytes": 24997,
+      "width": 228,
+      "height": 827,
+      "visuallyInspected": false
+    },
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/forced-colors-windlass-zero-backcheck.png",
+      "sha256": "e48e2b1a0e2f5bdd4a33ac52e46e85ab48a07b3dd598d87d1613eb3995a9978f",
+      "bytes": 20600,
+      "width": 228,
+      "height": 787,
+      "visuallyInspected": false
+    }
+  ],
+  "harness": {
+    "path": "dev-tools/ml_backcheck_qa.cjs",
+    "sha256": "a72c56de2d2f0f89a3d35ae9940eeb9c5a8e75b7ef0b8a6656d5de17aa772183",
+    "bytes": 17788
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/harness-snapshot.cjs",
+    "sha256": "a72c56de2d2f0f89a3d35ae9940eeb9c5a8e75b7ef0b8a6656d5de17aa772183",
+    "bytes": 17788
+  },
+  "helperPreamble": {
+    "path": "dev-tools/ml_power_lab_qa.cjs",
+    "sha256": "6aae492c9b2345e20279bc1e215837ce8d82a014744b0bfbf801362d97ff61b1",
+    "bytes": 23260
+  },
+  "baseHarness": {
+    "path": "dev-tools/ml_scene_shots.cjs",
+    "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7",
+    "bytes": 20872
+  },
+  "results": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/results.json",
+    "sha256": "c4821dba3182dedabefed135dff09a878f6e5d7e44054fe8d9e77c476e990f0d",
+    "bytes": 627417
+  },
+  "nativePage": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/ml-shots.html",
+    "sha256": "5b3aeb22323bef731677271e8b38dbbc2a4efd8d25c5a50aa439ce540154d99b",
+    "bytes": 2570999
+  },
+  "console": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/console.log",
+    "sha256": "9d034841fd49f6a181fa4377695d37394b4f042502762e6cbf0674233f47da27",
+    "bytes": 1366
+  },
+  "downloadedRecord": null,
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ]
+}

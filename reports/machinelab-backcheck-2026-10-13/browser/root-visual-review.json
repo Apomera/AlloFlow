@@ -1,0 +1,30 @@
+{
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "reviewer": "Root independent image inspection",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/desktop-lever-rounded-backcheck.png",
+      "sha256": "8a8e3c9c81e416b4b48fc491288b9b9dd761204008345947b3d4ffe26a325880",
+      "visuallyInspected": true,
+      "notes": "Desktop lever: checked 49.9 W and inverse 199.6 J versus 200 J are readable. Solid and striped bars, absolute difference and keyboard focus are clear; no visible clipping."
+    },
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/desktop-screw-rotation-backcheck.png",
+      "sha256": "6dbd03e07191bb79c9083fb08e9d0b4889c088b1aa0248db64ee82430b9775c9",
+      "visuallyInspected": true,
+      "notes": "Desktop screw: rounded 628.3 rad reconstructs 99.9971 turns against 100 turns. Equation, units, precision and paired cards are readable with no visible clipping."
+    },
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/dark-phone-ramp-rise-backcheck.png",
+      "sha256": "0303ca203570e64c3c65f14dcaa3f6cc5524a3b86554ddc71db358bfff371092",
+      "visuallyInspected": true,
+      "notes": "Dark 320px ramp: vertical-rise relationship and 2400 J comparison remain readable; cards stack into one column. Focus outline and both bar patterns remain clear."
+    },
+    {
+      "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/forced-colors-windlass-zero-backcheck.png",
+      "sha256": "e48e2b1a0e2f5bdd4a33ac52e46e85ab48a07b3dd598d87d1613eb3995a9978f",
+      "visuallyInspected": true,
+      "notes": "Forced-colors 320px windlass: both values read 0 J and both rails have no fill. Text, outlines, equation and keyboard focus remain readable without clipping."
+    }
+  ]
+}

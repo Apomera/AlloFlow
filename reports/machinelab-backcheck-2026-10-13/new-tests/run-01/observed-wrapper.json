@@ -1,0 +1,14 @@
+{
+  "observedWrapperExitCode": 1,
+  "sessionId": 49163,
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "testAtRun": {
+    "path": "test-at-run.js",
+    "sha256": "25dca3163687cfe22475f8e576e04e90f578df777f9dc6137869d63f5c5c5a42"
+  },
+  "runnerAtRun": {
+    "path": "runner-at-run.cjs",
+    "sha256": "ed7c8f83e18d98dd83745c313b542b33c2064f13abbc007994310cf6d1131db8"
+  },
+  "finding": "Fixture serialized a tiny numeric answer as exponent text 1e-11, which the existing decimal parser rejects. Change only the entered text to 0.00000000001; retain numeric inverse expectation 1e-11. First three groups passed 41 cases; final group passed 2 and failed 1. Preserve all receipts."
+}

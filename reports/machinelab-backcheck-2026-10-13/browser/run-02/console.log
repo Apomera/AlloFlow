@@ -1,0 +1,28 @@
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+checkpoint lever full inventory complete checks 299 routes 18 shots 0
+checkpoint pulley full inventory complete checks 589 routes 36 shots 0
+checkpoint windlass full inventory complete checks 991 routes 61 shots 0
+checkpoint ramp full inventory complete checks 1281 routes 79 shots 0
+checkpoint wedge full inventory complete checks 1571 routes 97 shots 0
+checkpoint screw full inventory complete checks 1973 routes 122 shots 0
+checkpoint desktop-lever-rounded-backcheck screenshot complete checks 1994 routes 122 shots 1
+native scenario 2 screw
+checkpoint desktop-screw-rotation-backcheck screenshot complete checks 2084 routes 122 shots 2
+native scenario 3 ramp
+checkpoint dark-phone-ramp-rise-backcheck screenshot complete checks 2192 routes 122 shots 3
+native scenario 4 windlass
+checkpoint Forced-colors mounted checks 2194 routes 122 shots 3
+checkpoint Forced-colors lab open checks 2194 routes 122 shots 3
+checkpoint Forced-colors rounded answer inspected checks 2208 routes 122 shots 3
+checkpoint Forced-colors zero loss inspected checks 2222 routes 122 shots 3
+checkpoint forced-colors-windlass-zero-backcheck screenshot complete checks 2228 routes 122 shots 4
+{
+  "scenarios": 4,
+  "checks": 2229,
+  "routes": 122,
+  "screenshots": 4,
+  "errors": [
+    "Rounded screw radians recover total turns: restored bar has a truthful relative width including zero"
+  ]
+}

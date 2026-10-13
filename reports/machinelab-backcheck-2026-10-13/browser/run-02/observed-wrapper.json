@@ -1,0 +1,28 @@
+{
+  "status": "failed",
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "observedNativeChildExitCode": 1,
+  "observedWrapperExitCode": 1,
+  "wrapperToolSession": 59173,
+  "process": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-02/process.json",
+    "sha256": "08f222133676cbe290c96909c1eae810f63293027eba88bed9ffc2597107a8be"
+  },
+  "results": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-02/results.json",
+    "sha256": "21b0eae24483e6e44cd270a543878a5bba71c9230ae18900ca40b56da39917ac"
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-02/harness-snapshot.cjs",
+    "sha256": "7083ca35ac712404cec1ca8ab29fc1022ad4cce712265a8ad816f8bbf85595af"
+  },
+  "wrapperSnapshot": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-02/wrapper-snapshot.cjs",
+    "sha256": "8645ef721de650ca46e48118f666c0058c2d2f75cfa187eb4a5eb11a7f4cfc35"
+  },
+  "attempt": {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-02/attempt.json",
+    "sha256": "8644ace8cd5160d0f167029c5c73c9fd58486ad64cef991658c940ecc1cad6d8"
+  },
+  "excludedFromFinalEvidence": true
+}

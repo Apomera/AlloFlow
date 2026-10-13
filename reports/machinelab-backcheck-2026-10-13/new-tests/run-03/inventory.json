@@ -1,0 +1,226 @@
+{
+  "file": "tests/machinelab_backcheck.test.js",
+  "sha256": "23575b05cf8ff1d6b3c65c990b5cbdf4859350b62a716eacfcae5e779cb21c31",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: back-check arithmetic restores every 'lever' skill through an independent inverse identity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: back-check arithmetic restores every 'pulley' skill through an independent inverse identity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: back-check arithmetic restores every 'ramp' skill through an independent inverse identity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: back-check arithmetic restores every 'wedge' skill through an independent inverse identity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: back-check arithmetic restores every 'windlass' skill through an independent inverse identity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: back-check arithmetic restores every 'screw' skill through an independent inverse identity",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: back-check arithmetic uses accepted entered values for all 'lever' skills instead of replacing them with exact targets",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: back-check arithmetic uses accepted entered values for all 'pulley' skills instead of replacing them with exact targets",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: back-check arithmetic uses accepted entered values for all 'ramp' skills instead of replacing them with exact targets",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: back-check arithmetic uses accepted entered values for all 'wedge' skills instead of replacing them with exact targets",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: back-check arithmetic uses accepted entered values for all 'windlass' skills instead of replacing them with exact targets",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: back-check arithmetic uses accepted entered values for all 'screw' skills instead of replacing them with exact targets",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: back-check arithmetic retains correct rotary inverse units for non-default 'windlass' geometry",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: back-check arithmetic retains correct rotary inverse units for non-default 'screw' geometry",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: back-check arithmetic uses vertical rise rather than ramp path length and distinguishes hand travel",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: back-check arithmetic normalizes entered minutes once before every inverse calculation",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: back-check arithmetic retains an impossible required efficiency above 100 percent without clamping its inverse",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: back-check provenance uses the worked target for 'lever' even when an unfinished draft is present",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: back-check provenance uses the worked target for 'pulley' even when an unfinished draft is present",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: back-check provenance uses the worked target for 'ramp' even when an unfinished draft is present",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: back-check provenance uses the worked target for 'wedge' even when an unfinished draft is present",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: back-check provenance uses the worked target for 'windlass' even when an unfinished draft is present",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: back-check provenance uses the worked target for 'screw' even when an unfinished draft is present",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: back-check provenance keeps solution provenance after a previously checked rounded answer is revealed and checked again",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: back-check provenance does not save on render or change snapshots, versions, other tools, notes or XP",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: back-check visibility does not disclose a back-check for unchecked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: back-check visibility does not disclose a back-check for first hint work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: back-check visibility does not disclose a back-check for second hint work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: back-check visibility does not disclose a back-check for invalid work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 29,
+      "fullName": "Machine Lab: back-check visibility does not disclose a back-check for unit work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 30,
+      "fullName": "Machine Lab: back-check visibility does not disclose a back-check for incorrect work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 31,
+      "fullName": "Machine Lab: back-check visibility retains grade-band and valid-model gates",
+      "executedPassCount": 1
+    },
+    {
+      "index": 32,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when answer changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 33,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when unit changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 34,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when question changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 35,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when percent changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 36,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when duration changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 37,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when timeUnit changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 38,
+      "fullName": "Machine Lab: back-check visibility follows the existing feedback lifecycle when budget changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 39,
+      "fullName": "Machine Lab: back-check visibility invalidates feedback after an external geometry change without replacing the stored record",
+      "executedPassCount": 1
+    },
+    {
+      "index": 40,
+      "fullName": "Machine Lab: back-check visibility does not leak feedback into another station or the learning record view",
+      "executedPassCount": 1
+    },
+    {
+      "index": 41,
+      "fullName": "Machine Lab: back-check numerical bounds keeps both zero-loss bars empty and represents a tiny accepted nonzero answer honestly",
+      "executedPassCount": 1
+    },
+    {
+      "index": 42,
+      "fullName": "Machine Lab: back-check numerical bounds keeps a near-zero loss reference nonzero when the existing absolute tolerance accepts zero",
+      "executedPassCount": 1
+    },
+    {
+      "index": 43,
+      "fullName": "Machine Lab: back-check numerical bounds preserves very small conversion quantities without introducing the older absolute tolerance floor",
+      "executedPassCount": 1
+    }
+  ]
+}

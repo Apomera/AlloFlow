@@ -1,0 +1,18 @@
+{
+  "status": "failed",
+  "excludedFromFinalEvidence": true,
+  "observedNativeChildExitCode": 1,
+  "observedWrapperExitCode": 1,
+  "wrapperToolSession": 59173,
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "checks": 2229,
+  "scenarios": 4,
+  "screenshots": 4,
+  "reason": "Only CSSOM percentage serialization exceeded the harness tolerance.",
+  "expectedPercent": 99.99705074463785,
+  "observedPercent": 99.9971,
+  "absoluteDifferenceInPercentagePoints": 0.000049255362156941374,
+  "oldTolerance": 0.00001,
+  "newTolerance": 0.0001,
+  "productionChanged": false
+}

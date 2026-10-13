@@ -8580,6 +8580,107 @@ window.StemLab = window.StemLab || {
           ]);
         }
         function action(key, label, handler, disabled) { var props = { key: key, type: 'button', style: Object.assign({}, button, key === 'check' ? { background: T.accent, color: T.accentInk, borderColor: T.accent, fontWeight: 800 } : {}), disabled: !!disabled, onClick: handler }; props['data-ml-power-' + key] = ''; return h('button', props, label); }
+        function backCheck() {
+          if (!model || !question || (result !== 'correct' && result !== 'solution')) return null;
+          var answer = result === 'solution' ? question.target : _machineMath.parseNum(draft.answer);
+          if (!finite(answer) || answer < 0) return null;
+          var p = powerFmt, a = powerResultFmt(draft.question, answer) + ' ' + question.unit, t = model.seconds, eta = model.efficiency;
+          var settings = session.settings, distance = settings.loadDistance, load = settings[bench.loadKey];
+          var workLabel = __alloT('stem.machinelab.backcheck_work', 'Useful task work');
+          var distanceLabel = bench.id === 'ramp' ? __alloT('stem.machinelab.backcheck_rise', 'Vertical load rise') : __alloT('stem.machinelab.backcheck_movement', 'Load movement');
+          var budgetLabel = __alloT('stem.machinelab.backcheck_budget_work', 'Useful energy available at the power budget');
+          var specs = {
+            inputPower: [answer * t * eta, model.workOut, 'J', workLabel,
+              __alloT('stem.machinelab.backcheck_rule_input', 'Useful work = input power × seconds × efficiency as a decimal.'), a + ' × ' + p(t) + ' s × ' + String(eta)],
+            usefulPower: [answer * t, model.workOut, 'J', workLabel,
+              __alloT('stem.machinelab.backcheck_rule_useful', 'Useful work = useful power × seconds.'), a + ' × ' + p(t) + ' s'],
+            lossPower: [answer * t, model.loss, 'J', __alloT('stem.machinelab.backcheck_lost', 'Energy lost'),
+              __alloT('stem.machinelab.backcheck_rule_loss', 'Energy lost = power lost × seconds. Zero power lost gives zero lost energy.'), a + ' × ' + p(t) + ' s'],
+            handSpeed: [answer * t, model.travel, 'm', __alloT('stem.machinelab.backcheck_travel', 'Hand travel'),
+              __alloT('stem.machinelab.backcheck_rule_hand', 'Hand travel = hand-path speed × seconds.'), a + ' × ' + p(t) + ' s'],
+            loadSpeed: [answer * t, distance, 'm', distanceLabel,
+              bench.id === 'ramp' ? __alloT('stem.machinelab.backcheck_rule_rise', 'Vertical rise = vertical rise rate × seconds. This checks rise, not travel along the ramp.')
+                : __alloT('stem.machinelab.backcheck_rule_movement', 'Load movement = load movement rate × seconds.'), a + ' × ' + p(t) + ' s'],
+            budgetTime: [answer * budget * eta, model.workOut, 'J', workLabel,
+              __alloT('stem.machinelab.backcheck_rule_time', 'Useful work = time at the power budget × input-power budget × efficiency as a decimal.'), a + ' × ' + p(budget) + ' W × ' + String(eta)],
+            budgetEnergy: [answer / t, budget, 'W', __alloT('stem.machinelab.backcheck_budget_power', 'Input-power budget'),
+              __alloT('stem.machinelab.backcheck_rule_energy', 'Input-power budget = available input energy ÷ seconds.'), a + ' ÷ ' + p(t) + ' s'],
+            budgetLoad: [answer * distance, budget * t * eta, 'J', budgetLabel,
+              bench.id === 'ramp' ? __alloT('stem.machinelab.backcheck_rule_budget_rise_load', 'Useful energy available = calculated load force × vertical rise held fixed.')
+                : __alloT('stem.machinelab.backcheck_rule_budget_load', 'Useful energy available = calculated load force × movement held fixed.'), a + ' × ' + p(distance) + ' m'],
+            budgetMovement: [answer * load, budget * t * eta, 'J', budgetLabel,
+              bench.id === 'ramp' ? __alloT('stem.machinelab.backcheck_rule_budget_rise', 'Useful energy available = calculated vertical rise × load force held fixed. Use rise, not travel along the ramp.')
+                : __alloT('stem.machinelab.backcheck_rule_budget_movement', 'Useful energy available = calculated load movement × load force held fixed.'), a + ' × ' + p(load) + ' N'],
+            requiredEfficiency: [answer / 100 * budget * t, model.workOut, 'J', workLabel,
+              __alloT('stem.machinelab.backcheck_rule_efficiency', 'Useful work = required efficiency as a decimal × input-power budget × seconds. A requirement above 100% is still impossible through efficiency alone.'),
+              '(' + a + ' ÷ 100%) × ' + p(budget) + ' W × ' + p(t) + ' s'],
+            effortFromPower: [answer * model.handSpeed, model.inputPower, 'W', __alloT('stem.machinelab.backcheck_input_power', 'Input power'),
+              __alloT('stem.machinelab.backcheck_rule_effort', 'Input power = effort force × hand-path speed. Do not apply efficiency a second time.'), a + ' × ' + p(model.handSpeed) + ' m/s'],
+            loadFromPower: [answer * model.loadSpeed, model.usefulPower, 'W', __alloT('stem.machinelab.backcheck_useful_power', 'Useful power'),
+              __alloT('stem.machinelab.backcheck_rule_load', 'Useful power = load force × load movement rate. On a ramp, use the vertical rise rate.'), a + ' × ' + p(model.loadSpeed) + ' m/s'],
+            powerKilowatts: [answer * 1000, model.inputPower, 'W', __alloT('stem.machinelab.backcheck_power_w', 'Original input power in watts'),
+              __alloT('stem.machinelab.backcheck_rule_kw', 'Reverse the conversion: multiply kilowatts by 1000 to recover watts.'), a + ' × (1000 W ÷ 1 kW)'],
+            powerWatts: [answer / 1000, model.inputPower / 1000, 'kW', __alloT('stem.machinelab.backcheck_power_kw', 'Original input power in kilowatts'),
+              __alloT('stem.machinelab.backcheck_rule_w', 'Reverse the conversion: divide watts by 1000 to recover kilowatts.'), a + ' × (1 kW ÷ 1000 W)'],
+            timeMinutes: [answer * 60, t, 's', __alloT('stem.machinelab.backcheck_time_s', 'Original task time in seconds'),
+              __alloT('stem.machinelab.backcheck_rule_min', 'Reverse the conversion: multiply minutes by 60 to recover seconds.'), a + ' × (60 s ÷ 1 min)'],
+            timeSeconds: [answer / 60, t / 60, 'min', __alloT('stem.machinelab.backcheck_time_min', 'Original task time in minutes'),
+              __alloT('stem.machinelab.backcheck_rule_s', 'Reverse the conversion: divide seconds by 60 to recover minutes.'), a + ' × (1 min ÷ 60 s)'],
+            speedCentimetres: [answer / 100, model.handSpeed, 'm/s', __alloT('stem.machinelab.backcheck_speed_ms', 'Original hand-path speed in metres per second'),
+              __alloT('stem.machinelab.backcheck_rule_cms', 'Reverse the conversion: divide centimetres per second by 100. Seconds stay unchanged.'), a + ' × (1 m ÷ 100 cm)'],
+            speedMetres: [answer * 100, model.handSpeed * 100, 'cm/s', __alloT('stem.machinelab.backcheck_speed_cms', 'Original hand-path speed in centimetres per second'),
+              __alloT('stem.machinelab.backcheck_rule_ms', 'Reverse the conversion: multiply metres per second by 100. Seconds stay unchanged.'), a + ' × (100 cm ÷ 1 m)']
+          };
+          var rotation = powerRotation(model, settings, bench);
+          if (rotation) {
+            var radius = powerRadius(settings, bench), ma = bench.ma(settings);
+            specs.torque = [answer / radius * ma * eta, load, 'N', __alloT('stem.machinelab.backcheck_load', 'Load force'),
+              __alloT('stem.machinelab.backcheck_rule_torque', 'Load force = torque ÷ handle radius × ideal MA × efficiency as a decimal.'),
+              a + ' ÷ ' + p(radius) + ' m × ' + p(ma) + ' × ' + String(eta)];
+            specs.rpm = [answer * t / 60 * rotation.advance, distance, 'm', distanceLabel,
+              __alloT('stem.machinelab.backcheck_rule_rpm', 'Load movement = RPM × seconds ÷ 60 × load advance per turn.'),
+              a + ' × (' + p(t) + ' s ÷ 60 s/min) × ' + p(rotation.advance) + ' m/turn'];
+            specs.turns = [answer * rotation.advance, distance, 'm', distanceLabel,
+              __alloT('stem.machinelab.backcheck_rule_turns', 'Load movement = turns × load advance per turn. Keep fractional turns.'), a + ' × ' + p(rotation.advance) + ' m/turn'];
+            specs.angularTravel = [answer / (2 * Math.PI), rotation.turns, 'turns', __alloT('stem.machinelab.backcheck_turns', 'Handle turns'),
+              __alloT('stem.machinelab.backcheck_rule_angle', 'Handle turns = angular travel ÷ (2π radians per turn).'), a + ' ÷ (2π rad/turn)'];
+            specs.omega = [answer * 60 / (2 * Math.PI), model.rpm, 'rpm', __alloT('stem.machinelab.backcheck_rpm', 'Handle RPM'),
+              __alloT('stem.machinelab.backcheck_rule_omega', 'RPM = angular speed × 60 seconds per minute ÷ (2π radians per turn).'), a + ' × 60 s/min ÷ (2π rad/turn)'];
+            specs.rotationalWork = [answer / rotation.torque, rotation.angularTravel, 'rad', __alloT('stem.machinelab.backcheck_angle', 'Angular travel'),
+              __alloT('stem.machinelab.backcheck_rule_rot_work', 'Angular travel in radians = input work ÷ applied torque. Torque already includes the assumed losses.'), a + ' ÷ (' + p(rotation.torque) + ' N·m)'];
+            specs.rotationalPower = [answer / rotation.torque, rotation.omega, 'rad/s', __alloT('stem.machinelab.backcheck_omega', 'Angular speed'),
+              __alloT('stem.machinelab.backcheck_rule_rot_power', 'Angular speed in radians per second = input power ÷ applied torque. Do not apply efficiency again.'), a + ' ÷ (' + p(rotation.torque) + ' N·m)'];
+          }
+          var spec = specs[draft.question];
+          if (!spec || !finite(spec[0]) || !finite(spec[1]) || spec[0] < 0 || spec[1] < 0) return null;
+          var difference = Math.abs(spec[0] - spec[1]), scale = Math.max(spec[0], spec[1]);
+          var titleId = prefix + 'backcheck-quantity-' + bench.id;
+          return h('details', { key: 'backcheck-' + draft.question, 'data-ml-power-backcheck': bench.id, 'data-skill': draft.question,
+            'data-provenance': result === 'solution' ? 'solution' : 'checked', className: 'ml-power-backcheck', style: panelStyle }, [
+            h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.backcheck_title', 'Check by working backwards')),
+            h('p', { key: 'answer', 'data-ml-power-backcheck-answer': '', 'data-value': answer, 'data-unit': question.unit, style: style },
+              (result === 'solution' ? __alloT('stem.machinelab.backcheck_from_solution', 'Using the worked solution: ') : __alloT('stem.machinelab.backcheck_from_answer', 'Using your checked answer: ')) + a),
+            h('p', { key: 'rule', style: style }, spec[4]),
+            h('p', { key: 'equation', 'data-ml-power-backcheck-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.accent, background: T.card, fontVariantNumeric: 'tabular-nums' }) }, spec[5] + ' ≈ ' + p(spec[0]) + ' ' + spec[2]),
+            h('figure', { key: 'comparison', 'aria-labelledby': titleId, style: { margin: '16px 0' } }, [
+              h('figcaption', { key: 'caption', id: titleId, style: Object.assign({}, style, { fontWeight: 800 }) }, spec[3]),
+              h('dl', { key: 'values', className: 'ml-backcheck-grid', style: { margin: '10px 0' } }, [
+                ['restored', spec[0], __alloT('stem.machinelab.backcheck_restored', 'Reconstructed from the answer')],
+                ['reference', spec[1], __alloT('stem.machinelab.backcheck_reference', 'Reference from this setup')]
+              ].map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-backcheck-metric': metric[0], 'data-value': metric[1], 'data-unit': spec[2], style: { minWidth: 0, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } }, [
+                h('dt', { key: 'label', style: style }, metric[2]),
+                h('dd', { key: 'value', style: Object.assign({}, valueStyle, { marginLeft: 0 }) }, [p(metric[1]) + ' ' + spec[2],
+                h('div', { key: 'track', className: 'ml-backcheck-track', 'aria-hidden': 'true', style: { height: 12, marginTop: 10, border: '1px solid ' + T.border, borderRadius: 3, overflow: 'hidden', background: T.bg } },
+                  h('span', { 'data-ml-power-backcheck-bar': metric[0], 'data-value': metric[1], style: { display: 'block', height: '100%', width: (scale > 0 ? metric[1] / scale * 100 : 0) + '%', color: T.accent,
+                    background: metric[0] === 'restored' ? T.accent : 'repeating-linear-gradient(135deg,transparent 0,transparent 3px,currentColor 3px,currentColor 6px)' } }))])
+              ]); }))
+            ]),
+            h('p', { key: 'difference', 'data-ml-power-backcheck-metric': 'difference', 'data-value': difference, 'data-unit': spec[2], style: style },
+              __alloT('stem.machinelab.backcheck_difference', 'Absolute difference: ') + p(difference) + ' ' + spec[2]),
+            h('p', { key: 'help', style: style }, __alloT('stem.machinelab.backcheck_help', 'The bars share one scale; a zero value has no filled length. Values use full precision before display rounding. Small differences can reflect rounding or the allowed answer tolerance. Use the original calculation feedback to judge acceptance; this comparison is not another grade.')),
+            h('style', { key: 'style' }, '.ml-backcheck-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:440px){.ml-backcheck-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-backcheck-track{border-color:CanvasText!important;background:Canvas!important}.ml-backcheck-track [data-ml-power-backcheck-bar]{forced-color-adjust:none;color:CanvasText!important}.ml-backcheck-track [data-ml-power-backcheck-bar=restored]{background:CanvasText!important}.ml-backcheck-track [data-ml-power-backcheck-bar=reference]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
+          ]);
+        }
         function paceChart() {
           // All rows and budget markers share one power scale. No settings are applied.
           var scale = Math.max(model.inputPower * 2, budget), marker = budget / scale * 100;
@@ -9015,6 +9116,7 @@ window.StemLab = window.StemLab || {
                 : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) +
                   question.setup + ' = ' + powerResultFmt(draft.question, question.target) + ' ' + question.unit) : null
             ]),
+            backCheck(),
             h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
               action('save', __alloT('stem.machinelab.power_save', 'Save / update this skill'), save, result !== 'correct' && result !== 'solution'),
               action('next', __alloT('stem.machinelab.power_next', 'Next skill'), function () { change({ question: kinds[(kinds.indexOf(draft.question) + 1) % kinds.length] }); })

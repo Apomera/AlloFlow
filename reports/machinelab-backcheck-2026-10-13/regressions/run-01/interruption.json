@@ -1,0 +1,18 @@
+{
+  "status": "failed-native-process",
+  "observedWrapperExitCode": null,
+  "sessionId": 74186,
+  "finding": "The native child for group17 returned2147483651 and logged Fatal process out of memory: Worklist::Segment::Create. The wrapper session was no longer available when polled; its exit was not observed. Sixteen earlier complete native receipts are eligible for hash-verified reuse.",
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "0d2199a20a5fb58cbdd66e9e96c4119f04c4e8546091a15525c0b3e89abb1fc2"
+  },
+  "runnerSnapshot": {
+    "path": "runner-snapshot.cjs",
+    "sha256": "4aa9836b7daf7947c9173a57471ef7c4899f61ca93cb3bf0b0b6059a5ff159cb"
+  },
+  "failedLog": {
+    "path": "group-17.log",
+    "sha256": "c388dd3654442bc4b22727e51744791ae0e3dbc5b8b05ad41511457dca4a7b33"
+  }
+}

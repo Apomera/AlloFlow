@@ -1,0 +1,24 @@
+{
+  "status": "failed-worker-startup",
+  "observedWrapperExitCode": 1,
+  "sessionId": 44490,
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "publicMirrorSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "finding": "Group30 failed before running tests: Vitest could not start the worker because parse5/dist/common/error-codes.js could not resolve. The file was present and parse5/jsdom loaded in a subsequent probe. No dependency or application changes were made. Twenty-nine earlier complete native receipts are eligible for hash-verified reuse.",
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "954f50cadefd80f2fac5ad5c4ee0bfb2f3d18a9d79981a9a27ad0da40d2ab916"
+  },
+  "runnerSnapshot": {
+    "path": "runner-snapshot.cjs",
+    "sha256": "4869990d9f8993e315564d79156661a73e79855da417f291b6c325cb65e19fd0"
+  },
+  "failedLog": {
+    "path": "group-30.log",
+    "sha256": "2d1586aba0dbe53f6921a3e2ca071d8a54d8c1ddc526cf80754b6dae9d7ea229"
+  },
+  "failedReceipt": {
+    "path": "group-30.json",
+    "sha256": "ad89f8f8dff205926b9723dc27544860f97e5581450f3e921fdf2a029d93723e"
+  }
+}

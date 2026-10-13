@@ -1,0 +1,52 @@
+{
+  "format": "machine-lab-new-backcheck-native-processes-v1",
+  "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+  "testSha256": "23575b05cf8ff1d6b3c65c990b5cbdf4859350b62a716eacfcae5e779cb21c31",
+  "helperSha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+  "runnerSha256": "ed7c8f83e18d98dd83745c313b542b33c2064f13abbc007994310cf6d1131db8",
+  "file": "tests/machinelab_backcheck.test.js",
+  "nodeHeapMiB": 512,
+  "nodeSemiSpaceMiB": 8,
+  "workers": 1,
+  "pool": "forks",
+  "isolate": false,
+  "testTimeoutMs": 30000,
+  "runs": [
+    {
+      "file": "tests/machinelab_backcheck.test.js",
+      "pattern": "^Machine Lab: back-check arithmetic ",
+      "expected": 17,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_backcheck.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-backcheck-2026-10-13\\new-tests\\run-02\\group-01.json",
+        "--testNamePattern",
+        "^Machine Lab: back-check arithmetic "
+      ],
+      "receipt": "group-01.json",
+      "log": "group-01.log",
+      "startedAt": "2026-10-13T21:31:29.101Z",
+      "sourceSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+      "mirrorBeforeSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+      "testSha256": "23575b05cf8ff1d6b3c65c990b5cbdf4859350b62a716eacfcae5e779cb21c31",
+      "status": "completed",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "finishedAt": "2026-10-13T21:31:44.541Z",
+      "sourceAfterSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+      "mirrorAfterSha256": "de186324605236e2b2761b2f67b3aab757a99615254777bd76d1938a357eb559",
+      "testAfterSha256": "23575b05cf8ff1d6b3c65c990b5cbdf4859350b62a716eacfcae5e779cb21c31",
+      "logSha256": "3305a20c18464fa645db23db4f92113cf4926601ad2ba4e70ee9571ae98fb958",
+      "receiptSha256": "de04a9e22c19286991936c2429d6a807f39883f3d3dad0bb589feb56875dafac"
+    }
+  ]
+}
