@@ -451,9 +451,86 @@ function srRecognitionText(recognition) {
     .join('\n');
 }
 
+// Store award file (2026-10-13). The Store's "Award from an AlloFlow file" reads it.
+// Only tokens not yet in an earlier file go into a new one, so each token reaches the
+// Store once; the Store then awards each student once per file. Codenames and counts only.
+const SR_RECOGNITION_LOG_KEY = 'allo_school_rewards_recognition_log_v1';
+const SR_HANDOFF_KEY = 'allo_school_rewards_handoff_v1';
+const SR_HANDOFF_KEEP_MS = 120 * 86400000;
+function srReadJsonKey(key) {
+  try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return value && typeof value === 'object' ? value : null; } catch (_) { return null; }
+}
+function srReadHandoff() {
+  const value = srReadJsonKey(SR_HANDOFF_KEY);
+  return { ids: value && value.ids && typeof value.ids === 'object' ? value.ids : {}, last: value && value.last && Array.isArray(value.last.ids) ? value.last : null };
+}
+function srPendingAwards(log, handoff) {
+  const sessions = log && log.sessions && typeof log.sessions === 'object' ? log.sessions : {};
+  const handed = handoff && handoff.ids ? handoff.ids : {};
+  const byName = Object.create(null);
+  Object.keys(sessions).forEach((code) => {
+    const rows = sessions[code] && sessions[code].rows;
+    if (!rows || typeof rows !== 'object') return;
+    Object.keys(rows).forEach((codename) => {
+      (Array.isArray(rows[codename] && rows[codename].ids) ? rows[codename].ids : []).forEach((raw) => {
+        const id = code + '|' + String(raw);
+        if (handed[id]) return;
+        (byName[codename] || (byName[codename] = [])).push(id);
+      });
+    });
+  });
+  const names = Object.keys(byName).filter((name) => name && name.length <= 80).sort().slice(0, 500);
+  const rows = names.map((codename) => ({ codename, tokens: Math.min(1000, byName[codename].length) }));
+  const ids = names.reduce((all, name) => all.concat(byName[name].slice(0, 1000)), []);
+  return { rows, ids, total: rows.reduce((sum, row) => sum + row.tokens, 0) };
+}
+function srNewAwardFileId() {
+  try { const bytes = new Uint8Array(12); crypto.getRandomValues(bytes); return 'af' + Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join(''); }
+  catch (_) { return 'af' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+}
+function srBuildAwardFile(pending, fileId, now) {
+  return { format: 'alloflow-store-award-file', version: 1, fileId, createdAt: new Date(now).toISOString(), rows: pending.rows.map((row) => ({ codename: row.codename, tokens: row.tokens })) };
+}
+function srMarkHandedOff(ids, fileId, now) {
+  const handoff = srReadHandoff();
+  Object.keys(handoff.ids).forEach((id) => { if (!(Number(handoff.ids[id]) > now - SR_HANDOFF_KEEP_MS)) delete handoff.ids[id]; });
+  ids.forEach((id) => { handoff.ids[id] = now; });
+  localStorage.setItem(SR_HANDOFF_KEY, JSON.stringify({ version: 1, ids: handoff.ids, last: { fileId, ids: ids.slice(), at: now } }));
+}
+function srUndoLastHandoff() {
+  const handoff = srReadHandoff();
+  if (!handoff.last) return 0;
+  handoff.last.ids.forEach((id) => { delete handoff.ids[id]; });
+  localStorage.setItem(SR_HANDOFF_KEY, JSON.stringify({ version: 1, ids: handoff.ids, last: null }));
+  return handoff.last.ids.length;
+}
+
 function SrRecognitionWorksheet({ recognition, tt, addToast }) {
   const rows = (recognition && Array.isArray(recognition.rows)) ? recognition.rows : [];
   const [copied, setCopied] = React.useState(false);
+  const [handoffTick, setHandoffTick] = React.useState(0);
+  const pending = React.useMemo(() => srPendingAwards(srReadJsonKey(SR_RECOGNITION_LOG_KEY), srReadHandoff()), [recognition, handoffTick]);
+  const lastHandoff = React.useMemo(() => srReadHandoff().last, [recognition, handoffTick]);
+  const downloadAwardFile = () => {
+    if (!pending.total) return;
+    try {
+      const now = Date.now(), fileId = srNewAwardFileId();
+      const blob = new Blob([JSON.stringify(srBuildAwardFile(pending, fileId, now), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = 'class.alloflow-store-awards.json';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      srMarkHandedOff(pending.ids, fileId, now);
+      setHandoffTick((value) => value + 1);
+      addToast(tt('schoolrewards.award_file_done', 'Store award file downloaded. Upload it in the School Store under Award, then Award from an AlloFlow file. These tokens are left out of your next file.'), 'success');
+    } catch (_) { addToast(tt('schoolrewards.award_file_failed', 'The Store award file could not be saved in this window.'), 'error'); }
+  };
+  const undoAwardFile = () => {
+    try { srUndoLastHandoff(); } catch (_) {}
+    setHandoffTick((value) => value + 1);
+    addToast(tt('schoolrewards.award_file_undone', "The last file's tokens are back. Download a new Store award file when you are ready."), 'info');
+  };
   const download = () => {
     try {
       const blob = new Blob([srRecognitionCsv(recognition)], { type: 'text/csv;charset=utf-8' });
@@ -482,6 +559,14 @@ function SrRecognitionWorksheet({ recognition, tt, addToast }) {
         <button type="button" className={SR_BTN_SECONDARY} onClick={download} data-help-key="schoolrewards_worksheet_download">{tt('schoolrewards.worksheet_download', 'Download worksheet CSV')}</button>
         <button type="button" className={SR_BTN_QUIET} onClick={copy} data-help-key="schoolrewards_worksheet_copy">{copied ? tt('schoolrewards.worksheet_copied', 'Copied') : tt('schoolrewards.worksheet_copy', 'Copy as text')}</button>
         <span className="text-xs text-slate-600">{recognition.sessionCode ? tt('schoolrewards.worksheet_session', 'Live session ') + recognition.sessionCode : tt('schoolrewards.worksheet_no_live', 'No live session')}{recognition.sessionCount > 1 ? ' · ' + recognition.sessionCount + tt('schoolrewards.worksheet_sessions_kept', ' sessions kept on this device') : ''}</span>
+      </div>
+      <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-slate-900" data-store-award-file>
+        <p>{pending.total ? tt('schoolrewards.award_file_pending', '{n} tokens for {c} codenames are not yet in a Store award file.').replace('{n}', String(pending.total)).replace('{c}', String(pending.rows.length)) : tt('schoolrewards.award_file_none', 'Every token here is already in a Store award file.')}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <button type="button" className={SR_BTN_SECONDARY} onClick={downloadAwardFile} disabled={!pending.total} data-help-key="schoolrewards_award_file">{tt('schoolrewards.award_file_download', 'Download Store award file')}</button>
+          {lastHandoff && <button type="button" className={SR_BTN_QUIET} onClick={undoAwardFile}>{tt('schoolrewards.award_file_undo', "Put the last file's tokens back")}</button>}
+        </div>
+        <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.award_file_help', 'Staff upload the file in the School Store, review the students it matches through your reviewed class links, and confirm. Each student is awarded once per file.')}</p>
       </div>
     </>}
   </section>;
