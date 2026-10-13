@@ -6,7 +6,8 @@ const FAMILIES = {
   power: ['inputPower', 'usefulPower', 'lossPower', 'effortFromPower', 'loadFromPower'],
   motion: ['handSpeed', 'loadSpeed'],
   planning: ['budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'],
-  rotation: ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']
+  rotation: ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower'],
+  units: ['powerKilowatts', 'powerWatts', 'timeMinutes', 'timeSeconds', 'speedCentimetres', 'speedMetres']
 };
 const BASE = { loadDistance: 0.5, leverEffortArm: 2, leverLoadArm: 1, leverLoad: 400,
   pulleySegments: 2, pulleyLoad: 400, rampLength: 4, rampHeight: 1, rampLoad: 400,
@@ -58,7 +59,7 @@ describe('Machine Lab: skill map inventory', () => {
       expect(nodes(section).filter(n => n.props?.['data-ml-power-skill']).map(n => n.props['data-ml-power-skill'])).toEqual(expected);
     }
     const buttons = nodes(map).filter(n => n.props?.['data-ml-power-skill']);
-    expect(buttons).toHaveLength(rotary ? 19 : 12);
+    expect(buttons).toHaveLength(rotary ? 25 : 18);
     expect(new Set(buttons.map(n => n.props['data-ml-power-skill'])).size).toBe(buttons.length);
     expect(buttons.map(n => n.props['data-ml-power-skill']).sort()).toEqual(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value).sort());
     for (const button of buttons) {

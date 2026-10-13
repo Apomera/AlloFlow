@@ -18,7 +18,8 @@ const SKILLS = [
 ];
 const LINEAR_KINDS = ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime'];
 const PLANNING_KINDS = ['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'];
-const ROTARY_KINDS = [...LINEAR_KINDS, 'torque', 'rpm', ...PLANNING_KINDS, ...SKILLS.map(q => q.id), 'effortFromPower', 'loadFromPower'];
+const CONVERSION_KINDS = ['powerKilowatts', 'powerWatts', 'timeMinutes', 'timeSeconds', 'speedCentimetres', 'speedMetres'];
+const ROTARY_KINDS = [...LINEAR_KINDS, 'torque', 'rpm', ...PLANNING_KINDS, ...SKILLS.map(q => q.id), 'effortFromPower', 'loadFromPower', ...CONVERSION_KINDS];
 const CASES = BENCHES.flatMap(b => SKILLS.map(q => ({ b, q, name: `${b.id}/${q.id}` })));
 function expected(b, settings = b.settings, movement = 0.5, percent = 80, seconds = 5) {
   const radius = settings[b.radius], load = settings[b.load];
@@ -100,10 +101,10 @@ describe('Machine Lab: independent rotary geometry and visuals', () => {
     answer(s, SKILLS[3], 50 * target.turns); expect(s.result()).toBe('incorrect'); s.edit('answer', 250); s.click('check'); expect(s.result()).toBe('correct');
     for (const q of [SKILLS[3], SKILLS[4]]) { answer(s, q, target[q.id] / 0.8); expect(s.result()).toBe('incorrect'); s.edit('answer', target[q.id]); s.click('check'); expect(s.result()).toBe('correct'); }
   });
-  it('keeps all four linear stations at twelve skills without a rotation guide', () => {
+  it('keeps all four linear stations at eighteen skills without a rotation guide', () => {
     for (const bench of ['lever', 'pulley', 'ramp', 'wedge']) {
       const s = session(BENCHES[0], { bench }); expect(s.guide()).toBeUndefined();
-      expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual([...LINEAR_KINDS, ...PLANNING_KINDS, 'effortFromPower', 'loadFromPower']);
+      expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual([...LINEAR_KINDS, ...PLANNING_KINDS, 'effortFromPower', 'loadFromPower', ...CONVERSION_KINDS]);
     }
   });
   it('shows rotary practice only in middle and high-school bands', () => {

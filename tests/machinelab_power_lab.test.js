@@ -138,7 +138,7 @@ describe('Machine Lab: optional power comparison', () => {
 
   it.each(BENCHES)('offers rotation practice only for a rotating handle on $id', b => {
     const s = session(b), values = nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value);
-    expect(values).toEqual(skills(b).map(q => q.id).concat(['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'], b.radius ? ['turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower'] : [], ['effortFromPower', 'loadFromPower']));
+    expect(values).toEqual(skills(b).map(q => q.id).concat(['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'], b.radius ? ['turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower'] : [], ['effortFromPower', 'loadFromPower', 'powerKilowatts', 'powerWatts', 'timeMinutes', 'timeSeconds', 'speedCentimetres', 'speedMetres']));
     expect(!!s.metric('torque')).toBe(!!b.radius); expect(!!s.metric('rpm')).toBe(!!b.radius);
   });
 

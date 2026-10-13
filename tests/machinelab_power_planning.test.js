@@ -24,7 +24,7 @@ const OLD_SKILLS = [
   { id: 'torque', unit: 'N·m', value: '50', rotation: true },
   { id: 'rpm', unit: 'rpm', value: String(0.5 / (2 * Math.PI * 0.1) / 5 * 60), rotation: true }
 ];
-const kinds = b => [...OLD_SKILLS.filter(q => !q.rotation || b.radius), ...NEW_SKILLS].map(q => q.id).concat(b.radius ? ['turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower'] : [], ['effortFromPower', 'loadFromPower']);
+const kinds = b => [...OLD_SKILLS.filter(q => !q.rotation || b.radius), ...NEW_SKILLS].map(q => q.id).concat(b.radius ? ['turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower'] : [], ['effortFromPower', 'loadFromPower', 'powerKilowatts', 'powerWatts', 'timeMinutes', 'timeSeconds', 'speedCentimetres', 'speedMetres']);
 const CASES = BENCHES.flatMap(b => NEW_SKILLS.map(q => ({ b, q, name: `${b.id}/${q.id}` })));
 const CAPACITY_KEYS = ['budgetEnergy', 'usefulBudgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'];
 function expected(load = 400, movement = 0.5, percent = 80, seconds = 5, watts = 100) {

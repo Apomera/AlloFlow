@@ -8274,10 +8274,12 @@ window.StemLab = window.StemLab || {
       }
       function powerPlanningKinds() { return ['budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']; }
       function powerMotionKinds() { return ['effortFromPower', 'loadFromPower']; }
-      function powerRecordVersion(kind) { return powerMotionKinds().indexOf(kind) >= 0 ? 4 : powerRotationKinds().indexOf(kind) >= 0 ? 3 : powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
+      function powerConversionKinds() { return ['powerKilowatts', 'powerWatts', 'timeMinutes', 'timeSeconds', 'speedCentimetres', 'speedMetres']; }
+      function powerUnits(kind) { return ['W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%', 'turns', 'rad', 'rad/s'].concat(powerConversionKinds().indexOf(kind) >= 0 ? ['kW', 'min', 'cm/s'] : []); }
+      function powerRecordVersion(kind) { return powerConversionKinds().indexOf(kind) >= 0 ? 5 : powerMotionKinds().indexOf(kind) >= 0 ? 4 : powerRotationKinds().indexOf(kind) >= 0 ? 3 : powerPlanningKinds().indexOf(kind) >= 0 ? 2 : 1; }
       function powerKinds(b) {
         return ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime'].concat(
-          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds(), b.id === 'windlass' || b.id === 'screw' ? powerRotationKinds() : [], powerMotionKinds());
+          b.id === 'windlass' || b.id === 'screw' ? ['torque', 'rpm'] : [], powerPlanningKinds(), b.id === 'windlass' || b.id === 'screw' ? powerRotationKinds() : [], powerMotionKinds(), powerConversionKinds());
       }
       function powerRadius(settings, b) { return b.id === 'windlass' ? settings.windlassHandleR : b.id === 'screw' ? settings.screwHandleR : null; }
       function powerFmt(value) { return finite(value) ? value.toLocaleString('en-US', { useGrouping: false, maximumSignificantDigits: 6 }) : '—'; }
@@ -8298,13 +8300,39 @@ window.StemLab = window.StemLab || {
         if (seconds !== null) seconds *= timeUnit === 'min' ? 60 : 1;
         var draft = { percent: percent, duration: duration, timeUnit: timeUnit, budget: budget, question: question, signature: signature,
           answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '',
-          unit: fresh && ['W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%', 'turns', 'rad', 'rad/s'].indexOf(raw.unit) >= 0 ? raw.unit : '',
+          unit: fresh && powerUnits(question).indexOf(raw.unit) >= 0 ? raw.unit : '',
           hint: fresh && Number.isInteger(raw.hint) && raw.hint >= 0 && raw.hint <= 2 ? raw.hint : 0,
           checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
         return { draft: draft, settings: settings, signature: signature, seconds: seconds,
           model: powerModel(settings, b, _machineMath.parseNum(percent), seconds, _machineMath.parseNum(budget)) };
       }
+      function powerConversionQuestion(kind, model) {
+        var p = powerFmt, specs = {
+          powerKilowatts: [model.inputPower, 'W', model.inputPower / 1000, 'kW',
+            __alloT('stem.machinelab.units_q_kw', 'Convert input power from watts to kilowatts'),
+            __alloT('stem.machinelab.units_rule_kw', 'One kilowatt equals 1000 watts. Divide watts by 1000. The power stays the same; its number becomes smaller in the larger unit.'), '1 kW ÷ 1000 W'],
+          powerWatts: [model.inputPower / 1000, 'kW', model.inputPower, 'W',
+            __alloT('stem.machinelab.units_q_w', 'Convert input power from kilowatts to watts'),
+            __alloT('stem.machinelab.units_rule_w', 'One kilowatt equals 1000 watts. Multiply kilowatts by 1000. This changes the unit, not the input power or efficiency.'), '1000 W ÷ 1 kW'],
+          timeMinutes: [model.seconds, 's', model.seconds / 60, 'min',
+            __alloT('stem.machinelab.units_q_min', 'Convert task time from seconds to minutes'),
+            __alloT('stem.machinelab.units_rule_min', 'One minute equals 60 seconds. Divide seconds by 60, not 100. Keep fractional minutes; do not round to whole minutes.'), '1 min ÷ 60 s'],
+          timeSeconds: [model.seconds / 60, 'min', model.seconds, 's',
+            __alloT('stem.machinelab.units_q_s', 'Convert task time from minutes to seconds'),
+            __alloT('stem.machinelab.units_rule_s', 'One minute equals 60 seconds. Multiply minutes by 60, not 100. The elapsed task time stays the same.'), '60 s ÷ 1 min'],
+          speedCentimetres: [model.handSpeed, 'm/s', model.handSpeed * 100, 'cm/s',
+            __alloT('stem.machinelab.units_q_cms', 'Convert hand-path speed to centimetres per second'),
+            __alloT('stem.machinelab.units_rule_cms', 'One metre equals 100 centimetres. Multiply metres per second by 100. The time unit stays seconds; the hand does not move faster.'), '100 cm ÷ 1 m'],
+          speedMetres: [model.handSpeed * 100, 'cm/s', model.handSpeed, 'm/s',
+            __alloT('stem.machinelab.units_q_ms', 'Convert hand-path speed to metres per second'),
+            __alloT('stem.machinelab.units_rule_ms', 'One metre equals 100 centimetres. Divide centimetres per second by 100. The time unit stays seconds; the hand does not move slower.'), '1 m ÷ 100 cm']
+        }, spec = specs[kind];
+        return { title: spec[4], target: spec[2], unit: spec[3],
+          given: __alloT('stem.machinelab.units_given', 'Current quantity: ') + p(spec[0]) + ' ' + spec[1] + ' · ' + __alloT('stem.machinelab.units_requested', 'Requested unit: ') + spec[3],
+          formula: spec[5], setup: p(spec[0]) + ' ' + spec[1] + ' × (' + spec[6] + ')' };
+      }
       function powerQuestion(kind, model, settings, b, budget) {
+        if (powerConversionKinds().indexOf(kind) >= 0) return powerConversionQuestion(kind, model);
         // Keep efficiency precise: rounding a near-100% assumption to 100%
         // would erase a small but nonzero loss in the displayed problem.
         var p = powerFmt, eta = String(model.efficiency), percent = String(model.efficiency * 100), seconds = p(model.seconds), useful = p(model.workOut);
@@ -8412,12 +8440,15 @@ window.StemLab = window.StemLab || {
         var value = _machineMath.parseNum(draft.answer);
         if (value === null || value < 0) return 'invalid';
         if (draft.unit !== question.unit) return 'unit';
+        // Unit conversions use a relative tolerance so changing the scale never changes the check.
+        if (powerConversionKinds().indexOf(draft.question) >= 0)
+          return Math.abs(value - question.target) <= Math.abs(question.target) * 0.01 ? 'correct' : 'incorrect';
         // A tiny absolute floor preserves meaningful checks for slow movement.
         return Math.abs(value - question.target) <= Math.max(1e-10, Math.abs(question.target) * 0.01) ? 'correct' : 'incorrect';
       }
       function validPowerRecord(record, b, kind) {
         if (!record || Array.isArray(record) || record.version !== powerRecordVersion(kind) || record.benchId !== b.id || record.question !== kind || powerKinds(b).indexOf(kind) < 0 ||
-          typeof record.answer !== 'string' || record.answer.length > 64 || ['', 'W', 'm/s', 's', 'N·m', 'rpm', 'J', 'N', 'm', '%', 'turns', 'rad', 'rad/s'].indexOf(record.unit) < 0 ||
+          typeof record.answer !== 'string' || record.answer.length > 64 || [''].concat(powerUnits(kind)).indexOf(record.unit) < 0 ||
           !Number.isInteger(record.hint) || record.hint < 0 || record.hint > 2) return null;
         var model = powerModel(record.settings, b, record.percent, record.seconds, record.budget);
         if (!model || (record.completion !== 'solution' && (record.completion !== 'checked' ||
@@ -8757,6 +8788,38 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'scope', style: style }, __alloT('stem.machinelab.power_planning_scope', 'These are energy-based limits at full mechanical input power and constant efficiency. They do not check peak force, available travel, strength or acceleration, and they do not change station settings. Changing mechanical advantage alone trades effort for hand travel; it does not change this task’s energy budget.'))
           ]);
         }
+        function unitConversionGuide() {
+          var cards = [
+            ['power', __alloT('stem.machinelab.units_power_title', 'Same input power'), __alloT('stem.machinelab.units_power_equal', '1 kW = 1000 W'),
+              ['watts', model.inputPower, 'W', __alloT('stem.machinelab.units_watts', 'Watts')], ['kilowatts', model.inputPower / 1000, 'kW', __alloT('stem.machinelab.units_kilowatts', 'Kilowatts')], 'W → kW: ÷ 1000', 'kW → W: × 1000'],
+            ['time', __alloT('stem.machinelab.units_time_title', 'Same task time'), __alloT('stem.machinelab.units_time_equal', '1 min = 60 s'),
+              ['seconds', model.seconds, 's', __alloT('stem.machinelab.power_seconds', 'Seconds')], ['minutes', model.seconds / 60, 'min', __alloT('stem.machinelab.power_minutes', 'Minutes')], 's → min: ÷ 60', 'min → s: × 60'],
+            ['speed', __alloT('stem.machinelab.units_speed_title', 'Same hand-path speed'), __alloT('stem.machinelab.units_speed_equal', '1 m/s = 100 cm/s'),
+              ['metresPerSecond', model.handSpeed, 'm/s', __alloT('stem.machinelab.units_metres_rate', 'Metres per second')], ['centimetresPerSecond', model.handSpeed * 100, 'cm/s', __alloT('stem.machinelab.units_centimetres_rate', 'Centimetres per second')], 'm/s → cm/s: × 100', 'cm/s → m/s: ÷ 100']
+          ];
+          return h('details', { key: 'units', 'data-ml-power-units': bench.id, style: { margin: '12px 0', borderTop: '1px solid ' + T.border } }, [
+            h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.units_guide_title', 'Convert units: same quantity, different number')),
+            returnToCalculation(),
+            h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.units_guide_intro', 'Use the station’s current values to practise both directions. A unit conversion changes how a quantity is written; it does not change the machine, task time or efficiency.')),
+            cards.map(function (card) { return h('figure', { key: card[0], 'data-ml-power-unit-card': card[0], style: Object.assign({}, panelStyle, { marginLeft: 0, marginRight: 0 }) }, [
+              h('figcaption', { key: 'caption', style: Object.assign({}, style, { fontSize: 16, fontWeight: 850 }) }, card[1]),
+              h('p', { key: 'identity', style: Object.assign({}, style, { margin: '6px 0 12px', fontWeight: 750 }) }, card[2]),
+              h('dl', { key: 'values', className: 'ml-unit-value-pair', style: { margin: 0 } }, [card[3], card[4]].map(function (metric) {
+                return h('div', { key: metric[0], 'data-ml-power-unit-metric': metric[0], 'data-value': metric[1],
+                  style: { minWidth: 0, padding: 10, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } }, [
+                  h('dt', { key: 'label', style: style }, metric[3]), h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 19 }) }, powerFmt(metric[1]) + ' ' + metric[2])
+                ]);
+              })),
+              h('div', { key: 'factors', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } }, [card[5], card[6]].map(function (factor, i) {
+                return h('span', { key: i, 'data-ml-power-unit-factor': i === 0 ? 'forward' : 'reverse', style: Object.assign({}, style, { padding: '6px 9px', border: '1px solid ' + T.border, borderRadius: 6, background: T.card, fontWeight: 750 }) }, factor);
+              }))
+            ]); }),
+            h('p', { key: 'check', style: Object.assign({}, style, { padding: 12, borderLeft: '3px solid ' + T.accent, background: T.bg, borderRadius: 8 }) },
+              __alloT('stem.machinelab.units_sense_check', 'Sense check: a larger unit gives a smaller number. Minutes use a factor of 60. For these speed conversions, only the distance unit changes; seconds stay seconds.')),
+            h('p', { key: 'factor-help', style: style }, __alloT('stem.machinelab.units_factor_help', 'In a calculation setup, choose a conversion fraction that cancels the starting unit. Its numerator and denominator represent the same amount, so the fraction equals one.')),
+            h('style', { key: 'style' }, '.ml-unit-value-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:440px){.ml-unit-value-pair{grid-template-columns:minmax(0,1fr)}}')
+          ]);
+        }
         function practice() {
           var skillLabels = {
             inputPower: __alloT('stem.machinelab.power_choose_input', 'Input power'),
@@ -8777,7 +8840,13 @@ window.StemLab = window.StemLab || {
             rotationalWork: __alloT('stem.machinelab.rot_choose_work', 'Work from torque'),
             rotationalPower: __alloT('stem.machinelab.rot_choose_power', 'Power from torque'),
             effortFromPower: __alloT('stem.machinelab.force_speed_choose_effort', 'Effort from power'),
-            loadFromPower: __alloT('stem.machinelab.force_speed_choose_load', 'Load from power')
+            loadFromPower: __alloT('stem.machinelab.force_speed_choose_load', 'Load from power'),
+            powerKilowatts: __alloT('stem.machinelab.units_choose_kw', 'Watts → kilowatts'),
+            powerWatts: __alloT('stem.machinelab.units_choose_w', 'Kilowatts → watts'),
+            timeMinutes: __alloT('stem.machinelab.units_choose_min', 'Seconds → minutes'),
+            timeSeconds: __alloT('stem.machinelab.units_choose_s', 'Minutes → seconds'),
+            speedCentimetres: __alloT('stem.machinelab.units_choose_cms', 'm/s → cm/s'),
+            speedMetres: __alloT('stem.machinelab.units_choose_ms', 'cm/s → m/s')
           };
           function skillMap() {
             var records = {}, checked = 0, solutions = 0;
@@ -8786,7 +8855,8 @@ window.StemLab = window.StemLab || {
               ['power', __alloT('stem.machinelab.map_power', 'Power and energy'), __alloT('stem.machinelab.map_power_help', 'Follow useful power and losses.'), ['inputPower', 'usefulPower', 'lossPower', 'effortFromPower', 'loadFromPower']],
               ['motion', __alloT('stem.machinelab.map_motion', 'Movement rates'), __alloT('stem.machinelab.map_motion_help', 'Connect distance with task time.'), ['handSpeed', 'loadSpeed']],
               ['planning', __alloT('stem.machinelab.map_plan', 'Plan a task'), __alloT('stem.machinelab.map_plan_help', 'Explore time, energy and power limits.'), ['budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency']],
-              ['rotation', __alloT('stem.machinelab.map_rotation', 'Rotation'), __alloT('stem.machinelab.map_rotation_help', 'Connect turns, torque, work and power.'), ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']]
+              ['rotation', __alloT('stem.machinelab.map_rotation', 'Rotation'), __alloT('stem.machinelab.map_rotation_help', 'Connect turns, torque, work and power.'), ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower']],
+              ['units', __alloT('stem.machinelab.units_map_title', 'Convert units'), __alloT('stem.machinelab.units_map_help', 'Practise both directions with factors of 1000, 60 and 100.'), powerConversionKinds()]
             ];
             return h('details', { key: 'skill-map', 'data-ml-power-skill-map': bench.id, style: { margin: '6px 0 14px', borderBottom: '1px solid ' + T.border } }, [
               h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_skill_map_title', 'Explore skills and saved practice')),
@@ -8829,7 +8899,8 @@ window.StemLab = window.StemLab || {
               h('style', { key: 'style' }, '.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-power-skill-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}}')
             ]);
           }
-          var guide = powerMotionKinds().indexOf(draft.question) >= 0 ? ['force-speed', __alloT('stem.machinelab.practice_flow_force', 'Open force and speed guide')]
+          var guide = powerConversionKinds().indexOf(draft.question) >= 0 ? ['units', __alloT('stem.machinelab.units_open_guide', 'Open unit conversion guide')]
+            : powerMotionKinds().indexOf(draft.question) >= 0 ? ['force-speed', __alloT('stem.machinelab.practice_flow_force', 'Open force and speed guide')]
             : powerRotationKinds().indexOf(draft.question) >= 0 || draft.question === 'torque' || draft.question === 'rpm' ? ['rotation', __alloT('stem.machinelab.practice_flow_rotation', 'Open rotation guide')]
             : powerPlanningKinds().indexOf(draft.question) >= 0 || draft.question === 'budgetTime' ? ['planning', __alloT('stem.machinelab.practice_flow_planning', 'Open power budget guide')]
             : ['comparison', __alloT('stem.machinelab.practice_flow_pace', 'Open power and motion guide')];
@@ -8850,7 +8921,9 @@ window.StemLab = window.StemLab || {
               h('button', { key: 'open', type: 'button', 'data-ml-power-open-guide': guide[0], style: button,
                 onClick: function (ev) { navigatePractice(ev, guide[0]); } }, guide[1])
             ]),
-            h('p', { key: 'rounding', id: roundingId, style: style }, __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
+            h('p', { key: 'rounding', id: roundingId, style: style }, powerConversionKinds().indexOf(draft.question) >= 0
+              ? __alloT('stem.machinelab.units_rounding', 'Use full values, or round to 3 significant figures. Conversion checks allow 1% of the correct value. Enter the requested unit; no points are awarded.')
+              : __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: style }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
               style: control, 'aria-describedby': roundingId, 'aria-invalid': result === 'invalid' || result === 'incorrect',
@@ -8864,7 +8937,10 @@ window.StemLab = window.StemLab || {
               ['m', __alloT('stem.machinelab.eff_unit_m', 'm — metres')], ['%', __alloT('stem.machinelab.eff_unit_percent', '% — percent')],
               ['turns', __alloT('stem.machinelab.rot_unit_turns', 'turns — revolutions')], ['rad', __alloT('stem.machinelab.rot_unit_rad', 'rad — radians')],
               ['rad/s', __alloT('stem.machinelab.rot_unit_omega', 'rad/s — radians per second')]
-            ]),
+            ].concat(powerConversionKinds().indexOf(draft.question) >= 0 ? [
+              ['kW', __alloT('stem.machinelab.units_unit_kw', 'kW — kilowatts')], ['min', __alloT('stem.machinelab.units_unit_min', 'min — minutes')],
+              ['cm/s', __alloT('stem.machinelab.units_unit_cms', 'cm/s — centimetres per second')]
+            ] : [])),
             h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
               action('check', __alloT('stem.machinelab.eff_check', 'Check calculation'), function () { change({ checked: true }); }),
               action('hint', draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup'),
@@ -8880,9 +8956,11 @@ window.StemLab = window.StemLab || {
                 ? __alloT('stem.machinelab.practice_flow_solution', 'Study the worked solution') : __alloT('stem.machinelab.practice_flow_retry', 'Check the answer and unit')) : null,
               result ? h('p', { key: 'result', 'data-ml-power-result': result }, result === 'invalid'
                 ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
+                : result === 'unit' && powerConversionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.units_unit_help', 'Choose the requested output unit: ') + question.unit
                 : result === 'unit' && powerMotionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.force_speed_unit_help', 'Use N for force. Watts divided by metres per second gives newtons; torque uses N·m.')
                 : result === 'unit' && powerRotationKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.rot_unit_help', 'Use turns for revolutions, rad for angular travel, rad/s for angular speed, J for work, or W for power. Torque uses N·m; energy uses J.')
                 : result === 'unit' ? __alloT('stem.machinelab.power_planning_unit_help', 'Check the requested unit: W for power, J for energy, N for load, m for movement, % for efficiency, m/s for rate, s for time, N·m for torque, or rpm for rotation rate.')
+                : result === 'incorrect' && powerConversionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.units_retry', 'Not yet. ') + question.formula
                 : result === 'incorrect' && powerMotionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.force_speed_retry', 'Not yet. ') + question.formula
                 : result === 'incorrect' && powerRotationKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.rot_retry', 'Not yet. ') + question.formula
                 : result === 'incorrect' ? (draft.question === 'budgetEnergy' ? __alloT('stem.machinelab.power_retry_budget_energy', 'Not yet. Multiply the input-power budget by time in seconds to find joules; do not apply efficiency to input energy.') : draft.question === 'budgetLoad' ? __alloT('stem.machinelab.power_retry_budget_load', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held movement.') : draft.question === 'budgetMovement' ? __alloT('stem.machinelab.power_retry_budget_movement', 'Not yet. Find useful energy from power × seconds × efficiency as a decimal, then divide by the held load force.') : draft.question === 'requiredEfficiency' ? __alloT('stem.machinelab.power_retry_required_efficiency', 'Not yet. Divide load × movement by power × seconds, then multiply by 100. Keep a result above 100%; it shows that efficiency alone cannot meet the task.') : __alloT('stem.machinelab.power_retry', 'Not yet. Check the percentage, time conversion and calculation. A hint can help.'))
@@ -8907,7 +8985,7 @@ window.StemLab = window.StemLab || {
           h('p', { key: 'seconds', 'data-ml-power-seconds': session.seconds, style: style }, __alloT('stem.machinelab.power_time_given', 'Task time: ') + (session.seconds === null ? '—' : powerFmt(session.seconds)) + ' s'),
           input('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), !(budget >= 0.01 && budget <= 100000), prefix + 'ranges-' + bench.id),
           h('p', { key: 'ranges', id: prefix + 'ranges-' + bench.id, style: style }, __alloT('stem.machinelab.power_ranges', 'Efficiency: 1–100%. Duration: 0.01–3600 seconds (up to 60 minutes). Input-power budget: 0.01–100000 W. One minute equals 60 seconds.')),
-          model ? h('div', { key: 'valid' }, [comparison(), forceSpeedGuide(), rotationGuide(), budgetPlanning(), practice()])
+          model ? h('div', { key: 'valid' }, [comparison(), forceSpeedGuide(), rotationGuide(), budgetPlanning(), unitConversionGuide(), practice()])
             : h('p', { key: 'invalid', role: 'status', style: style }, __alloT('stem.machinelab.power_invalid', 'Enter valid assumptions and a working station setup before calculating or checking an answer.')),
           h('p', { key: 'count', 'data-ml-power-count': saved.length, style: style }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),

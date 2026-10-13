@@ -145,12 +145,12 @@ describe('Machine Lab: force speed guarded state', () => {
     let count = 0;
     for (const b of BENCHES) {
       const s = session(b), kinds = nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value); count += kinds.length;
-      expect(kinds.slice(-2)).toEqual(SKILLS.map(q => q.id)); s.edit('question', kinds[kinds.length - 3]); s.click('next');
+      expect(kinds.slice(-8, -6)).toEqual(SKILLS.map(q => q.id)); s.edit('question', kinds[kinds.length - 9]); s.click('next');
       for (let i = 0; i < SKILLS.length; i++) { expect(s.byId('question').props.value).toBe(SKILLS[i].id); s.edit('answer', '123'); s.edit('unit', 'W'); s.click('hint'); s.click('reveal'); s.click('next');
-        expect(s.byId('question').props.value).toBe(SKILLS[i + 1]?.id || 'inputPower'); expect(s.byId('answer').props.value).toBe(''); expect(s.byId('unit').props.value).toBe(''); expect(s.result()).toBeUndefined(); }
+        expect(s.byId('question').props.value).toBe(SKILLS[i + 1]?.id || 'powerKilowatts'); expect(s.byId('answer').props.value).toBe(''); expect(s.byId('unit').props.value).toBe(''); expect(s.result()).toBeUndefined(); }
       expect(s.state().benchPowerRecords).toBeUndefined();
     }
-    expect(count).toBe(86);
+    expect(count).toBe(122);
   });
 });
 

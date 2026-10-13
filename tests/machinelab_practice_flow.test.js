@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadTool, makeCtx, newStore, ReactDOMServer, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const STATIONS = ['lever', 'pulley', 'ramp', 'wedge', 'windlass', 'screw'];
-const COMMON = ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency', 'effortFromPower', 'loadFromPower'];
+const CONVERSIONS = ['powerKilowatts', 'powerWatts', 'timeMinutes', 'timeSeconds', 'speedCentimetres', 'speedMetres'];
+const COMMON = ['inputPower', 'usefulPower', 'lossPower', 'handSpeed', 'loadSpeed', 'budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency', 'effortFromPower', 'loadFromPower', ...CONVERSIONS];
 const ROTATION = ['torque', 'rpm', 'turns', 'angularTravel', 'omega', 'rotationalWork', 'rotationalPower'];
 const BASE = { loadDistance: 0.5, leverEffortArm: 2, leverLoadArm: 1, leverLoad: 400,
   pulleySegments: 2, pulleyLoad: 400, rampLength: 4, rampHeight: 1, rampLoad: 400,
@@ -11,6 +12,7 @@ const BASE = { loadDistance: 0.5, leverEffortArm: 2, leverLoadArm: 1, leverLoad:
   screwHandleR: 0.15, screwPitch: 0.005, screwLoad: 2000 };
 const ROUTES = [['inputPower', 'comparison'], ['effortFromPower', 'force-speed'], ['omega', 'rotation'], ['budgetTime', 'planning']];
 function destination(kind) {
+  if (CONVERSIONS.includes(kind)) return 'units';
   if (['effortFromPower', 'loadFromPower'].includes(kind)) return 'force-speed';
   if (ROTATION.includes(kind)) return 'rotation';
   if (['budgetTime', 'budgetEnergy', 'budgetLoad', 'budgetMovement', 'requiredEfficiency'].includes(kind)) return 'planning';

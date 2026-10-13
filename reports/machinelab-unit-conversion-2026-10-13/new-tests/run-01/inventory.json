@@ -1,0 +1,221 @@
+{
+  "file": "tests/machinelab_unit_conversion.test.js",
+  "sha256": "222eac43777347a7eebe8c7328881f3bd0d9053ae5cb01194a99260082342d00",
+  "assertions": [
+    {
+      "index": 0,
+      "fullName": "Machine Lab: unit conversion guide derives six equivalent 'lever' quantities across efficiency and time boundaries",
+      "executedPassCount": 1
+    },
+    {
+      "index": 1,
+      "fullName": "Machine Lab: unit conversion guide derives six equivalent 'pulley' quantities across efficiency and time boundaries",
+      "executedPassCount": 1
+    },
+    {
+      "index": 2,
+      "fullName": "Machine Lab: unit conversion guide derives six equivalent 'ramp' quantities across efficiency and time boundaries",
+      "executedPassCount": 1
+    },
+    {
+      "index": 3,
+      "fullName": "Machine Lab: unit conversion guide derives six equivalent 'wedge' quantities across efficiency and time boundaries",
+      "executedPassCount": 1
+    },
+    {
+      "index": 4,
+      "fullName": "Machine Lab: unit conversion guide derives six equivalent 'windlass' quantities across efficiency and time boundaries",
+      "executedPassCount": 1
+    },
+    {
+      "index": 5,
+      "fullName": "Machine Lab: unit conversion guide derives six equivalent 'screw' quantities across efficiency and time boundaries",
+      "executedPassCount": 1
+    },
+    {
+      "index": 6,
+      "fullName": "Machine Lab: unit conversion guide retains the existing valid-model and middle-school visibility gates",
+      "executedPassCount": 1
+    },
+    {
+      "index": 7,
+      "fullName": "Machine Lab: unit conversion guide treats minute input as elapsed seconds once and converts that same task both ways",
+      "executedPassCount": 1
+    },
+    {
+      "index": 8,
+      "fullName": "Machine Lab: unit conversion practice checks and saves all six 'lever' conversions as version-5 snapshots",
+      "executedPassCount": 1
+    },
+    {
+      "index": 9,
+      "fullName": "Machine Lab: unit conversion practice checks and saves all six 'pulley' conversions as version-5 snapshots",
+      "executedPassCount": 1
+    },
+    {
+      "index": 10,
+      "fullName": "Machine Lab: unit conversion practice checks and saves all six 'ramp' conversions as version-5 snapshots",
+      "executedPassCount": 1
+    },
+    {
+      "index": 11,
+      "fullName": "Machine Lab: unit conversion practice checks and saves all six 'wedge' conversions as version-5 snapshots",
+      "executedPassCount": 1
+    },
+    {
+      "index": 12,
+      "fullName": "Machine Lab: unit conversion practice checks and saves all six 'windlass' conversions as version-5 snapshots",
+      "executedPassCount": 1
+    },
+    {
+      "index": 13,
+      "fullName": "Machine Lab: unit conversion practice checks and saves all six 'screw' conversions as version-5 snapshots",
+      "executedPassCount": 1
+    },
+    {
+      "index": 14,
+      "fullName": "Machine Lab: unit conversion practice rejects reversed and missing factors for 'powerKilowatts' and requires the requested unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 15,
+      "fullName": "Machine Lab: unit conversion practice rejects reversed and missing factors for 'powerWatts' and requires the requested unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 16,
+      "fullName": "Machine Lab: unit conversion practice rejects reversed and missing factors for 'timeMinutes' and requires the requested unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 17,
+      "fullName": "Machine Lab: unit conversion practice rejects reversed and missing factors for 'timeSeconds' and requires the requested unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 18,
+      "fullName": "Machine Lab: unit conversion practice rejects reversed and missing factors for 'speedCentimetres' and requires the requested unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 19,
+      "fullName": "Machine Lab: unit conversion practice rejects reversed and missing factors for 'speedMetres' and requires the requested unit",
+      "executedPassCount": 1
+    },
+    {
+      "index": 20,
+      "fullName": "Machine Lab: unit conversion practice uses relative one-percent rounding and progressive hints for 'powerKilowatts'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 21,
+      "fullName": "Machine Lab: unit conversion practice uses relative one-percent rounding and progressive hints for 'powerWatts'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 22,
+      "fullName": "Machine Lab: unit conversion practice uses relative one-percent rounding and progressive hints for 'timeMinutes'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 23,
+      "fullName": "Machine Lab: unit conversion practice uses relative one-percent rounding and progressive hints for 'timeSeconds'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 24,
+      "fullName": "Machine Lab: unit conversion practice uses relative one-percent rounding and progressive hints for 'speedCentimetres'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 25,
+      "fullName": "Machine Lab: unit conversion practice uses relative one-percent rounding and progressive hints for 'speedMetres'",
+      "executedPassCount": 1
+    },
+    {
+      "index": 26,
+      "fullName": "Machine Lab: unit conversion practice keeps very small legal kilowatt and speed answers positive and checks their relative error",
+      "executedPassCount": 1
+    },
+    {
+      "index": 27,
+      "fullName": "Machine Lab: unit conversion practice appends six conversions across 122 station skills and wraps the final skill to input power",
+      "executedPassCount": 1
+    },
+    {
+      "index": 28,
+      "fullName": "Machine Lab: unit conversion guarded state rejects delayed conversion handlers after station changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 29,
+      "fullName": "Machine Lab: unit conversion guarded state rejects delayed conversion handlers after view changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 30,
+      "fullName": "Machine Lab: unit conversion guarded state rejects delayed conversion handlers after geometry changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 31,
+      "fullName": "Machine Lab: unit conversion guarded state rejects delayed conversion handlers after assumptions changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 32,
+      "fullName": "Machine Lab: unit conversion guarded state rejects delayed conversion handlers after question changes",
+      "executedPassCount": 1
+    },
+    {
+      "index": 33,
+      "fullName": "Machine Lab: unit conversion guarded state keeps unrelated notes and existing records while changing conversion questions",
+      "executedPassCount": 1
+    },
+    {
+      "index": 34,
+      "fullName": "Machine Lab: unit conversion saved evidence revalidates 'powerKilowatts' arithmetic and keeps viewed solutions distinct from checked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 35,
+      "fullName": "Machine Lab: unit conversion saved evidence revalidates 'powerWatts' arithmetic and keeps viewed solutions distinct from checked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 36,
+      "fullName": "Machine Lab: unit conversion saved evidence revalidates 'timeMinutes' arithmetic and keeps viewed solutions distinct from checked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 37,
+      "fullName": "Machine Lab: unit conversion saved evidence revalidates 'timeSeconds' arithmetic and keeps viewed solutions distinct from checked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 38,
+      "fullName": "Machine Lab: unit conversion saved evidence revalidates 'speedCentimetres' arithmetic and keeps viewed solutions distinct from checked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 39,
+      "fullName": "Machine Lab: unit conversion saved evidence revalidates 'speedMetres' arithmetic and keeps viewed solutions distinct from checked work",
+      "executedPassCount": 1
+    },
+    {
+      "index": 40,
+      "fullName": "Machine Lab: unit conversion saved evidence renders valid versions one through five together and rejects relabeled versions",
+      "executedPassCount": 1
+    },
+    {
+      "index": 41,
+      "fullName": "Machine Lab: unit conversion saved evidence keeps new units exclusive to conversions even for legacy viewed-solution records",
+      "executedPassCount": 1
+    },
+    {
+      "index": 42,
+      "fullName": "Machine Lab: unit conversion saved evidence retains fixed conversion snapshots after setup changes and escapes saved drafts",
+      "executedPassCount": 1
+    }
+  ]
+}
