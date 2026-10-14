@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-10-14T22:23:58.845Z",
+  "completedAt": "2026-10-14T22:24:36.330Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_discovery_visual_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-discovery-visual-2026-10-14\\browser\\run-02"
+  ],
+  "nodeOptions": "--max-old-space-size=512 --max-semi-space-size=8",
+  "timeoutMs": 300000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_discovery_visual_qa.cjs",
+      "sha256": "bc3ac69f44709c6dd6ae7740f929b1d63dfedff953e89ed8ba7b9d6b5ba69f74"
+    },
+    {
+      "file": "reports/machinelab-discovery-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "fac93a28b4f1eeccfe809c67af67836522dfb3100ceeee3eb22671eeff7e7131"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_discovery_visual_qa.cjs",
+      "sha256": "bc3ac69f44709c6dd6ae7740f929b1d63dfedff953e89ed8ba7b9d6b5ba69f74"
+    },
+    {
+      "file": "reports/machinelab-discovery-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "fac93a28b4f1eeccfe809c67af67836522dfb3100ceeee3eb22671eeff7e7131"
+    }
+  ]
+}

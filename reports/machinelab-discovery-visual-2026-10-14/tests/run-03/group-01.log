@@ -1,0 +1,29 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_views.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_views.test.js (192 tests | 163 skipped) 8707ms
+     ✓ offers an ungraded visual clue at lever g68  606ms
+     ✓ offers an ungraded visual clue at pulley g68  408ms
+     ✓ offers an ungraded visual clue at windlass g68  565ms
+     ✓ offers an ungraded visual clue at ramp g68  519ms
+     ✓ offers an ungraded visual clue at wedge g68  386ms
+     ✓ offers an ungraded visual clue at screw g68  470ms
+     ✓ offers an ungraded visual clue at lever g912  482ms
+     ✓ offers an ungraded visual clue at pulley g912  344ms
+     ✓ offers an ungraded visual clue at windlass g912  329ms
+     ✓ offers an ungraded visual clue at wedge g912  472ms
+     ✓ offers an ungraded visual clue at screw g912  511ms
+     ✓ adapts the lever explanation for 1/2  354ms
+     ✓ adapts the lever explanation for 2/2  436ms
+     ✓ adapts the ramp explanation at height 1  351ms
+     ✓ adapts the ramp explanation at height 4  301ms
+
+ Test Files  1 passed (1)
+      Tests  29 passed | 163 skipped (192)
+   Start at  18:18:49
+   Duration  10.87s (transform 71ms, setup 56ms, import 96ms, tests 8.71s, environment 1.74s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-discovery-visual-2026-10-14/tests/run-03/group-01.json

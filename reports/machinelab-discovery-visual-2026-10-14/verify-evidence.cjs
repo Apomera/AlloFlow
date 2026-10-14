@@ -1,0 +1,20 @@
+const fs=require('fs'),path=require('path'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'../..');process.chdir(root);
+const read=p=>JSON.parse(fs.readFileSync(p)),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const source='stem_lab/stem_tool_machinelab.js',frozen='b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2';
+assert.equal(hash(source),frozen);assert.equal(hash('desktop/web-app/public/'+source),frozen);
+cp.execFileSync(process.execPath,[path.join(__dirname,'verify-scope.cjs')]);
+const tests=path.join(__dirname,'tests/run-04'),final=read(tests+'/final.json'),manifest=read(tests+'/processes.json');
+assert.equal(final.sourceSha256,frozen);assert.equal(final.passed,91);assert.equal(final.failed,0);assert.equal(final.processes,4);assert.equal(final.manifestSha256,hash(tests+'/processes.json'));
+assert.equal(manifest.runnerSha256,hash(tests+'/runner-snapshot.cjs'));assert.equal(manifest.runnerSha256,hash(__dirname+'/run-tests.cjs'));
+for(const t of manifest.tests)assert.equal(hash(t.file),t.sha256);
+assert.equal(hash(manifest.helper.path),manifest.helper.sha256);
+for(const run of manifest.runs){assert.equal(run.exitCode,0);assert.equal(run.signal,null);assert.equal(run.error,null);assert.equal(run.timedOut,false);assert.equal(run.sourceAfterSha256,frozen);assert.equal(run.mirrorAfterSha256,frozen);assert.equal(hash(tests+'/'+run.receipt),run.receiptSha256);assert.equal(hash(tests+'/'+run.log),run.logSha256);const r=read(tests+'/'+run.receipt);assert.equal(r.success,true);assert.equal(r.numPassedTests,run.expected);assert.equal(r.numFailedTests,0);}
+const browser=path.join(__dirname,'browser/run-02'),native=read(browser+'/native-exit.json'),r=read(browser+'/results.json');
+assert.equal(native.exitCode,0);assert.equal(native.signal,null);assert.equal(native.error,null);assert.equal(native.unchanged,true);assert.equal(native.frozenSourceSha256,frozen);
+for(const record of [...native.sourceBefore,...native.sourceAfter,...native.runnerBefore,...native.runnerAfter])assert.equal(hash(record.file),record.sha256);
+assert.equal(r.sourceSha256,frozen);assert.deepEqual(r.errors,[]);assert.deepEqual(r.routes,['lever','pulley','windlass','ramp','wedge','screw']);assert.equal(r.mounts,4);assert.equal(r.shots.length,4);assert.equal(r.tempCleaned,true);assert.equal(r.hostPageRemoved,true);
+for(const d of r.dependencies)assert.equal(hash(d.file),d.sha256);
+for(const s of r.shots)assert.equal(hash(browser+'/'+s.file),s.sha256);
+const review=read(__dirname+'/source-review.json');assert.equal(review.sourceSha256,frozen);assert.equal(review.mirrorSha256,frozen);assert.equal(review.verdict,'pass');assert.deepEqual(review.findings,[]);
+console.log(JSON.stringify({status:'passed',sourceSha256:frozen,tests:91,browserChecks:r.checks.length,stations:r.routes.length,screenshots:r.shots.length}));

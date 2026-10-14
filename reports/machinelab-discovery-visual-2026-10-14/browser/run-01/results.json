@@ -1,0 +1,3159 @@
+{
+  "sourceSha256": "090d4fc3110005f66fe27e9b9fb87029597be4cad58b9500565c4bf1aa0f650c",
+  "baselineSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "startedAt": "2026-10-14T22:19:36.721Z",
+  "completedAt": "2026-10-14T22:20:08.979Z",
+  "dependencies": [
+    {
+      "file": "dev-tools/ml_discovery_visual_qa.cjs",
+      "sha256": "4ef22ed667415cff965677d0c7609c92ead8ed1e1eea29024dc27891729bf448"
+    },
+    {
+      "file": "dev-tools/ml_scene_shots.cjs",
+      "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7"
+    },
+    {
+      "file": "stem_lab/stem_lab_module.js",
+      "sha256": "9fb70c087ea26acfb5e6eea5088c5232fbfedc306d52a00e231e20549a041d96"
+    },
+    {
+      "file": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "file": "vendor/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    }
+  ],
+  "mounts": 4,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "checks": [
+    "lever desktop: explanation starts closed",
+    "lever desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "lever desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "lever desktop: Inspect holds half stroke and frames the same model with its room hidden",
+    "lever desktop: clue setup preserves practice and independent saved state",
+    "lever desktop: existing camera preset and clue reminder are preserved",
+    "lever desktop: Return restores summary focus without revealing the answer",
+    "lever desktop: native keyboard reveal opens the explanation without changing state",
+    "lever desktop: scrubbing retains the revealed explanation",
+    "lever desktop: reveal summary retains a visible keyboard focus ring",
+    "lever desktop: original named section and title remain intact",
+    "lever desktop: ordered steps present predict, inspect, then native reveal",
+    "lever desktop: question, title and explanation use readable type",
+    "lever desktop: original actions remain readable and large enough",
+    "lever desktop: steps, summary and explanation fit without horizontal clipping",
+    "lever desktop: map retains its direction-only explanation and responsive lanes",
+    "lever desktop: both decorative direction arrows preserve their 48px geometry",
+    "lever desktop: direction-arrow paint contrasts with its lane background",
+    "lever: question, explanation, lane text and arrow markup match baseline exactly",
+    "pulley desktop: explanation starts closed",
+    "pulley desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "pulley desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "pulley desktop: Inspect holds half stroke and frames the same model with its room hidden",
+    "pulley desktop: clue setup preserves practice and independent saved state",
+    "pulley desktop: existing camera preset and clue reminder are preserved",
+    "pulley desktop: Return restores summary focus without revealing the answer",
+    "pulley desktop: native keyboard reveal opens the explanation without changing state",
+    "pulley desktop: scrubbing retains the revealed explanation",
+    "pulley desktop: reveal summary retains a visible keyboard focus ring",
+    "pulley desktop: original named section and title remain intact",
+    "pulley desktop: ordered steps present predict, inspect, then native reveal",
+    "pulley desktop: question, title and explanation use readable type",
+    "pulley desktop: original actions remain readable and large enough",
+    "pulley desktop: steps, summary and explanation fit without horizontal clipping",
+    "pulley desktop: map retains its direction-only explanation and responsive lanes",
+    "pulley desktop: both decorative direction arrows preserve their 48px geometry",
+    "pulley desktop: direction-arrow paint contrasts with its lane background",
+    "pulley: question, explanation, lane text and arrow markup match baseline exactly",
+    "windlass desktop: explanation starts closed",
+    "windlass desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "windlass desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "windlass desktop: Inspect holds half stroke and frames the same model with its room hidden",
+    "windlass desktop: clue setup preserves practice and independent saved state",
+    "windlass desktop: existing camera preset and clue reminder are preserved",
+    "windlass desktop: Return restores summary focus without revealing the answer",
+    "windlass desktop: native keyboard reveal opens the explanation without changing state",
+    "windlass desktop: scrubbing retains the revealed explanation",
+    "windlass desktop: reveal summary retains a visible keyboard focus ring",
+    "windlass desktop: original named section and title remain intact",
+    "windlass desktop: ordered steps present predict, inspect, then native reveal",
+    "windlass desktop: question, title and explanation use readable type",
+    "windlass desktop: original actions remain readable and large enough",
+    "windlass desktop: steps, summary and explanation fit without horizontal clipping",
+    "windlass desktop: map retains its direction-only explanation and responsive lanes",
+    "windlass desktop: both decorative direction arrows preserve their 48px geometry",
+    "windlass desktop: direction-arrow paint contrasts with its lane background",
+    "windlass: question, explanation, lane text and arrow markup match baseline exactly",
+    "ramp desktop: explanation starts closed",
+    "ramp desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "ramp desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "ramp desktop: Inspect holds half stroke and frames the same model with its room hidden",
+    "ramp desktop: clue setup preserves practice and independent saved state",
+    "ramp desktop: existing camera preset and clue reminder are preserved",
+    "ramp desktop: Return restores summary focus without revealing the answer",
+    "ramp desktop: native keyboard reveal opens the explanation without changing state",
+    "ramp desktop: scrubbing retains the revealed explanation",
+    "ramp desktop: reveal summary retains a visible keyboard focus ring",
+    "ramp desktop: original named section and title remain intact",
+    "ramp desktop: ordered steps present predict, inspect, then native reveal",
+    "ramp desktop: question, title and explanation use readable type",
+    "ramp desktop: original actions remain readable and large enough",
+    "ramp desktop: steps, summary and explanation fit without horizontal clipping",
+    "ramp desktop: map retains its direction-only explanation and responsive lanes",
+    "ramp desktop: both decorative direction arrows preserve their 48px geometry",
+    "ramp desktop: direction-arrow paint contrasts with its lane background",
+    "ramp: question, explanation, lane text and arrow markup match baseline exactly",
+    "wedge desktop: explanation starts closed",
+    "wedge desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "wedge desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "wedge desktop: Inspect holds half stroke and frames the same model with its room hidden",
+    "wedge desktop: clue setup preserves practice and independent saved state",
+    "wedge desktop: existing camera preset and clue reminder are preserved",
+    "wedge desktop: Return restores summary focus without revealing the answer",
+    "wedge desktop: native keyboard reveal opens the explanation without changing state",
+    "wedge desktop: scrubbing retains the revealed explanation",
+    "wedge desktop: reveal summary retains a visible keyboard focus ring",
+    "wedge desktop: original named section and title remain intact",
+    "wedge desktop: ordered steps present predict, inspect, then native reveal",
+    "wedge desktop: question, title and explanation use readable type",
+    "wedge desktop: original actions remain readable and large enough",
+    "wedge desktop: steps, summary and explanation fit without horizontal clipping",
+    "wedge desktop: map retains its direction-only explanation and responsive lanes",
+    "wedge desktop: both decorative direction arrows preserve their 48px geometry",
+    "wedge desktop: direction-arrow paint contrasts with its lane background",
+    "wedge: question, explanation, lane text and arrow markup match baseline exactly",
+    "screw desktop: explanation starts closed",
+    "screw desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "screw desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "screw desktop: Inspect holds half stroke and frames the same model with its room hidden",
+    "screw desktop: clue setup preserves practice and independent saved state",
+    "screw desktop: existing camera preset and clue reminder are preserved",
+    "screw desktop: Return restores summary focus without revealing the answer",
+    "screw desktop: native keyboard reveal opens the explanation without changing state",
+    "screw desktop: scrubbing retains the revealed explanation",
+    "screw desktop: reveal summary retains a visible keyboard focus ring",
+    "screw desktop: original named section and title remain intact",
+    "screw desktop: ordered steps present predict, inspect, then native reveal",
+    "screw desktop: question, title and explanation use readable type",
+    "screw desktop: original actions remain readable and large enough",
+    "screw desktop: steps, summary and explanation fit without horizontal clipping",
+    "screw desktop: map retains its direction-only explanation and responsive lanes",
+    "screw desktop: both decorative direction arrows preserve their 48px geometry",
+    "screw desktop: direction-arrow paint contrasts with its lane background",
+    "screw: question, explanation, lane text and arrow markup match baseline exactly",
+    "dark phone: explanation starts closed",
+    "dark phone: Inspect keyboard outline contrasts with its surrounding card",
+    "dark phone: Inspect moves keyboard focus to a visible enabled slider",
+    "dark phone: Inspect holds half stroke and frames the same model with its room hidden",
+    "dark phone: clue setup preserves practice and independent saved state",
+    "dark phone: existing camera preset and clue reminder are preserved",
+    "dark phone: Return restores summary focus without revealing the answer",
+    "dark phone: native keyboard reveal opens the explanation without changing state",
+    "dark phone: scrubbing retains the revealed explanation",
+    "dark phone: reveal summary retains a visible keyboard focus ring",
+    "dark phone: original named section and title remain intact",
+    "dark phone: ordered steps present predict, inspect, then native reveal",
+    "dark phone: question, title and explanation use readable type",
+    "dark phone: original actions remain readable and large enough",
+    "dark phone: steps, summary and explanation fit without horizontal clipping",
+    "dark phone: map retains its direction-only explanation and responsive lanes",
+    "dark phone: both decorative direction arrows preserve their 48px geometry",
+    "dark phone: direction-arrow paint contrasts with its lane background",
+    "forced phone: explanation starts closed",
+    "forced phone: Inspect keyboard outline contrasts with its surrounding card",
+    "forced phone: Inspect moves keyboard focus to a visible enabled slider",
+    "forced phone: Inspect holds half stroke and frames the same model with its room hidden",
+    "forced phone: clue setup preserves practice and independent saved state",
+    "forced phone: existing camera preset and clue reminder are preserved",
+    "forced phone: Return restores summary focus without revealing the answer",
+    "forced phone: native keyboard reveal opens the explanation without changing state",
+    "forced phone: scrubbing retains the revealed explanation",
+    "forced phone: reveal summary retains a visible keyboard focus ring",
+    "forced phone: original named section and title remain intact",
+    "forced phone: ordered steps present predict, inspect, then native reveal",
+    "forced phone: question, title and explanation use readable type",
+    "forced phone: original actions remain readable and large enough",
+    "forced phone: steps, summary and explanation fit without horizontal clipping",
+    "forced phone: map retains its direction-only explanation and responsive lanes",
+    "forced phone: both decorative direction arrows preserve their 48px geometry",
+    "forced phone: direction-arrow paint contrasts with its lane background",
+    "screw forced doubled phone: original named section and title remain intact",
+    "screw forced doubled phone: ordered steps present predict, inspect, then native reveal",
+    "screw forced doubled phone: question, title and explanation use readable type",
+    "screw forced doubled phone: original actions remain readable and large enough",
+    "screw forced doubled phone: steps, summary and explanation fit without horizontal clipping",
+    "screw forced doubled phone: map retains its direction-only explanation and responsive lanes",
+    "screw forced doubled phone: both decorative direction arrows preserve their 48px geometry",
+    "screw forced doubled phone: direction-arrow paint contrasts with its lane background",
+    "lever forced doubled phone: original named section and title remain intact",
+    "lever forced doubled phone: ordered steps present predict, inspect, then native reveal",
+    "lever forced doubled phone: question, title and explanation use readable type",
+    "lever forced doubled phone: original actions remain readable and large enough",
+    "lever forced doubled phone: steps, summary and explanation fit without horizontal clipping",
+    "lever forced doubled phone: map retains its direction-only explanation and responsive lanes",
+    "lever forced doubled phone: both decorative direction arrows preserve their 48px geometry",
+    "lever forced doubled phone: direction-arrow paint contrasts with its lane background",
+    "pulley forced doubled phone: original named section and title remain intact",
+    "pulley forced doubled phone: ordered steps present predict, inspect, then native reveal",
+    "pulley forced doubled phone: question, title and explanation use readable type",
+    "pulley forced doubled phone: original actions remain readable and large enough",
+    "pulley forced doubled phone: steps, summary and explanation fit without horizontal clipping",
+    "pulley forced doubled phone: map retains its direction-only explanation and responsive lanes",
+    "pulley forced doubled phone: both decorative direction arrows preserve their 48px geometry",
+    "pulley forced doubled phone: direction-arrow paint contrasts with its lane background",
+    "windlass forced doubled phone: original named section and title remain intact",
+    "windlass forced doubled phone: ordered steps present predict, inspect, then native reveal",
+    "windlass forced doubled phone: question, title and explanation use readable type",
+    "windlass forced doubled phone: original actions remain readable and large enough",
+    "windlass forced doubled phone: steps, summary and explanation fit without horizontal clipping",
+    "windlass forced doubled phone: map retains its direction-only explanation and responsive lanes",
+    "windlass forced doubled phone: both decorative direction arrows preserve their 48px geometry",
+    "windlass forced doubled phone: direction-arrow paint contrasts with its lane background",
+    "ramp forced doubled phone: original named section and title remain intact",
+    "ramp forced doubled phone: ordered steps present predict, inspect, then native reveal",
+    "ramp forced doubled phone: question, title and explanation use readable type",
+    "ramp forced doubled phone: original actions remain readable and large enough",
+    "ramp forced doubled phone: steps, summary and explanation fit without horizontal clipping",
+    "ramp forced doubled phone: map retains its direction-only explanation and responsive lanes",
+    "ramp forced doubled phone: both decorative direction arrows preserve their 48px geometry",
+    "ramp forced doubled phone: direction-arrow paint contrasts with its lane background",
+    "wedge forced doubled phone: original named section and title remain intact",
+    "wedge forced doubled phone: ordered steps present predict, inspect, then native reveal",
+    "wedge forced doubled phone: question, title and explanation use readable type",
+    "wedge forced doubled phone: original actions remain readable and large enough",
+    "wedge forced doubled phone: steps, summary and explanation fit without horizontal clipping",
+    "wedge forced doubled phone: map retains its direction-only explanation and responsive lanes",
+    "wedge forced doubled phone: both decorative direction arrows preserve their 48px geometry",
+    "wedge forced doubled phone: direction-arrow paint contrasts with its lane background"
+  ],
+  "shots": [
+    {
+      "name": "desktop-before-discovery",
+      "file": "desktop-before-discovery.png",
+      "sha256": "a24d016a7dc4c9593660517a1a00bd59fa5b5ea9a995e61b011ae1b868461453",
+      "baseline": true
+    },
+    {
+      "name": "desktop-discovery",
+      "file": "desktop-discovery.png",
+      "sha256": "2bf59aeb157bb020544c847e54413c3811753c3b03f35def1e8114885b3eda3a",
+      "baseline": false
+    },
+    {
+      "name": "dark-phone-discovery",
+      "file": "dark-phone-discovery.png",
+      "sha256": "6fcc517482ec7dca4aea67fbb4ff7155c11b3002d9719d4989357c8964ec9e58",
+      "baseline": false
+    },
+    {
+      "name": "forced-doubled-phone-discovery",
+      "file": "forced-doubled-phone-discovery.png",
+      "sha256": "520c180f24e5ae2acfa1dfdf619313711e7cd1d97c66446fb0fa176a5f8a60cf",
+      "baseline": false
+    }
+  ],
+  "observations": [
+    {
+      "label": "lever desktop",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "lever desktop",
+      "kind": "lever",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever desktop",
+      "kind": "lever",
+      "view": {
+        "viewport": 1150,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "Which end of this lever travels farther?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 85,
+            "y": 418.578125,
+            "right": 239.109375,
+            "bottom": 462.578125,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(180, 83, 9)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 98,
+            "y": 477.578125,
+            "right": 1095,
+            "bottom": 521.578125,
+            "width": 997,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenWhich end of this lever travels farther?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionEffort end moves downLoad motionLoad end risesArrows show motion directions, not distances. Compare distances using the front tracks.The effort end travels farther because its arm is longer. That extra distance trades for less effort force."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionEffort end moves downLoad motionLoad end risesArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 2,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 98,
+                "y": 562.578125,
+                "right": 591.5,
+                "bottom": 636.578125,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(180, 83, 9)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Effort end moves down",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 601.5,
+                "y": 562.578125,
+                "right": 1095,
+                "bottom": 636.578125,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(29, 78, 216)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Load end rises",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(180, 83, 9)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(29, 78, 216)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "pulley desktop",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "pulley desktop",
+      "kind": "pulley",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley desktop",
+      "kind": "pulley",
+      "view": {
+        "viewport": 1150,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "Which rope strands support the load, and which end do you pull?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 85,
+            "y": 419.390625,
+            "right": 239.109375,
+            "bottom": 463.390625,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(180, 83, 9)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 98,
+            "y": 478.390625,
+            "right": 1095,
+            "bottom": 522.390625,
+            "width": 997,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenWhich rope strands support the load, and which end do you pull?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionFree rope is pulled downLoad motionLoad risesArrows show motion directions, not distances. Compare distances using the front tracks.Count the small upward arrows: each marks a supporting strand. The free end with the grip is pulled downward; it is not an extra supporting strand. Follow a contrasting band to see the rope feed around the wheels."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionFree rope is pulled downLoad motionLoad risesArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 2,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 98,
+                "y": 563.390625,
+                "right": 591.5,
+                "bottom": 637.390625,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(180, 83, 9)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Free rope is pulled down",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 601.5,
+                "y": 563.390625,
+                "right": 1095,
+                "bottom": 637.390625,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(29, 78, 216)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Load rises",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(180, 83, 9)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(29, 78, 216)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "windlass desktop",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "windlass desktop",
+      "kind": "windlass",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass desktop",
+      "kind": "windlass",
+      "view": {
+        "viewport": 1150,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "Does the drum turn with the wheel, or stay still?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 85,
+            "y": 419.390625,
+            "right": 239.109375,
+            "bottom": 463.390625,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(180, 83, 9)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 98,
+            "y": 478.390625,
+            "right": 1095,
+            "bottom": 522.390625,
+            "width": 997,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the drum turn with the wheel, or stay still?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWheel turnsLoad motionRope lifts the loadArrows show motion directions, not distances. Compare distances using the front tracks.The marked grip and striped drum turn together on the same axle. The drum takes up rope as the load rises. The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWheel turnsLoad motionRope lifts the loadArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 2,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 98,
+                "y": 563.390625,
+                "right": 591.5,
+                "bottom": 637.390625,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(180, 83, 9)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Wheel turns",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 601.5,
+                "y": 563.390625,
+                "right": 1095,
+                "bottom": 637.390625,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(29, 78, 216)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Rope lifts the load",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "turn",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(180, 83, 9)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M11 33A16 16 0 1 1 39 14 M30 14H40V4",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(29, 78, 216)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "ramp desktop",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "ramp desktop",
+      "kind": "ramp",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp desktop",
+      "kind": "ramp",
+      "view": {
+        "viewport": 1150,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "Does the crate travel farther along the ramp than it rises?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 85,
+            "y": 418.578125,
+            "right": 239.109375,
+            "bottom": 462.578125,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(180, 83, 9)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 98,
+            "y": 477.578125,
+            "right": 1095,
+            "bottom": 521.578125,
+            "width": 997,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the crate travel farther along the ramp than it rises?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionCrate moves along the rampLoad motionCrate gains heightArrows show motion directions, not distances. Compare distances using the front tracks.The path along the slope is longer than the vertical rise. Follow the front marker and compare the effort and load distance bars."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionCrate moves along the rampLoad motionCrate gains heightArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 2,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 98,
+                "y": 562.578125,
+                "right": 591.5,
+                "bottom": 636.578125,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(180, 83, 9)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Crate moves along the ramp",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 601.5,
+                "y": 562.578125,
+                "right": 1095,
+                "bottom": 636.578125,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(29, 78, 216)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Crate gains height",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "slope",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(180, 83, 9)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M8 24H40 M30 14L40 24L30 34",
+              "transform": "rotate(-14.477512185929923 24 24)"
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(29, 78, 216)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "wedge desktop",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "wedge desktop",
+      "kind": "wedge",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge desktop",
+      "kind": "wedge",
+      "view": {
+        "viewport": 1150,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "How can pushing down make the two halves move sideways?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 85,
+            "y": 418.578125,
+            "right": 239.109375,
+            "bottom": 462.578125,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(180, 83, 9)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 98,
+            "y": 477.578125,
+            "right": 1095,
+            "bottom": 521.578125,
+            "width": 997,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenHow can pushing down make the two halves move sideways?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWedge moves downLoad motionHalves move apartArrows show motion directions, not distances. Compare distances using the front tracks.The two sloping faces redirect the downward push outward. As the wedge descends, a wider part enters the gap and separates the halves."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWedge moves downLoad motionHalves move apartArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 2,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 98,
+                "y": 562.578125,
+                "right": 591.5,
+                "bottom": 636.578125,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(180, 83, 9)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Wedge moves down",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 601.5,
+                "y": 562.578125,
+                "right": 1095,
+                "bottom": 636.578125,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(29, 78, 216)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Halves move apart",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(180, 83, 9)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            },
+            {
+              "direction": "apart",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(29, 78, 216)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M21 24H5 M12 17L5 24L12 31 M27 24H43 M36 17L43 24L36 31",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "screw desktop",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "screw desktop",
+      "kind": "screw",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw desktop",
+      "kind": "screw",
+      "view": {
+        "viewport": 1150,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "Does the block spin with the handle as it is pressed?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 85,
+            "y": 419.390625,
+            "right": 239.109375,
+            "bottom": 463.390625,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(255, 255, 255)",
+            "background": "rgb(180, 83, 9)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 98,
+            "y": 478.390625,
+            "right": 1095,
+            "bottom": 522.390625,
+            "width": 997,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(15, 23, 42)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(15, 23, 42)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the block spin with the handle as it is pressed?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionHandle turnsLoad motionPress shoe moves downArrows show motion directions, not distances. Compare distances using the front tracks.The shaft turns, but the swivel shoe presses straight down without turning the block. The bands move closer together as the block compresses. The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionHandle turnsLoad motionPress shoe moves downArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 2,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 98,
+                "y": 563.390625,
+                "right": 591.5,
+                "bottom": 637.390625,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(180, 83, 9)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Handle turns",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 601.5,
+                "y": 563.390625,
+                "right": 1095,
+                "bottom": 637.390625,
+                "width": 493.5,
+                "height": 74
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(15, 23, 42)",
+                "background": "rgb(248, 250, 252)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(29, 78, 216)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Press shoe moves down",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(15, 23, 42)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "turn",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(180, 83, 9)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M11 33A16 16 0 1 1 39 14 M30 14H40V4",
+              "transform": null
+            },
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(29, 78, 216)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "dark phone",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(241, 245, 249)",
+        "background": "rgb(30, 41, 59)"
+      }
+    },
+    {
+      "label": "dark phone",
+      "kind": "windlass",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "dark phone",
+      "kind": "windlass",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(241, 245, 249)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "named": true,
+        "question": "Does the drum turn with the wheel, or stay still?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(241, 245, 249)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 369.703125,
+            "right": 227.109375,
+            "bottom": 413.703125,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(28, 19, 16)",
+            "background": "rgb(245, 158, 11)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 477.703125,
+            "right": 269,
+            "bottom": 521.703125,
+            "width": 183,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(241, 245, 249)",
+            "background": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(241, 245, 249)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the drum turn with the wheel, or stay still?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWheel turnsLoad motionRope lifts the loadArrows show motion directions, not distances. Compare distances using the front tracks.The marked grip and striped drum turn together on the same axle. The drum takes up rope as the load rises. The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWheel turnsLoad motionRope lifts the loadArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 562.703125,
+                "right": 269,
+                "bottom": 694.890625,
+                "width": 183,
+                "height": 132.1875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(241, 245, 249)",
+                "background": "rgb(15, 23, 42)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(251, 191, 36)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Wheel turns",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(241, 245, 249)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 704.890625,
+                "right": 269,
+                "bottom": 837.078125,
+                "width": 183,
+                "height": 132.1875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(241, 245, 249)",
+                "background": "rgb(15, 23, 42)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(96, 165, 250)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                },
+                {
+                  "text": "Rope lifts the load",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(241, 245, 249)",
+                    "background": "rgba(0, 0, 0, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "turn",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(251, 191, 36)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M11 33A16 16 0 1 1 39 14 M30 14H40V4",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(96, 165, 250)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": false
+      }
+    },
+    {
+      "label": "forced phone",
+      "buttonFocus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3,
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "forced phone",
+      "kind": "screw",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "style": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "forced phone",
+      "kind": "screw",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 20,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "Does the block spin with the handle as it is pressed?",
+        "questionStyle": {
+          "font": 20,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 369.703125,
+            "right": 227.109375,
+            "bottom": 413.703125,
+            "width": 154.109375,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 477.703125,
+            "right": 269,
+            "bottom": 521.703125,
+            "width": 183,
+            "height": 44
+          },
+          "style": {
+            "font": 16,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 15,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the block spin with the handle as it is pressed?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionHandle turnsLoad motionPress shoe moves downArrows show motion directions, not distances. Compare distances using the front tracks.The shaft turns, but the swivel shoe presses straight down without turning the block. The bands move closer together as the block compresses. The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionHandle turnsLoad motionPress shoe moves downArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 562.703125,
+                "right": 269,
+                "bottom": 694.890625,
+                "width": 183,
+                "height": 132.1875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Handle turns",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 704.890625,
+                "right": 269,
+                "bottom": 860.265625,
+                "width": 183,
+                "height": 155.375
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 14,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Press shoe moves down",
+                  "style": {
+                    "font": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "turn",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M11 33A16 16 0 1 1 39 14 M30 14H40V4",
+              "transform": null
+            },
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": true
+      }
+    },
+    {
+      "label": "screw forced doubled phone",
+      "kind": "screw",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "Does the block spin with the handle as it is pressed?",
+        "questionStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 957.796875,
+            "right": 282,
+            "bottom": 1058.171875,
+            "width": 209,
+            "height": 100.375
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 1200.171875,
+            "right": 269,
+            "bottom": 1316.171875,
+            "width": 183,
+            "height": 116
+          },
+          "style": {
+            "font": 32,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 30,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the block spin with the handle as it is pressed?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionHandle turnsLoad motionPress shoe moves downArrows show motion directions, not distances. Compare distances using the front tracks.The shaft turns, but the swivel shoe presses straight down without turning the block. The bands move closer together as the block compresses. The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionHandle turnsLoad motionPress shoe moves downArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 1412.171875,
+                "right": 269,
+                "bottom": 1668.953125,
+                "width": 183,
+                "height": 256.78125
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Handle turns",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 1678.953125,
+                "right": 269,
+                "bottom": 2028.515625,
+                "width": 183,
+                "height": 349.5625
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Press shoe moves down",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "turn",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M11 33A16 16 0 1 1 39 14 M30 14H40V4",
+              "transform": null
+            },
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": true
+      }
+    },
+    {
+      "label": "lever forced doubled phone",
+      "kind": "lever",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "Which end of this lever travels farther?",
+        "questionStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 873.796875,
+            "right": 282,
+            "bottom": 974.171875,
+            "width": 209,
+            "height": 100.375
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 1116.171875,
+            "right": 269,
+            "bottom": 1232.171875,
+            "width": 183,
+            "height": 116
+          },
+          "style": {
+            "font": 32,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 30,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenWhich end of this lever travels farther?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionEffort end moves downLoad motionLoad end risesArrows show motion directions, not distances. Compare distances using the front tracks.The effort end travels farther because its arm is longer. That extra distance trades for less effort force."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionEffort end moves downLoad motionLoad end risesArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 1328.171875,
+                "right": 269,
+                "bottom": 1631.34375,
+                "width": 183,
+                "height": 303.171875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Effort end moves down",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 1641.34375,
+                "right": 269,
+                "bottom": 1898.125,
+                "width": 183,
+                "height": 256.78125
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Load end rises",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": true
+      }
+    },
+    {
+      "label": "pulley forced doubled phone",
+      "kind": "pulley",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "Which rope strands support the load, and which end do you pull?",
+        "questionStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 1041.796875,
+            "right": 282,
+            "bottom": 1142.171875,
+            "width": 209,
+            "height": 100.375
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 1284.171875,
+            "right": 269,
+            "bottom": 1400.171875,
+            "width": 183,
+            "height": 116
+          },
+          "style": {
+            "font": 32,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 30,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenWhich rope strands support the load, and which end do you pull?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionFree rope is pulled downLoad motionLoad risesArrows show motion directions, not distances. Compare distances using the front tracks.Count the small upward arrows: each marks a supporting strand. The free end with the grip is pulled downward; it is not an extra supporting strand. Follow a contrasting band to see the rope feed around the wheels."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionFree rope is pulled downLoad motionLoad risesArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 1496.171875,
+                "right": 269,
+                "bottom": 1799.34375,
+                "width": 183,
+                "height": 303.171875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Free rope is pulled down",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 1809.34375,
+                "right": 269,
+                "bottom": 2019.734375,
+                "width": 183,
+                "height": 210.390625
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Load rises",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": true
+      }
+    },
+    {
+      "label": "windlass forced doubled phone",
+      "kind": "windlass",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "Does the drum turn with the wheel, or stay still?",
+        "questionStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 929.796875,
+            "right": 282,
+            "bottom": 1030.171875,
+            "width": 209,
+            "height": 100.375
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 1172.171875,
+            "right": 269,
+            "bottom": 1288.171875,
+            "width": 183,
+            "height": 116
+          },
+          "style": {
+            "font": 32,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 30,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the drum turn with the wheel, or stay still?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWheel turnsLoad motionRope lifts the loadArrows show motion directions, not distances. Compare distances using the front tracks.The marked grip and striped drum turn together on the same axle. The drum takes up rope as the load rises. The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWheel turnsLoad motionRope lifts the loadArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 1384.171875,
+                "right": 269,
+                "bottom": 1640.953125,
+                "width": 183,
+                "height": 256.78125
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Wheel turns",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 1650.953125,
+                "right": 269,
+                "bottom": 1907.734375,
+                "width": 183,
+                "height": 256.78125
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Rope lifts the load",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "turn",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M11 33A16 16 0 1 1 39 14 M30 14H40V4",
+              "transform": null
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": true
+      }
+    },
+    {
+      "label": "ramp forced doubled phone",
+      "kind": "ramp",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "Does the crate travel farther along the ramp than it rises?",
+        "questionStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 1013.796875,
+            "right": 282,
+            "bottom": 1114.171875,
+            "width": 209,
+            "height": 100.375
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 1256.171875,
+            "right": 269,
+            "bottom": 1372.171875,
+            "width": 183,
+            "height": 116
+          },
+          "style": {
+            "font": 32,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 30,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenDoes the crate travel farther along the ramp than it rises?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionCrate moves along the rampLoad motionCrate gains heightArrows show motion directions, not distances. Compare distances using the front tracks.The path along the slope is longer than the vertical rise. Follow the front marker and compare the effort and load distance bars."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionCrate moves along the rampLoad motionCrate gains heightArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 1468.171875,
+                "right": 269,
+                "bottom": 1817.734375,
+                "width": 183,
+                "height": 349.5625
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Crate moves along the ramp",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 1827.734375,
+                "right": 269,
+                "bottom": 2130.90625,
+                "width": 183,
+                "height": 303.171875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Crate gains height",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "slope",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M8 24H40 M30 14L40 24L30 34",
+              "transform": "rotate(-14.477512185929923 24 24)"
+            },
+            {
+              "direction": "up",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 40V10 M14 20L24 10L34 20",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [],
+        "forced": true
+      }
+    },
+    {
+      "label": "wedge forced doubled phone",
+      "kind": "wedge",
+      "view": {
+        "viewport": 320,
+        "tag": "SECTION",
+        "title": "Motion detective",
+        "titleStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "named": true,
+        "question": "How can pushing down make the two halves move sideways?",
+        "questionStyle": {
+          "font": 40,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "button": {
+          "name": "Inspect the clue",
+          "type": "button",
+          "rect": {
+            "x": 73,
+            "y": 1013.796875,
+            "right": 282,
+            "bottom": 1114.171875,
+            "width": 209,
+            "height": 100.375
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)"
+          }
+        },
+        "summary": {
+          "name": "Reveal explanation",
+          "rect": {
+            "x": 86,
+            "y": 1256.171875,
+            "right": 269,
+            "bottom": 1372.171875,
+            "width": 183,
+            "height": 116
+          },
+          "style": {
+            "font": 32,
+            "color": "rgb(0, 0, 159)",
+            "background": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "answerStyle": {
+          "font": 30,
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)"
+        },
+        "steps": [
+          {
+            "number": "1",
+            "question": true,
+            "button": false,
+            "details": false,
+            "text": "1Predict what will happenHow can pushing down make the two halves move sideways?"
+          },
+          {
+            "number": "2",
+            "question": false,
+            "button": true,
+            "details": false,
+            "text": "2Inspect the cluePause halfway and look for evidence."
+          },
+          {
+            "number": "3",
+            "question": false,
+            "button": false,
+            "details": true,
+            "text": "3Reveal explanation.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWedge moves downLoad motionHalves move apartArrows show motion directions, not distances. Compare distances using the front tracks.The two sloping faces redirect the downward push outward. As the wedge descends, a wider part enters the gap and separates the halves."
+          }
+        ],
+        "map": {
+          "name": "Follow the motion",
+          "text": ".ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}Follow the motionEffort motionWedge moves downLoad motionHalves move apartArrows show motion directions, not distances. Compare distances using the front tracks.",
+          "columns": 1,
+          "lanes": [
+            {
+              "kind": "effort",
+              "rect": {
+                "x": 86,
+                "y": 1468.171875,
+                "right": 269,
+                "bottom": 1771.34375,
+                "width": 183,
+                "height": 303.171875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Effort motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Wedge moves down",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "load",
+              "rect": {
+                "x": 86,
+                "y": 1781.34375,
+                "right": 269,
+                "bottom": 2084.515625,
+                "width": 183,
+                "height": 303.171875
+              },
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)"
+              },
+              "texts": [
+                {
+                  "text": "Load motion",
+                  "style": {
+                    "font": 28,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                },
+                {
+                  "text": "Halves move apart",
+                  "style": {
+                    "font": 32,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(255, 255, 255, 0)"
+                  }
+                }
+              ]
+            }
+          ],
+          "icons": [
+            {
+              "direction": "down",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M24 8V38 M14 28L24 38L34 28",
+              "transform": null
+            },
+            {
+              "direction": "apart",
+              "viewBox": "0 0 48 48",
+              "width": "48",
+              "height": "48",
+              "hidden": "true",
+              "focusable": "false",
+              "style": {
+                "font": 16,
+                "color": "rgb(0, 0, 0)",
+                "background": "rgba(0, 0, 0, 0)"
+              },
+              "path": "M21 24H5 M12 17L5 24L12 31 M27 24H43 M36 17L43 24L36 31",
+              "transform": null
+            }
+          ]
+        },
+        "page": true,
+        "panel": true,
+        "clipped": [
+          "How can pushing down make the two halves move sideways?"
+        ],
+        "forced": true
+      }
+    }
+  ],
+  "errors": [
+    "pulley desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "pulley desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "windlass desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "windlass desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "wedge desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "screw desktop: Inspect keyboard outline contrasts with its surrounding card",
+    "screw desktop: Inspect moves keyboard focus to a visible enabled slider",
+    "dark phone: Inspect moves keyboard focus to a visible enabled slider",
+    "forced phone: Inspect moves keyboard focus to a visible enabled slider",
+    "wedge forced doubled phone: steps, summary and explanation fit without horizontal clipping"
+  ],
+  "tempCleaned": true,
+  "hostPageRemoved": true
+}

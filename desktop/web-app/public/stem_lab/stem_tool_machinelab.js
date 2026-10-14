@@ -13615,7 +13615,9 @@ window.StemLab = window.StemLab || {
           return h('div', { key: 'motion-map', className: 'ml-shop-motion-map', role: 'group',
             'aria-label': __alloT('stem.machinelab.map_title', 'Follow the motion'), style: { margin: '12px 0' }
           }, [
-            h('style', { key: 'styles' }, '.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:420px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}'),
+            h('style', { key: 'styles' }, '.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}'),
+            h('div', { key: 'title', style: { marginBottom: 10, fontSize: 14, fontWeight: 800, color: T.text } },
+              __alloT('stem.machinelab.map_title', 'Follow the motion')),
             h('div', { key: 'lanes', className: 'ml-motion-map-lanes' }, [0, 1].map(function (index) {
               var color = index ? T.load : T.effort;
               return h('div', { key: index, 'data-ml-motion-lane': index ? 'load' : 'effort', style: {
@@ -13624,63 +13626,85 @@ window.StemLab = window.StemLab || {
               } }, [
                 directionIcon(motion[index * 2], color),
                 h('div', { key: 'text', style: { minWidth: 0 } }, [
-                  h('div', { key: 'name', style: { fontSize: 11, fontWeight: 800, color: color, marginBottom: 4 } },
+                  h('div', { key: 'name', style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } },
                     index ? __alloT('stem.machinelab.map_load', 'Load motion') : __alloT('stem.machinelab.map_effort', 'Effort motion')),
-                  h('div', { key: 'direction', style: { fontSize: 13, fontWeight: 750, lineHeight: 1.45, color: T.text } }, motion[index * 2 + 1])
+                  h('div', { key: 'direction', style: { fontSize: 16, fontWeight: 750, lineHeight: 1.45, color: T.text } }, motion[index * 2 + 1])
                 ])
               ]);
             })),
-            h('p', { key: 'scale', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+            h('p', { key: 'scale', style: { margin: '10px 0 0', fontSize: 13, lineHeight: 1.5, color: T.dim } },
               __alloT('stem.machinelab.map_not_scale', 'Arrows show motion directions, not distances. Compare distances using the front tracks.'))
           ]);
         }
         function shopDiscoveryCard() {
           var clue = shopDiscoveryClue();
+          function stepNumber(number) {
+            return h('span', { key: 'number', className: 'ml-discovery-step-number', 'aria-hidden': 'true',
+              style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28,
+                borderRadius: '50%', border: '1px solid ' + T.border, color: T.accent, background: T.bg,
+                fontSize: 14, fontWeight: 850, lineHeight: 1 } }, number);
+          }
           return h('section', { key: 'detect-' + bench.id, className: 'ml-shop-discovery', 'aria-labelledby': 'ml-discovery-title',
-            style: { padding: 12, marginTop: 10, borderRadius: 12, border: '1px solid ' + T.border,
-              borderLeft: '4px solid ' + T.accent, background: T.card, color: T.text } }, [
-            h('div', { key: 'head', style: { display: 'flex', alignItems: 'center', gap: 10 } }, [
-              h('svg', { key: 'icon', viewBox: '0 0 32 32', width: 30, height: 30, 'aria-hidden': 'true', focusable: 'false',
+            style: { padding: 16, marginTop: 14, borderRadius: 14, border: '1px solid ' + T.border,
+              borderLeft: '4px solid ' + T.accent, background: T.card, color: T.text, overflowWrap: 'anywhere', '--ml-discovery-focus': T.text } }, [
+            h('style', { key: 'styles' }, '.ml-discovery-steps{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:14px}.ml-discovery-steps>li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start}.ml-shop-world .ml-shop-discovery button:focus-visible,.ml-shop-world .ml-shop-discovery summary:focus-visible{outline:3px solid var(--ml-discovery-focus);outline-offset:3px}.ml-shop-discovery summary::marker{color:inherit}@media(max-width:440px){.ml-shop-discovery{padding:12px!important}.ml-discovery-steps>li{grid-template-columns:24px minmax(0,1fr);gap:8px}.ml-discovery-step-number{width:24px!important;height:24px!important}}@media(forced-colors:active){.ml-shop-discovery{--ml-discovery-focus:Highlight!important}.ml-discovery-step-number,.ml-shop-discovery>div>svg{color:CanvasText!important}}'),
+            h('div', { key: 'head', style: { display: 'flex', alignItems: 'center', gap: 12 } }, [
+              h('svg', { key: 'icon', viewBox: '0 0 32 32', width: 44, height: 44, 'aria-hidden': 'true', focusable: 'false',
                 style: { flexShrink: 0, color: T.accent } }, [
                 h('circle', { key: 'lens', cx: 13, cy: 13, r: 9, fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 }),
                 h('path', { key: 'handle', d: 'M20 20 L28 28 M9 13 H17 M13 9 V17', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round' })
               ]),
               h('div', { key: 'text', style: { minWidth: 0 } }, [
-                h('h3', { key: 'title', id: 'ml-discovery-title', style: { margin: 0, fontSize: 13, fontWeight: 850 } },
+                h('h3', { key: 'title', id: 'ml-discovery-title', style: { margin: 0, fontSize: 20, fontWeight: 850, lineHeight: 1.3 } },
                   __alloT('stem.machinelab.motion_detective', 'Motion detective')),
-                h('p', { key: 'question', 'data-ml-discovery-question': '', style: { margin: '4px 0 0', fontSize: 13, lineHeight: 1.45 } }, clue[0])
+                h('p', { key: 'hint', style: { margin: '5px 0 0', fontSize: 13, lineHeight: 1.5, color: T.dim } },
+                  __alloT('stem.machinelab.detect_hint', 'Make a prediction, inspect the scene, then reveal the explanation.'))
               ])
             ]),
-            h('div', { key: 'actions', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 10 } }, [
-              h('button', { key: 'inspect', type: 'button', disabled: shopStatus === 'failed',
-                title: __alloT('stem.machinelab.inspect_clue_hint', 'Pause halfway, frame the mechanism, and hide the room to inspect the clue.'),
-                onClick: function (ev) {
-                  var world = ev.currentTarget.closest('.ml-shop-world');
-                  var bay = world && world.querySelector('.ml-shop-bay');
-                  var card = ev.currentTarget.closest('.ml-shop-discovery');
-                  updMulti({ shopAnimating: false, shopMotionProgress: 0.5, shopFocusMechanism: true, shopClueBench: bench.id,
-                    shopRotY: clue[2], shopRotX: clue[3], shopZoom: clue[4] });
-                  // Wait for a running demo's disabled slider to become active.
-                  setTimeout(function () {
-                    if (!card || !card.isConnected) return;
-                    var slider = world.querySelector('#ml-shop-stroke');
-                    if (slider) slider.focus({ preventScroll: true });
-                    if (bay && bay.scrollIntoView) bay.scrollIntoView({ block: 'center', behavior: 'auto' });
-                    if (slider && slider.scrollIntoView) slider.scrollIntoView({ block: 'nearest', behavior: 'auto' });
-                  }, 0);
-                  announceToSR(__alloT('stem.machinelab.clue_ready', 'Clue ready at half stroke. The room is hidden; use Focus mechanism to restore it.'));
-                },
-                style: { minHeight: 40, padding: '7px 12px', borderRadius: 8, border: '1px solid ' + T.accent,
-                  background: T.accent, color: T.accentInk, cursor: 'pointer', fontSize: 12, fontWeight: 800 }
-              }, __alloT('stem.machinelab.inspect_clue', 'Inspect the clue')),
-              h('span', { key: 'hint', style: { flex: '1 1 170px', fontSize: 11, lineHeight: 1.4, color: T.dim } },
-                __alloT('stem.machinelab.detect_hint', 'Make a prediction, inspect the scene, then reveal the explanation.'))
-            ]),
-            h('details', { key: 'answer-' + bench.id, style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid ' + T.border } }, [
-              h('summary', { key: 'reveal', style: { cursor: 'pointer', minHeight: 32, fontSize: 12, fontWeight: 750, lineHeight: '32px' } },
-                __alloT('stem.machinelab.reveal_explanation', 'Reveal explanation')),
-              shopMotionMap(),
-              h('p', { key: 'answer', 'data-ml-discovery-answer': '', style: { margin: '4px 0 0', fontSize: 13, lineHeight: 1.55, color: T.text } }, clue[1])
+            h('ol', { key: 'steps', className: 'ml-discovery-steps', role: 'list' }, [
+              h('li', { key: 'predict' }, [stepNumber('1'),
+                h('div', { key: 'content', style: { minWidth: 0, padding: '12px 14px', borderRadius: 10,
+                  border: '1px solid ' + T.border, background: T.bg } }, [
+                  h('div', { key: 'label', style: { fontSize: 13, fontWeight: 800, lineHeight: 1.4, color: T.dim } },
+                    __alloT('stem.machinelab.detect_predict', 'Predict what will happen')),
+                  h('p', { key: 'question', 'data-ml-discovery-question': '', style: { margin: '6px 0 0', fontSize: 20, fontWeight: 750, lineHeight: 1.4 } }, clue[0])
+                ])
+              ]),
+              h('li', { key: 'inspect' }, [stepNumber('2'),
+                h('div', { key: 'actions', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, minWidth: 0 } }, [
+                  h('button', { key: 'inspect', type: 'button', disabled: shopStatus === 'failed',
+                    title: __alloT('stem.machinelab.inspect_clue_hint', 'Pause halfway, frame the mechanism, and hide the room to inspect the clue.'),
+                    onClick: function (ev) {
+                      var world = ev.currentTarget.closest('.ml-shop-world');
+                      var bay = world && world.querySelector('.ml-shop-bay');
+                      var card = ev.currentTarget.closest('.ml-shop-discovery');
+                      updMulti({ shopAnimating: false, shopMotionProgress: 0.5, shopFocusMechanism: true, shopClueBench: bench.id,
+                        shopRotY: clue[2], shopRotX: clue[3], shopZoom: clue[4] });
+                      // Wait for a running demo's disabled slider to become active.
+                      setTimeout(function () {
+                        if (!card || !card.isConnected) return;
+                        var slider = world.querySelector('#ml-shop-stroke');
+                        if (slider) slider.focus({ preventScroll: true });
+                        if (bay && bay.scrollIntoView) bay.scrollIntoView({ block: 'center', behavior: 'auto' });
+                        if (slider && slider.scrollIntoView) slider.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+                      }, 0);
+                      announceToSR(__alloT('stem.machinelab.clue_ready', 'Clue ready at half stroke. The room is hidden; use Focus mechanism to restore it.'));
+                    },
+                    style: { minHeight: 44, maxWidth: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.accent,
+                      background: T.accent, color: T.accentInk, cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1.4 }
+                  }, __alloT('stem.machinelab.inspect_clue', 'Inspect the clue')),
+                  h('span', { key: 'hint', style: { flex: '1 1 170px', fontSize: 13, lineHeight: 1.5, color: T.dim } },
+                    __alloT('stem.machinelab.detect_observe', 'Pause halfway and look for evidence.'))
+                ])
+              ]),
+              h('li', { key: 'explain' }, [stepNumber('3'),
+                h('details', { key: 'answer-' + bench.id, style: { minWidth: 0, padding: '0 12px 12px', borderRadius: 10, border: '1px solid ' + T.border } }, [
+                  h('summary', { key: 'reveal', style: { cursor: 'pointer', minHeight: 44, boxSizing: 'border-box', padding: '10px 0', fontSize: 16, fontWeight: 750, lineHeight: 1.5 } },
+                    __alloT('stem.machinelab.reveal_explanation', 'Reveal explanation')),
+                  shopMotionMap(),
+                  h('p', { key: 'answer', 'data-ml-discovery-answer': '', style: { margin: '12px 0 0', fontSize: 15, lineHeight: 1.6, color: T.text } }, clue[1])
+                ])
+              ])
             ])
           ]);
         }

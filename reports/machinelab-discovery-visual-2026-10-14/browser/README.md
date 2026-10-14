@@ -1,0 +1,11 @@
+# Motion detective browser validation
+
+Final `run-02` passed **198 checks, four mounts, six station routes and four region screenshots** on source `b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2`. The native wrapper session 34190 exited 0. One real Chromium instance used the existing React/THREE host, a 512 MB Node heap cap and a 300-second bound. Generated host-page and browser-temp files were removed after completion.
+
+Each station exercised keyboard Inspect, the existing half-stroke/camera setup, slider focus, Return focus, native explanation reveal and scrubbing. Unrelated practice and saved state were preserved. Question, answer, lane text and full direction-arrow markup matched the baseline exactly for all six stations. All six also passed 320px forced-colors checks with doubled HTML text. The final PNGs show baseline/current desktop, dark windlass phone and the repaired forced-colors doubled-text wedge.
+
+`run-01` remains unchanged: 198 checks, exit 1, ten failures. Four immediately sampled button outlines were white on white; five slider bounds exceeded the viewport by a fractional pixel; the doubled wedge question overflowed its 179px content width by 6px. Its raw source, harness, wrapper, output and four images are retained.
+
+The read-only `probe-01` used two mounts and no screenshots. It recorded immediate, two-animation-frame and later measurements: pulley/windlass focus paint settled from white to dark while the focus variable stayed `#0f172a`; slider bounds stayed at 1000.3125px in a 1000px viewport. Root then added the more specific discovery focus selector and `overflow-wrap:anywhere` to production. The final harness has exactly three documented changes from the retained run-01 snapshot: two animation frames before focus-style sampling, an explicit 0.5px viewport rounding allowance with recorded bounds, and a wedge final screenshot. The contrast requirement remains at least 3:1; text-clipping assertions are unchanged.
+
+`final.json` binds the final results, native receipt, observed completion and agent image review. `attempt-history.json` binds the retained failed attempt and diagnostic evidence. The root evidence verifier also passes with 91 final-source tests.

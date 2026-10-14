@@ -1,0 +1,9 @@
+{
+  "status": "observed",
+  "sessionId": 92589,
+  "observedExitCode": 0,
+  "sourceSha256": "090d4fc3110005f66fe27e9b9fb87029597be4cad58b9500565c4bf1aa0f650c",
+  "resultsSha256": "cfb9f9ab44ee1f425651cbcfe3c110fbc90037ce68f5a75cd963514f1d17a042",
+  "nativeExitSha256": null,
+  "probeSha256": "d46895efc020e2f831a724bb603bde75b63ef08a6b961ad670ef5bd3228d805e"
+}
