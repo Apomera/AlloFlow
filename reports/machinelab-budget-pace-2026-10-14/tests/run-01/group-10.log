@@ -1,0 +1,17 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_practice_flow.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_practice_flow.test.js (25 tests | 15 skipped) 2797ms
+     ✓ opens the inputPower guide and focuses only the comparison direct summary  478ms
+     ✓ preserves checked work, hints, fixed records and unrelated notes through guide round trips  429ms
+     ✓ rejects old callbacks against a newly rendered question or geometry signature  410ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed | 15 skipped (25)
+   Start at  11:38:48
+   Duration  4.59s (transform 55ms, setup 44ms, import 80ms, tests 2.80s, environment 1.44s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-budget-pace-2026-10-14/tests/run-01/group-10.json

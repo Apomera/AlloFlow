@@ -1,0 +1,23 @@
+budget pace QA starting 2026-10-14T15:40:09.471Z
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+budget checkpoint: desktop-pending-pace checks 43 routes 0 shots 1
+budget checkpoint: lever routes checks 241 routes 3 shots 1
+budget checkpoint: pulley routes checks 384 routes 6 shots 1
+budget checkpoint: windlass routes checks 527 routes 9 shots 1
+budget checkpoint: ramp routes checks 670 routes 12 shots 1
+budget checkpoint: wedge routes checks 813 routes 15 shots 1
+budget checkpoint: screw routes checks 956 routes 18 shots 1
+native scenario 2 lever
+budget checkpoint: desktop-checked-pace checks 1005 routes 18 shots 2
+native scenario 3 ramp
+budget checkpoint: dark-phone-over-pace checks 1282 routes 18 shots 3
+native scenario 4 screw
+budget checkpoint: forced-colors-phone-at-pace checks 1330 routes 18 shots 4
+{
+  "scenarios": 4,
+  "checks": 1331,
+  "routes": 18,
+  "screenshots": 4,
+  "errors": []
+}

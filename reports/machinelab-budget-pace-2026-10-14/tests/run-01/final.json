@@ -1,0 +1,19 @@
+{
+  "format": "machine-lab-budget-pace-coverage-v1",
+  "sourceSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "publicMirrorSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "baselineCommit": "dea24fa02",
+  "passed": 107,
+  "failed": 0,
+  "uncovered": 0,
+  "files": 5,
+  "nativeProcesses": 13,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "290ca95353e79591edd1311b9ad7c1b1cacc06e40b0394b3ee704be8ca93aebd"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "878f61a6115e9e62dbca1d75c0094f6ee6dbe145fe2a0af4b1517fc6465bdbec"
+  }
+}

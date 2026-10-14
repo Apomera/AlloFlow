@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "sessionId": 11226,
+  "observedWrapperExitCode": 0,
+  "observedNativeChildExitCode": 0,
+  "sourceSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "checks": 1331,
+  "routes": 18,
+  "scenarios": 4,
+  "process": {
+    "path": "reports/machinelab-budget-pace-2026-10-14/browser/run-01/process.json",
+    "sha256": "caaa7dfbe20446f42a5259629bf00b1631775568a826a56866230e7d08e93c74"
+  },
+  "results": {
+    "path": "reports/machinelab-budget-pace-2026-10-14/browser/run-01/results.json",
+    "sha256": "ea2eabe97612973ab38ca4539d4e4b75de4183f890b5ebc2d50c8b742a732e4d",
+    "bytes": 360478
+  }
+}

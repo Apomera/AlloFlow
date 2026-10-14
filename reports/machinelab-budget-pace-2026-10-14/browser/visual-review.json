@@ -1,0 +1,29 @@
+{
+  "sourceSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-budget-pace-2026-10-14/browser/run-01/desktop-pending-pace.png",
+      "sha256": "2481097ba46b09d0d11ebbe0ee31fe029d0a36d2868206057b7dac2ee7b2fdb2",
+      "visuallyInspected": true,
+      "notes": "The complete pending desktop panel retains the clear two-step percentage and interpretation form. No worked percentage or pace section appears. Cards, fixed percent unit, selected classification and all actions fit cleanly without overlap or clipping."
+    },
+    {
+      "path": "reports/machinelab-budget-pace-2026-10-14/browser/run-01/desktop-checked-pace.png",
+      "sha256": "3141561c752ef4c9298ec53a83a0b0cf92457f0759dc510b57015d23d28ed9b7",
+      "visuallyInspected": true,
+      "notes": "The full checked desktop panel clearly distinguishes the percentage result from Choose a workable pace. Current 5s and full-budget 2.5s cards have proportionate solid and striped bars, a prominent 0.5× multiplier, both equations and explicit draft-switch guidance. The time-practice button has a visible focus outline; bottom clear action is fully captured. No overlap or clipping observed."
+    },
+    {
+      "path": "reports/machinelab-budget-pace-2026-10-14/browser/run-01/dark-phone-over-pace.png",
+      "sha256": "b79214a9435d47fd91ea0180da8853d6cb4534297429216ba09a1a7a09d1df54",
+      "visuallyInspected": true,
+      "notes": "The 320px dark phone panel stacks all cards and actions. Over-budget 200% leads to current 5s versus 10s at full budget and a 2× multiplier. Equations and guidance wrap within the narrow pace card. The primary time-practice shortcut has visible keyboard focus and its full label wraps clearly. Full panel and final action are captured without clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-budget-pace-2026-10-14/browser/run-01/forced-colors-phone-at-pace.png",
+      "sha256": "a323b7c72b376c88bc62dc1e5b9bd26310d7c9be0153c83064cce57ace5dc46f",
+      "visuallyInspected": true,
+      "notes": "The 320px forced-colors phone panel preserves headings, panel boundaries, equal 5s time bars and a 1× multiplier. Solid and striped time bars remain distinct. Equations, draft guidance and the focused time-practice action remain legible. Full panel, including final clear action, is captured without clipping or overlap."
+    }
+  ]
+}

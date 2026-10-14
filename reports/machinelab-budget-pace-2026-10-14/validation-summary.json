@@ -1,0 +1,18 @@
+{
+  "sourceSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "tests": 107,
+  "newTests": 21,
+  "unchangedTests": 86,
+  "testFiles": 5,
+  "nativeTestGroups": 13,
+  "browserChecks": 1331,
+  "budgetRoutes": 18,
+  "paceRoutes": 18,
+  "paceNavigationChecks": 12,
+  "browserScenarios": 4,
+  "inspectedScreenshots": 4,
+  "keyboardFocusChecks": 23,
+  "existingPhysicsAndPredictionPracticeUnchanged": true,
+  "ordinaryPracticeAndRecordsUnchanged": true,
+  "sourceMirrorParity": true
+}

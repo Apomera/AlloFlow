@@ -9145,12 +9145,79 @@ window.StemLab = window.StemLab || {
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchPowerBudgetPractice: entries }) });
           });
         }
+        function openBudgetTimePractice(ev) {
+          var origin = ev && ev.currentTarget, root = origin && origin.closest && origin.closest('[data-ml-power]');
+          if (!origin || !origin.isConnected || !root || !root.isConnected || !root.open || origin.disabled || !root.contains(origin) ||
+            root.getAttribute('data-ml-power') !== bench.id || root.getAttribute('data-ml-power-navigation-signature') !== session.signature ||
+            !root.querySelector('#' + prefix + 'answer-' + bench.id)) return;
+          var focusSignature = null;
+          setLabToolData(function (prev) {
+            focusSignature = null;
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = powerSession(source, bench);
+            if (!latest.model || latest.signature !== session.signature) return prev;
+            var outcome = budgetPracticeResult(budgetPracticeState(source, latest), latest);
+            if (outcome !== 'correct' && outcome !== 'solution') return prev;
+            if (latest.draft.question === 'budgetTime') { focusSignature = latest.signature; return prev; }
+            var next = Object.assign({}, latest.draft, { question: 'budgetTime', answer: '', unit: '', hint: 0, checked: false, revealed: false });
+            var entries = Object.assign({}, source.benchPower || {}); entries[bench.id] = next;
+            next.signature = powerSession(Object.assign({}, source, { benchPower: entries }), bench).signature;
+            focusSignature = next.signature;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchPower: entries }) });
+          });
+          // Wait for the selected skill to render, then recheck the live destination.
+          function focusTarget() {
+            if (!focusSignature || !root.isConnected || !root.open || root.getAttribute('data-ml-power') !== bench.id ||
+              root.getAttribute('data-ml-power-navigation-signature') !== focusSignature) return;
+            var selection = root.querySelector('#' + prefix + 'question-' + bench.id), target = root.querySelector('#' + prefix + 'answer-' + bench.id);
+            if (!selection || selection.value !== 'budgetTime' || !target || !target.isConnected || !root.contains(target)) return;
+            target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' });
+          }
+          if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focusTarget);
+          else window.setTimeout(focusTarget, 0);
+        }
         function budgetPractice() {
           var state = budgetPracticeState(d, session), spec = budgetPracticeModel(session), outcome = budgetPracticeResult(state, session);
           var show = outcome === 'correct' || outcome === 'solution', id = prefix + 'budget-practice-', scale = Math.max(100, spec.percent);
           // Do not round a genuine below/over-budget task into an apparent tie.
           var precise = spec.choice !== 'at' && (Number(powerFmt(spec.percent)) === 100 || Number(powerFmt(spec.required)) === Number(powerFmt(spec.available)));
           function formatShare(value) { return precise ? String(value) : powerFmt(value); }
+          var pacePrecise = precise || spec.choice !== 'at' && Number(powerFmt(model.seconds)) === Number(powerFmt(model.budgetTime));
+          function formatPace(value) { return pacePrecise ? String(value) : powerFmt(value); }
+          function paceComparison() {
+            var factor = spec.required / spec.available, timeScale = Math.max(model.seconds, model.budgetTime), active = draft.question === 'budgetTime';
+            return h('section', { key: 'pace', 'data-ml-power-budget-pace': bench.id, 'aria-labelledby': id + 'pace-title-' + bench.id,
+              style: { margin: '20px 0 0', padding: 14, border: '1px solid ' + T.border, borderRadius: 10, background: T.bg, minWidth: 0 } }, [
+              h('h5', { key: 'title', id: id + 'pace-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 17, fontWeight: 850 }) }, __alloT('stem.machinelab.budget_pace_title', 'Choose a workable pace')),
+              h('p', { key: 'meaning', style: style }, spec.choice === 'over'
+                ? __alloT('stem.machinelab.budget_pace_over', 'For the same task and efficiency, allow more time to fit this power budget. The time at full budget is the shortest time in this energy model.')
+                : spec.choice === 'below' ? __alloT('stem.machinelab.budget_pace_below', 'Your current task time already fits the power budget. The time at full budget is a faster option in this energy model.')
+                  : __alloT('stem.machinelab.budget_pace_at', 'Your current task time matches the time at full budget in this energy model.')),
+              h('dl', { key: 'times', className: 'ml-budget-pace-times', style: { margin: '14px 0' } }, [
+                ['current', model.seconds, __alloT('stem.machinelab.budget_pace_current', 'Current task time')],
+                ['budget', model.budgetTime, __alloT('stem.machinelab.budget_pace_full', 'Time at full budget')]
+              ].map(function (row) { return h('div', { key: row[0], 'data-ml-power-budget-pace-metric': row[0], 'data-value': row[1],
+                style: { minWidth: 0, padding: 10, border: '1px ' + (row[0] === 'current' ? 'solid ' : 'dashed ') + T.border, borderRadius: 8, background: T.card } }, [
+                h('dt', { key: 'label', style: style }, row[2]),
+                h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 22 }) }, formatPace(row[1]) + ' s'),
+                h('dd', { key: 'track', className: 'ml-budget-practice-track', 'aria-hidden': 'true', style: { height: 14, margin: '10px 0 0', overflow: 'hidden', border: '1px solid ' + T.border, background: T.bg } },
+                  h('span', { 'data-ml-power-budget-pace-bar': row[0], 'data-value': row[1], style: { display: 'block', height: '100%', width: (row[1] / timeScale * 100) + '%', color: T.accent,
+                    background: row[0] === 'current' ? T.accent : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 6px)' } }))
+              ]); })),
+              h('p', { key: 'factor', 'data-ml-power-budget-pace-factor': '', 'data-value': factor, style: Object.assign({}, style, { margin: '10px 0', fontSize: 20, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) }, __alloT('stem.machinelab.budget_pace_factor', 'Task-time multiplier: ') + formatPace(factor) + '×'),
+              h('p', { key: 'relationship', style: style }, __alloT('stem.machinelab.budget_pace_relationship', 'Time at full budget = current time × required share ÷ 100. Work and efficiency stay fixed.')),
+              h('p', { key: 'equation', 'data-ml-power-budget-pace-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.accent, background: T.card, fontSize: 16, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }) }, formatPace(model.seconds) + ' s × (' + formatPace(spec.percent) + '% ÷ 100%) ≈ ' + formatPace(model.budgetTime) + ' s'),
+              h('p', { key: 'energy', 'data-ml-power-budget-pace-energy': '', style: style }, formatPace(model.workIn) + ' J ÷ ' + formatPace(spec.available) + ' W ≈ ' + formatPace(model.budgetTime) + ' s'),
+              h('p', { key: 'scope', style: style }, __alloT('stem.machinelab.budget_pace_scope', 'Both time bars use one scale. Force, travel, strength and acceleration can impose other limits; this comparison uses energy and average input power.')),
+              h('p', { key: 'help', id: id + 'pace-help-' + bench.id, style: style }, active
+                ? __alloT('stem.machinelab.budget_pace_continue_help', 'Continue your current time calculation with its answer and hints preserved.')
+                : __alloT('stem.machinelab.budget_pace_switch_help', 'Selecting time practice clears your current unsaved calculation draft. Save that calculation first if you want to keep it. Saved records stay available.')),
+              h('div', { key: 'action', className: 'ml-budget-practice-actions' }, h('button', { type: 'button', 'data-ml-power-budget-pace-practice': '', 'aria-describedby': id + 'pace-help-' + bench.id,
+                className: 'ml-budget-practice-primary', style: Object.assign({}, button, { minHeight: 44, fontWeight: 750, background: T.accent, color: T.accentInk, borderColor: T.accent }),
+                onClick: openBudgetTimePractice }, active ? __alloT('stem.machinelab.budget_pace_continue', 'Continue time calculation') : __alloT('stem.machinelab.budget_pace_practice', 'Practise time at this budget')))
+            ]);
+          }
           var choices = [
             ['below', __alloT('stem.machinelab.budget_practice_below', 'Below budget'), '< 100%'],
             ['at', __alloT('stem.machinelab.budget_practice_at', 'At budget'), '= 100%'],
@@ -9224,10 +9291,11 @@ window.StemLab = window.StemLab || {
                   h('span', { 'data-ml-power-budget-utilization-bar': row[0], 'data-value': row[1], style: { display: 'block', height: '100%', width: (row[1] / scale * 100) + '%', color: T.accent,
                     background: row[0] === 'required' ? T.accent : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 6px)' } }))
               ]); })),
-              h('p', { key: 'help', style: style }, __alloT('stem.machinelab.budget_practice_chart_help', 'Both bars use the same scale. Solid shows the required share; stripes show the 100% budget. Over-budget results extend beyond the reference rather than stopping at 100%. Values are rounded except near a tie. Tiny differences may not be visible in the bars; compare the numbers too.'))
+              h('p', { key: 'help', style: style }, __alloT('stem.machinelab.budget_practice_chart_help', 'Both bars use the same scale. Solid shows the required share; stripes show the 100% budget. Over-budget results extend beyond the reference rather than stopping at 100%. Values are rounded except near a tie. Tiny differences may not be visible in the bars; compare the numbers too.')),
+              paceComparison()
             ]) : null,
             h('div', { key: 'retry', className: 'ml-budget-practice-actions', style: { marginTop: 14 } }, act('retry', __alloT('stem.machinelab.budget_practice_retry', 'Clear practice'))),
-            h('style', { key: 'style' }, '.ml-budget-practice-given{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-budget-practice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-budget-practice input[type=radio]{margin-bottom:0!important}.ml-power-lab .ml-budget-practice button:focus-visible,.ml-power-lab .ml-budget-practice input:focus-visible{outline:3px solid var(--ml-budget-practice-focus);outline-offset:3px}@media(max-width:600px){.ml-budget-practice-options,.ml-budget-practice-given{grid-template-columns:minmax(0,1fr)}.ml-budget-practice-actions button{width:100%!important}}@media(forced-colors:active){.ml-budget-practice{--ml-budget-practice-focus:CanvasText!important}.ml-budget-practice-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-budget-practice [data-ml-budget-practice-selected=true]{border-color:Highlight!important}.ml-budget-practice-track{border-color:CanvasText!important;background:Canvas!important}.ml-budget-practice-track span{forced-color-adjust:none;color:CanvasText!important}.ml-budget-practice-track [data-ml-power-budget-utilization-bar=required]{background:CanvasText!important}.ml-budget-practice-track [data-ml-power-budget-utilization-bar=budget]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
+            h('style', { key: 'style' }, '.ml-budget-practice-given,.ml-budget-pace-times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-budget-practice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-budget-practice input[type=radio]{margin-bottom:0!important}.ml-power-lab .ml-budget-practice button:focus-visible,.ml-power-lab .ml-budget-practice input:focus-visible{outline:3px solid var(--ml-budget-practice-focus);outline-offset:3px}@media(max-width:600px){.ml-budget-practice-options,.ml-budget-practice-given,.ml-budget-pace-times{grid-template-columns:minmax(0,1fr)}.ml-budget-practice-actions button{width:100%!important}}@media(forced-colors:active){.ml-budget-practice{--ml-budget-practice-focus:CanvasText!important}.ml-budget-practice-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-budget-practice [data-ml-budget-practice-selected=true]{border-color:Highlight!important}.ml-budget-practice-track{border-color:CanvasText!important;background:Canvas!important}.ml-budget-practice-track span{forced-color-adjust:none;color:CanvasText!important}.ml-budget-practice-track [data-ml-power-budget-utilization-bar=required],.ml-budget-practice-track [data-ml-power-budget-pace-bar=current]{background:CanvasText!important}.ml-budget-practice-track [data-ml-power-budget-utilization-bar=budget],.ml-budget-practice-track [data-ml-power-budget-pace-bar=budget]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
           ]);
         }
         function budgetPlanning() {
