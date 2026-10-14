@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-10-14T17:34:54.428Z",
+  "completedAt": "2026-10-14T17:36:09.337Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_practice_overview_visual_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-practice-overview-visual-2026-10-14\\browser\\run-01"
+  ],
+  "nodeOptions": "--max-old-space-size=512 --max-semi-space-size=8",
+  "timeoutMs": 300000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_practice_overview_visual_qa.cjs",
+      "sha256": "6b3f5fa93264756cae4fcbba6329b1da3bc5984d148f1dc9089b436e9598ccd0"
+    },
+    {
+      "file": "reports/machinelab-practice-overview-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "9693a26f27f934d351a3017f5b946378655773c071903fa9d50ec51b9de9a2a2"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_practice_overview_visual_qa.cjs",
+      "sha256": "6b3f5fa93264756cae4fcbba6329b1da3bc5984d148f1dc9089b436e9598ccd0"
+    },
+    {
+      "file": "reports/machinelab-practice-overview-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "9693a26f27f934d351a3017f5b946378655773c071903fa9d50ec51b9de9a2a2"
+    }
+  ]
+}

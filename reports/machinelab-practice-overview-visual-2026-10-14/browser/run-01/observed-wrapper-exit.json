@@ -1,0 +1,11 @@
+{
+  "sessionId": 50674,
+  "observedExitCode": 0,
+  "observedVia": "functions.exec tools.write_stdin",
+  "command": "node reports/machinelab-practice-overview-visual-2026-10-14/browser/run-native.cjs run-01",
+  "nativeExitCode": 0,
+  "checks": 1559,
+  "scenarios": 10,
+  "screenshots": 6,
+  "errors": []
+}

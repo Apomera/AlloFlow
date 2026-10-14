@@ -1,0 +1,87 @@
+{
+  "status": "passed",
+  "finalRun": "run-01",
+  "sourceSha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366",
+  "baselineSha256": "7b62f6befb82aee628688dd76dae6091ccd949757bc542269cdc4a465e747867",
+  "checks": 1559,
+  "scenarios": 10,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "screenshots": 6,
+  "errors": [],
+  "observedWrapperExitCode": 0,
+  "nativeExitCode": 0,
+  "harness": {
+    "file": "dev-tools/ml_practice_overview_visual_qa.cjs",
+    "sha256": "6b3f5fa93264756cae4fcbba6329b1da3bc5984d148f1dc9089b436e9598ccd0"
+  },
+  "artifacts": [
+    {
+      "file": "run-native.cjs",
+      "sha256": "9693a26f27f934d351a3017f5b946378655773c071903fa9d50ec51b9de9a2a2"
+    },
+    {
+      "file": "run-01/results.json",
+      "sha256": "cd38a9edb8932f5d0b5b4b9810939fd160005343c3c90b7822dd7d7810a6aab8"
+    },
+    {
+      "file": "run-01/native-exit.json",
+      "sha256": "af2b5b7deed47b671385763d273059ee89aa7ad62b6f3bead5af76f1f9f007d6"
+    },
+    {
+      "file": "run-01/observed-wrapper-exit.json",
+      "sha256": "7024a639b88274ddf79327fa3af4b1951280552c72d1ea811dff68b2101feb46"
+    },
+    {
+      "file": "run-01/stdout.log",
+      "sha256": "b4b0ead384158a1334f72d9f9da8771aeefb12da13595e9ed1573c5b36280779"
+    },
+    {
+      "file": "run-01/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run-01/harness-snapshot.cjs",
+      "sha256": "6b3f5fa93264756cae4fcbba6329b1da3bc5984d148f1dc9089b436e9598ccd0"
+    },
+    {
+      "file": "run-01/runner-snapshot.cjs",
+      "sha256": "9693a26f27f934d351a3017f5b946378655773c071903fa9d50ec51b9de9a2a2"
+    },
+    {
+      "file": "visual-review.json",
+      "sha256": "1af0976e09654291d42ea2b30dc60fc62fac988961dde1315644687ebcbd311a"
+    },
+    {
+      "file": "run-01/desktop-before-practice-overview.png",
+      "sha256": "d9ee75ad67a670311b91a260c17f77523d983803c5a32aaf7e62af99384336ca"
+    },
+    {
+      "file": "run-01/desktop-practice-overview.png",
+      "sha256": "82fad9ec4e556d785c80f6e225c23544abd9fff81ed202a64ab98299375af5c5"
+    },
+    {
+      "file": "run-01/desktop-linear-practice-overview.png",
+      "sha256": "8cc570ec54eba8e9a1ac367215edac464302f2bef535c8661268a33ac47a3497"
+    },
+    {
+      "file": "run-01/dark-phone-practice-overview.png",
+      "sha256": "9cea6575d6b877bd3b8b72b75cbba411cd1600c2f2627964181d2631e6e28a2b"
+    },
+    {
+      "file": "run-01/forced-colors-phone-practice-overview.png",
+      "sha256": "f4590b402625e97cb2f714d665ac1b39ac635e4a6b26d5a867a5e6d8d8641b5b"
+    },
+    {
+      "file": "run-01/large-text-phone-practice-overview.png",
+      "sha256": "3f38b96986bb18123e8f7f395aaf10b5d9bbb85745cb29abf21146f1edc5a4bb"
+    }
+  ],
+  "preservedFailedRuns": []
+}

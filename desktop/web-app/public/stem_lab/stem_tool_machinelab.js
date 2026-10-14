@@ -9423,15 +9423,32 @@ window.StemLab = window.StemLab || {
             return h('details', { key: 'skill-map', 'data-ml-power-skill-map': bench.id, style: { margin: '6px 0 14px', borderBottom: '1px solid ' + T.border } }, [
               h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_skill_map_title', 'Explore skills and saved practice')),
               h('p', { key: 'counts', 'data-ml-power-map-saved': saved.length, 'data-ml-power-map-checked': checked, 'data-ml-power-map-solutions': solutions,
-                style: Object.assign({}, style, { padding: 10, background: T.bg, borderRadius: 8, fontWeight: 750 }) },
-                __alloT('stem.machinelab.map_saved', 'Saved: ') + saved.length + '/' + kinds.length + ' · ' + __alloT('stem.machinelab.map_checked', 'Checked: ') + checked + ' · ' + __alloT('stem.machinelab.map_solutions', 'Solution viewed: ') + solutions),
+                style: Object.assign({}, style, { margin: '8px 0 10px', fontSize: 16, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) },
+                __alloT('stem.machinelab.map_saved', 'Saved: ') + saved.length + '/' + kinds.length),
+              h('dl', { key: 'history', className: 'ml-practice-history', style: { margin: '0 0 10px' } }, [
+                ['checked', checked, __alloT('stem.machinelab.map_answer_checked', 'Answer checked')],
+                ['solution', solutions, __alloT('stem.machinelab.map_viewed', 'Worked solution viewed')],
+                ['unsaved', kinds.length - saved.length, __alloT('stem.machinelab.map_unsaved', 'No saved record')]
+              ].map(function (item) {
+                return h('div', { key: item[0], 'data-ml-power-map-status': item[0], className: 'ml-practice-history-stat',
+                  style: { minWidth: 0, padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.bg } }, [
+                  h('dt', { key: 'label', style: Object.assign({}, style, { display: 'flex', alignItems: 'baseline', gap: 8, fontWeight: 750, margin: 0 }) }, [
+                    h('span', { key: 'swatch', 'data-ml-power-map-swatch': item[0], 'aria-hidden': 'true', style: { display: 'inline-block', width: 22, height: 12, flex: '0 0 22px', boxSizing: 'border-box', border: '1px solid ' + T.border, borderRadius: 3,
+                      backgroundColor: item[0] === 'checked' ? T.ok : T.card,
+                      backgroundImage: item[0] === 'solution' ? 'repeating-linear-gradient(135deg,transparent 0,transparent 3px,' + T.warn + ' 3px,' + T.warn + ' 6px)' : 'none' } }),
+                    h('span', { key: 'text', style: { minWidth: 0 } }, item[2])
+                  ]),
+                  h('dd', { key: 'value', style: { margin: 0, fontSize: 28, lineHeight: 1.25, fontWeight: 850, fontVariantNumeric: 'tabular-nums', color: T.text } }, item[1])
+                ]);
+              })),
+              h('p', { key: 'coverage-help', style: Object.assign({}, style, { margin: '0 0 16px' }) }, __alloT('stem.machinelab.coverage_history_help', 'Counts include records made with earlier setups. Saved records show practice history, not a score.')),
               h('p', { key: 'help', style: style }, __alloT('stem.machinelab.map_help', 'Choose a tile to practise that skill below. Selecting another skill clears the current draft; save first. Labels describe saved practice, including hints and the setup used.')),
               h('button', { key: 'go', type: 'button', 'data-ml-power-go-calculation': '', style: button,
                 onClick: function (ev) { navigatePractice(ev, 'answer'); } }, __alloT('stem.machinelab.practice_flow_go', 'Go to calculation')),
               h('div', { key: 'shortcuts', 'data-ml-power-practice-shortcuts': '', className: 'ml-practice-shortcuts', style: { margin: '12px 0 8px' } }, ['unsaved', 'solution'].map(function (mode) {
                 var target = practiceTarget(d, draft.question, mode); if (target === draft.question) target = null;
                 return h('button', { key: mode, type: 'button', 'data-ml-power-practice-next': mode, 'data-target': target || '', disabled: !target,
-                  onClick: function () { choosePractice(mode); }, style: Object.assign({}, button, { width: '100%', minWidth: 0, textAlign: 'left', padding: 11 }) }, [
+                  onClick: function () { choosePractice(mode); }, style: Object.assign({}, button, { width: '100%', minWidth: 0, minHeight: 68, textAlign: 'left', padding: 14, fontSize: 14 }) }, [
                   h('span', { key: 'label', style: { display: 'block', fontWeight: 800 } }, mode === 'unsaved'
                     ? __alloT('stem.machinelab.coverage_next_unsaved', 'Next unsaved skill') : __alloT('stem.machinelab.coverage_revisit', 'Revisit a worked solution')),
                   h('span', { key: 'target', style: { display: 'block', marginTop: 5, fontSize: 12, lineHeight: 1.5, overflowWrap: 'anywhere' } }, target ? skillLabels[target]
@@ -9439,7 +9456,6 @@ window.StemLab = window.StemLab || {
                 ]);
               })),
               h('p', { key: 'shortcut-help', style: style }, __alloT('stem.machinelab.coverage_shortcut_help', 'Shortcuts skip the current skill. Revisiting starts a fresh attempt with this setup; your saved solution stays in the record.')),
-              h('p', { key: 'coverage-help', style: style }, __alloT('stem.machinelab.coverage_history_help', 'Counts include records made with earlier setups. Saved records show practice history, not a score.')),
               families.map(function (family) {
                 var items = family[3].filter(function (kind) { return kinds.indexOf(kind) >= 0; });
                 if (!items.length) return null;
@@ -9447,11 +9463,11 @@ window.StemLab = window.StemLab || {
                 var familyChecked = items.filter(function (kind) { return records[kind] && records[kind].completion === 'checked'; }).length;
                 var familySolutions = items.filter(function (kind) { return records[kind] && records[kind].completion === 'solution'; }).length;
                 var familyUnsaved = items.length - familyChecked - familySolutions;
-                return h('section', { key: family[0], 'data-ml-power-skill-family': family[0], 'aria-labelledby': headingId, style: { margin: '18px 0' } }, [
-                  h('h4', { key: 'heading', id: headingId, style: Object.assign({}, style, { fontSize: 14, margin: '0 0 3px', fontWeight: 850 }) }, family[1]),
-                  h('p', { key: 'help', style: Object.assign({}, style, { fontSize: 12, margin: '0 0 9px' }) }, family[2]),
+                return h('section', { key: family[0], 'data-ml-power-skill-family': family[0], 'aria-labelledby': headingId, style: { margin: '20px 0', paddingTop: 16, borderTop: '1px solid ' + T.border } }, [
+                  h('h4', { key: 'heading', id: headingId, style: Object.assign({}, style, { fontSize: 17, margin: '0 0 3px', fontWeight: 850 }) }, family[1]),
+                  h('p', { key: 'help', style: Object.assign({}, style, { margin: '0 0 9px' }) }, family[2]),
                   h('p', { key: 'coverage', 'data-ml-power-family-coverage': family[0], 'data-checked': familyChecked, 'data-solution': familySolutions,
-                    'data-unsaved': familyUnsaved, 'data-total': items.length, style: Object.assign({}, style, { margin: '0 0 7px', fontSize: 12, fontWeight: 700 }) },
+                    'data-unsaved': familyUnsaved, 'data-total': items.length, style: Object.assign({}, style, { margin: '0 0 7px', fontSize: 14, fontWeight: 700 }) },
                     __alloT('stem.machinelab.map_checked', 'Checked: ') + familyChecked + ' · ' + __alloT('stem.machinelab.map_solutions', 'Solution viewed: ') + familySolutions + ' · ' + __alloT('stem.machinelab.map_unsaved', 'No saved record') + ': ' + familyUnsaved),
                   h('div', { key: 'track', 'data-ml-power-family-track': family[0], className: 'ml-practice-coverage-track', 'aria-hidden': 'true',
                     style: { display: 'flex', height: 12, overflow: 'hidden', marginBottom: 10, border: '1px solid ' + T.border, borderRadius: 4, background: T.card } },
@@ -9470,7 +9486,7 @@ window.StemLab = window.StemLab || {
                       'data-ml-power-skill-setup': record ? matches ? 'current' : 'earlier' : 'none', 'aria-pressed': active,
                       onClick: function () { if (!active) change({ question: kind }); },
                       style: Object.assign({}, button, { width: '100%', minWidth: 0, padding: 11, textAlign: 'left', borderWidth: 2, borderColor: active ? T.accent : T.border, background: active ? T.bg : T.card }) }, [
-                      h('span', { key: 'name', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, fontWeight: 800, lineHeight: 1.4 } }, [
+                      h('span', { key: 'name', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, fontSize: 16, fontWeight: 800, lineHeight: 1.4 } }, [
                         h('span', { key: 'label', style: { overflowWrap: 'anywhere' } }, skillLabels[kind]),
                         h('span', { key: 'unit', style: { fontSize: 12, whiteSpace: 'nowrap' } }, unit)
                       ]),
@@ -9483,7 +9499,7 @@ window.StemLab = window.StemLab || {
                   }))
                 ]);
               }),
-              h('style', { key: 'style' }, '.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ml-practice-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-power-skill-grid,.ml-practice-shortcuts{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}.ml-practice-coverage-track{border-color:CanvasText!important}.ml-practice-coverage-track [data-ml-power-family-segment]{forced-color-adjust:none;background-color:Canvas!important;background-image:none!important}.ml-practice-coverage-track [data-ml-power-family-segment=checked]{background-color:CanvasText!important}.ml-practice-coverage-track [data-ml-power-family-segment=solution]{background-image:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
+              h('style', { key: 'style' }, '.ml-practice-history{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-practice-history-stat{display:flex;flex-direction:column;justify-content:space-between;gap:10px}.ml-power-skill-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ml-practice-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:600px){.ml-practice-history,.ml-practice-shortcuts{grid-template-columns:minmax(0,1fr)}.ml-practice-history-stat{flex-direction:row;align-items:center}.ml-practice-history-stat dd{flex-shrink:0}}@media(max-width:440px){.ml-power-skill-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-skill-grid [aria-pressed=true]{border-color:Highlight!important}.ml-practice-coverage-track,.ml-practice-history-stat,[data-ml-power-map-swatch]{border-color:CanvasText!important}.ml-practice-coverage-track [data-ml-power-family-segment],[data-ml-power-map-swatch]{forced-color-adjust:none;background-color:Canvas!important;background-image:none!important}.ml-practice-coverage-track [data-ml-power-family-segment=checked],[data-ml-power-map-swatch=checked]{background-color:CanvasText!important}.ml-practice-coverage-track [data-ml-power-family-segment=solution],[data-ml-power-map-swatch=solution]{background-image:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
             ]);
           }
           var guide = powerConversionKinds().indexOf(draft.question) >= 0 ? ['units', __alloT('stem.machinelab.units_open_guide', 'Open unit conversion guide')]
