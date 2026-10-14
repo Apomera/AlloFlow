@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "sourceSha256": "beec1ea14944e6225b401e3f8b6235413535ed8f6059dbf3f4160ddf817b5af3",
+  "sourceUnchanged": true,
+  "publicMirrorUnchanged": true,
+  "observedNativeChildExitCode": 0,
+  "observedWrapperExitCode": 0,
+  "wrapperToolSession": 6926,
+  "checks": 1099,
+  "scenarios": 4,
+  "screenshots": 4,
+  "routes": 24,
+  "uniqueRoutes": 24,
+  "process": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/process.json",
+    "sha256": "d1435b69e13c75e97048ca86a661cf0e200cb4ab7618ca484d57e7ac0f5b6676"
+  },
+  "results": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/results.json",
+    "sha256": "293237137255d4eb5f94739b8f967a98ac0ce7e0d5324cf1df78746a1205d1f5"
+  },
+  "observedWrapper": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/observed-wrapper.json",
+    "sha256": "c2da1fe851e5b80702d8e986cdb758ba3d91f5eec56e94d453950871cae0311a"
+  },
+  "visualReview": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/visual-review.json",
+    "sha256": "16d1872f05e6905a9f7b49ffc3cef80842d3c29b6d1242c971a96086bc2452fb"
+  },
+  "harness": {
+    "path": "dev-tools/ml_prediction_visual_qa.cjs",
+    "sha256": "b6840c15d7f52aa9322c4aa82ba9e8c3ad72af18fe521937ba23c76d92c7357b"
+  },
+  "wrapper": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-native.cjs",
+    "sha256": "79a5ac75a1189d4feabdffe12cf17b8ab950129c3a0c2a6d9e10a0cf2032e6d0"
+  },
+  "excludedAttempts": [
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-01/observed-wrapper.json",
+      "sha256": "c3f415757395f4ec82931779e30be8b9381e917059802d4ccda1c62e27ab945e"
+    }
+  ],
+  "focusDiagnostic": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/focus-diagnostic-receipt.json",
+    "sha256": "d1f1bb94fc89c162e1636fab402f90cc05800bfa5e49cda900945ec8401b4997"
+  },
+  "heavySlotReleased": true
+}

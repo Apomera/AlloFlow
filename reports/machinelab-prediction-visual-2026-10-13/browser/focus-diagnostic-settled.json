@@ -1,0 +1,328 @@
+{
+  "savedHtml": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-prediction-visual-2026-10-13\\browser\\run-01\\ml-shots.html",
+    "sha256": "6167582e61cb3e5eff011c6d5b5d1eaf0d1d0fac3c3f28de0c2f3f135fb4e885"
+  },
+  "scriptSha256": "5526cb258a2db20381bbd62be5d2bbc94eca531fc3d09bce757d04c8c903525e",
+  "observations": [
+    {
+      "theme": "light",
+      "key": "check",
+      "active": true,
+      "visible": true,
+      "specificSelector": true,
+      "button": {
+        "style": "width: auto; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid rgb(180, 83, 9); border-radius: 6px; color: rgb(255, 255, 255); background: rgb(180, 83, 9); font-style: inherit; font-variant: inherit; font-weight: 750; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; cursor: pointer; white-space: normal;",
+        "custom": "#0f172a",
+        "outline": "rgb(15, 23, 42) solid 3px",
+        "outlineColor": "rgb(15, 23, 42)",
+        "outlineOffset": "3px",
+        "color": "rgb(255, 255, 255)"
+      },
+      "detail": {
+        "class": "ml-prediction",
+        "style": "margin: 16px 0px; padding: 14px; background: rgb(248, 250, 252); border: 1px solid rgb(203, 213, 225); border-radius: 12px; min-width: 0px; --ml-prediction-focus: #0f172a;",
+        "inlineCustom": "#0f172a",
+        "computedCustom": "#0f172a"
+      },
+      "matching": [
+        {
+          "selector": ".ml-power-lab .ml-prediction button:focus-visible, .ml-power-lab .ml-prediction input:focus-visible, .ml-power-lab .ml-prediction select:focus-visible",
+          "context": [],
+          "style": "outline: 3px solid var(--ml-prediction-focus); outline-offset: 3px;",
+          "outline": "3px solid var(--ml-prediction-focus)",
+          "outlinePriority": "",
+          "outlineColor": "",
+          "colorPriority": ""
+        },
+        {
+          "selector": ".ml-power-lab summary:focus-visible, .ml-power-lab input:focus-visible, .ml-power-lab select:focus-visible, .ml-power-lab button:focus-visible",
+          "context": [],
+          "style": "outline: currentcolor solid 3px; outline-offset: 2px;",
+          "outline": "currentcolor solid 3px",
+          "outlinePriority": "",
+          "outlineColor": "currentcolor",
+          "colorPriority": ""
+        }
+      ],
+      "inlineFocusStyles": [
+        ".ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}"
+      ],
+      "afterTwoFrames": {
+        "active": true,
+        "visible": true,
+        "color": "rgb(15, 23, 42)",
+        "offset": "3px",
+        "width": "3px",
+        "transition": "1e-05s",
+        "animations": 0
+      }
+    },
+    {
+      "theme": "light",
+      "key": "check-number",
+      "active": true,
+      "visible": true,
+      "specificSelector": true,
+      "button": {
+        "style": "width: auto; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid rgb(180, 83, 9); border-radius: 6px; color: rgb(255, 255, 255); background: rgb(180, 83, 9); font-style: inherit; font-variant: inherit; font-weight: 750; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; cursor: pointer; white-space: normal;",
+        "custom": "#0f172a",
+        "outline": "rgb(15, 23, 42) solid 3px",
+        "outlineColor": "rgb(15, 23, 42)",
+        "outlineOffset": "3px",
+        "color": "rgb(255, 255, 255)"
+      },
+      "detail": {
+        "class": "ml-prediction",
+        "style": "margin: 16px 0px; padding: 14px; background: rgb(248, 250, 252); border: 1px solid rgb(203, 213, 225); border-radius: 12px; min-width: 0px; --ml-prediction-focus: #0f172a;",
+        "inlineCustom": "#0f172a",
+        "computedCustom": "#0f172a"
+      },
+      "matching": [
+        {
+          "selector": ".ml-power-lab .ml-prediction button:focus-visible, .ml-power-lab .ml-prediction input:focus-visible, .ml-power-lab .ml-prediction select:focus-visible",
+          "context": [],
+          "style": "outline: 3px solid var(--ml-prediction-focus); outline-offset: 3px;",
+          "outline": "3px solid var(--ml-prediction-focus)",
+          "outlinePriority": "",
+          "outlineColor": "",
+          "colorPriority": ""
+        },
+        {
+          "selector": ".ml-power-lab summary:focus-visible, .ml-power-lab input:focus-visible, .ml-power-lab select:focus-visible, .ml-power-lab button:focus-visible",
+          "context": [],
+          "style": "outline: currentcolor solid 3px; outline-offset: 2px;",
+          "outline": "currentcolor solid 3px",
+          "outlinePriority": "",
+          "outlineColor": "currentcolor",
+          "colorPriority": ""
+        }
+      ],
+      "inlineFocusStyles": [
+        ".ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}"
+      ],
+      "afterTwoFrames": {
+        "active": true,
+        "visible": true,
+        "color": "rgb(15, 23, 42)",
+        "offset": "3px",
+        "width": "3px",
+        "transition": "1e-05s",
+        "animations": 0
+      }
+    },
+    {
+      "theme": "dark",
+      "key": "check",
+      "active": true,
+      "visible": true,
+      "specificSelector": true,
+      "button": {
+        "style": "width: auto; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid rgb(245, 158, 11); border-radius: 6px; color: rgb(28, 19, 16); background: rgb(245, 158, 11); font-style: inherit; font-variant: inherit; font-weight: 750; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; cursor: pointer; white-space: normal;",
+        "custom": "#f1f5f9",
+        "outline": "rgb(28, 19, 16) solid 3px",
+        "outlineColor": "rgb(28, 19, 16)",
+        "outlineOffset": "0px",
+        "color": "rgb(28, 19, 16)"
+      },
+      "detail": {
+        "class": "ml-prediction",
+        "style": "margin: 16px 0px; padding: 14px; background: rgb(15, 23, 42); border: 1px solid rgb(51, 65, 85); border-radius: 12px; min-width: 0px; --ml-prediction-focus: #f1f5f9;",
+        "inlineCustom": "#f1f5f9",
+        "computedCustom": "#f1f5f9"
+      },
+      "matching": [
+        {
+          "selector": ".ml-power-lab .ml-prediction button:focus-visible, .ml-power-lab .ml-prediction input:focus-visible, .ml-power-lab .ml-prediction select:focus-visible",
+          "context": [],
+          "style": "outline: 3px solid var(--ml-prediction-focus); outline-offset: 3px;",
+          "outline": "3px solid var(--ml-prediction-focus)",
+          "outlinePriority": "",
+          "outlineColor": "",
+          "colorPriority": ""
+        },
+        {
+          "selector": ".ml-power-lab summary:focus-visible, .ml-power-lab input:focus-visible, .ml-power-lab select:focus-visible, .ml-power-lab button:focus-visible",
+          "context": [],
+          "style": "outline: currentcolor solid 3px; outline-offset: 2px;",
+          "outline": "currentcolor solid 3px",
+          "outlinePriority": "",
+          "outlineColor": "currentcolor",
+          "colorPriority": ""
+        }
+      ],
+      "inlineFocusStyles": [
+        ".ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}"
+      ],
+      "afterTwoFrames": {
+        "active": true,
+        "visible": true,
+        "color": "rgb(241, 245, 249)",
+        "offset": "3px",
+        "width": "3px",
+        "transition": "1e-05s",
+        "animations": 0
+      }
+    },
+    {
+      "theme": "dark",
+      "key": "check-number",
+      "active": true,
+      "visible": true,
+      "specificSelector": true,
+      "button": {
+        "style": "width: auto; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid rgb(245, 158, 11); border-radius: 6px; color: rgb(28, 19, 16); background: rgb(245, 158, 11); font-style: inherit; font-variant: inherit; font-weight: 750; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; cursor: pointer; white-space: normal;",
+        "custom": "#f1f5f9",
+        "outline": "rgb(28, 19, 16) solid 3px",
+        "outlineColor": "rgb(28, 19, 16)",
+        "outlineOffset": "0px",
+        "color": "rgb(28, 19, 16)"
+      },
+      "detail": {
+        "class": "ml-prediction",
+        "style": "margin: 16px 0px; padding: 14px; background: rgb(15, 23, 42); border: 1px solid rgb(51, 65, 85); border-radius: 12px; min-width: 0px; --ml-prediction-focus: #f1f5f9;",
+        "inlineCustom": "#f1f5f9",
+        "computedCustom": "#f1f5f9"
+      },
+      "matching": [
+        {
+          "selector": ".ml-power-lab .ml-prediction button:focus-visible, .ml-power-lab .ml-prediction input:focus-visible, .ml-power-lab .ml-prediction select:focus-visible",
+          "context": [],
+          "style": "outline: 3px solid var(--ml-prediction-focus); outline-offset: 3px;",
+          "outline": "3px solid var(--ml-prediction-focus)",
+          "outlinePriority": "",
+          "outlineColor": "",
+          "colorPriority": ""
+        },
+        {
+          "selector": ".ml-power-lab summary:focus-visible, .ml-power-lab input:focus-visible, .ml-power-lab select:focus-visible, .ml-power-lab button:focus-visible",
+          "context": [],
+          "style": "outline: currentcolor solid 3px; outline-offset: 2px;",
+          "outline": "currentcolor solid 3px",
+          "outlinePriority": "",
+          "outlineColor": "currentcolor",
+          "colorPriority": ""
+        }
+      ],
+      "inlineFocusStyles": [
+        ".ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}"
+      ],
+      "afterTwoFrames": {
+        "active": true,
+        "visible": true,
+        "color": "rgb(241, 245, 249)",
+        "offset": "3px",
+        "width": "3px",
+        "transition": "1e-05s",
+        "animations": 0
+      }
+    },
+    {
+      "theme": "forced",
+      "key": "check",
+      "active": true,
+      "visible": true,
+      "specificSelector": true,
+      "button": {
+        "style": "width: auto; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid rgb(255, 255, 0); border-radius: 6px; color: rgb(0, 0, 0); background: rgb(255, 255, 0); font-style: inherit; font-variant: inherit; font-weight: 750; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; cursor: pointer; white-space: normal;",
+        "custom": "CanvasText",
+        "outline": "rgb(255, 255, 255) solid 3px",
+        "outlineColor": "rgb(255, 255, 255)",
+        "outlineOffset": "0px",
+        "color": "rgb(255, 255, 255)"
+      },
+      "detail": {
+        "class": "ml-prediction",
+        "style": "margin: 16px 0px; padding: 14px; background: rgb(0, 0, 0); border: 1px solid rgb(255, 255, 255); border-radius: 12px; min-width: 0px; --ml-prediction-focus: #ffffff;",
+        "inlineCustom": "#ffffff",
+        "computedCustom": "CanvasText"
+      },
+      "matching": [
+        {
+          "selector": ".ml-power-lab .ml-prediction button:focus-visible, .ml-power-lab .ml-prediction input:focus-visible, .ml-power-lab .ml-prediction select:focus-visible",
+          "context": [],
+          "style": "outline: 3px solid var(--ml-prediction-focus); outline-offset: 3px;",
+          "outline": "3px solid var(--ml-prediction-focus)",
+          "outlinePriority": "",
+          "outlineColor": "",
+          "colorPriority": ""
+        },
+        {
+          "selector": ".ml-power-lab summary:focus-visible, .ml-power-lab input:focus-visible, .ml-power-lab select:focus-visible, .ml-power-lab button:focus-visible",
+          "context": [],
+          "style": "outline: currentcolor solid 3px; outline-offset: 2px;",
+          "outline": "currentcolor solid 3px",
+          "outlinePriority": "",
+          "outlineColor": "currentcolor",
+          "colorPriority": ""
+        }
+      ],
+      "inlineFocusStyles": [
+        ".ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}"
+      ],
+      "afterTwoFrames": {
+        "active": true,
+        "visible": true,
+        "color": "rgb(0, 0, 0)",
+        "offset": "3px",
+        "width": "3px",
+        "transition": "1e-05s",
+        "animations": 0
+      }
+    },
+    {
+      "theme": "forced",
+      "key": "check-number",
+      "active": true,
+      "visible": true,
+      "specificSelector": true,
+      "button": {
+        "style": "width: auto; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid rgb(255, 255, 0); border-radius: 6px; color: rgb(0, 0, 0); background: rgb(255, 255, 0); font-style: inherit; font-variant: inherit; font-weight: 750; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-size-adjust: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-language-override: inherit; cursor: pointer; white-space: normal;",
+        "custom": "CanvasText",
+        "outline": "rgb(255, 255, 255) solid 3px",
+        "outlineColor": "rgb(255, 255, 255)",
+        "outlineOffset": "0px",
+        "color": "rgb(255, 255, 255)"
+      },
+      "detail": {
+        "class": "ml-prediction",
+        "style": "margin: 16px 0px; padding: 14px; background: rgb(0, 0, 0); border: 1px solid rgb(255, 255, 255); border-radius: 12px; min-width: 0px; --ml-prediction-focus: #ffffff;",
+        "inlineCustom": "#ffffff",
+        "computedCustom": "CanvasText"
+      },
+      "matching": [
+        {
+          "selector": ".ml-power-lab .ml-prediction button:focus-visible, .ml-power-lab .ml-prediction input:focus-visible, .ml-power-lab .ml-prediction select:focus-visible",
+          "context": [],
+          "style": "outline: 3px solid var(--ml-prediction-focus); outline-offset: 3px;",
+          "outline": "3px solid var(--ml-prediction-focus)",
+          "outlinePriority": "",
+          "outlineColor": "",
+          "colorPriority": ""
+        },
+        {
+          "selector": ".ml-power-lab summary:focus-visible, .ml-power-lab input:focus-visible, .ml-power-lab select:focus-visible, .ml-power-lab button:focus-visible",
+          "context": [],
+          "style": "outline: currentcolor solid 3px; outline-offset: 2px;",
+          "outline": "currentcolor solid 3px",
+          "outlinePriority": "",
+          "outlineColor": "currentcolor",
+          "colorPriority": ""
+        }
+      ],
+      "inlineFocusStyles": [
+        ".ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}"
+      ],
+      "afterTwoFrames": {
+        "active": true,
+        "visible": true,
+        "color": "rgb(0, 0, 0)",
+        "offset": "3px",
+        "width": "3px",
+        "transition": "1e-05s",
+        "animations": 0
+      }
+    }
+  ],
+  "errors": []
+}

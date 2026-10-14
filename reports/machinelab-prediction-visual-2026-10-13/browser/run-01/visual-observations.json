@@ -1,0 +1,32 @@
+{
+  "reviewer": "prediction_browser",
+  "sourceSha256": "beec1ea14944e6225b401e3f8b6235413535ed8f6059dbf3f4160ddf817b5af3",
+  "status": "focus-contrast-issue-found",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-01/desktop-pending-calculation.png",
+      "sha256": "c9011db2d8cb298277cffbbc5db27e0df24488fc449cbbde33be6d9852c24f6e",
+      "visuallyInspected": true,
+      "findings": "Setup quantities and solid/dashed edges are clear. Stage 1 uses a selected radio card with a stronger border; stage 2 shows the blank calculation without revealing the comparison. Primary actions and baseline are visually emphasized."
+    },
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-01/desktop-checked-calculation.png",
+      "sha256": "6b0da8d8082f328f6dc96053f890190dcbaea9836789353ef4962e73a928a116",
+      "visuallyInspected": true,
+      "findings": "All three numbered stages, the checked 25 W answer and contained comparison panel are clear and aligned. The desktop radio grid is compact and both setup quantities are labeled."
+    },
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-01/dark-phone-energy-calculation.png",
+      "sha256": "f831d144644df57b9715211db6869bc37f905cff8eedf95e62704ca97adfcebb",
+      "visuallyInspected": true,
+      "findings": "Dark phone view stacks the labeled cards, radio choices and all three stages. The 250 J entry and equal energy bars fit; primary buttons fill available width and all text wraps."
+    },
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-01/forced-colors-phone-load-calculation.png",
+      "sha256": "6ec31482eeeb745658833f6f8c350d80200bbac5fd5365e3050de5edc399b4e4",
+      "visuallyInspected": true,
+      "findings": "Forced-colors phone view preserves selected card emphasis, solid/dashed setup edges and solid/striped result bars. The checked 312.5 W input, step numbers and wrapped equation fit cleanly."
+    }
+  ],
+  "additionalFinding": "Native Tab/Shift+Tab checks found primary outlines match button text instead of the surrounding-panel focus color in all four scenes. Those numerical observations are retained in results.json; all eight fail and the run is excluded."
+}

@@ -1,0 +1,15 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_prediction.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_prediction.test.js (28 tests | 22 skipped) 2294ms
+     ✓ does not alter saved v1-v5 calculations, work in other benches, reflection or XP  1393ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed | 22 skipped (28)
+   Start at  22:58:49
+   Duration  4.31s (transform 62ms, setup 55ms, import 129ms, tests 2.29s, environment 1.54s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-visual-2026-10-13/tests/run-01/group-07.json

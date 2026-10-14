@@ -1,0 +1,11 @@
+# Native browser evidence
+
+`final.json` selects `run-02`: 1,099 checks across all 24 unique station/scenario calculation routes, four native React/THREE scenarios and four screenshots. Native child and wrapper exits were observed as 0 (wrapper session 6926). `visual-review.json` records direct inspection of all four final screenshots.
+
+The prior calculation harness coverage is retained: independent power/energy arithmetic; native controls and Enter checking; blank, malformed and wrong numbers; answer withholding; honest prior-answer exposure; sticky solution provenance; clear/next behavior; changed assumptions; unchanged physical setup and saved calculation records; minute normalization; and bounded load changes.
+
+Additional visual checks verify sequential, named stages with decorative numbered badges; quantity labels and solid/dashed setup-card borders; stronger selected radio borders; an emphasized baseline; three-column desktop versus stacked phone choices; primary button height and text contrast of at least 4.5:1; and keyboard focus outlines of at least 3 px with at least 3:1 contrast against the surrounding panel. Both primary buttons are focused through real Tab/Shift+Tab interaction in every screenshot scenario. Numeric input bounds and existing clipping checks remain intact.
+
+The initial `run-01` remains preserved and excluded. It completed 1,099 checks and all four screenshots but eight immediate focus-style samples occurred during the global 0.01 ms reduced-motion transition. Read-only diagnostics on its exact saved HTML confirmed the selector and custom property were correct, and that all six sampled light/dark/forced-colors focus states resolved correctly after two animation frames. `focus-diagnostic-receipt.json` binds those diagnostics. Only a call to the existing two-frame settle helper after Shift+Tab changed for `run-02`; no assertion, threshold or production source changed.
+
+Source and public mirror stayed at `beec1ea14944e6225b401e3f8b6235413535ed8f6059dbf3f4160ddf817b5af3`. The wrapper enforces a 240-second timeout and records source, mirror, harness, helper, native HTML, process and screenshot hashes. This exercised local Chromium with software WebGL, not a deployed host. Forced colors is browser emulation, not a physical assistive-technology session.

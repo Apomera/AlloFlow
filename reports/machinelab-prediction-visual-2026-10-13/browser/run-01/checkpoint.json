@@ -1,0 +1,23 @@
+{
+  "status": "in_progress",
+  "label": "forced-colors-phone-load-calculation captured",
+  "scenarios": 4,
+  "checks": 1098,
+  "routes": 24,
+  "shots": [
+    "desktop-pending-calculation",
+    "desktop-checked-calculation",
+    "dark-phone-energy-calculation",
+    "forced-colors-phone-load-calculation"
+  ],
+  "errors": [
+    "desktop-pending-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "desktop-pending-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "desktop-checked-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "desktop-checked-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "dark-phone-energy-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "dark-phone-energy-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "forced-colors-phone-load-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "forced-colors-phone-load-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast"
+  ]
+}

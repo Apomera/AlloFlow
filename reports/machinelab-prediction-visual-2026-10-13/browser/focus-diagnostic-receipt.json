@@ -1,0 +1,26 @@
+{
+  "status": "diagnosed-focus-style-transition",
+  "sourceSha256": "beec1ea14944e6225b401e3f8b6235413535ed8f6059dbf3f4160ddf817b5af3",
+  "sourceChanged": false,
+  "observedDiagnosticExitCode": 0,
+  "observedSettledDiagnosticExitCode": 0,
+  "settledDiagnosticSessionId": 67243,
+  "diagnostic": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/focus-diagnostic.cjs",
+    "sha256": "6d3de1f6199aa44961891777d75315865d139bfb2c7dc0b019446c28c795c4c6"
+  },
+  "observations": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/focus-diagnostic.json",
+    "sha256": "7f5a8fa03ef9c88f34202c7fe7294b992f3b67d582a5c70c677975558c8eabf5"
+  },
+  "settledDiagnostic": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/focus-diagnostic-settled.cjs",
+    "sha256": "5526cb258a2db20381bbd62be5d2bbc94eca531fc3d09bce757d04c8c903525e"
+  },
+  "settledObservations": {
+    "path": "reports/machinelab-prediction-visual-2026-10-13/browser/focus-diagnostic-settled.json",
+    "sha256": "988d05233af3c0985c2eb8f2920bcf6844c9df06a9cb704bc43a95e505d8e609"
+  },
+  "finding": "The global reduced-motion stylesheet creates a 0.01ms transition duration. Sampling immediately after keyboard focus can observe ink-colored outlines with zero offset before the focus transition completes. After two animation frames all six light, dark and forced-colors button focus states resolve to the intended high-contrast outline and 3px offset.",
+  "harnessCorrection": "Await the existing two-animation-frame settle helper after Shift+Tab before sampling focus style. Keep all original ≥3px, ≥3:1 outline and ≥4.5:1 text contrast requirements."
+}

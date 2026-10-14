@@ -8675,10 +8675,16 @@ window.StemLab = window.StemLab || {
           var numericOutcome = prediction.numericViewed ? 'solution' : prediction.numericChecked ? predictionNumberResult(prediction, spec) : null;
           var show = outcome === 'solution' || outcome === 'correct' && (!prediction.calculate || numericOutcome === 'correct' || numericOutcome === 'solution');
           var id = prefix + 'prediction-', maxPower = Math.max(spec.current, spec.changed);
-          function act(key, label) { return h('button', { key: key, type: 'button', 'data-ml-power-prediction-action': key, style: button,
+          function stageNumber(number) { return h('span', { key: 'stage-number', 'aria-hidden': 'true', className: 'ml-prediction-stage-number',
+            style: { display: 'inline-grid', placeItems: 'center', width: 26, height: 26, marginRight: 8, borderRadius: '50%', border: '1px solid ' + T.accent,
+              background: T.card, color: T.text, fontSize: 13, fontWeight: 850, verticalAlign: 'middle' } }, number); }
+          function act(key, label) { return h('button', { key: key, type: 'button', 'data-ml-power-prediction-action': key,
+            className: key === 'check' || key === 'check-number' ? 'ml-prediction-primary' : 'ml-prediction-secondary',
+            style: Object.assign({}, button, { minHeight: 44, fontWeight: 750 }, key === 'check' || key === 'check-number'
+              ? { background: T.accent, color: T.accentInk, borderColor: T.accent } : {}),
             onClick: function () { updatePrediction(prediction.kind, key); } }, label); }
-          return h('details', { key: 'prediction', 'data-ml-power-prediction': bench.id, 'data-kind': prediction.kind, style: panelStyle }, [
-            h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.predict_title', 'Predict the change')),
+          return h('details', { key: 'prediction', className: 'ml-prediction', 'data-ml-power-prediction': bench.id, 'data-kind': prediction.kind, style: Object.assign({}, panelStyle, { '--ml-prediction-focus': T.text }) }, [
+            h('summary', { key: 'title', style: Object.assign({}, summary, { fontSize: 17 }) }, __alloT('stem.machinelab.predict_title', 'Predict the change')),
             h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.predict_intro', 'Try a hypothetical change using your current setup. Predict the effect first, then check the calculation. These choices are separate from your saved calculation records.')),
             h('label', { key: 'label', htmlFor: id + 'kind-' + bench.id, style: style }, __alloT('stem.machinelab.predict_scenario', 'Prediction challenge')),
             h('select', { key: 'kind', id: id + 'kind-' + bench.id, value: prediction.kind, style: control,
@@ -8688,20 +8694,28 @@ window.StemLab = window.StemLab || {
             h('div', { key: 'inputs', className: 'ml-power-visual-grid' }, [
               ['before', spec.before, __alloT('stem.machinelab.predict_current', 'Current setup')], ['after', spec.after, __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup')]
             ].map(function (row) { return h('div', { key: row[0], 'data-ml-power-prediction-input': row[0], 'data-value': row[1], 'data-unit': spec.inputUnit,
-              style: { border: '1px solid ' + T.border, borderRadius: 8, padding: 10, background: T.card } }, [h('p', { key: 'label', style: style }, row[2]), h('p', { key: 'value', style: valueStyle }, powerFmt(row[1]) + ' ' + spec.inputUnit)]); })),
-            h('p', { key: 'baseline', style: style }, quantity + ': ' + powerFmt(spec.current) + ' ' + spec.unit + ' · ' + __alloT('stem.machinelab.predict_baseline', 'in the current setup')),
-            h('label', { key: 'calculate-mode', style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer' }) }, [
+              style: { border: '1px solid ' + T.border, borderTop: '4px ' + (row[0] === 'before' ? 'solid ' : 'dashed ') + T.accent, borderRadius: 9, padding: 12, background: T.card } }, [
+                h('p', { key: 'label', style: Object.assign({}, style, { margin: 0, fontWeight: 750 }) }, row[2]),
+                h('p', { key: 'quantity', style: Object.assign({}, style, { margin: '4px 0 0' }) }, inputLabel),
+                h('p', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 24 }) }, powerFmt(row[1]) + ' ' + spec.inputUnit)]); })),
+            h('p', { key: 'baseline', className: 'ml-prediction-baseline', style: Object.assign({}, style, { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 14px', padding: '10px 12px', border: '1px solid ' + T.border, borderRadius: 9, background: T.card }) }, [
+              h('span', { key: 'label' }, quantity + ' · ' + __alloT('stem.machinelab.predict_baseline', 'in the current setup')),
+              h('strong', { key: 'value', style: { fontSize: 22, lineHeight: 1.3, fontVariantNumeric: 'tabular-nums' } }, powerFmt(spec.current) + ' ' + spec.unit)
+            ]),
+            h('label', { key: 'calculate-mode', style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '8px 10px', border: '1px solid ' + T.border, borderRadius: 9, background: T.card, cursor: 'pointer' }) }, [
               h('input', { key: 'checkbox', type: 'checkbox', checked: prediction.calculate, 'data-ml-power-prediction-calculate': '',
                 style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent },
                 onChange: function (ev) { updatePrediction(prediction.kind, 'calculate', ev.target.checked); } }),
               h('span', { key: 'label' }, __alloT('stem.machinelab.predict_number_mode', 'Calculate the value too'))
             ]),
-            h('fieldset', { key: 'choices', style: { margin: '14px 0', padding: 10, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 8 }, 'aria-describedby': id + 'feedback-' + bench.id }, [
-              h('legend', { key: 'legend', style: style }, prediction.kind === 'work' ? __alloT('stem.machinelab.predict_question_work', 'How will the input energy change?') : __alloT('stem.machinelab.predict_question_power', 'How will the input power change?')),
-              choices.map(function (choice) { return h('label', { key: choice[0], style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, margin: '6px 0', padding: '4px 8px', borderRadius: 6, border: '1px solid ' + T.border, background: T.card, cursor: 'pointer' }) }, [
+            h('fieldset', { key: 'choices', 'data-ml-power-prediction-stage': 'predict', style: { margin: '18px 0 12px', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card }, 'aria-describedby': id + 'feedback-' + bench.id }, [
+              h('legend', { key: 'legend', style: Object.assign({}, style, { padding: '0 4px', fontWeight: 800 }) }, [stageNumber(1), prediction.kind === 'work' ? __alloT('stem.machinelab.predict_question_work', 'How will the input energy change?') : __alloT('stem.machinelab.predict_question_power', 'How will the input power change?')]),
+              h('div', { key: 'options', className: 'ml-prediction-options' }, choices.map(function (choice) { return h('label', { key: choice[0], 'data-ml-prediction-selected': prediction.choice === choice[0] ? 'true' : 'false',
+                style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 8, minHeight: 48, boxSizing: 'border-box', margin: 0, padding: prediction.choice === choice[0] ? '7px 9px' : '9px 11px', borderRadius: 8,
+                  border: prediction.choice === choice[0] ? '3px solid ' + T.accent : '1px solid ' + T.border, background: prediction.choice === choice[0] ? T.bg : T.card, cursor: 'pointer' }) }, [
                 h('input', { key: 'radio', type: 'radio', name: id + 'choice-' + bench.id, value: choice[0], checked: prediction.choice === choice[0], 'data-ml-power-prediction-choice': choice[0], style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent },
                   onChange: function () { updatePrediction(prediction.kind, 'choice', choice[0]); } }), h('span', { key: 'text' }, choice[1])
-              ]); })
+              ]); }))
             ]),
             h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [act('check', __alloT('stem.machinelab.predict_check', 'Check prediction')), act('reveal', __alloT('stem.machinelab.predict_reveal', 'Show explanation'))]),
             h('div', { key: 'feedback', id: id + 'feedback-' + bench.id, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: style }, outcome ? h('p', { 'data-ml-power-prediction-result': outcome },
@@ -8711,13 +8725,13 @@ window.StemLab = window.StemLab || {
                     : prediction.calculate && !show ? __alloT('stem.machinelab.predict_number_continue', 'Correct prediction. Calculate the new value to reveal the comparison.')
                       : __alloT('stem.machinelab.predict_correct', 'Correct prediction. Compare the values and relationship below.')) : null),
             prediction.calculate ? h('section', { key: 'number', 'data-ml-power-prediction-number-practice': '', 'aria-labelledby': id + 'number-title-' + bench.id,
-              style: { margin: '14px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } }, [
-              h('h4', { key: 'title', id: id + 'number-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 16, fontWeight: 800 }) }, __alloT('stem.machinelab.predict_number_title', 'Calculate the new value')),
+              'data-ml-power-prediction-stage': 'calculate', style: { margin: '18px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card } }, [
+              h('h4', { key: 'title', id: id + 'number-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 16, fontWeight: 800 }) }, [stageNumber(2), __alloT('stem.machinelab.predict_number_title', 'Calculate the new value')]),
               h('p', { key: 'help', id: id + 'number-help-' + bench.id, style: style }, __alloT('stem.machinelab.predict_number_help', 'Use the current value and the change factor. Enter a positive number in the shown unit. Answers within 1% are accepted. The comparison appears after both answers are correct, or when you view the explanation.')),
               h('label', { key: 'label', htmlFor: id + 'number-' + bench.id, style: style }, quantity + ' · ' + __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup') + ' (' + spec.unit + ')'),
               h('div', { key: 'entry', style: { display: 'flex', gap: 8, alignItems: 'center', margin: '8px 0' } }, [
                 h('input', { key: 'input', id: id + 'number-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: prediction.numericAnswer,
-                  style: Object.assign({}, control, { minWidth: 0, flex: 1 }), 'aria-invalid': numericOutcome === 'invalid' || numericOutcome === 'incorrect',
+                  style: Object.assign({}, control, { minWidth: 0, flex: 1, minHeight: 48, fontSize: 20, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }), 'aria-invalid': numericOutcome === 'invalid' || numericOutcome === 'incorrect',
                   'aria-describedby': id + 'number-help-' + bench.id + ' ' + id + 'number-feedback-' + bench.id,
                   onChange: function (ev) { updatePrediction(prediction.kind, 'number', ev.target.value); },
                   onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updatePrediction(prediction.kind, 'check-number'); } } }),
@@ -8731,9 +8745,11 @@ window.StemLab = window.StemLab || {
                       : outcome === 'correct' ? __alloT('stem.machinelab.predict_number_correct', 'Correct calculation. Compare your result with the worked relationship below.')
                         : __alloT('stem.machinelab.predict_number_check_prediction', 'The number is correct. Check your prediction to reveal the comparison.')) : null)
             ]) : null,
-            show ? h('div', { key: 'explanation', 'data-ml-power-prediction-explanation': outcome }, [
+            show ? h('section', { key: 'explanation', 'data-ml-power-prediction-explanation': outcome, 'data-ml-power-prediction-stage': 'compare', 'aria-labelledby': id + 'compare-title-' + bench.id,
+              style: { margin: '18px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card } }, [
+              h('h4', { key: 'title', id: id + 'compare-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 16, fontWeight: 800 }) }, [stageNumber(prediction.calculate ? 3 : 2), __alloT('stem.machinelab.predict_compare_title', 'Compare the results')]),
               h('p', { key: 'rule', style: style }, rule),
-              h('p', { key: 'factor', 'data-ml-power-prediction-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.accent, background: T.card }) },
+              h('p', { key: 'factor', 'data-ml-power-prediction-equation': '', style: Object.assign({}, style, { padding: 12, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, borderRadius: 6, background: T.bg, fontSize: 16, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) },
                 powerFmt(spec.current) + ' ' + spec.unit + ' × ' + powerFmt(spec.ratio) + ' ≈ ' + powerFmt(spec.changed) + ' ' + spec.unit),
               h('p', { key: 'calculation', style: style }, prediction.kind === 'work'
                 ? powerFmt(spec.changedWork) + ' J ÷ ' + powerFmt(spec.changedSeconds) + ' s ≈ ' + powerFmt(spec.changedWork / spec.changedSeconds) + ' W · ' + __alloT('stem.machinelab.predict_energy_fixed', 'Energy stays the same while power changes.')
@@ -8750,7 +8766,7 @@ window.StemLab = window.StemLab || {
               h('p', { key: 'precision', style: style }, __alloT('stem.machinelab.predict_precision', 'Both bars share one scale. Calculations use full precision; displayed values are rounded.'))
             ]) : null,
             h('div', { key: 'next', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 } }, [act('retry', __alloT('stem.machinelab.predict_retry', 'Clear prediction')), act('next', __alloT('stem.machinelab.predict_next', 'Next prediction'))]),
-            h('style', { key: 'colors' }, '@media(forced-colors:active){.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
+            h('style', { key: 'colors' }, '.ml-prediction-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-prediction-options>label{min-width:0}.ml-prediction-options input,.ml-prediction input[type=checkbox]{margin-bottom:0!important}.ml-prediction [data-ml-power-prediction-result],.ml-prediction [data-ml-power-prediction-number-result]{padding:10px 12px;border:1px solid currentColor;border-radius:8px;line-height:1.6}.ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}@media(max-width:600px){.ml-prediction-options{grid-template-columns:minmax(0,1fr)}.ml-prediction button{width:100%!important}.ml-prediction-baseline{align-items:flex-start!important;flex-direction:column}}@media(forced-colors:active){.ml-prediction{--ml-prediction-focus:CanvasText!important}.ml-prediction-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-prediction [data-ml-prediction-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:1px}.ml-prediction-stage-number{border-color:CanvasText!important}.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
           ]);
         }
         function backCheck() {

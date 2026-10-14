@@ -1,0 +1,70 @@
+{
+  "status": "passed-superseded-candidate",
+  "observedWrapperExitCode": 0,
+  "sessionId": 17106,
+  "observedNativeChildExitCodes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "sourceSha256": "458d63e5be5dbceeb459959efff12b4c900ca00913a851946deb5116d2f5db04",
+  "publicMirrorSha256": "458d63e5be5dbceeb459959efff12b4c900ca00913a851946deb5116d2f5db04",
+  "passed": 91,
+  "nativeProcesses": 12,
+  "tests": [
+    {
+      "file": "tests/machinelab_i18n_hygiene.test.js",
+      "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+      "baselineSha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad"
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+      "baselineSha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3"
+    },
+    {
+      "file": "tests/machinelab_prediction.test.js",
+      "sha256": "9af11c3dfff37c522b7bcb2dfe745546c9731b7c26ab9ed5c61e53120dfbb876",
+      "baselineSha256": "9af11c3dfff37c522b7bcb2dfe745546c9731b7c26ab9ed5c61e53120dfbb876"
+    },
+    {
+      "file": "tests/machinelab_prediction_calculation.test.js",
+      "sha256": "85e2ebbb90c34824394df96729dc0057b16ea510c9e77d9e3b71a3c168f4feb5",
+      "baselineSha256": "85e2ebbb90c34824394df96729dc0057b16ea510c9e77d9e3b71a3c168f4feb5"
+    }
+  ],
+  "helper": {
+    "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+    "path": "tests/helpers/stem_widgets_smoke_harness.js"
+  },
+  "runner": {
+    "sha256": "d0642d5a4d13860662829c370583f5bcd0e37c4328fd17db0fe9b36216925821",
+    "path": "reports/machinelab-prediction-visual-2026-10-13/run-tests.cjs"
+  },
+  "runnerSnapshot": {
+    "sha256": "d0642d5a4d13860662829c370583f5bcd0e37c4328fd17db0fe9b36216925821",
+    "path": "runner-snapshot.cjs"
+  },
+  "final": {
+    "sha256": "fcc2bb3b96b65f504469c8547f8fcaf2415888955377ef0b931de5f920b0ce21",
+    "path": "final.json"
+  },
+  "inventory": {
+    "sha256": "aa3d0ea0d8f723ca867f415601f0bea4be219cba2fa4cd9f600fc40909fc843a",
+    "path": "inventory.json"
+  },
+  "processes": {
+    "sha256": "d5dbddfd66677b66161e26efd8238af2092e677aa34d698eba1d4f6542c9594d",
+    "path": "processes.json"
+  },
+  "supersededReason": "A subsequent visual review identified outer focus CSS overriding the intended focus style. This completed successful attempt remains evidence for its pinned source only; final corrected source will receive a fresh full run."
+}

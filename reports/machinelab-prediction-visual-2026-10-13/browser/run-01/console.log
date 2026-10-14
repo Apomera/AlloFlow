@@ -1,0 +1,33 @@
+prediction visual QA starting 2026-10-14T03:02:43.589Z
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+prediction checkpoint: desktop pending mounted checks 1 routes 0 shots 0
+prediction checkpoint: desktop-pending-calculation captured checks 79 routes 0 shots 1
+prediction checkpoint: lever four calculation routes checked checks 198 routes 4 shots 1
+prediction checkpoint: pulley four calculation routes checked checks 317 routes 8 shots 1
+prediction checkpoint: windlass four calculation routes checked checks 436 routes 12 shots 1
+prediction checkpoint: ramp four calculation routes checked checks 555 routes 16 shots 1
+prediction checkpoint: wedge four calculation routes checked checks 674 routes 20 shots 1
+prediction checkpoint: screw four calculation routes checked checks 793 routes 24 shots 1
+native scenario 2 lever
+prediction checkpoint: desktop-checked-calculation captured checks 841 routes 24 shots 2
+native scenario 3 ramp
+prediction checkpoint: dark-phone-energy-calculation captured checks 1050 routes 24 shots 3
+native scenario 4 screw
+prediction checkpoint: forced-colors-phone-load-calculation captured checks 1098 routes 24 shots 4
+{
+  "scenarios": 4,
+  "checks": 1099,
+  "routes": 24,
+  "screenshots": 4,
+  "errors": [
+    "desktop-pending-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "desktop-pending-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "desktop-checked-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "desktop-checked-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "dark-phone-energy-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "dark-phone-energy-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "forced-colors-phone-load-calculation: check keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast",
+    "forced-colors-phone-load-calculation: check-number keyboard focus has a visible 3-pixel outline with at least 3-to-1 surrounding contrast"
+  ]
+}

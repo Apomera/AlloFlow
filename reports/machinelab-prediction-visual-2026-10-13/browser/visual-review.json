@@ -1,0 +1,42 @@
+{
+  "reviewer": "prediction_browser",
+  "run": "run-02",
+  "sourceSha256": "beec1ea14944e6225b401e3f8b6235413535ed8f6059dbf3f4160ddf817b5af3",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/desktop-pending-calculation.png",
+      "sha256": "1938c95b96c213222a6a59892a8813602cb03aef715539ab70c9da60c1367943",
+      "name": "desktop-pending-calculation.png",
+      "visuallyInspected": true,
+      "findings": "The labeled 5 s and 10 s setup cards use solid and dashed edges. The baseline 50 W is prominent. Stage 1 has compact radio cards with a stronger selected border; stage 2 shows a blank labeled W entry. Primary check actions are clear and stage 3 remains withheld."
+    },
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/desktop-checked-calculation.png",
+      "sha256": "6b0da8d8082f328f6dc96053f890190dcbaea9836789353ef4962e73a928a116",
+      "name": "desktop-checked-calculation.png",
+      "visuallyInspected": true,
+      "findings": "All three numbered stages are readable. The 25 W answer is checked, and the contained comparison panel clearly presents 50 W × 0.5 ≈ 25 W with solid and striped bars. Desktop columns, baseline, primary actions and feedback fit cleanly."
+    },
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/dark-phone-energy-calculation.png",
+      "sha256": "f831d144644df57b9715211db6869bc37f905cff8eedf95e62704ca97adfcebb",
+      "name": "dark-phone-energy-calculation.png",
+      "visuallyInspected": true,
+      "findings": "At a 320-pixel dark viewport, setup cards and radio choices stack. The complete selector, baseline 250 J, selected same prediction, large 250 J entry and three stage headings remain clear. Full-width primary buttons and the contained comparison panel fit without clipping."
+    },
+    {
+      "path": "reports/machinelab-prediction-visual-2026-10-13/browser/run-02/forced-colors-phone-load-calculation.png",
+      "sha256": "6ec31482eeeb745658833f6f8c350d80200bbac5fd5365e3050de5edc399b4e4",
+      "name": "forced-colors-phone-load-calculation.png",
+      "visuallyInspected": true,
+      "findings": "At a 320-pixel forced-colors viewport, solid/dashed setup borders, numbered stages, strong selected card and primary buttons remain distinct. The 312.5 W entry, wrapped equation and solid/striped shared-scale bars fit within the panel."
+    }
+  ],
+  "keyboardFocusChecks": 8,
+  "minimumFocusContrast": 13.35325281838611,
+  "minimumPrimaryTextContrast": 5.02163257594014,
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ]
+}

@@ -1,0 +1,18 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_prediction.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_prediction.test.js (28 tests | 24 skipped) 2566ms
+     ✓ normalizes minutes exactly once for both time-dependent power and time-independent work  454ms
+     ✓ chooses only admissible duration changes at both limits and the doubling boundary  616ms
+     ✓ uses percentage fractions and reverses efficiency changes before exceeding 100 percent  508ms
+     ✓ uses vertical movement for a ramp and keeps power independent of rotary geometry  986ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed | 24 skipped (28)
+   Start at  23:00:37
+   Duration  4.36s (transform 72ms, setup 59ms, import 97ms, tests 2.57s, environment 1.37s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-visual-2026-10-13/tests/run-02/group-05.json
