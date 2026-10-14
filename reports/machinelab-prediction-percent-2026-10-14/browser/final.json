@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "sourceSha256": "63019f670d4a624220e36d4c3d1bf13e506f2d41f7bf76e49fb6b694a6884a06",
+  "observedNativeChildExitCode": 0,
+  "observedWrapperExitCode": 0,
+  "checks": 1319,
+  "routes": 24,
+  "scenarios": 4,
+  "screenshots": 4,
+  "process": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-02/process.json",
+    "sha256": "42dfd2b82cd352535468c2c1ec9b97fa53959c9e61f019e3472b6fae5eb0a029"
+  },
+  "results": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-02/results.json",
+    "sha256": "05af0d6f88d9c68d888120ce3599a5794fa987eb0031b6e1cb5f3dccf96a013a",
+    "bytes": 503210
+  },
+  "observedWrapper": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-02/observed-wrapper.json",
+    "sha256": "565750178f60d3c9de79bf852228be960dbed626be73da9a90bcad4bd64979c6"
+  },
+  "harness": {
+    "path": "dev-tools/ml_prediction_percent_qa.cjs",
+    "sha256": "09a08d1e56c472d04bc4eabcddf21cc9e3f4aa3be0385b2c9f0f055ab1910b90",
+    "bytes": 29248
+  },
+  "visualReview": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/visual-review.json",
+    "sha256": "ca377bfa7a3d9a75399f11d4708b14507d6cca380db0566eb9b24ebd7212092e"
+  },
+  "harnessCorrection": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/harness-correction.json",
+    "sha256": "1e13cc7cc4ae4764ffaa637dfa124f91bb008e970b7b4cc8be4ad75128dcbb0a"
+  },
+  "excludedAttempt": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/observed-wrapper.json",
+    "sha256": "1958bb469368f76e5a0ab4825cb170803b0893206a7e7c1e7c8cead1bf581b05"
+  }
+}

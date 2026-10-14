@@ -1,0 +1,14 @@
+{
+  "status": "in_progress",
+  "label": "forced-colors-phone-zero-percent captured",
+  "scenarios": 4,
+  "checks": 1318,
+  "routes": 24,
+  "shots": [
+    "desktop-pending-percent",
+    "desktop-checked-percent",
+    "dark-phone-increase-percent",
+    "forced-colors-phone-zero-percent"
+  ],
+  "errors": []
+}

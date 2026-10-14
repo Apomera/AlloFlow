@@ -1,0 +1,18 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_prediction_percent.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_prediction_percent.test.js (28 tests | 24 skipped) 5314ms
+     ✓ accepts both inclusive percentage-point boundaries around negative, positive and zero changes  1524ms
+     ✓ uses signed decimals including explicit plus, zero and whitespace while rejecting unsupported forms  2448ms
+     ✓ converts minutes once and computes unchanged work independently of power  664ms
+     ✓ preserves the positive-value grading contract and its relative tolerance after switching back  675ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed | 24 skipped (28)
+   Start at  08:08:14
+   Duration  7.56s (transform 56ms, setup 45ms, import 87ms, tests 5.31s, environment 1.84s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-percent-2026-10-14/tests/run-01/group-15.json

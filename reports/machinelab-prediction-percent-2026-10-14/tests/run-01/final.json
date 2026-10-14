@@ -1,0 +1,19 @@
+{
+  "format": "machine-lab-prediction-percent-coverage-v1",
+  "sourceSha256": "63019f670d4a624220e36d4c3d1bf13e506f2d41f7bf76e49fb6b694a6884a06",
+  "publicMirrorSha256": "63019f670d4a624220e36d4c3d1bf13e506f2d41f7bf76e49fb6b694a6884a06",
+  "baselineCommit": "3c3deb314",
+  "passed": 119,
+  "failed": 0,
+  "uncovered": 0,
+  "files": 5,
+  "nativeProcesses": 17,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "96607591df9a05cf80b76fd46b76773879d223aa279b69fcd3ac1b53783010d1"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "f7c68fbf5b1877b150c314c370e6ee01da3debbc3d520cbec747ec866ea6cefe"
+  }
+}

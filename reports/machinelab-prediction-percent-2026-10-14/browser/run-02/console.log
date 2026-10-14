@@ -1,0 +1,23 @@
+prediction percent QA starting 2026-10-14T12:10:25.106Z
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+prediction checkpoint: desktop-pending-percent captured checks 106 routes 0 shots 1
+prediction checkpoint: lever percent routes checks 296 routes 4 shots 1
+prediction checkpoint: pulley percent routes checks 450 routes 8 shots 1
+prediction checkpoint: windlass percent routes checks 604 routes 12 shots 1
+prediction checkpoint: ramp percent routes checks 758 routes 16 shots 1
+prediction checkpoint: wedge percent routes checks 912 routes 20 shots 1
+prediction checkpoint: screw percent routes checks 1066 routes 24 shots 1
+native scenario 2 lever
+prediction checkpoint: desktop-checked-percent captured checks 1126 routes 24 shots 2
+native scenario 3 ramp
+prediction checkpoint: dark-phone-increase-percent captured checks 1258 routes 24 shots 3
+native scenario 4 screw
+prediction checkpoint: forced-colors-phone-zero-percent captured checks 1318 routes 24 shots 4
+{
+  "scenarios": 4,
+  "checks": 1319,
+  "routes": 24,
+  "screenshots": 4,
+  "errors": []
+}

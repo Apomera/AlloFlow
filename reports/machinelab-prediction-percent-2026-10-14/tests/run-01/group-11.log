@@ -1,0 +1,18 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_prediction_calculation.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_prediction_calculation.test.js (27 tests | 21 skipped) 2583ms
+     ✓ marks numerical answers as viewed when plain prediction checking already showed them  431ms
+     ✓ marks a pending numerical answer as viewed after disabling calculation mode exposes it  420ms
+     ✓ keeps explicitly viewed provenance through number edits, ratio edits and mode toggles  757ms
+     ✓ identifies an edited previously exposed value as viewed instead of a new independent answer  558ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed | 21 skipped (27)
+   Start at  08:07:29
+   Duration  5.65s (transform 76ms, setup 49ms, import 129ms, tests 2.58s, environment 2.46s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-percent-2026-10-14/tests/run-01/group-11.json

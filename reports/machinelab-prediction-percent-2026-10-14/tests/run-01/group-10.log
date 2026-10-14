@@ -1,0 +1,16 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_prediction_calculation.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_prediction_calculation.test.js (27 tests | 22 skipped) 1746ms
+     ✓ starts optional and withholds calculations until both answers are independently checked  346ms
+     ✓ rejects blank, nonfinite, nonpositive and unsupported numeric forms  740ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed | 22 skipped (27)
+   Start at  08:07:24
+   Duration  4.60s (transform 56ms, setup 45ms, import 91ms, tests 1.75s, environment 2.44s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-percent-2026-10-14/tests/run-01/group-10.json

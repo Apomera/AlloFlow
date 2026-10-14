@@ -1,0 +1,23 @@
+{
+  "status": "failed-harness-assumption",
+  "sessionId": 60519,
+  "observedWrapperExitCode": 1,
+  "observedNativeChildExitCode": 1,
+  "sourceSha256": "63019f670d4a624220e36d4c3d1bf13e506f2d41f7bf76e49fb6b694a6884a06",
+  "checks": 1319,
+  "routes": 24,
+  "scenarios": 4,
+  "process": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/process.json",
+    "sha256": "a00e2ec3c83d885bde2f365df092b9d9d88f51e93ac22f1f3e459e9f79ed8b27"
+  },
+  "results": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/results.json",
+    "sha256": "2cef5a385eb17506178ec594ed82aebbd0d617f2bf3140945e70c98fdab1e15a",
+    "bytes": 500604
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/harness-snapshot.cjs",
+    "sha256": "44dc83c5e0381231980795dc7721e1177a40af3b88de8b8d3fa6a4936ba4d727"
+  }
+}

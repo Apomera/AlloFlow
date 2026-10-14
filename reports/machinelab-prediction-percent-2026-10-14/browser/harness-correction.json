@@ -1,0 +1,22 @@
+{
+  "reason": "A fresh task can reveal the explanation before selecting a ratio. The inherited visual helper incorrectly required exactly one selected radio in that valid state. The corrected assertion still verifies checked/selected agreement, at most one selection, exactly 3px selected borders and exactly 1px unselected borders.",
+  "productionSourceUnchanged": "63019f670d4a624220e36d4c3d1bf13e506f2d41f7bf76e49fb6b694a6884a06",
+  "previousHarnessSha256": "44dc83c5e0381231980795dc7721e1177a40af3b88de8b8d3fa6a4936ba4d727",
+  "harnessSha256": "09a08d1e56c472d04bc4eabcddf21cc9e3f4aa3be0385b2c9f0f055ab1910b90",
+  "snapshot": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/harness-snapshot.cjs",
+    "sha256": "44dc83c5e0381231980795dc7721e1177a40af3b88de8b8d3fa6a4936ba4d727"
+  },
+  "oldAssertion": "check(selected.length===1&&selected[0].checked&&others.length===2&&others.every(c=>!c.checked&&selected[0].style.borderWidth>c.style.borderWidth),label+': selected radio card has an unmistakably stronger border');",
+  "newAssertion": "check(selected.length<=1&&observed.choices.every(c=>c.checked===c.selected)&&selected.every(c=>c.style.borderWidth===3)&&others.every(c=>c.style.borderWidth===1),label+': selected radio has a 3-pixel border; every unselected radio has a 1-pixel border, including a fresh revealed task without a choice');",
+  "failedProcess": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/process.json",
+    "sha256": "a00e2ec3c83d885bde2f365df092b9d9d88f51e93ac22f1f3e459e9f79ed8b27"
+  },
+  "observedWrapper": {
+    "path": "reports/machinelab-prediction-percent-2026-10-14/browser/run-01/observed-wrapper.json",
+    "sha256": "1958bb469368f76e5a0ab4825cb170803b0893206a7e7c1e7c8cead1bf581b05"
+  },
+  "sourceChanged": false,
+  "currentHarnessSha256": "09a08d1e56c472d04bc4eabcddf21cc9e3f4aa3be0385b2c9f0f055ab1910b90"
+}

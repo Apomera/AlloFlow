@@ -8585,10 +8585,12 @@ window.StemLab = window.StemLab || {
           if (!raw || typeof raw !== 'object' || Array.isArray(raw)) raw = {};
           var validKind = ['time', 'efficiency', 'load', 'work'].indexOf(raw.kind) >= 0, kind = validKind ? raw.kind : 'time';
           var fresh = validKind && raw.signature === latest.signature;
+          var validTarget = raw.numericTarget === undefined || raw.numericTarget === 'value' || raw.numericTarget === 'percent';
           return { signature: latest.signature, kind: kind, choice: fresh && ['half', 'same', 'double'].indexOf(raw.choice) >= 0 ? raw.choice : '',
             checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true,
-            calculate: fresh && raw.calculate === true, numericAnswer: fresh && typeof raw.numericAnswer === 'string' ? raw.numericAnswer.slice(0, 64) : '',
-            numericChecked: fresh && raw.numericChecked === true, numericViewed: fresh && (raw.numericViewed === true || raw.revealed === true) };
+            calculate: fresh && raw.calculate === true, numericTarget: fresh && raw.numericTarget === 'percent' ? 'percent' : 'value',
+            numericAnswer: fresh && validTarget && typeof raw.numericAnswer === 'string' ? raw.numericAnswer.slice(0, 64) : '',
+            numericChecked: fresh && validTarget && raw.numericChecked === true, numericViewed: fresh && (raw.numericViewed === true || raw.revealed === true) };
         }
         function predictionModel(latest, kind) {
           if (!latest.model) return null;
@@ -8609,17 +8611,25 @@ window.StemLab = window.StemLab || {
             changedWork: changed.workIn, changedSeconds: changed.seconds };
         }
         function predictionNumberResult(prediction, spec) {
+          if (prediction.numericTarget === 'percent') {
+            var raw = prediction.numericAnswer.trim();
+            if (!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(raw)) return 'invalid';
+            var signedAnswer = Number(raw), target = (spec.changed - spec.current) / spec.current * 100;
+            if (!finite(signedAnswer)) return 'invalid';
+            return Math.abs(signedAnswer - target) <= 0.1 + 1e-12 ? 'correct' : 'incorrect';
+          }
           var answer = _machineMath.parseNum(prediction.numericAnswer);
           if (!finite(answer) || answer <= 0) return 'invalid';
           return Math.abs(answer - spec.changed) / spec.changed <= 0.01 + 1e-12 ? 'correct' : 'incorrect';
         }
-        function updatePrediction(renderedKind, action, value) {
+        function updatePrediction(renderedKind, action, value, renderedTarget) {
           setLabToolData(function (prev) {
             var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
             if (source.view !== 'machines' || source.bench !== bench.id) return prev;
             var latest = powerSession(source, bench), current = predictionState(source, latest);
             var spec = predictionModel(latest, current.kind);
             if (latest.signature !== session.signature || current.kind !== renderedKind || !spec) return prev;
+            if (['number', 'check-number', 'target'].indexOf(action) >= 0 && current.numericTarget !== renderedTarget) return prev;
             var next = Object.assign({}, current), order = ['time', 'efficiency', 'load', 'work'];
             var correct = current.checked && current.choice === spec.choice;
             var exposed = current.revealed || correct && (!current.calculate || current.numericViewed || current.numericChecked && predictionNumberResult(current, spec) === 'correct');
@@ -8633,6 +8643,9 @@ window.StemLab = window.StemLab || {
             } else if (action === 'calculate') {
               if (typeof value !== 'boolean') return prev;
               Object.assign(next, { calculate: value, numericViewed: current.numericViewed || exposed || !value && correct });
+            } else if (action === 'target') {
+              if (!current.calculate || ['value', 'percent'].indexOf(value) < 0 || value === current.numericTarget) return prev;
+              Object.assign(next, { numericTarget: value, numericAnswer: '', numericChecked: false, numericViewed: current.numericViewed || exposed });
             } else if (action === 'number') {
               if (!current.calculate || typeof value !== 'string') return prev;
               Object.assign(next, { numericAnswer: value.slice(0, 64), numericChecked: false, numericViewed: current.numericViewed || exposed });
@@ -8673,6 +8686,9 @@ window.StemLab = window.StemLab || {
                 : __alloT('stem.machinelab.predict_rule_time', 'Input power = input energy ÷ seconds. With input energy fixed, power changes by the reciprocal time factor.');
           var outcome = prediction.revealed ? 'solution' : prediction.checked ? !prediction.choice ? 'invalid' : prediction.choice === spec.choice ? 'correct' : 'incorrect' : null;
           var numericOutcome = prediction.numericViewed ? 'solution' : prediction.numericChecked ? predictionNumberResult(prediction, spec) : null;
+          var percentMode = prediction.numericTarget === 'percent', numericUnit = percentMode ? '%' : spec.unit;
+          var difference = spec.changed - spec.current, percentChange = difference / spec.current * 100;
+          function signed(value) { return (value > 0 ? '+' : '') + powerFmt(value === 0 ? 0 : value); }
           var show = outcome === 'solution' || outcome === 'correct' && (!prediction.calculate || numericOutcome === 'correct' || numericOutcome === 'solution');
           var id = prefix + 'prediction-', maxPower = Math.max(spec.current, spec.changed);
           function stageNumber(number) { return h('span', { key: 'stage-number', 'aria-hidden': 'true', className: 'ml-prediction-stage-number',
@@ -8682,7 +8698,7 @@ window.StemLab = window.StemLab || {
             className: key === 'check' || key === 'check-number' ? 'ml-prediction-primary' : 'ml-prediction-secondary',
             style: Object.assign({}, button, { minHeight: 44, fontWeight: 750 }, key === 'check' || key === 'check-number'
               ? { background: T.accent, color: T.accentInk, borderColor: T.accent } : {}),
-            onClick: function () { updatePrediction(prediction.kind, key); } }, label); }
+            onClick: function () { updatePrediction(prediction.kind, key, undefined, prediction.numericTarget); } }, label); }
           return h('details', { key: 'prediction', className: 'ml-prediction', 'data-ml-power-prediction': bench.id, 'data-kind': prediction.kind, style: Object.assign({}, panelStyle, { '--ml-prediction-focus': T.text }) }, [
             h('summary', { key: 'title', style: Object.assign({}, summary, { fontSize: 17 }) }, __alloT('stem.machinelab.predict_title', 'Predict the change')),
             h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.predict_intro', 'Try a hypothetical change using your current setup. Predict the effect first, then check the calculation. These choices are separate from your saved calculation records.')),
@@ -8706,7 +8722,7 @@ window.StemLab = window.StemLab || {
               h('input', { key: 'checkbox', type: 'checkbox', checked: prediction.calculate, 'data-ml-power-prediction-calculate': '',
                 style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent },
                 onChange: function (ev) { updatePrediction(prediction.kind, 'calculate', ev.target.checked); } }),
-              h('span', { key: 'label' }, __alloT('stem.machinelab.predict_number_mode', 'Calculate the value too'))
+              h('span', { key: 'label' }, __alloT('stem.machinelab.predict_calculation_mode', 'Add calculation practice'))
             ]),
             h('fieldset', { key: 'choices', 'data-ml-power-prediction-stage': 'predict', style: { margin: '18px 0 12px', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card }, 'aria-describedby': id + 'feedback-' + bench.id }, [
               h('legend', { key: 'legend', style: Object.assign({}, style, { padding: '0 4px', fontWeight: 800 }) }, [stageNumber(1), prediction.kind === 'work' ? __alloT('stem.machinelab.predict_question_work', 'How will the input energy change?') : __alloT('stem.machinelab.predict_question_power', 'How will the input power change?')]),
@@ -8722,26 +8738,34 @@ window.StemLab = window.StemLab || {
               outcome === 'invalid' ? __alloT('stem.machinelab.predict_invalid', 'Choose a prediction before checking.')
                 : outcome === 'incorrect' ? __alloT('stem.machinelab.predict_incorrect', 'Not yet. Think about what stays fixed. You can choose again or view the explanation.')
                   : outcome === 'solution' ? __alloT('stem.machinelab.predict_solution', 'Explanation viewed. Try another change when you are ready.')
-                    : prediction.calculate && !show ? __alloT('stem.machinelab.predict_number_continue', 'Correct prediction. Calculate the new value to reveal the comparison.')
+                    : prediction.calculate && !show ? percentMode ? __alloT('stem.machinelab.predict_percent_continue', 'Correct prediction. Calculate the percentage change to reveal the comparison.') : __alloT('stem.machinelab.predict_number_continue', 'Correct prediction. Calculate the new value to reveal the comparison.')
                       : __alloT('stem.machinelab.predict_correct', 'Correct prediction. Compare the values and relationship below.')) : null),
             prediction.calculate ? h('section', { key: 'number', 'data-ml-power-prediction-number-practice': '', 'aria-labelledby': id + 'number-title-' + bench.id,
               'data-ml-power-prediction-stage': 'calculate', style: { margin: '18px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card } }, [
-              h('h4', { key: 'title', id: id + 'number-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 16, fontWeight: 800 }) }, [stageNumber(2), __alloT('stem.machinelab.predict_number_title', 'Calculate the new value')]),
-              h('p', { key: 'help', id: id + 'number-help-' + bench.id, style: style }, __alloT('stem.machinelab.predict_number_help', 'Use the current value and the change factor. Enter a positive number in the shown unit. Answers within 1% are accepted. The comparison appears after both answers are correct, or when you view the explanation.')),
-              h('label', { key: 'label', htmlFor: id + 'number-' + bench.id, style: style }, quantity + ' · ' + __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup') + ' (' + spec.unit + ')'),
+              h('h4', { key: 'title', id: id + 'number-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 16, fontWeight: 800 }) }, [stageNumber(2), percentMode ? __alloT('stem.machinelab.predict_percent_title', 'Calculate the percentage change') : __alloT('stem.machinelab.predict_number_title', 'Calculate the new value')]),
+              h('label', { key: 'target-label', htmlFor: id + 'target-' + bench.id, style: style }, __alloT('stem.machinelab.predict_target_label', 'Calculation target')),
+              h('select', { key: 'target', id: id + 'target-' + bench.id, 'data-ml-power-prediction-target': '', value: prediction.numericTarget, style: control,
+                onChange: function (ev) { updatePrediction(prediction.kind, 'target', ev.target.value, prediction.numericTarget); } }, [
+                h('option', { key: 'value', value: 'value' }, __alloT('stem.machinelab.predict_target_value', 'New value')),
+                h('option', { key: 'percent', value: 'percent' }, __alloT('stem.machinelab.predict_target_percent', 'Percentage change'))
+              ]),
+              h('p', { key: 'help', id: id + 'number-help-' + bench.id, style: style }, percentMode
+                ? __alloT('stem.machinelab.predict_percent_help', 'Percentage change = (new value − current value) ÷ current value × 100. Use a minus sign for a decrease, a positive number for an increase, or 0 for no change. Answers within 0.1 percentage points are accepted. The comparison appears after both answers are correct, or when you view the explanation.')
+                : __alloT('stem.machinelab.predict_number_help', 'Use the current value and the change factor. Enter a positive number in the shown unit. Answers within 1% are accepted. The comparison appears after both answers are correct, or when you view the explanation.')),
+              h('label', { key: 'label', htmlFor: id + 'number-' + bench.id, style: style }, quantity + ' · ' + (percentMode ? __alloT('stem.machinelab.predict_target_percent', 'Percentage change') : __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup')) + ' (' + numericUnit + ')'),
               h('div', { key: 'entry', style: { display: 'flex', gap: 8, alignItems: 'center', margin: '8px 0' } }, [
-                h('input', { key: 'input', id: id + 'number-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: prediction.numericAnswer,
+                h('input', { key: 'input', id: id + 'number-' + bench.id, type: 'text', inputMode: percentMode ? 'text' : 'decimal', maxLength: 64, value: prediction.numericAnswer,
                   style: Object.assign({}, control, { minWidth: 0, flex: 1, minHeight: 48, fontSize: 20, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }), 'aria-invalid': numericOutcome === 'invalid' || numericOutcome === 'incorrect',
                   'aria-describedby': id + 'number-help-' + bench.id + ' ' + id + 'number-feedback-' + bench.id,
-                  onChange: function (ev) { updatePrediction(prediction.kind, 'number', ev.target.value); },
-                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updatePrediction(prediction.kind, 'check-number'); } } }),
-                h('span', { key: 'unit', 'aria-hidden': 'true', style: Object.assign({}, style, { fontWeight: 800, flexShrink: 0 }) }, spec.unit)
+                  onChange: function (ev) { updatePrediction(prediction.kind, 'number', ev.target.value, prediction.numericTarget); },
+                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updatePrediction(prediction.kind, 'check-number', undefined, prediction.numericTarget); } } }),
+                h('span', { key: 'unit', 'aria-hidden': 'true', style: Object.assign({}, style, { fontWeight: 800, flexShrink: 0 }) }, numericUnit)
               ]),
               act('check-number', __alloT('stem.machinelab.predict_number_check', 'Check calculation')),
               h('div', { key: 'feedback', id: id + 'number-feedback-' + bench.id, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: style }, numericOutcome ? h('p', { 'data-ml-power-prediction-number-result': numericOutcome },
                 numericOutcome === 'solution' ? __alloT('stem.machinelab.predict_number_viewed', 'Worked value viewed. Clear the prediction to try both steps again.')
-                  : numericOutcome === 'invalid' ? __alloT('stem.machinelab.predict_number_invalid', 'Enter a positive, finite number in the shown unit before checking.')
-                    : numericOutcome === 'incorrect' ? __alloT('stem.machinelab.predict_number_incorrect', 'Not yet. Apply your change factor to the current value, and check the unit and decimal place.')
+                  : numericOutcome === 'invalid' ? percentMode ? __alloT('stem.machinelab.predict_percent_invalid', 'Enter a finite signed number, or 0, without the % symbol.') : __alloT('stem.machinelab.predict_number_invalid', 'Enter a positive, finite number in the shown unit before checking.')
+                    : numericOutcome === 'incorrect' ? percentMode ? __alloT('stem.machinelab.predict_percent_incorrect', 'Not yet. Divide the difference by the current value, then multiply by 100. Check the sign: a decrease is negative.') : __alloT('stem.machinelab.predict_number_incorrect', 'Not yet. Apply your change factor to the current value, and check the unit and decimal place.')
                       : outcome === 'correct' ? __alloT('stem.machinelab.predict_number_correct', 'Correct calculation. Compare your result with the worked relationship below.')
                         : __alloT('stem.machinelab.predict_number_check_prediction', 'The number is correct. Check your prediction to reveal the comparison.')) : null)
             ]) : null,
@@ -8754,6 +8778,15 @@ window.StemLab = window.StemLab || {
               h('p', { key: 'calculation', style: style }, prediction.kind === 'work'
                 ? powerFmt(spec.changedWork) + ' J ÷ ' + powerFmt(spec.changedSeconds) + ' s ≈ ' + powerFmt(spec.changedWork / spec.changedSeconds) + ' W · ' + __alloT('stem.machinelab.predict_energy_fixed', 'Energy stays the same while power changes.')
                 : powerFmt(spec.changedWork) + ' J ÷ ' + powerFmt(spec.changedSeconds) + ' s ≈ ' + powerFmt(spec.changed) + ' W'),
+              prediction.calculate && percentMode ? h('div', { key: 'percent', 'data-ml-power-prediction-percent': '', 'data-value': percentChange,
+                style: { padding: 14, margin: '14px 0', border: '1px solid ' + T.border, borderTop: '4px solid ' + T.accent, borderRadius: 10, background: T.bg } }, [
+                h('p', { key: 'label', style: Object.assign({}, style, { margin: 0, fontWeight: 800 }) }, quantity + ' · ' + __alloT('stem.machinelab.predict_target_percent', 'Percentage change')),
+                h('p', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 30, margin: '8px 0' }) }, signed(percentChange) + '%'),
+                h('p', { key: 'direction', style: Object.assign({}, style, { margin: '0 0 10px', fontWeight: 750 }) }, percentChange < 0 ? __alloT('stem.machinelab.predict_decrease', 'Decrease from the current setup') : percentChange > 0 ? __alloT('stem.machinelab.predict_increase', 'Increase from the current setup') : __alloT('stem.machinelab.predict_no_change', 'No change from the current setup')),
+                h('p', { key: 'difference', style: style }, __alloT('stem.machinelab.predict_difference', 'Difference: ') + signed(difference) + ' ' + spec.unit),
+                h('p', { key: 'equation', 'data-ml-power-prediction-percent-equation': '', style: Object.assign({}, style, { paddingTop: 10, borderTop: '1px solid ' + T.border, fontSize: 16, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }) },
+                  '(' + powerFmt(spec.changed) + ' ' + spec.unit + ' − ' + powerFmt(spec.current) + ' ' + spec.unit + ') ÷ ' + powerFmt(spec.current) + ' ' + spec.unit + ' × 100 ≈ ' + signed(percentChange) + '%')
+              ]) : null,
               h('dl', { key: 'comparison', className: 'ml-power-visual-grid', style: { margin: '10px 0' } }, [
                 ['before', spec.current, __alloT('stem.machinelab.predict_current', 'Current setup')], ['after', spec.changed, __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup')]
               ].map(function (row) { return h('div', { key: row[0], 'data-ml-power-prediction-metric': row[0], 'data-value': row[1], 'data-unit': spec.unit,
