@@ -1,0 +1,14 @@
+{
+  "status": "in_progress",
+  "label": "forced-colors-phone-load-prediction captured",
+  "scenarios": 4,
+  "checks": 554,
+  "routes": 24,
+  "shots": [
+    "desktop-time-prediction",
+    "desktop-efficiency-prediction",
+    "dark-phone-work-prediction",
+    "forced-colors-phone-load-prediction"
+  ],
+  "errors": []
+}

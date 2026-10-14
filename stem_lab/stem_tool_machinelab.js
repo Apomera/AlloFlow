@@ -8580,6 +8580,128 @@ window.StemLab = window.StemLab || {
           ]);
         }
         function action(key, label, handler, disabled) { var props = { key: key, type: 'button', style: Object.assign({}, button, key === 'check' ? { background: T.accent, color: T.accentInk, borderColor: T.accent, fontWeight: 800 } : {}), disabled: !!disabled, onClick: handler }; props['data-ml-power-' + key] = ''; return h('button', props, label); }
+        function predictionState(source, latest) {
+          var entries = source.benchPowerPredictions, raw = entries && typeof entries === 'object' && !Array.isArray(entries) && entries[bench.id];
+          if (!raw || typeof raw !== 'object' || Array.isArray(raw)) raw = {};
+          var validKind = ['time', 'efficiency', 'load', 'work'].indexOf(raw.kind) >= 0, kind = validKind ? raw.kind : 'time';
+          var fresh = validKind && raw.signature === latest.signature;
+          return { signature: latest.signature, kind: kind, choice: fresh && ['half', 'same', 'double'].indexOf(raw.choice) >= 0 ? raw.choice : '',
+            checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
+        }
+        function predictionModel(latest, kind) {
+          if (!latest.model) return null;
+          var settings = Object.assign({}, latest.settings), percent = _machineMath.parseNum(latest.draft.percent), seconds = latest.seconds;
+          var loadControl = bench.controls.find(function (c) { return c.key === bench.loadKey; });
+          var before = kind === 'efficiency' ? percent : kind === 'load' ? settings[bench.loadKey] : seconds;
+          var min = kind === 'efficiency' ? 1 : kind === 'load' ? loadControl.min : 0.01;
+          var max = kind === 'efficiency' ? 100 : kind === 'load' ? loadControl.max : 3600;
+          var factor = before * 2 <= max ? 2 : 0.5, after = before * factor;
+          if (!finite(after) || after < min || after > max) return null;
+          if (kind === 'efficiency') percent = after; else if (kind === 'load') settings[bench.loadKey] = after; else seconds = after;
+          var changed = powerModel(settings, bench, percent, seconds, _machineMath.parseNum(latest.draft.budget));
+          if (!changed) return null;
+          var ratio = kind === 'work' ? 1 : kind === 'load' ? factor : 1 / factor;
+          return { before: before, after: after, factor: factor, ratio: ratio, choice: ratio === 1 ? 'same' : ratio < 1 ? 'half' : 'double',
+            inputUnit: kind === 'efficiency' ? '%' : kind === 'load' ? 'N' : 's', unit: kind === 'work' ? 'J' : 'W',
+            current: kind === 'work' ? latest.model.workIn : latest.model.inputPower, changed: kind === 'work' ? changed.workIn : changed.inputPower,
+            changedWork: changed.workIn, changedSeconds: changed.seconds };
+        }
+        function updatePrediction(renderedKind, action, value) {
+          setLabToolData(function (prev) {
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = powerSession(source, bench), current = predictionState(source, latest);
+            if (latest.signature !== session.signature || current.kind !== renderedKind || !predictionModel(latest, current.kind)) return prev;
+            var next = Object.assign({}, current), order = ['time', 'efficiency', 'load', 'work'];
+            if (action === 'kind' || action === 'next') {
+              var target = action === 'next' ? order[(order.indexOf(current.kind) + 1) % order.length] : value;
+              if (order.indexOf(target) < 0 || !predictionModel(latest, target)) return prev;
+              Object.assign(next, { kind: target, choice: '', checked: false, revealed: false });
+            } else if (action === 'choice') {
+              if (['half', 'same', 'double'].indexOf(value) < 0) return prev;
+              Object.assign(next, { choice: value, checked: false });
+            } else if (action === 'check') next.checked = true;
+            else if (action === 'reveal') next.revealed = true;
+            else if (action === 'retry') Object.assign(next, { choice: '', checked: false, revealed: false });
+            else return prev;
+            var entries = source.benchPowerPredictions;
+            entries = Object.assign({}, entries && typeof entries === 'object' && !Array.isArray(entries) ? entries : {});
+            entries[bench.id] = next;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchPowerPredictions: entries }) });
+          });
+        }
+        function predictionPractice() {
+          var prediction = predictionState(d, session), spec = predictionModel(session, prediction.kind);
+          if (!spec) return null;
+          var labels = {
+            time: __alloT('stem.machinelab.predict_time', 'Time → input power'),
+            efficiency: __alloT('stem.machinelab.predict_efficiency', 'Efficiency → input power'),
+            load: __alloT('stem.machinelab.predict_load', 'Load → input power'),
+            work: __alloT('stem.machinelab.predict_work', 'Time → input energy')
+          };
+          var choices = [['half', __alloT('stem.machinelab.predict_half', 'Half as much (½×)')], ['same', __alloT('stem.machinelab.predict_same', 'The same (1×)')], ['double', __alloT('stem.machinelab.predict_double', 'Twice as much (2×)')]];
+          var inputLabel = prediction.kind === 'efficiency' ? __alloT('stem.machinelab.eff_control', 'Assumed efficiency (%)')
+            : prediction.kind === 'load' ? __alloT('stem.machinelab.backcheck_load', 'Load force') : __alloT('stem.machinelab.power_duration', 'Task duration');
+          var quantity = prediction.kind === 'work' ? __alloT('stem.machinelab.predict_energy', 'Input energy') : __alloT('stem.machinelab.backcheck_input_power', 'Input power');
+          var fixed = prediction.kind === 'load' ? __alloT('stem.machinelab.predict_fixed_load', 'Keep movement, geometry, efficiency, time and the power budget fixed.')
+            : prediction.kind === 'efficiency' ? __alloT('stem.machinelab.predict_fixed_efficiency', 'Keep load, movement, geometry, time and the power budget fixed.')
+              : __alloT('stem.machinelab.predict_fixed_time', 'Keep load, movement, geometry, efficiency and the power budget fixed.');
+          var rule = prediction.kind === 'work' ? __alloT('stem.machinelab.predict_rule_work', 'Input energy = useful work ÷ efficiency. Time does not appear in this relationship; the same task needs the same input energy.')
+            : prediction.kind === 'load' ? __alloT('stem.machinelab.predict_rule_load', 'Useful work = load force × movement. With the same movement, efficiency and time, input power changes by the same factor as load.')
+              : prediction.kind === 'efficiency' ? __alloT('stem.machinelab.predict_rule_efficiency', 'Input power = useful work ÷ (efficiency as a decimal × seconds). With useful work and time fixed, power changes by the reciprocal efficiency factor.')
+                : __alloT('stem.machinelab.predict_rule_time', 'Input power = input energy ÷ seconds. With input energy fixed, power changes by the reciprocal time factor.');
+          var outcome = prediction.revealed ? 'solution' : prediction.checked ? !prediction.choice ? 'invalid' : prediction.choice === spec.choice ? 'correct' : 'incorrect' : null;
+          var show = outcome === 'correct' || outcome === 'solution', id = prefix + 'prediction-', maxPower = Math.max(spec.current, spec.changed);
+          function act(key, label) { return h('button', { key: key, type: 'button', 'data-ml-power-prediction-action': key, style: button,
+            onClick: function () { updatePrediction(prediction.kind, key); } }, label); }
+          return h('details', { key: 'prediction', 'data-ml-power-prediction': bench.id, 'data-kind': prediction.kind, style: panelStyle }, [
+            h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.predict_title', 'Predict the change')),
+            h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.predict_intro', 'Try a hypothetical change using your current setup. Predict the effect first, then check the calculation. These choices are separate from your saved calculation records.')),
+            h('label', { key: 'label', htmlFor: id + 'kind-' + bench.id, style: style }, __alloT('stem.machinelab.predict_scenario', 'Prediction challenge')),
+            h('select', { key: 'kind', id: id + 'kind-' + bench.id, value: prediction.kind, style: control,
+              onChange: function (ev) { updatePrediction(prediction.kind, 'kind', ev.target.value); } }, Object.keys(labels).map(function (kind) { return h('option', { key: kind, value: kind }, labels[kind]); })),
+            h('p', { key: 'fixed', style: style }, fixed),
+            h('p', { key: 'change', style: Object.assign({}, style, { fontWeight: 800 }) }, inputLabel + ': ' + powerFmt(spec.before) + ' ' + spec.inputUnit + ' → ' + powerFmt(spec.after) + ' ' + spec.inputUnit),
+            h('div', { key: 'inputs', className: 'ml-power-visual-grid' }, [
+              ['before', spec.before, __alloT('stem.machinelab.predict_current', 'Current setup')], ['after', spec.after, __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup')]
+            ].map(function (row) { return h('div', { key: row[0], 'data-ml-power-prediction-input': row[0], 'data-value': row[1], 'data-unit': spec.inputUnit,
+              style: { border: '1px solid ' + T.border, borderRadius: 8, padding: 10, background: T.card } }, [h('p', { key: 'label', style: style }, row[2]), h('p', { key: 'value', style: valueStyle }, powerFmt(row[1]) + ' ' + spec.inputUnit)]); })),
+            h('p', { key: 'baseline', style: style }, quantity + ': ' + powerFmt(spec.current) + ' ' + spec.unit + ' · ' + __alloT('stem.machinelab.predict_baseline', 'in the current setup')),
+            h('fieldset', { key: 'choices', style: { margin: '14px 0', padding: 10, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 8 }, 'aria-describedby': id + 'feedback-' + bench.id }, [
+              h('legend', { key: 'legend', style: style }, prediction.kind === 'work' ? __alloT('stem.machinelab.predict_question_work', 'How will the input energy change?') : __alloT('stem.machinelab.predict_question_power', 'How will the input power change?')),
+              choices.map(function (choice) { return h('label', { key: choice[0], style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, margin: '6px 0', padding: '4px 8px', borderRadius: 6, border: '1px solid ' + T.border, background: T.card, cursor: 'pointer' }) }, [
+                h('input', { key: 'radio', type: 'radio', name: id + 'choice-' + bench.id, value: choice[0], checked: prediction.choice === choice[0], 'data-ml-power-prediction-choice': choice[0], style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent },
+                  onChange: function () { updatePrediction(prediction.kind, 'choice', choice[0]); } }), h('span', { key: 'text' }, choice[1])
+              ]); })
+            ]),
+            h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [act('check', __alloT('stem.machinelab.predict_check', 'Check prediction')), act('reveal', __alloT('stem.machinelab.predict_reveal', 'Show explanation'))]),
+            h('div', { key: 'feedback', id: id + 'feedback-' + bench.id, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: style }, outcome ? h('p', { 'data-ml-power-prediction-result': outcome },
+              outcome === 'invalid' ? __alloT('stem.machinelab.predict_invalid', 'Choose a prediction before checking.')
+                : outcome === 'incorrect' ? __alloT('stem.machinelab.predict_incorrect', 'Not yet. Think about what stays fixed. You can choose again or view the explanation.')
+                  : outcome === 'solution' ? __alloT('stem.machinelab.predict_solution', 'Explanation viewed. Try another change when you are ready.')
+                    : __alloT('stem.machinelab.predict_correct', 'Correct prediction. Compare the values and relationship below.')) : null),
+            show ? h('div', { key: 'explanation', 'data-ml-power-prediction-explanation': outcome }, [
+              h('p', { key: 'rule', style: style }, rule),
+              h('p', { key: 'factor', 'data-ml-power-prediction-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.accent, background: T.card }) },
+                powerFmt(spec.current) + ' ' + spec.unit + ' × ' + powerFmt(spec.ratio) + ' ≈ ' + powerFmt(spec.changed) + ' ' + spec.unit),
+              h('p', { key: 'calculation', style: style }, prediction.kind === 'work'
+                ? powerFmt(spec.changedWork) + ' J ÷ ' + powerFmt(spec.changedSeconds) + ' s ≈ ' + powerFmt(spec.changedWork / spec.changedSeconds) + ' W · ' + __alloT('stem.machinelab.predict_energy_fixed', 'Energy stays the same while power changes.')
+                : powerFmt(spec.changedWork) + ' J ÷ ' + powerFmt(spec.changedSeconds) + ' s ≈ ' + powerFmt(spec.changed) + ' W'),
+              h('dl', { key: 'comparison', className: 'ml-power-visual-grid', style: { margin: '10px 0' } }, [
+                ['before', spec.current, __alloT('stem.machinelab.predict_current', 'Current setup')], ['after', spec.changed, __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup')]
+              ].map(function (row) { return h('div', { key: row[0], 'data-ml-power-prediction-metric': row[0], 'data-value': row[1], 'data-unit': spec.unit,
+                style: { minWidth: 0, padding: 10, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } }, [
+                h('dt', { key: 'label', style: style }, row[2] + ' · ' + quantity), h('dd', { key: 'value', style: Object.assign({}, valueStyle, { marginLeft: 0 }) }, [powerFmt(row[1]) + ' ' + spec.unit,
+                  h('div', { key: 'track', className: 'ml-prediction-track', 'aria-hidden': 'true', style: { marginTop: 10, height: 12, border: '1px solid ' + T.border, background: T.bg } },
+                    h('span', { 'data-ml-power-prediction-bar': row[0], style: { display: 'block', height: '100%', width: (row[1] / maxPower * 100) + '%', color: T.accent,
+                      background: row[0] === 'before' ? T.accent : 'repeating-linear-gradient(135deg,transparent 0,transparent 3px,currentColor 3px,currentColor 6px)' } }))])
+              ]); })),
+              h('p', { key: 'precision', style: style }, __alloT('stem.machinelab.predict_precision', 'Both bars share one scale. Calculations use full precision; displayed values are rounded.'))
+            ]) : null,
+            h('div', { key: 'next', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 } }, [act('retry', __alloT('stem.machinelab.predict_retry', 'Clear prediction')), act('next', __alloT('stem.machinelab.predict_next', 'Next prediction'))]),
+            h('style', { key: 'colors' }, '@media(forced-colors:active){.ml-prediction-track{border-color:CanvasText!important;background:Canvas!important}.ml-prediction-track span{forced-color-adjust:none;color:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=before]{background:CanvasText!important}.ml-prediction-track [data-ml-power-prediction-bar=after]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
+          ]);
+        }
         function backCheck() {
           if (!model || !question || (result !== 'correct' && result !== 'solution')) return null;
           var answer = result === 'solution' ? question.target : _machineMath.parseNum(draft.answer);
@@ -9135,7 +9257,7 @@ window.StemLab = window.StemLab || {
           h('p', { key: 'seconds', 'data-ml-power-seconds': session.seconds, style: style }, __alloT('stem.machinelab.power_time_given', 'Task time: ') + (session.seconds === null ? '—' : powerFmt(session.seconds)) + ' s'),
           input('budget', __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)'), !(budget >= 0.01 && budget <= 100000), prefix + 'ranges-' + bench.id),
           h('p', { key: 'ranges', id: prefix + 'ranges-' + bench.id, style: style }, __alloT('stem.machinelab.power_ranges', 'Efficiency: 1–100%. Duration: 0.01–3600 seconds (up to 60 minutes). Input-power budget: 0.01–100000 W. One minute equals 60 seconds.')),
-          model ? h('div', { key: 'valid' }, [comparison(), forceSpeedGuide(), rotationGuide(), budgetPlanning(), unitConversionGuide(), practice()])
+          model ? h('div', { key: 'valid' }, [comparison(), forceSpeedGuide(), rotationGuide(), budgetPlanning(), unitConversionGuide(), predictionPractice(), practice()])
             : h('p', { key: 'invalid', role: 'status', style: style }, __alloT('stem.machinelab.power_invalid', 'Enter valid assumptions and a working station setup before calculating or checking an answer.')),
           h('p', { key: 'count', 'data-ml-power-count': saved.length, style: style }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),

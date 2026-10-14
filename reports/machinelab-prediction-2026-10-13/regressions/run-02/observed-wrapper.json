@@ -1,0 +1,23 @@
+{
+  "status": "failed-report-write",
+  "observedWrapperExitCode": 1,
+  "sessionId": 70716,
+  "sourceSha256": "ead716145aa5dda704b6f3fe3dd0e624b57456054af2a1036a6c0e69c38152b3",
+  "reason": "Group11 printed 8 passed assertions, then exited1 with ENOSPC while writing its JSON report. The empty receipt is not a pass. Ten earlier complete native groups may be hash-verified and reused.",
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "b4da0737e7524f3f92f77d857c7de99eef17f84bb5b8fa2eb52c44bf628feecb"
+  },
+  "runnerSnapshot": {
+    "path": "runner-snapshot.cjs",
+    "sha256": "b9c654cba3ba450f172690f30402bf455e2779ba9252ea1d1f46699c770c6db7"
+  },
+  "failedLog": {
+    "path": "group-11.log",
+    "sha256": "a556e1cd57a806f7452d58c2236b52d6d1419a1fb29d751150e1c2d980ef9dba"
+  },
+  "failedReceipt": {
+    "path": "group-11.json",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

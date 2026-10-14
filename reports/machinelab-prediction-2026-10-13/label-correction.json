@@ -1,0 +1,6 @@
+{
+  "previousSourceSha256": "066f5c3c30dcb04fdf120a3add27cdb9ba716cfbfc6f8ca7dfb296e0af132ed6",
+  "sourceSha256": "ead716145aa5dda704b6f3fe3dd0e624b57456054af2a1036a6c0e69c38152b3",
+  "onlyFourScenarioLabelsChanged": true,
+  "reason": "Native 320px QA found SELECT text clipping. Shorter labels preserve input power/energy wording, with overflow assertions unchanged."
+}

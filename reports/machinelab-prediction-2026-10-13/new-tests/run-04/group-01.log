@@ -1,0 +1,20 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_prediction.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_prediction.test.js (28 tests | 22 skipped) 7547ms
+     ✓ checks all four 'lever' relationships using independent work and power identities  860ms
+     ✓ checks all four 'pulley' relationships using independent work and power identities  1594ms
+     ✓ checks all four 'ramp' relationships using independent work and power identities  1733ms
+     ✓ checks all four 'wedge' relationships using independent work and power identities  555ms
+     ✓ checks all four 'windlass' relationships using independent work and power identities  1782ms
+     ✓ checks all four 'screw' relationships using independent work and power identities  955ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed | 22 skipped (28)
+   Start at  20:28:15
+   Duration  11.52s (transform 140ms, setup 94ms, import 414ms, tests 7.55s, environment 2.72s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-2026-10-13/new-tests/run-04/group-01.json

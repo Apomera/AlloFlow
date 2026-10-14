@@ -1,0 +1,30 @@
+{
+  "status": "failed-layout",
+  "observedWrapperExitCode": 1,
+  "observedNativeChildExitCode": 1,
+  "sessionId": 12292,
+  "sourceSha256": "066f5c3c30dcb04fdf120a3add27cdb9ba716cfbfc6f8ca7dfb296e0af132ed6",
+  "checks": 555,
+  "scenarios": 4,
+  "screenshots": 4,
+  "findings": [
+    "dark-phone-work-prediction: prompt, choices, equation and comparison fit without horizontal clipping",
+    "forced-colors-phone-load-prediction: prompt, choices, equation and comparison fit without horizontal clipping"
+  ],
+  "process": {
+    "path": "reports/machinelab-prediction-2026-10-13/browser/run-01/process.json",
+    "sha256": "490b133f4909cb430375fa6504de699d6ddc5b8a86efa18cf9b9e668cbc4e261"
+  },
+  "results": {
+    "path": "reports/machinelab-prediction-2026-10-13/browser/run-01/results.json",
+    "sha256": "a8befa649d7bf3b1fd7309dd395b0941c7920a682b17f02a1977b24766828928"
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-prediction-2026-10-13/browser/run-01/harness-snapshot.cjs",
+    "sha256": "6998ef7558d010cb5e1b8f4532f304bcb2450e39c50dca28b6b258fddca856cf"
+  },
+  "wrapperSnapshot": {
+    "path": "reports/machinelab-prediction-2026-10-13/browser/run-01/wrapper-snapshot.cjs",
+    "sha256": "b61ddb3260d6dbf3636bd21b508ac620606a8c574aaeb001fc715c1ea9f5713c"
+  }
+}

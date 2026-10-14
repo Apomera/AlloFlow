@@ -1,0 +1,22 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_backcheck.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_backcheck.test.js (44 tests | 36 skipped) 7566ms
+     ✓ uses the worked target for 'lever' even when an unfinished draft is present  974ms
+     ✓ uses the worked target for 'pulley' even when an unfinished draft is present  912ms
+     ✓ uses the worked target for 'ramp' even when an unfinished draft is present  760ms
+     ✓ uses the worked target for 'wedge' even when an unfinished draft is present  666ms
+     ✓ uses the worked target for 'windlass' even when an unfinished draft is present  1313ms
+     ✓ uses the worked target for 'screw' even when an unfinished draft is present  1243ms
+     ✓ keeps solution provenance after a previously checked rounded answer is revealed and checked again  327ms
+     ✓ does not save on render or change snapshots, versions, other tools, notes or XP  1367ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed | 36 skipped (44)
+   Start at  20:24:33
+   Duration  10.29s (transform 73ms, setup 60ms, import 117ms, tests 7.57s, environment 2.16s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-2026-10-13/regressions/run-01/group-11.json

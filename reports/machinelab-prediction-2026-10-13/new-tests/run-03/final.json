@@ -1,0 +1,53 @@
+{
+  "format": "machine-lab-new-prediction-coverage-v1",
+  "sourceSha256": "066f5c3c30dcb04fdf120a3add27cdb9ba716cfbfc6f8ca7dfb296e0af132ed6",
+  "publicMirrorSha256": "066f5c3c30dcb04fdf120a3add27cdb9ba716cfbfc6f8ca7dfb296e0af132ed6",
+  "file": "tests/machinelab_prediction.test.js",
+  "testSha256": "9af11c3dfff37c522b7bcb2dfe745546c9731b7c26ab9ed5c61e53120dfbb876",
+  "helper": "tests/helpers/stem_widgets_smoke_harness.js",
+  "helperSha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+  "passed": 28,
+  "failed": 0,
+  "uncovered": 0,
+  "nativeProcesses": 5,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "c4c84980eaffd489482d07fa30d5b0240934a6dcbdf9c9241a703c9c49d0a2fd"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "f97f022612c5739bf28e607d3aef236fcb5dac3e1267233f151be411ddb0d27f"
+  },
+  "receipts": [
+    {
+      "path": "group-01.json",
+      "sha256": "84554d10bb14185d981c540ee9d273ef6a3fe6729977bf7e058368e88a206cd8",
+      "passed": 6,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-02.json",
+      "sha256": "570767a92193d4b1c372b33f1f4ff335030fca995a29f87dbdcca2ed2c1229b3",
+      "passed": 6,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-03.json",
+      "sha256": "7a40bce84bd72ef6e68c83fe5ab1f846dc1085365a2302c4a095466731afdca4",
+      "passed": 4,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-04.json",
+      "sha256": "d10959b134a81e98a0412171de0c1a0c19cd73453c332a0513ab0def060414c0",
+      "passed": 6,
+      "observedExitCode": 0
+    },
+    {
+      "path": "group-05.json",
+      "sha256": "9cca7026280b5bbc3fc140fbc47ed6c30e69e5aab82b3fd55518e257e589f333",
+      "passed": 6,
+      "observedExitCode": 0
+    }
+  ]
+}

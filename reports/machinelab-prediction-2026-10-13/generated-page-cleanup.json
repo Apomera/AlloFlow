@@ -1,0 +1,122 @@
+[
+  {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-02/ml-shots.html",
+    "sha256": "5b3aeb22323bef731677271e8b38dbbc2a4efd8d25c5a50aa439ce540154d99b",
+    "bytes": 2570999,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-03/ml-shots.html",
+    "sha256": "5b3aeb22323bef731677271e8b38dbbc2a4efd8d25c5a50aa439ce540154d99b",
+    "bytes": 2570999,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-compound-lab-2026-10-11/browser/ml-shots.html",
+    "sha256": "be3b4188a20b26b3ae6205ca71a9de0af45b23d42163d8d17a58039595178339",
+    "bytes": 2420582,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-compound-planning-2026-10-11/browser/ml-shots.html",
+    "sha256": "00e23ef2d578965f6546e00740fd1ee9d5b378c9781b8bd76db54d3d730e3e3d",
+    "bytes": 2441995,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-compound-power-2026-10-11/browser/ml-shots.html",
+    "sha256": "a32af8a2fa48fa4ef240cf2add2a0e4826b425f98dd24b2e1a06f5d157c531cc",
+    "bytes": 2429581,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-compound-visual-2026-10-12/browser/ml-shots.html",
+    "sha256": "a6c2eece5746dc66877d045ebb13ab7942e3be326c15fd0e455fea220f6cc718",
+    "bytes": 2451574,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-efficiency-envelope-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "e26c722da17417f37f5861b138339a6bf54c886075e7e666ff7b2ecf420fed2d",
+    "bytes": 2498445,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-efficiency-skills-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "c645991b3893ac0bc029c7b9c0c86e867f88b322500968a8843532b674ba50f8",
+    "bytes": 2469053,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-force-speed-2026-10-13/browser/run-01/ml-shots.html",
+    "sha256": "64c4687c09f766fee05ffcfd685d1c1126662289c289de80229b6ba3653f202c",
+    "bytes": 2537353,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-power-planning-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "613276c3d6a761d157760fd1c8a9938cc650fb4df09eeddda9b464fd76d04c06",
+    "bytes": 2481769,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-power-visual-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "4b3e89a879e3709e1aa3ba93c340be8b770fa3e3021e633313279f947dbbe339",
+    "bytes": 2457595,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-power-visual-2026-10-12/browser/run-02/ml-shots.html",
+    "sha256": "b7760b3554f28accebfa447ccd0d5215a3a4151b12b7a9b33896f48294511f49",
+    "bytes": 2458373,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-practice-coverage-2026-10-13/browser/run-01/ml-shots.html",
+    "sha256": "040ae79279635c282d98456b1429af048462f2f823136fb0afcb0c06039713c9",
+    "bytes": 2557331,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-practice-flow-2026-10-13/browser/run-02/ml-shots.html",
+    "sha256": "8b46fe3bb0dbe4163b60c1d33ac98f13a86e4a07600b5ac3bdbbba8a10bafb59",
+    "bytes": 2541739,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-prediction-2026-10-13/browser/run-01/ml-shots.html",
+    "sha256": "7c93d360802e060f1f521e8d31c30a3366fd542440cfa8122dfb60fe33513503",
+    "bytes": 2586242,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-02/ml-shots.html",
+    "sha256": "0f9249764cae2fe9f9068b45748294188df14b06f02f60797e196186f8d101dd",
+    "bytes": 2507900,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-readout-visual-2026-10-12/browser/run-03/ml-shots.html",
+    "sha256": "0f9249764cae2fe9f9068b45748294188df14b06f02f60797e196186f8d101dd",
+    "bytes": 2507900,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-rotation-skills-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "9234089db94b8cb37c31e074fa45f633d261a8fa0876048650d49ff6b0d9d93d",
+    "bytes": 2522092,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-skill-map-2026-10-12/browser/run-01/ml-shots.html",
+    "sha256": "21e61de2e214f0b9b7825f3ce9cce3c187636177af0105d242f110f4f61aebca",
+    "bytes": 2528311,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  },
+  {
+    "path": "reports/machinelab-unit-conversion-2026-10-13/browser/run-01/ml-shots.html",
+    "sha256": "8350dbb36f18c9e607da964e16f7bbd6313a6ac7d98b41f09828398f515f4e9f",
+    "bytes": 2551393,
+    "reason": "Reproducible untracked browser test page; unchanged since recorded native QA. Screenshots, source, logs and receipts preserved."
+  }
+]

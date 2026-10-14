@@ -1,0 +1,25 @@
+{
+  "status": "failed-test-fixture",
+  "observedWrapperExitCode": 1,
+  "sessionId": 71946,
+  "observedNativeChildExitCodes": [
+    0,
+    0,
+    0,
+    1
+  ],
+  "sourceSha256": "066f5c3c30dcb04fdf120a3add27cdb9ba716cfbfc6f8ca7dfb296e0af132ed6",
+  "reason": "The lifecycle fixture used nonexistent view 'launchers'. Existing view dispatch falls back to Machine Shop for unknown names. Delayed handlers correctly rejected the state change, but the fixture incorrectly expected the fallback UI to disappear. Corrected only the fixture to actual view 'learn'; production unchanged.",
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "39742f55934075f3f7bce0349a9667e16c40d71316e934f42a86a66f1bf17b4c"
+  },
+  "runnerSnapshot": {
+    "path": "runner-at-run.cjs",
+    "sha256": "30b9f7ece06e7bcff79f6a53a9f98af654719ffd1939c8cc0fba137c18aa2366"
+  },
+  "testSnapshot": {
+    "path": "test-at-run.js",
+    "sha256": "5d04870e7266cc34ef465f2186a7008b37c180294115734db3ebbcab7f966a82"
+  }
+}

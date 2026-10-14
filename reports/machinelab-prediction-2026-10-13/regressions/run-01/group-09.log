@@ -1,0 +1,14 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_practice_coverage.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_practice_coverage.test.js (48 tests | 36 skipped) 1027ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed | 36 skipped (48)
+   Start at  20:23:37
+   Duration  3.89s (transform 73ms, setup 67ms, import 118ms, tests 1.03s, environment 2.32s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-prediction-2026-10-13/regressions/run-01/group-09.json

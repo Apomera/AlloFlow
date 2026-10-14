@@ -1,0 +1,39 @@
+{
+  "reviewer": "prediction_browser",
+  "run": "run-02",
+  "sourceSha256": "ead716145aa5dda704b6f3fe3dd0e624b57456054af2a1036a6c0e69c38152b3",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-prediction-2026-10-13/browser/run-02/desktop-time-prediction.png",
+      "sha256": "6ad79a5a5a0a90aca2a17515805a9fa62fbaa9a057da5b58018b8f10199516fb",
+      "name": "desktop-time-prediction.png",
+      "visuallyInspected": true,
+      "findings": "The complete selector and 5 s to 10 s change are readable. The selected half prediction, 50 W to 25 W equation and half-length striped comparison are clear; keyboard focus is visible and the cards align cleanly."
+    },
+    {
+      "path": "reports/machinelab-prediction-2026-10-13/browser/run-02/desktop-efficiency-prediction.png",
+      "sha256": "a34417bc9cff956cdfc1737f6aa6a5689f2ab34558b4c44e0162dd70ed5b5281",
+      "name": "desktop-efficiency-prediction.png",
+      "visuallyInspected": true,
+      "findings": "The 100% to 50% efficiency change visibly doubles input power from 40 W to 80 W. The full selector, selected double prediction, reciprocal relationship and solid/striped shared-scale bars fit."
+    },
+    {
+      "path": "reports/machinelab-prediction-2026-10-13/browser/run-02/dark-phone-work-prediction.png",
+      "sha256": "3a77a4a8f9935892af261c52c5bf948a6b5b458048843ea7a63518f7f9e836f5",
+      "name": "dark-phone-work-prediction.png",
+      "visuallyInspected": true,
+      "findings": "At 320 pixels in dark mode, the full Time to input energy selection now fits. The normalized 30 s to 60 s inputs, same-energy prediction, 250 J readings and equal solid/striped bars stack cleanly; equations and buttons wrap without clipping."
+    },
+    {
+      "path": "reports/machinelab-prediction-2026-10-13/browser/run-02/forced-colors-phone-load-prediction.png",
+      "sha256": "712ead3177935371af5feb6d441d47739953d43adc163fb545f501277150a2e9",
+      "name": "forced-colors-phone-load-prediction.png",
+      "visuallyInspected": true,
+      "findings": "At 320 pixels with forced colors, the full Load to input power selector fits. The 50 N to 100 N change doubles power from 6.25 W to 12.5 W; system-colored radios, borders, focus outline and solid/striped bars remain clear without horizontal overflow."
+    }
+  ],
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ]
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "path": "reports/machinelab-design-tradeoffs-2026-10-10/browser/ml-shots.html",
+    "bytes": 2304515,
+    "sha256": "a4993f28fc4c61400a5c099b123c1c7411b9f8dae07711a88f8125f97ce395c9",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-design-tradeoffs-2026-10-10\\browser\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-backcheck-2026-10-13/browser/run-01/ml-shots.html",
+    "bytes": 2570999,
+    "sha256": "5b3aeb22323bef731677271e8b38dbbc2a4efd8d25c5a50aa439ce540154d99b",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-backcheck-2026-10-13\\browser\\run-01\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-compound-power-2026-10-11/browser/second-attempt/ml-shots.html",
+    "bytes": 2429631,
+    "sha256": "e2721d6de54c0cd0e2f3cb442f1d1d29fdc28fdbc4cae444304afd28ad651b12",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-compound-power-2026-10-11\\browser\\second-attempt\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-compound-power-2026-10-11/browser/overflow-inspection/ml-shots.html",
+    "bytes": 2429661,
+    "sha256": "da778765e4186406b95d56a844269fb290a6fa3c06b79b3b9e86222fa4e2ee5a",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-compound-power-2026-10-11\\browser\\overflow-inspection\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-compound-power-2026-10-11/browser/initial-attempt/ml-shots.html",
+    "bytes": 2429661,
+    "sha256": "da778765e4186406b95d56a844269fb290a6fa3c06b79b3b9e86222fa4e2ee5a",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-compound-power-2026-10-11\\browser\\initial-attempt\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-efficiency-lab-2026-10-10/browser/ml-shots.html",
+    "bytes": 2354306,
+    "sha256": "0879063bde14868dbf2aaf1147aa29eb1cfea29e7afd61c8d13756cc1b16f143",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-efficiency-lab-2026-10-10\\browser\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-power-lab-2026-10-11/browser/ml-shots.html",
+    "bytes": 2386041,
+    "sha256": "41b8a8b2cbe69e81c4eb751f65a7d061a4795e871ddbb7a0cf10ee7cb807ed9c",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-power-lab-2026-10-11\\browser\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-limit-explanation-2026-10-10/browser/ml-shots.html",
+    "bytes": 2331014,
+    "sha256": "b58f967b59db23085e3bd2eceead1bce294d450205f7355acba1fc88d4428308",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-limit-explanation-2026-10-10\\browser\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-design-undo-2026-10-10/browser/ml-shots.html",
+    "bytes": 2315871,
+    "sha256": "589ae0c4d28e28150ee7138d23facd6fc8866559b0aed8bbc56ace01d6593fdf",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-design-undo-2026-10-10\\browser\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-task-trials-2026-10-10/browser/ml-shots.html",
+    "bytes": 2311395,
+    "sha256": "def09d1892fa7cd311a4d37f447023d337f73724c06a1445096fbb39230b6170",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-task-trials-2026-10-10\\browser\\ml-shots.html"
+  },
+  {
+    "path": "reports/machinelab-task-capacity-2026-10-10/browser/ml-shots.html",
+    "bytes": 2323832,
+    "sha256": "8387b74e81fcd22287263bd6e0423707a32cf4e244956cfa1a20870d90800046",
+    "absolutePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-task-capacity-2026-10-10\\browser\\ml-shots.html"
+  }
+]
