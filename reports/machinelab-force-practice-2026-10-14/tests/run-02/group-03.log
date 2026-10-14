@@ -1,0 +1,19 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_force_practice_entry.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_force_practice_entry.test.js (27 tests | 22 skipped) 4924ms
+     ✓ rejects closed, mismatched, stale, disabled or disconnected origins  710ms
+     ✓ requires the answer inside its owning lab and never uses an external duplicate  317ms
+     ✓ rejects stale callbacks after assumptions, geometry, question, bench or view change  1849ms
+     ✓ rechecks the live root, selected skill and answer before deferred focus  1475ms
+     ✓ changes only ordinary draft fields while retaining assumptions, records, other drafts, notes and XP  572ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed | 22 skipped (27)
+   Start at  16:18:12
+   Duration  8.14s (transform 128ms, setup 88ms, import 150ms, tests 4.92s, environment 2.63s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-force-practice-2026-10-14/tests/run-02/group-03.json

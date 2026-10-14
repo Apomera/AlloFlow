@@ -1,0 +1,23 @@
+{
+  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "newTests": 27,
+  "selectedExistingTests": 50,
+  "totalSelectedTests": 77,
+  "testFiles": 4,
+  "nativeTestProcesses": 7,
+  "finalTestRun": "run-02",
+  "preservedFailedTestRuns": [
+    "run-01"
+  ],
+  "failedAttemptOnlyMockGuardChanged": true,
+  "browserChecks": 681,
+  "benchRoutes": 6,
+  "browserScenarios": 9,
+  "inspectedScreenshots": 4,
+  "keyboardFocusChecks": 54,
+  "inverseCalculationInspections": 30,
+  "onlyGuideAndNewNavigationChanged": true,
+  "existingCalculationsScalesRowsBarsAndTranslationsUnchanged": true,
+  "existingHandlersPracticeRecordsAndExportsUnchanged": true,
+  "sourceMirrorParity": true
+}

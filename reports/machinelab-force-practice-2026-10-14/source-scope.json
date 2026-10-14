@@ -1,0 +1,11 @@
+{
+  "baselineCommit": "7e307c872",
+  "baselineSha256": "30be14963a64009b84a5c4c4aff01c3ff5a73aacdd58e0b6515559fe5c85ee6c",
+  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "mirrorSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "onlyGuideAndNewNavigationChanged": true,
+  "existingCalculationsScalesRowsBarsAndTranslationsUnchanged": true,
+  "existingHandlersPracticeRecordsAndExportsUnchanged": true,
+  "sourceMirrorParity": true,
+  "syntax": true
+}

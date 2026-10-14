@@ -1,0 +1,3053 @@
+{
+  "startedAt": "2026-10-14T20:19:08.496Z",
+  "completedAt": "2026-10-14T20:20:27.217Z",
+  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "baselineSha256": "30be14963a64009b84a5c4c4aff01c3ff5a73aacdd58e0b6515559fe5c85ee6c",
+  "dependencies": [
+    {
+      "file": "dev-tools/ml_force_practice_entry_qa.cjs",
+      "sha256": "0f9fc227944d54a55008f03e8453220b2983afa7c8a914d00b6e23bb79658fb5"
+    },
+    {
+      "file": "dev-tools/ml_power_lab_qa.cjs",
+      "sha256": "6aae492c9b2345e20279bc1e215837ce8d82a014744b0bfbf801362d97ff61b1"
+    },
+    {
+      "file": "dev-tools/ml_scene_shots.cjs",
+      "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7"
+    },
+    {
+      "file": "stem_lab/stem_lab_module.js",
+      "sha256": "9fb70c087ea26acfb5e6eea5088c5232fbfedc306d52a00e231e20549a041d96"
+    },
+    {
+      "file": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "file": "vendor/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    }
+  ],
+  "scenarios": 9,
+  "checks": [
+    "lever scenario 1: real THREE canvas initialized",
+    "lever: both inverse calculations appear once in input/output order",
+    "lever: effortFromPower divides independently calculated matching power by speed to recover force",
+    "lever: effortFromPower is a uniquely named section with one readable equation",
+    "lever: effortFromPower action belongs to the matching row and cannot submit a form",
+    "lever: effortFromPower has local draft help and explains efficiency handling",
+    "lever: loadFromPower divides independently calculated matching power by speed to recover force",
+    "lever: loadFromPower is a uniquely named section with one readable equation",
+    "lever: loadFromPower action belongs to the matching row and cannot submit a form",
+    "lever: loadFromPower has local draft help and explains efficiency handling",
+    "lever desktop: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "lever desktop: effortFromPower equation and action have readable contrast",
+    "lever desktop: effortFromPower action has a usable pointer target",
+    "lever desktop: loadFromPower equation and action have readable contrast",
+    "lever desktop: loadFromPower action has a usable pointer target",
+    "lever: answer feedback is correct",
+    "lever effortFromPower entry: inactive skill action offers practice",
+    "lever effortFromPower entry: native keyboard focus is visible",
+    "lever effortFromPower entry: real React commit leaves focus on the existing answer input",
+    "lever effortFromPower entry: guide remains open after practice entry",
+    "lever effortFromPower entry: selects the requested existing force question",
+    "lever: changed task clears old answer, unit, hints and completion",
+    "lever effortFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "lever effortFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "lever: answer feedback is unit",
+    "lever: effortFromPower rejects watts as a force answer",
+    "lever: answer feedback is correct",
+    "lever effortFromPower checked: active skill action offers to continue",
+    "lever effortFromPower checked: native keyboard focus is visible",
+    "lever effortFromPower checked: real React commit leaves focus on the existing answer input",
+    "lever effortFromPower checked: guide remains open after practice entry",
+    "lever effortFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "lever: answer feedback is correct",
+    "lever: effortFromPower saves an ordinary checked version4 force record",
+    "lever: answer feedback is solution",
+    "lever effortFromPower viewed: active skill action offers to continue",
+    "lever effortFromPower viewed: native keyboard focus is visible",
+    "lever effortFromPower viewed: real React commit leaves focus on the existing answer input",
+    "lever effortFromPower viewed: guide remains open after practice entry",
+    "lever effortFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "lever: answer feedback is solution",
+    "lever: effortFromPower retains viewed-solution provenance when saved",
+    "lever loadFromPower entry: inactive skill action offers practice",
+    "lever loadFromPower entry: native keyboard focus is visible",
+    "lever loadFromPower entry: real React commit leaves focus on the existing answer input",
+    "lever loadFromPower entry: guide remains open after practice entry",
+    "lever loadFromPower entry: selects the requested existing force question",
+    "lever: changed task clears old answer, unit, hints and completion",
+    "lever loadFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "lever loadFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "lever: answer feedback is unit",
+    "lever: loadFromPower rejects watts as a force answer",
+    "lever: answer feedback is correct",
+    "lever loadFromPower checked: active skill action offers to continue",
+    "lever loadFromPower checked: native keyboard focus is visible",
+    "lever loadFromPower checked: real React commit leaves focus on the existing answer input",
+    "lever loadFromPower checked: guide remains open after practice entry",
+    "lever loadFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "lever: answer feedback is correct",
+    "lever: loadFromPower saves an ordinary checked version4 force record",
+    "lever: answer feedback is solution",
+    "lever loadFromPower viewed: active skill action offers to continue",
+    "lever loadFromPower viewed: native keyboard focus is visible",
+    "lever loadFromPower viewed: real React commit leaves focus on the existing answer input",
+    "lever loadFromPower viewed: guide remains open after practice entry",
+    "lever loadFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "lever: answer feedback is solution",
+    "lever: loadFromPower retains viewed-solution provenance when saved",
+    "lever: both direct force exercises retain the earlier power record and unrelated evidence",
+    "lever converted minutes: both inverse calculations appear once in input/output order",
+    "lever converted minutes: effortFromPower divides independently calculated matching power by speed to recover force",
+    "lever converted minutes: effortFromPower is a uniquely named section with one readable equation",
+    "lever converted minutes: effortFromPower action belongs to the matching row and cannot submit a form",
+    "lever converted minutes: effortFromPower has local draft help and explains efficiency handling",
+    "lever converted minutes: loadFromPower divides independently calculated matching power by speed to recover force",
+    "lever converted minutes: loadFromPower is a uniquely named section with one readable equation",
+    "lever converted minutes: loadFromPower action belongs to the matching row and cannot submit a form",
+    "lever converted minutes: loadFromPower has local draft help and explains efficiency handling",
+    "lever changed task effortFromPower: inactive skill action offers practice",
+    "lever changed task effortFromPower: native keyboard focus is visible",
+    "lever changed task effortFromPower: real React commit leaves focus on the existing answer input",
+    "lever changed task effortFromPower: guide remains open after practice entry",
+    "lever changed task effortFromPower: selects the requested existing force question",
+    "lever: changed task clears old answer, unit, hints and completion",
+    "lever changed task effortFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "lever changed task effortFromPower: switching preserves saved records, other drafts and unrelated state",
+    "lever: answer feedback is correct",
+    "lever changed task loadFromPower: inactive skill action offers practice",
+    "lever changed task loadFromPower: native keyboard focus is visible",
+    "lever changed task loadFromPower: real React commit leaves focus on the existing answer input",
+    "lever changed task loadFromPower: guide remains open after practice entry",
+    "lever changed task loadFromPower: selects the requested existing force question",
+    "lever: changed task clears old answer, unit, hints and completion",
+    "lever changed task loadFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "lever changed task loadFromPower: switching preserves saved records, other drafts and unrelated state",
+    "lever: answer feedback is correct",
+    "lever: nondefault minute and efficiency practice preserves prior saved snapshots",
+    "Invalid duration hides inverse values, entry actions and grading",
+    "Repairing duration preserves every saved force record",
+    "Invalid percent hides inverse values, entry actions and grading",
+    "Repairing percent preserves every saved force record",
+    "Invalid budget hides inverse values, entry actions and grading",
+    "Repairing budget preserves every saved force record",
+    "pulley scenario 2: real THREE canvas initialized",
+    "pulley: both inverse calculations appear once in input/output order",
+    "pulley: effortFromPower divides independently calculated matching power by speed to recover force",
+    "pulley: effortFromPower is a uniquely named section with one readable equation",
+    "pulley: effortFromPower action belongs to the matching row and cannot submit a form",
+    "pulley: effortFromPower has local draft help and explains efficiency handling",
+    "pulley: loadFromPower divides independently calculated matching power by speed to recover force",
+    "pulley: loadFromPower is a uniquely named section with one readable equation",
+    "pulley: loadFromPower action belongs to the matching row and cannot submit a form",
+    "pulley: loadFromPower has local draft help and explains efficiency handling",
+    "pulley desktop: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "pulley desktop: effortFromPower equation and action have readable contrast",
+    "pulley desktop: effortFromPower action has a usable pointer target",
+    "pulley desktop: loadFromPower equation and action have readable contrast",
+    "pulley desktop: loadFromPower action has a usable pointer target",
+    "pulley: answer feedback is correct",
+    "pulley effortFromPower entry: inactive skill action offers practice",
+    "pulley effortFromPower entry: native keyboard focus is visible",
+    "pulley effortFromPower entry: real React commit leaves focus on the existing answer input",
+    "pulley effortFromPower entry: guide remains open after practice entry",
+    "pulley effortFromPower entry: selects the requested existing force question",
+    "pulley: changed task clears old answer, unit, hints and completion",
+    "pulley effortFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "pulley effortFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "pulley: answer feedback is unit",
+    "pulley: effortFromPower rejects watts as a force answer",
+    "pulley: answer feedback is correct",
+    "pulley effortFromPower checked: active skill action offers to continue",
+    "pulley effortFromPower checked: native keyboard focus is visible",
+    "pulley effortFromPower checked: real React commit leaves focus on the existing answer input",
+    "pulley effortFromPower checked: guide remains open after practice entry",
+    "pulley effortFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "pulley: answer feedback is correct",
+    "pulley: effortFromPower saves an ordinary checked version4 force record",
+    "pulley: answer feedback is solution",
+    "pulley effortFromPower viewed: active skill action offers to continue",
+    "pulley effortFromPower viewed: native keyboard focus is visible",
+    "pulley effortFromPower viewed: real React commit leaves focus on the existing answer input",
+    "pulley effortFromPower viewed: guide remains open after practice entry",
+    "pulley effortFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "pulley: answer feedback is solution",
+    "pulley: effortFromPower retains viewed-solution provenance when saved",
+    "pulley loadFromPower entry: inactive skill action offers practice",
+    "pulley loadFromPower entry: native keyboard focus is visible",
+    "pulley loadFromPower entry: real React commit leaves focus on the existing answer input",
+    "pulley loadFromPower entry: guide remains open after practice entry",
+    "pulley loadFromPower entry: selects the requested existing force question",
+    "pulley: changed task clears old answer, unit, hints and completion",
+    "pulley loadFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "pulley loadFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "pulley: answer feedback is unit",
+    "pulley: loadFromPower rejects watts as a force answer",
+    "pulley: answer feedback is correct",
+    "pulley loadFromPower checked: active skill action offers to continue",
+    "pulley loadFromPower checked: native keyboard focus is visible",
+    "pulley loadFromPower checked: real React commit leaves focus on the existing answer input",
+    "pulley loadFromPower checked: guide remains open after practice entry",
+    "pulley loadFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "pulley: answer feedback is correct",
+    "pulley: loadFromPower saves an ordinary checked version4 force record",
+    "pulley: answer feedback is solution",
+    "pulley loadFromPower viewed: active skill action offers to continue",
+    "pulley loadFromPower viewed: native keyboard focus is visible",
+    "pulley loadFromPower viewed: real React commit leaves focus on the existing answer input",
+    "pulley loadFromPower viewed: guide remains open after practice entry",
+    "pulley loadFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "pulley: answer feedback is solution",
+    "pulley: loadFromPower retains viewed-solution provenance when saved",
+    "pulley: both direct force exercises retain the earlier power record and unrelated evidence",
+    "pulley converted minutes: both inverse calculations appear once in input/output order",
+    "pulley converted minutes: effortFromPower divides independently calculated matching power by speed to recover force",
+    "pulley converted minutes: effortFromPower is a uniquely named section with one readable equation",
+    "pulley converted minutes: effortFromPower action belongs to the matching row and cannot submit a form",
+    "pulley converted minutes: effortFromPower has local draft help and explains efficiency handling",
+    "pulley converted minutes: loadFromPower divides independently calculated matching power by speed to recover force",
+    "pulley converted minutes: loadFromPower is a uniquely named section with one readable equation",
+    "pulley converted minutes: loadFromPower action belongs to the matching row and cannot submit a form",
+    "pulley converted minutes: loadFromPower has local draft help and explains efficiency handling",
+    "pulley changed task effortFromPower: inactive skill action offers practice",
+    "pulley changed task effortFromPower: native keyboard focus is visible",
+    "pulley changed task effortFromPower: real React commit leaves focus on the existing answer input",
+    "pulley changed task effortFromPower: guide remains open after practice entry",
+    "pulley changed task effortFromPower: selects the requested existing force question",
+    "pulley: changed task clears old answer, unit, hints and completion",
+    "pulley changed task effortFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "pulley changed task effortFromPower: switching preserves saved records, other drafts and unrelated state",
+    "pulley: answer feedback is correct",
+    "pulley changed task loadFromPower: inactive skill action offers practice",
+    "pulley changed task loadFromPower: native keyboard focus is visible",
+    "pulley changed task loadFromPower: real React commit leaves focus on the existing answer input",
+    "pulley changed task loadFromPower: guide remains open after practice entry",
+    "pulley changed task loadFromPower: selects the requested existing force question",
+    "pulley: changed task clears old answer, unit, hints and completion",
+    "pulley changed task loadFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "pulley changed task loadFromPower: switching preserves saved records, other drafts and unrelated state",
+    "pulley: answer feedback is correct",
+    "pulley: nondefault minute and efficiency practice preserves prior saved snapshots",
+    "windlass scenario 3: real THREE canvas initialized",
+    "windlass: both inverse calculations appear once in input/output order",
+    "windlass: effortFromPower divides independently calculated matching power by speed to recover force",
+    "windlass: effortFromPower is a uniquely named section with one readable equation",
+    "windlass: effortFromPower action belongs to the matching row and cannot submit a form",
+    "windlass: effortFromPower has local draft help and explains efficiency handling",
+    "windlass: loadFromPower divides independently calculated matching power by speed to recover force",
+    "windlass: loadFromPower is a uniquely named section with one readable equation",
+    "windlass: loadFromPower action belongs to the matching row and cannot submit a form",
+    "windlass: loadFromPower has local draft help and explains efficiency handling",
+    "windlass desktop: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "windlass desktop: effortFromPower equation and action have readable contrast",
+    "windlass desktop: effortFromPower action has a usable pointer target",
+    "windlass desktop: loadFromPower equation and action have readable contrast",
+    "windlass desktop: loadFromPower action has a usable pointer target",
+    "windlass: answer feedback is correct",
+    "windlass effortFromPower entry: inactive skill action offers practice",
+    "windlass effortFromPower entry: native keyboard focus is visible",
+    "windlass effortFromPower entry: real React commit leaves focus on the existing answer input",
+    "windlass effortFromPower entry: guide remains open after practice entry",
+    "windlass effortFromPower entry: selects the requested existing force question",
+    "windlass: changed task clears old answer, unit, hints and completion",
+    "windlass effortFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "windlass effortFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "windlass: answer feedback is unit",
+    "windlass: effortFromPower rejects watts as a force answer",
+    "windlass: answer feedback is correct",
+    "windlass effortFromPower checked: active skill action offers to continue",
+    "windlass effortFromPower checked: native keyboard focus is visible",
+    "windlass effortFromPower checked: real React commit leaves focus on the existing answer input",
+    "windlass effortFromPower checked: guide remains open after practice entry",
+    "windlass effortFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "windlass: answer feedback is correct",
+    "windlass: effortFromPower saves an ordinary checked version4 force record",
+    "windlass: answer feedback is solution",
+    "windlass effortFromPower viewed: active skill action offers to continue",
+    "windlass effortFromPower viewed: native keyboard focus is visible",
+    "windlass effortFromPower viewed: real React commit leaves focus on the existing answer input",
+    "windlass effortFromPower viewed: guide remains open after practice entry",
+    "windlass effortFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "windlass: answer feedback is solution",
+    "windlass: effortFromPower retains viewed-solution provenance when saved",
+    "windlass loadFromPower entry: inactive skill action offers practice",
+    "windlass loadFromPower entry: native keyboard focus is visible",
+    "windlass loadFromPower entry: real React commit leaves focus on the existing answer input",
+    "windlass loadFromPower entry: guide remains open after practice entry",
+    "windlass loadFromPower entry: selects the requested existing force question",
+    "windlass: changed task clears old answer, unit, hints and completion",
+    "windlass loadFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "windlass loadFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "windlass: answer feedback is unit",
+    "windlass: loadFromPower rejects watts as a force answer",
+    "windlass: answer feedback is correct",
+    "windlass loadFromPower checked: active skill action offers to continue",
+    "windlass loadFromPower checked: native keyboard focus is visible",
+    "windlass loadFromPower checked: real React commit leaves focus on the existing answer input",
+    "windlass loadFromPower checked: guide remains open after practice entry",
+    "windlass loadFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "windlass: answer feedback is correct",
+    "windlass: loadFromPower saves an ordinary checked version4 force record",
+    "windlass: answer feedback is solution",
+    "windlass loadFromPower viewed: active skill action offers to continue",
+    "windlass loadFromPower viewed: native keyboard focus is visible",
+    "windlass loadFromPower viewed: real React commit leaves focus on the existing answer input",
+    "windlass loadFromPower viewed: guide remains open after practice entry",
+    "windlass loadFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "windlass: answer feedback is solution",
+    "windlass: loadFromPower retains viewed-solution provenance when saved",
+    "windlass: both direct force exercises retain the earlier power record and unrelated evidence",
+    "windlass converted minutes: both inverse calculations appear once in input/output order",
+    "windlass converted minutes: effortFromPower divides independently calculated matching power by speed to recover force",
+    "windlass converted minutes: effortFromPower is a uniquely named section with one readable equation",
+    "windlass converted minutes: effortFromPower action belongs to the matching row and cannot submit a form",
+    "windlass converted minutes: effortFromPower has local draft help and explains efficiency handling",
+    "windlass converted minutes: loadFromPower divides independently calculated matching power by speed to recover force",
+    "windlass converted minutes: loadFromPower is a uniquely named section with one readable equation",
+    "windlass converted minutes: loadFromPower action belongs to the matching row and cannot submit a form",
+    "windlass converted minutes: loadFromPower has local draft help and explains efficiency handling",
+    "windlass changed task effortFromPower: inactive skill action offers practice",
+    "windlass changed task effortFromPower: native keyboard focus is visible",
+    "windlass changed task effortFromPower: real React commit leaves focus on the existing answer input",
+    "windlass changed task effortFromPower: guide remains open after practice entry",
+    "windlass changed task effortFromPower: selects the requested existing force question",
+    "windlass: changed task clears old answer, unit, hints and completion",
+    "windlass changed task effortFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "windlass changed task effortFromPower: switching preserves saved records, other drafts and unrelated state",
+    "windlass: answer feedback is correct",
+    "windlass changed task loadFromPower: inactive skill action offers practice",
+    "windlass changed task loadFromPower: native keyboard focus is visible",
+    "windlass changed task loadFromPower: real React commit leaves focus on the existing answer input",
+    "windlass changed task loadFromPower: guide remains open after practice entry",
+    "windlass changed task loadFromPower: selects the requested existing force question",
+    "windlass: changed task clears old answer, unit, hints and completion",
+    "windlass changed task loadFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "windlass changed task loadFromPower: switching preserves saved records, other drafts and unrelated state",
+    "windlass: answer feedback is correct",
+    "windlass: nondefault minute and efficiency practice preserves prior saved snapshots",
+    "ramp scenario 4: real THREE canvas initialized",
+    "ramp: both inverse calculations appear once in input/output order",
+    "ramp: effortFromPower divides independently calculated matching power by speed to recover force",
+    "ramp: effortFromPower is a uniquely named section with one readable equation",
+    "ramp: effortFromPower action belongs to the matching row and cannot submit a form",
+    "ramp: effortFromPower has local draft help and explains efficiency handling",
+    "ramp: loadFromPower divides independently calculated matching power by speed to recover force",
+    "ramp: loadFromPower is a uniquely named section with one readable equation",
+    "ramp: loadFromPower action belongs to the matching row and cannot submit a form",
+    "ramp: loadFromPower has local draft help and explains efficiency handling",
+    "ramp: load calculation explicitly uses vertical rise rather than ramp-path speed",
+    "ramp desktop: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "ramp desktop: effortFromPower equation and action have readable contrast",
+    "ramp desktop: effortFromPower action has a usable pointer target",
+    "ramp desktop: loadFromPower equation and action have readable contrast",
+    "ramp desktop: loadFromPower action has a usable pointer target",
+    "ramp: answer feedback is correct",
+    "ramp effortFromPower entry: inactive skill action offers practice",
+    "ramp effortFromPower entry: native keyboard focus is visible",
+    "ramp effortFromPower entry: real React commit leaves focus on the existing answer input",
+    "ramp effortFromPower entry: guide remains open after practice entry",
+    "ramp effortFromPower entry: selects the requested existing force question",
+    "ramp: changed task clears old answer, unit, hints and completion",
+    "ramp effortFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "ramp effortFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "ramp: answer feedback is unit",
+    "ramp: effortFromPower rejects watts as a force answer",
+    "ramp: answer feedback is correct",
+    "ramp effortFromPower checked: active skill action offers to continue",
+    "ramp effortFromPower checked: native keyboard focus is visible",
+    "ramp effortFromPower checked: real React commit leaves focus on the existing answer input",
+    "ramp effortFromPower checked: guide remains open after practice entry",
+    "ramp effortFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "ramp: answer feedback is correct",
+    "ramp: effortFromPower saves an ordinary checked version4 force record",
+    "ramp: answer feedback is solution",
+    "ramp effortFromPower viewed: active skill action offers to continue",
+    "ramp effortFromPower viewed: native keyboard focus is visible",
+    "ramp effortFromPower viewed: real React commit leaves focus on the existing answer input",
+    "ramp effortFromPower viewed: guide remains open after practice entry",
+    "ramp effortFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "ramp: answer feedback is solution",
+    "ramp: effortFromPower retains viewed-solution provenance when saved",
+    "ramp loadFromPower entry: inactive skill action offers practice",
+    "ramp loadFromPower entry: native keyboard focus is visible",
+    "ramp loadFromPower entry: real React commit leaves focus on the existing answer input",
+    "ramp loadFromPower entry: guide remains open after practice entry",
+    "ramp loadFromPower entry: selects the requested existing force question",
+    "ramp: changed task clears old answer, unit, hints and completion",
+    "ramp loadFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "ramp loadFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "ramp: answer feedback is unit",
+    "ramp: loadFromPower rejects watts as a force answer",
+    "ramp: answer feedback is correct",
+    "ramp loadFromPower checked: active skill action offers to continue",
+    "ramp loadFromPower checked: native keyboard focus is visible",
+    "ramp loadFromPower checked: real React commit leaves focus on the existing answer input",
+    "ramp loadFromPower checked: guide remains open after practice entry",
+    "ramp loadFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "ramp: answer feedback is correct",
+    "ramp: loadFromPower saves an ordinary checked version4 force record",
+    "ramp: answer feedback is solution",
+    "ramp loadFromPower viewed: active skill action offers to continue",
+    "ramp loadFromPower viewed: native keyboard focus is visible",
+    "ramp loadFromPower viewed: real React commit leaves focus on the existing answer input",
+    "ramp loadFromPower viewed: guide remains open after practice entry",
+    "ramp loadFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "ramp: answer feedback is solution",
+    "ramp: loadFromPower retains viewed-solution provenance when saved",
+    "ramp: both direct force exercises retain the earlier power record and unrelated evidence",
+    "ramp converted minutes: both inverse calculations appear once in input/output order",
+    "ramp converted minutes: effortFromPower divides independently calculated matching power by speed to recover force",
+    "ramp converted minutes: effortFromPower is a uniquely named section with one readable equation",
+    "ramp converted minutes: effortFromPower action belongs to the matching row and cannot submit a form",
+    "ramp converted minutes: effortFromPower has local draft help and explains efficiency handling",
+    "ramp converted minutes: loadFromPower divides independently calculated matching power by speed to recover force",
+    "ramp converted minutes: loadFromPower is a uniquely named section with one readable equation",
+    "ramp converted minutes: loadFromPower action belongs to the matching row and cannot submit a form",
+    "ramp converted minutes: loadFromPower has local draft help and explains efficiency handling",
+    "ramp converted minutes: load calculation explicitly uses vertical rise rather than ramp-path speed",
+    "ramp changed task effortFromPower: inactive skill action offers practice",
+    "ramp changed task effortFromPower: native keyboard focus is visible",
+    "ramp changed task effortFromPower: real React commit leaves focus on the existing answer input",
+    "ramp changed task effortFromPower: guide remains open after practice entry",
+    "ramp changed task effortFromPower: selects the requested existing force question",
+    "ramp: changed task clears old answer, unit, hints and completion",
+    "ramp changed task effortFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "ramp changed task effortFromPower: switching preserves saved records, other drafts and unrelated state",
+    "ramp: answer feedback is correct",
+    "ramp changed task loadFromPower: inactive skill action offers practice",
+    "ramp changed task loadFromPower: native keyboard focus is visible",
+    "ramp changed task loadFromPower: real React commit leaves focus on the existing answer input",
+    "ramp changed task loadFromPower: guide remains open after practice entry",
+    "ramp changed task loadFromPower: selects the requested existing force question",
+    "ramp: changed task clears old answer, unit, hints and completion",
+    "ramp changed task loadFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "ramp changed task loadFromPower: switching preserves saved records, other drafts and unrelated state",
+    "ramp: answer feedback is correct",
+    "ramp: nondefault minute and efficiency practice preserves prior saved snapshots",
+    "wedge scenario 5: real THREE canvas initialized",
+    "wedge: both inverse calculations appear once in input/output order",
+    "wedge: effortFromPower divides independently calculated matching power by speed to recover force",
+    "wedge: effortFromPower is a uniquely named section with one readable equation",
+    "wedge: effortFromPower action belongs to the matching row and cannot submit a form",
+    "wedge: effortFromPower has local draft help and explains efficiency handling",
+    "wedge: loadFromPower divides independently calculated matching power by speed to recover force",
+    "wedge: loadFromPower is a uniquely named section with one readable equation",
+    "wedge: loadFromPower action belongs to the matching row and cannot submit a form",
+    "wedge: loadFromPower has local draft help and explains efficiency handling",
+    "wedge desktop: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "wedge desktop: effortFromPower equation and action have readable contrast",
+    "wedge desktop: effortFromPower action has a usable pointer target",
+    "wedge desktop: loadFromPower equation and action have readable contrast",
+    "wedge desktop: loadFromPower action has a usable pointer target",
+    "wedge: answer feedback is correct",
+    "wedge effortFromPower entry: inactive skill action offers practice",
+    "wedge effortFromPower entry: native keyboard focus is visible",
+    "wedge effortFromPower entry: real React commit leaves focus on the existing answer input",
+    "wedge effortFromPower entry: guide remains open after practice entry",
+    "wedge effortFromPower entry: selects the requested existing force question",
+    "wedge: changed task clears old answer, unit, hints and completion",
+    "wedge effortFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "wedge effortFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "wedge: answer feedback is unit",
+    "wedge: effortFromPower rejects watts as a force answer",
+    "wedge: answer feedback is correct",
+    "wedge effortFromPower checked: active skill action offers to continue",
+    "wedge effortFromPower checked: native keyboard focus is visible",
+    "wedge effortFromPower checked: real React commit leaves focus on the existing answer input",
+    "wedge effortFromPower checked: guide remains open after practice entry",
+    "wedge effortFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "wedge: answer feedback is correct",
+    "wedge: effortFromPower saves an ordinary checked version4 force record",
+    "wedge: answer feedback is solution",
+    "wedge effortFromPower viewed: active skill action offers to continue",
+    "wedge effortFromPower viewed: native keyboard focus is visible",
+    "wedge effortFromPower viewed: real React commit leaves focus on the existing answer input",
+    "wedge effortFromPower viewed: guide remains open after practice entry",
+    "wedge effortFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "wedge: answer feedback is solution",
+    "wedge: effortFromPower retains viewed-solution provenance when saved",
+    "wedge loadFromPower entry: inactive skill action offers practice",
+    "wedge loadFromPower entry: native keyboard focus is visible",
+    "wedge loadFromPower entry: real React commit leaves focus on the existing answer input",
+    "wedge loadFromPower entry: guide remains open after practice entry",
+    "wedge loadFromPower entry: selects the requested existing force question",
+    "wedge: changed task clears old answer, unit, hints and completion",
+    "wedge loadFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "wedge loadFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "wedge: answer feedback is unit",
+    "wedge: loadFromPower rejects watts as a force answer",
+    "wedge: answer feedback is correct",
+    "wedge loadFromPower checked: active skill action offers to continue",
+    "wedge loadFromPower checked: native keyboard focus is visible",
+    "wedge loadFromPower checked: real React commit leaves focus on the existing answer input",
+    "wedge loadFromPower checked: guide remains open after practice entry",
+    "wedge loadFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "wedge: answer feedback is correct",
+    "wedge: loadFromPower saves an ordinary checked version4 force record",
+    "wedge: answer feedback is solution",
+    "wedge loadFromPower viewed: active skill action offers to continue",
+    "wedge loadFromPower viewed: native keyboard focus is visible",
+    "wedge loadFromPower viewed: real React commit leaves focus on the existing answer input",
+    "wedge loadFromPower viewed: guide remains open after practice entry",
+    "wedge loadFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "wedge: answer feedback is solution",
+    "wedge: loadFromPower retains viewed-solution provenance when saved",
+    "wedge: both direct force exercises retain the earlier power record and unrelated evidence",
+    "wedge converted minutes: both inverse calculations appear once in input/output order",
+    "wedge converted minutes: effortFromPower divides independently calculated matching power by speed to recover force",
+    "wedge converted minutes: effortFromPower is a uniquely named section with one readable equation",
+    "wedge converted minutes: effortFromPower action belongs to the matching row and cannot submit a form",
+    "wedge converted minutes: effortFromPower has local draft help and explains efficiency handling",
+    "wedge converted minutes: loadFromPower divides independently calculated matching power by speed to recover force",
+    "wedge converted minutes: loadFromPower is a uniquely named section with one readable equation",
+    "wedge converted minutes: loadFromPower action belongs to the matching row and cannot submit a form",
+    "wedge converted minutes: loadFromPower has local draft help and explains efficiency handling",
+    "wedge changed task effortFromPower: inactive skill action offers practice",
+    "wedge changed task effortFromPower: native keyboard focus is visible",
+    "wedge changed task effortFromPower: real React commit leaves focus on the existing answer input",
+    "wedge changed task effortFromPower: guide remains open after practice entry",
+    "wedge changed task effortFromPower: selects the requested existing force question",
+    "wedge: changed task clears old answer, unit, hints and completion",
+    "wedge changed task effortFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "wedge changed task effortFromPower: switching preserves saved records, other drafts and unrelated state",
+    "wedge: answer feedback is correct",
+    "wedge changed task loadFromPower: inactive skill action offers practice",
+    "wedge changed task loadFromPower: native keyboard focus is visible",
+    "wedge changed task loadFromPower: real React commit leaves focus on the existing answer input",
+    "wedge changed task loadFromPower: guide remains open after practice entry",
+    "wedge changed task loadFromPower: selects the requested existing force question",
+    "wedge: changed task clears old answer, unit, hints and completion",
+    "wedge changed task loadFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "wedge changed task loadFromPower: switching preserves saved records, other drafts and unrelated state",
+    "wedge: answer feedback is correct",
+    "wedge: nondefault minute and efficiency practice preserves prior saved snapshots",
+    "screw scenario 6: real THREE canvas initialized",
+    "screw: both inverse calculations appear once in input/output order",
+    "screw: effortFromPower divides independently calculated matching power by speed to recover force",
+    "screw: effortFromPower is a uniquely named section with one readable equation",
+    "screw: effortFromPower action belongs to the matching row and cannot submit a form",
+    "screw: effortFromPower has local draft help and explains efficiency handling",
+    "screw: loadFromPower divides independently calculated matching power by speed to recover force",
+    "screw: loadFromPower is a uniquely named section with one readable equation",
+    "screw: loadFromPower action belongs to the matching row and cannot submit a form",
+    "screw: loadFromPower has local draft help and explains efficiency handling",
+    "screw desktop: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "screw desktop: effortFromPower equation and action have readable contrast",
+    "screw desktop: effortFromPower action has a usable pointer target",
+    "screw desktop: loadFromPower equation and action have readable contrast",
+    "screw desktop: loadFromPower action has a usable pointer target",
+    "screw: answer feedback is correct",
+    "screw effortFromPower entry: inactive skill action offers practice",
+    "screw effortFromPower entry: native keyboard focus is visible",
+    "screw effortFromPower entry: real React commit leaves focus on the existing answer input",
+    "screw effortFromPower entry: guide remains open after practice entry",
+    "screw effortFromPower entry: selects the requested existing force question",
+    "screw: changed task clears old answer, unit, hints and completion",
+    "screw effortFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "screw effortFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "screw: answer feedback is unit",
+    "screw: effortFromPower rejects watts as a force answer",
+    "screw: answer feedback is correct",
+    "screw effortFromPower checked: active skill action offers to continue",
+    "screw effortFromPower checked: native keyboard focus is visible",
+    "screw effortFromPower checked: real React commit leaves focus on the existing answer input",
+    "screw effortFromPower checked: guide remains open after practice entry",
+    "screw effortFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "screw: answer feedback is correct",
+    "screw: effortFromPower saves an ordinary checked version4 force record",
+    "screw: answer feedback is solution",
+    "screw effortFromPower viewed: active skill action offers to continue",
+    "screw effortFromPower viewed: native keyboard focus is visible",
+    "screw effortFromPower viewed: real React commit leaves focus on the existing answer input",
+    "screw effortFromPower viewed: guide remains open after practice entry",
+    "screw effortFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "screw: answer feedback is solution",
+    "screw: effortFromPower retains viewed-solution provenance when saved",
+    "screw loadFromPower entry: inactive skill action offers practice",
+    "screw loadFromPower entry: native keyboard focus is visible",
+    "screw loadFromPower entry: real React commit leaves focus on the existing answer input",
+    "screw loadFromPower entry: guide remains open after practice entry",
+    "screw loadFromPower entry: selects the requested existing force question",
+    "screw: changed task clears old answer, unit, hints and completion",
+    "screw loadFromPower entry: switching changes only ordinary draft fields and keeps task assumptions",
+    "screw loadFromPower entry: switching preserves saved records, other drafts and unrelated state",
+    "screw: answer feedback is unit",
+    "screw: loadFromPower rejects watts as a force answer",
+    "screw: answer feedback is correct",
+    "screw loadFromPower checked: active skill action offers to continue",
+    "screw loadFromPower checked: native keyboard focus is visible",
+    "screw loadFromPower checked: real React commit leaves focus on the existing answer input",
+    "screw loadFromPower checked: guide remains open after practice entry",
+    "screw loadFromPower checked: same-skill entry preserves the exact draft and every saved record",
+    "screw: answer feedback is correct",
+    "screw: loadFromPower saves an ordinary checked version4 force record",
+    "screw: answer feedback is solution",
+    "screw loadFromPower viewed: active skill action offers to continue",
+    "screw loadFromPower viewed: native keyboard focus is visible",
+    "screw loadFromPower viewed: real React commit leaves focus on the existing answer input",
+    "screw loadFromPower viewed: guide remains open after practice entry",
+    "screw loadFromPower viewed: same-skill entry preserves the exact draft and every saved record",
+    "screw: answer feedback is solution",
+    "screw: loadFromPower retains viewed-solution provenance when saved",
+    "screw: both direct force exercises retain the earlier power record and unrelated evidence",
+    "screw converted minutes: both inverse calculations appear once in input/output order",
+    "screw converted minutes: effortFromPower divides independently calculated matching power by speed to recover force",
+    "screw converted minutes: effortFromPower is a uniquely named section with one readable equation",
+    "screw converted minutes: effortFromPower action belongs to the matching row and cannot submit a form",
+    "screw converted minutes: effortFromPower has local draft help and explains efficiency handling",
+    "screw converted minutes: loadFromPower divides independently calculated matching power by speed to recover force",
+    "screw converted minutes: loadFromPower is a uniquely named section with one readable equation",
+    "screw converted minutes: loadFromPower action belongs to the matching row and cannot submit a form",
+    "screw converted minutes: loadFromPower has local draft help and explains efficiency handling",
+    "screw changed task effortFromPower: inactive skill action offers practice",
+    "screw changed task effortFromPower: native keyboard focus is visible",
+    "screw changed task effortFromPower: real React commit leaves focus on the existing answer input",
+    "screw changed task effortFromPower: guide remains open after practice entry",
+    "screw changed task effortFromPower: selects the requested existing force question",
+    "screw: changed task clears old answer, unit, hints and completion",
+    "screw changed task effortFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "screw changed task effortFromPower: switching preserves saved records, other drafts and unrelated state",
+    "screw: answer feedback is correct",
+    "screw changed task loadFromPower: inactive skill action offers practice",
+    "screw changed task loadFromPower: native keyboard focus is visible",
+    "screw changed task loadFromPower: real React commit leaves focus on the existing answer input",
+    "screw changed task loadFromPower: guide remains open after practice entry",
+    "screw changed task loadFromPower: selects the requested existing force question",
+    "screw: changed task clears old answer, unit, hints and completion",
+    "screw changed task loadFromPower: switching changes only ordinary draft fields and keeps task assumptions",
+    "screw changed task loadFromPower: switching preserves saved records, other drafts and unrelated state",
+    "screw: answer feedback is correct",
+    "screw: nondefault minute and efficiency practice preserves prior saved snapshots",
+    "screw scenario 7: real THREE canvas initialized",
+    "dark-phone: both inverse calculations appear once in input/output order",
+    "dark-phone: effortFromPower divides independently calculated matching power by speed to recover force",
+    "dark-phone: effortFromPower is a uniquely named section with one readable equation",
+    "dark-phone: effortFromPower action belongs to the matching row and cannot submit a form",
+    "dark-phone: effortFromPower has local draft help and explains efficiency handling",
+    "dark-phone: loadFromPower divides independently calculated matching power by speed to recover force",
+    "dark-phone: loadFromPower is a uniquely named section with one readable equation",
+    "dark-phone: loadFromPower action belongs to the matching row and cannot submit a form",
+    "dark-phone: loadFromPower has local draft help and explains efficiency handling",
+    "dark-phone: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "dark-phone: effortFromPower equation and action have readable contrast",
+    "dark-phone: effortFromPower action has a usable pointer target",
+    "dark-phone: loadFromPower equation and action have readable contrast",
+    "dark-phone: loadFromPower action has a usable pointer target",
+    "dark-phone effort entry: native keyboard focus is visible",
+    "dark-phone effort entry: real React commit leaves focus on the existing answer input",
+    "dark-phone effort entry: guide remains open after practice entry",
+    "screw: answer feedback is correct",
+    "dark-phone effort continue: active skill action offers to continue",
+    "dark-phone effort continue: native keyboard focus is visible",
+    "dark-phone effort continue: real React commit leaves focus on the existing answer input",
+    "dark-phone effort continue: guide remains open after practice entry",
+    "dark-phone effort continue: same-skill entry preserves the exact draft and every saved record",
+    "screw: answer feedback is correct",
+    "dark-phone after React update: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "dark-phone after React update: effortFromPower equation and action have readable contrast",
+    "dark-phone after React update: effortFromPower action has a usable pointer target",
+    "dark-phone after React update: loadFromPower equation and action have readable contrast",
+    "dark-phone after React update: loadFromPower action has a usable pointer target",
+    "windlass scenario 8: real THREE canvas initialized",
+    "forced-colors-phone: both inverse calculations appear once in input/output order",
+    "forced-colors-phone: effortFromPower divides independently calculated matching power by speed to recover force",
+    "forced-colors-phone: effortFromPower is a uniquely named section with one readable equation",
+    "forced-colors-phone: effortFromPower action belongs to the matching row and cannot submit a form",
+    "forced-colors-phone: effortFromPower has local draft help and explains efficiency handling",
+    "forced-colors-phone: loadFromPower divides independently calculated matching power by speed to recover force",
+    "forced-colors-phone: loadFromPower is a uniquely named section with one readable equation",
+    "forced-colors-phone: loadFromPower action belongs to the matching row and cannot submit a form",
+    "forced-colors-phone: loadFromPower has local draft help and explains efficiency handling",
+    "forced-colors-phone: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "forced-colors-phone: effortFromPower equation and action have readable contrast",
+    "forced-colors-phone: effortFromPower action has a usable pointer target",
+    "forced-colors-phone: loadFromPower equation and action have readable contrast",
+    "forced-colors-phone: loadFromPower action has a usable pointer target",
+    "forced-colors-phone effort entry: native keyboard focus is visible",
+    "forced-colors-phone effort entry: real React commit leaves focus on the existing answer input",
+    "forced-colors-phone effort entry: guide remains open after practice entry",
+    "windlass: answer feedback is correct",
+    "forced-colors-phone effort continue: active skill action offers to continue",
+    "forced-colors-phone effort continue: native keyboard focus is visible",
+    "forced-colors-phone effort continue: real React commit leaves focus on the existing answer input",
+    "forced-colors-phone effort continue: guide remains open after practice entry",
+    "forced-colors-phone effort continue: same-skill entry preserves the exact draft and every saved record",
+    "windlass: answer feedback is correct",
+    "forced-colors-phone after React update: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "forced-colors-phone after React update: effortFromPower equation and action have readable contrast",
+    "forced-colors-phone after React update: effortFromPower action has a usable pointer target",
+    "forced-colors-phone after React update: loadFromPower equation and action have readable contrast",
+    "forced-colors-phone after React update: loadFromPower action has a usable pointer target",
+    "lever scenario 9: real THREE canvas initialized",
+    "large-text-phone: both inverse calculations appear once in input/output order",
+    "large-text-phone: effortFromPower divides independently calculated matching power by speed to recover force",
+    "large-text-phone: effortFromPower is a uniquely named section with one readable equation",
+    "large-text-phone: effortFromPower action belongs to the matching row and cannot submit a form",
+    "large-text-phone: effortFromPower has local draft help and explains efficiency handling",
+    "large-text-phone: loadFromPower divides independently calculated matching power by speed to recover force",
+    "large-text-phone: loadFromPower is a uniquely named section with one readable equation",
+    "large-text-phone: loadFromPower action belongs to the matching row and cannot submit a form",
+    "large-text-phone: loadFromPower has local draft help and explains efficiency handling",
+    "large-text-phone: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "large-text-phone: effortFromPower equation and action have readable contrast",
+    "large-text-phone: effortFromPower action has a usable pointer target",
+    "large-text-phone: loadFromPower equation and action have readable contrast",
+    "large-text-phone: loadFromPower action has a usable pointer target",
+    "large-text-phone effort entry: native keyboard focus is visible",
+    "large-text-phone effort entry: real React commit leaves focus on the existing answer input",
+    "large-text-phone effort entry: guide remains open after practice entry",
+    "lever: answer feedback is correct",
+    "large-text-phone effort continue: active skill action offers to continue",
+    "large-text-phone effort continue: native keyboard focus is visible",
+    "large-text-phone effort continue: real React commit leaves focus on the existing answer input",
+    "large-text-phone effort continue: guide remains open after practice entry",
+    "large-text-phone effort continue: same-skill entry preserves the exact draft and every saved record",
+    "lever: answer feedback is correct",
+    "large-text-phone after React update: inverse calculations, actions and surrounding guide fit without horizontal clipping",
+    "large-text-phone after React update: effortFromPower equation and action have readable contrast",
+    "large-text-phone after React update: effortFromPower action has a usable pointer target",
+    "large-text-phone after React update: loadFromPower equation and action have readable contrast",
+    "large-text-phone after React update: loadFromPower action has a usable pointer target",
+    "All six inverse-force practice routes exercised"
+  ],
+  "shots": [
+    {
+      "name": "desktop-force-practice",
+      "file": "desktop-force-practice.png",
+      "sha256": "ba71907d4cd8535423a8ab5ec15e14df579e04695688a7a29b80f17741f61f99",
+      "clip": {
+        "x": 593,
+        "y": 2837.578125,
+        "width": 529,
+        "height": 1711
+      },
+      "region": "complete guide"
+    },
+    {
+      "name": "dark-phone-force-practice",
+      "file": "dark-phone-force-practice.png",
+      "sha256": "6f188ab617ce8336c373cbf59ba3d4d9b3765d215995bf02db59bb6b9598e7a9",
+      "clip": {
+        "x": 61,
+        "y": 5696.40625,
+        "width": 201,
+        "height": 443
+      },
+      "region": "effort inverse panel"
+    },
+    {
+      "name": "forced-colors-phone-force-practice",
+      "file": "forced-colors-phone-force-practice.png",
+      "sha256": "aedeb5c48c2ef7f1011104754e4b75a4e7bae8a0cd5af545c0e091661c41d566",
+      "clip": {
+        "x": 61,
+        "y": 5674.828125,
+        "width": 201,
+        "height": 443
+      },
+      "region": "effort inverse panel"
+    },
+    {
+      "name": "large-text-phone-force-practice",
+      "file": "large-text-phone-force-practice.png",
+      "sha256": "bcbddaf986875bdfe5ace57e08feb43cb62755963cca0ccd8dfd4d9cf1ca463a",
+      "clip": {
+        "x": 61,
+        "y": 7523.28125,
+        "width": 201,
+        "height": 1422
+      },
+      "region": "effort inverse panel"
+    }
+  ],
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "observations": [
+    {
+      "label": "lever",
+      "kind": "lever",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 50,
+        "speed": 0.2,
+        "force": 250
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "50 W ÷ (0.2 m/s) = 250 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "lever",
+      "kind": "lever",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 40,
+        "speed": 0.1,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "40 W ÷ (0.1 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "lever",
+      "label": "lever desktop",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 202.40625,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "lever effortFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever effortFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever effortFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever loadFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever loadFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever loadFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever converted minutes",
+      "kind": "lever",
+      "skill": "effortFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 4.444444444444445,
+        "speed": 0.008333333333333333,
+        "force": 533.3333333333334
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "4.44444 W ÷ (0.00833333 m/s) = 533.333 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.4.44444 W ÷ (0.00833333 m/s) = 533.333 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "lever converted minutes",
+      "kind": "lever",
+      "skill": "loadFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 1.6666666666666667,
+        "speed": 0.004166666666666667,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "1.66667 W ÷ (0.00416667 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Continue load practice",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Continue this calculation with your answer, hints and feedback kept in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.1.66667 W ÷ (0.00416667 m/s) = 400 NContinue this calculation with your answer, hints and feedback kept in place.Continue load practice"
+      }
+    },
+    {
+      "label": "lever changed task effortFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "lever changed task loadFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley",
+      "kind": "pulley",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 50,
+        "speed": 0.2,
+        "force": 250
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "50 W ÷ (0.2 m/s) = 250 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "pulley",
+      "kind": "pulley",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 40,
+        "speed": 0.1,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "40 W ÷ (0.1 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "pulley",
+      "label": "pulley desktop",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 202.40625,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "pulley effortFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley effortFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley effortFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley loadFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley loadFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley loadFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley converted minutes",
+      "kind": "pulley",
+      "skill": "effortFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 4.444444444444445,
+        "speed": 0.008333333333333333,
+        "force": 533.3333333333334
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "4.44444 W ÷ (0.00833333 m/s) = 533.333 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.4.44444 W ÷ (0.00833333 m/s) = 533.333 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "pulley converted minutes",
+      "kind": "pulley",
+      "skill": "loadFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 1.6666666666666667,
+        "speed": 0.004166666666666667,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "1.66667 W ÷ (0.00416667 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Continue load practice",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Continue this calculation with your answer, hints and feedback kept in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.1.66667 W ÷ (0.00416667 m/s) = 400 NContinue this calculation with your answer, hints and feedback kept in place.Continue load practice"
+      }
+    },
+    {
+      "label": "pulley changed task effortFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "pulley changed task loadFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass",
+      "kind": "windlass",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 50,
+        "speed": 0.45,
+        "force": 111.1111111111111
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "50 W ÷ (0.45 m/s) = 111.111 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.45 m/s) = 111.111 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "windlass",
+      "kind": "windlass",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 40,
+        "speed": 0.1,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "40 W ÷ (0.1 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "windlass",
+      "label": "windlass desktop",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 202.40625,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.45 m/s) = 111.111 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "windlass effortFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass effortFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass effortFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass loadFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass loadFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass loadFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass converted minutes",
+      "kind": "windlass",
+      "skill": "effortFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 4.444444444444445,
+        "speed": 0.01875,
+        "force": 237.03703703703704
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "4.44444 W ÷ (0.01875 m/s) = 237.037 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.4.44444 W ÷ (0.01875 m/s) = 237.037 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "windlass converted minutes",
+      "kind": "windlass",
+      "skill": "loadFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 1.6666666666666667,
+        "speed": 0.004166666666666667,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "1.66667 W ÷ (0.00416667 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Continue load practice",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Continue this calculation with your answer, hints and feedback kept in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.1.66667 W ÷ (0.00416667 m/s) = 400 NContinue this calculation with your answer, hints and feedback kept in place.Continue load practice"
+      }
+    },
+    {
+      "label": "windlass changed task effortFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "windlass changed task loadFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp",
+      "kind": "ramp",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 50,
+        "speed": 0.4,
+        "force": 125
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "50 W ÷ (0.4 m/s) = 125 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.4 m/s) = 125 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "ramp",
+      "kind": "ramp",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 40,
+        "speed": 0.1,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "40 W ÷ (0.1 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ vertical rise rate. Use vertical rise per second, not speed along the ramp. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "ramp",
+      "label": "ramp desktop",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 202.40625,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.4 m/s) = 125 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ vertical rise rate. Use vertical rise per second, not speed along the ramp. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "ramp effortFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp effortFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp effortFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp loadFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp loadFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp loadFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp converted minutes",
+      "kind": "ramp",
+      "skill": "effortFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 4.444444444444445,
+        "speed": 0.016666666666666666,
+        "force": 266.6666666666667
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "4.44444 W ÷ (0.0166667 m/s) = 266.667 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.4.44444 W ÷ (0.0166667 m/s) = 266.667 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "ramp converted minutes",
+      "kind": "ramp",
+      "skill": "loadFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 1.6666666666666667,
+        "speed": 0.004166666666666667,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "1.66667 W ÷ (0.00416667 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Continue load practice",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Continue this calculation with your answer, hints and feedback kept in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ vertical rise rate. Use vertical rise per second, not speed along the ramp. Useful power already accounts for efficiency; do not apply it again.1.66667 W ÷ (0.00416667 m/s) = 400 NContinue this calculation with your answer, hints and feedback kept in place.Continue load practice"
+      }
+    },
+    {
+      "label": "ramp changed task effortFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "ramp changed task loadFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge",
+      "kind": "wedge",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 100,
+        "speed": 0.5,
+        "force": 200
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "100 W ÷ (0.5 m/s) = 200 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.100 W ÷ (0.5 m/s) = 200 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "wedge",
+      "kind": "wedge",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 80,
+        "speed": 0.1,
+        "force": 800
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "80 W ÷ (0.1 m/s) = 800 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.80 W ÷ (0.1 m/s) = 800 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "wedge",
+      "label": "wedge desktop",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 202.40625,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.100 W ÷ (0.5 m/s) = 200 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.80 W ÷ (0.1 m/s) = 800 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "wedge effortFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge effortFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge effortFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge loadFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge loadFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge loadFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge converted minutes",
+      "kind": "wedge",
+      "skill": "effortFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 8.88888888888889,
+        "speed": 0.020833333333333332,
+        "force": 426.6666666666667
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "8.88889 W ÷ (0.0208333 m/s) = 426.667 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.8.88889 W ÷ (0.0208333 m/s) = 426.667 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "wedge converted minutes",
+      "kind": "wedge",
+      "skill": "loadFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 3.3333333333333335,
+        "speed": 0.004166666666666667,
+        "force": 800
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "3.33333 W ÷ (0.00416667 m/s) = 800 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Continue load practice",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Continue this calculation with your answer, hints and feedback kept in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.3.33333 W ÷ (0.00416667 m/s) = 800 NContinue this calculation with your answer, hints and feedback kept in place.Continue load practice"
+      }
+    },
+    {
+      "label": "wedge changed task effortFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "wedge changed task loadFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw",
+      "kind": "screw",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 250,
+        "speed": 18.84955592153876,
+        "force": 13.26291192432461
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "250 W ÷ (18.8496 m/s) = 13.2629 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.250 W ÷ (18.8496 m/s) = 13.2629 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "screw",
+      "kind": "screw",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 200,
+        "speed": 0.1,
+        "force": 2000
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "200 W ÷ (0.1 m/s) = 2000 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.200 W ÷ (0.1 m/s) = 2000 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "screw",
+      "label": "screw desktop",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 202.40625,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.250 W ÷ (18.8496 m/s) = 13.2629 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.200 W ÷ (0.1 m/s) = 2000 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "screw effortFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw effortFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw effortFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw loadFromPower entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw loadFromPower checked",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw loadFromPower viewed",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw converted minutes",
+      "kind": "screw",
+      "skill": "effortFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 22.22222222222222,
+        "speed": 0.7853981633974482,
+        "force": 28.29421210522584
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "22.2222 W ÷ (0.785398 m/s) = 28.2942 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.22.2222 W ÷ (0.785398 m/s) = 28.2942 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "screw converted minutes",
+      "kind": "screw",
+      "skill": "loadFromPower",
+      "percent": 37.5,
+      "seconds": 120,
+      "expected": {
+        "watts": 8.333333333333334,
+        "speed": 0.004166666666666667,
+        "force": 2000
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "8.33333 W ÷ (0.00416667 m/s) = 2000 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Continue load practice",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Continue this calculation with your answer, hints and feedback kept in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.8.33333 W ÷ (0.00416667 m/s) = 2000 NContinue this calculation with your answer, hints and feedback kept in place.Continue load practice"
+      }
+    },
+    {
+      "label": "screw changed task effortFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "screw changed task loadFromPower",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "dark-phone",
+      "kind": "screw",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 250,
+        "speed": 18.84955592153876,
+        "force": 13.26291192432461
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "250 W ÷ (18.8496 m/s) = 13.2629 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.250 W ÷ (18.8496 m/s) = 13.2629 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "dark-phone",
+      "kind": "screw",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 200,
+        "speed": 0.1,
+        "force": 2000
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "200 W ÷ (0.1 m/s) = 2000 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.200 W ÷ (0.1 m/s) = 2000 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "screw",
+      "label": "dark-phone",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "dashed none none",
+              "borderColor": "rgb(51, 65, 85) rgb(241, 245, 249) rgb(241, 245, 249)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(15, 23, 42)",
+              "border": "none none none solid",
+              "borderColor": "rgb(241, 245, 249) rgb(241, 245, 249) rgb(241, 245, 249) rgb(251, 191, 36)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "borderColor": "rgb(51, 65, 85)"
+            },
+            "buttonHeight": 60,
+            "buttonWidth": 195,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.250 W ÷ (18.8496 m/s) = 13.2629 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "dashed none none",
+              "borderColor": "rgb(51, 65, 85) rgb(241, 245, 249) rgb(241, 245, 249)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(15, 23, 42)",
+              "border": "none none none solid",
+              "borderColor": "rgb(241, 245, 249) rgb(241, 245, 249) rgb(241, 245, 249) rgb(96, 165, 250)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "borderColor": "rgb(51, 65, 85)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.200 W ÷ (0.1 m/s) = 2000 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "dark-phone effort entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "dark-phone effort continue",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "kind": "screw",
+      "label": "dark-phone after React update",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "dashed none none",
+              "borderColor": "rgb(51, 65, 85) rgb(241, 245, 249) rgb(241, 245, 249)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(15, 23, 42)",
+              "border": "none none none solid",
+              "borderColor": "rgb(241, 245, 249) rgb(241, 245, 249) rgb(241, 245, 249) rgb(251, 191, 36)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "borderColor": "rgb(51, 65, 85)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 185.171875,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.250 W ÷ (18.8496 m/s) = 13.2629 NContinue this calculation with your answer, hints and feedback kept in place.Continue effort practice"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "dashed none none",
+              "borderColor": "rgb(51, 65, 85) rgb(241, 245, 249) rgb(241, 245, 249)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(15, 23, 42)",
+              "border": "none none none solid",
+              "borderColor": "rgb(241, 245, 249) rgb(241, 245, 249) rgb(241, 245, 249) rgb(96, 165, 250)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "borderColor": "rgb(51, 65, 85)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.200 W ÷ (0.1 m/s) = 2000 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "forced-colors-phone",
+      "kind": "windlass",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 50,
+        "speed": 0.45,
+        "force": 111.1111111111111
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "50 W ÷ (0.45 m/s) = 111.111 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.45 m/s) = 111.111 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "forced-colors-phone",
+      "kind": "windlass",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 40,
+        "speed": 0.1,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "40 W ÷ (0.1 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "windlass",
+      "label": "forced-colors-phone",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": true,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "none none none solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonHeight": 60,
+            "buttonWidth": 195,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.45 m/s) = 111.111 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "none none none solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "forced-colors-phone effort entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "forced-colors-phone effort continue",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "kind": "windlass",
+      "label": "forced-colors-phone after React update",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": true,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "none none none solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 185.171875,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.45 m/s) = 111.111 NContinue this calculation with your answer, hints and feedback kept in place.Continue effort practice"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "equationStyle": {
+              "font": 18,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "none none none solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonStyle": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(0, 0, 0)"
+            },
+            "buttonHeight": 44,
+            "buttonWidth": 194.46875,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "large-text-phone",
+      "kind": "lever",
+      "skill": "effortFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 50,
+        "speed": 0.2,
+        "force": 250
+      },
+      "card": {
+        "skill": "effortFromPower",
+        "tag": "SECTION",
+        "row": "input",
+        "heading": "Find effort force from power and hand speed",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "50 W ÷ (0.2 m/s) = 250 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise effort from power",
+          "skill": "effortFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+      }
+    },
+    {
+      "label": "large-text-phone",
+      "kind": "lever",
+      "skill": "loadFromPower",
+      "percent": 80,
+      "seconds": 5,
+      "expected": {
+        "watts": 40,
+        "speed": 0.1,
+        "force": 400
+      },
+      "card": {
+        "skill": "loadFromPower",
+        "tag": "SECTION",
+        "row": "output",
+        "heading": "Find load force from useful power and movement rate",
+        "localHeading": true,
+        "uniqueHeading": true,
+        "equation": "40 W ÷ (0.1 m/s) = 400 N",
+        "equationTag": "P",
+        "equationCount": 1,
+        "button": {
+          "type": "button",
+          "text": "Practise load from power",
+          "skill": "loadFromPower",
+          "count": 1
+        },
+        "help": "Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.",
+        "localHelp": true,
+        "uniqueHelp": true,
+        "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+      }
+    },
+    {
+      "kind": "lever",
+      "label": "large-text-phone",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 36,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 32,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 147,
+            "buttonWidth": 195,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise effort from power"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 36,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 32,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 147,
+            "buttonWidth": 195,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    },
+    {
+      "label": "large-text-phone effort entry",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "label": "large-text-phone effort continue",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "outline": "solid",
+        "width": 3
+      }
+    },
+    {
+      "kind": "lever",
+      "label": "large-text-phone after React update",
+      "visual": {
+        "page": true,
+        "panel": true,
+        "forced": false,
+        "cards": [
+          {
+            "skill": "effortFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 36,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(180, 83, 9)"
+            },
+            "buttonStyle": {
+              "font": 32,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 147,
+            "buttonWidth": 195,
+            "text": "Find effort force from power and hand speedEffort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.50 W ÷ (0.2 m/s) = 250 NContinue this calculation with your answer, hints and feedback kept in place.Continue effort practice"
+          },
+          {
+            "skill": "loadFromPower",
+            "cardStyle": {
+              "font": 16,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "dashed none none",
+              "borderColor": "rgb(203, 213, 225) rgb(15, 23, 42) rgb(15, 23, 42)"
+            },
+            "equationStyle": {
+              "font": 36,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(248, 250, 252)",
+              "border": "none none none solid",
+              "borderColor": "rgb(15, 23, 42) rgb(15, 23, 42) rgb(15, 23, 42) rgb(29, 78, 216)"
+            },
+            "buttonStyle": {
+              "font": 32,
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "borderColor": "rgb(203, 213, 225)"
+            },
+            "buttonHeight": 147,
+            "buttonWidth": 195,
+            "text": "Find load force from useful power and movement rateLoad force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.40 W ÷ (0.1 m/s) = 400 NOpening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.Practise load from power"
+          }
+        ],
+        "clipped": []
+      }
+    }
+  ],
+  "errors": []
+}

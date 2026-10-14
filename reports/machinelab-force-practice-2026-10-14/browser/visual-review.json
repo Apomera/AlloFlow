@@ -1,0 +1,51 @@
+{
+  "reviewer": "force_guide_browser",
+  "method": "Direct view_image inspection of all four final run-01 PNGs at original resolution.",
+  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "finalRun": "run-01",
+  "nativeExitCode": 0,
+  "observedOuterSession": 30304,
+  "observedOuterExitCode": 0,
+  "scenarios": 9,
+  "checks": 681,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "errors": [],
+  "images": [
+    {
+      "file": "run-01/desktop-force-practice.png",
+      "sha256": "ba71907d4cd8535423a8ab5ec15e14df579e04695688a7a29b80f17741f61f99",
+      "verdict": "pass",
+      "observation": "Both guide rows show clearly separated inverse calculations with correct matching units. The effort action offers practice and the active load action offers continuation, each with local draft guidance. All figures and equations remain readable without clipping."
+    },
+    {
+      "file": "run-01/dark-phone-force-practice.png",
+      "sha256": "6f188ab617ce8336c373cbf59ba3d4d9b3765d215995bf02db59bb6b9598e7a9",
+      "verdict": "pass",
+      "observation": "The screw effort panel fits at 320px in dark mode. The 250 W divided by 18.8496 m/s calculation recovers 13.2629 N; the complete numbers, efficiency explanation and continuation action remain readable."
+    },
+    {
+      "file": "run-01/forced-colors-phone-force-practice.png",
+      "sha256": "aedeb5c48c2ef7f1011104754e4b75a4e7bae8a0cd5af545c0e091661c41d566",
+      "verdict": "pass",
+      "observation": "The windlass effort panel retains its equation boundary and native action boundary under forced colors. The complete 50 W divided by 0.45 m/s calculation and 111.111 N result fit clearly."
+    },
+    {
+      "file": "run-01/large-text-phone-force-practice.png",
+      "sha256": "bcbddaf986875bdfe5ace57e08feb43cb62755963cca0ccd8dfd4d9cf1ca463a",
+      "verdict": "pass",
+      "observation": "At 320px with doubled guide text, the effort panel expands vertically. The full 50 W divided by 0.2 m/s calculation, 250 N result, explanation and continuation action wrap without clipping; enlargement remains after the React interaction."
+    }
+  ],
+  "limits": [
+    "Desktop screenshot includes the complete force-speed guide; phone screenshots crop the new effort inverse panel. Native assertions inspect both inverse panels on every route and phone scenario.",
+    "Enlarged text doubles computed font sizes inside the guide rather than browser zoom.",
+    "Native harness uses real React, THREE and the host module with software WebGL. No production edits were made during this run."
+  ]
+}

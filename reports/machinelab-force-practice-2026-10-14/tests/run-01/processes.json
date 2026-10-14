@@ -1,0 +1,176 @@
+{
+  "baselineCommit": "7e307c872",
+  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "runnerSha256": "8739e9f69bde67108db734147baf00bf89852a61793111b186757a32494701c7",
+  "helper": {
+    "path": "tests/helpers/stem_widgets_smoke_harness.js",
+    "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c"
+  },
+  "tests": [
+    {
+      "file": "tests/machinelab_force_practice_entry.test.js",
+      "sha256": "61d998eb0ad1b767baa13e3dc66d2b0a5b8229eb9edcf5fa14da140559ad00f3",
+      "baselineSha256": null
+    },
+    {
+      "file": "tests/machinelab_force_practice_entry.test.js",
+      "sha256": "61d998eb0ad1b767baa13e3dc66d2b0a5b8229eb9edcf5fa14da140559ad00f3",
+      "baselineSha256": null
+    },
+    {
+      "file": "tests/machinelab_force_practice_entry.test.js",
+      "sha256": "61d998eb0ad1b767baa13e3dc66d2b0a5b8229eb9edcf5fa14da140559ad00f3",
+      "baselineSha256": null
+    },
+    {
+      "file": "tests/machinelab_force_speed.test.js",
+      "sha256": "e19024e0c623a50c241885e09ec9cde10454fb540c83d16e4d798b147b40f78a",
+      "baselineSha256": "e19024e0c623a50c241885e09ec9cde10454fb540c83d16e4d798b147b40f78a"
+    },
+    {
+      "file": "tests/machinelab_force_speed.test.js",
+      "sha256": "e19024e0c623a50c241885e09ec9cde10454fb540c83d16e4d798b147b40f78a",
+      "baselineSha256": "e19024e0c623a50c241885e09ec9cde10454fb540c83d16e4d798b147b40f78a"
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+      "baselineSha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3"
+    },
+    {
+      "file": "tests/machinelab_i18n_hygiene.test.js",
+      "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+      "baselineSha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad"
+    }
+  ],
+  "runs": [
+    {
+      "file": "tests/machinelab_force_practice_entry.test.js",
+      "pattern": "^Machine Lab: force practice entry equations",
+      "expected": 8,
+      "fresh": true,
+      "receipt": "group-01.json",
+      "log": "group-01.log",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_force_practice_entry.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-force-practice-2026-10-14\\tests\\run-01/group-01.json",
+        "--testNamePattern",
+        "^Machine Lab: force practice entry equations"
+      ],
+      "startedAt": "2026-10-14T20:17:11.914Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "timedOut": false,
+      "finishedAt": "2026-10-14T20:17:15.232Z",
+      "sourceAfterSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+      "mirrorAfterSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+      "logSha256": "93dfec7f8d8e141466f832dc4a4cf6521024e0c7867f87757ab748b670fa9a0e",
+      "receiptSha256": "9f4ed772ace279ecf88fd3255b05b4e31572a6e18d035bcf564b65e7d72f7e5b",
+      "passedNames": [
+        "Machine Lab: force practice entry equations connects both 'lever' guide rows to independently correct inverse calculations",
+        "Machine Lab: force practice entry equations connects both 'pulley' guide rows to independently correct inverse calculations",
+        "Machine Lab: force practice entry equations connects both 'ramp' guide rows to independently correct inverse calculations",
+        "Machine Lab: force practice entry equations connects both 'wedge' guide rows to independently correct inverse calculations",
+        "Machine Lab: force practice entry equations connects both 'windlass' guide rows to independently correct inverse calculations",
+        "Machine Lab: force practice entry equations connects both 'screw' guide rows to independently correct inverse calculations",
+        "Machine Lab: force practice entry equations uses converted minutes and nondefault efficiency without applying losses twice",
+        "Machine Lab: force practice entry equations offers no inverse entry outside the supported band or valid task model"
+      ]
+    },
+    {
+      "file": "tests/machinelab_force_practice_entry.test.js",
+      "pattern": "^Machine Lab: force practice entry navigation",
+      "expected": 14,
+      "fresh": true,
+      "receipt": "group-02.json",
+      "log": "group-02.log",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_force_practice_entry.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-force-practice-2026-10-14\\tests\\run-01/group-02.json",
+        "--testNamePattern",
+        "^Machine Lab: force practice entry navigation"
+      ],
+      "startedAt": "2026-10-14T20:17:15.260Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "timedOut": false,
+      "finishedAt": "2026-10-14T20:17:23.805Z",
+      "sourceAfterSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+      "mirrorAfterSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+      "logSha256": "ba4684076327ba85ffeb0fcd380f09149adb80dfb25695f77364b8bb85761793",
+      "receiptSha256": "f177d78d7972ba2484f99c2cba94f70dd4f7f2d980e29273b6d171f82b708ae6",
+      "passedNames": [
+        "Machine Lab: force practice entry navigation opens and solves 'lever/effortFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'lever/loadFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'pulley/effortFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'pulley/loadFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'ramp/effortFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'ramp/loadFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'wedge/effortFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'wedge/loadFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'windlass/effortFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'windlass/loadFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'screw/effortFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation opens and solves 'screw/loadFromPower' using the existing calculation input",
+        "Machine Lab: force practice entry navigation continues effortFromPower without replacing a checked or viewed draft",
+        "Machine Lab: force practice entry navigation continues loadFromPower without replacing a checked or viewed draft"
+      ]
+    },
+    {
+      "file": "tests/machinelab_force_practice_entry.test.js",
+      "pattern": "^Machine Lab: force practice entry guards",
+      "expected": 5,
+      "fresh": true,
+      "receipt": "group-03.json",
+      "log": "group-03.log",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_force_practice_entry.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-force-practice-2026-10-14\\tests\\run-01/group-03.json",
+        "--testNamePattern",
+        "^Machine Lab: force practice entry guards"
+      ],
+      "startedAt": "2026-10-14T20:17:23.833Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "timedOut": false,
+      "finishedAt": "2026-10-14T20:17:29.320Z",
+      "sourceAfterSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+      "mirrorAfterSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+      "logSha256": "c4194f58afed33233fe9d49749ecc335ebb7b39403e87149e3064bd5f7e592c3",
+      "receiptSha256": "4ed0a43d41ba1babbcb64a583a62b521120668cde405d6a1805da5984c063e20"
+    }
+  ]
+}

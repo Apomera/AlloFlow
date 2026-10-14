@@ -1,0 +1,58 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_force_practice_entry.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/machinelab_force_practice_entry.test.js (27 tests | 1 failed | 22 skipped) 2644ms
+     ↓ connects both 'lever' guide rows to independently correct inverse calculations
+     ↓ connects both 'pulley' guide rows to independently correct inverse calculations
+     ↓ connects both 'ramp' guide rows to independently correct inverse calculations
+     ↓ connects both 'wedge' guide rows to independently correct inverse calculations
+     ↓ connects both 'windlass' guide rows to independently correct inverse calculations
+     ↓ connects both 'screw' guide rows to independently correct inverse calculations
+     ↓ uses converted minutes and nondefault efficiency without applying losses twice
+     ↓ offers no inverse entry outside the supported band or valid task model
+     ↓ opens and solves 'lever/effortFromPower' using the existing calculation input
+     ↓ opens and solves 'lever/loadFromPower' using the existing calculation input
+     ↓ opens and solves 'pulley/effortFromPower' using the existing calculation input
+     ↓ opens and solves 'pulley/loadFromPower' using the existing calculation input
+     ↓ opens and solves 'ramp/effortFromPower' using the existing calculation input
+     ↓ opens and solves 'ramp/loadFromPower' using the existing calculation input
+     ↓ opens and solves 'wedge/effortFromPower' using the existing calculation input
+     ↓ opens and solves 'wedge/loadFromPower' using the existing calculation input
+     ↓ opens and solves 'windlass/effortFromPower' using the existing calculation input
+     ↓ opens and solves 'windlass/loadFromPower' using the existing calculation input
+     ↓ opens and solves 'screw/effortFromPower' using the existing calculation input
+     ↓ opens and solves 'screw/loadFromPower' using the existing calculation input
+     ↓ continues effortFromPower without replacing a checked or viewed draft
+     ↓ continues loadFromPower without replacing a checked or viewed draft
+     ✓ rejects closed, mismatched, stale, disabled or disconnected origins  399ms
+     ✓ requires the answer inside its owning lab and never uses an external duplicate 195ms
+     × rejects stale callbacks after assumptions, geometry, question, bench or view change 362ms
+     ✓ rechecks the live root, selected skill and answer before deferred focus  1185ms
+     ✓ changes only ordinary draft fields while retaining assumptions, records, other drafts, notes and XP  502ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/machinelab_force_practice_entry.test.js > Machine Lab: force practice entry guards > rejects stale callbacks after assumptions, geometry, question, bench or view change
+TypeError: Cannot read properties of undefined (reading 'props')
+ ❯ flush tests/machinelab_force_practice_entry.test.js:80:93
+     78|       if (current && current.props['data-ml-power'] === root.getAttrib…
+     79|         root.setAttribute('data-ml-power-navigation-signature', curren…
+     80|         root.querySelector('#ml-power-question-' + s.state().bench).va…
+       |                                                                                             ^
+     81|       }
+     82|     }
+ ❯ Object.run tests/machinelab_force_practice_entry.test.js:86:127
+ ❯ tests/machinelab_force_practice_entry.test.js:163:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed | 22 skipped (27)
+   Start at  16:17:24
+   Duration  4.79s (transform 51ms, setup 47ms, import 82ms, tests 2.64s, environment 1.70s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-force-practice-2026-10-14/tests/run-01/group-03.json

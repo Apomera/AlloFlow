@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-10-14T20:19:05.147Z",
+  "completedAt": "2026-10-14T20:20:27.543Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_force_practice_entry_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-force-practice-2026-10-14\\browser\\run-01"
+  ],
+  "nodeOptions": "--max-old-space-size=512 --max-semi-space-size=8",
+  "timeoutMs": 300000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_force_practice_entry_qa.cjs",
+      "sha256": "0f9fc227944d54a55008f03e8453220b2983afa7c8a914d00b6e23bb79658fb5"
+    },
+    {
+      "file": "reports/machinelab-force-practice-2026-10-14/browser/run-native.cjs",
+      "sha256": "0edc58406ac7c66509e2f63180f218531238cffc5e2d00e069fd7fcf963e0ffb"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_force_practice_entry_qa.cjs",
+      "sha256": "0f9fc227944d54a55008f03e8453220b2983afa7c8a914d00b6e23bb79658fb5"
+    },
+    {
+      "file": "reports/machinelab-force-practice-2026-10-14/browser/run-native.cjs",
+      "sha256": "0edc58406ac7c66509e2f63180f218531238cffc5e2d00e069fd7fcf963e0ffb"
+    }
+  ]
+}

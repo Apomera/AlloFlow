@@ -8957,7 +8957,10 @@ window.StemLab = window.StemLab || {
             h('figure', { key: 'figure', 'aria-labelledby': titleId, style: Object.assign({}, panelStyle, { marginLeft: 0, marginRight: 0 }) }, [
               h('figcaption', { key: 'title', id: titleId, style: Object.assign({}, style, { fontSize: 24, lineHeight: 1.35, fontWeight: 850 }) }, __alloT('stem.machinelab.force_speed_equation', 'Force × speed = power')),
               h('p', { key: 'units', style: style }, __alloT('stem.machinelab.force_speed_units', 'Newtons × metres per second = watts. Compare each quantity between the hand and the load.')),
-              rows.map(function (row) { return h('section', { key: row[0], 'data-ml-power-motion-row': row[0], 'aria-labelledby': titleId + '-' + row[0], style: { minWidth: 0, marginTop: 18, padding: 14, border: '1px solid ' + T.border, borderLeft: '4px solid ' + row[2], borderRadius: 10, background: T.card } }, [
+              rows.map(function (row) {
+                var kind = row[0] === 'input' ? 'effortFromPower' : 'loadFromPower', inverse = powerQuestion(kind, model, session.settings, bench, budget);
+                var inverseId = titleId + '-' + kind, active = draft.question === kind;
+                return h('section', { key: row[0], 'data-ml-power-motion-row': row[0], 'aria-labelledby': titleId + '-' + row[0], style: { minWidth: 0, marginTop: 18, padding: 14, border: '1px solid ' + T.border, borderLeft: '4px solid ' + row[2], borderRadius: 10, background: T.card } }, [
                 h('h3', { key: 'heading', id: titleId + '-' + row[0], style: Object.assign({}, style, { display: 'flex', alignItems: 'baseline', gap: 9, fontSize: 18, fontWeight: 850, margin: '0 0 12px' }) }, [
                   h('span', { key: 'swatch', 'data-ml-power-motion-swatch': row[0], 'aria-hidden': 'true', style: { display: 'inline-block', width: 26, height: 12, flex: '0 0 26px', boxSizing: 'border-box', border: '1px solid ' + T.border, borderRadius: 3, color: row[2],
                     backgroundColor: row[0] === 'input' ? row[2] : T.card, backgroundImage: row[0] === 'input' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' } }),
@@ -8974,7 +8977,20 @@ window.StemLab = window.StemLab || {
                   ]);
                 })),
                 h('p', { key: 'equation', 'data-ml-power-motion-equation': row[0], style: Object.assign({}, style, { margin: '14px 0 0', padding: 12, border: '1px solid ' + T.border, borderLeft: '3px solid ' + row[2], borderRadius: 6, background: T.bg, fontSize: 18, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) },
-                  powerFmt(row[3][0][2]) + ' N × ' + powerFmt(row[3][1][2]) + ' m/s = ' + powerFmt(row[3][2][2]) + ' W')
+                  powerFmt(row[3][0][2]) + ' N × ' + powerFmt(row[3][1][2]) + ' m/s = ' + powerFmt(row[3][2][2]) + ' W'),
+                h('section', { key: 'inverse', 'data-ml-power-force-inverse': kind, 'aria-labelledby': inverseId, style: { marginTop: 18, paddingTop: 16, borderTop: '1px dashed ' + T.border, minWidth: 0 } }, [
+                  h('h4', { key: 'title', id: inverseId, style: Object.assign({}, style, { margin: '0 0 10px', fontSize: 17, fontWeight: 800 }) }, inverse.title),
+                  h('p', { key: 'rule', style: style }, inverse.formula),
+                  h('p', { key: 'equation', 'data-ml-power-force-inverse-equation': kind, style: Object.assign({}, style, { padding: 12, borderLeft: '3px solid ' + row[2], borderRadius: 6, background: T.bg, fontSize: 18, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) },
+                    inverse.setup + ' = ' + powerFmt(inverse.target) + ' ' + inverse.unit),
+                  h('p', { key: 'help', id: inverseId + '-help', style: style }, active
+                    ? __alloT('stem.machinelab.force_practice_continue_help', 'Continue this calculation with your answer, hints and feedback kept in place.')
+                    : __alloT('stem.machinelab.force_practice_start_help', 'Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.')),
+                  h('button', { key: 'practice', type: 'button', 'data-ml-power-force-practice': kind, 'aria-describedby': inverseId + '-help', onClick: function (ev) { openForcePractice(ev, kind); },
+                    style: Object.assign({}, button, { minHeight: 44, maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere', textAlign: 'left' }) }, kind === 'effortFromPower'
+                    ? active ? __alloT('stem.machinelab.force_practice_continue_effort', 'Continue effort practice') : __alloT('stem.machinelab.force_practice_effort', 'Practise effort from power')
+                    : active ? __alloT('stem.machinelab.force_practice_continue_load', 'Continue load practice') : __alloT('stem.machinelab.force_practice_load', 'Practise load from power'))
+                ])
               ]); }),
               h('p', { key: 'scale', style: style }, __alloT('stem.machinelab.force_speed_scale', 'Compare force with force, speed with speed, and power with power. Each pair shares a scale starting at zero; different units have separate scales. Solid bars mark input; stripes mark useful output. Read the numbers beside tiny bars.'))
             ]),
@@ -9189,6 +9205,36 @@ window.StemLab = window.StemLab || {
               root.getAttribute('data-ml-power-navigation-signature') !== focusSignature) return;
             var selection = root.querySelector('#' + prefix + 'question-' + bench.id), target = root.querySelector('#' + prefix + 'answer-' + bench.id);
             if (!selection || selection.value !== 'budgetTime' || !target || !target.isConnected || !root.contains(target)) return;
+            target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' });
+          }
+          if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focusTarget);
+          else window.setTimeout(focusTarget, 0);
+        }
+        function openForcePractice(ev, kind) {
+          if (powerMotionKinds().indexOf(kind) < 0) return;
+          var origin = ev && ev.currentTarget, root = origin && origin.closest && origin.closest('[data-ml-power]');
+          if (!origin || !origin.isConnected || !root || !root.isConnected || !root.open || origin.disabled || !root.contains(origin) ||
+            root.getAttribute('data-ml-power') !== bench.id || root.getAttribute('data-ml-power-navigation-signature') !== session.signature ||
+            !root.querySelector('#' + prefix + 'answer-' + bench.id)) return;
+          var focusSignature = null;
+          setLabToolData(function (prev) {
+            focusSignature = null;
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = powerSession(source, bench);
+            if (!latest.model || latest.signature !== session.signature) return prev;
+            if (latest.draft.question === kind) { focusSignature = latest.signature; return prev; }
+            var next = Object.assign({}, latest.draft, { question: kind, answer: '', unit: '', hint: 0, checked: false, revealed: false });
+            var entries = Object.assign({}, source.benchPower || {}); entries[bench.id] = next;
+            next.signature = powerSession(Object.assign({}, source, { benchPower: entries }), bench).signature;
+            focusSignature = next.signature;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchPower: entries }) });
+          });
+          function focusTarget() {
+            if (!focusSignature || !root.isConnected || !root.open || root.getAttribute('data-ml-power') !== bench.id ||
+              root.getAttribute('data-ml-power-navigation-signature') !== focusSignature) return;
+            var selection = root.querySelector('#' + prefix + 'question-' + bench.id), target = root.querySelector('#' + prefix + 'answer-' + bench.id);
+            if (!selection || selection.value !== kind || !target || !target.isConnected || !root.contains(target)) return;
             target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' });
           }
           if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focusTarget);

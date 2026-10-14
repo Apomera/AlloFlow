@@ -1,0 +1,6 @@
+{
+  "sessionId": 30304,
+  "observedExitCode": 0,
+  "source": "functions.exec/write_stdin returned exit_code 0 for wrapper session 30304",
+  "nativeReceipt": "native-exit.json"
+}

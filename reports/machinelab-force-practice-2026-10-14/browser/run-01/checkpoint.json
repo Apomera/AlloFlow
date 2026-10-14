@@ -1,0 +1,63 @@
+{
+  "label": "large-text-phone-force-practice",
+  "checks": 680,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "shots": [
+    {
+      "name": "desktop-force-practice",
+      "file": "desktop-force-practice.png",
+      "sha256": "ba71907d4cd8535423a8ab5ec15e14df579e04695688a7a29b80f17741f61f99",
+      "clip": {
+        "x": 593,
+        "y": 2837.578125,
+        "width": 529,
+        "height": 1711
+      },
+      "region": "complete guide"
+    },
+    {
+      "name": "dark-phone-force-practice",
+      "file": "dark-phone-force-practice.png",
+      "sha256": "6f188ab617ce8336c373cbf59ba3d4d9b3765d215995bf02db59bb6b9598e7a9",
+      "clip": {
+        "x": 61,
+        "y": 5696.40625,
+        "width": 201,
+        "height": 443
+      },
+      "region": "effort inverse panel"
+    },
+    {
+      "name": "forced-colors-phone-force-practice",
+      "file": "forced-colors-phone-force-practice.png",
+      "sha256": "aedeb5c48c2ef7f1011104754e4b75a4e7bae8a0cd5af545c0e091661c41d566",
+      "clip": {
+        "x": 61,
+        "y": 5674.828125,
+        "width": 201,
+        "height": 443
+      },
+      "region": "effort inverse panel"
+    },
+    {
+      "name": "large-text-phone-force-practice",
+      "file": "large-text-phone-force-practice.png",
+      "sha256": "bcbddaf986875bdfe5ace57e08feb43cb62755963cca0ccd8dfd4d9cf1ca463a",
+      "clip": {
+        "x": 61,
+        "y": 7523.28125,
+        "width": 201,
+        "height": 1422
+      },
+      "region": "effort inverse panel"
+    }
+  ],
+  "errors": []
+}

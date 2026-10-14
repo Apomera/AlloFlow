@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root",
+  "recordedBy": "/root/force_guide_browser",
+  "basis": "Explicit root message confirms direct view_image inspection of all four PNGs and authorizes this hash-bound record.",
+  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
+  "verdict": "pass",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-force-practice-2026-10-14/browser/run-01/desktop-force-practice.png",
+      "sha256": "ba71907d4cd8535423a8ab5ec15e14df579e04695688a7a29b80f17741f61f99",
+      "visuallyInspected": true,
+      "notes": "Root directly inspected both input/output inverse equations and labels. They are clearly separated, matching bar scales remain accurate, and the text fits."
+    },
+    {
+      "path": "reports/machinelab-force-practice-2026-10-14/browser/run-01/dark-phone-force-practice.png",
+      "sha256": "6f188ab617ce8336c373cbf59ba3d4d9b3765d215995bf02db59bb6b9598e7a9",
+      "visuallyInspected": true,
+      "notes": "Root directly inspected the dark panel: the full grouped denominator and newton output are visible, with a readable Continue action."
+    },
+    {
+      "path": "reports/machinelab-force-practice-2026-10-14/browser/run-01/forced-colors-phone-force-practice.png",
+      "sha256": "aedeb5c48c2ef7f1011104754e4b75a4e7bae8a0cd5af545c0e091661c41d566",
+      "visuallyInspected": true,
+      "notes": "Root directly inspected the forced-color panel: the full grouped denominator and newton output are visible, with a readable Continue action."
+    },
+    {
+      "path": "reports/machinelab-force-practice-2026-10-14/browser/run-01/large-text-phone-force-practice.png",
+      "sha256": "bcbddaf986875bdfe5ace57e08feb43cb62755963cca0ccd8dfd4d9cf1ca463a",
+      "visuallyInspected": true,
+      "notes": "Root directly inspected the enlarged-text 201px panel: the full heading, formula, equation, help and button flow without clipped words."
+    }
+  ]
+}
