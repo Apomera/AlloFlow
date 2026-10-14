@@ -1,0 +1,20 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_practice_flow.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_practice_flow.test.js (25 tests | 18 skipped) 5915ms
+     ✓ links every lever skill to an existing relevant visual guide  831ms
+     ✓ links every pulley skill to an existing relevant visual guide  961ms
+     ✓ links every ramp skill to an existing relevant visual guide  797ms
+     ✓ links every wedge skill to an existing relevant visual guide  813ms
+     ✓ links every windlass skill to an existing relevant visual guide  1293ms
+     ✓ links every screw skill to an existing relevant visual guide  1089ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 18 skipped (25)
+   Start at  06:28:01
+   Duration  9.42s (transform 89ms, setup 86ms, import 191ms, tests 5.92s, environment 2.70s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-calculation-visual-2026-10-14/tests/run-01/group-03.json

@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "sourceSha256": "25d51a5672a1cf55bbaed925203e136be895a5cf8cde7f9adbb9ca2f10115603",
+  "observedNativeChildExitCode": 0,
+  "observedWrapperExitCode": 0,
+  "checks": 511,
+  "representativeSkillForms": 43,
+  "scenarios": 4,
+  "screenshots": 4,
+  "process": {
+    "path": "reports/machinelab-calculation-visual-2026-10-14/browser/run-02/process.json",
+    "sha256": "ebc5bd2404eae3cd6dc9f50b86f2e2a2c812da8a15e02b20edc18536e987f7a3"
+  },
+  "results": {
+    "path": "reports/machinelab-calculation-visual-2026-10-14/browser/run-02/results.json",
+    "sha256": "de31bc367848dc2b95f553431f548ec38adeacbbcb514d0f04f571f136ac796b",
+    "bytes": 111173
+  },
+  "observedWrapper": {
+    "path": "reports/machinelab-calculation-visual-2026-10-14/browser/run-02/observed-wrapper.json",
+    "sha256": "4322dfc98fc042a266cb5f63c4f0292d2ae09716b7b0fe1f278123f6ceb086a5"
+  },
+  "excludedAttempt": {
+    "path": "reports/machinelab-calculation-visual-2026-10-14/browser/run-01/interrupted.json",
+    "sha256": "a751ce0e7462bc9a7f7d3ce2d8675d3683dc0de182515823313dfa0e9786bd64"
+  },
+  "captureCorrection": {
+    "path": "reports/machinelab-calculation-visual-2026-10-14/browser/capture-correction.json",
+    "sha256": "4e18e859c336af82595101c5237f36d1637d3c118705df0ce592eb881890bfe6"
+  }
+}

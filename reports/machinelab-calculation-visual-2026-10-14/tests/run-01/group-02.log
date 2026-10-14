@@ -1,0 +1,27 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stderr | tests/machinelab_a11y.test.js > Machine Lab a11y: interactive elements > uses native buttons and inputs, never a hand-rolled clickable div
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <div>. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at Comp
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <tr>. See https://reactjs.org/link/warning-keys for more information.
+    at td
+    at Comp
+
+ ✓ tests/machinelab_a11y.test.js (28 tests) 1302ms
+     ✓ uses native buttons and inputs, never a hand-rolled clickable div  336ms
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  06:27:54
+   Duration  4.70s (transform 86ms, setup 73ms, import 270ms, tests 1.30s, environment 2.57s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-calculation-visual-2026-10-14/tests/run-01/group-02.json

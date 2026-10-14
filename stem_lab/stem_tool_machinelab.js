@@ -9243,30 +9243,39 @@ window.StemLab = window.StemLab || {
             : powerPlanningKinds().indexOf(draft.question) >= 0 || draft.question === 'budgetTime' ? ['planning', __alloT('stem.machinelab.practice_flow_planning', 'Open power budget guide')]
             : ['comparison', __alloT('stem.machinelab.practice_flow_pace', 'Open power and motion guide')];
           function stepHeading(key, number, label) {
-            return h('h5', { key: key + '-heading', 'data-ml-power-step': key, style: { display: 'flex', alignItems: 'center', gap: 8, margin: '14px 0 6px', fontSize: 13, color: T.text } }, [
+            return h('h5', { key: key + '-heading', 'data-ml-power-step': key, style: { display: 'flex', alignItems: 'center', gap: 8, margin: '16px 0 8px', fontSize: 14, color: T.text } }, [
               h('span', { key: 'number', 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 25, height: 25, flex: '0 0 25px', border: '1px solid currentColor', borderRadius: '50%', fontWeight: 800 } }, number),
               h('span', { key: 'label' }, label)
             ]);
           }
-          return h('div', { key: 'practice', 'data-ml-power-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
-            h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.power_practice', 'Practice a power & motion skill')),
+          return h('div', { key: 'practice', className: 'ml-calculation-practice', 'data-ml-power-practice': '', style: Object.assign({}, panelStyle, {
+            background: T.card, borderTop: '4px solid ' + T.accent, paddingTop: 8, '--ml-calculation-focus': T.text, '--ml-calculation-accent': T.accent, '--ml-calculation-ink': T.accentInk }) }, [
+            h('h3', { key: 'title', style: { fontSize: 18, lineHeight: 1.4, color: T.text } }, __alloT('stem.machinelab.power_practice', 'Practice a power & motion skill')),
             skillMap(),
             select('question', __alloT('stem.machinelab.power_choose', 'Choose a skill'), kinds.map(function (kind) { return [kind, skillLabels[kind]]; })),
-            h('h4', { key: 'question-title', 'data-ml-power-question-title': '', style: Object.assign({}, style, { fontSize: 14, fontWeight: 800, margin: '10px 0 6px' }) }, question.title),
-            h('p', { key: 'given', 'data-ml-power-given': '', style: Object.assign({}, style, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, question.given),
+            h('section', { key: 'task', 'data-ml-power-task': '', 'aria-labelledby': prefix + 'question-title-' + bench.id,
+              style: { margin: '14px 0', padding: 14, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, borderRadius: 10, background: T.bg } }, [
+              h('h4', { key: 'question-title', id: prefix + 'question-title-' + bench.id, 'data-ml-power-question-title': '', style: Object.assign({}, style, { fontSize: 18, lineHeight: 1.4, fontWeight: 800, margin: '0 0 10px' }) }, question.title),
+              h('p', { key: 'given', 'data-ml-power-given': '', style: Object.assign({}, style, { margin: 0, fontVariantNumeric: 'tabular-nums' }) }, question.given)
+            ]),
             h('div', { key: 'guide-link', 'data-ml-power-guide-link': '', style: { margin: '12px 0', padding: 12, background: T.bg, border: '1px solid ' + T.border, borderRadius: 8 } }, [
               h('p', { key: 'intro', style: Object.assign({}, style, { margin: '0 0 8px' }) }, __alloT('stem.machinelab.practice_flow_help', 'Need a visual? Open the matching guide, then use Back to calculation. Your draft stays here. Guides include worked values.')),
               h('button', { key: 'open', type: 'button', 'data-ml-power-open-guide': guide[0], style: button,
                 onClick: function (ev) { navigatePractice(ev, guide[0]); } }, guide[1])
             ]),
-            h('p', { key: 'rounding', id: roundingId, style: style }, powerConversionKinds().indexOf(draft.question) >= 0
+            h('fieldset', { key: 'entry', 'data-ml-power-entry': '', style: { margin: '18px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10 } }, [
+            h('legend', { key: 'legend', style: Object.assign({}, style, { padding: '0 5px', fontSize: 16, fontWeight: 800 }) }, __alloT('stem.machinelab.calculation_entry', 'Your calculation')),
+            h('p', { key: 'rounding', id: roundingId, style: Object.assign({}, style, { margin: '0 0 14px' }) }, powerConversionKinds().indexOf(draft.question) >= 0
               ? __alloT('stem.machinelab.units_rounding', 'Use full values, or round to 3 significant figures. Conversion checks allow 1% of the correct value. Enter the requested unit; no points are awarded.')
               : __alloT('stem.machinelab.power_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.')),
+            h('div', { key: 'fields', className: 'ml-calculation-fields' }, [
+            h('div', { key: 'answer-field', style: { minWidth: 0 } }, [
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: style }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
-              style: control, 'aria-describedby': roundingId, 'aria-invalid': result === 'invalid' || result === 'incorrect',
+              style: Object.assign({}, control, { minHeight: 52, fontSize: 22, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }), 'aria-describedby': roundingId, 'aria-invalid': result === 'invalid' || result === 'incorrect',
               onChange: function (ev) { change({ answer: ev.target.value.slice(0, 64), checked: false }); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } }),
+              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } })
+            ]),
             select('unit', __alloT('stem.machinelab.eff_unit', 'Answer unit'), [
               ['', __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')], ['W', __alloT('stem.machinelab.power_unit_w', 'W — watts')],
               ['m/s', __alloT('stem.machinelab.power_unit_speed', 'm/s — metres per second')], ['s', __alloT('stem.machinelab.power_unit_time', 's — seconds')],
@@ -9278,21 +9287,23 @@ window.StemLab = window.StemLab || {
             ].concat(powerConversionKinds().indexOf(draft.question) >= 0 ? [
               ['kW', __alloT('stem.machinelab.units_unit_kw', 'kW — kilowatts')], ['min', __alloT('stem.machinelab.units_unit_min', 'min — minutes')],
               ['cm/s', __alloT('stem.machinelab.units_unit_cms', 'cm/s — centimetres per second')]
-            ] : [])),
-            h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
+            ] : []))
+            ]),
+            h('div', { key: 'actions', className: 'ml-calculation-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 } }, [
               action('check', __alloT('stem.machinelab.eff_check', 'Check calculation'), function () { change({ checked: true }); }),
               action('hint', draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup'),
                 function () { change({ hint: Math.min(2, draft.hint + 1) }); }, draft.hint >= 2),
               action('reveal', __alloT('stem.machinelab.eff_solution', 'Show worked solution'), function () { change({ revealed: true }); }, draft.revealed)
+            ])
             ]),
             h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, style, result || draft.hint ? { margin: '14px 0', padding: '0 12px', border: '1px solid ' + (result === 'correct' ? T.ok : result === 'incorrect' || result === 'unit' || result === 'invalid' ? T.warn : T.border), borderLeftWidth: 4, borderRadius: 8, background: T.bg } : {}) }, [
               draft.hint > 0 ? stepHeading('formula', 1, __alloT('stem.machinelab.practice_flow_relationship', 'Choose the relationship')) : null,
-              draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-power-hint-level': draft.hint }, question.formula) : null,
+              draft.hint > 0 ? h('p', { key: 'hint', className: 'ml-calculation-equation', 'data-ml-power-hint-level': draft.hint, style: { padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } }, question.formula) : null,
               draft.hint > 1 ? stepHeading('setup', 2, __alloT('stem.machinelab.practice_flow_substitute', 'Substitute the values')) : null,
-              draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
+              draft.hint > 1 ? h('p', { key: 'setup', className: 'ml-calculation-equation', style: { padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } }, question.setup) : null,
               result ? stepHeading('result', 3, result === 'correct' ? __alloT('stem.machinelab.practice_flow_checked', 'Review your checked answer') : result === 'solution'
                 ? __alloT('stem.machinelab.practice_flow_solution', 'Study the worked solution') : __alloT('stem.machinelab.practice_flow_retry', 'Check the answer and unit')) : null,
-              result ? h('p', { key: 'result', 'data-ml-power-result': result }, result === 'invalid'
+              result ? h('p', { key: 'result', 'data-ml-power-result': result, style: { fontSize: 15, lineHeight: 1.6, fontWeight: 650, fontVariantNumeric: 'tabular-nums' } }, result === 'invalid'
                 ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
                 : result === 'unit' && powerConversionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.units_unit_help', 'Choose the requested output unit: ') + question.unit
                 : result === 'unit' && powerMotionKinds().indexOf(draft.question) >= 0 ? __alloT('stem.machinelab.force_speed_unit_help', 'Use N for force. Watts divided by metres per second gives newtons; torque uses N·m.')
@@ -9306,11 +9317,14 @@ window.StemLab = window.StemLab || {
                   question.setup + ' = ' + powerResultFmt(draft.question, question.target) + ' ' + question.unit) : null
             ]),
             backCheck(),
-            h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
+            h('div', { key: 'save-footer', className: 'ml-calculation-save', style: { marginTop: 18, paddingTop: 16, borderTop: '1px solid ' + T.border } }, [
+            h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, [
               action('save', __alloT('stem.machinelab.power_save', 'Save / update this skill'), save, result !== 'correct' && result !== 'solution'),
               action('next', __alloT('stem.machinelab.power_next', 'Next skill'), function () { change({ question: kinds[(kinds.indexOf(draft.question) + 1) % kinds.length] }); })
             ]),
             h('p', { key: 'save-help', style: style }, __alloT('stem.machinelab.power_save_help', 'Save before moving to the next skill. Each station keeps one fixed record per skill; saving that skill again replaces only its record. Hints and viewed solutions stay identified.'))
+            ]),
+            h('style', { key: 'calculation-style' }, '.ml-calculation-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ml-calculation-fields>div{min-width:0}.ml-calculation-fields input,.ml-calculation-fields select{margin-bottom:0!important;min-height:52px!important}.ml-calculation-actions button,.ml-calculation-save button{min-height:44px!important;font-weight:750!important}.ml-calculation-practice [data-ml-power-save]:not(:disabled){background:var(--ml-calculation-accent)!important;color:var(--ml-calculation-ink)!important;border-color:var(--ml-calculation-accent)!important}.ml-calculation-equation{font-size:16px;font-weight:750;font-variant-numeric:tabular-nums}.ml-power-lab .ml-calculation-practice button:focus-visible,.ml-power-lab .ml-calculation-practice input:focus-visible,.ml-power-lab .ml-calculation-practice select:focus-visible{outline:3px solid var(--ml-calculation-focus);outline-offset:3px}@media(max-width:600px){.ml-calculation-fields{grid-template-columns:minmax(0,1fr)}.ml-calculation-actions button,.ml-calculation-save button{width:100%!important}}@media(forced-colors:active){.ml-calculation-practice{--ml-calculation-focus:CanvasText!important}.ml-calculation-practice [data-ml-power-check],.ml-calculation-practice [data-ml-power-save]:not(:disabled){forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}}')
           ]);
         }
         return card([h('details', { key: 'lab', className: 'ml-power-lab', 'data-ml-power': bench.id, 'data-ml-power-navigation-signature': session.signature }, [

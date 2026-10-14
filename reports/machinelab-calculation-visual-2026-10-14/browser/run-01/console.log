@@ -1,0 +1,5 @@
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 windlass
+desktop-fresh-calculation {"checks":18,"routes":0,"shots":1,"errors":0}
+desktop-checked-calculation {"checks":287,"routes":25,"shots":2,"errors":0}
+native scenario 2 lever

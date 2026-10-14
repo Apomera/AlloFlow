@@ -1,0 +1,19 @@
+{
+  "format": "machine-lab-calculation-visual-coverage-v1",
+  "sourceSha256": "25d51a5672a1cf55bbaed925203e136be895a5cf8cde7f9adbb9ca2f10115603",
+  "publicMirrorSha256": "25d51a5672a1cf55bbaed925203e136be895a5cf8cde7f9adbb9ca2f10115603",
+  "baselineCommit": "4eeb666c7",
+  "passed": 110,
+  "failed": 0,
+  "uncoveredSelected": 0,
+  "files": 5,
+  "nativeProcesses": 15,
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "40c60448d5840a2ff2177f630a855b25d31bfeac643223d9fb50597c777f84a4"
+  },
+  "processManifest": {
+    "path": "processes.json",
+    "sha256": "0cac6c1723b638a5c41008a1b67688da92b77429a6c35674b0b923f3a6824f97"
+  }
+}

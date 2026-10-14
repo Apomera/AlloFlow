@@ -1,0 +1,78 @@
+{
+  "status": "passed",
+  "observedWrapperExitCode": 0,
+  "sessionId": 9739,
+  "observedNativeChildExitCodes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "sourceSha256": "25d51a5672a1cf55bbaed925203e136be895a5cf8cde7f9adbb9ca2f10115603",
+  "publicMirrorSha256": "25d51a5672a1cf55bbaed925203e136be895a5cf8cde7f9adbb9ca2f10115603",
+  "passed": 110,
+  "nativeProcesses": 15,
+  "baselineCommit": "4eeb666c7",
+  "tests": [
+    {
+      "file": "tests/machinelab_i18n_hygiene.test.js",
+      "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+      "baselineSha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad"
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+      "baselineSha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3"
+    },
+    {
+      "file": "tests/machinelab_practice_flow.test.js",
+      "sha256": "2991c8d05605fd15593be8cbecdf48a486dab89751999509ef7a021e03b78b4c",
+      "baselineSha256": "2991c8d05605fd15593be8cbecdf48a486dab89751999509ef7a021e03b78b4c"
+    },
+    {
+      "file": "tests/machinelab_power_lab.test.js",
+      "sha256": "e93f856fa40cba1561a2ede00e1930c29c29d5d54d9c6dddc231ddadc9d72e31",
+      "baselineSha256": "e93f856fa40cba1561a2ede00e1930c29c29d5d54d9c6dddc231ddadc9d72e31"
+    },
+    {
+      "file": "tests/machinelab_skill_map.test.js",
+      "sha256": "75776eaae1eea565fda1d486a71a5b4b5e9d3cbb78abc895cf92c151353fa5b3",
+      "baselineSha256": "75776eaae1eea565fda1d486a71a5b4b5e9d3cbb78abc895cf92c151353fa5b3"
+    }
+  ],
+  "helper": {
+    "path": "tests/helpers/stem_widgets_smoke_harness.js",
+    "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c"
+  },
+  "runner": {
+    "path": "reports/machinelab-calculation-visual-2026-10-14/run-tests.cjs",
+    "sha256": "daaab818ff14ecd00fc8296940eaa2e0acf79b2c2abfd5d4daa31e9f41025503"
+  },
+  "runnerSnapshot": {
+    "path": "runner-snapshot.cjs",
+    "sha256": "daaab818ff14ecd00fc8296940eaa2e0acf79b2c2abfd5d4daa31e9f41025503"
+  },
+  "final": {
+    "path": "final.json",
+    "sha256": "27086fdd42158a8b077ec80ef89c36ab55dd200f45e08242bd36fd80eb45c097"
+  },
+  "inventory": {
+    "path": "inventory.json",
+    "sha256": "40c60448d5840a2ff2177f630a855b25d31bfeac643223d9fb50597c777f84a4"
+  },
+  "processes": {
+    "path": "processes.json",
+    "sha256": "0cac6c1723b638a5c41008a1b67688da92b77429a6c35674b0b923f3a6824f97"
+  }
+}

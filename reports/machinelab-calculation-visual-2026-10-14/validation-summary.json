@@ -1,0 +1,13 @@
+{
+  "sourceSha256": "25d51a5672a1cf55bbaed925203e136be895a5cf8cde7f9adbb9ca2f10115603",
+  "tests": 110,
+  "testFiles": 5,
+  "nativeTestGroups": 15,
+  "browserChecks": 511,
+  "browserScenarios": 4,
+  "skillForms": 43,
+  "inspectedScreenshots": 4,
+  "onlyPracticeRenderingChanged": true,
+  "allInlineCallbacksByteIdentical": true,
+  "sourceMirrorParity": true
+}
