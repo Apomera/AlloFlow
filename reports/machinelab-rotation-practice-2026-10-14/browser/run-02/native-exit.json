@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-10-14T20:35:12.139Z",
+  "completedAt": "2026-10-14T20:36:17.171Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_rotation_practice_entry_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-rotation-practice-2026-10-14\\browser\\run-02"
+  ],
+  "nodeOptions": "--max-old-space-size=512 --max-semi-space-size=8",
+  "timeoutMs": 300000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_rotation_practice_entry_qa.cjs",
+      "sha256": "626afcbe62da68826807ccdd25040b495c374128ca38930a324c90bbb3c11576"
+    },
+    {
+      "file": "reports/machinelab-rotation-practice-2026-10-14/browser/run-native.cjs",
+      "sha256": "5e2a2eb7559002d8906bc845d661dc59deb1bf9339c71070dda08d068e4c9b73"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_rotation_practice_entry_qa.cjs",
+      "sha256": "626afcbe62da68826807ccdd25040b495c374128ca38930a324c90bbb3c11576"
+    },
+    {
+      "file": "reports/machinelab-rotation-practice-2026-10-14/browser/run-native.cjs",
+      "sha256": "5e2a2eb7559002d8906bc845d661dc59deb1bf9339c71070dda08d068e4c9b73"
+    }
+  ]
+}

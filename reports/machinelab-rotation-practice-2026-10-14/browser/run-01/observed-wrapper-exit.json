@@ -1,0 +1,5 @@
+{
+  "observedExitCode": 1,
+  "source": "functions.exec exec_command returned exit_code 1 before any PTY session was needed",
+  "nativeReceipt": "native-exit.json"
+}

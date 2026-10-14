@@ -8986,7 +8986,7 @@ window.StemLab = window.StemLab || {
                   h('p', { key: 'help', id: inverseId + '-help', style: style }, active
                     ? __alloT('stem.machinelab.force_practice_continue_help', 'Continue this calculation with your answer, hints and feedback kept in place.')
                     : __alloT('stem.machinelab.force_practice_start_help', 'Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.')),
-                  h('button', { key: 'practice', type: 'button', 'data-ml-power-force-practice': kind, 'aria-describedby': inverseId + '-help', onClick: function (ev) { openForcePractice(ev, kind); },
+                  h('button', { key: 'practice', type: 'button', 'data-ml-power-force-practice': kind, 'aria-describedby': inverseId + '-help', onClick: function (ev) { openGuidePractice(ev, kind); },
                     style: Object.assign({}, button, { minHeight: 44, maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere', textAlign: 'left' }) }, kind === 'effortFromPower'
                     ? active ? __alloT('stem.machinelab.force_practice_continue_effort', 'Continue effort practice') : __alloT('stem.machinelab.force_practice_effort', 'Practise effort from power')
                     : active ? __alloT('stem.machinelab.force_practice_continue_load', 'Continue load practice') : __alloT('stem.machinelab.force_practice_load', 'Practise load from power'))
@@ -9009,7 +9009,7 @@ window.StemLab = window.StemLab || {
             h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.rot_guide_title', 'Follow a turn: motion, work and power')),
             returnToCalculation(),
             h('figure', { key: 'turn', 'aria-labelledby': titleId, style: panelStyle }, [
-              h('figcaption', { key: 'caption', id: titleId, style: Object.assign({}, style, { fontWeight: 850, fontSize: 15 }) }, __alloT('stem.machinelab.rot_one_turn', 'One turn → load movement')),
+              h('figcaption', { key: 'caption', id: titleId, style: Object.assign({}, style, { fontWeight: 850, fontSize: 24, lineHeight: 1.35 }) }, __alloT('stem.machinelab.rot_one_turn', 'One turn → load movement')),
               h('div', { key: 'route', className: 'ml-rotation-route', style: { display: 'grid', gridTemplateColumns: 'minmax(120px,0.7fr) minmax(0,1fr)', alignItems: 'center', gap: 14, marginTop: 12 } }, [
                 h('div', { key: 'circle', style: { textAlign: 'center' } }, [
                   h('svg', { key: 'diagram', viewBox: '0 0 180 155', 'aria-hidden': 'true', focusable: 'false', 'data-ml-rotation-reference': '', style: { display: 'block', width: '100%', maxWidth: 220, margin: 'auto', color: T.effort } }, [
@@ -9026,9 +9026,9 @@ window.StemLab = window.StemLab || {
                 h('dl', { key: 'paths', style: { margin: 0, display: 'grid', gap: 14 } }, [
                   { id: 'hand', metric: 'handPerTurn', label: __alloT('stem.machinelab.rot_hand_per_turn', 'Hand path per turn'), value: rotation.handPerTurn, pattern: 'solid' },
                   { id: 'load', metric: 'advance', label: __alloT('stem.machinelab.rot_load_per_turn', 'Load advance per turn'), value: rotation.advance, pattern: 'striped' }
-                ].map(function (part) { return h('div', { key: part.id, 'data-ml-power-rotation-metric': part.metric, 'data-value': part.value }, [
-                  h('dt', { key: 'label', style: Object.assign({}, style, { fontSize: 12 }) }, part.label),
-                  h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 18 }) }, powerFmt(part.value) + ' m'),
+                ].map(function (part) { return h('div', { key: part.id, 'data-ml-power-rotation-metric': part.metric, 'data-value': part.value, style: { minWidth: 0 } }, [
+                  h('dt', { key: 'label', style: Object.assign({}, style, { fontWeight: 750 }) }, part.label),
+                  h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 24 }) }, powerFmt(part.value) + ' m'),
                   h('dd', { key: 'bar', 'aria-hidden': 'true', className: 'ml-rotation-track', style: { margin: '7px 0 0', height: 13, borderRadius: 3, background: T.card, outline: '1px solid ' + T.border } },
                     h('span', { 'data-ml-rotation-bar': part.id, 'data-value': part.value, 'data-pattern': part.pattern,
                       style: { display: 'block', width: (part.value / scale * 100) + '%', height: '100%', color: part.id === 'hand' ? T.effort : T.load,
@@ -9041,31 +9041,45 @@ window.StemLab = window.StemLab || {
                 ? __alloT('stem.machinelab.power_screw_scope', 'The screw assumes a single-start thread: one turn advances by one pitch.')
                 : __alloT('stem.machinelab.rot_drum_scope', 'One drum revolution winds a rope length of 2π × drum radius. The handle and drum turn together without slip.'))
             ]),
-            h('div', { key: 'task', style: panelStyle }, [
-              h('h3', { key: 'title', style: Object.assign({}, style, { fontSize: 15, margin: '0 0 10px', fontWeight: 850 }) }, __alloT('stem.machinelab.rot_this_task', 'From one turn to this task')),
+            h('section', { key: 'task', 'data-ml-power-rotation-task': bench.id, 'aria-labelledby': titleId + '-task', style: panelStyle }, [
+              h('h3', { key: 'title', id: titleId + '-task', style: Object.assign({}, style, { fontSize: 20, margin: '0 0 12px', fontWeight: 850 }) }, __alloT('stem.machinelab.rot_this_task', 'From one turn to this task')),
               h('p', { key: 'travel', 'data-ml-rotation-travel-equation': '', style: Object.assign({}, style, { fontVariantNumeric: 'tabular-nums' }) },
                 powerFmt(rotation.turns) + ' × ' + powerFmt(rotation.handPerTurn) + ' m = ' + powerFmt(model.travel) + ' m · ' + __alloT('stem.machinelab.rot_hand_total', 'total hand path')),
               h('p', { key: 'load', 'data-ml-rotation-load-equation': '', style: Object.assign({}, style, { fontVariantNumeric: 'tabular-nums' }) },
                 powerFmt(rotation.turns) + ' × ' + powerFmt(rotation.advance) + ' m = ' + powerFmt(session.settings.loadDistance) + ' m · ' + __alloT('stem.machinelab.rot_load_total', 'load movement')),
-              h('dl', { key: 'metrics', className: 'ml-power-visual-grid' }, [
+              h('dl', { key: 'metrics', className: 'ml-rotation-metric-grid' }, [
                 ['turns', __alloT('stem.machinelab.power_turns', 'Handle turns'), __alloT('stem.machinelab.power_turn_unit', 'turns')],
                 ['angularTravel', __alloT('stem.machinelab.rot_angle', 'Total angular travel'), 'rad'],
                 ['omega', __alloT('stem.machinelab.power_omega', 'Average angular speed'), 'rad/s'],
                 ['torque', __alloT('stem.machinelab.power_torque', 'Applied handle torque'), 'N·m'],
                 ['rotationalWork', __alloT('stem.machinelab.rot_work', 'Input work from torque'), 'J'],
                 ['rotationalPower', __alloT('stem.machinelab.rot_power', 'Input power from torque'), 'W']
-              ].map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-rotation-metric': metric[0], 'data-value': rotation[metric[0]], style: { padding: 10, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } }, [
-                h('dt', { key: 'label', style: Object.assign({}, style, { fontSize: 12 }) }, metric[1]),
-                h('dd', { key: 'value', style: valueStyle }, powerFmt(rotation[metric[0]]) + ' ' + metric[2])
+              ].map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-rotation-metric': metric[0], 'data-value': rotation[metric[0]], style: { minWidth: 0, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } }, [
+                h('dt', { key: 'label', style: Object.assign({}, style, { fontWeight: 750 }) }, metric[1]),
+                h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: metric[0] === 'rotationalWork' || metric[0] === 'rotationalPower' ? 26 : 24 }) }, powerFmt(rotation[metric[0]]) + ' ' + metric[2])
               ]); })),
-              h('p', { key: 'work', 'data-ml-rotation-work-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.effort, background: T.card }) },
-                powerFmt(rotation.torque) + ' N·m × ' + powerFmt(rotation.angularTravel) + ' rad = ' + powerFmt(rotation.rotationalWork) + ' J'),
-              h('p', { key: 'power', 'data-ml-rotation-power-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.load, background: T.card }) },
-                powerFmt(rotation.torque) + ' N·m × ' + powerFmt(rotation.omega) + ' rad/s = ' + powerFmt(rotation.rotationalPower) + ' W'),
+              ['rotationalWork', 'rotationalPower'].map(function (kind) {
+                var spec = powerQuestion(kind, model, session.settings, bench, budget), active = draft.question === kind;
+                var work = kind === 'rotationalWork', id = titleId + '-' + kind, color = work ? T.effort : T.load;
+                var equationProps = { key: 'equation', 'data-ml-power-rotation-calculation-equation': kind, style: Object.assign({}, style, { margin: '14px 0', padding: 12, borderLeft: '3px solid ' + color, borderRadius: 6, background: T.bg, fontSize: 20, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) };
+                equationProps[work ? 'data-ml-rotation-work-equation' : 'data-ml-rotation-power-equation'] = '';
+                return h('section', { key: kind, 'data-ml-power-rotation-calculation': kind, 'aria-labelledby': id, style: { marginTop: 18, padding: 14, minWidth: 0, border: '1px solid ' + T.border, borderLeft: '4px solid ' + color, borderRadius: 10, background: T.card } }, [
+                  h('h4', { key: 'title', id: id, style: Object.assign({}, style, { margin: '0 0 10px', fontSize: 18, fontWeight: 850 }) }, spec.title),
+                  h('p', { key: 'rule', style: style }, spec.formula),
+                  h('p', equationProps, spec.setup + ' = ' + powerFmt(spec.target) + ' ' + spec.unit),
+                  h('p', { key: 'help', id: id + '-help', style: style }, active
+                    ? __alloT('stem.machinelab.force_practice_continue_help', 'Continue this calculation with your answer, hints and feedback kept in place.')
+                    : __alloT('stem.machinelab.force_practice_start_help', 'Opening a different skill clears the current answer, hints and feedback. Save any calculation you want to keep first. Task settings and saved practice stay in place.')),
+                  h('button', { key: 'practice', type: 'button', 'data-ml-power-rotation-practice': kind, 'aria-describedby': id + '-help', onClick: function (ev) { openGuidePractice(ev, kind); },
+                    style: Object.assign({}, button, { minHeight: 44, maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere', textAlign: 'left' }) }, work
+                    ? active ? __alloT('stem.machinelab.rot_continue_work', 'Continue work practice') : __alloT('stem.machinelab.rot_practise_work', 'Practise work from torque')
+                    : active ? __alloT('stem.machinelab.rot_continue_power', 'Continue power practice') : __alloT('stem.machinelab.rot_practise_power', 'Practise power from torque'))
+                ]);
+              }),
               h('p', { key: 'scope', style: Object.assign({}, style, { fontSize: 12 }) }, __alloT('stem.machinelab.rot_work_scope', 'Use radians in the torque equations. Torque already accounts for the assumed efficiency: these products give input work and power. Values are rounded for display; calculations use full precision.'))
             ]),
             h('p', { key: 'practice', style: style }, __alloT('stem.machinelab.rot_practice_help', 'Try the five rotation skills in the practice menu below. Partial turns count; task duration is separate from demonstration timing.')),
-            h('style', { key: 'style' }, '@media(max-width:600px){.ml-rotation-route{grid-template-columns:minmax(0,1fr)!important}}@media(forced-colors:active){.ml-rotation-guide svg{color:CanvasText!important}.ml-rotation-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-rotation-track [data-ml-rotation-bar]{color:CanvasText!important;background-color:Canvas!important}.ml-rotation-track [data-pattern=solid]{background-color:CanvasText!important}}')
+            h('style', { key: 'style' }, '.ml-rotation-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}@media(max-width:600px){.ml-rotation-route,.ml-rotation-metric-grid{grid-template-columns:minmax(0,1fr)!important}}@media(forced-colors:active){.ml-rotation-guide svg{color:CanvasText!important}.ml-rotation-guide [data-ml-power-rotation-calculation],.ml-rotation-guide [data-ml-power-rotation-calculation-equation],.ml-rotation-metric-grid>div{border-color:CanvasText!important}.ml-rotation-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-rotation-track [data-ml-rotation-bar]{color:CanvasText!important;background-color:Canvas!important}.ml-rotation-track [data-pattern=solid]{background-color:CanvasText!important}}')
           ]);
         }
         function comparison() {
@@ -9210,8 +9224,8 @@ window.StemLab = window.StemLab || {
           if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focusTarget);
           else window.setTimeout(focusTarget, 0);
         }
-        function openForcePractice(ev, kind) {
-          if (powerMotionKinds().indexOf(kind) < 0) return;
+        function openGuidePractice(ev, kind) {
+          if (powerMotionKinds().concat(['rotationalWork', 'rotationalPower']).indexOf(kind) < 0 || powerKinds(bench).indexOf(kind) < 0) return;
           var origin = ev && ev.currentTarget, root = origin && origin.closest && origin.closest('[data-ml-power]');
           if (!origin || !origin.isConnected || !root || !root.isConnected || !root.open || origin.disabled || !root.contains(origin) ||
             root.getAttribute('data-ml-power') !== bench.id || root.getAttribute('data-ml-power-navigation-signature') !== session.signature ||

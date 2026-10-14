@@ -1,0 +1,25 @@
+{
+  "sourceSha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040",
+  "newTests": 17,
+  "selectedExistingTests": 86,
+  "totalSelectedTests": 103,
+  "testFiles": 5,
+  "nativeTestProcesses": 10,
+  "browserChecks": 527,
+  "rotaryRoutes": 2,
+  "linearExclusionsAndForceRegressionRoutes": 4,
+  "browserScenarios": 9,
+  "inspectedScreenshots": 4,
+  "keyboardFocusChecks": 26,
+  "quantitativeRotaryInspections": 7,
+  "calculationCardInspections": 14,
+  "finalBrowserRun": "run-02",
+  "preservedFailedBrowserRuns": [
+    "run-01"
+  ],
+  "failedAttemptOnlyLocalIdentifierChanged": true,
+  "onlyRotationGuideAndSharedNavigationChanged": true,
+  "existingCalculationsRotationBarsAndReferenceUnchanged": true,
+  "existingDraftUpdateFocusGradingRecordsAndExportsUnchanged": true,
+  "sourceMirrorParity": true
+}

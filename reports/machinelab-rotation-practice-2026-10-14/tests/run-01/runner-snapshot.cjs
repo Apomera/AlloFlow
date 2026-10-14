@@ -1,0 +1,85 @@
+const fs=require('fs'),path=require('path'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
+process.chdir(path.resolve(__dirname,'../..'));
+const frozen='8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040',baseline='cb2392852';
+const source='stem_lab/stem_tool_machinelab.js',mirror='desktop/web-app/public/'+source;
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),hash=p=>sha(fs.readFileSync(p));
+const out=path.resolve(process.argv[2]||__dirname+'/tests/run-01');assert(!fs.existsSync(out),'Use a fresh directory');fs.mkdirSync(out+'/test-temp',{recursive:true});
+const groups=[
+  {
+    "file": "tests/machinelab_rotation_practice_entry.test.js",
+    "pattern": "^Machine Lab: rotation practice entry equations",
+    "expected": 6,
+    "fresh": true
+  },
+  {
+    "file": "tests/machinelab_rotation_practice_entry.test.js",
+    "pattern": "^Machine Lab: rotation practice entry navigation",
+    "expected": 6,
+    "fresh": true
+  },
+  {
+    "file": "tests/machinelab_rotation_practice_entry.test.js",
+    "pattern": "^Machine Lab: rotation practice entry guards",
+    "expected": 5,
+    "fresh": true
+  },
+  {
+    "file": "tests/machinelab_rotation_skills.test.js",
+    "pattern": "^Machine Lab: independent rotary geometry and visuals",
+    "expected": 13
+  },
+  {
+    "file": "tests/machinelab_rotation_skills.test.js",
+    "pattern": "^Machine Lab: rotary calculation practice checks and saves",
+    "expected": 10
+  },
+  {
+    "file": "tests/machinelab_force_practice_entry.test.js",
+    "pattern": "^Machine Lab: force practice entry equations",
+    "expected": 8
+  },
+  {
+    "file": "tests/machinelab_force_practice_entry.test.js",
+    "pattern": "^Machine Lab: force practice entry navigation",
+    "expected": 14
+  },
+  {
+    "file": "tests/machinelab_force_practice_entry.test.js",
+    "pattern": "^Machine Lab: force practice entry guards",
+    "expected": 5
+  },
+  {
+    "file": "tests/machinelab_a11y.test.js",
+    "expected": 28
+  },
+  {
+    "file": "tests/machinelab_i18n_hygiene.test.js",
+    "expected": 8
+  }
+];
+const tests=groups.map(g=>({file:g.file,sha256:hash(g.file),baselineSha256:g.fresh?null:sha(cp.execFileSync('git',['show',baseline+':'+g.file],{maxBuffer:5e6}))}));for(const t of tests)if(t.baselineSha256)assert.equal(t.sha256,t.baselineSha256);
+const manifest={baselineCommit:baseline,sourceSha256:frozen,runnerSha256:hash(__filename),helper:{path:'tests/helpers/stem_widgets_smoke_harness.js',sha256:hash('tests/helpers/stem_widgets_smoke_harness.js')},tests,runs:[]};
+fs.copyFileSync(__filename,out+'/runner-snapshot.cjs');
+function verify(){assert.equal(hash(source),frozen);assert.equal(hash(mirror),frozen);assert.equal(hash(manifest.helper.path),manifest.helper.sha256);for(const t of tests)assert.equal(hash(t.file),t.sha256);}
+function write(name,data){fs.writeFileSync(out+'/'+name,JSON.stringify(data,null,2)+'\n');}
+async function run(){
+  let passed=0;
+  for(const [i,g] of groups.entries()){
+    verify();const stem='group-'+String(i+1).padStart(2,'0'),receipt=stem+'.json',log=stem+'.log',fd=fs.openSync(out+'/'+log,'wx');
+    const args=['node_modules/vitest/vitest.mjs','run',g.file,'--maxWorkers=1','--pool=forks','--no-isolate','--testTimeout=30000','--reporter=default','--reporter=json','--outputFile',out+'/'+receipt];if(g.pattern)args.push('--testNamePattern',g.pattern);
+    const row={...g,receipt,log,command:[process.execPath,...args],startedAt:new Date().toISOString()};manifest.runs.push(row);write('processes.json',manifest);
+    const result=await new Promise(resolve=>{
+      let error=null,timedOut=false;const child=cp.spawn(process.execPath,args,{windowsHide:true,stdio:['ignore','pipe','pipe'],env:{...process.env,NODE_OPTIONS:'--max-old-space-size=512 --max-semi-space-size=8',TEMP:out+'/test-temp',TMP:out+'/test-temp'}});
+      child.stdout.on('data',d=>fs.writeSync(fd,d));child.stderr.on('data',d=>fs.writeSync(fd,d));child.on('error',e=>{error=String(e);});
+      const timer=setTimeout(()=>{timedOut=true;if(process.platform==='win32'&&child.pid)cp.spawn('taskkill',['/PID',String(child.pid),'/T','/F'],{windowsHide:true,stdio:'ignore'});else child.kill('SIGKILL');},120000);
+      child.on('close',(exitCode,signal)=>{clearTimeout(timer);fs.closeSync(fd);resolve({exitCode,signal,error,timedOut});});
+    });
+    fs.writeFileSync(out+'/'+log,fs.readFileSync(out+'/'+log,'utf8').replace(/\r\n/g,'\n').split('\n').map(s=>s.trimEnd()).join('\n').trimEnd()+'\n');
+    Object.assign(row,result,{finishedAt:new Date().toISOString(),sourceAfterSha256:hash(source),mirrorAfterSha256:hash(mirror),logSha256:hash(out+'/'+log)});if(fs.existsSync(out+'/'+receipt))row.receiptSha256=hash(out+'/'+receipt);write('processes.json',manifest);
+    assert.equal(row.exitCode,0);assert.equal(row.signal,null);assert.equal(row.error,null);assert.equal(row.timedOut,false);verify();
+    const report=JSON.parse(fs.readFileSync(out+'/'+receipt));assert.equal(report.success,true);assert.equal(report.numFailedTests,0);assert.equal(report.numPassedTests,g.expected);
+    row.passedNames=report.testResults.flatMap(r=>r.assertionResults.filter(t=>t.status==='passed').map(t=>t.fullName));assert.equal(row.passedNames.length,g.expected);assert.equal(new Set(row.passedNames).size,g.expected);passed+=g.expected;write('processes.json',manifest);console.log(stem+': '+g.expected+' passed; native exit 0');
+  }
+  assert.equal(passed,103);verify();write('final.json',{sourceSha256:frozen,mirrorSha256:hash(mirror),passed,failed:0,processes:10,manifestSha256:hash(out+'/processes.json')});console.log('103 selected tests passed (17 new and 86 existing).');
+}
+run().catch(e=>{console.error(e.stack);process.exitCode=1;});
