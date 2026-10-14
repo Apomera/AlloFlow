@@ -1,0 +1,30 @@
+task settings visual QA starting 2026-10-14T15:58:40.052Z
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+task settings checkpoint desktop-before-task-settings 1 checks
+native scenario 2 lever
+task settings checkpoint desktop-task-settings 20 checks
+task settings checkpoint lever complete 57 checks
+native scenario 3 pulley
+task settings checkpoint pulley complete 107 checks
+native scenario 4 windlass
+task settings checkpoint windlass complete 167 checks
+native scenario 5 ramp
+task settings checkpoint ramp complete 217 checks
+native scenario 6 wedge
+task settings checkpoint wedge complete 267 checks
+native scenario 7 screw
+task settings checkpoint screw complete 327 checks
+native scenario 8 ramp
+task settings checkpoint dark-phone-task-settings 346 checks
+native scenario 9 screw
+task settings checkpoint forced-colors-phone-task-settings 365 checks
+native scenario 10 lever
+task settings checkpoint large-text-phone-task-settings 384 checks
+{
+  "scenarios": 10,
+  "checks": 385,
+  "routes": 6,
+  "screenshots": 5,
+  "errors": []
+}

@@ -1,0 +1,2481 @@
+{
+  "startedAt": "2026-10-14T15:58:44.237Z",
+  "completedAt": "2026-10-14T15:59:49.004Z",
+  "sourceSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "baselineSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "dependencies": [
+    {
+      "file": "dev-tools/ml_task_setup_visual_qa.cjs",
+      "sha256": "d856b0993d638704e8f106142d76f7a4a24f9d20011e5b035ba7cf1a0aedd5f1"
+    },
+    {
+      "file": "dev-tools/ml_power_lab_qa.cjs",
+      "sha256": "6aae492c9b2345e20279bc1e215837ce8d82a014744b0bfbf801362d97ff61b1"
+    },
+    {
+      "file": "dev-tools/ml_scene_shots.cjs",
+      "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7"
+    },
+    {
+      "file": "stem_lab/stem_lab_module.js",
+      "sha256": "9fb70c087ea26acfb5e6eea5088c5232fbfedc306d52a00e231e20549a041d96"
+    },
+    {
+      "file": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "file": "vendor/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    }
+  ],
+  "scenarios": 10,
+  "checks": [
+    "lever scenario 1: real THREE canvas initialized",
+    "lever scenario 2: real THREE canvas initialized",
+    "lever desktop: one native fieldset has the visible Task settings legend",
+    "lever desktop: DOM order matches efficiency, power budget, duration and time unit",
+    "lever desktop: each control retains one explicit visible label",
+    "lever desktop: decimal inputs retain linked range guidance",
+    "lever desktop: all controls retain visible boundaries and at least52px height",
+    "lever desktop: numerical inputs are large tabular text and selector is readable",
+    "lever desktop: fieldset text and controls fit without horizontal overflow",
+    "lever desktop: grid geometry follows two-column reading order",
+    "lever desktop: converted seconds remain visible and emphasized",
+    "lever desktop: model scope stays visible next to task settings",
+    "lever desktop: ml-power-percent-lever text contrast is at least4.5to1",
+    "lever desktop: ml-power-budget-lever text contrast is at least4.5to1",
+    "lever desktop: ml-power-duration-lever text contrast is at least4.5to1",
+    "lever desktop: ml-power-timeUnit-lever text contrast is at least4.5to1",
+    "lever desktop: Tab reaches percent in reading order with visible3px focus",
+    "lever desktop: Tab reaches budget in reading order with visible3px focus",
+    "lever desktop: Tab reaches duration in reading order with visible3px focus",
+    "lever desktop: Tab reaches timeUnit in reading order with visible3px focus",
+    "lever: all default assumptions are retained",
+    "lever: every applicable power and motion quantity is present",
+    "lever: inputPower agrees with independent physics at 80% over 5 s",
+    "lever: usefulPower agrees with independent physics at 80% over 5 s",
+    "lever: lossPower agrees with independent physics at 80% over 5 s",
+    "lever: handSpeed agrees with independent physics at 80% over 5 s",
+    "lever: loadSpeed agrees with independent physics at 80% over 5 s",
+    "lever: budgetTime agrees with independent physics at 80% over 5 s",
+    "lever: useful and loss powers balance the input",
+    "lever: average input power is compared with the entered power budget",
+    "lever: pace comparison includes half, same and double duration",
+    "lever: 0.5x duration changes power and hand speed while preserving input work",
+    "lever: 1x duration changes power and hand speed while preserving input work",
+    "lever: 2x duration changes power and hand speed while preserving input work",
+    "lever: answer feedback is correct",
+    "lever: changed task clears old answer, unit, hints and completion",
+    "lever: every applicable power and motion quantity is present",
+    "lever: inputPower agrees with independent physics at 80% over 30 s",
+    "lever: usefulPower agrees with independent physics at 80% over 30 s",
+    "lever: lossPower agrees with independent physics at 80% over 30 s",
+    "lever: handSpeed agrees with independent physics at 80% over 30 s",
+    "lever: loadSpeed agrees with independent physics at 80% over 30 s",
+    "lever: budgetTime agrees with independent physics at 80% over 30 s",
+    "lever: useful and loss powers balance the input",
+    "lever: average input power is compared with the entered power budget",
+    "lever: pace comparison includes half, same and double duration",
+    "lever: 0.5x duration changes power and hand speed while preserving input work",
+    "lever: 1x duration changes power and hand speed while preserving input work",
+    "lever: 2x duration changes power and hand speed while preserving input work",
+    "lever: minutes update the visible converted seconds readout",
+    "lever: changing settings preserves saved calculations and unrelated records",
+    "Invalid budget keeps its field visible while withholding derived calculations",
+    "Invalid setup affects only the current calculation draft",
+    "Out-of-range efficiency retains aria-invalid",
+    "Minutes outside3600seconds retain validation",
+    "Blank duration retains visible empty seconds state",
+    "Invalid drafts preserve saved skill bytes",
+    "pulley scenario 3: real THREE canvas initialized",
+    "pulley desktop: one native fieldset has the visible Task settings legend",
+    "pulley desktop: DOM order matches efficiency, power budget, duration and time unit",
+    "pulley desktop: each control retains one explicit visible label",
+    "pulley desktop: decimal inputs retain linked range guidance",
+    "pulley desktop: all controls retain visible boundaries and at least52px height",
+    "pulley desktop: numerical inputs are large tabular text and selector is readable",
+    "pulley desktop: fieldset text and controls fit without horizontal overflow",
+    "pulley desktop: grid geometry follows two-column reading order",
+    "pulley desktop: converted seconds remain visible and emphasized",
+    "pulley desktop: model scope stays visible next to task settings",
+    "pulley desktop: ml-power-percent-pulley text contrast is at least4.5to1",
+    "pulley desktop: ml-power-budget-pulley text contrast is at least4.5to1",
+    "pulley desktop: ml-power-duration-pulley text contrast is at least4.5to1",
+    "pulley desktop: ml-power-timeUnit-pulley text contrast is at least4.5to1",
+    "pulley desktop: Tab reaches percent in reading order with visible3px focus",
+    "pulley desktop: Tab reaches budget in reading order with visible3px focus",
+    "pulley desktop: Tab reaches duration in reading order with visible3px focus",
+    "pulley desktop: Tab reaches timeUnit in reading order with visible3px focus",
+    "pulley: all default assumptions are retained",
+    "pulley: every applicable power and motion quantity is present",
+    "pulley: inputPower agrees with independent physics at 80% over 5 s",
+    "pulley: usefulPower agrees with independent physics at 80% over 5 s",
+    "pulley: lossPower agrees with independent physics at 80% over 5 s",
+    "pulley: handSpeed agrees with independent physics at 80% over 5 s",
+    "pulley: loadSpeed agrees with independent physics at 80% over 5 s",
+    "pulley: budgetTime agrees with independent physics at 80% over 5 s",
+    "pulley: useful and loss powers balance the input",
+    "pulley: average input power is compared with the entered power budget",
+    "pulley: pace comparison includes half, same and double duration",
+    "pulley: 0.5x duration changes power and hand speed while preserving input work",
+    "pulley: 1x duration changes power and hand speed while preserving input work",
+    "pulley: 2x duration changes power and hand speed while preserving input work",
+    "pulley: answer feedback is correct",
+    "pulley: changed task clears old answer, unit, hints and completion",
+    "pulley: every applicable power and motion quantity is present",
+    "pulley: inputPower agrees with independent physics at 80% over 30 s",
+    "pulley: usefulPower agrees with independent physics at 80% over 30 s",
+    "pulley: lossPower agrees with independent physics at 80% over 30 s",
+    "pulley: handSpeed agrees with independent physics at 80% over 30 s",
+    "pulley: loadSpeed agrees with independent physics at 80% over 30 s",
+    "pulley: budgetTime agrees with independent physics at 80% over 30 s",
+    "pulley: useful and loss powers balance the input",
+    "pulley: average input power is compared with the entered power budget",
+    "pulley: pace comparison includes half, same and double duration",
+    "pulley: 0.5x duration changes power and hand speed while preserving input work",
+    "pulley: 1x duration changes power and hand speed while preserving input work",
+    "pulley: 2x duration changes power and hand speed while preserving input work",
+    "pulley: minutes update the visible converted seconds readout",
+    "pulley: changing settings preserves saved calculations and unrelated records",
+    "windlass scenario 4: real THREE canvas initialized",
+    "windlass desktop: one native fieldset has the visible Task settings legend",
+    "windlass desktop: DOM order matches efficiency, power budget, duration and time unit",
+    "windlass desktop: each control retains one explicit visible label",
+    "windlass desktop: decimal inputs retain linked range guidance",
+    "windlass desktop: all controls retain visible boundaries and at least52px height",
+    "windlass desktop: numerical inputs are large tabular text and selector is readable",
+    "windlass desktop: fieldset text and controls fit without horizontal overflow",
+    "windlass desktop: grid geometry follows two-column reading order",
+    "windlass desktop: converted seconds remain visible and emphasized",
+    "windlass desktop: model scope stays visible next to task settings",
+    "windlass desktop: ml-power-percent-windlass text contrast is at least4.5to1",
+    "windlass desktop: ml-power-budget-windlass text contrast is at least4.5to1",
+    "windlass desktop: ml-power-duration-windlass text contrast is at least4.5to1",
+    "windlass desktop: ml-power-timeUnit-windlass text contrast is at least4.5to1",
+    "windlass desktop: Tab reaches percent in reading order with visible3px focus",
+    "windlass desktop: Tab reaches budget in reading order with visible3px focus",
+    "windlass desktop: Tab reaches duration in reading order with visible3px focus",
+    "windlass desktop: Tab reaches timeUnit in reading order with visible3px focus",
+    "windlass: all default assumptions are retained",
+    "windlass: every applicable power and motion quantity is present",
+    "windlass: inputPower agrees with independent physics at 80% over 5 s",
+    "windlass: usefulPower agrees with independent physics at 80% over 5 s",
+    "windlass: lossPower agrees with independent physics at 80% over 5 s",
+    "windlass: handSpeed agrees with independent physics at 80% over 5 s",
+    "windlass: loadSpeed agrees with independent physics at 80% over 5 s",
+    "windlass: budgetTime agrees with independent physics at 80% over 5 s",
+    "windlass: torque agrees with independent physics at 80% over 5 s",
+    "windlass: turns agrees with independent physics at 80% over 5 s",
+    "windlass: rpm agrees with independent physics at 80% over 5 s",
+    "windlass: omega agrees with independent physics at 80% over 5 s",
+    "windlass: useful and loss powers balance the input",
+    "windlass: torque times angular rate equals input power",
+    "windlass: average input power is compared with the entered power budget",
+    "windlass: pace comparison includes half, same and double duration",
+    "windlass: 0.5x duration changes power and hand speed while preserving input work",
+    "windlass: 1x duration changes power and hand speed while preserving input work",
+    "windlass: 2x duration changes power and hand speed while preserving input work",
+    "windlass: answer feedback is correct",
+    "windlass: changed task clears old answer, unit, hints and completion",
+    "windlass: every applicable power and motion quantity is present",
+    "windlass: inputPower agrees with independent physics at 80% over 30 s",
+    "windlass: usefulPower agrees with independent physics at 80% over 30 s",
+    "windlass: lossPower agrees with independent physics at 80% over 30 s",
+    "windlass: handSpeed agrees with independent physics at 80% over 30 s",
+    "windlass: loadSpeed agrees with independent physics at 80% over 30 s",
+    "windlass: budgetTime agrees with independent physics at 80% over 30 s",
+    "windlass: torque agrees with independent physics at 80% over 30 s",
+    "windlass: turns agrees with independent physics at 80% over 30 s",
+    "windlass: rpm agrees with independent physics at 80% over 30 s",
+    "windlass: omega agrees with independent physics at 80% over 30 s",
+    "windlass: useful and loss powers balance the input",
+    "windlass: torque times angular rate equals input power",
+    "windlass: average input power is compared with the entered power budget",
+    "windlass: pace comparison includes half, same and double duration",
+    "windlass: 0.5x duration changes power and hand speed while preserving input work",
+    "windlass: 1x duration changes power and hand speed while preserving input work",
+    "windlass: 2x duration changes power and hand speed while preserving input work",
+    "windlass: minutes update the visible converted seconds readout",
+    "windlass: changing settings preserves saved calculations and unrelated records",
+    "ramp scenario 5: real THREE canvas initialized",
+    "ramp desktop: one native fieldset has the visible Task settings legend",
+    "ramp desktop: DOM order matches efficiency, power budget, duration and time unit",
+    "ramp desktop: each control retains one explicit visible label",
+    "ramp desktop: decimal inputs retain linked range guidance",
+    "ramp desktop: all controls retain visible boundaries and at least52px height",
+    "ramp desktop: numerical inputs are large tabular text and selector is readable",
+    "ramp desktop: fieldset text and controls fit without horizontal overflow",
+    "ramp desktop: grid geometry follows two-column reading order",
+    "ramp desktop: converted seconds remain visible and emphasized",
+    "ramp desktop: model scope stays visible next to task settings",
+    "ramp desktop: ml-power-percent-ramp text contrast is at least4.5to1",
+    "ramp desktop: ml-power-budget-ramp text contrast is at least4.5to1",
+    "ramp desktop: ml-power-duration-ramp text contrast is at least4.5to1",
+    "ramp desktop: ml-power-timeUnit-ramp text contrast is at least4.5to1",
+    "ramp desktop: Tab reaches percent in reading order with visible3px focus",
+    "ramp desktop: Tab reaches budget in reading order with visible3px focus",
+    "ramp desktop: Tab reaches duration in reading order with visible3px focus",
+    "ramp desktop: Tab reaches timeUnit in reading order with visible3px focus",
+    "ramp: all default assumptions are retained",
+    "ramp: every applicable power and motion quantity is present",
+    "ramp: inputPower agrees with independent physics at 80% over 5 s",
+    "ramp: usefulPower agrees with independent physics at 80% over 5 s",
+    "ramp: lossPower agrees with independent physics at 80% over 5 s",
+    "ramp: handSpeed agrees with independent physics at 80% over 5 s",
+    "ramp: loadSpeed agrees with independent physics at 80% over 5 s",
+    "ramp: budgetTime agrees with independent physics at 80% over 5 s",
+    "ramp: useful and loss powers balance the input",
+    "ramp: average input power is compared with the entered power budget",
+    "ramp: pace comparison includes half, same and double duration",
+    "ramp: 0.5x duration changes power and hand speed while preserving input work",
+    "ramp: 1x duration changes power and hand speed while preserving input work",
+    "ramp: 2x duration changes power and hand speed while preserving input work",
+    "ramp: answer feedback is correct",
+    "ramp: changed task clears old answer, unit, hints and completion",
+    "ramp: every applicable power and motion quantity is present",
+    "ramp: inputPower agrees with independent physics at 80% over 30 s",
+    "ramp: usefulPower agrees with independent physics at 80% over 30 s",
+    "ramp: lossPower agrees with independent physics at 80% over 30 s",
+    "ramp: handSpeed agrees with independent physics at 80% over 30 s",
+    "ramp: loadSpeed agrees with independent physics at 80% over 30 s",
+    "ramp: budgetTime agrees with independent physics at 80% over 30 s",
+    "ramp: useful and loss powers balance the input",
+    "ramp: average input power is compared with the entered power budget",
+    "ramp: pace comparison includes half, same and double duration",
+    "ramp: 0.5x duration changes power and hand speed while preserving input work",
+    "ramp: 1x duration changes power and hand speed while preserving input work",
+    "ramp: 2x duration changes power and hand speed while preserving input work",
+    "ramp: minutes update the visible converted seconds readout",
+    "ramp: changing settings preserves saved calculations and unrelated records",
+    "wedge scenario 6: real THREE canvas initialized",
+    "wedge desktop: one native fieldset has the visible Task settings legend",
+    "wedge desktop: DOM order matches efficiency, power budget, duration and time unit",
+    "wedge desktop: each control retains one explicit visible label",
+    "wedge desktop: decimal inputs retain linked range guidance",
+    "wedge desktop: all controls retain visible boundaries and at least52px height",
+    "wedge desktop: numerical inputs are large tabular text and selector is readable",
+    "wedge desktop: fieldset text and controls fit without horizontal overflow",
+    "wedge desktop: grid geometry follows two-column reading order",
+    "wedge desktop: converted seconds remain visible and emphasized",
+    "wedge desktop: model scope stays visible next to task settings",
+    "wedge desktop: ml-power-percent-wedge text contrast is at least4.5to1",
+    "wedge desktop: ml-power-budget-wedge text contrast is at least4.5to1",
+    "wedge desktop: ml-power-duration-wedge text contrast is at least4.5to1",
+    "wedge desktop: ml-power-timeUnit-wedge text contrast is at least4.5to1",
+    "wedge desktop: Tab reaches percent in reading order with visible3px focus",
+    "wedge desktop: Tab reaches budget in reading order with visible3px focus",
+    "wedge desktop: Tab reaches duration in reading order with visible3px focus",
+    "wedge desktop: Tab reaches timeUnit in reading order with visible3px focus",
+    "wedge: all default assumptions are retained",
+    "wedge: every applicable power and motion quantity is present",
+    "wedge: inputPower agrees with independent physics at 80% over 5 s",
+    "wedge: usefulPower agrees with independent physics at 80% over 5 s",
+    "wedge: lossPower agrees with independent physics at 80% over 5 s",
+    "wedge: handSpeed agrees with independent physics at 80% over 5 s",
+    "wedge: loadSpeed agrees with independent physics at 80% over 5 s",
+    "wedge: budgetTime agrees with independent physics at 80% over 5 s",
+    "wedge: useful and loss powers balance the input",
+    "wedge: average input power is compared with the entered power budget",
+    "wedge: pace comparison includes half, same and double duration",
+    "wedge: 0.5x duration changes power and hand speed while preserving input work",
+    "wedge: 1x duration changes power and hand speed while preserving input work",
+    "wedge: 2x duration changes power and hand speed while preserving input work",
+    "wedge: answer feedback is correct",
+    "wedge: changed task clears old answer, unit, hints and completion",
+    "wedge: every applicable power and motion quantity is present",
+    "wedge: inputPower agrees with independent physics at 80% over 30 s",
+    "wedge: usefulPower agrees with independent physics at 80% over 30 s",
+    "wedge: lossPower agrees with independent physics at 80% over 30 s",
+    "wedge: handSpeed agrees with independent physics at 80% over 30 s",
+    "wedge: loadSpeed agrees with independent physics at 80% over 30 s",
+    "wedge: budgetTime agrees with independent physics at 80% over 30 s",
+    "wedge: useful and loss powers balance the input",
+    "wedge: average input power is compared with the entered power budget",
+    "wedge: pace comparison includes half, same and double duration",
+    "wedge: 0.5x duration changes power and hand speed while preserving input work",
+    "wedge: 1x duration changes power and hand speed while preserving input work",
+    "wedge: 2x duration changes power and hand speed while preserving input work",
+    "wedge: minutes update the visible converted seconds readout",
+    "wedge: changing settings preserves saved calculations and unrelated records",
+    "screw scenario 7: real THREE canvas initialized",
+    "screw desktop: one native fieldset has the visible Task settings legend",
+    "screw desktop: DOM order matches efficiency, power budget, duration and time unit",
+    "screw desktop: each control retains one explicit visible label",
+    "screw desktop: decimal inputs retain linked range guidance",
+    "screw desktop: all controls retain visible boundaries and at least52px height",
+    "screw desktop: numerical inputs are large tabular text and selector is readable",
+    "screw desktop: fieldset text and controls fit without horizontal overflow",
+    "screw desktop: grid geometry follows two-column reading order",
+    "screw desktop: converted seconds remain visible and emphasized",
+    "screw desktop: model scope stays visible next to task settings",
+    "screw desktop: ml-power-percent-screw text contrast is at least4.5to1",
+    "screw desktop: ml-power-budget-screw text contrast is at least4.5to1",
+    "screw desktop: ml-power-duration-screw text contrast is at least4.5to1",
+    "screw desktop: ml-power-timeUnit-screw text contrast is at least4.5to1",
+    "screw desktop: Tab reaches percent in reading order with visible3px focus",
+    "screw desktop: Tab reaches budget in reading order with visible3px focus",
+    "screw desktop: Tab reaches duration in reading order with visible3px focus",
+    "screw desktop: Tab reaches timeUnit in reading order with visible3px focus",
+    "screw: all default assumptions are retained",
+    "screw: every applicable power and motion quantity is present",
+    "screw: inputPower agrees with independent physics at 80% over 5 s",
+    "screw: usefulPower agrees with independent physics at 80% over 5 s",
+    "screw: lossPower agrees with independent physics at 80% over 5 s",
+    "screw: handSpeed agrees with independent physics at 80% over 5 s",
+    "screw: loadSpeed agrees with independent physics at 80% over 5 s",
+    "screw: budgetTime agrees with independent physics at 80% over 5 s",
+    "screw: torque agrees with independent physics at 80% over 5 s",
+    "screw: turns agrees with independent physics at 80% over 5 s",
+    "screw: rpm agrees with independent physics at 80% over 5 s",
+    "screw: omega agrees with independent physics at 80% over 5 s",
+    "screw: useful and loss powers balance the input",
+    "screw: torque times angular rate equals input power",
+    "screw: average input power is compared with the entered power budget",
+    "screw: pace comparison includes half, same and double duration",
+    "screw: 0.5x duration changes power and hand speed while preserving input work",
+    "screw: 1x duration changes power and hand speed while preserving input work",
+    "screw: 2x duration changes power and hand speed while preserving input work",
+    "screw: answer feedback is correct",
+    "screw: changed task clears old answer, unit, hints and completion",
+    "screw: every applicable power and motion quantity is present",
+    "screw: inputPower agrees with independent physics at 80% over 30 s",
+    "screw: usefulPower agrees with independent physics at 80% over 30 s",
+    "screw: lossPower agrees with independent physics at 80% over 30 s",
+    "screw: handSpeed agrees with independent physics at 80% over 30 s",
+    "screw: loadSpeed agrees with independent physics at 80% over 30 s",
+    "screw: budgetTime agrees with independent physics at 80% over 30 s",
+    "screw: torque agrees with independent physics at 80% over 30 s",
+    "screw: turns agrees with independent physics at 80% over 30 s",
+    "screw: rpm agrees with independent physics at 80% over 30 s",
+    "screw: omega agrees with independent physics at 80% over 30 s",
+    "screw: useful and loss powers balance the input",
+    "screw: torque times angular rate equals input power",
+    "screw: average input power is compared with the entered power budget",
+    "screw: pace comparison includes half, same and double duration",
+    "screw: 0.5x duration changes power and hand speed while preserving input work",
+    "screw: 1x duration changes power and hand speed while preserving input work",
+    "screw: 2x duration changes power and hand speed while preserving input work",
+    "screw: minutes update the visible converted seconds readout",
+    "screw: changing settings preserves saved calculations and unrelated records",
+    "ramp scenario 8: real THREE canvas initialized",
+    "Dark320phone: one native fieldset has the visible Task settings legend",
+    "Dark320phone: DOM order matches efficiency, power budget, duration and time unit",
+    "Dark320phone: each control retains one explicit visible label",
+    "Dark320phone: decimal inputs retain linked range guidance",
+    "Dark320phone: all controls retain visible boundaries and at least52px height",
+    "Dark320phone: numerical inputs are large tabular text and selector is readable",
+    "Dark320phone: fieldset text and controls fit without horizontal overflow",
+    "Dark320phone: grid geometry follows single-column reading order",
+    "Dark320phone: converted seconds remain visible and emphasized",
+    "Dark320phone: model scope stays visible next to task settings",
+    "Dark320phone: ml-power-percent-ramp text contrast is at least4.5to1",
+    "Dark320phone: ml-power-budget-ramp text contrast is at least4.5to1",
+    "Dark320phone: ml-power-duration-ramp text contrast is at least4.5to1",
+    "Dark320phone: ml-power-timeUnit-ramp text contrast is at least4.5to1",
+    "Dark320phone: Tab reaches percent in reading order with visible3px focus",
+    "Dark320phone: Tab reaches budget in reading order with visible3px focus",
+    "Dark320phone: Tab reaches duration in reading order with visible3px focus",
+    "Dark320phone: Tab reaches timeUnit in reading order with visible3px focus",
+    "screw scenario 9: real THREE canvas initialized",
+    "Forcedcolors320phone: one native fieldset has the visible Task settings legend",
+    "Forcedcolors320phone: DOM order matches efficiency, power budget, duration and time unit",
+    "Forcedcolors320phone: each control retains one explicit visible label",
+    "Forcedcolors320phone: decimal inputs retain linked range guidance",
+    "Forcedcolors320phone: all controls retain visible boundaries and at least52px height",
+    "Forcedcolors320phone: numerical inputs are large tabular text and selector is readable",
+    "Forcedcolors320phone: fieldset text and controls fit without horizontal overflow",
+    "Forcedcolors320phone: grid geometry follows single-column reading order",
+    "Forcedcolors320phone: converted seconds remain visible and emphasized",
+    "Forcedcolors320phone: model scope stays visible next to task settings",
+    "Forcedcolors320phone: ml-power-percent-screw text contrast is at least4.5to1",
+    "Forcedcolors320phone: ml-power-budget-screw text contrast is at least4.5to1",
+    "Forcedcolors320phone: ml-power-duration-screw text contrast is at least4.5to1",
+    "Forcedcolors320phone: ml-power-timeUnit-screw text contrast is at least4.5to1",
+    "Forcedcolors320phone: Tab reaches percent in reading order with visible3px focus",
+    "Forcedcolors320phone: Tab reaches budget in reading order with visible3px focus",
+    "Forcedcolors320phone: Tab reaches duration in reading order with visible3px focus",
+    "Forcedcolors320phone: Tab reaches timeUnit in reading order with visible3px focus",
+    "lever scenario 10: real THREE canvas initialized",
+    "200percenttext320phone: one native fieldset has the visible Task settings legend",
+    "200percenttext320phone: DOM order matches efficiency, power budget, duration and time unit",
+    "200percenttext320phone: each control retains one explicit visible label",
+    "200percenttext320phone: decimal inputs retain linked range guidance",
+    "200percenttext320phone: all controls retain visible boundaries and at least52px height",
+    "200percenttext320phone: numerical inputs are large tabular text and selector is readable",
+    "200percenttext320phone: fieldset text and controls fit without horizontal overflow",
+    "200percenttext320phone: grid geometry follows single-column reading order",
+    "200percenttext320phone: converted seconds remain visible and emphasized",
+    "200percenttext320phone: model scope stays visible next to task settings",
+    "200percenttext320phone: ml-power-percent-lever text contrast is at least4.5to1",
+    "200percenttext320phone: ml-power-budget-lever text contrast is at least4.5to1",
+    "200percenttext320phone: ml-power-duration-lever text contrast is at least4.5to1",
+    "200percenttext320phone: ml-power-timeUnit-lever text contrast is at least4.5to1",
+    "200percenttext320phone: Tab reaches percent in reading order with visible3px focus",
+    "200percenttext320phone: Tab reaches budget in reading order with visible3px focus",
+    "200percenttext320phone: Tab reaches duration in reading order with visible3px focus",
+    "200percenttext320phone: Tab reaches timeUnit in reading order with visible3px focus",
+    "All six station setting routes exercised"
+  ],
+  "shots": [
+    {
+      "name": "desktop-before-task-settings",
+      "file": "desktop-before-task-settings.png",
+      "sha256": "3b8f193f553a9172dcbff51fe9086c59cd3d54cf9563df52ef592c63385b7524",
+      "clip": {
+        "x": 593,
+        "y": 2736.765625,
+        "width": 529,
+        "height": 548
+      },
+      "baseline": true
+    },
+    {
+      "name": "desktop-task-settings",
+      "file": "desktop-task-settings.png",
+      "sha256": "b67119b8fd87935007872cd3568a502339cdf613c9648cba3f92ef91d0463898",
+      "clip": {
+        "x": 593,
+        "y": 2736.765625,
+        "width": 529,
+        "height": 556
+      },
+      "baseline": false
+    },
+    {
+      "name": "dark-phone-task-settings",
+      "file": "dark-phone-task-settings.png",
+      "sha256": "cd352e4181335ba4daf9a6665bf0689bab350d4151c787a38e3b05e16efee75e",
+      "clip": {
+        "x": 28,
+        "y": 3808,
+        "width": 264,
+        "height": 898
+      },
+      "baseline": false
+    },
+    {
+      "name": "forced-colors-phone-task-settings",
+      "file": "forced-colors-phone-task-settings.png",
+      "sha256": "f246537df0d803455636faa327ba38a3fc46a5809316a35e3c8b83d2b2662cbe",
+      "clip": {
+        "x": 28,
+        "y": 3859,
+        "width": 264,
+        "height": 898
+      },
+      "baseline": false
+    },
+    {
+      "name": "large-text-phone-task-settings",
+      "file": "large-text-phone-task-settings.png",
+      "sha256": "fe7451948f84fa6cc5692cb46cb0fceee359b43697cc0b21e75c8616b1a9cae0",
+      "clip": {
+        "x": 28,
+        "y": 4660.625,
+        "width": 264,
+        "height": 1955
+      },
+      "baseline": false
+    }
+  ],
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "observations": [
+    {
+      "label": "lever desktop",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 596,
+          "y": 655.046875,
+          "width": 523,
+          "height": 334.046875,
+          "bottom": 989.09375,
+          "right": 1119
+        },
+        "page": true,
+        "panel": true,
+        "grid": "240.5px 240.5px",
+        "controls": [
+          {
+            "id": "ml-power-percent-lever",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-lever",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 717.375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.375,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-lever",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-lever",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 863.5,
+              "y": 717.375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.375,
+              "right": 1104
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-lever",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-lever",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 810.515625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.515625,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-lever",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 863.5,
+              "y": 810.515625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.515625,
+              "right": 1104
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "lever desktop keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "lever desktop keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "lever desktop keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "lever desktop keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "pulley desktop",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 596,
+          "y": 655.109375,
+          "width": 523,
+          "height": 334.046875,
+          "bottom": 989.15625,
+          "right": 1119
+        },
+        "page": true,
+        "panel": true,
+        "grid": "240.5px 240.5px",
+        "controls": [
+          {
+            "id": "ml-power-percent-pulley",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-pulley",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 717.4375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.4375,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-pulley",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-pulley",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 863.5,
+              "y": 717.4375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.4375,
+              "right": 1104
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-pulley",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-pulley",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 810.578125,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.578125,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-pulley",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 863.5,
+              "y": 810.578125,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.578125,
+              "right": 1104
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "pulley desktop keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "pulley desktop keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "pulley desktop keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "pulley desktop keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "windlass desktop",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 596,
+          "y": 655.109375,
+          "width": 523,
+          "height": 334.046875,
+          "bottom": 989.15625,
+          "right": 1119
+        },
+        "page": true,
+        "panel": true,
+        "grid": "240.5px 240.5px",
+        "controls": [
+          {
+            "id": "ml-power-percent-windlass",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-windlass",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 717.4375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.4375,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-windlass",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-windlass",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 863.5,
+              "y": 717.4375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.4375,
+              "right": 1104
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-windlass",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-windlass",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 810.578125,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.578125,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-windlass",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 863.5,
+              "y": 810.578125,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.578125,
+              "right": 1104
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "windlass desktop keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "windlass desktop keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "windlass desktop keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "windlass desktop keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "ramp desktop",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 596,
+          "y": 655.296875,
+          "width": 523,
+          "height": 334.046875,
+          "bottom": 989.34375,
+          "right": 1119
+        },
+        "page": true,
+        "panel": true,
+        "grid": "240.5px 240.5px",
+        "controls": [
+          {
+            "id": "ml-power-percent-ramp",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-ramp",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 717.625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.625,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-ramp",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-ramp",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 863.5,
+              "y": 717.625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.625,
+              "right": 1104
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-ramp",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-ramp",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 810.765625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.765625,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-ramp",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 863.5,
+              "y": 810.765625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.765625,
+              "right": 1104
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "ramp desktop keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "ramp desktop keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "ramp desktop keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "ramp desktop keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "wedge desktop",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 596,
+          "y": 655.296875,
+          "width": 523,
+          "height": 334.046875,
+          "bottom": 989.34375,
+          "right": 1119
+        },
+        "page": true,
+        "panel": true,
+        "grid": "240.5px 240.5px",
+        "controls": [
+          {
+            "id": "ml-power-percent-wedge",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-wedge",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 717.625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.625,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-wedge",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-wedge",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 863.5,
+              "y": 717.625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.625,
+              "right": 1104
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-wedge",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-wedge",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 810.765625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.765625,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-wedge",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 863.5,
+              "y": 810.765625,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.765625,
+              "right": 1104
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "wedge desktop keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "wedge desktop keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "wedge desktop keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "wedge desktop keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "screw desktop",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 596,
+          "y": 655.109375,
+          "width": 523,
+          "height": 334.046875,
+          "bottom": 989.15625,
+          "right": 1119
+        },
+        "page": true,
+        "panel": true,
+        "grid": "240.5px 240.5px",
+        "controls": [
+          {
+            "id": "ml-power-percent-screw",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-screw",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 717.4375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.4375,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-screw",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-screw",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 863.5,
+              "y": 717.4375,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 769.4375,
+              "right": 1104
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-screw",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-screw",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 611,
+              "y": 810.578125,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.578125,
+              "right": 851.5
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-screw",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 863.5,
+              "y": 810.578125,
+              "width": 240.5,
+              "height": 52,
+              "bottom": 862.578125,
+              "right": 1104
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "screw desktop keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "screw desktop keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "screw desktop keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "screw desktop keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "Dark320phone",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 31,
+          "y": 715.703125,
+          "width": 258,
+          "height": 554.609375,
+          "bottom": 1270.3125,
+          "right": 289
+        },
+        "page": true,
+        "panel": true,
+        "grid": "228px",
+        "controls": [
+          {
+            "id": "ml-power-percent-ramp",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-ramp",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 778.03125,
+              "width": 228,
+              "height": 52,
+              "bottom": 830.03125,
+              "right": 274
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 13.35325281838611
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-ramp",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-ramp",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 869.171875,
+              "width": 228,
+              "height": 52,
+              "bottom": 921.171875,
+              "right": 274
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 13.35325281838611
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-ramp",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-ramp",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 960.3125,
+              "width": 228,
+              "height": 52,
+              "bottom": 1012.3125,
+              "right": 274
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 13.35325281838611
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-ramp",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 46,
+              "y": 1051.453125,
+              "width": 228,
+              "height": 52,
+              "bottom": 1103.453125,
+              "right": 274
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(241, 245, 249)",
+              "background": "rgb(30, 41, 59)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 13.35325281838611
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(241, 245, 249)",
+            "background": "rgb(30, 41, 59)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "Dark320phone keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(241, 245, 249)",
+        "background": "rgb(30, 41, 59)",
+        "contrast": 13.35325281838611
+      }
+    },
+    {
+      "label": "Dark320phone keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(241, 245, 249)",
+        "background": "rgb(30, 41, 59)",
+        "contrast": 13.35325281838611
+      }
+    },
+    {
+      "label": "Dark320phone keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(241, 245, 249)",
+        "background": "rgb(30, 41, 59)",
+        "contrast": 13.35325281838611
+      }
+    },
+    {
+      "label": "Dark320phone keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(241, 245, 249)",
+        "background": "rgb(30, 41, 59)",
+        "contrast": 13.35325281838611
+      }
+    },
+    {
+      "label": "Forcedcolors320phone",
+      "largeText": false,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 31,
+          "y": 715.703125,
+          "width": 258,
+          "height": 554.609375,
+          "bottom": 1270.3125,
+          "right": 289
+        },
+        "page": true,
+        "panel": true,
+        "grid": "228px",
+        "controls": [
+          {
+            "id": "ml-power-percent-screw",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-screw",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 778.03125,
+              "width": 228,
+              "height": 52,
+              "bottom": 830.03125,
+              "right": 274
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 21
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-screw",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-screw",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 869.171875,
+              "width": 228,
+              "height": 52,
+              "bottom": 921.171875,
+              "right": 274
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 21
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-screw",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-screw",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 960.3125,
+              "width": 228,
+              "height": 52,
+              "bottom": 1012.3125,
+              "right": 274
+            },
+            "style": {
+              "font": 22,
+              "weight": "750",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 21
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-screw",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 46,
+              "y": 1051.453125,
+              "width": 228,
+              "height": 52,
+              "bottom": 1103.453125,
+              "right": 274
+            },
+            "style": {
+              "font": 16,
+              "weight": "750",
+              "color": "rgb(0, 0, 0)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 21
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 21,
+            "weight": "850",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": true
+      }
+    },
+    {
+      "label": "Forcedcolors320phone keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 15.134013837043632
+      }
+    },
+    {
+      "label": "Forcedcolors320phone keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 15.134013837043632
+      }
+    },
+    {
+      "label": "Forcedcolors320phone keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 15.134013837043632
+      }
+    },
+    {
+      "label": "Forcedcolors320phone keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 15.134013837043632
+      }
+    },
+    {
+      "label": "200percenttext320phone",
+      "largeText": true,
+      "view": {
+        "tag": "FIELDSET",
+        "legend": "Task settings",
+        "live": false,
+        "rect": {
+          "x": 31,
+          "y": 767.328125,
+          "width": 258,
+          "height": 1183.828125,
+          "bottom": 1951.15625,
+          "right": 289
+        },
+        "page": true,
+        "panel": true,
+        "grid": "228px",
+        "controls": [
+          {
+            "id": "ml-power-percent-lever",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "80",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Assumed efficiency (%)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-lever",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 965.703125,
+              "width": 228,
+              "height": 76,
+              "bottom": 1041.703125,
+              "right": 274
+            },
+            "style": {
+              "font": 44,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-budget-lever",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "100",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Mechanical input-power budget (W)"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-lever",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 1141.296875,
+              "width": 228,
+              "height": 76,
+              "bottom": 1217.296875,
+              "right": 274
+            },
+            "style": {
+              "font": 44,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-duration-lever",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "5",
+            "inputMode": "decimal",
+            "invalid": "false",
+            "labels": [
+              "Task duration"
+            ],
+            "described": [
+              {
+                "id": "ml-power-ranges-lever",
+                "exists": true
+              }
+            ],
+            "rect": {
+              "x": 46,
+              "y": 1276.59375,
+              "width": 228,
+              "height": 76,
+              "bottom": 1352.59375,
+              "right": 274
+            },
+            "style": {
+              "font": 44,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          },
+          {
+            "id": "ml-power-timeUnit-lever",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "s",
+            "inputMode": "",
+            "invalid": "false",
+            "labels": [
+              "Task time unit"
+            ],
+            "described": [],
+            "rect": {
+              "x": 46,
+              "y": 1411.890625,
+              "width": 228,
+              "height": 63,
+              "bottom": 1474.890625,
+              "right": 274
+            },
+            "style": {
+              "font": 32,
+              "weight": "750",
+              "color": "rgb(15, 23, 42)",
+              "background": "rgb(255, 255, 255)",
+              "border": "solid",
+              "variant": "tabular-nums",
+              "contrast": 17.85253496299567
+            },
+            "overflow": false
+          }
+        ],
+        "seconds": {
+          "text": "Task time: 5 s",
+          "value": "5",
+          "style": {
+            "font": 42,
+            "weight": "850",
+            "color": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "border": "none",
+            "variant": "tabular-nums"
+          }
+        },
+        "clipped": [],
+        "scope": "Task time is a calculation input, not demonstration playback time. Assume constant efficiency and steady motion, without acceleration, inertia or starting friction. These calculations do not establish machine strength or safety.",
+        "forced": false
+      }
+    },
+    {
+      "label": "200percenttext320phone keyboard percent",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "200percenttext320phone keyboard budget",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "200percenttext320phone keyboard duration",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    },
+    {
+      "label": "200percenttext320phone keyboard timeUnit",
+      "view": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 17.85253496299567
+      }
+    }
+  ],
+  "errors": []
+}

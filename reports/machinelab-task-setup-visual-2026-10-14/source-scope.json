@@ -1,0 +1,10 @@
+{
+  "baselineCommit": "b33626f52",
+  "baselineSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "sourceSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "mirrorSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "onlyTaskSetupAndRenderShellChanged": true,
+  "existingCalculationsHandlersPracticeAndRecordsUnchanged": true,
+  "sourceMirrorParity": true,
+  "syntax": true
+}

@@ -1,0 +1,58 @@
+{
+  "reviewer": "setup_browser",
+  "method": "Direct view_image inspection of all5 PNGs; desktop pair was viewed from run-02 and verified byte-identical to final run-03, remaining3 from run-03.",
+  "sourceSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "finalRun": "run-03",
+  "nativeExitCode": 0,
+  "observedOuterSession": 53038,
+  "observedOuterExitCode": 0,
+  "scenarios": 10,
+  "checks": 385,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "errors": [],
+  "images": [
+    {
+      "file": "run-03/desktop-before-task-settings.png",
+      "sha256": "3b8f193f553a9172dcbff51fe9086c59cd3d54cf9563df52ef592c63385b7524",
+      "verdict": "pass",
+      "observation": "Baseline shows separated efficiency, duration, seconds and budget controls. Snapshot establishes the earlier visual state at the same default values."
+    },
+    {
+      "file": "run-03/desktop-task-settings.png",
+      "sha256": "b67119b8fd87935007872cd3568a502339cdf613c9648cba3f92ef91d0463898",
+      "verdict": "pass",
+      "observation": "Current setup forms a clearly named fieldset with balanced two-column controls; enlarged values and seconds create a useful hierarchy. Keyboard focus is visible; scope remains below without clipping."
+    },
+    {
+      "file": "run-03/dark-phone-task-settings.png",
+      "sha256": "cd352e4181335ba4daf9a6665bf0689bab350d4151c787a38e3b05e16efee75e",
+      "verdict": "pass",
+      "observation": "At320px all four controls stack in reading order. Light text, numeric values, field boundaries, focus outline and amber time accent remain readable; ranges and scope wrap cleanly."
+    },
+    {
+      "file": "run-03/forced-colors-phone-task-settings.png",
+      "sha256": "f246537df0d803455636faa327ba38a3fc46a5809316a35e3c8b83d2b2662cbe",
+      "verdict": "pass",
+      "observation": "At320px forced colors preserve fieldset and input boundaries, black time accent and distinct keyboard focus. All labels, range guidance and scope remain visible."
+    },
+    {
+      "file": "run-03/large-text-phone-task-settings.png",
+      "sha256": "fe7451948f84fa6cc5692cb46cb0fceee359b43697cc0b21e75c8616b1a9cae0",
+      "verdict": "pass",
+      "observation": "With setup and scope text enlarged to200%, labels and legend wrap, controls grow, and seconds remain readable. The long single-column region has no horizontal clipping or overlapping text."
+    }
+  ],
+  "limits": [
+    "Focused setup/header/scope review, not a whole-app visual audit.",
+    "The200% text case injects doubled computed font sizes into the reviewed setup, summary and scope; it is not browser zoom.",
+    "Failed native run-01 was a git-show buffer limit before scenarios. Failed run-02 was a QA locator for a null-valued React data attribute. Both originals, corrections and receipts are preserved; no production changes followed either failure.",
+    "Empty stderr log artifacts in run-02 and run-03 were normalized from the wrapper-added newline to zero bytes; native stderr was empty."
+  ]
+}

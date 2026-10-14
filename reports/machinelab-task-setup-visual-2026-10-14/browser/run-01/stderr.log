@@ -1,0 +1,434 @@
+node:internal/child_process:1120
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+
+<ref *1> Error: spawnSync git ENOBUFS
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at spawnSync (node:child_process:911:24)
+    at Object.execFileSync (node:child_process:954:15)
+    at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\dev-tools\ml_task_setup_visual_qa.cjs:324:43 {
+  errno: -4060,
+  code: 'ENOBUFS',
+  syscall: 'spawnSync git',
+  path: 'git',
+  spawnargs: [ 'show', 'b33626f52:stem_lab/stem_tool_machinelab.js' ],
+  error: [Circular *1],
+  status: null,
+  signal: 'SIGTERM',
+  output: [
+    null,
+    '// ═══════════════════════════════════════════\n' +
+      '// stem_tool_machinelab.js — Machine Lab\n' +
+      '// P1: the Simple Machine Shop. Six benches, four grade bands.\n' +
+      '//\n' +
+      '// Spec: MACHINE_LAB_SPEC.md (repo root).\n' +
+      '//\n' +
+      '// Why this tool exists: projectile motion is already covered three times\n' +
+      '// (physics, throwlab, skatelab) and structural failure once (bridgeLab), but\n' +
+      '// nothing in stem_lab/ taught levers, pulleys, wheel-and-axle, inclined planes,\n' +
+      '// wedges or screws. That is the gap this fills.\n' +
+      '//\n' +
+      '// The one idea the whole tool is built to deliver:\n' +
+      '//   Mechanical advantage trades DISTANCE for FORCE. It never creates energy.\n' +
+      '//   Work in equals work out, minus friction.\n' +
+      '//\n' +
+      '// Grade policy (spec 3.6): all four bands get the WHOLE tool. Nothing is\n' +
+      '// filtered out. What changes is how the same physics is said. This is the\n' +
+      '// opposite of stem_tool_firstresponse.js, which filters cards out below a band\n' +
+      '// because its content (overdose, mental-health protocols) is genuinely unsafe\n' +
+      '// for K-2. Nothing here is unsafe for a second-grader, so it restates instead.\n' +
+      '// ═══════════════════════════════════════════\n' +
+      '\n' +
+      '// ═══ Defensive StemLab guard ═══\n' +
+      '// Ensure window.StemLab is available before registering tools.\n' +
+      "// If stem_lab_module.js hasn't loaded yet, create the registry stub.\n" +
+      'window.StemLab = window.StemLab || {\n' +
+      '  _registry: {},\n' +
+      '  _order: [],\n' +
+      '  registerTool: function(id, config) {\n' +
+      '    config.id = id;\n' +
+      '    config.ready = config.ready !== false;\n' +
+      '    this._registry[id] = config;\n' +
+      '    if (this._order.indexOf(id) === -1) this._order.push(id);\n' +
+      "    console.log('[StemLab] Registered tool: ' + id);\n" +
+      '  },\n' +
+      '  getRegisteredTools: function() {\n' +
+      '    var self = this;\n' +
+      '    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);\n' +
+      '  },\n' +
+      '  isRegistered: function(id) { return !!this._registry[id]; },\n' +
+      '  renderTool: function(id, ctx) {\n' +
+      '    var tool = this._registry[id];\n' +
+      '    if (!tool || !tool.render) return null;\n' +
+      "    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }\n" +
+      '  }\n' +
+      '};\n' +
+      '// ═══ End Guard ═══\n' +
+      '\n' +
+      '(function() {\n' +
+      "  'use strict';\n" +
+      '\n' +
+      '  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──\n' +
+      '  (function() {\n' +
+      "    if (typeof document === 'undefined') return;\n" +
+      "    if (document.getElementById('allo-stem-motion-reduce-css')) return;\n" +
+      "    var st = document.createElement('style');\n" +
+      "    st.id = 'allo-stem-motion-reduce-css';\n" +
+      "    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';\n" +
+      '    document.head.appendChild(st);\n' +
+      '  })();\n' +
+      '\n' +
+      '  // ═══════════════════════════════════════════════════════════════════\n' +
+      '  // PURE MATH — no DOM, no React, no state. Everything the student is\n' +
+      '  // graded on comes from here, which is what makes it testable.\n' +
+      '  // ═══════════════════════════════════════════════════════════════════\n' +
+      '\n' +
+      "  function finite(n) { return typeof n === 'number' && isFinite(n); }\n" +
+      '  function pos(n) { return finite(n) && n > 0; }\n' +
+      '\n' +
+      '  var _machineMath = {\n' +
+      '\n' +
+      "    // Number('') is 0 and Number(' ') is 0. Letting either through means a\n" +
+      '    // blank answer box silently scores as a real prediction of zero, which has\n' +
+      '    // struck this codebase before. Validate the RAW string first.\n' +
+      '    parseNum: function (raw) {\n' +
+      '      if (raw === null || raw === undefined) return null;\n' +
+      '      var s = String(raw).trim();\n' +
+      "      if (s === '') return null;\n" +
+      '      if (!/^-?(\\d+\\.?\\d*|\\.\\d+)$/.test(s)) return null;\n' +
+      '      var n = Number(s);\n' +
+      '      return isFinite(n) ? n : null;\n' +
+      '    },\n' +
+      '\n' +
+      '    // ── Mechanical advantage, one per machine ──\n' +
+      '\n' +
+      '    // Class-1 lever. MA is the ratio of the arms, nothing to do with the load.\n' +
+      '    leverMA: function (effortArm, loadArm) {\n' +
+      '      if (!pos(effortArm) || !pos(loadArm)) return null;\n' +
+      '      return effortArm / loadArm;\n' +
+      '    },\n' +
+      '\n' +
+      '    // Block and tackle. MA is the number of rope segments actually supporting\n' +
+      '    // the moving block, which is why students miscount it: the segment you pull\n' +
+      '    // on only counts when it runs up from the moving block.\n' +
+      '    pulleyMA: function (segments) {\n' +
+      '      if (!pos(segments)) return null;\n' +
+      '      if (Math.abs(segments - Math.round(segments)) > 1e-9) return null;\n' +
+      '      return Math.round(segments);\n' +
+      '    },\n' +
+      '\n' +
+      '    // Wheel and axle (a windlass). Turning a big circle to wind a small one.\n' +
+      '    windlassMA: function (handleRadius, drumRadius) {\n' +
+      '      if (!pos(handleRadius) || !pos(drumRadius)) return null;\n' +
+      '      return handleRadius / drumRadius;\n' +
+      '    },\n' +
+      '\n' +
+      '    // Inclined plane, frictionless ideal. A ramp shorter than it is tall is not\n' +
+      '    // a ramp, so that returns null rather than a nonsense MA below 1.\n' +
+      '    rampMA: function (length, height) {\n' +
+      '      if (!pos(length) || !pos(height)) return null;\n' +
+      '      if (height > length) return null;\n' +
+      '      return length / height;\n' +
+      '    },\n' +
+      '\n' +
+      '    // Wedge. Geometrically a moving inclined plane.\n' +
+      '    wedgeMA: function (length, thickness) {\n' +
+      '      if (!pos(length) || !pos(thickness)) return null;\n' +
+      '      return length / thickness;\n' +
+      '    },\n' +
+      '\n' +
+      '    // Screw. One full turn of the handle advances the screw by one pitch, so\n' +
+      '    // the effort travels a whole circumference to move that far.\n' +
+      '    screwMA: function (handleRadius, pitch) {\n' +
+      '      if (!pos(handleRadius) || !pos(pitch)) return null;\n' +
+      '      return (2 * Math.PI * handleRadius) / pitch;\n' +
+      '    },\n' +
+      '\n' +
+      '    // ── The shared consequences of any MA ──\n' +
+      '\n' +
+      '    effortForce: function (load, ma) {\n' +
+      '      if (!finite(load) || load < 0 || !pos(ma)) return null;\n' +
+      '      return load / ma;\n' +
+      '    },\n' +
+      '\n' +
+      '    // The other half of the trade, and the half students forget.\n' +
+      '    effortDistance: function (loadDistance, ma) {\n' +
+      '      if (!finite(loadDistance) || loadDistance < 0 || !pos(ma)) return null;\n' +
+      '      return loadDistance * ma;\n' +
+      '    },\n' +
+      '\n' +
+      '    // The whole point of the tool, in one function: what you put in is what you\n' +
+      '    // get out. Any gap here is a bug in the model, not a lesson about friction\n' +
+      '    // (P1 is the ideal case; the loss chain arrives with the energy ledger).\n' +
+      '    workCheck: function (load, loadDistance, ma) {\n' +
+      '      var fe = this.effortForce(load, ma);\n' +
+      '      var de = this.effortDistance(loadDistance, ma);\n' +
+      '      if (fe === null || de === null) return null;\n' +
+      '      var workIn = fe * de;\n' +
+      '      var workOut = load * loadDistance;\n' +
+      '      var scale = Math.max(Math.abs(workIn), Math.abs(workOut), 1);\n' +
+      '      return {\n' +
+      '        workIn: workIn,\n' +
+      '        workOut: workOut,\n' +
+      '        equal: Math.abs(workIn - workOut) <= 1e-9 * scale\n' +
+      '      };\n' +
+      '    },\n' +
+      '\n' +
+      '    // An assumed, constant efficiency compares the same task and geometry with\n' +
+      '    // the ideal bench. It is not a friction coefficient or a material model.\n' +
+      '    efficiencyWork: function (load, loadDistance, idealMA, percent) {\n' +
+      '      if (!pos(load) || !pos(loadDistance) || !pos(idealMA) || !finite(percent) || percent < 1 || percent > 100) return null;\n' +
+      '      var eta = percent / 100, idealForce = load / idealMA, travel = loadDistance * idealMA;\n' +
+      '      var workOut = load * loadDistance, workIn = workOut / eta, force = idealForce / eta;\n' +
+      '      var actualMA = idealMA * eta, loss = Math.max(0, workIn - workOut);\n' +
+      '      if (![idealForce, travel, workOut, workIn, force, actualMA, loss].every(finite)) return null;\n' +
+      '      return { idealForce: idealForce, force: force, travel: travel, workOut: workOut, workIn: workIn,\n' +
+      '        loss: loss, actualMA: actualMA, efficiency: eta };\n' +
+      '    },\n' +
+      '\n' +
+      '    // Continuous mechanical-advantage limits with an assumed efficiency.\n' +
+      '    // Exact endpoints describe mathematics, not available slider geometry.\n' +
+      '    efficiencyEnvelope: function (load, distance, ma, percent, forceLimit, travelLimit) {\n' +
+      '      if (!finite(forceLimit) || forceLimit < 1 || forceLimit > 5000 || !finite(travelLimit) || travelLimit < 0.1 || travelLimit > 300) return null;\n' +
+      '      var work = this.efficiencyWork(load, distance, ma, percent);\n' +
+      '      if (!work) return null;\n' +
+      '      var minMA = (load / forceLimit) / work.efficiency, maxMA = travelLimit / distance;\n' +
+      '      var result = Object.assign({}, work, { idealMA: ma, forceLimit: forceLimit, travelLimit: travelLimit,\n' +
+      '        minMA: minMA, maxMA: maxMA, forceEfficiency: (load / ma / forceLimit) * 100,\n' +
+      '        taskEfficiency: (load / forceLimit) * (distance / travelLimit) * 100, feasible: minMA <= maxMA });\n' +
+      "      return Object.keys(result).every(function (key) { return typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;\n" +
+      '    },\n' +
+      '\n' +
+      '    // Average rates for the same fixed task. The time is a calculation input,\n' +
+      '    // not animation timing. Optional radius describes a tangential drive handle.\n' +
+      '    powerMotion: function (load, distance, ma, percent, seconds, budget, radius) {\n' +
+      '      if (!finite(seconds) || seconds < 0.01 || seconds > 3600 || !finite(budget) || budget < 0.01 || budget > 100000 ||\n' +
+      '        (radius != null && !pos(radius))) return null;\n' +
+      '      var work = this.efficiencyWork(load, distance, ma, percent);\n' +
+      '      if (!work) return null;\n' +
+      '      var result = Object.assign({}, work, { seconds: seconds, inputPower: work.workIn / seconds,\n' +
+      '        usefulPower: work.workOut / seconds, lossPower: work.loss / seconds, handSpeed: work.travel / seconds,\n' +
+      '        loadSpeed: distance / seconds, budgetTime: work.workIn / budget,\n' +
+      '        powerFits: work.workIn / seconds <= budget + 1e-9 * Math.max(1, budget),\n' +
+      '        torque: null, turns: null, rpm: null, omega: null });\n' +
+      '      if (radius != null) {\n' +
+      '        result.torque = work.force * radius; result.turns = work.travel / (2 * Math.PI * radius);\n' +
+      '        result.rpm = result.turns * 60 / seconds; result.omega = result.turns * 2 * Math.PI / seconds;\n' +
+      '      }\n' +
+      "      return Object.keys(result).every(function (key) { return result[key] === null || typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;\n" +
+      '    },\n' +
+      '\n' +
+      '    // Energy-limited alternatives for one station at a sustained input power.\n' +
+      '    // Load capacity holds movement fixed; movement capacity holds load fixed.\n' +
+      '    powerBudget: function (load, distance, ma, percent, seconds, budget, radiu'... 1049385 more characters,
+    ''
+  ],
+  pid: 27888,
+  stdout: '// ═══════════════════════════════════════════\n' +
+    '// stem_tool_machinelab.js — Machine Lab\n' +
+    '// P1: the Simple Machine Shop. Six benches, four grade bands.\n' +
+    '//\n' +
+    '// Spec: MACHINE_LAB_SPEC.md (repo root).\n' +
+    '//\n' +
+    '// Why this tool exists: projectile motion is already covered three times\n' +
+    '// (physics, throwlab, skatelab) and structural failure once (bridgeLab), but\n' +
+    '// nothing in stem_lab/ taught levers, pulleys, wheel-and-axle, inclined planes,\n' +
+    '// wedges or screws. That is the gap this fills.\n' +
+    '//\n' +
+    '// The one idea the whole tool is built to deliver:\n' +
+    '//   Mechanical advantage trades DISTANCE for FORCE. It never creates energy.\n' +
+    '//   Work in equals work out, minus friction.\n' +
+    '//\n' +
+    '// Grade policy (spec 3.6): all four bands get the WHOLE tool. Nothing is\n' +
+    '// filtered out. What changes is how the same physics is said. This is the\n' +
+    '// opposite of stem_tool_firstresponse.js, which filters cards out below a band\n' +
+    '// because its content (overdose, mental-health protocols) is genuinely unsafe\n' +
+    '// for K-2. Nothing here is unsafe for a second-grader, so it restates instead.\n' +
+    '// ═══════════════════════════════════════════\n' +
+    '\n' +
+    '// ═══ Defensive StemLab guard ═══\n' +
+    '// Ensure window.StemLab is available before registering tools.\n' +
+    "// If stem_lab_module.js hasn't loaded yet, create the registry stub.\n" +
+    'window.StemLab = window.StemLab || {\n' +
+    '  _registry: {},\n' +
+    '  _order: [],\n' +
+    '  registerTool: function(id, config) {\n' +
+    '    config.id = id;\n' +
+    '    config.ready = config.ready !== false;\n' +
+    '    this._registry[id] = config;\n' +
+    '    if (this._order.indexOf(id) === -1) this._order.push(id);\n' +
+    "    console.log('[StemLab] Registered tool: ' + id);\n" +
+    '  },\n' +
+    '  getRegisteredTools: function() {\n' +
+    '    var self = this;\n' +
+    '    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);\n' +
+    '  },\n' +
+    '  isRegistered: function(id) { return !!this._registry[id]; },\n' +
+    '  renderTool: function(id, ctx) {\n' +
+    '    var tool = this._registry[id];\n' +
+    '    if (!tool || !tool.render) return null;\n' +
+    "    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }\n" +
+    '  }\n' +
+    '};\n' +
+    '// ═══ End Guard ═══\n' +
+    '\n' +
+    '(function() {\n' +
+    "  'use strict';\n" +
+    '\n' +
+    '  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──\n' +
+    '  (function() {\n' +
+    "    if (typeof document === 'undefined') return;\n" +
+    "    if (document.getElementById('allo-stem-motion-reduce-css')) return;\n" +
+    "    var st = document.createElement('style');\n" +
+    "    st.id = 'allo-stem-motion-reduce-css';\n" +
+    "    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';\n" +
+    '    document.head.appendChild(st);\n' +
+    '  })();\n' +
+    '\n' +
+    '  // ═══════════════════════════════════════════════════════════════════\n' +
+    '  // PURE MATH — no DOM, no React, no state. Everything the student is\n' +
+    '  // graded on comes from here, which is what makes it testable.\n' +
+    '  // ═══════════════════════════════════════════════════════════════════\n' +
+    '\n' +
+    "  function finite(n) { return typeof n === 'number' && isFinite(n); }\n" +
+    '  function pos(n) { return finite(n) && n > 0; }\n' +
+    '\n' +
+    '  var _machineMath = {\n' +
+    '\n' +
+    "    // Number('') is 0 and Number(' ') is 0. Letting either through means a\n" +
+    '    // blank answer box silently scores as a real prediction of zero, which has\n' +
+    '    // struck this codebase before. Validate the RAW string first.\n' +
+    '    parseNum: function (raw) {\n' +
+    '      if (raw === null || raw === undefined) return null;\n' +
+    '      var s = String(raw).trim();\n' +
+    "      if (s === '') return null;\n" +
+    '      if (!/^-?(\\d+\\.?\\d*|\\.\\d+)$/.test(s)) return null;\n' +
+    '      var n = Number(s);\n' +
+    '      return isFinite(n) ? n : null;\n' +
+    '    },\n' +
+    '\n' +
+    '    // ── Mechanical advantage, one per machine ──\n' +
+    '\n' +
+    '    // Class-1 lever. MA is the ratio of the arms, nothing to do with the load.\n' +
+    '    leverMA: function (effortArm, loadArm) {\n' +
+    '      if (!pos(effortArm) || !pos(loadArm)) return null;\n' +
+    '      return effortArm / loadArm;\n' +
+    '    },\n' +
+    '\n' +
+    '    // Block and tackle. MA is the number of rope segments actually supporting\n' +
+    '    // the moving block, which is why students miscount it: the segment you pull\n' +
+    '    // on only counts when it runs up from the moving block.\n' +
+    '    pulleyMA: function (segments) {\n' +
+    '      if (!pos(segments)) return null;\n' +
+    '      if (Math.abs(segments - Math.round(segments)) > 1e-9) return null;\n' +
+    '      return Math.round(segments);\n' +
+    '    },\n' +
+    '\n' +
+    '    // Wheel and axle (a windlass). Turning a big circle to wind a small one.\n' +
+    '    windlassMA: function (handleRadius, drumRadius) {\n' +
+    '      if (!pos(handleRadius) || !pos(drumRadius)) return null;\n' +
+    '      return handleRadius / drumRadius;\n' +
+    '    },\n' +
+    '\n' +
+    '    // Inclined plane, frictionless ideal. A ramp shorter than it is tall is not\n' +
+    '    // a ramp, so that returns null rather than a nonsense MA below 1.\n' +
+    '    rampMA: function (length, height) {\n' +
+    '      if (!pos(length) || !pos(height)) return null;\n' +
+    '      if (height > length) return null;\n' +
+    '      return length / height;\n' +
+    '    },\n' +
+    '\n' +
+    '    // Wedge. Geometrically a moving inclined plane.\n' +
+    '    wedgeMA: function (length, thickness) {\n' +
+    '      if (!pos(length) || !pos(thickness)) return null;\n' +
+    '      return length / thickness;\n' +
+    '    },\n' +
+    '\n' +
+    '    // Screw. One full turn of the handle advances the screw by one pitch, so\n' +
+    '    // the effort travels a whole circumference to move that far.\n' +
+    '    screwMA: function (handleRadius, pitch) {\n' +
+    '      if (!pos(handleRadius) || !pos(pitch)) return null;\n' +
+    '      return (2 * Math.PI * handleRadius) / pitch;\n' +
+    '    },\n' +
+    '\n' +
+    '    // ── The shared consequences of any MA ──\n' +
+    '\n' +
+    '    effortForce: function (load, ma) {\n' +
+    '      if (!finite(load) || load < 0 || !pos(ma)) return null;\n' +
+    '      return load / ma;\n' +
+    '    },\n' +
+    '\n' +
+    '    // The other half of the trade, and the half students forget.\n' +
+    '    effortDistance: function (loadDistance, ma) {\n' +
+    '      if (!finite(loadDistance) || loadDistance < 0 || !pos(ma)) return null;\n' +
+    '      return loadDistance * ma;\n' +
+    '    },\n' +
+    '\n' +
+    '    // The whole point of the tool, in one function: what you put in is what you\n' +
+    '    // get out. Any gap here is a bug in the model, not a lesson about friction\n' +
+    '    // (P1 is the ideal case; the loss chain arrives with the energy ledger).\n' +
+    '    workCheck: function (load, loadDistance, ma) {\n' +
+    '      var fe = this.effortForce(load, ma);\n' +
+    '      var de = this.effortDistance(loadDistance, ma);\n' +
+    '      if (fe === null || de === null) return null;\n' +
+    '      var workIn = fe * de;\n' +
+    '      var workOut = load * loadDistance;\n' +
+    '      var scale = Math.max(Math.abs(workIn), Math.abs(workOut), 1);\n' +
+    '      return {\n' +
+    '        workIn: workIn,\n' +
+    '        workOut: workOut,\n' +
+    '        equal: Math.abs(workIn - workOut) <= 1e-9 * scale\n' +
+    '      };\n' +
+    '    },\n' +
+    '\n' +
+    '    // An assumed, constant efficiency compares the same task and geometry with\n' +
+    '    // the ideal bench. It is not a friction coefficient or a material model.\n' +
+    '    efficiencyWork: function (load, loadDistance, idealMA, percent) {\n' +
+    '      if (!pos(load) || !pos(loadDistance) || !pos(idealMA) || !finite(percent) || percent < 1 || percent > 100) return null;\n' +
+    '      var eta = percent / 100, idealForce = load / idealMA, travel = loadDistance * idealMA;\n' +
+    '      var workOut = load * loadDistance, workIn = workOut / eta, force = idealForce / eta;\n' +
+    '      var actualMA = idealMA * eta, loss = Math.max(0, workIn - workOut);\n' +
+    '      if (![idealForce, travel, workOut, workIn, force, actualMA, loss].every(finite)) return null;\n' +
+    '      return { idealForce: idealForce, force: force, travel: travel, workOut: workOut, workIn: workIn,\n' +
+    '        loss: loss, actualMA: actualMA, efficiency: eta };\n' +
+    '    },\n' +
+    '\n' +
+    '    // Continuous mechanical-advantage limits with an assumed efficiency.\n' +
+    '    // Exact endpoints describe mathematics, not available slider geometry.\n' +
+    '    efficiencyEnvelope: function (load, distance, ma, percent, forceLimit, travelLimit) {\n' +
+    '      if (!finite(forceLimit) || forceLimit < 1 || forceLimit > 5000 || !finite(travelLimit) || travelLimit < 0.1 || travelLimit > 300) return null;\n' +
+    '      var work = this.efficiencyWork(load, distance, ma, percent);\n' +
+    '      if (!work) return null;\n' +
+    '      var minMA = (load / forceLimit) / work.efficiency, maxMA = travelLimit / distance;\n' +
+    '      var result = Object.assign({}, work, { idealMA: ma, forceLimit: forceLimit, travelLimit: travelLimit,\n' +
+    '        minMA: minMA, maxMA: maxMA, forceEfficiency: (load / ma / forceLimit) * 100,\n' +
+    '        taskEfficiency: (load / forceLimit) * (distance / travelLimit) * 100, feasible: minMA <= maxMA });\n' +
+    "      return Object.keys(result).every(function (key) { return typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;\n" +
+    '    },\n' +
+    '\n' +
+    '    // Average rates for the same fixed task. The time is a calculation input,\n' +
+    '    // not animation timing. Optional radius describes a tangential drive handle.\n' +
+    '    powerMotion: function (load, distance, ma, percent, seconds, budget, radius) {\n' +
+    '      if (!finite(seconds) || seconds < 0.01 || seconds > 3600 || !finite(budget) || budget < 0.01 || budget > 100000 ||\n' +
+    '        (radius != null && !pos(radius))) return null;\n' +
+    '      var work = this.efficiencyWork(load, distance, ma, percent);\n' +
+    '      if (!work) return null;\n' +
+    '      var result = Object.assign({}, work, { seconds: seconds, inputPower: work.workIn / seconds,\n' +
+    '        usefulPower: work.workOut / seconds, lossPower: work.loss / seconds, handSpeed: work.travel / seconds,\n' +
+    '        loadSpeed: distance / seconds, budgetTime: work.workIn / budget,\n' +
+    '        powerFits: work.workIn / seconds <= budget + 1e-9 * Math.max(1, budget),\n' +
+    '        torque: null, turns: null, rpm: null, omega: null });\n' +
+    '      if (radius != null) {\n' +
+    '        result.torque = work.force * radius; result.turns = work.travel / (2 * Math.PI * radius);\n' +
+    '        result.rpm = result.turns * 60 / seconds; result.omega = result.turns * 2 * Math.PI / seconds;\n' +
+    '      }\n' +
+    "      return Object.keys(result).every(function (key) { return result[key] === null || typeof result[key] === 'boolean' || finite(result[key]); }) ? result : null;\n" +
+    '    },\n' +
+    '\n' +
+    '    // Energy-limited alternatives for one station at a sustained input power.\n' +
+    '    // Load capacity holds movement fixed; movement capacity holds load fixed.\n' +
+    '    powerBudget: function (load, distance, ma, percent, seconds, budget, radiu'... 1049385 more characters,
+  stderr: ''
+}
+
+Node.js v24.11.1

@@ -1,0 +1,15 @@
+task settings visual QA starting 2026-10-14T15:57:25.964Z
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+task settings checkpoint desktop-before-task-settings 1 checks
+native scenario 2 lever
+task settings checkpoint desktop-task-settings 20 checks
+{
+  "scenarios": 2,
+  "checks": 55,
+  "routes": 1,
+  "screenshots": 2,
+  "errors": [
+    "locator.textContent: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-ml-power=lever]').locator('[data-ml-power-setup=lever]').locator('[data-ml-power-seconds]')\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\ml_task_setup_visual_qa.cjs:367:1004"
+  ]
+}

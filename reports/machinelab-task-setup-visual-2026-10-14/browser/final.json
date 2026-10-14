@@ -1,0 +1,88 @@
+{
+  "status": "passed",
+  "finalRun": "run-03",
+  "sourceSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "baselineSha256": "5a8b2a49887866acfac8e85ea3e9d94370e576233aa17074436d85b58f649231",
+  "checks": 385,
+  "scenarios": 10,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "screenshots": 5,
+  "errors": [],
+  "observedWrapperExitCode": 0,
+  "nativeExitCode": 0,
+  "harness": {
+    "file": "dev-tools/ml_task_setup_visual_qa.cjs",
+    "sha256": "d856b0993d638704e8f106142d76f7a4a24f9d20011e5b035ba7cf1a0aedd5f1"
+  },
+  "artifacts": [
+    {
+      "file": "run-native.cjs",
+      "sha256": "14a65c44c43aef33226b3dc8774ccf9ffdc7c1c9862ab28589ac122391a2ec22"
+    },
+    {
+      "file": "run-03/results.json",
+      "sha256": "6924955d4088e10d249d10da98a0d68e62bc3d154c93072cd70786f3d75ddf3a"
+    },
+    {
+      "file": "run-03/native-exit.json",
+      "sha256": "dc1b157bad11dff3a0bd7be14731cdf2164e5712bf80d07ffe220ce01e3f4158"
+    },
+    {
+      "file": "run-03/observed-wrapper-exit.json",
+      "sha256": "04e3155d525972b90868f9ec8f847d6ab623227056d3f0289b38b419f8f3d95a"
+    },
+    {
+      "file": "run-03/stdout.log",
+      "sha256": "ad43f22acc16b0b11f80081e685050f389377ac05d4f4551eaa50ed3f8639471"
+    },
+    {
+      "file": "run-03/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "visual-review.json",
+      "sha256": "7ef634de569a4181137b2a736342b396382889f4af639542f60494f808c03073"
+    },
+    {
+      "file": "run-03/desktop-before-task-settings.png",
+      "sha256": "3b8f193f553a9172dcbff51fe9086c59cd3d54cf9563df52ef592c63385b7524"
+    },
+    {
+      "file": "run-03/desktop-task-settings.png",
+      "sha256": "b67119b8fd87935007872cd3568a502339cdf613c9648cba3f92ef91d0463898"
+    },
+    {
+      "file": "run-03/dark-phone-task-settings.png",
+      "sha256": "cd352e4181335ba4daf9a6665bf0689bab350d4151c787a38e3b05e16efee75e"
+    },
+    {
+      "file": "run-03/forced-colors-phone-task-settings.png",
+      "sha256": "f246537df0d803455636faa327ba38a3fc46a5809316a35e3c8b83d2b2662cbe"
+    },
+    {
+      "file": "run-03/large-text-phone-task-settings.png",
+      "sha256": "fe7451948f84fa6cc5692cb46cb0fceee359b43697cc0b21e75c8616b1a9cae0"
+    }
+  ],
+  "preservedFailedRuns": [
+    {
+      "run": "run-01",
+      "reason": "Baseline git show exceeded the default1MiB execFileSync buffer before scenario checks.",
+      "correction": "run-01/correction.json",
+      "originalHarness": "run-01/harness-failed.cjs"
+    },
+    {
+      "run": "run-02",
+      "reason": "Blank-duration QA targeted a data attribute React omits when null.",
+      "correction": "run-02/correction.json",
+      "originalHarness": "run-02/harness-failed.cjs"
+    }
+  ]
+}

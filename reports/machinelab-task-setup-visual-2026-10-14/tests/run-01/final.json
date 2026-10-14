@@ -1,0 +1,8 @@
+{
+  "sourceSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "mirrorSha256": "de9f5c176c4683696dbec24bed49d55e425cf8739536ac77f77b67ed0828dd03",
+  "passed": 52,
+  "failed": 0,
+  "processes": 3,
+  "manifestSha256": "5423a64d865d4adcac3406b62870a2a85b0d3df85b15890cc17321a78b753aca"
+}
