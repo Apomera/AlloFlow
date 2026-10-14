@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
+process.chdir(path.resolve(__dirname,'../..'));
+const source='stem_lab/stem_tool_machinelab.js',mirror='desktop/web-app/public/'+source,baseline='1a68d0d70';
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex'),current=fs.readFileSync(source,'utf8'),before=cp.execFileSync('git',['show',baseline+':'+source],{encoding:'utf8',maxBuffer:5e6});
+const marker='        function savedPractice() {',endMarker='        function taskSetup() {',start=current.indexOf(marker),end=current.indexOf(endMarker,start);
+assert(start>0&&end>start);assert.equal(before.includes(marker),false);
+const oldStart=before.indexOf("          saved.length ? h('details', { key: 'saved', 'data-ml-power-saved': bench.id }"),oldEnd=before.indexOf("          h('style', { key: 'visual'",oldStart);
+assert(oldStart>0&&oldEnd>oldStart);
+const restored=(current.slice(0,start)+current.slice(end)).replace('          savedPractice(),\n',before.slice(oldStart,oldEnd));
+assert.equal(restored,before,'Removing the saved renderer and restoring its call must reproduce baseline');
+const added=current.slice(start,end);assert.equal((added.match(/onClick:/g)||[]).length,1);assert(added.includes('onClick: openWorkRecord'));
+assert(added.includes('powerModel(record.settings, bench, record.percent, record.seconds, record.budget)'));assert(added.includes('powerQuestion(record.question, savedModel, record.settings, bench, record.budget)'));assert(added.includes('powerRecordText(record, bench)'));
+assert.equal(hash(current),hash(fs.readFileSync(mirror)));cp.execFileSync(process.execPath,['--check',source],{stdio:'pipe',windowsHide:true});
+const result={baselineCommit:baseline,baselineSha256:hash(before),sourceSha256:hash(current),mirrorSha256:hash(fs.readFileSync(mirror)),onlySavedRendererAndCallChanged:true,existingCalculationsHandlersPracticeRecordsAndExportsUnchanged:true,savedValuesUseOnlyRecordSnapshot:true,sourceMirrorParity:true,syntax:true};
+fs.writeFileSync(__dirname+'/source-scope.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

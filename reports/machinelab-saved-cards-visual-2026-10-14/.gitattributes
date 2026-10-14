@@ -1,0 +1,2 @@
+# Preserve the exact native export, including existing empty-unit trailing spaces.
+browser/run-01/downloaded-record-pulley.txt -whitespace

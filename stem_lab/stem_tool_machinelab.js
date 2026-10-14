@@ -9592,6 +9592,51 @@ window.StemLab = window.StemLab || {
             h('style', { key: 'calculation-style' }, '.ml-calculation-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ml-calculation-fields>div{min-width:0}.ml-calculation-fields input,.ml-calculation-fields select{margin-bottom:0!important;min-height:52px!important}.ml-calculation-actions button,.ml-calculation-save button{min-height:44px!important;font-weight:750!important}.ml-calculation-practice [data-ml-power-save]:not(:disabled){background:var(--ml-calculation-accent)!important;color:var(--ml-calculation-ink)!important;border-color:var(--ml-calculation-accent)!important}.ml-calculation-equation{font-size:16px;font-weight:750;font-variant-numeric:tabular-nums}.ml-power-lab .ml-calculation-practice button:focus-visible,.ml-power-lab .ml-calculation-practice input:focus-visible,.ml-power-lab .ml-calculation-practice select:focus-visible{outline:3px solid var(--ml-calculation-focus);outline-offset:3px}@media(max-width:600px){.ml-calculation-fields{grid-template-columns:minmax(0,1fr)}.ml-calculation-actions button,.ml-calculation-save button{width:100%!important}}@media(forced-colors:active){.ml-calculation-practice{--ml-calculation-focus:CanvasText!important}.ml-calculation-practice [data-ml-power-check],.ml-calculation-practice [data-ml-power-save]:not(:disabled){forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}}')
           ]);
         }
+        function savedPractice() {
+          if (!saved.length) return null;
+          return h('details', { key: 'saved', 'data-ml-power-saved': bench.id }, [
+            h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_saved', 'Saved power & motion skills')),
+            h('p', { key: 'scope', style: Object.assign({}, style, { margin: '0 0 14px' }) }, __alloT('stem.machinelab.power_record_scope', 'Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.')),
+            saved.map(function (record) {
+              var savedModel = powerModel(record.settings, bench, record.percent, record.seconds, record.budget);
+              var savedQuestion = powerQuestion(record.question, savedModel, record.settings, bench, record.budget);
+              var headingId = prefix + 'saved-' + bench.id + '-' + record.question;
+              return h('article', { key: record.question, 'data-ml-power-saved-card': record.question, 'aria-labelledby': headingId,
+                style: { margin: '12px 0', padding: 14, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 12, background: T.bg, color: T.text } }, [
+                h('div', { key: 'heading', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px 12px', marginBottom: 14 } }, [
+                  h('h3', { key: 'title', id: headingId, style: Object.assign({}, style, { flex: '1 1 220px', minWidth: 0, fontSize: 18, fontWeight: 850, margin: 0 }) }, savedQuestion.title),
+                  h('span', { key: 'status', 'data-ml-power-saved-status': record.completion, style: Object.assign({}, style, { padding: '4px 8px', border: '1px ' + (record.completion === 'solution' ? 'dashed ' : 'solid ') + T.border, borderRadius: 6, fontSize: 12, fontWeight: 750, background: T.card }) }, record.completion === 'solution'
+                    ? __alloT('stem.machinelab.map_viewed', 'Worked solution viewed') : __alloT('stem.machinelab.map_answer_checked', 'Answer checked'))
+                ]),
+                h('dl', { key: 'values', className: 'ml-power-saved-values', style: { margin: '0 0 12px' } }, [
+                  h('div', { key: 'calculated', 'data-ml-power-saved-result': record.question, style: { minWidth: 0, padding: 12, border: '1px solid ' + T.border, borderTop: '3px solid ' + T.accent, borderRadius: 8, background: T.card } }, [
+                    h('dt', { key: 'label', style: Object.assign({}, style, { fontWeight: 750 }) }, __alloT('stem.machinelab.saved_calculated_result', 'Calculated result')),
+                    h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 28 }) }, powerResultFmt(record.question, savedQuestion.target) + ' ' + savedQuestion.unit)
+                  ]),
+                  h('div', { key: 'entered', 'data-ml-power-saved-entered': record.question, style: { minWidth: 0, padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } }, [
+                    h('dt', { key: 'label', style: Object.assign({}, style, { fontWeight: 750 }) }, __alloT('stem.machinelab.eff_record_answer', 'Entered answer: ')),
+                    h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 18, whiteSpace: 'pre-wrap' }) }, record.answer.trim() ? record.answer + ' ' + record.unit : __alloT('stem.machinelab.eff_no_answer', 'none'))
+                  ])
+                ]),
+                h('div', { key: 'assumptions', 'data-ml-power-saved-assumptions': record.question, style: Object.assign({}, style, { display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontVariantNumeric: 'tabular-nums' }) }, [
+                  h('span', { key: 'efficiency' }, __alloT('stem.machinelab.eff_assumption', 'Assumed constant efficiency: ') + String(record.percent) + '%'),
+                  h('span', { key: 'time' }, __alloT('stem.machinelab.power_time_given', 'Task time: ') + powerFmt(record.seconds) + ' s'),
+                  h('span', { key: 'budget' }, __alloT('stem.machinelab.power_budget_label', 'Mechanical input-power budget (W)') + ': ' + powerFmt(record.budget))
+                ]),
+                h('p', { key: 'completion', 'data-ml-power-saved-completion': record.question, style: Object.assign({}, style, { margin: '12px 0 4px' }) }, record.completion === 'solution'
+                  ? __alloT('stem.machinelab.eff_record_solution', 'Worked solution viewed; this is practice, not an independent score.')
+                  : __alloT('stem.machinelab.eff_record_checked', 'Answer checked within the stated rounding tolerance; this is practice, not a score.')),
+                h('p', { key: 'hints', style: Object.assign({}, style, { margin: '0 0 10px', fontWeight: 750 }) }, __alloT('stem.machinelab.eff_record_hints', 'Hints opened: ') + record.hint + '/2'),
+                h('details', { key: 'detail', 'data-ml-power-saved-detail': record.question, style: { borderTop: '1px solid ' + T.border } }, [
+                  h('summary', { key: 'title', style: Object.assign({}, summary, { fontSize: 14 }) }, __alloT('stem.machinelab.saved_setup_calculation', 'Saved setup and calculation')),
+                  h('p', { key: 'snapshot', 'data-ml-power-saved-snapshot': record.question, style: Object.assign({}, style, { margin: '0 0 6px', whiteSpace: 'pre-line' }) }, powerRecordText(record, bench))
+                ])
+              ]);
+            }),
+            h('button', { key: 'record', type: 'button', style: Object.assign({}, button, { margin: '4px 0 12px', minHeight: 44, fontWeight: 750 }), onClick: openWorkRecord }, __alloT('stem.machinelab.design_open_record', 'Open work record')),
+            h('style', { key: 'style' }, '.ml-power-saved-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-power-saved-values{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-lab [data-ml-power-saved-card],.ml-power-lab [data-ml-power-saved-status],.ml-power-lab .ml-power-saved-values>div,.ml-power-lab [data-ml-power-saved-detail]{border-color:CanvasText!important}}')
+          ]);
+        }
         function taskSetup() {
           return h('fieldset', { key: 'setup', className: 'ml-power-setup', 'data-ml-power-setup': bench.id,
             style: { minWidth: 0, margin: '18px 0 12px', padding: '12px 14px 14px', border: '1px solid ' + T.border, borderRadius: 12, background: T.bg, color: T.text } }, [
@@ -9619,11 +9664,7 @@ window.StemLab = window.StemLab || {
             : h('p', { key: 'invalid', role: 'status', style: style }, __alloT('stem.machinelab.power_invalid', 'Enter valid assumptions and a working station setup before calculating or checking an answer.')),
           h('p', { key: 'count', 'data-ml-power-count': saved.length, style: style }, __alloT('stem.machinelab.power_count', 'Saved skill practice: ') + saved.length + '/' + kinds.length + '. ' +
             __alloT('stem.machinelab.power_count_scope', 'Records may come from different tasks. This is a practice collection, not a mastery score.')),
-          saved.length ? h('details', { key: 'saved', 'data-ml-power-saved': bench.id }, [
-            h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_saved', 'Saved power & motion skills')),
-            saved.map(function (record) { return h('p', { key: record.question, style: Object.assign({}, style, { whiteSpace: 'pre-line', borderTop: '1px solid ' + T.border, paddingTop: 8 }) }, powerRecordText(record, bench)); }),
-            h('button', { key: 'record', type: 'button', style: button, onClick: openWorkRecord }, __alloT('stem.machinelab.design_open_record', 'Open work record'))
-          ]) : null,
+          savedPractice(),
           h('style', { key: 'visual' }, '.ml-power-lab label{display:block;margin-bottom:5px;font-weight:650}.ml-power-lab input,.ml-power-lab select{margin-bottom:10px}.ml-power-visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-power-visual-grid>div{min-width:0}.ml-power-budget-grid>div:last-child{grid-column:1/-1}.ml-power-lab [data-ml-power-comparison]{border-top:1px solid currentColor}.ml-power-lab td,.ml-power-lab th{font-variant-numeric:tabular-nums}@media(max-width:440px){.ml-power-visual-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-lab [data-ml-power-budget-track]{outline-color:CanvasText!important;background:Canvas!important}.ml-power-lab [data-ml-power-budget-bar]{forced-color-adjust:none;color:CanvasText!important;background-color:Canvas!important}.ml-power-lab [data-ml-power-budget-bar][data-pattern=solid]{background-color:CanvasText!important}.ml-power-lab [data-ml-power-pace-track]{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-power-lab [data-ml-power-pace-bar]{background:Highlight!important}.ml-power-lab [data-ml-power-budget-marker]{border-color:CanvasText!important;outline-color:Canvas!important;background:Canvas!important}.ml-power-lab button:disabled{opacity:1!important}}'),
           h('style', { key: 'focus' }, '.ml-power-lab summary:focus-visible,.ml-power-lab input:focus-visible,.ml-power-lab select:focus-visible,.ml-power-lab button:focus-visible{outline:3px solid currentColor;outline-offset:2px}.ml-power-lab button:disabled{cursor:default;opacity:0.65}')
         ])], 'power-lab');

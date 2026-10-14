@@ -1,0 +1,82 @@
+Machine Lab — work record
+Reading level: Grades 6-8
+Benches proven: 0/6
+Current prediction streak: 0
+Machines fired: none yet
+Shots logged: 0
+Recorded comparisons: 1/6
+Recorded comparison: Lever
+Investigation: What changes when you double the effort arm?
+Original predictions — effort force: Same; hand travel: More
+All pairs below read before → after. Ideal model results; values are rounded.
+Effort arm: 2 m → 4 m (Changed)
+Load arm: 1 m → 1 m (held constant)
+Load: 400 N → 400 N (held constant)
+Load moves: 0.5 m → 0.5 m (held constant)
+Mechanical advantage: 2× → 4×
+Effort needed: 200 N → 100 N
+Your hand moves: 1 m → 2 m
+Work put in: 200 J → 200 J
+Work delivered: 200 J → 200 J
+My explanation: My separate geometry investigation.
+Recorded designs: 1/6
+Recorded design: Lever
+Fixed recorded settings and limits. Ideal model results; values are rounded.
+Maximum effort force: 250 N
+Maximum total hand travel: 1.25 m
+Chosen setting: Effort arm
+Effort arm: 2 m
+Load arm: 1 m
+Load: 400 N
+Load moves: 0.5 m
+Mechanical advantage: 2×
+Effort needed: 200 N · Within limit
+Total hand travel: 1 m · Within limit
+Task work: 200 J
+Recorded setup meets both limits.
+My explanation: This fixed ideal design needs 200 N effort and 1 m of hand travel for 200 J of work.
+Recorded efficiency calculation: Lever
+Assumed constant efficiency: 80%
+Fixed task — load: 400 N; Load moves: 0.5 m; Ideal MA: 2
+Modeled effort: 250 N
+Total hand travel: 1 m
+Useful work: 200 J
+Input work: 250 J
+Energy lost: 50 J
+Calculate the input work: 200 J ÷ 0.8 = 250 J
+Entered answer: 250 J
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Geometry and travel follow the ideal model; efficiency is an assumption, not a measured material property.
+Recorded power & motion skill: Inclined Plane — Calculate average input power
+Ramp length: 4 m
+Ramp height: 1 m
+Weight: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Useful work: 200 J · Efficiency: 80% · Task time: 5 s
+Input work = useful work ÷ efficiency as a decimal. Average input power = input work ÷ seconds.
+200 J ÷ (0.8 × 5 s) = 50 W
+Entered answer: 49.9 W
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Inclined Plane — Calculate average useful power
+Ramp length: 4 m
+Ramp height: 1 m
+Weight: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Useful work: 200 J · Task time: 5 s
+Average useful power = useful work ÷ seconds. One watt is one joule per second.
+200 J ÷ 5 s = 40 W
+Entered answer: none
+Worked solution viewed; this is practice, not an independent score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.

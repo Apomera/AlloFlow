@@ -1,0 +1,210 @@
+Machine Lab — work record
+Reading level: Grades 6-8
+Benches proven: 0/6
+Current prediction streak: 0
+Machines fired: none yet
+Shots logged: 0
+Recorded comparisons: 1/6
+Recorded comparison: Lever
+Investigation: What changes when you double the effort arm?
+Original predictions — effort force: Same; hand travel: More
+All pairs below read before → after. Ideal model results; values are rounded.
+Effort arm: 2 m → 4 m (Changed)
+Load arm: 1 m → 1 m (held constant)
+Load: 400 N → 400 N (held constant)
+Load moves: 0.5 m → 0.5 m (held constant)
+Mechanical advantage: 2× → 4×
+Effort needed: 200 N → 100 N
+Your hand moves: 1 m → 2 m
+Work put in: 200 J → 200 J
+Work delivered: 200 J → 200 J
+My explanation: My separate geometry investigation.
+Recorded designs: 1/6
+Recorded design: Lever
+Fixed recorded settings and limits. Ideal model results; values are rounded.
+Maximum effort force: 250 N
+Maximum total hand travel: 1.25 m
+Chosen setting: Effort arm
+Effort arm: 2 m
+Load arm: 1 m
+Load: 400 N
+Load moves: 0.5 m
+Mechanical advantage: 2×
+Effort needed: 200 N · Within limit
+Total hand travel: 1 m · Within limit
+Task work: 200 J
+Recorded setup meets both limits.
+My explanation: This fixed ideal design needs 200 N effort and 1 m of hand travel for 200 J of work.
+Recorded efficiency calculation: Lever
+Assumed constant efficiency: 80%
+Fixed task — load: 400 N; Load moves: 0.5 m; Ideal MA: 2
+Modeled effort: 250 N
+Total hand travel: 1 m
+Useful work: 200 J
+Input work: 250 J
+Energy lost: 50 J
+Calculate the input work: 200 J ÷ 0.8 = 250 J
+Entered answer: 250 J
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Geometry and travel follow the ideal model; efficiency is an assumption, not a measured material property.
+Recorded power & motion skill: Wheel & Axle — Calculate average input power
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Useful work: 200 J · Efficiency: 80% · Task time: 5 s
+Input work = useful work ÷ efficiency as a decimal. Average input power = input work ÷ seconds.
+200 J ÷ (0.8 × 5 s) = 50 W
+Entered answer: 49.9 W
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Calculate average useful power
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Useful work: 200 J · Task time: 5 s
+Average useful power = useful work ÷ seconds. One watt is one joule per second.
+200 J ÷ 5 s = 40 W
+Entered answer: none
+Worked solution viewed; this is practice, not an independent score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Calculate input energy available from power and time
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Mechanical input-power budget (W): 100 · Task time: 5 s
+Input energy available = input-power budget × time in seconds. One watt is one joule per second.
+100 W × 5 s = 500 J
+Entered answer: 500 J
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Calculate the load at this power budget
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Mechanical input-power budget (W): 100 · Task time: 5 s · Movement held fixed: 0.5 m · 80%
+At full input power, useful work = power × seconds × efficiency as a decimal. Load force = useful work ÷ the held load movement.
+(100 W × 5 s × 0.8) ÷ 0.5 m = 800 N
+Entered answer: none
+Worked solution viewed; this is practice, not an independent score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Calculate handle turns for this task
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Load moves: 0.5 m · Load advance per turn: 0.628319 m
+Turns = load movement ÷ load advance per turn. Fractional turns are allowed; do not round up to a whole turn.
+0.5 m ÷ (0.628319 m/turn) = 0.795775 turns
+Entered answer: 0.7957747154594768 turns
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Convert total turns to angular travel
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Handle turns: 0.795775
+Angular travel = turns × 2π radians per turn. Use radians, not degrees; keep all turns, including the fractional part.
+0.795775 × 2π rad = 5 rad
+Entered answer: none
+Worked solution viewed; this is practice, not an independent score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Find effort force from power and hand speed
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Average input power: 50 W · Average hand-path speed: 0.45 m/s
+Effort force = input power ÷ hand-path speed. Use watts and metres per second to get newtons. Input power already includes the assumed losses; do not apply efficiency again.
+50 W ÷ (0.45 m/s) = 111.111 N
+Entered answer: 111.11111111111111 N
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Find load force from useful power and movement rate
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Average useful power: 40 W · Average load movement rate: 0.1 m/s
+Load force = useful power ÷ load movement rate. Pair useful power with load speed, not hand speed. Useful power already accounts for efficiency; do not apply it again.
+40 W ÷ (0.1 m/s) = 400 N
+Entered answer: none
+Worked solution viewed; this is practice, not an independent score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Convert input power from watts to kilowatts
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Current quantity: 50 W · Requested unit: kW
+One kilowatt equals 1000 watts. Divide watts by 1000. The power stays the same; its number becomes smaller in the larger unit.
+50 W × (1 kW ÷ 1000 W) = 0.05 kW
+Entered answer: 0.05 kW
+Answer checked within the stated rounding tolerance; this is practice, not a score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.
+Recorded power & motion skill: Wheel & Axle — Convert input power from kilowatts to watts
+Handle radius: 0.45 m
+Drum radius: 0.1 m
+Load: 400 N
+Load moves: 0.5 m
+Assumed constant efficiency: 80%
+Task time: 5 s
+Mechanical input-power budget (W): 100
+Input work: 250 J · Useful work: 200 J
+Current quantity: 0.05 kW · Requested unit: W
+One kilowatt equals 1000 watts. Multiply kilowatts by 1000. This changes the unit, not the input power or efficiency.
+0.05 kW × (1000 W ÷ 1 kW) = 50 W
+Entered answer: none
+Worked solution viewed; this is practice, not an independent score.
+Hints opened: 1/2
+Fixed calculation snapshot. Constant efficiency and steady motion; task time is separate from demonstration playback.

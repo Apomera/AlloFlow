@@ -1,0 +1,7 @@
+{
+  "command": "node reports/machinelab-saved-cards-visual-2026-10-14/run-tests.cjs",
+  "execSessionId": 6691,
+  "observedExitCode": 0,
+  "observedPassedTests": 64,
+  "sourceSha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559"
+}

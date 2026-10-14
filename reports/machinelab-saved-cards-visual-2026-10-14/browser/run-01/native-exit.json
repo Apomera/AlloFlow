@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-10-14T17:48:47.862Z",
+  "completedAt": "2026-10-14T17:50:16.651Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_saved_cards_visual_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-saved-cards-visual-2026-10-14\\browser\\run-01"
+  ],
+  "nodeOptions": "--max-old-space-size=512 --max-semi-space-size=8",
+  "timeoutMs": 300000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_saved_cards_visual_qa.cjs",
+      "sha256": "3b173b181d90ac399f215b0dbb22301bbf0da7504f38750793e714e8e033df18"
+    },
+    {
+      "file": "reports/machinelab-saved-cards-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "3b2449c18a9d5545554c5b336f726a0aacdafea62b0ed988e9ac45a781978beb"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_saved_cards_visual_qa.cjs",
+      "sha256": "3b173b181d90ac399f215b0dbb22301bbf0da7504f38750793e714e8e033df18"
+    },
+    {
+      "file": "reports/machinelab-saved-cards-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "3b2449c18a9d5545554c5b336f726a0aacdafea62b0ed988e9ac45a781978beb"
+    }
+  ]
+}

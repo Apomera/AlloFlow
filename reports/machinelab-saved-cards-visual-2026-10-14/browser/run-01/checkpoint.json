@@ -1,0 +1,87 @@
+{
+  "label": "large-text-phone-saved-cards",
+  "checks": 637,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "shots": [
+    {
+      "name": "desktop-before-saved-cards",
+      "file": "desktop-before-saved-cards.png",
+      "sha256": "beb416fe801406ff0305ade6191618fe71004e93e778358bbd430eafe3dc0d7b",
+      "clip": {
+        "x": 593,
+        "y": 4269.578125,
+        "width": 529,
+        "height": 826
+      },
+      "baseline": true
+    },
+    {
+      "name": "desktop-saved-cards",
+      "file": "desktop-saved-cards.png",
+      "sha256": "fe4c463e02e1de073d4d8cdc98c000699f4db7f8e7c8f810639186d3ff00df94",
+      "clip": {
+        "x": 593,
+        "y": 4269.578125,
+        "width": 529,
+        "height": 855
+      },
+      "baseline": false
+    },
+    {
+      "name": "desktop-expanded-saved-calculation",
+      "file": "desktop-expanded-saved-calculation.png",
+      "sha256": "d0addde6230c1451d460e3a57fad6519ff07aa77eae6c2cec1dfae16093f96e8",
+      "clip": {
+        "x": 593,
+        "y": 4269.578125,
+        "width": 529,
+        "height": 856
+      },
+      "baseline": false
+    },
+    {
+      "name": "dark-phone-saved-cards",
+      "file": "dark-phone-saved-cards.png",
+      "sha256": "e2bd70ad0abc91c532c30689d894808261b9996ac360c8ea709ee4573350040c",
+      "clip": {
+        "x": 28,
+        "y": 6787.9375,
+        "width": 264,
+        "height": 1321
+      },
+      "baseline": false
+    },
+    {
+      "name": "forced-colors-phone-saved-cards",
+      "file": "forced-colors-phone-saved-cards.png",
+      "sha256": "ec12f689f50a3397751034867ea550d357929db308952b618a09e1defca1ef77",
+      "clip": {
+        "x": 28,
+        "y": 6794.25,
+        "width": 264,
+        "height": 1321
+      },
+      "baseline": false
+    },
+    {
+      "name": "large-text-phone-saved-cards",
+      "file": "large-text-phone-saved-cards.png",
+      "sha256": "8c5f43245b87ce856dbf7fcb72ca2f22faadcd61c73714c6552e19bea5be24c2",
+      "clip": {
+        "x": 28,
+        "y": 7504.5625,
+        "width": 264,
+        "height": 1647
+      },
+      "baseline": false
+    }
+  ],
+  "errors": []
+}
