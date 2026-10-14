@@ -9063,14 +9063,27 @@ window.StemLab = window.StemLab || {
             ['rpm', __alloT('stem.machinelab.power_rpm', 'Average handle RPM'), 'rpm'],
             ['omega', __alloT('stem.machinelab.power_omega', 'Average angular speed'), 'rad/s']
           ]);
+          var groups = [
+            ['power', __alloT('stem.machinelab.power_results_transfer', 'Power transfer'), labels.slice(0, 3)],
+            ['motion', __alloT('stem.machinelab.power_results_motion', 'Motion and task time'), labels.slice(3, 6)]
+          ];
+          if (model.torque !== null) groups.push(['rotation', __alloT('stem.machinelab.power_results_rotation', 'Handle rotation'), labels.slice(6)]);
           return h('details', { key: 'comparison', 'data-ml-power-comparison': bench.id, style: { margin: '12px 0' } }, [
             h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_compare', 'Explore power, motion and pace')),
             returnToCalculation(),
-            h('dl', { key: 'values', className: 'ml-power-visual-grid' },
-              labels.map(function (metric) { return h('div', { key: metric[0], 'data-ml-power-metric': metric[0], 'data-value': model[metric[0]],
-                style: { border: '1px solid ' + T.border, background: T.bg, padding: 8, borderRadius: 6, minWidth: 0 } }, [
-                h('dt', { key: 'label', style: style }, metric[1]), h('dd', { key: 'value', style: valueStyle }, powerFmt(model[metric[0]]) + ' ' + metric[2])
-              ]); })),
+            groups.map(function (group) { return h('section', { key: group[0], className: 'ml-power-metric-group', 'data-ml-power-metric-group': group[0],
+              'aria-labelledby': prefix + 'results-' + group[0] + '-' + bench.id, style: { margin: '20px 0', minWidth: 0 } }, [
+              h('h3', { key: 'title', id: prefix + 'results-' + group[0] + '-' + bench.id, style: Object.assign({}, style, { margin: '0 0 10px', paddingBottom: 7, borderBottom: '1px solid ' + T.border, fontSize: 17, fontWeight: 850 }) }, group[1]),
+              h('dl', { key: 'values', className: 'ml-power-metric-grid', style: { margin: 0 } }, group[2].map(function (metric) {
+                var primary = metric[0] === 'inputPower';
+                return h('div', { key: metric[0], 'data-ml-power-metric': metric[0], 'data-value': model[metric[0]],
+                  style: { border: '1px solid ' + T.border, borderTop: primary ? '3px solid ' + T.accent : '1px solid ' + T.border, background: primary ? T.card : T.bg, padding: 12, borderRadius: 10, minWidth: 0 } }, [
+                  h('dt', { key: 'label', style: Object.assign({}, style, { fontWeight: primary ? 750 : 650 }) }, metric[1]),
+                  h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: primary ? 30 : 23 }) }, powerFmt(model[metric[0]]) + ' ' + metric[2])
+                ]);
+              }))
+            ]); }),
+            h('style', { key: 'metric-style' }, '.ml-power-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-power-metric-group [data-ml-power-metric=inputPower],.ml-power-metric-group [data-ml-power-metric=budgetTime]{grid-column:1/-1}@media(max-width:600px){.ml-power-metric-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-power-metric-group h3,.ml-power-metric-group [data-ml-power-metric]{border-color:CanvasText!important}}'),
             h('p', { key: 'fit', 'data-ml-power-fit': String(model.powerFits), style: Object.assign({}, style, { padding: 12, background: T.bg, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (model.powerFits ? T.ok : T.warn), borderRadius: 8 }) }, (model.powerFits
               ? __alloT('stem.machinelab.power_fits', 'The requested task time fits this input-power budget. ')
               : __alloT('stem.machinelab.power_exceeds', 'The requested task time needs more input power than this budget. ')) +

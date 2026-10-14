@@ -1,0 +1,54 @@
+{
+  "startedAt": "2026-10-14T16:15:12.846Z",
+  "completedAt": "2026-10-14T16:16:22.562Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_results_visual_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-results-visual-2026-10-14\\browser\\run-01"
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "7b62f6befb82aee628688dd76dae6091ccd949757bc542269cdc4a465e747867",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "7b62f6befb82aee628688dd76dae6091ccd949757bc542269cdc4a465e747867"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "7b62f6befb82aee628688dd76dae6091ccd949757bc542269cdc4a465e747867"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "7b62f6befb82aee628688dd76dae6091ccd949757bc542269cdc4a465e747867"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "7b62f6befb82aee628688dd76dae6091ccd949757bc542269cdc4a465e747867"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_results_visual_qa.cjs",
+      "sha256": "d054e692bc6b14cad8fdf995e6f58ea58276606d82b093546f26a43affc5471c"
+    },
+    {
+      "file": "reports/machinelab-results-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "f600613061e0ec37e607f809900a956686611fb39fe8851d14d53a6bed1bd24a"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_results_visual_qa.cjs",
+      "sha256": "d054e692bc6b14cad8fdf995e6f58ea58276606d82b093546f26a43affc5471c"
+    },
+    {
+      "file": "reports/machinelab-results-visual-2026-10-14/browser/run-native.cjs",
+      "sha256": "f600613061e0ec37e607f809900a956686611fb39fe8851d14d53a6bed1bd24a"
+    }
+  ]
+}

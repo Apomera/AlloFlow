@@ -1,0 +1,16 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_i18n_hygiene.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_i18n_hygiene.test.js (8 tests) 5371ms
+     ✓ has no key without an English fallback, out of namespace, blank, or double-booked  2269ms
+     ✓ holds for the mirrored copy the desktop app serves  3097ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  12:14:19
+   Duration  7.11s (transform 35ms, setup 41ms, import 32ms, tests 5.37s, environment 1.36s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-results-visual-2026-10-14/tests/run-01/group-03.json

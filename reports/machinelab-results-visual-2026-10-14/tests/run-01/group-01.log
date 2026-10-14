@@ -1,0 +1,14 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_power_lab.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_power_lab.test.js (173 tests | 155 skipped) 594ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed | 155 skipped (173)
+   Start at  12:14:13
+   Duration  2.47s (transform 59ms, setup 50ms, import 89ms, tests 594ms, environment 1.48s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-results-visual-2026-10-14/tests/run-01/group-01.json
