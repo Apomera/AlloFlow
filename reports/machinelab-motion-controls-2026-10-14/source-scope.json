@@ -1,0 +1,11 @@
+{
+  "baselineCommit": "e058da26d",
+  "baselineSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7",
+  "sourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "mirrorSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "onlyMotionInspectorChanged": true,
+  "previewGeometrySimulationAndCalculationsUnchanged": true,
+  "existingHandlersRefsAndDisabledRulesUnchanged": true,
+  "sourceMirrorParity": true,
+  "syntax": true
+}

@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root",
+  "recordedBy": "/root/force_guide_browser",
+  "sourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "finalRun": "run-03",
+  "verdict": "pass",
+  "method": "Root freshly viewed all five exact run-03 PNG paths with view_image and explicitly authorized this record.",
+  "observation": "Desktop: readable enlarged label/readout and clear Start/Halfway/Full stroke cards with common-scale diagrams; slider focus remains distinct from selection. Dark: complete readable content. Forced colors: all five black ruler ticks are now distinct and the selected Halfway card retains a clear outer keyboard ring. Doubled text: 0%, 50% and 100% are well separated and contained, with no other clipping or overlap.",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-motion-controls-2026-10-14/browser/run-03/desktop-before-motion-controls.png",
+      "sha256": "230d3dfcf77714632d96eb9892859bf517dff1e55325280898c1a6bed8e0bf44",
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-motion-controls-2026-10-14/browser/run-03/desktop-motion-controls.png",
+      "sha256": "3659e368fede0b814307d1629050294fb5a72735cf120883485adc0e54f7df08",
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-motion-controls-2026-10-14/browser/run-03/dark-phone-motion-controls.png",
+      "sha256": "2dec22ca5da93f8b7d1e2941017def9a93084a0381167ccadbd240bb68c46d77",
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-motion-controls-2026-10-14/browser/run-03/forced-colors-phone-motion-controls.png",
+      "sha256": "38bd5eb0e1a84a460eb25e10afb5c7f26b43b1fd4a823428601fbce4f2704b8d",
+      "visuallyInspected": true
+    },
+    {
+      "path": "reports/machinelab-motion-controls-2026-10-14/browser/run-03/large-text-phone-motion-controls.png",
+      "sha256": "a85bf3bb430fa6b698a4399ecc23701741905afbd21fc5c9907970c0c5ba5159",
+      "visuallyInspected": true
+    }
+  ]
+}

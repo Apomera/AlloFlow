@@ -1,0 +1,58 @@
+{
+  "reviewer": "force_guide_browser",
+  "method": "Direct view_image inspection of all five final run-03 PNGs at original resolution.",
+  "sourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "finalRun": "run-03",
+  "nativeExitCode": 0,
+  "observedOuterSession": 18861,
+  "observedOuterExitCode": 0,
+  "scenarios": 7,
+  "checks": 278,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "errors": [],
+  "images": [
+    {
+      "file": "run-03/desktop-before-motion-controls.png",
+      "sha256": "230d3dfcf77714632d96eb9892859bf517dff1e55325280898c1a6bed8e0bf44",
+      "verdict": "pass",
+      "observation": "Baseline reference shows the original motion inspector, smaller percentage and three compact common-scale previews."
+    },
+    {
+      "file": "run-03/desktop-motion-controls.png",
+      "sha256": "3659e368fede0b814307d1629050294fb5a72735cf120883485adc0e54f7df08",
+      "verdict": "pass",
+      "observation": "The larger 50% readout, motion label, Hold/Return controls and pose labels are legible. The three enlarged distance previews retain their common scale. Selected Halfway remains distinct from slider focus; text fits."
+    },
+    {
+      "file": "run-03/dark-phone-motion-controls.png",
+      "sha256": "2dec22ca5da93f8b7d1e2941017def9a93084a0381167ccadbd240bb68c46d77",
+      "verdict": "pass",
+      "observation": "At 320px in dark mode, single-column pose cards, clue and explanations fit. Halfway has an amber selection and a separate white focus ring. The three major ruler labels are separated and stay within the inspector."
+    },
+    {
+      "file": "run-03/forced-colors-phone-motion-controls.png",
+      "sha256": "38bd5eb0e1a84a460eb25e10afb5c7f26b43b1fd4a823428601fbce4f2704b8d",
+      "verdict": "pass",
+      "observation": "At 320px with forced colors, the diamond and open-circle diagrams remain distinguishable. Card boundaries, the selected Halfway state and its outer purple focus ring are clear. All five black ruler marks remain visible against the white background; the major labels and complete help text fit."
+    },
+    {
+      "file": "run-03/large-text-phone-motion-controls.png",
+      "sha256": "a85bf3bb430fa6b698a4399ecc23701741905afbd21fc5c9907970c0c5ba5159",
+      "verdict": "pass",
+      "observation": "At 320px with doubled HTML text, motion and pose headings, Hold/Return controls and explanations wrap without clipping. The visible 0%, 50% and 100% labels stay inside the inspector with clear separation; all five tick marks remain. The complete enlarged Halfway label fits."
+    }
+  ],
+  "limits": [
+    "Screenshots crop the complete inspector; quantitative scene checks verify actual rendered movement on all six machines.",
+    "Enlarged text doubles computed HTML font sizes inside the inspector rather than browser zoom; original SVG geometry remains unchanged.",
+    "The real host uses React, THREE and software WebGL. A scene observation hook exposes existing renderer state; the final fallback scenario disables the viewer factory before registering the unchanged tool.",
+    "The first source passed its 93 tests but failed two enlarged-ruler browser assertions. The next source passed native checks but root review found missing forced-color tick paint; the final source adds explicit CanvasText mark backgrounds and every tick now passes a computed contrast check. Both prior stages are preserved."
+  ]
+}

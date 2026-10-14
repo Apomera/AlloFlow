@@ -1,0 +1,14 @@
+{
+  "sourceBeforeSha256": "9b8334a65498aa4ff567b482a31fbb5671f1736e22de67da6d3f29ef03c9acfa",
+  "sourceAfterSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "anchor": ".ml-shop-inspector{--ml-inspector-focus:Highlight!important}",
+  "insert": ".ml-shop-inspector .ml-stroke-ruler>span>span:first-child{background:CanvasText!important}",
+  "harnessBeforeSha256": "2d99403f81292dbfd67f0c51967375627e6ba2e23164bee47d8415297e7a2269",
+  "harnessAfterSha256": "c01c9a741f46662925ab00d3c21bbf8315f50d46ab47d4fe1ae1573d678587d3",
+  "harnessChanges": [
+    "Record the computed tick background and inspector background.",
+    "Require at least 3:1 painted contrast for every tick in every inspector inspection."
+  ],
+  "nativeRun02Passed": true,
+  "rootVisualApprovalWithheld": true
+}

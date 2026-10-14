@@ -1,0 +1,17 @@
+# Machine Lab: clearer motion controls
+
+The motion inspector now emphasizes the live position readout, larger Hold and comparison controls, and three illustrated pose cards. The 18px label and 26px readout make scrubbing more visible; 60px-high distance previews retain their original common scale and SVG geometry. Cards use three desktop columns, one column at 600px, and stack their labels above diagrams at 440px for narrow phones and enlarged text. All five ruler tick marks remain; narrow layouts show the three major percentage labels, with endpoint text aligned inward.
+
+The range, Hold, outline, return-to-clue and pose callbacks, saved work, animation synchronization, calculations and scenes are unchanged. Only shopMotionInspector presentation changed. Existing accessible names, descriptions, disabled rules and translation text are preserved; keyboard focus remains explicit in forced colors.
+
+All 93 selected existing tests passed on the final source across seven serial native processes. Native Chromium run-03 passed 278 checks across seven mounts and all six machines. Actual keyboard scrubbing to 37% and the 0/50/100% presets agree with rendered effort/load positions and the original common-scale previews. Live and reduced-motion Hold, clue return, outline changes and the unavailable-viewer fallback retain their behavior. Checked/viewed records, an unfinished hinted answer and independent saved work remain intact.
+
+Ten quantitative inspector inspections cover desktop, both responsive boundaries, dark and forced-color phones, doubled text and fallback. Thirty-two rendered-pose inspections verify movement and readout agreement; six focus checks cover the slider, selected Halfway card and outline checkbox. All 50 inspected tick marks have at least 3:1 computed contrast against their backgrounds. Five final screenshots were directly inspected: before/current desktop plus dark, forced-color and doubled-text 320px layouts. Exact results appear in `validation-summary.json`; image reviews and hashes are in `browser/`.
+
+The first source passed the same 93 tests, but browser run-01 found two enlarged-text failures: the 100% label extended 0.234375px beyond the inspector before and after a React update. Its source snapshot, native results, images and observed exit are retained. The correction hides the 25%/75% text at widths up to 600px while retaining their marks, and aligns endpoint text inward. The harness explicitly verifies all five equally spaced anchors, exact responsive visible labels, and the same containment/non-overlap tolerances.
+
+The second source passed all 93 tests and all 268 native browser checks, but root's image review found that forced colors made the quarter-stroke marks indistinct. That native pass is retained with the separate visual issue and initial agent review; it is not counted as an approved final result. A single scoped rule now paints ruler marks with CanvasText in forced colors, and the harness verifies actual computed mark contrast in every layout. Final tests/run-03 and browser/run-03 passed on this source; observed browser wrapper session 18861 exited zero.
+
+Run `node reports/machinelab-motion-controls-2026-10-14/verify-evidence.cjs` to verify source scope, all three test runs, the preserved browser failure and visual issue, exact source repairs, final browser results and screenshot hashes.
+
+This is a local update without push or deployment. Browser checks use Chromium software WebGL; forced colors and doubled text are simulated, not a screen-reader evaluation.

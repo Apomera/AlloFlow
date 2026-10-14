@@ -1,0 +1,236 @@
+{
+  "status": "passed",
+  "finalRun": "run-03",
+  "sourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "baselineSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7",
+  "checks": 278,
+  "scenarios": 7,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "screenshots": 5,
+  "errors": [],
+  "observedWrapperExitCode": 0,
+  "nativeExitCode": 0,
+  "harness": {
+    "file": "dev-tools/ml_motion_controls_visual_qa.cjs",
+    "sha256": "c01c9a741f46662925ab00d3c21bbf8315f50d46ab47d4fe1ae1573d678587d3"
+  },
+  "artifacts": [
+    {
+      "file": "run-native.cjs",
+      "sha256": "a8c501503d0e436401b0aa9b13b0c9bcce52b3b72f6aeaa0a22c27675a739253"
+    },
+    {
+      "file": "finalize.cjs",
+      "sha256": "1bc73c0c44a6a05be32c480087b6144dbcc3eec91c244b72e3495277a5e522e3"
+    },
+    {
+      "file": "run-03/results.json",
+      "sha256": "cbb8cb1f67ebe0e3aebe1f0d0c4218afd386d96d71fd76716ef930102e5d8d9d"
+    },
+    {
+      "file": "run-03/native-exit.json",
+      "sha256": "12d9244f62e8215fcd32702dbc756149d706e640fc6da4cfb1bf791c649a2533"
+    },
+    {
+      "file": "run-03/observed-wrapper-exit.json",
+      "sha256": "9b0ea4998e9335c096af882deab5fe32db5582e735aa80e129e0782109485a28"
+    },
+    {
+      "file": "run-03/stdout.log",
+      "sha256": "9222971291842e178884b179292ced860a27c09124c88522df93a6ceb94655a4"
+    },
+    {
+      "file": "run-03/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run-03/harness-snapshot.cjs",
+      "sha256": "c01c9a741f46662925ab00d3c21bbf8315f50d46ab47d4fe1ae1573d678587d3"
+    },
+    {
+      "file": "run-03/runner-snapshot.cjs",
+      "sha256": "a8c501503d0e436401b0aa9b13b0c9bcce52b3b72f6aeaa0a22c27675a739253"
+    },
+    {
+      "file": "run-03/checkpoint.json",
+      "sha256": "dfac51c1ac1e5d441e6e0bc984a59a384fb492b707faef21fa06c3619ac6c89a"
+    },
+    {
+      "file": "visual-review.json",
+      "sha256": "4b7d25372f453e1ac52be7dde3f879e197751a26192c73cde9727a678a9e5a53"
+    },
+    {
+      "file": "run-03/desktop-before-motion-controls.png",
+      "sha256": "230d3dfcf77714632d96eb9892859bf517dff1e55325280898c1a6bed8e0bf44"
+    },
+    {
+      "file": "run-03/desktop-motion-controls.png",
+      "sha256": "3659e368fede0b814307d1629050294fb5a72735cf120883485adc0e54f7df08"
+    },
+    {
+      "file": "run-03/dark-phone-motion-controls.png",
+      "sha256": "2dec22ca5da93f8b7d1e2941017def9a93084a0381167ccadbd240bb68c46d77"
+    },
+    {
+      "file": "run-03/forced-colors-phone-motion-controls.png",
+      "sha256": "38bd5eb0e1a84a460eb25e10afb5c7f26b43b1fd4a823428601fbce4f2704b8d"
+    },
+    {
+      "file": "run-03/large-text-phone-motion-controls.png",
+      "sha256": "a85bf3bb430fa6b698a4399ecc23701741905afbd21fc5c9907970c0c5ba5159"
+    },
+    {
+      "file": "run-01/native-exit.json",
+      "sha256": "59ef7022e01502b7d4ab3c6a22b43810687c5a2a21488b2cec7bf143b7a57914"
+    },
+    {
+      "file": "run-01/observed-wrapper-exit.json",
+      "sha256": "6054ed8abae2a250e7ce68dc76b6053735bd3f92800cea3cbbb5e75dbd11c849"
+    },
+    {
+      "file": "run-01/stdout.log",
+      "sha256": "db703263ee075ec83441f1c2a461e2d4de46f2b1664784fb7d15f5571e0e106a"
+    },
+    {
+      "file": "run-01/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run-01/harness-snapshot.cjs",
+      "sha256": "807daef99ae9e021a5cbfd634930213b7eb5aa1447f0763b500e90f7ce79a721"
+    },
+    {
+      "file": "run-01/runner-snapshot.cjs",
+      "sha256": "ce22ea6b6be92fd7cbbbec7a5723b682d65c629afa5d90a2d8cd9d5f7b6396e3"
+    },
+    {
+      "file": "run-01/ruler-repair.json",
+      "sha256": "bf441352e59c65e51e908265f5f169db4514432e6a5c0f9df79e058054b72c08"
+    },
+    {
+      "file": "run-01/source-snapshot.js",
+      "sha256": "476fbae24a8c299de8aed79525d3e0ddf8a6182067a9a470d07beb61918ab625"
+    },
+    {
+      "file": "run-01/results.json",
+      "sha256": "4336d24745ae6bdecba291036e802f9b97ed328214d8cac43a8dce86be7f274e"
+    },
+    {
+      "file": "run-01/checkpoint.json",
+      "sha256": "bfd8e6624904b34460295d786c038e4359514dd392fe41df8afe30dd0d1c62e2"
+    },
+    {
+      "file": "run-01/desktop-before-motion-controls.png",
+      "sha256": "230d3dfcf77714632d96eb9892859bf517dff1e55325280898c1a6bed8e0bf44"
+    },
+    {
+      "file": "run-01/desktop-motion-controls.png",
+      "sha256": "5fc34cd2a7b4f061257c571e5e6e58b2e3d331903df114974d508be67447181a"
+    },
+    {
+      "file": "run-01/dark-phone-motion-controls.png",
+      "sha256": "3caab5e1833f0e4f05fda898681602a591e49b62d350e17a85f9056d12af41bb"
+    },
+    {
+      "file": "run-01/forced-colors-phone-motion-controls.png",
+      "sha256": "dad304e71adfb7d0ba77e681959a88c325519e86b94712decb9e31e17c14cd63"
+    },
+    {
+      "file": "run-01/large-text-phone-motion-controls.png",
+      "sha256": "eb7c3439029b15c16c6c567dc252558a458870d208f247ec5e6d68053763ccae"
+    },
+    {
+      "file": "run-02/native-exit.json",
+      "sha256": "8ee0ba88fb1710f67b9badee0de587c232f5ab8065e69789ea6ab09613e24852"
+    },
+    {
+      "file": "run-02/observed-wrapper-exit.json",
+      "sha256": "3003fe5ccbbfca7fb93bdbc6cc0696ba424469f9c8b6ecf96b9527523f56fe2d"
+    },
+    {
+      "file": "run-02/stdout.log",
+      "sha256": "230e04c35f1d651448df793b6eb450044380de6966817456f4ab8286b0c0a37f"
+    },
+    {
+      "file": "run-02/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run-02/harness-snapshot.cjs",
+      "sha256": "2d99403f81292dbfd67f0c51967375627e6ba2e23164bee47d8415297e7a2269"
+    },
+    {
+      "file": "run-02/runner-snapshot.cjs",
+      "sha256": "f680769dccd1b204803ffd610a105fff1c585c2a6dd573bfc00dd3393bfad71e"
+    },
+    {
+      "file": "run-02/source-snapshot.js",
+      "sha256": "9b8334a65498aa4ff567b482a31fbb5671f1736e22de67da6d3f29ef03c9acfa"
+    },
+    {
+      "file": "run-02/results.json",
+      "sha256": "f87445a114022d2cbcb2865ae33015500393ad49df9e839d43ddf7316a9b1b55"
+    },
+    {
+      "file": "run-02/checkpoint.json",
+      "sha256": "3b514a44041115440df8de3b0ca7e4fa88cb5628e20eeef94b9889487db73fec"
+    },
+    {
+      "file": "run-02/initial-agent-visual-review.json",
+      "sha256": "567bf9ee5c44cf96f95d2f602d6371109757e8e54ec07900df5d3eca0071bb6c"
+    },
+    {
+      "file": "run-02/initial-native-summary.json",
+      "sha256": "89028e3f8975dd3213cab3e5acdf8a8340b5d94eeb815b50248ba81e564d2e97"
+    },
+    {
+      "file": "run-02/finalizer-snapshot.cjs",
+      "sha256": "01fa4684b08e78d921fb67a4e03dfed7295d1cccc0988f30c4afa385830c9016"
+    },
+    {
+      "file": "run-02/visual-review-issue.json",
+      "sha256": "f4298b21ec433481c73c25ac0e404eb16dfadb15e00084a62bd6b76b8c9292d9"
+    },
+    {
+      "file": "run-02/paint-repair.json",
+      "sha256": "108cef10b5f25233c8249555d6ba63e0feafb700b6a95869d7437a2836c44714"
+    },
+    {
+      "file": "run-02/desktop-before-motion-controls.png",
+      "sha256": "230d3dfcf77714632d96eb9892859bf517dff1e55325280898c1a6bed8e0bf44"
+    },
+    {
+      "file": "run-02/desktop-motion-controls.png",
+      "sha256": "3659e368fede0b814307d1629050294fb5a72735cf120883485adc0e54f7df08"
+    },
+    {
+      "file": "run-02/dark-phone-motion-controls.png",
+      "sha256": "2dec22ca5da93f8b7d1e2941017def9a93084a0381167ccadbd240bb68c46d77"
+    },
+    {
+      "file": "run-02/forced-colors-phone-motion-controls.png",
+      "sha256": "79da2abaface058fc45a71a63c78d5795bc9e316dbdb076f640bf5712ae3728b"
+    },
+    {
+      "file": "run-02/large-text-phone-motion-controls.png",
+      "sha256": "a85bf3bb430fa6b698a4399ecc23701741905afbd21fc5c9907970c0c5ba5159"
+    },
+    {
+      "file": "root-visual-review.json",
+      "sha256": "7a489714b5fa449e01c08b14bb57749207b9d6514c787a507004de0b05a11164"
+    }
+  ],
+  "preservedFailedRuns": [
+    "run-01"
+  ],
+  "preservedPassingNativeRunsWithVisualIssue": [
+    "run-02"
+  ]
+}

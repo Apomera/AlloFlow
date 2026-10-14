@@ -1,0 +1,25 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_views.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_views.test.js (192 tests | 181 skipped) 10981ms
+     ✓ preserves the lever distance ratio across poses at 2/1  3735ms
+     ✓ preserves the lever distance ratio across poses at 1/2  1866ms
+     ✓ preserves the lever distance ratio across poses at 2/2  876ms
+     ✓ preserves the lever distance ratio across poses at 4/0.2  652ms
+     ✓ preserves the lever distance ratio across poses at 0.2/4  567ms
+     ✓ offers three bounded distance previews at lever  557ms
+     ✓ offers three bounded distance previews at pulley  535ms
+     ✓ offers three bounded distance previews at windlass  724ms
+     ✓ offers three bounded distance previews at ramp  480ms
+     ✓ offers three bounded distance previews at wedge  464ms
+     ✓ offers three bounded distance previews at screw  521ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed | 181 skipped (192)
+   Start at  17:50:18
+   Duration  17.65s (transform 509ms, setup 70ms, import 629ms, tests 10.98s, environment 5.16s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-motion-controls-2026-10-14/tests/run-02/group-02.json

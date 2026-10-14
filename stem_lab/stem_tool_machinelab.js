@@ -13455,14 +13455,14 @@ window.StemLab = window.StemLab || {
         }
         function shopMotionInspector() {
           return h('div', { key: 'inspect', className: 'ml-shop-inspector', style: {
-            padding: '10px 12px', marginTop: 8, borderRadius: 12,
-            background: T.bg, border: '1px solid ' + T.border
+            padding: 16, marginTop: 10, borderRadius: 14,
+            background: T.bg, border: '1px solid ' + T.border, color: T.text, '--ml-inspector-focus': T.text
           } }, [
             d.shopClueBench === bench.id ? h('div', { key: 'clue', className: 'ml-shop-clue-reminder',
               role: 'group', 'aria-label': __alloT('stem.machinelab.current_clue', 'Current observation clue'),
               style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '8px 10px', marginBottom: 10,
                 borderRadius: 8, borderLeft: '3px solid ' + T.accent, background: T.card } }, [
-              h('span', { key: 'question', style: { flex: '1 1 210px', fontSize: 12, lineHeight: 1.45, color: T.text } }, shopDiscoveryClue()[0]),
+              h('span', { key: 'question', style: { flex: '1 1 210px', fontSize: 14, lineHeight: 1.5, color: T.text } }, shopDiscoveryClue()[0]),
               h('button', { key: 'back', type: 'button',
                 onClick: function (ev) {
                   var world = ev.currentTarget.closest('.ml-shop-world');
@@ -13471,26 +13471,26 @@ window.StemLab = window.StemLab || {
                   if (summary) summary.focus({ preventScroll: true });
                   if (card && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'auto' });
                 },
-                style: { minHeight: 36, padding: '5px 10px', borderRadius: 7, border: '1px solid ' + T.border,
-                  background: T.bg, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 9, border: '1px solid ' + T.border,
+                  background: T.bg, color: T.text, fontSize: 14, fontWeight: 750, cursor: 'pointer' }
               }, __alloT('stem.machinelab.return_clue', 'Return to clue'))
             ]) : null,
             h('div', { key: 'heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, [
-              h('label', { key: 'label', id: 'ml-shop-stroke-label', htmlFor: 'ml-shop-stroke', style: { fontSize: 12, fontWeight: 800, color: T.text } },
+              h('label', { key: 'label', id: 'ml-shop-stroke-label', htmlFor: 'ml-shop-stroke', style: { fontSize: 18, lineHeight: 1.4, fontWeight: 850, color: T.text } },
                 __alloT('stem.machinelab.inspect_motion', 'Inspect the motion')),
               h('div', { key: 'state', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, [
-                h('span', { key: 'position', ref: function (el) { shopStrokeReadout = el; if (el) syncShopStroke(shopProgress); }, 'data-ml-stroke-readout': '', style: { fontSize: 14, fontWeight: 850, color: T.effort,
-                  minWidth: 46, padding: '5px 8px', textAlign: 'center', borderRadius: 7, border: '1px solid ' + T.border,
+                h('span', { key: 'position', ref: function (el) { shopStrokeReadout = el; if (el) syncShopStroke(shopProgress); }, 'data-ml-stroke-readout': '', style: { fontSize: 26, lineHeight: 1.25, fontWeight: 850, color: T.effort,
+                  minWidth: 74, padding: '8px 10px', textAlign: 'center', borderRadius: 10, border: '1px solid ' + T.border,
                   background: T.card, fontVariantNumeric: 'tabular-nums' } },
                   Math.round(shopProgress * 100) + '%'),
                 h('button', { key: 'hold', type: 'button', onClick: holdShopPose,
                   disabled: !d.shopAnimating || shopStatus === 'failed',
                   title: __alloT('stem.machinelab.hold_pose_hint', 'Stop at the current position, then rotate the view or move the position slider.'),
-                  style: { display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 36, padding: '5px 10px', borderRadius: 7,
+                  style: { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '8px 12px', borderRadius: 9,
                     border: '1px solid ' + (d.shopAnimating ? T.accent : T.border),
                     background: d.shopAnimating ? T.accent : T.card, color: d.shopAnimating ? T.accentInk : T.dim,
-                    fontSize: 11, fontWeight: 800, cursor: d.shopAnimating ? 'pointer' : 'default' }
-                }, [h('svg', { key: 'icon', width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': 'true', focusable: 'false' },
+                    fontSize: 14, lineHeight: 1.4, fontWeight: 800, cursor: d.shopAnimating ? 'pointer' : 'default' }
+                }, [h('svg', { key: 'icon', width: 14, height: 14, viewBox: '0 0 12 12', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } },
                   h('path', { d: 'M2 1h3v10H2zM7 1h3v10H7z', fill: 'currentColor' })),
                   h('span', { key: 'label' }, __alloT('stem.machinelab.hold_pose', 'Hold this pose'))])
               ])
@@ -13504,7 +13504,10 @@ window.StemLab = window.StemLab || {
               '.ml-stroke-range::-moz-range-thumb{box-sizing:border-box;width:24px;height:24px;border:4px solid var(--ml-stroke-rest);border-radius:50%;background:var(--ml-stroke-ink);box-shadow:0 0 0 2px var(--ml-stroke-ink)}' +
               '.ml-stroke-range:focus-visible{outline:3px solid var(--ml-stroke-ink);outline-offset:2px}' +
               '.ml-stroke-range:disabled{cursor:default!important}' +
-              '@media(forced-colors:active){.ml-stroke-range{forced-color-adjust:none;--ml-stroke-ink:Highlight!important;--ml-stroke-border:CanvasText!important;--ml-stroke-rest:Canvas!important}.ml-shop-inspector [data-ml-stroke-preview]{forced-color-adjust:none}.ml-shop-inspector [data-ml-stroke-preview] path{stroke:CanvasText}.ml-shop-inspector [data-ml-preview-marker=effort]{fill:CanvasText}.ml-shop-inspector [data-ml-preview-marker=load]{fill:Canvas;stroke:CanvasText}}'),
+              '.ml-shop-inspector{overflow-wrap:anywhere}.ml-shop-inspector [data-ml-stroke-preview]{height:60px!important;max-width:220px!important;margin-top:8px!important}.ml-shop-inspector button:focus-visible,.ml-shop-inspector input[type=checkbox]:focus-visible{outline:3px solid var(--ml-inspector-focus);outline-offset:3px}.ml-shop-inspector .ml-stroke-pose:hover:not(:disabled){box-shadow:inset 0 0 0 1px currentColor!important}' +
+              '@media(max-width:600px){.ml-shop-inspector .ml-stroke-poses{grid-template-columns:minmax(0,1fr)!important}.ml-shop-inspector .ml-stroke-pose{display:grid!important;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);min-height:88px!important;gap:8px}.ml-shop-inspector .ml-stroke-pose [data-ml-stroke-preview]{margin:0 auto!important}.ml-shop-inspector .ml-stroke-pose>span{padding:6px!important}.ml-shop-inspector [data-ml-stroke-tick="25"]>span:last-child,.ml-shop-inspector [data-ml-stroke-tick="75"]>span:last-child{visibility:hidden}}' +
+              '@media(max-width:440px){.ml-shop-inspector .ml-stroke-pose{grid-template-columns:minmax(0,1fr);min-height:112px!important}}' +
+              '@media(forced-colors:active){.ml-stroke-range{forced-color-adjust:none;--ml-stroke-ink:Highlight!important;--ml-stroke-border:CanvasText!important;--ml-stroke-rest:Canvas!important}.ml-shop-inspector{--ml-inspector-focus:Highlight!important}.ml-shop-inspector .ml-stroke-ruler>span>span:first-child{background:CanvasText!important}.ml-shop-inspector .ml-stroke-pose[aria-pressed=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:-4px}.ml-shop-inspector .ml-stroke-pose:focus-visible{outline:3px solid Highlight;outline-offset:3px}.ml-shop-inspector [data-ml-stroke-preview]{forced-color-adjust:none}.ml-shop-inspector [data-ml-stroke-preview] path{stroke:CanvasText}.ml-shop-inspector [data-ml-preview-marker=effort]{fill:CanvasText}.ml-shop-inspector [data-ml-preview-marker=load]{fill:Canvas;stroke:CanvasText}}'),
             h('input', {
               key: 'stroke', ref: function (el) { shopStrokeElement = el; if (el) syncShopStroke(shopProgress); }, id: 'ml-shop-stroke', className: 'ml-stroke-range', type: 'range', min: 0, max: 100, step: 1,
               value: Math.round(shopProgress * 100), disabled: !!d.shopAnimating || shopStatus === 'failed',
@@ -13516,45 +13519,46 @@ window.StemLab = window.StemLab || {
                 '--ml-stroke-rest': T.card, '--ml-stroke-border': T.dim, '--ml-stroke-fill': Math.round(shopProgress * 100) + '%' }
             }),
             h('div', { key: 'ruler', 'aria-hidden': 'true', className: 'ml-stroke-ruler',
-              style: { display: 'flex', justifyContent: 'space-between', margin: '6px 12px 12px', color: T.dim, fontSize: 10, fontVariantNumeric: 'tabular-nums', pointerEvents: 'none' }
+              style: { display: 'flex', justifyContent: 'space-between', margin: '6px 12px 16px', color: T.text, fontSize: 12, fontVariantNumeric: 'tabular-nums', pointerEvents: 'none' }
             }, [0, 25, 50, 75, 100].map(function (value) {
               return h('span', { key: value, 'data-ml-stroke-tick': value, style: { width: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 } }, [
                 h('span', { key: 'mark', style: { width: 1, height: value % 50 === 0 ? 7 : 4, marginTop: value % 50 === 0 ? 0 : 3, background: T.dim } }),
-                h('span', { key: 'value', style: { lineHeight: '14px', whiteSpace: 'nowrap' } }, value + '%')
+                h('span', { key: 'value', style: { lineHeight: 1.4, whiteSpace: 'nowrap', transform: value === 0 ? 'translateX(50%)' : value === 100 ? 'translateX(-50%)' : undefined } }, value + '%')
               ]);
             })),
-            h('div', { key: 'poses', role: 'group', 'aria-label': __alloT('stem.machinelab.stroke_positions', 'Working stroke positions'),
+            h('div', { key: 'poses-label', 'aria-hidden': 'true', style: { margin: '4px 0 10px', fontSize: 15, lineHeight: 1.4, fontWeight: 800 } },
+              __alloT('stem.machinelab.stroke_positions', 'Working stroke positions')),
+            h('div', { key: 'poses', className: 'ml-stroke-poses', role: 'group', 'aria-label': __alloT('stem.machinelab.stroke_positions', 'Working stroke positions'),
               'aria-describedby': 'ml-shop-preview-help',
-              style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6 } },
+              style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 10 } },
               [0, 0.5, 1].map(function (progress, index) {
                 var selected = !d.shopAnimating && shopProgress === progress;
-                return h('button', { key: index, type: 'button', disabled: shopStatus === 'failed',
+                return h('button', { key: index, className: 'ml-stroke-pose', type: 'button', disabled: shopStatus === 'failed',
                   'aria-pressed': selected, onClick: function () { inspectShopMotion(progress); },
-                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: 40, padding: '6px', borderRadius: 8, fontSize: 11, fontWeight: 800,
-                    cursor: 'pointer', color: T.text, background: T.bg,
-                    boxShadow: selected ? 'inset 0 0 0 1px ' + T.accent : 'none',
-                    border: '1px solid ' + (selected ? T.accent : T.border) }
-                }, [h('span', { key: 'label', style: { display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', padding: '3px 7px', borderRadius: 5,
+                  style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, minHeight: 112, padding: 10, borderRadius: 12, fontSize: 14, lineHeight: 1.4, fontWeight: 800,
+                    cursor: shopStatus === 'failed' ? 'default' : 'pointer', color: T.text, background: selected ? T.card : T.bg,
+                    border: '2px solid ' + (selected ? T.accent : T.border) }
+                }, [h('span', { key: 'label', style: { display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', maxWidth: '100%', padding: '4px 9px', borderRadius: 6,
                     color: selected ? T.accentInk : T.text, background: selected ? T.accent : 'transparent' } },
                   index === 0 ? __alloT('stem.machinelab.stroke_start', 'Start') : index === 1
                     ? __alloT('stem.machinelab.stroke_half', 'Halfway') : __alloT('stem.machinelab.stroke_full', 'Full stroke')),
                   shopStrokePreview(progress)]);
               })),
-            h('div', { key: 'outline', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 7 } }, [
-              h('label', { key: 'toggle', style: { display: 'inline-flex', alignItems: 'center', gap: 7, minHeight: 36,
-                padding: '0 8px', borderRadius: 7, border: '1px dashed ' + T.border, cursor: 'pointer', fontSize: 12, color: T.text } }, [
+            h('div', { key: 'outline', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 12 } }, [
+              h('label', { key: 'toggle', style: { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44,
+                padding: '4px 10px', borderRadius: 9, border: '1px dashed ' + T.border, cursor: 'pointer', fontSize: 14, lineHeight: 1.4, color: T.text } }, [
                 h('input', { key: 'check', type: 'checkbox', checked: !!d.shopStartOutline, disabled: shopStatus === 'failed',
                   'aria-describedby': d.shopStartOutline ? 'ml-shop-outline-help' : undefined,
                   onChange: function (ev) { upd('shopStartOutline', ev.target.checked); },
-                  style: { accentColor: T.accent, width: 16, height: 16, margin: 0 } }),
+                  style: { accentColor: T.accent, width: 18, height: 18, flexShrink: 0, margin: 0 } }),
                 h('span', { key: 'text' }, __alloT('stem.machinelab.show_start_outline', 'Show starting outline'))
               ]),
-              d.shopStartOutline ? h('span', { key: 'help', id: 'ml-shop-outline-help', style: { fontSize: 11, lineHeight: 1.4, color: T.dim } },
+              d.shopStartOutline ? h('span', { key: 'help', id: 'ml-shop-outline-help', style: { fontSize: 13, lineHeight: 1.5, color: T.text } },
                 __alloT('stem.machinelab.start_outline_links_help', 'Dashed outline = load at the start. Open marker = start; solid marker = now. Move beyond Start to compare.')) : null
             ]),
-            h('p', { key: 'preview-help', id: 'ml-shop-preview-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.text } },
+            h('p', { key: 'preview-help', id: 'ml-shop-preview-help', style: { margin: '10px 0 0', fontSize: 13, lineHeight: 1.5, color: T.text } },
               __alloT('stem.machinelab.stroke_preview_help', 'Distance previews: ◆ effort · ○ load. One scale for all three positions.')),
-            h('p', { key: 'help', id: 'ml-shop-stroke-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+            h('p', { key: 'help', id: 'ml-shop-stroke-help', style: { margin: '8px 0 0', fontSize: 13, lineHeight: 1.5, color: T.text } },
               d.shopAnimating ? __alloT('stem.machinelab.live_stroke_help', 'The ruler follows the machine: 0% at the start, 100% at full stroke. Hold this pose to inspect the current position.')
                 : __alloT('stem.machinelab.inspect_help', 'Choose a position, then rotate the view to inspect it. The model stays still. These positions show the working stroke of the demonstration.'))
           ]);

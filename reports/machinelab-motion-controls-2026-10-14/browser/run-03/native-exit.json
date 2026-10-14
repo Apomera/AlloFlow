@@ -1,0 +1,56 @@
+{
+  "startedAt": "2026-10-14T21:58:24.387Z",
+  "completedAt": "2026-10-14T21:59:50.714Z",
+  "command": "C:\\Program Files\\nodejs\\node.exe",
+  "args": [
+    "dev-tools/ml_motion_controls_visual_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-motion-controls-2026-10-14\\browser\\run-03"
+  ],
+  "nodeOptions": "--max-old-space-size=512 --max-semi-space-size=8",
+  "timeoutMs": 300000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "frozenSourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "unchanged": true,
+  "sourceBefore": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010"
+    }
+  ],
+  "runnerBefore": [
+    {
+      "file": "dev-tools/ml_motion_controls_visual_qa.cjs",
+      "sha256": "c01c9a741f46662925ab00d3c21bbf8315f50d46ab47d4fe1ae1573d678587d3"
+    },
+    {
+      "file": "reports/machinelab-motion-controls-2026-10-14/browser/run-native.cjs",
+      "sha256": "a8c501503d0e436401b0aa9b13b0c9bcce52b3b72f6aeaa0a22c27675a739253"
+    }
+  ],
+  "runnerAfter": [
+    {
+      "file": "dev-tools/ml_motion_controls_visual_qa.cjs",
+      "sha256": "c01c9a741f46662925ab00d3c21bbf8315f50d46ab47d4fe1ae1573d678587d3"
+    },
+    {
+      "file": "reports/machinelab-motion-controls-2026-10-14/browser/run-native.cjs",
+      "sha256": "a8c501503d0e436401b0aa9b13b0c9bcce52b3b72f6aeaa0a22c27675a739253"
+    }
+  ]
+}

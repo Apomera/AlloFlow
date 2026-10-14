@@ -1,0 +1,18 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_views.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_views.test.js (192 tests | 188 skipped) 5054ms
+     ✓ provides a named native hold control with no-WebGL fallback at k2  1265ms
+     ✓ provides a named native hold control with no-WebGL fallback at g35  431ms
+     ✓ provides a named native hold control with no-WebGL fallback at g68  1959ms
+     ✓ provides a named native hold control with no-WebGL fallback at g912  1396ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed | 188 skipped (192)
+   Start at  17:42:19
+   Duration  12.78s (transform 177ms, setup 91ms, import 216ms, tests 5.05s, environment 5.47s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-motion-controls-2026-10-14/tests/run-01/group-04.json

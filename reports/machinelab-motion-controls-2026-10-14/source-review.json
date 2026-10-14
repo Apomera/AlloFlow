@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/motion_visual_review",
+  "baselineCommit": "e058da26d",
+  "sourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "mirrorSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010",
+  "verdict": "pass",
+  "findings": [],
+  "reviewed": [
+    "Changes are confined to shopMotionInspector presentation; canonical source and public mirror match.",
+    "Range, pose, hold, outline and clue-return callbacks, values, disabled conditions and state handling remain unchanged.",
+    "Motion calculations, SVG preview geometry, scale and marker origins remain unchanged.",
+    "Existing control labels, descriptions, pressed states, translation keys and native semantics remain intact; the added visible group label is decorative.",
+    "Larger text and targets, responsive pose layouts and explicit focus indicators improve control discoverability.",
+    "Forced-colors focus rules follow selected-state rules and retain a distinct external focus outline.",
+    "Ruler spacing corrections retain all five slider-aligned tick anchors; the ruler remains decorative and native slider value semantics are unchanged.",
+    "The final diff against the preserved run-02 source adds only the scoped forced-colors rule setting ruler tick backgrounds to CanvasText. No logic, geometry, focus rules or normal-color styles change."
+  ],
+  "resolvedDuringReview": [
+    "At widths up to 440 pixels, pose labels stack above previews with a 112-pixel minimum card height, reducing enlarged-label wrapping pressure.",
+    "Ruler-number line height is unitless 1.4 so it scales with enlarged text.",
+    "After run-01 exposed endpoint crowding, endpoint labels now extend inward from their tick anchors. At widths up to 600 pixels, 0%, 50% and 100% remain visible while the two intermediate text labels are hidden, making room without moving or removing ticks.",
+    "After the root's run-02 screenshot review identified faint forced-colors ruler ticks, the final rule explicitly assigns CanvasText to the five mark backgrounds. Actual paint contrast remains subject to the separate browser rerun."
+  ],
+  "nativeChecksRunByReviewer": false,
+  "limitations": [
+    "Static review only; playback, scrubbing, keyboard focus, responsive geometry and saved-state preservation require the separately owned runtime checks."
+  ]
+}

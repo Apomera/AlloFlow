@@ -1,0 +1,29 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_views.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_views.test.js (192 tests | 166 skipped) 8784ms
+     ✓ keeps the active question beside inspection for lever k2  462ms
+     ✓ keeps the active question beside inspection for lever g68  563ms
+     ✓ keeps the active question beside inspection for pulley g68  545ms
+     ✓ keeps the active question beside inspection for windlass g68  586ms
+     ✓ keeps the active question beside inspection for ramp g68  393ms
+     ✓ keeps the active question beside inspection for wedge g68  389ms
+     ✓ keeps the active question beside inspection for screw g68  517ms
+     ✓ keeps the active question beside inspection for lever g912  468ms
+     ✓ keeps the active question beside inspection for pulley g912  403ms
+     ✓ keeps the active question beside inspection for windlass g912  471ms
+     ✓ keeps the active question beside inspection for ramp g912  785ms
+     ✓ keeps the active question beside inspection for wedge g912  500ms
+     ✓ keeps the active question beside inspection for screw g912  467ms
+     ✓ does not show a reminder before this station is investigated: undefined  377ms
+     ✓ does not show a reminder before this station is investigated: screw  494ms
+
+ Test Files  1 passed (1)
+      Tests  26 passed | 166 skipped (192)
+   Start at  17:57:01
+   Duration  11.29s (transform 72ms, setup 53ms, import 112ms, tests 8.78s, environment 1.99s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-motion-controls-2026-10-14/tests/run-03/group-05.json

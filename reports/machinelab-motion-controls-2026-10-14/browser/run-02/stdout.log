@@ -1,0 +1,19 @@
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+motion controls checkpoint desktop-before-motion-controls 1 checks
+native scenario 2 lever
+motion controls checkpoint desktop-motion-controls 15 checks
+native scenario 3 windlass
+native scenario 4 lever
+motion controls checkpoint dark-phone-motion-controls 198 checks
+native scenario 5 lever
+motion controls checkpoint forced-colors-phone-motion-controls 228 checks
+native scenario 6 lever
+motion controls checkpoint large-text-phone-motion-controls 256 checks
+{
+  "scenarios": 7,
+  "checks": 268,
+  "routes": 6,
+  "screenshots": 5,
+  "errors": []
+}
