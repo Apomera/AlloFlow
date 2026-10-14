@@ -8586,7 +8586,9 @@ window.StemLab = window.StemLab || {
           var validKind = ['time', 'efficiency', 'load', 'work'].indexOf(raw.kind) >= 0, kind = validKind ? raw.kind : 'time';
           var fresh = validKind && raw.signature === latest.signature;
           return { signature: latest.signature, kind: kind, choice: fresh && ['half', 'same', 'double'].indexOf(raw.choice) >= 0 ? raw.choice : '',
-            checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true };
+            checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true,
+            calculate: fresh && raw.calculate === true, numericAnswer: fresh && typeof raw.numericAnswer === 'string' ? raw.numericAnswer.slice(0, 64) : '',
+            numericChecked: fresh && raw.numericChecked === true, numericViewed: fresh && (raw.numericViewed === true || raw.revealed === true) };
         }
         function predictionModel(latest, kind) {
           if (!latest.model) return null;
@@ -8606,23 +8608,42 @@ window.StemLab = window.StemLab || {
             current: kind === 'work' ? latest.model.workIn : latest.model.inputPower, changed: kind === 'work' ? changed.workIn : changed.inputPower,
             changedWork: changed.workIn, changedSeconds: changed.seconds };
         }
+        function predictionNumberResult(prediction, spec) {
+          var answer = _machineMath.parseNum(prediction.numericAnswer);
+          if (!finite(answer) || answer <= 0) return 'invalid';
+          return Math.abs(answer - spec.changed) / spec.changed <= 0.01 + 1e-12 ? 'correct' : 'incorrect';
+        }
         function updatePrediction(renderedKind, action, value) {
           setLabToolData(function (prev) {
             var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
             if (source.view !== 'machines' || source.bench !== bench.id) return prev;
             var latest = powerSession(source, bench), current = predictionState(source, latest);
-            if (latest.signature !== session.signature || current.kind !== renderedKind || !predictionModel(latest, current.kind)) return prev;
+            var spec = predictionModel(latest, current.kind);
+            if (latest.signature !== session.signature || current.kind !== renderedKind || !spec) return prev;
             var next = Object.assign({}, current), order = ['time', 'efficiency', 'load', 'work'];
+            var correct = current.checked && current.choice === spec.choice;
+            var exposed = current.revealed || correct && (!current.calculate || current.numericViewed || current.numericChecked && predictionNumberResult(current, spec) === 'correct');
             if (action === 'kind' || action === 'next') {
               var target = action === 'next' ? order[(order.indexOf(current.kind) + 1) % order.length] : value;
               if (order.indexOf(target) < 0 || !predictionModel(latest, target)) return prev;
-              Object.assign(next, { kind: target, choice: '', checked: false, revealed: false });
+              Object.assign(next, { kind: target, choice: '', checked: false, revealed: false, numericAnswer: '', numericChecked: false, numericViewed: false });
             } else if (action === 'choice') {
               if (['half', 'same', 'double'].indexOf(value) < 0) return prev;
-              Object.assign(next, { choice: value, checked: false });
-            } else if (action === 'check') next.checked = true;
-            else if (action === 'reveal') next.revealed = true;
-            else if (action === 'retry') Object.assign(next, { choice: '', checked: false, revealed: false });
+              Object.assign(next, { choice: value, checked: false, numericViewed: current.numericViewed || exposed });
+            } else if (action === 'calculate') {
+              if (typeof value !== 'boolean') return prev;
+              Object.assign(next, { calculate: value, numericViewed: current.numericViewed || exposed || !value && correct });
+            } else if (action === 'number') {
+              if (!current.calculate || typeof value !== 'string') return prev;
+              Object.assign(next, { numericAnswer: value.slice(0, 64), numericChecked: false, numericViewed: current.numericViewed || exposed });
+            } else if (action === 'check-number') {
+              if (!current.calculate) return prev;
+              next.numericChecked = true;
+            } else if (action === 'check') {
+              next.checked = true;
+              if (!current.calculate && current.choice === spec.choice) next.numericViewed = true;
+            } else if (action === 'reveal') Object.assign(next, { revealed: true, numericViewed: true });
+            else if (action === 'retry') Object.assign(next, { choice: '', checked: false, revealed: false, numericAnswer: '', numericChecked: false, numericViewed: false });
             else return prev;
             var entries = source.benchPowerPredictions;
             entries = Object.assign({}, entries && typeof entries === 'object' && !Array.isArray(entries) ? entries : {});
@@ -8651,7 +8672,9 @@ window.StemLab = window.StemLab || {
               : prediction.kind === 'efficiency' ? __alloT('stem.machinelab.predict_rule_efficiency', 'Input power = useful work ÷ (efficiency as a decimal × seconds). With useful work and time fixed, power changes by the reciprocal efficiency factor.')
                 : __alloT('stem.machinelab.predict_rule_time', 'Input power = input energy ÷ seconds. With input energy fixed, power changes by the reciprocal time factor.');
           var outcome = prediction.revealed ? 'solution' : prediction.checked ? !prediction.choice ? 'invalid' : prediction.choice === spec.choice ? 'correct' : 'incorrect' : null;
-          var show = outcome === 'correct' || outcome === 'solution', id = prefix + 'prediction-', maxPower = Math.max(spec.current, spec.changed);
+          var numericOutcome = prediction.numericViewed ? 'solution' : prediction.numericChecked ? predictionNumberResult(prediction, spec) : null;
+          var show = outcome === 'solution' || outcome === 'correct' && (!prediction.calculate || numericOutcome === 'correct' || numericOutcome === 'solution');
+          var id = prefix + 'prediction-', maxPower = Math.max(spec.current, spec.changed);
           function act(key, label) { return h('button', { key: key, type: 'button', 'data-ml-power-prediction-action': key, style: button,
             onClick: function () { updatePrediction(prediction.kind, key); } }, label); }
           return h('details', { key: 'prediction', 'data-ml-power-prediction': bench.id, 'data-kind': prediction.kind, style: panelStyle }, [
@@ -8667,6 +8690,12 @@ window.StemLab = window.StemLab || {
             ].map(function (row) { return h('div', { key: row[0], 'data-ml-power-prediction-input': row[0], 'data-value': row[1], 'data-unit': spec.inputUnit,
               style: { border: '1px solid ' + T.border, borderRadius: 8, padding: 10, background: T.card } }, [h('p', { key: 'label', style: style }, row[2]), h('p', { key: 'value', style: valueStyle }, powerFmt(row[1]) + ' ' + spec.inputUnit)]); })),
             h('p', { key: 'baseline', style: style }, quantity + ': ' + powerFmt(spec.current) + ' ' + spec.unit + ' · ' + __alloT('stem.machinelab.predict_baseline', 'in the current setup')),
+            h('label', { key: 'calculate-mode', style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer' }) }, [
+              h('input', { key: 'checkbox', type: 'checkbox', checked: prediction.calculate, 'data-ml-power-prediction-calculate': '',
+                style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent },
+                onChange: function (ev) { updatePrediction(prediction.kind, 'calculate', ev.target.checked); } }),
+              h('span', { key: 'label' }, __alloT('stem.machinelab.predict_number_mode', 'Calculate the value too'))
+            ]),
             h('fieldset', { key: 'choices', style: { margin: '14px 0', padding: 10, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 8 }, 'aria-describedby': id + 'feedback-' + bench.id }, [
               h('legend', { key: 'legend', style: style }, prediction.kind === 'work' ? __alloT('stem.machinelab.predict_question_work', 'How will the input energy change?') : __alloT('stem.machinelab.predict_question_power', 'How will the input power change?')),
               choices.map(function (choice) { return h('label', { key: choice[0], style: Object.assign({}, style, { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, margin: '6px 0', padding: '4px 8px', borderRadius: 6, border: '1px solid ' + T.border, background: T.card, cursor: 'pointer' }) }, [
@@ -8679,7 +8708,29 @@ window.StemLab = window.StemLab || {
               outcome === 'invalid' ? __alloT('stem.machinelab.predict_invalid', 'Choose a prediction before checking.')
                 : outcome === 'incorrect' ? __alloT('stem.machinelab.predict_incorrect', 'Not yet. Think about what stays fixed. You can choose again or view the explanation.')
                   : outcome === 'solution' ? __alloT('stem.machinelab.predict_solution', 'Explanation viewed. Try another change when you are ready.')
-                    : __alloT('stem.machinelab.predict_correct', 'Correct prediction. Compare the values and relationship below.')) : null),
+                    : prediction.calculate && !show ? __alloT('stem.machinelab.predict_number_continue', 'Correct prediction. Calculate the new value to reveal the comparison.')
+                      : __alloT('stem.machinelab.predict_correct', 'Correct prediction. Compare the values and relationship below.')) : null),
+            prediction.calculate ? h('section', { key: 'number', 'data-ml-power-prediction-number-practice': '', 'aria-labelledby': id + 'number-title-' + bench.id,
+              style: { margin: '14px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } }, [
+              h('h4', { key: 'title', id: id + 'number-title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 16, fontWeight: 800 }) }, __alloT('stem.machinelab.predict_number_title', 'Calculate the new value')),
+              h('p', { key: 'help', id: id + 'number-help-' + bench.id, style: style }, __alloT('stem.machinelab.predict_number_help', 'Use the current value and the change factor. Enter a positive number in the shown unit. Answers within 1% are accepted. The comparison appears after both answers are correct, or when you view the explanation.')),
+              h('label', { key: 'label', htmlFor: id + 'number-' + bench.id, style: style }, quantity + ' · ' + __alloT('stem.machinelab.predict_hypothetical', 'Hypothetical setup') + ' (' + spec.unit + ')'),
+              h('div', { key: 'entry', style: { display: 'flex', gap: 8, alignItems: 'center', margin: '8px 0' } }, [
+                h('input', { key: 'input', id: id + 'number-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: prediction.numericAnswer,
+                  style: Object.assign({}, control, { minWidth: 0, flex: 1 }), 'aria-invalid': numericOutcome === 'invalid' || numericOutcome === 'incorrect',
+                  'aria-describedby': id + 'number-help-' + bench.id + ' ' + id + 'number-feedback-' + bench.id,
+                  onChange: function (ev) { updatePrediction(prediction.kind, 'number', ev.target.value); },
+                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updatePrediction(prediction.kind, 'check-number'); } } }),
+                h('span', { key: 'unit', 'aria-hidden': 'true', style: Object.assign({}, style, { fontWeight: 800, flexShrink: 0 }) }, spec.unit)
+              ]),
+              act('check-number', __alloT('stem.machinelab.predict_number_check', 'Check calculation')),
+              h('div', { key: 'feedback', id: id + 'number-feedback-' + bench.id, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: style }, numericOutcome ? h('p', { 'data-ml-power-prediction-number-result': numericOutcome },
+                numericOutcome === 'solution' ? __alloT('stem.machinelab.predict_number_viewed', 'Worked value viewed. Clear the prediction to try both steps again.')
+                  : numericOutcome === 'invalid' ? __alloT('stem.machinelab.predict_number_invalid', 'Enter a positive, finite number in the shown unit before checking.')
+                    : numericOutcome === 'incorrect' ? __alloT('stem.machinelab.predict_number_incorrect', 'Not yet. Apply your change factor to the current value, and check the unit and decimal place.')
+                      : outcome === 'correct' ? __alloT('stem.machinelab.predict_number_correct', 'Correct calculation. Compare your result with the worked relationship below.')
+                        : __alloT('stem.machinelab.predict_number_check_prediction', 'The number is correct. Check your prediction to reveal the comparison.')) : null)
+            ]) : null,
             show ? h('div', { key: 'explanation', 'data-ml-power-prediction-explanation': outcome }, [
               h('p', { key: 'rule', style: style }, rule),
               h('p', { key: 'factor', 'data-ml-power-prediction-equation': '', style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + T.accent, background: T.card }) },

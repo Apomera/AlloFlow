@@ -1,0 +1,30 @@
+{
+  "reviewer": "Root independent image inspection",
+  "sourceSha256": "a870651502478d2885948b0c08f2065cbebefcf135241efb4c8da6ec0837f5ee",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/desktop-pending-calculation.png",
+      "sha256": "c2f74b02e40539a781b71c7175438bda9e4476c67e5fef78523b22991cce954a",
+      "visuallyInspected": true,
+      "findings": "Independently viewed the final pending desktop screenshot. The selected half prediction and correct-prediction feedback lead into the empty W calculation field; the worked target and comparison remain absent. Labels, help, checkbox and controls fit cleanly."
+    },
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/desktop-checked-calculation.png",
+      "sha256": "711ed5692ae125eb0aea7bc8878a5edad3d282b5980b46b1aeff433351506383",
+      "visuallyInspected": true,
+      "findings": "Independently viewed the final checked desktop screenshot. The 25 W entry and separate correct-calculation feedback are readable above the 50 W to 25 W worked equations and proportional bars. The two-column cards and numeric unit suffix align clearly."
+    },
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/dark-phone-energy-calculation.png",
+      "sha256": "50b4ec95b35f2835e1c6acb915a7598ba36c1e5ed81021e0a10daea2ec7465c8",
+      "visuallyInspected": true,
+      "findings": "Independently viewed the final dark phone screenshot. The full energy selector fits, the 250 J numeric field and suffix fit inside the calculation card, and feedback wraps cleanly. Stacked 250 J comparisons and equal patterned bars clearly distinguish fixed energy from changing power."
+    },
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/forced-colors-phone-load-calculation.png",
+      "sha256": "9a81bf49fd8edb90498f73e7beb2a9c245ceb9ff7172fdaa5fb8466cb7d73eb7",
+      "visuallyInspected": true,
+      "findings": "Independently viewed the final forced-colors phone screenshot. The full load selector, native checkbox/radios and 312.5 W input remain readable. The 625 W to 312.5 W equation, half-length striped bar, card borders and focus outline remain distinct without relying on color."
+    }
+  ]
+}

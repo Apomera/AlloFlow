@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "observedWrapperExitCode": 0,
+  "observedNativeChildExitCode": 0,
+  "sessionId": 34687,
+  "sourceSha256": "a870651502478d2885948b0c08f2065cbebefcf135241efb4c8da6ec0837f5ee",
+  "checks": 742,
+  "scenarios": 4,
+  "screenshots": 4,
+  "process": {
+    "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/process.json",
+    "sha256": "7edb78a0c4743455c95c71c638866dfb49663534f21c9720e2b941adf8a0ad8c"
+  },
+  "results": {
+    "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/results.json",
+    "sha256": "2a7fe9eba0cc2ab38d1744c855af443da433e45c0dffad2cc4a5f2ac1c6ebcb0"
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/harness-snapshot.cjs",
+    "sha256": "f8779e9b9672d28df38e04d8ce1c45b1b1a8e4afc5b65ecc2794f73c00edd34e"
+  },
+  "wrapperSnapshot": {
+    "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/wrapper-snapshot.cjs",
+    "sha256": "9fc6f3f6b0a391c6700c7d128a565c153cbf0394c24aeb68a0726ac2509d776b"
+  }
+}

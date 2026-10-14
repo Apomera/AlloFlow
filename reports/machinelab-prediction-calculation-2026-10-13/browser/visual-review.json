@@ -1,0 +1,39 @@
+{
+  "reviewer": "prediction_browser",
+  "run": "run-01",
+  "sourceSha256": "a870651502478d2885948b0c08f2065cbebefcf135241efb4c8da6ec0837f5ee",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/desktop-pending-calculation.png",
+      "sha256": "c2f74b02e40539a781b71c7175438bda9e4476c67e5fef78523b22991cce954a",
+      "name": "desktop-pending-calculation.png",
+      "visuallyInspected": true,
+      "findings": "The optional calculation checkbox and correctly checked half prediction are visible. The labeled blank W entry and Check calculation action fit; worked equations and comparison bars are absent, and the prompt explains how to reveal them."
+    },
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/desktop-checked-calculation.png",
+      "sha256": "711ed5692ae125eb0aea7bc8878a5edad3d282b5980b46b1aeff433351506383",
+      "name": "desktop-checked-calculation.png",
+      "visuallyInspected": true,
+      "findings": "The entered 25 W value is correctly checked beside the selected half prediction. The 50 W to 25 W equation, shared-scale solid/striped bars and aligned cards are readable; the new calculation section and controls fit without clipping."
+    },
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/dark-phone-energy-calculation.png",
+      "sha256": "50b4ec95b35f2835e1c6acb915a7598ba36c1e5ed81021e0a10daea2ec7465c8",
+      "name": "dark-phone-energy-calculation.png",
+      "visuallyInspected": true,
+      "findings": "At a 320-pixel dark viewport, the complete Time to input energy selector, checked same prediction and labeled 250 J entry fit. The 30 s to 60 s scenario, same-energy equation and equal bars stack cleanly, with readable feedback and wrapped actions."
+    },
+    {
+      "path": "reports/machinelab-prediction-calculation-2026-10-13/browser/run-01/forced-colors-phone-load-calculation.png",
+      "sha256": "9a81bf49fd8edb90498f73e7beb2a9c245ceb9ff7172fdaa5fb8466cb7d73eb7",
+      "name": "forced-colors-phone-load-calculation.png",
+      "visuallyInspected": true,
+      "findings": "At a 320-pixel forced-colors viewport, the 5000 N to 2500 N scenario, selected half prediction and 312.5 W entry are clear. System-colored checkbox, radios, input, focus and borders remain distinguishable; the 625 W and 312.5 W bars retain solid/striped contrast and fit the panel."
+    }
+  ],
+  "limitations": [
+    "Native React/THREE with local Chromium software WebGL; no deployed host build exercised.",
+    "Forced colors is browser emulation; no physical assistive technology session."
+  ]
+}

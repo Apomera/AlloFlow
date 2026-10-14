@@ -1,0 +1,13 @@
+{
+  "sourceSha256": "a870651502478d2885948b0c08f2065cbebefcf135241efb4c8da6ec0837f5ee",
+  "tests": 144,
+  "testFiles": 5,
+  "nativeTestGroups": 14,
+  "browserChecks": 742,
+  "browserScenarios": 4,
+  "calculationRoutes": 24,
+  "inspectedScreenshots": 4,
+  "onlyPredictionHelpersChanged": true,
+  "predictionModelUnchanged": true,
+  "sourceMirrorParity": true
+}
