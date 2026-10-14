@@ -1,0 +1,29 @@
+{
+  "sourceSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-02/desktop-pending-budget.png",
+      "sha256": "2481097ba46b09d0d11ebbe0ee31fe029d0a36d2868206057b7dac2ee7b2fdb2",
+      "visuallyInspected": true,
+      "notes": "Full pending desktop panel shows required and available watts side by side, distinct numbered calculation and interpretation steps, fixed percent unit and blank answer. The selected radio and keyboard focus are clear; the worked result remains hidden. All buttons and the full panel are visible without clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-02/desktop-checked-budget.png",
+      "sha256": "6ae36ee560504f40efad444d449b4f423e2fa7f2e1cf42dddd2c05a3ebf35b4e",
+      "visuallyInspected": true,
+      "notes": "Full checked desktop panel emphasizes 50% and Below budget with the worked watt fraction. The solid required bar is half the striped 100% budget bar and the reference is at the common scale endpoint. Form, feedback, explanation and clear action remain separated and fully visible."
+    },
+    {
+      "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-02/dark-phone-over-budget.png",
+      "sha256": "03749fd9e2b2c37e6e2d35ce5107cbb3c27b70fdcb5d0358cb7f201f077e0eb2",
+      "visuallyInspected": true,
+      "notes": "The 320px dark phone layout stacks given cards, classifications and actions cleanly. It prominently shows 200%, Over budget and a wrapped worked fraction. The 100% reference is midway across the common scale and the budget bar is half the required bar. Focus ring, complete panel and bottom clear action are visible without clipping or overlap."
+    },
+    {
+      "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-02/forced-colors-phone-at-budget.png",
+      "sha256": "f56a6fa44ba57f9cafa108bea19d4f657e9ca485735a5f8b59f66472a51e06ec",
+      "visuallyInspected": true,
+      "notes": "The 320px forced-colors phone view keeps visible boundaries, focus ring and distinct primary action. 100%, At budget and the full watt fraction are legible. Solid and striped equal-length bars retain their distinction and the 100% reference is at the endpoint. All content, including the final clear action, is captured without clipping or overlap."
+    }
+  ]
+}

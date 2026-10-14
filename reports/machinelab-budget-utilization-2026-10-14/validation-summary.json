@@ -1,0 +1,16 @@
+{
+  "sourceSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "tests": 197,
+  "newTests": 25,
+  "unchangedTests": 172,
+  "testFiles": 5,
+  "nativeTestGroups": 25,
+  "browserChecks": 594,
+  "budgetRoutes": 18,
+  "browserScenarios": 4,
+  "inspectedScreenshots": 4,
+  "keyboardFocusChecks": 20,
+  "existingPhysicsAndPredictionPracticeUnchanged": true,
+  "ordinaryPracticeAndRecordsUnchanged": true,
+  "sourceMirrorParity": true
+}

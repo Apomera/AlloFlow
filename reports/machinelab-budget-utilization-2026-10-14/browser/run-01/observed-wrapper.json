@@ -1,0 +1,23 @@
+{
+  "status": "failed-css-serialization-assumption",
+  "sessionId": 16065,
+  "observedWrapperExitCode": 1,
+  "observedNativeChildExitCode": 1,
+  "sourceSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "checks": 594,
+  "routes": 18,
+  "scenarios": 4,
+  "process": {
+    "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-01/process.json",
+    "sha256": "d5ce0d6a969bbb95676e097f345f33ca49fab006d6192bfca2aa0686285a44af"
+  },
+  "results": {
+    "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-01/results.json",
+    "sha256": "06fefb70d4e81907e37e16b66b9d3a89a3e82c12ef64edc01c47fccbf4046dbe",
+    "bytes": 144417
+  },
+  "harnessSnapshot": {
+    "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-01/harness-snapshot.cjs",
+    "sha256": "6d014e29b1c33890616d9ee7b2c212d402b685bc3999ef8c587194c1fd29b85c"
+  }
+}

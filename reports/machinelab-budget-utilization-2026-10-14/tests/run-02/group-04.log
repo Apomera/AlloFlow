@@ -1,0 +1,21 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_budget_utilization.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_budget_utilization.test.js (24 tests | 17 skipped) 6661ms
+     ✓ rejects old field, choice and action callbacks after session, station or view changes  1714ms
+     ✓ removes practice when assumptions become invalid and clears drafts on signature changes  609ms
+     ✓ keeps bench drafts independent without render-time state writes  874ms
+     ✓ normalizes malformed restored drafts and flags without granting independent success  1948ms
+     ✓ retains main calculation records, notes, other drafts, prediction work and XP  688ms
+     ✓ labels percent input and radio choices and announces feedback in a polite live region  515ms
+     ✓ respects the existing learner-band visibility for the budget guide  310ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 17 skipped (24)
+   Start at  08:27:42
+   Duration  12.43s (transform 138ms, setup 80ms, import 170ms, tests 6.66s, environment 4.51s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-budget-utilization-2026-10-14/tests/run-02/group-04.json

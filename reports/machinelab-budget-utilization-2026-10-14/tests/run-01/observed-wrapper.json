@@ -1,0 +1,20 @@
+{
+  "status": "superseded-source",
+  "sessionId": 50137,
+  "observedWrapperExitCode": 1,
+  "reason": "Root added a React key to a decorative stage badge while a bounded native child was running; source-pin verification rejected this intermediate run. Use fresh run-02 for final coverage.",
+  "sourceSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+  "sourceAfterSha256": "8e83dfcc3b7c282ebeac4f6d5c8e614b8d66940ad46579ef7604c1e03904bdcb",
+  "observedNativeChildExitCodes": [
+    0,
+    0
+  ],
+  "processes": {
+    "path": "processes.json",
+    "sha256": "4e16bbdb675b7a417ab66341a85d2eeb9dc190a63313fb8888f5b6b6ac5ea86c"
+  },
+  "runnerSnapshot": {
+    "path": "runner-snapshot.cjs",
+    "sha256": "7e230fc3eb3237f6048bbbfe6ad5f3dc66c60e3c390bc5be69975a04a5850f73"
+  }
+}

@@ -1,0 +1,17 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_budget_utilization.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_budget_utilization.test.js (25 tests | 18 skipped) 2352ms
+     ✓ rejects old field, choice and action callbacks after session, station or view changes  879ms
+     ✓ keeps bench drafts independent without render-time state writes  356ms
+     ✓ normalizes malformed restored drafts and flags without granting independent success  530ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 18 skipped (25)
+   Start at  08:32:11
+   Duration  6.01s (transform 107ms, setup 70ms, import 163ms, tests 2.35s, environment 2.71s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-budget-utilization-2026-10-14/tests/run-03/group-04.json

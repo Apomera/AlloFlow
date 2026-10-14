@@ -1,0 +1,31 @@
+{
+  "status": "selector-mismatch",
+  "sessionId": 24089,
+  "observedWrapperExitCode": 1,
+  "reason": "The first quoted $name planning subgroup matched zero cases; the runner expected 8 and stopped. No test assertion failed. First112 cases passed on final source; group12 exited0 with all cases skipped.",
+  "sourceSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "sourceAfterSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "observedNativeChildExitCodes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "passed": 112,
+  "processes": {
+    "path": "processes.json",
+    "sha256": "12711d51c9e6e651c19cf6b7dd7734c23c18ec6de07cdb9d01edfbff3d52c685"
+  },
+  "runnerSnapshot": {
+    "path": "runner-snapshot.cjs",
+    "sha256": "45bba58bac7d209165add8f969ce92852e5eece5f37a61e66e87290c121e8579"
+  }
+}

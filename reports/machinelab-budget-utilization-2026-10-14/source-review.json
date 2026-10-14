@@ -1,0 +1,18 @@
+{
+  "baselineCommit": "158683f06",
+  "sourceSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "reviewers": ["root", "percent_browser"],
+  "resolvedFindings": [
+    "Added the React key for numbered legend badges.",
+    "Preserved precise given powers, utilization and worked equation whenever rounding could conceal a genuine below/over-budget result."
+  ],
+  "actionableFindings": [],
+  "reviewed": [
+    "Positive signed decimal parsing and inclusive absolute 0.1 percentage-point tolerance",
+    "Unclamped utilization and common-scale 100 percent reference",
+    "Below/at/over classification using full-precision powers and the existing numerical tolerance",
+    "Two-answer gating, deliberate reveal, viewed provenance and clear-practice reset",
+    "Separate bench state, signature guards, immutable ordinary records and no XP awards",
+    "Native labels, fieldsets, radio groups, keyboard focus, responsive and forced-color styles"
+  ]
+}

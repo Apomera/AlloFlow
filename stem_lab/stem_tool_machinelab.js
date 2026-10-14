@@ -9096,6 +9096,140 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'pace-help', style: style }, __alloT('stem.machinelab.power_pace_help', 'Halving the time doubles average power and movement rates. Doubling time halves them. Work, efficiency and modeled effort stay the same; this table does not change the station.'))
           ]);
         }
+        function budgetPracticeState(source, latest) {
+          var entries = source.benchPowerBudgetPractice, raw = entries && typeof entries === 'object' && !Array.isArray(entries) && entries[bench.id];
+          if (!raw || typeof raw !== 'object' || Array.isArray(raw)) raw = {};
+          var fresh = raw.signature === latest.signature;
+          return { signature: latest.signature, answer: fresh && typeof raw.answer === 'string' ? raw.answer.slice(0, 64) : '',
+            choice: fresh && ['below', 'at', 'over'].indexOf(raw.choice) >= 0 ? raw.choice : '',
+            checked: fresh && raw.checked === true, revealed: fresh && raw.revealed === true,
+            viewed: fresh && (raw.viewed === true || raw.revealed === true) };
+        }
+        function budgetPracticeModel(latest) {
+          var available = _machineMath.parseNum(latest.draft.budget), required = latest.model.inputPower, ratio = required / available;
+          // Match the existing power-fit comparison's relative numerical tolerance.
+          return { required: required, available: available, percent: ratio * 100,
+            choice: ratio < 1 - 1e-9 ? 'below' : ratio > 1 + 1e-9 ? 'over' : 'at' };
+        }
+        function budgetPracticeNumber(text) {
+          var raw = text.trim(), answer = Number(raw);
+          return /^\+?(\d+\.?\d*|\.\d+)$/.test(raw) && finite(answer) && answer > 0 ? answer : null;
+        }
+        function budgetPracticeResult(state, latest) {
+          if (state.revealed || state.viewed) return 'solution';
+          if (!state.checked) return null;
+          var answer = budgetPracticeNumber(state.answer), spec = budgetPracticeModel(latest);
+          if (answer === null || !state.choice) return 'invalid';
+          if (Math.abs(answer - spec.percent) > 0.1 + 1e-12) return 'number';
+          return state.choice === spec.choice ? 'correct' : 'choice';
+        }
+        function updateBudgetPractice(action, value) {
+          setLabToolData(function (prev) {
+            var cur = prev && prev.machineLab || {}, source = Object.assign({}, _defaults, cur);
+            if (source.view !== 'machines' || source.bench !== bench.id) return prev;
+            var latest = powerSession(source, bench);
+            if (!latest.model || latest.signature !== session.signature) return prev;
+            var current = budgetPracticeState(source, latest), next = Object.assign({}, current);
+            var exposed = budgetPracticeResult(current, latest) === 'correct';
+            if (action === 'answer' || action === 'choice') {
+              if (action === 'answer' && typeof value !== 'string' || action === 'choice' && ['below', 'at', 'over'].indexOf(value) < 0) return prev;
+              next[action] = action === 'answer' ? value.slice(0, 64) : value;
+              next.checked = false; next.viewed = current.viewed || current.revealed || exposed;
+            } else if (action === 'check') next.checked = true;
+            else if (action === 'reveal') Object.assign(next, { revealed: true, viewed: true });
+            else if (action === 'retry') Object.assign(next, { answer: '', choice: '', checked: false, revealed: false, viewed: false });
+            else return prev;
+            var entries = source.benchPowerBudgetPractice;
+            entries = Object.assign({}, entries && typeof entries === 'object' && !Array.isArray(entries) ? entries : {});
+            entries[bench.id] = next;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchPowerBudgetPractice: entries }) });
+          });
+        }
+        function budgetPractice() {
+          var state = budgetPracticeState(d, session), spec = budgetPracticeModel(session), outcome = budgetPracticeResult(state, session);
+          var show = outcome === 'correct' || outcome === 'solution', id = prefix + 'budget-practice-', scale = Math.max(100, spec.percent);
+          // Do not round a genuine below/over-budget task into an apparent tie.
+          var precise = spec.choice !== 'at' && (Number(powerFmt(spec.percent)) === 100 || Number(powerFmt(spec.required)) === Number(powerFmt(spec.available)));
+          function formatShare(value) { return precise ? String(value) : powerFmt(value); }
+          var choices = [
+            ['below', __alloT('stem.machinelab.budget_practice_below', 'Below budget'), '< 100%'],
+            ['at', __alloT('stem.machinelab.budget_practice_at', 'At budget'), '= 100%'],
+            ['over', __alloT('stem.machinelab.budget_practice_over', 'Over budget'), '> 100%']
+          ];
+          function act(key, label) { return h('button', { key: key, type: 'button', 'data-ml-power-budget-practice-action': key,
+            className: key === 'check' ? 'ml-budget-practice-primary' : '', style: Object.assign({}, button, { minHeight: 44, fontWeight: 750 }, key === 'check' ? { background: T.accent, color: T.accentInk, borderColor: T.accent } : {}),
+            onClick: function () { updateBudgetPractice(key); } }, label); }
+          function badge(number) { return h('span', { key: 'badge', 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, marginRight: 8, border: '1px solid currentColor', borderRadius: '50%' } }, number); }
+          return h('section', { key: 'budget-practice', 'data-ml-power-budget-practice': bench.id, className: 'ml-budget-practice',
+            'aria-labelledby': id + 'title-' + bench.id, style: Object.assign({}, panelStyle, { '--ml-budget-practice-focus': T.text }) }, [
+            h('h4', { key: 'title', id: id + 'title-' + bench.id, style: Object.assign({}, style, { margin: '0 0 8px', fontSize: 18, fontWeight: 850 }) }, __alloT('stem.machinelab.budget_practice_title', 'How much of the power budget is needed?')),
+            h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.budget_practice_intro', 'Calculate the required share of the budget, then decide whether the task fits. Use mechanical input power for both values.')),
+            h('dl', { key: 'given', className: 'ml-budget-practice-given', style: { margin: '14px 0' } }, [
+              ['required', spec.required, __alloT('stem.machinelab.budget_practice_required', 'Required input power')],
+              ['budget', spec.available, __alloT('stem.machinelab.backcheck_budget_power', 'Input-power budget')]
+            ].map(function (row) { return h('div', { key: row[0], style: { minWidth: 0, padding: 12, border: '1px ' + (row[0] === 'required' ? 'solid ' : 'dashed ') + T.border, borderTopWidth: 3, borderRadius: 8, background: T.card } }, [
+              h('dt', { key: 'label', style: style }, row[2]), h('dd', { key: 'value', style: valueStyle }, formatShare(row[1]) + ' W')
+            ]); })),
+            h('fieldset', { key: 'number', style: { margin: '18px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card } }, [
+              h('legend', { key: 'legend', style: Object.assign({}, style, { padding: '0 4px', fontWeight: 800 }) }, [badge(1), __alloT('stem.machinelab.budget_practice_calculate', 'Calculate the percentage')]),
+              h('p', { key: 'help', id: id + 'help-' + bench.id, style: style }, __alloT('stem.machinelab.budget_practice_help', 'Required share (%) = required input power ÷ input-power budget × 100. Enter a positive number without the % symbol. Answers within 0.1 percentage points are accepted. A result above 100% is allowed.')),
+              h('label', { key: 'label', htmlFor: id + 'answer-' + bench.id, style: Object.assign({}, style, { fontWeight: 750 }) }, __alloT('stem.machinelab.budget_practice_answer_label', 'Required share of the budget (%)')),
+              h('div', { key: 'entry', style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } }, [
+                h('input', { key: 'input', type: 'text', inputMode: 'decimal', maxLength: 64, id: id + 'answer-' + bench.id, value: state.answer,
+                  style: Object.assign({}, control, { minWidth: 0, flex: 1, minHeight: 48, fontSize: 20, fontWeight: 750 }),
+                  'aria-describedby': id + 'help-' + bench.id + ' ' + id + 'feedback-' + bench.id, 'aria-invalid': outcome === 'number' || outcome === 'invalid' && budgetPracticeNumber(state.answer) === null,
+                  onChange: function (ev) { updateBudgetPractice('answer', ev.target.value); },
+                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updateBudgetPractice('check'); } } }),
+                h('span', { key: 'unit', 'aria-hidden': 'true', style: Object.assign({}, style, { fontWeight: 800 }) }, '%')
+              ])
+            ]),
+            h('fieldset', { key: 'classification', 'aria-describedby': id + 'feedback-' + bench.id, style: { margin: '18px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 10, background: T.card } }, [
+              h('legend', { key: 'legend', style: Object.assign({}, style, { padding: '0 4px', fontWeight: 800 }) }, [badge(2), __alloT('stem.machinelab.budget_practice_interpret', 'Interpret the result')]),
+              h('div', { key: 'choices', className: 'ml-budget-practice-options' }, choices.map(function (choice) {
+                var selected = state.choice === choice[0];
+                return h('label', { key: choice[0], 'data-ml-budget-practice-selected': String(selected), style: Object.assign({}, style, { display: 'flex', gap: 8, alignItems: 'center', padding: selected ? 8 : 10, minHeight: 56, minWidth: 0, cursor: 'pointer', border: (selected ? '3px solid ' + T.accent : '1px solid ' + T.border), borderRadius: 8, background: selected ? T.bg : T.card, fontWeight: 750 }) }, [
+                  h('input', { key: 'radio', type: 'radio', name: id + 'choice-' + bench.id, checked: selected, value: choice[0], 'data-ml-power-budget-practice-choice': choice[0], style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent },
+                    onChange: function () { updateBudgetPractice('choice', choice[0]); } }),
+                  h('span', { key: 'label' }, [choice[1], h('span', { key: 'range', style: { display: 'block', fontVariantNumeric: 'tabular-nums' } }, choice[2])])
+                ]);
+              }))
+            ]),
+            h('div', { key: 'actions', className: 'ml-budget-practice-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, [act('check', __alloT('stem.machinelab.budget_practice_check', 'Check both answers')), act('reveal', __alloT('stem.machinelab.predict_reveal', 'Show explanation'))]),
+            h('div', { key: 'feedback', id: id + 'feedback-' + bench.id, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: style }, outcome ? h('p', { 'data-ml-power-budget-practice-result': outcome, style: { padding: 12, border: '1px solid currentColor', borderRadius: 8 } },
+              outcome === 'solution' ? __alloT('stem.machinelab.budget_practice_viewed', 'Worked comparison viewed. Clear practice to try both steps again.')
+                : outcome === 'invalid' ? __alloT('stem.machinelab.budget_practice_invalid', 'Enter a positive, finite number without the % symbol and choose below, at, or over budget.')
+                  : outcome === 'number' ? __alloT('stem.machinelab.budget_practice_number_retry', 'Check the percentage: divide required input power by the budget, then multiply by 100. Keep results above 100%.')
+                    : outcome === 'choice' ? __alloT('stem.machinelab.budget_practice_choice_retry', 'The percentage is correct. Compare the required power with the budget and check your interpretation.')
+                      : __alloT('stem.machinelab.budget_practice_correct', 'Both answers are correct. Compare your result with the budget reference below.')) : null),
+            show ? h('figure', { key: 'comparison', 'aria-labelledby': id + 'comparison-' + bench.id, 'data-ml-power-budget-utilization': '', 'data-value': spec.percent,
+              style: { margin: '18px 0', padding: 14, minWidth: 0, border: '1px solid ' + T.border, borderTop: '4px solid ' + T.accent, borderRadius: 10, background: T.card } }, [
+              h('figcaption', { key: 'title', id: id + 'comparison-' + bench.id, style: Object.assign({}, style, { fontWeight: 800 }) }, __alloT('stem.machinelab.budget_practice_answer_label', 'Required share of the budget (%)')),
+              h('p', { key: 'percent', style: Object.assign({}, valueStyle, { fontSize: 32, margin: '8px 0' }) }, formatShare(spec.percent) + '%'),
+              h('p', { key: 'meaning', style: Object.assign({}, style, { fontWeight: 750 }) }, spec.choice === 'below'
+                ? __alloT('stem.machinelab.budget_practice_below_meaning', 'Below budget: the task needs only part of the available input power.')
+                : spec.choice === 'over' ? __alloT('stem.machinelab.budget_practice_over_meaning', 'Over budget: the task needs more input power than is available at this pace.')
+                  : __alloT('stem.machinelab.budget_practice_at_meaning', 'At budget: the task needs the full input-power budget.')),
+              h('p', { key: 'equation', 'data-ml-power-budget-utilization-equation': '', style: Object.assign({}, style, { padding: '10px 0', borderTop: '1px solid ' + T.border, fontSize: 16, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }) }, formatShare(spec.required) + ' W ÷ ' + formatShare(spec.available) + ' W × 100 ≈ ' + formatShare(spec.percent) + '%'),
+              h('div', { key: 'reference', style: { margin: '12px 0', minWidth: 0 } }, [
+                h('p', { key: 'label', style: Object.assign({}, style, { margin: '0 0 4px', fontWeight: 750 }) }, __alloT('stem.machinelab.budget_practice_reference', '100% budget reference')),
+                h('div', { key: 'ruler', 'aria-hidden': 'true', style: { position: 'relative', height: 12, borderBottom: '1px solid ' + T.text, margin: '0 2px' } },
+                  h('span', { 'data-ml-power-budget-utilization-reference': '', 'data-value': 100, style: { position: 'absolute', left: (100 / scale * 100) + '%', bottom: -1, height: 14, borderLeft: '3px solid currentColor', color: T.text, transform: 'translateX(-50%)' } }))
+              ]),
+              h('dl', { key: 'bars', style: { margin: 0, display: 'grid', gap: 14 } }, [
+                ['required', spec.percent, __alloT('stem.machinelab.budget_practice_required', 'Required input power')],
+                ['budget', 100, __alloT('stem.machinelab.backcheck_budget_power', 'Input-power budget')]
+              ].map(function (row) { return h('div', { key: row[0], style: { minWidth: 0 } }, [
+                h('dt', { key: 'label', style: style }, row[2] + ' · ' + formatShare(row[1]) + '%'),
+                h('dd', { key: 'track', className: 'ml-budget-practice-track', 'aria-hidden': 'true', style: { margin: '5px 0 0', height: 18, border: '1px solid ' + T.border, background: T.bg, overflow: 'hidden' } },
+                  h('span', { 'data-ml-power-budget-utilization-bar': row[0], 'data-value': row[1], style: { display: 'block', height: '100%', width: (row[1] / scale * 100) + '%', color: T.accent,
+                    background: row[0] === 'required' ? T.accent : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 6px)' } }))
+              ]); })),
+              h('p', { key: 'help', style: style }, __alloT('stem.machinelab.budget_practice_chart_help', 'Both bars use the same scale. Solid shows the required share; stripes show the 100% budget. Over-budget results extend beyond the reference rather than stopping at 100%. Values are rounded except near a tie. Tiny differences may not be visible in the bars; compare the numbers too.'))
+            ]) : null,
+            h('div', { key: 'retry', className: 'ml-budget-practice-actions', style: { marginTop: 14 } }, act('retry', __alloT('stem.machinelab.budget_practice_retry', 'Clear practice'))),
+            h('style', { key: 'style' }, '.ml-budget-practice-given{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ml-budget-practice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-budget-practice input[type=radio]{margin-bottom:0!important}.ml-power-lab .ml-budget-practice button:focus-visible,.ml-power-lab .ml-budget-practice input:focus-visible{outline:3px solid var(--ml-budget-practice-focus);outline-offset:3px}@media(max-width:600px){.ml-budget-practice-options,.ml-budget-practice-given{grid-template-columns:minmax(0,1fr)}.ml-budget-practice-actions button{width:100%!important}}@media(forced-colors:active){.ml-budget-practice{--ml-budget-practice-focus:CanvasText!important}.ml-budget-practice-primary{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-budget-practice [data-ml-budget-practice-selected=true]{border-color:Highlight!important}.ml-budget-practice-track{border-color:CanvasText!important;background:Canvas!important}.ml-budget-practice-track span{forced-color-adjust:none;color:CanvasText!important}.ml-budget-practice-track [data-ml-power-budget-utilization-bar=required]{background:CanvasText!important}.ml-budget-practice-track [data-ml-power-budget-utilization-bar=budget]{background:repeating-linear-gradient(135deg,Canvas 0,Canvas 3px,CanvasText 3px,CanvasText 6px)!important}}')
+          ]);
+        }
         function budgetPlanning() {
           var scale = Math.max(model.workIn, model.budgetEnergy);
           var rows = [
@@ -9106,6 +9240,7 @@ window.StemLab = window.StemLab || {
             h('summary', { key: 'title', style: summary }, __alloT('stem.machinelab.power_planning_title', 'Plan a task at this power')),
             returnToCalculation(),
             h('p', { key: 'intro', style: style }, __alloT('stem.machinelab.power_planning_intro', 'Hold the power budget and task time fixed. Compare the input work the current task needs with the input energy supplied at full budget.')),
+            budgetPractice(),
             h('figure', { key: 'chart', 'data-ml-power-budget-chart': '', 'aria-labelledby': prefix + 'budget-chart-title-' + bench.id, style: panelStyle }, [
               h('figcaption', { key: 'caption', id: prefix + 'budget-chart-title-' + bench.id, style: Object.assign({}, style, { fontWeight: 800, marginBottom: 10 }) }, __alloT('stem.machinelab.power_planning_energy_title', 'Power × time gives an energy budget')),
               h('p', { key: 'equation', style: Object.assign({}, style, { margin: '0 0 14px', fontVariantNumeric: 'tabular-nums' }) }, powerFmt(budget) + ' W × ' + powerFmt(model.seconds) + ' s = ' + powerFmt(model.budgetEnergy) + ' J'),

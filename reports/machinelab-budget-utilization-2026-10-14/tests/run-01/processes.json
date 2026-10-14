@@ -1,0 +1,121 @@
+{
+  "format": "machine-lab-budget-utilization-native-processes-v1",
+  "sourceSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+  "baselineCommit": "158683f06",
+  "runnerSha256": "7e230fc3eb3237f6048bbbfe6ad5f3dc66c60e3c390bc5be69975a04a5850f73",
+  "helper": "tests/helpers/stem_widgets_smoke_harness.js",
+  "helperSha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+  "tests": [
+    {
+      "file": "tests/machinelab_budget_utilization.test.js",
+      "sha256": "5355665aff5fcf28b8df1ce2dcdd85ab63541e2a42ded69c62ff6fcb64d15856",
+      "baselineSha256": null
+    },
+    {
+      "file": "tests/machinelab_i18n_hygiene.test.js",
+      "sha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad",
+      "baselineSha256": "bb94c2dfae94226e2bff99fdff3370480438ee538d76c5ef480470af8374a6ad"
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3",
+      "baselineSha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3"
+    },
+    {
+      "file": "tests/machinelab_practice_flow.test.js",
+      "sha256": "2991c8d05605fd15593be8cbecdf48a486dab89751999509ef7a021e03b78b4c",
+      "baselineSha256": "2991c8d05605fd15593be8cbecdf48a486dab89751999509ef7a021e03b78b4c"
+    },
+    {
+      "file": "tests/machinelab_power_planning.test.js",
+      "sha256": "0c58985034baa132db3b34320f024bcb69fa948efe6368deb07cc2194d2b5a2a",
+      "baselineSha256": "0c58985034baa132db3b34320f024bcb69fa948efe6368deb07cc2194d2b5a2a"
+    }
+  ],
+  "nodeHeapMiB": 512,
+  "nodeSemiSpaceMiB": 8,
+  "workers": 1,
+  "pool": "forks",
+  "isolate": false,
+  "testTimeoutMs": 30000,
+  "childTimeoutMs": 120000,
+  "runs": [
+    {
+      "file": "tests/machinelab_budget_utilization.test.js",
+      "pattern": "^Machine Lab: budget utilization arithmetic calculates ",
+      "expected": 6,
+      "receipt": "group-01.json",
+      "log": "group-01.log",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_budget_utilization.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-budget-utilization-2026-10-14\\tests\\run-01\\group-01.json",
+        "--testNamePattern",
+        "^Machine Lab: budget utilization arithmetic calculates "
+      ],
+      "status": "completed",
+      "startedAt": "2026-10-14T12:26:17.407Z",
+      "sourceSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+      "mirrorBeforeSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+      "testSha256": "5355665aff5fcf28b8df1ce2dcdd85ab63541e2a42ded69c62ff6fcb64d15856",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "timedOut": false,
+      "finishedAt": "2026-10-14T12:26:27.157Z",
+      "sourceAfterSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+      "mirrorAfterSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+      "testAfterSha256": "5355665aff5fcf28b8df1ce2dcdd85ab63541e2a42ded69c62ff6fcb64d15856",
+      "logSha256": "9c9385bb9cbc08e707f11ba0ffb25780492cea1486a913e67d9b7dc43e373485",
+      "receiptSha256": "2731d297e36cd36b915b89a2561c19b4c197b7f3a0ac6e35e64a3faeccf2ff7f",
+      "passed": 6
+    },
+    {
+      "file": "tests/machinelab_budget_utilization.test.js",
+      "pattern": "^Machine Lab: budget utilization arithmetic (accepts|classifies|converts|preserves|rejects)",
+      "expected": 5,
+      "receipt": "group-02.json",
+      "log": "group-02.log",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/machinelab_budget_utilization.test.js",
+        "--maxWorkers=1",
+        "--pool=forks",
+        "--no-isolate",
+        "--testTimeout=30000",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-budget-utilization-2026-10-14\\tests\\run-01\\group-02.json",
+        "--testNamePattern",
+        "^Machine Lab: budget utilization arithmetic (accepts|classifies|converts|preserves|rejects)"
+      ],
+      "status": "completed",
+      "startedAt": "2026-10-14T12:26:27.276Z",
+      "sourceSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+      "mirrorBeforeSha256": "e3d1f23f6a5d16af0708fd5106420d52a004ca8df40fb6577acbdf8424306a9d",
+      "testSha256": "5355665aff5fcf28b8df1ce2dcdd85ab63541e2a42ded69c62ff6fcb64d15856",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "timedOut": false,
+      "finishedAt": "2026-10-14T12:26:41.537Z",
+      "sourceAfterSha256": "8e83dfcc3b7c282ebeac4f6d5c8e614b8d66940ad46579ef7604c1e03904bdcb",
+      "mirrorAfterSha256": "8e83dfcc3b7c282ebeac4f6d5c8e614b8d66940ad46579ef7604c1e03904bdcb",
+      "testAfterSha256": "5355665aff5fcf28b8df1ce2dcdd85ab63541e2a42ded69c62ff6fcb64d15856",
+      "logSha256": "3c76982a9fff49c01a3941186b2dc4a3ca2f3732b4275362218187acd91024f2",
+      "receiptSha256": "0bc42133be152844d64a15a6b0c3f4e58335a6ba183170a58d76d943eb03aada"
+    }
+  ]
+}

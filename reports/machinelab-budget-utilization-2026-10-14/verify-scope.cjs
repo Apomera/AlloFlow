@@ -1,0 +1,12 @@
+const fs=require('fs'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
+const source='stem_lab/stem_tool_machinelab.js',mirror='desktop/web-app/public/'+source,baseline='158683f06';
+const hash=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
+const current=fs.readFileSync(source,'utf8'),before=cp.execFileSync('git',['show',baseline+':'+source],{encoding:'utf8',maxBuffer:5e6});
+const start=current.indexOf('        function budgetPracticeState('),end=current.indexOf('        function budgetPlanning()',start);
+assert(start>0&&end>start);const withoutHelpers=current.slice(0,start)+current.slice(end);
+const call='            budgetPractice(),\n';assert.equal(withoutHelpers.split(call).length,2);
+assert.equal(withoutHelpers.replace(call,''),before,'Only six budget-practice helpers and their render call may change');
+assert.equal(hash(fs.readFileSync(source)),hash(fs.readFileSync(mirror)));
+cp.execFileSync(process.execPath,['--check',source],{stdio:'pipe',windowsHide:true});
+const report={baselineCommit:baseline,baselineSha256:hash(before),sourceSha256:hash(current),mirrorSha256:hash(fs.readFileSync(mirror)),onlyBudgetPracticeAdded:true,existingPhysicsAndPredictionPracticeUnchanged:true,ordinaryPracticeAndRecordsUnchanged:true,sourceMirrorParity:true,syntax:true};
+fs.writeFileSync(__dirname+'/source-scope.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));

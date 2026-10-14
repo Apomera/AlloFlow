@@ -1,0 +1,15 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_power_planning.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_power_planning.test.js (111 tests | 108 skipped) 687ms
+     ✓ coexists with legacy records and replaces only the active skill while preserving unrelated evidence  564ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed | 108 skipped (111)
+   Start at  08:35:39
+   Duration  2.74s (transform 56ms, setup 44ms, import 86ms, tests 687ms, environment 1.60s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-budget-utilization-2026-10-14/tests/run-04/group-25.json

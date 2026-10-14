@@ -1,0 +1,14 @@
+{
+  "status": "in_progress",
+  "label": "forced-colors-phone-at-budget",
+  "scenarios": 4,
+  "checks": 593,
+  "routes": 18,
+  "shots": [
+    "desktop-pending-budget",
+    "desktop-checked-budget",
+    "dark-phone-over-budget",
+    "forced-colors-phone-at-budget"
+  ],
+  "errors": []
+}

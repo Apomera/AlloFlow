@@ -1,0 +1,37 @@
+{
+  "reason": "Chromium serializes assigned CSS percentage lengths to limited decimal precision. The old harness compared serialized style.width/left directly with full precision arithmetic using a tolerance smaller than that serialization loss. Expected percentages remain independently calculated, then are normalized through a detached DOM element in the same browser and compared exactly. Full precision data, visible percentages, equations, classifications and all other checks remain unchanged.",
+  "sourceChanged": false,
+  "sourceSha256": "f85b92da74d871b1847fc02c63a8c72c146534dc65176be7805c0122030c4bb2",
+  "previousHarnessSha256": "6d014e29b1c33890616d9ee7b2c212d402b685bc3999ef8c587194c1fd29b85c",
+  "currentHarnessSha256": "a181606b64da2cce6107be13fbc2fde5017942ff4290bba66e0319bc98bba8ff",
+  "snapshot": {
+    "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-01/harness-snapshot.cjs",
+    "sha256": "6d014e29b1c33890616d9ee7b2c212d402b685bc3999ef8c587194c1fd29b85c"
+  },
+  "edits": [
+    {
+      "old": "const scale=Math.max(100,e.percent),display=",
+      "new": "const scale=Math.max(100,e.percent),expectedCss=await pg.evaluate(percent=>{const scale=Math.max(100,percent),node=document.createElement('span');node.style.width=(percent/scale*100)+'%';const required=parseFloat(node.style.width);node.style.width=(100/scale*100)+'%';const budget=parseFloat(node.style.width);node.style.left=(100/scale*100)+'%';return{required,budget,reference:parseFloat(node.style.left)};},e.percent),display="
+    },
+    {
+      "old": "Math.abs(bar.width-value/scale*100)<1e-6",
+      "new": "bar.width===expectedCss[bar.key]"
+    },
+    {
+      "old": "Math.abs(view.reference.left-100/scale*100)<1e-6",
+      "new": "view.reference.left===expectedCss.reference"
+    },
+    {
+      "old": "observations.push({label,expected:e,view});",
+      "new": "observations.push({label,expected:e,expectedCss,view});"
+    }
+  ],
+  "failedProcess": {
+    "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-01/process.json",
+    "sha256": "d5ce0d6a969bbb95676e097f345f33ca49fab006d6192bfca2aa0686285a44af"
+  },
+  "observedWrapper": {
+    "path": "reports/machinelab-budget-utilization-2026-10-14/browser/run-01/observed-wrapper.json",
+    "sha256": "39e7de0a30b7910c7f3daf7244bdc27fed9b15a2a59c8778571c960413f1062c"
+  }
+}
