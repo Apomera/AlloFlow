@@ -8955,30 +8955,34 @@ window.StemLab = window.StemLab || {
             h('summary', { key: 'summary', style: summary }, __alloT('stem.machinelab.force_speed_title', 'Connect force, speed and power')),
             returnToCalculation(),
             h('figure', { key: 'figure', 'aria-labelledby': titleId, style: Object.assign({}, panelStyle, { marginLeft: 0, marginRight: 0 }) }, [
-              h('figcaption', { key: 'title', id: titleId, style: Object.assign({}, style, { fontSize: 17, fontWeight: 850 }) }, __alloT('stem.machinelab.force_speed_equation', 'Force × speed = power')),
+              h('figcaption', { key: 'title', id: titleId, style: Object.assign({}, style, { fontSize: 24, lineHeight: 1.35, fontWeight: 850 }) }, __alloT('stem.machinelab.force_speed_equation', 'Force × speed = power')),
               h('p', { key: 'units', style: style }, __alloT('stem.machinelab.force_speed_units', 'Newtons × metres per second = watts. Compare each quantity between the hand and the load.')),
-              rows.map(function (row) { return h('section', { key: row[0], 'data-ml-power-motion-row': row[0], 'aria-labelledby': titleId + '-' + row[0], style: { marginTop: 18 } }, [
-                h('h3', { key: 'heading', id: titleId + '-' + row[0], style: Object.assign({}, style, { fontSize: 14, fontWeight: 850, margin: '0 0 8px' }) }, row[1]),
+              rows.map(function (row) { return h('section', { key: row[0], 'data-ml-power-motion-row': row[0], 'aria-labelledby': titleId + '-' + row[0], style: { minWidth: 0, marginTop: 18, padding: 14, border: '1px solid ' + T.border, borderLeft: '4px solid ' + row[2], borderRadius: 10, background: T.card } }, [
+                h('h3', { key: 'heading', id: titleId + '-' + row[0], style: Object.assign({}, style, { display: 'flex', alignItems: 'baseline', gap: 9, fontSize: 18, fontWeight: 850, margin: '0 0 12px' }) }, [
+                  h('span', { key: 'swatch', 'data-ml-power-motion-swatch': row[0], 'aria-hidden': 'true', style: { display: 'inline-block', width: 26, height: 12, flex: '0 0 26px', boxSizing: 'border-box', border: '1px solid ' + T.border, borderRadius: 3, color: row[2],
+                    backgroundColor: row[0] === 'input' ? row[2] : T.card, backgroundImage: row[0] === 'input' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' } }),
+                  h('span', { key: 'text', style: { minWidth: 0 } }, row[1])
+                ]),
                 h('dl', { key: 'metrics', className: 'ml-force-speed-grid', style: { margin: 0 } }, row[3].map(function (metric, index) {
-                  return h('div', { key: metric[0], 'data-ml-power-motion-metric': metric[0], 'data-value': metric[2], style: { minWidth: 0, padding: 10, border: '1px solid ' + T.border, borderTop: '3px solid ' + row[2], borderRadius: 8, background: T.card } }, [
-                    h('dt', { key: 'term', style: Object.assign({}, style, { fontSize: 12 }) }, metric[1]),
-                    h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: 18 }) }, powerFmt(metric[2]) + ' ' + metric[3]),
-                    h('dd', { key: 'track', className: 'ml-force-speed-track', 'aria-hidden': 'true', style: { margin: '9px 0 0', height: 10, background: T.bg, outline: '1px solid ' + T.border } },
+                  return h('div', { key: metric[0], 'data-ml-power-motion-metric': metric[0], 'data-value': metric[2], style: { minWidth: 0, padding: 10, border: '1px solid ' + (index === 2 ? row[2] : T.border), borderTopWidth: index === 2 ? 3 : 1, borderRadius: 8, background: index === 2 ? T.card : T.bg } }, [
+                    h('dt', { key: 'term', style: Object.assign({}, style, { fontWeight: 750 }) }, metric[1]),
+                    h('dd', { key: 'value', style: Object.assign({}, valueStyle, { fontSize: index === 2 ? 26 : 24 }) }, powerFmt(metric[2]) + ' ' + metric[3]),
+                    h('dd', { key: 'track', className: 'ml-force-speed-track', 'aria-hidden': 'true', style: { margin: '10px 0 0', height: 12, background: T.bg, outline: '1px solid ' + T.border } },
                       h('span', { 'data-ml-power-motion-bar': metric[0], 'data-value': metric[2], 'data-pattern': row[0] === 'input' ? 'solid' : 'striped', style: {
                         display: 'block', height: '100%', width: (metric[2] / scales[index] * 100) + '%', color: row[2],
                         backgroundColor: row[0] === 'input' ? row[2] : T.card, backgroundImage: row[0] === 'input' ? 'none' : 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' } }))
                   ]);
                 })),
-                h('p', { key: 'equation', 'data-ml-power-motion-equation': row[0], style: Object.assign({}, style, { padding: 10, borderLeft: '3px solid ' + row[2], background: T.card, fontVariantNumeric: 'tabular-nums' }) },
+                h('p', { key: 'equation', 'data-ml-power-motion-equation': row[0], style: Object.assign({}, style, { margin: '14px 0 0', padding: 12, border: '1px solid ' + T.border, borderLeft: '3px solid ' + row[2], borderRadius: 6, background: T.bg, fontSize: 18, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }) },
                   powerFmt(row[3][0][2]) + ' N × ' + powerFmt(row[3][1][2]) + ' m/s = ' + powerFmt(row[3][2][2]) + ' W')
               ]); }),
-              h('p', { key: 'scale', style: Object.assign({}, style, { fontSize: 12, color: T.muted }) }, __alloT('stem.machinelab.force_speed_scale', 'Compare force with force, speed with speed, and power with power. Each pair shares a scale starting at zero; different units have separate scales. Solid bars mark input; stripes mark useful output. Read the numbers beside tiny bars.'))
+              h('p', { key: 'scale', style: style }, __alloT('stem.machinelab.force_speed_scale', 'Compare force with force, speed with speed, and power with power. Each pair shares a scale starting at zero; different units have separate scales. Solid bars mark input; stripes mark useful output. Read the numbers beside tiny bars.'))
             ]),
-            h('p', { key: 'balance', style: style }, __alloT('stem.machinelab.force_speed_balance', 'Input power = useful power + power lost: ') + powerFmt(model.inputPower) + ' W = ' + powerFmt(model.usefulPower) + ' W + ' + powerFmt(model.lossPower) + ' W.'),
+            h('p', { key: 'balance', style: Object.assign({}, style, { padding: 12, borderLeft: '3px solid ' + T.accent, borderRadius: 6, background: T.bg, fontSize: 15, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }) }, __alloT('stem.machinelab.force_speed_balance', 'Input power = useful power + power lost: ') + powerFmt(model.inputPower) + ' W = ' + powerFmt(model.usefulPower) + ' W + ' + powerFmt(model.lossPower) + ' W.'),
             h('p', { key: 'scope', style: style }, __alloT('stem.machinelab.force_speed_scope', 'This model assumes constant force along the motion and steady average rates. The hand speed follows the full hand path, including a turning handle. Input power already includes the selected efficiency; do not apply losses twice.')),
             bench.id === 'ramp' ? h('p', { key: 'ramp', style: style }, __alloT('stem.machinelab.force_speed_ramp_scope', 'For the ramp, load force acts vertically, so useful power uses vertical rise rate. Hand speed follows the ramp path.')) : null,
             h('p', { key: 'practice', style: style }, __alloT('stem.machinelab.force_speed_try', 'Try Effort from power and Load from power in the practice menu. Divide matching power by speed to recover force.')),
-            h('style', { key: 'style' }, '.ml-force-speed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(max-width:440px){.ml-force-speed-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-force-speed-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-force-speed-track span{color:CanvasText!important;background-color:Canvas!important}.ml-force-speed-track [data-pattern=solid]{background-color:CanvasText!important}}')
+            h('style', { key: 'style' }, '.ml-force-speed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(max-width:600px){.ml-force-speed-grid{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-force-speed-guide [data-ml-power-motion-row],.ml-force-speed-guide [data-ml-power-motion-metric],.ml-force-speed-guide [data-ml-power-motion-equation],.ml-force-speed-guide [data-ml-power-motion-swatch]{border-color:CanvasText!important}.ml-force-speed-track{forced-color-adjust:none;background:Canvas!important;outline-color:CanvasText!important}.ml-force-speed-track span,.ml-force-speed-guide [data-ml-power-motion-swatch]{forced-color-adjust:none;color:CanvasText!important;background-color:Canvas!important}.ml-force-speed-track [data-pattern=solid],.ml-force-speed-guide [data-ml-power-motion-swatch=input]{background-color:CanvasText!important}}')
           ]);
         }
         function rotationGuide() {

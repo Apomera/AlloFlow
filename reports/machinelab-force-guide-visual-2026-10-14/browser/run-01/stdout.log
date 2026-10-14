@@ -1,0 +1,31 @@
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 windlass
+force guide checkpoint desktop-before-force-guide 1 checks
+native scenario 2 lever
+force guide checkpoint lever complete 151 checks
+native scenario 3 pulley
+force guide checkpoint pulley complete 301 checks
+native scenario 4 windlass
+force guide checkpoint desktop-force-guide 370 checks
+force guide checkpoint windlass complete 451 checks
+native scenario 5 ramp
+force guide checkpoint ramp complete 602 checks
+native scenario 6 wedge
+force guide checkpoint wedge complete 752 checks
+native scenario 7 screw
+force guide checkpoint screw complete 902 checks
+native scenario 8 lever
+force guide checkpoint intermediate-force-guide 1021 checks
+native scenario 9 screw
+force guide checkpoint dark-phone-force-guide 1130 checks
+native scenario 10 windlass
+force guide checkpoint forced-colors-phone-force-guide 1197 checks
+native scenario 11 lever
+force guide checkpoint large-text-phone-force-guide 1257 checks
+{
+  "scenarios": 11,
+  "checks": 1258,
+  "routes": 6,
+  "screenshots": 6,
+  "errors": []
+}

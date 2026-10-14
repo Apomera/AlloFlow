@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
+process.chdir(path.resolve(__dirname,'../..'));
+const source='stem_lab/stem_tool_machinelab.js',mirror='desktop/web-app/public/'+source,baseline='a94ee728a';
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex'),current=fs.readFileSync(source,'utf8'),before=cp.execFileSync('git',['show',baseline+':'+source],{encoding:'utf8',maxBuffer:5e6});
+const marker='        function forceSpeedGuide() {',endMarker='        function rotationGuide() {',start=current.indexOf(marker),end=current.indexOf(endMarker,start),oldStart=before.indexOf(marker),oldEnd=before.indexOf(endMarker,oldStart);
+assert(start>0&&end>start&&oldStart>0&&oldEnd>oldStart);
+assert.equal(current.slice(0,start)+before.slice(oldStart,oldEnd)+current.slice(end),before,'Only forceSpeedGuide may change');
+const now=current.slice(start,end),old=before.slice(oldStart,oldEnd);
+assert.equal(now.slice(0,now.indexOf("          return h('details'")),old.slice(0,old.indexOf("          return h('details'")),'Calculations, scales and row definitions unchanged');
+const translations=s=>s.match(/__alloT\('(?:\\.|[^'])*', '(?:\\.|[^'])*'\)/g);
+assert.deepEqual(translations(now),translations(old));
+const bars=s=>s.slice(s.indexOf("h('span', { 'data-ml-power-motion-bar'"),s.indexOf("                h('p', { key: 'equation'"));assert.equal(bars(now),bars(old));
+assert.equal(hash(current),hash(fs.readFileSync(mirror)));cp.execFileSync(process.execPath,['--check',source],{stdio:'pipe',windowsHide:true});
+const result={baselineCommit:baseline,baselineSha256:hash(before),sourceSha256:hash(current),mirrorSha256:hash(fs.readFileSync(mirror)),onlyForceSpeedGuideChanged:true,calculationsScalesRowsBarsAndTranslationsUnchanged:true,existingHandlersPracticeRecordsAndExportsUnchanged:true,sourceMirrorParity:true,syntax:true};
+fs.writeFileSync(__dirname+'/source-scope.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

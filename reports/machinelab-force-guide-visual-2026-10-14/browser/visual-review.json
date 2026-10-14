@@ -1,0 +1,63 @@
+{
+  "reviewer": "force_guide_browser",
+  "method": "Direct view_image inspection of all six PNGs from final run-01, requesting original resolution.",
+  "sourceSha256": "30be14963a64009b84a5c4c4aff01c3ff5a73aacdd58e0b6515559fe5c85ee6c",
+  "finalRun": "run-01",
+  "nativeExitCode": 0,
+  "observedOuterSession": 88036,
+  "observedOuterExitCode": 0,
+  "scenarios": 11,
+  "checks": 1258,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "errors": [],
+  "images": [
+    {
+      "file": "run-01/desktop-before-force-guide.png",
+      "sha256": "d9b8cd1ff93aeb0f3193fe5024aab31eb562538a11046c36f9604d29189b56ed",
+      "verdict": "pass",
+      "observation": "Baseline shows the same windlass quantities with smaller headings, readings and equations; input/output patterns are present only in the bars and explanatory text."
+    },
+    {
+      "file": "run-01/desktop-force-guide.png",
+      "sha256": "bd51899b8f8ca9befc22dcc9470c63d16c402b4f3ab1a8e388934783e4dd81f1",
+      "verdict": "pass",
+      "observation": "Input and useful-output sections have clear headings and matching solid/striped swatches. All six values fit, equations are prominent, and power results are emphasized while paired bars retain matching track lengths."
+    },
+    {
+      "file": "run-01/intermediate-force-guide.png",
+      "sha256": "518ebfafebd49ab59fc721f1a101766d1426479cc22c148beecdc9d0ff016bcc",
+      "verdict": "pass",
+      "observation": "At the 600px viewport, all three cards stack in each section. The sub-one lever correctly shows larger input force and smaller hand speed; the output bars reverse that ordering with aligned zero origins."
+    },
+    {
+      "file": "run-01/dark-phone-force-guide.png",
+      "sha256": "7b36a87d12c571f2052a1404e4cd105e03304520cc200ab61817100488987935",
+      "verdict": "pass",
+      "observation": "At 320px in dark mode, the screw values and equations wrap within the cards. Solid and striped keys match the bars, including the correctly tiny effort-force and load-speed bars."
+    },
+    {
+      "file": "run-01/forced-colors-phone-force-guide.png",
+      "sha256": "7e552f9770546282b6e273cc0fc0e644b8c735842671a11f1733e65f1a5673e5",
+      "verdict": "pass",
+      "observation": "At 320px with forced colors, section and card boundaries remain visible. Solid black input and striped useful output remain distinct in both heading swatches and quantitative bars."
+    },
+    {
+      "file": "run-01/large-text-phone-force-guide.png",
+      "sha256": "2886e51da53fe822eae9771dce74b00f30ab20488184cf476fe46a6e4263875a",
+      "verdict": "pass",
+      "observation": "At 320px with guide text doubled, headings, values, units, equations and explanatory text wrap in reading order. The region expands vertically with no horizontal clipping; numerical bar proportions remain unchanged."
+    }
+  ],
+  "limits": [
+    "Screenshots crop the complete force-speed guide, not the whole application. All six station routes receive numeric, bar-geometry, semantic, visual-style and keyboard-navigation assertions.",
+    "The enlarged-text case doubles computed font sizes inside the guide rather than browser zoom; the 264 by 4631px image was resized for display by the image tool.",
+    "Browser harness uses real React, THREE, host module and bundled production source. No production edits were made during the native run."
+  ]
+}

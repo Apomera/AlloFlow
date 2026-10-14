@@ -1,0 +1,7 @@
+{
+  "command": "node reports/machinelab-force-guide-visual-2026-10-14/run-tests.cjs",
+  "execSessionId": 17551,
+  "observedExitCode": 0,
+  "observedPassedTests": 50,
+  "sourceSha256": "30be14963a64009b84a5c4c4aff01c3ff5a73aacdd58e0b6515559fe5c85ee6c"
+}

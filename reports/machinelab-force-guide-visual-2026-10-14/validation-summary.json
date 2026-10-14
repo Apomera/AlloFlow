@@ -1,0 +1,16 @@
+{
+  "sourceSha256": "30be14963a64009b84a5c4c4aff01c3ff5a73aacdd58e0b6515559fe5c85ee6c",
+  "selectedExistingTests": 50,
+  "testFiles": 3,
+  "nativeTestProcesses": 4,
+  "browserChecks": 1258,
+  "benchRoutes": 6,
+  "browserScenarios": 11,
+  "inspectedScreenshots": 6,
+  "keyboardFocusChecks": 17,
+  "quantitativeGuideInspections": 24,
+  "onlyForceSpeedGuideChanged": true,
+  "calculationsScalesRowsBarsAndTranslationsUnchanged": true,
+  "existingHandlersPracticeRecordsAndExportsUnchanged": true,
+  "sourceMirrorParity": true
+}

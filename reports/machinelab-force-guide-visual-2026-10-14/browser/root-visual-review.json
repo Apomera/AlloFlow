@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root",
+  "recordedBy": "/root/force_guide_browser",
+  "basis": "Explicit root task message confirms direct inspection of all six PNGs and authorizes recording this review.",
+  "sourceSha256": "30be14963a64009b84a5c4c4aff01c3ff5a73aacdd58e0b6515559fe5c85ee6c",
+  "verdict": "pass",
+  "screenshots": [
+    {
+      "path": "reports/machinelab-force-guide-visual-2026-10-14/browser/run-01/desktop-before-force-guide.png",
+      "sha256": "d9b8cd1ff93aeb0f3193fe5024aab31eb562538a11046c36f9604d29189b56ed",
+      "visuallyInspected": true,
+      "notes": "Baseline inspected directly by root; existing values and proportional bars are readable."
+    },
+    {
+      "path": "reports/machinelab-force-guide-visual-2026-10-14/browser/run-01/desktop-force-guide.png",
+      "sha256": "bd51899b8f8ca9befc22dcc9470c63d16c402b4f3ab1a8e388934783e4dd81f1",
+      "visuallyInspected": true,
+      "notes": "Updated desktop inspected directly by root; larger complete numbers and matching heading swatches are legible, with accurate paired bar geometry and no clipping."
+    },
+    {
+      "path": "reports/machinelab-force-guide-visual-2026-10-14/browser/run-01/intermediate-force-guide.png",
+      "sha256": "518ebfafebd49ab59fc721f1a101766d1426479cc22c148beecdc9d0ff016bcc",
+      "visuallyInspected": true,
+      "notes": "Intermediate width inspected directly by root; stacked cards remain legible and paired bar geometry is accurate without clipping."
+    },
+    {
+      "path": "reports/machinelab-force-guide-visual-2026-10-14/browser/run-01/dark-phone-force-guide.png",
+      "sha256": "7b36a87d12c571f2052a1404e4cd105e03304520cc200ab61817100488987935",
+      "visuallyInspected": true,
+      "notes": "Dark phone inspected directly by root; complete numbers and solid/striped swatches are legible, with no clipping."
+    },
+    {
+      "path": "reports/machinelab-force-guide-visual-2026-10-14/browser/run-01/forced-colors-phone-force-guide.png",
+      "sha256": "7e552f9770546282b6e273cc0fc0e644b8c735842671a11f1733e65f1a5673e5",
+      "visuallyInspected": true,
+      "notes": "Forced-color phone inspected directly by root; swatches, complete numbers and paired bar geometry remain legible and accurate, with no clipping."
+    },
+    {
+      "path": "reports/machinelab-force-guide-visual-2026-10-14/browser/run-01/large-text-phone-force-guide.png",
+      "sha256": "2886e51da53fe822eae9771dce74b00f30ab20488184cf476fe46a6e4263875a",
+      "visuallyInspected": true,
+      "notes": "Enlarged-text phone inspected directly by root; the full values and swatches remain legible and text wraps without clipping."
+    }
+  ]
+}
