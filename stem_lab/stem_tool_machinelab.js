@@ -7505,13 +7505,26 @@ window.StemLab = window.StemLab || {
           style: { display: 'block', flexShrink: 0 } }, shapes[kind]);
       }
       function benchTabs() {
-        return h('div', {
+        var cues = {
+          lever: __alloT('stem.machinelab.station_cue_lever', 'Compare the two lever arms.'),
+          pulley: __alloT('stem.machinelab.station_cue_pulley', 'Count the supporting rope strands.'),
+          windlass: __alloT('stem.machinelab.station_cue_windlass', 'Turn a handle to wind the rope.'),
+          ramp: __alloT('stem.machinelab.station_cue_ramp', 'Compare slope length and height.'),
+          wedge: __alloT('stem.machinelab.station_cue_wedge', 'Push a wedge between two blocks.'),
+          screw: __alloT('stem.machinelab.station_cue_screw', 'Follow one turn of the thread.')
+        };
+        return h('section', { key: 'station-chooser', className: 'ml-station-chooser', 'data-ml-station-chooser': '', 'aria-labelledby': 'ml-station-chooser-title',
+          style: { marginBottom: 18, color: T.text, '--ml-chooser-focus': T.text } }, [
+          h('h2', { key: 'title', id: 'ml-station-chooser-title', style: { margin: '0 0 6px', fontSize: 24, lineHeight: 1.35, fontWeight: 850, overflowWrap: 'anywhere' } },
+            __alloT('stem.machinelab.station_explore_title', 'Choose a machine to explore')),
+          h('p', { key: 'intro', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.55, overflowWrap: 'anywhere' } },
+            __alloT('stem.machinelab.station_explore_intro', 'Pick a station, change one setting, and watch how the motion changes.')),
+          h('div', {
           key: 'tabs', className: 'ml-bench-tabs',
           role: 'tablist',
           'aria-label': __alloT('stem.machinelab.aria_benchlist', 'Simple machine benches'),
           style: {
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
-            gap: 8, marginBottom: 12
+            display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10
           }
         }, BENCHES.map(function (b, stationIndex) {
           var active = b.id === bench.id;
@@ -7519,6 +7532,7 @@ window.StemLab = window.StemLab || {
           return h('button', {
             key: b.id,
             role: 'tab', type: 'button', id: 'ml-bench-tab-' + b.id,
+            'data-ml-station-card': b.id, 'aria-labelledby': 'ml-station-name-' + b.id, 'aria-describedby': 'ml-station-cue-' + b.id,
             tabIndex: active ? 0 : -1, 'aria-controls': 'ml-shop-panel',
             title: __alloT('stem.machinelab.station_keys', 'Use Left and Right arrow keys to switch stations; Home and End select the first and last.'),
             onKeyDown: function (ev) {
@@ -7534,26 +7548,31 @@ window.StemLab = window.StemLab || {
             'aria-selected': active ? 'true' : 'false',
             onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false, shopMotionProgress: null, shopClueBench: null }); },
             style: {
-              minHeight: 76, padding: '8px 10px', borderRadius: 12, cursor: 'pointer',
-              border: '1px solid ' + (active ? T.accent : T.border), textAlign: 'left',
-              boxShadow: active ? '0 0 0 2px ' + T.accent + '33' : 'none',
-              background: active ? T.accent : T.card, color: active ? T.accentInk : T.text,
-              fontSize: 12, fontWeight: 750, display: 'grid', gridTemplateColumns: '42px minmax(0,1fr)',
-              alignItems: 'center', gap: 7
+              position: 'relative', minWidth: 0, minHeight: 134, padding: 14, borderRadius: 14, cursor: 'pointer',
+              border: '2px solid ' + (active ? T.accent : T.border), textAlign: 'left',
+              background: active ? T.bg : T.card, color: T.text,
+              font: 'inherit', display: 'grid', gridTemplateColumns: '64px minmax(0,1fr)',
+              alignContent: 'center', alignItems: 'center', gap: '8px 12px', overflowWrap: 'anywhere'
             }
           }, [
-            benchPreview(b.id, active),
-            h('span', { key: 'l', style: { lineHeight: 1.2 } }, [
-              h('span', { key: 'n', style: { display: 'block', fontSize: 9, letterSpacing: 0.7, textTransform: 'uppercase' } },
+            h('span', { key: 'preview', className: 'ml-station-card-preview', 'aria-hidden': 'true', style: { gridRow: '1 / span 2', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, background: active ? T.accent : T.bg } }, benchPreview(b.id, active)),
+            h('span', { key: 'l', id: 'ml-station-name-' + b.id, style: { minWidth: 0, lineHeight: 1.35 } }, [
+              h('span', { key: 'n', style: { display: 'block', fontSize: 11, fontWeight: 750, letterSpacing: 0.5, textTransform: 'uppercase' } },
                 __alloT('stem.machinelab.station', 'Station ') + (stationIndex + 1)),
-              h('span', { key: 't' }, b.label),
-              done ? h('span', { key: 'd', style: { display: 'block', marginTop: 4, fontSize: 10, fontWeight: 800 } }, [
+              h('span', { key: 't', style: { display: 'block', marginTop: 3, fontSize: 18, fontWeight: 850 } }, b.label),
+              done ? h('span', { key: 'd', style: { display: 'block', marginTop: 5, fontSize: 12, fontWeight: 800 } }, [
                 h('span', { key: 'check', 'aria-hidden': 'true' }, '✓ '),
                 __alloT('stem.machinelab.station_proven', 'Proven')
               ]) : null
+            ]),
+            h('span', { key: 'cue', id: 'ml-station-cue-' + b.id, style: { gridColumn: 2, fontSize: 13, lineHeight: 1.45, fontWeight: 400, minWidth: 0 } }, cues[b.id]),
+            h('span', { key: 'selected', 'data-ml-station-selected': active ? b.id : undefined, 'aria-hidden': 'true', style: { visibility: active ? 'visible' : 'hidden', gridColumn: '1 / -1', justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, border: '1px solid ' + T.accent, color: T.text, fontSize: 12, lineHeight: 1.4, fontWeight: 800 } }, [
+              h('span', { key: 'mark' }, '✓'), __alloT('stem.machinelab.station_selected', 'Selected')
             ])
           ]);
-        }));
+        })),
+          h('style', { key: 'style' }, '.ml-station-chooser .ml-station-card-preview svg{width:60px;height:60px}.ml-station-chooser [role=tab]:focus-visible{outline:3px solid var(--ml-chooser-focus);outline-offset:3px}.ml-station-chooser [role=tab]:hover{box-shadow:inset 0 0 0 1px currentColor}@media(max-width:800px){.ml-station-chooser .ml-bench-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:440px){.ml-station-chooser .ml-bench-tabs{grid-template-columns:minmax(0,1fr)!important}}@media(forced-colors:active){.ml-station-chooser{--ml-chooser-focus:Highlight!important}.ml-station-chooser [role=tab]{border-color:ButtonText!important}.ml-station-chooser [role=tab][aria-selected=true]{border-color:Highlight!important;outline:1px solid Highlight;outline-offset:-4px}.ml-station-chooser [role=tab]:focus-visible{outline:3px solid Highlight;outline-offset:3px}.ml-station-chooser [data-ml-station-selected]{border-color:Highlight!important}.ml-station-chooser .ml-station-card-preview{background:Canvas!important}.ml-station-chooser .ml-station-card-preview svg{color:CanvasText}.ml-station-chooser .ml-station-card-preview svg [stroke]{stroke:CanvasText!important}.ml-station-chooser .ml-station-card-preview svg [fill]:not([fill=none]){fill:CanvasText!important}}')
+        ]);
       }
 
       function bandPicker() {

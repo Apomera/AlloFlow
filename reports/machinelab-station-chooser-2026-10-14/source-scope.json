@@ -1,0 +1,11 @@
+{
+  "baselineCommit": "453fdbdd9",
+  "baselineSha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040",
+  "sourceSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7",
+  "mirrorSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7",
+  "onlyBenchTabsChanged": true,
+  "existingPreviewArtworkAndCalculationsUnchanged": true,
+  "existingKeyboardSelectionStateAndRecordsUnchanged": true,
+  "sourceMirrorParity": true,
+  "syntax": true
+}

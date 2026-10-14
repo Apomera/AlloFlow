@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/motion_visual_review",
+  "baselineCommit": "453fdbdd9",
+  "sourceSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7",
+  "mirrorSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7",
+  "verdict": "pass",
+  "findings": [],
+  "reviewed": [
+    "Canonical and public mirror match the declared frozen hash. The production diff is confined to benchTabs; shared benchPreview and the workshop remain unchanged.",
+    "The existing six tab IDs, roles, selected state, roving tab index, controlled panel, keyboard handler and selection callback are preserved.",
+    "A named section places its heading and introductory paragraph outside the tablist. Each tab references a label containing its original station number, machine name and real Proven status, with its factual observation cue supplied separately through aria-describedby.",
+    "The Selected chip is decorative because aria-selected already conveys the state. Hidden inactive chips reserve the same layout space without entering the accessible name or exposing a selected data marker.",
+    "All cues describe machine features or actions without promising force reduction, manufacturing mastery, adding state or changing calculations.",
+    "Preview size, hover, focus and forced-color rules are scoped to the chooser; shared workshop previews retain their original dimensions and rendering.",
+    "Responsive grids, minimum-width handling and text wrapping support narrow layouts. The final forced-colors focus-visible rule retains a distinct outer keyboard-focus ring over the selected-card styling.",
+    "New prose uses unique Machine Lab translation keys with English fallbacks. Existing translation keys retain their original fallback text.",
+    "No new unit tests were added for this visual change. The relevant existing selection is ten illustrated-navigation cases, twenty-eight accessibility cases and eight translation-hygiene cases."
+  ],
+  "resolvedDuringReview": [
+    "Reserved the Selected-chip row on inactive cards to prevent selection-dependent card and grid-row height changes.",
+    "Placed a forced-colors focus-visible rule after selected styling so keyboard focus keeps its three-pixel outer outline."
+  ],
+  "nativeChecksRunByReviewer": false,
+  "limitations": [
+    "This review is static. Actual keyboard navigation, rendered accessible descriptions, card stability and responsive appearance require the separately recorded browser checks."
+  ]
+}

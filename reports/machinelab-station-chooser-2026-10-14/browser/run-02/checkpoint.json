@@ -1,0 +1,81 @@
+{
+  "label": "large-text-phone-station-chooser",
+  "checks": 1285,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "bands": [
+    "g68",
+    "k2",
+    "g35",
+    "g912"
+  ],
+  "shots": [
+    {
+      "name": "desktop-before-station-chooser",
+      "file": "desktop-before-station-chooser.png",
+      "sha256": "42e6b2412613fab21a1515bd4a317cb1241386f8cad58d669ed21793c7b0bf7f",
+      "clip": {
+        "x": 13,
+        "y": 233,
+        "width": 1124,
+        "height": 82
+      },
+      "baseline": true
+    },
+    {
+      "name": "desktop-station-chooser",
+      "file": "desktop-station-chooser.png",
+      "sha256": "849a169f1d7c335af83f04b278c9763337252e2ee8b087884813df1c04993f11",
+      "clip": {
+        "x": 13,
+        "y": 233,
+        "width": 1124,
+        "height": 405
+      },
+      "baseline": false
+    },
+    {
+      "name": "dark-phone-station-chooser",
+      "file": "dark-phone-station-chooser.png",
+      "sha256": "1c6a35e0ae92410cdd99f1880245df9ce9db9033af95fab53ed1d3cda9a1ab2c",
+      "clip": {
+        "x": 13,
+        "y": 517,
+        "width": 294,
+        "height": 1117
+      },
+      "baseline": false
+    },
+    {
+      "name": "forced-colors-phone-station-chooser",
+      "file": "forced-colors-phone-station-chooser.png",
+      "sha256": "b93c001c7405acadd0f6b456498a429641bc4cfc8ad0d28c35b63cd3a5d375f9",
+      "clip": {
+        "x": 13,
+        "y": 517,
+        "width": 294,
+        "height": 1117
+      },
+      "baseline": false
+    },
+    {
+      "name": "large-text-phone-station-chooser",
+      "file": "large-text-phone-station-chooser.png",
+      "sha256": "9f89562f53075888c51c8fd84a608cdfb6ea547a87f744bd71cc5c2b8a4a87c8",
+      "clip": {
+        "x": 13,
+        "y": 517,
+        "width": 294,
+        "height": 2257
+      },
+      "baseline": false
+    }
+  ],
+  "errors": []
+}

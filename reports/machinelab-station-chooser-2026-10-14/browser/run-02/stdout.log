@@ -1,0 +1,22 @@
+harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
+native scenario 1 lever
+station chooser checkpoint desktop-before-station-chooser 1 checks
+native scenario 2 lever
+station chooser checkpoint desktop-station-chooser 490 checks
+native scenario 3 lever
+native scenario 4 lever
+native scenario 5 lever
+native scenario 6 lever
+station chooser checkpoint dark-phone-station-chooser 1055 checks
+native scenario 7 lever
+station chooser checkpoint forced-colors-phone-station-chooser 1170 checks
+native scenario 8 lever
+station chooser checkpoint large-text-phone-station-chooser 1285 checks
+{
+  "scenarios": 8,
+  "checks": 1286,
+  "routes": 6,
+  "bands": 4,
+  "screenshots": 5,
+  "errors": []
+}
