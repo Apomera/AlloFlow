@@ -1761,7 +1761,7 @@ window.StemLab = window.StemLab || {
     if (S.renderer && S.renderer.setClearColor) {
       S.renderer.setClearColor(clearColor, 1);
     }
-    if (!contrast && S.scene && typeof THREE.Fog === 'function') S.scene.fog = new THREE.Fog(clearColor, 11, 27);
+    if (S.scene) S.scene.fog = !contrast && typeof THREE.Fog === 'function' ? new THREE.Fog(clearColor, 11, 27) : null;
     var workshopWood = contrast ? null : woodTexture(THREE);
     var workshopSurface = contrast ? null : makeCanvasTexture(THREE,128,function(g,n) {
       g.fillStyle='#ededed';g.fillRect(0,0,n,n);
@@ -3631,13 +3631,9 @@ window.StemLab = window.StemLab || {
     ? window.StemLab.makeOrbitViewer({
         attr: 'data-machinelab-shop-gl', clearColor: 0x07111f, fov: 42,
         fitSlack: 1.12, rot: { y: 28, x: 16 },
-        // The workshop has a lit torch flame (emissive 0xff5a00 at intensity
-        // 1.1) and a fire that grows with the sim. Threshold 0.72 catches
-        // those while the 0.45-luma slate machinery and the white callout
-        // labels stay out of the glow — the readable surfaces must not bloom.
-        // env gives the metalness-0.55 parts something to reflect; without it
-        // PBR metal loses its diffuse and just goes dark.
-        bloom: { strength: 0.6, radius: 0.38, threshold: 0.72 },
+        // Whole-scene bloom also amplifies the pale light-theme background,
+        // washing out machinery and motion guides. Keep direct rendering;
+        // the environment still gives metal parts their reflected light.
         env: true,
         failMessage: '3D workshop unavailable. The live diagram and number panels carry the same mechanics.',
         lights: function (THREE, scene, S) {
