@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/motion_visual_review",
+  "baselineCommit": "a8d6c8625d20f6249147a13f4aca984b0f0e7390",
+  "baselineSha256": "b1722eb8475bd8992229fc5480a8e8073cac810540b3c58cab019a8c06b3ccd2",
+  "sourceSha256": "f253abaf842de6a16003053526359561b78b3cea1412a9e07f8eb302f1715d7d",
+  "mirrorMatches": true,
+  "verdict": "pass",
+  "findings": [],
+  "verified": [
+    "Outside the extracted mission block, new helper and moved call, source is identical to baseline.",
+    "runShopDemo and openNextBench remain verbatim, preserving timing, run guards, focus, scrolling, announcements and state updates.",
+    "Action keys, labels, handlers, checked and disabled conditions, and workflow colors are preserved. Run now precedes Slow motion; Next remains enabled during playback.",
+    "The single helper call follows the distance legend and precedes camera, inspector and discovery inside the same fullscreen workshop wrapper.",
+    "All previous translations remain intact; the two new namespaced heading/help keys have unique English fallbacks.",
+    "Scoped focus selectors outrank the shared host rule; T.text and forced-color Highlight are used. Targets, unitless line heights and narrow-screen wrapping are appropriate."
+  ],
+  "nativeProcessesRunByReviewer": false,
+  "limitations": "Static review only; playback, keyboard focus, fullscreen, fallback and enlarged-text layout remain subject to separate runtime checks."
+}

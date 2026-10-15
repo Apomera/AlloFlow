@@ -1,0 +1,15 @@
+# Machine Lab playback controls
+
+Run demonstration, Slow motion, and Next station now appear directly beneath the scene's distance legend, before camera controls and observation panels. The named Try the motion panel adds brief guidance, larger workflow indicators, a 52px primary Run target, and 44px minimum secondary targets. Phone controls stack at full width. Focus styles use theme text color, outrank shared host styles, and preserve forced-color behavior.
+
+The existing mission renderer was extracted into `shopDemoControls()` and moved within the same workshop/fullscreen wrapper. Callback functions, durations, run guards, checked/disabled conditions, workflow colors, calculations, saved records, and original action labels remain unchanged. Scope and independent static reviews pass. Baseline: `a8d6c8625`. Canonical/public SHA-256: `f253abaf842de6a16003053526359561b78b3cea1412a9e07f8eb302f1715d7d`.
+
+Selected unit coverage totals 67 unchanged tests. `tests/run-01` completed the first 31 view/playback/navigation tests and 28 accessibility tests with native exit 0. Disk exhaustion interrupted the third process's report writing; its empty receipt is excluded. `tests/run-02` reran only the remaining eight translation checks and passed with native exit 0. Successful results all use the final source. `verify-evidence.cjs` verifies these three selected child-process receipts and their hashes.
+
+Disk exhaustion also interrupted preparation of the browser harness. Its missing local file was recreated after free space returned. A proposed cleanup of old generated HTML aborted during validation before any deletions because one file was tracked. Production files remained intact.
+
+Browser `run-01` lost its tool connection and produced no completion receipt; it is excluded. `run-02` completed with a timing failure: a short demonstration ended between remote state checks and Hold activation. The final harness captures the running state and activates the existing Hold control in one animation-frame callback, preserving the actual 2200/6600ms durations and exact pose comparison. Its earlier harness is retained with the failed run. Production remained unchanged throughout.
+
+Final browser `run-03` passed 212 checks with native exit 0 across three mounts and all six station routes. Coverage includes Run keyboard activation, live normal/slow durations, exact held-pose geometry, reduced-motion preference, disabled states, Next navigation/focus, an actual saved power record and unfinished draft, focus/text contrast, and unclipped 320px/doubled-text layouts. Root inspected three screenshots: desktop scene/control placement, dark phone controls, and forced-color enlarged controls. The desktop scene appears very bright in the existing light theme; renderer lighting was not changed by this pass. Temporary files from the completed browser run were removed after Chromium closed.
+
+No full application build, push, or deployment. Shared handoff remains unstaged. Temporary browser files are excluded from saved evidence.

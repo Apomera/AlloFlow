@@ -13708,6 +13708,81 @@ window.StemLab = window.StemLab || {
             ])
           ]);
         }
+        function shopDemoControls() {
+          return h('section', {
+            key: 'mission', className: 'ml-shop-demo-controls', 'aria-labelledby': 'ml-shop-demo-title',
+            style: {
+              padding: 16, marginTop: 12, borderRadius: 14, border: '1px solid ' + T.border,
+              borderTop: '3px solid ' + T.accent, background: T.card, color: T.text,
+              overflowWrap: 'anywhere', '--ml-demo-focus': T.text
+            }
+          }, [
+            h('style', { key: 'style' }, '.ml-shop-world .ml-shop-demo-controls button:focus-visible,.ml-shop-world .ml-shop-demo-controls input:focus-visible{outline:3px solid var(--ml-demo-focus);outline-offset:3px}.ml-demo-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ml-demo-actions button{max-width:100%}.ml-demo-actions>button:first-child{flex:1 1 230px}.ml-demo-actions>button:last-child{margin-left:auto}@media(max-width:600px){.ml-demo-actions>*{width:100%;box-sizing:border-box}.ml-demo-actions>button:first-child{flex-basis:auto}.ml-demo-actions>label{justify-content:center}.ml-demo-actions>button:last-child{margin-left:0}}@media(forced-colors:active){.ml-shop-demo-controls{--ml-demo-focus:Highlight!important}}'),
+            h('h3', { key: 'title', id: 'ml-shop-demo-title', style: { margin: 0, fontSize: 20, fontWeight: 850, lineHeight: 1.3 } },
+              __alloT('stem.machinelab.demo_controls_title', 'Try the motion')),
+            h('p', { key: 'help', style: { margin: '6px 0 12px', fontSize: 13, color: T.dim, lineHeight: 1.5 } },
+              __alloT('stem.machinelab.demo_controls_help', 'Run a demonstration, then hold a pose to inspect the moving parts.')),
+            h('div', {
+              key: 'steps', role: 'group',
+              'aria-label': __alloT('stem.machinelab.station_flow', 'Station workflow: adjust, run, prove'),
+              style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14 }
+            }, [
+              h('span', { key: 'a', style: {
+                padding: '6px 10px', borderRadius: 999, fontSize: 13, fontWeight: 800, lineHeight: 1.4,
+                color: hasRunDemo ? T.muted : T.accentInk, background: hasRunDemo ? T.bg : T.accent,
+                border: '1px solid ' + (hasRunDemo ? T.border : T.accent)
+              } }, '1 ' + __alloT('stem.machinelab.step_adjust', 'Adjust')),
+              h('span', { key: 'r', 'aria-hidden': 'true', style: { color: T.dim, fontSize: 11 } }, '→'),
+              h('span', { key: 'b', style: {
+                padding: '6px 10px', borderRadius: 999, fontSize: 13, fontWeight: 800, lineHeight: 1.4,
+                color: d.shopAnimating ? T.accentInk : T.text,
+                background: d.shopAnimating ? T.accent : T.bg,
+                border: '1px solid ' + (d.shopAnimating ? T.accent : T.border)
+              } }, '2 ' + __alloT('stem.machinelab.step_run', 'Run')),
+              h('span', { key: 'r2', 'aria-hidden': 'true', style: { color: T.dim, fontSize: 11 } }, '→'),
+              h('span', { key: 'c', style: {
+                padding: '6px 10px', borderRadius: 999, fontSize: 13, fontWeight: 800, lineHeight: 1.4,
+                color: hasRunDemo && !d.shopAnimating ? T.accentInk : T.text,
+                background: hasRunDemo && !d.shopAnimating ? T.accent : T.bg,
+                border: '1px solid ' + (hasRunDemo && !d.shopAnimating ? T.accent : T.border)
+              } }, '3 ' + __alloT('stem.machinelab.step_prove', 'Prove'))
+            ]),
+            h('div', { key: 'actions', className: 'ml-demo-actions' }, [
+              h('button', {
+                key: 'run', type: 'button', onClick: runShopDemo,
+                disabled: !!d.shopAnimating || shopStatus === 'failed',
+                'aria-label': __alloT('stem.machinelab.run_demo_aria', 'Run the three-dimensional demonstration for ') + bench.label,
+                style: {
+                  padding: '12px 18px', minHeight: 52, borderRadius: 10,
+                  cursor: d.shopAnimating || shopStatus === 'failed' ? 'default' : 'pointer',
+                  border: '1px solid ' + T.accent,
+                  background: d.shopAnimating ? T.bg : T.accent,
+                  color: d.shopAnimating ? T.dim : T.accentInk,
+                  fontSize: 16, fontWeight: 800, lineHeight: 1.5, opacity: shopStatus === 'failed' ? 0.5 : 1
+                }
+              }, d.shopAnimating
+                ? __alloT('stem.machinelab.demo_running', 'Running...')
+                : '▶ ' + __alloT('stem.machinelab.run_demo', 'Run demonstration')),
+              h('label', { key: 'slow', title: __alloT('stem.machinelab.slow_demo_hint', 'Play the same motion three times slower. Motion-off preferences still apply.'),
+                style: { display: 'inline-flex', alignItems: 'center', gap: 9, minHeight: 44, boxSizing: 'border-box', padding: '10px 14px',
+                  borderRadius: 10, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14, fontWeight: 750, lineHeight: 1.5, cursor: 'pointer' } }, [
+                h('input', { key: 'check', type: 'checkbox', checked: !!d.shopSlowMotion,
+                  disabled: !!d.shopAnimating || shopStatus === 'failed', onChange: function (ev) { upd('shopSlowMotion', ev.target.checked); },
+                  style: { width: 18, height: 18, flexShrink: 0, margin: 0, accentColor: T.accent } }),
+                h('span', { key: 'label' }, __alloT('stem.machinelab.slow_demo', 'Slow motion'))
+              ]),
+              h('button', {
+                key: 'next', type: 'button', onClick: openNextBench,
+                'aria-label': __alloT('stem.machinelab.next_station', 'Next station: ') + nextBench.label,
+                style: {
+                  padding: '10px 14px', minHeight: 44, borderRadius: 10, cursor: 'pointer',
+                  border: '1px solid ' + T.border, background: T.card,
+                  color: T.text, fontSize: 14, fontWeight: 750, lineHeight: 1.5
+                }
+              }, __alloT('stem.machinelab.next_short', 'Next: ') + nextBench.label + ' →')
+            ])
+          ]);
+        }
         function runShopDemo(ev) {
           if (d.shopAnimating || shopStatus === 'failed') return;
           var runId = (d.shopDemoId || 0) + 1, runBench = bench.id;
@@ -13895,76 +13970,10 @@ window.StemLab = window.StemLab || {
               h('span', { key: 'scale' }, __alloT('stem.machinelab.same_distance_scale', 'Same distance scale')),
               h('span', { key: 'fill', 'data-ml-distance-fill-guide': '', style: { flexBasis: '100%', fontWeight: 500 } }, __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled. End caps mark the finish.'))
             ]),
+            shopDemoControls(),
             camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
             shopMotionInspector(),
-            shopDiscoveryCard(),
-            h('div', {
-              key: 'mission',
-              style: {
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                gap: 10, flexWrap: 'wrap', padding: '7px 6px 2px'
-              }
-            }, [
-              h('div', {
-                key: 'steps',
-                'aria-label': __alloT('stem.machinelab.station_flow', 'Station workflow: adjust, run, prove'),
-                style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }
-              }, [
-                h('span', { key: 'a', style: {
-                  padding: '5px 9px', borderRadius: 999, fontSize: 10, fontWeight: 800,
-                  color: hasRunDemo ? T.muted : T.accentInk, background: hasRunDemo ? T.bg : T.accent,
-                  border: '1px solid ' + (hasRunDemo ? T.border : T.accent)
-                } }, '1 ' + __alloT('stem.machinelab.step_adjust', 'Adjust')),
-                h('span', { key: 'r', 'aria-hidden': 'true', style: { color: T.dim, fontSize: 11 } }, '→'),
-                h('span', { key: 'b', style: {
-                  padding: '5px 9px', borderRadius: 999, fontSize: 10, fontWeight: 800,
-                  color: d.shopAnimating ? T.accentInk : T.text,
-                  background: d.shopAnimating ? T.accent : T.bg,
-                  border: '1px solid ' + (d.shopAnimating ? T.accent : T.border)
-                } }, '2 ' + __alloT('stem.machinelab.step_run', 'Run')),
-                h('span', { key: 'r2', 'aria-hidden': 'true', style: { color: T.dim, fontSize: 11 } }, '→'),
-                h('span', { key: 'c', style: {
-                  padding: '5px 9px', borderRadius: 999, fontSize: 10, fontWeight: 800,
-                  color: hasRunDemo && !d.shopAnimating ? T.accentInk : T.text,
-                  background: hasRunDemo && !d.shopAnimating ? T.accent : T.bg,
-                  border: '1px solid ' + (hasRunDemo && !d.shopAnimating ? T.accent : T.border)
-                } }, '3 ' + __alloT('stem.machinelab.step_prove', 'Prove'))
-              ]),
-              h('div', { key: 'actions', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } }, [
-                h('label', { key: 'slow', title: __alloT('stem.machinelab.slow_demo_hint', 'Play the same motion three times slower. Motion-off preferences still apply.'),
-                  style: { display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 36, padding: '0 8px',
-                    borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 11, cursor: 'pointer' } }, [
-                  h('input', { key: 'check', type: 'checkbox', checked: !!d.shopSlowMotion,
-                    disabled: !!d.shopAnimating || shopStatus === 'failed', onChange: function (ev) { upd('shopSlowMotion', ev.target.checked); },
-                    style: { width: 16, height: 16, margin: 0, accentColor: T.accent } }),
-                  h('span', { key: 'label' }, __alloT('stem.machinelab.slow_demo', 'Slow motion'))
-                ]),
-                h('button', {
-                  key: 'run', type: 'button', onClick: runShopDemo,
-                  disabled: !!d.shopAnimating || shopStatus === 'failed',
-                  'aria-label': __alloT('stem.machinelab.run_demo_aria', 'Run the three-dimensional demonstration for ') + bench.label,
-                  style: {
-                    padding: '7px 13px', borderRadius: 9,
-                    cursor: d.shopAnimating || shopStatus === 'failed' ? 'default' : 'pointer',
-                    border: '1px solid ' + T.accent,
-                    background: d.shopAnimating ? T.bg : T.accent,
-                    color: d.shopAnimating ? T.dim : T.accentInk,
-                    fontSize: 11, fontWeight: 800, opacity: shopStatus === 'failed' ? 0.5 : 1
-                  }
-                }, d.shopAnimating
-                  ? __alloT('stem.machinelab.demo_running', 'Running...')
-                  : '▶ ' + __alloT('stem.machinelab.run_demo', 'Run demonstration')),
-                h('button', {
-                  key: 'next', type: 'button', onClick: openNextBench,
-                  'aria-label': __alloT('stem.machinelab.next_station', 'Next station: ') + nextBench.label,
-                  style: {
-                    padding: '7px 11px', borderRadius: 9, cursor: 'pointer',
-                    border: '1px solid ' + T.border, background: T.card,
-                    color: T.text, fontSize: 11, fontWeight: 750
-                  }
-                }, __alloT('stem.machinelab.next_short', 'Next: ') + nextBench.label + ' →')
-              ])
-            ])
+            shopDiscoveryCard()
           ]),
           shopStatus !== 'ready' ? card([
             h('p', { key: 'st', style: { margin: '0 0 10px', fontSize: 12, color: T.dim } },

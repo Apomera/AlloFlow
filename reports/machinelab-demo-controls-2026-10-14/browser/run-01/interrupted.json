@@ -1,0 +1,5 @@
+{
+  "status": "incomplete",
+  "sourceSha256": "f253abaf842de6a16003053526359561b78b3cea1412a9e07f8eb302f1715d7d",
+  "reason": "Native tool transport was lost. A temporary host page exists, but no results or native completion receipt was produced. No Node process remained when root took over. Excluded from successful validation."
+}

@@ -1,0 +1,36 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/machinelab_views.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/machinelab_views.test.js (192 tests | 161 skipped) 11385ms
+     ✓ offers labelled keyboard inspection at k2  381ms
+     ✓ offers labelled keyboard inspection at g68  559ms
+     ✓ offers labelled keyboard inspection at g912  503ms
+     ✓ marks the held Start pose  521ms
+     ✓ marks the held Halfway pose  466ms
+     ✓ marks the held Full stroke pose  475ms
+     ✓ does not claim a held pose during playback, while leaving stop-at-position buttons available  498ms
+     ✓ links the selected lever tab to the workshop and exposes progress  426ms
+     ✓ links the selected pulley tab to the workshop and exposes progress  410ms
+     ✓ links the selected windlass tab to the workshop and exposes progress  423ms
+     ✓ links the selected ramp tab to the workshop and exposes progress  359ms
+     ✓ links the selected wedge tab to the workshop and exposes progress  398ms
+     ✓ links the selected screw tab to the workshop and exposes progress  488ms
+     ✓ provides six decorative schematics with text labels at g68  519ms
+     ✓ provides six decorative schematics with text labels at g912  414ms
+     ✓ shows the slow option at g68 running false  433ms
+     ✓ shows the slow option at g68 running true  426ms
+     ✓ shows the slow option at g912 running false  503ms
+     ✓ shows the slow option at g912 running true  441ms
+   ✓ labels a motion-off demonstration as still  490ms
+     ✓ provides a named native hold control with no-WebGL fallback at g68  510ms
+     ✓ provides a named native hold control with no-WebGL fallback at g912  488ms
+
+ Test Files  1 passed (1)
+      Tests  31 passed | 161 skipped (192)
+   Start at  18:30:57
+   Duration  14.29s (transform 84ms, setup 61ms, import 140ms, tests 11.39s, environment 2.33s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/machinelab-demo-controls-2026-10-14/tests/run-01/group-01.json

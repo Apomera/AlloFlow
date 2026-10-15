@@ -1,0 +1,1367 @@
+{
+  "sourceSha256": "f253abaf842de6a16003053526359561b78b3cea1412a9e07f8eb302f1715d7d",
+  "startedAt": "2026-10-15T02:48:18.964Z",
+  "completedAt": "2026-10-15T02:48:59.928Z",
+  "dependencies": [
+    {
+      "file": "dev-tools/ml_demo_controls_visual_qa.cjs",
+      "sha256": "33779dc546db0f9bb4286994d892c50d29b4483eddcac2240bb8c3d1d2d76669"
+    },
+    {
+      "file": "dev-tools/ml_scene_shots.cjs",
+      "sha256": "aaefca7a2c051f57f2d412e748c07c8d50c33b325d3c57dbd6a3b1ea0da6b7c7"
+    },
+    {
+      "file": "stem_lab/stem_lab_module.js",
+      "sha256": "9fb70c087ea26acfb5e6eea5088c5232fbfedc306d52a00e231e20549a041d96"
+    },
+    {
+      "file": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "file": "vendor/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    {
+      "file": "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    }
+  ],
+  "mounts": 3,
+  "routes": [
+    "lever",
+    "pulley",
+    "windlass",
+    "ramp",
+    "wedge",
+    "screw"
+  ],
+  "checks": [
+    "Saved real power record and separate unfinished draft before playback",
+    "lever desktop: demonstration controls have a readable named heading",
+    "lever desktop: controls immediately follow the scene distance legend and precede camera tools",
+    "lever desktop: existing adjust, run, prove workflow remains intact",
+    "lever desktop: Run, Slow motion and Next provide full-size targets",
+    "lever desktop: action text stays readable",
+    "lever desktop: heading, guidance and action labels fit without clipping",
+    "lever desktop: action text contrasts with its background",
+    "lever Run: keyboard focus is distinct from its surrounding surface",
+    "lever: existing duration and motion preference reach the live scene",
+    "lever: Run focuses the existing scene",
+    "lever: running keeps existing disabled and Hold states",
+    "lever: Hold keeps the rendered pose and restores slider focus",
+    "lever: held scene geometry matches the captured stroke",
+    "lever: inspection re-enables playback and preserves practice and saved state",
+    "lever: existing duration and motion preference reach the live scene",
+    "lever: Run focuses the existing scene",
+    "lever: running keeps existing disabled and Hold states",
+    "lever: Hold keeps the rendered pose and restores slider focus",
+    "lever: held scene geometry matches the captured stroke",
+    "lever: inspection re-enables playback and preserves practice and saved state",
+    "lever: Next opens the original next station with existing motion reset",
+    "lever: Next keeps focus on the existing action",
+    "lever: Next preserves calculation drafts, saved records and separate notes",
+    "pulley desktop: demonstration controls have a readable named heading",
+    "pulley desktop: controls immediately follow the scene distance legend and precede camera tools",
+    "pulley desktop: existing adjust, run, prove workflow remains intact",
+    "pulley desktop: Run, Slow motion and Next provide full-size targets",
+    "pulley desktop: action text stays readable",
+    "pulley desktop: heading, guidance and action labels fit without clipping",
+    "pulley desktop: action text contrasts with its background",
+    "pulley Run: keyboard focus is distinct from its surrounding surface",
+    "pulley: existing duration and motion preference reach the live scene",
+    "pulley: Run focuses the existing scene",
+    "pulley: running keeps existing disabled and Hold states",
+    "pulley: Hold keeps the rendered pose and restores slider focus",
+    "pulley: held scene geometry matches the captured stroke",
+    "pulley: inspection re-enables playback and preserves practice and saved state",
+    "pulley: existing duration and motion preference reach the live scene",
+    "pulley: Run focuses the existing scene",
+    "pulley: running keeps existing disabled and Hold states",
+    "pulley: Hold keeps the rendered pose and restores slider focus",
+    "pulley: held scene geometry matches the captured stroke",
+    "pulley: inspection re-enables playback and preserves practice and saved state",
+    "pulley: Next opens the original next station with existing motion reset",
+    "pulley: Next keeps focus on the existing action",
+    "pulley: Next preserves calculation drafts, saved records and separate notes",
+    "windlass desktop: demonstration controls have a readable named heading",
+    "windlass desktop: controls immediately follow the scene distance legend and precede camera tools",
+    "windlass desktop: existing adjust, run, prove workflow remains intact",
+    "windlass desktop: Run, Slow motion and Next provide full-size targets",
+    "windlass desktop: action text stays readable",
+    "windlass desktop: heading, guidance and action labels fit without clipping",
+    "windlass desktop: action text contrasts with its background",
+    "windlass Run: keyboard focus is distinct from its surrounding surface",
+    "windlass: existing duration and motion preference reach the live scene",
+    "windlass: Run focuses the existing scene",
+    "windlass: running keeps existing disabled and Hold states",
+    "windlass: Hold keeps the rendered pose and restores slider focus",
+    "windlass: held scene geometry matches the captured stroke",
+    "windlass: inspection re-enables playback and preserves practice and saved state",
+    "windlass: existing duration and motion preference reach the live scene",
+    "windlass: Run focuses the existing scene",
+    "windlass: running keeps existing disabled and Hold states",
+    "windlass: Hold keeps the rendered pose and restores slider focus",
+    "windlass: held scene geometry matches the captured stroke",
+    "windlass: inspection re-enables playback and preserves practice and saved state",
+    "desktop capture Run: keyboard focus is distinct from its surrounding surface",
+    "windlass: Next opens the original next station with existing motion reset",
+    "windlass: Next keeps focus on the existing action",
+    "windlass: Next preserves calculation drafts, saved records and separate notes",
+    "ramp desktop: demonstration controls have a readable named heading",
+    "ramp desktop: controls immediately follow the scene distance legend and precede camera tools",
+    "ramp desktop: existing adjust, run, prove workflow remains intact",
+    "ramp desktop: Run, Slow motion and Next provide full-size targets",
+    "ramp desktop: action text stays readable",
+    "ramp desktop: heading, guidance and action labels fit without clipping",
+    "ramp desktop: action text contrasts with its background",
+    "ramp Run: keyboard focus is distinct from its surrounding surface",
+    "ramp: existing duration and motion preference reach the live scene",
+    "ramp: Run focuses the existing scene",
+    "ramp: running keeps existing disabled and Hold states",
+    "ramp: Hold keeps the rendered pose and restores slider focus",
+    "ramp: held scene geometry matches the captured stroke",
+    "ramp: inspection re-enables playback and preserves practice and saved state",
+    "ramp: existing duration and motion preference reach the live scene",
+    "ramp: Run focuses the existing scene",
+    "ramp: running keeps existing disabled and Hold states",
+    "ramp: Hold keeps the rendered pose and restores slider focus",
+    "ramp: held scene geometry matches the captured stroke",
+    "ramp: inspection re-enables playback and preserves practice and saved state",
+    "ramp: Next opens the original next station with existing motion reset",
+    "ramp: Next keeps focus on the existing action",
+    "ramp: Next preserves calculation drafts, saved records and separate notes",
+    "wedge desktop: demonstration controls have a readable named heading",
+    "wedge desktop: controls immediately follow the scene distance legend and precede camera tools",
+    "wedge desktop: existing adjust, run, prove workflow remains intact",
+    "wedge desktop: Run, Slow motion and Next provide full-size targets",
+    "wedge desktop: action text stays readable",
+    "wedge desktop: heading, guidance and action labels fit without clipping",
+    "wedge desktop: action text contrasts with its background",
+    "wedge Run: keyboard focus is distinct from its surrounding surface",
+    "wedge: existing duration and motion preference reach the live scene",
+    "wedge: Run focuses the existing scene",
+    "wedge: running keeps existing disabled and Hold states",
+    "wedge: Hold keeps the rendered pose and restores slider focus",
+    "wedge: held scene geometry matches the captured stroke",
+    "wedge: inspection re-enables playback and preserves practice and saved state",
+    "wedge: existing duration and motion preference reach the live scene",
+    "wedge: Run focuses the existing scene",
+    "wedge: running keeps existing disabled and Hold states",
+    "wedge: Hold keeps the rendered pose and restores slider focus",
+    "wedge: held scene geometry matches the captured stroke",
+    "wedge: inspection re-enables playback and preserves practice and saved state",
+    "wedge: Next opens the original next station with existing motion reset",
+    "wedge: Next keeps focus on the existing action",
+    "wedge: Next preserves calculation drafts, saved records and separate notes",
+    "screw desktop: demonstration controls have a readable named heading",
+    "screw desktop: controls immediately follow the scene distance legend and precede camera tools",
+    "screw desktop: existing adjust, run, prove workflow remains intact",
+    "screw desktop: Run, Slow motion and Next provide full-size targets",
+    "screw desktop: action text stays readable",
+    "screw desktop: heading, guidance and action labels fit without clipping",
+    "screw desktop: action text contrasts with its background",
+    "screw Run: keyboard focus is distinct from its surrounding surface",
+    "screw: existing duration and motion preference reach the live scene",
+    "screw: Run focuses the existing scene",
+    "screw: running keeps existing disabled and Hold states",
+    "screw: Hold keeps the rendered pose and restores slider focus",
+    "screw: held scene geometry matches the captured stroke",
+    "screw: inspection re-enables playback and preserves practice and saved state",
+    "screw: existing duration and motion preference reach the live scene",
+    "screw: Run focuses the existing scene",
+    "screw: running keeps existing disabled and Hold states",
+    "screw: Hold keeps the rendered pose and restores slider focus",
+    "screw: held scene geometry matches the captured stroke",
+    "screw: inspection re-enables playback and preserves practice and saved state",
+    "screw: Next opens the original next station with existing motion reset",
+    "screw: Next keeps focus on the existing action",
+    "screw: Next preserves calculation drafts, saved records and separate notes",
+    "dark phone: demonstration controls have a readable named heading",
+    "dark phone: controls immediately follow the scene distance legend and precede camera tools",
+    "dark phone: existing adjust, run, prove workflow remains intact",
+    "dark phone: Run, Slow motion and Next provide full-size targets",
+    "dark phone: action text stays readable",
+    "dark phone: heading, guidance and action labels fit without clipping",
+    "dark phone: action text contrasts with its background",
+    "dark Slow motion: keyboard focus is distinct from its surrounding surface",
+    "windlass: existing duration and motion preference reach the live scene",
+    "windlass: Run focuses the existing scene",
+    "windlass: running keeps existing disabled and Hold states",
+    "windlass: Hold keeps the rendered pose and restores slider focus",
+    "windlass: held scene geometry matches the captured stroke",
+    "windlass: inspection re-enables playback and preserves practice and saved state",
+    "dark Run: keyboard focus is distinct from its surrounding surface",
+    "lever: existing duration and motion preference reach the live scene",
+    "lever: Run focuses the existing scene",
+    "lever: running keeps existing disabled and Hold states",
+    "lever: Hold keeps the rendered pose and restores slider focus",
+    "lever: held scene geometry matches the captured stroke",
+    "lever: inspection re-enables playback and preserves practice and saved state",
+    "forced phone: demonstration controls have a readable named heading",
+    "forced phone: controls immediately follow the scene distance legend and precede camera tools",
+    "forced phone: existing adjust, run, prove workflow remains intact",
+    "forced phone: Run, Slow motion and Next provide full-size targets",
+    "forced phone: action text stays readable",
+    "forced phone: heading, guidance and action labels fit without clipping",
+    "forced phone: action text contrasts with its background",
+    "forced Slow motion: keyboard focus is distinct from its surrounding surface",
+    "lever forced doubled phone: demonstration controls have a readable named heading",
+    "lever forced doubled phone: controls immediately follow the scene distance legend and precede camera tools",
+    "lever forced doubled phone: existing adjust, run, prove workflow remains intact",
+    "lever forced doubled phone: Run, Slow motion and Next provide full-size targets",
+    "lever forced doubled phone: action text stays readable",
+    "lever forced doubled phone: heading, guidance and action labels fit without clipping",
+    "lever forced doubled phone: action text contrasts with its background",
+    "pulley forced doubled phone: demonstration controls have a readable named heading",
+    "pulley forced doubled phone: controls immediately follow the scene distance legend and precede camera tools",
+    "pulley forced doubled phone: existing adjust, run, prove workflow remains intact",
+    "pulley forced doubled phone: Run, Slow motion and Next provide full-size targets",
+    "pulley forced doubled phone: action text stays readable",
+    "pulley forced doubled phone: heading, guidance and action labels fit without clipping",
+    "pulley forced doubled phone: action text contrasts with its background",
+    "forced doubled Next: keyboard focus is distinct from its surrounding surface",
+    "windlass forced doubled phone: demonstration controls have a readable named heading",
+    "windlass forced doubled phone: controls immediately follow the scene distance legend and precede camera tools",
+    "windlass forced doubled phone: existing adjust, run, prove workflow remains intact",
+    "windlass forced doubled phone: Run, Slow motion and Next provide full-size targets",
+    "windlass forced doubled phone: action text stays readable",
+    "windlass forced doubled phone: heading, guidance and action labels fit without clipping",
+    "windlass forced doubled phone: action text contrasts with its background",
+    "ramp forced doubled phone: demonstration controls have a readable named heading",
+    "ramp forced doubled phone: controls immediately follow the scene distance legend and precede camera tools",
+    "ramp forced doubled phone: existing adjust, run, prove workflow remains intact",
+    "ramp forced doubled phone: Run, Slow motion and Next provide full-size targets",
+    "ramp forced doubled phone: action text stays readable",
+    "ramp forced doubled phone: heading, guidance and action labels fit without clipping",
+    "ramp forced doubled phone: action text contrasts with its background",
+    "wedge forced doubled phone: demonstration controls have a readable named heading",
+    "wedge forced doubled phone: controls immediately follow the scene distance legend and precede camera tools",
+    "wedge forced doubled phone: existing adjust, run, prove workflow remains intact",
+    "wedge forced doubled phone: Run, Slow motion and Next provide full-size targets",
+    "wedge forced doubled phone: action text stays readable",
+    "wedge forced doubled phone: heading, guidance and action labels fit without clipping",
+    "wedge forced doubled phone: action text contrasts with its background",
+    "screw forced doubled phone: demonstration controls have a readable named heading",
+    "screw forced doubled phone: controls immediately follow the scene distance legend and precede camera tools",
+    "screw forced doubled phone: existing adjust, run, prove workflow remains intact",
+    "screw forced doubled phone: Run, Slow motion and Next provide full-size targets",
+    "screw forced doubled phone: action text stays readable",
+    "screw forced doubled phone: heading, guidance and action labels fit without clipping",
+    "screw forced doubled phone: action text contrasts with its background"
+  ],
+  "shots": [
+    {
+      "name": "desktop-demo-controls",
+      "file": "desktop-demo-controls.png",
+      "sha256": "e9bb489e9320320f4043ca0e45ecf9a2988b59fbb1e3bbf0007e14511194f7a2"
+    },
+    {
+      "name": "dark-phone-demo-controls",
+      "file": "dark-phone-demo-controls.png",
+      "sha256": "bbf8acdaab25e97ae68a12317edc96d904b4f09c90a4284bfa8350aaeb63c1b9"
+    },
+    {
+      "name": "forced-doubled-phone-demo-controls",
+      "file": "forced-doubled-phone-demo-controls.png",
+      "sha256": "8074ba945e9762dc79af33e1fb4b1f455c8f413811d3822920d738ebdfa16889"
+    }
+  ],
+  "observations": [
+    {
+      "label": "lever desktop",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Lever",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 777.71875,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(255, 255, 255)",
+              "bg": "rgb(180, 83, 9)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Pulley",
+            "text": "Next: Pulley →",
+            "rect": {
+              "width": 128.03125,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(15, 23, 42)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": false,
+          "label": "Slow motion",
+          "rect": {
+            "width": 140.25,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(15, 23, 42)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "lever Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "kind": "lever",
+      "slow": false,
+      "reduced": false,
+      "duration": 2200,
+      "held": 0.16639892030889417,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "kind": "lever",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.8323697752800713,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "pulley desktop",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Pulley",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 730.78125,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(255, 255, 255)",
+              "bg": "rgb(180, 83, 9)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Wheel & Axle",
+            "text": "Next: Wheel & Axle →",
+            "rect": {
+              "width": 174.96875,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(15, 23, 42)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 140.25,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(15, 23, 42)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "pulley Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "kind": "pulley",
+      "slow": false,
+      "reduced": false,
+      "duration": 2200,
+      "held": 0.16639256854014028,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "kind": "pulley",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.34281835298623026,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "windlass desktop",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Wheel & Axle",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 724.8125,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(255, 255, 255)",
+              "bg": "rgb(180, 83, 9)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Inclined Plane",
+            "text": "Next: Inclined Plane →",
+            "rect": {
+              "width": 180.9375,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(15, 23, 42)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 140.25,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(15, 23, 42)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "windlass Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "kind": "windlass",
+      "slow": false,
+      "reduced": false,
+      "duration": 2200,
+      "held": 0.251063989084365,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "kind": "windlass",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.19334020237551297,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "desktop capture Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "ramp desktop",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Inclined Plane",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 773.3125,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(255, 255, 255)",
+              "bg": "rgb(180, 83, 9)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Wedge",
+            "text": "Next: Wedge →",
+            "rect": {
+              "width": 132.4375,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(15, 23, 42)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 140.25,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(15, 23, 42)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "ramp Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "kind": "ramp",
+      "slow": false,
+      "reduced": false,
+      "duration": 2200,
+      "held": 0.16623379978827635,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "kind": "ramp",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.16628671726283467,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "wedge desktop",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Wedge",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 777.703125,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(255, 255, 255)",
+              "bg": "rgb(180, 83, 9)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Screw",
+            "text": "Next: Screw →",
+            "rect": {
+              "width": 128.046875,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(15, 23, 42)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 140.25,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(15, 23, 42)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "wedge Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "kind": "wedge",
+      "slow": false,
+      "reduced": false,
+      "duration": 2200,
+      "held": 0.1663925685401432,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "kind": "wedge",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.26082995951215,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "screw desktop",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Screw",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 781.59375,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(255, 255, 255)",
+              "bg": "rgb(180, 83, 9)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Lever",
+            "text": "Next: Lever →",
+            "rect": {
+              "width": 124.15625,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(15, 23, 42)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 140.25,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(15, 23, 42)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "screw Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(15, 23, 42)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "kind": "screw",
+      "slow": false,
+      "reduced": false,
+      "duration": 2200,
+      "held": 0.16623379978827638,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "kind": "screw",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.17519911439236108,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "dark phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Wheel & Axle",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(28, 19, 16)",
+              "bg": "rgb(245, 158, 11)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Inclined Plane",
+            "text": "Next: Inclined Plane →",
+            "rect": {
+              "width": 236,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(241, 245, 249)",
+              "bg": "rgb(30, 41, 59)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": false,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(241, 245, 249)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "dark Slow motion",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(241, 245, 249)",
+        "bg": "rgb(30, 41, 59)"
+      }
+    },
+    {
+      "kind": "windlass",
+      "slow": true,
+      "reduced": false,
+      "duration": 6600,
+      "held": 0.5204293495685366,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "dark Run",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(241, 245, 249)",
+        "bg": "rgb(30, 41, 59)"
+      }
+    },
+    {
+      "kind": "lever",
+      "slow": true,
+      "reduced": true,
+      "duration": 2200,
+      "held": 1,
+      "sceneFocused": true,
+      "runDisabled": true,
+      "slowDisabled": true,
+      "holdEnabled": true,
+      "sliderDisabled": true
+    },
+    {
+      "label": "forced phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 20,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Lever",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 52
+            },
+            "style": {
+              "font": 16,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Pulley",
+            "text": "Next: Pulley →",
+            "rect": {
+              "width": 236,
+              "height": 44
+            },
+            "style": {
+              "font": 14,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 44
+          },
+          "style": {
+            "font": 14,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "forced Slow motion",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "lever forced doubled phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 40,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Lever",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 170
+            },
+            "style": {
+              "font": 32,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Pulley",
+            "text": "Next: Pulley →",
+            "rect": {
+              "width": 236,
+              "height": 64
+            },
+            "style": {
+              "font": 28,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 64
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "pulley forced doubled phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 40,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Pulley",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 170
+            },
+            "style": {
+              "font": 32,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Wheel & Axle",
+            "text": "Next: Wheel & Axle →",
+            "rect": {
+              "width": 236,
+              "height": 106
+            },
+            "style": {
+              "font": 28,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 64
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "forced doubled Next",
+      "focus": {
+        "active": true,
+        "visible": true,
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "bg": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "label": "windlass forced doubled phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 40,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Wheel & Axle",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 170
+            },
+            "style": {
+              "font": 32,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Inclined Plane",
+            "text": "Next: Inclined Plane →",
+            "rect": {
+              "width": 236,
+              "height": 106
+            },
+            "style": {
+              "font": 28,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 64
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "ramp forced doubled phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 40,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Inclined Plane",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 170
+            },
+            "style": {
+              "font": 32,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Wedge",
+            "text": "Next: Wedge →",
+            "rect": {
+              "width": 236,
+              "height": 64
+            },
+            "style": {
+              "font": 28,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 64
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "wedge forced doubled phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 40,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Wedge",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 170
+            },
+            "style": {
+              "font": 32,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Screw",
+            "text": "Next: Screw →",
+            "rect": {
+              "width": 236,
+              "height": 64
+            },
+            "style": {
+              "font": 28,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 64
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    },
+    {
+      "label": "screw forced doubled phone",
+      "layout": {
+        "tag": "SECTION",
+        "title": "Try the motion",
+        "named": true,
+        "titleFont": 40,
+        "order": true,
+        "workflow": "1 Adjust|→|2 Run|→|3 Prove",
+        "page": true,
+        "panel": true,
+        "buttons": [
+          {
+            "type": "button",
+            "label": "Run the three-dimensional demonstration for Screw",
+            "text": "▶ Run demonstration",
+            "rect": {
+              "width": 236,
+              "height": 170
+            },
+            "style": {
+              "font": 32,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          },
+          {
+            "type": "button",
+            "label": "Next station: Lever",
+            "text": "Next: Lever →",
+            "rect": {
+              "width": 236,
+              "height": 64
+            },
+            "style": {
+              "font": 28,
+              "color": "rgb(0, 0, 0)",
+              "bg": "rgb(255, 255, 255)"
+            }
+          }
+        ],
+        "slow": {
+          "checked": true,
+          "label": "Slow motion",
+          "rect": {
+            "width": 236,
+            "height": 64
+          },
+          "style": {
+            "font": 28,
+            "color": "rgb(0, 0, 0)",
+            "bg": "rgba(255, 255, 255, 0)"
+          }
+        },
+        "clipped": []
+      }
+    }
+  ],
+  "errors": [],
+  "tempCleaned": true,
+  "hostPageRemoved": true
+}
