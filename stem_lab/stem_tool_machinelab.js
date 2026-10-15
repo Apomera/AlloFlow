@@ -13361,6 +13361,11 @@ window.StemLab = window.StemLab || {
             if (shopStrokeElement.getAttribute('aria-valuetext') !== percent + shopStrokeSuffix) shopStrokeElement.setAttribute('aria-valuetext', percent + shopStrokeSuffix);
           }
           if (shopStrokeReadout && shopStrokeReadout.isConnected && shopStrokeReadout.textContent !== percent + '%') shopStrokeReadout.textContent = percent + '%';
+          if (shopPhaseElement && shopPhaseElement.isConnected) {
+            if (shopPhaseElement.style.getPropertyValue('--ml-live-stroke') !== percent + '%') shopPhaseElement.style.setProperty('--ml-live-stroke', percent + '%');
+            var liveReadout = shopPhaseElement.querySelector('[data-ml-live-stroke]');
+            if (liveReadout && liveReadout.textContent !== percent + '%') liveReadout.textContent = percent + '%';
+          }
         }
         function recordShopPhase(progress, runId, kind, phase) {
           recordShopPose(progress, runId, kind, phase);
@@ -13863,19 +13868,50 @@ window.StemLab = window.StemLab || {
               }, style: { minHeight: 40, padding: '7px 10px', border: '1px solid ' + T.border, borderRadius: 7, background: T.card, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' } },
                 __alloT('stem.machinelab.investigation_return', 'Return to investigation'))
             ]) : null,
-            d.shopAnimating ? h('div', { key: 'demo-phase', className: 'ml-demo-phase',
-              ref: function (el) { shopPhaseElement = el; }, 'data-ml-demo-phase': initialShopPhase,
-              style: { padding: '8px 10px', marginBottom: 8, borderRadius: 9, background: T.bg, border: '1px solid ' + T.border,
-                color: T.text, '--ml-phase-ink': T.accent, '--ml-phase-rest': T.border }
+            d.shopAnimating ? h('div', { key: 'demo-phase', className: 'ml-demo-phase', role: 'group',
+              'aria-label': __alloT('stem.machinelab.live_motion', 'Live motion'),
+              ref: function (el) {
+                shopPhaseElement = el;
+                if (el) {
+                  // The stable React child avoids repeating a phase announcement after a camera render.
+                  var label = el.querySelector('[data-ml-demo-phase-label]');
+                  if (label && label.textContent !== shopPhaseLabels[initialShopPhase]) label.textContent = shopPhaseLabels[initialShopPhase];
+                  syncShopStroke(shopProgress);
+                }
+              }, 'data-ml-demo-phase': initialShopPhase,
+              style: { padding: 14, marginBottom: 8, borderRadius: 12, background: T.bg, border: '1px solid ' + T.border,
+                color: T.text, overflowWrap: 'anywhere', '--ml-phase-ink': T.accent, '--ml-phase-on-ink': T.accentInk,
+                '--ml-phase-rest': T.border, '--ml-phase-focus': T.text, '--ml-live-stroke': Math.round(shopProgress * 100) + '%' }
             }, [
-              h('div', { key: 'label', role: 'status', 'aria-atomic': 'true', 'data-ml-demo-phase-label': '',
-                style: { fontSize: 12, fontWeight: 800, lineHeight: 1.4 } }, shopPhaseLabels[initialShopPhase]),
-              h('div', { key: 'hint', style: { marginTop: 2, fontSize: 11, lineHeight: 1.4, color: T.dim } },
+              h('div', { key: 'heading', className: 'ml-live-motion-heading', style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } }, [
+                h('div', { key: 'label', role: 'status', 'aria-atomic': 'true', 'data-ml-demo-phase-label': '',
+                  style: { flex: '1 1 180px', minWidth: 0, fontSize: 20, fontWeight: 850, lineHeight: 1.35 } }, shopPhaseLabels[reducedMotion ? 'held' : 'work']),
+                h('div', { key: 'position', style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', color: T.text } }, [
+                  h('span', { key: 'label', style: { fontSize: 13, fontWeight: 650, lineHeight: 1.4 } },
+                    __alloT('stem.machinelab.live_stroke_position', 'Stroke position')),
+                  h('span', { key: 'value', 'data-ml-live-stroke': '', style: { minWidth: '3.5ch', textAlign: 'right', fontSize: 30, fontWeight: 850, lineHeight: 1.2, fontVariantNumeric: 'tabular-nums' } },
+                    Math.round(shopProgress * 100) + '%')
+                ]),
+                h('button', { key: 'inspect', type: 'button', onClick: holdShopPose, disabled: shopStatus === 'failed',
+                  title: __alloT('stem.machinelab.hold_pose_hint', 'Stop at the current position, then rotate the view or move the position slider.'),
+                  style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, maxWidth: '100%',
+                    padding: '10px 14px', borderRadius: 9, border: '1px solid ' + T.accent, background: T.accent, color: T.accentInk,
+                    fontSize: 14, fontWeight: 800, lineHeight: 1.4, cursor: shopStatus === 'failed' ? 'default' : 'pointer' }
+                }, [h('svg', { key: 'icon', width: 14, height: 14, viewBox: '0 0 12 12', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } },
+                  h('path', { d: 'M2 1h3v10H2zM7 1h3v10H7z', fill: 'currentColor' })),
+                  h('span', { key: 'text' }, __alloT('stem.machinelab.inspect_live_pose', 'Inspect this pose'))])
+              ]),
+              h('div', { key: 'track', 'aria-hidden': 'true', style: { height: 8, marginTop: 12, borderRadius: 99, overflow: 'hidden', border: '1px solid ' + T.dim, background: T.card } },
+                h('div', { 'data-ml-live-stroke-fill': '', style: { width: 'var(--ml-live-stroke)', height: '100%', background: 'var(--ml-phase-ink)' } })),
+              h('div', { key: 'stages', 'aria-hidden': 'true', className: 'ml-demo-phase-stages', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8, marginTop: 10 } },
+                ['work', 'return'].map(function (phase, index) { return h('div', { key: phase, 'data-ml-phase-segment': phase,
+                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, fontSize: 13, lineHeight: 1.4, fontWeight: 750 } }, [
+                    h('span', { key: 'step', style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: '1.7em', height: '1.7em', borderRadius: '50%', border: '1px solid currentColor' } }, String(index + 1)),
+                    h('span', { key: 'label' }, shopPhaseLabels[phase])
+                  ]); })),
+              h('div', { key: 'hint', style: { marginTop: 9, fontSize: 13, lineHeight: 1.5, color: T.text } },
                 __alloT('stem.machinelab.demo_phase_hint', 'Arrows show the working direction. The return resets the demonstration.')),
-              h('div', { key: 'stages', 'aria-hidden': 'true', className: 'ml-demo-phase-stages', style: { display: 'flex', gap: 4, marginTop: 6 } },
-                ['work', 'return'].map(function (phase) { return h('span', { key: phase, 'data-ml-phase-segment': phase,
-                  style: { display: 'block', flex: 1, height: 4, borderRadius: 2, background: 'var(--ml-phase-rest)' } }); })),
-              h('style', { key: 'style' }, '.ml-demo-phase[data-ml-demo-phase=work] [data-ml-phase-segment=work],.ml-demo-phase[data-ml-demo-phase=return] [data-ml-phase-segment=return]{background:var(--ml-phase-ink)!important}.ml-demo-phase[data-ml-demo-phase=held] .ml-demo-phase-stages{display:none!important}@media(forced-colors:active){.ml-demo-phase{--ml-phase-ink:Highlight!important;--ml-phase-rest:GrayText!important}.ml-demo-phase-stages{forced-color-adjust:none}}')
+              h('style', { key: 'style' }, '.ml-demo-phase[data-ml-demo-phase=work] [data-ml-phase-segment=work],.ml-demo-phase[data-ml-demo-phase=return] [data-ml-phase-segment=return]{background:var(--ml-phase-ink)!important;color:var(--ml-phase-on-ink)!important;border-color:var(--ml-phase-ink)!important}.ml-demo-phase[data-ml-demo-phase=held] .ml-demo-phase-stages{display:none!important}.ml-demo-phase button:focus-visible{outline:3px solid var(--ml-phase-focus);outline-offset:3px}@media(max-width:600px){.ml-live-motion-heading>button{width:100%}}@media(max-width:440px){.ml-demo-phase-stages{grid-template-columns:minmax(0,1fr)!important}}@media(forced-colors:active){.ml-demo-phase{--ml-phase-ink:Highlight!important;--ml-phase-on-ink:HighlightText!important;--ml-phase-focus:Highlight!important}.ml-demo-phase-stages,[data-ml-live-stroke-fill]{forced-color-adjust:none}.ml-demo-phase [data-ml-phase-segment]{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}')
             ]) : null,
             h('div', {
               key: 'bay', ref: shopGlRef, role: 'img', tabIndex: -1, className:'ml-shop-bay',

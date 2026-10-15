@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-10-15T12:00:16.882Z",
+  "completedAt": "2026-10-15T12:01:49.594Z",
+  "args": [
+    "dev-tools/ml_live_motion_qa.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\machinelab-live-motion-2026-10-14\\browser\\run-07"
+  ],
+  "before": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "c007670ebf89440fb6549bc8b26eab54343fa027feb9dee49b1950bca25ad67c"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "c007670ebf89440fb6549bc8b26eab54343fa027feb9dee49b1950bca25ad67c"
+    },
+    {
+      "file": "dev-tools/ml_live_motion_qa.cjs",
+      "sha256": "962bc0c7dfc882a068bd05639ca914c4ac381e5e6b9346493ee2f5c6cd4f5fa8"
+    }
+  ],
+  "after": [
+    {
+      "file": "stem_lab/stem_tool_machinelab.js",
+      "sha256": "c007670ebf89440fb6549bc8b26eab54343fa027feb9dee49b1950bca25ad67c"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+      "sha256": "c007670ebf89440fb6549bc8b26eab54343fa027feb9dee49b1950bca25ad67c"
+    },
+    {
+      "file": "dev-tools/ml_live_motion_qa.cjs",
+      "sha256": "962bc0c7dfc882a068bd05639ca914c4ac381e5e6b9346493ee2f5c6cd4f5fa8"
+    }
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "unchanged": true
+}

@@ -1,0 +1,10 @@
+const fs=require('fs'),path=require('path'),cp=require('child_process'),crypto=require('crypto'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'../..'),run=process.argv[2]||'run-06';assert(/^run-\d{2}$/.test(run));
+const out=path.join(__dirname,'browser',run);assert(!fs.existsSync(out),'Use a fresh directory');fs.mkdirSync(out,{recursive:true});
+const files=['stem_lab/stem_tool_machinelab.js','desktop/web-app/public/stem_lab/stem_tool_machinelab.js','dev-tools/ml_live_motion_qa.cjs'],hash=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
+const before=files.map(file=>({file,sha256:hash(file)})),frozen='c007670ebf89440fb6549bc8b26eab54343fa027feb9dee49b1950bca25ad67c';assert.equal(before[0].sha256,frozen);assert.equal(before[1].sha256,frozen);
+const args=['dev-tools/ml_live_motion_qa.cjs',out],startedAt=new Date().toISOString();
+const result=cp.spawnSync(process.execPath,args,{cwd:root,windowsHide:true,encoding:'utf8',timeout:240000,maxBuffer:8e6,env:{...process.env,NODE_OPTIONS:'--max-old-space-size=512 --max-semi-space-size=8'}});
+fs.writeFileSync(out+'/stdout.log',(result.stdout||'').replace(/\r\n/g,'\n').trimEnd()+'\n');fs.writeFileSync(out+'/stderr.log',(result.stderr||'').replace(/\r\n/g,'\n').trimEnd()+'\n');
+const after=files.map(file=>({file,sha256:hash(file)})),receipt={startedAt,completedAt:new Date().toISOString(),args,before,after,exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null,unchanged:JSON.stringify(before)===JSON.stringify(after)};
+fs.writeFileSync(out+'/native-exit.json',JSON.stringify(receipt,null,2)+'\n');process.stdout.write(result.stdout||'');process.stderr.write(result.stderr||'');assert.equal(result.status,0);assert(!result.error&&!result.signal);assert(receipt.unchanged);
