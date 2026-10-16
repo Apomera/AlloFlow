@@ -1345,6 +1345,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const applyImportedRosterRef = useRef(null);
   const planRosterUpdateTextRef = useRef(null);
   const stageHandoffRosterRef = useRef(null);
+  const cancelPendingHandoffRef = useRef(null);
   const [pendingHandoff, setPendingHandoff] = useState(null);
   const pendingHandoffRef = useRef(null);
   pendingHandoffRef.current = pendingHandoff;
@@ -1437,7 +1438,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     if (isOpen) return;
     setShowPrivateLabels(false);
     setEditingLabelFor(null);
-    if (pendingHandoffRef.current) cancelPendingHandoff("The roster panel was closed before the Classroom roster was confirmed. Nothing changed.");
+    if (pendingHandoffRef.current) cancelPendingHandoffRef.current?.("The roster panel was closed before the Classroom roster was confirmed. Nothing changed.");
   }, [isOpen]);
   useEffect(() => {
     if (pendingHandoff) pendingHandoffCardRef.current?.focus();
@@ -1756,6 +1757,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     announceRoster(text, "info");
     staged.reply({ ok: false, message: text });
   };
+  cancelPendingHandoffRef.current = cancelPendingHandoff;
   const handleImport = (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;

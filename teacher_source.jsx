@@ -1201,6 +1201,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const applyImportedRosterRef = useRef(null);
   const planRosterUpdateTextRef = useRef(null);
   const stageHandoffRosterRef = useRef(null);
+  const cancelPendingHandoffRef = useRef(null);   // the close effect runs on the render that returns early, before the handler exists
   // A roster sent from the Classroom helper waits here for the teacher. A native confirm() would
   // open in this tab while the helper tab is in front, and both tabs would look stalled.
   const [pendingHandoff, setPendingHandoff] = useState(null);
@@ -1301,7 +1302,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     if (isOpen) return;
     setShowPrivateLabels(false);                  // labels never survive a close: projecting the next open is safe
     setEditingLabelFor(null);
-    if (pendingHandoffRef.current) cancelPendingHandoff('The roster panel was closed before the Classroom roster was confirmed. Nothing changed.');
+    if (pendingHandoffRef.current) cancelPendingHandoffRef.current?.('The roster panel was closed before the Classroom roster was confirmed. Nothing changed.');
   }, [isOpen]);
   useEffect(() => { if (pendingHandoff) pendingHandoffCardRef.current?.focus(); }, [pendingHandoff]);
   useEffect(() => {
@@ -1613,6 +1614,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     announceRoster(text, 'info');
     staged.reply({ ok: false, message: text });
   };
+  cancelPendingHandoffRef.current = cancelPendingHandoff;
   const handleImport = (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;

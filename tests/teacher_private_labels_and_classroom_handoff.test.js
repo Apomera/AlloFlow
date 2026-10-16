@@ -248,6 +248,36 @@ describe('in-app Google Classroom handoff', () => {
     expect(liveRoster.classId).toBe('CLS-second');                // invalid and oversized sends changed nothing
   });
 
+  it('cancels a waiting roster without throwing when the panel closes', async () => {
+    // The closed render returns before cancelPendingHandoff is declared, so the close effect
+    // must reach it through a ref (2026-10-16: it threw "before initialization" instead).
+    const helper = helperWindow();
+    vi.spyOn(window, 'open').mockReturnValue(helper);
+    const errors = [];
+    const onError = event => { errors.push(event.error || event.message); event.preventDefault?.(); };
+    window.addEventListener('error', onError);
+    let current = roster();
+    function Toggle() {
+      const [open, setOpen] = React.useState(true);
+      window.__closeRoster = () => setOpen(false);
+      return React.createElement(window.AlloModules.RosterKeyPanel, { isOpen: open, onClose() {}, rosterKey: current, setRosterKey(next) { current = typeof next === 'function' ? next(current) : next; }, t: key => key });
+    }
+    root = createRoot(container);
+    await act(async () => root.render(React.createElement(Toggle)));
+    await click(button('Google Classroom setup'));
+    await post(helper, { type: internals.handoffType, json: rosterJson() });
+    expect(helper.postMessage.mock.calls.at(-1)[0]).toMatchObject({ ok: true, pending: true });
+    try {
+      await act(async () => window.__closeRoster());
+    } finally {
+      window.removeEventListener('error', onError);
+      delete window.__closeRoster;
+    }
+    expect(errors).toEqual([]);
+    expect(helper.postMessage.mock.calls.at(-1)[0]).toEqual({ type: internals.handoffReply, ok: false, pending: false, message: 'The roster panel was closed before the Classroom roster was confirmed. Nothing changed.' });
+    expect(current.classId).toBe('CLS-fictional-a');
+  });
+
   it('ignores handoff messages entirely in parent and independent mode and before the helper was opened', async () => {
     const helper = helperWindow();
     vi.spyOn(window, 'open').mockReturnValue(helper);
