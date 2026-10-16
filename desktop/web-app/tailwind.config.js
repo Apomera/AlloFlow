@@ -13,11 +13,36 @@
 //     plugins, dev-mode loaders, fallback HTML pages
 //
 // Kept out of scope (known to have no Tailwind): *.json, *.css, *.map, sw.js.
+//
+// Runs of 20,000+ characters with no whitespace are data, never class lists, and
+// Tailwind's extractor stalls on them: Flight Sim's inlined elevation, lake, city
+// and land-mask data (one 5.7 MB run) held the 2026-10-16 production build for
+// hours. They are collapsed before scanning; a linear scan, because a regex over a
+// multi-MB run overflows V8's regex stack. Checked across all 808 content files:
+// no utility class occurs only inside such a run.
+const MAX_SCANNED_RUN = 20000;
+function collapseLongRuns(content) {
+    let out = null, runStart = 0, last = 0;
+    for (let i = 0; i <= content.length; i++) {
+        const c = i < content.length ? content.charCodeAt(i) : 32;
+        if (c === 32 || c === 10 || c === 13 || c === 9 || c === 12) {
+            if (i - runStart >= MAX_SCANNED_RUN) {
+                (out = out || []).push(content.slice(last, runStart), ' ');
+                last = i;
+            }
+            runStart = i + 1;
+        }
+    }
+    return out ? out.join('') + content.slice(last) : content;
+}
 module.exports = {
-    content: [
-        "./src/**/*.{js,jsx,ts,tsx}",
-        "./public/**/*.{js,jsx,html}",
-    ],
+    content: {
+        files: [
+            "./src/**/*.{js,jsx,ts,tsx}",
+            "./public/**/*.{js,jsx,html}",
+        ],
+        transform: { js: collapseLongRuns, jsx: collapseLongRuns, ts: collapseLongRuns, tsx: collapseLongRuns, html: collapseLongRuns },
+    },
     // Safelist for dynamically-constructed classes. Tailwind's scanner only finds
     // whole class names in source; patterns like `bg-${color}-500` evaluated at
     // runtime will be missed. Keep this minimal — each entry adds rules to the CSS
