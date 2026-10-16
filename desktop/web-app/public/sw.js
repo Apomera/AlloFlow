@@ -4,10 +4,17 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const CACHE_NAME = 'alloflow-v__BUILD_TS__';
+const RELEASE_ID = '__RELEASE_ID__';
+const RELEASE_BUILT_AT = __BUILD_TS__;
+const CACHE_NAME = 'alloflow-v__RELEASE_ID__-__BUILD_TS__';
 const PRECACHE_PATHS = __PRECACHE_PATHS__;
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
+const CLASSROOM_NETWORK_PATHS = new Set([
+    '/classroom-import.html', '/classroom-import',
+    '/classroom_import_config.js', '/classroom_import_app.js',
+    '/classroom_import_service.js'
+]);
 
 // Cloudflare Pages answers ./index.html with a 308 to ./ (clean URLs), so the
 // precached shell arrived as a REDIRECTED response. A navigation request's
@@ -27,8 +34,15 @@ self.addEventListener('install', (event) => {
     // Install succeeds only when the HTML and every hashed boot asset are cached.
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => Promise.all(PRECACHE_PATHS.map(scopedUrl).map((assetUrl) =>
-            fetch(assetUrl).then((response) => {
+            fetch(assetUrl, { cache: 'reload' }).then(async (response) => {
                 if (!response.ok) throw new Error('[SW] precache failed: ' + assetUrl + ' -> ' + response.status);
+                // A deployment can switch between fetching sw.js and HTML.
+                // Never announce a release unless its own shell was installed.
+                if (assetUrl === SHELL_URL) {
+                    const html = await response.clone().text();
+                    const release = html.match(/window\.__alloReleaseId\s*=\s*["']([a-f0-9]+)["']/);
+                    if (!release || release[1] !== RELEASE_ID) throw new Error('[SW] shell release does not match worker');
+                }
                 return cache.put(assetUrl, cleanCopy(response));
             })
         )))
@@ -40,6 +54,11 @@ self.addEventListener('install', (event) => {
 // in-app update prompt. This preserves interruption-free automatic updates
 // while making "Refresh now" deterministic when the timing is appropriate.
 self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'ALLOFLOW_GET_RELEASE') {
+        const reply = { type: 'ALLOFLOW_RELEASE', releaseId: RELEASE_ID, releaseBuiltAt: RELEASE_BUILT_AT };
+        if (event.ports && event.ports[0]) event.ports[0].postMessage(reply);
+        return;
+    }
     if (event.data && event.data.type === 'ALLOFLOW_ACTIVATE_UPDATE') {
         self.skipWaiting();
     }
@@ -62,6 +81,27 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     if (url.origin !== self.location.origin && event.request.mode !== 'navigate') return;
+
+    // Standalone Classroom pages must never become the app shell. Fetch the
+    // helper and its configuration afresh so cached enablement cannot reopen
+    // Google access after school IT has disabled the deployment.
+    if (url.origin === self.location.origin && CLASSROOM_NETWORK_PATHS.has(url.pathname)) {
+        event.respondWith(
+            fetch(event.request, { cache: 'no-store' }).catch(() => new Response(
+                'Classroom connection is unavailable. Reconnect and reopen this page.',
+                {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: {
+                        'Content-Type': 'text/plain; charset=utf-8',
+                        'Cache-Control': 'no-store',
+                        'X-Content-Type-Options': 'nosniff'
+                    }
+                }
+            ))
+        );
+        return;
+    }
 
     if (event.request.mode === 'navigate') {
         event.respondWith(

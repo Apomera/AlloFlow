@@ -1,73 +1,92 @@
 /**
- * Post-build: keep the HTML shell small and preserve CRA's content-hashed
- * JavaScript/CSS as separate files. The service worker precaches the complete
- * shell atomically, so repeat launches and offline recovery remain reliable
- * without reparsing a multi-megabyte HTML document.
+ * Preserve CRA's content-hashed assets and identify the complete app release.
+ * A wall-clock build time orders releases, but never defines whether the app
+ * has changed: rebuilding identical content must not display an update.
  */
 const fs = require('fs');
 const path = require('path');
+const { createHash } = require('crypto');
 
-// The desktop release builder uses an isolated BUILD_PATH so it can compile
-// desktop-only environment values without overwriting the hosted Firebase
-// artifact that deploy.sh has just produced.
-const buildDir = process.env.BUILD_PATH
-    ? path.resolve(__dirname, process.env.BUILD_PATH)
-    : path.join(__dirname, 'build');
-const htmlPath = path.join(buildDir, 'index.html');
-const swPath = path.join(buildDir, 'sw.js');
-const swTemplatePath = path.join(__dirname, 'public', 'sw.js');
+const releaseScriptPattern = /<script\b[^>]*\bid=["']alloflow-release["'][^>]*>[\s\S]*?<\/script>/i;
 
-let html = fs.readFileSync(htmlPath, 'utf8');
-// Relative asset URLs work at both / and the published /app/ scope.
-html = html.replace(/(["'])\/static\//g, '$1./static/');
+function postbuild(options = {}) {
+    // Desktop packaging supplies an isolated BUILD_PATH so it cannot overwrite
+    // the hosted artifact produced by deploy.sh.
+    const buildDir = options.buildDir || (process.env.BUILD_PATH
+        ? path.resolve(__dirname, process.env.BUILD_PATH)
+        : path.join(__dirname, 'build'));
+    const templateDir = options.templateDir || path.join(__dirname, 'public');
+    const htmlPath = path.join(buildDir, 'index.html');
+    let html = fs.readFileSync(htmlPath, 'utf8');
+    const previousId = html.match(/window\.__alloReleaseId\s*=\s*["']([a-f0-9]+)["']/)?.[1];
+    const previousBuiltAt = Number(html.match(/window\.__alloReleaseBuiltAt\s*=\s*(\d+)/)?.[1]);
+    // Remove only our own generated metadata when postbuild is rerun.
+    html = html.replace(releaseScriptPattern, '').replace(/(["'])\/static\//g, '$1./static/');
 
-const assetMatches = Array.from(html.matchAll(/["'](\.\/static\/(?:js|css)\/[^"']+\.(?:js|css))["']/g));
-const assetPaths = Array.from(new Set(assetMatches.map(match => match[1])));
-const mainJs = assetPaths.find(asset => /^\.\/static\/js\/main\.[a-f0-9]+\.js$/.test(asset));
-const mainCss = assetPaths.find(asset => /^\.\/static\/css\/main\.[a-f0-9]+\.css$/.test(asset));
-if (!mainJs || !mainCss) throw new Error('Hashed main JS/CSS assets were not found in build/index.html');
+    const assetPaths = Array.from(new Set(Array.from(
+        html.matchAll(/["'](\.\/static\/(?:js|css)\/[^"']+\.(?:js|css))["']/g), match => match[1]
+    )));
+    if (!assetPaths.some(asset => /^\.\/static\/js\/main\.[a-f0-9]+\.js$/.test(asset))
+        || !assetPaths.some(asset => /^\.\/static\/css\/main\.[a-f0-9]+\.css$/.test(asset))) {
+        throw new Error('Hashed main JS/CSS assets were not found in build/index.html');
+    }
 
-for (const asset of assetPaths) {
-    const filePath = path.join(buildDir, asset.replace(/^\.\//, ''));
-    if (!fs.existsSync(filePath)) throw new Error('Referenced build asset is missing: ' + asset);
+    // OneDrive/CRA can omit these public files from an otherwise complete
+    // isolated output. Restore missing files from the tracked templates.
+    const supportPaths = ['./alloflow_desktop_bridge.js', './alloflow_update.js'];
+    for (const asset of supportPaths) {
+        const target = path.join(buildDir, asset);
+        if (!fs.existsSync(target)) fs.copyFileSync(path.join(templateDir, asset), target);
+    }
+
+    // Main JS contains the version-pinned dynamic module/plugin URLs. Hashing
+    // its bytes therefore includes CDN module releases, not just the HTML UI.
+    // Also cover un-hashed local boot scripts, styles, and inline font URLs.
+    const releaseAssets = new Set([...assetPaths, ...supportPaths]);
+    const references = [
+        ...Array.from(html.matchAll(/\b(?:src|href)=["']([^"']+)["']/g), match => match[1]),
+        ...Array.from(html.matchAll(/url\(\s*["']?([^\s"')]+)["']?\s*\)/g), match => match[1])
+    ];
+    for (const reference of references) {
+        if (/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(reference)) continue;
+        const pathname = reference.split(/[?#]/, 1)[0].replace(/^\//, './');
+        if (/\.(?:m?js|css|woff2?|png|jpe?g|svg|ico|json)$/i.test(pathname)) releaseAssets.add(pathname);
+    }
+    const swTemplate = fs.readFileSync(path.join(templateDir, 'sw.js'), 'utf8');
+    for (const placeholder of ['__BUILD_TS__', '__RELEASE_ID__', '__PRECACHE_PATHS__']) {
+        if (!swTemplate.includes(placeholder)) throw new Error('Service-worker placeholder is missing: ' + placeholder);
+    }
+    const hash = createHash('sha256');
+    const addContent = (name, bytes) => hash.update(name + '\0' + bytes.length + '\0').update(bytes);
+    addContent('index.html', Buffer.from(html));
+    addContent('sw.js', Buffer.from(swTemplate));
+    for (const asset of Array.from(releaseAssets).sort()) {
+        const filePath = path.resolve(buildDir, asset);
+        if (!filePath.startsWith(path.resolve(buildDir) + path.sep)) throw new Error('Asset escapes build directory: ' + asset);
+        if (!fs.existsSync(filePath)) throw new Error('Referenced build asset is missing: ' + asset);
+        addContent(asset, fs.readFileSync(filePath));
+    }
+    const releaseId = hash.digest('hex');
+    const releaseBuiltAt = previousId === releaseId && previousBuiltAt > 0
+        ? previousBuiltAt : (options.now || Date.now)();
+    const releaseScript = '<script id="alloflow-release">window.__alloReleaseId=' + JSON.stringify(releaseId)
+        + ';window.__alloReleaseBuiltAt=' + releaseBuiltAt + ';</script>';
+    if (!/<head\b[^>]*>/i.test(html)) throw new Error('Build HTML is missing its head element');
+    // Metadata must exist before the update manager or any deferred app code.
+    html = html.replace(/<head\b[^>]*>/i, match => match + releaseScript);
+    fs.writeFileSync(htmlPath, html, 'utf8');
+
+    const swContent = swTemplate
+        .replace(/__BUILD_TS__/g, String(releaseBuiltAt))
+        .replace(/__RELEASE_ID__/g, releaseId)
+        .replace('__PRECACHE_PATHS__', JSON.stringify(['./index.html', ...supportPaths, ...assetPaths]));
+    fs.writeFileSync(path.join(buildDir, 'sw.js'), swContent, 'utf8');
+    console.log('✓ Split shell HTML:', (Buffer.byteLength(html) / 1024).toFixed(1) + ' KB');
+    console.log('✓ Preserved hashed assets:', assetPaths.join(', '));
+    console.log('✓ App release:', releaseId, '(built ' + releaseBuiltAt + ')');
+    console.log('✓ Post-build complete: split shell assets are precached for offline/repeat launch');
+    return { releaseId, releaseBuiltAt };
 }
 
-fs.writeFileSync(htmlPath, html, 'utf8');
-const htmlBytes = Buffer.byteLength(html, 'utf8');
-console.log('✓ Split shell HTML:', (htmlBytes / 1024).toFixed(1) + ' KB');
-console.log('✓ Preserved hashed assets:', assetPaths.join(', '));
-
-if (!fs.existsSync(swPath)) {
-    // OneDrive/CRA can occasionally omit the service-worker template from an
-    // otherwise complete isolated output. Restore the tracked template before
-    // stamping it so desktop packaging remains deterministic.
-    if (!fs.existsSync(swTemplatePath)) throw new Error('public/sw.js template is missing');
-    console.warn('⚠ build/sw.js is missing — restoring the template from public/sw.js');
-    fs.copyFileSync(swTemplatePath, swPath);
-}
-const desktopBridgePath = path.join(buildDir, 'alloflow_desktop_bridge.js');
-if (!fs.existsSync(desktopBridgePath)) {
-    const bridgeTemplatePath = path.join(__dirname, 'public', 'alloflow_desktop_bridge.js');
-    if (!fs.existsSync(bridgeTemplatePath)) throw new Error('public/alloflow_desktop_bridge.js is missing');
-    console.warn('⚠ build/alloflow_desktop_bridge.js is missing — restoring the published bridge');
-    fs.copyFileSync(bridgeTemplatePath, desktopBridgePath);
-}
-const buildTs = Date.now();
-let swContent = fs.readFileSync(swPath, 'utf8');
-if (!swContent.includes('__BUILD_TS__')) {
-    // Self-heal (field-hit 2026-07-20): build/sw.js can be a previously
-    // STAMPED copy instead of the template — the build dir is gitignored and
-    // OneDrive sync can restore a stale stamped version between the CRA copy
-    // step and this script. Re-copy the template from public/ and only fail
-    // if the TEMPLATE itself lost its placeholders.
-    console.warn('⚠ build/sw.js has no build-timestamp placeholder (stale stamped copy?) — re-copying the template from public/sw.js');
-    swContent = fs.readFileSync(swTemplatePath, 'utf8');
-}
-if (!swContent.includes('__BUILD_TS__')) throw new Error('Service-worker build timestamp placeholder is missing');
-if (!swContent.includes('__PRECACHE_PATHS__')) throw new Error('Service-worker precache placeholder is missing');
-swContent = swContent
-    .replace(/__BUILD_TS__/g, String(buildTs))
-    .replace('__PRECACHE_PATHS__', JSON.stringify(['./index.html', './alloflow_desktop_bridge.js', ...assetPaths]));
-fs.writeFileSync(swPath, swContent, 'utf8');
-console.log('✓ SW stamped: CACHE_NAME = alloflow-v' + buildTs);
-console.log('✓ Post-build complete: split shell assets are precached for offline/repeat launch');
+if (require.main === module) postbuild();
+module.exports = { postbuild };

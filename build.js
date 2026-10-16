@@ -58,6 +58,7 @@ const STUDENT_SHELL_ENTRIES = [
     'qrcode.js',
     'ai_backend_module.js',
     'alloflow_desktop_bridge.js',
+    'alloflow_update.js',
     'static',
     // The shell asks for ./vendor/ scripts and ./fonts/; without these Pages answers with HTML.
     'vendor',
@@ -121,6 +122,7 @@ function publishStudentShell() {
     let publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
     // The hosted build uses a root URL; the /app/ copy owns this boot asset locally.
     publishedHtml = publishedHtml.replace(/(["'])\/alloflow_desktop_bridge\.js\1/g, '$1./alloflow_desktop_bridge.js$1');
+    publishedHtml = publishedHtml.replace(/(["'])\/alloflow_update\.js\1/g, '$1./alloflow_update.js$1');
     // postbuild may preserve readable or minified service-worker registration.
     const rootSwRegistration = /navigator\.serviceWorker\.register\((['"])\/sw\.js\1,\s*\{\s*updateViaCache:\s*(['"])none\2\s*\}\)/;
     if (!rootSwRegistration.test(publishedHtml)) {
@@ -2657,6 +2659,13 @@ if (dryRun) {
         ...MODULES.map(m => m.filename),
         'word_sounds_module.js',
         'teacher_module.js',
+        'classroom-import.html',
+        'docs/google_classroom_import.md',
+        'docs/google_classroom_oauth_verification.md',
+        'docs/google_workspace_connections.md',
+        'classroom_import_config.js',
+        'classroom_import_service.js',
+        'classroom_import_app.js',
         'ui_strings.js',
         'qrcode.js',
         'concept_quest_engine.js',
@@ -2668,8 +2677,11 @@ if (dryRun) {
         'stem_lab/stem_lumen_study.js',
         // BirdLab and Raptor Lab load these shared 3D companions on demand.
         'stem_lab/avian_feather_art.js',
+        'stem_lab/avian_woodland_birds.js',
         'stem_lab/birdlab_3d_bird.js',
         'stem_lab/birdlab_3d_habitat.js',
+        'stem_lab/birdlab_3d_wildlife.js',
+        'stem_lab/birdlab_3d_mammals.js',
         'stem_lab/birdlab_3d_engine.js',
         // Lazy-loaded visual coding runtime (self-hosted for offline/CSP use)
         'stem_lab/blockly_runtime.bundle.js'

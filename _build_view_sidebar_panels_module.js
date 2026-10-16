@@ -111,7 +111,7 @@ window.AlloModules.ToolCatalogControls = (typeof ToolCatalogControls !== 'undefi
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
-window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView };  // truthy legacy registration plus host views
+window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView, UNIVERSAL_GRADE_CHOICES };  // truthy legacy registration plus host views
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
 })();
 `;
