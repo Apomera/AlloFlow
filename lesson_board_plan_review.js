@@ -1,4 +1,4 @@
-import {goalOf} from './lesson_board_engine.js';
+import {goalOf, buildSite, spatialRoutes} from './lesson_board_engine.js';
 
 // Describe only projected mechanics. These are not records of learner understanding.
 export function planReview(board, result) {
@@ -13,6 +13,12 @@ export function planReview(board, result) {
       if (project.effect.kind === 'yield') return [{project, earned: steps.slice(index + 1).filter(item => item.kind === 'explore').length}];
       const destination = board.locations.find(node => node.id === project.effect.targetId);
       const visitedBefore = initial.visited.includes(destination.id) || steps.slice(0, index).some(item => item.id === destination.id);
+      if(board.playStyle==='tabletop') {
+        const site=buildSite(board,project);
+        const bridge=spatialRoutes(board,progress).some(route=>route.projectId===project.id);
+        const crossings=bridge?steps.slice(index+1).filter(item=>item.path?.some((id,i)=>i>0&&(item.path[i-1]===site&&id===destination.id||item.path[i-1]===destination.id&&id===site))).length:0;
+        return [{project,destination,site:board.locations.find(node=>node.id===site),crossings,tabletop:true}];
+      }
       return [{project, destination, opened: step.newlyOpened.includes(destination.id), visitedBefore}];
     })
   };

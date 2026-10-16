@@ -1,4 +1,7 @@
+import {EXPEDITION_KIT_IDS} from './lesson_board_tactics.js';
 import { ICONS, THEMES, GOALS, validateBoard } from './lesson_board_engine.js';
+import { isSpatialChallenge, challengeTargetField, challengeAnswerField } from './lesson_board_challenges.js';
+import { isPuzzle, editablePuzzle } from './lesson_board_puzzles.js';
 // AI replies are read tolerantly and repaired deterministically before any
 // second AI call. Repairs never invent lesson facts: excerpts are only ever
 // replaced by real lesson text, and anything unfixable is left for validation.
@@ -163,7 +166,7 @@ const pairOf = (value, max) => {
   if (next[0] + next[1] === 0) next[0] = 1;
   return next;
 };
-const KINDS = { choice: 'choice', 'multiple-choice': 'choice', multiple_choice: 'choice', multiplechoice: 'choice', mcq: 'choice', quiz: 'choice', order: 'order', ordering: 'order', sequence: 'order', sort: 'order', sorting: 'order', settings: 'settings', setting: 'settings', configure: 'settings', configuration: 'settings', controls: 'settings' };
+const KINDS = { choice: 'choice', 'multiple-choice': 'choice', multiple_choice: 'choice', multiplechoice: 'choice', mcq: 'choice', quiz: 'choice', order: 'order', ordering: 'order', sequence: 'order', sort: 'order', sorting: 'order', settings: 'settings', setting: 'settings', configure: 'settings', configuration: 'settings', controls: 'settings', classify: 'classify', classification: 'classify', categorize: 'classify', connect: 'connect', matching: 'connect', match: 'connect', place: 'place', placement: 'place', allocate: 'allocate', allocation: 'allocate', repair: 'repair' };
 const ICON_WORDS = [['water', /water|river|rain|ocean|sea|lake|wave|flood|ice|cloud/i], ['leaf', /leaf|plant|tree|garden|forest|seed|farm|flower|grow/i], ['book', /book|library|read|story|word|poem|letter|archive|history/i], ['gear', /gear|machine|engine|tool|factory|robot|mechan/i], ['star', /star|space|sky|planet|moon|sun|galax/i], ['home', /home|house|village|town|city|family|shelter/i], ['bridge', /bridge|road|path|route|trail|gate|crossing/i], ['flask', /lab|flask|experiment|chemi|test|measure|reaction/i]];
 const iconFor = (value, text, index) => ICONS.includes(value) ? value : (ICON_WORDS.find(([, re]) => re.test(text)) || [ICONS[index % ICONS.length]])[0];
 const THEME_WORDS = [['river', /river|ocean|sea|water|lake|coast|island/i], ['space', /space|star|planet|galax|orbit|moon/i], ['workshop', /workshop|lab|factory|machine|engineer|invent|city/i], ['archive', /archive|library|museum|history|ancient|castle|kingdom/i], ['garden', /garden|forest|farm|plant|park|nature|jungle/i]];
@@ -187,6 +190,8 @@ const FIELDS = {
   card: [['id', 'title', 'text', 'sourceQuote', 'reward'], { name: 'title', fact: 'text', description: 'text', body: 'text', quote: 'sourceQuote', evidence: 'sourceQuote', excerpt: 'sourceQuote', rewards: 'reward', bonus: 'reward' }],
   concept: [['id', 'name'], { title: 'name', label: 'name' }]
 };
+FIELDS.board[0].push('playStyle', 'contracts', 'expeditionKit');
+FIELDS.location[0].push('categories', 'matches', 'slots', 'placements', 'connections', 'needs', 'budget', 'constraints', 'allocation', 'repairs', 'corrections');
 function distance(a, b) {
   if (Math.abs(a.length - b.length) > 2) return 3;
   let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
@@ -214,7 +219,7 @@ function scavenge(root, looksLike, known, limit) {
   walk(root, 0);
   return found;
 }
-const locationLike = value => { const n = canonical(value, 'location', new Set()); return typeof n.instruction === 'string' && typeof n.sourceQuote === 'string' && (Array.isArray(n.options) || Array.isArray(n.items) || Array.isArray(n.controls)); };
+const locationLike = value => { const n = canonical(value, 'location', new Set()); return typeof n.instruction === 'string' && typeof n.sourceQuote === 'string' && (Array.isArray(n.options) || Array.isArray(n.items) || Array.isArray(n.controls) || Array.isArray(n.needs)); };
 const projectLike = value => { const p = canonical(value, 'project', new Set()); return typeof p.name === 'string' && p.cost !== undefined && isObject(p.effect); };
 function healLocation(raw, index, context) {
   const fixes = context.fixes, n = canonical(isObject(raw) ? raw : {}, 'location', fixes), node = {};
@@ -222,7 +227,7 @@ function healLocation(raw, index, context) {
   for (const [name, max] of [['name', 80], ['scene', 450], ['instruction', 900], ['explanation', 1000]]) { node[name] = clip(n[name], max); if (node[name] && node[name] !== n[name]) fixes.add('text'); }
   const concept = context.conceptOf(n.conceptId ?? n.concept); node.conceptId = concept ?? (typeof n.conceptId === 'string' ? n.conceptId : ''); if (concept && concept !== n.conceptId) fixes.add('concepts');
   node.icon = iconFor(n.icon, [n.name, n.scene].join(' '), index); if (node.icon !== n.icon) fixes.add('icons');
-  const kind = KINDS[String(n.kind || n.type || '').toLowerCase().trim()] || (Array.isArray(n.controls) ? 'settings' : Array.isArray(n.items) ? 'order' : Array.isArray(n.options) ? 'choice' : String(n.kind || 'choice'));
+  const kind = KINDS[String(n.kind || n.type || '').toLowerCase().trim()] || (Array.isArray(n.needs) || Array.isArray(n.allocation) ? 'allocate' : Array.isArray(n.repairs) ? 'repair' : Array.isArray(n.categories) ? 'classify' : Array.isArray(n.matches) ? 'connect' : Array.isArray(n.slots) ? 'place' : Array.isArray(n.controls) ? 'settings' : Array.isArray(n.items) ? 'order' : Array.isArray(n.options) ? 'choice' : String(n.kind || 'choice'));
   node.kind = kind; if (kind !== n.kind) fixes.add('kinds');
   const quote = !context.source || quoted(n.sourceQuote, context.source, 650) ? n.sourceQuote : groundQuote(n.sourceQuote ?? n.quote ?? n.evidence, context.source);
   node.sourceQuote = typeof quote === 'string' && quote ? quote : clip(n.sourceQuote, 650); if (quote && quote !== n.sourceQuote) fixes.add('quotes');
@@ -234,11 +239,35 @@ function healLocation(raw, index, context) {
     let options = optionTexts(n.options, 220), answer = answerIndex(n.answer, options, [n.correctIndex, n.correctAnswer, n.correct, flagged(n.options)]);
     if (options.length > 5) { const keep = [answer, ...options.map((_, i) => i).filter(i => i !== answer)].slice(0, 5).sort((a, b) => a - b); answer = keep.indexOf(answer); options = keep.map(i => options[i]); fixes.add('options'); }
     node.options = options; node.answer = answer; if (answer !== n.answer || JSON.stringify(options) !== JSON.stringify(n.options)) fixes.add('answers');
+  } else if (isPuzzle(node)) {
+    // Normalize only explicit authored numbers. Missing keys stay invalid for
+    // teacher review; neither constraints nor corrections are an answer oracle.
+    const integer = value => Number.isInteger(value) ? value : typeof value === 'string' && /^\d+$/.test(value.trim()) ? Number(value) : -1;
+    if (kind === 'allocate') {
+      node.needs = optionTexts(n.needs, 180); node.budget = integer(n.budget);
+      node.constraints = optionTexts(n.constraints, 220); node.allocation = list(n.allocation).map(integer);
+    } else {
+      node.items = optionTexts(n.items, 180); node.repairs = list(n.repairs).map(integer);
+      node.corrections = list(n.corrections).map(value => typeof value === 'string' ? clip(value, 400) : '');
+    }
+    if (JSON.stringify(node) !== JSON.stringify({ ...node, ...(kind === 'allocate' ? { needs:n.needs, budget:n.budget, constraints:n.constraints, allocation:n.allocation } : { items:n.items, repairs:n.repairs, corrections:n.corrections }) })) fixes.add('answers');
   } else if (kind === 'order') {
     const items = optionTexts(n.items, 180); let order = list(n.order).map(value => typeof value === 'string' && !/^\d+$/.test(value) ? items.findIndex(item => collapse(item).toLowerCase() === collapse(value).toLowerCase()) : Number(value));
     if (order.length === items.length && !order.includes(0) && order.every(v => Number.isInteger(v) && v >= 1 && v <= items.length)) order = order.map(v => v - 1);
     order = order.map(v => Number.isInteger(v) ? v : -1);
     node.items = items; node.order = order; if (JSON.stringify(order) !== JSON.stringify(n.order) || JSON.stringify(items) !== JSON.stringify(n.items)) fixes.add('answers');
+  } else if (isSpatialChallenge(node)) {
+    const targetField = challengeTargetField(node), answerField = challengeAnswerField(node);
+    node.items = optionTexts(n.items, 180); node[targetField] = optionTexts(n[targetField], 180);
+    // Convert only explicit numeric indices or uniquely named destinations.
+    // Never supply a missing relationship or guess an answer key.
+    node[answerField] = list(n[answerField]).map(value => {
+      if (Number.isInteger(value)) return value;
+      if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value);
+      const matches = typeof value === 'string' ? node[targetField].map((target, i) => collapse(target).toLowerCase() === collapse(value).toLowerCase() ? i : -1).filter(i => i >= 0) : [];
+      return matches.length === 1 ? matches[0] : -1;
+    });
+    if (JSON.stringify(node[answerField]) !== JSON.stringify(n[answerField])) fixes.add('answers');
   } else if (kind === 'settings') {
     node.controls = list(n.controls).filter(isObject).map(raw => canonical(raw, 'control', fixes)).map(control => { const options = optionTexts(control.options, 160); return { label: clip(control.label ?? control.name, 100), options, answer: answerIndex(control.answer, options, [control.correctIndex, control.correct, flagged(control.options)]) }; });
     if (JSON.stringify(node.controls) !== JSON.stringify(list(n.controls).map(c => isObject(c) ? { label: c.label, options: c.options, answer: c.answer } : c))) fixes.add('answers');
@@ -285,6 +314,10 @@ function healDiscoveries(raw, source, fixes) {
 export function healBoard(raw, source, options = {}) {
   const fixes = new Set(), b = canonical(isObject(raw) ? raw : {}, 'board', fixes), used = new Set(), goal = GOALS.includes(options.goal) ? options.goal : GOALS.includes(b.goal) ? b.goal : undefined;
   const board = { version: 1, ...(goal ? { goal } : {}), title: clip(b.title ?? b.name, 120), mission: clip(b.mission, 1200), debrief: clip(b.debrief ?? b.reflection, 1200) };
+  if (b.playStyle !== undefined) board.playStyle = b.playStyle;
+  // Travel is an explicit setup rule. Preserve it for validation rather than
+  // silently changing an invalid or unsupported rule into unlimited movement.
+  if (b.travelLimit !== undefined) board.travelLimit = b.travelLimit;
   if (b.version !== 1) fixes.add('version');
   const themeText = [b.theme, b.title, b.mission].join(' ');
   board.theme = THEMES.includes(b.theme) ? b.theme : (THEME_WORDS.find(([, re]) => re.test(themeText)) || ['garden'])[0]; if (board.theme !== b.theme) fixes.add('theme');
@@ -337,6 +370,21 @@ export function healBoard(raw, source, options = {}) {
   let projects = rawProjects;
   if (projects.length > 3) { const kindOf = p => /yield|bonus|income|produc|extra/i.test(String(p.effect?.kind)) ? 'yield' : 'path', first = kind => projects.find(p => kindOf(p) === kind); const picked = [...new Set([first('path'), first('yield'), ...projects].filter(Boolean))].slice(0, 3); projects = projects.filter(p => picked.includes(p)); fixes.add('projects'); }
   board.projects = projects.map((raw, index) => healProject(raw, index, context, board));
+  if (b.expeditionKit !== undefined) { if(board.playStyle==='tabletop'&&EXPEDITION_KIT_IDS.includes(b.expeditionKit))board.expeditionKit=b.expeditionKit;else fixes.add('kit'); }
+  if (b.contracts !== undefined) {
+    const contracts = [], contractSets = new Set(), contractIds = new Set([...ids, ...board.projects.map(project => project.id)]);
+    if (board.playStyle === 'tabletop') for (const raw of list(b.contracts)) {
+      if (!isObject(raw)) continue;
+      const locations = [...new Set(list(raw.locations).map(context.locationRef).filter(id => idSet.has(id)))].slice(0, 3), signature = locations.slice().sort().join(':');
+      const title = clip(raw.title, 80), description = clip(raw.description, 300);
+      if (locations.length < 2 || !title.trim() || !description.trim() || contractSets.has(signature)) continue;
+      contracts.push({ id: unique(slug(raw.id ?? title, 'contract-' + (contracts.length + 1)), contractIds), title, description, locations, reward: pairOf(raw.reward, 3) });
+      contractSets.add(signature);
+      if (contracts.length === 3) break;
+    }
+    if (contracts.length) board.contracts = contracts;
+    if (JSON.stringify(contracts) !== JSON.stringify(b.contracts)) fixes.add('contracts');
+  }
   const far = distances(board), targeted = new Set(board.projects.filter(p => p.effect.kind === 'path').map(p => p.effect.targetId));
   for (const project of board.projects) {
     if (project.effect.kind !== 'path') continue;
@@ -358,7 +406,10 @@ export function healBoard(raw, source, options = {}) {
 // projects is fundable from base location rewards alone.
 function balance(board, fixes) {
   if (board.projects.length !== 3 || board.locations.length < 1 || board.resources.length !== 2) return;
-  const sets = board.goal === 'architect' ? [[0, 1, 2]] : [[0, 1], [0, 2], [1, 2]];
+  // Tabletop parties may finish the activities before buying both yield
+  // projects. Keep the bridge affordable as a way to use a construction and
+  // deliver the discoveries, even when those late yields cannot earn again.
+  const sets = board.goal === 'architect' || board.playStyle === 'tabletop' ? [[0, 1, 2]] : [[0, 1], [0, 2], [1, 2]];
   for (let guard = 0; guard < 60; guard++) {
     const total = board.locations.reduce((sum, node) => sum.map((v, i) => v + node.reward[i]), [0, 0]);
     const short = sets.map(set => ({ set, need: [0, 1].map(i => set.reduce((sum, p) => sum + board.projects[p].cost[i], 0) - total[i]) })).filter(item => item.need.some(v => v > 0)).sort((a, b) => Math.max(...b.need) - Math.max(...a.need))[0];
@@ -386,7 +437,9 @@ export function editableDraft(board) {
   const texts = value => Array.isArray(value) && value.every(item => typeof item === 'string');
   return strings(board, ['title', 'mission', 'debrief', 'theme']) && Array.isArray(board.resources) && board.resources.length === 2 && texts(board.resources)
     && Array.isArray(board.concepts) && board.concepts.length > 0 && board.concepts.every(c => strings(c, ['id', 'name']))
-    && Array.isArray(board.locations) && board.locations.length >= 2 && board.locations.every(n => strings(n, ['id', 'name', 'scene', 'instruction', 'explanation', 'sourceQuote', 'conceptId', 'icon']) && texts(n.hints) && pair(n.reward) && (n.kind === 'choice' ? texts(n.options) && Number.isInteger(n.answer) : n.kind === 'order' ? texts(n.items) && Array.isArray(n.order) && n.order.every(Number.isInteger) : n.kind === 'settings' && Array.isArray(n.controls) && n.controls.every(c => strings(c, ['label']) && texts(c.options) && Number.isInteger(c.answer))))
+    && Array.isArray(board.locations) && board.locations.length >= 2 && board.locations.every(n => strings(n, ['id', 'name', 'scene', 'instruction', 'explanation', 'sourceQuote', 'conceptId', 'icon']) && texts(n.hints) && pair(n.reward) && (n.kind === 'choice' ? texts(n.options) && Number.isInteger(n.answer) : n.kind === 'order' ? texts(n.items) && Array.isArray(n.order) && n.order.every(Number.isInteger) : isPuzzle(n) ? editablePuzzle(n) : isSpatialChallenge(n) ? texts(n.items) && texts(n[challengeTargetField(n)]) && Array.isArray(n[challengeAnswerField(n)]) && n[challengeAnswerField(n)].every(Number.isInteger) : n.kind === 'settings' && Array.isArray(n.controls) && n.controls.every(c => strings(c, ['label']) && texts(c.options) && Number.isInteger(c.answer))))
     && Array.isArray(board.projects) && board.projects.length > 0 && board.projects.every(p => strings(p, ['id', 'name', 'description', 'icon']) && pair(p.cost) && isObject(p.effect) && ['yield', 'path'].includes(p.effect.kind))
+    && (board.expeditionKit === undefined || typeof board.expeditionKit === 'string')
+    && (board.contracts === undefined || Array.isArray(board.contracts) && board.contracts.every(contract => strings(contract, ['id', 'title', 'description']) && texts(contract.locations) && pair(contract.reward)))
     && Array.isArray(board.starts) && texts(board.starts) && Array.isArray(board.edges) && board.edges.every(edge => Array.isArray(edge) && edge.length === 2 && texts(edge));
 }

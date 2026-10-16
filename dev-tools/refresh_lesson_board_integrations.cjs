@@ -21,10 +21,34 @@ for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 
 }
 const fallbacks = {};
 const add = (key, value) => { if (fallbacks[key] && fallbacks[key] !== value) throw Error('Conflicting board string: ' + key); fallbacks[key] = value; };
-for (const file of ['lesson_board_session_guide.jsx', 'lesson_board_plan_review.jsx', 'lesson_board_map.jsx', 'lesson_board_sandbox_ui.jsx', 'lesson_board_ui.jsx', 'lesson_board_source.jsx', 'lesson_board_review.jsx', 'lesson_board_authoring.jsx', 'lesson_board_library.jsx', 'lesson_board_setup.jsx', 'lesson_board_play_extras.jsx', 'lesson_board_followthrough.jsx', 'lesson_board_roles.js', 'lesson_board_strategy_ui.jsx', 'lesson_board_support_ui.jsx', 'lesson_board_visual_ui.jsx', 'lesson_board_guide_ui.jsx', 'lesson_board_image.jsx', 'lesson_board_finale_ui.jsx', 'lesson_board_replay_ui.jsx', 'lesson_board_world_ui.jsx', 'lesson_board_sharing.js', 'lesson_board_sharing_ui.jsx']) {
+const spatialFiles = ['lesson_board_scenery_generation.jsx','lesson_board_investment_ui.jsx','lesson_board_funding_ui.jsx','lesson_board_expeditions_ui.jsx','lesson_board_tactics_ui.jsx','lesson_board_tactical_preview.jsx','lesson_board_puzzles_ui.jsx','lesson_board_contracts_ui.jsx','lesson_board_encounters_ui.jsx','lesson_board_destination_ui.jsx','lesson_board_encounter_labels.js','lesson_board_tabletop_encounters.jsx', 'lesson_board_landscape.jsx', 'lesson_board_tabletop.jsx', 'lesson_board_tabletop_ui.jsx', 'lesson_board_challenges_ui.jsx', 'lesson_board_refine.jsx'];
+spatialFiles.push('lesson_board_journey_ui.jsx');
+spatialFiles.push('lesson_board_barter_ui.jsx');
+spatialFiles.push('lesson_board_construction_impact_ui.jsx');
+spatialFiles.push('lesson_board_delivery_ui.jsx');
+spatialFiles.push('lesson_board_route_ui.jsx');
+spatialFiles.push('lesson_board_tokens.jsx');
+spatialFiles.push('lesson_board_commissions_ui.jsx');
+spatialFiles.push('lesson_board_commission_art.jsx');
+spatialFiles.push('lesson_board_encounter_decision_ui.jsx');
+spatialFiles.push('lesson_board_assignments_ui.jsx','lesson_board_assignment_art.jsx');
+spatialFiles.push('lesson_board_relays_ui.jsx','lesson_board_relay_art.jsx');
+spatialFiles.push('lesson_board_ventures_ui.jsx','lesson_board_venture_art.jsx','lesson_board_dice.jsx');
+for (const file of [...spatialFiles, 'lesson_board_session_guide.jsx', 'lesson_board_plan_review.jsx', 'lesson_board_map.jsx', 'lesson_board_sandbox_ui.jsx', 'lesson_board_ui.jsx', 'lesson_board_source.jsx', 'lesson_board_review.jsx', 'lesson_board_authoring.jsx', 'lesson_board_library.jsx', 'lesson_board_setup.jsx', 'lesson_board_play_extras.jsx', 'lesson_board_followthrough.jsx', 'lesson_board_roles.js', 'lesson_board_strategy_ui.jsx', 'lesson_board_support_ui.jsx', 'lesson_board_visual_ui.jsx', 'lesson_board_guide_ui.jsx', 'lesson_board_image.jsx', 'lesson_board_finale_ui.jsx', 'lesson_board_replay_ui.jsx', 'lesson_board_world_ui.jsx', 'lesson_board_sharing.js', 'lesson_board_sharing_ui.jsx']) {
   traverse(parser.parse(fs.readFileSync(file, 'utf8'), { sourceType: 'module', plugins: ['jsx'] }), {
     CallExpression({ node }) {
       if (node.callee.name === 'tr' && node.arguments[1]?.type === 'StringLiteral' && node.arguments[2]?.type === 'StringLiteral') add(node.arguments[1].value, node.arguments[2].value);
+    },
+    VariableDeclarator({node}) {
+      if (file !== 'lesson_board_encounter_labels.js' || node.id.name !== 'STORIES') return;
+      // Story keys are composed from theme, reward family and saved variant.
+      for (const theme of node.init.properties) for (const family of theme.value.properties) {
+        family.value.elements.forEach((story, index) => {
+          const prefix = 'field_story_' + theme.key.name + '_' + family.key.name + '_' + index;
+          add(prefix + '_title', story.elements[0].value);
+          add(prefix + '_text', story.elements[1].value);
+        });
+      }
     },
     ObjectExpression({node}) {
       const fields = Object.fromEntries(node.properties.filter(p => p.type === 'ObjectProperty' && p.key.type === 'Identifier' && p.value.type === 'StringLiteral').map(p => [p.key.name, p.value.value]));
@@ -35,7 +59,7 @@ for (const file of ['lesson_board_session_guide.jsx', 'lesson_board_plan_review.
     ArrayExpression({node}) {
       const values = node.elements.map(item => item?.type === 'StringLiteral' ? item.value : null);
       if (['choose_mission_step','create_inspect_step','explore_build_step'].includes(values[0])) add(values[0], values[1]);
-      if (['blueprint_choice','blueprint_order','blueprint_settings'].includes(values[1])) add(values[1], values[2]);
+      if (['blueprint_choice','blueprint_order','blueprint_settings','blueprint_classify','blueprint_connect','blueprint_place','blueprint_allocate','blueprint_repair'].includes(values[1])) add(values[1], values[2]);
     }
   });
 }

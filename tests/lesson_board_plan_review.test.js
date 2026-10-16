@@ -31,6 +31,18 @@ describe('Projected mission and construction explanations',()=>{
   it('does not promise a new route after a construction finishes the mission',()=>{
     expect(review('core').effects.find(effect=>effect.project.id==='bridge').opened).toBe(false);
   });
+  it('counts tabletop bridge crossings even when the destination has already been explored',()=>{
+    const board={...makeBoard(),goal:'expedition',playStyle:'tabletop'};
+    const result=simulatePlan(board,emptyRun(),['heater','cloud','heater','bridge','sequence','heater']);
+    expect(result.steps).toHaveLength(6);
+    expect(planReview(board,result).effects[0]).toMatchObject({tabletop:true,crossings:2,site:{id:'heater'},destination:{id:'sequence'}});
+  });
+  it('excludes travel from a tabletop yield project’s projected income',()=>{
+    const board={...makeBoard(),goal:'expedition',playStyle:'tabletop'};
+    const result=simulatePlan(board,emptyRun(),['heater','cloud','heater','research','river','heater']);
+    expect(result.steps).toHaveLength(6);
+    expect(planReview(board,result).effects[0]).toMatchObject({project:{id:'research'},earned:1});
+  });
   it('limits review-only glossary pictures to actually reviewed locations even for a shared term',()=>{
     const raw={...support(),definitionMode:'review'};raw.terms[0].locations=['heater','cloud'];
     const before=JSON.stringify(raw),limited=previewSupport(raw,['heater']);

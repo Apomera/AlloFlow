@@ -6,6 +6,14 @@ const require = createRequire(import.meta.url), { makeBoard } = require('../dev-
 const reviewed = (targetId, marks, success = true) => ({ phase: 'review', targetId, result: { success, marks } });
 
 describe('Board decision previews and learning records', () => {
+  it('includes actual tabletop bridge connections even when their destination was explored already', () => {
+    const board = {...makeBoard(),playStyle:'tabletop'}, site = engine.buildSite(board,'bridge'), project = board.projects.find(item=>item.id==='bridge');
+    const before = {turn:2,steps:{t0:reviewed('heater',{u:true}),t1:reviewed('cloud',{u:true}),t2:reviewed(project.effect.targetId,{u:true})}};
+    expect(moveDetails(board,before,'bridge').pathAlreadyOpen).toBe(false);
+    const run = {turn:3,steps:{...before.steps,t3:reviewed('bridge',{})}};
+    expect(moveDetails(board,run,site).connections.map(item=>item.id)).toContain(project.effect.targetId);
+    expect(moveDetails(board,run,'bridge').pathAlreadyOpen).toBe(true);
+  });
   it('includes earned project bonuses in the reward preview', () => {
     const board = makeBoard(), run = { turn: 3, steps: { t0: reviewed('heater', { u: true }), t1: reviewed('cloud', { u: true }), t2: reviewed('research', {}), t3: engine.emptyStep() } };
     expect(moveDetails(board, run, 'river').reward).toEqual([3, 1]);

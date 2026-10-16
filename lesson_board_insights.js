@@ -1,6 +1,22 @@
-import { derive, targets, stepOf, validValue, MAX_TURNS, attemptRecords, missionProgress } from './lesson_board_engine.js';
+import { isPuzzle, puzzleResponseText } from './lesson_board_puzzles.js';
+import { derive, targets, stepOf, validValue, MAX_TURNS, attemptRecords, missionProgress, isTabletop, spatialRoutes } from './lesson_board_engine.js';
+import { isSpatialChallenge, challengeResponseText } from './lesson_board_challenges.js';
 
 function availableLocations(board, progress) {
+  if (isTabletop(board)) {
+    const available = new Set([progress.position]);
+    // Traverse cleared territory from the party's actual position. New spaces
+    // are visible endpoints, never intermediate steps in a legal move.
+    const queue = [progress.position], routes = spatialRoutes(board, progress);
+    for (let index = 0; index < queue.length; index++) {
+      const current = queue[index];
+      for (const {from, to} of routes) {
+        const next = from === current ? to : to === current ? from : null;
+        if (next && !available.has(next)) { available.add(next); if (progress.visited.includes(next)) queue.push(next); }
+      }
+    }
+    return available;
+  }
   const available = new Set([...board.starts, ...progress.opened]);
   for (const [a, b] of board.edges) { if (progress.visited.includes(a)) available.add(b); if (progress.visited.includes(b)) available.add(a); }
   return available;
@@ -8,12 +24,13 @@ function availableLocations(board, progress) {
 // Multi-source BFS counts successful activities still needed, starting from every open site.
 export function unlockPath(board, run, id) {
   const progress = derive(board, run), available = availableLocations(board, progress);
+  const edges = isTabletop(board) ? spatialRoutes(board, progress).map(({from,to})=>[from,to]) : board.edges;
   if (progress.visited.includes(id)) return [];
   const queue = board.locations.filter(node => available.has(node.id) && !progress.visited.includes(node.id)).map(node => [node.id]), seen = new Set(queue.map(path => path[0]));
   while (queue.length) {
     const path = queue.shift(), last = path[path.length - 1];
     if (last === id) return path.map(key => board.locations.find(node => node.id === key));
-    for (const [a, b] of board.edges) { const next = a === last ? b : b === last ? a : null; if (next && !seen.has(next) && !progress.visited.includes(next)) { seen.add(next); queue.push([...path, next]); } }
+    for (const [a, b] of edges) { const next = a === last ? b : b === last ? a : null; if (next && !seen.has(next) && !progress.visited.includes(next)) { seen.add(next); queue.push([...path, next]); } }
   }
   return [];
 }
@@ -21,7 +38,8 @@ export function moveDetails(board, run, id) {
   const progress = derive(board, run), available = availableLocations(board, progress);
   const location = board.locations.find(item => item.id === id);
   if (location) {
-    const neighbors = new Set(board.edges.flatMap(([a, b]) => a === id ? [b] : b === id ? [a] : []));
+    const edges = isTabletop(board) ? spatialRoutes(board, progress).map(({from,to})=>[from,to]) : board.edges;
+    const neighbors = new Set(edges.flatMap(([a, b]) => a === id ? [b] : b === id ? [a] : []));
     return {
       complete: progress.complete,
       concept: board.concepts.find(item => item.id === location.conceptId),
@@ -36,8 +54,8 @@ export function moveDetails(board, run, id) {
   const project = board.projects.find(item => item.id === id);
   if (!project) return null;
   const built = progress.built.includes(id), shortfall = project.cost.map((amount, index) => Math.max(0, amount - progress.balance[index]));
-  const pathAlreadyOpen = project.effect.kind === 'path' && (progress.visited.includes(project.effect.targetId) || available.has(project.effect.targetId));
-  const mission = missionProgress(board,run), completesOnBuild = !built && mission.remainingProjects <= 1 && mission.remainingConcepts === 0 && (mission.goal !== 'expedition' || mission.remainingLocations === 0);
+  const pathAlreadyOpen = project.effect.kind === 'path' && (isTabletop(board) ? built : progress.visited.includes(project.effect.targetId) || available.has(project.effect.targetId));
+  const mission = missionProgress(board,run), completesOnBuild = !isTabletop(board) && !built && mission.remainingProjects <= 1 && mission.remainingConcepts === 0 && (mission.goal !== 'expedition' || mission.remainingLocations === 0);
   const yieldRemaining = built || progress.complete || completesOnBuild ? 0 : Math.min(board.locations.length - progress.visited.length, Math.max(0,MAX_TURNS - run.turn - 1));
   return { complete: progress.complete, built, shortfall, affordable: !built && shortfall.every(amount => amount === 0), after: progress.balance.map((amount, index) => amount - project.cost[index]), pathAlreadyOpen,
     yieldRemaining, yieldPotential: [0, 1].map(index => project.effect.kind === 'yield' && index === project.effect.resource ? yieldRemaining : 0), yieldBreakEven: project.effect.kind === 'yield' ? project.cost[project.effect.resource] : null,
@@ -89,6 +107,8 @@ export function learningSummary(board, run, roster) {
 
 export function responseText(node, value) {
   if (!validValue(node, value)) return '';
+  if (isPuzzle(node)) return puzzleResponseText(node, value);
+  if (isSpatialChallenge(node)) return challengeResponseText(node, value);
   const indices = value.split(',').map(Number);
   if (node.kind === 'choice') return node.options[indices[0]];
   if (node.kind === 'order') return indices.map((item, index) => (index + 1) + '. ' + node.items[item]).join('; ');

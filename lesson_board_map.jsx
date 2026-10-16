@@ -2,9 +2,14 @@ import {worldProgress} from './lesson_board_world.js';
 import {SupportImage} from './lesson_board_support_ui.jsx';
 import {tr} from './lesson_board_strings.js';
 import {symbolOf,hasSymbols,SYMBOL_LICENCE_URL} from './lesson_board_symbols.js';
+import {SpatialBoard} from './lesson_board_tabletop.jsx';
 export function SymbolCredit({support,showImages=true,t}){if(!showImages||!hasSymbols(support))return null;return <p className="lb-muted" data-symbol-credit>{tr(t,'symbol_credit','Picture symbols: {credit}.',{credit:support.art.symbolCredit})} <a href={SYMBOL_LICENCE_URL} target="_blank" rel="noopener noreferrer">{tr(t,'symbol_licence','View the licence')}</a></p>;}
 const React=window.React;
-export function BoardMap({support,showImages,planned=[],board,run,progress,ready,selected,onSelect,view,currentId,Icon,projection=false,t}) {
+export function BoardMap(props) {
+  if(props.board?.playStyle==='tabletop')return <><SpatialBoard {...props}/><SymbolCredit support={props.support} showImages={props.showImages} t={props.t}/></>;
+  return <LegacyBoardMap {...props}/>;
+}
+function LegacyBoardMap({support,showImages,planned=[],board,run,progress,ready,selected,onSelect,view,currentId,Icon,projection=false,t}) {
   const ref=React.useRef(null),[lines,setLines]=React.useState([]),world=React.useMemo(()=>worldProgress(board,run),[board,run]);
   const ordered=[],queue=[...board.starts],seen=new Set();
   while(queue.length){const id=queue.shift();if(seen.has(id))continue;seen.add(id);const node=board.locations.find(item=>item.id===id);if(node)ordered.push(node);for(const [a,b] of board.edges){if(a===id&&!seen.has(b))queue.push(b);if(b===id&&!seen.has(a))queue.push(a);}}

@@ -1,11 +1,13 @@
 import {planReview, previewSupport} from './lesson_board_plan_review.js';
-import {targets} from './lesson_board_engine.js';
+import {targets,stepOf} from './lesson_board_engine.js';
 import {simulatePlan} from './lesson_board_sandbox.js';
 import {BoardMap} from './lesson_board_map.jsx';
-import {Amounts} from './lesson_board_play_extras.jsx';
+import {ResourceCounters} from './lesson_board_tokens.jsx';
+import {VentureForecastNote} from './lesson_board_tactical_preview.jsx';
 import {tr} from './lesson_board_strings.js';
 const React=window.React;
 const NoIcon=()=>null;
+const moveId=entry=>typeof entry==='string'?entry:entry?.id||'';
 
 export function PlanMissionReview({board,result,t}) {
   const review=planReview(board,result);
@@ -16,7 +18,7 @@ export function PlanMissionReview({board,result,t}) {
       {review.remainingProjects>0&&<li>{tr(t,'plan_review_missing_projects','Build {count} more constructions.',{count:review.remainingProjects})}</li>}
       {review.remainingLocations.length>0&&<li>{tr(t,'plan_review_missing_locations','Explore {count} remaining locations: {names}',{count:review.remainingLocations.length,names:review.remainingLocations.map(node=>node.name).join(', ')})}</li>}
     </ul></>}
-    {review.effects.length>0&&<><h5>{tr(t,'plan_review_effects','Effects within this plan')}</h5><ul>{review.effects.map(effect=><li key={effect.project.id} data-plan-effect={effect.project.id}><strong>{effect.project.name}: </strong>{effect.project.effect.kind==='yield'?tr(t,'plan_review_earned','{count} extra {resource} from later explorations in this plan.',{count:effect.earned,resource:board.resources[effect.project.effect.resource]}):effect.opened?tr(t,'plan_review_opened','Opens a new route to {name}.',{name:effect.destination.name}):effect.visitedBefore?tr(t,'plan_review_already_visited','{name} is already explored when this shortcut is built.',{name:effect.destination.name}):result.progress.complete&&result.steps[result.steps.length-1]?.id===effect.project.id?tr(t,'plan_review_final_project','This construction completes the mission, so there is no later exploration.'):tr(t,'plan_review_already_open','{name} is already reachable when this shortcut is built.',{name:effect.destination.name})}</li>)}</ul></>}
+    {review.effects.length>0&&<><h5>{tr(t,'plan_review_effects','Effects within this plan')}</h5><ul>{review.effects.map(effect=><li key={effect.project.id} data-plan-effect={effect.project.id}><strong>{effect.project.name}: </strong>{effect.project.effect.kind==='yield'?tr(t,'plan_review_earned','{count} extra {resource} from later explorations in this plan.',{count:effect.earned,resource:board.resources[effect.project.effect.resource]}):effect.tabletop?tr(t,'plan_review_bridge_crossings','Connects {from} and {to}; crossed in {count} later planned moves.',{from:effect.site.name,to:effect.destination.name,count:effect.crossings}):effect.opened?tr(t,'plan_review_opened','Opens a new route to {name}.',{name:effect.destination.name}):effect.visitedBefore?tr(t,'plan_review_already_visited','{name} is already explored when this shortcut is built.',{name:effect.destination.name}):result.progress.complete&&result.steps[result.steps.length-1]?.id===effect.project.id?tr(t,'plan_review_final_project','This construction completes the mission, so there is no later exploration.'):tr(t,'plan_review_already_open','{name} is already reachable when this shortcut is built.',{name:effect.destination.name})}</li>)}</ul></>}
     <p className="lb-muted">{tr(t,'plan_review_learning_note','Projected exploration shows route coverage. It does not record anyone’s understanding or award learning credit.')}</p>
   </details>;
 }
@@ -28,25 +30,27 @@ export function PlanTradeoffs({board,plans,t}) {
 }
 
 function PreviewWorld({board,base,ids,title,support,showImages,Icon,t}) {
-  const routeKey=JSON.stringify([base,ids,title]),[position,setPosition]=React.useState(null),[view,setView]=React.useState('board');
+  const routeKey=JSON.stringify([base,ids,title]),[position,setPosition]=React.useState(null),[view,setView]=React.useState(board.playStyle==='tabletop'?'tabletop':'board');
   React.useEffect(()=>setPosition(null),[routeKey]);
   const index=position?.key===routeKey?Math.min(position.index,ids.length):ids.length;
   const frame=React.useMemo(()=>simulatePlan(board,base,ids.slice(0,index)),[board,base,ids,index]);
   const move=frame.steps[frame.steps.length-1],selected=position?.key===routeKey?position.selected:move?.id||'';
+  const projectionTurn=move?frame.run.turn-Number(stepOf(frame.run).phase==='choose'):undefined;
   const inspected=[...board.locations,...board.projects].find(node=>node.id===selected);
   const pictures=React.useMemo(()=>previewSupport(support,frame.initial.visited),[support,frame.initial]);
-  const go=next=>setPosition({key:routeKey,index:next,selected:next?ids[next-1]:''});
+  const go=next=>setPosition({key:routeKey,index:next,selected:next?moveId(ids[next-1]):''});
   const select=id=>setPosition({key:routeKey,index,selected:id});
   return <div className="lb-plan-preview-world">
     <p className="lb-notice">{tr(t,'plan_preview_help','This is a projected world. Each planned exploration assumes a successful response. Selecting a location here only inspects this preview.')}</p>
-    <div className="lb-plan-preview-controls"><label>{tr(t,'plan_preview_position','Preview point')}<select data-plan-preview-position value={index} onChange={event=>go(Number(event.target.value))}><option value={0}>{tr(t,'plan_preview_start','Starting board')}</option>{ids.map((id,i)=><option key={i} value={i+1}>{tr(t,'plan_preview_option','After move {count}: {name}',{count:i+1,name:[...board.locations,...board.projects].find(node=>node.id===id)?.name||''})}</option>)}</select></label><div className="lb-row"><button type="button" data-plan-preview-prev disabled={index===0} onClick={()=>go(index-1)}>{tr(t,'plan_preview_previous','Previous preview step')}</button><button type="button" data-plan-preview-next disabled={index===ids.length} onClick={()=>go(index+1)}>{tr(t,'plan_preview_next','Next preview step')}</button></div></div>
+    <div className="lb-plan-preview-controls"><label>{tr(t,'plan_preview_position','Preview point')}<select data-plan-preview-position value={index} onChange={event=>go(Number(event.target.value))}><option value={0}>{tr(t,'plan_preview_start','Starting board')}</option>{ids.map((id,i)=><option key={i} value={i+1}>{tr(t,'plan_preview_option','After move {count}: {name}',{count:i+1,name:[...board.locations,...board.projects].find(node=>node.id===moveId(id))?.name||''})}</option>)}</select></label><div className="lb-row"><button type="button" data-plan-preview-prev disabled={index===0} onClick={()=>go(index-1)}>{tr(t,'plan_preview_previous','Previous preview step')}</button><button type="button" data-plan-preview-next disabled={index===ids.length} onClick={()=>go(index+1)}>{tr(t,'plan_preview_next','Next preview step')}</button></div></div>
     <p role="status" data-plan-preview-status>{index?tr(t,'plan_preview_at','{plan}: after {count} of {total} planned moves.',{plan:title,count:index,total:ids.length}):tr(t,'plan_preview_at_start','{plan}: starting board before any planned moves.',{plan:title})}</p>
-    <p><strong>{tr(t,'sandbox_projected_supplies','Projected supplies')}</strong></p><Amounts board={board} values={frame.progress.balance} zeros/>
+    <p><strong>{tr(t,'sandbox_projected_supplies','Projected supplies')}</strong></p><ResourceCounters board={board} values={frame.progress.balance} label={tr(t,'sandbox_projected_supplies','Projected supplies')} t={t}/>
+    <VentureForecastNote board={board} uncertainVentures={frame.uncertainVentures} pendingVenture={frame.progress.fieldVenture} t={t}/>
     {move?.newlyOpened.length>0&&<p data-plan-preview-opened>{tr(t,'plan_preview_new_routes','This step opens: {names}',{names:board.locations.filter(node=>move.newlyOpened.includes(node.id)).map(node=>node.name).join(', ')})}</p>}
     {frame.progress.complete&&<p>{tr(t,'sandbox_mission_complete','This plan would complete the mission.')}</p>}
-    <div className="lb-row" role="group" aria-label={tr(t,'plan_preview_display','Preview display')}><button type="button" data-plan-preview-map aria-pressed={view==='board'} onClick={()=>setView('board')}>{tr(t,'plan_preview_map','Preview map')}</button><button type="button" data-plan-preview-list aria-pressed={view==='list'} onClick={()=>setView('list')}>{tr(t,'plan_preview_list','Preview location list')}</button></div>
+    <div className="lb-row" role="group" aria-label={tr(t,'plan_preview_display','Preview display')}><button type="button" data-plan-preview-map aria-pressed={view==='board'} onClick={()=>setView('board')}>{tr(t,'plan_preview_map','Preview map')}</button>{board.playStyle==='tabletop'&&<button type="button" data-plan-preview-tabletop aria-pressed={view==='tabletop'} onClick={()=>setView('tabletop')}>{tr(t,'plan_preview_tabletop','Preview 3D tabletop')}</button>}<button type="button" data-plan-preview-list aria-pressed={view==='list'} onClick={()=>setView('list')}>{tr(t,'plan_preview_list','Preview location list')}</button></div>
     {inspected&&<p data-plan-preview-selection><strong>{tr(t,'plan_preview_inspecting','Inspecting in preview: {name}',{name:inspected.name})}</strong>{' '}{inspected.cost?inspected.description:board.concepts.find(concept=>concept.id===inspected.conceptId)?.name}</p>}
-    <BoardMap projection board={board} run={frame.run} progress={frame.progress} ready={targets(board,frame.run).map(node=>node.id)} selected={selected} onSelect={select} support={pictures} showImages={showImages} Icon={Icon||NoIcon} view={view} t={t}/>
+    <BoardMap projection projectionTurn={projectionTurn} planned={ids.slice(index).map(moveId)} board={board} run={frame.run} progress={frame.progress} ready={targets(board,frame.run).map(node=>node.id)} selected={selected} onSelect={select} support={pictures} showImages={showImages} Icon={Icon||NoIcon} view={view} t={t}/>
   </div>;
 }
 

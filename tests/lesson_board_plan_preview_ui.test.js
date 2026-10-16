@@ -18,8 +18,8 @@ describe('Step-by-step projected board',()=>{
     expect(node('[data-board-map] [data-map-construction="bridge"]').dataset.built).toBe('false');
     expect(node('[data-plan-preview-opened]').textContent).toContain('Cycle mechanism');
     await point(2);expect(node('[data-plan-map] [data-map-construction="research"]').dataset.built).toBe('false');
-    expect(node('[data-plan-preview] .lb-tokens').textContent).toContain('4 Observation tokens');
-    await point(0);expect(node('[data-plan-preview-prev]').disabled).toBe(true);expect(node('[data-plan-preview] .lb-tokens').textContent).toContain('0 Observation tokens');
+    expect(node('[data-plan-preview] [data-resource-count="0"]').textContent).toBe('4');
+    await point(0);expect(node('[data-plan-preview-prev]').disabled).toBe(true);expect(node('[data-plan-preview] [data-resource-count="0"]').textContent).toBe('0');
     await click('[data-plan-preview-next]');expect(node('[data-plan-preview-status]').textContent).toContain('after 1 of 5');
     expect(JSON.stringify(run)).toBe(before);expect(onMove).not.toHaveBeenCalled();expect(onAnswer).not.toHaveBeenCalled();expect(localStorage.length+sessionStorage.length).toBe(0);
   });
@@ -37,7 +37,7 @@ describe('Step-by-step projected board',()=>{
   it('keeps the earlier preview while a real move makes the plan stale',async()=>{
     const b=board(),run=e.emptyRun();await start({board:b,run});const next=e.merge(run,e.begin(b,run,'cloud'));
     await render(UI.BoardView,{board:b,run:next,role:'solo',uid:'solo'});expect(node('[data-sandbox-stale]')).toBeTruthy();expect(node('[data-sandbox-inspect]').disabled).toBe(true);
-    await point(0);expect(node('[data-plan-preview] .lb-tokens').textContent).toContain('0 Observation tokens');expect(node('[data-plan-map] [data-location="cloud"]').dataset.built).toBe('false');
+    await point(0);expect(node('[data-plan-preview] [data-resource-count="0"]').textContent).toBe('0');expect(node('[data-plan-map] [data-location="cloud"]').dataset.built).toBe('false');
   });
   it('does not reveal review-only pictures through a hypothetical successful response',async()=>{
     const raw={...support(),definitionMode:'review'};await start({support:raw});
@@ -56,4 +56,29 @@ describe('Step-by-step projected board',()=>{
     const a=node('[data-sandbox-comparison="0"]');expect(a.textContent).toContain('5 remaining locations');expect(a.querySelector('[data-plan-effect="research"]').textContent).toContain('1 extra Observation tokens');
     expect(node('[data-sandbox-comparison="1"] [data-plan-effect="research"]').textContent).toContain('0 extra Observation tokens');
   });
+  it('previews explicit tabletop payments and full names at every rewind point',async()=>{
+    const b={...board(),playStyle:'tabletop'},base=simulatePlan(b,e.emptyRun(),['heater','cloud']).run;
+    const ids=[{id:'network',funding:'research'},'rain'],before=JSON.stringify(base);
+    await render(UI.PlanMapPreview,{board:b,base,ids,title:'Plan A'});await click('[data-plan-preview] > summary');
+    expect(node('[data-spatial-board]').dataset.spatialView).toBe('tabletop');
+    expect(node('[data-plan-preview-position]').textContent).toContain('After move 1: Water-cycle network');
+    await point(1);expect(node('[data-plan-preview-selection]').textContent).toContain('Water-cycle network');
+    expect(node('[data-plan-preview] [data-resource-count="0"]').textContent).toBe('1');
+    await point(0);expect(node('[data-plan-map] [data-map-construction="network"] [data-plan-pin]').textContent).toBe('1');
+    await click('[data-plan-preview-map]');await click('[data-plan-preview-tabletop]');
+    expect(JSON.stringify(base)).toBe(before);expect(localStorage.length+sessionStorage.length).toBe(0);
+  });
+  it('connects route planning to the live board without spending or submitting until an explicit action',async()=>{
+    const b={...board(),playStyle:'tabletop'},run=simulatePlan(b,e.emptyRun(),['heater','cloud']).run,before=JSON.stringify(run),onMove=vi.fn(),onAnswer=vi.fn();
+    await render(UI.BoardView,{board:b,run,role:'solo',onMove,onAnswer});
+    await click('[data-open-planning]');expect(node('[data-board-sandbox]').open).toBe(true);
+    await click('[data-sandbox-start]');await click('[data-sandbox-construction="network"] [value="research"]');await click('[data-sandbox-add="network"]');
+    expect(node('[data-board-map] [data-map-construction="network"] [data-plan-pin]').textContent).toBe('1');
+    await click('[data-sandbox-inspect]');
+    expect(node('[data-board-sandbox]').open).toBe(false);expect(node('.lb-current h3').textContent).toBe('Water-cycle network');
+    expect(node('.lb-current [value="research"]').checked).toBe(true);expect(onMove).not.toHaveBeenCalled();expect(onAnswer).not.toHaveBeenCalled();expect(JSON.stringify(run)).toBe(before);
+    expect(node('[data-board-map] [data-plan-pin]')).toBeNull();
+    await click('[data-board-move="network"]');expect(onMove).toHaveBeenCalledWith('network','research');
+  });
+
 });

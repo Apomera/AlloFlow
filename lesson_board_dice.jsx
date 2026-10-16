@@ -27,7 +27,7 @@ export function DiscoveryCard({ card, fresh = false, t }) {
 // Rolls play once per page visit; later renders show the settled result.
 const played = new Set();
 export function FortuneRoll({ board, run, t }) {
-  const step = engine.stepOf(run), entry = React.useMemo(() => engine.derive(board, run).luck.find(item => item.turn === run.turn), [board, run]);
+  const step = engine.stepOf(run), progress = React.useMemo(() => engine.derive(board, run), [board, run]), entry = progress.luck.find(item => item.turn === run.turn), venture = progress.fieldDeliveries?.find(item => item.turn === run.turn && item.kind === 'venture');
   const key = entry ? [board.title, run.turn, step.retryRound || 0, entry.dice.join('-')].join(':') : '';
   const [rolling, setRolling] = useState(() => !!key && !played.has(key));
   useEffect(() => { if (!key || played.has(key)) { setRolling(false); return; } setRolling(true); playDiceSound(reducedMotion() ? 0.3 : 1.7); const timer = setTimeout(() => { played.add(key); setRolling(false); }, reducedMotion() ? 250 : 2000); return () => clearTimeout(timer); }, [key]);
@@ -35,8 +35,9 @@ export function FortuneRoll({ board, run, t }) {
   const card = entry.cardId ? board.discoveries?.find(item => item.id === entry.cardId) : null, roll = entry.roll, resource = board.resources[entry.gain[0] ? 0 : 1];
   const headline = { steady: tr(t, 'fortune_steady', 'You rolled {roll}. Steady progress: your base reward is safe.', { roll }), single: tr(t, 'fortune_single', 'You rolled {roll}! Bonus: +1 {resource}.', { roll, resource }), double: tr(t, 'fortune_double', 'You rolled {roll}! Bonus: +1 of each resource.', { roll }), discovery: card ? tr(t, 'fortune_discovery', 'You rolled {roll}! You revealed a discovery card.', { roll }) : tr(t, 'fortune_all_found', 'You rolled {roll}! Every discovery card is found, so you earn +1 of each resource.', { roll }), jackpot: card ? tr(t, 'fortune_jackpot', 'Natural 20! A discovery card and +1 of each resource.') : tr(t, 'fortune_jackpot_plain', 'Natural 20! +2 of each resource.') }[entry.outcome];
   return <section className="lb-fortune" data-board-fortune data-outcome={entry.outcome} aria-label={tr(t, 'fortune_title', 'Fortune roll')}><DiceStyles/>
-    <div className="lb-fortune-dice" key={key}>{entry.dice.map((value, index) => <D20 key={index} value={value} animate={rolling} dim={entry.dice.length > 1 && index !== entry.dice.indexOf(roll)}/>)}</div>
+    <div className="lb-fortune-dice" key={key}>{entry.dice.map((value, index) => <D20 key={index} value={value} animate={rolling} dim={entry.dice.length > 1 && index !== entry.dice.indexOf(roll) && !(venture && index === 0)}/>)}</div>
     <div><h4>{tr(t, 'fortune_title', 'Fortune roll')}</h4>{entry.dice.length > 1 && <p className="lb-muted">{tr(t, 'fortune_advantage', 'Momentum bonus: two dice rolled ({dice}). The higher one counts.', { dice: entry.dice.join(', ') })}</p>}
+      {!rolling && venture?.firstDie && <p className="lb-muted" data-venture-die-note>{tr(t, 'venture_fortune_first_die', 'Exploration find: the first die ({roll}) decides the possible bonus. The higher die still decides ordinary fortune.', {roll:venture.firstDie})}</p>}
       {rolling && <p className="lb-muted" aria-hidden="true">{tr(t, 'fortune_rolling', 'Rolling the fortune die\u2026')}</p>}
       <div role="status" data-fortune-result>{!rolling && <><p className="lb-fortune-headline">{headline}</p>{entry.gain.some(value => value > 0) && <Amounts board={board} values={entry.gain} prefix="+"/>}</>}</div>
     </div>

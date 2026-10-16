@@ -1,4 +1,4 @@
-import { runOf, stepOf, derive } from './lesson_board_engine.js';
+import { runOf, stepOf, derive, isTravelStep } from './lesson_board_engine.js';
 import { roleAssignments } from './lesson_board_roles.js';
 
 // This is a local orientation marker, not a transport timestamp or a saved game.
@@ -26,13 +26,14 @@ export function boardOrientation(state, roster, uid, pending) {
   const next = !joined ? 'join' : state.isPaused ? 'paused' : pending ? 'delivery' : progress.complete ? 'complete' :
     phase === 'answer' ? answered ? 'answered' : step.retryRound ? 'retry' : 'answer' :
     phase === 'review' ? 'review' : proposed ? 'proposed' : 'choose';
-  const recent = Object.entries(run.steps || {}).filter(([key, value]) => /^t\d+$/.test(key) && Number(key.slice(1)) <= run.turn && value.result)
-    .sort(([a], [b]) => Number(b.slice(1)) - Number(a.slice(1)))[0]?.[1];
+  const recentEntry = Object.entries(run.steps || {}).filter(([key, value]) => /^t\d+$/.test(key) && Number(key.slice(1)) <= run.turn && value.result)
+    .sort(([a], [b]) => Number(b.slice(1)) - Number(a.slice(1)))[0];
+  const recent = recentEntry?.[1];
   const recentNode = recent && [...board.locations, ...board.projects].find(node => node.id === recent.targetId);
   return {
     turn: run.turn + 1, phase, next, progress,
     target: [...board.locations, ...board.projects].find(node => node.id === step.targetId)?.name || '',
     roles: roleAssignments(state.boardRoles, roster, run.turn).filter(role => role.uid === uid),
-    recent: recentNode ? { name: recentNode.name, outcome: recentNode.cost ? 'built' : recent.result.success ? 'explored' : 'review' } : null,
+    recent: recentNode ? { name: recentNode.name, outcome: recentNode.cost ? 'built' : isTravelStep(board,run,Number(recentEntry[0].slice(1))) ? 'traveled' : recent.result.success ? 'explored' : 'review' } : null,
   };
 }

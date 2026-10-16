@@ -1,4 +1,6 @@
+import {puzzleValidDraft} from './lesson_board_puzzles.js';
 import {prepareReplay} from './lesson_board_replay.js';
+import {challengeValidDraft} from './lesson_board_challenges.js';
 import {prepareFinale} from './lesson_board_finale.js';
 import * as engine from './lesson_board_engine.js';
 import { prepareBoard, emptyRun, derive } from './lesson_board_engine.js';
@@ -42,17 +44,18 @@ export const soloStorageKey = (board, appId, uid) => {
 };
 export function soloWorkspace(board, run, value) {
   const selected = [...board.locations, ...board.projects].some(item => item.id === value?.selected) ? value.selected : board.starts[0];
-  const result = { selected, view: ['list','focus'].includes(value?.view) ? value.view : 'board', drafts: {} };
+  const result = { selected, view: ['list','focus'].includes(value?.view) || board.playStyle === 'tabletop' && value?.view === 'tabletop' ? value.view : 'board', drafts: {} };
   const replay=prepareReplay(board,run,value?.replay);if(replay)result.replay=replay;
   const finale=prepareFinale(board,run,value?.finale);if(finale)result.finale=finale;
   if (value?.showImages === false) result.showImages = false;
   if (['active','off'].includes(value?.guideMode)) result.guideMode = value.guideMode;
+  if (board.playStyle==='tabletop' && board.contracts?.some(contract=>contract.id===value?.contractGoal)) result.contractGoal=value.contractGoal;
   if (board.projects.some(project => project.id === value?.projectGoal)) result.projectGoal = value.projectGoal;
   for (const node of board.locations) {
     const round = engine.stepOf(run).retryRound || 0, key = run.turn + ':' + (round ? round + ':' : '') + node.id, draft = value?.drafts?.[key];
     if (typeof draft !== 'string' || draft.length > 24) continue;
     const partialSettings = node.kind === 'settings' && draft.split(',').length === node.controls.length && draft.split(',').every((part, index) => part === '' || /^[0-9]$/.test(part) && Number(part) < node.controls[index].options.length);
-    if (draft === engine.initialDraft(node) || engine.validValue(node, draft) || partialSettings) result.drafts[key] = draft;
+    if (draft === engine.initialDraft(node) || engine.validValue(node, draft) || partialSettings || challengeValidDraft(node, draft) || puzzleValidDraft(node, draft)) result.drafts[key] = draft;
   }
   return result;
 }

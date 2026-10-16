@@ -1,5 +1,9 @@
+import { isPuzzle } from './lesson_board_puzzles.js';
+import { isSpatialChallenge, challengeTargets, challengeTargetField, challengeAnswerField } from './lesson_board_challenges.js';
 export function canMixPractice(node) {
-  const text = [node.instruction,node.explanation,...(node.hints || []),...(node.options || []),...(node.items || []),...(node.controls || []).flatMap(control => [control.label,...control.options])].join(' ');
+  // Named placement destinations may encode physical order; keep their layout.
+  if (node.kind === 'place' || isPuzzle(node)) return false;
+  const text = [node.instruction,node.explanation,...(node.hints || []),...(node.options || []),...(node.items || []),...(node.categories || []),...(node.matches || []),...(node.slots || []),...(node.controls || []).flatMap(control => [control.label,...control.options])].join(' ');
   // Conservatively keep wording that may depend on displayed choice positions.
   return !(/\b(?:all|none|both|any)\s+(?:of\s+)?(?:the\s+)?(?:above|below|preceding|following)\b|\b(?:option|choice|answer)s?\s+(?:[a-e]|[1-5]|one|two|three|four|five)\b|\b(?:first|second|third|fourth|fifth|last|top|bottom|previous|next)\s+(?:option|choice|answer|item)\b|\b[a-e]\s+(?:and|or|&)\s+[a-e]\b|\b(?:todas?|ninguna|ambas)\s+(?:las?\s+)?(?:anteriores|siguientes)\b|\b(?:toutes?|aucune)\s+(?:les?\s+)?(?:réponses?\s+)?(?:ci-dessus|précédentes?)\b/i.test(text));
 }
@@ -12,6 +16,10 @@ export function practiceVariant(node, round = 0) {
     return values.slice(offset).concat(values.slice(0, offset));
   };
   if (!turn || !canMixPractice(node)) return node;
+  if (isSpatialChallenge(node)) {
+    const targets = challengeTargets(node), indices = rotation(targets.map((_, index) => index));
+    return { ...node, [challengeTargetField(node)]: indices.map(index => targets[index]), [challengeAnswerField(node)]: node[challengeAnswerField(node)].map(index => indices.indexOf(index)) };
+  }
   if (node.kind === 'choice') {
     const indices = rotation(node.options.map((_, index) => index));
     return { ...node, options: indices.map(index => node.options[index]), answer: indices.indexOf(node.answer) };

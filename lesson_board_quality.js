@@ -40,9 +40,11 @@ export function boardChanges(before, after) {
     added: [...next.values()].filter(node => !old.has(node.id)).map(node => node.name),
     removed: [...old.values()].filter(node => !next.has(node.id)).map(node => node.name),
     projects: JSON.stringify(before?.projects) !== JSON.stringify(after?.projects),
+    ...(before?.expeditionKit || after?.expeditionKit ? {kit:before?.expeditionKit!==after?.expeditionKit} : {}),
+    ...(before?.contracts || after?.contracts ? { contracts: JSON.stringify(before?.contracts) !== JSON.stringify(after?.contracts) } : {}),
     story: ['title', 'mission', 'debrief'].some(key => before?.[key] !== after?.[key])
   };
 }
 // Groups the mechanical repair codes into a few teacher-readable categories.
-export const FIX_GROUPS = { reply: ['json', 'truncated', 'recovered'], quotes: ['quotes'], activities: ['answers', 'options', 'kinds'], map: ['paths', 'starts', 'shortcut', 'trimmed'], economy: ['balance', 'rewards', 'costs', 'effects', 'projects'], details: ['ids', 'text', 'concepts', 'icons', 'hints', 'theme', 'version', 'resources', 'fields'], cards: ['cards'] };
+export const FIX_GROUPS = { reply: ['json', 'truncated', 'recovered'], quotes: ['quotes'], activities: ['answers', 'options', 'kinds'], map: ['paths', 'starts', 'shortcut', 'trimmed'], economy: ['balance', 'rewards', 'costs', 'effects', 'projects'], details: ['ids', 'text', 'concepts', 'icons', 'hints', 'theme', 'version', 'resources', 'fields', 'kit'], cards: ['cards'], contracts: ['contracts'] };
 export const fixGroups = fixes => Object.keys(FIX_GROUPS).filter(group => FIX_GROUPS[group].some(code => (fixes || []).includes(code)));
