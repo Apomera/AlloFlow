@@ -412,6 +412,7 @@ const _dsMirrorSet = (key, storedValue) => {
 // store back periodically and on hide/unload. window.__alloPrefsHydrated +
 // the allo-prefs-hydrated event let the monolith's mount gate hold first
 // paint briefly so boot-time reads (theme, a11y) see restored values.
+const _isPrivateClassroomStorageKey = (key) => key === 'alloflow_classroom_roster_state_v1' || key === 'alloflow_classroom_sync_keys';
 if (_dsBridgeWanted && typeof window !== 'undefined') {
   let _prefsHydrationPromise = null;
   let _lsSnapshotPromise = null;
@@ -432,6 +433,7 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
       if (snap && typeof snap === 'object') {
         Object.keys(snap).forEach((k) => {
           try {
+            if (_isPrivateClassroomStorageKey(k)) return;
             if (typeof snap[k] !== 'string') return;
             const currentValue = localStorage.getItem(k);
             if (currentValue === snap[k]) return;
@@ -470,7 +472,7 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
         const dump = {};
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
-          if (k) dump[k] = localStorage.getItem(k);
+          if (k && !_isPrivateClassroomStorageKey(k)) dump[k] = localStorage.getItem(k);
         }
         const sig = JSON.stringify(dump);
         if (sig === _lsLastSnapshotSig) continue;

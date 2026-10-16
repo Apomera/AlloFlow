@@ -708,7 +708,15 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : (t('lesson_plan.title') || 'Lesson Plan'))}`,
                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : (t('lesson_plan.title') || 'Lesson Plan')),
                 timestamp: new Date(),
-                config: { gradeLevel, language: planLanguage, generationInputs }
+                config: { gradeLevel, language: planLanguage, generationInputs,
+                    ...(deps.generationSource ? {
+                        inputArtifactId: deps.generationSource.inputArtifactId || null,
+                        sourceArtifactId: deps.generationSource.sourceArtifactId || null,
+                        sourceFamilyId: deps.generationSource.sourceFamilyId || null,
+                        unitId: deps.generationSource.unitId || null,
+                        sourceSnapshot: deps.generationSource.sourceSnapshot || null,
+                        generationInputText: deps.generationSource.text
+                    } : {}) }
             };
             if (switchView) {
                 setGeneratedContent(newItem);
@@ -720,6 +728,7 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             else if (isParentMode) successToastKey = 'lesson_plan.success_family';
             addToast(t(successToastKey), "success");
             flyToElement('tour-tool-lesson-plan');
+            return newItem;
         } catch (e) {
             warnLog("Unhandled error:", e);
             setError(t('lesson_plan.error_gen_failed'));

@@ -668,6 +668,7 @@ function useImmersiveTimeouts() {
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
   const dialogRef = useOverlayDialogFocus(isOpen);
+  const paragraphs = useMemo(() => isOpen ? String(text || "").replace(/<\/?[a-zA-Z][^<>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim().split(/\n{2,}/).filter(Boolean) : [], [isOpen, text]);
   const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
     try {
       const v = parseInt(localStorage.getItem("allo_crawl_speed"), 10);
@@ -679,7 +680,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   useEffect(() => {
     writeCrawlPreference("allo_crawl_speed", String(speedPxPerSec));
   }, [speedPxPerSec]);
-  const [isPlaying, setIsPlaying] = useState(() => !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+  const [isPlaying, setIsPlaying] = useState(() => isOpen && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
   const [translateY, setTranslateY] = useState(0);
   const [palette, setPalette] = useState(() => {
     try {
@@ -724,11 +725,37 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     setProgressPct(0);
     lastTsRef.current = null;
   }, []);
+  const togglePlay = useCallback(() => {
+    if (finished) {
+      resetCrawl();
+      setIsPlaying(true);
+    } else setIsPlaying((pl) => !pl);
+  }, [finished, resetCrawl]);
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setIsPlaying(false);
+      return;
+    }
     resetCrawl();
     setIsPlaying(!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
   }, [isOpen, text, resetCrawl]);
+  useEffect(() => {
+    if (!isOpen || !window.matchMedia) return;
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let active = true;
+    const pauseForReducedMotion = (event) => {
+      if (active && event.matches) setIsPlaying(false);
+    };
+    const modern = typeof preference.addEventListener === "function" && typeof preference.removeEventListener === "function";
+    if (modern) preference.addEventListener("change", pauseForReducedMotion);
+    else preference.addListener?.(pauseForReducedMotion);
+    pauseForReducedMotion(preference);
+    return () => {
+      active = false;
+      if (modern) preference.removeEventListener?.("change", pauseForReducedMotion);
+      else preference.removeListener?.(pauseForReducedMotion);
+    };
+  }, [isOpen]);
   useEffect(() => {
     if (!isOpen || !isPlaying) {
       lastTsRef.current = null;
@@ -844,7 +871,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
-        setIsPlaying((pl) => !pl);
+        togglePlay();
       } else if (e.key === "Escape") onClose();
       else if (e.key === "r" || e.key === "R") {
         resetCrawl();
@@ -853,17 +880,9 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose, resetCrawl]);
+  }, [isOpen, onClose, resetCrawl, togglePlay]);
   if (!isOpen) return null;
-  const cleaned = String(text || "").replace(/<\/?[a-zA-Z][^<>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim();
-  const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
   const staticPreview = !isPlaying && translateY === 0;
-  const togglePlay = () => {
-    if (finished) {
-      resetCrawl();
-      setIsPlaying(true);
-    } else setIsPlaying((pl) => !pl);
-  };
   return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "perspective-crawl-dialog-title", tabIndex: -1, "data-help-key": "perspective_crawl_overlay_panel", className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_exit_btn", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("h2", { id: "perspective-crawl-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "data-help-key": "perspective_crawl_speed_control", "aria-label": t("immersive.crawl_speed_aria") || "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-end" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "data-help-key": "perspective_crawl_palette_select", "aria-label": t("a11y.fab_open_palette"), value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
     "button",
     {

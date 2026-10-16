@@ -859,6 +859,7 @@ const handleLoadProject = (e, deps) => {
                              stats: snapshot.stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] },
                              currentScene: snapshot.currentScene,
                              history: snapshot.history || [],
+                             readingSource: snapshot.readingSource || null,
                              turnCount: snapshot.turnCount || 0,
                              climax: snapshot.climax || { isActive: false, archetype: 'Auto', masteryScore: 0, attempts: 0 },
                              debateMomentum: snapshot.debateMomentum ?? 50,

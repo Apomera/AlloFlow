@@ -160,17 +160,83 @@ function AnalysisView(props) {
   const analysisData = generatedContent && generatedContent.data && typeof generatedContent.data === 'object' ? generatedContent.data : {};
   const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
   const isUnreadableNote = value => !!value && typeof value === 'object';
-  const accuracy = analysisData.accuracy && typeof analysisData.accuracy === 'object' && !Array.isArray(analysisData.accuracy) ? analysisData.accuracy : {};
-  const accuracyRating = asText(accuracy.rating).trim() || analysisLabel('analysis.rating_unknown', 'Not rated');
-  const conceptList = (Array.isArray(analysisData.concepts) ? analysisData.concepts : [analysisData.concepts]).map(asText).filter(concept => concept.trim());
-  const readingLevel = analysisData.readingLevel && typeof analysisData.readingLevel === 'object' ? analysisData.readingLevel : null;
+  const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  const baseReportLanguage = asText(analysisData.reportLanguage || generatedContent?.config?.language).trim();
+  const reportTranslations = isRecord(analysisData.reportTranslations) ? analysisData.reportTranslations : {};
+  const reportLanguages = Object.keys(reportTranslations).filter(language => language.trim() && language !== baseReportLanguage && isRecord(reportTranslations[language]));
+  const preferredReportLanguage = reportLanguages.includes(analysisData.displayReportLanguage) ? analysisData.displayReportLanguage : baseReportLanguage;
+  // Persist only the display preference so reopening and exporting use the chosen report.
+  // Functional updates preserve any newer source edits, findings and provenance.
+  const reportSelectionKey = JSON.stringify([generatedContent?.id, baseReportLanguage, analysisData.displayReportLanguage]);
+  const [reportSelection, setReportSelection] = React.useState(null);
+  const selectedReportLanguage = reportSelection?.key === reportSelectionKey && (reportSelection.language === baseReportLanguage || reportLanguages.includes(reportSelection.language)) ? reportSelection.language : preferredReportLanguage;
+  const changeReportLanguage = language => {
+    if (language !== baseReportLanguage && !reportLanguages.includes(language)) return;
+    setReportSelection({
+      key: reportSelectionKey,
+      language
+    });
+    const id = generatedContent?.id;
+    const updateDisplayPreference = item => item && item.id === id && item.data && item.data.displayReportLanguage !== language ? {
+      ...item,
+      data: {
+        ...item.data,
+        displayReportLanguage: language
+      }
+    } : item;
+    updateAnalysisResource(updateDisplayPreference);
+  };
+  const isTranslatedReport = selectedReportLanguage !== baseReportLanguage && reportLanguages.includes(selectedReportLanguage);
+  const reportData = isTranslatedReport ? reportTranslations[selectedReportLanguage] : analysisData;
+  const baseAccuracy = isRecord(analysisData.accuracy) ? analysisData.accuracy : {};
+  const translatedAccuracy = isRecord(reportData.accuracy) ? reportData.accuracy : {};
+  // Only the explanations change language. Ratings, citations and measurements describe the source.
+  const accuracy = {
+    ...baseAccuracy,
+    ...translatedAccuracy,
+    rating: baseAccuracy.rating,
+    citations: baseAccuracy.citations
+  };
+  const accuracyRating = asText(baseAccuracy.rating).trim() || analysisLabel('analysis.rating_unknown', 'Not rated');
+  const concepts = reportData.concepts ?? analysisData.concepts;
+  const conceptList = (Array.isArray(concepts) ? concepts : [concepts]).map(asText).filter(concept => concept.trim());
+  const baseReadingLevel = isRecord(analysisData.readingLevel) ? analysisData.readingLevel : null;
+  const readingLevel = baseReadingLevel ? {
+    ...baseReadingLevel,
+    explanation: isRecord(reportData.readingLevel) ? reportData.readingLevel.explanation ?? baseReadingLevel.explanation : baseReadingLevel.explanation
+  } : null;
   const verifiedFactList = (Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : []).filter(fact => typeof fact === 'string' && fact.trim());
   const isTranslatedDisplay = typeof analysisData.translatedText === 'string' && !!analysisData.translatedText.trim();
+  const canChangeReportNotes = isTeacherMode && !isTranslatedReport;
+  const normalizedText = text => asText(text).trim().replace(/\s+/g, ' ');
+  const sourceTranslationMap = isRecord(analysisData.sourceTranslations) ? analysisData.sourceTranslations : {};
+  const sourceTranslations = Object.entries(sourceTranslationMap).filter(([language, text]) => language.trim() && typeof text === 'string' && text.trim() && normalizedText(text) !== normalizedText(analysisData.originalText) && language.trim().toLowerCase() !== asText(analysisData.sourceLanguage).trim().toLowerCase());
+  const reportLanguageControl = reportLanguages.length > 0 && /*#__PURE__*/React.createElement("section", {
+    "data-analysis-report-language": true,
+    className: "rounded-xl border border-slate-300 bg-white p-4 text-sm text-slate-800"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "flex flex-wrap items-center gap-3 font-bold"
+  }, analysisLabel('analysis.report_language', 'Report language'), /*#__PURE__*/React.createElement("select", {
+    "aria-label": analysisLabel('analysis.report_language', 'Report language'),
+    value: selectedReportLanguage,
+    onChange: event => changeReportLanguage(event.target.value),
+    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: baseReportLanguage
+  }, baseReportLanguage || analysisLabel('analysis.original_report', 'Original report')), reportLanguages.map(language => /*#__PURE__*/React.createElement("option", {
+    key: language,
+    value: language
+  }, language)))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs text-slate-600"
+  }, analysisLabel('analysis.report_source_note', 'All report languages describe the original source. Reading-level results apply to that source.')), isTranslatedReport && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 text-xs text-slate-700"
+  }, analysisLabel('analysis.report_correction_note', 'Select the original report language to correct or dismiss findings.')));
   const includeTitle = analysisLabel('analysis.include_in_correction', 'Include in correction');
   const ignoreTitle = analysisLabel('analysis.ignore_this_error', 'Ignore this error');
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, isTeacherMode ? readingRoleControl : readWithSupportsButton, isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, isTeacherMode ? readingRoleControl : readWithSupportsButton, isTeacherMode && reportLanguageControl, isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800",
@@ -287,11 +353,11 @@ function AnalysisView(props) {
       className: "space-y-2 mb-3"
     }, rawDiscrepancies.map((d, i) => {
       if (isInvalidDiscrepancy(d)) return null;
-      const isSelected = selectedDiscrepancies.has(i);
+      const isSelected = isTranslatedReport || selectedDiscrepancies.has(i);
       return /*#__PURE__*/React.createElement("div", {
         key: i,
         className: `flex items-start gap-2 p-1.5 rounded transition-colors ${isSelected ? 'bg-white/50' : 'opacity-60'}`
-      }, isTeacherMode && /*#__PURE__*/React.createElement("input", {
+      }, canChangeReportNotes && /*#__PURE__*/React.createElement("input", {
         "aria-label": analysisLabel('analysis.select_factual_note', 'Include factual note in correction') + ' ' + (i + 1) + ': ' + d,
         type: "checkbox",
         checked: isSelected,
@@ -303,7 +369,7 @@ function AnalysisView(props) {
       }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
         text: d
       })));
-    })), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    })), canChangeReportNotes && /*#__PURE__*/React.createElement("button", {
       onClick: handleAutoCorrectSource,
       disabled: isProcessing || selectedDiscrepancies.size === 0,
       "aria-busy": isProcessing,
@@ -319,7 +385,13 @@ function AnalysisView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 leading-relaxed"
   }, renderFormattedText(asText(accuracy.citations), false)))), (() => {
-    const rawGrammarNotes = Array.isArray(analysisData.grammar) ? analysisData.grammar : [];
+    const baseGrammarNotes = Array.isArray(analysisData.grammar) ? analysisData.grammar : [];
+    const translatedGrammarNotes = Array.isArray(reportData.grammar) && reportData.grammar.length === baseGrammarNotes.length ? reportData.grammar : baseGrammarNotes;
+    const rawGrammarNotes = isTranslatedReport ? baseGrammarNotes.map((note, index) => {
+      const status = typeof note === 'string' && note.match(/^(✓ (?:FIXED|DISMISSED): )/);
+      const translated = asText(translatedGrammarNotes[index]).replace(/^✓ (?:FIXED|DISMISSED): /, '');
+      return (status ? status[1] : '') + (translated || asText(note));
+    }) : baseGrammarNotes;
     const unreadableGrammarNotes = rawGrammarNotes.filter(isUnreadableNote).length + (Number(analysisData.grammarUnreadable) > 0 ? Number(analysisData.grammarUnreadable) : 0);
     const isInvalidGrammarNote = g => {
       if (!g || typeof g !== 'string') return true;
@@ -372,7 +444,7 @@ function AnalysisView(props) {
       setGrammarNoteAt(idx, note.slice(GRAMMAR_DISMISSED_PREFIX.length));
     };
     // Notes describe the source; the displayed text is a translation, so an AI fix would edit the wrong text.
-    const canFixGrammar = isTeacherMode && !isTranslatedDisplay;
+    const canFixGrammar = canChangeReportNotes && !isTranslatedDisplay;
     const handleFixGrammarErrors = async () => {
       if (!canFixGrammar || !generatedContent?.data?.originalText || selectedGrammarErrors.size === 0) return;
       setIsProcessing(true);
@@ -468,7 +540,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       className: "space-y-2 mb-3"
     }, rawGrammarNotes.map((note, idx) => {
       if (isInvalidGrammarNote(note)) return null;
-      const isSelected = selectedGrammarErrors.has(idx);
+      const isSelected = isTranslatedReport || selectedGrammarErrors.has(idx);
       const isFixed = isFixedNote(note);
       const isDismissed = isDismissedNote(note);
       const bareNote = isFixed ? note.replace(GRAMMAR_FIXED_PREFIX, '') : isDismissed ? note.slice(GRAMMAR_DISMISSED_PREFIX.length) : note;
@@ -494,7 +566,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         className: `flex-1 text-sm text-slate-700 leading-relaxed ${!isSelected && !isFixed && !isDismissed || isDismissed ? 'line-through text-slate-600' : ''}`
       }, formatInlineText(bareNote, false), isDismissed && /*#__PURE__*/React.createElement("span", {
         className: "ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-200 text-slate-600"
-      }, t('analysis.grammar_dismissed_tag') || 'Dismissed')), isTeacherMode && !isFixed && !isDismissed && /*#__PURE__*/React.createElement("button", {
+      }, t('analysis.grammar_dismissed_tag') || 'Dismissed')), canChangeReportNotes && !isFixed && !isDismissed && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => dismissGrammarNote(idx),
         title: t('analysis.grammar_dismiss_hint') || 'Dismiss this notice without using AI (already fixed by hand, or not a real error)',
@@ -503,7 +575,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       }, /*#__PURE__*/React.createElement(X, {
         size: 14,
         "aria-hidden": "true"
-      })), isTeacherMode && isDismissed && /*#__PURE__*/React.createElement("button", {
+      })), canChangeReportNotes && isDismissed && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => restoreGrammarNote(idx),
         "aria-label": `${t('analysis.grammar_restore_one') || 'Restore notice'}: ${bareNote.slice(0, 80)}`,
@@ -521,7 +593,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wand2, {
       size: 12
-    }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", selectedGrammarErrors.size, ")"), isTeacherMode && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
+    }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", selectedGrammarErrors.size, ")"), canChangeReportNotes && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         updateAnalysisResource(prev => ({
           ...prev,
@@ -682,7 +754,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       body: _bodyNoRefs,
       references: _refs
     } = splitReferencesFromBody(_fullOrig);
-    return /*#__PURE__*/React.createElement(React.Fragment, null, renderFormattedText(_bodyNoRefs, false), generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && /*#__PURE__*/React.createElement("div", {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, renderFormattedText(_bodyNoRefs, false), generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && normalizedText(generatedContent.data.rawEnglishText) !== normalizedText(_fullOrig) && /*#__PURE__*/React.createElement("div", {
       className: "mt-8 pt-8 border-t border-slate-200 opacity-80"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2"
@@ -691,7 +763,19 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     }), " ", t('output.original_source_label')), renderFormattedText(generatedContent?.data.rawEnglishText, false)), _refs && /*#__PURE__*/React.createElement(SourceReferencesPanel, {
       referencesText: _refs
     }));
-  })())));
+  })()), sourceTranslations.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 space-y-3 border-t border-slate-200 pt-4"
+  }, sourceTranslations.map(([language, text]) => /*#__PURE__*/React.createElement("details", {
+    key: language,
+    "data-source-translation": language,
+    className: "rounded-lg border border-slate-300 bg-white p-3"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer content-center text-sm font-bold text-indigo-800"
+  }, analysisLabel('analysis.translated_passage', 'Translated passage'), " · ", language), /*#__PURE__*/React.createElement("p", {
+    className: "my-3 text-xs text-slate-600"
+  }, analysisLabel('analysis.source_translation_note', 'This companion translation does not replace the original source used for activities or reading-level results.')), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-serif leading-relaxed text-slate-700"
+  }, renderFormattedText(text, false)))))));
 }
 
   window.AlloModules = window.AlloModules || {};

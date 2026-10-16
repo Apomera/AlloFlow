@@ -1179,7 +1179,7 @@
         {
           "id": "instruction-unknown",
           "title": "Unresolved: instruction required after the evaluation",
-          "text": "The excerpt does not include a completed comparison of what general education can adequately provide, the precise disability-related teaching adaptations Alex needs, or independent transfer into unpracticed classroom reading. Participants should identify which records and team members could clarify those issues. Twelve weeks describes this case and does not prescribe a waiting period or a prerequisite for evaluation."
+          "text": "The team has not yet established whether general education can adequately meet Alex's needs, which teaching adaptations are necessary, or how independently Alex transfers learning to unpracticed classroom reading. Identify the records and team members who could clarify these questions. Twelve weeks describes this case and does not prescribe a waiting period or a prerequisite for evaluation."
         }
       ],
       "caseType": "base",
@@ -1193,14 +1193,14 @@
       "narrative": [
         "Alex is age 9, in Grade 4, English-dominant, with 96% attendance. Appropriate core instruction and 12 weeks of explicit decoding intervention (4 x 30 minutes weekly) have documented implementation. Reading increases from 54 to 61 correct words per minute; the fictional grade benchmark is 110.",
         "With audio text, Alex answers grade-level content questions independently. Independent reading stays slow with decoding errors despite extra time. Family reports that Alex discusses stories heard aloud but needs help reading homework directions.",
-        "Assume valid testing by qualified evaluators, a documented review finding no primary exclusionary cause, normal vision/hearing screening, and no educationally relevant medical finding. The full score record is simulated for discussion; original reporting and scoring detail remain intentional verification gaps."
+        "Assume valid testing by qualified evaluators, a documented review finding no primary exclusionary cause, normal vision/hearing screening, and no educationally relevant medical finding. The score table is simulated. Original examiner reports and scoring details are not provided; identify what you would verify before relying on the results in an actual evaluation."
       ],
       "assumptions": [
         "The case, scores, benchmark and intervention history are fictional.",
         "The 12-week duration is not a required waiting period, and no score or benchmark is an eligibility cutoff.",
         "Appropriate core instruction and intervention implementation are assumed for the exercise; actual records would require verification.",
         "No listed exclusionary factor is assumed to be the primary cause; an actual determination requires evidence for each Q3 subpart.",
-        "The record intentionally leaves general education sufficiency and the necessary teaching adaptation unresolved."
+        "Whether general education is sufficient and which teaching adaptations are necessary remain unresolved."
       ],
       "scoreRowIds": [
         "wisc_indexes-full-scale-iq-fsiq",
@@ -1309,13 +1309,13 @@
         "Q8": {
           "response": "YES",
           "responseLabel": "YES as a provisional practice recommendation",
-          "feedback": "The abbreviated fictional record supports this practice recommendation after full verification. The scores do not automatically establish SLD or determine Q9.",
+          "feedback": "The case evidence and supplied assumptions support a provisional SLD recommendation. An actual determination requires verification of the source records; the scores alone do not establish SLD or determine Q9.",
           "status": "provisional"
         },
         "Q9": {
           "response": "MORE_EVIDENCE",
           "responseLabel": "More evidence needed",
-          "feedback": "The abbreviated record does not settle general education sufficiency or the teaching adaptations actually required. Select 9a only if the full record establishes SDI need; supported provisional alternatives are acceptable. Explain one case fact and one missing instructional fact.",
+          "feedback": "Whether general education is sufficient and which teaching adaptations are necessary remain unresolved. Select 9a only when evidence establishes a need for specially designed instruction; supported provisional alternatives are acceptable. Explain one case fact and one missing instructional fact.",
           "status": "provisional"
         }
       },
@@ -1357,7 +1357,7 @@
       ],
       "debrief": {
         "summary": "A supported provisional Q8 recommendation and an explicit Q9 evidence gap are compatible. Do not force an instructional eligibility conclusion from the score table.",
-        "q9Example": "Decoding difficulties limit Alex's independent reading despite access supports. If the full record shows that general education instruction cannot adequately meet the need, Alex requires disability-related adaptations to methodology and delivery.",
+        "q9Example": "Decoding difficulties limit Alex's independent reading despite access supports. The team still needs to establish whether general education adequately meets Alex's needs and which disability-related adaptations to methodology or delivery are necessary.",
         "nextEvidence": [
           "Original evaluator reports",
           "Observation documentation",
@@ -1390,13 +1390,13 @@
       "evidenceSupplement": [
         {
           "id": "same-record",
-          "title": "Shared record: use the base Alex evidence",
-          "text": "Alex is age 9 years, 2 months, in Grade 4, English-dominant, with 96% attendance. Independent reading remains slow with decoding errors; audio supports grade-level content answers. Family reports difficulty reading homework directions. In 12 weeks of explicit decoding instruction, 44 of 48 planned 30-minute sessions occurred and fluency increased from 54 to 61 correct words per minute against a fictional benchmark of 110. Use the same 52 scores and all other base Alex observations. This contrast does not assert that the reading difficulty disappeared."
+          "title": "Shared evidence: Alex's reading and instruction history",
+          "text": "Alex is age 9 years, 2 months, in Grade 4, English-dominant, with 96% attendance. Independent reading remains slow with decoding errors; audio supports grade-level content answers. Family reports difficulty reading homework directions. In 12 weeks of explicit decoding instruction, 44 of 48 planned 30-minute sessions occurred and fluency increased from 54 to 61 correct words per minute against a fictional benchmark of 110. Use the same 52 scores and shared Alex observations. This comparison does not mean the reading difficulty disappeared."
         },
         {
           "id": "sufficiency-premise",
-          "title": "Counterfactual premise: complete instruction-need review",
-          "text": "This is an explicitly stipulated counterfactual for practicing the distinction between Q8 and Q9. It replaces the base case's unresolved instruction-need premise only: assume the complete review establishes that general education interventions and accommodations adequately meet Alex's needs without necessary disability-related adaptations constituting specially designed instruction. The unchanged slow fluency and small intervention gain do not themselves support that conclusion. Supporting records are not reproduced and no new outcome score is invented. Participants should identify the independent-performance, implementation, maintenance and access evidence needed before using 9b in a real case. A general education setting or a widely used strategy alone does not settle the distinction."
+          "title": "Comparison assumption: general education meets the need",
+          "text": "For this comparison, keep Alex's facts and scores unchanged and accept one different assumption: general education interventions and accommodations adequately meet Alex's needs without necessary specially designed instruction. The existing fluency results do not establish that assumption. Identify the independent-performance, implementation, maintenance and access evidence you would need to support Q9b in an actual case. A general education setting or commonly used strategy alone does not settle the decision."
         },
         {
           "id": "support-plan",
@@ -1413,13 +1413,13 @@
       },
       "languageContext": "English-dominant",
       "narrative": [
-        "Use the same Alex case and score record. Change only the premise about the need for special education.",
-        "Assume the full review still establishes SLD, but the complete evaluation now demonstrates that general education interventions and accommodations adequately address Alex's learning needs."
+        "Use the shared Alex case information and score table. For this comparison, change only the assumption about the need for special education.",
+        "Assume that SLD is established and that general education interventions and accommodations adequately address Alex's learning needs without necessary specially designed instruction."
       ],
       "assumptions": [
         "All Alex facts and scores remain unchanged except the stated general education sufficiency premise.",
-        "The full review is stipulated to establish SLD.",
-        "Adequate general education support is stipulated for this contrast; no new progress score is supplied."
+        "For this exercise, accept SLD identification as a supplied assumption.",
+        "Adequate general education support is a supplied assumption for this comparison, not a conclusion demonstrated by new progress data."
       ],
       "scoreRowIds": [
         "wisc_indexes-full-scale-iq-fsiq",
@@ -1527,8 +1527,8 @@
         },
         "Q8": {
           "response": "YES",
-          "responseLabel": "YES under the stipulated full review",
-          "feedback": "The contrast assumes the full review still establishes SLD. Q8 is separate from whether special education is required.",
+          "responseLabel": "YES under the supplied SLD assumption",
+          "feedback": "The comparison assumes that SLD is established. Q8 is separate from whether special education is required.",
           "status": "stipulated"
         },
         "Q9": {
@@ -1577,12 +1577,12 @@
           "Family concerns"
         ]
       },
-      "languageContext": "English used at home and school; assessment access reviewed in the stipulated evaluation",
+      "languageContext": "English used at home and school; assessment access is assumed appropriate for this exercise",
       "evidenceSupplement": [
         {
           "id": "academic-record",
-          "title": "Stipulated and illustrated: academic evidence",
-          "text": "The complete evaluation establishes adequate age-based achievement and independent grade-level work across all eight areas. Illustrative work includes accurate independent unfamiliar-word reading, a written explanation with a clear claim and supporting details, and independently solved grade-level multistep mathematics. Separate classroom discussion and listening tasks inform oral expression and listening comprehension. These examples illustrate the premise; they are not a replacement for the full eight-area record."
+          "title": "Supplied assumption and examples: academic evidence",
+          "text": "For this exercise, assume adequate age-based achievement and independent grade-level work across all eight areas. Examples include accurate independent unfamiliar-word reading, a written explanation with a clear claim and supporting details, and independently solved grade-level multistep mathematics. Separate classroom discussion and listening tasks inform oral expression and listening comprehension. These examples illustrate only some of the evidence an actual evaluation would require to verify achievement across all eight areas."
         },
         {
           "id": "home-school",
@@ -1592,7 +1592,7 @@
         {
           "id": "follow-through",
           "title": "Unresolved: support for the reported difficulty",
-          "text": "The low working-memory result is one source to interpret alongside daily functioning. Its specific cause and the need for other evaluation are not established by this excerpt. Plan a family-agreed trial of written directions and a short follow-up log documenting time, prompts and frustration while considering any other suspected disability. The SLD pathway conclusion is limited to the stipulated academic evidence."
+          "text": "The low working-memory result is one source to interpret alongside daily functioning. The reason for that result and whether further evaluation is needed remain unresolved. Plan a family-agreed trial of written directions and a short follow-up log documenting time, prompts and frustration while considering any other suspected disability. Limit the SLD conclusion to the supplied academic evidence and assumptions."
         }
       ],
       "caseType": "contrast",
@@ -1607,7 +1607,7 @@
         "All details are fictional. Passing grades or promotion alone would not establish the stated achievement evidence. The conclusion concerns SLD and does not dismiss other suspected disabilities or end appropriate support."
       ],
       "assumptions": [
-        "The complete, valid record establishes the Q1 premise across all eight areas; a single composite or passing grades are not substituted for that evidence.",
+        "For this exercise, accept adequate achievement for age and independent grade-level performance across all eight academic areas as a supplied assumption. A single composite or passing grades would not establish that finding in an actual evaluation.",
         "The working-memory measure is generic; no test brand or index is asserted.",
         "Family concerns remain part of the discussion and may warrant support or further inquiry."
       ],
@@ -1631,7 +1631,7 @@
         "Q1": {
           "response": "YES",
           "responseLabel": "YES: proceed to Q8",
-          "feedback": "The complete stipulated record shows adequate achievement for age AND grade-level standards independently across ALL eight areas. Document that evidence and proceed to Q8.",
+          "feedback": "The supplied assumption is adequate achievement for age AND independent grade-level performance across ALL eight areas. Identify this assumption in your verification and proceed to Q8.",
           "status": "stipulated"
         },
         "Q2": {
@@ -1679,7 +1679,7 @@
         "Q8": {
           "response": "NO",
           "responseLabel": "NO SLD qualification under this pathway",
-          "feedback": "The Q1 YES pathway does not support SLD qualification on the stipulated achievement evidence. One low processing score cannot override the complete academic record.",
+          "feedback": "The Q1 YES pathway does not support SLD qualification under the supplied achievement assumption. One low processing score cannot override adequate achievement across all eight academic areas.",
           "status": "stipulated"
         },
         "Q9": {
@@ -1702,7 +1702,7 @@
       ],
       "debrief": {
         "summary": "Q1 YES directs the team to Q8 and no SLD qualification under this pathway. One low processing score does not independently establish SLD.",
-        "familyExample": "We considered your concerns, the processing result and Jordan's academic and classroom evidence. The complete record shows adequate achievement for age and grade standards across all eight areas, so the team recorded no SLD qualification under this form. We will discuss supports and any further inquiry warranted by your concerns.",
+        "familyExample": "We considered your concerns, the processing result and Jordan's academic and classroom evidence. The evaluation summary reports adequate achievement for age and grade standards across all eight areas, so the team recorded no SLD qualification under this form. We will discuss supports and any further inquiry warranted by your concerns.",
         "caution": "Limit the conclusion to SLD. Do not dismiss family concerns, other suspected needs or appropriate support."
       }
     },
@@ -1735,7 +1735,7 @@
         {
           "id": "form-completion-limit",
           "title": "Documentation limit: unresolved form decisions",
-          "text": "This excerpt does not support a completed Q1 determination. Later Q2-Q7 discussion entries are evidence-planning notes, not a verified progression through the official form. Q8 remains unresolved and neither Q9 option is reached. More evidence needed is a training status, not an official checkbox; lack of supplied validity documentation does not itself prove that an assessment is invalid."
+          "text": "The available evidence does not support a completed Q1 determination. Use Q2-Q7 to plan evidence requests, not to imply that those form steps have been verified. Q8 remains unresolved and neither Q9 option is reached. More evidence needed is a training status, not an official checkbox; missing validity documentation does not itself prove that an assessment is invalid."
         },
         {
           "id": "evidence-requests",
@@ -1758,13 +1758,13 @@
         "Marisol is age 9 years, 10 months, in Grade 4. She uses Spanish with her family and English and Spanish at school. Her family describes detailed Spanish storytelling, an interest in science and persistent difficulty reading unfamiliar words in Spanish. She explains mathematical reasoning well with diagrams. She attended Spanish-medium school in Grades 1-2, with a four-month interruption during a school closure, and entered English-medium instruction in Grade 3. Prior literacy-instruction records are incomplete.",
         "The current school documents regular attendance and scheduled ESOL instruction. The ESOL teacher reports stronger English listening and discussion with visual/context support than independent academic reading and written explanations. English development differs across tasks and domains. The language-access plan is available, but classroom implementation logs and the earlier school's instruction and intervention records have not yet been reviewed. These gaps do not establish whether inadequate instruction primarily explains the reading concern.",
         "During an English science lesson, Marisol explains the concept using a diagram and partner discussion, but has difficulty independently reading the written directions. In a brief Spanish reading sample arranged by qualified bilingual staff, she hesitates on unfamiliar words; no age/grade comparison, systematic response-to-teaching record or comprehensive Spanish literacy assessment accompanies that sample. Her family requests an evaluation and participation through a qualified Spanish interpreter. The team has begun the evaluation process while language and reading supports continue.",
-        "An English-only assessment summary lists low reading performance but does not document the assessment's linguistic suitability, norming applicability, administration adaptations or interpretation limits. No standardized scores from that summary are supplied for this practice record. Vision/hearing screening reports, the complete medical history and a full review across the academic areas are also absent from the excerpt. The record raises a reading concern and an assessment-validity question; it establishes neither SLD nor a language-only explanation."
+        "An English-only assessment summary lists low reading performance but does not document the assessment's linguistic suitability, norming applicability, administration adaptations or interpretation limits. No standardized scores from that summary are supplied. Vision/hearing screening reports, the complete medical history and a review across all academic areas are also not available for this discussion. The available information raises a reading concern and an assessment-validity question; it establishes neither SLD nor a language-only explanation."
       ],
       "assumptions": [
         "All details are fictional. Schooling durations, service schedules and language descriptions are case context, not eligibility thresholds or required waiting periods.",
         "The evaluation proceeds with appropriate procedures while ESOL, content-access and reading supports continue; Marisol does not have to reach an English-proficiency threshold before evaluation.",
-        "The English-only summary's suitability has not been established. Its omission from this score record is a validity safeguard, not a finding that all English assessments or all standardized assessments are unsuitable for multilingual learners.",
-        "The abbreviated record intentionally leaves appropriate-instruction verification, primary-cause analysis, assessment validity, SLD identification and any necessary special-education instruction unresolved. Family concerns and strengths remain relevant."
+        "Do not interpret the English-only assessment summary until its linguistic suitability, norm applicability and interpretation limits have been clarified. This concern does not mean that all English-language or standardized assessments are unsuitable for multilingual learners.",
+        "The team still needs to verify appropriate instruction, primary causes and assessment validity before determining whether SLD exists and whether special education is needed. Family concerns and strengths remain relevant."
       ],
       "scoreRowIds": [],
       "extraScoreRows": [],
@@ -1806,7 +1806,7 @@
         "Q1": {
           "response": "MORE_EVIDENCE",
           "responseLabel": "More evidence needed: achievement review incomplete",
-          "feedback": "The excerpt does not provide multiple appropriate, valid sources establishing age and grade expectations across the academic areas. Reading concerns merit inquiry; neither an English-only summary nor one brief Spanish sample resolves Q1.",
+          "feedback": "The available information does not include multiple appropriate, valid sources establishing age and grade expectations across the academic areas. Reading concerns merit inquiry; neither an English-only summary nor one brief Spanish sample resolves Q1.",
           "status": "provisional"
         },
         "Q2": {
@@ -1836,7 +1836,7 @@
         "Q6": {
           "response": "NARRATIVE",
           "responseLabel": "Medical/screening information not supplied",
-          "feedback": "Record that relevant medical and vision/hearing information has not been supplied, then seek appropriate records. Absence from this excerpt is not verification that every relevant finding is absent.",
+          "feedback": "Record that relevant medical and vision/hearing information has not been supplied, then seek appropriate records. Missing information is not evidence that no relevant medical or sensory finding exists.",
           "status": "provisional"
         },
         "Q7": {
@@ -1847,7 +1847,7 @@
         },
         "Q8": {
           "response": "MORE_EVIDENCE",
-          "responseLabel": "SLD conclusion unresolved in this practice excerpt",
+          "responseLabel": "SLD conclusion unresolved",
           "feedback": "Complete the appropriate evaluation and instruction/primary-cause review before making the supported team conclusion. Uncertainty calls for timely evidence gathering, not a language-proficiency waiting rule or an automatic SLD or language-only verdict.",
           "status": "provisional"
         },
@@ -1862,7 +1862,7 @@
         "summary": "The useful outcome is a defensible evidence plan, not a forced eligibility answer. The record raises reading, instructional-access and assessment-validity concerns, while leaving their causes and any necessary specially designed instruction unresolved.",
         "q9Example": "We cannot yet select a supported Q9 option because SLD identification and the necessary instruction remain unresolved. We will gather appropriate language/literacy, instruction, assessment and classroom evidence while providing current supports and conducting the evaluation.",
         "familyExplanation": "Your observations and Marisol's strengths are important. We need a fuller picture of her reading and learning in the languages she uses, and of the instruction and supports she has received. We will work with language-acquisition and evaluation specialists and a qualified interpreter, continue supports, and evaluate without waiting for a particular English-proficiency level.",
-        "caution": "Do not assume disability because reading is difficult in two languages, or assume language alone explains the concern because Marisol is multilingual. Schooling history and language development require evidence-based interpretation. No score or prescribed waiting period is inferred here.",
+        "caution": "Do not assume disability because reading is difficult in two languages, or assume language alone explains the concern because Marisol is multilingual. Schooling history and language development require evidence-based interpretation. Do not infer scores or impose a language-proficiency waiting period.",
         "nextEvidence": [
           "Prior and current literacy-instruction records and implementation of classroom language-access supports.",
           "Family/student language and literacy history, obtained with qualified interpretation as needed.",
@@ -1898,12 +1898,12 @@
         {
           "id": "processing-documentation-limit",
           "title": "Documentation limit: psychological-processing verification",
-          "text": "The complete reevaluation's relevant psychological-processing findings are stipulated, but this excerpt does not name the standardized processing measures, give their composite scores, or reproduce the source report. The four achievement scores and classroom observations do not fill the separate Q4d processing cells. A facilitator may model the assumption and identify the missing report; an actual completed form needs the applicable source findings and interpretation, not invented scores."
+          "text": "For this exercise, relevant psychological-processing findings are a supplied assumption. The names of the processing measures, composite scores and source report are not provided. In Q4d, identify the missing source findings and interpretation. Achievement scores and classroom observations cannot replace this processing evidence; do not invent scores."
         },
         {
           "id": "student-family-goal",
           "title": "Reported and planned: participation and independence",
-          "text": "Taylor wants to read game instructions without waiting for a friend. Family values improved confidence and asks how progress will transfer beyond the practiced material. The next instructional plan should name the reading adaptation, monitor unpracticed-word and connected-text performance and retain access to grade-level content. The complete reevaluation's finding that SDI remains necessary is stipulated separately from these illustrative observations."
+          "text": "Taylor wants to read game instructions without waiting for a friend. Family values improved confidence and asks how progress will transfer beyond the practiced material. The next instructional plan should name the reading adaptation, monitor unpracticed-word and connected-text performance and retain access to grade-level content."
         }
       ],
       "caseType": "extended-practice",
@@ -1919,13 +1919,13 @@
       "narrative": [
         "Taylor is age 10 years, 7 months, in Grade 5 and receives reading instruction under an IEP. A comprehensive reevaluation includes appropriate achievement and psychological-processing assessments, repeated progress measures, classroom observations, work samples and student/family input. The qualified evaluators document a relevant pattern across the required evidence streams and continuing SLD affecting basic reading and reading fluency. Appropriate core instruction, intervention implementation and a documented review of each primary-cause factor are verified.",
         "Taylor contributes thoughtful ideas to class discussion and meets many science and social-studies assignment expectations with accessible audio/text, previewed vocabulary and extra reading time. Independent unfamiliar-word reading and connected-text fluency remain below age and Grade 5 expectations across valid assessment, classroom work and repeated reading measures. Successful supported content work does not show adequate independent achievement in every academic area.",
-        "Taylor's progress measures show improvement during explicitly sequenced decoding instruction: smaller teaching steps, carefully selected word patterns, cumulative practice, immediate corrective feedback and flexible pacing adjusted from ongoing error analysis. Implementation and longitudinal transfer records document that these adaptations address Taylor's disability-related learning needs. Appropriate general education interventions and accommodations have not adequately addressed those needs without the specified teaching adaptations. The full reevaluation establishes that the adaptations remain necessary for access to and progress in the curriculum.",
-        "The family asks whether better report-card grades mean that the reading instruction can end. The team has not withdrawn necessary instruction to test that idea. It reviews existing instruction, implementation, independent performance, supported performance and generalization data. No educationally relevant medical finding is reported in the complete reviewed record. The few simulated scores below illustrate that record; they do not determine eligibility, calculate composites or replace the full evaluation."
+        "Taylor's progress measures show improvement during explicitly sequenced decoding instruction: smaller teaching steps, carefully selected word patterns, cumulative practice, immediate corrective feedback and flexible pacing adjusted from ongoing error analysis. Implementation and longitudinal transfer records document that these adaptations address Taylor's disability-related learning needs. Appropriate general education interventions and accommodations have not adequately addressed those needs without the specified teaching adaptations. For this exercise, accept the reevaluation summary's finding that these adaptations remain necessary for access to and progress in the curriculum.",
+        "The family asks whether better report-card grades mean that the reading instruction can end. The team has not withdrawn necessary instruction to test that idea. It reviews existing instruction, implementation, independent performance, supported performance and generalization data. No educationally relevant medical finding is reported. Use the achievement scores together with the case summary and observations; scores alone do not determine eligibility."
       ],
       "assumptions": [
-        "All details and score values are fictional. The abbreviated rows are generic age-based standard scores (mean 100, SD 15), not a branded battery or required assessment list; no percentile or confidence interval is supplied.",
-        "The full reevaluation is stipulated to be appropriate, valid, reliable and comprehensive, with qualified personnel, verified appropriate instruction and evidence for every Q3 subpart; no listed factor is the primary cause.",
-        "The full reviewed record establishes continuing SLD and the necessity of the specified disability-related adaptations; general education interventions/accommodations alone have not adequately met the need. Progress depends on the necessary instruction, rather than proving it unnecessary.",
+        "All details and score values are fictional. The four scores are generic age-based standard scores (mean 100, SD 15), not a branded battery or required assessment list; no percentile or confidence interval is supplied.",
+        "For this exercise, assume an appropriate, valid, reliable and comprehensive reevaluation by qualified personnel, appropriate instruction and a review of every Q3 subpart finding that no listed factor is the primary cause.",
+        "Accept continuing SLD and the necessity of the specified disability-related adaptations as supplied evaluation-summary findings. General education interventions/accommodations alone have not adequately met the need. Progress depends on the necessary instruction, rather than proving it unnecessary.",
         "Success with content-access supports is distinguished from independent basic-reading/fluency achievement. No support-withdrawal trial, particular program, staff title, setting or score cutoff is required or used as the sole basis for the practice conclusion."
       ],
       "scoreRowIds": [],
@@ -1972,8 +1972,8 @@
         "ageAtEvaluation": "10 years, 7 months",
         "grade": 5
       },
-      "scoreGuidance": "These four generic simulated achievement standard scores use mean 100, SD 15 and age-based comparisons. They are not a branded assessment battery, computed composites, required tests or eligibility cutoffs. Grade-level achievement and the need for instruction are established by the separate stipulated full record. No percentiles or confidence intervals are supplied or inferred.",
-      "evidencePrompt": "Select findings that help distinguish independent reading from supported content performance, and explain how the full-record assumptions affect your reasoning. Relate teaching adaptations to the documented learning needs; no particular number or selection of findings is required.",
+      "scoreGuidance": "These four generic simulated achievement standard scores use mean 100, SD 15 and age-based comparisons. They are not a branded assessment battery, computed composites, required tests or eligibility cutoffs. Achievement and instruction-need findings are supplied in the case summary; identify the assumptions you use when completing the form. No percentiles or confidence intervals are supplied or inferred.",
+      "evidencePrompt": "Select findings that help distinguish independent reading from supported content performance, and explain how the supplied evaluation-summary assumptions affect your reasoning. Relate teaching adaptations to the documented learning needs; no particular number or selection of findings is required.",
       "focusSteps": [
         "Q1",
         "Q4",
@@ -1991,7 +1991,7 @@
         },
         {
           "id": "progress-and-q9",
-          "prompt": "Use the full-record assumptions to explain Q8 and Q9 separately. Why does improvement under necessary instruction not by itself establish general education sufficiency?"
+          "prompt": "Use the supplied evaluation-summary assumptions to explain Q8 and Q9 separately. Why does improvement under necessary instruction not by itself establish general education sufficiency?"
         },
         {
           "id": "family-transfer",
@@ -2002,25 +2002,25 @@
         "Q1": {
           "response": "NO",
           "responseLabel": "NO: basic-reading/fluency achievement remains inadequate",
-          "feedback": "The complete valid record identifies inadequate independent basic reading and fluency for age and grade expectations. Supported content success or passing grades does not establish the Q1 YES premise across every academic area.",
+          "feedback": "The case summary identifies inadequate independent basic reading and fluency for age and grade expectations. Supported content success or passing grades does not establish the Q1 YES premise across every academic area.",
           "status": "stipulated"
         },
         "Q2": {
           "response": "NO",
           "responseLabel": "NO: appropriate instruction verified",
-          "feedback": "The stipulated full record verifies appropriate core instruction, qualified delivery and implementation. Underachievement is not attributed to lack of appropriate instruction; continue through the form using that documented basis.",
+          "feedback": "Appropriate core instruction, qualified delivery and implementation are supplied evaluation-summary findings. Identify those assumptions in the verification; the reported underachievement is not attributed to lack of appropriate instruction.",
           "status": "stipulated"
         },
         "Q3": {
           "response": "ALL_NO",
-          "responseLabel": "All subparts NO under the full-record assumptions",
-          "feedback": "The complete review includes supporting evidence for each listed factor and finds none is the primary cause. This is an exercise assumption, not a result inferred merely from the four score rows.",
+          "responseLabel": "All subparts NO under the supplied assumptions",
+          "feedback": "A review of each listed factor finding none is the primary cause is a supplied assumption. Label that basis in each Q3 verification; the four achievement scores do not provide the factor-specific evidence.",
           "status": "stipulated"
         },
         "Q4": {
           "response": "YES",
-          "responseLabel": "YES: relevant pattern established by the full record",
-          "feedback": "The reevaluation stipulates a relevant pattern from intervention response, classroom, achievement and psychological-processing evidence. Relate independent reading weakness, supported content strengths and necessary teaching adaptations without treating one score difference as the decision.",
+          "responseLabel": "YES under the supplied pattern finding",
+          "feedback": "A relevant pattern across intervention response, classroom, achievement and psychological-processing evidence is supplied as an evaluation-summary finding. Relate independent reading weakness, supported content strengths and necessary teaching adaptations without treating one score difference as the decision. Identify the processing measure names, composite scores and interpretations as information still needed for the Q4d source cells.",
           "status": "stipulated"
         },
         "Q5": {
@@ -2032,31 +2032,31 @@
         "Q6": {
           "response": "NARRATIVE",
           "responseLabel": "No relevant medical finding reported in the reviewed record",
-          "feedback": "Record the full record's report that no educationally relevant medical finding is identified. Q6 remains a narrative field rather than a YES/NO eligibility checkbox.",
+          "feedback": "Record the case summary's statement that no educationally relevant medical finding is identified. Q6 remains a narrative field rather than a YES/NO eligibility checkbox.",
           "status": "stipulated"
         },
         "Q7": {
           "response": "YES",
           "responseLabel": "YES under the documented validity/qualification assumptions",
-          "feedback": "Appropriate, valid/reliable assessment and qualified evaluation are stipulated in the comprehensive record. The generic score excerpt alone would not establish those assurances in an actual evaluation.",
+          "feedback": "Appropriate, valid/reliable assessment by qualified evaluators is a supplied assumption. Label that basis in the practice response; an actual evaluation requires assessment-specific validity information and evaluator qualifications.",
           "status": "stipulated"
         },
         "Q8": {
           "response": "YES",
-          "responseLabel": "YES: continuing SLD established by the full reevaluation",
-          "feedback": "The exercise expressly establishes continuing SLD through the complete review. State that basis separately from Q9; neither better grades nor the isolated score rows replace the supported team conclusion.",
+          "responseLabel": "YES under the supplied continuing-SLD finding",
+          "feedback": "Continuing SLD is a supplied evaluation-summary finding. State that basis separately from Q9; neither better grades nor isolated achievement scores settle the SLD conclusion.",
           "status": "stipulated"
         },
         "Q9": {
           "response": "Q9A",
           "responseLabel": "9a: necessary specially designed instruction supported",
-          "feedback": "The full record establishes that disability-related adaptations to methodology/delivery remain necessary and that general education interventions/accommodations alone have not adequately met the need. Improvement while receiving that necessary instruction does not establish that it is unnecessary.",
+          "feedback": "The case summary states that disability-related adaptations to methodology/delivery remain necessary and that general education interventions/accommodations alone have not adequately met the need. Improvement while receiving that necessary instruction does not establish that it is unnecessary.",
           "status": "stipulated"
         }
       },
       "debrief": {
-        "summary": "Q1 NO and Q8 YES follow the complete stipulated record; Q9a is supported by the documented necessity of the teaching adaptations. Successful supported content work and progress are compatible with continuing special-education need.",
-        "q9Example": "Taylor's SLD continues to limit independent basic reading and fluency despite appropriate instruction. The full record shows that specifically sequenced teaching, corrective feedback and individualized pacing remain necessary to address those disability-related needs, while general education interventions/accommodations alone are insufficient; Q9a is supported.",
+        "summary": "Q1 NO and Q8 YES follow the supplied evaluation-summary findings; Q9a follows the stated necessity of the teaching adaptations. Successful supported content work and progress are compatible with continuing special-education need.",
+        "q9Example": "Taylor's SLD continues to limit independent basic reading and fluency despite appropriate instruction. The evaluation summary identifies specifically sequenced teaching, corrective feedback and individualized pacing as necessary to address those disability-related needs, while general education interventions/accommodations alone are insufficient; Q9a is supported.",
         "familyExplanation": "Taylor's progress matters, and the record connects that improvement to the instruction and access supports Taylor is receiving. Reading independently remains difficult. We will continue the necessary teaching adaptations and review progress, implementation and transfer evidence; better grades alone do not show that the reading instruction can end.",
         "caution": "Describe the adaptation, the disability-related need and the evidence of necessity. Individualization, intensity, a branded program, staff title or location alone does not define SDI. Do not withdraw necessary support simply to demonstrate dependence.",
         "nextEvidence": [
@@ -2091,15 +2091,15 @@
         ]
       },
       "narrative": [
-        "Complete fictional practice record, revised October 12, 2026. This replaces Samira's earlier assumption-based excerpt for the PDF activity. All people, institutions, dates, scores, statements and records below are invented. The sources are authored summaries, not actual confidential reports or reproduced test protocols.",
-        "Samira is a Grade 4 student, age 9 years 8 months at the September 16 psychological assessment. She enjoys science demonstrations, diagrams and Arabic storytelling. Read sources S1-S9 before completing the official SLD form. The packet supplies evidence for every question but does not supply participant checkbox answers. Consider the strength and limits of the evidence rather than counting low scores.",
-        "The local tasks, rubrics, instructional targets and comparison values are invented for this case. They are not Maine cutoffs, national norms, required intervention durations or universal eligibility rules. Named standardized processing composites are simulated report results, independently assigned for this exercise, not calculated from secured test items or scoring tables."
+        "Fictional practice case. All people, institutions, dates, scores, statements and records in this packet are invented. Sources S1-S9 are report summaries for training, not actual student records or test protocols.",
+        "Samira is a Grade 4 student, age 9 years 8 months at the September 16 psychological assessment. She enjoys science demonstrations, diagrams and Arabic storytelling. Read sources S1-S9 before completing the official SLD form. Use the evidence to make and explain each form decision. Consider the strength and limits of the evidence rather than counting low scores.",
+        "The local tasks, rubrics, instructional targets and comparison values are fictional. They are not Maine cutoffs, national norms, required intervention durations or universal eligibility rules. Named standardized processing composites are simulated report results; do not reconstruct test protocols or calculate additional scores from them."
       ],
       "evidenceSupplement": [
         {
           "id": "S1",
           "title": "S1: Referral, consent, participation and source record",
-          "text": "Coordinator Morgan Ellis's record, September 30: at intervention planning on April 3, 2026, Rania received interpreted information about the performance data to be collected, general-education services, strategies for increasing learning and her right to request an evaluation; this information was reviewed again August 20. The family and Grade 4 teacher requested evaluation August 20 for persistent word-reading difficulty. Prior notices and the evaluation plan were explained with qualified Arabic interpretation; written parent consent was received August 24. Evaluation activities occurred September 4-30. The new regular-classroom observation in S7 followed consent. Instruction and ESOL continued; no additional intervention cycle was required before evaluation.\n\nThe October 2 meeting notice was provided September 18; Rania confirmed attendance and requested interpretation. Reports and an interpreted review were provided September 30. Proposed participants are Rania; Melanie Voss, general educator; Nina Park, special educator; Morgan Ellis, district representative; Dr. Elena Mercer, school psychologist able to interpret evaluation results; Hana Nasser, ESOL teacher; and Dalia Mansour, qualified Arabic interpreter/language consultant. Samira's September 11 interview is included even though she will not attend the full meeting. All names and professional roles are fictional.\n\nThis is a planned training meeting, not a completed actual eligibility decision. Use October 2, 2026 for the repeated child/date fields. Participants supply their reasoned team conclusion; do not invent signatures or claim notices were issued after the meeting. The packet includes source summaries needed for this exercise, not every item normally retained in an actual student file."
+          "text": "Coordinator Morgan Ellis's record, September 30: at intervention planning on April 3, 2026, Rania received interpreted information about the performance data to be collected, general-education services, strategies for increasing learning and her right to request an evaluation; this information was reviewed again August 20. The family and Grade 4 teacher requested evaluation August 20 for persistent word-reading difficulty. Prior notices and the evaluation plan were explained with qualified Arabic interpretation; written parent consent was received August 24. Evaluation activities occurred September 4-30. The new regular-classroom observation in S7 followed consent. Instruction and ESOL continued; no additional intervention cycle was required before evaluation.\n\nThe October 2 meeting notice was provided September 18; Rania confirmed attendance and requested interpretation. Reports and an interpreted review were provided September 30. Proposed participants are Rania; Melanie Voss, general educator; Nina Park, special educator; Morgan Ellis, district representative; Dr. Elena Mercer, school psychologist able to interpret evaluation results; Hana Nasser, ESOL teacher; and Dalia Mansour, qualified Arabic interpreter/language consultant. Samira's September 11 interview is included even though she will not attend the full meeting. All names and professional roles are fictional.\n\nFor this exercise, the team is preparing for the October 2 meeting; no eligibility decision has been made. Use October 2, 2026 for the repeated child/date fields. Discuss and document your team's conclusion, but leave signature lines unsigned and do not state that a Written Notice has been issued. Use the source summaries to complete the practice form; an actual student file would include the supporting records."
         },
         {
           "id": "S2",
@@ -2114,7 +2114,7 @@
         {
           "id": "S4",
           "title": "S4: Eight-area achievement review and summative evidence",
-          "text": "Melanie Voss and the curriculum coordinator reviewed June 2026 Grade 3 core-curriculum summative results, September 2026 beginning-Grade-4 assessments and classroom work. Tasks were mapped to Maine's grade-level ELA/mathematics expectations and taught prerequisites, with ordinary language-access supports recorded. September judgments concern expectations at this point in Grade 4, not untaught end-of-year content. Local minimums below are instructional criteria, not eligibility cutoffs or nationally validated norms.\n\nAchievement norm-group comparability for an English nationally normed achievement battery was not established for this Arabic-English literacy history. Consistent with the form's conditional instruction, the Q1 evidence therefore uses the multi-tiered performance record, work samples and district summative assessments; no standardized achievement score is used. No age/grade-equivalent conversion is available or invented. Q4c may use district core-curriculum summative evidence, not only nationally normed tests.\n\nAll reading-comprehension scores below involved Samira reading the printed text herself, with her own rereading and no adult reading, audio or word supply. Untimed comprehension and slow/inaccurate reading can coexist. Oral presentation is separately identified for listening and mathematics tasks so it is not misrepresented as reading performance. Two educators independently scored the September rubric samples; they agreed on domain ratings, and checked disputed item scores against the rubric.\n\nSLD academic area: Oral expression | June summative / September evidence: 9/12 / 10/12 on explanation rubrics | Expected performance and conditions: Local minimum 9/12. Relevant ideas, sequence and clear sentences; visual planning allowed, no supplied answers.\n\nSLD academic area: Listening comprehension | June summative / September evidence: 8/10 / 9/10 | Expected performance and conditions: Minimum 8/10. Teacher reads an unfamiliar curriculum passage aloud; Samira answers independently.\n\nSLD academic area: Written expression | June summative / September evidence: 9/12 / 9/12 | Expected performance and conditions: Minimum 9/12 across ideas, organization and conventions. Independent handwritten paragraphs, ordinary planning sheet, no scribe. September spelling sample 11/15; monitor spelling/language growth.\n\nSLD academic area: Basic reading skill | June summative / September evidence: 8/20 / 9/20 on new words using taught patterns | Expected performance and conditions: Local criterion 16/20. Frequent first-letter guesses and inaccurate vowel/syllable analysis despite vocabulary familiarity.\n\nSLD academic area: Reading fluency skills | June summative / September evidence: June: 61 correct words/minute, 92% accuracy / September: 63, 92% | Expected performance and conditions: At Grade 4 entry, local screening target 105 correct words/minute and 95% accuracy on Grade 3 review passages. Three novel one-minute passages per review; no preview or adult correction during timing. These targets are not national norms.\n\nSLD academic area: Reading comprehension | June summative / September evidence: 8/10 / 8/10 | Expected performance and conditions: Minimum 8/10. Independent, untimed narrative/informational reading and text-based answers. September two passages took 22 minutes total versus the teacher's 12-15-minute planning estimate; accuracy adequate, efficiency a concern.\n\nSLD academic area: Mathematics calculation | June summative / September evidence: 18/20 / 18/20 | Expected performance and conditions: Minimum 16/20. Independent grade-appropriate operations/place-value tasks; directions clarified, no calculation prompts.\n\nSLD academic area: Mathematics problem-solving | June summative / September evidence: 8/10 / 9/10 | Expected performance and conditions: Minimum 8/10. Samira selects operations and explains solutions. Directions and word problems read aloud to isolate mathematics, without solution cues."
+          "text": "Melanie Voss and the curriculum coordinator reviewed June 2026 Grade 3 core-curriculum summative results, September 2026 beginning-Grade-4 assessments and classroom work. Tasks were mapped to Maine's grade-level ELA/mathematics expectations and taught prerequisites, with ordinary language-access supports recorded. September judgments concern expectations at this point in Grade 4, not untaught end-of-year content. Local minimums below are instructional criteria, not eligibility cutoffs or nationally validated norms.\n\nAchievement norm-group comparability for an English nationally normed achievement battery was not established for this Arabic-English literacy history. Consistent with the form's conditional instruction, the Q1 evidence therefore uses the multi-tiered performance record, work samples and district summative assessments; no standardized achievement score is used. Age/grade-equivalent scores are not provided; do not calculate them from the local task results. Q4c may use district core-curriculum summative evidence, not only nationally normed tests.\n\nAll reading-comprehension scores below involved Samira reading the printed text herself, with her own rereading and no adult reading, audio or word supply. Untimed comprehension and slow/inaccurate reading can coexist. Oral presentation is separately identified for listening and mathematics tasks so it is not misrepresented as reading performance. Two educators independently scored the September rubric samples; they agreed on domain ratings, and checked disputed item scores against the rubric.\n\nSLD academic area: Oral expression | June summative / September evidence: 9/12 / 10/12 on explanation rubrics | Expected performance and conditions: Local minimum 9/12. Relevant ideas, sequence and clear sentences; visual planning allowed, no supplied answers.\n\nSLD academic area: Listening comprehension | June summative / September evidence: 8/10 / 9/10 | Expected performance and conditions: Minimum 8/10. Teacher reads an unfamiliar curriculum passage aloud; Samira answers independently.\n\nSLD academic area: Written expression | June summative / September evidence: 9/12 / 9/12 | Expected performance and conditions: Minimum 9/12 across ideas, organization and conventions. Independent handwritten paragraphs, ordinary planning sheet, no scribe. September spelling sample 11/15; monitor spelling/language growth.\n\nSLD academic area: Basic reading skill | June summative / September evidence: 8/20 / 9/20 on new words using taught patterns | Expected performance and conditions: Local criterion 16/20. Frequent first-letter guesses and inaccurate vowel/syllable analysis despite vocabulary familiarity.\n\nSLD academic area: Reading fluency skills | June summative / September evidence: June: 61 correct words/minute, 92% accuracy / September: 63, 92% | Expected performance and conditions: At Grade 4 entry, local screening target 105 correct words/minute and 95% accuracy on Grade 3 review passages. Three novel one-minute passages per review; no preview or adult correction during timing. These targets are not national norms.\n\nSLD academic area: Reading comprehension | June summative / September evidence: 8/10 / 8/10 | Expected performance and conditions: Minimum 8/10. Independent, untimed narrative/informational reading and text-based answers. September two passages took 22 minutes total versus the teacher's 12-15-minute planning estimate; accuracy adequate, efficiency a concern.\n\nSLD academic area: Mathematics calculation | June summative / September evidence: 18/20 / 18/20 | Expected performance and conditions: Minimum 16/20. Independent grade-appropriate operations/place-value tasks; directions clarified, no calculation prompts.\n\nSLD academic area: Mathematics problem-solving | June summative / September evidence: 8/10 / 9/10 | Expected performance and conditions: Minimum 8/10. Samira selects operations and explains solutions. Directions and word problems read aloud to isolate mathematics, without solution cues."
         },
         {
           "id": "S5",
@@ -2139,7 +2139,7 @@
         {
           "id": "S9",
           "title": "S9: Assessment-quality review and limits of the record",
-          "text": "Dr. Mercer and Hana Nasser's September 30 review documents the question addressed by each method, language used, administration conditions, evaluator qualifications and limits. Standardized processing measures were administered in their published age range using required manual procedures; the score report was checked by a second qualified psychologist. Published reliability/validity evidence supports the selected constructs, but does not make every interpretation for every multilingual child valid. The team retained the processing results only for the bounded, corroborated purposes described in S5; it did not claim exact Arabic-English norm representativeness or use an improvised translated standard score.\n\nCurriculum and monitoring probes used documented comparable difficulty, consistent instructions, independent scoring and repeated samples. Cross-source agreement is considered alongside variation across tasks and supports. ACCESS was administered by the trained ESOL teacher under the assessment's procedures; the 2026 reporting limits are retained. Family/student interviews and Arabic-language consultation add history and functional-language evidence but are not norm-referenced tests. Native-language information was actively obtained, while equivalent standardized Arabic achievement scores were not produced from limited Arabic literacy instruction or translated English tests.\n\nIntentional omissions: secured test items, raw protocols, score confidence intervals, an FSIQ, a standardized adaptive scale, Arabic achievement equivalents and an unrelated medical battery are not supplied or required by this scenario. No significance tests, score conversions or diagnoses may be invented from their absence. The available sources provide the relevant evidence for the SLD-form exercise. Actual evaluations require professional judgment about additional suspected needs and applicable procedures; this training summary is not a universal battery or a legal compliance certification."
+          "text": "Dr. Mercer and Hana Nasser's September 30 review documents the question addressed by each method, language used, administration conditions, evaluator qualifications and limits. Standardized processing measures were administered in their published age range using required manual procedures; the score report was checked by a second qualified psychologist. Published reliability/validity evidence supports the selected constructs, but does not make every interpretation for every multilingual child valid. The team retained the processing results only for the bounded, corroborated purposes described in S5; it did not claim exact Arabic-English norm representativeness or use an improvised translated standard score.\n\nCurriculum and monitoring probes used documented comparable difficulty, consistent instructions, independent scoring and repeated samples. Cross-source agreement is considered alongside variation across tasks and supports. ACCESS was administered by the trained ESOL teacher under the assessment's procedures; the 2026 reporting limits are retained. Family/student interviews and Arabic-language consultation add history and functional-language evidence but are not norm-referenced tests. Native-language information was actively obtained, while equivalent standardized Arabic achievement scores were not produced from limited Arabic literacy instruction or translated English tests.\n\nScope of the practice record: secured test items, raw protocols, score confidence intervals, an FSIQ, a standardized adaptive scale, Arabic achievement equivalents and unrelated medical testing are not included. Complete the form using the supplied sources; do not infer additional scores, significance tests, score conversions or diagnoses. In an actual evaluation, the team determines whether additional evidence is needed for the student and assessment questions and follows applicable procedures. This practice record is not a required assessment battery or evidence that an actual evaluation meets all requirements."
         }
       ],
       "assumptions": [],
@@ -2230,7 +2230,7 @@
           "interpretation": "Slow retrieval on familiar letter/digit naming tasks; not interchangeable with general processing speed."
         }
       ],
-      "scoreGuidance": "S5 supplies seven fictional age-based processing composites (mean 100, SD 15), with administration and interpretation limits in S5/S9. They are independently authored report results, not calculated from secured protocols. NVI is not FSIQ; overlapping indexes are not independent replications. Exact Arabic-English norm representativeness is not established. Use scores only for their bounded, corroborated purposes, not as a language-independent diagnosis or score cutoff. S4 uses district summative and performance evidence for achievement; classroom task counts, local criteria and ACCESS proficiency levels are not standard scores or eligibility thresholds.",
+      "scoreGuidance": "S5 supplies seven fictional age-based processing composites (mean 100, SD 15), with administration and interpretation limits in S5/S9. Use the supplied composite scores; do not calculate additional scores from them. NVI is not FSIQ; overlapping indexes are not independent replications. Exact Arabic-English norm representativeness is not established. Use scores only for their bounded, corroborated purposes, not as a language-independent diagnosis or score cutoff. S4 uses district summative and performance evidence for achievement; classroom task counts, local criteria and ACCESS proficiency levels are not standard scores or eligibility thresholds.",
       "evidencePrompt": "Use sources S1-S9 to connect each SLD-form entry to supplied evidence and its limitations. Distinguish independent reading, supported content access and English-language development; explain the necessary teaching adaptations separately from the disability conclusion.",
       "scoreRecordMetadata": {
         "comparison": "Age-based processing composites; achievement uses district summative and performance evidence",
@@ -2251,7 +2251,7 @@
       "tasks": [
         {
           "id": "complete-form",
-          "prompt": "Complete the header and each Q1-Q9 entry using the official form's exact routing. Cite the source IDs and actual evidence, not a missing-record premise. State the affected academic areas and distinguish instructional criteria from eligibility rules."
+          "prompt": "Complete the header and each Q1-Q9 entry using the official form's exact routing. Cite the source IDs and findings that support each entry. State the affected academic areas and distinguish instructional criteria from eligibility rules."
         },
         {
           "id": "source-streams",
@@ -2296,7 +2296,7 @@
         "Q6": {
           "response": "NARRATIVE",
           "responseLabel": "Narrative; no YES/NO box",
-          "feedback": "Marina Cole, RN, reviewed the school health record, parent questionnaire and available pediatric summary with consent on September 10. No educationally relevant medical finding was identified in those reviewed sources, including no reported seizures, traumatic brain injury, diagnosed ADHD, significant sleep problem, chronic illness or medication effect. Vision/hearing screening and functional motor observations are documented separately in S6. This is an affirmative report of a documented review, not an inference from absent information, a medical examination or certification that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
+          "feedback": "Marina Cole, RN, reviewed the school health record, parent questionnaire and available pediatric summary with consent on September 10. No educationally relevant medical finding was identified in those reviewed sources, including no reported seizures, traumatic brain injury, diagnosed ADHD, significant sleep problem, chronic illness or medication effect. Vision/hearing screening and functional motor observations are documented separately in S6. The nurse's dated review supports this entry; a blank health section would not. The review is not a medical examination or proof that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
           "status": "provisional"
         },
         "Q7": {
@@ -2319,12 +2319,12 @@
         }
       },
       "debrief": {
-        "summary": "A fully documented fictional practice case: basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of necessary instructional adaptations; no missing-record premise is needed.",
+        "summary": "Basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of the instructional adaptations Samira needs.",
         "q9Example": "Samira requires disability-related adaptation of reading methodology/delivery: smaller error-selected steps, fewer new contrasts, immediate individualized feedback, spaced retrieval and planned transfer to unfamiliar words/text. S3 shows persistent difficulty despite accessible general instruction/intervention. In S8, general-sequence next-day retention is 3-4/10 and transfer 3/10; adapted instruction yields 8/10 retention and 7-8/10 transfer, with one-week retention 8/10 versus 4/10. Access supports improve content responses to 8/10 from 4/10 but do not remediate independent decoding; broad monitoring remains 9/20 and 63 correct words/minute at 92%. General education interventions/accommodations alone have not adequately addressed the need. Select 9(a), coordinate necessary instruction with continuing ESOL/content access, and monitor independent retention, transfer and fluency.",
         "familyExplanation": "Samira explains ideas, learns mathematics and brings strong storytelling skills. The evaluation also shows persistent difficulty reading unfamiliar words accurately and efficiently, beyond what her English-development history explains. Ordinary reading intervention and access supports have not been enough for independent reading. Smaller steps based on her errors, retrieval practice and planned transfer improved her independence, so she needs individualized reading instruction while English-language and classroom supports continue. We will respect Arabic use and review progress with you through a qualified interpreter.",
-        "caution": "A participant may reasonably ask further clinical questions or disagree with this model, but should identify the exact evidence and effect on the decision. Do not manufacture facts or treat the answer key as a substitute for professional judgment. Actual certification, dissent and notice remain human team responsibilities.",
+        "caution": "Participants may ask further assessment questions or disagree with this model. Ask them to identify the evidence and explain how it affects the decision. Use only the supplied facts and apply professional judgment. In actual practice, the team is responsible for certification, any dissenting statement and Written Notice.",
         "nextEvidence": [
-          "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles; do not fabricate real signatures or a completed Written Notice. An actual dissent requires a separate statement.",
+          "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles. Leave signature lines unsigned, and discuss what should be documented in Written Notice without stating that a notice was issued. An actual dissent requires a separate statement.",
           "Translate the S8 instructional findings into measurable individualized reading instruction and independent progress monitoring. Review broad reading gains as well as taught-item retention and new-word transfer; the narrow successful probes do not mean the wider need is resolved.",
           "Coordinate ESOL and content access with reading instruction. Preserve Arabic use, qualified interpretation, private corrective feedback and meaningful student/family participation. Report reading and language development separately.",
           "Reconsider interpretation, additional assessment or instructional changes if new evidence warrants them. Do not require more intervention cycles, an English-proficiency level or equivalent Arabic reading failure before appropriate action."
@@ -2334,9 +2334,9 @@
         "version": "1.0.0",
         "caseId": "samira",
         "overview": [
-          "Complete fictional practice record, revised October 12, 2026. This replaces Samira's earlier assumption-based excerpt for the PDF activity. All people, institutions, dates, scores, statements and records below are invented. The sources are authored summaries, not actual confidential reports or reproduced test protocols.",
-          "Samira is a Grade 4 student, age 9 years 8 months at the September 16 psychological assessment. She enjoys science demonstrations, diagrams and Arabic storytelling. Read sources S1-S9 before completing the official SLD form. The packet supplies evidence for every question but does not supply participant checkbox answers. Consider the strength and limits of the evidence rather than counting low scores.",
-          "The local tasks, rubrics, instructional targets and comparison values are invented for this case. They are not Maine cutoffs, national norms, required intervention durations or universal eligibility rules. Named standardized processing composites are simulated report results, independently assigned for this exercise, not calculated from secured test items or scoring tables."
+          "Fictional practice case. All people, institutions, dates, scores, statements and records in this packet are invented. Sources S1-S9 are report summaries for training, not actual student records or test protocols.",
+          "Samira is a Grade 4 student, age 9 years 8 months at the September 16 psychological assessment. She enjoys science demonstrations, diagrams and Arabic storytelling. Read sources S1-S9 before completing the official SLD form. Use the evidence to make and explain each form decision. Consider the strength and limits of the evidence rather than counting low scores.",
+          "The local tasks, rubrics, instructional targets and comparison values are fictional. They are not Maine cutoffs, national norms, required intervention durations or universal eligibility rules. Named standardized processing composites are simulated report results; do not reconstruct test protocols or calculate additional scores from them."
         ],
         "headerRows": [
           [
@@ -2375,7 +2375,7 @@
             "paragraphs": [
               "Coordinator Morgan Ellis's record, September 30: at intervention planning on April 3, 2026, Rania received interpreted information about the performance data to be collected, general-education services, strategies for increasing learning and her right to request an evaluation; this information was reviewed again August 20. The family and Grade 4 teacher requested evaluation August 20 for persistent word-reading difficulty. Prior notices and the evaluation plan were explained with qualified Arabic interpretation; written parent consent was received August 24. Evaluation activities occurred September 4-30. The new regular-classroom observation in S7 followed consent. Instruction and ESOL continued; no additional intervention cycle was required before evaluation.",
               "The October 2 meeting notice was provided September 18; Rania confirmed attendance and requested interpretation. Reports and an interpreted review were provided September 30. Proposed participants are Rania; Melanie Voss, general educator; Nina Park, special educator; Morgan Ellis, district representative; Dr. Elena Mercer, school psychologist able to interpret evaluation results; Hana Nasser, ESOL teacher; and Dalia Mansour, qualified Arabic interpreter/language consultant. Samira's September 11 interview is included even though she will not attend the full meeting. All names and professional roles are fictional.",
-              "This is a planned training meeting, not a completed actual eligibility decision. Use October 2, 2026 for the repeated child/date fields. Participants supply their reasoned team conclusion; do not invent signatures or claim notices were issued after the meeting. The packet includes source summaries needed for this exercise, not every item normally retained in an actual student file."
+              "For this exercise, the team is preparing for the October 2 meeting; no eligibility decision has been made. Use October 2, 2026 for the repeated child/date fields. Discuss and document your team's conclusion, but leave signature lines unsigned and do not state that a Written Notice has been issued. Use the source summaries to complete the practice form; an actual student file would include the supporting records."
             ]
           },
           {
@@ -2461,7 +2461,7 @@
             "title": "Eight-area achievement review and summative evidence",
             "paragraphs": [
               "Melanie Voss and the curriculum coordinator reviewed June 2026 Grade 3 core-curriculum summative results, September 2026 beginning-Grade-4 assessments and classroom work. Tasks were mapped to Maine's grade-level ELA/mathematics expectations and taught prerequisites, with ordinary language-access supports recorded. September judgments concern expectations at this point in Grade 4, not untaught end-of-year content. Local minimums below are instructional criteria, not eligibility cutoffs or nationally validated norms.",
-              "Achievement norm-group comparability for an English nationally normed achievement battery was not established for this Arabic-English literacy history. Consistent with the form's conditional instruction, the Q1 evidence therefore uses the multi-tiered performance record, work samples and district summative assessments; no standardized achievement score is used. No age/grade-equivalent conversion is available or invented. Q4c may use district core-curriculum summative evidence, not only nationally normed tests.",
+              "Achievement norm-group comparability for an English nationally normed achievement battery was not established for this Arabic-English literacy history. Consistent with the form's conditional instruction, the Q1 evidence therefore uses the multi-tiered performance record, work samples and district summative assessments; no standardized achievement score is used. Age/grade-equivalent scores are not provided; do not calculate them from the local task results. Q4c may use district core-curriculum summative evidence, not only nationally normed tests.",
               "All reading-comprehension scores below involved Samira reading the printed text herself, with her own rereading and no adult reading, audio or word supply. Untimed comprehension and slow/inaccurate reading can coexist. Oral presentation is separately identified for listening and mathematics tasks so it is not misrepresented as reading performance. Two educators independently scored the September rubric samples; they agreed on domain ratings, and checked disputed item scores against the rubric."
             ],
             "table": {
@@ -2658,16 +2658,16 @@
             "paragraphs": [
               "Dr. Mercer and Hana Nasser's September 30 review documents the question addressed by each method, language used, administration conditions, evaluator qualifications and limits. Standardized processing measures were administered in their published age range using required manual procedures; the score report was checked by a second qualified psychologist. Published reliability/validity evidence supports the selected constructs, but does not make every interpretation for every multilingual child valid. The team retained the processing results only for the bounded, corroborated purposes described in S5; it did not claim exact Arabic-English norm representativeness or use an improvised translated standard score.",
               "Curriculum and monitoring probes used documented comparable difficulty, consistent instructions, independent scoring and repeated samples. Cross-source agreement is considered alongside variation across tasks and supports. ACCESS was administered by the trained ESOL teacher under the assessment's procedures; the 2026 reporting limits are retained. Family/student interviews and Arabic-language consultation add history and functional-language evidence but are not norm-referenced tests. Native-language information was actively obtained, while equivalent standardized Arabic achievement scores were not produced from limited Arabic literacy instruction or translated English tests.",
-              "Intentional omissions: secured test items, raw protocols, score confidence intervals, an FSIQ, a standardized adaptive scale, Arabic achievement equivalents and an unrelated medical battery are not supplied or required by this scenario. No significance tests, score conversions or diagnoses may be invented from their absence. The available sources provide the relevant evidence for the SLD-form exercise. Actual evaluations require professional judgment about additional suspected needs and applicable procedures; this training summary is not a universal battery or a legal compliance certification."
+              "Scope of the practice record: secured test items, raw protocols, score confidence intervals, an FSIQ, a standardized adaptive scale, Arabic achievement equivalents and unrelated medical testing are not included. Complete the form using the supplied sources; do not infer additional scores, significance tests, score conversions or diagnoses. In an actual evaluation, the team determines whether additional evidence is needed for the student and assessment questions and follows applicable procedures. This practice record is not a required assessment battery or evidence that an actual evaluation meets all requirements."
             ]
           }
         ],
         "tasks": [
-          "Complete the header and each Q1-Q9 entry using the official form's exact routing. Cite the source IDs and actual evidence, not a missing-record premise. State the affected academic areas and distinguish instructional criteria from eligibility rules.",
+          "Complete the header and each Q1-Q9 entry using the official form's exact routing. Cite the source IDs and findings that support each entry. State the affected academic areas and distinguish instructional criteria from eligibility rules.",
           "For Q3, make and explain four separate primary-cause determinations. For Q4, enter both strengths and weaknesses in all four evidence streams; do not reuse one observation as four independent sources.",
           "Explain Q8 separately from Q9. Identify what the record shows about independent retention/transfer, necessary adaptations, continuing ESOL and access supports. A defensible answer must address the limitations as well as the supportive evidence."
         ],
-        "completionNote": "Use the fictional header information exactly as labeled and October 2, 2026 in repeated child/date fields. On the official certification page, list the S1 meeting roles for practice and identify agreement/disagreement after discussion; leave actual signature lines unsigned or mark them 'training only' outside the signature line. Every actual team member must certify agreement or disagreement, and a dissenting member submits a separate statement. Document the conversation/form completion in Written Notice as the official checklist's best-practice item; this packet does not fabricate a completed meeting or notice. The practice worksheet supplements, and does not replace, the official SLD form.",
+        "completionNote": "Use the fictional header information exactly as labeled and October 2, 2026 in repeated child/date fields. On the official certification page, list the S1 meeting roles for practice and identify agreement/disagreement after discussion; leave actual signature lines unsigned or mark them 'training only' outside the signature line. Every actual team member must certify agreement or disagreement, and a dissenting member submits a separate statement. The official checklist identifies documenting the conversation/form completion in Written Notice as best practice. For this exercise, discuss what should be documented without stating that an actual notice was issued. The practice worksheet supplements, and does not replace, the official SLD form.",
         "sources": [
           {
             "label": "Maine DOE current posted SLD form/checklist (source for form structure, not fictional case facts)",
@@ -2706,12 +2706,12 @@
       "facilitatorKey": {
         "caseId": "samira",
         "routeSummary": "Q1 NO; Q2 NO; Q3a-d NO; Q4 YES; Q5/Q6 narratives; Q7 YES for the documented uses; Q8 YES; Q9(a). Each decision is supported by sources S1-S9 in the participant record.",
-        "summary": "A fully documented fictional practice case: basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of necessary instructional adaptations; no missing-record premise is needed.",
+        "summary": "Basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of the instructional adaptations Samira needs.",
         "qualityNotes": [
-          "This key models a defensible team analysis of the supplied fictional sources, not an automatic scoring rule or an actual eligibility determination. All names, institutions, dates, scores and statements are invented and visibly labeled. Sources are authored report summaries, not confidential records or test protocols.",
+          "This facilitator key offers one reasoned interpretation of the fictional record. Ask participants to support or challenge each conclusion with evidence. It is not an automatic scoring rule or an actual eligibility determination. All names, institutions, dates, scores and statements are fictional; the source summaries are not actual student records or test protocols.",
           "Q1 uses district summative and multi-tiered performance evidence because comparable achievement norms were not established. Processing composites are included for the narrower, corroborated purposes described in S5/S9. English proficiency, a composite score, an IQ-achievement contrast or membership in a language group does not decide SLD.",
-          "The record intentionally omits secured items/protocols, confidence intervals, FSIQ, standardized adaptive scores, Arabic achievement equivalents and unrelated medical testing. None is needed to complete this exercise as designed. Do not calculate missing conversions, significance tests or diagnostic findings. These choices are not a universal evaluation battery for actual students.",
-          "A participant may reasonably ask further clinical questions or disagree with this model, but should identify the exact evidence and effect on the decision. Do not manufacture facts or treat the answer key as a substitute for professional judgment. Actual certification, dissent and notice remain human team responsibilities."
+          "Secured items/protocols, confidence intervals, FSIQ, standardized adaptive scores, Arabic achievement equivalents and unrelated medical testing are not included in the practice record. Use the supplied sources to complete this exercise; do not infer score conversions, significance tests or diagnostic findings. In an actual evaluation, the team determines whether additional evidence is needed for the student and assessment questions. The case does not prescribe a required assessment battery.",
+          "Participants may ask further assessment questions or disagree with this model. Ask them to identify the evidence and explain how it affects the decision. Use only the supplied facts and apply professional judgment. In actual practice, the team is responsible for certification, any dissenting statement and Written Notice."
         ],
         "administrative": [
           {
@@ -2722,7 +2722,7 @@
           {
             "field": "Meeting and repeated date fields",
             "entry": "October 2, 2026",
-            "rationale": "S1 identifies the planned training meeting date. Use this date and Samira Haddad on repeated child/date fields, not the workshop delivery date."
+            "rationale": "S1 identifies the planned meeting date in this fictional case. Use this date and Samira Haddad on repeated child/date fields, not the workshop delivery date."
           },
           {
             "field": "SAU / school / school phone",
@@ -2892,7 +2892,7 @@
             "id": "Q6",
             "selection": "Narrative; no YES/NO box",
             "entry": "Marina Cole, RN, reviewed the school health record, parent questionnaire and available pediatric summary with consent on September 10. No educationally relevant medical finding was identified in those reviewed sources, including no reported seizures, traumatic brain injury, diagnosed ADHD, significant sleep problem, chronic illness or medication effect. Vision/hearing screening and functional motor observations are documented separately in S6.",
-            "rationale": "This is an affirmative report of a documented review, not an inference from absent information, a medical examination or certification that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
+            "rationale": "The nurse's dated review supports this entry; a blank health section would not. The review is not a medical examination or proof that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
             "evidence": [
               "S6: dated nurse/health, sensory and motor sources"
             ],
@@ -2932,7 +2932,7 @@
           }
         ],
         "followUp": [
-          "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles; do not fabricate real signatures or a completed Written Notice. An actual dissent requires a separate statement.",
+          "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles. Leave signature lines unsigned, and discuss what should be documented in Written Notice without stating that a notice was issued. An actual dissent requires a separate statement.",
           "Translate the S8 instructional findings into measurable individualized reading instruction and independent progress monitoring. Review broad reading gains as well as taught-item retention and new-word transfer; the narrow successful probes do not mean the wider need is resolved.",
           "Coordinate ESOL and content access with reading instruction. Preserve Arabic use, qualified interpretation, private corrective feedback and meaningful student/family participation. Report reading and language development separately.",
           "Reconsider interpretation, additional assessment or instructional changes if new evidence warrants them. Do not require more intervention cycles, an English-proficiency level or equivalent Arabic reading failure before appropriate action."
@@ -3009,20 +3009,20 @@
       },
       "narrative": [
         "Avery is age 11 years, 6 months, in Grade 6 and moved to a new school at the beginning of Grade 5. Avery enjoys building stage sets and explaining how shapes fit together. The family describes strong reading interests and difficulty completing calculations without losing track of place value. Attendance is 96%. Earlier records show similar mathematics concerns before the move; a transition is part of the history, not an assumed explanation for disability or underachievement.",
-        "The comprehensive evaluation reviews all eight academic areas. Appropriate age-based measures and independent grade-level work establish inadequate mathematics calculation and mathematics problem-solving, with stronger reading, language and visual representation skills. The full team review documents a relevant pattern across intervention response, classroom performance, achievement and appropriate psychological-processing evidence. For this exercise, that review establishes SLD in mathematics. The short score excerpt does not independently establish those findings.",
-        "Records from both schools verify appropriate mathematics instruction by qualified staff, including the prerequisite skills relevant to the current errors. The team reviews health/sensory information, developmental history, language access, emotional functioning and family/context evidence and finds no listed Q3 factor to be the primary cause. No educationally relevant medical finding is reported. The original evaluation's validity and qualifications are stipulated as established.",
-        "Avery can represent a problem with a drawing but often misaligns place value, loses regrouping steps and chooses an operation without checking the relationships in the problem. Extra time does not consistently resolve the errors. An intervention with worked examples, concrete-to-symbolic links and guided self-explanation improves performance on practiced tasks. The current excerpt does not establish whether general education adequately meets the need or which disability-related adaptations are necessary for independent transfer. The Q9 decision therefore remains open."
+        "The evaluation summary addresses all eight academic areas. It reports that appropriate age-based measures and independent grade-level work establish inadequate mathematics calculation and mathematics problem-solving, with stronger reading, language and visual representation skills. It describes a relevant pattern across intervention response, classroom performance, achievement and appropriate psychological-processing evidence. For this exercise, accept the summary's finding of SLD in mathematics as a supplied assumption. Use the achievement scores together with the classroom and intervention evidence; the three scores alone do not establish SLD.",
+        "Records from both schools verify appropriate mathematics instruction by qualified staff, including the prerequisite skills relevant to the current errors. The team reviews health/sensory information, developmental history, language access, emotional functioning and family/context evidence and finds no listed Q3 factor to be the primary cause. No educationally relevant medical finding is reported. Appropriate, valid and reliable assessment by qualified evaluators is a supplied assumption.",
+        "Avery can represent a problem with a drawing but often misaligns place value, loses regrouping steps and chooses an operation without checking the relationships in the problem. Extra time does not consistently resolve the errors. An intervention with worked examples, concrete-to-symbolic links and guided self-explanation improves performance on practiced tasks. The team still needs evidence about whether general education adequately meets Avery's needs and which teaching adaptations are necessary for independent transfer. Keep Q9 open and identify the information needed to decide."
       ],
       "evidenceSupplement": [
         {
           "id": "processing-documentation-limit",
           "title": "Documentation limit: processing sources and composites",
-          "text": "The relevant psychological-processing pattern is stipulated in the full evaluation; its standardized measure names, composite scores and specific processing findings are not reproduced. Reading comprehension 103, mathematics scores, drawings and place-value errors do not by themselves document Q4d. Mark those source details as absent from this excerpt and request the original qualified evaluator's report rather than inventing a processing diagnosis or score."
+          "text": "For this exercise, a relevant psychological-processing pattern is a supplied assumption. The names of the processing measures, composite scores and specific findings are not provided. In Q4d, identify these missing source details and request the qualified evaluator's report. Reading comprehension 103, mathematics scores, drawings and place-value errors do not supply the missing processing evidence; do not invent a diagnosis or score."
         },
         {
           "id": "instruction-continuity",
           "title": "Documented in the fictional record: opportunity to learn",
-          "text": "The case manager compares the two schools' unit maps, work samples and service logs. Place-value and computation concerns predate the move; both schools taught the relevant concepts with models, explicit explanation and guided practice. A newly taught fraction unit is evaluated separately so lack of exposure to that unit is not mistaken for longstanding disability. The full review, not attendance or relocation alone, supports the appropriate-instruction premise."
+          "text": "The case manager compares the two schools' unit maps, work samples and service logs. Place-value and computation concerns predate the move; both schools taught the relevant concepts with models, explicit explanation and guided practice. A newly taught fraction unit is evaluated separately so lack of exposure to that unit is not mistaken for longstanding disability. Use this instruction review, rather than attendance or relocation alone, to explain the appropriate-instruction assumption."
         },
         {
           "id": "task-observation",
@@ -3042,9 +3042,9 @@
       ],
       "assumptions": [
         "All people, observations, scores and task counts are fictional. Generic standard scores use mean 100 and SD 15; they are not a branded battery, computed composites or eligibility cutoffs.",
-        "The complete appropriate evaluation stipulates a relevant SLD pattern, verified appropriate instruction, no primary exclusionary cause, qualified valid assessment and Q8 YES. Short excerpts do not replace the underlying record.",
+        "For this exercise, accept these evaluation-summary findings as supplied assumptions: a relevant SLD pattern, appropriate instruction, no primary exclusionary cause, valid assessment by qualified personnel and Q8 YES. Identify any source details needed to verify individual form entries.",
         "The school move is documented context; the case does not infer trauma, socioeconomic disadvantage, poor instruction or family support from relocation.",
-        "Q9 is intentionally unresolved. Intervention improvement, a small group, a calculator, a program name or a low score alone does not determine whether SDI is required."
+        "Q9 remains unresolved. Intervention improvement, a small group, a calculator, a program name or a low score alone does not determine whether SDI is required."
       ],
       "scoreRowIds": [],
       "extraScoreRows": [
@@ -3081,7 +3081,7 @@
         "ageAtEvaluation": "11 years, 6 months",
         "grade": 6
       },
-      "scoreGuidance": "Three generic simulated achievement standard scores use mean 100 and SD 15. They are not branded tests, required measures or cutoffs and provide no percentile or confidence interval. Read them with classroom work, instruction history and the separately stipulated full review. No intellectual-development score or discrepancy rule is implied.",
+      "scoreGuidance": "Three generic simulated achievement standard scores use mean 100 and SD 15. They are not branded tests, required measures or cutoffs and provide no percentile or confidence interval. Read them with classroom work, instruction history and the supplied evaluation-summary assumptions. No intellectual-development score or discrepancy rule is implied.",
       "evidencePrompt": "Connect mathematics findings to the conditions under which Avery works independently or with support. Select evidence that clarifies the learning need and evidence that leaves the necessary instruction uncertain.",
       "focusSteps": [
         "Q1",
@@ -3101,7 +3101,7 @@
         },
         {
           "id": "q8-q9-separation",
-          "prompt": "Use the stipulated full evaluation to explain Q8, then identify what remains unresolved for Q9. Describe the evidence that would support either general education sufficiency or necessary teaching adaptations."
+          "prompt": "Use the supplied evaluation-summary assumptions to explain Q8, then identify what remains unresolved for Q9. Describe the evidence that would support either general education sufficiency or necessary teaching adaptations."
         },
         {
           "id": "independent-transfer",
@@ -3111,8 +3111,8 @@
       "recommendedResponses": {
         "Q1": {
           "response": "NO",
-          "responseLabel": "NO under the complete achievement record",
-          "feedback": "Appropriate age-based measures and grade-level performance in the full record establish inadequate mathematics calculation and problem-solving. Scores alone do not establish the complete Q1 review.",
+          "responseLabel": "NO under the supplied achievement findings",
+          "feedback": "The case summary reports that appropriate age-based measures and grade-level performance establish inadequate mathematics calculation and problem-solving. Identify that supplied finding in the verification; the three scores alone do not verify the complete eight-area achievement review.",
           "status": "stipulated"
         },
         "Q2": {
@@ -3123,14 +3123,14 @@
         },
         "Q3": {
           "response": "ALL_NO",
-          "responseLabel": "All subparts NO under the complete review",
-          "feedback": "The stipulated full record supports each primary-cause finding. Do not infer health, emotional functioning, economic circumstances or language access from the student's school transition.",
+          "responseLabel": "All subparts NO under the supplied assumptions",
+          "feedback": "A review of each listed factor finding none is the primary cause is a supplied assumption. Label that basis in each Q3 verification. Do not infer health, emotional functioning, economic circumstances or language access from the student's school transition.",
           "status": "stipulated"
         },
         "Q4": {
           "response": "YES",
-          "responseLabel": "YES: relevant pattern established in the full evaluation",
-          "feedback": "The complete record integrates all required evidence streams. Strong drawings and lower mathematics scores illustrate a contrast but are not an independently sufficient SLD pattern.",
+          "responseLabel": "YES under the supplied pattern finding",
+          "feedback": "A relevant pattern across all four evidence streams is a supplied evaluation-summary finding. Strong drawings and lower mathematics scores alone do not establish that pattern. Identify the missing processing measure names, composite scores and interpretations in the Q4d source cells rather than inventing them.",
           "status": "stipulated"
         },
         "Q5": {
@@ -3141,33 +3141,33 @@
         },
         "Q6": {
           "response": "NARRATIVE",
-          "responseLabel": "No relevant medical finding in the stipulated record",
-          "feedback": "Document the reviewed record's statement as a narrative. Do not turn missing detail in this excerpt into a new medical conclusion.",
+          "responseLabel": "No relevant medical finding reported",
+          "feedback": "Record the case summary's statement that no educationally relevant medical finding is reported. Q6 is a narrative field; do not add medical findings that are not supplied.",
           "status": "stipulated"
         },
         "Q7": {
           "response": "YES",
           "responseLabel": "YES under the validity and qualification assumptions",
-          "feedback": "The original complete evaluation is stipulated to use appropriate, valid and reliable measures administered by qualified personnel. The generic excerpt alone would not verify these assurances.",
+          "feedback": "Appropriate, valid and reliable measures administered by qualified personnel are supplied assumptions. Label that basis in the practice response; an actual evaluation requires assessment-specific validity information and evaluator qualifications.",
           "status": "stipulated"
         },
         "Q8": {
           "response": "YES",
-          "responseLabel": "YES under the stipulated complete SLD review",
-          "feedback": "The full team evaluation establishes mathematics SLD for this exercise. A score difference or a single intervention result would not independently establish that conclusion.",
+          "responseLabel": "YES under the supplied mathematics-SLD finding",
+          "feedback": "Mathematics SLD is a supplied evaluation-summary finding for this exercise. Identify that basis; a score difference or a single intervention result would not independently establish the conclusion.",
           "status": "stipulated"
         },
         "Q9": {
           "response": "MORE_EVIDENCE",
           "responseLabel": "More evidence needed about the instruction required",
-          "feedback": "The excerpt describes improved practiced performance and limited transfer but does not establish general education sufficiency or necessary disability-related adaptations. Identify evidence needed for either official option; Q8 YES does not automatically settle Q9.",
+          "feedback": "The intervention evidence describes improved practiced performance and limited transfer but does not establish general education sufficiency or necessary disability-related adaptations. Identify evidence needed for either official option; Q8 YES does not automatically settle Q9.",
           "status": "provisional"
         }
       },
       "debrief": {
-        "summary": "Avery broadens the discussion beyond reading. The complete evaluation supports mathematics SLD; the short instruction record deliberately leaves Q9 unresolved.",
+        "summary": "Use the supplied mathematics-SLD finding for Q8. Keep Q9 open because the team still needs evidence about general education sufficiency and the teaching adaptations required for independent performance.",
         "q9Example": "The record documents mathematics difficulty and partial improvement with instruction. We still need evidence about independent transfer, maintenance and the adaptations actually necessary to meet Avery's disability-related needs before supporting either Q9 option.",
-        "familyExplanation": "Avery's ideas and visual explanations are strengths. The full evaluation supports a mathematics learning disability, while we still need to clarify the teaching required for independent work. We will review how Avery uses skills in new problems, how much prompting is needed and which instruction makes a sustained difference.",
+        "familyExplanation": "Avery's ideas and visual explanations are strengths. The evaluation summary identifies a mathematics learning disability, while we still need to clarify the teaching required for independent work. We will review how Avery uses skills in new problems, how much prompting is needed and which instruction makes a sustained difference.",
         "caution": "Do not equate a calculator with mathematics instruction, assume a relocation caused underachievement, or treat intervention gains as proving either the need for or the absence of SDI. Keep actual instruction and independence central.",
         "nextEvidence": [
           "Task-level error analysis and repeated independent performance on taught and unpracticed problems.",

@@ -2837,6 +2837,131 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] translateResourceItem fired"); } catch(_) {}
       // A copy of an untranslatable resource is not a translation: report it.
       if (['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type)) throw new Error('This resource type has no text to translate.');
+      if (item.type === 'analysis') {
+          // An analysis is a source artifact. Translation adds report views and a
+          // companion passage; it must never rewrite the source or its provenance.
+          const source = item.data;
+          if (!source || typeof source !== 'object' || Array.isArray(source)) throw new Error('This analysis has no report to translate.');
+          const target = String(targetLanguage || '').trim();
+          if (!target) throw new Error('Choose a translation language.');
+          const languageKey = value => {
+              const text = String(value || '').trim().toLowerCase().replace(/_/g, '-');
+              try {
+                  if (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(text)) return new Intl.DisplayNames(['en'], { type: 'language' }).of(text.split('-')[0]).toLowerCase();
+              } catch (_) {}
+              return text;
+          };
+          const reportLanguage = source.reportLanguage || item.config?.language || 'English';
+          const translations = source.reportTranslations && typeof source.reportTranslations === 'object' && !Array.isArray(source.reportTranslations) ? source.reportTranslations : {};
+          const existingLanguage = Object.keys(translations).find(language => languageKey(language) === languageKey(target)
+              && translations[language] && typeof translations[language] === 'object' && !Array.isArray(translations[language]));
+          const availableReportLanguage = languageKey(reportLanguage) === languageKey(target) ? reportLanguage : existingLanguage;
+          const originalText = typeof source.originalText === 'string' ? source.originalText : '';
+          const studentSources = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
+          const privateAppendix = /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi.test(originalText);
+          // A companion is student-facing. Translate only the public reading;
+          // keep the saved original and its provenance completely unchanged.
+          const companionSource = typeof studentSources?.publicText === 'function'
+              ? studentSources.publicText(originalText, item.studentSources) : privateAppendix ? '' : originalText;
+          const sourceLanguage = source.sourceLanguage || '';
+          const sourceTranslations = source.sourceTranslations && typeof source.sourceTranslations === 'object' && !Array.isArray(source.sourceTranslations) ? source.sourceTranslations : {};
+          const comparable = text => text.normalize('NFC').replace(/\s+/g, ' ').trim();
+          const cachedSource = Object.keys(sourceTranslations).some(language => languageKey(language) === languageKey(target)
+              && typeof sourceTranslations[language] === 'string' && sourceTranslations[language].trim()
+              && comparable(sourceTranslations[language]) !== comparable(companionSource));
+          const includeSource = !!companionSource.trim() && !cachedSource && (!sourceLanguage || languageKey(sourceLanguage) !== languageKey(target));
+          const companionInstruction = includeSource
+              ? `Provide a faithful companion translation of the original passage below in sourceTranslation. If it is already in ${target}, return null. This companion is not the text being assessed. Preserve existing Markdown citations and URLs exactly.\nOriginal passage: ${JSON.stringify(companionSource)}`
+              : 'Return null for sourceTranslation; no companion translation is needed.';
+          if (availableReportLanguage) {
+              const data = { ...source, reportLanguage, displayReportLanguage: availableReportLanguage };
+              if (!includeSource) return { ...item, data };
+              // The requested report is already available, but its source passage
+              // may be in another language. Request only that missing companion.
+              try {
+                  const result = JSON.parse(cleanJson(await callGemini(`Translate the source passage into ${target}. Do not analyze, correct, or simplify it.\n${companionInstruction}\nReturn ONLY JSON: {"sourceTranslation": <string or null>}.`, true)));
+                  if (!result || typeof result !== 'object' || Array.isArray(result)
+                      || (result.sourceTranslation !== null && (typeof result.sourceTranslation !== 'string' || !result.sourceTranslation.trim()))) {
+                      throw new Error('The source translation reply was not usable.');
+                  }
+                  const companion = result.sourceTranslation;
+                  if (typeof companion === 'string' && comparable(companion) !== comparable(companionSource)) {
+                      data.sourceTranslations = { ...sourceTranslations, [availableReportLanguage]: companion };
+                  }
+                  return { ...item, data };
+              } catch (error) {
+                  warnLog('Translation failed for analysis source companion', error);
+                  throw error;
+              }
+          }
+          const readingLevel = source.readingLevel && typeof source.readingLevel === 'object' ? source.readingLevel : { range: source.readingLevel || '', explanation: '' };
+          const accuracy = source.accuracy && typeof source.accuracy === 'object' ? source.accuracy : { rating: 'Unknown', reason: '' };
+          const report = {
+              readingLevel: { range: readingLevel.range, explanation: readingLevel.explanation || '' },
+              concepts: Array.isArray(source.concepts) ? source.concepts : [],
+              accuracy: { rating: accuracy.rating, reason: accuracy.reason || '', discrepancies: Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [], verifiedFacts: Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : [] },
+              grammar: Array.isArray(source.grammar) ? source.grammar : []
+          };
+          // Protect cited evidence and quoted source examples even if the model
+          // tries to translate them. Every protected token must survive its field.
+          const protectedText = [];
+          const protect = value => typeof value === 'string'
+              ? value.replace(/\[[^\]\n]*\]\([^\s)]+\)|https?:\/\/[^\s)]+|\[\d+(?:\s*[,–-]\s*\d+)*\]|"[^"\n]+"|“[^”\n]+”|‘[^’\n]+’|`[^`\n]+`|(?<!\w)'[^'\n]+'(?!\w)/g, match => `__ANALYSIS_QUOTE_${protectedText.push(match) - 1}__`)
+              : Array.isArray(value) ? value.map(protect)
+              : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, protect(nested)])) : value;
+          const maskedReport = protect(report);
+          const prompt = `Translate the explanations in this existing source-text analysis into ${target}. Do not analyze, correct, or reassess the passage.
+Report JSON: ${JSON.stringify(maskedReport)}
+Rules:
+- Translate readingLevel.explanation, concepts, accuracy.reason, accuracy.discrepancies, accuracy.verifiedFacts, and grammar explanations. Keep each list in the same order with the same number of entries.
+- Keep readingLevel.range and accuracy.rating unchanged. Keep non-string entries unchanged.
+- Keep every __ANALYSIS_QUOTE_N__ token exactly in its original field. They represent citations and quoted examples from the ORIGINAL language; never translate examples, corrections, or evidence quotations.
+- Return ONLY JSON: {"report": <the same report shape>, "sourceTranslation": <string or null>}.
+${companionInstruction}`;
+          try {
+              const result = JSON.parse(cleanJson(await callGemini(prompt, true)));
+              const translated = result && result.report;
+              if (!translated || typeof translated !== 'object' || Array.isArray(translated)) throw new Error('The analysis translation reply was not usable.');
+              const translateField = (value, template) => {
+                  if (typeof template !== 'string') return template;
+                  if (!template) return template;
+                  if (typeof value !== 'string' || !value.trim()) throw new Error('The analysis translation omitted an explanation.');
+                  const tokens = template.match(/__ANALYSIS_QUOTE_\d+__/g) || [];
+                  const returnedTokens = value.match(/__ANALYSIS_QUOTE_\d+__/g) || [];
+                  if (tokens.slice().sort().join('|') !== returnedTokens.slice().sort().join('|')) throw new Error('The analysis translation changed quoted evidence.');
+                  return value.replace(/__ANALYSIS_QUOTE_(\d+)__/g, (_, index) => protectedText[Number(index)]);
+              };
+              const translateList = (value, template, original) => {
+                  if (!Array.isArray(value) || value.length !== template.length) throw new Error('The analysis translation changed the report findings.');
+                  return template.map((entry, index) => typeof entry === 'string' ? translateField(value[index], entry) : original[index]);
+              };
+              const translatedReport = {
+                  readingLevel: { range: readingLevel.range, explanation: translateField(translated.readingLevel?.explanation, maskedReport.readingLevel.explanation) },
+                  concepts: translateList(translated.concepts, maskedReport.concepts, report.concepts),
+                  accuracy: {
+                      rating: accuracy.rating,
+                      reason: translateField(translated.accuracy?.reason, maskedReport.accuracy.reason),
+                      discrepancies: translateList(translated.accuracy?.discrepancies, maskedReport.accuracy.discrepancies, report.accuracy.discrepancies),
+                      verifiedFacts: translateList(translated.accuracy?.verifiedFacts, maskedReport.accuracy.verifiedFacts, report.accuracy.verifiedFacts)
+                  },
+                  grammar: translateList(translated.grammar, maskedReport.grammar, report.grammar)
+              };
+              const companion = includeSource && typeof result.sourceTranslation === 'string' ? result.sourceTranslation : '';
+              return {
+                  ...item,
+                  data: {
+                      ...source,
+                      reportLanguage,
+                      reportTranslations: { ...translations, [target]: translatedReport },
+                      displayReportLanguage: target,
+                      ...(companion.trim() && comparable(companion) !== comparable(companionSource) ? { sourceTranslations: { ...sourceTranslations, [target]: companion } } : {})
+                  }
+              };
+          } catch (error) {
+              warnLog('Translation failed for analysis', error);
+              throw error;
+          }
+      }
       // Inline pictures and audio never go to the model (one picture can be
       // megabytes). Placeholders keep their place; restoreMedia puts them back.
       const media = [];
@@ -2974,22 +3099,6 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
                   if (newData.faqs && Array.isArray(newData.faqs)) newData = newData.faqs;
                   else if (newData.questions && Array.isArray(newData.questions)) newData = newData.questions;
                   else newData = [];
-              }
-          } else if (item.type === 'analysis') {
-              if (!newData.concepts || !Array.isArray(newData.concepts)) {
-                  newData.concepts = newData.concepts ? [String(newData.concepts)] : [];
-              }
-              if (!newData.grammar || !Array.isArray(newData.grammar)) newData.grammar = [];
-              if (!newData.accuracy || typeof newData.accuracy !== 'object') {
-                  newData.accuracy = { rating: "Unknown", reason: "Translation missing accuracy data." };
-              }
-              if (!newData.readingLevel) {
-                   newData.readingLevel = { range: "N/A", explanation: "Translation missing level data." };
-              } else if (typeof newData.readingLevel === 'string') {
-                   newData.readingLevel = { range: newData.readingLevel, explanation: "" };
-              }
-              if (!newData.originalText && item.data.originalText) {
-                  newData.originalText = item.data.originalText;
               }
           } else if (item.type === 'brainstorm') {
               if (!Array.isArray(newData)) {

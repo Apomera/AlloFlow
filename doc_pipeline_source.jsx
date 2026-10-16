@@ -42426,27 +42426,65 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'analysis') {
-          const readingLevelDisplay = typeof item.data.readingLevel === 'object'
-              ? `<strong>${item.data.readingLevel.range}</strong><br/><em style="color:#666; font-size:0.9em;">${item.data.readingLevel.explanation}</em>`
-              : item.data.readingLevel;
-          const citationsHtml = item.data.accuracy?.citations
+          // Report language is a saved display preference. The source, measured
+          // range, rating and citations always belong to the original analysis.
+          const source = item.data;
+          const record = value => value && typeof value === 'object' && !Array.isArray(value);
+          const text = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
+          const escape = value => text(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+          const label = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
+          const translations = record(source.reportTranslations) ? source.reportTranslations : {};
+          const baseLanguage = text(source.reportLanguage || item.config?.language);
+          const selectedLanguage = text(source.displayReportLanguage);
+          const hasTranslation = selectedLanguage && selectedLanguage !== baseLanguage
+              && Object.prototype.hasOwnProperty.call(translations, selectedLanguage) && record(translations[selectedLanguage]);
+          const report = hasTranslation ? translations[selectedLanguage] : source;
+          const reportLanguage = hasTranslation ? selectedLanguage : baseLanguage;
+          const direction = language => { if (!language) return 'auto'; try { return isRtlLang(language) ? 'rtl' : 'ltr'; } catch (_) { return 'auto'; } };
+          const reportText = (value, fallback) => typeof value === 'string' ? value : text(fallback);
+          const reportList = (value, fallback) => (Array.isArray(value) && value.every(entry => typeof entry === 'string') ? value : Array.isArray(fallback) ? fallback : []).map(escape);
+          const explanation = reportText(report.readingLevel?.explanation, source.readingLevel?.explanation);
+          const reason = reportText(report.accuracy?.reason, source.accuracy?.reason);
+          const baseGrammar = Array.isArray(source.grammar) ? source.grammar : [];
+          const selectedGrammar = hasTranslation && Array.isArray(report.grammar) && report.grammar.length === baseGrammar.length
+              ? baseGrammar.map((note, index) => {
+                  const status = text(note).match(/^(✓ (?:FIXED|DISMISSED): )/);
+                  return (status ? status[1] : '') + reportText(report.grammar[index], note).replace(/^✓ (?:FIXED|DISMISSED): /, '');
+              }) : source.grammar;
+          const readingLevelDisplay = record(source.readingLevel)
+              ? `<strong>${escape(source.readingLevel.range)}</strong><br/><em style="color:#666; font-size:0.9em;">${escape(explanation)}</em>`
+              : escape(source.readingLevel);
+          const citationsHtml = source.accuracy?.citations
             ? `<div style="margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0; font-size:0.85em; color:#64748b;">
-                 ${parseMarkdownToHTML(item.data.accuracy.citations)}
+                 ${parseMarkdownToHTML(source.accuracy.citations)}
                </div>`
             : '';
+          const normalize = value => text(value).trim().replace(/\s+/g, ' ');
+          const publicSource = studentReadingText(source.originalText);
+          // A saved translation of a private appendix may have translated its
+          // heading too. It cannot inherit permission from a sanitized source.
+          const companions = (isTeacher || publicSource === source.originalText) && record(source.sourceTranslations) ? Object.entries(source.sourceTranslations) : [];
+          const sourceTranslationsHtml = companions.filter(([language, value]) => language.trim() && typeof value === 'string' && value.trim()
+              && normalize(value) !== normalize(source.originalText) && language.trim().toLowerCase() !== text(source.sourceLanguage || item.config?.language).trim().toLowerCase())
+              .map(([language, value]) => `<section class="analysis-source-translation" data-source-translation="${escape(language)}" dir="${direction(language)}" style="margin-top:20px;padding-top:15px;border-top:1px solid #e2e8f0;">
+                  <h3>${escape(label('analysis.translated_passage', 'Translated passage'))} · ${escape(language)}</h3>
+                  <p style="font-size:0.85em;color:#475569;">${escape(label('analysis.source_translation_note', 'This companion translation does not replace the original source used for activities or reading-level results.'))}</p>
+                  ${parseMarkdownToHTML(studentReadingText(value))}
+              </section>`).join('');
           return `
               <div class="section" id="${item.id}" role="region" aria-label="${title}">
                   ${enhancedHeader}
-                  <div style="background:#f8fafc; padding:15px; border-radius:5px; border:1px solid #e2e8f0;">
+                  <div class="analysis-report" data-report-language="${escape(reportLanguage)}" dir="${direction(reportLanguage)}" style="background:#f8fafc; padding:15px; border-radius:5px; border:1px solid #e2e8f0;">
                       <p><strong>${t('simplified.level_estimate_label')}:</strong> ${readingLevelDisplay}</p>
-                      <p><strong>${t('output.analysis_accuracy')}:</strong> ${item.data.accuracy.rating} - ${item.data.accuracy.reason}</p>
-                      <p><strong>${t('output.analysis_concepts')}:</strong> ${item.data.concepts.join(', ')}</p>
-                      <p><strong>${t('output.analysis_grammar')}:</strong> ${item.data.grammar.join('; ')}</p>
+                      <p><strong>${t('output.analysis_accuracy')}:</strong> ${escape(source.accuracy?.rating)} - ${escape(reason)}</p>
+                      <p><strong>${t('output.analysis_concepts')}:</strong> ${reportList(report.concepts, source.concepts).join(', ')}</p>
+                      <p><strong>${t('output.analysis_grammar')}:</strong> ${reportList(selectedGrammar, source.grammar).join('; ')}</p>
                   </div>
-                  <div style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(studentReadingText(item.data.originalText))}</div>
+                  <div class="analysis-original-source" dir="${direction(text(source.sourceLanguage || item.config?.language))}" style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(publicSource)}</div>
                   ${citationsHtml}
+                  ${sourceTranslationsHtml}
               </div>
-              ${studentSourceExcerptsHTML(item.data.originalText)}
+              ${studentSourceExcerptsHTML(source.originalText)}
           `;
       } else if (item.type === 'udl-advice') {
           return `

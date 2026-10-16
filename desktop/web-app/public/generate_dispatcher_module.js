@@ -198,14 +198,30 @@ function resolveGenerationSource({ type, textOverride, inputText, history = [], 
     }
     // Older runtime compatibility must also avoid a global newest-text guess.
     const candidates = history.filter(item => item && !item._fullPackPlannedArtifact
-        && (!unitId || (item.unitId || item.config?.unitId) === unitId)
+        && (!unitId || unitId === 'all' || (item.unitId || item.config?.unitId) === unitId)
         && (item.type === 'analysis' || item.type === 'simplified')
-        && (typeof item.data === 'string' || typeof item.data?.originalText === 'string'));
-    const selected = choice ? candidates.find(item => String(item.id) === String(choice)) : candidates.filter(item => {
+        && (typeof item.data === 'string' ? item.data.trim() : typeof item.data?.originalText === 'string' && item.data.originalText.trim()));
+    const eligibleCandidates = candidates.filter(item => {
+        const profile = contextModule?.getInstructionalText?.(item) || item.instructionalText || item.config?.instructionalText;
+        return (!profile || profile.form !== 'same-text-supported' || contextModule?.isSupportedOriginal?.(item) === true)
+            && (!profile || profile.form !== 'adapted' || profile.role !== 'primary'
+                || (profile.replacementAuthorization?.authorized === true && profile.replacementAuthorization?.source === 'educator'));
+    });
+    if (!choice && unitId === 'all' && new Set(eligibleCandidates.map(item => item.unitId || item.config?.unitId || null)).size > 1) {
+        return { status: 'ambiguous', text: '', candidates: eligibleCandidates, unitId };
+    }
+    const primaryCandidates = eligibleCandidates.filter(item => {
         const profile = contextModule?.getInstructionalText?.(item) || item.instructionalText || item.config?.instructionalText;
         return profile ? profile.role === 'primary' && (profile.form !== 'adapted'
             || (profile.replacementAuthorization?.authorized === true && profile.replacementAuthorization?.source === 'educator')) : item.type === 'analysis';
     });
+    // Without a designated main reading, saved supporting/undesignated sources
+    // still require a choice. Do not report them as missing or use residual input.
+    const selected = choice ? eligibleCandidates.find(item => String(item.id) === String(choice))
+        : primaryCandidates.length ? primaryCandidates : eligibleCandidates.filter(item => {
+            const profile = contextModule?.getInstructionalText?.(item) || item.instructionalText || item.config?.instructionalText;
+            return profile && profile.role !== 'primary';
+        });
     const eligible = Array.isArray(selected) ? selected : selected ? [selected] : [];
     if (eligible.length !== 1) {
         if (!choice && !candidates.length) return resolveGenerationSource({ type: 'analysis', inputText, config, contextModule, activeUnitId });
@@ -319,6 +335,35 @@ Occurrence choices: ${JSON.stringify(candidates.map(word => ({ id: word.id, quot
 }
 
 const ADAPTED_CITATION_AUDIT_VERSION = 1;
+// Only generators that consume a reading participate in the interactive picker.
+const GENERATION_SOURCE_CHOICE_LABELS = Object.freeze({
+    simplified: 'leveled text', glossary: 'glossary', quiz: 'quiz',
+    'sentence-frames': 'sentence frames', faq: 'FAQ', brainstorm: 'activity',
+    outline: 'outline', timeline: 'timeline', 'concept-sort': 'concept sort',
+    dbq: 'document-based questions', 'note-taking': 'note-taking guide',
+    'anchor-chart': 'anchor chart', 'memory-aid': 'memory aid',
+    'applied-challenge': 'applied challenge', image: 'visual',
+    'gemini-bridge': 'Gemini Bridge', 'lesson-plan': 'lesson plan',
+    persona: 'personas', adventure: 'adventure'
+});
+function getGenerationSourceChoiceLabel(type) {
+    return Object.prototype.hasOwnProperty.call(GENERATION_SOURCE_CHOICE_LABELS, type)
+        ? GENERATION_SOURCE_CHOICE_LABELS[type] : null;
+}
+function getGenerationSourceChoices(resolved) {
+    const seen = new Set();
+    return (resolved?.candidates || []).flatMap(candidate => {
+        const item = candidate.artifact || candidate.item || candidate;
+        const value = String(item.id || '');
+        const sourceText = item.type === 'analysis' ? item.data?.originalText : item.data;
+        if (candidate.eligible === false || !value || seen.has(value) || typeof sourceText !== 'string' || !sourceText.trim()) return [];
+        seen.add(value);
+        const preview = sourceText.replace(/\s+/g, ' ').trim();
+        return [{ value, label: item.title || candidate.title || 'Reading',
+            description: preview.length > 180 ? preview.slice(0, 180).trimEnd() + '…' : preview, sourceText }];
+    });
+}
+
 const GENERATION_STAGE_BY_TYPE = Object.freeze({
   source: 'analyze', glossary: 'analyze', analysis: 'analyze', image: 'analyze',
   faq: 'analyze', 'concept-sort': 'analyze', dbq: 'analyze', 'alignment-report': 'analyze',
@@ -772,6 +817,53 @@ function normalizeAuditLanguageTag(value) {
   return 'und';
 }
 
+// Audit the saved report view, not every cached language version. This is a
+// read-only projection; source selection always uses the stored original text.
+function _auditReadableData(artifact) {
+  const data = artifact && artifact.data;
+  const record = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  if (!artifact || artifact.type !== 'analysis' || !record(data)) return data;
+  const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
+  const textList = value => Array.isArray(value) ? value.filter(entry => typeof entry === 'string' && entry.trim()) : [];
+  const baseLanguage = String(data.reportLanguage || artifact.config?.language || '').trim();
+  const translations = record(data.reportTranslations) ? data.reportTranslations : {};
+  const selected = data.displayReportLanguage;
+  const report = typeof selected === 'string' && selected.trim() && selected !== baseLanguage
+    && Object.prototype.hasOwnProperty.call(translations, selected) && record(translations[selected])
+    ? translations[selected] : data;
+  const readingLevel = record(data.readingLevel) ? { range: asText(data.readingLevel.range),
+    explanation: asText(record(report.readingLevel) ? report.readingLevel.explanation ?? data.readingLevel.explanation : data.readingLevel.explanation)
+  } : asText(data.readingLevel);
+  const baseAccuracy = record(data.accuracy) ? data.accuracy : {};
+  const translatedAccuracy = record(report.accuracy) ? report.accuracy : {};
+  const accuracy = { rating: asText(baseAccuracy.rating), citations: asText(baseAccuracy.citations) };
+  ['reason', 'discrepancies', 'verifiedFacts', 'verificationDetails'].forEach(key => {
+    const value = translatedAccuracy[key] ?? baseAccuracy[key];
+    accuracy[key] = key === 'discrepancies' || key === 'verifiedFacts' ? textList(value) : asText(value);
+  });
+  const grammar = Array.isArray(data.grammar) && report !== data && Array.isArray(report.grammar)
+    && report.grammar.length === data.grammar.length
+    ? report.grammar.map((note, index) => {
+      const base = typeof data.grammar[index] === 'string' ? data.grammar[index] : '';
+      const status = base.match(/^✓ (?:FIXED|DISMISSED): /);
+      const translated = typeof note === 'string' ? note.replace(/^✓ (?:FIXED|DISMISSED): /, '') : '';
+      return (status ? status[0] : '') + (translated || base);
+    }) : data.grammar;
+  const comparable = value => typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
+  const original = comparable(data.originalText);
+  // Source companions are exposed separately in the reader and remain audit
+  // content. The compatibility alias is included only when it is distinct.
+  const companions = record(data.sourceTranslations) ? Object.entries(data.sourceTranslations)
+    .filter(([language, text]) => language.trim() && typeof text === 'string' && comparable(text)
+      && comparable(text) !== original && language.trim().toLowerCase() !== String(data.sourceLanguage || '').trim().toLowerCase())
+    .map(([, text]) => text) : [];
+  const concepts = report.concepts ?? data.concepts;
+  return { readingLevel, concepts: (Array.isArray(concepts) ? concepts : [concepts]).map(asText).filter(Boolean), accuracy, grammar: textList(grammar),
+    originalText: data.originalText,
+    ...(comparable(data.translatedText) && comparable(data.rawEnglishText) && comparable(data.rawEnglishText) !== original ? { rawEnglishText: data.rawEnglishText } : {}),
+    sourceTranslations: companions };
+}
+
 function _collectAuditStrings(value, out, seen, depth) {
   if (value === null || value === undefined || depth > 7) return;
   if (typeof value === 'string') {
@@ -823,8 +915,8 @@ function summarizeAuditCitations(artifacts) {
   (Array.isArray(artifacts) ? artifacts : []).forEach(function (item) {
     if (!item) return;
     const raw = [];
-    _collectAuditStrings(item.originalText, raw, new Set(), 0);
-    _collectAuditStrings(item.data, raw, new Set(), 0);
+    if (item.type !== 'analysis' || item.originalText !== item.data?.originalText) _collectAuditStrings(item.originalText, raw, new Set(), 0);
+    _collectAuditStrings(_auditReadableData(item), raw, new Set(), 0);
     let markers = 0;
     let hasReferences = false;
     raw.forEach(function (chunk) {
@@ -853,8 +945,8 @@ function summarizeAuditCitations(artifacts) {
 function extractAuditArtifactText(artifact) {
   const chunks = [];
   if (!artifact) return '';
-  _collectAuditStrings(artifact.originalText, chunks, new Set(), 0);
-  _collectAuditStrings(artifact.data, chunks, new Set(), 0);
+  if (artifact.type !== 'analysis' || artifact.originalText !== artifact.data?.originalText) _collectAuditStrings(artifact.originalText, chunks, new Set(), 0);
+  _collectAuditStrings(_auditReadableData(artifact), chunks, new Set(), 0);
   return chunks
     .map(function (chunk) { return stripAuditCitationMarkup(chunk).trim(); })
     .filter(Boolean)
@@ -1282,7 +1374,16 @@ function _auditFingerprint(artifacts, ...extras) {
     const parts = sorted.map(a => {
         if (!a) return '?';
         let dataHash = '0';
-        try { dataHash = _hashStr(JSON.stringify(a.data || null)); } catch (e) { dataHash = 'circ'; }
+        try {
+            let fingerprintData = a.data || null;
+            if (a.type === 'analysis' && fingerprintData && typeof fingerprintData === 'object' && !Array.isArray(fingerprintData)) {
+                // Keep canonical assessment/audio evidence in the key, but an
+                // unused report cache must not invalidate otherwise equal reviews.
+                const { reportTranslations, sourceTranslations, reportLanguage, displayReportLanguage, sourceLanguage, ...evidence } = fingerprintData;
+                fingerprintData = { evidence, readable: _auditReadableData(a) };
+            }
+            dataHash = _hashStr(JSON.stringify(fingerprintData));
+        } catch (e) { dataHash = 'circ'; }
         const profile = _auditInstructionalText(a);
         let roleHash = '0';
         try { roleHash = _hashStr(JSON.stringify([profile, a.sourceInstructionalText || a.config?.sourceInstructionalText || null, a.sourceSnapshot || a.config?.sourceSnapshot || null, a.sourceFamilyId || a.config?.sourceFamilyId || null, a.unitId || a.config?.unitId || null])); } catch (e) { roleHash = 'circ'; }
@@ -2626,6 +2727,58 @@ const normalizeAnalysisResult = (raw) => {
     if (discrepancies.unreadable) result.accuracy.discrepanciesUnreadable = discrepancies.unreadable;
     return result;
 };
+// Language views are companions to one source-bound report. Never let model
+// output or a display-language change replace the text downstream tools read.
+const createAnalysisSourceContent = (report, raw, options = {}) => {
+    const sourceText = String(options.sourceText == null ? '' : options.sourceText);
+    const reportLanguage = String(options.reportLanguage || 'English').trim();
+    const sourceLanguage = typeof raw?.sourceLanguage === 'string' ? raw.sourceLanguage.trim() : '';
+    const target = String(options.translationLanguage || '').trim();
+    const languageKey = value => {
+        const key = String(value || '').trim().toLowerCase().replace(/_/g, '-');
+        try {
+            if (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(key)) return new Intl.DisplayNames(['en'], { type: 'language' }).of(key.split('-')[0]).toLowerCase();
+        } catch (_) {}
+        return key;
+    };
+    const comparable = value => value.normalize('NFC').replace(/\s+/g, ' ').trim();
+    const distinctText = value => typeof value === 'string' && value.trim()
+        && comparable(value) !== comparable(sourceText);
+    const reportTranslations = {};
+    const sourceTranslations = {};
+    if (options.translationEnabled && target) {
+        const translated = raw?.reportTranslations?.[target];
+        // Aligned arrays preserve which claim or original-language example each
+        // explanation describes. Reject incomplete versions instead of mixing languages.
+        const protectedExcerpts = value => (String(value || '').match(/\[[^\]\n]*\]\([^\s)]+\)|https?:\/\/[^\s)]+|\[\d+(?:\s*[,–-]\s*\d+)*\]|"[^"\n]+"|“[^”\n]+”|‘[^’\n]+’|`[^`\n]+`|(?<!\w)'[^'\n]+'(?!\w)/g) || []).sort();
+        const sameEvidence = (base, candidate) => typeof candidate === 'string' && (!base.trim() || candidate.trim())
+            && JSON.stringify(protectedExcerpts(base)) === JSON.stringify(protectedExcerpts(candidate));
+        const sameShape = (base, candidate) => Array.isArray(candidate) && candidate.length === base.length
+            && candidate.every((value, index) => sameEvidence(base[index], value));
+        if (languageKey(target) !== languageKey(reportLanguage) && translated
+            && sameEvidence(report.readingLevel.explanation, translated.readingLevel?.explanation)
+            && sameEvidence(report.accuracy.reason, translated.accuracy?.reason)
+            && sameShape(report.concepts, translated.concepts)
+            && sameShape(report.grammar, translated.grammar)
+            && sameShape(report.accuracy.discrepancies, translated.accuracy?.discrepancies)
+            && sameShape(report.accuracy.verifiedFacts, translated.accuracy?.verifiedFacts)) {
+            reportTranslations[target] = {
+                readingLevel: { ...report.readingLevel, explanation: translated.readingLevel.explanation },
+                concepts: translated.concepts.slice(),
+                accuracy: { ...report.accuracy, reason: translated.accuracy.reason,
+                    discrepancies: translated.accuracy.discrepancies.slice(), verifiedFacts: translated.accuracy.verifiedFacts.slice() },
+                grammar: translated.grammar.slice(),
+            };
+        }
+        for (const language of options.includeSourceTranslations === false ? [] : new Set([reportLanguage, target])) {
+            const companion = raw?.sourceTranslations?.[language];
+            if (languageKey(language) !== languageKey(sourceLanguage) && distinctText(companion)) sourceTranslations[language] = companion;
+        }
+    }
+    const { translatedText, ...base } = report;
+    return { ...base, analysisSourceVersion: 1, originalText: sourceText, rawEnglishText: sourceText,
+        reportLanguage, sourceLanguage, reportTranslations, sourceTranslations, localStats: options.localStats };
+};
 // Cloud and local scaffold JSON share one list/paragraph shape; an empty result is an error, not a blank resource.
 const normalizeScaffoldContent = (raw, frameType) => {
     let content = Array.isArray(raw) ? { items: raw } : (raw && typeof raw === 'object' ? { ...raw } : {});
@@ -3184,16 +3337,51 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         ) || '';
     const _selectedSource = resolveGenerationSource({ type, textOverride, inputText,
         history: generationHistory, config: configOverride, contextModule: _instructionalContextModule, selectedReadingSourceId, activeUnitId });
+    const interactiveSourceChoice = switchView || (type === 'memory-aid' && configOverride.memoryAidPreviewOnly === true);
+    if (getGenerationSourceChoiceLabel(type) && _selectedSource.status === 'ambiguous' && interactiveSourceChoice && !keepLoading
+        && !configOverride.rethrowErrors && !configOverride.historyOverride
+        && typeof deps.requestGenerationSourceChoice === 'function') {
+        const choices = getGenerationSourceChoices(_selectedSource);
+        // Keep callers awaiting preview results connected to the resumed request.
+        let completeChoice;
+        const completion = new Promise(resolve => { completeChoice = resolve; });
+        if (choices.length > 1 && deps.requestGenerationSourceChoice({ type, langOverride, textOverride,
+            configOverride, switchView, choices, onComplete: completeChoice }) === true) return completion;
+    }
     if (type !== 'alignment-report' && (_selectedSource.status === 'ambiguous' || (_selectedSource.status === 'missing' && (selectedReadingSourceId || configOverride.inputArtifactId)))) {
         const sourceError = new Error(_selectedSource.status === 'ambiguous'
-            ? 'Choose a reading in Based on before generating. This lesson has more than one main reading.'
+            ? 'Choose a reading in Based on before generating. More than one reading is available.'
             : 'The selected reading is unavailable in this lesson. Choose a reading in Based on.');
         sourceError.code = 'allo/source-' + _selectedSource.status;
         if (configOverride.rethrowErrors) throw sourceError;
         addToast(sourceError.message, 'info');
+        // Bring the existing source choice into view before any generation starts.
+        // Background/batch requests must not move focus away from the user's work.
+        if (switchView && !keepLoading && typeof document !== 'undefined') {
+            const sourceChoice = document.getElementById('reading-activity-source');
+            sourceChoice?.scrollIntoView?.({ block: 'center', behavior: 'auto' });
+            sourceChoice?.focus?.({ preventScroll: true });
+        }
         return;
     }
     const _sourceSnapshot = _selectedSource.sourceSnapshot || null;
+    const _selectedReadingArtifact = _selectedSource.artifact || _selectedSource.item
+        || generationHistory.find(item => item?.id && String(item.id) === String(_selectedSource.inputArtifactId));
+    const _matchesAnalyzedSource = item => item && (
+        (item.type === 'analysis' && item.data?.originalText === _selectedSource.text)
+        || (_instructionalContextModule?.isSupportedOriginal?.(item) && item.data === _selectedSource.text)
+    );
+    // A saved analysis (or its supported original) owns its entire source body,
+    // even if it contains the legacy bilingual separator. Pack/retry calls can
+    // carry that same source without a selected artifact; require matching text
+    // and source-family provenance rather than borrowing an unrelated analysis.
+    const _preserveAnalyzedSource = _matchesAnalyzedSource(_selectedReadingArtifact)
+        || (!!configOverride.sourceSnapshot && !!_sourceSnapshot
+            && configOverride.generationInputText === _selectedSource.text
+            && generationHistory.some(item => _matchesAnalyzedSource(item)
+                && ((item.id && item.id === _selectedSource.sourceArtifactId)
+                    || (_selectedSource.sourceFamilyId
+                        && (item.sourceFamilyId || item.config?.sourceFamilyId) === _selectedSource.sourceFamilyId))));
     const _studentSourcesApi = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
     const _selectedStudentRecord = _selectedSource.artifact?.studentSources || _selectedSource.item?.studentSources
         || generationHistory.find(item => item?.id === _selectedSource.inputArtifactId)?.studentSources;
@@ -3244,7 +3432,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (configOverride && configOverride.rethrowErrors) throw noSourceError;
         return;
     }
-    if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
+    if (type !== 'analysis' && !_preserveAnalyzedSource && textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
         const bilingualReferenceParts = splitAdaptationReferences(textToProcess);
         if (!carriedInputReferences && bilingualReferenceParts.references) {
             carriedInputReferences = bilingualReferenceParts.references;
@@ -5809,13 +5997,8 @@ ${_itemsBlock}`;
             }
         }
         setGenerationStatus(isSearchActive ? t('status_steps.synthesizing_analysis') : t('status_steps.analyzing_structure'), 'analyze');
-        // 2026-08-16 (L4): this read currentUiLanguage, which meant the whole
-        // analysis came back in the app's INTERFACE language and ignored the
-        // Output language setting entirely. It is the leak Aaron suspected.
-        // The analysis prose now follows effectiveLanguage like every other
-        // resource; the extra full-text translation follows the translation
-        // setting. Local backends still opt out: the twin local prompt has no
-        // room for a second full rendering of the source.
+        // Analyze the source once. Report translations and optional translated
+        // passages have separate fields; neither changes the source or its findings.
         const targetUiLang = _xlate.target || effectiveLanguage;
         const isTranslatedAnalysis = _xlate.enabled && !usesLocalTextBackend;
         const prompt = `
@@ -5836,8 +6019,10 @@ ${_itemsBlock}`;
           2. Key Concepts (array of strings)
           3. Estimated Accuracy (e.g. "High", "Moderate", with a short explanation).
           4. Potential Grammar/Spelling Issues (list specific examples or say "None detected")
-          ${isTranslatedAnalysis ? `5. Translated Text: A full, fluent translation of the source text into ${targetUiLang}.` : ''}
-          ${languageDirective ? `Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in ${effectiveLanguage}.` : ''}
+          5. Source Language: Identify the language of the supplied source using its English language name (or "Multiple languages" for mixed text).
+          Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in ${effectiveLanguage}.
+          Always quote source examples and proposed spelling/grammar corrections in the ORIGINAL source language.
+          Calculate reading level and all findings from the ORIGINAL SOURCE, never from a translation.
           CRITICAL OUTPUT INSTRUCTION:
           You MUST return VALID JSON. Do not wrap the JSON in markdown code blocks.
           *** CITATION RETENTION RULE ***:
@@ -5846,14 +6031,11 @@ ${_itemsBlock}`;
           - Incorrect: "The text claims X, but sources say Y.",
           ${isTranslatedAnalysis ? `
           LANGUAGE INSTRUCTIONS:
-          - Also supply a ${targetUiLang} rendering of every analysis field (concepts, explanations, accuracy reasons, grammar notes).
-          - Include the "translatedText" field with the source text translated into ${targetUiLang}.
-          - CRITICAL: Calculate the "readingLevel" from the complexity of the ORIGINAL SOURCE text, NOT of any translation.
-          --- BILINGUAL ARRAYS REQUIREMENT ---
-          For the "discrepancies" and "verifiedFacts" arrays specifically:
-          You MUST provide both the ${targetUiLang} text AND the original source-language text for every item.
-          Format each string exactly like this (the "--- ENGLISH TRANSLATION ---" marker is a fixed separator token, not a claim about the language):
-          "${targetUiLang} Version... [1] --- ENGLISH TRANSLATION --- Original Version... [1]"
+          - Put a ${targetUiLang} translation of the SAME report in reportTranslations[${JSON.stringify(targetUiLang)}].
+          - Translate explanations only; copy readingLevel.range and accuracy.rating unchanged. Keep every array in the same order with exactly the same number of entries. Preserve citations and quoted original-language examples/corrections exactly.
+          - Each field contains ONE language. Do not concatenate bilingual strings or add separator markers.
+          - In sourceTranslations, optionally provide a full faithful source translation for each of these languages that differs from the source language: ${[...new Set([effectiveLanguage, targetUiLang])].join(', ')}. Use the English language name as each key. Omit same-language copies. Never rewrite or simplify the source.
+          - Do not return originalText, rawEnglishText, translatedText, localStats, or sourceSnapshot; the application preserves the source and its measurements.
           ` : ''}
           Required JSON Structure:
           {
@@ -5863,7 +6045,15 @@ ${_itemsBlock}`;
                 "rating": "...",
                 "reason": "..."${checkAccuracyWithSearch ? ', \n"discrepancies": ["Error found... [1]", "Inaccuracy... [2]"], \n"verifiedFacts": ["Fact verified... [3]", "Date confirmed... [1]"]' : ''}
             },
-            "grammar": ["..."]${isTranslatedAnalysis ? ', \n"translatedText": "..."' : ''}
+            "grammar": ["..."],
+            "sourceLanguage": "English language name"${isTranslatedAnalysis ? `,
+            "reportTranslations": { ${JSON.stringify(targetUiLang)}: {
+                "readingLevel": { "range": "same range", "explanation": "translated explanation" },
+                "concepts": ["translated concept"],
+                "accuracy": { "rating": "same rating", "reason": "translated reason", "discrepancies": [], "verifiedFacts": [] },
+                "grammar": ["translated note with original source examples"]
+            } },
+            "sourceTranslations": { ${JSON.stringify(effectiveLanguage)}: "source translation, only if language differs" }` : ''}
           }
           ${differentiationContext}
           Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 7000) : textToProcess}"
@@ -5906,7 +6096,7 @@ ${_itemsBlock}`;
                             "discrepancies": ["..."],
                             "verifiedFacts": ["..."]
                         },
-                        "grammar": ["..."]${isTranslatedAnalysis ? ', "translatedText": "..."' : ''}
+                        "grammar": ["..."], "sourceLanguage": "English language name"${isTranslatedAnalysis ? ', "reportTranslations": {}, "sourceTranslations": {}' : ''}
                     }
                     Input Text to Convert:
                     """
@@ -5934,6 +6124,7 @@ ${_itemsBlock}`;
                  };
              }
         }
+        const analysisLanguageData = analysisData;
         analysisData = normalizeAnalysisResult(analysisData);
         if (checkAccuracyWithSearch && !isSearchActive) {
             analysisData.accuracy = {
@@ -6030,33 +6221,25 @@ ${_itemsBlock}`;
                  }
                  analysisData.accuracy.citations = gatheredCitations;
              }
+             const translatedAccuracy = analysisLanguageData?.reportTranslations?.[targetUiLang]?.accuracy;
+             if (translatedAccuracy && typeof translatedAccuracy === 'object') {
+                 for (const field of ['discrepancies', 'verifiedFacts']) {
+                     if (Array.isArray(translatedAccuracy[field]) && translatedAccuracy[field].every(value => typeof value === 'string')) {
+                         translatedAccuracy[field] = rehydrateList(translatedAccuracy[field]);
+                     }
+                 }
+             }
         }
         const localStats = calculateReadability(textToProcess);
-        const textForDisplay = analysisData.translatedText || textToProcess;
-        let cleanedTextForDisplay = textForDisplay.split('\n').map(line => {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('**') && trimmed.endsWith('**') && trimmed.length > 4) {
-                return line.replace(/^(\s*)\*\*(.*)\*\*$/, '$1$2');
-            }
-            return line;
-        }).join('\n');
-        const _nonEmpty = cleanedTextForDisplay.split('\n').filter(l => l.trim());
-        const _headerCount = _nonEmpty.filter(l => l.trim().startsWith('#')).length;
-        if (_nonEmpty.length > 3 && _headerCount / _nonEmpty.length > 0.4) {
-            cleanedTextForDisplay = cleanedTextForDisplay.split('\n').map(line => {
-                const trimmed = line.trim();
-                if (/^#{1,6}\s+/.test(trimmed)) {
-                    return line.replace(/^(\s*)#{1,6}\s+(.*)$/, '$1**$2**');
-                }
-                return line;
-            }).join('\n');
-        }
-        content = {
-            ...analysisData,
-            originalText: cleanedTextForDisplay,
-            rawEnglishText: textToProcess,
-            localStats
-        };
+        const analysisPublicSource = _studentSourcesApi?.publicText
+            ? _studentSourcesApi.publicText(textToProcess, _inputStudentRecord) : textToProcess;
+        content = createAnalysisSourceContent(analysisData, analysisLanguageData, {
+            sourceText: textToProcess, reportLanguage: effectiveLanguage, translationLanguage: targetUiLang,
+            translationEnabled: isTranslatedAnalysis && !(checkAccuracyWithSearch && !isSearchActive), localStats,
+            // The analysis prompt can contain teacher references. Do not attach
+            // a model-translated appendix to a student-facing companion.
+            includeSourceTranslations: analysisPublicSource === textToProcess
+        });
         metaInfo = `${isSearchActive ? t('meta.analysis_verified') : t('meta.analysis_standard')}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'faq') {
         if (usesLocalTextBackend) {
@@ -7402,7 +7585,7 @@ ${modeListForAuto}
       } else if (type === 'gemini-bridge') {
          const localBridgeStepCount = usesLocalTextBackend ? Math.max(3, Math.min(Number(bridgeStepCount) || 5, 6)) : bridgeStepCount;
          setGenerationStep(t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
-         const context = getLessonContext();
+         const context = getLessonContext(generationHistory, { selectedReadingSourceId: _inputArtifactId || '__input__', inputText: _selectedSource.text, unitId: _sourceUse.unitId });
          const bridgeContext = usesLocalTextBackend ? localExcerpt(context, 6500) : context;
          const stackMap = {
             'react': 'Interactive Web App (React)',
@@ -7891,7 +8074,8 @@ Return ONLY JSON:
          setGenerationStep(isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          const historySource = configOverride.historyOverride || history;
          const contextTrace = [], inventoryTrace = [];
-         const context = getLessonContext(historySource, { trace: segment => contextTrace.push(segment) });
+         const context = getLessonContext(historySource, { trace: segment => contextTrace.push(segment),
+             selectedReadingSourceId: _inputArtifactId || '__input__', inputText: _selectedSource.text, unitId: _sourceUse.unitId });
          // Unit Path context: when this plan is being generated for a node the
          // teacher activated from the path, tell the model where the lesson sits
          // and stamp the plan as that node afterwards (see normalisation below).
@@ -9069,6 +9253,14 @@ Return ONLY JSON:
                   replacementAuthorization: { authorized: false, source: 'none' }, ...(_selectedSource.instructionalText || {}), ...(configOverride.instructionalText || {}) }
           } : (configOverride.instructionalText ? { instructionalText: configOverride.instructionalText } : {}))
       };
+      if (type === 'analysis' && newItem.data.analysisSourceVersion === 1) {
+          // config.language is also consumed by source readers and narration.
+          // The report's language lives only in data.reportLanguage.
+          const sourceLanguage = newItem.data.sourceLanguage || _sourceSnapshot?.language || effectiveLanguage;
+          newItem.config = { ...newItem.config, language: sourceLanguage };
+          newItem.instructionalText = { ...newItem.instructionalText,
+              complexity: { ...newItem.instructionalText.complexity, language: sourceLanguage } };
+      }
       if (type === 'analysis' && typeof newItem.data?.originalText === 'string'
           && (!_studentSourcesApi?.forText || !_studentSourcesApi?.publicText)
           && /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi.test(newItem.data.originalText)) {
@@ -9077,13 +9269,14 @@ Return ONLY JSON:
       if (type === 'analysis' && typeof newItem.data?.originalText === 'string'
           && _studentSourcesApi?.forText && _studentSourcesApi?.publicText) {
           const studentRecord = _studentSourcesApi.forText(_studentRecordMatchesInput ? _inputStudentRecord : null, newItem.data.originalText);
-          newItem.data = { ...newItem.data, originalText: _studentSourcesApi.publicText(newItem.data.originalText, studentRecord) };
+          const publicSourceText = _studentSourcesApi.publicText(newItem.data.originalText, studentRecord);
+          newItem.data = { ...newItem.data, originalText: publicSourceText, rawEnglishText: publicSourceText };
           if (studentRecord) newItem.studentSources = studentRecord;
       }
       if (type === 'analysis' && newItem.instructionalText.form !== 'adapted') {
           const originId = _primarySourceArtifactId || newItemId;
           newItem.sourceSnapshot = _instructionalContextModule?.createSourceSnapshot?.(_sourceSnapshot?.text || _selectedSource.text, {
-              ...(_sourceSnapshot || {}), sourceArtifactId: originId
+              ...(_sourceSnapshot || {}), sourceArtifactId: originId, language: newItem.config.language
           }) || _sourceSnapshot;
           newItem.sourceInstructionalText = _instructionalContextModule?.normalizeSourceInstructionalText?.(newItem.instructionalText, { sourceArtifactId: originId }) || newItem.instructionalText;
           newItem.sourceFamilyId = _sourceUse.sourceFamilyId || originId;
@@ -9174,6 +9367,8 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.GenDispatcher = {
   handleGenerate,
   resolveGenerationSource,
+  getGenerationSourceChoiceLabel,
+  getGenerationSourceChoices,
   generateReadingSupports,
   buildAdaptationFormatPolicy,
   createGlossaryImageReuseCache,
@@ -9206,6 +9401,7 @@ window.AlloModules.GenDispatcher = {
   stampActivityDerivative,
   attachActivityDerivativeMetadata,
   normalizeAnalysisResult,
+  createAnalysisSourceContent,
   normalizeScaffoldContent,
   normalizeConceptSortContent,
   normalizeGlossaryTerms,

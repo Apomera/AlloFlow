@@ -564,6 +564,11 @@
   // on every open and the "added by AI" notice survives a reopen.
   var AUTO_WORD_SUPPORTS_KEY = 'alloflow_auto_word_supports';
   var autoWordSupportRuns = new Map();
+  var autoWordSupportListeners = new Set();
+  function setAutoSupportStatus(key, status) {
+    autoWordSupportRuns.set(key, status);
+    autoWordSupportListeners.forEach(listener => listener(key));
+  }
   function readAutoWordSupportsOff() {
     try { return localStorage.getItem(AUTO_WORD_SUPPORTS_KEY) === 'off'; } catch (_) { return false; }
   }
@@ -1907,6 +1912,7 @@
     const [pickingPicture, setPickingPicture] = React.useState(false);
     const [preparingPicture, setPreparingPicture] = React.useState(false);
     const pictureEpoch = React.useRef(0), mutationEpoch = React.useRef(0), mountedRef = React.useRef(true), ownerRef = React.useRef(ownerKey), pendingRef = React.useRef(null), focusRef = React.useRef(null), focusRequested = React.useRef(false), sectionRef = React.useRef(null);
+    const sourceFocusRef = React.useRef({ key: sourceKey, reset: false });
     const pictureCallbackEpoch = pictureEpoch.current;
     const ownerChanged = ownerRef.current !== ownerKey;
     pendingRef.current = pendingAction;
@@ -2031,7 +2037,16 @@
       if ((dirty || pickingPicture || preparingPicture) && replacesDraft) { reveal(); pendingRef.current = action; setPendingAction(action); return; }
       performAction(action);
     };
-    React.useLayoutEffect(() => { mutationEpoch.current++; cancelPicture(); dismissPending(); setBusy(false); setPickingPicture(false); setFilterQuery(''); setFilterKind('all'); }, [sourceKey]);
+    React.useLayoutEffect(() => {
+      if (sourceFocusRef.current.key !== sourceKey) {
+        sourceFocusRef.current = { key: sourceKey, reset: true };
+        setNotice(''); setError('');
+        focusRequested.current = false; focusRef.current = null;
+        refocusPicture.current = false; refocusAdd.current = false;
+      }
+      mutationEpoch.current++; cancelPicture(); dismissPending();
+      setBusy(false); setPickingPicture(false); setFilterQuery(''); setFilterKind('all');
+    }, [sourceKey]);
     const isOpen = !!embedded || open;
     // Inline editing belongs to this deliberately opened editor. Collapsing it
     // still goes through requestAction so unfinished work keeps its draft guard.
@@ -2054,9 +2069,16 @@
       if (entry) requestAction({ type: 'edit', entry });
     }, [request]);
     React.useEffect(() => {
+      // A source reset can dismiss a prompt in a second commit. Neither commit
+      // should replay focus requested while editing the previous passage.
+      if (sourceFocusRef.current.reset) {
+        focusRequested.current = false;
+        if (!pendingAction) sourceFocusRef.current.reset = false;
+        return;
+      }
       if (pendingAction) { focusRequested.current = false; keepRef.current?.focus(); }
       else if (draft) focusRequested.current = true;
-    }, [!!draft, draft?.anchor?.start, pendingAction]);
+    }, [!!draft, draft?.anchor?.start, pendingAction, sourceKey]);
     React.useEffect(() => {
       if (refocusAdd.current && !draft && !busy && !disabled && !pendingAction) { addRef.current?.focus(); refocusAdd.current = false; }
       if (!focusRequested.current || pendingAction || busy || disabled || !draft) return;
@@ -2348,7 +2370,7 @@
   // Word help for an ADAPTED text: its own supports (item.adaptedReadingSupports),
   // hidden from students until the teacher shows them, and listed after the
   // passage because the adapted reader does not keep character positions.
-  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession, onOpen, supportView }) {
+  function AdaptedWordHelp({ item, teacher, disabled, onUpdate, onGenerate, languageTag, direction, onListen, listening, onListClose, renderCredits, originalSupports, passageSelector, language, markWords, quiet, draftSession, onOpen, supportView, actionScope }) {
     const ownSupportView = useSimplifiedAdaptedSupportView(supportView ? null : item, null);
     supportView = supportView || ownSupportView;
     const contract = getInstructionalContextApi();
@@ -2361,18 +2383,29 @@
     const [panelOpen, setPanelOpen] = React.useState(staleNow);
     React.useEffect(() => { if (staleNow) setPanelOpen(true); }, [staleNow]);
     const noticeRef = React.useRef(null), focusNotice = React.useRef(false);
+    const actionSessionRef = React.useRef(null);
+    const actionOwnerKey = readingSupportDraftKey(item, true);
+    React.useLayoutEffect(() => {
+      const session = { active: true, pending: false };
+      actionSessionRef.current = session;
+      setBusy(false); setNotice(''); focusNotice.current = false;
+      return () => { session.active = false; };
+    }, [actionOwnerKey, item?.data, item?.config?.unitId, language, languageTag, actionScope, teacher]);
     React.useEffect(() => { if (focusNotice.current && noticeRef.current) { focusNotice.current = false; noticeRef.current.focus(); } });
     // Words that have help, as they appear in the passage on screen (a CSS
     // highlight marks them, so the passage's own markup is never touched).
     const listRef = React.useRef(null), spotTimer = React.useRef(null), spotRangesRef = React.useRef([]);
     const helpInstanceId = React.useId();
     const [spotNotice, setSpotNotice] = React.useState('');
-    const clearSpot = () => {
+    const clearSpot = (resetNotice = true) => {
       if (spotTimer.current) clearTimeout(spotTimer.current);
       spotTimer.current = null;
       if (typeof CSS !== 'undefined' && CSS.highlights) shareWordHelpMarks(CSS.highlights, spotRangesRef.current, [], 'allo-word-help-focus');
       spotRangesRef.current = [];
+      if (resetNotice) setSpotNotice('');
     };
+    // Locator feedback belongs to this presentation even without CSS Highlight support.
+    React.useLayoutEffect(() => { clearSpot(); }, [actionOwnerKey, item?.data, item?.config?.unitId, language, languageTag, actionScope, teacher, quiet, markWords, passageSelector, item?.adaptedReadingSupports, supportView.version, help?.shown, help?.status]);
     // No marks where the passage on screen is not this word help's text (the
     // English side of a bilingual text in Both) - markWords is false there.
     const passageOnScreen = () => {
@@ -2403,18 +2436,19 @@
       const container = passageOnScreen();
       const shownText = container ? container.textContent : '';
       const last = marksRef.current;
-      if (last && last.data === item.data && last.supports === item.adaptedReadingSupports && last.version === supportView.version && last.shownText === shownText && last.where === passageSelector + '|' + language
-        && last.ranges.every(range => range.startContainer.isConnected && range.endContainer.isConnected)) return;
+      if (last && last.data === item.data && last.supports === item.adaptedReadingSupports && last.version === supportView.version && last.container === container && last.shownText === shownText && last.where === passageSelector + '|' + language
+        && last.ranges.every(range => !range.collapsed && range.startContainer.isConnected && range.endContainer.isConnected)) return;
       clearSpot();
       const ranges = container ? wordHelpOnScreen().flatMap(hit => hit.ranges) : [];
-      marksRef.current = { data: item.data, supports: item.adaptedReadingSupports, version: supportView.version, shownText, where: passageSelector + '|' + language, ranges };
+      marksRef.current = { data: item.data, supports: item.adaptedReadingSupports, version: supportView.version, container, shownText, where: passageSelector + '|' + language, ranges };
       // One highlight shared by every reader on the page (a student preview is a
       // second reader): each adds and removes only its own ranges.
       shareWordHelpMarks(registry, last ? last.ranges : [], ranges);
     });
     React.useEffect(() => () => {
-      clearSpot();
+      clearSpot(false);
       if (typeof CSS !== 'undefined' && CSS.highlights) shareWordHelpMarks(CSS.highlights, marksRef.current ? marksRef.current.ranges : [], []);
+      marksRef.current = null;
     }, []);
     const showInText = entry => {
       clearSpot();
@@ -2451,11 +2485,20 @@
     const idBase = 'adapted-word-help-' + helpInstanceId;
     const explanation = entry => entry.definition || entry.explanation || entry.text || '';
     const run = async (work, message) => {
-      if (busy || disabled) return;
+      const session = actionSessionRef.current;
+      if (busy || disabled || !session?.active || session.pending) return;
+      session.pending = true;
+      const current = () => session.active && actionSessionRef.current === session;
       setBusy(true); setNotice('');
-      try { setNotice(message(await work())); }
-      catch (error) { setNotice(error?.message || simplifiedText('simplified.word_help_could_not_be_saved', 'Word help could not be saved. The adapted text is unchanged.')); }
-      finally { setBusy(false); }
+      try {
+        const result = await work();
+        // Message callbacks may also request focus, so guard before evaluating them.
+        if (current()) setNotice(message(result));
+      } catch (error) {
+        if (current()) setNotice(error?.message || simplifiedText('simplified.word_help_could_not_be_saved', 'Word help could not be saved. The adapted text is unchanged.'));
+      } finally {
+        if (current()) { session.pending = false; setBusy(false); }
+      }
     };
     const list = !quiet && help.shown && entries.length > 0 && <section ref={listRef} data-adapted-word-help aria-labelledby={idBase + '-title'} className="mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={idBase + '-title'} className="text-lg font-bold text-indigo-950">{simplifiedText('simplified.word_help_word_help', 'Word help')}</h3>{onListen && <button type="button" onClick={() => onListen(entries.map(entry => entry.quote + '. ' + explanation(entry)).join('. '))} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900">{listening ? simplifiedText('simplified.word_help_stop_word_help', 'Stop word help') : simplifiedText('simplified.word_help_listen_to_word_help', 'Listen to word help')}</button>}</div>
@@ -2489,7 +2532,11 @@
     if (!list && !panel) return null;
     // Teachers edit in the panel below; the student list stays mounted (it anchors
     // the passage marks) but folded, one line instead of a second full list.
-    return <>{teacher && list ? <details data-adapted-word-help-student-view className="mt-6 rounded-xl border border-slate-200 bg-white px-3 py-1"><summary className="min-h-11 cursor-pointer py-2 font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{simplifiedText('simplified.word_help_student_view', 'What students see: the word help list ({count})', { count: entries.length })}</summary>{list}</details> : list}{panel}</>;
+    return <>{teacher && list ? <details data-adapted-word-help-student-view onToggle={event => {
+      if (event.target !== event.currentTarget || event.currentTarget.open) return;
+      clearSpot();
+      if (onListClose) onListClose();
+    }} className="mt-6 rounded-xl border border-slate-200 bg-white px-3 py-1"><summary className="min-h-11 cursor-pointer py-2 font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{simplifiedText('simplified.word_help_student_view', 'What students see: the word help list ({count})', { count: entries.length })}</summary>{list}</details> : list}{panel}</>;
   }
 
   // Preview receives a frozen data snapshot and an explicit presentation-only
@@ -3088,9 +3135,18 @@
     var ttsDiagCopied_state = React.useState(false);
     var ttsDiagCopied = ttsDiagCopied_state[0];
     var setTtsDiagCopied = ttsDiagCopied_state[1];
+    var ttsDiagTimer = React.useRef(null), ttsDiagSession = React.useRef(0), ttsDiagRequest = React.useRef(0);
+    React.useLayoutEffect(function () {
+      setTtsDiagCopied(false);
+      return function () {
+        ttsDiagSession.current++;
+        clearTimeout(ttsDiagTimer.current); ttsDiagTimer.current = null;
+      };
+    }, [generatedContent?.id, generatedContent?._artifactInstanceId, generatedContent?.data, props.readingLearnerKey, props.isStudentPreview]);
     var _fallbackCopyTtsDiag = function (text) {
+      var scratch;
       try {
-        var scratch = document.createElement('textarea');
+        scratch = document.createElement('textarea');
         scratch.setAttribute('aria-label', 'Temporary field for copying read-aloud diagnostics');
         scratch.value = text;
         scratch.setAttribute('readonly', '');
@@ -3098,12 +3154,14 @@
         scratch.style.opacity = '0';
         document.body.appendChild(scratch);
         scratch.select();
-        var ok = document.execCommand('copy');
-        scratch.remove();
-        return ok;
-      } catch (e) { return false; }
+        return document.execCommand('copy');
+      } catch (e) { return false; } finally { if (scratch) scratch.remove(); }
     };
     var copyTtsDiagnostics = function () {
+      var session = ttsDiagSession.current, request = ++ttsDiagRequest.current;
+      var current = function () { return session === ttsDiagSession.current && request === ttsDiagRequest.current; };
+      clearTimeout(ttsDiagTimer.current); ttsDiagTimer.current = null;
+      setTtsDiagCopied(false);
       var payload;
       try {
         payload = JSON.stringify({
@@ -3122,17 +3180,20 @@
         }, null, 2);
       } catch (e) { payload = 'diagnostics-serialize-failed: ' + String((e && e.message) || e); }
       var done = function (ok) {
-        if (!ok) return;
+        if (!ok || !current()) return;
         setTtsDiagCopied(true);
-        setTimeout(function () { setTtsDiagCopied(false); }, 2000);
+        ttsDiagTimer.current = setTimeout(function () {
+          ttsDiagTimer.current = null;
+          if (current()) setTtsDiagCopied(false);
+        }, 2000);
       };
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(payload).then(function () { done(true); }, function () { done(_fallbackCopyTtsDiag(payload)); });
+          navigator.clipboard.writeText(payload).then(function () { done(true); }, function () { if (current()) done(_fallbackCopyTtsDiag(payload)); });
           return;
         }
       } catch (e) {}
-      done(_fallbackCopyTtsDiag(payload));
+      if (current()) done(_fallbackCopyTtsDiag(payload));
     };
     var savingAudioKeys_state = React.useState({});
     var savingAudioKeys = savingAudioKeys_state[0];
@@ -4452,8 +4513,7 @@
     var [linkedSection, setLinkedSection] = React.useState(0);
     var [relatedPassage, setRelatedPassage] = React.useState(null);
     var readingFingerprint = value => readingContract?.fingerprintSourceText ? readingContract.fingerprintSourceText(String(value || '')) : String(value || '');
-    function readingScopeIdentity(item) {
-      var snapshot = readingContract?.getSourceSnapshot?.(item);
+    function readingScopeIdentity(item, snapshot = readingContract?.getSourceSnapshot?.(item)) {
       return JSON.stringify([readingContract?.getReadingSourceFamilyId?.(item), item?.unitId !== undefined ? item.unitId : item?.config?.unitId, snapshot?.sourceArtifactId, snapshot?.fingerprint, snapshot?.language, item?.config?.language, item?.instructionalText?.complexity?.language]);
     }
     var rememberedCompanion = protectedOriginal && navigationRef.current.companions.slice().reverse().map(id => (history || []).find(item => item.id === id)).find(item => item && findSimplifiedReadingCompanion([item], generatedContent, capturedSource));
@@ -4464,7 +4524,9 @@
       navigationRef.current.companions = ids.concat(generatedContent.id).slice(-30);
     }, [generatedContent?.id, protectedOriginal]);
     var currentReadingFingerprint = React.useMemo(() => readingFingerprint(generatedContent?.data), [generatedContent?.data, readingContract?.fingerprintSourceText]);
-    var comparisonPreferenceKey = JSON.stringify([companion?.id || generatedContent?.id, readingScopeIdentity(companion || generatedContent), companion?.data === generatedContent?.data ? currentReadingFingerprint : readingFingerprint(companion?.data)]);
+    // Reuse this render's source only; navigation actions still resolve fresh snapshots.
+    var currentReadingScope = readingScopeIdentity(generatedContent, capturedSource);
+    var comparisonPreferenceKey = JSON.stringify([companion?.id || generatedContent?.id, companion && companion !== generatedContent ? readingScopeIdentity(companion) : currentReadingScope, companion?.data === generatedContent?.data ? currentReadingFingerprint : readingFingerprint(companion?.data)]);
     var pairPreferences = comparisonPreferences[comparisonPreferenceKey] || {};
     var comparisonLanguage = pairPreferences.language || 'auto';
     var requestedComparisonSource = pairPreferences.source || 'linked';
@@ -4483,7 +4545,7 @@
         return Object.assign(Object.fromEntries(entries), { [comparisonPreferenceKey]: Object.assign({}, pairPreferences, { [field]: value }) });
       });
     }
-    var navigationViewKey = JSON.stringify([generatedContent?.id, currentReadingFingerprint, readingScopeIdentity(generatedContent), isCompareMode ? readingScopeIdentity(selectedComparisonArtifact) : '', isCompareMode ? 'both' : protectedOriginal ? 'original' : 'adapted', isCompareMode ? comparisonSourceId : '', isCompareMode ? readingFingerprint(getArtifactReadingText(selectedComparisonArtifact)) : '', isCompareMode ? comparisonLanguage : '', !!isTeacherMode]);
+    var navigationViewKey = JSON.stringify([generatedContent?.id, currentReadingFingerprint, currentReadingScope, isCompareMode ? readingScopeIdentity(selectedComparisonArtifact) : '', isCompareMode ? 'both' : protectedOriginal ? 'original' : 'adapted', isCompareMode ? comparisonSourceId : '', isCompareMode ? readingFingerprint(getArtifactReadingText(selectedComparisonArtifact)) : '', isCompareMode ? comparisonLanguage : '', !!isTeacherMode]);
     function readingOuterScroller() {
       var surface = readerSurfaceRef.current;
       if (props.isStudentPreview) return surface?.closest('[data-student-preview]') || surface;
@@ -4752,6 +4814,13 @@
     var placeMountedRef = React.useRef(true);
     React.useEffect(function () { placeMountedRef.current = true; return function () { placeMountedRef.current = false; }; }, []);
     var paragraphSnippet = index => { var words = simplifiedPlainInline(String(placeParagraphs[index] || '').replace(/^\s{0,3}#{1,6}\s+/gm, '')).split(/\s+/).filter(Boolean); return words.slice(0, 10).join(' ') + (words.length > 10 ? '…' : ''); };
+    function placeSnippetLabel(index, snippet) {
+      // Keep persisted snippets exact; only the visible label hides media syntax.
+      var paragraph = !protectedOriginal && String(placeParagraphs[index] || '').trim();
+      if (paragraph && /^\[\[CHART:/.test(paragraph)) return viewText('simplified.chart_label', 'Reading chart');
+      if (paragraph && (paragraph.startsWith('|') || paragraph.includes('\n|'))) return readerText('simplified.table_label', 'Reading table');
+      return snippet;
+    }
     var [placeReviewState, setPlaceReviewState] = React.useState(null);
     var [placeReviewBusyState, setPlaceReviewBusyState] = React.useState(null);
     var placeReview = placeReviewState?.key === placeScopeKey ? placeReviewState.review : null;
@@ -5022,7 +5091,8 @@
 
     function passageParagraphNodes() {
       var surface = readerSurfaceRef.current;
-      return surface ? Array.from(surface.querySelectorAll('[data-reading-passage] [data-reading-paragraph]')).filter(node => placeParagraphOf(node) != null) : [];
+      return surface ? Array.from(surface.querySelectorAll('[data-reading-passage] [data-reading-paragraph]'))
+        .filter(node => node.closest('[data-adapted-reader]') === surface && placeParagraphOf(node) != null) : [];
     }
     // The paragraph being read: the focused one, else the first one on screen.
     function currentReadingParagraph() {
@@ -5060,7 +5130,9 @@
       return last && last.key === placeScopeKey ? last.paragraph : currentReadingParagraph();
     }
     function goToReadingParagraph(index) {
-      var node = passageParagraphNodes().find(element => placeParagraphOf(element) === Number(index));
+      // Keep the beginning reachable even when it has no rendered paragraph.
+      var node = passageParagraphNodes().find(element => placeParagraphOf(element) === Number(index))
+        || (Number(index) === 0 ? readingStartRef.current : null);
       if (!node) return false;
       noteReadingParagraph(Number(index));
       var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -5068,6 +5140,35 @@
       if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '-1');
       node.focus({ preventScroll: true });
       return true;
+    }
+    var placeOfferNavigationRef = React.useRef(null);
+    React.useLayoutEffect(function () {
+      var pending = placeOfferNavigationRef.current;
+      placeOfferNavigationRef.current = null;
+      if (!pending || pending.key !== placeScopeKey || placeOffer || !placeAvailable || studentPreview) return;
+      if (document.activeElement !== pending.from && document.activeElement !== document.body) return;
+      // The dismissed banner must leave the layout before measuring the target.
+      if (goToReadingParagraph(pending.paragraph) && pending.continuing)
+        setPlaceNotice(viewText('simplified.place_continuing', 'Continuing where you left off.'));
+    });
+    function continueReading() {
+      placeOfferNavigationRef.current = { key: placeScopeKey, paragraph: placeOffer.paragraph, from: document.activeElement, continuing: true };
+      setPlaceOffer(null);
+    }
+    function restartReading() {
+      noteReadingParagraph(0);
+      placeOfferNavigationRef.current = { key: placeScopeKey, paragraph: 0, from: document.activeElement };
+      setPlaceOffer(null);
+      storeReadingPlace({ paragraph: 0, snippet: paragraphSnippet(0), resume: false });
+    }
+    function dismissRevisedReading(event) {
+      var notice = event.currentTarget.closest('[data-reading-revised]'), active = document.activeElement;
+      if (notice?.contains(active)) {
+        var last = lastReadRef.current;
+        var paragraph = last && last.key === placeScopeKey ? last.paragraph : paragraphInView() ?? 0;
+        placeOfferNavigationRef.current = { key: placeScopeKey, paragraph, from: active };
+      }
+      setPlaceOffer(null);
     }
     function rememberPlace(resume) {
       var paragraph = readingPlaceParagraph();
@@ -5109,7 +5210,10 @@
     React.useEffect(function () {
       if (!placeAvailable || studentPreview || typeof document === 'undefined') return undefined;
       var timer = null, dwell = null, saved = null, surface = readerSurfaceRef.current;
-      var nodeOf = target => { var node = target?.closest?.('[data-reading-passage] [data-reading-paragraph]'); return node && placeParagraphOf(node) != null ? node : null; };
+      var nodeOf = target => {
+        var node = target?.closest?.('[data-reading-passage] [data-reading-paragraph]');
+        return node && node.closest('[data-adapted-reader]') === surface && placeParagraphOf(node) != null ? node : null;
+      };
       var numberOf = node => placeParagraphOf(node);
       var onScreen = node => { var box = node.getBoundingClientRect(), view = readingViewport(); return box.bottom > view.top && box.top < view.bottom; };
       // Saved where the reader rests in the text: the focused paragraph while it
@@ -5141,7 +5245,7 @@
         document.removeEventListener('scroll', onScroll, true); surface?.removeEventListener('focusin', onFocus); surface?.removeEventListener('pointerdown', onPointer);
         if (timer) clearTimeout(timer); if (dwell) clearTimeout(dwell);
       };
-    }, [placeLearner, placeItemId, placeFingerprint, placeAvailable, !!studentPreview]);
+    }, [placeScopeKey, placeAvailable, !!studentPreview]);
     // Optional prompts about one section, answered beside the passage so the
     // reading place and the answers stay put across reading and listening.
     var [promptsOpen, setPromptsOpen] = React.useState(false);
@@ -5149,28 +5253,58 @@
     // 'inline': opened from the button at the end of a section, so the questions sit
     // beside that section; 'end': opened from the button after the whole passage.
     var [promptsWhere, setPromptsWhere] = React.useState('end');
+    var promptNavigationFocusRef = React.useRef(null), promptFocusOwnerRef = React.useRef(null);
+    React.useLayoutEffect(function () {
+      if (!promptsOpen || !placeAvailable || interactionMode === 'cloze') promptFocusOwnerRef.current = null;
+      var pending = promptNavigationFocusRef.current;
+      promptNavigationFocusRef.current = null;
+      if (!pending || !promptsOpen || pending.key !== placeScopeKey || pending.section !== promptSection) return;
+      if (document.activeElement !== pending.from && document.activeElement !== document.body) return;
+      var surface = readerSurfaceRef.current;
+      var selector = surface && Array.from(surface.querySelectorAll('[data-section-prompts-section]')).find(node => node.closest('[data-adapted-reader]') === surface);
+      selector?.focus();
+    });
     var sectionAnswered = section => Object.values(((readingPlace && readingPlace.responses) || {})[section.first] || {}).some(Boolean);
     // A new version closes the prompts. If the reader was answering, focus goes
     // to the notice saying why (or back to the prompts button), never to <body>.
     var promptFocusLostRef = React.useRef(false);
     React.useEffect(function () {
-      promptFocusLostRef.current = !!document.activeElement?.closest?.('[data-section-prompts]');
+      var active = document.activeElement, owned = promptFocusOwnerRef.current;
+      // An inline panel may already have moved when edited text commits.
+      promptFocusLostRef.current = active?.closest?.('[data-section-prompts]')?.closest?.('[data-adapted-reader]') === readerSurfaceRef.current
+        || !!(active === document.body && owned && !owned.isConnected);
+      promptFocusOwnerRef.current = null;
       setPromptsOpen(false); setPromptSection(0);
     }, [placeItemId, placeFingerprint]);
     React.useEffect(function () {
       if (!promptFocusLostRef.current || promptsOpen) return;
       promptFocusLostRef.current = false;
+      if (document.activeElement !== document.body) return;
       var surface = readerSurfaceRef.current, notice = surface?.querySelector('[data-reading-revised]');
       if (notice) { notice.focus(); return; }
       surface?.querySelector('[data-section-prompts-toggle]')?.focus();
       setPlaceNotice(viewText('simplified.place_prompts_closed_changed', 'This reading changed, so the questions closed. Answers you gave belong to the earlier version.'));
     });
-    function sectionAtParagraph(paragraph) { return outlineSections.find(section => paragraph != null && paragraph >= section.first && paragraph <= section.last) || outlineSections[0] || null; }
+    function sectionAtParagraph(paragraph) {
+      return outlineSections.find((section, index) => paragraph != null && paragraph >= section.first
+        && paragraph < (outlineSections[index + 1]?.first ?? placeParagraphs.length)) || outlineSections[0] || null;
+    }
     function openSectionPrompts() {
       var section = sectionAtParagraph(readingPlaceParagraph());
       setPromptSection(section ? section.index : 0);
       setPromptsWhere('end');
       setPromptsOpen(true);
+    }
+    function sectionHasPromptContent(section) {
+      return simplifiedParagraphBlocks(section.text).some(block => block.type !== 'heading' && block.type !== 'rule' && block.raw.trim());
+    }
+    function changePromptSection(event) {
+      var section = outlineSections[Number(event.currentTarget.value)];
+      if (!section || section.index === promptSection) return;
+      // Inline navigation remounts the panel; transfer only the initiating focus.
+      if (document.activeElement === event.currentTarget) promptNavigationFocusRef.current = { key: placeScopeKey, section: section.index, from: event.currentTarget };
+      setPromptSection(section.index);
+      if (promptsWhere === 'inline' && !sectionHasPromptContent(section)) setPromptsWhere('end');
     }
     // At the end of each section of a longer reading: the questions about it, right there.
     function renderSectionThink(paragraph) {
@@ -5181,7 +5315,7 @@
       // Charts and tables belong before the preceding section's question too.
       var section = outlineSections.find((entry, index) => (outlineSections[index + 1] ? outlineSections[index + 1].first - 1 : placeParagraphs.length - 1) === paragraph);
       if (!section) return null;
-      if (!simplifiedParagraphBlocks(section.text).some(block => block.type !== 'heading' && block.type !== 'rule' && block.raw.trim())) return null;
+      if (!sectionHasPromptContent(section)) return null;
       var open = promptsOpen && promptsWhere === 'inline' && promptSection === section.index;
       return <div data-reading-ui data-section-think={section.index} className="mb-4 text-base font-normal">
         <button type="button" data-section-think-toggle aria-expanded={open} aria-controls={open ? readerId('simplified-section-prompts') : undefined} onClick={() => { if (open) { setPromptsOpen(false); return; } setPromptSection(section.index); setPromptsWhere('inline'); setPromptsOpen(true); }} className="min-h-11 rounded-lg border border-indigo-200 bg-white px-3 py-1 text-sm text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{sectionAnswered(section) ? <span aria-hidden="true">✓ </span> : null}{viewText('simplified.prompt_this_section', 'Think about this section')}{sectionAnswered(section) ? <span className="sr-only">{' (' + viewText('simplified.prompt_answered', 'answered') + ')'}</span> : null}</button>
@@ -5199,11 +5333,15 @@
       var sentences = (typeof splitTextToSentences === 'function' ? splitTextToSentences(plain) : [plain]).map(sentence => String(sentence).trim()).filter(Boolean);
       var field = 'mt-1 min-h-11 w-full min-w-0 rounded-lg border border-slate-400 bg-white px-2 font-normal';
       var sentencePicker = (name, value) => <select value={value || ''} onChange={event => saveSectionResponse(section, name, event.target.value)} className={field}><option value="">{viewText('simplified.prompt_choose_sentence', 'Choose a sentence')}</option>{sentences.map((sentence, index) => <option key={index} value={sentence}>{sentence.length > 140 ? sentence.slice(0, 140) + '…' : sentence}</option>)}{value && !sentences.includes(value) ? <option value={value}>{value}</option> : null}</select>;
-      return <section id={readerId('simplified-section-prompts')} data-section-prompts aria-labelledby={readerId('simplified-section-prompts-title')} className="mt-3 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-base text-slate-900">
+      return <section id={readerId('simplified-section-prompts')} data-section-prompts aria-labelledby={readerId('simplified-section-prompts-title')} onFocusCapture={event => {
+        if (event.target.closest('[data-adapted-reader]') === readerSurfaceRef.current) promptFocusOwnerRef.current = event.target;
+      }} onBlurCapture={event => {
+        if (!event.currentTarget.contains(event.relatedTarget) && event.target.isConnected) promptFocusOwnerRef.current = null;
+      }} className="mt-3 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-base text-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 id={readerId('simplified-section-prompts-title')} className="text-lg font-bold text-indigo-950">{viewText('simplified.prompt_title', 'Think about a section')}</h3><button type="button" onClick={event => { var toggle = event.currentTarget.closest('[data-section-prompts-area], [data-section-think]')?.querySelector('[data-section-prompts-toggle], [data-section-think-toggle]'); setPromptsOpen(false); toggle?.focus(); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm">{viewText('common.close', 'Close')}</button></div>
         {renderPlacePersistence()}
-        <label className="block font-semibold">{viewText('simplified.prompt_section', 'Section')}<select data-section-prompts-section value={section.index} onChange={event => setPromptSection(Number(event.target.value))} className={field}>{outlineSections.map(entry => <option key={entry.index} value={entry.index}>{(sectionAnswered(entry) ? '✓ ' : '') + entry.label}</option>)}</select></label>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => goToReadingParagraph(section.first)} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900">{viewText('simplified.prompt_go_to_section', 'Go to this section')}</button><button type="button" aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!!props.isStudentPreview} onClick={() => speakExactPassage(plain, 'section-' + section.first, readingLanguage)} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900">{isExactPassagePlaying('section-' + section.first) ? viewText('common.stop', 'Stop') : viewText('simplified.prompt_listen_section', 'Listen to this section')}</button></div>
+        <label className="block font-semibold">{viewText('simplified.prompt_section', 'Section')}<select data-section-prompts-section value={section.index} onChange={changePromptSection} className={field}>{outlineSections.map(entry => <option key={entry.index} value={entry.index}>{(sectionAnswered(entry) ? '✓ ' : '') + entry.label}</option>)}</select></label>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => goToReadingParagraph(section.first)} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900">{viewText('simplified.prompt_go_to_section', 'Go to this section')}</button><button type="button" aria-describedby={props.isStudentPreview ? props.previewLimitId : undefined} disabled={!plain || !!props.isStudentPreview} onClick={() => speakExactPassage(plain, 'section-' + section.first, readingLanguage)} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-sm text-indigo-900 disabled:opacity-50">{isExactPassagePlaying('section-' + section.first) ? viewText('common.stop', 'Stop') : viewText('simplified.prompt_listen_section', 'Listen to this section')}</button></div>
         <label className="block font-semibold">{viewText('simplified.prompt_main_idea', 'What is the main idea?')}<textarea data-section-prompt="mainIdea" rows={2} value={answers.mainIdea || ''} onChange={event => saveSectionResponse(section, 'mainIdea', event.target.value)} className={field + ' py-2'} /></label>
         <label className="block font-semibold">{viewText('simplified.prompt_support', 'Which sentence supports it?')}{sentencePicker('support', answers.support)}</label>
         <label className="block font-semibold">{viewText('simplified.prompt_confusing', 'Mark a confusing part.')}{sentencePicker('confusing', answers.confusing)}</label>
@@ -5222,8 +5360,8 @@
       var current = sectionAtParagraph(readingPlace ? readingPlace.paragraph : null);
       var small = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-medium text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
       return <>
-        {placeOffer && placeOffer.kind === 'continue' && <div data-reading-continue className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-base text-indigo-950"><p className="min-w-0 flex-1">{viewText('simplified.place_continue', 'Continue where you left off: {snippet}', { snippet: placeOffer.snippet })}</p><button type="button" data-reading-continue-go onClick={() => { var target = placeOffer.paragraph; setPlaceOffer(null); if (goToReadingParagraph(target)) setPlaceNotice(viewText('simplified.place_continuing', 'Continuing where you left off.')); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white">{viewText('simplified.place_continue_button', 'Continue')}</button><button type="button" data-reading-continue-restart onClick={() => { setPlaceOffer(null); storeReadingPlace({ paragraph: 0, snippet: paragraphSnippet(0) }); }} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900">{viewText('simplified.place_start_over', 'Start from the beginning')}</button></div>}
-        {placeOffer && placeOffer.kind === 'revised' && <div data-reading-revised role="status" tabIndex={-1} className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-base text-amber-950"><p className="min-w-0 flex-1">{viewText('simplified.place_revised', 'This reading was changed since you last read it, so it starts at the beginning. Earlier bookmarks and answers belong to the old version.')}</p><button type="button" onClick={() => setPlaceOffer(null)} className="min-h-11 rounded-lg border border-amber-700 bg-white px-3">{viewText('simplified.place_ok', 'OK')}</button></div>}
+        {placeOffer && placeOffer.kind === 'continue' && <div data-reading-continue className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-base text-indigo-950"><p className="min-w-0 flex-1">{viewText('simplified.place_continue', 'Continue where you left off: {snippet}', { snippet: placeSnippetLabel(placeOffer.paragraph, placeOffer.snippet) })}</p><button type="button" data-reading-continue-go onClick={continueReading} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-semibold text-white">{viewText('simplified.place_continue_button', 'Continue')}</button><button type="button" data-reading-continue-restart onClick={restartReading} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-indigo-900">{viewText('simplified.place_start_over', 'Start from the beginning')}</button></div>}
+        {placeOffer && placeOffer.kind === 'revised' && <div data-reading-revised role="status" tabIndex={-1} className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-base text-amber-950"><p className="min-w-0 flex-1">{viewText('simplified.place_revised', 'This reading was changed since you last read it, so it starts at the beginning. Earlier bookmarks and answers belong to the old version.')}</p><button type="button" onClick={dismissRevisedReading} className="min-h-11 rounded-lg border border-amber-700 bg-white px-3">{viewText('simplified.place_ok', 'OK')}</button></div>}
         <p role="status" data-reading-place-notice className={placeNotice ? 'mb-3 text-sm text-indigo-900' : 'sr-only'}>{placeNotice}</p>
         {!promptsOpen && renderPlacePersistence(true)}
         {outlineOpen && outlineSections.length >= 3 && <nav id={readerId('simplified-reading-outline')} data-reading-outline aria-label={viewText('simplified.outline_label', 'Sections of this reading')} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeReadingOutline(); } }} className="mb-4 space-y-3 rounded-xl border border-indigo-200 bg-white p-3 text-base">
@@ -5251,8 +5389,8 @@
       var result = await storeReadingPlace({ bookmark: { paragraph, snippet } });
       if (!placeMountedRef.current || placeRef.current.key !== key || !result) return;
       setPlaceNotice(result.status === 'saved'
-        ? viewText('simplified.place_bookmark_saved', 'Bookmark saved at: {snippet}', { snippet })
-        : viewText('simplified.place_bookmark_temporary', 'Bookmark kept for this visit at: {snippet}', { snippet }));
+        ? viewText('simplified.place_bookmark_saved', 'Bookmark saved at: {snippet}', { snippet: placeSnippetLabel(paragraph, snippet) })
+        : viewText('simplified.place_bookmark_temporary', 'Bookmark kept for this visit at: {snippet}', { snippet: placeSnippetLabel(paragraph, snippet) }));
     }
     function openBookmark() {
       var mark = readingPlace && readingPlace.bookmark;
@@ -5514,7 +5652,7 @@
       if (teacherRoleNeedsAttention) attention.unshift(viewText('simplified.teacher_setup_lesson_review', 'Review lesson use'));
       if (ttsPrepState.busy) attention.push(viewText('simplified.compact_audio_preparing', 'Preparing sentence audio'));
       if (protectedOriginal && !isCompareMode && verifiedOriginal && autoSupportStatus === 'added') attention.push(viewText('simplified.review_help_needs_review', 'Word help needs review'));
-      if (protectedOriginal && !isCompareMode && (glossBusy || autoSupportStatus === 'working')) attention.push(viewText('simplified.original_adding_word_supports', 'Adding word help…'));
+      if (protectedOriginal && !isCompareMode && (glossBusy || autoSupportStatus === 'working')) attention.push(viewText('simplified.word_help_working', 'Working…'));
       return <button ref={teacherSetupToggleRef} type="button" data-teacher-setup-toggle aria-expanded={teacherSetupOpen} aria-controls={readerId('simplified-teacher-setup-panel')} onClick={() => teacherSetupOpen ? closeTeacherSetup() : openTeacherSetup()} className="flex min-h-11 w-full min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
         <Settings size={18} aria-hidden="true" className="shrink-0 text-slate-600" />
         <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">{viewText('simplified.teacher_setup', 'Teacher setup')}</span>{attention.length ? <span data-teacher-setup-attention role="status" className="mt-1 block text-xs font-semibold leading-5 text-amber-900">{attention.join(' · ')}</span> : <span className="block text-xs leading-5 text-slate-600">{viewText('simplified.teacher_setup_hint', 'Lesson use, review and narration')}</span>}</span>
@@ -5810,7 +5948,7 @@
       return function () { surface.removeEventListener('scroll', onScroll, true); };
     }, [isCompareMode, scrollTogether]);
     var [showReadingGlosses, setShowReadingGlosses] = React.useState(true);
-    var preparedHelpContext = JSON.stringify([generatedContent?.id, generatedContent?.data, readingLanguage, interactionMode, isCompareMode, comparisonLanguage, showComparisonChanges, showReadingGlosses, isEditingLeveledText, isImmersiveReaderActive, isSideBySide, learnerScope]);
+    var preparedHelpContext = JSON.stringify([readingSupportDraftKey(generatedContent, true), generatedContent?.config?.unitId, generatedContent?.data, readingLanguage, interactionMode, isCompareMode, comparisonLanguage, showComparisonChanges, showReadingGlosses, isEditingLeveledText, isImmersiveReaderActive, isSideBySide, learnerScope, props.readingLearnerSession]);
     // A classification or validation change can withdraw help without changing
     // the passage or envelope. Only a currently accepted entry may keep a card.
     var currentWordHelpCard = wordHelpCard && wordHelpCard.context === preparedHelpContext
@@ -5877,7 +6015,44 @@
     React.useEffect(() => { setGlossEditorRequest(null); }, [glossEditingScope]);
     var isGlossEditing = owner => isTeacherMode && !props.isStudentPreview && !isZenMode && (!protectedOriginal || isCompareMode || teacherSetupOpen) && owner
       && glossEditingOwner === glossEditingScope + ':' + readingSupportDraftKey(owner, false);
-    var currentGlossSourceRef = React.useRef(''); currentGlossSourceRef.current = generatedContent?.id + ':' + (capturedSource?.fingerprint || '');
+    var glossActionSessionRef = React.useRef(null);
+    var glossActionViewRef = React.useRef(null);
+    // Keep the same pending session through StrictMode replay, but not A -> B -> A navigation.
+    var glossActionSession = React.useMemo(() => ({ active: false, pending: false }), [readingSupportDraftKey(generatedContent, false), generatedContent?.data, generatedContent?.config?.unitId, capturedSource?.text, readingLanguage, learnerScope, protectedOriginal]);
+    React.useLayoutEffect(() => {
+      if (glossActionSessionRef.current !== glossActionSession) setGlossNotice('');
+      glossActionSessionRef.current = glossActionSession;
+      glossActionSession.active = true;
+      setGlossBusy(glossActionSession.pending);
+      return () => { glossActionSession.active = false; };
+    }, [glossActionSession]);
+    React.useLayoutEffect(() => {
+      glossActionViewRef.current = { session: glossActionSession, item: generatedContent, supports: checkedSupports, onUpdate: props.onUpdateReadingSupports };
+    });
+    var isCurrentGlossAction = session => session?.active && glossActionSessionRef.current === session;
+    function beginGlossAction() {
+      if (!isCurrentGlossAction(glossActionSession) || glossActionSession.pending || autoWordSupportRuns.get(autoSupportKey) === 'working') return null;
+      glossActionSession.pending = true;
+      setGlossBusy(true); setGlossNotice('');
+      return glossActionSession;
+    }
+    function finishGlossAction(session) {
+      session.pending = false;
+      if (isCurrentGlossAction(session)) setGlossBusy(false);
+    }
+    async function generateOriginalWordSupports() {
+      var request = beginGlossAction();
+      if (!request) return;
+      try {
+        var result = await props.onGenerateReadingSupports(generatedContent);
+        if (isCurrentGlossAction(request)) setGlossNotice(result?.status === 'unavailable'
+          ? viewText('simplified.original_word_supports_could_not_be_generated', 'Word help could not be generated. The original is unchanged.')
+          : result?.status === 'partial' ? viewText('simplified.original_some_words_could_not_be_supported', 'Some words could not be supported. The original is unchanged.')
+            : viewText('simplified.original_word_supports_are_ready', 'Word help is ready.'));
+      } catch (error) {
+        if (isCurrentGlossAction(request)) setGlossNotice(error?.message || viewText('simplified.original_word_supports_could_not_be_generated', 'Word help could not be generated. The original is unchanged.'));
+      } finally { finishGlossAction(request); }
+    }
     // First teacher open of a preserved original: AI suggests word supports
     // once, while the reading stays usable (shouldAutoSuggestReadingSupports).
     var autoSupportAiAvailable = useAutoSupportAiAvailable();
@@ -5885,28 +6060,50 @@
     var [, setAutoSupportTick] = React.useState(0);
     var autoSupportKey = verifiedOriginal ? autoWordSupportKey(generatedContent) : '';
     var autoSupportStatus = autoSupportKey ? autoWordSupportRuns.get(autoSupportKey) || '' : '';
-    var setAutoSupportStatus = (key, status) => { autoWordSupportRuns.set(key, status); setAutoSupportTick(value => value + 1); };
+    var originalWordHelpBusy = glossBusy || autoSupportStatus === 'working';
+    React.useLayoutEffect(() => {
+      if (!autoSupportKey) return;
+      // A reopened reader observes the run even when its originating view is gone.
+      var refresh = key => { if (key === autoSupportKey) setAutoSupportTick(value => value + 1); };
+      autoWordSupportListeners.add(refresh);
+      if ((autoWordSupportRuns.get(autoSupportKey) || '') !== autoSupportStatus) refresh(autoSupportKey);
+      return () => autoWordSupportListeners.delete(refresh);
+    }, [autoSupportKey]);
     React.useEffect(() => {
       if (!shouldAutoSuggestReadingSupports({ isTeacherMode, isStudentPreview: !!props.isStudentPreview, verifiedOriginal, item: generatedContent, owner: supportOwner, canGenerate: typeof props.onGenerateReadingSupports === 'function', aiAvailable: autoSupportAiAvailable, off: autoSupportsOff, isMainReading: getSimplifiedInstructionalText(generatedContent).role !== 'supplemental', key: autoSupportKey })) return;
-      var key = autoSupportKey, request = currentGlossSourceRef.current;
-      if (!claimAutoWordSupportRun()) { setAutoSupportStatus(key, 'paused'); return; }
-      setAutoSupportStatus(key, 'working'); setGlossBusy(true); setGlossNotice('');
+      var key = autoSupportKey, request = beginGlossAction();
+      if (!request) return;
+      if (!claimAutoWordSupportRun()) { setAutoSupportStatus(key, 'paused'); finishGlossAction(request); return; }
+      setAutoSupportStatus(key, 'working');
       Promise.resolve().then(() => props.onGenerateReadingSupports(generatedContent)).then(result => {
         var added = (result?.annotations || []).some(entry => entry.origin !== 'educator');
         setAutoSupportStatus(key, added ? 'added' : 'done');
-        if (!added && request === currentGlossSourceRef.current) setGlossNotice(viewText('simplified.auto_supports_none', 'No word help was added. The original is unchanged.'));
+        if (!added && isCurrentGlossAction(request)) setGlossNotice(viewText('simplified.auto_supports_none', 'No word help was added. The original is unchanged.'));
       }, () => {
         setAutoSupportStatus(key, 'done');
-        if (request === currentGlossSourceRef.current) setGlossNotice(viewText('simplified.original_word_supports_could_not_be_generated', 'Word help could not be generated. The original is unchanged.'));
-      }).finally(() => setGlossBusy(false));
-    }, [autoSupportKey, isTeacherMode, autoSupportAiAvailable, autoSupportsOff]);
+        if (isCurrentGlossAction(request)) setGlossNotice(viewText('simplified.original_word_supports_could_not_be_generated', 'Word help could not be generated. The original is unchanged.'));
+      }).finally(() => finishGlossAction(request));
+    }, [autoSupportKey, glossActionSession, isTeacherMode, autoSupportAiAvailable, autoSupportsOff]);
     async function removeAutoWordSupports() {
-      var key = autoSupportKey, generated = (checkedSupports?.annotations || []).filter(entry => entry.origin !== 'educator' && !entry.pinned);
-      setAutoSupportStatus(key, 'done'); setGlossNotice('');
+      var request = beginGlossAction();
+      if (!request) return;
+      var key = autoSupportKey, generated = (checkedSupports?.annotations || []).filter(entry => entry.origin !== 'educator' && !entry.pinned)
+        .map(entry => ({ id: entry.id, start: entry.start, end: entry.end, quote: entry.quote }));
+      setAutoSupportStatus(key, 'done');
       try {
-        for (var entry of generated) await props.onUpdateReadingSupports(generatedContent, { type: 'remove', id: entry.id });
-        setGlossNotice(viewText('simplified.auto_supports_removed', 'AI word help removed. The original is unchanged.'));
-      } catch (error) { setGlossNotice(error?.message || viewText('simplified.auto_supports_remove_failed', 'Some AI word help could not be removed. Review the explanations in the list.')); }
+        for (var entry of generated) {
+          if (!isCurrentGlossAction(request)) return;
+          var live = glossActionViewRef.current;
+          if (live?.session !== request || typeof live.onUpdate !== 'function') return;
+          // Only remove original targets still eligible after the preceding save.
+          var current = live.supports?.annotations?.find(value => value.id === entry.id);
+          if (!current || current.origin === 'educator' || current.pinned || current.start !== entry.start || current.end !== entry.end || current.quote !== entry.quote) continue;
+          await live.onUpdate(live.item, { type: 'remove', id: current.id });
+        }
+        if (isCurrentGlossAction(request)) setGlossNotice(viewText('simplified.auto_supports_removed', 'AI word help removed. The original is unchanged.'));
+      } catch (error) {
+        if (isCurrentGlossAction(request)) setGlossNotice(error?.message || viewText('simplified.auto_supports_remove_failed', 'Some AI word help could not be removed. Review the explanations in the list.'));
+      } finally { finishGlossAction(request); }
     }
     var audioGlosses = readingContract?.selectReadingSupports ? readingContract.selectReadingSupports(supportOwner || generatedContent, checkedSupports, { density: glossDensity }) : (checkedSupports?.annotations || []);
     var activeGlosses = showReadingGlosses ? audioGlosses : [];
@@ -6089,7 +6286,7 @@
             {version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <div data-comparison-support-editor hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }}><ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(comparisonSupportOwner, false)} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest?.scope === glossEditingScope ? glossEditorRequest : null} onEditingChange={onGlossEditingChange} onReveal={() => { if (isZenMode) props.onFocusViewChange?.(false); }} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} /></div>}
           </div>
         </section>)}</div>
-        {showReadingGlosses && !showDiff && <AdaptedWordHelp supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
+        {showReadingGlosses && !showDiff && <AdaptedWordHelp actionScope={learnerScope} supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={false} passageSelector='[data-compare-version="adapted"]' language={targetLanguage} markWords={!(adaptedParts && effectiveLanguage === 'english')} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} />}
       </div>;
     }
 
@@ -6102,13 +6299,63 @@
       if (typeof stopPlayback === 'function') stopPlayback();
       if (!wasPlaying && typeof handleSpeak === 'function') handleSpeak(text, id, 0, true, owner.language || readingLanguage);
     }
-    function isExactPassagePlaying(pane) { return !!isPlaying && playingContentId === 'reading-' + generatedContent.id + '-' + pane; }
+    var exactPassageOwnerRef = React.useRef(null), exactPassageSequenceRef = React.useRef(0);
+    var exactPassagePlaybackRef = React.useRef({ id: null, stop: null });
+    var exactPassageInstanceId = React.useId().replace(/[^a-z0-9_-]/gi, '');
+    var exactPassageScope = [readingSupportDraftKey(generatedContent, false), generatedContent?.data, capturedSource?.text,
+      currentReadingScope, readingLanguage, learnerScope, props.readingLearnerSession, !!props.isStudentPreview,
+      !!protectedOriginal, !!isCompareMode, !!isEditingLeveledText, !!isImmersiveReaderActive, interactionMode,
+      comparisonSourceId, comparisonLanguage];
+    function exactPassageText(pane) {
+      if (pane === 'adapted-word-help') {
+        var help = adaptedSupportView.help;
+        return help?.shown && help.status !== 'stale' && help.annotations?.length
+          ? help.annotations.map(entry => entry.quote + '. ' + (entry.definition || entry.explanation || entry.text || '')).join('. ') : null;
+      }
+      var section = outlineSections[promptSection] || outlineSections[0];
+      return promptsOpen && section && pane === 'section-' + section.first
+        ? simplifiedPlainInline(section.text.replace(/^\s{0,3}#{1,6}\s+.*$/gm, '')).trim() : null;
+    }
+    function exactPassageOwnerIsCurrent(owner) {
+      return !!owner && owner.scope.every((value, index) => value === exactPassageScope[index])
+        && owner.text === exactPassageText(owner.pane);
+    }
+    function retireExactPassageAudio(alreadyStopping) {
+      var owner = exactPassageOwnerRef.current, live = exactPassagePlaybackRef.current;
+      exactPassageOwnerRef.current = null;
+      if (owner && !alreadyStopping && live.id === owner.id && typeof live.stop === 'function') live.stop();
+    }
+    function closeWordHelpList() {
+      if (exactPassageOwnerRef.current?.pane === 'adapted-word-help') retireExactPassageAudio(false);
+    }
+    React.useLayoutEffect(function () {
+      exactPassagePlaybackRef.current = { id: playingContentId, stop: stopPlayback };
+      var owner = exactPassageOwnerRef.current;
+      if (!owner) return;
+      var surface = readerSurfaceRef.current;
+      var selector = owner.pane === 'adapted-word-help' ? '[data-adapted-word-help]' : '[data-section-prompts]';
+      var visible = surface && Array.from(surface.querySelectorAll(selector)).some(node =>
+        node.closest('[data-adapted-reader]') === surface && !node.closest('[hidden], [inert], [aria-hidden="true"], details:not([open])'));
+      if (!exactPassageOwnerIsCurrent(owner) || !visible) {
+        // The earlier reading-change effect already stops playback for ID/text changes.
+        retireExactPassageAudio(owner.itemId !== generatedContent?.id || owner.data !== generatedContent?.data);
+      }
+    });
+    React.useEffect(() => () => { retireExactPassageAudio(false); }, []);
+    // The reserved ID covers pending synthesis as well as active playback.
+    function isExactPassagePlaying(pane) {
+      var owner = exactPassageOwnerRef.current;
+      return owner?.pane === pane && exactPassageOwnerIsCurrent(owner) && playingContentId === owner.id;
+    }
     function speakExactPassage(text, pane, language) {
       if (props.isStudentPreview) return;
       var wasPlaying = isExactPassagePlaying(pane);
+      exactPassageOwnerRef.current = null;
       if (typeof stopPlayback === 'function') stopPlayback();
-      if (wasPlaying) return;
-      if (typeof handleSpeak === 'function') handleSpeak(text, 'reading-' + generatedContent.id + '-' + pane, 0, true, language || readingLanguage);
+      if (wasPlaying || typeof handleSpeak !== 'function') return;
+      var id = 'reading-' + generatedContent.id + '-' + pane + '-' + exactPassageInstanceId + '-' + (++exactPassageSequenceRef.current);
+      exactPassageOwnerRef.current = { id, pane, text, scope: exactPassageScope, itemId: generatedContent.id, data: generatedContent.data };
+      handleSpeak(text, id, 0, true, language || readingLanguage);
     }
     // Credits for pictures shown beside word supports (their licences require it).
     function renderPictureCredits(annotations) {
@@ -6243,8 +6490,8 @@
     function renderOriginalWordHelpSetup() {
       if (!protectedOriginal || isCompareMode || isEditingLeveledText || (!props.onGenerateReadingSupports && !props.onUpdateReadingSupports && !autoSupportStatus)) return null;
       return <section data-original-word-help-setup aria-labelledby={readerId('original-word-help-setup-title')} className="mt-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm font-normal text-slate-800">
-        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 id={readerId('original-word-help-setup-title')} className="text-sm font-semibold">{viewText('simplified.word_help_word_help', 'Word help')}</h3>{isTeacherMode && props.onGenerateReadingSupports && <button type="button" data-original-generate-supports hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }} disabled={glossBusy || !verifiedOriginal} className="min-h-11 max-w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left font-semibold text-indigo-800 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50" onClick={async () => { const request = currentGlossSourceRef.current; setGlossBusy(true); setGlossNotice(''); try { const result = await props.onGenerateReadingSupports(generatedContent); if (request === currentGlossSourceRef.current) setGlossNotice(result?.status === 'unavailable' ? viewText('simplified.original_word_supports_could_not_be_generated', 'Word help could not be generated. The original is unchanged.') : result?.status === 'partial' ? viewText('simplified.original_some_words_could_not_be_supported', 'Some words could not be supported. The original is unchanged.') : viewText('simplified.original_word_supports_are_ready', 'Word help is ready.')); } catch(error) { if (request === currentGlossSourceRef.current) setGlossNotice(error?.message || viewText('simplified.original_word_supports_could_not_be_generated', 'Word help could not be generated. The original is unchanged.')); } finally { setGlossBusy(false); } }}>{glossBusy ? viewText('simplified.original_adding_word_supports', 'Adding word help…') : checkedSupports?.annotations?.length ? viewText('simplified.original_refresh_suggested_supports', 'Refresh word help') : viewText('simplified.original_add_word_supports', 'Add word help')}</button>}</div>
-        {isTeacherMode && !props.isStudentPreview && verifiedOriginal && <div data-auto-word-supports={autoSupportStatus || 'idle'} hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }} className={autoSupportStatus === 'working' || autoSupportStatus === 'added' || autoSupportStatus === 'paused' ? 'my-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-indigo-950' : 'my-2'}><p role="status" className={autoSupportStatus === 'working' || autoSupportStatus === 'added' || autoSupportStatus === 'paused' ? 'font-semibold' : 'sr-only'}>{autoSupportStatus === 'working' ? viewText('simplified.auto_supports_working', 'Adding word help with AI. You can start reading now.') : autoSupportStatus === 'added' ? viewText('simplified.auto_supports_added', 'Word help added by AI. Review the explanations.') : autoSupportStatus === 'paused' ? viewText('simplified.auto_supports_paused', 'Word help is added automatically for up to 10 originals a day on this device. Use Add word help for this one.') : ''}</p>{autoSupportStatus === 'added' && <div className="mt-2 flex flex-wrap gap-2"><button type="button" data-auto-supports-review className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 font-semibold text-indigo-900" onClick={() => { setAutoSupportStatus(autoSupportKey, 'done'); setGlossEditorRequest(previous => ({ scope: glossEditingScope, ownerId: generatedContent.id, open: true, serial: (previous?.serial || 0) + 1 })); }}>{viewText('simplified.auto_supports_review', 'Review and edit word help')}</button>{props.onUpdateReadingSupports && <button type="button" data-auto-supports-remove disabled={glossBusy || isProcessing} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-slate-900 disabled:opacity-50" onClick={removeAutoWordSupports}>{viewText('simplified.auto_supports_remove', 'Remove AI word help')}</button>}</div>}{autoSupportAiAvailable && props.onGenerateReadingSupports && <label className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" data-auto-supports-switch checked={!autoSupportsOff} onChange={event => { setAutoSupportsOff(!event.target.checked); saveAutoWordSupportsOff(!event.target.checked); }} />{viewText('simplified.auto_supports_switch', 'Add AI word help when I first open an original')}</label>}</div>}
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 id={readerId('original-word-help-setup-title')} className="text-sm font-semibold">{viewText('simplified.word_help_word_help', 'Word help')}</h3>{isTeacherMode && props.onGenerateReadingSupports && <button type="button" data-original-generate-supports hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }} disabled={originalWordHelpBusy || !verifiedOriginal} className="min-h-11 max-w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-left font-semibold text-indigo-800 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50" onClick={generateOriginalWordSupports}>{originalWordHelpBusy ? viewText('simplified.word_help_working', 'Working…') : checkedSupports?.annotations?.length ? viewText('simplified.original_refresh_suggested_supports', 'Refresh word help') : viewText('simplified.original_add_word_supports', 'Add word help')}</button>}</div>
+        {isTeacherMode && !props.isStudentPreview && verifiedOriginal && <div data-auto-word-supports={autoSupportStatus || 'idle'} hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }} className={autoSupportStatus === 'working' || autoSupportStatus === 'added' || autoSupportStatus === 'paused' ? 'my-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-indigo-950' : 'my-2'}><p role="status" className={autoSupportStatus === 'working' || autoSupportStatus === 'added' || autoSupportStatus === 'paused' ? 'font-semibold' : 'sr-only'}>{autoSupportStatus === 'working' ? viewText('simplified.auto_supports_working', 'Adding word help with AI. You can start reading now.') : autoSupportStatus === 'added' ? viewText('simplified.auto_supports_added', 'Word help added by AI. Review the explanations.') : autoSupportStatus === 'paused' ? viewText('simplified.auto_supports_paused', 'Word help is added automatically for up to 10 originals a day on this device. Use Add word help for this one.') : ''}</p>{autoSupportStatus === 'added' && <div className="mt-2 flex flex-wrap gap-2"><button type="button" data-auto-supports-review className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 font-semibold text-indigo-900" onClick={() => { setAutoSupportStatus(autoSupportKey, 'done'); setGlossEditorRequest(previous => ({ scope: glossEditingScope, ownerId: generatedContent.id, open: true, serial: (previous?.serial || 0) + 1 })); }}>{viewText('simplified.auto_supports_review', 'Review and edit word help')}</button>{props.onUpdateReadingSupports && <button type="button" data-auto-supports-remove disabled={originalWordHelpBusy || isProcessing} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-slate-900 disabled:opacity-50" onClick={removeAutoWordSupports}>{viewText('simplified.auto_supports_remove', 'Remove AI word help')}</button>}</div>}{autoSupportAiAvailable && props.onGenerateReadingSupports && <label className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" data-auto-supports-switch checked={!autoSupportsOff} onChange={event => { setAutoSupportsOff(!event.target.checked); saveAutoWordSupportsOff(!event.target.checked); }} />{viewText('simplified.auto_supports_switch', 'Add AI word help when I first open an original')}</label>}</div>}
         {isTeacherMode && verifiedOriginal && props.onUpdateReadingSupports && <div data-original-support-editor hidden={isZenMode} style={{ display: isZenMode ? 'none' : undefined }}><ReadingGlossEditor draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, false)} item={generatedContent} supports={checkedSupports} request={glossEditorRequest?.scope === glossEditingScope ? glossEditorRequest : null} onEditingChange={onGlossEditingChange} onReveal={() => { openTeacherSetup(); if (isZenMode) props.onFocusViewChange?.(false); }} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} /></div>}
       </section>;
     }
@@ -6266,8 +6513,8 @@
         var headingLevels = simplifiedHeadingLevels(section.paragraphs.join('\n'));
         return section.paragraphs.map(function (paragraph, paragraphIndex) {
           var paragraphId = section.key === 'mono' ? paragraphIndex : section.key + '-' + paragraphIndex;
-          if (/^\[\[CHART:/.test(paragraph.trim())) return <React.Fragment key={paragraphId}><div data-reading-chart="true" className="my-4 max-w-full overflow-x-auto">{renderFormattedText(paragraph, false)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
-          if (paragraph.trim().startsWith('|') || paragraph.includes('\n|')) return <React.Fragment key={paragraphId}><div data-reading-table="true" lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} className="my-4 max-w-full overflow-x-auto" tabIndex={0} role="region" aria-label={readerText('simplified.table_label', 'Reading table')}>{renderFormattedText(paragraph, false)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
+          if (/^\[\[CHART:/.test(paragraph.trim())) return <React.Fragment key={paragraphId}><div data-reading-chart="true" data-reading-paragraph={paragraphId} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} tabIndex={-1} role="region" aria-label={viewText('simplified.chart_label', 'Reading chart')} className="my-4 max-w-full overflow-x-auto">{renderFormattedText(paragraph, false)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
+          if (paragraph.trim().startsWith('|') || paragraph.includes('\n|')) return <React.Fragment key={paragraphId}><div data-reading-table="true" data-reading-paragraph={paragraphId} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} className="my-4 max-w-full overflow-x-auto" tabIndex={0} role="region" aria-label={readerText('simplified.table_label', 'Reading table')}>{renderFormattedText(paragraph, false)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
           var startIdx = sentenceCursor;
           var blocks = simplifiedParagraphBlocks(paragraph).map(function (block) {
             block.start = sentenceCursor;
@@ -6661,7 +6908,7 @@
               }} className="px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"><Plus size={12} className="text-green-700" /> {t('text_tools.add_term')}</button>}</>}</div><div className="w-2 h-2 bg-slate-800 rotate-45" /></div>}{selectionMenu && <div className={`fixed inset-0 ${_popupBackdropZ} bg-transparent`} onMouseDown={e => {
           setSelectionMenu(null);
           setIsCustomReviseOpen(false);
-        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'AI is working...')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{isCompareMode || isEditingLeveledText ? <>{readingColumnRole}{versionControls}</> : null}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} /></div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
+        }} />}{revisionData && <div ref={revisionDialogRef} role="dialog" aria-modal="true" aria-labelledby={readerId("simplified-revision-title")} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, revisionDialogRef.current, closeRevision)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={simplifiedPopupStyle(revisionData, 18)}><SimplifiedPopupStatus message={revisionData.result ? viewText('common.ready', 'Ready') : viewText('simplified.revision.working', 'AI is working...')} /><div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-100"><h5 id={readerId("simplified-revision-title")} className="min-w-0 break-words font-bold text-slate-700 text-xs uppercase tracking-wider flex items-center gap-2">{revisionData.type === 'simplify' ? <Sparkles size={14} className="text-yellow-500" /> : revisionData.type === 'custom' ? <PenTool size={14} className="text-indigo-500" /> : <HelpCircle size={14} className="text-teal-500" />}{revisionData.type === 'simplify' ? t('simplified.revision.header_simplify') : revisionData.type === 'custom' ? t('simplified.revision.header_custom') : t('simplified.revision.header_explain')}</h5><div className="flex items-center gap-1">{revisionData.result ? renderSimplifiedPopupSpeaker(SIMPLIFIED_REVISION_AUDIO_ID, revisionData.result) : null}<button ref={revisionCloseRef} type="button" onClick={closeRevision} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div></div>{revisionData.result ? <><div className="text-sm text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded border border-slate-100 mb-3">{renderFormattedText(revisionData.result, false)}</div>{isTeacherMode && !protectedOriginal && (revisionData.type === 'simplify' || revisionData.type === 'custom') && <button type="button" onClick={applyTextRevision} className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} /> {t('simplified.revision.replace_btn')}</button>}</> : <div className="flex flex-col items-center justify-center py-4 gap-2 text-slate-600"><RefreshCw size={20} className="animate-spin motion-reduce:animate-none text-indigo-500" /><span className="text-xs">{t('simplified.revision.working')}</span></div>}</div>}{revisionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ} bg-black/5`} onClick={closeRevision} />}{isCompareMode || isEditingLeveledText ? <>{readingColumnRole}{versionControls}</> : null}{isCompareMode ? renderSimplifiedComparison() : isEditingLeveledText ? <div className="w-full bg-white border border-orange-200 rounded-lg overflow-hidden shadow-sm"><div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-orange-100"><button type="button" onClick={() => handleFormatText('bold')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" onClick={() => handleFormatText('italic')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" onClick={() => handleFormatText('highlight')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('h1')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" onClick={() => handleFormatText('h2')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" onClick={() => handleFormatText('h3')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-orange-200 mx-1" /><button type="button" onClick={() => handleFormatText('list')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" onClick={() => handleFormatText('numlist')} className="p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button></div><textarea aria-label={t('simplified.revision.placeholder_edit_text') || 'Edit simplified text'} data-allo-textundo="simplified" ref={textEditorRef} value={generatedContent?.data} onChange={e => handleSimplifiedTextChange(e.target.value)} className="w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans" spellCheck="false" placeholder={t('simplified.revision.placeholder_edit_text')} /></div> : protectedOriginal ? renderOriginalReading() : <>{isImmersiveReaderActive && generatedContent?.immersiveData && hiddenPassageRef.current ? hiddenPassageRef.current : (hiddenPassageRef.current = renderSimplifiedReading())}<div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}><AdaptedWordHelp actionScope={learnerScope} supportView={adaptedSupportView} onOpen={(event, entry) => showPreparedWordHelp(event, entry, readingLanguage, null)} draftSession={supportDraftSession} key={readingSupportDraftKey(generatedContent, true)} item={generatedContent} teacher={isTeacherMode} onListClose={closeWordHelpList} originalSupports={checkedSupports} passageSelector="[data-reading-passage]" language={readingLanguage} quiet={interactionMode === 'cloze'} disabled={isProcessing} onUpdate={props.onUpdateReadingSupports} onGenerate={props.onGenerateReadingSupports} languageTag={simplifiedLanguageTag(readingLanguage)} direction={typeof getContentDirection === 'function' ? getContentDirection(readingLanguage) : undefined} onListen={props.isStudentPreview ? undefined : text => speakExactPassage(text, 'adapted-word-help', readingLanguage)} listening={isExactPassagePlaying('adapted-word-help')} renderCredits={renderPictureCredits} /></div></>}</div></div></>;
   }
   SimplifiedView.getReadingNavigationSections = getReadingNavigationSections;
   SimplifiedView.findRelatedOriginalPassage = findRelatedOriginalPassage;

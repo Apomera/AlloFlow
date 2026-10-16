@@ -341,6 +341,9 @@ function LessonPlanView(props) {
                                            audioVoice: props.teachingScriptVoice, audioSpeed: props.teachingScriptSpeed, onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings, onDeleteTeachingScript: props.onDeleteTeachingScript,
                                          onGenerateTeachingScript: props.onGenerateTeachingScript,
                                          onCancelTeachingScript: props.onCancelTeachingScript,
+                                         onGetTeachingScriptRecovery: props.onGetTeachingScriptRecovery,
+                                         onDiscardTeachingScriptRecovery: props.onDiscardTeachingScriptRecovery,
+                                         onRegenerateTeachingStep: props.onRegenerateTeachingStep,
                                          onUpdateTeachingScript: props.onUpdateTeachingScript,
                                          onOpenTeachingMaterial: props.onOpenTeachingMaterial
                                      }) : (

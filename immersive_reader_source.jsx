@@ -768,6 +768,9 @@ function useImmersiveTimeouts() {
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
     const dialogRef = useOverlayDialogFocus(isOpen);
+    const paragraphs = useMemo(() => isOpen
+        ? String(text || '').replace(/<\/?[a-zA-Z][^<>]*>/g, '').replace(/\n{3,}/g, '\n\n').trim().split(/\n{2,}/).filter(Boolean)
+        : [], [isOpen, text]);
     // Persist user's preferred speed / palette / ambient across sessions so each
     // open doesn't reset to defaults. Direct localStorage with try/catch — same
     // lightweight pattern used elsewhere (no safeGetItem dep needed).
@@ -775,7 +778,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         try { const v = parseInt(localStorage.getItem('allo_crawl_speed'), 10); return (v >= 10 && v <= 140) ? v : 70; } catch { return 70; }
     });
     useEffect(() => { writeCrawlPreference('allo_crawl_speed', String(speedPxPerSec)); }, [speedPxPerSec]);
-    const [isPlaying, setIsPlaying] = useState(() => !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    const [isPlaying, setIsPlaying] = useState(() => isOpen && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
     const [palette, setPalette] = useState(() => {
         try { const v = localStorage.getItem('allo_crawl_palette'); return ['gold', 'teal', 'paper'].includes(v) ? v : 'gold'; } catch { return 'gold'; }
@@ -818,12 +821,35 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         setProgressPct(0);
         lastTsRef.current = null;
     }, []);
+    const togglePlay = useCallback(() => {
+        if (finished) { resetCrawl(); setIsPlaying(true); }
+        else setIsPlaying(pl => !pl);
+    }, [finished, resetCrawl]);
 
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen) { setIsPlaying(false); return; }
         resetCrawl();
         setIsPlaying(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     }, [isOpen, text, resetCrawl]);
+
+    useEffect(() => {
+        if (!isOpen || !window.matchMedia) return;
+        const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let active = true;
+        const pauseForReducedMotion = event => {
+            if (active && event.matches) setIsPlaying(false);
+        };
+        // Pause on a new accessibility preference; only an explicit action resumes.
+        const modern = typeof preference.addEventListener === 'function' && typeof preference.removeEventListener === 'function';
+        if (modern) preference.addEventListener('change', pauseForReducedMotion);
+        else preference.addListener?.(pauseForReducedMotion);
+        pauseForReducedMotion(preference);
+        return () => {
+            active = false;
+            if (modern) preference.removeEventListener?.('change', pauseForReducedMotion);
+            else preference.removeListener?.(pauseForReducedMotion);
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen || !isPlaying) { lastTsRef.current = null; return; }
@@ -932,24 +958,18 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         const handler = (e) => {
             if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
             if (e.key !== 'Escape' && isInteractiveShortcutTarget(e.target)) return;
-            if (e.code === 'Space') { e.preventDefault(); setIsPlaying(pl => !pl); }
+            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
             else if (e.key === 'Escape') onClose();
             else if (e.key === 'r' || e.key === 'R') { resetCrawl(); setIsPlaying(true); }
             else if (e.key === 'm' || e.key === 'M') setAmbientOn(a => !a);
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, onClose, resetCrawl]);
+    }, [isOpen, onClose, resetCrawl, togglePlay]);
 
     if (!isOpen) return null;
 
-    const cleaned = String(text || '').replace(/<\/?[a-zA-Z][^<>]*>/g, '').replace(/\n{3,}/g, '\n\n').trim();
-    const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
     const staticPreview = !isPlaying && translateY === 0;
-    const togglePlay = () => {
-        if (finished) { resetCrawl(); setIsPlaying(true); }
-        else setIsPlaying(pl => !pl);
-    };
 
     return (
         <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="perspective-crawl-dialog-title" tabIndex={-1} data-help-key="perspective_crawl_overlay_panel" className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>

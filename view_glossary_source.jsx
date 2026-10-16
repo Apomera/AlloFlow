@@ -395,7 +395,7 @@ function getGlossaryImageAlt(item) {
     var handleQuickAddGlossary = props.handleQuickAddGlossary;
     var handleDeleteTerm = props.handleDeleteTerm;
     var handleGenerateTermImage = props.handleGenerateTermImage;
-    var handleDeleteTermImage = props.handleDeleteTermImage;
+    var deleteGlossaryImageInHost = props.handleDeleteTermImage;
     var handleGenerateTermEtymology = props.handleGenerateTermEtymology;
     var handleRefineGlossaryImage = props.handleRefineGlossaryImage;
     var handleGlossaryChange = props.handleGlossaryChange;
@@ -425,7 +425,7 @@ function getGlossaryImageAlt(item) {
     var handleToggleShowHealthCheckPanel = props.handleToggleShowHealthCheckPanel;
     var handleGlossarySelectAll = props.handleGlossarySelectAll;
     var handleGlossarySelectionChange = props.handleGlossarySelectionChange;
-    var handleDeleteGlossaryItem = props.handleDeleteGlossaryItem;
+    var deleteGlossaryTermInHost = props.handleDeleteGlossaryItem;
     var fetchReplacementSuggestion = props.fetchReplacementSuggestion;
     var toggleLetterSelection = props.toggleLetterSelection;
     // Screener helpers
@@ -649,6 +649,10 @@ function getGlossaryImageAlt(item) {
     var glossaryAudioEditStateState = React.useState({ busyKey: '', message: '' });
     var glossaryAudioEditState = glossaryAudioEditStateState[0];
     var setGlossaryAudioEditState = glossaryAudioEditStateState[1];
+    var [isGlossaryAudioReviewOpen, setIsGlossaryAudioReviewOpen] = React.useState(false);
+    React.useEffect(function () {
+      setIsGlossaryAudioReviewOpen(false);
+    }, [activityResourceKey, isTeacherMode, isEditingGlossary]);
     var wordSearchStartState = React.useState(null);
     var wordSearchStart = wordSearchStartState[0];
     var setWordSearchStart = wordSearchStartState[1];
@@ -669,16 +673,71 @@ function getGlossaryImageAlt(item) {
     var glossaryResourceKey = String(generatedContent?.type || '') + ':' + String(generatedContent?.id || '');
     var glossaryViewSessionRef = React.useRef({ key: glossaryResourceKey });
     if (glossaryViewSessionRef.current.key !== glossaryResourceKey) glossaryViewSessionRef.current = { key: glossaryResourceKey };
+    var glossarySuggestionScope = glossaryResourceKey + ':' + String(activeView) + ':' + String(isTeacherMode);
+    var glossarySuggestionSessionRef = React.useRef({ key: glossarySuggestionScope, pending: new Set() });
+    if (glossarySuggestionSessionRef.current.key !== glossarySuggestionScope) glossarySuggestionSessionRef.current = { key: glossarySuggestionScope, pending: new Set() };
+    var [glossarySuggestionState, setGlossarySuggestionState] = React.useState({ key: glossarySuggestionScope, pending: [], message: '' });
+    var glossaryPendingSuggestions = glossarySuggestionState.key === glossarySuggestionScope ? glossarySuggestionState.pending : [];
+    var glossarySuggestionMessage = glossarySuggestionState.key === glossarySuggestionScope ? glossarySuggestionState.message : '';
+    React.useEffect(function () {
+      setGlossarySuggestionState({ key: glossarySuggestionScope, pending: [], message: '' });
+    }, [glossarySuggestionScope]);
     var glossaryAudioSignature = JSON.stringify((Array.isArray(generatedContent?.data) ? generatedContent.data : []).map(item => item && [item.entryId, item.term, item.def, item.translations]));
     var glossaryAudioOwnerRef = React.useRef({ key: glossaryResourceKey, signature: glossaryAudioSignature });
     if (glossaryAudioOwnerRef.current.key !== glossaryResourceKey || glossaryAudioOwnerRef.current.signature !== glossaryAudioSignature) glossaryAudioOwnerRef.current = { key: glossaryResourceKey, signature: glossaryAudioSignature };
     var glossaryMountedRef = React.useRef(true);
     var glossaryAudioControllersRef = React.useRef(new Set());
+    var glossaryAudioPrepControllerRef = React.useRef(null);
+    var glossaryAudioEditControllerRef = React.useRef(null);
     var glossaryDictionaryAudioRef = React.useRef(null);
     var flashcardMoveTimerRef = React.useRef(null);
     var flashcardFocusTimerRef = React.useRef(null);
     function isGlossaryViewCurrent(owner) { return glossaryMountedRef.current && glossaryViewSessionRef.current === owner; }
     function isGlossaryAudioCurrent(owner) { return glossaryMountedRef.current && glossaryAudioOwnerRef.current === owner; }
+    function glossarySuggestionKey(term) { return String(term || '').trim().toLocaleLowerCase(); }
+    async function handleAddGlossarySuggestion(gap) {
+      var addedTerm = String(gap?.term || '').trim();
+      var key = glossarySuggestionKey(addedTerm);
+      var session = glossarySuggestionSessionRef.current;
+      if (!isTeacherMode || activeView !== 'glossary' || !key || session.pending.has(key)) return;
+      var owner = glossaryViewSessionRef.current;
+      var current = function () { return isGlossaryViewCurrent(owner) && glossarySuggestionSessionRef.current === session; };
+      var updateMessage = function (message) {
+        if (current()) setGlossarySuggestionState({ key: session.key, pending: Array.from(session.pending), message: message });
+      };
+      session.pending.add(key);
+      updateMessage(glossaryText('glossary.suggestion_adding_status', 'Adding {term} to the glossary…', { term: addedTerm }));
+      try {
+        var added = await handleQuickAddGlossary(addedTerm, true);
+        if (!current()) return;
+        if (added === false) {
+          updateMessage(glossaryText('glossary.suggestion_add_failed', 'Could not add {term}. Try again.', { term: addedTerm }));
+          return;
+        }
+        setGlossaryHealthCheck(function (previous) {
+          if (!current() || !previous || !Array.isArray(previous.coverageGaps)) return previous;
+          return { ...previous, coverageGaps: previous.coverageGaps.filter(function (item) { return glossarySuggestionKey(item.term) !== key; }) };
+        });
+        updateMessage(glossaryText('glossary.suggestion_added_status', 'Added {term} to the glossary.', { term: addedTerm }));
+        try {
+          var replacement = await fetchReplacementSuggestion(generatedContent?.data || [], addedTerm, relatedGlossarySourceText());
+          if (replacement && current()) setGlossaryHealthCheck(function (previous) {
+            if (!current() || !previous) return previous;
+            return { ...previous, coverageGaps: [...(Array.isArray(previous.coverageGaps) ? previous.coverageGaps : []), replacement] };
+          });
+        } catch (_) {
+          updateMessage(glossaryText('glossary.suggestion_refresh_failed', 'Added {term}. More suggestions could not be refreshed.', { term: addedTerm }));
+        }
+      } catch (_) {
+        updateMessage(glossaryText('glossary.suggestion_add_failed', 'Could not add {term}. Try again.', { term: addedTerm }));
+      } finally {
+        session.pending.delete(key);
+        if (current()) setGlossarySuggestionState(function (previous) {
+          if (!current()) return previous;
+          return { key: session.key, pending: Array.from(session.pending), message: previous.key === session.key ? previous.message : '' };
+        });
+      }
+    }
     function playGlossaryDictionaryAudio(url, key) {
       if (glossaryDictionaryAudioRef.current) glossaryDictionaryAudioRef.current.pause();
       var owner = glossaryAudioOwnerRef.current;
@@ -730,6 +789,8 @@ function getGlossaryImageAlt(item) {
         glossarySavedAudioSessionRef.current += 1;
         glossaryAudioControllersRef.current.forEach(controller => controller.abort());
         glossaryAudioControllersRef.current.clear();
+        glossaryAudioPrepControllerRef.current = null;
+        glossaryAudioEditControllerRef.current = null;
         if (glossaryDictionaryAudioRef.current) {
           glossaryDictionaryAudioRef.current.pause();
           glossaryDictionaryAudioRef.current = null;
@@ -803,6 +864,83 @@ function getGlossaryImageAlt(item) {
       };
     }, [screenerSession && screenerSession.status]);
     var flashcardDeck = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+    // Keep a small, local stack of reversible mutations. Receipts restore only
+    // the deleted part of the resource, never an old copy of the whole glossary.
+    var [glossaryUndoActions, setGlossaryUndoActions] = React.useState([]);
+    var glossaryUndoActionsRef = React.useRef([]);
+    var [glossaryUndoAnnouncement, setGlossaryUndoAnnouncement] = React.useState('');
+    var glossaryUndoButtonRef = React.useRef(null);
+    var glossaryUndoFocusRef = React.useRef(null);
+    var glossaryWordListRef = React.useRef(null);
+    React.useEffect(function () {
+      glossaryUndoActionsRef.current = [];
+      glossaryUndoFocusRef.current = null;
+      setGlossaryUndoActions([]);
+      setGlossaryUndoAnnouncement('');
+    }, [activityResourceKey, isTeacherMode]);
+    React.useEffect(function () {
+      var focus = glossaryUndoFocusRef.current;
+      if (!focus) return;
+      glossaryUndoFocusRef.current = null;
+      if (focus.undo && glossaryUndoButtonRef.current) {
+        glossaryUndoButtonRef.current.focus({ preventScroll: true });
+        return;
+      }
+      var list = glossaryWordListRef.current;
+      var row = focus.entryKey && list && Array.from(list.querySelectorAll('[data-glossary-entry-key]')).find(node => node.getAttribute('data-glossary-entry-key') === focus.entryKey);
+      var target = row?.querySelector('textarea, input, button:not([disabled])') || list;
+      target?.focus({ preventScroll: true });
+    }, [glossaryUndoActions]);
+    function rememberGlossaryDeletion(index, kind, event) {
+      if (!canEditGlossary) return;
+      var remove = kind === 'image' ? deleteGlossaryImageInHost : deleteGlossaryTermInHost;
+      if (typeof remove !== 'function') return;
+      var item = generatedContent?.data?.[index];
+      var heldFocus = !!event?.currentTarget && document.activeElement === event.currentTarget;
+      var receipt = remove(index);
+      // Older embedded hosts can still delete but cannot yet return a receipt.
+      if (!receipt || typeof receipt.undo !== 'function' || String(receipt.resourceId) !== String(generatedContent?.id)) return;
+      var action = { receipt: receipt, entryKey: getGlossaryEntryKey(item, index),
+        message: kind === 'image' ? glossaryText('glossary.undo_image_removed', 'Removed image for {term}.', { term: receipt.term })
+          : glossaryText('glossary.undo_term_deleted', 'Deleted {term}.', { term: receipt.term }) };
+      var actions = glossaryUndoActionsRef.current.slice(-9).concat(action);
+      glossaryUndoActionsRef.current = actions;
+      if (heldFocus) glossaryUndoFocusRef.current = { undo: true };
+      setGlossaryUndoActions(actions);
+      setGlossaryUndoAnnouncement(action.message + ' ' + glossaryText('glossary.undo_available', 'Undo is available.'));
+    }
+    function handleDeleteGlossaryItem(index, event) { rememberGlossaryDeletion(index, 'term', event); }
+    function handleDeleteTermImage(index, event) { rememberGlossaryDeletion(index, 'image', event); }
+    function undoGlossaryDeletion() {
+      var actions = glossaryUndoActionsRef.current;
+      var action = actions[actions.length - 1];
+      if (!action || !isTeacherMode) return;
+      var restored = false;
+      try { restored = action.receipt.undo() === true; } catch (_error) { /* Preserve newer edits if restoration is no longer possible. */ }
+      var remaining = actions.slice(0, -1);
+      glossaryUndoActionsRef.current = remaining;
+      glossaryUndoFocusRef.current = { entryKey: restored ? action.entryKey : null };
+      setGlossaryUndoActions(remaining);
+      setGlossaryUndoAnnouncement(restored
+        ? glossaryText('glossary.undo_restored', 'Restored {term}.', { term: action.receipt.term })
+        : glossaryText('glossary.undo_unavailable', 'This deletion could not be undone because the glossary changed.'));
+    }
+    function dismissGlossaryUndo() {
+      glossaryUndoActionsRef.current = [];
+      glossaryUndoFocusRef.current = {};
+      setGlossaryUndoActions([]);
+      setGlossaryUndoAnnouncement('');
+    }
+    function renderGlossaryUndoNotice() {
+      var action = glossaryUndoActions[glossaryUndoActions.length - 1];
+      if (!isTeacherMode) return null;
+      var buttonClass = 'min-h-11 shrink-0 rounded-lg px-3 py-2 text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
+      return <><p data-glossary-undo-status role="status" aria-live="polite" aria-atomic="true" className="sr-only print:hidden">{glossaryUndoAnnouncement}</p>{action && <><div aria-hidden="true" className="h-28 print:hidden" /><div data-glossary-undo className="fixed bottom-4 left-4 right-4 z-40 mx-auto flex max-w-lg flex-wrap items-center gap-2 rounded-xl border border-indigo-300 bg-white p-3 text-slate-900 shadow-lg print:hidden">
+        <p className="min-w-0 flex-1 line-clamp-2 break-words text-sm" title={action.message}>{action.message}</p>
+        <button ref={glossaryUndoButtonRef} data-glossary-undo-action type="button" onClick={undoGlossaryDeletion} className={buttonClass + ' bg-indigo-700 text-white hover:bg-indigo-800'} aria-label={action.receipt.kind === 'image' ? glossaryText('glossary.undo_image_aria', 'Undo image removal for {term}', { term: action.receipt.term }) : glossaryText('glossary.undo_term_aria', 'Undo deletion of {term}', { term: action.receipt.term })}>{glossaryText('glossary.undo', 'Undo')}</button>
+        <button type="button" onClick={dismissGlossaryUndo} className={buttonClass + ' min-w-11 text-slate-600 hover:bg-slate-100'} aria-label={glossaryText('glossary.undo_dismiss', 'Dismiss undo')}><X size={18} aria-hidden="true" /></button>
+      </div></>}</>;
+    }
     function getGlossaryEntryKey(item, idx) {
       if (item && item.entryId != null && String(item.entryId).trim()) return 'entry:' + String(item.entryId);
       if (item && item.glossaryEntryId != null && String(item.glossaryEntryId).trim()) return 'entry:' + String(item.glossaryEntryId);
@@ -837,6 +975,12 @@ function getGlossaryImageAlt(item) {
       };
       return glossaryText('glossary.' + (stopping ? 'stop_' : 'read_') + field + '_aria', labels[field], { term: term, lang: lang });
     }
+    function handleGlossaryInputEnter(event, callback, disabled) {
+      if (event.key !== 'Enter' || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+      event.preventDefault();
+      if (event.repeat || disabled) return;
+      callback();
+    }
     React.useEffect(function () {
       setFlashcardSummary(false); setFlashcardRoundKeys(null); setFlashcardReviewState({});
       flashcardNavigationRef.current += 1; clearTimeout(flashcardMoveTimerRef.current);
@@ -851,24 +995,21 @@ function getGlossaryImageAlt(item) {
     var flashcardDefinitionLabel = t('flashcards.back_label_def') || t('glossary.table_def') || '';
     var flashcardKnownLabel = t('common.correct') || t('flashcards.correct_msg') || '';
     var flashcardLearningLabel = t('flashcards.try_again') || t('flashcards.practice_mode') || '';
-    var audioReviewLabel = t('common.listen') || t('common.read') || '';
-    var audioStopLabel = t('common.stop') || '';
-    var audioGenerateLabel = t('common.generate') || '';
-    var audioRegenerateLabel = t('common.regenerate') || '';
-    var audioProcessingLabel = t('common.processing') || '';
-    var audioSuccessLabel = t('common.success') || '';
-    var audioErrorLabel = t('common.error') || '';
-    var glossaryPrepareAudioLabel = t('common.download_audio') || '';
-    var glossaryPreparingAudioLabel = t('common.processing') || '';
+    var audioReviewLabel = glossaryText('common.listen', 'Listen');
+    var audioStopLabel = glossaryText('common.stop', 'Stop');
+    var audioGenerateLabel = glossaryText('common.generate', 'Generate');
+    var audioRegenerateLabel = glossaryText('common.regenerate', 'Regenerate');
+    var glossaryPrepareAudioLabel = glossaryText('glossary.prepare_audio', 'Prepare audio');
+    var glossaryPreparingAudioLabel = glossaryText('glossary.preparing_audio', 'Preparing audio…');
     var glossaryProgressLabel = t('common.progress') || '';
     var glossaryQuizToggleLabel = t('flashcards.tooltip_toggle_quiz') || '';
     var glossaryNextLabel = t('flashcards.next') || t('common.next_flashcard') || '';
     var glossarySkipLabel = t('common.skip') || '';
     var glossaryDoneLabel = t('common.done') || '';
-    var audioFieldLabel = function (field) {
-      return field === 'term' ? flashcardTermLabel : field === 'definition' ? flashcardDefinitionLabel : (t('glossary.edit_translation') || '');
+    var audioFieldLabel = function (field, language) {
+      return field === 'term' ? flashcardTermLabel : field === 'definition' ? flashcardDefinitionLabel : glossaryText('glossary.audio_translation_field', '{lang} translation', { lang: language || '' });
     };
-    var flashcardStatusText = currentFlashcardItem ? flashcardTermLabel + ' ' + (flashcardIndex + 1) + ' of ' + flashcardDeck.length + ': ' + (currentFlashcardItem.term || flashcardTermLabel.toLowerCase()) + '. ' + (isFlashcardFlipped ? flashcardDefinitionLabel + ' side.' : flashcardTermLabel + ' side.') + ' ' + (currentFlashcardConfidence === 'known' ? flashcardKnownLabel + '.' : currentFlashcardConfidence === 'learning' ? flashcardLearningLabel + '.' : (t('common.progress') || '') + '.') : '';
+    var flashcardStatusText = currentFlashcardItem ? flashcardTermLabel + ' ' + (flashcardRoundPosition + 1) + ' of ' + flashcardRoundIndices.length + ': ' + (currentFlashcardItem.term || flashcardTermLabel.toLowerCase()) + '. ' + (isFlashcardFlipped ? flashcardDefinitionLabel + ' side.' : flashcardTermLabel + ' side.') + ' ' + (currentFlashcardConfidence === 'known' ? flashcardKnownLabel + '.' : currentFlashcardConfidence === 'learning' ? flashcardLearningLabel + '.' : (t('common.progress') || '') + '.') : '';
     React.useEffect(function () {
       if (!isFlashcardEditDrawerOpen) return;
       var timer = setTimeout(function () {
@@ -1169,9 +1310,34 @@ function getGlossaryImageAlt(item) {
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     }
+    // Search feedback and selection describe the same data shown by the host.
+    // Keep the visible result count immediate, but wait for typing to settle
+    // before announcing it. Selection always covers the complete glossary.
+    var glossarySearchInputRef = React.useRef(null);
+    var glossaryAllWords = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+    var glossaryResultCount = Array.isArray(filteredGlossaryData) ? filteredGlossaryData.length : 0;
+    var glossaryTotalCount = glossaryAllWords.length;
+    var glossarySelectedCount = glossaryAllWords.filter(function (item) { return item && item.isSelected !== false; }).length;
+    var glossaryAllSelected = glossaryTotalCount > 0 && glossarySelectedCount === glossaryTotalCount;
+    var glossarySomeSelected = glossarySelectedCount > 0 && !glossaryAllSelected;
+    var glossaryHasFilters = !!String(glossarySearchTerm || '').trim() || glossaryFilter === 'academic' || glossaryFilter === 'domain';
+    var glossaryResultText = glossaryText('glossary.result_count', '{shown} of {total} words', { shown: glossaryResultCount, total: glossaryTotalCount });
+    var [glossarySearchAnnouncement, setGlossarySearchAnnouncement] = React.useState('');
+    React.useEffect(function () {
+      var timer = setTimeout(function () { setGlossarySearchAnnouncement(glossaryResultText); }, 300);
+      return function () { clearTimeout(timer); };
+    }, [glossarySearchTerm, glossaryFilter, glossaryResultText, activityResourceKey]);
+    function focusGlossarySearch() {
+      if (glossarySearchInputRef.current) glossarySearchInputRef.current.focus({ preventScroll: true });
+    }
+    function clearGlossarySearch() {
+      if (typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm('');
+      focusGlossarySearch();
+    }
     function clearGlossaryFilters() {
       if (typeof handleSetGlossaryFilterToAll === 'function') handleSetGlossaryFilterToAll();
       if (typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm('');
+      focusGlossarySearch();
     }
     // ── G6: the phantom "no words match your search" ────────────────────────
     // The old empty state claimed "No terms match this search or vocabulary
@@ -1378,52 +1544,65 @@ function getGlossaryImageAlt(item) {
     }
     function inspectGlossaryAudio(item, field, spokenText, language) {
       var inspect = typeof window !== 'undefined' ? window.__alloInspectGlossaryAudio : null;
-      if (typeof inspect !== 'function' || !String(spokenText == null ? '' : spokenText).trim()) {
-        return { status: 'missing', source: null };
-      }
+      if (!String(spokenText == null ? '' : spokenText).trim()) return { status: 'empty', source: null };
+      if (typeof inspect !== 'function') return { status: 'unavailable', source: null };
       try {
         return inspect(makeGlossaryAudioRequest(item, field, spokenText, language), {
           reason: 'glossary-edit-review'
-        }) || { status: 'missing', source: null };
+        }) || { status: 'unavailable', source: null };
       } catch (_) {
-        return { status: 'missing', source: null };
+        return { status: 'unavailable', source: null };
       }
+    }
+    function cancelGlossaryClipAudio(item, field, language) {
+      var controller = glossaryAudioEditControllerRef.current;
+      if (!controller) return;
+      var clip = controller.glossaryClipInfo || {};
+      controller.abort();
+      glossaryAudioEditControllerRef.current = null;
+      glossaryAudioControllersRef.current.delete(controller);
+      setGlossaryAudioEditState({ busyKey: '', message: glossaryText('glossary.audio_clip_stopped', 'Audio preparation stopped for {field}: {term}.', { field: audioFieldLabel(field || clip.field, language || clip.language), term: item?.term || clip.term || '' }) });
     }
     async function handleRegenerateGlossaryAudio(item, field, spokenText, contentId, language) {
       var text = String(spokenText == null ? '' : spokenText).trim();
-      if (!text || glossaryAudioEditState.busyKey) return;
+      if (!text || glossaryAudioEditControllerRef.current || glossaryAudioPrepControllerRef.current) return;
       var regenerate = typeof window !== 'undefined' ? window.__alloRegenerateGlossaryAudio : null;
       if (typeof regenerate !== 'function') {
-        var unavailableMessage = t('common.processing');
+        var unavailableMessage = glossaryText('glossary.audio_preparation_unavailable', 'Audio preparation is unavailable. Reload AlloFlow and try again.');
         setGlossaryAudioEditState({ busyKey: '', message: unavailableMessage });
         if (typeof addToast === 'function') addToast(unavailableMessage, 'info');
         return;
       }
       var audioOwner = glossaryAudioOwnerRef.current;
       var controller = new AbortController();
+      controller.glossaryClipInfo = { term: item?.term || '', field: field, language: language };
+      glossaryAudioEditControllerRef.current = controller;
       glossaryAudioControllersRef.current.add(controller);
       var request = makeGlossaryAudioRequest(item, field, text, language);
-      var inspection = inspectGlossaryAudio(item, field, text, language);
-      var wasSaved = inspection.status === 'ready' || inspection.status === 'stale' || inspection.status === 'corrupt';
+      var messageParams = { field: audioFieldLabel(field, language), term: item?.term || '' };
+      function current() { return !controller.signal.aborted && glossaryAudioEditControllerRef.current === controller && isGlossaryAudioCurrent(audioOwner); }
       stopGlossarySavedAudio(true);
       if (typeof stopPlayback === 'function') stopPlayback();
       setGlossaryAudioEditState({
         busyKey: contentId,
-        message: (wasSaved ? audioRegenerateLabel : audioGenerateLabel) + ': ' + audioFieldLabel(field) + ' ' + (item?.term || '')
+        message: glossaryText('glossary.audio_clip_preparing', 'Preparing {field} audio for {term}…', messageParams)
       });
       try {
         var url = await regenerate(request, { reason: 'glossary-edit-regenerate', signal: controller.signal });
-        if (!isGlossaryAudioCurrent(audioOwner)) return;
+        if (!current()) return;
         if (!url) throw new Error('No audio was returned');
-        var successMessage = (wasSaved ? audioRegenerateLabel : audioGenerateLabel) + ': ' + audioFieldLabel(field) + ' ' + (item?.term || '')
+        var successMessage = glossaryText('glossary.audio_clip_ready', 'Audio ready for {field}: {term}.', messageParams);
         setGlossaryAudioEditState({ busyKey: '', message: successMessage });
         if (typeof addToast === 'function') addToast(successMessage, 'success');
       } catch (_) {
-        if (!isGlossaryAudioCurrent(audioOwner)) return;
-        var failureMessage = audioErrorLabel + ': ' + audioFieldLabel(field) + ' ' + (item?.term || '')
+        if (!current()) return;
+        var failureMessage = glossaryText('glossary.audio_clip_failed', 'Audio could not be prepared for {field}: {term}. Try again.', messageParams);
         setGlossaryAudioEditState({ busyKey: '', message: failureMessage });
         if (typeof addToast === 'function') addToast(failureMessage, 'error');
-      } finally { glossaryAudioControllersRef.current.delete(controller); }
+      } finally {
+        glossaryAudioControllersRef.current.delete(controller);
+        if (glossaryAudioEditControllerRef.current === controller) glossaryAudioEditControllerRef.current = null;
+      }
     }
     function renderGlossaryEditAudioTools(item, field, spokenText, contentId, language) {
       var inspection = inspectGlossaryAudio(item, field, spokenText, language);
@@ -1433,9 +1612,15 @@ function getGlossaryImageAlt(item) {
       var isBusy = glossaryAudioEditState.busyKey === contentId;
       var anyAudioEditBusy = !!glossaryAudioEditState.busyKey;
       var isThisPlaying = playingContentId === contentId;
-      var fieldLabel = audioFieldLabel(field);
-      var statusLabel = isReady ? audioSuccessLabel : needsRebuild ? audioProcessingLabel : audioErrorLabel;
-      var actionLabel = isReady ? audioRegenerateLabel : audioGenerateLabel;
+      var fieldLabel = audioFieldLabel(field, language);
+      var statusLabel = isBusy ? glossaryPreparingAudioLabel : isReady ? glossaryText('glossary.audio_ready', 'Ready')
+        : status === 'corrupt' ? glossaryText('glossary.audio_unavailable', 'Audio unavailable')
+        : needsRebuild ? glossaryText('glossary.audio_needs_update', 'Needs update')
+        : status === 'empty' ? glossaryText('glossary.audio_no_text', 'No text')
+        : status === 'unavailable' ? glossaryText('glossary.audio_unavailable', 'Audio unavailable')
+        : glossaryText('glossary.audio_not_prepared', 'Not prepared');
+      var actionLabel = isBusy ? glossaryText('common.cancel', 'Cancel') : isReady || needsRebuild ? audioRegenerateLabel : audioGenerateLabel;
+      var actionName = isBusy ? glossaryText('glossary.audio_cancel_clip', 'Cancel preparing {field} audio for {term}', { field: fieldLabel, term: item?.term || '' }) : actionLabel + ': ' + fieldLabel + ' ' + (item?.term || '');
       var statusClass = isReady
         ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
         : needsRebuild
@@ -1443,31 +1628,44 @@ function getGlossaryImageAlt(item) {
           : 'border-slate-300 bg-slate-50 text-slate-700';
       var actionClass = 'min-h-11 inline-flex items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:cursor-not-allowed disabled:opacity-50';
       return <div role="group" aria-label={audioReviewLabel + ': ' + fieldLabel + ' ' + (item?.term || '')} className="mt-1 flex flex-wrap items-center justify-center gap-1.5">
-        <span className={'inline-flex min-h-7 items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-bold ' + statusClass}>{isReady ? <CheckCircle2 size={10} aria-hidden="true" /> : <AlertCircle size={10} aria-hidden="true" />}{statusLabel}</span>
-        <button type="button" onClick={() => handleGlossarySpeak(item, field, spokenText, contentId, language)} disabled={!isReady || isBusy || (isGeneratingAudio && !isThisPlaying)} aria-pressed={isThisPlaying} aria-label={(isThisPlaying ? audioStopLabel : audioReviewLabel) + ': ' + fieldLabel + ' ' + (item?.term || '')} title={isReady ? (isThisPlaying ? audioStopLabel : audioReviewLabel) : audioGenerateLabel} className={actionClass + ' border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'}>{isThisPlaying ? <StopCircle size={12} aria-hidden="true" /> : <Volume2 size={12} aria-hidden="true" />}<span>{isThisPlaying ? audioStopLabel : audioReviewLabel}</span></button>
-        <button type="button" onClick={() => handleRegenerateGlossaryAudio(item, field, spokenText, contentId, language)} disabled={!String(spokenText == null ? '' : spokenText).trim() || anyAudioEditBusy || isGeneratingAudio} aria-label={actionLabel + ': ' + fieldLabel + ' ' + (item?.term || '')} title={actionLabel} className={actionClass + ' border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50'}>{isBusy ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={12} aria-hidden="true" />}<span>{isBusy ? (isReady || needsRebuild ? audioRegenerateLabel : audioGenerateLabel) : actionLabel}</span></button>
+        <span data-glossary-audio-status className={'inline-flex min-h-7 items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-bold ' + statusClass}>{isBusy ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : isReady ? <CheckCircle2 size={10} aria-hidden="true" /> : needsRebuild || status === 'unavailable' ? <AlertCircle size={10} aria-hidden="true" /> : null}{statusLabel}</span>
+        <button type="button" onClick={() => handleGlossarySpeak(item, field, spokenText, contentId, language)} disabled={!isThisPlaying && (!isReady || anyAudioEditBusy || glossaryAudioPrep.busy || isGeneratingAudio)} aria-label={(isThisPlaying ? audioStopLabel : audioReviewLabel) + ': ' + fieldLabel + ' ' + (item?.term || '')} title={(isThisPlaying ? audioStopLabel : audioReviewLabel) + ': ' + fieldLabel + ' ' + (item?.term || '')} className={actionClass + ' border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'}>{isThisPlaying ? <StopCircle size={12} aria-hidden="true" /> : <Volume2 size={12} aria-hidden="true" />}<span>{isThisPlaying ? audioStopLabel : audioReviewLabel}</span></button>
+        <button type="button" onClick={() => isBusy ? cancelGlossaryClipAudio(item, field, language) : handleRegenerateGlossaryAudio(item, field, spokenText, contentId, language)} disabled={!isBusy && (!String(spokenText == null ? '' : spokenText).trim() || anyAudioEditBusy || glossaryAudioPrep.busy || isGeneratingAudio)} aria-busy={isBusy} aria-label={actionName} title={actionName} className={actionClass + ' border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50'}>{isBusy ? <StopCircle size={12} aria-hidden="true" /> : <Volume2 size={12} aria-hidden="true" />}<span>{actionLabel}</span></button>
       </div>;
     }
+    function stopPreparingGlossaryAudio() {
+      var controller = glossaryAudioPrepControllerRef.current;
+      if (!controller) return;
+      controller.abort();
+      glossaryAudioPrepControllerRef.current = null;
+      glossaryAudioControllersRef.current.delete(controller);
+      setGlossaryAudioPrep(prev => ({ ...prev, busy: false, message: glossaryText('glossary.audio_preparation_stopped', 'Audio preparation stopped. Completed clips are kept.') }));
+    }
     async function handlePrepareGlossaryAudio() {
-      if (glossaryAudioPrep.busy) return;
+      if (glossaryAudioPrepControllerRef.current || glossaryAudioEditControllerRef.current || !generatedContent?.data?.length) return;
       var includeDefinitions = glossaryAudioScope !== 'terms';
       var preparedLanguages = glossaryAudioScope === 'all' ? glossaryLanguages.slice() : [];
       var prepare = typeof window !== 'undefined' ? window.__alloPrepareGlossaryAudio : null;
       if (typeof prepare !== 'function') {
-        var unavailableMessage = 'Audio preparation is not available in this build yet.';
+        var unavailableMessage = glossaryText('glossary.audio_preparation_unavailable', 'Audio preparation is unavailable. Reload AlloFlow and try again.');
         setGlossaryAudioPrep({ busy: false, done: 0, total: 0, message: unavailableMessage });
         if (typeof addToast === 'function') addToast(unavailableMessage, 'info');
         return;
       }
       var audioOwner = glossaryAudioOwnerRef.current;
       var controller = new AbortController();
+      glossaryAudioPrepControllerRef.current = controller;
       glossaryAudioControllersRef.current.add(controller);
+      stopGlossarySavedAudio(true);
+      if (typeof stopPlayback === 'function') stopPlayback();
       setGlossaryAudioPrep({ busy: true, done: 0, total: 0, message: glossaryPreparingAudioLabel });
+      function current() { return !controller.signal.aborted && glossaryAudioPrepControllerRef.current === controller && isGlossaryAudioCurrent(audioOwner); }
       function updateGlossaryAudioProgress(doneOrProgress, total, segment) {
-        if (!isGlossaryAudioCurrent(audioOwner)) return;
+        if (!current()) return;
         var progress = doneOrProgress && typeof doneOrProgress === 'object' ? doneOrProgress : { done: doneOrProgress, total: total, segment: segment };
-        var done = Number(progress.done ?? progress.prepared ?? progress.ready ?? 0);
-        var count = Number(progress.total ?? progress.count ?? total ?? 0);
+        var count = Math.max(0, Number(progress.total ?? progress.count ?? total ?? 0) || 0);
+        var done = Math.max(0, Number(progress.done ?? progress.prepared ?? progress.ready ?? 0) || 0);
+        if (count > 0) done = Math.min(done, count);
         setGlossaryAudioPrep({
           busy: true,
           done: Number.isFinite(done) ? done : 0,
@@ -1477,35 +1675,42 @@ function getGlossaryImageAlt(item) {
       }
       try {
         var result = await prepare({ includeTerms: true, includeDefinitions: includeDefinitions, languages: preparedLanguages }, updateGlossaryAudioProgress, { source: 'glossary-teacher-tools', signal: controller.signal });
-        if (!isGlossaryAudioCurrent(audioOwner)) return;
-        if (result && result.ok === false && !result.cancelled) throw new Error(result.error || 'Audio preparation failed');
-        var ready = Number(result && (result.ready ?? result.prepared ?? result.total));
-        var total = Number(result && (result.total ?? result.ready ?? result.prepared));
-        var generated = Number(result && (result.generated ?? result.prepared ?? 0));
-        var finalMessage = result && result.cancelled
-          ? 'Audio preparation stopped.'
-          : Number.isFinite(ready) && ready > 0
-            ? ready + '/' + (Number.isFinite(total) && total > 0 ? total : ready) + ' audio clips ready' + (Number.isFinite(generated) && generated > 0 ? ' (' + generated + ' generated)' : '') + '. Saved with this resource/project.'
-            : 'Audio saved with this resource/project.';
-        setGlossaryAudioPrep({ busy: false, done: Number.isFinite(ready) ? ready : 0, total: Number.isFinite(total) ? total : (Number.isFinite(ready) ? ready : 0), message: finalMessage });
-        if (typeof addToast === 'function') addToast(finalMessage, result && result.cancelled ? 'info' : 'success');
+        if (!current()) return;
+        if (!result || typeof result !== 'object') throw new Error('No preparation result');
+        function count(value) { var number = Number(value); return Number.isFinite(number) ? Math.max(0, number) : 0; }
+        var total = count(result.total ?? result.ready ?? result.prepared);
+        var ready = Math.min(total, count(result.ready ?? result.prepared));
+        var partial = result.ok === false || count(result.failed) > 0 || count(result.remaining) > 0 || ready < total;
+        var finalMessage = result.cancelled ? glossaryText('glossary.audio_preparation_stopped', 'Audio preparation stopped. Completed clips are kept.')
+          : partial ? glossaryText('glossary.audio_preparation_partial', '{ready} of {total} audio clips ready. Some clips could not be prepared. Try again to finish.', { ready: ready, total: total })
+          : total > 0 ? glossaryText('glossary.audio_preparation_ready', '{ready} of {total} audio clips ready. Saved with this glossary.', { ready: ready, total: total })
+          : glossaryText('glossary.audio_preparation_empty', 'No audio clips to prepare for this selection.');
+        setGlossaryAudioPrep({ busy: false, done: ready, total: total, message: finalMessage });
+        if (typeof addToast === 'function') addToast(finalMessage, result.cancelled || partial || !total ? 'info' : 'success');
       } catch (error) {
-        if (!isGlossaryAudioCurrent(audioOwner)) return;
-        var failureMessage = error && error.message ? error.message : 'Audio preparation failed.';
-        setGlossaryAudioPrep({ busy: false, done: 0, total: 0, message: failureMessage });
+        if (!current()) return;
+        var failureMessage = glossaryText('glossary.audio_preparation_failed', 'Audio preparation could not finish. Completed clips are kept. Try again.');
+        setGlossaryAudioPrep(prev => ({ ...prev, busy: false, message: failureMessage }));
         if (typeof addToast === 'function') addToast(failureMessage, 'error');
-      } finally { glossaryAudioControllersRef.current.delete(controller); }
+      } finally {
+        glossaryAudioControllersRef.current.delete(controller);
+        if (glossaryAudioPrepControllerRef.current === controller) glossaryAudioPrepControllerRef.current = null;
+      }
     }
     function renderGlossaryAudioReviewPanel() {
       if (!isTeacherMode || !isEditingGlossary || !Array.isArray(generatedContent?.data) || generatedContent.data.length === 0) return null;
+      var reviewWords = Array.isArray(filteredGlossaryData) ? filteredGlossaryData : [];
       return <div id="glossary-edit-audio-review" role="region" aria-labelledby="glossary-edit-audio-review-title" className="rounded-xl border border-violet-200 bg-white p-3 shadow-sm" data-help-key="glossary_audio_review">
-        <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-          <div><h3 id="glossary-edit-audio-review-title" className="text-sm font-black text-violet-950">{t('common.review_and_edit_word_list')}</h3><p className="mt-0.5 text-xs text-slate-600">{t('common.play_audio_sequence')}</p></div>
-          <span className="w-fit rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-bold text-violet-800">{t('common.voice_input')} · {t('common.speed')} · {t('common.target_language_selector')}</span>
-        </div>
-        {glossaryAudioEditState.message && <p role="status" aria-live="polite" className="mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800">{glossaryAudioEditState.message}</p>}
-        <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1 custom-scrollbar">{generatedContent.data.map(function (item, idx) {
+        <h3 id="glossary-edit-audio-review-title"><button type="button" data-glossary-audio-review-toggle aria-expanded={isGlossaryAudioReviewOpen} aria-controls="glossary-edit-audio-review-content" aria-describedby="glossary-edit-audio-review-help" onClick={() => setIsGlossaryAudioReviewOpen(open => !open)} className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg text-start text-sm font-black text-violet-950 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><span>{glossaryText('glossary.audio_review_title', 'Review and prepare audio')}</span><ChevronDown size={16} aria-hidden="true" className={'shrink-0 ' + (isGlossaryAudioReviewOpen ? 'rotate-180' : '')} /></button></h3>
+        <p id="glossary-edit-audio-review-help" className="mt-0.5 text-xs text-slate-600">{glossaryText('glossary.audio_review_help', 'Review audio for terms, definitions, and translations. Search and filters apply to this list.')}</p>
+        <p role="status" aria-live="polite" className={glossaryAudioEditState.message ? 'mt-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800' : 'sr-only'}>{glossaryAudioEditState.message}</p>
+        {glossaryAudioEditState.busyKey && <button type="button" onClick={e => { cancelGlossaryClipAudio(); e.currentTarget.closest('#glossary-edit-audio-review')?.querySelector('[data-glossary-audio-review-toggle]')?.focus(); }} className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"><StopCircle size={14} aria-hidden="true" />{glossaryText('glossary.audio_cancel_preparation', 'Cancel audio preparation')}</button>}
+        <div id="glossary-edit-audio-review-content" hidden={!isGlossaryAudioReviewOpen}>{isGlossaryAudioReviewOpen && <>
+        <p className="my-3 text-xs font-semibold text-slate-700">{glossaryText('glossary.audio_review_count', 'Showing {shown} of {total} words.', { shown: reviewWords.length, total: generatedContent.data.length })}</p>
+        {reviewWords.length === 0 && <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">{glossaryText('glossary.audio_review_no_matches', 'No words match the current search and filters. Clear or adjust them to review audio.')}</p>}
+        <div className="max-h-[34rem] space-y-2 overflow-y-auto pr-1 custom-scrollbar">{reviewWords.map(function (item) {
           if (!item || typeof item !== 'object') return null;
+          var idx = item._originalIdx;
           return <article key={'audio-review-' + getGlossaryEntryKey(item, idx)} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
             <h4 className="mb-2 text-sm font-black text-slate-900">{item.term || t('common.untitled')}</h4>
             <div className="grid gap-2 lg:grid-cols-2">
@@ -1518,6 +1723,7 @@ function getGlossaryImageAlt(item) {
             })}</div></details>}
           </article>;
         })}</div>
+        </>}</div>
       </div>;
     }
     function renderGlossaryToolbar() {
@@ -1530,8 +1736,8 @@ function getGlossaryImageAlt(item) {
           {isTeacherMode && <p data-glossary-udl-goal className="max-w-xl text-sm text-blue-800"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('glossary.udl_goal_desc')}</p>}
           <div className="relative w-full sm:max-w-sm" data-help-key="glossary_search">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-700" size={16} aria-hidden="true" />
-            <input type="search" aria-label={t('glossary.search_placeholder')} placeholder={t('glossary.search_placeholder')} value={glossarySearchTerm} onChange={e => setGlossarySearchTerm(e.target.value)} className="min-h-11 w-full rounded-lg border border-blue-400 bg-white py-2 pl-10 pr-11 text-sm focus:ring-2 focus:ring-indigo-500" />
-            {glossarySearchTerm && <button type="button" onClick={() => setGlossarySearchTerm('')} className="absolute right-0 top-0 min-h-11 min-w-11 inline-flex items-center justify-center rounded-r-lg text-blue-700 hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.clear')}><X size={16} aria-hidden="true" /></button>}
+            <input ref={glossarySearchInputRef} type="search" aria-label={t('glossary.search_placeholder')} placeholder={t('glossary.search_placeholder')} value={glossarySearchTerm} onChange={e => setGlossarySearchTerm(e.target.value)} className="min-h-11 w-full rounded-lg border border-blue-400 bg-white py-2 pl-10 pr-11 text-sm focus:ring-2 focus:ring-indigo-500" />
+            {glossarySearchTerm && <button type="button" onClick={clearGlossarySearch} className="absolute right-0 top-0 min-h-11 min-w-11 inline-flex items-center justify-center rounded-r-lg text-blue-700 hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={glossaryText('glossary.clear_search', 'Clear search')}><X size={16} aria-hidden="true" /></button>}
           </div>
         </div>
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -1586,9 +1792,9 @@ function getGlossaryImageAlt(item) {
           {glossaryLanguages.length > 0 && <button type="button" data-help-key="glossary_export_language" onClick={() => handleExportFlashcards('language')} className={secondaryButton}><Languages size={16} aria-hidden="true" /> {t('flashcards.export_language')}</button>}
           <label data-help-key="glossary_image_size" className="min-h-11 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"><ImageIcon size={16} aria-hidden="true" /><span>{t('glossary.image_size_tooltip')}</span><input aria-label={t('glossary.image_size_tooltip')} type="range" min="64" max="300" step="16" value={glossaryImageSize} onChange={e => setGlossaryImageSize(Number(e.target.value))} className="w-24 accent-blue-600" /></label>
           <button type="button" onClick={runCurrentGlossaryHealthCheck} disabled={isRunningHealthCheck || generatedContent?.type !== 'glossary'} className={secondaryButton + ' disabled:opacity-50 disabled:cursor-not-allowed'}>{isRunningHealthCheck ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <CheckCircle2 size={16} aria-hidden="true" />} {isRunningHealthCheck ? t('common.processing') : glossaryHealthCheck ? t('common.refresh') : t('common.check')}</button>
-          <label className="min-h-11 inline-flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-bold text-violet-900"><span>{t('common.download_audio')}</span><select aria-label={t('common.download_audio')} value={glossaryAudioScope} onChange={e => setGlossaryAudioScope(e.target.value)} disabled={glossaryAudioPrep.busy} className="min-h-9 rounded-md border border-violet-300 bg-white px-2 text-sm focus:ring-2 focus:ring-violet-600"><option value="core">{flashcardTermLabel} + {flashcardDefinitionLabel}</option><option value="terms">{flashcardTermLabel}</option>{glossaryLanguages.length > 0 && <option value="all">{flashcardTermLabel} + {flashcardDefinitionLabel} + {t('glossary.edit_translation')}</option>}</select></label>
-          <button type="button" onClick={handlePrepareGlossaryAudio} disabled={glossaryAudioPrep.busy} aria-label={glossaryPrepareAudioLabel} aria-describedby="glossary-audio-prep-status" className={toolButton + ' bg-violet-700 text-white border-violet-700 hover:bg-violet-800 disabled:opacity-60'} data-help-key="glossary_prepare_audio">{glossaryAudioPrep.busy ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />} {glossaryAudioPrep.busy && glossaryAudioPrep.total > 0 ? glossaryAudioPrep.done + '/' + glossaryAudioPrep.total : glossaryPrepareAudioLabel}</button>
-        </div>{glossaryAudioPrep.message && <p id="glossary-audio-prep-status" role="status" aria-live="polite" className="mt-2 text-xs text-slate-600">{glossaryAudioPrep.message}</p>}</div>}
+          <label className="min-h-11 inline-flex min-w-0 max-w-full flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-bold text-violet-900"><span>{glossaryText('glossary.audio_scope', 'Audio to prepare')}</span><select aria-label={glossaryText('glossary.audio_scope', 'Audio to prepare')} aria-describedby="glossary-audio-prep-help" value={glossaryAudioScope} onChange={e => setGlossaryAudioScope(e.target.value)} disabled={glossaryAudioPrep.busy || !!glossaryAudioEditState.busyKey} className="min-h-9 min-w-0 max-w-full rounded-md border border-violet-300 bg-white px-2 text-sm focus:ring-2 focus:ring-violet-600"><option value="core">{glossaryText('glossary.audio_scope_core', 'Terms + definitions')}</option><option value="terms">{glossaryText('glossary.audio_scope_terms', 'Terms only')}</option>{glossaryLanguages.length > 0 && <option value="all">{glossaryText('glossary.audio_scope_all', 'All fields')}</option>}</select></label>
+          <button type="button" onClick={glossaryAudioPrep.busy ? stopPreparingGlossaryAudio : handlePrepareGlossaryAudio} disabled={!glossaryAudioPrep.busy && (!!glossaryAudioEditState.busyKey || !generatedContent?.data?.length)} aria-busy={glossaryAudioPrep.busy} aria-label={glossaryAudioPrep.busy ? glossaryText('glossary.audio_stop_preparing', 'Stop preparing audio') : glossaryPrepareAudioLabel} aria-describedby="glossary-audio-prep-help glossary-audio-prep-status" className={toolButton + ' bg-violet-700 text-white border-violet-700 hover:bg-violet-800 disabled:opacity-60'} data-help-key="glossary_prepare_audio">{glossaryAudioPrep.busy ? <StopCircle size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />} {glossaryAudioPrep.busy ? glossaryText('glossary.audio_stop_preparing', 'Stop preparing audio') : glossaryPrepareAudioLabel}{glossaryAudioPrep.busy && glossaryAudioPrep.total > 0 && <span aria-hidden="true">{glossaryAudioPrep.done}/{glossaryAudioPrep.total}</span>}</button>
+        </div><p id="glossary-audio-prep-help" className="mt-2 text-xs text-slate-600">{glossaryText('glossary.audio_prepare_help', 'Prepares all glossary words and saves recordings for later playback. Existing recordings are reused.')}{glossaryLanguages.length > 0 && <> {glossaryText('glossary.audio_scope_all_help', 'All fields includes translations.')}</>}</p><p id="glossary-audio-prep-status" role="status" aria-live="polite" className="mt-2 text-xs text-slate-600">{glossaryAudioPrep.message}</p></div>}
         <div className="flex flex-col gap-2 border-t border-blue-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
           <div role="group" aria-label={t('glossary.title')} className="inline-flex w-fit max-w-full flex-wrap rounded-lg border border-blue-200 bg-white p-1">
             <button type="button" aria-pressed={glossaryFilter === 'all'} aria-label={t('glossary.filter_all')} data-help-key="glossary_filter_all" onClick={handleSetGlossaryFilterToAll} className={'min-h-11 rounded-md px-3 py-2 text-sm font-bold ' + (glossaryFilter === 'all' ? 'bg-blue-100 text-blue-800' : 'text-slate-700 hover:bg-slate-50')}>{t('glossary.filter_all')}</button>
@@ -1596,6 +1802,11 @@ function getGlossaryImageAlt(item) {
             <button type="button" aria-pressed={glossaryFilter === 'domain'} aria-label={t('glossary.label_tier3')} data-help-key="glossary_filter_tier3" onClick={handleSetGlossaryFilterToDomain} className={'min-h-11 rounded-md px-3 py-2 text-sm font-bold ' + (glossaryFilter === 'domain' ? 'bg-purple-700 text-white' : 'text-slate-700 hover:bg-slate-50')}>{t('glossary.label_tier3')}</button>
           </div>
           <p className="text-xs text-blue-800">{glossaryText('glossary.tier_help', 'Academic vocabulary appears across subjects; subject vocabulary is specific to this topic.')}</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 print:hidden" data-glossary-search-feedback>
+          <p className="text-sm font-semibold text-blue-900" data-glossary-result-count>{glossaryResultText}</p>
+          {glossaryHasFilters && <button type="button" onClick={clearGlossaryFilters} className={secondaryButton}>{glossaryText('glossary.clear_filters', 'Clear filters')}</button>}
+          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-glossary-search-announcement>{glossarySearchAnnouncement}</p>
         </div>
         {renderGlossaryAudioReviewPanel()}
       </section></>;
@@ -1659,12 +1870,12 @@ function getGlossaryImageAlt(item) {
                     }} aria-label={`${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`} title={t('flashcards.tooltip_audio')} className="min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2">{generatedContent?.data[flashcardIndex].def}</button></p><p className="mt-2 text-[11px] leading-snug text-blue-50">{glossaryText('glossary.flashcard_provenance', "Provenance: generated from this lesson's source text and selected grade level.")}</p></div>{standardDeckLang !== 'English Only' && <div className="rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-white uppercase mb-2">{standardDeckLang}</p><p className="text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer"><button type="button" onClick={e => {
                         e.stopPropagation();
                         const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-                        const def = fullTrans.includes(':') ? fullTrans.split(':')[1].trim() : fullTrans;
+                        const def = fullTrans.includes(':') ? fullTrans.substring(fullTrans.indexOf(':') + 1).trim() : fullTrans;
                         handleUncachedGlossarySpeak(def, `fc-back-def-${standardDeckLang}`);
                       }} aria-label={`${t('common.read_translated_definition')}: ${standardDeckLang}`} className="min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2">{(() => {
                           const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || glossaryText('glossary.translation_unavailable', 'Translation not available');
                           if (fullTrans.includes(":")) {
-                            return fullTrans.split(":")[1].trim();
+                            return fullTrans.substring(fullTrans.indexOf(':') + 1).trim();
                           }
                           return fullTrans;
                         })()}</button></p></div>}{generatedContent?.data[flashcardIndex]?.etymology && <div className="mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"><p className="text-xs font-bold text-white uppercase mb-1">📜 {t('glossary.etymology_label') || 'Word roots'}</p><p className="text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer"><button type="button" onClick={e => {
@@ -1698,7 +1909,7 @@ function getGlossaryImageAlt(item) {
                 }}>{risk.label}</p><p className={`text-4xl font-black ${risk.tier === 1 ? 'text-emerald-600' : risk.tier === 2 ? 'text-amber-600' : 'text-red-600'}`}>{risk.avgAccuracy}%</p><p className="text-xs text-slate-600 mt-1">{t('glossary_health.composite_accuracy')}</p>{risk.reasons.length > 0 && <div className="mt-3 space-y-1">{risk.reasons.map((r, ri) => <p key={ri} className="text-xs" style={{
                     color: risk.color
                   }}>{r}</p>)}</div>}</div>;
-            })()}<div className="flex gap-3">{rosterQueue.length > 0 && <button onClick={advanceRoster} className="flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg transition-colors">▶ {glossaryNextLabel} ({rosterQueue[0]})</button>}<button onClick={closeScreenerResults} className={`${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`}>{rosterQueue.length > 0 ? glossarySkipLabel + ' / ' + glossaryDoneLabel : glossaryDoneLabel}</button></div><button onClick={exportScreeningCSV} className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2">📊 Export Screening CSV</button></div></div>}{gameMode === 'wordsearch' && gameData && <div className="mb-6 bg-white p-4 sm:p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in motion-reduce:animate-none fade-in slide-in-from-top-4"><div className="flex flex-wrap justify-between items-center gap-2 mb-4 border-b border-slate-100 pb-2"><div><h3 className="font-bold text-teal-800 text-lg flex items-center gap-2"><Gamepad2 size={20} aria-hidden="true" /> {t('glossary.word_search_title')}</h3><p className="no-print mt-1 text-xs text-slate-600">{glossaryText('glossary.word_search_select_help', 'Select the first and last letter of a word. Use arrow keys inside the grid, then Enter or Space to select.')}</p></div><div className="flex gap-2">{isTeacherMode && <button type="button" onClick={handleToggleShowWordSearchAnswers} className={'min-h-11 text-xs flex items-center gap-1 px-3 py-2 rounded-full font-bold transition-colors ' + (showWordSearchAnswers ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{showWordSearchAnswers ? <Eye size={14} aria-hidden="true" /> : <MousePointerClick size={14} aria-hidden="true" />}{showWordSearchAnswers ? t('glossary.hide_answers') : t('glossary.show_answers')}</button>}{isTeacherMode && <button type="button" onClick={handlePrintGame} className="min-h-11 text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-2 rounded-full font-bold hover:bg-teal-200 transition-colors"><Printer size={14} aria-hidden="true" /> {t('glossary.print_puzzle')}</button>}<button type="button" onClick={handleSetGameModeToNull} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors" aria-label={t('common.close')}><X size={18} aria-hidden="true" /></button></div></div><div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{wordSearchAnnouncement}</div><div id="printable-game-area" className="flex flex-col items-center"><h2 className="hidden print-only font-bold text-xl mb-4">{t('glossary.word_search_title')}</h2><div className="max-w-full overflow-x-auto p-1"><div ref={wordSearchGridRef} id="word-search-grid" role="grid" tabIndex={0} dir={gameData.isRtl ? 'rtl' : 'ltr'} aria-label={(t('glossary.word_search_title') || 'Word search') + '. ' + wordSearchFoundWords.size + ' of ' + gameData.words.length + ' words found.'} aria-rowcount={gameData.grid.length} aria-colcount={gameData.grid[0]?.length || 0} aria-activedescendant={'word-search-cell-' + wordSearchActive.r + '-' + wordSearchActive.c} onKeyDown={handleWordSearchGridKeyDown} className="inline-grid gap-0 border-2 border-slate-800 bg-white p-1 focus-visible:ring-4 focus-visible:ring-teal-500 focus-visible:ring-offset-2" style={{ gridTemplateColumns: 'repeat(' + (gameData.grid[0]?.length || 0) + ', minmax(2rem, 2.25rem))' }}>{gameData.grid.map((row, r) => <div key={r} role="row" className="contents">{row.map((char, c) => { var key = wordSearchCellKey(r, c); var active = wordSearchActive.r === r && wordSearchActive.c === c; var inPath = wordSearchPath.includes(key); var foundCell = isWordSearchFoundCell(key); var isAnswer = gameData.solutions && gameData.solutions.includes(key); var highlightClass = showWordSearchAnswers && isAnswer ? 'bg-green-200 text-green-900 font-extrabold' : foundCell ? 'bg-emerald-100 text-emerald-900' : inPath ? 'bg-yellow-200 text-black' : 'bg-white text-slate-700 hover:bg-slate-50'; return <div key={c} id={'word-search-cell-' + r + '-' + c} role="gridcell" aria-rowindex={r + 1} aria-colindex={c + 1} aria-selected={active} aria-label={(t('glossary.word_search_cell_aria') || 'Cell') + ' ' + (r + 1) + '-' + (c + 1) + ': ' + char} onClick={() => { submitWordSearchCell(r, c); wordSearchGridRef.current?.focus({ preventScroll: true }); }} className={'w-8 h-8 sm:w-9 sm:h-9 border border-slate-400 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell ' + (active ? 'ring-2 ring-inset ring-teal-600 z-10 ' : '') + highlightClass}>{char}</div>; })}</div>)}</div></div><div className="mt-4 text-sm font-bold text-teal-800" role="status">Found {wordSearchFoundWords.size} of {gameData.words.length}</div><div className="mt-3 w-full max-w-md"><h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">{t('glossary.word_search_find')}</h4><div className="flex flex-wrap justify-center gap-x-6 gap-y-2 word-list">{gameData.words.map((word, i) => { var isFound = wordSearchFoundWords.has(word) || (foundWords && typeof foundWords.has === 'function' && foundWords.has(word)); return <span key={i} className={'text-sm font-medium px-2 py-1 rounded transition-all flex items-center gap-1 print:bg-transparent print:p-0 ' + (isFound ? 'bg-green-100 text-green-800 line-through opacity-70 decoration-green-600' : 'text-slate-700 bg-slate-100')}>{isFound && <CheckCircle2 size={12} className="inline" aria-hidden="true" />}{word}</span>; })}</div></div></div></div>}{canEditGlossary && <div data-help-key="glossary_add_term" className="flex flex-col sm:flex-row gap-2 mb-4 bg-white p-3 rounded-lg border border-slate-400 shadow-sm sm:items-center animate-in motion-reduce:animate-none fade-in slide-in-from-top-2"><div className="hidden sm:block shrink-0 bg-indigo-100 p-2 rounded-full text-indigo-600"><Plus size={16} /></div><div className="w-full sm:w-1/3 min-w-0 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2"><label className="block text-[11px] font-bold text-indigo-900 mb-1">Image style</label><select aria-label="Glossary image style source" data-help-key="glossary_image_style_mode" value={glossaryStyleMode} onChange={handleGlossaryStyleModeChange} disabled={isAddingTerm} className="w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs focus:ring-2 focus:ring-indigo-500"><option value="inherit">Use Universal style</option><option value="override">Override for this resource</option></select>{glossaryStyleMode === 'inherit' ? <p className="mt-1 text-[10px] leading-snug text-indigo-800">{String(universalImageStyle || '').trim() ? 'Using Universal style: ' + String(universalImageStyle).trim() : 'No Universal style is set; the app default will be used.'}</p> : <input aria-label={t('common.enter_glossary_image_style')} data-help-key="glossary_image_style" type="text" value={glossaryImageStyle} onChange={e => setGlossaryImageStyle(e.target.value)} placeholder={t('glossary.style_placeholder')} className="mt-2 w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500" disabled={isAddingTerm} />}<p className="mt-1 text-[10px] leading-snug text-slate-600">Applies to new or regenerated term images.</p></div><input aria-label={t('common.enter_new_glossary_term')} type="text" value={newGlossaryTerm} onChange={e => setNewGlossaryTerm(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddGlossaryTerm()} placeholder={t('glossary.add_term_placeholder')} className="w-full min-w-0 flex-1 text-sm border border-slate-300 sm:border-none py-2 px-2 focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded" disabled={isAddingTerm} /><button onClick={handleAddGlossaryTerm} disabled={!newGlossaryTerm.trim() || isAddingTerm} className="w-full sm:w-auto shrink-0 justify-center text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">{isAddingTerm ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Sparkles size={12} className="text-yellow-700 fill-current" />}{isAddingTerm ? t('glossary.defining') : t('glossary.add_term')}</button></div>}{isTeacherMode && (glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && <div className="mb-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm overflow-hidden" data-help-key="glossary_health_check"><div className="w-full flex flex-wrap items-center gap-2 px-2 py-2">
+            })()}<div className="flex gap-3">{rosterQueue.length > 0 && <button onClick={advanceRoster} className="flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg transition-colors">▶ {glossaryNextLabel} ({rosterQueue[0]})</button>}<button onClick={closeScreenerResults} className={`${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`}>{rosterQueue.length > 0 ? glossarySkipLabel + ' / ' + glossaryDoneLabel : glossaryDoneLabel}</button></div><button onClick={exportScreeningCSV} className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2">📊 Export Screening CSV</button></div></div>}{gameMode === 'wordsearch' && gameData && <div className="mb-6 bg-white p-4 sm:p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in motion-reduce:animate-none fade-in slide-in-from-top-4"><div className="flex flex-wrap justify-between items-center gap-2 mb-4 border-b border-slate-100 pb-2"><div><h3 className="font-bold text-teal-800 text-lg flex items-center gap-2"><Gamepad2 size={20} aria-hidden="true" /> {t('glossary.word_search_title')}</h3><p className="no-print mt-1 text-xs text-slate-600">{glossaryText('glossary.word_search_select_help', 'Select the first and last letter of a word. Use arrow keys inside the grid, then Enter or Space to select.')}</p></div><div className="flex gap-2">{isTeacherMode && <button type="button" onClick={handleToggleShowWordSearchAnswers} className={'min-h-11 text-xs flex items-center gap-1 px-3 py-2 rounded-full font-bold transition-colors ' + (showWordSearchAnswers ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{showWordSearchAnswers ? <Eye size={14} aria-hidden="true" /> : <MousePointerClick size={14} aria-hidden="true" />}{showWordSearchAnswers ? t('glossary.hide_answers') : t('glossary.show_answers')}</button>}{isTeacherMode && <button type="button" onClick={handlePrintGame} className="min-h-11 text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-2 rounded-full font-bold hover:bg-teal-200 transition-colors"><Printer size={14} aria-hidden="true" /> {t('glossary.print_puzzle')}</button>}<button type="button" onClick={handleSetGameModeToNull} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors" aria-label={t('common.close')}><X size={18} aria-hidden="true" /></button></div></div><div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{wordSearchAnnouncement}</div><div id="printable-game-area" className="flex flex-col items-center"><h2 className="hidden print-only font-bold text-xl mb-4">{t('glossary.word_search_title')}</h2><div className="max-w-full overflow-x-auto p-1"><div ref={wordSearchGridRef} id="word-search-grid" role="grid" tabIndex={0} dir={gameData.isRtl ? 'rtl' : 'ltr'} aria-label={(t('glossary.word_search_title') || 'Word search') + '. ' + wordSearchFoundWords.size + ' of ' + gameData.words.length + ' words found.'} aria-rowcount={gameData.grid.length} aria-colcount={gameData.grid[0]?.length || 0} aria-activedescendant={'word-search-cell-' + wordSearchActive.r + '-' + wordSearchActive.c} onKeyDown={handleWordSearchGridKeyDown} className="inline-grid gap-0 border-2 border-slate-800 bg-white p-1 focus-visible:ring-4 focus-visible:ring-teal-500 focus-visible:ring-offset-2" style={{ gridTemplateColumns: 'repeat(' + (gameData.grid[0]?.length || 0) + ', minmax(2rem, 2.25rem))' }}>{gameData.grid.map((row, r) => <div key={r} role="row" className="contents">{row.map((char, c) => { var key = wordSearchCellKey(r, c); var active = wordSearchActive.r === r && wordSearchActive.c === c; var inPath = wordSearchPath.includes(key); var foundCell = isWordSearchFoundCell(key); var isAnswer = gameData.solutions && gameData.solutions.includes(key); var highlightClass = showWordSearchAnswers && isAnswer ? 'bg-green-200 text-green-900 font-extrabold' : foundCell ? 'bg-emerald-100 text-emerald-900' : inPath ? 'bg-yellow-200 text-black' : 'bg-white text-slate-700 hover:bg-slate-50'; return <div key={c} id={'word-search-cell-' + r + '-' + c} role="gridcell" aria-rowindex={r + 1} aria-colindex={c + 1} aria-selected={active} aria-label={(t('glossary.word_search_cell_aria') || 'Cell') + ' ' + (r + 1) + '-' + (c + 1) + ': ' + char} onClick={() => { submitWordSearchCell(r, c); wordSearchGridRef.current?.focus({ preventScroll: true }); }} className={'w-8 h-8 sm:w-9 sm:h-9 border border-slate-400 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell ' + (active ? 'ring-2 ring-inset ring-teal-600 z-10 ' : '') + highlightClass}>{char}</div>; })}</div>)}</div></div><div className="mt-4 text-sm font-bold text-teal-800" role="status">Found {wordSearchFoundWords.size} of {gameData.words.length}</div><div className="mt-3 w-full max-w-md"><h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">{t('glossary.word_search_find')}</h4><div className="flex flex-wrap justify-center gap-x-6 gap-y-2 word-list">{gameData.words.map((word, i) => { var isFound = wordSearchFoundWords.has(word) || (foundWords && typeof foundWords.has === 'function' && foundWords.has(word)); return <span key={i} className={'text-sm font-medium px-2 py-1 rounded transition-all flex items-center gap-1 print:bg-transparent print:p-0 ' + (isFound ? 'bg-green-100 text-green-800 line-through opacity-70 decoration-green-600' : 'text-slate-700 bg-slate-100')}>{isFound && <CheckCircle2 size={12} className="inline" aria-hidden="true" />}{word}</span>; })}</div></div></div></div>}{canEditGlossary && <div data-help-key="glossary_add_term" className="flex flex-col sm:flex-row gap-2 mb-4 bg-white p-3 rounded-lg border border-slate-400 shadow-sm sm:items-center animate-in motion-reduce:animate-none fade-in slide-in-from-top-2"><div className="hidden sm:block shrink-0 bg-indigo-100 p-2 rounded-full text-indigo-600"><Plus size={16} /></div><div className="w-full sm:w-1/3 min-w-0 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2"><label className="block text-[11px] font-bold text-indigo-900 mb-1">Image style</label><select aria-label="Glossary image style source" data-help-key="glossary_image_style_mode" value={glossaryStyleMode} onChange={handleGlossaryStyleModeChange} disabled={isAddingTerm} className="w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs focus:ring-2 focus:ring-indigo-500"><option value="inherit">Use Universal style</option><option value="override">Override for this resource</option></select>{glossaryStyleMode === 'inherit' ? <p className="mt-1 text-[10px] leading-snug text-indigo-800">{String(universalImageStyle || '').trim() ? 'Using Universal style: ' + String(universalImageStyle).trim() : 'No Universal style is set; the app default will be used.'}</p> : <input aria-label={t('common.enter_glossary_image_style')} data-help-key="glossary_image_style" type="text" value={glossaryImageStyle} onChange={e => setGlossaryImageStyle(e.target.value)} placeholder={t('glossary.style_placeholder')} className="mt-2 w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500" disabled={isAddingTerm} />}<p className="mt-1 text-[10px] leading-snug text-slate-600">Applies to new or regenerated term images.</p></div><input aria-label={t('common.enter_new_glossary_term')} type="text" value={newGlossaryTerm} onChange={e => setNewGlossaryTerm(e.target.value)} onKeyDown={e => handleGlossaryInputEnter(e, handleAddGlossaryTerm, !newGlossaryTerm.trim() || isAddingTerm)} placeholder={t('glossary.add_term_placeholder')} className="w-full min-w-0 flex-1 min-h-11 text-sm border border-slate-300 sm:border-none py-2 px-2 focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded" disabled={isAddingTerm} /><button type="button" onClick={handleAddGlossaryTerm} disabled={!newGlossaryTerm.trim() || isAddingTerm} aria-busy={isAddingTerm} aria-describedby="glossary-add-term-status" className="w-full sm:w-auto shrink-0 justify-center min-h-11 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">{isAddingTerm ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Sparkles size={12} className="text-yellow-700 fill-current" />}{isAddingTerm ? t('glossary.defining') : t('glossary.add_term')}</button><p id="glossary-add-term-status" role="status" aria-live="polite" className="sr-only">{isAddingTerm ? glossaryText('glossary.add_term_pending', 'Preparing the new glossary word…') : ''}</p></div>}{isTeacherMode && (glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && <div className="mb-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm overflow-hidden" data-help-key="glossary_health_check"><div className="w-full flex flex-wrap items-center gap-2 px-2 py-2">
   <button
     type="button"
     onClick={handleToggleShowHealthCheckPanel}
@@ -1738,48 +1949,22 @@ function getGlossaryImageAlt(item) {
       title={t('common.dismiss_analysis')}
     ><X size={16} aria-hidden="true" /></button>
   </div>
-</div>{showHealthCheckPanel && glossaryHealthCheck && !glossaryHealthCheck.error && <div id="glossary-health-check-details" role="region" aria-labelledby="glossary-health-check-title" className="px-4 pb-4 space-y-3 border-t border-amber-200/50 animate-in slide-in-from-top-2 motion-reduce:animate-none duration-200"><p className="text-sm text-amber-800 italic pt-2">{glossaryHealthCheck.summary}</p>{glossaryHealthCheck.definitionGradeLevel && <div className="flex flex-wrap items-center gap-3"><span className="text-xs font-bold text-slate-600 uppercase w-28 shrink-0">{t('glossary_health.grade_level')}</span><div className="flex flex-wrap items-center gap-2 flex-grow"><span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${glossaryHealthCheck.gradeAppropriate ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{glossaryHealthCheck.definitionGradeLevel}</span>{glossaryHealthCheck.gradeAppropriate ? <span className="text-xs text-emerald-600">✓ Appropriate</span> : <span className="text-xs text-amber-600">⚠ May need adjustment</span>}</div></div>}{glossaryHealthCheck.tierAudit && <div><span className="text-xs font-bold text-slate-600 uppercase">{t('glossary_health.vocabulary_tiers')}</span><div className="mt-1 flex flex-wrap gap-1.5">{(Array.isArray(glossaryHealthCheck.tierAudit.tier2) ? glossaryHealthCheck.tierAudit.tier2 : []).map((t, i) => <span key={`t2-${i}`} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Tier 2: {t}</span>)}{(Array.isArray(glossaryHealthCheck.tierAudit.tier3) ? glossaryHealthCheck.tierAudit.tier3 : []).map((t, i) => <span key={`t3-${i}`} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Tier 3: {t}</span>)}</div>{Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && <div className="mt-1.5 space-y-0.5">{glossaryHealthCheck.tierAudit.notes.map((note, i) => <p key={i} className="text-xs text-slate-600 italic">💡 {typeof note === 'string' ? note : JSON.stringify(note)}</p>)}</div>}{typeof glossaryHealthCheck.tierAudit.notes === 'string' && glossaryHealthCheck.tierAudit.notes.length > 0 && <div className="mt-1.5"><p className="text-xs text-slate-600 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p></div>}</div>}{Array.isArray(glossaryHealthCheck.coverageGaps) && glossaryHealthCheck.coverageGaps.length > 0 && <div><span className="text-xs font-bold text-slate-600 uppercase">{t('glossary_health.suggested_terms')}</span><div className="mt-1 space-y-1">{glossaryHealthCheck.coverageGaps.map((gap, i) => <div key={i} className="flex flex-wrap items-center gap-2 bg-white/60 rounded-md px-2.5 py-1.5 border border-amber-100"><span className="text-sm font-semibold text-slate-800">"{gap.term}"</span><span className="min-w-0 text-xs text-slate-600 flex-grow">{gap.reason}</span>{isTeacherMode && <button onClick={async () => {
-                    const owner = glossaryViewSessionRef.current;
-                    const addedTerm = gap.term;
-                    const added = await handleQuickAddGlossary(addedTerm, true);
-                    if (added === false || !isGlossaryViewCurrent(owner)) return;
-                    setGlossaryHealthCheck(prev => {
-                      if (!prev || !Array.isArray(prev.coverageGaps)) return prev;
-                      return {
-                        ...prev,
-                        coverageGaps: prev.coverageGaps.filter(g => g.term !== addedTerm)
-                      };
-                    });
-                    const allTerms = generatedContent?.data || [];
-                    const srcText = relatedGlossarySourceText();
-                    const replacement = await fetchReplacementSuggestion(allTerms, addedTerm, srcText);
-                    if (replacement && isGlossaryViewCurrent(owner)) {
-                      setGlossaryHealthCheck(prev => {
-                        if (!prev) return prev;
-                        const gaps = Array.isArray(prev.coverageGaps) ? [...prev.coverageGaps] : [];
-                        gaps.push(replacement);
-                        return {
-                          ...prev,
-                          coverageGaps: gaps
-                        };
-                      });
-                    }
-                  }} className="text-[11px] font-bold bg-indigo-100 text-indigo-600 hover:bg-indigo-200 px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5 shrink-0" title={t('common.add_this_term_to_glossary')}><Plus size={10} /> Add</button>}</div>)}</div></div>}{Array.isArray(glossaryHealthCheck.conceptConnections) && glossaryHealthCheck.conceptConnections.length > 0 && <div><span className="text-xs font-bold text-slate-600 uppercase">{t('glossary_health.concept_web')}</span><div className="mt-1 space-y-1.5">{glossaryHealthCheck.conceptConnections.map((cc, i) => <div key={i} className="bg-white/60 rounded-md px-2.5 py-1.5 border border-amber-100"><div className="flex flex-wrap items-center gap-1.5"><span className="text-sm font-bold text-indigo-700">🔗 {cc.concept}</span><span className="text-xs text-slate-600">→</span><span className="min-w-0 text-xs text-slate-600">{(cc.connectedTerms || []).join(', ')}</span></div>{cc.note && <p className="text-[11px] text-slate-600 mt-0.5">{cc.note}</p>}</div>)}</div></div>}</div>}{showHealthCheckPanel && glossaryHealthCheck && glossaryHealthCheck.error && <div id="glossary-health-check-details" role="region" aria-labelledby="glossary-health-check-title" className="px-4 pb-3 text-sm text-amber-600 italic border-t border-amber-200/50 pt-2">Analysis could not be completed. Click "Re-analyze" to try again.</div>}{showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && <div id="glossary-health-check-details" role="status" aria-live="polite" aria-labelledby="glossary-health-check-title" className="px-4 pb-3 text-sm text-amber-600 border-t border-amber-200/50 pt-2 flex items-center gap-2"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> Analyzing glossary quality...</div>}</div>}{!isMemoryGame && <div data-help-key="glossary_terms_table" className="overflow-hidden rounded-lg border border-slate-400 shadow-sm"><p id="glossary-table-layout-hint" className="px-3 py-2 text-xs text-slate-600 bg-slate-50 sm:hidden print:hidden">{glossaryText('glossary.table_stacked_hint', 'Definitions and translations follow each word.')}</p><div data-glossary-word-list className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" role="region" aria-label={t('glossary.table_label')} aria-describedby="glossary-table-layout-hint" tabIndex={0}><table role="table" className="w-full text-center text-sm"><thead role="rowgroup" className="bg-slate-100 text-slate-600 font-semibold"><tr role="row">{isEditingGlossary && <th role="columnheader" scope="col" data-glossary-selection className="p-4 border-b border-slate-200 w-12 text-center"><div className="flex flex-col items-center gap-1"><input aria-label={glossaryText('glossary.include_all_aria', 'Include all terms')} type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer" checked={generatedContent?.data.length > 0 && generatedContent?.data.every(i => i.isSelected !== false)} onChange={handleGlossarySelectAll} title={t('glossary.tooltips.select_all_highlight')} /><span className="text-[11px] font-normal leading-none text-slate-600">{t('glossary.highlight_label')}</span></div></th>}<th role="columnheader" scope="col" className="p-4 border-b border-slate-200 min-w-[150px]">{t('glossary.table_term')}</th><th role="columnheader" scope="col" className="p-4 border-b border-slate-200 min-w-[200px]">{t('glossary.table_def')}</th>{displayLanguages.map(lang => <th role="columnheader" scope="col" key={lang} className="p-4 border-b border-slate-200 min-w-[150px] text-indigo-600 text-center">{lang}</th>)}</tr></thead><tbody role="rowgroup" className="divide-y divide-slate-100">{filteredGlossaryData.map(item => {
+</div><p id="glossary-suggestion-status" data-glossary-suggestion-status role="status" aria-live="polite" className={glossarySuggestionMessage ? "px-4 pb-3 text-sm text-amber-900" : "sr-only"}>{glossarySuggestionMessage}</p>{showHealthCheckPanel && glossaryHealthCheck && !glossaryHealthCheck.error && <div id="glossary-health-check-details" role="region" aria-labelledby="glossary-health-check-title" className="px-4 pb-4 space-y-3 border-t border-amber-200/50 animate-in slide-in-from-top-2 motion-reduce:animate-none duration-200"><p className="text-sm text-amber-800 italic pt-2">{glossaryHealthCheck.summary}</p>{glossaryHealthCheck.definitionGradeLevel && <div className="flex flex-wrap items-center gap-3"><span className="text-xs font-bold text-slate-600 uppercase w-28 shrink-0">{t('glossary_health.grade_level')}</span><div className="flex flex-wrap items-center gap-2 flex-grow"><span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${glossaryHealthCheck.gradeAppropriate ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{glossaryHealthCheck.definitionGradeLevel}</span>{glossaryHealthCheck.gradeAppropriate ? <span className="text-xs text-emerald-600">✓ Appropriate</span> : <span className="text-xs text-amber-600">⚠ May need adjustment</span>}</div></div>}{glossaryHealthCheck.tierAudit && <div><span className="text-xs font-bold text-slate-600 uppercase">{t('glossary_health.vocabulary_tiers')}</span><div className="mt-1 flex flex-wrap gap-1.5">{(Array.isArray(glossaryHealthCheck.tierAudit.tier2) ? glossaryHealthCheck.tierAudit.tier2 : []).map((t, i) => <span key={`t2-${i}`} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Tier 2: {t}</span>)}{(Array.isArray(glossaryHealthCheck.tierAudit.tier3) ? glossaryHealthCheck.tierAudit.tier3 : []).map((t, i) => <span key={`t3-${i}`} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Tier 3: {t}</span>)}</div>{Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && <div className="mt-1.5 space-y-0.5">{glossaryHealthCheck.tierAudit.notes.map((note, i) => <p key={i} className="text-xs text-slate-600 italic">💡 {typeof note === 'string' ? note : JSON.stringify(note)}</p>)}</div>}{typeof glossaryHealthCheck.tierAudit.notes === 'string' && glossaryHealthCheck.tierAudit.notes.length > 0 && <div className="mt-1.5"><p className="text-xs text-slate-600 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p></div>}</div>}{Array.isArray(glossaryHealthCheck.coverageGaps) && glossaryHealthCheck.coverageGaps.length > 0 && <div><span className="text-xs font-bold text-slate-600 uppercase">{t('glossary_health.suggested_terms')}</span><div className="mt-1 space-y-1">{glossaryHealthCheck.coverageGaps.map((gap, i) => <div key={i} className="flex flex-wrap items-center gap-2 bg-white/60 rounded-md px-2.5 py-1.5 border border-amber-100"><span className="text-sm font-semibold text-slate-800">"{gap.term}"</span><span className="min-w-0 text-xs text-slate-600 flex-grow">{gap.reason}</span>{isTeacherMode && <button type="button" onClick={() => handleAddGlossarySuggestion(gap)} disabled={glossaryPendingSuggestions.includes(glossarySuggestionKey(gap.term))} aria-busy={glossaryPendingSuggestions.includes(glossarySuggestionKey(gap.term))} aria-label={glossaryPendingSuggestions.includes(glossarySuggestionKey(gap.term)) ? glossaryText('glossary.suggestion_adding_aria', 'Adding {term}', { term: gap.term }) : glossaryText('glossary.suggestion_add_aria', 'Add {term}', { term: gap.term })} aria-describedby="glossary-suggestion-status" className="min-h-11 min-w-11 text-xs font-bold bg-indigo-100 text-indigo-800 hover:bg-indigo-200 px-3 py-2 rounded-full transition-colors inline-flex items-center justify-center gap-1 shrink-0 disabled:opacity-60 disabled:cursor-wait focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" title={t('common.add_this_term_to_glossary')}>{glossaryPendingSuggestions.includes(glossarySuggestionKey(gap.term)) ? <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {glossaryText('glossary.suggestion_adding', 'Adding…')}</> : <><Plus size={14} aria-hidden="true" /> {glossaryText('common.add', 'Add')}</>}</button>}</div>)}</div></div>}{Array.isArray(glossaryHealthCheck.conceptConnections) && glossaryHealthCheck.conceptConnections.length > 0 && <div><span className="text-xs font-bold text-slate-600 uppercase">{t('glossary_health.concept_web')}</span><div className="mt-1 space-y-1.5">{glossaryHealthCheck.conceptConnections.map((cc, i) => <div key={i} className="bg-white/60 rounded-md px-2.5 py-1.5 border border-amber-100"><div className="flex flex-wrap items-center gap-1.5"><span className="text-sm font-bold text-indigo-700">🔗 {cc.concept}</span><span className="text-xs text-slate-600">→</span><span className="min-w-0 text-xs text-slate-600">{(cc.connectedTerms || []).join(', ')}</span></div>{cc.note && <p className="text-[11px] text-slate-600 mt-0.5">{cc.note}</p>}</div>)}</div></div>}</div>}{showHealthCheckPanel && glossaryHealthCheck && glossaryHealthCheck.error && <div id="glossary-health-check-details" role="region" aria-labelledby="glossary-health-check-title" className="px-4 pb-3 text-sm text-amber-600 italic border-t border-amber-200/50 pt-2">Analysis could not be completed. Click "Re-analyze" to try again.</div>}{showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && <div id="glossary-health-check-details" role="status" aria-live="polite" aria-labelledby="glossary-health-check-title" className="px-4 pb-3 text-sm text-amber-600 border-t border-amber-200/50 pt-2 flex items-center gap-2"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> Analyzing glossary quality...</div>}</div>}{!isMemoryGame && <div data-help-key="glossary_terms_table" className="overflow-hidden rounded-lg border border-slate-400 shadow-sm">{isEditingGlossary && <p id="glossary-selection-scope" className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 print:hidden">{glossaryText('glossary.selection_scope', 'Selection applies to all {total} words, including words hidden by filters.', { total: glossaryTotalCount })}</p>}<p id="glossary-table-layout-hint" className="px-3 py-2 text-xs text-slate-600 bg-slate-50 sm:hidden print:hidden">{glossaryText('glossary.table_stacked_hint', 'Definitions and translations follow each word.')}</p><div ref={glossaryWordListRef} data-glossary-word-list className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" role="region" aria-label={t('glossary.table_label')} aria-describedby="glossary-table-layout-hint" tabIndex={0}><table role="table" className="w-full text-center text-sm"><thead role="rowgroup" className="bg-slate-100 text-slate-600 font-semibold"><tr role="row">{isEditingGlossary && <th role="columnheader" scope="col" data-glossary-selection className="p-4 border-b border-slate-200 w-12 text-center"><div className="flex flex-col items-center gap-1"><input ref={input => { if (input) input.indeterminate = glossarySomeSelected; }} aria-label={glossaryText('glossary.include_all_aria', 'Include all terms')} aria-describedby="glossary-selection-scope" aria-checked={glossarySomeSelected ? 'mixed' : glossaryAllSelected} type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer" checked={glossaryAllSelected} disabled={!glossaryTotalCount} onChange={handleGlossarySelectAll} title={t('glossary.tooltips.select_all_highlight')} /><span className="text-[11px] font-normal leading-none text-slate-600">{glossaryText('glossary.all_terms', 'All terms')}</span></div></th>}<th role="columnheader" scope="col" className="p-4 border-b border-slate-200 min-w-[150px]">{t('glossary.table_term')}</th><th role="columnheader" scope="col" className="p-4 border-b border-slate-200 min-w-[200px]">{t('glossary.table_def')}</th>{displayLanguages.map(lang => <th role="columnheader" scope="col" key={lang} className="p-4 border-b border-slate-200 min-w-[150px] text-indigo-600 text-center">{lang}</th>)}</tr></thead><tbody role="rowgroup" className="divide-y divide-slate-100">{filteredGlossaryData.map(item => {
                   const idx = item._originalIdx;
                   const entryKey = getGlossaryEntryKey(item, idx);
                   const isTier2 = item.tier === 'Academic';
                   const isTier3 = item.tier === 'Domain-Specific';
-                  return <tr role="row" key={getGlossaryEntryKey(item, idx)} className="group/row allo-vghov-row">{isEditingGlossary && <td role="cell" data-glossary-selection className="p-4 border-b border-slate-100 text-center align-top"><input aria-label={glossaryText('glossary.include_term_aria', 'Include {term}', { term: item.term || '' })} type="checkbox" className="mt-1.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer" checked={item.isSelected !== false} onChange={() => handleGlossarySelectionChange(idx)} title={t('glossary.tooltips.select_highlight')} /><span data-glossary-mobile-label aria-hidden="true">{t('glossary.highlight_label')}</span></td>}<td role="cell" data-glossary-term className="p-4 font-bold text-slate-800 align-top min-w-[200px]"><div className="flex flex-col gap-2 items-center">{!isEditingGlossary && item.tier && <span className={`text-[11px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border mb-1 ${isTier2 ? 'bg-blue-50 text-blue-700 border-blue-200' : isTier3 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{isTier2 ? glossaryText('glossary.tier_badge_academic', 'Academic vocabulary') : isTier3 ? glossaryText('glossary.tier_badge_subject', 'Subject vocabulary') : item.tier}</span>}{isEditingGlossary ? <div className="w-full flex flex-col gap-2"><select aria-label={(t('glossary.edit_tier_placeholder') || 'Vocabulary type') + ': ' + item.term} value={item.tier || ''} onChange={e => handleGlossaryChange(idx, 'tier', e.target.value)} className="text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1  focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600" data-help-key="glossary_edit_tier"><option value="">{t('glossary.edit_tier_placeholder')}</option><option value="Academic">{t('glossary.edit_tier_academic')}</option><option value="Domain-Specific">{t('glossary.edit_tier_domain')}</option></select><div className="flex items-start gap-2 w-full"><textarea aria-label={t('glossary.edit_term') || 'Edit glossary term'} value={item.term} onChange={e => handleGlossaryChange(idx, 'term', e.target.value)} rows={getRows(item.term, 25)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center" /><button type="button" aria-label={glossaryText('glossary.delete_term_aria', 'Delete term: {term}', { term: item.term })} onClick={() => handleDeleteGlossaryItem(idx)} className="min-h-11 min-w-11 inline-flex items-center justify-center bg-red-50 text-red-800 hover:bg-red-100 rounded transition-colors shrink-0" title={t('glossary.tooltips.delete_term')}><Trash2 size={14} /></button></div></div> : <div className="px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center">{item.emoji ? <span aria-hidden="true" className="mr-1">{item.emoji}</span> : null}{item.term}</div>}<div className="mt-1 px-1">{item.image ? <div className="flex flex-col gap-2"><div className="relative group/image inline-block w-fit"><img loading="lazy" src={item.image} alt={getGlossaryImageAlt(item)} role={getGlossaryImageAlt(item) ? undefined : "presentation"} style={{
+                  return <tr role="row" data-glossary-entry-key={getGlossaryEntryKey(item, idx)} key={getGlossaryEntryKey(item, idx)} className="group/row allo-vghov-row">{isEditingGlossary && <td role="cell" data-glossary-selection className="p-4 border-b border-slate-100 text-center align-top"><input aria-label={glossaryText('glossary.include_term_aria', 'Include {term}', { term: item.term || '' })} type="checkbox" className="mt-1.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer" checked={item.isSelected !== false} onChange={() => handleGlossarySelectionChange(idx)} title={t('glossary.tooltips.select_highlight')} /><span data-glossary-mobile-label aria-hidden="true">{t('glossary.highlight_label')}</span></td>}<td role="cell" data-glossary-term className="p-4 font-bold text-slate-800 align-top min-w-[200px]"><div className="flex flex-col gap-2 items-center">{!isEditingGlossary && item.tier && <span className={`text-[11px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border mb-1 ${isTier2 ? 'bg-blue-50 text-blue-700 border-blue-200' : isTier3 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{isTier2 ? glossaryText('glossary.tier_badge_academic', 'Academic vocabulary') : isTier3 ? glossaryText('glossary.tier_badge_subject', 'Subject vocabulary') : item.tier}</span>}{isEditingGlossary ? <div className="w-full flex flex-col gap-2"><select aria-label={(t('glossary.edit_tier_placeholder') || 'Vocabulary type') + ': ' + item.term} value={item.tier || ''} onChange={e => handleGlossaryChange(idx, 'tier', e.target.value)} className="text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1  focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600" data-help-key="glossary_edit_tier"><option value="">{t('glossary.edit_tier_placeholder')}</option><option value="Academic">{t('glossary.edit_tier_academic')}</option><option value="Domain-Specific">{t('glossary.edit_tier_domain')}</option></select><div className="flex items-start gap-2 w-full"><textarea aria-label={t('glossary.edit_term') || 'Edit glossary term'} value={item.term} onChange={e => handleGlossaryChange(idx, 'term', e.target.value)} rows={getRows(item.term, 25)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center" /><button type="button" aria-label={glossaryText('glossary.delete_term_aria', 'Delete term: {term}', { term: item.term })} onClick={e => handleDeleteGlossaryItem(idx, e)} className="min-h-11 min-w-11 inline-flex items-center justify-center bg-red-50 text-red-800 hover:bg-red-100 rounded transition-colors shrink-0" title={t('glossary.tooltips.delete_term')}><Trash2 size={14} /></button></div></div> : <div className="px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center">{item.emoji ? <span aria-hidden="true" className="mr-1">{item.emoji}</span> : null}{item.term}</div>}<div className="mt-1 px-1">{item.image ? <div className="flex flex-col gap-2"><div className="relative group/image inline-block w-fit"><img loading="lazy" src={item.image} alt={getGlossaryImageAlt(item)} role={getGlossaryImageAlt(item) ? undefined : "presentation"} style={{
                                 width: `${glossaryImageSize}px`,
                                 height: `${glossaryImageSize}px`
-                              }} className="max-w-none rounded-lg border border-slate-400 object-contain bg-white shadow-sm transition-all duration-200" decoding="async" /><div hidden={!canEditGlossary} style={{ display: canEditGlossary ? undefined : 'none' }} className="relative mt-2 bg-slate-800 p-1 sm:absolute sm:inset-0 sm:mt-0 sm:p-0 sm:bg-black/60 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover/image:opacity-100 sm:group-focus-within/image:opacity-100 transition-opacity gap-2 sm:backdrop-blur-[1px]"><button type="button" aria-label={glossaryText('glossary.delete_image_aria', 'Delete image for {term}', { term: item.term })} onClick={() => handleDeleteTermImage(idx)} className="min-h-11 min-w-11 inline-flex items-center justify-center text-white hover:text-red-300 bg-white/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-white" title={t('common.delete')} data-help-key="glossary_delete_image"><Trash2 size={12} /></button></div></div>{isEditingGlossary && <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 mt-1"><button onClick={() => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")} disabled={(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} className="w-full mb-1.5 text-[11px] bg-red-50 text-red-800 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm" title={t('glossary.auto_remove_tooltip')} data-help-key="glossary_remove_words">{(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> : <Ban size={10} />} {t('glossary.remove_words_btn')}</button><div className="flex gap-1"><input aria-label={t('common.glossary_custom_edit_placeholder')} type="text" value={glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || ''} onChange={e => setGlossaryRefinementInputs(prev => ({
+                              }} className="max-w-none rounded-lg border border-slate-400 object-contain bg-white shadow-sm transition-all duration-200" decoding="async" /><div hidden={!canEditGlossary} style={{ display: canEditGlossary ? undefined : 'none' }} className="relative mt-2 bg-slate-800 p-1 sm:absolute sm:inset-0 sm:mt-0 sm:p-0 sm:bg-black/60 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover/image:opacity-100 sm:group-focus-within/image:opacity-100 transition-opacity gap-2 sm:backdrop-blur-[1px]"><button type="button" aria-label={glossaryText('glossary.delete_image_aria', 'Delete image for {term}', { term: item.term })} onClick={e => handleDeleteTermImage(idx, e)} className="min-h-11 min-w-11 inline-flex items-center justify-center text-white hover:text-red-300 bg-white/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-white" title={t('common.delete')} data-help-key="glossary_delete_image"><Trash2 size={12} /></button></div></div>{isEditingGlossary && <div className="w-full min-w-0 animate-in motion-reduce:animate-none slide-in-from-top-2 mt-1"><button type="button" onClick={() => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")} disabled={(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} aria-label={glossaryText('glossary.remove_image_words_aria', 'Remove words from image for {term}', { term: item.term })} className="min-h-11 w-full mb-1.5 text-[11px] bg-red-50 text-red-800 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm" title={t('glossary.auto_remove_tooltip')} data-help-key="glossary_remove_words">{(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> : <Ban size={10} />} {t('glossary.remove_words_btn')}</button><div className="flex w-full min-w-0 gap-1"><input aria-label={glossaryText('glossary.image_edit_instructions_aria', 'Image edit instructions for {term}', { term: item.term })} type="text" value={glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || ''} onChange={e => setGlossaryRefinementInputs(prev => ({
                                   ...prev,
                                   [entryKey]: e.target.value
-                                }))} placeholder={t('glossary.custom_edit_placeholder')} className="text-[11px] border border-yellow-300 rounded px-1 py-0.5 w-20 focus:w-full transition-all  focus:ring-1 focus:ring-yellow-400" onKeyDown={e => e.key === 'Enter' && handleRefineGlossaryImage(idx)} /><button aria-label={t('common.refresh')} onClick={() => handleRefineGlossaryImage(idx)} disabled={!(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx]) || (isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} className="bg-yellow-400 text-yellow-900 p-1 rounded hover:bg-yellow-50 disabled:opacity-50 disabled:cursor-not-allowed shrink-0" title={t('glossary.tooltips.apply_edit')}>{(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> : <Send size={10} />}</button></div><span className="text-[11px] text-slate-600 italic mt-0.5 block">{glossaryText('glossary.image_editing_active', 'Image editing active')}</span></div>}</div> : null}</div><GlossaryImageControls key={String(generatedContent?.id) + ":" + entryKey} item={item} index={idx} canEdit={canEditGlossary} beginTask={props.beginGlossaryImageTask} onGenerate={handleGenerateTermImage} generating={!!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} t={t} /><div className="flex items-center gap-1  mt-1"><button type="button" aria-label={glossaryAudioActionLabel(`term-${idx}`, 'term', item.term)} title={glossaryAudioActionLabel(`term-${idx}`, 'term', item.term)} onClick={() => handleGlossarySpeak(item, 'term', item.term, `term-${idx}`, item.termLanguage || 'English')} disabled={isGeneratingAudio && playingContentId !== `term-${idx}`} className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `term-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`} data-help-key="glossary_speak_term">{playingContentId === `term-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : playingContentId === `term-${idx}` ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}</button>{
+                                }))} placeholder={t('glossary.custom_edit_placeholder')} className="min-h-11 min-w-0 w-full flex-1 text-xs border border-yellow-400 rounded px-2 py-1 focus:ring-2 focus:ring-yellow-500" onKeyDown={e => handleGlossaryInputEnter(e, () => handleRefineGlossaryImage(idx), !String(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || '').trim() || isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} /><button type="button" aria-label={glossaryText('glossary.apply_image_edit_aria', 'Apply image edit for {term}', { term: item.term })} onClick={() => handleRefineGlossaryImage(idx)} disabled={!String(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || '').trim() || !!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} aria-busy={!!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} className="min-h-11 min-w-11 inline-flex items-center justify-center bg-yellow-400 text-yellow-900 p-2 rounded hover:bg-yellow-50 focus-visible:ring-2 focus-visible:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0" title={glossaryText('glossary.apply_image_edit_aria', 'Apply image edit for {term}', { term: item.term })}>{(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> : <Send size={10} />}</button></div><span className="text-[11px] text-slate-600 italic mt-0.5 block">{glossaryText('glossary.image_editing_active', 'Image editing active')}</span></div>}</div> : null}</div><GlossaryImageControls key={String(generatedContent?.id) + ":" + entryKey} item={item} index={idx} canEdit={canEditGlossary} beginTask={props.beginGlossaryImageTask} onGenerate={handleGenerateTermImage} generating={!!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])} t={t} /><div className="flex items-center gap-1  mt-1"><button type="button" aria-label={glossaryAudioActionLabel(`term-${idx}`, 'term', item.term)} title={glossaryAudioActionLabel(`term-${idx}`, 'term', item.term)} onClick={() => handleGlossarySpeak(item, 'term', item.term, `term-${idx}`, item.termLanguage || 'English')} disabled={isGeneratingAudio && playingContentId !== `term-${idx}`} className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `term-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`} data-help-key="glossary_speak_term">{playingContentId === `term-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : playingContentId === `term-${idx}` ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}</button>{
                           // Pronounce button — opens the same phonics popup the simplified view uses
                           // (phonetic spelling + IPA + syllables + audio playback). Only rendered if
                           // the host wired handlePhonicsClick into the props.
-                          handlePhonicsClick && <button onClick={ev => handlePhonicsClick(item.term, ev)} className="text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 font-bold text-[11px] tracking-tight" aria-label={(t('glossary.pronounce_term') || 'Pronounce') + ': ' + item.term} title={t('glossary.pronounce_term_title') || 'Show pronunciation, IPA, and syllables'} data-help-key="glossary_pronounce_term">/əˈ/</button>}<button type="button" aria-label={glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', { term: item.term })} title={glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', { term: item.term })} onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled={downloadingContentId === `dl-term-${idx}`} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors" data-help-key="glossary_download_audio">{downloadingContentId === `dl-term-${idx}` ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}</button></div></div></td><td role="cell" className="p-4 text-slate-600 align-top"><span data-glossary-mobile-label aria-hidden="true">{t('glossary.table_def')}</span><div className="flex flex-col gap-2 items-center">{isEditingGlossary ? <textarea aria-label={t('glossary.edit_definition') || 'Edit definition'} value={item.def} onChange={e => handleGlossaryChange(idx, 'def', e.target.value)} rows={getRows(item.def, 45)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-center" /> : <div className="px-2 py-1 text-slate-600 whitespace-pre-wrap">{currentUiLanguage !== 'English' && <span className="block font-bold text-indigo-900 text-xs mb-1 uppercase tracking-wide">{item.term}</span>}{item.def}</div>}<div className="flex items-center gap-1 "><button type="button" aria-label={glossaryAudioActionLabel(`def-${idx}`, 'definition', item.term)} title={glossaryAudioActionLabel(`def-${idx}`, 'definition', item.term)} onClick={() => handleGlossarySpeak(item, 'definition', item.def, `def-${idx}`, item.definitionLanguage || 'English')} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : playingContentId === `def-${idx}` ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}</button><button type="button" aria-label={glossaryText('glossary.download_definition_audio_aria', 'Download definition audio for {term}', { term: item.term })} title={glossaryText('glossary.download_definition_audio_aria', 'Download definition audio for {term}', { term: item.term })} onClick={() => handleDownloadAudio(glossarySpeechText(item, 'definition', item.def), `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}</button></div>{item.etymology ? <details className="mt-2 text-xs w-full" data-help-key="glossary_etymology_info"><summary className="cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none">📜 {t('glossary.etymology_label') || 'Word roots'}</summary>{(() => {
+                          handlePhonicsClick && <button onClick={ev => handlePhonicsClick(item.term, ev)} className="text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 font-bold text-[11px] tracking-tight" aria-label={(t('glossary.pronounce_term') || 'Pronounce') + ': ' + item.term} title={t('glossary.pronounce_term_title') || 'Show pronunciation, IPA, and syllables'} data-help-key="glossary_pronounce_term">/əˈ/</button>}<button type="button" aria-label={glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', { term: item.term })} title={glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', { term: item.term })} onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled={downloadingContentId === `dl-term-${idx}`} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors" data-help-key="glossary_download_audio">{downloadingContentId === `dl-term-${idx}` ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}</button></div></div></td><td role="cell" className="p-4 text-slate-600 align-top"><span data-glossary-mobile-label aria-hidden="true">{t('glossary.table_def')}</span><div className="flex flex-col gap-2 items-center">{isEditingGlossary ? <textarea aria-label={glossaryText('glossary.edit_definition_aria', 'Edit definition for {term}', { term: item.term })} value={item.def} onChange={e => handleGlossaryChange(idx, 'def', e.target.value)} rows={getRows(item.def, 45)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-center" /> : <div className="px-2 py-1 text-slate-600 whitespace-pre-wrap">{currentUiLanguage !== 'English' && <span className="block font-bold text-indigo-900 text-xs mb-1 uppercase tracking-wide">{item.term}</span>}{item.def}</div>}<div className="flex items-center gap-1 "><button type="button" aria-label={glossaryAudioActionLabel(`def-${idx}`, 'definition', item.term)} title={glossaryAudioActionLabel(`def-${idx}`, 'definition', item.term)} onClick={() => handleGlossarySpeak(item, 'definition', item.def, `def-${idx}`, item.definitionLanguage || 'English')} disabled={isGeneratingAudio && playingContentId !== `def-${idx}`} className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `def-${idx}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : playingContentId === `def-${idx}` ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}</button><button type="button" aria-label={glossaryText('glossary.download_definition_audio_aria', 'Download definition audio for {term}', { term: item.term })} title={glossaryText('glossary.download_definition_audio_aria', 'Download definition audio for {term}', { term: item.term })} onClick={() => handleDownloadAudio(glossarySpeechText(item, 'definition', item.def), `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentId === `dl-def-${idx}`} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors">{downloadingContentId === `dl-def-${idx}` ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}</button></div>{item.etymology ? <details className="mt-2 text-xs w-full" data-help-key="glossary_etymology_info"><summary className="cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none">📜 {t('glossary.etymology_label') || 'Word roots'}</summary>{(() => {
                             const etyMap = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang : null;
                             const displayLang = 'English'; /* The glossary is deliberately multi-language: the base column is always the English definition (the generation prompt asks for "An English definition") and every teacher language gets its own column. Keying this to leveledTextLanguage put e.g. Spanish word-root prose under the English definition whenever the output language was not English. */
                             const etymologyProse = etyMap && (etyMap['English'] || etyMap[displayLang]) || item.etymology || '';
@@ -1805,7 +1990,7 @@ function getGlossaryImageAlt(item) {
                                     return <div className="text-[11px] text-slate-600 leading-snug pl-1"><span className="font-semibold text-slate-700">{t('glossary.related_words_label') || 'Related words:'}</span> {allRelated.slice(0, 6).map((w, wi) => <span key={wi}>{wi > 0 && <span className="text-slate-600">, </span>}<span className="font-medium text-indigo-800">{w}</span></span>)}</div>;
                                   })()}</div>;
                               })()}</div>;
-                          })()}</details> : includeEtymology ? <button hidden={!canEditGlossary} style={{ display: canEditGlossary ? undefined : 'none' }} onClick={() => handleGenerateTermEtymology(idx, item.term)} disabled={(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx])} aria-busy={!!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx])} aria-live="polite" className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1" data-help-key="glossary_etymology_info" title={t('glossary.etymology_label') || 'Word roots'}>{(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]) ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.actions.generating_etymology') || 'Finding roots…'}</> : <>📜 {t('glossary.actions.show_etymology') || 'Show word roots'}</>}</button> : null}</div></td>{displayLanguages.map(lang => <td role="cell" key={lang} className="p-4 text-slate-600 italic border-l border-slate-50 align-top"><span data-glossary-mobile-label aria-hidden="true">{lang}</span><div className="flex flex-col gap-2" dir={isRtlLang(lang) ? 'rtl' : 'ltr'}>{isEditingGlossary ? <textarea aria-label={t('glossary.edit_translation') || 'Edit translation'} value={item.translations?.[lang] || ""} onChange={e => handleGlossaryChange(idx, 'translations', e.target.value, lang)} rows={getRows(item.translations?.[lang], 30)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center" /> : <div className="px-2 py-1 text-slate-600 italic whitespace-pre-wrap text-center">{item.translations?.[lang] || ""}</div>}{item.translations?.[lang] && <div className="flex items-center gap-1  justify-center" dir="ltr"><button type="button" aria-label={glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang)} title={glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang)} onClick={() => handleGlossarySpeak(item, 'translation', item.translations[lang], `trans-${idx}-${lang}`, lang)} disabled={isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`} className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : playingContentId === `trans-${idx}-${lang}` ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}</button><button type="button" aria-label={glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', { lang: lang, term: item.term })} title={glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', { lang: lang, term: item.term })} onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`)} disabled={downloadingContentId === `dl-trans-${idx}-${lang}`} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors">{downloadingContentId === `dl-trans-${idx}-${lang}` ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}</button></div>}{item.translations?.[lang] && (() => {
+                          })()}</details> : includeEtymology ? <button hidden={!canEditGlossary} style={{ display: canEditGlossary ? undefined : 'none' }} onClick={() => handleGenerateTermEtymology(idx, item.term)} disabled={(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx])} aria-busy={!!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx])} aria-live="polite" className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1" data-help-key="glossary_etymology_info" title={t('glossary.etymology_label') || 'Word roots'}>{(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]) ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.actions.generating_etymology') || 'Finding roots…'}</> : <>📜 {t('glossary.actions.show_etymology') || 'Show word roots'}</>}</button> : null}</div></td>{displayLanguages.map(lang => <td role="cell" key={lang} className="p-4 text-slate-600 italic border-l border-slate-50 align-top"><span data-glossary-mobile-label aria-hidden="true">{lang}</span><div className="flex flex-col gap-2" dir={isRtlLang(lang) ? 'rtl' : 'ltr'}>{isEditingGlossary ? <textarea aria-label={glossaryText('glossary.edit_translation_aria', 'Edit {lang} translation for {term}', { lang: lang, term: item.term })} value={item.translations?.[lang] || ""} onChange={e => handleGlossaryChange(idx, 'translations', e.target.value, lang)} rows={getRows(item.translations?.[lang], 30)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center" /> : <div className="px-2 py-1 text-slate-600 italic whitespace-pre-wrap text-center">{item.translations?.[lang] || ""}</div>}{item.translations?.[lang] && <div className="flex items-center gap-1  justify-center" dir="ltr"><button type="button" aria-label={glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang)} title={glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang)} onClick={() => handleGlossarySpeak(item, 'translation', item.translations[lang], `trans-${idx}-${lang}`, lang)} disabled={isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`} className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}>{playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : playingContentId === `trans-${idx}-${lang}` ? <StopCircle size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}</button><button type="button" aria-label={glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', { lang: lang, term: item.term })} title={glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', { lang: lang, term: item.term })} onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`)} disabled={downloadingContentId === `dl-trans-${idx}-${lang}`} className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors">{downloadingContentId === `dl-trans-${idx}-${lang}` ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}</button></div>}{item.translations?.[lang] && (() => {
                           const etyLangProse = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang[lang] : null;
                           const hasOwnProse = typeof etyLangProse === 'string' && etyLangProse.trim() && etyLangProse.trim() !== 'NONE';
                           const hasEnglishEty = !!(item.etymology || item.etymologyByLang && (item.etymologyByLang.English || Object.keys(item.etymologyByLang).length > 0));
@@ -2233,7 +2418,7 @@ function getGlossaryImageAlt(item) {
                           }
                           return null;
                         })()}</div></td>)}</tr>;
-                })}{filteredGlossaryData.length === 0 && <tr role="row"><td role="cell" colSpan={2 + displayLanguages.length + (isEditingGlossary ? 1 : 0)} className="p-10 text-center text-slate-600"><div className="flex flex-col items-center gap-3"><span className="text-4xl allo-empty-float select-none" aria-hidden="true">📖</span>{generatedContent?.data.length === 0 ? <span className="text-sm font-medium text-slate-700">{t('glossary.no_terms')}</span> : renderGlossaryEmptyState()}</div></td></tr>}</tbody></table></div></div>}{
+                })}{filteredGlossaryData.length === 0 && <tr role="row"><td role="cell" colSpan={2 + displayLanguages.length + (isEditingGlossary ? 1 : 0)} className="p-10 text-center text-slate-600"><div className="flex flex-col items-center gap-3"><span className="text-4xl allo-empty-float select-none" aria-hidden="true">📖</span>{generatedContent?.data.length === 0 ? <span className="text-sm font-medium text-slate-700">{t('glossary.no_terms')}</span> : renderGlossaryEmptyState()}</div></td></tr>}</tbody></table></div></div>}{renderGlossaryUndoNotice()}{
         // ── Phonics popup (sibling) ──
         // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
         // Renders only when the host has set phonicsData (via handlePhonicsClick),

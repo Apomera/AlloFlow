@@ -486,6 +486,14 @@ function _ltsSessionSettings(value) {
 function _ltsSessionSteps(steps) {
   return Array.isArray(steps) && steps.length > 0 && steps.length <= 24 && steps.every(step => _ltsRecord(step) && _ltsBoundedString(step.id, 160) && _ltsBoundedString(step.title, 1000) && (step.phase == null || _ltsBoundedString(step.phase, 100)) && (step.minutes === '' || ['string', 'number'].includes(typeof step.minutes) && String(step.minutes).length <= 32 && Number.isFinite(Number(step.minutes))) && _LTS_TEXT_FIELDS.every(key => _ltsBoundedString(step[key], 20000)) && ['resourceIds', 'recommendationIds'].every(key => Array.isArray(step[key]) && step[key].length <= 500 && step[key].every(id => _ltsBoundedString(id, 160))));
 }
+function _ltsSessionStepUndo(entries, steps) {
+  return entries == null || Array.isArray(entries) && entries.length <= 24 && Array.isArray(steps) && new Set(entries.map(entry => entry?.stepId)).size === entries.length && entries.every(entry => {
+    if (!_ltsRecord(entry) || !_ltsBoundedString(entry.stepId, 160) || !entry.stepId || !_ltsSessionSteps([entry.previous]) || entry.kind != null && !['replacement', 'restore'].includes(entry.kind)) return false;
+    const matches = steps.filter(step => step?.id === entry.stepId),
+      current = matches[0];
+    return matches.length === 1 && entry.previous.id === entry.stepId && (entry.previous.phase || '') === (current.phase || '') && (entry.kind === 'restore' || Number(entry.previous.minutes) === Number(current.minutes));
+  });
+}
 const _ltsOptionalStrings = (value, keys, limit) => keys.every(key => value[key] == null || _ltsBoundedString(value[key], limit));
 function _ltsSessionSource(source) {
   return _ltsRecord(source) && _ltsOptionalStrings(source, ['id', 'title', 'url', 'author', 'publishedAt', 'evidenceKind', 'scope', 'evidenceLevel', 'retrievedAt'], 4000) && (source.recommendations == null || Array.isArray(source.recommendations) && source.recommendations.length <= 100 && source.recommendations.every(item => _ltsRecord(item) && _ltsOptionalStrings(item, ['id', 'text', 'locator', 'evidenceLevel'], 20000)));
@@ -496,7 +504,7 @@ function _ltsSessionVersion(version) {
   return _ltsRecord(version) && _ltsBoundedString(version.id, 160) && version.id && [1, 2].includes(version.schemaVersion) && _ltsBoundedString(version.title, 1000) && Number.isFinite(version.durationMinutes) && version.durationMinutes > 0 && version.durationMinutes <= 240 && _ltsOptionalStrings(version, ['createdAt', 'researchStatus'], 100) && (!version.scope || ['segment', 'lesson'].includes(version.scope)) && (version.sources == null || Array.isArray(version.sources) && version.sources.length <= 100 && version.sources.every(_ltsSessionSource)) && (version.warnings == null || Array.isArray(version.warnings) && version.warnings.length <= 100 && version.warnings.every(item => _ltsBoundedString(item, 20000))) && (snapshot == null || _ltsRecord(snapshot) && _ltsOptionalStrings(snapshot, ['planFingerprint'], 1000) && (settings == null || _ltsRecord(settings) && _ltsOptionalStrings(settings, ['subject'], 200) && (settings.grade == null || _ltsBoundedString(settings.grade, 200) || typeof settings.grade === 'number' && Number.isFinite(settings.grade)))) && _ltsSessionSteps(version.steps);
 }
 function _ltsSessionValue(value) {
-  return _ltsRecord(value) && value.schemaVersion === 1 && _ltsBoundedString(value.scope, 2048) && _ltsBoundedString(value.planId, 160) && _ltsSessionSettings(value.settings) && _ltsRecord(value.defaults) && ['goal', 'grade', 'subject', 'topic', 'standard'].every(key => _ltsBoundedString(value.defaults[key], 4000)) && _ltsBoundedString(value.selectedId, 160) && (value.draft == null || _ltsRecord(value.draft) && _ltsSessionVersion(value.draft.version) && _ltsBoundedString(value.draft.baseline, _LTS_SESSION_LIMIT) && _ltsSessionSteps(JSON.parse(value.draft.baseline)) && _ltsSessionSteps(value.draft.steps));
+  return _ltsRecord(value) && value.schemaVersion === 1 && _ltsBoundedString(value.scope, 2048) && _ltsBoundedString(value.planId, 160) && _ltsSessionSettings(value.settings) && _ltsRecord(value.defaults) && ['goal', 'grade', 'subject', 'topic', 'standard'].every(key => _ltsBoundedString(value.defaults[key], 4000)) && _ltsBoundedString(value.selectedId, 160) && (value.draft == null || _ltsRecord(value.draft) && _ltsSessionVersion(value.draft.version) && _ltsBoundedString(value.draft.baseline, _LTS_SESSION_LIMIT) && _ltsSessionSteps(JSON.parse(value.draft.baseline)) && _ltsSessionSteps(value.draft.steps) && _ltsSessionStepUndo(value.draft.stepUndo, value.draft.steps));
 }
 function _ltsReadSession(key, scope, planId) {
   if (!key) return {
@@ -519,6 +527,8 @@ function _ltsReadSession(key, scope, planId) {
   try {
     if (raw.length > _LTS_SESSION_LIMIT) throw new Error('Oversized recovery data');
     const value = JSON.parse(raw);
+    // Optional undo history must not prevent recovery of the teacher's main draft.
+    if (_ltsRecord(value?.draft) && !_ltsSessionStepUndo(value.draft.stepUndo, value.draft.steps)) value.draft.stepUndo = [];
     if (!_ltsSessionValue(value) || value.scope !== scope || value.planId !== planId) throw new Error('Invalid recovery data');
     return {
       value,
@@ -535,7 +545,15 @@ function _ltsWriteSession(key, value) {
   if (!key) return 'unavailable';
   try {
     if (!_ltsSessionValue(value)) return 'large';
-    const raw = JSON.stringify(value);
+    let raw = JSON.stringify(value);
+    // The current draft takes priority over optional undo snapshots near the tab limit.
+    if (raw.length > _LTS_SESSION_LIMIT && value.draft?.stepUndo?.length) raw = JSON.stringify({
+      ...value,
+      draft: {
+        ...value.draft,
+        stepUndo: []
+      }
+    });
     if (raw.length > _LTS_SESSION_LIMIT) return 'large';
     window.sessionStorage.setItem(key, raw);
     return '';
@@ -569,7 +587,10 @@ function LessonTeachingScriptPanel(props) {
     onGenerateTeachingScript,
     onCancelTeachingScript,
     onUpdateTeachingScript,
-    onOpenTeachingMaterial
+    onOpenTeachingMaterial,
+    onGetTeachingScriptRecovery,
+    onDiscardTeachingScriptRecovery,
+    onRegenerateTeachingStep
   } = props;
   const tr = (key, fallback) => {
     const value = props.t?.('lesson_script.' + key);
@@ -641,13 +662,20 @@ function LessonTeachingScriptPanel(props) {
   const [materialIds, setMaterialIds] = React.useState(() => restored?.settings.materialIds || materials.filter(materialAvailable).slice(0, 3).map(item => String(item.id)));
   const [selectedId, setSelectedId] = React.useState(() => restored?.draft?.version.id || restored?.selectedId || String(versions[versions.length - 1]?.id || ''));
   const [draft, setDraft] = React.useState(restored?.draft?.steps || null);
+  const [stepUndo, setStepUndo] = React.useState(restored?.draft?.stepUndo || []);
   const [draftSnapshot, setDraftSnapshot] = React.useState(restored?.draft?.version || null);
   const [draftBase, setDraftBase] = React.useState(restored?.draft?.baseline || '');
   const [draftVersionId, setDraftVersionId] = React.useState(restored?.draft?.version.id || '');
   const [localBusy, setLocalBusy] = React.useState(false);
+  const [, refreshGenerationRecovery] = React.useState(0);
   const [saving, setSaving] = React.useState(false);
   const [localError, setLocalError] = React.useState('');
   const [notice, setNotice] = React.useState('');
+  const [regenerateIndex, setRegenerateIndex] = React.useState(null);
+  const [regenerateInstruction, setRegenerateInstruction] = React.useState('');
+  const [regeneratingStep, setRegeneratingStep] = React.useState(null);
+  const regenerateFocus = React.useRef(null);
+  const latestVersion = React.useRef(null);
   const mounted = React.useRef(true);
   const requestOwner = React.useRef(0);
   const generatingRequest = React.useRef(false);
@@ -667,16 +695,69 @@ function LessonTeachingScriptPanel(props) {
   const steps = draft || sourceSteps;
   const versionRules = _ltsRules(version);
   const timings = steps.reduce((sum, step) => sum + Number(step.minutes || 0), 0);
-  const invalidTiming = !!draft && (draft.some(step => !Number.isInteger(Number(step.minutes)) || Number(step.minutes) < 1 || Number(step.minutes) > versionRules.maxStepMinutes) || timings !== Number(version?.durationMinutes));
-  const invalidDraftText = !!draft && draft.some(step => _ltsText(step.title).trim().length < 2 || _ltsText(step.title).trim().length > 240 || ['teacherSays', 'studentDoes', 'checkQuestion', 'possibleResponse', 'ifStruggling', 'ifReady'].some(key => _ltsText(step[key]).trim().length < (key === 'teacherSays' ? 60 : 12)));
-  const invalidDraftLength = !!draft && draft.some(step => ['teacherSays', 'studentDoes', 'checkQuestion', 'possibleResponse', 'ifStruggling', 'ifReady'].some(key => _ltsText(step[key]).trim().length > 16000));
+  const invalidStepTiming = !!draft && draft.some(step => !Number.isInteger(Number(step.minutes)) || Number(step.minutes) < 1 || Number(step.minutes) > versionRules.maxStepMinutes);
+  const invalidTiming = !!draft && (invalidStepTiming || timings !== Number(version?.durationMinutes));
+  const draftTextProblems = (draft || []).map(step => ({
+    incomplete: _ltsText(step.title).trim().length < 2 || _ltsText(step.title).trim().length > 240 || _LTS_TEXT_FIELDS.some(key => _ltsText(step[key]).trim().length < (key === 'teacherSays' ? 60 : 12)),
+    oversized: _LTS_TEXT_FIELDS.some(key => _ltsText(step[key]).trim().length > 16000)
+  }));
+  const invalidDraftText = draftTextProblems.some(problem => problem.incomplete);
+  const invalidDraftLength = draftTextProblems.some(problem => problem.oversized);
+  const timingDifference = Number(version?.durationMinutes) - timings;
+  const timingAdjustment = invalidTiming && !invalidStepTiming ? (timingDifference > 0 ? timingDifference === 1 ? tr('timing_add_one', 'Add 1 minute across steps to meet the saved teaching time.') : tr('timing_add', 'Add {count} minutes across steps to meet the saved teaching time.') : timingDifference === -1 ? tr('timing_remove_one', 'Remove 1 minute across steps to meet the saved teaching time.') : tr('timing_remove', 'Remove {count} minutes across steps to meet the saved teaching time.')).replace('{count}', String(Math.abs(timingDifference))) : '';
+  const regenerationIssue = index => {
+    if (invalidTiming) return timingAdjustment || tr('step_timing_blocker', 'Use positive whole minutes within the allowed range for every step before regenerating.');
+    // The replacement can repair this step's wording; every untouched step must stay valid.
+    const otherIssue = draftTextProblems.findIndex((problem, offset) => offset !== index && (problem.incomplete || problem.oversized));
+    return otherIssue >= 0 ? tr('step_other_blocker', 'Complete the highlighted fields in step {number} before regenerating this step.').replace('{number}', String(otherIssue + 1)) : '';
+  };
   const draftChanged = !!draft && JSON.stringify(draft.map(step => ({
     ...step,
     minutes: Number(step.minutes)
   }))) !== draftBase;
+  const stepChanged = index => !!draft && !!sourceSteps[index] && steps[index]?.id === sourceSteps[index].id && JSON.stringify({
+    ...steps[index],
+    minutes: Number(steps[index].minutes)
+  }) !== JSON.stringify(sourceSteps[index]);
   const staleDraft = !!draft && (!canonicalVersion || String(canonicalVersion.id) !== draftVersionId || JSON.stringify(sourceSteps) !== draftBase);
+  latestVersion.current = {
+    id: String(version?.id || ''),
+    baseline: JSON.stringify(sourceSteps)
+  };
   const selectedMaterials = materials.filter(item => materialIds.includes(String(item.id)) && materialAvailable(item));
   const unavailableMaterialIds = materialIds.filter(id => !selectedMaterials.some(item => String(item.id) === id));
+  const generationSettings = {
+    goal: goal.trim(),
+    grade,
+    subject,
+    topic: topic.trim(),
+    inferContext: {
+      ...inferContext
+    },
+    scope,
+    durationMinutes: Number(durationMinutes),
+    priorKnowledge: priorKnowledge.trim(),
+    researchEnabled,
+    materialIds: selectedMaterials.map(item => item.id),
+    language: _ltsText(defaultSettings.language) || 'English',
+    standard: standard.trim()
+  };
+  let generationRecovery = null;
+  try {
+    const saved = onGetTeachingScriptRecovery?.(generationSettings);
+    if (saved && Number.isInteger(saved.completedChunks) && Number.isInteger(saved.totalChunks) && saved.totalChunks > 0 && saved.completedChunks >= 0 && saved.completedChunks <= saved.totalChunks && (saved.completedChunks > 0 || ['generating', 'chunking'].includes(saved.stage))) generationRecovery = saved;
+  } catch (_) {/* A missing checkpoint must not prevent reading or generating a script. */}
+  const canFinishSaving = generationRecovery?.stage === 'ready' && generationRecovery.completedChunks === generationRecovery.totalChunks && typeof onGenerateTeachingScript === 'function';
+  const canReuseResearch = !!generationRecovery && ['generating', 'chunking', 'ready'].includes(generationRecovery.stage);
+  const canContinueGeneration = canFinishSaving || canGenerate && (!researchEnabled || canResearch || canReuseResearch);
+  // A settings mismatch hides Resume, but must not hide generated work that a reload would lose.
+  let pendingGenerationRecovery = generationRecovery;
+  if (!pendingGenerationRecovery) {
+    try {
+      pendingGenerationRecovery = onGetTeachingScriptRecovery?.() || null;
+    } catch (_) {/* Optional recovery status. */}
+  }
+  const memoryOnlyGeneration = pendingGenerationRecovery?.persistence === 'memory' && Number.isInteger(pendingGenerationRecovery.completedChunks) && Number.isInteger(pendingGenerationRecovery.totalChunks) && pendingGenerationRecovery.totalChunks > 0 && pendingGenerationRecovery.completedChunks >= 0 && pendingGenerationRecovery.completedChunks <= pendingGenerationRecovery.totalChunks && ['generating', 'chunking', 'ready'].includes(pendingGenerationRecovery.stage);
   let inputWarnings = [],
     planChangedSinceScript = false,
     materialStatus = null;
@@ -717,6 +798,12 @@ function LessonTeachingScriptPanel(props) {
       downloads.current.clear();
     };
   }, []);
+  React.useEffect(() => {
+    if (regenerateFocus.current === null || regeneratingStep !== null) return;
+    const index = regenerateFocus.current;
+    regenerateFocus.current = null;
+    (document.getElementById(id + '-edit-' + index + '-title') || document.getElementById(id + '-regenerate-' + index))?.focus();
+  }, [draft, regeneratingStep, regenerateIndex]);
   const defaultsKey = JSON.stringify(detectedDefaults);
   React.useEffect(() => {
     if (busy || saving || JSON.stringify(previousDefaults.current) === defaultsKey) return;
@@ -780,7 +867,8 @@ function LessonTeachingScriptPanel(props) {
     draft: draft ? {
       version: draftSnapshot,
       baseline: draftBase,
-      steps: draft
+      steps: draft,
+      stepUndo
     } : null
   };
   const recoveryPayload = JSON.stringify(recoveryValue);
@@ -794,14 +882,14 @@ function LessonTeachingScriptPanel(props) {
     setRecoveryStatus(status);
   }, [recoveryPayload, hasSessionWork, recoveryKey]);
   React.useEffect(() => {
-    if (!draft || !['unavailable', 'large'].includes(recoveryStatus)) return;
-    const protectUnrecoverableDraft = event => {
+    if (!memoryOnlyGeneration && (!draft || !['unavailable', 'large'].includes(recoveryStatus))) return;
+    const protectUnrecoverableWork = event => {
       event.preventDefault();
       event.returnValue = '';
     };
-    window.addEventListener('beforeunload', protectUnrecoverableDraft);
-    return () => window.removeEventListener('beforeunload', protectUnrecoverableDraft);
-  }, [!!draft, recoveryStatus]);
+    window.addEventListener('beforeunload', protectUnrecoverableWork);
+    return () => window.removeEventListener('beforeunload', protectUnrecoverableWork);
+  }, [!!draft, recoveryStatus, memoryOnlyGeneration]);
   const versionIds = versions.map(item => String(item.id)).join('|');
   React.useEffect(() => {
     const added = versions.filter(item => !previousVersions.current.includes(String(item.id)));
@@ -821,31 +909,22 @@ function LessonTeachingScriptPanel(props) {
     // Each scope has its own realistic default; the teacher can still edit the minutes afterwards.
     setDurationMinutes(Number(suggested[next]) || (next === 'lesson' ? 45 : 15));
   };
-  const generate = async event => {
+  const generate = async (event, startOver = false) => {
     event?.preventDefault();
-    if (generatingRequest.current || deletingRequest.current || deleting || busy || saving || draft || !canGenerate || researchEnabled && !canResearch || !formReady) return;
+    const available = startOver ? canGenerate && (!researchEnabled || canResearch) : canContinueGeneration;
+    if (generatingRequest.current || deletingRequest.current || deleting || busy || saving || draft || !available || !formReady) return;
     const owner = ++requestOwner.current;
     generatingRequest.current = true;
     setLocalBusy(true);
     setLocalError('');
     setNotice('');
     try {
-      const result = await onGenerateTeachingScript({
-        goal: goal.trim(),
-        grade,
-        subject,
-        topic: topic.trim(),
-        inferContext: {
-          ...inferContext
-        },
-        scope,
-        durationMinutes: Number(durationMinutes),
-        priorKnowledge: priorKnowledge.trim(),
-        researchEnabled,
-        materialIds: selectedMaterials.map(item => item.id),
-        language: _ltsText(defaultSettings.language) || 'English',
-        standard: standard.trim()
-      });
+      if (startOver) {
+        const cleared = await onDiscardTeachingScriptRecovery?.();
+        if (cleared?.ok !== true) throw new Error(_ltsText(cleared?.error?.message || cleared?.error) || tr('restart_failed', 'The saved progress could not be cleared. Try again.'));
+        if (!mounted.current || owner !== requestOwner.current) return;
+      }
+      const result = await onGenerateTeachingScript(generationSettings);
       if (result?.ok && mounted.current && owner === requestOwner.current) {
         const resolved = result.version?.inputSnapshot?.settings;
         if (inferContext.subject && subjectOptions.some(([value]) => value === resolved?.subject)) setSubject(resolved.subject);
@@ -858,6 +937,7 @@ function LessonTeachingScriptPanel(props) {
       if (mounted.current && owner === requestOwner.current) {
         generatingRequest.current = false;
         setLocalBusy(false);
+        refreshGenerationRecovery(revision => revision + 1);
       }
     }
   };
@@ -865,9 +945,72 @@ function LessonTeachingScriptPanel(props) {
     requestOwner.current += 1;
     generatingRequest.current = false;
     setLocalBusy(false);
+    setRegeneratingStep(null);
+    setLocalError('');
     if (typeof onCancelTeachingScript === 'function') onCancelTeachingScript(plan.id);
-    setNotice(tr('cancelled', 'Generation cancelled.'));
+    setNotice(regeneratingStep !== null ? tr('step_cancelled', 'Step regeneration cancelled. Your script is unchanged.') : tr('cancelled', 'Generation cancelled. Completed sections are kept so you can resume.'));
+    if (regeneratingStep !== null) {
+      regenerateFocus.current = regeneratingStep;
+      return;
+    }
     (expanded ? settingsToggle.current : panelToggle.current)?.focus();
+  };
+  const regenerateStep = async index => {
+    if (generatingRequest.current || savingRequest.current || deletingRequest.current || !version || !canonicalVersion || !steps[index] || busy || saving || deleting || regenerationIssue(index) || staleDraft || !canGenerate || typeof onRegenerateTeachingStep !== 'function') return;
+    const owner = ++requestOwner.current,
+      baseline = draft ? draftBase : JSON.stringify(sourceSteps),
+      versionId = String(version.id);
+    const currentSteps = JSON.parse(JSON.stringify(steps)),
+      target = currentSteps[index];
+    const snapshot = JSON.parse(JSON.stringify(draftSnapshot || version));
+    generatingRequest.current = true;
+    setLocalBusy(true);
+    setRegeneratingStep(index);
+    setConfirmDiscard(false);
+    setDeleteCandidate(null);
+    setLocalError('');
+    setNotice('');
+    try {
+      const result = await onRegenerateTeachingStep(plan.id, version.id, target.id, {
+        steps: currentSteps.map(step => ({
+          ...step,
+          minutes: Number(step.minutes)
+        })),
+        instruction: regenerateInstruction.trim().slice(0, 2000),
+        expectedSteps: JSON.parse(baseline)
+      });
+      if (!mounted.current || owner !== requestOwner.current) return;
+      if (latestVersion.current.id !== versionId || latestVersion.current.baseline !== baseline) throw new Error(tr('step_stale', 'This saved version changed while the step was being generated. Your existing edits are still here.'));
+      if (result?.ok !== true) throw new Error(_ltsText(result?.error?.message || result?.error) || tr('step_failed', 'This step could not be regenerated. Your existing wording is still here.'));
+      const replacement = result.step;
+      if (!_ltsSessionSteps([replacement]) || replacement.id !== target.id || replacement.phase !== (target.phase || '') || Number(replacement.minutes) !== Number(target.minutes) || replacement.title.trim().length < 2 || replacement.title.trim().length > 240 || _LTS_TEXT_FIELDS.some(key => replacement[key].trim().length < (key === 'teacherSays' ? 60 : 12) || replacement[key].length > 16000)) {
+        throw new Error(tr('step_invalid', 'The replacement step was incomplete. Your existing wording is still here.'));
+      }
+      setDraft(currentSteps.map((step, offset) => offset === index ? {
+        ...replacement,
+        minutes: Number(target.minutes)
+      } : step));
+      setStepUndo(previous => previous.filter(entry => entry.stepId !== target.id).concat({
+        stepId: target.id,
+        previous: target
+      }));
+      setDraftSnapshot(snapshot);
+      setDraftBase(baseline);
+      setDraftVersionId(versionId);
+      setRegenerateIndex(null);
+      setRegenerateInstruction('');
+      setShowRecoveryNotice(false);
+      regenerateFocus.current = index;
+      setNotice(tr('step_ready', 'Replacement step added to your unsaved draft. Review it, then save or discard your edits.'));
+    } catch (failure) {
+      if (mounted.current && owner === requestOwner.current) setLocalError(_ltsText(failure?.message) || tr('step_failed', 'This step could not be regenerated. Your existing wording is still here.'));
+    } finally {
+      if (mounted.current && owner === requestOwner.current) {
+        generatingRequest.current = false;
+        setLocalBusy(false);
+        setRegeneratingStep(null);
+      }
+    }
   };
   const edit = () => {
     if (!version || busy || saving || deleting) return;
@@ -875,6 +1018,7 @@ function LessonTeachingScriptPanel(props) {
     setDeleteCandidate(null);
     focusNewDraft.current = true;
     setDraft(JSON.parse(JSON.stringify(sourceSteps)));
+    setStepUndo([]);
     setDraftSnapshot(JSON.parse(JSON.stringify(version)));
     setDraftBase(JSON.stringify(sourceSteps));
     setDraftVersionId(String(version.id));
@@ -883,14 +1027,52 @@ function LessonTeachingScriptPanel(props) {
     setNotice('');
   };
   const updateStep = (index, key, value) => {
+    if (generatingRequest.current || savingRequest.current) return;
     setConfirmDiscard(false);
+    // Editing this step accepts its last change, so Undo never erases newer teacher wording.
+    setStepUndo(previous => previous.filter(entry => entry.stepId !== steps[index]?.id));
     setDraft(previous => previous.map((step, offset) => offset === index ? {
       ...step,
       [key]: value
     } : step));
   };
+  const restoreSavedStep = index => {
+    if (generatingRequest.current || savingRequest.current || deletingRequest.current || busy || saving || deleting || staleDraft || !draft || !canonicalVersion || !stepChanged(index)) return;
+    const target = steps[index],
+      saved = sourceSteps[index];
+    if (!_ltsSessionSteps([target]) || !_ltsSessionSteps([saved]) || (target.phase || '') !== (saved.phase || '')) return;
+    setDraft(previous => previous.map((step, offset) => offset === index ? JSON.parse(JSON.stringify(saved)) : step));
+    setStepUndo(previous => previous.filter(entry => entry.stepId !== target.id).concat({
+      stepId: target.id,
+      kind: 'restore',
+      previous: JSON.parse(JSON.stringify(target))
+    }));
+    setRegenerateIndex(null);
+    setRegenerateInstruction('');
+    setConfirmDiscard(false);
+    setLocalError('');
+    regenerateFocus.current = index;
+    setNotice(tr('step_restored', 'Restored this step to its saved wording and minutes in your draft. Your other edits are still here. Review the timing before saving.'));
+  };
+  const undoStepChange = index => {
+    if (generatingRequest.current || savingRequest.current || deletingRequest.current || busy || saving || deleting || staleDraft || !draft || !canonicalVersion) return;
+    const target = steps[index],
+      entry = stepUndo.find(item => item.stepId === target?.id);
+    if (!entry || !_ltsSessionStepUndo([entry], steps)) return;
+    setDraft(previous => previous.map((step, offset) => offset === index ? JSON.parse(JSON.stringify(entry.previous)) : step));
+    setStepUndo(previous => previous.filter(item => item.stepId !== target.id));
+    setRegenerateIndex(null);
+    setRegenerateInstruction('');
+    setConfirmDiscard(false);
+    setLocalError('');
+    regenerateFocus.current = index;
+    setNotice(entry.kind === 'restore' ? tr('step_restore_undone', 'Undid the step restore. Your previous wording and minutes are back, and your other edits are still here.') : tr('step_undone', 'Restored this step to its wording before the replacement. Your other edits are still here.'));
+  };
   const discardEdits = () => {
-    if (saving) return;
+    if (saving || busy || generatingRequest.current) return;
+    setRegenerateIndex(null);
+    setRegenerateInstruction('');
+    setStepUndo([]);
     setConfirmDiscard(false);
     restoreEditFocus.current = true;
     setDraft(null);
@@ -905,7 +1087,7 @@ function LessonTeachingScriptPanel(props) {
     setTimeout(() => discardToggle.current?.focus(), 0);
   };
   const saveEdits = async () => {
-    if (savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return;
+    if (generatingRequest.current || busy || savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return;
     const owner = ++requestOwner.current;
     savingRequest.current = true;
     setConfirmDiscard(false);
@@ -922,16 +1104,17 @@ function LessonTeachingScriptPanel(props) {
         ...step,
         minutes: Number(step.minutes)
       })), JSON.parse(draftBase));
-      if (result !== false && result?.ok !== false) {
+      if (result?.ok === true) {
         const clearStatus = _ltsClearSubmittedDraft(recoveryKey, draftScope, planId, submittedDraft);
         if (mounted.current && clearStatus) setRecoveryStatus(clearStatus);
       }
       if (!mounted.current || owner !== requestOwner.current) return;
-      if (result === false || result?.ok === false) {
-        setLocalError(_ltsText(result?.error?.message || result?.error) || tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.'));
+      if (result?.ok !== true) {
+        setLocalError(_ltsText(result?.error?.message || result?.error) || (result === false || result?.ok === false ? tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.') : tr('save_unconfirmed', 'Saving could not be confirmed. Your draft is still here. Try saving again.')));
         return;
       }
       restoreEditFocus.current = true;
+      setStepUndo([]);
       setDraft(null);
       setDraftSnapshot(null);
       setDraftBase('');
@@ -1019,8 +1202,8 @@ function LessonTeachingScriptPanel(props) {
     try {
       const result = await props.onDeleteTeachingScript(plan.id, deleteCandidate.id, deleteCandidate);
       if (!mounted.current) return;
-      if (result === false || result?.ok === false) {
-        setLocalError(_ltsText(result?.error?.message || result?.error) || tr('delete_failed', 'The version could not be deleted. Try again.'));
+      if (result?.ok !== true) {
+        setLocalError(_ltsText(result?.error?.message || result?.error) || (result === false || result?.ok === false ? tr('delete_failed', 'The version could not be deleted. Try again.') : tr('delete_unconfirmed', 'Deletion could not be confirmed. Review this version and try again.')));
         return;
       }
       restoreDeleteFocus.current = true;
@@ -1115,8 +1298,10 @@ function LessonTeachingScriptPanel(props) {
     research: tr('progress_research', 'Finding research for this lesson…'),
     generating: tr('progress_generating', 'Writing the teaching script…'),
     validating: tr('progress_validating', 'Checking and improving the script…'),
+    ready: tr('progress_saving', 'Adding the completed script to this lesson…'),
+    regeneratingStep: tr('progress_step', 'Writing the replacement step…'),
     chunking: tr('progress_chunking', 'Writing the script in smaller sections…') + (Number.isInteger(hostRun.totalChunks) && hostRun.totalChunks > 0 ? ' ' + Math.min(hostRun.totalChunks, Math.max(0, Number(hostRun.completedChunks) || 0)) + '/' + hostRun.totalChunks : '')
-  }[hostRun.stage] || _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…');
+  }[regeneratingStep !== null ? 'regeneratingStep' : hostRun.stage] || _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…');
   if (spokenOnly && version) return /*#__PURE__*/React.createElement(LessonSpokenDirections, {
     key: JSON.stringify([version.id, runtime?.spokenSegments?.({
       ...version,
@@ -1167,7 +1352,10 @@ function LessonTeachingScriptPanel(props) {
   }, tr('tagline', 'Word-for-word teacher wording for this lesson · any subject and grade · a teaching segment or the whole lesson')), showRecoveryNotice && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-2 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950"
-  }, draft ? tr('recovered_draft', 'Recovered unsaved script edits and settings from this tab. Save edits to add them to the lesson plan.') : tr('recovered_settings', 'Recovered your script settings from this tab.')), (recoveryStatus === 'invalid' || hasSessionWork && ['unavailable', 'large'].includes(recoveryStatus)) && /*#__PURE__*/React.createElement("p", {
+  }, draft ? tr('recovered_draft', 'Recovered unsaved script edits and settings from this tab. Save edits to add them to the lesson plan.') : tr('recovered_settings', 'Recovered your script settings from this tab.')), memoryOnlyGeneration && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+  }, tr('generation_recovery_unavailable', 'This app could not keep a recovery copy of the latest generated work. Keep it open and resume or finish saving before reloading, closing, or switching workspaces.')), (recoveryStatus === 'invalid' || hasSessionWork && ['unavailable', 'large'].includes(recoveryStatus)) && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
   }, recoveryStatus === 'invalid' ? tr('recovery_invalid', 'A recovery copy could not be restored. Your saved lesson and script versions are still available.') : tr('recovery_unavailable', 'This tab could not keep a recovery copy of the latest changes. Save script edits before leaving this lesson; your current edits are still on this page.')), hasIncompleteVersions && /*#__PURE__*/React.createElement("p", {
@@ -1424,22 +1612,32 @@ function LessonTeachingScriptPanel(props) {
     className: "text-xs text-slate-600"
   }, tr('research_hint', 'Public practice guides are matched to the subject, topic and grade above and read in full; if none can be verified, generation stops so you can decide.')), !researchEnabled && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-sm text-slate-700"
-  }, tr('resources_only', 'The script will use your saved lesson and selected resources without retrieved research.')), researchEnabled && !canResearch && /*#__PURE__*/React.createElement("p", {
+  }, tr('resources_only', 'The script will use your saved lesson and selected resources without retrieved research.')), researchEnabled && !canResearch && !canReuseResearch && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, tr('research_unavailable', 'Live research is unavailable here. Turn off research to generate from the lesson, or try again when research is available.'))), !canGenerate && /*#__PURE__*/React.createElement("p", {
+  }, tr('research_unavailable', 'Live research is unavailable here. Turn off research to generate from the lesson, or try again when research is available.')), researchEnabled && !canResearch && canReuseResearch && !canFinishSaving && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, tr('research_reused', 'Resume will reuse this run’s saved research. Starting over with research requires live research access.'))), !canGenerate && !canFinishSaving && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "rounded-lg bg-amber-50 p-3 text-sm text-amber-950"
   }, tr('ai_unavailable', 'Script generation needs an available AI connection. Saved versions remain available to read, edit and export.')), !!draft && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900"
   }, tr('finish_edits', 'Save or discard your script edits before generating another version.')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')), /*#__PURE__*/React.createElement("div", {
+  }, tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')), generationRecovery && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950"
+  }, generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('resume_save_progress', 'All sections are ready. Finish saving to add the completed script to this lesson.') : generationRecovery.completedChunks === 0 ? tr('resume_setup_progress', 'Your lesson setup is ready. Resume to write the script.') : tr('resume_progress', '{completed} of {total} sections are ready. Resume to finish the remaining sections.').replace('{completed}', String(generationRecovery.completedChunks)).replace('{total}', String(generationRecovery.totalChunks))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: buttonClass + ' bg-indigo-50',
-    disabled: !canGenerate || researchEnabled && !canResearch || busy || saving || deleting || !!draft || !formReady
-  }, error ? tr('retry', 'Try generating again') : tr('generate', 'Generate script')))))), /*#__PURE__*/React.createElement("div", {
+    disabled: !canContinueGeneration || busy || saving || deleting || !!draft || !formReady
+  }, generationRecovery ? generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('finish_saving', 'Finish saving') : tr('resume', 'Resume script') : error ? tr('retry', 'Try generating again') : tr('generate', 'Generate script')), generationRecovery && typeof onDiscardTeachingScriptRecovery === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    disabled: !canGenerate || researchEnabled && !canResearch || busy || saving || deleting || !!draft || !formReady,
+    onClick: event => generate(event, true)
+  }, tr('start_over', 'Start over')))))), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     className: "text-sm font-bold text-indigo-950"
@@ -1468,6 +1666,8 @@ function LessonTeachingScriptPanel(props) {
     onChange: event => {
       setDeleteCandidate(null);
       setSelectedId(event.target.value);
+      setRegenerateIndex(null);
+      setRegenerateInstruction('');
       setNotice('');
       setLocalError('');
     }
@@ -1486,22 +1686,22 @@ function LessonTeachingScriptPanel(props) {
     ref: spokenToggle,
     type: "button",
     className: buttonClass,
-    disabled: saving || deleting,
+    disabled: saving || busy || deleting,
     onClick: () => setSpokenOnly(true)
   }, tr('spoken_view', 'Spoken directions')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || busy,
     onClick: () => exportText('copy')
   }, tr('copy', 'Copy text')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || busy,
     onClick: () => exportText('download')
   }, tr('download', 'Download text')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || busy,
     onClick: () => exportText('print')
   }, tr('print_script', 'Print script'))), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
@@ -1587,7 +1787,11 @@ function LessonTeachingScriptPanel(props) {
     }
   }, tr('review_save', 'Go to save and discard controls')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800"
-  }, tr('edit_timing', 'Step total:'), " ", Number.isFinite(timings) ? timings : '—', " / ", version.durationMinutes, " ", tr('minutes', 'minutes')), (invalidTiming || invalidDraftText || invalidDraftLength) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, tr('edit_timing', 'Step total:'), " ", Number.isFinite(timings) ? timings : '—', " / ", version.durationMinutes, " ", tr('minutes', 'minutes')), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: 'text-sm ' + (timingAdjustment ? 'text-red-900' : 'text-slate-700')
+  }, timingAdjustment || tr('edit_timing_hint', 'Redistribute minutes between steps while keeping the saved teaching time. Regenerating a step keeps its current minutes.')), (invalidTiming || invalidDraftText || invalidDraftLength) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-red-900"
   }, tr('review_fields', 'Review the highlighted fields and step timing before saving.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1625,7 +1829,7 @@ function LessonTeachingScriptPanel(props) {
     className: fieldClass + ' mt-1',
     value: step.title || '',
     maxLength: 240,
-    disabled: saving,
+    disabled: saving || busy,
     onChange: event => updateStep(index, 'title', event.target.value)
   })), editFieldError(step, index, 'title')), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold"
@@ -1637,7 +1841,7 @@ function LessonTeachingScriptPanel(props) {
     max: versionRules.maxStepMinutes,
     step: 1,
     value: step.minutes,
-    disabled: saving,
+    disabled: saving || busy,
     onChange: event => updateStep(index, 'minutes', event.target.value)
   })), editFieldError(step, index, 'minutes'))) : /*#__PURE__*/React.createElement("h5", {
     "data-script-step-heading": true,
@@ -1645,7 +1849,80 @@ function LessonTeachingScriptPanel(props) {
     className: "rounded font-black text-indigo-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
   }, index + 1, ". ", _ltsText(step.title), " ", /*#__PURE__*/React.createElement("span", {
     className: "font-normal"
-  }, "· ", step.minutes, " ", tr('minutes', 'minutes'), phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : '')), /*#__PURE__*/React.createElement("div", {
+  }, "· ", step.minutes, " ", tr('minutes', 'minutes'), phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : '')), canGenerate && typeof onRegenerateTeachingStep === 'function' && typeof onUpdateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2 no-print"
+  }, regenerateIndex === index ? /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1),
+    className: "space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold"
+  }, tr('step_instruction', 'What should change? (optional)'), " · ", index + 1, /*#__PURE__*/React.createElement("textarea", {
+    autoFocus: true,
+    "aria-label": tr('step_instruction', 'What should change? (optional)') + ' · ' + (index + 1),
+    rows: 2,
+    maxLength: 2000,
+    className: fieldClass + ' mt-1',
+    value: regenerateInstruction,
+    disabled: busy || saving || deleting,
+    onChange: event => setRegenerateInstruction(event.target.value)
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
+  }, tr('step_regenerate_hint', 'Only this step will change. Review the replacement in your draft before saving.')), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    "aria-describedby": regenerationIssue(index) ? id + '-regenerate-issue-' + index : undefined,
+    disabled: busy || saving || deleting || !!regenerationIssue(index) || staleDraft,
+    onClick: () => regenerateStep(index)
+  }, tr('generate_replacement', 'Generate replacement')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    disabled: busy || saving || deleting,
+    onClick: () => {
+      regenerateFocus.current = index;
+      setRegenerateIndex(null);
+      setRegenerateInstruction('');
+    }
+  }, tr('keep_step', 'Keep current step')))) : /*#__PURE__*/React.createElement("button", {
+    id: id + '-regenerate-' + index,
+    type: "button",
+    className: buttonClass,
+    "aria-label": tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1),
+    "aria-describedby": regenerationIssue(index) ? id + '-regenerate-issue-' + index : undefined,
+    disabled: busy || saving || deleting || !!regenerationIssue(index) || staleDraft,
+    onClick: () => {
+      setRegenerateIndex(index);
+      setRegenerateInstruction('');
+      setLocalError('');
+      setNotice('');
+    }
+  }, tr('regenerate_step', 'Regenerate step')), regenerationIssue(index) && /*#__PURE__*/React.createElement("p", {
+    id: id + '-regenerate-issue-' + index,
+    className: "text-xs text-red-900"
+  }, regenerationIssue(index))), draft && stepChanged(index) && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-1 no-print"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    "aria-label": tr('restore_saved_step', 'Restore saved step') + ' ' + (index + 1),
+    disabled: busy || saving || deleting || staleDraft,
+    onClick: () => restoreSavedStep(index)
+  }, tr('restore_saved_step', 'Restore saved step')), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600"
+  }, tr('restore_saved_step_hint', 'Restore this step’s saved wording and minutes. Other steps stay as edited; check the total time before saving. You can undo this restore.'))), draft && stepUndo.filter(entry => entry.stepId === step.id).map(entry => /*#__PURE__*/React.createElement("div", {
+    key: entry.stepId,
+    className: "space-y-1 no-print"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    "aria-label": (entry.kind === 'restore' ? tr('undo_step_restore', 'Undo step restore') : tr('undo_step_replacement', 'Undo step replacement')) + ' ' + (index + 1),
+    disabled: busy || saving || deleting || staleDraft,
+    onClick: () => undoStepChange(index)
+  }, entry.kind === 'restore' ? tr('undo_step_restore', 'Undo step restore') : tr('undo_step_replacement', 'Undo step replacement')), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600"
+  }, entry.kind === 'restore' ? tr('undo_step_restore_hint', 'Bring back the wording and minutes from before this restore. Editing this step will clear its undo option.') : tr('undo_step_hint', 'Restore the wording from before this replacement. Editing this step will clear its undo option.')))), /*#__PURE__*/React.createElement("div", {
     className: "grid gap-3 sm:grid-cols-2"
   }, stepFields.map(([key, label]) => /*#__PURE__*/React.createElement("div", {
     key: key,
@@ -1662,7 +1939,7 @@ function LessonTeachingScriptPanel(props) {
     rows: 3,
     value: step[key] || '',
     maxLength: 16000,
-    disabled: saving,
+    disabled: saving || busy,
     onChange: event => updateStep(index, key, event.target.value)
   })), editFieldError(step, index, key)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h6", {
     className: "text-xs font-black uppercase tracking-wide text-slate-600"
@@ -1679,7 +1956,7 @@ function LessonTeachingScriptPanel(props) {
       type: "button",
       key: resourceId,
       className: buttonClass + ' no-print',
-      disabled: !!draft || saving,
+      disabled: !!draft || saving || busy,
       onClick: () => onOpenTeachingMaterial(material.id)
     }, _ltsText(material.title || material.data?.title) || _ltsText(material.type)) : /*#__PURE__*/React.createElement("span", {
       key: resourceId,
@@ -1727,13 +2004,13 @@ function LessonTeachingScriptPanel(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
-    disabled: saving || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft,
+    disabled: saving || busy || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft,
     onClick: saveEdits
   }, saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')), !confirmDiscard && /*#__PURE__*/React.createElement("button", {
     ref: discardToggle,
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || busy,
     onClick: () => draftChanged ? setConfirmDiscard(true) : discardEdits()
   }, tr('discard', 'Discard edits')), confirmDiscard && /*#__PURE__*/React.createElement("div", {
     role: "group",
@@ -1754,12 +2031,12 @@ function LessonTeachingScriptPanel(props) {
     autoFocus: true,
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || busy,
     onClick: keepEditing
   }, tr('keep_editing', 'Keep editing')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || busy,
     onClick: discardEdits
   }, tr('discard_confirm', 'Discard changes')))))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3 border-t border-slate-200 pt-4"

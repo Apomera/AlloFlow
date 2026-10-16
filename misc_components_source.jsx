@@ -244,6 +244,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
 
 const WordSoundsReviewPanel = ({
     preloadedWords,
+    teacherSpokenWords,
     packMaintenance,
     onUpdateWord,
     onReorderWords,
@@ -268,10 +269,12 @@ const WordSoundsReviewPanel = ({
     onGenerateImage,
     onRefineImage,
     generatingImageIndex,
+    generatingImageSet,
     isLoading,
     onDeleteWord,
     t,
     activitySequence,
+    currentActivity,
     setActivitySequence,
     isStudentLocked,
     setIsStudentLocked,
@@ -282,6 +285,16 @@ const WordSoundsReviewPanel = ({
     // computed by the player so this list and the skip always agree.
     wordFamilySkips
 }) => {
+    // Setup can select several activities; standalone sessions provide only
+    // the current activity. Older hosts that provide neither retain the full
+    // readiness overview rather than hiding warnings without a known scope.
+    const reviewActivities = Array.isArray(activitySequence) && activitySequence.length
+        ? activitySequence : currentActivity ? [currentActivity] : null;
+    const reviewsActivity = (...activities) => !reviewActivities || reviewActivities.some(activity => activities.includes(activity));
+    const isGeneratingImage = index => generatingImageSet?.has?.(index) || generatingImageIndex === index;
+    const teacherSpokenKey = JSON.stringify(teacherSpokenWords || []);
+    const teacherSpokenKeys = React.useMemo(() => new Set(JSON.parse(teacherSpokenKey).map(value => String(value).normalize('NFC').trim().toLowerCase())), [teacherSpokenKey]);
+    const isTeacherSpoken = React.useCallback(word => teacherSpokenKeys.has(String(word?.targetWord || word?.word || word?.term || '').normalize('NFC').trim().toLowerCase()), [teacherSpokenKeys]);
     // Match the host translator while tolerating missing keys and both placeholder conventions.
     const reviewText = (key, fallback, params = {}) => {
         const fullKey = 'word_sounds.' + key;
@@ -297,8 +310,10 @@ const WordSoundsReviewPanel = ({
         if (!syllableReviewRequest || !Number.isInteger(syllableReviewRequest.index)) return;
         setExpandedIndex(syllableReviewRequest.index);
         const timer = setTimeout(() => {
-            const editor = document.getElementById('ws-syllables-' + syllableReviewRequest.index);
-            if (editor) { editor.open = true; editor.scrollIntoView?.({ block: 'nearest' }); editor.querySelector('summary')?.focus(); }
+            const editor = reviewDialogRef.current?.querySelector('#ws-syllables-' + syllableReviewRequest.index);
+            // The nested syllable review opens and focuses the requested count
+            // or recording control. This deferred scroll must preserve that focus.
+            editor?.scrollIntoView?.({ block: 'nearest' });
         }, 0);
         return () => clearTimeout(timer);
     }, [syllableReviewRequest?.index, syllableReviewRequest?.nonce]);
@@ -370,7 +385,7 @@ const WordSoundsReviewPanel = ({
                 }
                 // Let the host's state update land before reading it.
                 await new Promise((r) => setTimeout(r, 0));
-                const after = (latestWordsRef.current || [])[idx];
+                const after = gap.currentItem ? gap.currentItem(idx) : (latestWordsRef.current || [])[idx];
                 // VERIFY, do not assume. Every host fixer toasts its own
                 // failure and resolves normally, so "the call returned" says
                 // nothing. The gap predicate is the only honest signal.
@@ -489,8 +504,8 @@ const WordSoundsReviewPanel = ({
                  }
              });
              setAudioProgress({
-                 ready: preloadedWords.filter(w => w.ttsReady === true || portableKeys.has(normalizeAudioKey(w.targetWord || w.word || w.term))).length,
-                 total: preloadedWords.length
+                 ready: preloadedWords.filter(w => !isTeacherSpoken(w) && (w.ttsReady === true || portableKeys.has(normalizeAudioKey(w.targetWord || w.word || w.term)))).length,
+                 total: preloadedWords.filter(w => !isTeacherSpoken(w)).length
              });
         };
         let cancelled = false;
@@ -504,7 +519,7 @@ const WordSoundsReviewPanel = ({
             cancelled = true;
             if (pollTimer) clearTimeout(pollTimer);
         };
-    }, [preloadedWords]);
+    }, [preloadedWords, isTeacherSpoken]);
     const PHONEME_BANK = {
         'Consonants': ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z'],
         'Digraphs': ['sh', 'zh', 'ch', 'th', 'wh', 'ph', 'ck', 'ng', 'q'],
@@ -729,9 +744,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     <p id="word-sounds-review-description" className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
                         {isLoading && <span role="status" aria-live="polite" className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none"><div className="w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
-                        {!isLoading && preloadedWords.some(w => w && w._ttsFailed) && (
+                        {!isLoading && preloadedWords.some(w => w && w._ttsFailed && !isTeacherSpoken(w)) && (
                             <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
-                                <span>{reviewText('review_missing_audio', "Words missing audio: {count}", { count: preloadedWords.filter(w => w && w._ttsFailed).length })}</span>
+                                <span>{reviewText('review_missing_audio', "Words missing audio: {count}", { count: preloadedWords.filter(w => w && w._ttsFailed && !isTeacherSpoken(w)).length })}</span>
                                 {typeof onRetryFailedTTS === 'function' && (
                                     <button
                                         type="button"
@@ -757,6 +772,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                 )}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar">
                     {packMaintenance}
+                    {teacherSpokenKeys.size > 0 && <p role="status" className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">{reviewText('review_teacher_spoken', 'Teacher-led lesson: say these words aloud during syllable counting: {words}.', { words: [...teacherSpokenKeys].join(', ') })}</p>}
                     {(() => {
                         const words = [...new Set((preloadedWords || []).flatMap(w => w?._instructionalCoverage?.untaughtWords || []))];
                         if (!words.length) return null;
@@ -764,7 +780,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         return <p role="note" className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900">{label.replace(/\{\{?words\}?\}/g, words.join(', '))}</p>;
                     })()}
                     {(() => {
-                        const skipped = Array.isArray(wordFamilySkips) ? wordFamilySkips.filter(Boolean) : [];
+                        const skipped = reviewsActivity('word_families') && Array.isArray(wordFamilySkips) ? wordFamilySkips.filter(Boolean) : [];
                         if (!skipped.length) return null;
                         const words = skipped.join(', ');
                         const label = t('word_sounds.word_families_skipped_for_students', { count: skipped.length, words }) || '{count} skipped for students in Word Families (needs a reviewed word family): {words}';
@@ -777,13 +793,19 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     {!isLoading && preloadedWords.length > 0 && (() => {
                         const norm = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
                         const portableKeys = new Set();
-                        const imageKeys = new Set();
+                        const imageKeysFor = words => {
+                            const keys = new Set();
+                            (words || []).forEach(item => {
+                                if (item?._decodingAssets && typeof item._decodingAssets === 'object') Object.keys(item._decodingAssets).forEach(key => keys.add(norm(key)));
+                                if (item?._aacAssets && typeof item._aacAssets === 'object') Object.keys(item._aacAssets).forEach(key => keys.add(norm(key)));
+                                const word = norm(item && (item.targetWord || item.word || item.term));
+                                if (word && item.image) keys.add(word);
+                            });
+                            return keys;
+                        };
+                        const imageKeys = imageKeysFor(preloadedWords);
                         preloadedWords.forEach((item) => {
                             if (item && item._ttsAssets && typeof item._ttsAssets === 'object') Object.keys(item._ttsAssets).forEach((k) => portableKeys.add(norm(k)));
-                            if (item && item._decodingAssets && typeof item._decodingAssets === 'object') Object.keys(item._decodingAssets).forEach((k) => imageKeys.add(norm(k)));
-                            if (item && item._aacAssets && typeof item._aacAssets === 'object') Object.keys(item._aacAssets).forEach((k) => imageKeys.add(norm(k)));
-                            const w = norm(item && (item.targetWord || item.word || item.term));
-                            if (w && item.image) imageKeys.add(w);
                         });
                         // Each gap carries the PREDICATE that defines it, and
                         // its indices are derived from that same predicate, so
@@ -801,6 +823,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         // when the service starts refusing.
                         const gaps = [];
                         const addGap = (gap) => {
+                            if (gap.activities && !reviewsActivity(...gap.activities)) return;
                             const indices = preloadedWords
                                 .map((w, i) => (gap.test(w) ? i : -1))
                                 .filter((i) => i >= 0);
@@ -831,7 +854,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             : reviewText('review_pack_silent', " Student devices may lack audio for these words or use a fallback voice; re-prepare the pack in setup.");
                         addGap({
                             key: 'audio',
-                            test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+                            test: (w) => w && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
                             text: (n) => reviewText('review_gap_audio', "Words without portable audio: {count}.{note}", { count: n, note: packNote }),
                             each: null,
                         });
@@ -841,7 +864,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         // still reach TTS.
                         addGap({
                             key: 'audio_runtime',
-                            test: (w) => w && w._ttsFailed,
+                            test: (w) => w && w._ttsFailed && !isTeacherSpoken(w),
                             text: (n) => reviewText('review_gap_runtime_audio', "Words whose audio failed to load in this session: {count}", { count: n }),
                             label: t('word_sounds.fix_audio') || 'Retry audio',
                             needsNetwork: !ttsIsLocal,
@@ -854,18 +877,18 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
 
                         addGap({
                             key: 'rhyme',
+                            activities: ['rhyming'],
                             test: (w) => w && !(w.rhymeWord || (w.rhymes || [])[0]),
                             text: (n) => reviewText('review_gap_rhyme', "Without a rhyme answer (board is built on-device): {count}", { count: n }),
-                            // The player derives one at runtime, so this is a
-                            // completeness note, not a broken board. Fixing it
-                            // means regenerating the whole word.
-                            label: t('word_sounds.fix_regenerate') || 'Regenerate',
-                            needsNetwork: true,
-                            each: onRegenerateWord,
+                            // The player derives the board at runtime. The
+                            // word regeneration callback repairs audio only,
+                            // so it cannot resolve a missing saved rhyme.
+                            each: null,
                         });
 
                         addGap({
                             key: 'task',
+                            activities: ['manipulation'],
                             test: (w) => w && !(w.manipulationTask && w.manipulationTask.answer),
                             text: (n) => reviewText('review_gap_task', "Words without a Sound Swap answer: {count}. Unverified tasks are unavailable to students; choose another activity or review the task.", { count: n }),
                             label: t('word_sounds.fix_tasks') || 'Build tasks',
@@ -873,21 +896,50 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             each: onRegenerateManipulationTask,
                         });
 
-                        const missingDecodingImgs = preloadedWords.reduce((sum, w) => {
-                            const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
-                            if (!Array.isArray(choices)) return sum;
-                            return sum + choices.filter((c) => !imageKeys.has(norm(c))).length;
-                        }, 0);
+                        const missingDecodingChoices = (item, words = latestWordsRef.current) => {
+                            const choices = item?.activityItems?.decoding?.choices;
+                            if (!Array.isArray(choices)) return [];
+                            const keys = imageKeysFor(words);
+                            return [...new Set(choices.map(norm).filter(Boolean))].filter(choice => !keys.has(choice));
+                        };
+                        // Capture the reviewed row and board, then locate that
+                        // same row before each request. A reorder is safe; a
+                        // replacement or changed choice board ends the repair.
+                        const currentDecodingRow = index => {
+                            const original = preloadedWords[index];
+                            if (!original) return null;
+                            const key = norm(original.targetWord || original.word || original.term);
+                            const matches = (latestWordsRef.current || []).map((item, currentIndex) => ({ item, index: currentIndex })).filter(({ item }) =>
+                                item && norm(item.targetWord || item.word || item.term) === key &&
+                                (original.id == null || item.id === original.id) && item.activityItems?.decoding === original.activityItems?.decoding);
+                            return matches.length === 1 ? matches[0] : null;
+                        };
+                        const missingDecodingImgs = preloadedWords.reduce((sum, item) => sum + missingDecodingChoices(item).length, 0);
                         addGap({
                             key: 'images',
-                            test: (w) => {
-                                const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
-                                return Array.isArray(choices) && choices.some((c) => !imageKeys.has(norm(c)));
-                            },
+                            activities: ['decoding'],
+                            test: item => missingDecodingChoices(item).length > 0,
+                            currentItem: index => currentDecodingRow(index)?.item,
                             text: () => reviewText('review_gap_images', "Read & Match pictures missing: {count}", { count: missingDecodingImgs }),
                             label: t('word_sounds.fix_images') || 'Generate pictures',
                             needsNetwork: true,
-                            each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null,
+                            each: onGenerateImage ? async index => {
+                                const row = currentDecodingRow(index);
+                                if (!row) return false;
+                                const choices = missingDecodingChoices(row.item);
+                                for (const choice of choices) {
+                                    if (unmountedRef.current) return false;
+                                    const current = currentDecodingRow(index);
+                                    if (!current) return false;
+                                    // A previous row can have prepared this
+                                    // same choice while this repair was waiting.
+                                    if (!missingDecodingChoices(current.item).includes(choice)) continue;
+                                    const result = await onGenerateImage(current.index, choice, { purpose: 'decoding-choice' });
+                                    if (result === false || unmountedRef.current) return false;
+                                    await new Promise(resolve => setTimeout(resolve, 0));
+                                }
+                                return true;
+                            } : null,
                         });
 
                         // Connected-text boards carry their own audio: the
@@ -900,13 +952,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         // write _ttsAssets.
                         addGap({
                             key: 'sentence_audio',
+                            activities: ['read_sentence', 'read_passage', 'sentence_match'],
                             test: (w) => {
                                 const b = w && w.activityItems;
                                 if (!b) return false;
                                 const texts = [
-                                    b.read_sentence && b.read_sentence.sentence,
-                                    b.read_passage && b.read_passage.story,
-                                    b.sentence_match && b.sentence_match.sentence,
+                                    reviewsActivity('read_sentence') && b.read_sentence && b.read_sentence.sentence,
+                                    reviewsActivity('read_passage') && b.read_passage && b.read_passage.story,
+                                    reviewsActivity('sentence_match') && b.sentence_match && b.sentence_match.sentence,
                                 ].filter(Boolean);
                                 return texts.some((s) => !portableKeys.has(norm(s)));
                             },
@@ -926,6 +979,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         }, 0);
                         addGap({
                             key: 'tile_images',
+                            activities: ['sentence_match'],
                             test: (w) => {
                                 const sm = w && w.activityItems && w.activityItems.sentence_match;
                                 if (!sm) return false;
@@ -944,6 +998,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         // reaches a child.
                         addGap({
                             key: 'unverified',
+                            activities: ['rhyming', 'word_families'],
                             test: (w) => w && Array.isArray(w._unverifiedWords) && w._unverifiedWords.length > 0,
                             text: (n) => {
                                 const sample = [...new Set(preloadedWords
@@ -967,6 +1022,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
 
                         addGap({
                             key: 'phonemes',
+                            activities: ['blending', 'segmentation', 'counting', 'isolation', 'manipulation', 'mapping', 'orthography', 'sound_sort', 'word_families', 'rhyming', 'decoding', 'spelling_bee'],
                             test: (w) => w && w._fallbackUsed,
                             // Generation now tries eSpeak before the spelling
                             // heuristic, so this means a real G2P engine could
@@ -1001,7 +1057,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                 </div>
                                 <ul className="space-y-1">
                                     {gaps.map((g) => (
-                                        <li key={g.key} className="flex items-center justify-between gap-3">
+                                        <li key={g.key} data-review-gap={g.key} className="flex items-center justify-between gap-3">
                                             <span>{g.text}</span>
                                             {(g.each || g.batch) && (
                                                 <button
@@ -1136,7 +1192,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     setPlayingWordIndex(null);
                                                 }
                                             }}
-                                            disabled={playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady)}
+                                            disabled={isTeacherSpoken(word) || playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady)}
                                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
                                                 word._ttsFailed
                                                     ? 'bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300'
@@ -1146,9 +1202,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
                                                             : 'bg-pink-100 hover:bg-pink-200 text-pink-700'
                                             }`}
-                                            title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
-                                            aria-busy={playingWordIndex === idx || (!word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady))}
-                                            aria-label={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
+                                            title={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
+                                            aria-busy={!isTeacherSpoken(word) && (playingWordIndex === idx || (!word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady)))}
+                                            aria-label={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
                                         >
                                             {word._ttsFailed ? <span aria-hidden="true">🔇</span> : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />)}
                                         </button>
@@ -1193,13 +1249,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             e.stopPropagation();
                                                             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                         }}
-                                                        disabled={generatingImageIndex === idx}
-                                                        aria-busy={generatingImageIndex === idx}
-                                                        aria-label={generatingImageIndex === idx ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
+                                                        disabled={isGeneratingImage(idx)}
+                                                        aria-busy={isGeneratingImage(idx)}
+                                                        aria-label={isGeneratingImage(idx) ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
                                                         className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none border border-indigo-200"
                                                         data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
                                                     >
-                                                        {generatingImageIndex === idx ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none text-indigo-500" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-500" aria-hidden="true"/>}
+                                                        {isGeneratingImage(idx) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none text-indigo-500" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-500" aria-hidden="true"/>}
                                                     </button>
                                                 </div>
                                             ) : (
@@ -1208,16 +1264,16 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         e.stopPropagation();
                                                         onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                     }}
-                                                    disabled={generatingImageIndex === idx}
-                                                    aria-busy={generatingImageIndex === idx}
+                                                    disabled={isGeneratingImage(idx)}
+                                                    aria-busy={isGeneratingImage(idx)}
                                                     className={`px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all motion-reduce:transition-none ${
-                                                        generatingImageIndex === idx
+                                                        isGeneratingImage(idx)
                                                             ? 'border-indigo-400 bg-indigo-100 text-indigo-600 animate-pulse motion-reduce:animate-none'
                                                             : 'border-dashed border-indigo-300 text-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105'
                                                     }`}
                                                     data-help-key="word_sounds_review_image_gen" title={t('common.generate_image_for_this_word')}
                                                 >
-                                                    {generatingImageIndex === idx ? (
+                                                    {isGeneratingImage(idx) ? (
                                                         <><RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('word_sounds.generating_image') || 'Generating...'}</>
                                                     ) : (
                                                         <><ImageIcon size={16} aria-hidden="true"/> {t('word_sounds.add_image_button') || '+ Image'}</>
@@ -1751,14 +1807,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 <div className="flex-1 space-y-2">
                                                     <button type="button"
                                                         onClick={() => onGenerateImage && onGenerateImage(idx, word.targetWord || word.word)}
-                                                        disabled={generatingImageIndex === idx}
+                                                        disabled={isGeneratingImage(idx)}
                                                         className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none ${
                                                             word.image
                                                                 ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200 border border-indigo-200'
                                                                 : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md'
                                                         }`}
                                                     >
-                                                        {generatingImageIndex === idx ? (
+                                                        {isGeneratingImage(idx) ? (
                                                             <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('word_sounds.generating_image') || 'Generating...'}</>
                                                         ) : word.image ? (
                                                             <><RefreshCw size={14}/> {t('word_sounds.regenerate_image_button') || 'Regenerate Image'}</>
@@ -1770,7 +1826,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         <div className="space-y-2">
                                                             <button type="button"
                                                                 onClick={() => onRefineImage && onRefineImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")}
-                                                                disabled={generatingImageIndex === idx}
+                                                                disabled={isGeneratingImage(idx)}
                                                                 className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-800 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none"
                                                             >
                                                                 <Ban size={12}/> {t('word_sounds.remove_text_from_image') || 'Remove Text from Image'}
@@ -1792,10 +1848,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             setImageRefinementInputs(prev => ({...prev, [idx]: ''}));
                                                                         }
                                                                     }}
-                                                                    disabled={!imageRefinementInputs[idx] || generatingImageIndex === idx}
+                                                                    disabled={!imageRefinementInputs[idx] || isGeneratingImage(idx)}
                                                                     className="px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition-colors motion-reduce:transition-none"
                                                                 >
-                                                                    {generatingImageIndex === idx ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Send size={12}/>}
+                                                                    {isGeneratingImage(idx) ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Send size={12}/>}
                                                                 </button>
                                                             </div>
                                                             <span className="text-[11px] text-slate-600 italic">{t('word_sounds.nano_mode_hint') || '✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"'}</span>

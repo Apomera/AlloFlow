@@ -592,6 +592,9 @@ function LessonPlanView(props) {
     onDeleteTeachingScript: props.onDeleteTeachingScript,
     onGenerateTeachingScript: props.onGenerateTeachingScript,
     onCancelTeachingScript: props.onCancelTeachingScript,
+    onGetTeachingScriptRecovery: props.onGetTeachingScriptRecovery,
+    onDiscardTeachingScriptRecovery: props.onDiscardTeachingScriptRecovery,
+    onRegenerateTeachingStep: props.onRegenerateTeachingStep,
     onUpdateTeachingScript: props.onUpdateTeachingScript,
     onOpenTeachingMaterial: props.onOpenTeachingMaterial
   }) : /*#__PURE__*/React.createElement("section", {

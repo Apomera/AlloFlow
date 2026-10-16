@@ -81,23 +81,16 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(function (reg) {
         console.log('[AlloFlow] Service worker registered');
-        // Download updates quietly. They activate after open AlloFlow tabs close,
-        // so a deployment never interrupts a live classroom or QR join.
-        reg.addEventListener('updatefound', function () {
-          var newSW = reg.installing;
-          if (!newSW) return;
-          newSW.addEventListener('statechange', function () {
-            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-              window.__alloUpdateReady = true;
-              window.dispatchEvent(new CustomEvent('alloflow:update-ready'));
-            }
-          });
-        });
+        // The manager compares release identities before announcing an update.
+        window.__alloSWRegistration = reg;
+        if (window.__alloAppUpdates) window.__alloAppUpdates.watchRegistration(reg);
       }).catch(function (err) {
         console.warn('[AlloFlow] SW registration failed:', err);
       });
     }
   </script>
+  <!-- Release-aware service-worker updates must be available before React starts. -->
+  <script src="./alloflow_update.js" defer></script>
   <!-- AI Backend: Firebase Shim + WebSearchProvider + AIProvider (must load before React bundle) -->
   <script id="alloflow-ai-backend-script" src="./ai_backend_module.js" defer></script>
   <!-- Narrow cross-origin bridge for the isolated Electron command-center preview. -->
@@ -149,6 +142,7 @@
         var d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       }
+      function isPrivateClassroomKey(key) { return key === 'alloflow_classroom_roster_state_v1' || key === 'alloflow_classroom_sync_keys'; }
       function readDb(name) {
         return new Promise(function (resolve) {
           var out = { name: name, stores: {} };
@@ -166,7 +160,13 @@
               var store = tx.objectStore(storeName);
               var keys = store.getAllKeys();
               var values = store.getAll();
-              values.onsuccess = function () { out.stores[storeName] = { keys: keys.result, values: values.result }; };
+              values.onsuccess = function () {
+                var safeKeys = [], safeValues = [];
+                keys.result.forEach(function (key, index) {
+                  if (!isPrivateClassroomKey(key)) { safeKeys.push(key); safeValues.push(values.result[index]); }
+                });
+                out.stores[storeName] = { keys: safeKeys, values: safeValues };
+              };
             });
             tx.oncomplete = tx.onerror = tx.onabort = function () { try { db.close(); } catch (e) {} resolve(out); };
           };
@@ -175,13 +175,24 @@
       function backup(statusLine) {
         statusLine.textContent = 'Preparing the file...';
         var local = {};
-        try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); local[k] = localStorage.getItem(k); } } catch (e) {}
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (!isPrivateClassroomKey(k)) local[k] = localStorage.getItem(k);
+          }
+          var envelope = JSON.parse(localStorage.getItem('alloflow_classroom_roster_state_v1') || 'null');
+          if (envelope && envelope.version === 1 && Object.prototype.hasOwnProperty.call(envelope, 'roster')) {
+            if (envelope.roster === null) delete local.alloflow_roster_key;
+            else local.alloflow_roster_key = JSON.stringify(envelope.roster);
+          }
+        } catch (e) {}
         var list = (window.indexedDB && indexedDB.databases) ? indexedDB.databases().catch(function () { return []; }) : Promise.resolve([]);
         return list.then(function (dbs) {
           return Promise.all(dbs.map(function (d) { return readDb(d.name); }));
         }).then(function (databases) {
           var skipped = 0;
           var json = JSON.stringify({ app: 'AlloFlow', savedAt: new Date().toISOString(), localStorage: local, indexedDB: databases }, function (key, value) {
+            if (isPrivateClassroomKey(key)) return undefined;
             if ((typeof Blob !== 'undefined' && value instanceof Blob) || value instanceof ArrayBuffer || ArrayBuffer.isView(value)) { skipped++; return { skipped: 'binary data (audio or images) not included' }; }
             return value;
           });
@@ -192,7 +203,7 @@
           document.body.appendChild(a);
           a.click();
           setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
-          statusLine.textContent = 'Downloaded ' + a.download + '. Keep this file.' + (skipped ? ' Audio and images are not included.' : '');
+          statusLine.textContent = 'Downloaded ' + a.download + '. Keep this file. Classroom private recovery keys are not included.' + (skipped ? ' Audio and images are not included.' : '');
         }).catch(function () { statusLine.textContent = 'The copy could not be made in this browser.'; });
       }
       function clearAndReload() {
@@ -240,7 +251,7 @@
         var confirmBox = el('div', '', 'margin-top:0.75rem;padding:0.75rem;border:1px solid #f87171;border-radius:0.375rem;');
         confirmBox.id = 'loader-clear-confirm';
         confirmBox.hidden = true;
-        var warning = el('p', 'This deletes everything AlloFlow saved in this browser, including projects and student work that were not downloaded or exported. It cannot be undone.', 'color:#fecaca;font-weight:600;');
+        var warning = el('p', 'This deletes everything AlloFlow saved in this browser, including projects, student work, and Classroom linking keys. The saved-work download does not include private linking keys. Export a Classroom private recovery copy before clearing. Deletion cannot be undone.', 'color:#fecaca;font-weight:600;');
         warning.id = 'loader-clear-warning';
         warning.tabIndex = -1;
         confirmBox.appendChild(warning);

@@ -212,19 +212,69 @@ const scheduleAdventureEstablishingShot = ({ prompt, callImagen, setAdventureSta
   return request;
 };
 
+// Once a story starts, keep its reading stable even if another reading is later
+// selected in the lesson. The snapshot also travels with saved adventures.
+const resolveAdventureReadingSource = (deps, useStorySource = true) => {
+  const saved = useStorySource && deps.adventureState?.readingSource;
+  if (saved && typeof saved.text === 'string' && saved.text.trim()) return { ...saved, status: 'resolved' };
+  const dispatcher = window.AlloModules?.GenDispatcher;
+  if (typeof dispatcher?.resolveGenerationSource === 'function') {
+    return dispatcher.resolveGenerationSource({
+      type: 'adventure', history: deps.history || [], inputText: deps.inputText,
+      selectedReadingSourceId: deps.selectedReadingSourceId,
+      activeUnitId: deps.activeUnitId,
+      config: typeof deps.adventureSourceArtifactId === 'string' ? { inputArtifactId: deps.adventureSourceArtifactId } : {},
+      contextModule: window.AlloModules?.InstructionalContext,
+    });
+  }
+  // Compatibility for an older host without the shared source resolver.
+  const analysis = (Array.isArray(deps.history) ? deps.history : []).slice().reverse().find(item => item?.type === 'analysis');
+  const text = String(analysis?.data?.originalText || deps.inputText || '');
+  return { status: text.trim() ? 'resolved' : 'missing', text, inputArtifactId: analysis?.id || null,
+    sourceArtifactId: analysis?.id || null, unitId: analysis?.unitId || null };
+};
+
+const getAdventureReadingHistory = (history, reading) => (Array.isArray(history) ? history : []).filter(item => {
+  if (!item) return false;
+  if (reading.unitId && reading.unitId !== 'all' && (item.unitId || item.config?.unitId || null) !== reading.unitId) return false;
+  if (item.id === reading.inputArtifactId || item.id === reading.sourceArtifactId) return true;
+  if (reading.sourceFamilyId && (item.sourceFamilyId || item.config?.sourceFamilyId) === reading.sourceFamilyId) return true;
+  if (reading.inputArtifactId && (item.inputArtifactId || item.config?.inputArtifactId) === reading.inputArtifactId) return true;
+  if (reading.sourceArtifactId && (item.sourceArtifactId || item.config?.sourceArtifactId || item.instructionalText?.sourceArtifactId) === reading.sourceArtifactId) return true;
+  return item.type === 'analysis' && item.data?.originalText === reading.text;
+});
+
 let adventureLaunchInFlight = false;
 const executeStartAdventure = async (contextOverride = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, universalImageStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true) return;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] executeStartAdventure fired"); } catch(_) {}
-    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-    const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
-        ? latestAnalysis.data.originalText
-        : inputText;
+    const reading = resolveAdventureReadingSource(deps, Boolean(contextOverride));
+    if (reading.status === 'ambiguous') {
+        const choices = window.AlloModules?.GenDispatcher?.getGenerationSourceChoices?.(reading) || [];
+        if (choices.length > 1 && typeof deps.requestGenerationSourceChoice === 'function') {
+            let completeChoice;
+            const completion = new Promise(resolve => { completeChoice = resolve; });
+            if (deps.requestGenerationSourceChoice({ type: 'adventure', choices, configOverride: {}, onComplete: completeChoice,
+                onGenerate: value => {
+                    const current = typeof deps.getAdventureGenerationDeps === 'function' ? deps.getAdventureGenerationDeps() : deps;
+                    return executeStartAdventure(contextOverride, { ...current, adventureSourceArtifactId: value });
+                } }) === true) return completion;
+        }
+        addToast('Choose a reading in Based on before generating. More than one reading is available.', 'info');
+        return;
+    }
+    const sourceText = reading.text || '';
     if (!sourceText.trim()) {
         addToast(t('adventure.no_text_error'), "error");
         return;
     }
+    const readingSource = { text: sourceText, inputArtifactId: reading.inputArtifactId || null,
+        type: reading.type || reading.artifact?.type || reading.item?.type
+            || history.find(item => item?.id === reading.inputArtifactId)?.type || null,
+        sourceArtifactId: reading.sourceArtifactId || null, sourceFamilyId: reading.sourceFamilyId || null,
+        unitId: reading.unitId || null };
+    const readingHistory = getAdventureReadingHistory(history, readingSource);
     cancelAdventureEstablishingShot();
     window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
     stopPlayback();
@@ -254,6 +304,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
     const startingXpToNext = isSequel ? Math.max(1, Number(adventureState.xpToNextLevel) || 100) : 100;
     setAdventureState(prev => ({
       ...prev,
+      readingSource,
       history: [],
       currentScene: null,
       isLoading: true,
@@ -313,9 +364,9 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               }));
           }).catch(error => { if (openingActive) warnLog("Adventure finale detection failed", error); });
       }
-      const keyTerms = getAdventureGlossaryTerms(history, adventureLanguageMode);
-      const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
-      const keyConcepts = analysisItem ? analysisItem.data.concepts.join(', ') : '';
+      const keyTerms = getAdventureGlossaryTerms(readingHistory, adventureLanguageMode);
+      const analysisItem = readingHistory.slice().reverse().find(h => h && h.type === 'analysis');
+      const keyConcepts = Array.isArray(analysisItem?.data?.concepts) ? analysisItem.data.concepts.join(', ') : '';
       const effectiveInstructions = contextOverride
           ? `${contextOverride}\n\n${adventureCustomInstructions}`
           : adventureCustomInstructions;
@@ -629,6 +680,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
           timestamp: new Date(),
           data: {
               snapshot: {
+                  readingSource,
                   currentScene: sceneData,
                   history: [],
                   level: startingLevel,
@@ -649,7 +701,9 @@ Opening scene: ${sceneText.substring(0, 1200)}
                   isGameOver: false,
               }
           },
-          config: {}
+          unitId: readingSource.unitId,
+          inputArtifactId: readingSource.inputArtifactId,
+          config: { inputArtifactId: readingSource.inputArtifactId, sourceArtifactId: readingSource.sourceArtifactId }
       };
       setHistory(prev => [...prev, newAdventureItem]);
       setGeneratedContent(newAdventureItem);
@@ -674,11 +728,10 @@ const handleStartAdventure = async (deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true || adventureRestartPromptPending) return false;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleStartAdventure fired"); } catch(_) {}
-      const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-      const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
-          ? latestAnalysis.data.originalText
-          : inputText;
-      if (!sourceText.trim()) {
+      const reading = resolveAdventureReadingSource(deps, false);
+      // Opening settings is not generation; an ambiguous reading is chosen only
+      // after the learner finishes setup and starts the adventure.
+      if (reading.status !== 'ambiguous' && !String(reading.text || '').trim()) {
           addToast(t('adventure.no_text_error'), "error");
           return;
       }
@@ -711,6 +764,7 @@ const handleStartAdventure = async (deps) => {
       setActiveView('adventure');
       setAdventureState(prev => ({
           ...prev,
+          readingSource: null,
           history: [],
           currentScene: null,
           isLoading: false,
@@ -759,7 +813,9 @@ const handleResumeAdventure = async (deps) => {
           // stranding a story someone is part way into.
           const _lessonKeyOf = window._alloAdventureLessonKey;
           const savedLessonKey = String(savedConfig.lessonKey || '');
-          const currentLessonKey = typeof _lessonKeyOf === 'function' ? _lessonKeyOf(history, inputText) : '';
+          const currentLessonKey = typeof _lessonKeyOf === 'function' ? _lessonKeyOf(history, inputText, {
+              selectedReadingSourceId: deps.selectedReadingSourceId, activeUnitId: deps.activeUnitId
+          }) : '';
           if (savedLessonKey && currentLessonKey && savedLessonKey !== currentLessonKey) {
               addToast(t('toasts.adventure_other_lesson'), "error");
               setHasSavedAdventure(false);
@@ -889,12 +945,12 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
     if (!overrideInput) setAdventureTextInput('');
     addToast(adventureInputMode === 'debate' ? t('adventure.status_messages.initiating_debate') : t('adventure.status_messages.starting'), "info");
     try {
-          const keyTerms = getAdventureGlossaryTerms(history, adventureLanguageMode);
-          const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
-          const keyConcepts = analysisItem ? analysisItem.data.concepts.join(', ') : '';
-          const sourceText = (analysisItem && analysisItem.data && analysisItem.data.originalText)
-              ? analysisItem.data.originalText
-              : inputText;
+          const reading = resolveAdventureReadingSource(deps);
+          const readingHistory = getAdventureReadingHistory(history, reading);
+          const keyTerms = getAdventureGlossaryTerms(readingHistory, adventureLanguageMode);
+          const analysisItem = readingHistory.slice().reverse().find(h => h && h.type === 'analysis');
+          const keyConcepts = Array.isArray(analysisItem?.data?.concepts) ? analysisItem.data.concepts.join(', ') : '';
+          const sourceText = reading.text || '';
           const isLastTurn = getAdventurePacing(adventureState).isFinalTurn;
           const turnsSinceLastDrop = adventureState.turnCount - (adventureState.lastKeyItemTurn || 0);
           const currentInventoryNames = adventureState.inventory.map(i => i.name).join(', ');
@@ -1271,12 +1327,12 @@ const handleAdventureChoice = async (choice, deps) => {
     try {
       const isLastTurn = getAdventurePacing(adventureState).isFinalTurn;
       const turnsSinceLastDrop = adventureState.turnCount - (adventureState.lastKeyItemTurn || 0);
-      const keyTerms = getAdventureGlossaryTerms(history, adventureLanguageMode);
-      const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
-      const keyConcepts = analysisItem ? analysisItem.data.concepts.join(', ') : '';
-      const sourceText = (analysisItem && analysisItem.data && analysisItem.data.originalText)
-          ? analysisItem.data.originalText
-          : inputText;
+      const reading = resolveAdventureReadingSource(deps);
+      const readingHistory = getAdventureReadingHistory(history, reading);
+      const keyTerms = getAdventureGlossaryTerms(readingHistory, adventureLanguageMode);
+      const analysisItem = readingHistory.slice().reverse().find(h => h && h.type === 'analysis');
+      const keyConcepts = Array.isArray(analysisItem?.data?.concepts) ? analysisItem.data.concepts.join(', ') : '';
+      const sourceText = reading.text || '';
       const currentInventoryNames = adventureState.inventory.map(i => i.name).join(', ');
       const glossLanguage = adventureGlossLanguage(deps);
       let langInstruction = "Language: English.";
@@ -1574,7 +1630,7 @@ const handleGuidingHand = async (item, deps) => {
       ? `Established cast:\n${adventureState.characters.map(character => `- ${character.name}: ${character.role || 'character'}; ${character.appearance || ''}`).join('\n')}\nPrefer an established character when one naturally fits; otherwise use a plausible event or discovery.`
       : 'Introduce a context-appropriate helper, event, safeguard, or discovery only if needed.';
     const learnedContext = getAssistedKnowledgeContext(adventureState);
-    const sourceContext = String(inputText || sourceTopic || '').slice(0, 1800);
+    const sourceContext = String(resolveAdventureReadingSource(deps).text || sourceTopic || '').slice(0, 1800);
     const recentHistory = (adventureState.history || []).slice(-6).map(entry => `${String(entry.type || 'event').toUpperCase()}: ${String(entry.text || '')}`).join('\n');
     const optionsInstruction = adventureFreeResponseEnabled
       ? 'Return scene.options as an empty array. End with a specific new unresolved problem that invites the learner to type the next response.'
@@ -1748,7 +1804,7 @@ const handleAdventureHint = async (deps) => {
   const requestTurn = adventureState.turnCount;
   if (adventureState.currentHint?.turn === requestTurn && adventureState.currentHint.loading) return;
   const sceneText = String(scene.text || '').replace(/\s+/g, ' ').trim();
-  const sourceText = String(inputText || '').replace(/\s+/g, ' ').trim().slice(0, 2800);
+  const sourceText = String(resolveAdventureReadingSource(deps).text || '').replace(/\s+/g, ' ').trim().slice(0, 2800);
   const topicText = String(sourceTopic || '').trim();
   const draftText = String(adventureTextInput || '').trim().slice(0, 600);
   const mode = isSocialStoryMode ? 'social' : String(adventureInputMode || 'adventure').toLowerCase();
@@ -1844,6 +1900,7 @@ Return ONLY JSON:
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AdventureHandlers = {
+  resolveAdventureReadingSource,
   executeStartAdventure,
   handleStartAdventure,
   handleResumeAdventure,

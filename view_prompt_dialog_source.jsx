@@ -17,6 +17,7 @@
  *                    multiline?,     (boolean — uses textarea)
  *                    maxLength?,     (number)
  *                    inputType?,     ('text' | 'url' | 'email' | 'number' — default 'text')
+ *                    choices?,       (array of { value, label, description? } — renders radio cards)
  *                    onCancel?,      (() => void)
  *                    validate?,      ((value: string) => string | null — return error msg or null)
  *                  }
@@ -35,34 +36,52 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
   const [error, setError] = React.useState(null);
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
+  const settledRef = React.useRef(false);
+  const choiceMode = Array.isArray(promptDialog.choices);
+  const choices = choiceMode ? promptDialog.choices.filter(choice => choice && choice.value != null && String(choice.value)) : [];
+  const validChoice = choices.some(choice => String(choice.value) === value);
 
   const handleCancel = React.useCallback(() => {
+    if (settledRef.current) return;
+    settledRef.current = true;
     if (typeof promptDialog.onCancel === 'function') { try { promptDialog.onCancel(); } catch (_) {} }
     setPromptDialog(null);
   }, [promptDialog, setPromptDialog]);
 
   const handleSubmit = React.useCallback(() => {
+    if (settledRef.current) return;
+    if (choiceMode && !validChoice) {
+      setError('Choose a source before continuing.');
+      return;
+    }
     if (typeof promptDialog.validate === 'function') {
       const err = promptDialog.validate(value);
       if (err) { setError(err); return; }
     }
+    settledRef.current = true;
     try { promptDialog.onSubmit(value); } catch (_) {}
     setPromptDialog(null);
-  }, [promptDialog, setPromptDialog, value]);
+  }, [promptDialog, setPromptDialog, value, choiceMode, validChoice]);
 
   _promptUseFocusTrap(dialogRef, true, handleCancel);
 
   React.useEffect(() => {
+    settledRef.current = false;
+    setValue(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '');
+    setError(null);
     try {
       inputRef.current && inputRef.current.focus();
       if (inputRef.current && inputRef.current.select) inputRef.current.select();
     } catch (_) {}
-  }, []);
+  }, [promptDialog]);
 
   const handleDialogKeyDown = React.useCallback((e) => {
+    // Choice cards use native button activation: Enter on Cancel or Close must
+    // not confirm the selected reading through this dialog-level shortcut.
+    if (choiceMode && e.target?.closest?.('button')) return;
     if (e.key === 'Enter' && !promptDialog.multiline) { e.preventDefault(); handleSubmit(); }
     else if (e.key === 'Enter' && promptDialog.multiline && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); }
-  }, [handleSubmit, promptDialog.multiline]);
+  }, [handleSubmit, promptDialog.multiline, choiceMode]);
 
   // role="alert" on the error element only triggers SR announcement when the
   // element is INSERTED into the DOM. If the dialog is already open when the
@@ -75,7 +94,6 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     }
   }, [error]);
 
-  const InputTag = promptDialog.multiline ? 'textarea' : 'input';
   const inputCommonProps = {
     ref: inputRef,
     value,
@@ -107,27 +125,53 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
           <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
             <Edit3 size={20} className="text-indigo-600" aria-hidden="true" />
           </div>
-          <h3 id="alloflow-prompt-title" className="text-lg font-bold text-slate-800 flex-1 truncate">
+          <h3 id="alloflow-prompt-title" className={'text-lg font-bold text-slate-800 flex-1 ' + (choiceMode ? 'min-w-0 break-words' : 'truncate')}>
             {promptDialog.title || t('common.enter_value') || 'Enter Value'}
           </h3>
           <button
             type="button"
             aria-label={t('common.close') || 'Close'}
             onClick={handleCancel}
-            className="w-11 h-11 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300"
+            className="w-11 h-11 shrink-0 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300"
           >
             <X size={16} aria-hidden="true" />
           </button>
         </div>
         <p id="alloflow-prompt-description" className="text-sm text-slate-700 leading-relaxed mb-4 whitespace-pre-wrap">{promptDialog.message}</p>
-        {promptDialog.multiline
+        {choiceMode ? (
+          <fieldset className="min-w-0 space-y-3" aria-describedby={error ? 'alloflow-prompt-error' : undefined}>
+            <legend className="sr-only">{promptDialog.message}</legend>
+            {choices.map((choice, index) => {
+              const choiceValue = String(choice.value);
+              const checked = value === choiceValue;
+              return <label key={choiceValue} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors focus-within:ring-4 focus-within:ring-indigo-500/20 ' + (checked ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400')}>
+                <input
+                  ref={index === 0 ? inputRef : undefined}
+                  data-autofocus={index === 0 ? true : undefined}
+                  type="radio"
+                  name="alloflow-prompt-choice"
+                  value={choiceValue}
+                  checked={checked}
+                  onChange={() => { setValue(choiceValue); setError(null); }}
+                  aria-labelledby={'alloflow-prompt-choice-' + index}
+                  aria-describedby={choice.description ? 'alloflow-prompt-preview-' + index : undefined}
+                  className="mt-1 h-4 w-4 shrink-0 accent-indigo-600"
+                />
+                <span className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">
+                  <span id={'alloflow-prompt-choice-' + index} className="block text-sm font-semibold text-slate-900">{choice.label || choiceValue}</span>
+                  {choice.description && <span id={'alloflow-prompt-preview-' + index} className="mt-1 block text-xs leading-relaxed text-slate-700">{choice.description}</span>}
+                </span>
+              </label>;
+            })}
+          </fieldset>
+        ) : promptDialog.multiline
           ? <textarea {...inputCommonProps} rows={4} />
           : <input {...inputCommonProps} type={promptDialog.inputType || 'text'} />
         }
         {error && (
           <p id="alloflow-prompt-error" role="alert" className="text-xs text-red-600 mt-2 font-semibold">{error}</p>
         )}
-        <div className="flex gap-3 justify-end mt-5">
+        <div className={'flex gap-3 justify-end mt-5' + (choiceMode ? ' flex-col sm:flex-row' : '')}>
           <button
             type="button"
             onClick={handleCancel}
@@ -138,7 +182,8 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
           <button
             type="button"
             onClick={handleSubmit}
-            className="min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-300"
+            disabled={choiceMode && !validChoice}
+            className="min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {promptDialog.confirmText || t('common.ok') || 'OK'}
           </button>
@@ -147,3 +192,5 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     </div>
   );
 }
+
+PromptDialog.supportsChoices = true;

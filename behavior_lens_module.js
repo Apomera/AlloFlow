@@ -28420,6 +28420,7 @@ IMPORTANT rules for expert keys:
         studentNickname,
         dashboardData,
         isTeacherMode,
+        familyOnly = false,
         alloBotRef,
         firestore,
         firebaseAuth,
@@ -28903,10 +28904,11 @@ IMPORTANT rules for expert keys:
         const [showChoiceBoard, setShowChoiceBoard] = useState(false);
         // The role belongs to whoever is at this device, not to the student: it was restored from each
         // student's saved workspace, so switching student in Family view brought back teacher view.
-        const [userRole, setUserRole] = useState(() => {
-            if (!isTeacherMode) return 'parent';
+        const [userRoleChoice, setUserRole] = useState(() => {
+            if (familyOnly || !isTeacherMode) return 'parent';
             try { return localStorage.getItem('bl_staff_role') === 'bcba' ? 'bcba' : 'teacher'; } catch { return 'teacher'; }
         });
+        const userRole = familyOnly ? 'parent' : userRoleChoice;
         const isParentMode = userRole === 'parent';
         const lastStaffRoleRef = useRef(userRole === 'parent' ? 'teacher' : userRole);
         useEffect(() => {
@@ -30411,9 +30413,10 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         // Available students from dashboardData
         const studentOptions = useMemo(() => {
+            if (familyOnly) return [];
             if (!dashboardData || !Array.isArray(dashboardData)) return [];
             return dashboardData.map(s => s.studentNickname).filter(Boolean);
-        }, [dashboardData]);
+        }, [dashboardData, familyOnly]);
 
         // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
         useEffect(function() {
@@ -31806,7 +31809,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         '👤 ', tt('behavior_lens.hub.select_student', 'Select Student')
                     ),
                     // Role Selector
-                    h('div', { className: 'flex items-center gap-2 mt-2 mb-1' },
+                    !familyOnly && h('div', { className: 'flex items-center gap-2 mt-2 mb-1' },
                         h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, tt('behavior_lens.ui.your_role_2', 'Your Role:')),
                         ['teacher', 'parent', 'bcba'].map(role =>
                             h('button', { 'aria-label': role === 'bcba' ? 'Use specialist view' : role === 'parent' ? 'Use family view' : 'Use teacher view', 'aria-pressed': userRole === role,
@@ -31817,7 +31820,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         )
                     ),
                     isParentMode && selectedStudent
-                        ? h('p', { className: 'text-sm text-slate-700 mt-2' }, tt('behavior_lens.hub.family_one_student', 'Family view shows one student. Leave Family view to choose another.'))
+                        ? h('p', { className: 'text-sm text-slate-700 mt-2' }, familyOnly ? tt('behavior_lens.family_mode', 'Family Mode') : tt('behavior_lens.hub.family_one_student', 'Family view shows one student. Leave Family view to choose another.'))
                     : studentOptions.length > 0
                         // When dashboard data exists, show a single dropdown of known students
                         ? h('div', { className: 'flex gap-3 items-center' },
@@ -31933,7 +31936,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             !isParentMode && currentNames.length > 1 && h('div', null,
                                 h('label', { htmlFor: 'bl-today-student', className: 'block text-sm text-slate-700 mb-1' }, 'Switch student'),
                                 h('select', { id: 'bl-today-student', 'aria-label': 'Choose a student', value: selectedStudent, onChange: event => switchToStudent(event.target.value), className: 'min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 text-sm' }, currentNames.map(name => h('option', { key: name, value: name }, name)))),
-                            h('button', { type: 'button', 'aria-expanded': showStudentSetup, 'aria-controls': 'bl-today-setup', onClick: () => setShowStudentSetup(value => !value), className: actionClass }, 'Student and role settings'))
+                            h('button', { type: 'button', 'aria-expanded': showStudentSetup, 'aria-controls': 'bl-today-setup', onClick: () => setShowStudentSetup(value => !value), className: actionClass }, familyOnly ? 'Student settings' : 'Student and role settings'))
                     ) : h('h2', { className: 'text-xl font-bold text-slate-900' }, 'Choose a student to start'),
                     (!selectedStudent || showStudentSetup) && h('div', { id: 'bl-today-setup' }, studentSetup),
                     isPracticeMode && h('div', { className: 'rounded-lg border border-amber-400 bg-amber-50 p-3 flex flex-wrap items-center justify-between gap-2' },
@@ -32003,7 +32006,7 @@ Use professional language. Refer to "the student" (not the codename).`;
 
             return h('div', { className: 'max-w-4xl mx-auto' },
                 hubNavigation,
-                h('details', { className: 'mb-4', open: !selectedStudent }, h('summary', { className: 'min-h-11 py-3 text-sm font-bold text-slate-700' }, 'Student and role settings'), studentSetup),
+                h('details', { className: 'mb-4', open: !selectedStudent }, h('summary', { className: 'min-h-11 py-3 text-sm font-bold text-slate-700' }, familyOnly ? 'Student settings' : 'Student and role settings'), studentSetup),
                 // ── Student Roster Quick-Switch ──────────────────────
                 !isParentMode && studentRoster.length > 1 && h('div', { id: 'bl-quick-switch', tabIndex: -1, role: 'group', 'aria-label': 'Quick switch. Now viewing ' + (selectedStudent || 'no student'), className: 'mb-4 bg-white/80 backdrop-blur rounded-xl border border-slate-400 p-3 shadow-sm' },
                     h('div', { className: 'flex items-center justify-between mb-2' },
@@ -32663,7 +32666,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 : (tt('behavior_lens.ai.toggle_title_off', 'AI OFF — no student data leaves this browser. Click to enable.'))
                         }, aiConsent ? '🤖 AI: ON' : '🤖 AI: OFF'),
                         // Parent Mode toggle
-                        activePanel === 'hub' && h('button', { 'aria-label': 'Family Mode', 'aria-pressed': isParentMode,
+                        activePanel === 'hub' && !familyOnly && h('button', { 'aria-label': 'Family Mode', 'aria-pressed': isParentMode,
                             onClick: () => setUserRole(isParentMode ? lastStaffRoleRef.current : 'parent'),
                             className: `px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isParentMode
                                 ? 'bg-blue-700 text-white border-blue-500 shadow-md'
