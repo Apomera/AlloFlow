@@ -80,30 +80,51 @@ class Response(Flowable):
                 fieldFlags='multiline doNotScroll', annotationFlags='print', maxlen=self.maxlen, forceBorder=True)
 
 
+class PageAnchor(Flowable):
+    def __init__(self, name):
+        Flowable.__init__(self)
+        self.name = name
+        self.width = self.height = 0
+
+    def draw(self):
+        self.canv.bookmarkPage(self.name, fit='Fit')
+
+
 def response_keys():
     return ([s['id'] for s in DATA['formSteps']] + ['evidence', 'next', 'instruction', 'family']
         + ['Q3' + part for part in 'abcd']
         + ['Q4' + part + '_' + side for part in 'abcd' for side in ['strengths', 'weaknesses']]
         + ['continuation'])
 
-def footer(label):
+def footer(label, navigation=False):
     def draw(canvas, doc):
         canvas.saveState()
         canvas.setStrokeColor(RULE)
         canvas.line(48, 39, 564, 39)
         canvas.setFont('Arial', 8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(48, 27, 'Maine SLD | Fictional practice | ' + label)
+        canvas.drawString(48, 27, 'Maine SLD | Fictional practice' if navigation else 'Maine SLD | Fictional practice | ' + label)
+        if navigation and doc.page > 1:
+            text = 'Back to case list'
+            width = pdfmetrics.stringWidth(text, 'Arial', 8)
+            x = 482 - width
+            canvas.setFillColor(GREEN)
+            canvas.drawString(x, 27, text)
+            canvas.setStrokeColor(GREEN)
+            canvas.setLineWidth(.4)
+            canvas.line(x, 26, 482, 26)
+            canvas.linkRect('Back to case list', 'case-menu', (x - 2, 24, 484, 37), relative=0, thickness=0)
+            canvas.setFillColor(MUTED)
         canvas.drawRightString(564, 27, str(doc.page))
         canvas.restoreState()
     return draw
 
-def build_pdf(filename, story, label):
+def build_pdf(filename, story, label, navigation=False):
     path = OUT / filename
     doc = SimpleDocTemplate(str(path), pagesize=(612, 792), rightMargin=48, leftMargin=48,
         topMargin=43, bottomMargin=52, title=label, author='AlloFlow workshop materials',
         subject='Fictional educator practice; not an eligibility determination')
-    doc.build(story, onFirstPage=footer(label), onLaterPages=footer(label))
+    doc.build(story, onFirstPage=footer(label, navigation), onLaterPages=footer(label, navigation))
     reader = PdfReader(BytesIO(path.read_bytes()))
     writer = PdfWriter()
     writer.clone_document_from_reader(reader)
@@ -261,7 +282,7 @@ def participant(case, fillable=True):
     if story:
         story.append(PageBreak())
     story += [p(case_label(case), 'title'), p(case_focus(case)),
-        p('Participant case record | Supplement to the Maine SLD workshop | October 12, 2026', 'small'),
+        p('Participant case record | Supplement to the Maine SLD workshop | October 13, 2026', 'small'),
         p('Read the record before choosing a supported provisional response. This case is fictional: names, histories, observations, scores and progress values are simulated. They are not diagnostic cutoffs, eligibility rules or required waiting periods.', 'small'),
         p('Language and learning context', 'heading'), p(case['languageContext']), p('Case record', 'heading')]
     if case.get('baseCaseId'):
@@ -320,7 +341,7 @@ def participant(case, fillable=True):
 def complete_participant(case, fillable=True):
     record = COMPLETE_RECORD
     story = [p(case_label(case) + ' complete practice record', 'title'),
-        p('Fictional source summaries | PDF workshop edition ' + record['version'] + ' | October 12, 2026', 'small')]
+        p('Fictional source summaries | PDF workshop edition ' + record['version'] + ' | October 13, 2026', 'small')]
     story += [p(item) for item in record['overview']]
     story += [p('Official form header information', 'heading'),
         table([['Header field', 'Fictional training information']] + record['headerRows'], [178, 338])]
@@ -345,36 +366,37 @@ def complete_participant(case, fillable=True):
     return story
 
 
-def menu():
-    story = [p('Choose an SLD practice case', 'title'),
+def menu(fillable=False):
+    story = ([PageAnchor('case-menu')] if fillable else []) + [p('Choose an SLD practice case', 'title'),
         p('Choose a learning concern and context. Every packet contains its fictional record and the same Q1 to Q9 worksheet. Case choices do not indicate conclusions.'),
-        p('For the 12 minute workshop activity, pre-read the record and concentrate on its discussion focus. Full-form completion needs a longer activity, especially for Samira. Use the original Alex and Jordan slides for the shared debrief.', 'small')]
+        p('For the 12 minute workshop activity, read the record in advance and concentrate on its discussion focus. Full-form completion needs a longer activity, especially for Samira.', 'small')]
     for case in DATA['cases']:
         selection = case.get('selection', {})
-        story += [p(case_label(case), 'heading'), p(case_focus(case)),
+        heading = Paragraph(f'<link href="#case-{case["id"]}" color="#23665B"><u>{escape(case_label(case))}</u></link>', STYLES['heading']) if fillable else p(case_label(case), 'heading')
+        story += [heading, p(case_focus(case)),
             p('Context: ' + '; '.join(selection.get('contexts', [case['languageContext']])), 'small')]
     story += [p('Working with the packets', 'heading'),
-        p('Individual PDFs are fillable and printable; save, reopen and check responses before printing. Use each case\'s fillable continuation page for longer answers. This combined packet is for printing. Facilitator guidance is separate.', 'small'),
+        p('Select a case name or use the PDF bookmarks to jump to its record. Each case has separate fillable fields and a continuation page. Back to case list returns here. Save, reopen and check your responses before printing. Facilitator answers are not included.' if fillable else 'Individual PDFs are fillable and printable; save, reopen and check responses before printing. Use each case\'s fillable continuation page for longer answers. This combined packet is for printing. Facilitator guidance is separate.', 'small'),
         p('Every record includes strengths and family or student perspectives. Language, culture, mobility, and access to instruction require case-specific inquiry; none alone establishes or excludes a disability.', 'small')]
     return story
 
 def facilitator():
     story = [p('SLD case facilitator supplement', 'title'),
-        p('Seven cases extend the original Alex and Jordan presentation activity. Use the same evidence reasoning process for every case. The case menu describes context without giving away the discussion conclusion.'),
+        p('Use these seven cases to practice connecting evidence to the Maine SLD form. Participants can choose a learning concern and context from the case menu. Use the same evidence reasoning process for every case.'),
         p('Workshop integration', 'heading'),
         p('Share the case menu and current Maine form before the session. Participants choose by grade, academic concern, or context. Distribute selected participant packets and retain this guide. Teams can assign recorder, evidence mapper, and challenger roles.'),
-        p('Retain the 48 minute schedule by assigning reading in advance. For the 12 minute activity on slides 18 and 19: select evidence for 3 minutes, discuss focus questions for 6, then share a provisional recommendation and evidence request for 3. Add reading time if needed. The full worksheet supports extended practice; all nine questions need not be completed during this round.'),
-        p('Retain Alex on slides 20 and 21 to contrast identification and instruction need, and Jordan on slides 22 and 23 for comparison. Invite other teams to contribute one insight. The original deck has not been rewritten.'),
+        p('For a 45-60 minute session, assign case reading in advance. For the 12 minute activity on slides 18 and 19: select evidence for 3 minutes, discuss focus questions for 6, then share a provisional recommendation and evidence request for 3. Add reading time if needed. The full worksheet supports extended practice; all nine questions need not be completed during this round.'),
+        p('Use Alex on slides 20 and 21 to contrast identification and instruction need, and Jordan on slides 22 and 23 for comparison. Invite other teams to contribute one insight.'),
         p('Facilitation and quality checks', 'heading'),
         p('Identify each source: observation, student or family report, teaching record, assessment, assumption, or unresolved question. Accept supported provisional reasoning; a count of low scores cannot replace interpretation or resolve missing evidence.'),
         p('Compare Marisol and Samira through language and literacy history, instruction, assessment validity, appropriate comparisons, and qualified interpretation. No language proficiency waiting period applies. Eligible learners can receive language services and special education together.'),
         p('For Q9, ask what general education provides and what establishes the necessity of a disability-related teaching adaptation. Intensity, staff, program, or placement alone does not define SDI. Do not withdraw necessary support to prove need.'),
-        p('These are synthetic training records reviewed for internal consistency and alignment with cited sources. They are not externally validated cases, a required evaluation battery, or a substitute for qualified team judgment.', 'small')]
+        p('These fictional practice cases are not a required evaluation battery or a substitute for qualified team judgment. Ask participants to explain how each source supports a form entry and to identify what remains uncertain.', 'small')]
     add_sources(story)
     for case in DATA['cases']:
         if case['id'] == COMPLETE_RECORD['caseId']:
             story += [PageBreak(), p(case_label(case) + ' facilitator guidance', 'title'),
-                p('Use the complete PDF practice record and its matching worked answer key. Each Q1-Q9 verification is supported by identified fictional source summaries. The former assumption-only Samira excerpt has been replaced in the PDF materials.'),
+                p('Use the Samira participant record with its matching worked answer key. Ask participants to cite sources S1-S9 when explaining their Q1-Q9 entries, including the strengths and limits of the evidence.'),
                 link('Open the complete Samira facilitator key', '../sld-facilitator-keys/samira-facilitator-key.pdf')]
             continue
         story += [PageBreak(), p(case_label(case) + ' facilitator guidance', 'title'), p(case['debrief']['summary']), p('Discussion focus', 'heading')]
@@ -401,7 +423,7 @@ def index_html():
         cards.append(f'<article {attrs}><h2>{html.escape(case_label(case))}</h2><p>{html.escape(case_focus(case))}</p><p class="context">{html.escape("; ".join(sel.get("contexts", [])))}</p><a href="{case["id"]}-participant.pdf">Open fillable case packet</a></article>')
     document = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SLD practice case handouts</title>
 <style>*{box-sizing:border-box}body{margin:0;color:#16343b;background:#f5f7f6;font:16px/1.55 system-ui,sans-serif;letter-spacing:0}main{max-width:1050px;margin:auto;padding:32px 24px}h1{font-size:30px;line-height:1.2;margin:0 0 12px}h2{font-size:20px;line-height:1.3}a{color:#155b80;text-underline-offset:3px}a:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid #a04b16;outline-offset:3px}.filters{display:flex;gap:16px;flex-wrap:wrap;border-block:1px solid #cad6d1;padding:18px 0;margin:24px 0}label{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px;font-weight:600}select,button{font:inherit;padding:9px;border:1px solid #82988e;border-radius:4px;background:white;color:#16343b;max-width:100%}#cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:20px}article{border:1px solid #cad6d1;border-top:4px solid #23665b;background:white;padding:20px;border-radius:4px}article[hidden]{display:none}.context{font-size:14px;color:#52656a}.downloads{border-top:1px solid #cad6d1;margin-top:32px;padding-top:16px}.downloads a{display:block;margin:12px 0}footer{font-size:14px;margin-top:24px;color:#52656a}button{align-self:end;cursor:pointer}</style>
-<main><h1>SLD practice case handouts</h1><p>Choose a grade, learning concern, or context for your workshop discussion.</p><div class="filters"><label>Grade<select id="grade"><option value="">All grades</option></select></label><label>Academic focus<select id="focus"><option value="">All areas</option></select></label><label>Context<select id="context"><option value="">All contexts</option></select></label><button id="reset" type="button">Reset filters</button></div><p id="count" role="status" aria-live="polite"></p><section id="cases" aria-label="Case choices">CARDS</section><p id="empty" hidden>No cases match these choices. Reset a filter to broaden the results.</p><section class="downloads"><h2>Workshop materials</h2><a href="SLD-Participant-Case-Pack.pdf">All participant cases - print packet</a><a href="SLD-Facilitator-Supplement.pdf">Facilitator guidance - separate from participant packets</a></section><footer>All cases and data are fictional. These are practice materials, not real student records or eligibility determinations. Prepared October 12, 2026. Individual PDFs contain fillable response fields.</footer></main>
+<main><h1>SLD practice case handouts</h1><p>Choose a grade, learning concern, or context for your workshop discussion.</p><div class="filters"><label>Grade<select id="grade"><option value="">All grades</option></select></label><label>Academic focus<select id="focus"><option value="">All areas</option></select></label><label>Context<select id="context"><option value="">All contexts</option></select></label><button id="reset" type="button">Reset filters</button></div><p id="count" role="status" aria-live="polite"></p><section id="cases" aria-label="Case choices">CARDS</section><p id="empty" hidden>No cases match these choices. Reset a filter to broaden the results.</p><section class="downloads"><h2>Workshop materials</h2><a href="SLD-Participant-Fillable-Case-Pack.pdf">All participant cases - fillable packet</a><a href="SLD-Participant-Case-Pack.pdf">All participant cases - print packet</a><a href="SLD-Facilitator-Supplement.pdf">Facilitator guidance - separate from participant packets</a></section><footer>All cases and data are fictional. These are practice materials, not real student records or eligibility determinations. Workshop materials | October 13, 2026. Individual PDFs contain fillable response fields.</footer></main>
 <script>const cards=[...document.querySelectorAll('article')],fields=['grade','focus','context'];for(const key of fields){const el=document.getElementById(key);const vals=[...new Set(cards.flatMap(c=>c.dataset[key].split('|')).filter(Boolean))].sort();for(const v of vals){const o=document.createElement('option');o.value=v;o.textContent=v;el.append(o)}el.addEventListener('change',filter)}function filter(){let n=0;for(const c of cards){c.hidden=!fields.every(k=>!document.getElementById(k).value||c.dataset[k].split('|').includes(document.getElementById(k).value));if(!c.hidden)n++}document.getElementById('count').textContent=n+' of '+cards.length+' cases';document.getElementById('empty').hidden=n>0}document.getElementById('reset').addEventListener('click',()=>{fields.forEach(k=>document.getElementById(k).value='');filter()});filter();</script></html>'''
     document = document.replace('</style>', '@media(max-width:600px){.filters label{flex-basis:100%;min-width:0}.filters button{align-self:flex-start}}</style>')
     (OUT / 'Choose-a-Case.html').write_text(document.replace('CARDS', ''.join(cards)), encoding='utf-8')
@@ -424,13 +446,38 @@ def main():
         story += [PageBreak()] + participant(case, False)
     path = build_pdf('SLD-Participant-Case-Pack.pdf', story, 'Participant print pack')
     manifest['files'].append({'name': path.name, 'pages': len(PdfReader(path).pages)})
+    story = menu(fillable=True)
+    for case in DATA['cases']:
+        story += [PageBreak(), PageAnchor('case-' + case['id'])] + participant(case, True)
+    path = build_pdf('SLD-Participant-Fillable-Case-Pack.pdf', story, 'Participant fillable pack', navigation=True)
+    reader = PdfReader(path)
+    expected = {case['id'] + '_' + key for case in DATA['cases'] for key in response_keys()}
+    assert set(reader.get_fields() or {}) == expected
+    widgets = [a.get_object() for page in reader.pages for a in page.get('/Annots', []) if a.get_object().get('/Subtype') == '/Widget']
+    assert len(widgets) == len(expected)
+    assert all(w.get('/V', '') == '' and w.get('/AP', {}).get('/N') is not None for w in widgets)
+    # Individual case page counts also locate the matching sections in the combined packet.
+    case_pages = {item['name']: item['pages'] for item in manifest['files'] if item.get('fields')}
+    offset = len(reader.pages) - sum(case_pages.values())
+    assert offset >= 1
+    writer = PdfWriter()
+    writer.clone_document_from_reader(reader)
+    writer.add_outline_item('Choose a case', 0)
+    for case in DATA['cases']:
+        assert case_label(case) in (reader.pages[offset].extract_text() or '')
+        writer.add_outline_item(case_label(case), offset)
+        offset += case_pages[case['id'] + '-participant.pdf']
+    assert offset == len(reader.pages)
+    with path.open('wb') as stream:
+        writer.write(stream)
+    manifest['files'].append({'name': path.name, 'pages': len(reader.pages), 'fields': len(expected)})
     path = build_pdf('SLD-Facilitator-Supplement.pdf', facilitator(), 'Facilitator only')
     manifest['files'].append({'name': path.name, 'pages': len(PdfReader(path).pages)})
     index_html()
     chooser = OUT / 'Choose-a-Case.html'
     chooser.write_text(chooser.read_text(encoding='utf-8').replace('<a href="SLD-Facilitator-Supplement.pdf">Facilitator guidance - separate from participant packets</a>', ''), encoding='utf-8')
     with zipfile.ZipFile(OUT / 'SLD-Participant-Handouts.zip', 'w', zipfile.ZIP_DEFLATED) as bundle:
-        for file in [chooser, OUT / 'SLD-Participant-Case-Pack.pdf'] + [OUT / (c['id'] + '-participant.pdf') for c in DATA['cases']]:
+        for file in [chooser, OUT / 'SLD-Participant-Case-Pack.pdf', OUT / 'SLD-Participant-Fillable-Case-Pack.pdf'] + [OUT / (c['id'] + '-participant.pdf') for c in DATA['cases']]:
             bundle.write(file, file.name)
     (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
     print(json.dumps(manifest, indent=2))

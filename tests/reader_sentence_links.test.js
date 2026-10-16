@@ -40,7 +40,15 @@ const TEXT = 'Plants grow. [⁽¹⁾](https://example.org/plants) See [the rain 
 describe('links in sentences', () => {
   it('are never inside a sentence button', () => {
     mount(TEXT);
-    expect(body().querySelectorAll('a')).toHaveLength(2);
+    const passage = body().querySelector('[data-reading-passage]');
+    expect([...passage.querySelectorAll('a')].map(link => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['⁽¹⁾', 'https://example.org/plants'],
+      ['the rain guide', 'https://example.org/rain']
+    ]);
+    const source = body().querySelector('[data-student-sources] a');
+    expect(source.textContent).toBe('Open source');
+    expect(source.getAttribute('href')).toBe('https://example.org/plants');
+    expect(passage.contains(source)).toBe(false);
     expect(body().querySelectorAll('[role=button] a, [role=button] button, button a')).toHaveLength(0);
   });
   it('a citation at the end follows its sentence button, which is named without it', () => {

@@ -310,6 +310,7 @@ describe('Adventure Mode runtime regressions', () => {
         },
       },
       adventureSnapshot: {
+        readingSource: { inputArtifactId: 'moon', type: 'analysis', text: 'The Moon causes tides.', unitId: 'lesson' },
         xp: 45, gold: 12, energy: 81, level: 2, xpToNextLevel: 150,
         inventory: [], narrativeLedger: 'Remember the bridge.', stats: {},
         currentScene: { text: 'Project scene', options: [] }, history: [], turnCount: 5,
@@ -348,6 +349,7 @@ describe('Adventure Mode runtime regressions', () => {
     expect(setters.setSocialStoryFocus).toHaveBeenCalledWith('Perspective taking');
     expect(setters.setAdventureArtStyle).toHaveBeenCalledWith('custom');
     expect(restoredState.currentScene.text).toBe('Project scene');
+    expect(restoredState.readingSource).toEqual(project.adventureSnapshot.readingSource);
     expect(restoredState.turnCount).toBe(5);
     expect(restoredState.debateMomentum).toBe(64);
     expect(restoredState.isGameOver).toBe(false);

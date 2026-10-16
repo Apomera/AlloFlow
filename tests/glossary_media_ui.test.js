@@ -171,6 +171,7 @@ describe('glossary definition speech', () => {
     window.__alloInspectGlossaryAudio = vi.fn(() => ({ status: 'missing' }));
     window.__alloRegenerateGlossaryAudio = vi.fn(async () => 'blob:prepared');
     const { container } = mount({ isEditingGlossary: true });
+    await act(async () => container.querySelector('[data-glossary-audio-review-toggle]').click());
     const requests = window.__alloInspectGlossaryAudio.mock.calls.map(([request]) => request);
     expect(requests).toContainEqual(expect.objectContaining({ field: 'definition', spokenText: 'Leaf: A plant part that captures sunlight.' }));
     const definitionGroup = [...container.querySelectorAll('#glossary-edit-audio-review [role="group"]')].find(el => el.getAttribute('aria-label').includes('flashcards.back_label_def'));

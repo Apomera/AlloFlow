@@ -23,15 +23,15 @@ spec.loader.exec_module(h)
 
 def participant_guide():
     return [h.p('Start here: participant PDFs', 'title'),
-        h.p('Maine SLD case practice | October 12, 2026', 'small'),
-        h.p('Choose one case', 'heading'),
-        h.p('Open Choose-a-Case.html to compare the seven cases, or open your assigned file ending in -participant.pdf. Each individual PDF contains the case record and fillable worksheet. Keep the chooser and PDFs together after extracting the ZIP.'),
-        h.p('Type in the individual PDF', 'heading'),
-        h.p('The visible response boxes are interactive. Use a PDF reader that supports forms. Before the activity, type a short test response, save the PDF, close it and reopen it to confirm that your reader preserves the response. Use the individual case PDF for electronic work, not the combined print packet.'),
+        h.p('Maine SLD case practice | October 13, 2026', 'small'),
+        h.p('Choose your packet', 'heading'),
+        h.p('Open Choose-a-Case.html to compare the seven cases, or open your assigned file ending in -participant.pdf. To keep every case in one fillable file, use SLD-Participant-Fillable-Case-Pack.pdf. Select a case name on its first page or use the bookmarks; Back to case list returns to the menu. Keep the chooser and PDFs together after extracting the ZIP.'),
+        h.p('Choose a fillable format', 'heading'),
+        h.p('Both individual case PDFs and the complete fillable packet have interactive response boxes. In the complete packet, each case keeps separate answers. Use a PDF reader that supports forms. Test a short response, save, close and reopen the file to confirm that your reader preserves it. The separate print packet is not fillable.'),
         h.p('Keep answers readable', 'heading'),
         h.p('Write a concise source, finding and explanation in each box. Use the fillable Continuation notes page for longer answers, beginning each entry with its question or cell label, such as Q3d or Q4b strengths. When a box is full, continue there instead of reducing readability. Review saved pages and print preview so that all intended text is visible; reader behavior can vary.'),
         h.p('Follow the form route', 'heading'),
-        h.p('Use the included official Maine SLD form as the reference. It is an unchanged reference PDF, not the interactive worksheet. Complete only the questions reached by your case. Identify skipped questions, exercise assumptions and missing information. Pending is a training status, not an extra official checkbox. Do not invent assessment findings or signatures.'),
+        h.p('Use the included official Maine SLD form to check instructions and routing; type your answers in your chosen fillable PDF. Complete only the questions reached by each case. Identify skipped questions, exercise assumptions and missing information. Pending is a training status, not an extra official checkbox. Do not invent assessment findings or signatures.'),
         h.p('During the short activity', 'heading'),
         h.p('Identify two relevant findings and one limitation. Explain the applicable form route, the conclusion supported at that point and the next evidence or instruction question. The full worksheet supports extended practice; you do not need to finish every box during a 12-minute discussion.'),
         h.p('Files to keep separate', 'heading'),
@@ -40,22 +40,22 @@ def participant_guide():
 
 def presenter_guide(manifest):
     stories = [h.p('Start here: presenter PDFs', 'title'),
-        h.p('Maine SLD case practice | October 12, 2026 | Presenter only', 'small'),
-        h.p('The participant worksheets and the case-specific keys are the primary materials. This package does not require AlloFlow or a slide-deck update to conduct the PDF activity.'),
+        h.p('Maine SLD case practice | October 13, 2026 | Presenter only', 'small'),
+        h.p('Use the participant worksheets with the matching case keys and official Maine SLD form. The PDF activity can be conducted without AlloFlow.'),
         h.p('What to distribute', 'heading'),
-        h.p('Share SLD-Participant-Materials.zip, or distribute each group\'s selected individual case PDF plus the official Maine SLD form. The participant package contains a short start guide, a chooser, seven fillable case packets, an optional nonfillable print master and the unchanged official reference form. Do not distribute this presenter ZIP before participants discuss their reasoning.'),
+        h.p('Share SLD-Participant-Materials.zip, or distribute the selected individual case PDFs or SLD-Participant-Fillable-Case-Pack.pdf plus the official Maine SLD form. The complete fillable packet includes all seven cases with separate answers and bookmarks. A nonfillable print master is also included. Keep presenter keys separate until participants discuss their reasoning.'),
         h.p('What to keep open', 'heading'),
         h.table([['Presenter document', 'Purpose'],
             ['SLD-Facilitator-Quick-Reference.pdf', 'Seven pages: one quick key for each case. Use while circulating or debriefing.'],
             ['SLD-Facilitator-Worked-Answer-Keys.pdf', 'Detailed model entries, evidence and rationale. Use the page map on the next page.'],
-            ['samira-facilitator-key.pdf', 'Samira only: the expanded source record\'s matching worked key.'],
-            [FORM_NAME, 'Official form/checklist reference. It is unchanged and not made fillable here.']], [240, 276]),
+            ['samira-facilitator-key.pdf', 'Samira only: worked entries and rationales linked to sources S1-S9.'],
+            [FORM_NAME, 'Official form/checklist reference. Type practice responses in the case worksheet.']], [240, 276]),
         h.p('Before participants begin', 'heading'),
-        h.p('Ask participants to test typing, saving and reopening their individual PDF. Explain that the visible boxes hold brief answers and that longer responses belong on the fillable Continuation notes page. Check print preview when printing completed work. No PDF/UA or universal viewer compatibility certification is claimed.'),
+        h.p('Ask participants to test typing, saving and reopening their chosen fillable PDF. Use each case\'s Continuation notes page for longer answers and check print preview before printing. Confirm that participants can use the files with their PDF reader and any assistive technology. Offer a printed copy or another accessible response format when needed.'),
         h.p('A focused activity within a 45-60 minute session', 'heading'),
         h.p('Advance selection and reading are helpful. For a 12-minute discussion, allow about 3 minutes to identify evidence, 6 minutes to connect it to the form and 3 minutes to share a conclusion or evidence request. Ask for two relevant findings, one limitation, the applicable route and a next step. A complete review of every worksheet field is extended practice, not the short-activity requirement.'),
         h.p('Presenter checks', 'heading'),
-        h.p('Samira now includes complete fictional source summaries for Q1-Q9 practice. Other cases retain their stated evidence limits. Ask participants to cite evidence and explain reasoning, not merely match an answer label. Accept uncertainty when the selected case leaves facts unresolved.', 'small'),
+        h.p('Samira includes fictional source summaries for Q1-Q9 practice. Other cases use stated exercise assumptions or leave some decisions unresolved. Ask participants to cite evidence and explain reasoning, not merely match an answer label. Accept uncertainty when the selected case leaves facts unresolved.', 'small'),
         PageBreak(), h.p('Case keys and form safeguards', 'title')]
     labels = {
         'alex': 'Reading evidence; Q8 provisional, Q9 unresolved.',
@@ -74,13 +74,13 @@ def presenter_guide(manifest):
         start = end + 1
     stories += [h.table(rows, [117, 88, 311]),
         h.p('Q3 and Q4', 'heading'),
-        h.p('Q3 requires four separate primary-cause determinations with verification. Q4 requires strengths and weaknesses across four evidence streams: eight cells. When the excerpt omits psychological-processing measures or composites, name that limitation. Classroom observations and achievement scores do not substitute for that documentation.'),
+        h.p('Q3 requires four separate primary-cause determinations with verification. Q4 requires strengths and weaknesses across four evidence streams: eight cells. When a case does not provide psychological-processing measures or composite scores, identify the missing information and the report needed to verify it. Classroom observations and achievement scores do not substitute for that documentation.'),
         h.p('Routing and conclusions', 'heading'),
         h.p('Skipped questions are not NO findings. Q7 asks for assessment-specific verification if NO and has no printed automatic stop branch. Q8 asks whether SLD exists; Q9 separately asks whether the disability requires special education or can be adequately addressed through general education interventions/accommodations. Do not force Q9 when the case has not reached it.'),
         h.p('Multilingual cases', 'heading'),
         h.p('Language history and instructional access require inquiry; multilingual identity alone establishes neither SLD nor an exclusion. Follow the official form\'s conditional norm-group instruction without applying it to every multilingual learner or inventing equivalent scores. Keep appropriate supports and timely evaluation in view.'),
         h.p('How to use the answers', 'heading'),
-        h.p('The worked keys model training documentation, not signed eligibility forms. Samira has newly authored, explicitly fictional source data; participants should not invent additional findings. Keep answer keys private until discussion is complete, then share the relevant key.', 'small'),
+        h.p('The worked keys model training documentation, not signed eligibility forms. Use only the selected case information and its stated assumptions; do not add findings. Keep answer keys private until discussion is complete, then share the relevant key.', 'small'),
         h.p('Base case version ' + h.DATA['metadata']['version'] + '; Samira source-record edition ' + h.COMPLETE_RECORD['version'] + '. Use the matching Samira source-record edition in the PDFs and AlloFlow. Verify the edition before switching formats, and keep the worksheet with its matching facilitator key.', 'small')]
     return stories
 
@@ -96,7 +96,7 @@ def build():
     for folder in (participant_dir, presenter_dir):
         folder.mkdir(parents=True, exist_ok=True)
         shutil.copy2(FORM, folder / FORM_NAME)
-    participant_names = ['Choose-a-Case.html', 'SLD-Participant-Case-Pack.pdf'] + [c['id'] + '-participant.pdf' for c in h.DATA['cases']]
+    participant_names = ['Choose-a-Case.html', 'SLD-Participant-Case-Pack.pdf', 'SLD-Participant-Fillable-Case-Pack.pdf'] + [c['id'] + '-participant.pdf' for c in h.DATA['cases']]
     for name in participant_names:
         shutil.copy2(HANDOUTS / name, participant_dir / name)
     presenter_names = ['SLD-Facilitator-Quick-Reference.pdf', 'SLD-Facilitator-Worked-Answer-Keys.pdf', 'samira-facilitator-key.pdf']
@@ -121,12 +121,16 @@ def build():
         assert len(reader.get_fields() or {}) == 26
         assert case['id'] + '_continuation' in reader.get_fields()
         counts.append({'case': case['id'], 'pages': len(reader.pages), 'fields': len(reader.get_fields())})
+    complete = PdfReader(participant_dir / 'SLD-Participant-Fillable-Case-Pack.pdf')
+    expected_fields = {case['id'] + '_' + key for case in h.DATA['cases'] for key in h.response_keys()}
+    assert set(complete.get_fields() or {}) == expected_fields
+    assert all(field.get('/V', '') == '' for field in complete.get_fields().values())
     for path, expected in [(participant_dir / 'START_HERE-Participants.pdf', 1), (presenter_dir / 'START_HERE-Presenters.pdf', 2)]:
         assert len(PdfReader(path).pages) == expected, path
         with pdfplumber.open(path) as pdf:
             for page in pdf.pages:
                 assert all(40 <= c['x0'] <= c['x1'] <= 572 and 32 <= c['top'] <= c['bottom'] <= 773 for c in page.chars), path
-    summary = {'caseDataVersion': h.DATA['metadata']['version'], 'samiraRecordVersion': h.COMPLETE_RECORD['version'], 'samiraRecordSha256': manifest['samiraRecordSha256'], 'samiraKeySha256': manifest['samiraKeySha256'], 'participantFiles': participant_names, 'presenterFiles': presenter_names, 'cases': counts, 'officialFormSha256': FORM_SHA}
+    summary = {'caseDataVersion': h.DATA['metadata']['version'], 'samiraRecordVersion': h.COMPLETE_RECORD['version'], 'samiraRecordSha256': manifest['samiraRecordSha256'], 'samiraKeySha256': manifest['samiraKeySha256'], 'participantFiles': participant_names, 'presenterFiles': presenter_names, 'cases': counts, 'completeFillablePacket': {'file': 'SLD-Participant-Fillable-Case-Pack.pdf', 'pages': len(complete.pages), 'fields': len(expected_fields)}, 'officialFormSha256': FORM_SHA}
     (OUT / 'manifest.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
     print(json.dumps(summary, indent=2))
 

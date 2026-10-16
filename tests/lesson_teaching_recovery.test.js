@@ -17,7 +17,7 @@ function harness(overrides = {}) {
   let state = { history: [plan(), material()], isTeacherMode: true, isParentMode: false, isIndependentMode: false, actorKey: 'teacher', canGenerate: true };
   const statuses = [], writes = [];
   const deps = {
-    core, getState: () => state, onStatus: value => statuses.push(value), callText: vi.fn(async () => raw()),
+    storage: null, core, getState: () => state, onStatus: value => statuses.push(value), callText: vi.fn(async () => raw()),
     updateResource: (id, update) => {
       const before = state.history.find(item => item.id === id), after = before && update(before);
       if (!after || before === after) return false;

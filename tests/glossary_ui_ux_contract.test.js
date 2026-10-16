@@ -81,11 +81,11 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain("var preparedLanguages = glossaryAudioScope === 'all'");
     expect(source).toContain("typeof prepare !== 'function'");
     expect(source).toContain("doneOrProgress && typeof doneOrProgress === 'object'");
-    expect(source).toContain('<option value="core">{flashcardTermLabel} + {flashcardDefinitionLabel}');
-    expect(source).toContain('<option value="terms">{flashcardTermLabel}');
-    expect(source).toContain('<option value="all">{flashcardTermLabel} + {flashcardDefinitionLabel}');
-    expect(source).toContain("var ready = Number(result && (result.ready ?? result.prepared ?? result.total))");
-    expect(source).toContain('Saved with this resource/project.');
+    expect(source).toContain("<option value=\"core\">{glossaryText('glossary.audio_scope_core', 'Terms + definitions')}");
+    expect(source).toContain("<option value=\"terms\">{glossaryText('glossary.audio_scope_terms', 'Terms only')}");
+    expect(source).toContain("<option value=\"all\">{glossaryText('glossary.audio_scope_all', 'All fields')}");
+    expect(source).toContain('var ready = Math.min(total, count(result.ready ?? result.prepared))');
+    expect(source).toContain('Saved with this glossary.');
     expect(source).toContain('id="glossary-audio-prep-status" role="status" aria-live="polite"');
   });
 
@@ -96,7 +96,8 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain("handleGlossarySpeak(item, 'term', item.term");
     expect(source).toContain("handleGlossarySpeak(item, 'definition', item.def");
     expect(source).toContain("handleGlossarySpeak(item, 'translation', item.translations[lang]");
-    expect(source).toContain("aria-label={t('common.download_audio')} value={glossaryAudioScope}");
+    expect(source).toContain("aria-label={glossaryText('glossary.audio_scope', 'Audio to prepare')}");
+    expect(source).toContain('value={glossaryAudioScope}');
     expect(source).toContain("includeDefinitions: includeDefinitions, languages: preparedLanguages");
     expect(source).toContain('window.__alloEnsureGlossaryEntryIds');
   });

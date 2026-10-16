@@ -15,15 +15,17 @@
 // the worker as it was on 2026-09-13 morning and passes on the fixed one.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import http from 'node:http';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
 const ROOT = process.cwd();
 const WORKER = readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');
 const PRECACHE = JSON.parse(WORKER.match(/const PRECACHE_PATHS = (\[[^\n]*\]);/)[1]);
+const RELEASE_ID = WORKER.match(/const RELEASE_ID = ['"]([^'"]+)['"];/)?.[1] || '';
+const RELEASE_BUILT_AT = Number(WORKER.match(/const RELEASE_BUILT_AT = (\d+);/)?.[1]) || 0;
 
-const SHELL = '<!doctype html><html><head><meta charset="utf-8"><title>shell</title></head><body>shell<script>navigator.serviceWorker.register("./sw.js", { scope: "./" });</script></body></html>';
+const SHELL = '<!doctype html><html><head><meta charset="utf-8"><title>shell</title><script>window.__alloReleaseId=' + JSON.stringify(RELEASE_ID) + ';window.__alloReleaseBuiltAt=' + RELEASE_BUILT_AT + ';</script></head><body>shell<script>navigator.serviceWorker.register("./sw.js", { scope: "./" });</script></body></html>';
 
 let server, base, browser;
 beforeAll(async () => {
@@ -37,7 +39,11 @@ beforeAll(async () => {
   });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   base = 'http://127.0.0.1:' + server.address().port + '/app/';
-  browser = await chromium.launch();
+  const executablePath = [process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, chromium.executablePath(),
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(candidate => candidate && existsSync(candidate));
+  browser = await chromium.launch(executablePath ? { executablePath } : {});
 }, 60000);
 afterAll(async () => { if (browser) await browser.close(); if (server) { server.closeAllConnections(); await new Promise((r) => server.close(r)); } }, 30000);
 
@@ -50,7 +56,10 @@ describe('service worker vs the clean-URL redirect', () => {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
     await page.goto(base, { waitUntil: 'load' });
-    await page.waitForFunction(async () => { const r = await navigator.serviceWorker.getRegistration(); return !!(r && r.active); }, null, { timeout: 30000 });
+    await expect.poll(() => page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      return registration?.active?.state === 'activated' && navigator.serviceWorker.controller === registration.active;
+    }), { timeout: 30000 }).toBe(true);
     // Let the install's precache settle.
     // Poll inside the page: install writes the precache after activation
     // reports, and the entry appears a moment later.

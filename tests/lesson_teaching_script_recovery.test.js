@@ -159,6 +159,40 @@ describe('scoped teaching-script recovery', () => {
     await act(async () => button('Save edits').click()); expect(record().draft.steps[0].teacherSays).toBe(edited);
     unmount(); mount(p); expect(field('Teacher says').value).toBe(edited);
   });
+  it.each([undefined, null, {}, true, { ok: 'true' }])('keeps the editor, recovery, and step undo until saving is explicitly confirmed: %j', async result => {
+    const save = vi.fn().mockResolvedValueOnce(result).mockResolvedValueOnce({ ok: true });
+    const p = startDraft(props({ onUpdateTeachingScript: save }));
+    change('Teacher says · 2', edited + ' Keep this second-step edit.');
+    click('Restore saved step');
+    const before = record().draft;
+    expect(before.stepUndo[0].previous.teacherSays).toBe(edited);
+    await act(async () => button('Save edits').click());
+    expect(host.textContent).toContain('Saving could not be confirmed. Your draft is still here. Try saving again.');
+    expect(host.textContent).not.toContain('Script edits added to this plan.');
+    expect(button('Save edits').disabled).toBe(false);
+    expect(record().draft).toEqual(before);
+    expect(button('Undo step restore')).toBeTruthy();
+    unmount(); mount(p);
+    expect(record().draft).toEqual(before);
+    click('Undo step restore');
+    expect(field('Teacher says').value).toBe(edited);
+    expect(field('Teacher says · 2').value).toContain('Keep this second-step edit.');
+    await act(async () => button('Save edits').click());
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(record().draft).toBeNull();
+    expect(button('Save edits')).toBeUndefined();
+  });
+  it.each([undefined, null, {}])('keeps the submitted recovery draft when an unconfirmed save finishes after navigation: %j', async result => {
+    let finish;
+    const p = startDraft(props({ onUpdateTeachingScript: vi.fn(() => new Promise(resolve => { finish = resolve; })) }));
+    const before = record().draft;
+    act(() => button('Save edits').click()); unmount();
+    await act(async () => finish(result));
+    expect(record().draft).toEqual(before);
+    mount(p);
+    expect(field('Teacher says').value).toBe(edited);
+    expect(button('Save edits').disabled).toBe(false);
+  });
   it('clears a successfully submitted draft even when saving finishes after navigation', async () => {
     let finish; const p = startDraft(props({ onUpdateTeachingScript: vi.fn(() => new Promise(resolve => { finish = resolve; })) }));
     act(() => button('Save edits').click()); unmount(); await act(async () => finish({ ok: true }));

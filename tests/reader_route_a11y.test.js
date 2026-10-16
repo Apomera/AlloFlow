@@ -110,7 +110,19 @@ describe('Original and Both Explain routes', () => {
     await click(link);
     expect(view.props.setSelectionMenu).not.toHaveBeenCalled();
     expect(scope.querySelector('[data-reading-gloss] button')).toBeNull();
-    await click($('[data-reading-gloss-editor] button[aria-expanded]'));
+    const editor = $('[data-reading-gloss-editor] button[aria-expanded]');
+    if (route === 'original') {
+      const setup = $('[data-teacher-setup-toggle]');
+      expect(setup.getAttribute('aria-expanded')).toBe('false');
+      expect(editor.closest('[hidden]')).not.toBeNull();
+      await click(setup);
+      expect(setup.getAttribute('aria-expanded')).toBe('true');
+      expect(scope.querySelector('[data-reading-gloss] button')).toBeNull();
+    }
+    expect(editor.closest('[hidden]')).toBeNull();
+    expect(editor.getAttribute('aria-expanded')).toBe('false');
+    await click(editor);
+    expect(editor.getAttribute('aria-expanded')).toBe('true');
     const edit = scope.querySelector('[data-reading-gloss] button');
     expect(edit).not.toBeNull();
     expect(scope.querySelectorAll('[role="button"] button, button button')).toHaveLength(0);

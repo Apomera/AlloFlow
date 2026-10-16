@@ -51,6 +51,8 @@ test.describe('Cephalopod Lab — surfacing is not a lost context', () => {
       'document.querySelector(\'#wrap canvas[role="application"]\')');
     await liveGl(page);
     await clickByText(page, /End run \+ surface/, 'End run + surface');
+    await expect(page.getByRole('dialog', { name: 'End of dive', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: /Pick different species/ }).click();
     await page.waitForTimeout(1500);
     const failed = await bodyHas(page, /WebGL failed to load or initialize/);
     console.log('ceph after surfacing, failure shown:', failed);

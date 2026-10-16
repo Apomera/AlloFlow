@@ -204,8 +204,12 @@ describe('what automatic supports cost', () => {
     const view = mount(); await settle();
     expect(view.generate).not.toHaveBeenCalled();
     expect(auto().getAttribute('data-auto-word-supports')).toBe('paused');
-    expect(auto().querySelector('[role=status]').textContent).toBe('Word supports are added automatically for up to 10 originals a day on this device. Use Add word helps for this one.');
-    const manual = [...host.querySelectorAll('button')].find(node => node.textContent.trim() === 'Add word helps');
+    expect(auto().querySelector('[role=status]').textContent).toBe('Word help is added automatically for up to 10 originals a day on this device. Use Add word help for this one.');
+    const setup = host.querySelector('[data-teacher-setup-toggle]');
+    if (setup?.getAttribute('aria-expanded') === 'false') await click(setup);
+    const manual = host.querySelector('[data-original-generate-supports]');
+    expect(manual.textContent.trim()).toBe('Add word help');
+    expect(manual.disabled).toBe(false);
     await click(manual); await settle();
     expect(view.generate).toHaveBeenCalledTimes(1);
   });

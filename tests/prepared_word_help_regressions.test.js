@@ -50,7 +50,7 @@ function bilingual(text) {
   const parts = text.split('--- ENGLISH TRANSLATION ---');
   return parts.length < 2 ? null : { source: parts[0].trim().split(/\n{2,}/), target: parts[1].trim().split(/\n{2,}/), sourceFull: parts[0].trim(), targetFull: parts[1].trim() };
 }
-function mount(item, extra = {}) {
+function mount(item, extra = {}, { strict = false, onCommit } = {}) {
   const noop = () => {};
   const props = {
     ComplexityGauge: () => null, t: key => key, inputText: '', gradeLevel: '5', leveledTextLanguage: item.config.language,
@@ -72,7 +72,15 @@ function mount(item, extra = {}) {
     highlightGlossaryTerms: value => value, SourceReferencesPanel: () => null, ...extra,
   };
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-  const update = patch => act(() => { Object.assign(props, patch); root.render(React.createElement(View, props)); });
+  function ObservedReader(currentProps) {
+    React.useLayoutEffect(() => { onCommit(); });
+    return React.createElement(View, currentProps);
+  }
+  const update = patch => act(() => {
+    Object.assign(props, patch);
+    const reader = React.createElement(onCommit ? ObservedReader : View, props);
+    root.render(strict ? React.createElement(React.StrictMode, null, reader) : reader);
+  });
   update({});
   return { props, update };
 }
@@ -343,6 +351,35 @@ describe('Prepared help exact occurrence regressions', () => {
 });
 
 describe('Prepared help lifecycle regressions', () => {
+  it('clears a teacher list locator on collapse without removing passage word-help marks', () => {
+    const registry = new Map();
+    vi.stubGlobal('CSS', { highlights: registry });
+    vi.stubGlobal('Highlight', class extends Set { constructor(...ranges) { super(ranges); } });
+    mount(itemWithHelp('The heron rests.', 'heron'), { isTeacherMode: true });
+    const disclosure = host.querySelector('[data-adapted-word-help-student-view]');
+    const toggle = open => act(() => {
+      disclosure.open = open;
+      disclosure.dispatchEvent(new Event('toggle'));
+    });
+    toggle(true);
+    const passageMarks = [...registry.get('allo-word-help')];
+    expect(passageMarks.length).toBeGreaterThan(0);
+    click(disclosure.querySelector('[data-adapted-word-help-spot]'));
+    const notice = disclosure.querySelector('[data-adapted-word-help-spot-notice]');
+    expect(notice.textContent).toContain('highlighted');
+    expect(registry.has('allo-word-help-focus')).toBe(true);
+
+    toggle(false);
+
+    expect(notice.textContent).toBe('');
+    expect(registry.has('allo-word-help-focus')).toBe(false);
+    expect([...registry.get('allo-word-help')]).toEqual(passageMarks);
+    toggle(true);
+    expect(notice.textContent).toBe('');
+    expect(registry.has('allo-word-help-focus')).toBe(false);
+    expect([...registry.get('allo-word-help')]).toEqual(passageMarks);
+  });
+
   it.each(['original', 'same-text-supported'])('dismisses prepared help and its owned audio when the reading becomes %s', form => {
     const registry = new Map();
     vi.stubGlobal('CSS', { highlights: registry });
@@ -571,6 +608,183 @@ describe('Prepared help lifecycle regressions', () => {
     view.update({ isPlaying: true, playingContentId: firstId }); view.props.stopPlayback.mockClear();
     click(host.querySelector('[data-prepared-help-open]'));
     expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    click(card().querySelector('[data-word-help-card-hear]'));
+    expect(view.props.handleSpeak.mock.calls.at(-1)[1]).not.toBe(firstId);
+  });
+});
+
+describe.each([false, true])('Prepared help artifact ownership (StrictMode=%s)', strict => {
+  const boundaries = [
+    ['instance', item => ({ ...item, _artifactInstanceId: 'instance-b' })],
+    ['family', item => ({ ...item, sourceFamilyId: 'family-b' })],
+    ['unit', item => ({ ...item, unitId: 'unit-b' })],
+    ['config unit', item => ({ ...item, config: { ...item.config, unitId: 'config-unit-b' } })],
+  ];
+  const ownedItem = () => ({ ...itemWithHelp('The heron rests.', 'heron'),
+    _artifactInstanceId: 'instance-a', sourceFamilyId: 'family-a', unitId: 'unit-a' });
+
+  for (const [boundary, replaceOwner] of boundaries) {
+    it.each([false, true])(`dismisses the old ${boundary} card and its owned audio (isPlaying=%s)`, isPlaying => {
+      const item = ownedItem(), changed = replaceOwner(item), commits = [];
+      const view = mount(item, {}, { strict, onCommit: () => commits.push(card()) });
+      const opener = host.querySelector('[data-prepared-help-open]');
+      click(opener);
+      expect(card()).not.toBeNull();
+      click(card().querySelector('[data-word-help-card-listen]'));
+      const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+      view.update({ isPlaying, playingContentId: ownedId });
+      const oldOpenerFocus = vi.spyOn(opener, 'focus');
+      view.props.stopPlayback.mockClear(); commits.length = 0;
+      expect(changed.id).toBe(item.id); expect(changed.data).toBe(item.data);
+      expect(changed.adaptedReadingSupports).toBe(item.adaptedReadingSupports);
+
+      view.update({ generatedContent: changed });
+
+      expect(commits.length).toBeGreaterThan(0);
+      expect(commits.every(popup => popup === null)).toBe(true);
+      expect(card()).toBeNull();
+      expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+      expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+      expect(oldOpenerFocus).not.toHaveBeenCalled();
+      expect(document.activeElement).not.toBe(opener);
+      if (boundary !== 'config unit') expect(opener.isConnected).toBe(false);
+      const nextOpener = host.querySelector('[data-prepared-help-open]');
+      expect(nextOpener.getAttribute('aria-expanded')).toBe('false');
+      expect(nextOpener.hasAttribute('aria-controls')).toBe(false);
+    });
+  }
+
+  it('dismisses a replaced instance without stopping unrelated playback', () => {
+    const item = ownedItem(), view = mount(item, {}, { strict });
+    click(host.querySelector('[data-prepared-help-open]'));
+    click(card().querySelector('[data-word-help-card-hear]'));
+    view.update({ isPlaying: true, playingContentId: 'unrelated-reading' });
+    view.props.stopPlayback.mockClear();
+    view.update({ generatedContent: { ...item, _artifactInstanceId: 'instance-b' } });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).not.toHaveBeenCalled();
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps same-owner cards, focus, scroll, and audio through metadata and transport updates', () => {
+    const item = ownedItem(), view = mount(item, {}, { strict });
+    click(host.querySelector('[data-prepared-help-open]'));
+    const popup = card(), listen = popup.querySelector('[data-word-help-card-listen]');
+    click(listen);
+    const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    act(() => listen.focus()); popup.scrollTop = 85;
+    view.props.stopPlayback.mockClear();
+    view.update({ generatedContent: { ...item, title: 'A revised display title' },
+      isPlaying: false, playingContentId: ownedId });
+    view.update({ isPlaying: true, playbackState: { currentIdx: 1 } });
+    expect(card()).toBe(popup);
+    expect(popup.scrollTop).toBe(85);
+    expect(document.activeElement).toBe(listen);
+    expect(listen.textContent).toBe('Stop');
+    expect(view.props.stopPlayback).not.toHaveBeenCalled();
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not revive a prior card after returning to the same public ID and instance', () => {
+    const item = ownedItem(), view = mount(item, {}, { strict });
+    click(host.querySelector('[data-prepared-help-open]'));
+    click(card().querySelector('[data-word-help-card-hear]'));
+    const firstId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    view.update({ isPlaying: false, playingContentId: firstId });
+    view.props.stopPlayback.mockClear();
+    view.update({ generatedContent: { ...item, _artifactInstanceId: 'instance-b' } });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    view.update({ generatedContent: item, playingContentId: null });
+    expect(card()).toBeNull();
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    const opener = host.querySelector('[data-prepared-help-open]');
+    click(opener);
+    expect(card().querySelector('[data-word-help-card-text]').textContent).toBe('Meaning for the selected occurrence.');
+    click(card().querySelector('[data-word-help-card-hear]'));
+    expect(view.props.handleSpeak.mock.calls.at(-1)[1]).not.toBe(firstId);
+    key(card(), 'Escape');
+    expect(document.activeElement).toBe(opener);
+  });
+});
+
+describe.each([false, true])('Prepared help learner sessions (StrictMode=%s)', strict => {
+  const sessionProps = { readingLearnerKey: '', readingLearnerSession: 'visit-a' };
+
+  for (const control of ['hear', 'listen']) {
+    it.each([false, true])(`dismisses the previous learner's card and ${control} audio (isPlaying=%s)`, isPlaying => {
+      const commits = [], view = mount(itemWithHelp('The heron rests.', 'heron'), sessionProps,
+        { strict, onCommit: () => commits.push(card()) });
+      const opener = host.querySelector('[data-prepared-help-open]');
+      click(opener);
+      click(card().querySelector('[data-word-help-card-' + control + ']'));
+      const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+      view.update({ isPlaying, playingContentId: ownedId });
+      const openerFocus = vi.spyOn(opener, 'focus');
+      view.props.stopPlayback.mockClear(); commits.length = 0;
+
+      view.update({ readingLearnerSession: 'visit-b' });
+
+      expect(commits.length).toBeGreaterThan(0);
+      expect(commits.every(popup => popup === null)).toBe(true);
+      expect(card()).toBeNull();
+      expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+      expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+      expect(openerFocus).not.toHaveBeenCalled();
+      expect(document.activeElement).not.toBe(opener);
+      expect(opener.getAttribute('aria-expanded')).toBe('false');
+      expect(opener.hasAttribute('aria-controls')).toBe(false);
+      view.update({});
+      expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    });
+  }
+
+  it.each([false, true])('leaves unrelated audio alone on a session boundary (isPlaying=%s)', isPlaying => {
+    const view = mount(itemWithHelp('The heron rests.', 'heron'), sessionProps, { strict });
+    click(host.querySelector('[data-prepared-help-open]'));
+    click(card().querySelector('[data-word-help-card-listen]'));
+    view.update({ isPlaying, playingContentId: 'unrelated-reader-request' });
+    view.props.stopPlayback.mockClear();
+    view.update({ readingLearnerSession: 'visit-b' });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).not.toHaveBeenCalled();
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the same session card, focus, scroll, and audio through playback updates', () => {
+    const view = mount(itemWithHelp('The heron rests.', 'heron'), sessionProps, { strict });
+    click(host.querySelector('[data-prepared-help-open]'));
+    const popup = card(), listen = popup.querySelector('[data-word-help-card-listen]');
+    click(listen);
+    const ownedId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    act(() => listen.focus()); popup.scrollTop = 85;
+    view.props.stopPlayback.mockClear();
+    view.update({ readingLearnerSession: 'visit-a', isPlaying: false, playingContentId: ownedId });
+    view.update({ readingLearnerSession: 'visit-a', isPlaying: true, playbackState: { currentIdx: 1 } });
+    expect(card()).toBe(popup);
+    expect(popup.scrollTop).toBe(85);
+    expect(document.activeElement).toBe(listen);
+    expect(listen.textContent).toBe('Stop');
+    expect(view.props.stopPlayback).not.toHaveBeenCalled();
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not revive an old card when a previous learner session returns', () => {
+    const view = mount(itemWithHelp('The heron rests.', 'heron'), sessionProps, { strict });
+    click(host.querySelector('[data-prepared-help-open]'));
+    click(card().querySelector('[data-word-help-card-hear]'));
+    const firstId = view.props.handleSpeak.mock.calls.at(-1)[1];
+    view.update({ isPlaying: false, playingContentId: firstId });
+    view.props.stopPlayback.mockClear();
+    view.update({ readingLearnerSession: 'visit-b' });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    view.update({ readingLearnerSession: 'visit-a', playingContentId: null });
+    expect(card()).toBeNull();
+    expect(view.props.stopPlayback).toHaveBeenCalledTimes(1);
+    expect(view.props.handleSpeak).toHaveBeenCalledTimes(1);
+    click(host.querySelector('[data-prepared-help-open]'));
     click(card().querySelector('[data-word-help-card-hear]'));
     expect(view.props.handleSpeak.mock.calls.at(-1)[1]).not.toBe(firstId);
   });

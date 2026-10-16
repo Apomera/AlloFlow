@@ -226,6 +226,8 @@ function dispatcherHarness(options={}){
  const localExcerpt=new Function(source.slice(localStart,localEnd)+';return localExcerpt;')();
  const history=options.history || [{id:'terms',type:'glossary',title:'Vocabulary',data:[{term:'Water'}]},{id:'quiz',type:'quiz',title:'Exit ticket',data:{questions:[{}]}}];
  const deps={history,configOverride:{},isIndependentMode:false,isParentMode:false,effectiveLanguage:'English',effectiveGrade:'3',effCustomInstructions:'',usesLocalTextBackend:false,standardsDirective:'',dokDirective:'',interestsDirective:'',setGenerationStep:vi.fn(),setGenerationTaskProgress:vi.fn(),t:k=>k,getLessonContext:(scope,options)=>r.context(scope,{history,targetStandards:[],inputText:'Source input',trace:options.trace}),getAssetManifest:r.utils.getAssetManifest,buildStudyGuidePrompt:c=>c,buildParentGuidePrompt:c=>c,buildLessonPlanPrompt:(c,m)=>c+m,localExcerpt,assertLocalTaskSupported:vi.fn(),localSchemaArg:()=>undefined,callGemini:vi.fn().mockResolvedValue('{"objectives":["Learn"],"extensions":[]}'),safeJsonParse:JSON.parse,parseJsonLenient:JSON.parse,cleanJson:v=>v,warnLog:vi.fn(),...options};
+ const resolvedSourceDefaults={_inputArtifactId:null,_sourceUse:{unitId:null},_selectedSource:{text:'Source input'}};
+ for(const [key,value] of Object.entries(resolvedSourceDefaults)) if(!(key in deps)) deps[key]=value;
  const names=Object.keys(deps);
  const run=new Function('window','deps','return (async()=>{const {'+names.join(',')+'}=deps;let planningGenerationInputs,content,metaInfo;'+body+';return {planningGenerationInputs,content,metaInfo};})()');
  return {...r,deps,run:()=>run(r.window,deps)};

@@ -11,7 +11,7 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
 function setup(overrides={}){
   let state={history:[plan(),material()],isTeacherMode:true,isParentMode:false,isIndependentMode:false,canGenerate:true,actorKey:'teacher-1'};
   const statuses=[],writes=[];
-  const deps={core,getState:()=>state,onStatus:s=>statuses.push(s),callText:vi.fn(async()=>JSON.stringify(raw())),updateResource:(id,updater)=>{const current=state.history.find(item=>item.id===id);if(!current)return false;const next=updater(current);if(!next||next===current)return false;writes.push(id);state={...state,history:state.history.map(item=>item.id===id?next:item)};return true;},...overrides};
+  const deps={storage:null,core,getState:()=>state,onStatus:s=>statuses.push(s),callText:vi.fn(async()=>JSON.stringify(raw())),updateResource:(id,updater)=>{const current=state.history.find(item=>item.id===id);if(!current)return false;const next=updater(current);if(!next||next===current)return false;writes.push(id);state={...state,history:state.history.map(item=>item.id===id?next:item)};return true;},...overrides};
   return {controller:host.createController(deps),deps,statuses,writes,get:()=>state,set:next=>{state=typeof next==='function'?next(state):next;}};
 }
 describe('teaching-script host boundaries with real core',()=>{

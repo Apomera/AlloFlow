@@ -177,3 +177,125 @@ describe('section prompts', () => {
     expect(document.activeElement).toBe(notice);
   });
 });
+
+describe('anonymous reading position ownership', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { unmount(); vi.useRealTimers(); });
+
+  const advance = milliseconds => act(async () => { await vi.advanceTimersByTimeAsync(milliseconds); });
+  const pointAt = index => act(() => { paragraph(index).dispatchEvent(new Event('pointerdown', { bubbles: true })); });
+  const anonymous = session => ({ readingLearnerKey: '', readingLearnerSession: session });
+  const openBookmark = async () => {
+    if (!$('[data-reading-bookmark]')) await press($('[data-reading-outline-toggle]'));
+    await press($('[data-reading-bookmark]'));
+  };
+  async function nextSession(view, boundary) {
+    if (boundary === 'session change') {
+      view.rerender(anonymous('second'));
+      return;
+    }
+    await openBookmark();
+    await press($('[data-reading-clear]'));
+    await press($('[data-reading-clear-yes]'));
+    expect($('[data-reading-place-notice]').textContent).toBe('Your reading work was cleared from this page.');
+  }
+
+  for (const boundary of ['session change', 'Clear my work']) {
+    it(`bookmarks a fresh pointer position after ${boundary}`, async () => {
+      const view = mount(item(), anonymous('first'));
+      layout(0);
+      pointAt(1);
+      await nextSession(view, boundary);
+      pointAt(4);
+      layout(AT_CONTROLS);
+      await openBookmark();
+      expect($('[data-reading-place-notice]').textContent).toBe('Bookmark kept for this visit at: Nests');
+      expect(localStorage.getItem('alloflow_reading_places_v1')).toBeNull();
+    });
+
+    it(`opens questions for the freshly selected section after ${boundary}`, async () => {
+      const view = mount(item(), anonymous('first'));
+      layout(0);
+      pointAt(1);
+      await nextSession(view, boundary);
+      pointAt(4);
+      layout(AT_CONTROLS);
+      await press($('[data-section-prompts-toggle]'));
+      expect($('[data-section-prompts-section]').value).toBe('2');
+    });
+
+    it(`tracks a keyboard reading pause after ${boundary}`, async () => {
+      const view = mount(item(), anonymous('first'));
+      layout(0);
+      pointAt(1);
+      await nextSession(view, boundary);
+      focusParagraph(3);
+      await advance(1500);
+      layout(AT_CONTROLS);
+      await openBookmark();
+      expect($('[data-reading-place-notice]').textContent).toBe('Bookmark kept for this visit at: It waited for a fish near the reeds. Then it…');
+    });
+
+    it(`tracks a new scroll pause after ${boundary}`, async () => {
+      const view = mount(item(), anonymous('first'));
+      layout(0);
+      pointAt(1);
+      await nextSession(view, boundary);
+      layout(READ_TO_5);
+      act(() => { document.dispatchEvent(new Event('scroll')); });
+      await advance(800);
+      layout(AT_CONTROLS);
+      await openBookmark();
+      expect($('[data-reading-place-notice]').textContent).toBe('Bookmark kept for this visit at: Herons build nests high in trees.');
+    });
+  }
+
+  it('does not save the previous session pending scroll into the new session', async () => {
+    const content = item();
+    const view = mount(content, anonymous('first'));
+    layout(READ_TO_5);
+    act(() => { document.dispatchEvent(new Event('scroll')); });
+    await advance(400);
+    view.rerender(anonymous('second'));
+    await advance(400);
+    unmount();
+    mount(content, anonymous('second'));
+    expect($('[data-reading-continue]')).toBeNull();
+  });
+
+  it('cancels pending focus and scroll timers when the anonymous session changes', () => {
+    const view = mount(item(), anonymous('first'));
+    const schedule = vi.spyOn(globalThis, 'setTimeout');
+    const cancel = vi.spyOn(globalThis, 'clearTimeout');
+    layout(0);
+    focusParagraph(3);
+    act(() => { document.dispatchEvent(new Event('scroll')); });
+    const positionTimers = schedule.mock.calls.flatMap((args, index) =>
+      [800, 1500].includes(args[1]) ? [schedule.mock.results[index].value] : []);
+    expect(positionTimers).toHaveLength(2);
+    view.rerender(anonymous('second'));
+    for (const timer of positionTimers) expect(cancel).toHaveBeenCalledWith(timer);
+  });
+
+  it('keeps the remembered pointer position across an ordinary same-session rerender', async () => {
+    const view = mount(item(), anonymous('first'));
+    layout(0);
+    pointAt(4);
+    view.rerender({ selectedVoice: 'Puck' });
+    layout(AT_CONTROLS);
+    await openBookmark();
+    expect($('[data-reading-place-notice]').textContent).toBe('Bookmark kept for this visit at: Nests');
+  });
+
+  it('keeps a pending focus pause across an ordinary same-session rerender', async () => {
+    const view = mount(item(), anonymous('first'));
+    layout(0);
+    focusParagraph(3);
+    await advance(750);
+    view.rerender({ selectedVoice: 'Puck' });
+    await advance(750);
+    layout(AT_CONTROLS);
+    await openBookmark();
+    expect($('[data-reading-place-notice]').textContent).toBe('Bookmark kept for this visit at: It waited for a fish near the reeds. Then it…');
+  });
+});

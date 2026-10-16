@@ -205,3 +205,66 @@ it('does not fall back to legacy copying after a late clipboard rejection on clo
  const original=document.execCommand;const legacyCopy=vi.fn(()=>true);document.execCommand=legacyCopy;
  try{karaoke();click([...host.querySelectorAll('button')].find(el=>el.textContent.includes('Diagnostics')));karaoke({isOpen:false});rejectClipboard(Error('clipboard denied'));await flush();expect(legacyCopy).not.toHaveBeenCalled();expect(document.querySelectorAll('textarea')).toHaveLength(0);expect(vi.getTimerCount()).toBe(0);}finally{document.execCommand=original;}
 });
+
+describe('Crawl text preparation',()=>{
+ function crawlProbe(texts){
+  vi.stubGlobal('matchMedia',()=>({matches:false}));
+  const frames=new Map(),scans=new Map(texts.map(text=>[text,0]));let serial=0;
+  vi.stubGlobal('requestAnimationFrame',vi.fn(callback=>{const id=++serial;frames.set(id,callback);return id;}));
+  vi.stubGlobal('cancelAnimationFrame',vi.fn(id=>frames.delete(id)));
+  const replace=String.prototype.replace;
+  vi.spyOn(String.prototype,'replace').mockImplementation(function(...args){
+   const text=String(this);if(scans.has(text))scans.set(text,scans.get(text)+1);
+   return replace.apply(this,args);
+  });
+  return {frames,scans,frame:time=>act(()=>{const callbacks=[...frames.values()];frames.clear();callbacks.forEach(callback=>callback(time));})};
+ }
+ it.each([false,true])('Space restarts a completed crawl from the beginning (StrictMode=%s)',strict=>{
+  const text='A short reading.';
+  const probe=crawlProbe([text]);localStorage.setItem('allo_crawl_speed','140');
+  render('PerspectiveCrawlOverlay',{text},strict);
+  const panel=surface(),slab=panel.querySelector('p').parentElement;
+  Object.defineProperty(panel,'clientHeight',{configurable:true,value:30});
+  Object.defineProperty(slab,'clientHeight',{configurable:true,value:20});
+  for(let time=0;time<=400;time+=100)probe.frame(time);
+  expect(host.textContent).toContain('THE END');expect(probe.frames.size).toBe(0);
+  expect(key(document,'Space').defaultPrevented).toBe(true);
+  expect(host.textContent).not.toContain('THE END');expect(slab.style.transform).toContain('translateY(0px)');
+  expect(panel.getAttribute('aria-pressed')).toBe('true');expect(probe.frames.size).toBe(1);
+  probe.frame(1000);probe.frame(1016);
+  expect(panel.getAttribute('aria-pressed')).toBe('true');expect(slab.style.transform).not.toContain('translateY(0px)');
+  key(document,'Space');expect(panel.getAttribute('aria-pressed')).toBe('false');expect(probe.frames.size).toBe(0);
+  const paused=slab.style.transform;
+  key(document,'Space',{ctrlKey:true});key(host.querySelector('input'),'Space');
+  expect(panel.getAttribute('aria-pressed')).toBe('false');expect(slab.style.transform).toBe(paused);
+ });
+ it.each([false,true])('reuses prepared text during animation and refreshes a changed passage (StrictMode=%s)',strict=>{
+  const text=Array.from({length:300},(_,i)=>'<p>Paragraph '+i+' stays current.</p>').join('\n\n');
+  const changed='<p>Replacement passage.</p>\n\nA different ending.';
+  const probe=crawlProbe([text,changed]);
+  render('PerspectiveCrawlOverlay',{text},strict);const initial=probe.scans.get(text);
+  expect(initial).toBeGreaterThan(0);expect(probe.frames.size).toBe(1);
+  const initialView=host.querySelector('[role=button]').innerHTML;
+  for(let i=0;i<25;i++)probe.frame(i*16);
+  expect(host.querySelector('[role=button]').innerHTML).not.toBe(initialView);
+  expect(probe.scans.get(text)).toBe(initial);expect(host.textContent).toContain('Paragraph 299 stays current.');
+  render('PerspectiveCrawlOverlay',{text:changed},strict);
+  expect(probe.scans.get(changed)).toBeGreaterThan(0);
+  expect(host.textContent).toContain('A different ending.');expect(host.textContent).not.toContain('Paragraph 0 stays current.');
+  act(()=>root.unmount());root=null;expect(probe.frames.size).toBe(0);
+ });
+ it.each([false,true])('keeps hidden text unprepared and releases preparation on close (StrictMode=%s)',strict=>{
+  const text='<p>Original hidden passage.</p>',changed='<p>Latest hidden passage.</p>';
+  const probe=crawlProbe([text,changed]);
+  render('PerspectiveCrawlOverlay',{text,isOpen:false},strict);
+  render('PerspectiveCrawlOverlay',{text:changed,isOpen:false},strict);
+  expect(probe.scans.get(text)).toBe(0);expect(probe.scans.get(changed)).toBe(0);expect(probe.frames.size).toBe(0);
+  render('PerspectiveCrawlOverlay',{text:changed},strict);const prepared=probe.scans.get(changed);
+  expect(prepared).toBeGreaterThan(0);expect(host.textContent).toContain('Latest hidden passage.');
+  render('PerspectiveCrawlOverlay',{text:changed,isOpen:false},strict);
+  expect(host.textContent).toBe('');expect(probe.frames.size).toBe(0);expect(probe.scans.get(changed)).toBe(prepared);
+  render('PerspectiveCrawlOverlay',{text:changed},strict);
+  expect(probe.scans.get(changed)).toBeGreaterThan(prepared);expect(host.textContent).toContain('Latest hidden passage.');
+  act(()=>root.unmount());root=null;expect(probe.frames.size).toBe(0);
+ });
+});

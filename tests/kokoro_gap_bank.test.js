@@ -13,21 +13,22 @@
  *   - getAudio's precedence is proven by RUNNING it, not by reading it;
  *   - every clip is provenance-labeled in the manifest, which is the
  *     developer-side "this is Kokoro, replace me later" record;
- *   - the word bank matches the cull exactly: every kept word present, every
- *     dropped word absent.
+ *   - the original cull is preserved, with additional curated syllable words
+ *     accounted for by their own generation manifest; dropped words stay out.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const ROOT = resolve(__dirname, '..');
-let gemini, kokoro, wordBank, manifest, anti;
+let gemini, kokoro, wordBank, manifest, syllableManifest, anti;
 
 beforeAll(() => {
   gemini = JSON.parse(readFileSync(resolve(ROOT, 'audio_bank.json'), 'utf8'));
   kokoro = JSON.parse(readFileSync(resolve(ROOT, 'audio_bank_kokoro.json'), 'utf8'));
   wordBank = JSON.parse(readFileSync(resolve(ROOT, 'word_audio_kokoro_bank.json'), 'utf8'));
   manifest = JSON.parse(readFileSync(resolve(ROOT, 'dev-tools/kokoro_audio_manifest.json'), 'utf8'));
+  syllableManifest = JSON.parse(readFileSync(resolve(ROOT, 'dev-tools/word_sounds_syllable_audio_manifest.json'), 'utf8'));
   anti = readFileSync(resolve(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 });
 
@@ -67,10 +68,10 @@ describe('the gap bank', () => {
 });
 
 describe('the word bank', () => {
-  it('matches the cull exactly: kept words in, dropped words out', () => {
+  it('preserves the cull and adds only the separately audited syllable words', () => {
     const words = Object.keys(wordBank.words);
     const drops = Object.keys(manifest.cull.drops);
-    expect(words.length).toBe(manifest.cull.kept);
+    expect(words.length).toBe(manifest.cull.kept + syllableManifest.clips.length);
     const dropped = words.filter((w) => manifest.cull.drops[w]);
     expect(dropped, 'dropped words leaked into the shipped bank').toEqual([]);
     expect(drops.length).toBe(manifest.cull.dropped);
@@ -96,7 +97,10 @@ describe('provenance manifest', () => {
     const shipped = new Set();
     for (const cat of CATEGORIES) Object.keys(kokoro[cat] || {}).forEach((k) => shipped.add(cat + '/' + k));
     Object.keys(wordBank.words).forEach((w) => shipped.add('words/' + w));
-    const listed = new Set(manifest.clips.map((c) => c.category + '/' + c.key));
+    const listed = new Set([
+      ...manifest.clips.map((c) => c.category + '/' + c.key),
+      ...syllableManifest.clips.map((c) => 'words/' + c.key),
+    ]);
     const unlisted = [...shipped].filter((k) => !listed.has(k));
     expect(unlisted, 'shipped clips missing from the manifest').toEqual([]);
     for (const c of manifest.clips) {

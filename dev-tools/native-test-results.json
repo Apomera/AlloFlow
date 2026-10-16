@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "checks": [
+    "empty library, explicit save and whitelisted instructional data",
+    "native IndexedDB survives page reload and friendly English aliases",
+    "concurrent replacements are atomic and stale removal preserves the winner",
+    "exact regional/dialect context stays separate while German aliases reuse safely",
+    "Unicode-equivalent word spellings share the same reviewed entry",
+    "tampered review and another word are rejected before persistence",
+    "corrupt stored data is visible as unusable and removable with its current token",
+    "transaction failure rolls back both clip and catalog writes",
+    "unavailable, blocked, timeout and pre-aborted storage produce actionable outcomes",
+    "cancellation during an actual pending transaction leaves prior clips intact",
+    "library has bounded entry capacity, replacement at capacity and reusable removal",
+    "byte budget and corrupt accounting fail atomically without evicting recordings"
+  ],
+  "coreSha": "6f315c9ff6ec5150844bdb6d9b4ef460cae466452338e48f10775af40ef218bd",
+  "helperSha": "70d065432788473fb9cce83288c2a071d5d0b88622a236cb90c003ce0e9a1554",
+  "limits": "Real browser IndexedDB and production helper; schema audio fixture only, no playback, microphone, cloud or pronunciation evaluation."
+}

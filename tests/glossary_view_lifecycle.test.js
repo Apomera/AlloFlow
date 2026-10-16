@@ -71,6 +71,7 @@ describe('glossary media cannot leak across resource transitions', () => {
     window.__alloInspectGlossaryAudio = () => ({ status: 'missing' });
     window.__alloRegenerateGlossaryAudio = vi.fn(() => request.promise);
     const view = mount({ isEditingGlossary: true, addToast });
+    await click(view.container.querySelector('[data-glossary-audio-review-toggle]'));
     const group = [...view.container.querySelectorAll('#glossary-edit-audio-review [role="group"]')].find(el => el.getAttribute('aria-label').includes('flashcards.back_label_def'));
     await click(group.querySelectorAll('button')[1]);
     const old = view.props(); view.rerender({ ...old, generatedContent: { ...old.generatedContent, data: [{ ...old.generatedContent.data[0], def: 'An updated definition.' }] } });

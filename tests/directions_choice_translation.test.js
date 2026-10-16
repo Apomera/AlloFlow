@@ -27,7 +27,7 @@ const translate = item => window.AlloModules.PhaseKHelpers.translateResourceItem
 const remapSource = () => {
   const source = read('host_handlers_source.jsx');
   const start = source.indexOf('// Directions goal tethers must follow the translation');
-  const end = source.indexOf('__d.setHistory(prev => [...prev, ...newItems]);', start);
+  const end = source.indexOf('// Apply analysis translations only if their source', start);
   expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
   return new Function('newItems', '_translatedIdMap', source.slice(start, end));
 };

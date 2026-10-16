@@ -8,10 +8,11 @@
 // text.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
-let React, createRoot, act, View, root, host, pure, phase;
+let React, createRoot, act, View, root, host, pure, phase, passageBuilds;
 beforeAll(() => {
   React = require(resolve('desktop/web-app/node_modules/react'));
   ({ createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client')));
@@ -21,14 +22,20 @@ beforeAll(() => {
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js');
-  loadAlloModule(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+  const modulePath = resolve(process.env.ALLO_VIEW_CANDIDATE || 'view_simplified_module.js');
+  const source = readFileSync(modulePath, 'utf8');
+  // Measure the real render boundary, not legacy formatting props bypassed by readingText.
+  const marker = /function renderSimplifiedReading\(\)\s*\{/g;
+  expect([...source.matchAll(marker)]).toHaveLength(1);
+  new Function('recordPassageBuild', source.replace(marker, '$&recordPassageBuild();') + '\n//# sourceURL=' + modulePath.replace(/\\/g, '/'))(() => { passageBuilds++; });
   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
 });
 afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; vi.restoreAllMocks(); });
 
 const DATA = 'Plants need light. Roots take in water.\n\nLeaves make food. Energy moves on.';
 function setup() {
-  const counts = { split: 0, format: 0, words: 0 };
+  passageBuilds = 0;
+  const counts = { split: 0, format: 0, words: 0, get passage() { return passageBuilds; } };
   const base = { ComplexityGauge: () => null, t: k => k, generatedContent: { id: 'a', type: 'simplified', data: DATA, config: { language: 'English' }, immersiveData: DATA.split(' ').map(text => ({ text, pos: 'noun' })), immersiveSource: DATA, posEnriched: true }, leveledTextLanguage: 'English', isTeacherMode: false, isZenMode: true, interactionMode: 'read', history: [], textEditorRef: React.createRef(), splitTextToSentences: s => { counts.split++; return pure.splitTextToSentences(s, {}); }, getSideBySideContent: () => null, handleSpeak: vi.fn(), cursorStyles: {}, getContentDirection: () => 'ltr', isRtlLang: () => false, renderFormattedText: x => x, formatInteractiveText: (text, cloze) => { counts.format++; return phase.formatInteractiveText(text, cloze, false, { highlightGlossaryTerms: x => x, latestGlossary: [], MathSymbol: ({ text: m }) => m }); }, SourceReferencesPanel: () => null, playbackState: { currentIdx: -1 }, highlightGlossaryTerms: text => { counts.format++; return text; }, latestGlossary: [], setFocusedParagraphIndex: () => {}, ErrorBoundary: ({ children }) => children, FocusReaderOverlay: () => null, PerspectiveCrawlOverlay: () => null, KaraokeReaderOverlay: () => null, ImmersiveToolbar: () => null, ImmersiveWord: ({ wordData }) => { counts.words++; return wordData.text; }, immersiveSettings: {}, isChunkReaderActive: true, chunkReaderIdx: 0 };
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   const render = extra => act(() => root.render(React.createElement(View, { ...base, ...extra })));
@@ -41,7 +48,9 @@ describe('with Immersive Reader open', () => {
     render({ isImmersiveReaderActive: true, chunkReaderSweepPct: 0 });
     const before = { ...counts };
     for (let pct = 10; pct <= 50; pct += 10) render({ isImmersiveReaderActive: true, chunkReaderSweepPct: pct });
-    expect(counts.format).toBe(before.format);
+    expect(before.passage).toBeGreaterThan(0);
+    expect(before.split).toBeGreaterThan(0);
+    expect(counts.passage).toBe(before.passage);
     expect(counts.split).toBe(before.split);
   });
   it('the words are still matched to their sentences', () => {
@@ -61,9 +70,9 @@ describe('with Immersive Reader open', () => {
   it('the passage is rebuilt, with current text, when Immersive closes', () => {
     const { counts, render } = setup();
     render({ isImmersiveReaderActive: true });
-    const before = counts.format;
+    const before = counts.passage;
     render({ isImmersiveReaderActive: false, generatedContent: { id: 'a', type: 'simplified', data: 'Plants need light today.', config: { language: 'English' } } });
-    expect(counts.format).toBeGreaterThan(before);
+    expect(counts.passage).toBeGreaterThan(before);
     expect(host.querySelector('[data-simplified-reading-body]').textContent).toContain('Plants need light today.');
   });
 });
@@ -100,9 +109,9 @@ describe('reader performance keeps exact ownership', () => {
       { readingLearnerKey: 'learner-b' },
       { generatedContent: { ...initial, adaptedReadingSupports: { shown: false, annotations: [] } } }
     ]) {
-      const before = counts.format;
+      const before = counts.passage;
       props = { ...props, ...change }; render(props);
-      expect(counts.format).toBeGreaterThan(before);
+      expect(counts.passage).toBeGreaterThan(before);
     }
     const data = 'A completely new passage.';
     render({ ...props, generatedContent: { ...initial, data, immersiveSource: data, immersiveData: data.split(' ').map(text => ({ text, pos: 'noun' })) } });
@@ -148,5 +157,79 @@ describe('reader performance keeps exact ownership', () => {
     render({ isImmersiveReaderActive: true, interactionMode: 'read', isChunkReaderActive: false, handleSpeak: speak, ImmersiveWord: Word });
     act(() => host.querySelector('[data-sentence-idx="0"] button').click());
     expect(speak).toHaveBeenCalledWith('Plants', expect.stringMatching(/^immersive-word-/), 0, true);
+  });
+});
+
+describe('render-local source identity reuse', () => {
+  function readingPair(base) {
+    const api = window.AlloModules.InstructionalContext;
+    const snapshot = api.createSourceSnapshot('An earlier source passage.', { sourceArtifactId: 'source-a', language: 'English' });
+    const item = { ...base.generatedContent, sourceSnapshot: snapshot, sourceFamilyId: 'scope-family',
+      instructionalText: { form: 'adapted', role: 'supplemental' } };
+    return { api, item };
+  }
+  function clickVersion(version) {
+    const button = host.querySelector('[data-reading-version="' + version + '"]');
+    expect(button).not.toBeNull();
+    act(() => button.click());
+  }
+
+  it('reads the current source once per unchanged immersive frame, without caching it across renders', () => {
+    const { render, base } = setup(), { api, item } = readingPair(base);
+    const read = vi.spyOn(api, 'getSourceSnapshot');
+    const props = { generatedContent: item, isImmersiveReaderActive: true };
+    render(props);
+    for (let frame = 1; frame <= 4; frame++) {
+      read.mockClear();
+      render({ ...props, chunkReaderSweepPct: frame * 10 });
+      // Adapted readings without history need the captured source, but no additional
+      // source copies for the comparison preference and navigation identities.
+      expect(read.mock.calls.filter(([value]) => value === item)).toHaveLength(1);
+    }
+    Object.assign(item.sourceSnapshot, api.createSourceSnapshot('The updated source passage.', { sourceArtifactId: 'source-b' }));
+    read.mockClear();
+    render({ ...props, chunkReaderSweepPct: 50 });
+    expect(read.mock.calls.filter(([value]) => value === item)).toHaveLength(1);
+    expect(read.mock.results.find((result, index) => read.mock.calls[index][0] === item).value.text).toBe('The updated source passage.');
+  });
+
+  it('keeps comparison preferences and saved pane positions separate after an in-place source edit', () => {
+    const { render, base } = setup(), { api, item } = readingPair(base);
+    const alternate = { id: 'alternate-source', type: 'analysis', title: 'Alternative source', data: { originalText: 'Another source for comparison.' } };
+    const props = { generatedContent: item, history: [item, alternate], isTeacherMode: true,
+      isCompareMode: true, onOpenReadingArtifact: vi.fn() };
+    render(props);
+    const sourceSelect = () => [...host.querySelectorAll('[data-reading-comparison] select')]
+      .find(select => [...select.options].some(option => option.value === alternate.id));
+    expect(sourceSelect()).toBeTruthy();
+    act(() => { sourceSelect().value = alternate.id; sourceSelect().dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(sourceSelect().value).toBe(alternate.id);
+    expect(host.querySelector('[data-compare-version="source"]').textContent).toContain('Another source for comparison.');
+    host.querySelector('[data-compare-version="source"]').scrollTop = 310;
+    clickVersion('adapted');
+    render({ ...props, isCompareMode: false });
+
+    Object.assign(item.sourceSnapshot, api.createSourceSnapshot('A replacement source in the same reading.', { sourceArtifactId: 'source-b' }));
+    render({ ...props, isCompareMode: false });
+    clickVersion('both');
+    render(props);
+    expect(sourceSelect().value).toBe('linked');
+    const source = host.querySelector('[data-compare-version="source"]');
+    expect(source.textContent).toContain('A replacement source in the same reading.');
+    expect(source.scrollTop).toBe(0);
+  });
+
+  it('reads a source changed after render when an Original navigation event records its return scope', () => {
+    const { render, base } = setup(), { api, item } = readingPair(base);
+    const openOriginal = vi.fn();
+    const props = { generatedContent: item, history: [item], isCompareMode: true, onReadOriginal: openOriginal };
+    render(props);
+    // No intervening render: navigation must not close over the old captured copy.
+    Object.assign(item.sourceSnapshot, api.createSourceSnapshot('Source updated just before navigation.', { sourceArtifactId: 'source-b', language: 'French' }));
+    clickVersion('original');
+    expect(openOriginal).toHaveBeenCalledWith(item);
+    const original = api.createSupportedReading(item.sourceSnapshot, { id: 'current-original', sourceFamilyId: 'scope-family', config: { language: 'French' } });
+    render({ ...props, generatedContent: original, history: [item, original], isCompareMode: false });
+    expect([...host.querySelectorAll('button')].some(button => button.textContent === 'Back to comparison')).toBe(true);
   });
 });

@@ -12,6 +12,7 @@ function createHarness({
   callImagen = vi.fn(),
   safetyCheck = () => [],
   deferHistoryUpdates = false,
+  canonicalSources = false,
 }) {
   let state = initialState;
   let generated = resource;
@@ -25,7 +26,7 @@ function createHarness({
     callGemini,
     callGeminiImageEdit: vi.fn(),
   };
-  vm.runInNewContext(personaSource, {
+  const sandbox = {
     window: windowObject,
     console,
     setTimeout,
@@ -37,7 +38,12 @@ function createHarness({
     Set,
     Map,
     AbortController,
-  });
+  };
+  if (canonicalSources) {
+    vm.runInNewContext(fs.readFileSync('instructional_context_module.js', 'utf8'), sandbox);
+    vm.runInNewContext(fs.readFileSync('generate_dispatcher_source.jsx', 'utf8'), sandbox);
+  }
+  vm.runInNewContext(personaSource, sandbox);
 
   const liveRef = { current: {} };
   const sync = () => Object.assign(liveRef.current, {
@@ -135,6 +141,7 @@ function createHarness({
 
   return {
     api,
+    modules: windowObject.AlloModules,
     setState: setPersonaState,
     setHistory,
     flushHistoryUpdates,
@@ -168,6 +175,116 @@ function basePersonaState(character, extras = {}) {
 }
 
 describe('Persona core enhancement contracts', () => {
+  const sourceReadings = () => [
+    { id: 'moon', title: 'Moon reading', data: { originalText: 'The Moon orbits Earth and creates tides.' } },
+    { id: 'plants', title: 'Plants reading', data: { originalText: 'Plants absorb sunlight using chlorophyll.' } },
+  ].map(item => ({ ...item, type: 'analysis', unitId: 'lesson', instructionalText: {
+    role: 'unspecified', form: 'original', designationSource: 'educator',
+  } }));
+  const sourceHarness = (readings = sourceReadings(), callGemini = vi.fn().mockResolvedValue({ data: [
+    { name: 'Ada', role: 'Mathematician', year: '1843', quests: [], suggestedQuestions: [] },
+  ] })) => {
+    const resource = { id: 'saved-persona', type: 'persona', data: [{ name: 'Existing' }], config: {} };
+    const harness = createHarness({ state: basePersonaState(resource.data[0]), resource,
+      history: [...readings, resource], callGemini, canonicalSources: true });
+    const requestGenerationSourceChoice = vi.fn(() => true);
+    const addToast = vi.fn();
+    harness.setLive({ selectedReadingSourceId: '', activeUnitId: 'lesson', requestGenerationSourceChoice, addToast });
+    return { harness, requestGenerationSourceChoice, callGemini, resource, addToast };
+  };
+
+  it('opens the source picker before generating interview candidates and resumes from the chosen passage', async () => {
+    const f = sourceHarness();
+    await f.harness.api.handleGeneratePersonas();
+    expect(f.callGemini).not.toHaveBeenCalled();
+    expect(f.harness.isGeneratingPersona).toBe(false);
+    const request = f.requestGenerationSourceChoice.mock.calls[0][0];
+    expect(request.type).toBe('persona');
+    expect(request.choices.map(choice => choice.value)).toEqual(['moon', 'plants']);
+    expect(f.harness.generated).toBe(f.resource);
+    // Submission must work even before React has rendered the selected source.
+    await request.onGenerate('moon');
+    expect(f.callGemini).toHaveBeenCalledOnce();
+    expect(f.callGemini.mock.calls[0][0]).toContain('The Moon orbits Earth and creates tides.');
+    expect(f.callGemini.mock.calls[0][0]).not.toContain('Plants absorb sunlight using chlorophyll.');
+    expect(f.harness.generated.config.personaSource.analysisId).toBe('moon');
+    expect(f.requestGenerationSourceChoice).toHaveBeenCalledOnce();
+  });
+
+  it.each(['selected', 'primary', 'single', 'input', 'adapted'])('uses the resolved %s passage without asking again', async mode => {
+    const readings = sourceReadings();
+    if (mode === 'primary') readings[0].instructionalText.role = 'primary';
+    if (mode === 'single') readings.pop();
+    if (mode === 'adapted') readings.push({ id: 'adapted', type: 'simplified', unitId: 'lesson', data: 'An adapted Moon passage.',
+      instructionalText: { role: 'supplemental', form: 'adapted', designationSource: 'educator' } });
+    const f = sourceHarness(readings);
+    f.harness.setLive({ selectedReadingSourceId: mode === 'selected' ? 'moon' : mode === 'input' ? '__input__' : mode === 'adapted' ? 'adapted' : '' });
+    await f.harness.api.handleGeneratePersonas();
+    expect(f.requestGenerationSourceChoice).not.toHaveBeenCalled();
+    expect(f.callGemini).toHaveBeenCalledOnce();
+    expect(f.callGemini.mock.calls[0][0]).toContain(mode === 'input' ? 'Fallback lesson text'
+      : mode === 'adapted' ? 'An adapted Moon passage.' : 'The Moon orbits Earth and creates tides.');
+    expect(f.callGemini.mock.calls[0][0]).not.toContain('Plants absorb sunlight using chlorophyll.');
+  });
+
+  it('keeps topic-only generation available when no reading exists', async () => {
+    const f = sourceHarness([]);
+    f.harness.setLive({ inputText: '', sourceTopic: 'Computing history' });
+    await f.harness.api.handleGeneratePersonas();
+    expect(f.requestGenerationSourceChoice).not.toHaveBeenCalled();
+    expect(f.callGemini).toHaveBeenCalledOnce();
+    expect(f.callGemini.mock.calls[0][0]).toContain('Computing history');
+  });
+
+  it('loads source resolution before requesting a choice when the dispatcher is lazy', async () => {
+    const f = sourceHarness();
+    const dispatcher = f.harness.modules.GenDispatcher;
+    delete f.harness.modules.GenDispatcher;
+    const ensureGenerationSourceResolver = vi.fn(async () => { f.harness.modules.GenDispatcher = dispatcher; });
+    f.harness.setLive({ ensureGenerationSourceResolver });
+    await f.harness.api.handleGeneratePersonas();
+    expect(ensureGenerationSourceResolver).toHaveBeenCalledOnce();
+    expect(f.requestGenerationSourceChoice).toHaveBeenCalledOnce();
+    expect(f.callGemini).not.toHaveBeenCalled();
+  });
+
+  it('does not generate from changed source context after loading source resolution', async () => {
+    const f = sourceHarness();
+    const dispatcher = f.harness.modules.GenDispatcher;
+    delete f.harness.modules.GenDispatcher;
+    f.harness.setLive({ ensureGenerationSourceResolver: async () => {
+      f.harness.modules.GenDispatcher = dispatcher;
+      f.harness.setLive({ selectedReadingSourceId: 'plants' });
+    } });
+    await f.harness.api.handleGeneratePersonas();
+    expect(f.requestGenerationSourceChoice).not.toHaveBeenCalled();
+    expect(f.callGemini).not.toHaveBeenCalled();
+  });
+
+  it('does not replace an unavailable selected passage with the newest reading', async () => {
+    const f = sourceHarness();
+    f.harness.setLive({ selectedReadingSourceId: 'deleted' });
+    await f.harness.api.handleGeneratePersonas();
+    expect(f.callGemini).not.toHaveBeenCalled();
+    expect(f.requestGenerationSourceChoice).not.toHaveBeenCalled();
+    expect(f.addToast).toHaveBeenCalledWith(expect.stringContaining('unavailable'), 'info');
+    expect(f.harness.generated).toBe(f.resource);
+  });
+
+  it.each(['edited', 'deleted', 'changed-selection', 'changed-lesson'])('discards candidates when their chosen source is %s during generation', async change => {
+    let complete;
+    const f = sourceHarness(sourceReadings(), vi.fn(() => new Promise(resolve => { complete = resolve; })));
+    const running = f.harness.api.handleGeneratePersonas({ inputArtifactId: 'moon', selectedReadingSourceId: 'moon' });
+    if (change === 'edited') f.harness.setHistory(previous => previous.map(item => item.id === 'moon' ? { ...item, data: { originalText: 'Edited passage' } } : item));
+    if (change === 'deleted') f.harness.setHistory(previous => previous.filter(item => item.id !== 'moon'));
+    if (change === 'changed-selection') f.harness.setLive({ selectedReadingSourceId: 'plants' });
+    if (change === 'changed-lesson') f.harness.setLive({ activeUnitId: 'another-lesson' });
+    complete({ data: [{ name: 'Stale candidate', role: 'Scientist', year: '1900' }] });
+    await running;
+    expect(f.harness.generated).toBe(f.resource);
+    expect(f.harness.isGeneratingPersona).toBe(false);
+  });
+
   it('accepts structured candidate envelopes and rejects generation results after source settings change', async () => {
     const existing = { name: 'Existing', role: 'Saved', year: '1900', quests: [], avatarUrl: 'data:image/png;base64,old' };
     const resource = { id: 'persona-generation-context', type: 'persona', data: [existing], config: {} };

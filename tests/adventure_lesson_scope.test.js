@@ -27,7 +27,7 @@ beforeAll(() => {
   anti = readFileSync('AlloFlowANTI.txt', 'utf8');
   handlers = readFileSync('adventure_handlers_source.jsx', 'utf8');
 
-  const start = anti.indexOf('const _alloAdventureLessonKey = (history, inputText) => {');
+  const start = anti.indexOf('const _alloAdventureLessonKey = (history, inputText, options = null) => {');
   if (start < 0) throw new Error('_alloAdventureLessonKey not found');
   const end = anti.indexOf('window._alloAdventureLessonKey = _alloAdventureLessonKey;', start);
   if (end < 0) throw new Error('_alloAdventureLessonKey export not found');
@@ -98,6 +98,23 @@ describe('lesson key', () => {
 
   it('distinguishes two lessons that differ only in one word', () => {
     expect(lessonKey([], 'the cat sat on the mat')).not.toBe(lessonKey([], 'the cat sat on the hat'));
+  });
+
+  it('uses the explicitly chosen reading rather than the newest analysis', () => {
+    loadAlloModule('instructional_context_module.js');
+    new Function(readFileSync('generate_dispatcher_source.jsx', 'utf8'))();
+    const history = ['moon', 'plants'].map(id => ({ id, type: 'analysis', unitId: 'lesson',
+      data: { originalText: id + ' source text' },
+      instructionalText: { role: 'unspecified', form: 'original', designationSource: 'educator' } }));
+    expect(lessonKey(history, '', { selectedReadingSourceId: 'moon', activeUnitId: 'lesson' })).toBe('analysis:moon');
+    expect(lessonKey(history, '', { selectedReadingSourceId: '', activeUnitId: 'lesson' })).toBe('');
+  });
+
+  it('stamps the story reading even after another source is selected or removed', () => {
+    const readingSource = { inputArtifactId: 'moon', type: 'analysis', text: 'The Moon causes tides.' };
+    expect(lessonKey([], 'New text', { readingSource, selectedReadingSourceId: 'plants' })).toBe('analysis:moon');
+    expect(lessonKey([], 'New text', { readingSource: { text: 'Pinned working text.' } }))
+      .toBe(lessonKey([], 'Pinned working text.'));
   });
 });
 

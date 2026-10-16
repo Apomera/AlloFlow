@@ -24,15 +24,19 @@ function annotation(text, quote, index, id, definition = 'A useful explanation.'
   for (let count = 0; count <= index; count++) { start = text.indexOf(quote, from); from = start + quote.length; }
   return { id, start, end: start + quote.length, quote, text: definition, priority: 'helpful', origin: 'generated', pinned: false, kind: 'gloss' };
 }
-function mount(text = 'Fair is foul. Fair returns.', suppliedEntries) {
-  const item = contract.createSupportedReading(text, { id: 'original' });
+function mount(text = 'Fair is foul. Fair returns.', suppliedEntries, adapted = false) {
+  const original = contract.createSupportedReading(text, { id: 'original' });
+  const item = adapted ? { ...original, instructionalText: { form: 'adapted' } } : original;
   const entries = suppliedEntries || [annotation(text, 'Fair', 0, 'first', 'First meaning.'), annotation(text, 'Fair', 1, 'second', 'Second meaning.')];
-  let props = { item, supports: contract.validateReadingSupports(item, entries), disabled: false };
+  const supports = adapted ? entries.reduce((value, entry) => contract.upsertAdaptedReadingSupport(item, value, entry), null)
+    : contract.validateReadingSupports(item, entries);
+  let props = { item, supports, adapted, snapshot: adapted ? contract.getAdaptedSupportSnapshot(item, supports) : undefined, disabled: false };
   const onUpdate = vi.fn(async (owner, action) => {
-    const supports = action.type === 'upsert' ? contract.upsertReadingSupport(owner, props.supports, action.annotation)
-      : action.type === 'remove' ? contract.removeReadingSupport(owner, props.supports, action.id)
-      : contract.setReadingSupportPinned(owner, props.supports, action.id, action.pinned);
-    props = { ...props, supports }; render(); return { ...owner, readingSupports: supports };
+    const suffix = adapted ? 'AdaptedReadingSupport' : 'ReadingSupport';
+    const supports = action.type === 'upsert' ? contract['upsert' + suffix](owner, props.supports, action.annotation)
+      : action.type === 'remove' ? contract['remove' + suffix](owner, props.supports, action.id)
+      : contract['set' + suffix + 'Pinned'](owner, props.supports, action.id, action.pinned);
+    props = { ...props, supports }; render(); return { ...owner, [adapted ? 'adaptedReadingSupports' : 'readingSupports']: supports };
   });
   props.onUpdate = onUpdate;
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
@@ -49,6 +53,20 @@ const change = (node, value) => act(() => {
   node.dispatchEvent(new Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
 });
 async function openEdit(index = 0) { await click(button('Review word help')); await click(editButtons()[index]); }
+const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
+function replacePassage(h) {
+  const text = 'Fair seems different. Fair returns.';
+  const item = h.props.adapted ? { ...h.props.item, data: text }
+    : contract.createSupportedReading(text, { id: h.item.id });
+  const supports = h.props.adapted ? contract.validateAdaptedReadingSupports(item, h.props.supports)
+    : contract.validateReadingSupports(item, h.props.supports);
+  h.update({ item, supports, snapshot: h.props.adapted ? contract.getAdaptedSupportSnapshot(item, null) : undefined,
+    supportsStale: h.props.adapted });
+}
+function focusElsewhere() {
+  const target = document.createElement('button'); target.textContent = 'Current reading action'; host.append(target); target.focus();
+  return target;
+}
 
 describe('Gloss editor exact occurrences', () => {
   it('matches whole occurrences, not substrings, contractions, or another inflection', () => {
@@ -125,6 +143,100 @@ describe('Gloss editor unsaved drafts', () => {
     await click(button('Save word help')); expect(host.querySelector('[role=alert]').textContent).toBe('Try again later.');
     change(host.querySelector('textarea'), 'Third update.'); expect(host.querySelector('[role=alert]')).toBeNull();
   });
+});
+
+describe('Gloss editor feedback belongs to its passage', () => {
+  for (const adapted of [false, true]) {
+    const kind = adapted ? 'adapted' : 'original';
+    it.each(['success', 'failure'])(`clears completed ${kind} %s feedback on passage replacement, but not a same-source render`, async outcome => {
+      const h = mount(undefined, undefined, adapted); await openEdit();
+      change(host.querySelector('textarea'), 'Keep this teacher wording.');
+      if (outcome === 'failure') h.onUpdate.mockRejectedValueOnce(new Error('Previous passage save failed.'));
+      await click(button('Save word help'));
+      const feedback = () => outcome === 'success' ? host.querySelector('[data-gloss-notice]').textContent
+        : host.querySelector('[role=alert]')?.textContent;
+      const expected = outcome === 'success' ? 'Word help saved. Your wording will be kept when suggestions are refreshed.'
+        : 'Previous passage save failed.';
+      expect(feedback()).toBe(expected);
+      h.update({ disabled: false });
+      expect(feedback()).toBe(expected);
+      const target = focusElsewhere();
+      replacePassage(h);
+      expect(h.props.item.id).toBe(h.item.id);
+      expect(host.querySelector('[data-gloss-notice]').textContent).toBe('');
+      expect(host.querySelector('[role=alert]')).toBeNull();
+      expect(host.querySelector('textarea').value).toBe('Keep this teacher wording.');
+      expect(host.textContent).toContain('The passage changed. Your draft is retained.');
+      expect(document.activeElement).toBe(target);
+      if (outcome === 'failure') {
+        await click(button('Done editing'));
+        expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
+        expect(host.querySelector('textarea').value).toBe('Keep this teacher wording.');
+      }
+    });
+
+    it.each(['resolve', 'reject'])(`does not steal focus from changed ${kind} text when an old save becomes idle and later %s`, async outcome => {
+      const h = mount(undefined, undefined, adapted); await openEdit();
+      change(host.querySelector('textarea'), 'Unsaved wording from the previous passage.');
+      const pending = deferred(); h.onUpdate.mockReturnValueOnce(pending.promise);
+      await click(button('Save word help'));
+      const action = h.onUpdate.mock.calls[0][1];
+      const saved = contract[adapted ? 'upsertAdaptedReadingSupport' : 'upsertReadingSupport'](h.props.item, h.props.supports, action.annotation);
+      expect(host.querySelector('[data-gloss-draft]').disabled).toBe(true);
+      const target = focusElsewhere();
+      replacePassage(h);
+      expect(host.querySelector('[data-gloss-draft]').disabled).toBe(false);
+      expect(document.activeElement).toBe(target);
+      await act(async () => outcome === 'resolve' ? pending.resolve(saved) : pending.reject(new Error('Obsolete save failed.')));
+      expect(host.querySelector('[data-gloss-notice]').textContent).toBe('');
+      expect(host.querySelector('[role=alert]')).toBeNull();
+      expect(host.querySelector('textarea').value).toBe('Unsaved wording from the previous passage.');
+      expect(document.activeElement).toBe(target);
+      h.update({ disabled: false });
+      expect(document.activeElement).toBe(target);
+      await click(button('Done editing'));
+      expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
+    });
+
+    it(`does not replay deferred ${kind} focus when disabled controls become available on a new passage`, async () => {
+      const h = mount(undefined, undefined, adapted); await openEdit();
+      change(host.querySelector('textarea'), 'Retain this unsaved explanation.');
+      const pending = deferred(); h.onUpdate.mockReturnValueOnce(pending.promise);
+      await click(button('Save word help'));
+      h.update({ disabled: true });
+      await act(async () => pending.reject(new Error('Earlier save failed while controls were unavailable.')));
+      expect(host.querySelector('[data-gloss-draft]').disabled).toBe(true);
+      const target = focusElsewhere();
+      replacePassage(h);
+      expect(document.activeElement).toBe(target);
+      h.update({ disabled: false });
+      expect(host.querySelector('[data-gloss-draft]').disabled).toBe(false);
+      expect(document.activeElement).toBe(target);
+      expect(host.querySelector('[role=alert]')).toBeNull();
+      expect(host.querySelector('textarea').value).toBe('Retain this unsaved explanation.');
+    });
+
+    it(`cancels a pending ${kind} discard decision without moving focus, then restores explicit editing focus normally`, async () => {
+      const h = mount(undefined, undefined, adapted); await openEdit();
+      change(host.querySelector('textarea'), 'Keep my draft through the passage change.');
+      await click(button('Add a word or phrase'));
+      expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
+      expect(document.activeElement).toBe(button('Keep editing'));
+      const target = focusElsewhere();
+      replacePassage(h);
+      expect(host.querySelector('[role=alertdialog]')).toBeNull();
+      expect(host.querySelector('textarea').value).toBe('Keep my draft through the passage change.');
+      expect(document.activeElement).toBe(target);
+      h.update({ disabled: false });
+      expect(document.activeElement).toBe(target);
+      await click(button('Add a word or phrase'));
+      expect(host.querySelector('[role=alertdialog]')).not.toBeNull();
+      await click(button('Keep editing'));
+      expect(host.querySelector('[role=alertdialog]')).toBeNull();
+      expect(document.activeElement).toBe(host.querySelector('textarea'));
+      expect(host.querySelector('textarea').value).toBe('Keep my draft through the passage change.');
+    });
+  }
 });
 
 describe('Gloss editor exact-anchor save safety', () => {

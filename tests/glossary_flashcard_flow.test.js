@@ -17,9 +17,9 @@ let unmount;
 // Mutation runs load a scratch export copy so a mutant never reaches the shared file.
 beforeAll(() => { window.React = React; loadAlloModule('view_glossary_module.js'); loadAlloModule('host_handlers_module.js'); if (process.env.FLASHCARD_EXPORT) new Function(readFileSync(process.env.FLASHCARD_EXPORT, 'utf8'))(); else loadAlloModule('export_module.js'); });
 afterEach(() => { unmount?.(); unmount = null; vi.useRealTimers(); vi.restoreAllMocks(); });
-function mount(extra = {}) {
+function mount(extra = {}, entryOverrides = {}) {
   const base = glossaryMediaProps();
-  const data = ['Leaf', 'Root', 'Seed'].map((term, i) => ({ ...base.generatedContent.data[0], entryId: String(i), term, def: 'Definition ' + i }));
+  const data = ['Leaf', 'Root', 'Seed'].map((term, i) => ({ ...base.generatedContent.data[0], entryId: String(i), term, def: 'Definition ' + i, ...entryOverrides }));
   const resource = { ...base.generatedContent, data };
   const container = document.createElement('div'); document.body.append(container);
   const root = ReactDOMClient.createRoot(container); let latest, update;
@@ -46,6 +46,27 @@ const summary = view => view.container.querySelector('[data-flashcard-summary]')
 const counts = view => [...summary(view).querySelectorAll('dd')].map(el => Number(el.textContent));
 
 describe('glossary flashcard review rounds', () => {
+  it('announces positions within a practice retry round', async () => {
+    vi.useFakeTimers(); const v = mount();
+    await click(button(v, 'common.correct')); await advance(200);
+    await click(v.container.querySelector('[data-help-key="flashcard_next"]')); await advance(200);
+    await click(v.container.querySelector('[data-help-key="flashcard_next"]'));
+    await click(button(v, 'Review cards needing practice (2)'));
+    expect(v.container.querySelector('#flashcard-live-status').textContent).toContain('1 of 2: Root');
+    await click(v.container.querySelector('[data-help-key="flashcard_next"]')); await advance(200);
+    expect(v.container.querySelector('#flashcard-live-status').textContent).toContain('2 of 2: Seed');
+  });
+  it.each([
+    ['Feuille: Une partie de la plante: elle capte la lumière.', 'Une partie de la plante: elle capte la lumière.'],
+    ['Une partie de la plante qui capte la lumière.', 'Une partie de la plante qui capte la lumière.'],
+  ])('shows and reads the full translated definition for %s', async (translation, definition) => {
+    const handleSpeak = vi.fn();
+    const v = mount({ isFlashcardFlipped: true, standardDeckLang: 'French', handleSpeak }, { translations: { French: translation } });
+    const read = v.container.querySelector('[data-flashcard-face="back"] button[aria-label="common.read_translated_definition: French"]');
+    expect(read.textContent).toBe(definition);
+    await click(read);
+    expect(handleSpeak).toHaveBeenCalledWith(definition, 'fc-back-def-French');
+  });
   it('summarizes rated and skipped cards, reviews only remaining cards, and restarts the full deck', async () => {
     vi.useFakeTimers(); const v = mount();
     await click(button(v, 'common.correct')); await advance(200); expect(v.state().flashcardIndex).toBe(1);

@@ -226,6 +226,21 @@ describe('lesson script keyboard actions and deletion reliability', () => {
   it.each([{ok:false,error:{message:'Could not save the deletion.'}},false])('keeps the version and reports a failed deletion: %j', async result => {
     const saved=script(),remove=vi.fn().mockResolvedValue(result);mount(React.createElement(View,props({generatedContent:plan('plan-a',[saved]),onDeleteTeachingScript:remove})));expand();click('Delete this version');await act(async()=>button('Delete version and audio').click());expect(host.textContent).toContain(result?.error?.message || 'The version could not be deleted. Try again.');expect(host.textContent).not.toContain('[object Object]');expect(field('Script version').value).toBe(saved.id);expect(button('Keep version').disabled).toBe(false);
   });
+  it.each([undefined, null, {}, true, { ok: 'true' }])('keeps deletion confirmation available for retry until explicitly acknowledged: %j', async result => {
+    const saved = script(), remove = vi.fn().mockResolvedValueOnce(result).mockResolvedValueOnce({ ok: true });
+    mount(React.createElement(View, props({ generatedContent: plan('plan-a', [saved]), onDeleteTeachingScript: remove })));
+    expand(); click('Delete this version');
+    await act(async () => button('Delete version and audio').click());
+    expect(host.textContent).toContain('Deletion could not be confirmed. Review this version and try again.');
+    expect(host.textContent).not.toContain('Script version and its saved audio deleted.');
+    expect(field('Script version').value).toBe(saved.id);
+    expect(button('Keep version').disabled).toBe(false);
+    expect(button('Delete version and audio').disabled).toBe(false);
+    await act(async () => button('Delete version and audio').click());
+    expect(remove).toHaveBeenCalledTimes(2);
+    expect(remove).toHaveBeenLastCalledWith('plan-a', saved.id, saved);
+    expect(host.textContent).toContain('Script version and its saved audio deleted.');
+  });
   it.each([null,'Connection lost'])('handles non-Error rejections without losing the confirmation: %j', async failure => {
     mount(React.createElement(View,props({generatedContent:plan('plan-a',[script()]),onDeleteTeachingScript:vi.fn().mockRejectedValue(failure)})));expand();click('Delete this version');await act(async()=>button('Delete version and audio').click());expect(host.textContent).toContain(failure || 'The version could not be deleted. Try again.');expect(button('Keep version').disabled).toBe(false);
   });

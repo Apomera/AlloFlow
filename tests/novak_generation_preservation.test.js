@@ -290,7 +290,7 @@ describe('new analysis source role metadata', () => {
   function createAnalysis(config = {}, selected = {}) {
     const start = dispatcherSource.indexOf('      const newItem = {', dispatcherSource.indexOf('      const storedContent ='));
     const end = dispatcherSource.indexOf("      if (type === 'lesson-plan' && planningGenerationInputs)", start);
-    const fn = new Function('state', 'const { newItemId, type, storedContent, metaInfo, itemTitle, _buildItemConfig, _sourceUse, _sourceSnapshot, _instructionalContextModule, configOverride, effectiveLanguage, effectiveGrade, _primarySourceArtifactId, _chosenPrimaryArtifactId, _selectedSource } = state;\n' + dispatcherSource.slice(start, end) + '\nreturn newItem;');
+    const fn = new Function('state', 'const { newItemId, type, storedContent, metaInfo, itemTitle, _buildItemConfig, _sourceUse, _sourceSnapshot, _instructionalContextModule, configOverride, effectiveLanguage, effectiveGrade, _primarySourceArtifactId, _chosenPrimaryArtifactId, _selectedSource, _studentSourcesApi, _inputStudentRecord, _studentRecordMatchesInput } = state;\n' + dispatcherSource.slice(start, end) + '\nreturn newItem;');
     const snapshot = contract.createSourceSnapshot('Exact original.');
     return fn({ newItemId: 'new-analysis', type: 'analysis', storedContent: { originalText: selected.text || snapshot.text }, metaInfo: '', itemTitle: 'Analysis',
       _buildItemConfig: () => ({}), _sourceUse: { unitId: 'plays' }, _sourceSnapshot: snapshot, _instructionalContextModule: contract,

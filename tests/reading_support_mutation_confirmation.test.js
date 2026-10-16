@@ -55,7 +55,7 @@ describe('save confirmation source and owner', () => {
       if (result === 'null annotation') accepted.annotations = [null];
       h.persist.mockResolvedValueOnce({ [adapted ? 'adaptedReadingSupports' : 'readingSupports']: accepted });
       const leave = vi.fn(); act(() => h.session.request(leave)); await click(button('Save and continue'));
-      expect(leave).not.toHaveBeenCalled(); expect(host.textContent).toContain('did not confirm this word support');
+      expect(leave).not.toHaveBeenCalled(); expect(host.textContent).toContain('The save did not confirm this word help. Your draft is retained.');
       expect(draft().querySelector('textarea').value).toBe('Retain my explanation.'); expect(h.session.hasChanges()).toBe(true);
       await click(button('Keep editing')); expect(document.activeElement).toBe(draft().querySelector('textarea'));
       act(() => h.session.request(leave)); await click(button('Save and continue'));

@@ -1,12 +1,12 @@
 {
   "caseId": "samira",
   "routeSummary": "Q1 NO; Q2 NO; Q3a-d NO; Q4 YES; Q5/Q6 narratives; Q7 YES for the documented uses; Q8 YES; Q9(a). Each decision is supported by sources S1-S9 in the participant record.",
-  "summary": "A fully documented fictional practice case: basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of necessary instructional adaptations; no missing-record premise is needed.",
+  "summary": "Basic-reading and fluency difficulties coexist with English-language development. Sources S1-S9 support the form entries and a separate explanation of the instructional adaptations Samira needs.",
   "qualityNotes": [
-    "This key models a defensible team analysis of the supplied fictional sources, not an automatic scoring rule or an actual eligibility determination. All names, institutions, dates, scores and statements are invented and visibly labeled. Sources are authored report summaries, not confidential records or test protocols.",
+    "This facilitator key offers one reasoned interpretation of the fictional record. Ask participants to support or challenge each conclusion with evidence. It is not an automatic scoring rule or an actual eligibility determination. All names, institutions, dates, scores and statements are fictional; the source summaries are not actual student records or test protocols.",
     "Q1 uses district summative and multi-tiered performance evidence because comparable achievement norms were not established. Processing composites are included for the narrower, corroborated purposes described in S5/S9. English proficiency, a composite score, an IQ-achievement contrast or membership in a language group does not decide SLD.",
-    "The record intentionally omits secured items/protocols, confidence intervals, FSIQ, standardized adaptive scores, Arabic achievement equivalents and unrelated medical testing. None is needed to complete this exercise as designed. Do not calculate missing conversions, significance tests or diagnostic findings. These choices are not a universal evaluation battery for actual students.",
-    "A participant may reasonably ask further clinical questions or disagree with this model, but should identify the exact evidence and effect on the decision. Do not manufacture facts or treat the answer key as a substitute for professional judgment. Actual certification, dissent and notice remain human team responsibilities."
+    "Secured items/protocols, confidence intervals, FSIQ, standardized adaptive scores, Arabic achievement equivalents and unrelated medical testing are not included in the practice record. Use the supplied sources to complete this exercise; do not infer score conversions, significance tests or diagnostic findings. In an actual evaluation, the team determines whether additional evidence is needed for the student and assessment questions. The case does not prescribe a required assessment battery.",
+    "Participants may ask further assessment questions or disagree with this model. Ask them to identify the evidence and explain how it affects the decision. Use only the supplied facts and apply professional judgment. In actual practice, the team is responsible for certification, any dissenting statement and Written Notice."
   ],
   "administrative": [
     {
@@ -17,7 +17,7 @@
     {
       "field": "Meeting and repeated date fields",
       "entry": "October 2, 2026",
-      "rationale": "S1 identifies the planned training meeting date. Use this date and Samira Haddad on repeated child/date fields, not the workshop delivery date."
+      "rationale": "S1 identifies the planned meeting date in this fictional case. Use this date and Samira Haddad on repeated child/date fields, not the workshop delivery date."
     },
     {
       "field": "SAU / school / school phone",
@@ -187,7 +187,7 @@
       "id": "Q6",
       "selection": "Narrative; no YES/NO box",
       "entry": "Marina Cole, RN, reviewed the school health record, parent questionnaire and available pediatric summary with consent on September 10. No educationally relevant medical finding was identified in those reviewed sources, including no reported seizures, traumatic brain injury, diagnosed ADHD, significant sleep problem, chronic illness or medication effect. Vision/hearing screening and functional motor observations are documented separately in S6.",
-      "rationale": "This is an affirmative report of a documented review, not an inference from absent information, a medical examination or certification that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
+      "rationale": "The nurse's dated review supports this entry; a blank health section would not. The review is not a medical examination or proof that every condition is absent. Q6 does not replace Q3's separate primary-cause determinations.",
       "evidence": [
         "S6: dated nurse/health, sensory and motor sources"
       ],
@@ -227,7 +227,7 @@
     }
   ],
   "followUp": [
-    "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles; do not fabricate real signatures or a completed Written Notice. An actual dissent requires a separate statement.",
+    "Complete the practice discussion and official page-7 agreement/disagreement process using S1 roles. Leave signature lines unsigned, and discuss what should be documented in Written Notice without stating that a notice was issued. An actual dissent requires a separate statement.",
     "Translate the S8 instructional findings into measurable individualized reading instruction and independent progress monitoring. Review broad reading gains as well as taught-item retention and new-word transfer; the narrow successful probes do not mean the wider need is resolved.",
     "Coordinate ESOL and content access with reading instruction. Preserve Arabic use, qualified interpretation, private corrective feedback and meaningful student/family participation. Report reading and language development separately.",
     "Reconsider interpretation, additional assessment or instructional changes if new evidence warrants them. Do not require more intervention cycles, an English-proficiency level or equivalent Arabic reading failure before appropriate action."

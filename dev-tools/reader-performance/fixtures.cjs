@@ -20,7 +20,7 @@ function makeFixture(options = {}) {
       }
       paragraphs.push(sentences.join(' '));
     }
-    return paragraphs.join('\n\n');
+    return (spec.leadingTitle ? '# Water study\n\n' : '') + paragraphs.join('\n\n');
   }
   const originalText = passage(false);
   const supportText = passage(spec.bilingual);
@@ -38,13 +38,20 @@ function makeFixture(options = {}) {
 }
 
 const cases = [
+  { name: 'crawl-long', sentences: 300, immersive: true, crawl: true },
   { name: 'short-read', sentences: 30 },
   { name: 'long-immersive', sentences: 300, immersive: true },
   { name: 'stress-immersive', sentences: 3000, immersive: true },
   { name: 'outline-closed', sentences: 300, headings: true, teacher: true },
+  { name: 'section-prompts', sentences: 90, headings: true, leadingTitle: true },
+  { name: 'section-prompts-phone', sentences: 90, headings: true, leadingTitle: true, width: 320, fontSize: 24 },
   { name: 'supports-30', sentences: 300, supports: 30, immersive: true },
   { name: 'supports-200', sentences: 300, supports: 200, immersive: true },
   { name: 'supports-1000', sentences: 3000, supports: 1000, immersive: true },
+  { name: 'original-supports-200', sentences: 300, supports: 30, originalSupports: 200, immersive: true },
+  { name: 'protected-original-supports-200', sentences: 300, originalSupports: 200, protectedOriginal: true },
+  { name: 'protected-original-phone', sentences: 300, originalSupports: 200, protectedOriginal: true, width: 320, fontSize: 24 },
+  { name: 'comparison-supports-200', sentences: 300, supports: 30, originalSupports: 200, compare: true },
   { name: 'bilingual-panes', sentences: 300, supports: 200, bilingual: true, compare: true },
   { name: 'large-text-phone', sentences: 300, supports: 30, width: 320, fontSize: 24 },
   { name: 'preview-cycles', sentences: 300, supports: 30, teacher: true, lifecycle: 'preview' },

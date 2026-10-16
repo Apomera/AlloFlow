@@ -17,7 +17,7 @@ const snapshot = (extra = {}) => core.captureInputs(plan(), settings(extra), [ma
 function setup(callText) {
   let state = { history: [plan(), material], isTeacherMode: true, canGenerate: true, actorKey: 'teacher' };
   const writes = [], statuses = [];
-  const controller = host.createController({ core, callText, getState: () => state, onStatus: status => statuses.push(status), updateResource: (id, update) => {
+  const controller = host.createController({ storage: null, core, callText, getState: () => state, onStatus: status => statuses.push(status), updateResource: (id, update) => {
     const old = state.history[0], next = update(old);
     if (old === next) return false;
     writes.push(next); state = { ...state, history: [next, material] }; return true;
