@@ -167,12 +167,12 @@ async function run() {
   console.log('PASS count and move controls wait for pending library work');
 
   await mount({ board: null }); await count(4); await label(2, 'old word'); await upload(2, assets[2]); await count(2);
-  await rerender({ word: 'tomato' }); await count(4); assert.deepEqual(labels(), ['', '', '', '']);
+  await rerender({ word: 'tomato' }); await count(4); assert.deepEqual(labels(), ['to', 'ma', 'to', '']);
   assert.equal(button('Hear syllable 3').disabled, true); assert.equal(button('Hear syllable 4').disabled, true);
   console.log('PASS changing the word discards hidden recordings from the previous word');
 
   await mount({ board: null }); await count(4); await label(2, 'old language'); await upload(2, assets[2]); await count(2);
-  await rerender({ language: 'en-GB' }); await count(4); assert.deepEqual(labels(), ['', '', '', '']);
+  await rerender({ language: 'en-GB' }); await count(4); assert.deepEqual(labels(), ['wa', 'ter', 'mel', 'on']);
   assert.equal(button('Hear syllable 3').disabled, true); assert.equal(button('Hear syllable 4').disabled, true);
   console.log('PASS changing recording language discards hidden recordings from the previous language');
 
@@ -193,7 +193,15 @@ async function run() {
   const beforeLibrarySave = saveCalls; await click(button('Use saved recordings in this lesson')); assert.equal(saveCalls, beforeLibrarySave + 1);
   assert.deepEqual(labels(), ['new first', 'new second']); await count(4); assertBlankTail(); await hear(0, freshAssets[0]); await hear(1, freshAssets[1]);
   console.log('PASS applying a saved library set clears hidden units from the replaced draft');
-  console.log('PASS recording draft count recovery and reordering: 13 regression groups');
+  const eightAssets = [...assets, ...freshAssets, assets[0], assets[1]];
+  const eightLabels = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+  await mount({ board: task('watermelon', eightAssets, eightLabels) });
+  await count(2); await count(8); assert.deepEqual(labels(), eightLabels);
+  await previewAndConfirm(eightAssets); await click(button('Save reviewed syllables'));
+  assert.deepEqual(plain(saved.syllables), eightLabels);
+  assert.equal(context.WS_CORE.reviewedSyllableReady(saved), true);
+  console.log('PASS eight recording slots survive count changes, ordered preview, review and saving');
+  console.log('PASS recording draft count recovery and reordering: 14 regression groups');
 }
 run().catch(error => { console.error(error); process.exitCode = 1; }).finally(async () => {
   if (root) await act(async () => root.unmount());

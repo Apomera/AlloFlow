@@ -21,8 +21,8 @@ describe('Word Sounds review-row actions (live panel)', () => {
   });
 
   it('exposes busy state on the word-level audio and image actions', () => {
-    expect(source).toContain('aria-busy={playingWordIndex === idx');
-    expect(source.match(/aria-busy=\{generatingImageIndex === idx\}/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(source).toContain('aria-busy={!isTeacherSpoken(word) && (playingWordIndex === idx');
+    expect(source.match(/aria-busy=\{isGeneratingImage\(idx\)\}/g)?.length).toBeGreaterThanOrEqual(2);
     expect(source).toContain('aria-busy={regeneratingIndex === idx}');
   });
 

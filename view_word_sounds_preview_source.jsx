@@ -178,12 +178,13 @@ function WordSoundsPreviewView(props) {
                         <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
                           <h4 className="font-bold text-slate-800">{label('readiness_heading', 'Ready for students')} <span className="text-sm font-medium">{label('readiness_audio_qualifier', 'Audio check')}</span></h4>
                           <p role="status" aria-live="polite" aria-atomic="true" className={`mt-2 text-sm font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-800'}`}>
-                            {readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : (wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'))}
+                            {readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : (wordSoundsAudioCoverage.teacherLedReady ? label('readiness_teacher_led_ready', 'Ready with a teacher present') : wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'))}
                             {!readinessBusy && readinessNotice === 'cancelled' && <span className="block">{label('readiness_cancelled', 'Audio check cancelled. Readiness is unconfirmed.')}</span>}
                             {!readinessBusy && readinessNotice === 'failed' && <span className="block">{label('readiness_failed', 'Audio could not be checked. Review the lesson and try again.')}</span>}
                           </p>
+                          {wordSoundsAudioCoverage.requiresTeacher && <p className="mt-2 text-sm text-violet-900">{label('readiness_teacher_led_words', 'A teacher must say these words aloud: {words}. This lesson needs teacher support.', { words: wordSoundsAudioCoverage.teacherLedWords.join(', ') })}</p>}
                           <p className="mt-2 text-sm text-slate-700">{label('readiness_counts', '{ready}/{total} required clips verified; {embedded} embedded, {online} online dependencies, {deviceOnly} available only on this device.', wordSoundsAudioCoverage)}</p>
-                          <p className="mt-2 text-xs text-slate-600">{label('readiness_limits', 'This checks audio only. Review the lesson content before sharing. Online app banks and device cache are not embedded in the student pack; this check cannot confirm them on another device.')}</p>
+                          <p className="mt-2 text-xs text-slate-600">{label('readiness_limits', 'This checks prepared audio and syllable counts. Review the lesson content before sharing. Online app banks and device cache are not embedded in the student pack; this check cannot confirm them on another device.')}</p>
                           {missingAudioLabels.length > 0 && <p className="mt-2 text-sm text-amber-900">{label('preview_missing', 'Missing: {labels}', { labels: missingAudioLabels.slice(0, 5).map(readableAudioLabel).join(', ') })}{missingAudioLabels.length > 5 && label('preview_more', ', plus {count} more', { count: missingAudioLabels.length - 5 })}</p>}
                           {wordSoundsAudioCoverage.dependencies && wordSoundsAudioCoverage.dependencies.length > 0 && <p className="mt-2 text-sm text-slate-700">{label('readiness_dependencies', 'App or device audio to review: {labels}', { labels: wordSoundsAudioCoverage.dependencies.slice(0, 5).map(readableAudioLabel).join(', ') })}{wordSoundsAudioCoverage.dependencies.length > 5 && label('preview_more', ', plus {count} more', { count: wordSoundsAudioCoverage.dependencies.length - 5 })}</p>}
                           {wordSoundsAudioCoverage.omittedLabels && wordSoundsAudioCoverage.omittedLabels.length > 0 && <p className="mt-2 text-sm text-amber-900">{label('readiness_omitted', 'Prepared clips omitted from delivery: {labels}', { labels: wordSoundsAudioCoverage.omittedLabels.slice(0, 5).join(', ') })}{wordSoundsAudioCoverage.omittedLabels.length > 5 && label('preview_more', ', plus {count} more', { count: wordSoundsAudioCoverage.omittedLabels.length - 5 })}</p>}
@@ -223,10 +224,12 @@ function WordSoundsPreviewView(props) {
                         )}
                         <button
                           type="button"
+                          disabled={!isTeacherMode && wordSoundsAudioCoverage.requiresTeacher}
                           onClick={() => {
                             if (isTeacherMode
                                 && wordSoundsAudioCoverage
                                 && !wordSoundsAudioCoverage.complete
+                                && !wordSoundsAudioCoverage.teacherLedReady
                                 && typeof requestIncompleteAudioConfirmation === 'function') {
                               requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity);
                               return;
@@ -240,8 +243,8 @@ function WordSoundsPreviewView(props) {
                         >
                           <Play size={20} aria-hidden="true" />
                           <span className="text-start">
-                            <span className="block">{isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')}</span>
-                            <span className="block text-xs font-medium text-indigo-100">{label('preview_start_hint', 'Begin the prepared activities now')}</span>
+                            <span className="block">{wordSoundsAudioCoverage.requiresTeacher ? (isTeacherMode ? label('preview_teacher_led_start', 'Start teacher-led practice') : label('preview_teacher_required', 'Ask your teacher to begin')) : isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')}</span>
+                            <span className="block text-xs font-medium text-indigo-100">{wordSoundsAudioCoverage.requiresTeacher ? label('preview_teacher_led_hint', 'The teacher says each marked word aloud') : label('preview_start_hint', 'Begin the prepared activities now')}</span>
                           </span>
                         </button>
                       </div>

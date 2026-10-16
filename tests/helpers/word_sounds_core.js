@@ -6,8 +6,8 @@ export function compileWords(words, profile = {}, language = 'en', preparedActiv
   const between = (a,b) => {const start=source.indexOf(a),end=source.indexOf(b,start+a.length);if(start<0||end<0)throw Error(a);return source.slice(start,end);};
   const compiler = new Function('instructionalProfile','wordSoundsLanguage','trustedTables', `
     ${coreSource}
-    const WS_CORE=createWordSoundsCore();
     const window={AlloModules:{AlloData:trustedTables}};
+    const WS_CORE=createWordSoundsCore();
     const Math=Object.create(globalThis.Math); Math.random=()=>0.5;
     ${between('const PACK_COMMON_WORDS =', '// ── eSpeak G2P')}
     ${between('const normalizePackKey =', 'const handleStart =')}

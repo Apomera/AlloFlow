@@ -47,16 +47,22 @@ describe('the live panel reaches the real phoneme checker', () => {
 });
 
 describe('each gap that has a fixer gets a scoped button', () => {
-  it('fixes run over the affected words only, not the whole pack', () => {
+  it('fixes run over affected words in the selected activities only', () => {
     expect(SOURCE).toMatch(/const addGap = \(gap\) => \{/);
+    expect(SOURCE).toContain('if (gap.activities && !reviewsActivity(...gap.activities)) return;');
     expect(SOURCE).toMatch(/gaps\.push\(\{ \.\.\.gap, indices, text: gap\.text\(indices\.length\) \}\)/);
   });
 
-  it('routes each gap to the fixer that already existed', () => {
+  it('routes repairable gaps to their actual fixer and leaves runtime rhyme boards informational', () => {
     expect(SOURCE).toMatch(/batch: onRetryFailedTTS/);
     expect(SOURCE).toMatch(/each: onCheckPhonemes/);
     expect(SOURCE).toMatch(/each: onRegenerateManipulationTask/);
-    expect(SOURCE).toMatch(/each: onRegenerateWord/);
+    // Regenerate word now refreshes audio; it cannot fill a missing rhyme.
+    // The player builds the rhyme board, so this note offers no false repair.
+    const rhyme = SOURCE.slice(SOURCE.indexOf("key: 'rhyme'"), SOURCE.indexOf("key: 'task'"));
+    expect(rhyme).toContain("activities: ['rhyming']");
+    expect(rhyme).toMatch(/each: null/);
+    expect(rhyme).not.toMatch(/label:|each: onRegenerateWord/);
     expect(SOURCE).toMatch(/onGenerateImage\(i, preloadedWords\[i\]/);
   });
 

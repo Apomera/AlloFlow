@@ -65,8 +65,8 @@ describe('what the teacher sees stays accurate', () => {
     const gap = MISC.slice(MISC.indexOf("key: 'audio',"), MISC.indexOf("key: 'audio_runtime',"));
     expect(gap).toMatch(/each: null/);
     expect(gap).not.toMatch(/batch:/);
-    // The remedy is named in packNote, which the line interpolates.
-    expect(gap).toMatch(/\$\{packNote\}/);
+    // The translated warning receives the remedy through its note placeholder.
+    expect(gap).toMatch(/note: packNote/);
     expect(MISC).toMatch(/re-prepare the pack in setup/);
   });
 

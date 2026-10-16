@@ -32,6 +32,7 @@ if (!fs.existsSync(SOURCE)) {
 }
 
 require('./dev-tools/sync_word_sounds_core.cjs');
+require('./dev-tools/sync_word_sounds_count_review.cjs');
 const source = fs.readFileSync(SOURCE, 'utf-8');
 
 // Entry with globals declared so esbuild's JSX pass doesn't complain about

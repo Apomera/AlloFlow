@@ -141,7 +141,7 @@ test('blending render does not include the target-revealing generic prompt', () 
   assert(rendering.includes('isPlayingAudio || isSyllableSequenceBusy'));
 });
 test('instructions on and off both use the managed syllable sequence', () => {
-  assert(source.includes('if (wordSoundsActivity !== "syllable_blending") await handleAudio(currentWordSoundsWord);'));
+  assert(source.includes('if (wordSoundsActivity !== "syllable_blending" && wordSoundsActivity !== "syllable_counting") await handleAudio(currentWordSoundsWord);'));
   assert(source.includes('await playSyllables(automaticStale);'));
   assert(source.includes('await playSyllables(seqStale);'));
 });

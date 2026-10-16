@@ -28,7 +28,7 @@
   (function (root, factory) {
   if (root && root.window) root = root.window;
   var existing = root && root.AlloModules && root.AlloModules.WordSoundsReadiness;
-  var api = existing && existing.VERSION === 6 && typeof existing.portable === 'function' ? existing : factory(root || {});
+  var api = existing && existing.VERSION === 7 && typeof existing.portable === 'function' ? existing : factory(root || {});
   if (root) {
     root.AlloModules = root.AlloModules || {};
     root.AlloModules.WordSoundsReadiness = api;
@@ -41,8 +41,65 @@
   // Canonical Word Sounds logic. Embedded by dev-tools/sync_word_sounds_core.cjs.
   // Edge sounds use the application's English phoneme-bank convention (including
   // r-controlled vowel units). null denotes an unresolved pronunciation variant.
-  function createWordSoundsCore() {
+  function createWordSoundsCore(options = {}) {
     const VERSION = 1;
+    // Shared, lazy pronunciation data: keep the full dictionary out of each of
+    // the three embedded core copies and out of lessons saved for students.
+    const root = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {};
+    const scriptUrl = typeof document !== 'undefined' ? document.currentScript?.src || document.baseURI : '';
+    const pronunciationData = () => options.pronunciations || root.AlloModules?.WordSoundsPronunciations;
+    const loadSyllablePronunciations = async () => {
+      if (pronunciationData()?.lookup) return true;
+      if (typeof document === 'undefined') return false;
+      if (!root.__alloSyllablePronunciationLoad) {
+        root.__alloSyllablePronunciationLoad = new Promise(resolve => {
+          let settled = false;
+          const finish = () => {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timer);
+              resolve(!!pronunciationData()?.lookup);
+            }
+          };
+          const timer = setTimeout(finish, 10000);
+          if (typeof root.__alloLoadPlugin === 'function') {
+            Promise.resolve().then(() => root.__alloLoadPlugin('word_sounds_pronunciations.js')).then(loaded => {
+              // The host loader retains failed script tags. Remove only this
+              // data module's failed tag so a later request can actually retry.
+              if (!loaded && !pronunciationData()?.lookup) {
+                for (const script of document.querySelectorAll?.('script[src]') || []) {
+                  try {
+                    if (new URL(script.src, document.baseURI).pathname.endsWith('/word_sounds_pronunciations.js') && script.dataset?.alloLoaded !== '1') script.remove();
+                  } catch (_) {}
+                }
+              }
+              finish();
+            }, finish);
+          } else {
+            try {
+              const url = new URL('word_sounds_pronunciations.js', scriptUrl || document.baseURI);
+              const version = new URL(scriptUrl || document.baseURI).searchParams.get('v');
+              if (version) url.searchParams.set('v', version);
+              const script = document.createElement('script');
+              script.src = url.href;
+              script.async = true;
+              script.onload = finish;
+              script.onerror = () => {
+                script.remove();
+                finish();
+              };
+              document.head.appendChild(script);
+            } catch (_) {
+              finish();
+            }
+          }
+        }).then(loaded => {
+          if (!loaded) root.__alloSyllablePronunciationLoad = null;
+          return loaded;
+        });
+      }
+      return root.__alloSyllablePronunciationLoad;
+    };
     const EDGES = {
       "about": ["schwa", "t"],
       "action": ["a", "n"],
@@ -886,8 +943,294 @@
       headband: ['head', 'band']
     };
     const syllableWords = () => Object.keys(SYLLABLE_COMPOUNDS);
+    // Written hints for recording word-specific speech, never TTS fragments.
+    // These expand the teaching inventory without claiming unrecorded sounds are
+    // checked audio. The teacher still previews and confirms every recording.
+    const SYLLABLE_RECORDING_HINTS = {
+      apple: ['ap', 'ple'],
+      table: ['ta', 'ble'],
+      rabbit: ['rab', 'bit'],
+      pencil: ['pen', 'cil'],
+      basket: ['bas', 'ket'],
+      window: ['win', 'dow'],
+      monkey: ['mon', 'key'],
+      garden: ['gar', 'den'],
+      button: ['but', 'ton'],
+      tiger: ['ti', 'ger'],
+      wagon: ['wag', 'on'],
+      lemon: ['lem', 'on'],
+      puppy: ['pup', 'py'],
+      kitten: ['kit', 'ten'],
+      dragon: ['drag', 'on'],
+      robot: ['ro', 'bot'],
+      picnic: ['pic', 'nic'],
+      people: ['peo', 'ple'],
+      banana: ['ba', 'na', 'na'],
+      elephant: ['el', 'e', 'phant'],
+      computer: ['com', 'pu', 'ter'],
+      potato: ['po', 'ta', 'to'],
+      tomato: ['to', 'ma', 'to'],
+      dinosaur: ['di', 'no', 'saur'],
+      butterfly: ['but', 'ter', 'fly'],
+      animal: ['an', 'i', 'mal'],
+      alphabet: ['al', 'pha', 'bet'],
+      octopus: ['oc', 'to', 'pus'],
+      alligator: ['al', 'li', 'ga', 'tor'],
+      helicopter: ['hel', 'i', 'cop', 'ter'],
+      watermelon: ['wa', 'ter', 'mel', 'on'],
+      avocado: ['av', 'o', 'ca', 'do'],
+      hippopotamus: ['hip', 'po', 'pot', 'a', 'mus'],
+      communication: ['com', 'mu', 'ni', 'ca', 'tion'],
+      electricity: ['e', 'lec', 'tric', 'i', 'ty'],
+      imagination: ['i', 'mag', 'i', 'na', 'tion'],
+      responsibility: ['re', 'spon', 'si', 'bil', 'i', 'ty']
+    };
+    const syllableCountWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_RECORDING_HINTS)];
     const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
     const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
+    const validSyllableCount = count => Number.isInteger(count) && count >= 1 && count <= 12;
+    const syllableCountLanguageKey = language => packAudioLanguageKey(language || 'en');
+    const syllableFingerprint = value => {
+      let a = 2166136261,
+        b = 5381;
+      for (let i = 0; i < value.length; i++) {
+        a = Math.imul(a ^ value.charCodeAt(i), 16777619);
+        b = Math.imul(b, 33) ^ value.charCodeAt(i);
+      }
+      return value.length + ':' + (a >>> 0).toString(16) + '-' + (b >>> 0).toString(16);
+    };
+    const countAssetFingerprints = new WeakMap();
+    let lastCountAudioSource = null,
+      lastCountSourceFingerprint = null;
+    const countAudioSignature = context => JSON.stringify([context.language, context.fingerprint, context.fingerprint ? '' : context.voice]);
+    const createSyllableCountAudioContext = (input = {}) => {
+      const asset = input.asset;
+      let fingerprint = null;
+      if (asset && typeof asset === 'object' && typeof asset.mime === 'string' && /^audio\//i.test(asset.mime) && typeof asset.base64 === 'string' && asset.base64) {
+        const cached = countAssetFingerprints.get(asset);
+        if (cached && cached.mime === asset.mime && cached.base64 === asset.base64) fingerprint = cached.fingerprint;else {
+          fingerprint = syllableFingerprint(asset.mime.toLowerCase() + ';' + asset.base64.replace(/\s/g, ''));
+          countAssetFingerprints.set(asset, {
+            mime: asset.mime,
+            base64: asset.base64,
+            fingerprint
+          });
+        }
+      } else if (typeof input.audioSource === 'string') {
+        if (input.audioSource === lastCountAudioSource) fingerprint = lastCountSourceFingerprint;else {
+          const match = input.audioSource.match(/^data:(audio\/[^;,]+);base64,([\s\S]+)$/i);
+          fingerprint = match ? syllableFingerprint(match[1].toLowerCase() + ';' + match[2].replace(/\s/g, '')) : null;
+          lastCountAudioSource = input.audioSource;
+          lastCountSourceFingerprint = fingerprint;
+        }
+      }
+      const provenance = asset?.provenance;
+      const voice = String(fingerprint ? provenance?.resolvedVoice || provenance?.voice || '' : input.voice || provenance?.resolvedVoice || provenance?.voice || '').trim();
+      const context = {
+        version: 1,
+        language: syllableCountLanguageKey(input.language),
+        fingerprint,
+        voice
+      };
+      return Object.freeze({
+        ...context,
+        signature: countAudioSignature(context)
+      });
+    };
+    const validCountAudioContext = context => !!context && context.version === 1 && typeof context.language === 'string' && context.language === syllableCountLanguageKey(context.language) && (context.fingerprint === null || typeof context.fingerprint === 'string' && /^\d+:[a-f0-9]+-[a-f0-9]+$/.test(context.fingerprint)) && typeof context.voice === 'string' && context.voice.length <= 512 && context.signature === countAudioSignature(context);
+    const countSignature = data => data.version === 1 ? JSON.stringify([data.targetWord, data.language, data.revision, data.count]) : JSON.stringify([data.targetWord, data.language, data.revision, data.count, data.source, data.recordingSignature || null, data.audioContext?.signature || null]);
+    const makeReviewedSyllableCount = (input, source = 'teacher_review', recordingSignature = null) => {
+      const targetWord = normalize(input?.targetWord),
+        language = syllableCountLanguageKey(input?.language);
+      if (!targetWord || targetWord.length > 80 || input?.reviewed !== true || !validSyllableCount(input.count) || !Number.isSafeInteger(input.revision) || input.revision < 1 || input.audioContext != null && (!validCountAudioContext(input.audioContext) || input.audioContext.language !== language)) return null;
+      const result = {
+        version: 2,
+        targetWord,
+        language,
+        supported: true,
+        count: input.count,
+        counts: [input.count],
+        answer: input.count,
+        status: 'reviewed',
+        source,
+        syllables: [],
+        stressPatterns: [],
+        revision: input.revision,
+        audioContext: input.audioContext ? {
+          ...input.audioContext
+        } : null
+      };
+      if (source === 'teacher_review' && result.audioContext?.fingerprint === null) result.deliveryMode = 'teacher_spoken';
+      if (recordingSignature) result.recordingSignature = recordingSignature;
+      return {
+        ...result,
+        review: {
+          confirmed: true,
+          signature: countSignature(result)
+        }
+      };
+    };
+    const createReviewedSyllableCount = input => makeReviewedSyllableCount(input);
+    const countEvidenceSignature = data => JSON.stringify([data.targetWord, data.language, data.counts, data.stressPatterns, data.source]);
+    const resolveSyllableCount = (word, input = {}) => {
+      const targetWord = normalize(word),
+        language = syllableCountLanguageKey(input.language);
+      const base = {
+        version: 1,
+        targetWord,
+        language,
+        supported: false,
+        count: null,
+        counts: [],
+        status: 'needs_review',
+        source: 'unverified',
+        syllables: [],
+        stressPatterns: []
+      };
+      if (!targetWord) return {
+        ...base,
+        reason: 'missing_word'
+      };
+      // Keep the original approval inside unresolved boards. Otherwise saving a
+      // stale result would discard the evidence and allow a dictionary fallback.
+      const prepared = input.prepared?.reviewedEvidence || input.prepared;
+      const reviewCandidate = prepared?.status === 'reviewed' && ['teacher_review', 'teacher_recording'].includes(prepared.source) && prepared.targetWord === targetWord && prepared.language === language;
+      const validReview = [1, 2].includes(prepared?.version) && reviewCandidate && prepared.targetWord === targetWord && prepared.language === language && prepared.review?.confirmed === true && Number.isSafeInteger(prepared.revision) && prepared.revision > 0 && validSyllableCount(prepared.count) && (prepared.version === 1 || prepared.audioContext == null || validCountAudioContext(prepared.audioContext) && prepared.audioContext.language === language) && prepared.review.signature === countSignature(prepared);
+      const needsCountReview = (reason, extra = {}) => ({
+        ...base,
+        counts: validSyllableCount(prepared?.count) ? [prepared.count] : [],
+        reason,
+        reviewedEvidence: prepared,
+        ...extra
+      });
+      if (reviewCandidate && !validReview) return needsCountReview('count_review_invalid');
+      if (validReview && input.audioContext === undefined && input.prepared?.reviewedEvidence && ['count_audio_changed', 'count_audio_review_required'].includes(input.prepared.reason)) return needsCountReview(input.prepared.reason);
+      if (validReview && input.audioContext !== undefined) {
+        if (!validCountAudioContext(input.audioContext) || input.audioContext.language !== language || !prepared.audioContext) return needsCountReview('count_audio_review_required');
+        // A teacher's spoken delivery does not use the selected synthetic voice.
+        // Any actual clip still changes the evidence and requires fresh review.
+        const teacherSpoken = prepared.source === 'teacher_review' && prepared.audioContext.fingerprint === null && input.audioContext.fingerprint === null;
+        if (!teacherSpoken && prepared.audioContext.signature !== input.audioContext.signature) return needsCountReview('count_audio_changed');
+      }
+      const recorded = resolveSyllableTask(targetWord, input.recordedTask, input.language);
+      if (validReview && prepared.source === 'teacher_review') {
+        if (input.prepared?.reason === 'count_recording_conflict' && !recorded.supported) return needsCountReview('count_recording_conflict', {
+          counts: input.prepared.counts,
+          reviewedCount: prepared.count,
+          recordedCount: input.prepared.recordedCount
+        });
+        if (recorded.supported && prepared.count !== recorded.syllables.length) return needsCountReview('count_recording_conflict', {
+          counts: [...new Set([prepared.count, recorded.syllables.length])].sort((a, b) => a - b),
+          reviewedCount: prepared.count,
+          recordedCount: recorded.syllables.length
+        });
+        return {
+          ...makeReviewedSyllableCount({
+            ...prepared,
+            reviewed: true
+          })
+        };
+      }
+      if (recorded.contentStatus === 'teacher_recorded' && recorded.supported) {
+        const result = makeReviewedSyllableCount({
+          targetWord,
+          language,
+          count: recorded.syllables.length,
+          revision: recorded.revision,
+          reviewed: true,
+          audioContext: input.audioContext ?? (validReview ? prepared.audioContext : undefined)
+        }, 'teacher_recording', recorded.review.signature);
+        return result ? {
+          ...result,
+          syllables: [...recorded.syllables]
+        } : {
+          ...base,
+          reason: 'count_audio_review_required'
+        };
+      }
+      // Counting-only packs can omit the clips after the teacher reviewed them.
+      // When clips are present, always revalidate them above instead of reusing
+      // the count from an older recording revision.
+      if (input.recordedTask?.contentStatus !== 'teacher_recorded' && validReview && prepared.source === 'teacher_recording' && typeof prepared.recordingSignature === 'string' && prepared.recordingSignature) {
+        return makeReviewedSyllableCount({
+          ...prepared,
+          reviewed: true
+        }, 'teacher_recording', prepared.recordingSignature);
+      }
+      if (input.recordedTask?.contentStatus === 'teacher_recorded' && !recorded.supported && validReview && prepared.source === 'teacher_recording') return needsCountReview(recorded.reason || 'recording_review_required');
+      if (!isSyllableLanguageSupported(input.language)) return {
+        ...base,
+        reason: 'unsupported_language'
+      };
+      if (recorded.supported) {
+        const result = {
+          ...base,
+          supported: true,
+          count: recorded.syllables.length,
+          counts: [recorded.syllables.length],
+          status: 'curated',
+          source: 'compound_bank',
+          syllables: [...recorded.syllables]
+        };
+        return {
+          ...result,
+          evidenceSignature: countEvidenceSignature(result)
+        };
+      }
+      const data = pronunciationData();
+      const stressPatterns = [...new Set((data?.lookup?.(targetWord) || []).filter(value => typeof value === 'string' && /^[012]{1,12}$/.test(value)))];
+      if (stressPatterns.length) {
+        const counts = [...new Set(stressPatterns.map(value => value.length))].sort((a, b) => a - b);
+        const supported = counts.length === 1;
+        const result = {
+          ...base,
+          supported,
+          count: supported ? counts[0] : null,
+          counts,
+          stressPatterns,
+          status: supported ? 'dictionary' : 'needs_review',
+          source: 'cmudict',
+          dialect: 'en-US',
+          reason: supported ? undefined : 'pronunciation_variant'
+        };
+        return {
+          ...result,
+          evidenceSignature: countEvidenceSignature(result)
+        };
+      }
+      // A saved dictionary-backed board works offline without shipping the entire
+      // dictionary. Legacy AI/spelling estimates lack this evidence and need review.
+      if (prepared?.version === 1 && prepared.targetWord === targetWord && prepared.language === language && prepared.status === 'dictionary' && prepared.source === 'cmudict' && prepared.supported === true && validSyllableCount(prepared.count) && Array.isArray(prepared.counts) && prepared.counts.length === 1 && prepared.counts[0] === prepared.count && Array.isArray(prepared.stressPatterns) && prepared.stressPatterns.length && prepared.stressPatterns.every(value => typeof value === 'string' && /^[012]{1,12}$/.test(value) && value.length === prepared.count) && prepared.evidenceSignature === countEvidenceSignature(prepared)) return {
+        ...base,
+        ...prepared,
+        syllables: []
+      };
+      const suggested = prepared?.count ?? prepared?.answer;
+      return {
+        ...base,
+        counts: validSyllableCount(suggested) ? [suggested] : [],
+        reason: data ? 'unknown_word' : 'dictionary_unavailable'
+      };
+    };
+    const isTeacherSpokenSyllableCount = (word, input = {}) => {
+      const resolved = resolveSyllableCount(word, input);
+      return resolved.supported === true && resolved.source === 'teacher_review' && resolved.audioContext?.fingerprint === null;
+    };
+    const syllableRecordingTemplate = (word, language) => {
+      const targetWord = normalize(word);
+      const count = resolveSyllableCount(targetWord, {
+        language
+      });
+      const hints = isSyllableLanguageSupported(language) && Object.prototype.hasOwnProperty.call(SYLLABLE_RECORDING_HINTS, targetWord) && SYLLABLE_RECORDING_HINTS[targetWord];
+      return {
+        targetWord,
+        reviewRequired: true,
+        syllables: hints ? [...hints] : [],
+        count: count.count || hints?.length || null,
+        stressPatterns: count.stressPatterns,
+        source: hints ? 'recording_hints' : count.source
+      };
+    };
     const syllableAssetSource = asset => {
       if (!asset || !/^audio\/(?:wav|x-wav|wave|mpeg|mp3|ogg|webm|mp4|x-m4a|aac)$/i.test(asset.mime || '') || typeof asset.base64 !== 'string' || asset.base64.length < 16 || asset.base64.length > 512000 || asset.base64.length % 4 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(asset.base64)) return null;
       const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -911,7 +1254,9 @@
     // This checksum binds teacher review to these exact clips and their order;
     // it is an edit/staleness guard, not a claim of independent linguistic review.
     const syllableReviewSignature = task => {
-      const value = JSON.stringify([task.targetWord, task.language, task.revision, task.syllables, (task.audioUnits || []).map(unit => [unit.key, unit.text, unit.asset?.mime, unit.asset?.base64, unit.asset?.durationSeconds])]);
+      const evidence = [task.targetWord, task.language, task.revision, task.syllables, (task.audioUnits || []).map(unit => [unit.key, unit.text, unit.asset?.mime, unit.asset?.base64, unit.asset?.durationSeconds])];
+      if (task.version === 3) evidence.unshift(3);
+      const value = JSON.stringify(evidence);
       let a = 2166136261,
         b = 5381;
       for (let i = 0; i < value.length; i++) {
@@ -921,7 +1266,7 @@
       return (a >>> 0).toString(16) + '-' + (b >>> 0).toString(16);
     };
     const reviewedSyllableReady = task => {
-      if (!task || task.version !== 2 || task.supported !== true || task.contentStatus !== 'teacher_recorded' || !task.targetWord || task.targetWord !== normalize(task.targetWord) || task.targetWord.length > 80 || typeof task.language !== 'string' || !task.language || task.language !== syllableLanguageKey(task.language) || !Number.isSafeInteger(task.revision) || task.revision < 1 || !Array.isArray(task.syllables) || task.syllables.length < 2 || task.syllables.length > 4 || !Array.isArray(task.audioUnits) || task.audioUnits.length !== task.syllables.length || task.review?.confirmed !== true) return false;
+      if (!task || ![2, 3].includes(task.version) || task.supported !== true || task.contentStatus !== 'teacher_recorded' || !task.targetWord || task.targetWord !== normalize(task.targetWord) || task.targetWord.length > 80 || typeof task.language !== 'string' || !task.language || task.language !== (task.version === 2 ? syllableLanguageKey(task.language) : packAudioLanguageKey(task.language)) || !Number.isSafeInteger(task.revision) || task.revision < 1 || !Array.isArray(task.syllables) || task.syllables.length < 2 || task.syllables.length > 8 || !Array.isArray(task.audioUnits) || task.audioUnits.length !== task.syllables.length || task.review?.confirmed !== true) return false;
       if (!task.syllables.every((part, index) => {
         const unit = task.audioUnits[index];
         return typeof part === 'string' && part === part.trim() && part.length > 0 && part.length <= 40 && unit?.key === 'syllable:' + task.targetWord + ':' + task.revision + ':' + index && unit.text === part && unit.asset?.source === 'teacher_recording' && unit.asset?.decoded === true && Number.isFinite(unit.asset.durationSeconds) && unit.asset.durationSeconds >= 0.08 && unit.asset.durationSeconds <= 8 && !!syllableAssetSource(unit.asset);
@@ -931,11 +1276,11 @@
     const createReviewedSyllableTask = input => {
       if (input?.reviewed !== true || !Array.isArray(input.syllables) || !Array.isArray(input.assets)) return null;
       const task = {
-        version: 2,
+        version: 3,
         supported: true,
         contentStatus: 'teacher_recorded',
         targetWord: normalize(input.targetWord),
-        language: syllableLanguageKey(input.language),
+        language: packAudioLanguageKey(input.language || 'en'),
         revision: input.revision,
         syllables: input.syllables.map(part => String(part).trim())
       };
@@ -952,6 +1297,25 @@
       };
       return reviewedSyllableReady(task) ? task : null;
     };
+    const recoverSyllableRecordingDraft = (word, task) => {
+      if (!reviewedSyllableReady(task) || task.targetWord !== normalize(word)) return null;
+      return {
+        version: task.version,
+        targetWord: task.targetWord,
+        language: task.language,
+        revision: task.revision,
+        supported: false,
+        contentStatus: 'syllable_recording_draft',
+        reviewRequired: true,
+        syllables: [...task.syllables],
+        audioUnits: task.audioUnits.map(unit => ({
+          ...unit,
+          asset: {
+            ...unit.asset
+          }
+        }))
+      };
+    };
     const resolveSyllableTask = (word, prepared, language) => {
       const targetWord = normalize(word);
       const needsRecording = () => ({
@@ -964,7 +1328,14 @@
         reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds Studio.'
       });
       if (prepared?.contentStatus === 'teacher_recorded') {
-        if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && prepared.language === syllableLanguageKey(language)) {
+        if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && prepared.version === 2 && prepared.language === 'en') {
+          return {
+            ...needsRecording(),
+            reason: 'recording_locale_review_required',
+            recoverable: true
+          };
+        }
+        if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && packAudioLanguageKey(prepared.language) === packAudioLanguageKey(language || 'en')) {
           return {
             ...prepared,
             syllables: [...prepared.syllables],
@@ -976,7 +1347,13 @@
             }))
           };
         }
-        return needsRecording();
+        return {
+          ...needsRecording(),
+          ...(reviewedSyllableReady(prepared) && prepared.targetWord === targetWord ? {
+            reason: 'recording_locale_review_required',
+            recoverable: true
+          } : {})
+        };
       }
       const parts = isSyllableLanguageSupported(language) && Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, targetWord) && SYLLABLE_COMPOUNDS[targetWord];
       if (!parts) return needsRecording();
@@ -993,7 +1370,7 @@
       };
     };
     const syllableReady = task => {
-      if (task?.contentStatus === 'teacher_recorded') return reviewedSyllableReady(task);
+      if (task?.contentStatus === 'teacher_recorded') return reviewedSyllableReady(task) && !(task.version === 2 && task.language === 'en');
       if (!task || task.supported !== true || task.version !== 1 || task.contentStatus !== 'curated_compound') return false;
       const expected = resolveSyllableTask(task.targetWord, null, 'en');
       return expected.supported && Array.isArray(task.syllables) && Array.isArray(task.audioUnits) && task.syllables.length === expected.syllables.length && task.audioUnits.length === expected.audioUnits.length && expected.syllables.every((part, i) => task.syllables[i] === part && task.audioUnits[i]?.key === part && task.audioUnits[i]?.text === part);
@@ -1262,14 +1639,24 @@
         return PACK_LANGUAGE_DEFAULTS[input] || input;
       };
       const alias = input => Object.prototype.hasOwnProperty.call(PACK_LANGUAGE_ALIASES, input) ? tag(PACK_LANGUAGE_ALIASES[input].toLowerCase()) : '';
+      // Stored keys use "canonical locale ␟ dialect"; input profiles can use
+      // "language name ␟ locale ␟ dialect". Preserve stored keys when a reviewed
+      // recording/count is serialized and validated again, including dialect
+      // names that happen to resemble a language tag (for example "uk").
+      const namedKey = base.startsWith('name:') ? base.slice(5).trim() ? base : '' : null;
+      if (namedKey === '') return '';
+      if (parts.length === 2 && (namedKey || tag(base) === base)) {
+        dialect = locale;
+        locale = '';
+      }
       const dialectLocale = dialect ? alias(base + ' (' + dialect + ')') : '';
-      const baseKey = alias(base) || tag(base) || (base ? 'name:' + base : '');
+      const baseKey = namedKey || alias(base) || tag(base) || (base ? 'name:' + base : '');
       if (!baseKey) return '';
       if (locale && !tag(locale)) return '';
       const key = locale ? tag(locale) : dialectLocale || baseKey;
       return dialect && dialectLocale !== key ? key + '\u241f' + dialect : key;
     };
-    const packAudioInventory = (words, selectedVoice, language, canonicalEntries = []) => {
+    const packAudioInventory = (words, selectedVoice, language, canonicalEntries = [], activities) => {
       const assets = Object.create(null),
         required = new Map(),
         recordings = [],
@@ -1279,14 +1666,31 @@
         const key = packAudioKey(value);
         if (key && !/^syllable:/.test(key) && !required.has(key)) required.set(key, String(value).trim());
       };
+      list(words).forEach(item => Object.assign(assets, item && item._ttsAssets || {}));
+      const spokenKeys = new Set(list(words).filter(item => {
+        if (!item) return false;
+        const selected = list(activities).length ? activities : list(item._preparedActivities).length ? item._preparedActivities : Object.keys(item.activityItems || {});
+        const word = item.targetWord || item.word || item.term,
+          key = packAudioKey(word);
+        return selected.length > 0 && selected.every(id => id === 'syllable_counting') && isTeacherSpokenSyllableCount(word, {
+          language: language || item.activityItems?.syllable_counting?.language,
+          prepared: item.activityItems?.syllable_counting,
+          recordedTask: item.activityItems?.syllable_blending,
+          audioContext: createSyllableCountAudioContext({
+            asset: assets[key],
+            audioSource: typeof assets[key] === 'string' ? assets[key] : undefined,
+            language: language || item.activityItems?.syllable_counting?.language,
+            voice: selectedVoice
+          })
+        });
+      }).map(item => packAudioKey(item.targetWord || item.word || item.term)));
       list(words).forEach(item => {
-        Object.assign(assets, item && item._ttsAssets || {});
         if (!item) return;
         const syllableBoard = item.activityItems && item.activityItems.syllable_blending;
         const legacyParts = new Set([...list(item.syllables), ...list(syllableBoard && syllableBoard.syllables), ...list(syllableBoard && syllableBoard.audioUnits).map(unit => unit && unit.text)].map(packAudioKey));
         legacyParts.forEach(key => fragmentKeys.add(key));
-        list(item._ttsRequiredKeys).filter(value => !legacyParts.has(packAudioKey(value))).forEach(add);
-        add(item.targetWord || item.word || item.term);
+        list(item._ttsRequiredKeys).filter(value => !legacyParts.has(packAudioKey(value)) && !spokenKeys.has(packAudioKey(value))).forEach(add);
+        if (!spokenKeys.has(packAudioKey(item.targetWord || item.word || item.term))) add(item.targetWord || item.word || item.term);
         add('as in');
         const boards = item.activityItems || {};
         Object.entries(boards).forEach(([id, board]) => {
@@ -1303,7 +1707,7 @@
                 text: (item.targetWord || item.word || item.term) + ' · syllable ' + (index + 1),
                 asset: unit.asset,
                 present: portablePackAsset(unit.asset),
-                label: typeof reviewedSyllableReady === 'function' && reviewedSyllableReady(board) && (!language || resolveSyllableTask(item.targetWord || item.word || item.term, board, language).supported) ? 'Teacher-reviewed recording' : 'Syllable recording · needs review',
+                label: syllableReady(board) && (!language || resolveSyllableTask(item.targetWord || item.word || item.term, board, language).supported) ? 'Teacher-reviewed recording' : 'Syllable recording · needs review',
                 mismatch: false,
                 unknown: false,
                 regeneratable: false
@@ -1515,9 +1919,13 @@
     const replacePackAssets = (words, replacements) => {
       if (!Array.isArray(words) || !words.length) return words;
       const assets = Object.create(null);
+      const replacedKeys = new Set();
       words.forEach(item => Object.assign(assets, item && item._ttsAssets || {}));
       Object.entries(replacements || {}).forEach(([key, asset]) => {
-        if (portablePackAsset(asset)) assets[packAudioKey(key)] = asset;
+        if (portablePackAsset(asset)) {
+          assets[packAudioKey(key)] = asset;
+          replacedKeys.add(packAudioKey(key));
+        }
       });
       const next = words.map((item, index) => {
         const copy = Object.assign({}, item);
@@ -1526,7 +1934,34 @@
           delete copy._ttsRequiredKeys;
         } else copy._ttsAssets = assets;
         copy.ttsReady = portablePackAsset(assets[packAudioKey(item.targetWord || item.word || item.term)]);
-        copy._ttsFailed = !copy.ttsReady;
+        copy._ttsFailed = !copy.ttsReady && !isTeacherSpokenSyllableCount(item.targetWord || item.word || item.term, {
+          language: item.activityItems?.syllable_counting?.language,
+          prepared: item.activityItems?.syllable_counting,
+          recordedTask: item.activityItems?.syllable_blending,
+          audioContext: createSyllableCountAudioContext({
+            asset: assets[packAudioKey(item.targetWord || item.word || item.term)],
+            language: item.activityItems?.syllable_counting?.language
+          })
+        });
+        const word = item.targetWord || item.word || item.term,
+          key = packAudioKey(word);
+        const countBoard = item.activityItems?.syllable_counting;
+        const approval = countBoard?.reviewedEvidence || countBoard;
+        if (replacedKeys.has(key) && approval?.status === 'reviewed') {
+          const audioContext = createSyllableCountAudioContext({
+            asset: assets[key],
+            language: approval.language
+          });
+          copy.activityItems = {
+            ...item.activityItems,
+            syllable_counting: resolveSyllableCount(word, {
+              language: approval.language,
+              prepared: countBoard,
+              recordedTask: item.activityItems?.syllable_blending,
+              audioContext
+            })
+          };
+        }
         return copy;
       });
       const inventory = packAudioInventory(next);
@@ -1541,6 +1976,14 @@
       return next;
     };
     return {
+      loadSyllablePronunciations,
+      resolveSyllableCount,
+      isTeacherSpokenSyllableCount,
+      createReviewedSyllableCount,
+      createSyllableCountAudioContext,
+      recoverSyllableRecordingDraft,
+      syllableCountWords,
+      syllableRecordingTemplate,
       normalizeRecordedSyllableDependencies,
       packAudioLanguageKey,
       packAudioKey,
@@ -1579,7 +2022,7 @@
   }
   const WS_CORE = createWordSoundsCore();
   // END GENERATED WORD SOUNDS CORE
-  var VERSION = 6,
+  var VERSION = 7,
     MAX_TARGETS = 1024,
     MAX_WORDS = 200,
     MAX_CLIP_CHARS = 512 * 1024;
@@ -1863,11 +2306,13 @@
     var entries = new Map(),
       overflow = false,
       unknownActivities = [],
-      contentIssues = [];
+      contentIssues = [],
+      teacherLedWords = [];
+    var intentionalSpokenTargets = new Set();
     var add = function (label, category) {
       var key = keyOf(label),
         id = category + ':' + key;
-      if (!key || entries.has(id)) return;
+      if (!key || entries.has(id) || category === 'speech' && intentionalSpokenTargets.has(key)) return;
       if (!safeKey(key) || entries.size >= MAX_TARGETS) {
         overflow = true;
         return;
@@ -1895,6 +2340,55 @@
     activities.forEach(function (activity) {
       if (known.indexOf(activity) === -1) unknownActivities.push(String(activity));
     });
+    if (activities.indexOf('syllable_counting') !== -1) {
+      // Delivery and playback merge every per-word bucket in order. Resolve
+      // approvals against that same winning clip, including shadowing assets.
+      var countAssets = Object.create(null);
+      words.slice(0, MAX_WORDS).forEach(function (item) {
+        var map = item && item._ttsAssets;
+        if (!map || typeof map !== 'object' || Array.isArray(map)) return;
+        Object.keys(map).slice(0, MAX_TARGETS + 1).forEach(function (raw) {
+          var key = keyOf(raw);
+          if (safeKey(key)) countAssets[key] = map[raw];
+        });
+      });
+      words.slice(0, MAX_WORDS).forEach(function (item) {
+        var word = wordOf(item);
+        if (!word) return;
+        var boards = item.activityItems || {},
+          prepared = boards.syllable_counting;
+        var language = config.wordSoundsLanguage || resource.wordSoundsLanguage || resource.language || prepared && prepared.language || boards.syllable_blending && boards.syllable_blending.language;
+        var asset = countAssets[word];
+        var input = {
+          language: language,
+          prepared: prepared,
+          recordedTask: boards.syllable_blending,
+          audioContext: WS_CORE.createSyllableCountAudioContext({
+            asset: asset,
+            audioSource: typeof asset === 'string' ? asset : undefined,
+            language: language,
+            voice: config.selectedVoice || resource.selectedVoice || resource.voice || item._ttsVoice
+          })
+        };
+        var resolved = WS_CORE.resolveSyllableCount(word, input);
+        if (!resolved.supported) {
+          var reasons = {
+            count_audio_changed: 'the whole-word audio changed after approval',
+            count_audio_review_required: 'the count needs approval for this whole-word audio',
+            count_recording_conflict: 'the approved count conflicts with the reviewed syllable recordings',
+            count_review_invalid: 'the saved count approval is no longer valid',
+            pronunciation_variant: 'different pronunciations have different counts',
+            dictionary_unavailable: 'pronunciation data is unavailable and no checked count is saved',
+            unknown_word: 'no checked pronunciation count is available',
+            unsupported_language: 'this language needs a reviewed count'
+          };
+          contentIssues.push('Syllable count for ' + word + ' needs review: ' + (reasons[resolved.reason] || 'the saved count evidence is incomplete or outdated') + '.');
+        } else if (WS_CORE.isTeacherSpokenSyllableCount(word, input)) {
+          if (teacherLedWords.indexOf(word) === -1) teacherLedWords.push(word);
+          if (activities.length === 1) intentionalSpokenTargets.add(word);
+        }
+      });
+    }
     words.slice(0, MAX_WORDS).forEach(function (item) {
       if (!item || typeof item !== 'object' || !wordOf(item)) {
         overflow = true;
@@ -1998,6 +2492,7 @@
       overflow: overflow,
       unknownActivities: unknownActivities,
       contentIssues: contentIssues,
+      teacherLedWords: teacherLedWords,
       wordCount: words.length
     };
   }
@@ -2107,7 +2602,13 @@
       return !clip.checked;
     });
     var omittedLabels = built.omittedLabels;
-    var complete = !!built.binding && !built.needed.overflow && !built.needed.unknownActivities.length && !built.needed.contentIssues.length && built.needed.wordCount > 0 && clips.length > 0 && incomplete.length === 0;
+    var contentComplete = !!built.binding && !built.needed.overflow && !built.needed.unknownActivities.length && !built.needed.contentIssues.length && built.needed.wordCount > 0 && clips.length > 0;
+    var requiresTeacher = built.needed.teacherLedWords.length > 0;
+    var materialsComplete = contentComplete && incomplete.length === 0;
+    var teacherLedReady = requiresTeacher && contentComplete && clips.every(function (clip) {
+      return clip.locallyChecked;
+    });
+    var complete = materialsComplete && !requiresTeacher;
     return {
       version: VERSION,
       route: built.route,
@@ -2122,10 +2623,15 @@
       unverified: incomplete.length,
       complete: complete,
       offlinePortable: complete,
+      independentReady: complete,
+      materialsComplete: materialsComplete,
+      teacherLedWords: built.needed.teacherLedWords,
+      requiresTeacher: requiresTeacher,
+      teacherLedReady: teacherLedReady,
       overflow: built.needed.overflow,
       unknownActivities: built.needed.unknownActivities,
       contentIssues: built.needed.contentIssues,
-      status: complete ? 'ready' : failures.length || built.needed.overflow || built.needed.unknownActivities.length || built.needed.contentIssues.length || !built.needed.wordCount ? 'attention' : 'needs-check',
+      status: complete ? 'ready' : teacherLedReady ? 'teacher-led' : failures.length || built.needed.overflow || built.needed.unknownActivities.length || built.needed.contentIssues.length || !built.needed.wordCount ? 'attention' : 'needs-check',
       clips: clips,
       missingLabels: failures.map(function (clip) {
         return clip.category + ': ' + clip.label;
@@ -2574,15 +3080,19 @@ function WordSoundsPreviewView(props) {
     "aria-live": "polite",
     "aria-atomic": "true",
     className: `mt-2 text-sm font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-800'}`
-  }, readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'), !readinessBusy && readinessNotice === 'cancelled' && /*#__PURE__*/React.createElement("span", {
+  }, readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : wordSoundsAudioCoverage.teacherLedReady ? label('readiness_teacher_led_ready', 'Ready with a teacher present') : wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'), !readinessBusy && readinessNotice === 'cancelled' && /*#__PURE__*/React.createElement("span", {
     className: "block"
   }, label('readiness_cancelled', 'Audio check cancelled. Readiness is unconfirmed.')), !readinessBusy && readinessNotice === 'failed' && /*#__PURE__*/React.createElement("span", {
     className: "block"
-  }, label('readiness_failed', 'Audio could not be checked. Review the lesson and try again.'))), /*#__PURE__*/React.createElement("p", {
+  }, label('readiness_failed', 'Audio could not be checked. Review the lesson and try again.'))), wordSoundsAudioCoverage.requiresTeacher && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm text-violet-900"
+  }, label('readiness_teacher_led_words', 'A teacher must say these words aloud: {words}. This lesson needs teacher support.', {
+    words: wordSoundsAudioCoverage.teacherLedWords.join(', ')
+  })), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm text-slate-700"
   }, label('readiness_counts', '{ready}/{total} required clips verified; {embedded} embedded, {online} online dependencies, {deviceOnly} available only on this device.', wordSoundsAudioCoverage)), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-xs text-slate-600"
-  }, label('readiness_limits', 'This checks audio only. Review the lesson content before sharing. Online app banks and device cache are not embedded in the student pack; this check cannot confirm them on another device.')), missingAudioLabels.length > 0 && /*#__PURE__*/React.createElement("p", {
+  }, label('readiness_limits', 'This checks prepared audio and syllable counts. Review the lesson content before sharing. Online app banks and device cache are not embedded in the student pack; this check cannot confirm them on another device.')), missingAudioLabels.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm text-amber-900"
   }, label('preview_missing', 'Missing: {labels}', {
     labels: missingAudioLabels.slice(0, 5).map(readableAudioLabel).join(', ')
@@ -2645,8 +3155,9 @@ function WordSoundsPreviewView(props) {
     className: "block text-xs font-medium text-violet-600"
   }, label('preview_teacher_hint', 'Check or edit the lesson before students begin')))), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    disabled: !isTeacherMode && wordSoundsAudioCoverage.requiresTeacher,
     onClick: () => {
-      if (isTeacherMode && wordSoundsAudioCoverage && !wordSoundsAudioCoverage.complete && typeof requestIncompleteAudioConfirmation === 'function') {
+      if (isTeacherMode && wordSoundsAudioCoverage && !wordSoundsAudioCoverage.complete && !wordSoundsAudioCoverage.teacherLedReady && typeof requestIncompleteAudioConfirmation === 'function') {
         requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity);
         return;
       }
@@ -2663,9 +3174,9 @@ function WordSoundsPreviewView(props) {
     className: "text-start"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block"
-  }, isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')), /*#__PURE__*/React.createElement("span", {
+  }, wordSoundsAudioCoverage.requiresTeacher ? isTeacherMode ? label('preview_teacher_led_start', 'Start teacher-led practice') : label('preview_teacher_required', 'Ask your teacher to begin') : isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-medium text-indigo-100"
-  }, label('preview_start_hint', 'Begin the prepared activities now')))))));
+  }, wordSoundsAudioCoverage.requiresTeacher ? label('preview_teacher_led_hint', 'The teacher says each marked word aloud') : label('preview_start_hint', 'Begin the prepared activities now')))))));
 }
 
   window.AlloModules = window.AlloModules || {};

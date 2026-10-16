@@ -1,0 +1,37 @@
+{
+  "id": "cmudict",
+  "name": "Carnegie Mellon Pronouncing Dictionary",
+  "language": "en-US",
+  "repository": "https://github.com/cmusphinx/cmudict",
+  "commit": "74790861f652b15e4ac49015a90074ad62a27690",
+  "url": "https://github.com/cmusphinx/cmudict/blob/74790861f652b15e4ac49015a90074ad62a27690/cmudict.dict",
+  "sha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+  "license": "Carnegie Mellon University permissive license",
+  "licenseUrl": "https://github.com/cmusphinx/cmudict/blob/74790861f652b15e4ac49015a90074ad62a27690/LICENSE",
+  "format": "One stress digit per vowel phone: 0 unstressed, 1 primary, 2 secondary. Pattern length is the syllable count.",
+  "scope": "US English pronunciation baseline. Alternatives retain upstream order and are not tagged by dialect, context, or chosen voice.",
+  "limitations": "Provides count and stress evidence, not written syllable boundaries, audio, pronunciation verification, or a reviewed stimulus. Words without vowel phones are unresolved.",
+  "wordCount": 126045,
+  "pronunciationCount": 135158,
+  "distinctStressPatternCount": 129142,
+  "countVariantWordCount": 1714,
+  "sourceFiles": {
+    "cmudict.dict": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+    "LICENSE": "bd4ce8e44170a5f9f481310ca85c51de3c4f851a65e679b40e603b143bd3542a",
+    "README": "00c34e7564f1f6a68de02e12c123d801471da92bc3091f7d89b605f238bf8554",
+    "cmudict.phones": "ffb588a5e55684723582c7256e1d2f9fadb130011392d9e59237c76e34c2cfd6"
+  },
+  "excludedNoVowelWords": [
+    "fs",
+    "hm",
+    "hmm",
+    "hmmm",
+    "mm",
+    "sh",
+    "shh",
+    "ths"
+  ],
+  "generatedModuleSha256": "a8965992183317abe74ea762a1e5ba5b5df61c0646067f05aa8fe659cda7611f",
+  "generatedModuleBytes": 1084443,
+  "generatedModuleGzipBytes": 397635
+}

@@ -16,8 +16,9 @@ const pcm=Buffer.alloc(16044);pcm.write('RIFF',0);pcm.writeUInt32LE(16036,4);pcm
 const asset={mime:'audio/wav',base64:pcm.toString('base64'),durationSeconds:0.5,decoded:true,source:'teacher_recording'};
 function task(count=3,word='banana'){return C.createReviewedSyllableTask({targetWord:word,language:'en-US',syllables:Array.from({length:count},(_,i)=>'part'+i),assets:Array.from({length:count},()=>({...asset})),revision:42,reviewed:true});}
 const banana=task();banana.options=['banana','tomato','potato'];banana.answer='banana';
-test('2, 3, and 4 reviewed clips accepted',()=>{for(const count of[2,3,4])assert.ok(C.reviewedSyllableReady(task(count)));});
+test('two through eight reviewed clips accepted',()=>{for(const count of[2,3,4,5,6,7,8])assert.ok(C.reviewedSyllableReady(task(count)));});
 test('reviewed task resolves with embedded clips',()=>{assert.equal(C.resolveSyllableTask('banana',banana,'English').supported,true);assert.ok(C.validSyllableBoard(banana));assert.equal(C.syllableReady(banana),true);});
+test('recording schema retains the exact reviewed English locale',()=>{assert.equal(banana.version,3);assert.equal(banana.language,'en-us');assert.equal(C.resolveSyllableTask('banana',banana,'en-GB').supported,false);const draft=C.recoverSyllableRecordingDraft('banana',banana);assert.equal(draft.supported,false);assert.equal(draft.reviewRequired,true);assert.equal(draft.audioUnits[0].asset.base64,asset.base64);});
 test('curated bank remains usable',()=>assert.equal(C.resolveSyllableTask('sunset',null,'en').contentStatus,'curated_compound'));
 test('unreviewed arbitrary fragments rejected',()=>{assert.equal(C.resolveSyllableTask('banana',{syllables:['ba','na','na']},'en').supported,false);assert.equal(C.createReviewedSyllableTask({targetWord:'banana',language:'en',syllables:['ba','na','na'],assets:[asset,asset,asset],revision:1,reviewed:false}),null);});
 test('review binds word, language, clip order, label and exact bytes',()=>{
@@ -27,7 +28,7 @@ test('review binds word, language, clip order, label and exact bytes',()=>{
 test('invalid recorded override does not fall back to a compound',()=>{const b=task(2,'sunset');b.review.confirmed=false;assert.equal(C.resolveSyllableTask('sunset',b,'en').supported,false);});
 test('recording caps and malformed source rejected',()=>{
  for(const broken of[{...asset,base64:'a'.repeat(512004)},{...asset,base64:'not audio!!!'},{...asset,mime:'text/html'},{...asset,base64:Buffer.alloc(120).toString('base64')}])assert.equal(C.syllableAssetSource(broken),null);
- assert.equal(task(1),null);assert.equal(task(5),null);
+ assert.equal(task(1),null);assert.equal(task(9),null);
 });
 test('portable JSON retains exact reviewed audio and order',()=>{const loaded=JSON.parse(JSON.stringify(banana));assert.ok(C.validSyllableBoard(loaded));assert.equal(C.syllableAssetSource(loaded.audioUnits[0].asset),'data:audio/wav;base64,'+asset.base64);});
 // Embed candidate canonical core into the contract exactly as the normal sync does.

@@ -14,10 +14,14 @@ const preflightSource = between('      React.useEffect(() => {\n        if (!pla
 const manifestSource = between('      const portableTtsLibrary = React.useMemo', '      const [preparedAudioRetryEpoch,');
 const flush = async () => { for (let i = 0; i < 16; i += 1) await Promise.resolve(); };
 
-function coverageFor(words, language = 'en-US') {
-  return new Function('React', 'preloadedWords', 'WS_CORE', 'wordSoundsLanguage', `${manifestSource}\nreturn { portableTtsLibrary, preparedAudioTargets, preparedAudioStartupTargets, preparedAudioCoverage };`)(
-    { useMemo: fn => fn() }, words, core, language,
-  );
+function coverageFor(words, language = 'en-US', activities = ['blending']) {
+  const helperSource = between('    const syllableCountWordKey =', '    // SyllableCountingView');
+  const helpers = new Function('WS_CORE', 'window', helperSource + '\nreturn {syllableCountAudioFor,syllableCountContextKey};')(core, {});
+  const env = { React: { useMemo: fn => fn(), useCallback: fn => fn }, preloadedWords: words, WS_CORE: core, wordSoundsLanguage: language,
+    ...helpers, activitySequence: activities, wordSoundsActivity: activities[0], selectedVoice: '', currentWordSoundsWord: words[0]?.word,
+    wordSoundsPhonemes: words[0], wordSoundsAudioLibrary: {}, syllableCountAudioRef: { current: null }, syllableCountContextRef: { current: null },
+    syllableCountAttemptRef: { current: 0 }, syllableCountResponsesRef: { current: [] }, syllableCountDeliveryRef: { current: null }, advanceEpochRef: { current: 0 } };
+  return new Function(...Object.keys(env), `${manifestSource}\nreturn { portableTtsLibrary, preparedAudioTargets, preparedAudioStartupTargets, preparedAudioCoverage };`)(...Object.values(env));
 }
 function runtime(previous, total = 4, enabled = true, code = callbackSource) {
   const progress = { completed: ['blending'], correct: 2, attempts: 3, sequence: ['blending', 'read_sentence'], wordIndex: 1 };
@@ -94,6 +98,15 @@ describe('actual prepared runtime playback callback', () => {
 });
 
 describe('actual per-clip preflight effect', () => {
+  it('omits only intentional teacher-spoken count targets and keeps mixed-activity requirements', () => {
+    const audioContext = core.createSyllableCountAudioContext({ language: 'en-US' });
+    const prepared = core.createReviewedSyllableCount({ targetWord: 'fire', language: 'en-US', count: 1, revision: 1, reviewed: true, audioContext });
+    const words = [{ word: 'fire', _ttsRequiredKeys: ['fire', 'instruction'], activityItems: { syllable_counting: prepared } }];
+    expect(coverageFor(words, 'en-US', ['syllable_counting']).preparedAudioTargets).toEqual(['instruction']);
+    expect(coverageFor(words, 'en-US', ['syllable_counting', 'blending']).preparedAudioTargets).toEqual(['fire', 'instruction']);
+    words[0]._ttsAssets = { fire: 'data:audio/wav;base64,' + Buffer.from('RIFFWAVEnewclip').toString('base64') };
+    expect(coverageFor(words, 'en-US', ['syllable_counting']).preparedAudioTargets).toContain('fire');
+  });
   it('requires both legacy words when a sparse manifest declares only one word and a prompt', () => {
     const words = [{ targetWord: ' Cat ', _ttsRequiredKeys: ['cat', 'which word?'],
       _ttsAssets: { cat: { mime: 'audio/wav', base64: 'GOOD' }, 'which word?': { mime: 'audio/wav', base64: 'GOOD' } } },

@@ -28,7 +28,8 @@ beforeAll(() => {
   if (!m) throw new Error('recordedBankAssetFor not found in setup source');
   // eslint-disable-next-line no-new-func
   helperFactory = new Function('packRecordedWordBank', 'normalizePackKey',
-    'return ' + m[0].replace('const recordedBankAssetFor = ', ''));
+    readFileSync(resolve(ROOT, 'word_sounds_core.js'), 'utf8') +
+    '\nconst WS_CORE = createWordSoundsCore();\nreturn ' + m[0].replace('const recordedBankAssetFor = ', ''));
 });
 
 const normalizePackKey = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');

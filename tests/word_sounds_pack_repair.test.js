@@ -25,14 +25,14 @@ const SOURCE = readFileSync(resolve(process.cwd(), 'word_sounds_setup_source.jsx
  *  eSpeak load cache is per-instance, so a test can control it). */
 function loadHelpers() {
   const start = SOURCE.indexOf('const PACK_COMMON_WORDS');
-  const end = SOURCE.indexOf('const WordSoundsGenerator = React.memo(');
+  const end = SOURCE.indexOf('// BEGIN WORD SOUNDS REVIEWED RECORDING LIBRARY');
   if (start < 0 || end < 0 || end <= start) {
     throw new Error('helper block not found — did the source move?');
   }
   const block = SOURCE.slice(start, end);
   // eslint-disable-next-line no-new-func
   return new Function(
-    `${block}\nreturn { PACK_COMMON_WORDS, packRimeOfWord, derivePackRhyme, espeakPackPhonemes };`,
+    `${readFileSync(resolve(process.cwd(), 'word_sounds_core.js'), 'utf8')}\nconst WS_CORE = createWordSoundsCore();\n${block}\nreturn { PACK_COMMON_WORDS, packRimeOfWord, derivePackRhyme, espeakPackPhonemes };`,
   )();
 }
 

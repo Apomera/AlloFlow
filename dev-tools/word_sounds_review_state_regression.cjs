@@ -140,13 +140,14 @@ async function run() {
   assert.equal(button('Download saved recording set').disabled, false);
   console.log('PASS existing lesson recordings are truthfully saved without granting a fresh draft review');
 
-  await mount({ word: 'tomato' }); state('not saved'); assert.deepEqual(labels(), ['', '']);
+  await mount({ word: 'tomato' }); state('not saved'); assert.deepEqual(labels(), ['to', 'ma', 'to']);
+  assert.equal(button('Hear syllable 1').disabled, true); assert.equal(button('Save reviewed syllables').disabled, true);
   await mount({ language: 'fr' }); state('not saved'); assert.deepEqual(labels(), ['', '']);
   const corrupt = plain(board); corrupt.review.signature += '-changed'; await mount({ board: corrupt }); state('not saved');
   await mount({ word: ' WATERMELON ', language: 'English' }); state('saved in lesson');
   console.log('PASS saved state requires a valid task for the current word and supported language, including normalized aliases');
 
-  await mount({ board: null }); state('not saved');
+  await mount({ word: 'unlistedpracticeword', board: null }); state('not saved');
   assert.match(guidance(), /labels for syllables 1, 2/i); assert.match(guidance(), /recordings for syllables 1, 2/i);
   await label(0, 'one'); await upload(1, assets[1]);
   assert.match(guidance(), /labels for syllable 2\./i); assert.match(guidance(), /recordings for syllable 1\./i);
@@ -180,7 +181,7 @@ async function run() {
   });
   assert.equal(new Set(guidanceIds).size, 2, 'Each mounted editor owns unique guidance');
   assert.match(document.getElementById(guidanceIds[0]).textContent, /lesson already has/i);
-  assert.match(document.getElementById(guidanceIds[1]).textContent, /labels for syllables 1, 2/i);
+  assert.match(document.getElementById(guidanceIds[1]).textContent, /recordings for syllables 1, 2, 3/i);
   console.log('PASS simultaneous word editors link preview and save to unique, correctly scoped guidance');
 
   await mount(); await click(button('Preview syllables in order')); assert.match(guidance(), /listen.*stop the preview/i); await click(button('Stop preview'));

@@ -48,6 +48,29 @@ const pack = () => ([
   { targetWord: 'fun', ttsReady: true },
 ]);
 
+function loadPackAudioUpdate(words, resolveReplacement) {
+  const core = new Function(read('word_sounds_core.js') + '\nreturn createWordSoundsCore();')();
+  const start = MODULE.indexOf('const handlePackAudioUpdate = async (mode, keys) =>');
+  const end = MODULE.indexOf('const handleRegenerateWord = async', start);
+  expect(start).toBeGreaterThan(0);
+  expect(end).toBeGreaterThan(start);
+  const saved = { words, writes: 0 };
+  const context = {
+    WS_CORE: core, isTeacherMode: true, showReviewPanel: true, runtimeAiAllowed: true,
+    callTTS: () => {}, preloadedWords: words, selectedVoice: 'af_heart', wordSoundsLanguage: 'en-US', activitySequence: [],
+    packRepairRef: { current: { words, epoch: 0, controller: null } }, isMountedRef: { current: true },
+    packRepairWordsEqual: (left, right) => left === right,
+    wordSoundsPackInventory: core.packAudioInventory,
+    resolveWordSoundsReplacement: resolveReplacement,
+    setPackRepairState: () => {},
+    setPreloadedWords: updater => { saved.words = updater(saved.words); saved.writes += 1; },
+    packAudioInvalidatedRef: { current: new Set() }, audioCache: { current: new Map() },
+    audioInstances: { current: new Map() }, ttsInflight: { current: new Map() },
+  };
+  const update = new Function(...Object.keys(context), `${MODULE.slice(start, end)}\nreturn handlePackAudioUpdate;`)(...Object.values(context));
+  return { update, saved };
+}
+
 describe('dropping a packed clip drops the claim with it', () => {
   const dropPackedClip = loadDropPackedClip();
 
@@ -92,15 +115,41 @@ describe('dropping a packed clip drops the claim with it', () => {
   });
 });
 
-describe('both invalidation sites use the shared helper', () => {
-  it('regenerate-word and refresh-audio both route through it', () => {
-    expect((MODULE.match(/dropPackedClip\(prev, packKey\)/g) || []).length).toBe(4);
+describe('review regeneration replaces saved audio atomically', () => {
+  it('word and option regeneration route through the shared replacement operation', () => {
+    const word = MODULE.slice(MODULE.indexOf('const handleRegenerateWord = async'), MODULE.indexOf('const phonemeCheckStateRef'));
+    const option = MODULE.slice(MODULE.indexOf('const handleRegenerateOption = async'), MODULE.indexOf('const handleRegenerateAll'));
+    expect(word).toContain("handlePackAudioUpdate('replace', [WS_CORE.packAudioKey(word.targetWord || word.word || word.term)])");
+    expect(option).toContain("handlePackAudioUpdate('replace', [WS_CORE.packAudioKey(currentVal)])");
+    expect(word + option).not.toContain('dropPackedClip');
   });
 
-  it('the persisted copy is updated too', () => {
-    // Without this the stale ttsReady rides into the saved project file, which
-    // is exactly how the bug was found: in a file, days later.
-    expect((MODULE.match(/setWsPreloadedWords\(\(prev\) => dropPackedClip/g) || []).length).toBe(2);
+  it('persists successful replacements once and keeps previous clips when generation fails', async () => {
+    // The local setter aliases the lifted setter; the replacement must use it
+    // once, after synthesis, so the live lesson and saved copy stay together.
+    expect(MODULE).toMatch(/const setPreloadedWords =[\s\S]{0,180}setWsPreloadedWords/);
+    const bytes = Buffer.alloc(68); bytes.write('RIFF'); bytes.write('WAVE', 8);
+    const replacement = { mime: 'audio/wav', base64: bytes.toString('base64') };
+    const before = pack();
+    before[0]._ttsAssets.done = { mime: 'audio/wav', base64: 'OLD-DONE' };
+    const originalDone = before[0]._ttsAssets.done, originalBun = before[0]._ttsAssets.bun;
+    const partial = loadPackAudioUpdate(before, async text => {
+      expect(partial.saved.writes, 'saved clips remain available during generation').toBe(0);
+      if (text === 'done') throw new Error('speech unavailable');
+      return replacement;
+    });
+    expect(await partial.update('replace', ['bun', 'done'])).toBe(false);
+    expect(partial.saved.writes).toBe(1);
+    expect(partial.saved.words[0]._ttsAssets.bun).toBe(replacement);
+    expect(partial.saved.words[0]._ttsAssets.done).toBe(originalDone);
+    expect(before[0]._ttsAssets.bun).toBe(originalBun);
+    expect(partial.saved.words[0].ttsReady).toBe(true);
+
+    const failed = loadPackAudioUpdate(before, async () => { throw new Error('speech unavailable'); });
+    expect(await failed.update('replace', ['bun'])).toBe(false);
+    expect(failed.saved.writes).toBe(0);
+    expect(failed.saved.words).toBe(before);
+    expect(failed.saved.words[0]._ttsAssets.bun).toBe(originalBun);
   });
 
   it('no site deletes from _ttsAssets by hand any more', () => {

@@ -40,6 +40,19 @@ await library.save('café','French',fixture('café','French'));const result=awai
 await check('tampered review and another word are rejected before persistence',async()=>{
 const altered=fixture();altered.audioUnits[0].asset.durationSeconds=.5;await expectCode(()=>library.save('banana','en',altered),'invalid');await expectCode(()=>library.save('tomato','en',fixture()),'invalid');await expectCode(()=>library.save('banane','French',fixture('banane','German')),'invalid');
 });
+await check('legacy English recordings remain recoverable drafts until a fresh exact-locale review',async()=>{
+const legacy={...fixture('legacyword','en-US'),version:2,language:'en'};
+const evidence=JSON.stringify([legacy.targetWord,legacy.language,legacy.revision,legacy.syllables,legacy.audioUnits.map(unit=>[unit.key,unit.text,unit.asset.mime,unit.asset.base64,unit.asset.durationSeconds])]);
+let a=2166136261,b=5381;for(let i=0;i<evidence.length;i++){a=Math.imul(a^evidence.charCodeAt(i),16777619);b=Math.imul(b,33)^evidence.charCodeAt(i);}
+legacy.review={confirmed:true,signature:(a>>>0).toString(16)+'-'+(b>>>0).toString(16)};
+const match=library.identity('legacyword','en-US');await editDb((records,catalog)=>{records.put({version:1,...match,token:'legacy-token',task:legacy});catalog.put({key:match.key,bytes:JSON.stringify(legacy).length*2});});
+const loaded=await library.load('legacyword','en-US');assert(!loaded.task&&!loaded.corrupt&&loaded.needsReview&&loaded.draft,'legacy is recoverable, not corrupt or approved');assert(loaded.draft.audioUnits[0].asset.base64===legacy.audioUnits[0].asset.base64,'original clip survives migration');assert(!core.resolveSyllableTask('legacyword',legacy,'en-US').supported,'old collapsed locale cannot play');
+await expectCode(()=>library.save('legacyword','en-US',legacy,{expectedToken:loaded.token}),'invalid');
+assert(!(await library.load('legacyword','en-GB')).draft,'legacy envelope cannot migrate into another locale');
+const imported=library.parseSet(JSON.stringify({format:'alloflow.word-sounds-recordings',version:1,word:'legacyword',language:match.languageKey,task:legacy}),'legacyword','en-US');assert(imported.reviewRequired&&!imported.supported,'import also requires new review');
+const fresh=core.createReviewedSyllableTask({...loaded.draft,language:'en-US',revision:2,assets:loaded.draft.audioUnits.map(unit=>unit.asset),reviewed:true});await library.save('legacyword','en-US',fresh,{expectedToken:loaded.token});
+const current=await library.load('legacyword','en-US');assert(current.task.version===3&&!current.needsReview,'fresh approval replaces draft');assert(core.resolveSyllableTask('legacyword',current.task,'en-US').supported&&!core.resolveSyllableTask('legacyword',current.task,'en-GB').supported,'new review remains bound to exact locale');
+});
 await check('corrupt stored data is visible as unusable and removable with its current token',async()=>{
 const key=library.identity('broken','en').key;await editDb((records,catalog)=>{records.put({version:1,key,targetWord:'broken',languageKey:'en-us',token:'broken1',task:fixture('other')});catalog.put({key,bytes:1});});const broken=await library.load('broken','en');assert(!broken.task&&broken.corrupt&&broken.token==='broken1','corruption reported honestly');await library.remove('broken','en',{expectedToken:broken.token});assert(!(await library.load('broken','en')).corrupt,'corrupt item removed');
 });

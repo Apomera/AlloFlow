@@ -32,6 +32,27 @@ afterEach(() => {
 });
 
 describe('Word Sounds preview audio readiness', () => {
+  it('labels checked teacher-led lessons honestly and starts a guided lesson without a missing-audio warning', () => {
+    const api = loadHelper();
+    vi.spyOn(api, 'inspect').mockReturnValue({ ready: 1, total: 1, embedded: 1, online: 0, deviceOnly: 0,
+      complete: false, requiresTeacher: true, teacherLedReady: true, teacherLedWords: ['fire'], missingLabels: [], dependencies: [] });
+    const values = props(); const { element } = mount(values);
+    expect(element.textContent).toContain('Ready with a teacher present');
+    expect(element.textContent).toContain('A teacher must say these words aloud: fire');
+    expect(element.textContent).not.toContain('Audio verified for this student pack');
+    click(button(element, 'Start teacher-led practice'));
+    expect(values.requestIncompleteAudioConfirmation).not.toHaveBeenCalled();
+    expect(values.setIsWordSoundsMode).toHaveBeenCalledWith(true);
+  });
+  it('explains teacher support instead of offering an independent learner launch', () => {
+    const api = loadHelper();
+    vi.spyOn(api, 'inspect').mockReturnValue({ ready: 0, total: 1, embedded: 1, online: 0, deviceOnly: 0,
+      complete: false, requiresTeacher: true, teacherLedReady: false, teacherLedWords: ['fire'], missingLabels: [], dependencies: [] });
+    const values = props({ isTeacherMode: false }); const { element } = mount(values);
+    const launch = button(element, 'Ask your teacher to begin');
+    expect(launch.disabled).toBe(true);
+    click(launch); expect(values.setIsWordSoundsMode).not.toHaveBeenCalled();
+  });
   it('never displays a legacy complete flag as the new ready claim', () => {
     loadHelper(); const { element } = mount(props());
     expect(element.textContent).toContain('Audio needs checking or review'); expect(element.textContent).not.toContain('Audio verified for this student pack'); expect(element.textContent).toContain('Words and text: cat'); expect(element.querySelector('section').getAttribute('aria-label')).toBe('Ready for students: audio check');

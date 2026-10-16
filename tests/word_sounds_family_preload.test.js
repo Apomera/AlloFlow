@@ -102,6 +102,7 @@ function audioHarness({ packed = null, cached = null } = {}) {
     React: { useCallback: fn => fn }, Audio,
     wordSoundsVoiceRef: { current: 'af_heart' }, selectedVoice: 'af_heart',
     audioRunIdRef: { current: 1 }, isMountedRef: { current: true }, audioCancelledRef: { current: false },
+    latestAudioRequestRef: { current: null }, wordSoundsActivity: 'word_families', currentWordSoundsWord: 'hat', wordSoundsPhonemes: { word: 'hat' },
     feedbackPlaybackRef: { current: null }, activePlaybackRef: { current: null }, currentActiveAudio: { current: null },
     lastAudioRef: { current: null }, audioNotice: null, clearAudioNotice: vi.fn(), cancelMicInput: vi.fn(),
     window: {}, warnLog: vi.fn(), debugLog: vi.fn(), setIsPlayingAudio: vi.fn(), ttsSpeed: 1,
@@ -139,7 +140,7 @@ describe('silent option loading and playback outcomes', () => {
   });
   it('does not report cancellation of a delayed load as damaged audio', async () => {
     const h = audioHarness({ packed: 'data:audio/mp3;base64,HAT' }), played = h.handleAudio('hat');
-    h.audioRunIdRef.current++; await tick(1001); await expect(played).resolves.toBeNull();
+    h.audioRunIdRef.current++; await tick(1001); await expect(played).resolves.toEqual({ ok: false, status: 'cancelled' });
     expect(h.clips[0].play).not.toHaveBeenCalled(); expect(h.notifyAudioUnavailable).not.toHaveBeenCalled();
     expect(h.reportPreparedRuntimePlayback).not.toHaveBeenCalled();
   });
