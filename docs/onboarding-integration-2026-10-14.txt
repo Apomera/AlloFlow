@@ -1,0 +1,84 @@
+Selective onboarding integration - October 14, 2026
+
+Approved scope
+Role-first entry, explicit workspace resume, optional Guided paths, prepared
+example, source-first Family actions, materials navigation, optional quick
+groups and role-aware tool labels. Keep existing reader and document controls.
+Classroom linked sync and teacher-private labels are NOT included.
+Local changes only: no commit, push, deployment or worktree retirement.
+
+Attribution for the eventual Git commit and GitHub pull request
+The original onboarding, Family, materials, sample and quick-group proposals
+were authored by Tyler <tyler@physher.com>. This integration adapts those ideas
+to current main, rather than replacing current files with the older checkout.
+
+Original commits:
+8edfaa9b67c22b10904da5ce3f2dee91589ee537
+  Onboarding redesign (WIP branch, not for main until approved)
+955d6d0300a9269afb19f7478852dc11c3f4bb08
+  Class & Materials in Guided Mode, no AI pop-up, sample result,
+  Family first step, quick groups
+d9a9c957f526c14e4ca66c0998491465e183788a
+  Label Educator tools in the header; teachers see Reading tools
+
+These original commits also record:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+When committing adapted/squashed work, include the source SHAs and preserve
+attribution with:
+Co-authored-by: Tyler <tyler@physher.com>
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+
+The GitHub PR description should identify Tyler's original contributions and
+distinguish the current Codex adaptation, safety checks and regression tests.
+GitHub profile linking depends on the account associated with this email;
+an account/handle has not been independently verified here.
+
+Prepared example storage
+The fixed photosynthesis passage and display-only example analysis ship in the
+Guided view module; translated UI text lives in ui_strings.js. No AI request,
+history entry or completed-step record is created by opening the example.
+Only the exact unchanged example passage may display its prepared analysis.
+Choosing the example passage fills the ordinary editable source field, so the
+existing source-draft autosave still applies; the prepared output is not saved.
+This is an onboarding demonstration, not an imported Community Catalog lesson.
+
+Intentional adaptations
+- Explicit Continue last workspace instead of automatic adult-role selection.
+- Visible independent-learning entry and concrete Professional tools label.
+- Suggested reading-support path, optional Change path, no required AI planner.
+- Source review always waits for Continue; auto-advance defaults off for users
+  without an existing preference.
+- Family opens source and support configuration without automatic generation.
+- Quick groups are optional, use existing grade/language choices, preserve a
+  refused-save draft and do not automatically replace current generator settings.
+- Existing custom Guided progress, reader work and document-only controls stay.
+
+Verification
+- 313 focused Vitest checks passed across 17 files. The final broad run passed
+  300 checks; 13 source-entry checks were skipped after their JSX-compilation
+  setup exceeded 10 seconds. That new test setup now allows 30 seconds, and all
+  13 checks passed on the isolated retry (3.81 seconds for the file).
+- 28 full-app Playwright checks passed using the rebuilt desktop App.jsx:
+  fresh role entry, keyboard/code controls, Teacher defaults, explicit resume,
+  Guided materials and return navigation, prepared sample, Family actions,
+  Professional tools role reset, and local group creation without applying it.
+  Layouts checked at 1440, 390 and 320 pixels; no horizontal page overflow or
+  launch-coach overlap with role choices. No uncaught browser exceptions.
+- Browser evidence: .codex-artifacts/onboarding-workspace-qa-2026-10-14/report.json
+  and adjacent viewport screenshots. Its host SHA-256 matches the current App.jsx.
+- All 13 changed canonical/public asset pairs match byte-for-byte. Targeted
+  module builds, development shell generation and scoped git diff --check passed.
+- No full repository CI, production CRA build, live AI generation or real
+  Classroom join was run. Existing unrelated working-tree changes were preserved.
+
+Known limits and follow-ups
+The local preview deliberately blocks external services. Its captured console
+errors include blocked CDN fonts, audio and Chart.js. The visible diagnostic
+badge was traced to a blocked kokoro-js dynamic import during the Family greeting,
+not an onboarding exception; the report retains that diagnostic without hiding it.
+The existing workspace AlloBot avatar can overlap the header menu, particularly
+on mobile. Complete AlloBot styles were included in QA; its unchanged positioning
+is outside this integration. The existing generated-resource auto-advance timer
+also does not cancel a pending advance if its preference is toggled off mid-delay.
+Neither follow-up was introduced by this selective integration.

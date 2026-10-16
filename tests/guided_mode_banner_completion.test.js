@@ -87,6 +87,11 @@ function mountBanner(props) {
   return api;
 }
 
+function openAiPlanner(banner) {
+  if (!banner.button('Plan with AI')) act(() => { banner.button('Change path').click(); });
+  act(() => { banner.button('Plan with AI').click(); });
+}
+
 describe('Guided banner — success note is gated on real completion, not the click', () => {
   it('THE BUG: analysis step shows the ACTION (not "done") even when guidedEngaged is true, while history is empty', () => {
     const b = mountBanner(baseProps({ guidedStep: 1, guidedEngaged: true, history: [] }));
@@ -374,7 +379,8 @@ describe('Guided banner - controlled journey UX', () => {
     act(() => { b.button('Adapt a reading').click(); });
     expect(b.text()).toContain('Change Guided path?');
     expect(applyGuidedPreset).not.toHaveBeenCalled();
-    act(() => { b.button('Change path').click(); });
+    const confirmation = [...b.host.querySelectorAll('[role="alert"]')].find(node => node.textContent.includes('Change Guided path?'));
+    act(() => { confirmation.querySelector('button').click(); });
     expect(applyGuidedPreset).toHaveBeenCalledWith(presets[0]);
     b.cleanup();
 
@@ -461,7 +467,7 @@ describe('Guided banner - AI-configured lesson path', () => {
       guidedStep: 0, guidedPresets: [], applyGuidedPreset, generateGuidedPlanFromGoal,
       allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
     }));
-    act(() => { b.button('Plan with AI').click(); });
+    openAiPlanner(b);
     const textarea = b.host.querySelector('#guided-ai-goal');
     expect(textarea).toBeTruthy();
     act(() => {
@@ -540,7 +546,7 @@ describe('Guided banner - AI-configured lesson path', () => {
       guidedStep: 0, guidedPresets: [], applyGuidedPreset, generateGuidedPlanFromGoal,
       openGuidedDocumentBuilder: vi.fn(), allGuidedSteps: planSteps, GUIDED_STEPS: planSteps,
     }));
-    act(() => { b.button('Plan with AI').click(); });
+    openAiPlanner(b);
     const textarea = b.host.querySelector('#guided-ai-goal');
     act(() => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -575,7 +581,7 @@ describe('Guided banner - AI-configured lesson path', () => {
       guidedStep: 0, guidedPresets: [], generateGuidedPlanFromGoal,
       allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
     }));
-    act(() => { b.button('Plan with AI').click(); });
+    openAiPlanner(b);
     const textarea = b.host.querySelector('#guided-ai-goal');
     act(() => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -594,7 +600,7 @@ describe('Guided banner - AI-configured lesson path', () => {
   it('keeps, restores, and can explicitly discard an unfinished private planning draft', () => {
     const goal = 'Create a visual middle-school lesson with printable supports.';
     const b = mountBanner(baseProps({ guidedStep: 0, guidedPresets: [], allGuidedSteps: STEPS, GUIDED_STEPS: STEPS }));
-    act(() => { b.button('Plan with AI').click(); });
+    openAiPlanner(b);
     const textarea = b.host.querySelector('#guided-ai-goal');
     act(() => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -607,7 +613,7 @@ describe('Guided banner - AI-configured lesson path', () => {
     expect(b.host.querySelector('[role="dialog"]')).toBeFalsy();
     expect(JSON.parse(localStorage.getItem('allo_guided_planner_draft') || 'null')).toEqual(expect.objectContaining({ goal }));
 
-    act(() => { b.button('Plan with AI').click(); });
+    openAiPlanner(b);
     expect(b.text()).toContain('Resume your unfinished plan?');
     act(() => { b.button('Resume draft').click(); });
     expect(b.host.querySelector('#guided-ai-goal').value).toBe(goal);
@@ -659,7 +665,7 @@ describe('Guided banner - adaptive planning context and phase checkpoints', () =
       guidedStep: 0, guidedPresets: [], generateGuidedPlanFromGoal: vi.fn(),
       allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
     }));
-    act(() => { b.button('Plan with AI').click(); });
+    openAiPlanner(b);
     const input = b.host.querySelector('input[type="file"][accept=".json,application/json"]');
     const portable = {
       format: 'alloflow-guided-plans', version: 1,
@@ -977,6 +983,7 @@ describe('Guided reading first use', () => {
     const applyGuidedPreset = vi.fn();
     const b = mountBanner(baseProps({ guidedStep: 0, GUIDED_STEPS: config.GUIDED_STEPS,
       allGuidedSteps: config.GUIDED_STEPS, guidedPresets: [preset], applyGuidedPreset }));
+    act(() => { b.button('Change path').click(); });
     const button = b.button(preset.label);
     expect(button).toBeTruthy();
     expect(button.textContent).toContain('7 steps, including review and delivery');

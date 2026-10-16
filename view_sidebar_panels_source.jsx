@@ -4335,7 +4335,7 @@ function SourceInputShellView(props) {
     handleSetStandardModeToAi, handleSetStandardModeToManual, handleSourceFileUpload,
     handleTranscriptSourceAction, handleUrlFetch, includeSourceCitations, inputText, isCanvas,
     isDraftSaving, isExtracting, isFindingStandards, isGeneratingSource, isGuidedToolVisible,
-    isIndependentMode, isLiveVerificationHtmlBound, isPdfDocumentIntakeCurrent, isProcessing,
+    guidedMode, isParentMode, isTeacherMode, onFamilyAction, isIndependentMode, isLiveVerificationHtmlBound, isPdfDocumentIntakeCurrent, isProcessing,
     isUrlSearchMode, pdfProjectLoadEpochRef, rehydrateVerificationHtmlBinding, searchOptions,
     setAiStandardQuery, setAiStandardRegion, setExpandedTools, setGenerationStep,
     setIncludeSourceCitations, setInputText, setIsExtracting, setIsReadingLibraryOpen,
@@ -4348,14 +4348,17 @@ function SourceInputShellView(props) {
     targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
     useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly,
   } = props;
+  const simplifySources = !!guidedMode || !!isParentMode;
+  const MoreSources = simplifySources ? 'details' : React.Fragment;
+  const moreSourcesProps = simplifySources ? { className: 'min-w-0 max-w-full', 'data-help-key': 'source_more_options' } : {};
   return (
 <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
             <div
                 className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
                 onClick={() => toggleTool('source-input')}
             >
-              <h2 className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
-                <FileText size={16} /> {t('tools.source')}
+              <h2 id="source-ready-title" tabIndex={-1} className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
+                <FileText size={16} /> {isParentMode ? (t('family_start.title') || "Start with your child's reading") : t('tools.source')}
               </h2>
               <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0">
                  <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0" onClick={(e) => e.stopPropagation()}>
@@ -4377,6 +4380,9 @@ function SourceInputShellView(props) {
                         {isExtracting ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Upload size={12} />}
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
+                     <MoreSources {...moreSourcesProps}>
+                     {simplifySources && <summary className="cursor-pointer min-h-10 inline-flex items-center gap-1 px-2 text-xs font-medium text-slate-700"><ChevronDown size={12} aria-hidden="true" />{t('input.actions.more_sources') || 'More sources'}</summary>}
+                     <div className={simplifySources ? 'mt-2 flex flex-wrap items-center gap-2' : 'contents'}>
                      <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
@@ -4558,6 +4564,8 @@ function SourceInputShellView(props) {
                         <span aria-hidden="true">📖</span>
                         {t('input.actions.books_short') || 'Books'}
                      </button>
+                     </div>
+                     </MoreSources>
                  </div>
                  {expandedTools.includes('source-input') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </div>
@@ -4629,6 +4637,15 @@ function SourceInputShellView(props) {
           standardMode, suggestedStandards, t, targetStandards, urlSearchQuery,
           urlToFetch, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly
             })}
+            {expandedTools.includes('source-input') && isParentMode && isTeacherMode && String(inputText || '').trim().length > 20 && typeof onFamilyAction === 'function' && (
+              <div data-help-key="family_source_actions" role="group" aria-label={t('family_start.actions_label') || 'Adapt this reading'} className="flex flex-wrap gap-2 border-t border-slate-200 p-3">
+                {[
+                  { kind: 'simplified', label: t('family_start.simpler') || 'Simpler text', Icon: FileText },
+                  { kind: 'glossary', label: t('family_start.words') || 'Word list', Icon: Globe },
+                  { kind: 'adventure', label: t('family_start.story') || 'Story', Icon: BookOpen },
+                ].map(({ kind, label, Icon }) => <button key={kind} type="button" disabled={isProcessing || isExtracting || isGeneratingSource} onClick={() => onFamilyAction(kind)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-indigo-300 px-3 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"><Icon size={16} aria-hidden="true" />{label}</button>)}
+              </div>
+            )}
           </div>
   );
 }

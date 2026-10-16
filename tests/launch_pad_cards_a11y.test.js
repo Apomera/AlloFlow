@@ -5,7 +5,8 @@ const source = fs.readFileSync('view_launch_pad_source.jsx', 'utf8');
 
 describe('Launch-pad primary mode card accessibility', () => {
   it('uses native buttons instead of simulated card controls', () => {
-    expect(source.match(/<button type="button" className="lp-card"/g)).toHaveLength(4);
+    // Four legacy pathways and the shared role-door renderer all stay native.
+    expect(source.match(/<button type="button" className="lp-card"/g)).toHaveLength(5);
     expect(source).not.toContain('<div className="lp-card"');
     expect(source).not.toContain('role="button"');
     expect(source).not.toContain("onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ')");
@@ -16,7 +17,7 @@ describe('Launch-pad primary mode card accessibility', () => {
     expect(source).toContain('aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc"');
     expect(source).toContain('aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-desc"');
     expect(source).toContain('aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-desc"');
-    expect(source.match(/className="lp-card-icon"/g)).toHaveLength(4);
+    expect(source.match(/className="lp-card-icon"/g)).toHaveLength(5);
     expect(source).toContain('function LaunchPadIcon(iconProps)');
     expect(source).toContain('aria-hidden="true" focusable="false"');
   });
@@ -87,7 +88,7 @@ describe('Launch-pad primary mode card accessibility', () => {
   it('keeps generated launch-pad modules synchronized', () => {
     const rootModule = fs.readFileSync('view_launch_pad_module.js', 'utf8');
     expect(fs.readFileSync('desktop/web-app/public/view_launch_pad_module.js', 'utf8')).toBe(rootModule);
-    expect(rootModule.match(/type: "button",\n\s+className: "lp-card"/g)).toHaveLength(4);
+    expect(rootModule.match(/type: "button",\n\s+className: "lp-card"/g)).toHaveLength(5);
     expect(rootModule).not.toContain('role: "button"');
     expect(rootModule).toContain('aria-labelledby');
   });

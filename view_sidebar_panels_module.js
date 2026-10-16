@@ -4917,6 +4917,10 @@ function SourceInputShellView(props) {
     isFindingStandards,
     isGeneratingSource,
     isGuidedToolVisible,
+    guidedMode,
+    isParentMode,
+    isTeacherMode,
+    onFamilyAction,
     isIndependentMode,
     isLiveVerificationHtmlBound,
     isPdfDocumentIntakeCurrent,
@@ -4977,13 +4981,16 @@ function SourceInputShellView(props) {
     documentsOnly,
     setDocumentsOnly
   } = props;
+  const simplifySources = !!guidedMode || !!isParentMode;
+  const MoreSources = simplifySources ? "details" : React.Fragment;
+  const moreSourcesProps = simplifySources ? { className: "min-w-0 max-w-full", "data-help-key": "source_more_options" } : {};
   return /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("source-input") ? void 0 : "none" }, id: "tour-input-panel", "data-help-key": "source_input", className: `bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === "input" ? "border-indigo-600 shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200"}` }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors motion-reduce:transition-none",
       onClick: () => toggleTool("source-input")
     },
-    /* @__PURE__ */ React.createElement("h2", { className: "font-semibold text-slate-700 flex items-center gap-2 text-sm" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", t("tools.source")),
+    /* @__PURE__ */ React.createElement("h2", { id: "source-ready-title", tabIndex: -1, className: "font-semibold text-slate-700 flex items-center gap-2 text-sm" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", isParentMode ? t("family_start.title") || "Start with your child's reading" : t("tools.source")),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -5008,7 +5015,7 @@ function SourceInputShellView(props) {
       },
       isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw2, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Upload, { size: 12 }),
       isExtracting ? t("input.actions.analyzing_short") : t("common.upload")
-    ), /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+    ), /* @__PURE__ */ React.createElement(MoreSources, { ...moreSourcesProps }, simplifySources && /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-10 inline-flex items-center gap-1 px-2 text-xs font-medium text-slate-700" }, /* @__PURE__ */ React.createElement(ChevronDown2, { size: 12, "aria-hidden": "true" }), t("input.actions.more_sources") || "More sources"), /* @__PURE__ */ React.createElement("div", { className: simplifySources ? "mt-2 flex flex-wrap items-center gap-2" : "contents" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 64 * 1024 * 1024) {
@@ -5222,7 +5229,7 @@ function SourceInputShellView(props) {
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D6}"),
       t("input.actions.books_short") || "Books"
-    )), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" }))
+    )))), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" }))
   ), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -5318,7 +5325,11 @@ function SourceInputShellView(props) {
     setSelectedOwnSourceIds,
     documentsOnly,
     setDocumentsOnly
-  }));
+  }), expandedTools.includes("source-input") && isParentMode && isTeacherMode && String(inputText || "").trim().length > 20 && typeof onFamilyAction === "function" && /* @__PURE__ */ React.createElement("div", { "data-help-key": "family_source_actions", role: "group", "aria-label": t("family_start.actions_label") || "Adapt this reading", className: "flex flex-wrap gap-2 border-t border-slate-200 p-3" }, [
+    { kind: "simplified", label: t("family_start.simpler") || "Simpler text", Icon: FileText2 },
+    { kind: "glossary", label: t("family_start.words") || "Word list", Icon: Globe2 },
+    { kind: "adventure", label: t("family_start.story") || "Story", Icon: BookOpen2 }
+  ].map(({ kind, label, Icon }) => /* @__PURE__ */ React.createElement("button", { key: kind, type: "button", disabled: isProcessing || isExtracting || isGeneratingSource, onClick: () => onFamilyAction(kind), className: "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-indigo-300 px-3 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50" }, /* @__PURE__ */ React.createElement(Icon, { size: 16, "aria-hidden": "true" }), label))));
 }
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AdventurePanel = (typeof AdventurePanel !== 'undefined') ? AdventurePanel : null;
@@ -5347,6 +5358,6 @@ window.AlloModules.ToolCatalogControls = (typeof ToolCatalogControls !== 'undefi
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
-window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView };  // truthy legacy registration plus host views
+window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView, UNIVERSAL_GRADE_CHOICES };  // truthy legacy registration plus host views
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
 })();

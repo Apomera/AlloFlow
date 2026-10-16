@@ -22,6 +22,17 @@ function LaunchPadView(props) {
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var onChooseRole = props.onChooseRole;
+  var resumeWorkspace = props.resumeWorkspace;
+  var onResumeWorkspace = props.onResumeWorkspace;
+  var companion = props.companion || null;
+  var _studentOpen = useState(false);
+  var studentOpen = _studentOpen[0];
+  var setStudentOpen = _studentOpen[1];
+  var _classCode = useState('');
+  var classCode = _classCode[0];
+  var setClassCode = _classCode[1];
+  var classCodeRef = React.useRef(null);
   var _aiSettingsLoad = useState('idle');
   var aiSettingsLoadStatus = _aiSettingsLoad[0];
   var setAiSettingsLoadStatus = _aiSettingsLoad[1];
@@ -294,6 +305,36 @@ function LaunchPadView(props) {
     var value = t ? t(key) : '';
     return value && value !== key ? value : fallback;
   };
+  var legacyHost = typeof onChooseRole !== 'function';
+  var lastRole = null;
+  var teacherPrefersFull = false;
+  try {
+    lastRole = localStorage.getItem('alloflow_last_role');
+    teacherPrefersFull = localStorage.getItem('alloflow_teacher_workspace') === 'full';
+  } catch (_) {}
+  var lastDoor = { teacher: 'teacher', parent: 'family', independent: 'adult', specialist: 'specialist' }[lastRole] || null;
+  var cleanClassCode = String(classCode || '').toUpperCase().replace(/[\s-]/g, '');
+  var classCodeReady = /^[A-Z0-9]{5}$/.test(cleanClassCode);
+  function chooseRole(key, event, options) {
+    runLaunchTransition(function() { onChooseRole(key, options || {}); }, event);
+  }
+  function closeStudentPanel() {
+    setStudentOpen(false);
+    var button = launchPadRef.current && launchPadRef.current.querySelector('[data-pathway="student"]');
+    if (button) button.focus();
+  }
+  function renderRoleDoor(door) {
+    return <button type="button" className="lp-card" data-pathway={door.key}
+      data-lp-initial-focus={(lastDoor || 'teacher') === door.key ? 'true' : undefined}
+      aria-labelledby={'launch-pad-' + door.key + '-title'}
+      aria-describedby={'launch-pad-' + door.key + '-desc' + (lastDoor === door.key ? ' launch-pad-' + door.key + '-last' : '')}
+      aria-expanded={door.expanded} aria-controls={door.controls} onClick={door.onClick}>
+      <LaunchPadIcon className="lp-card-icon" name={door.icon} size={24} />
+      <span className="lp-card-title" id={'launch-pad-' + door.key + '-title'}>{door.title}</span>
+      <span className="lp-card-desc" id={'launch-pad-' + door.key + '-desc'}>{door.description}</span>
+      {lastDoor === door.key && <span className="lp-role-last" id={'launch-pad-' + door.key + '-last'}>{copy('roles.last_time', 'Last time')}</span>}
+    </button>;
+  }
   var fullTitle = copy('launch_pad.full_title', 'Full AlloFlow');
   var fullDesc = copy('launch_pad.full_desc', 'Use the complete workspace with every tool available.');
   var guidedTitle = copy('launch_pad.guided_title', 'Guided Mode');
@@ -302,6 +343,13 @@ function LaunchPadView(props) {
   var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEAM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
   var educatorToolsTitle = copy('launch_pad.educator_tools_title', 'Educator Tools');
   var educatorToolsDesc = copy('launch_pad.educator_tools_desc_open', 'BehaviorLens, Report Writer, and other professional educator tools.');
+  var resumeRoleLabels = {
+    teacher: copy('roles.teacher', 'Teacher'), parent: copy('launch_pad.door_family', 'Family'),
+    independent: copy('launch_pad.learn_independently', 'Learn independently'), specialist: copy('launch_pad.professional_tools', 'Professional tools')
+  };
+  var resumeRoleLabel = resumeWorkspace && Object.prototype.hasOwnProperty.call(resumeRoleLabels, resumeWorkspace.role) && resumeRoleLabels[resumeWorkspace.role];
+  var canResumeWorkspace = !!resumeRoleLabel && typeof onResumeWorkspace === 'function';
+  var resumeLabel = resumeRoleLabel + (resumeWorkspace && resumeWorkspace.role === 'teacher' ? ' - ' + (resumeWorkspace.workspace === 'guided' ? guidedTitle : fullTitle) : '');
   var switchHint = copy('launch_pad.switch_hint', 'You can switch modes later.');
   var voiceAccessStarting = !voiceAccessActive && micPermissionStatus === 'requesting';
   var voiceAccessDenied = !voiceAccessActive && micPermissionStatus === 'denied';
@@ -474,7 +522,7 @@ function LaunchPadView(props) {
       element.setAttribute('inert', '');
       element.setAttribute('aria-hidden', 'true');
     });
-    var focusTarget = root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
+    var focusTarget = root.querySelector('[data-lp-initial-focus="true"]') || root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
     if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
     return function() {
       previousState.forEach(function(state) {
@@ -488,6 +536,9 @@ function LaunchPadView(props) {
       }
     };
   }, []);
+  React.useEffect(function() {
+    if (studentOpen && classCodeRef.current) classCodeRef.current.focus();
+  }, [studentOpen]);
   // Always show both names when they differ, matching the header picker. The
   // separator avoids nested parentheses for regional language variants.
   var LP_PROVENANCE_SUFFIX = {
@@ -569,7 +620,7 @@ function LaunchPadView(props) {
             .lp-root { background: radial-gradient(circle at 14% 0%, rgba(99,102,241,.18), transparent 34%), radial-gradient(circle at 88% 8%, rgba(14,165,233,.11), transparent 30%), linear-gradient(155deg, #080b16 0%, #0d1324 48%, #10182b 100%); }
             .lp-root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
             .lp-root *, .lp-root *::before, .lp-root *::after { box-sizing: border-box; }
-            .lp-shell { width: min(760px, 100%); padding: 0 24px; display: grid; gap: 28px; }
+            .lp-shell { width: min(760px, 100%); padding: 0 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
             .lp-utility-bar { position: absolute; top: 18px; right: 20px; z-index: 2147483001; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
             .lp-lang-switcher { position: relative; }
             .lp-logo-block { text-align: center; }
@@ -598,6 +649,31 @@ function LaunchPadView(props) {
             .lp-direct-copy { min-width: 0; padding-right: 4px; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; font-size: 9px; font-weight: 800; padding: 5px 9px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; text-transform: uppercase; letter-spacing: 1.1px; box-shadow: 0 4px 14px rgba(15,23,42,.2); }
             .lp-mode-badge { position: absolute; top: 14px; right: 14px; }
+            .lp-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+            .lp-role-cell { min-width: 0; display: grid; align-content: start; }
+            .lp-role-grid .lp-card { min-height: 164px; padding: 20px 45px 18px 18px; border-radius: 8px; }
+            .lp-role-grid .lp-card-icon { margin-bottom: 12px; }
+            .lp-role-grid .lp-card-title, .lp-role-grid .lp-card-desc { letter-spacing: 0; overflow-wrap: anywhere; }
+            .lp-role-grid .lp-card[data-pathway="teacher"] .lp-card-icon { color: #fef08a; border-color: #a16207; background: #422006; }
+            .lp-role-grid .lp-card[data-pathway="student"] .lp-card-icon { color: #a7f3d0; border-color: #047857; background: #022c22; }
+            .lp-role-grid .lp-card[data-pathway="family"] .lp-card-icon { color: #fbcfe8; border-color: #be185d; background: #500724; }
+            .lp-role-grid .lp-card[data-pathway="specialist"] .lp-card-icon { color: #bae6fd; border-color: #0369a1; background: #082f49; }
+            .lp-role-last { display: block; margin-top: 8px; color: #a7f3d0; font-size: 11px; font-weight: 700; }
+            .lp-role-link { appearance: none; min-height: 44px; padding: 8px 2px; border: 0; background: transparent; color: #c7d2fe; font: inherit; font-size: 12px; font-weight: 700; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+            .lp-role-link:focus-visible, .lp-code-input:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
+            .lp-independent-entry { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+            .lp-student-panel { grid-column: 1 / -1; min-width: 0; padding: 14px 0; border-block: 1px solid #475569; }
+            .lp-student-options { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+            .lp-student-option { min-width: 0; display: grid; align-content: start; gap: 8px; margin: 0; }
+            .lp-student-option label, .lp-student-option h3 { margin: 0; font-size: 14px; color: #f8fafc; font-weight: 750; }
+            .lp-student-option p { margin: 0; color: #c3cede; font-size: 12px; line-height: 1.5; }
+            .lp-student-option .lp-download-button { justify-self: start; }
+            .lp-code-row { display: flex; flex-wrap: wrap; gap: 8px; }
+            .lp-code-input { flex: 1 1 100px; width: 100px; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid #94a3b8; border-radius: 8px; background: #111827; color: white; font: inherit; font-size: 18px; letter-spacing: 0; text-transform: uppercase; }
+            .lp-code-input::placeholder { color: #94a3b8; }
+            .lp-resume { display: grid; gap: 4px; width: 100%; min-height: 64px; margin-bottom: 16px; padding: 12px 14px; border: 1px solid #059669; border-radius: 8px; background: #064e3b; color: #ecfdf5; font: inherit; font-size: 14px; font-weight: 750; text-align: left; cursor: pointer; }
+            .lp-resume span { color: #a7f3d0; font-size: 12px; font-weight: 500; }
+            .lp-resume:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
             @media (hover: hover) {
               .lp-card:hover { transform: translateY(-2px); background: rgba(27,38,63,.98); border-color: rgba(165,180,252,.48); box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 18px 42px rgba(2,6,23,.28); }
               .lp-card:hover::after { transform: translate(3px, -50%); color: #fde68a; }
@@ -639,6 +715,8 @@ function LaunchPadView(props) {
               .lp-shell { padding: 0 16px; gap: 24px; }
               .lp-logo-block { margin-bottom: 2px !important; }
               .lp-mode-grid, .lp-direct-grid { grid-template-columns: 1fr !important; }
+              .lp-role-grid, .lp-student-options { grid-template-columns: minmax(0, 1fr); }
+              .lp-role-grid .lp-card { min-height: 124px; }
               .lp-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
               .lp-mode-grid .lp-card { min-height: 142px; padding: 20px 54px 19px 19px; }
               .lp-direct-grid .lp-card { min-height: 92px; }
@@ -747,6 +825,7 @@ function LaunchPadView(props) {
             <h1 style={{ fontSize: 'clamp(32px, 5vw, 41px)', lineHeight: 1, fontWeight: 900, background: 'linear-gradient(100deg,#fff7d6,#fcd34d 42%,#fb923c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', margin: '0 0 10px', letterSpacing: '-1.45px' }}>AlloFlow</h1>
             <p style={{ fontSize: '10px', color: '#aebbd2', fontWeight: 780, letterSpacing: '2.25px', textTransform: 'uppercase', margin: 0 }}>{copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs')}</p>
           </div>
+          {legacyHost ? (<>
           <section className="lp-choice-section" aria-labelledby="launch-pad-choice-title">
             <div className="lp-section-intro">
               <p className="lp-eyebrow">{copy('launch_pad.workspace_eyebrow', 'Choose your workspace')}</p>
@@ -792,6 +871,76 @@ function LaunchPadView(props) {
             </button>
           </div>
           </section>
+          </>) : (
+          <section aria-labelledby="launch-pad-role-title">
+            {canResumeWorkspace && <button type="button" className="lp-resume" data-lp-initial-focus="true"
+              aria-labelledby="launch-pad-resume-title" aria-describedby="launch-pad-resume-workspace"
+              onClick={function(event) { runLaunchTransition(onResumeWorkspace, event); }}>
+              <strong id="launch-pad-resume-title">{copy('launch_pad.continue_workspace', 'Continue last workspace')}</strong>
+              <span id="launch-pad-resume-workspace">{resumeLabel}</span>
+            </button>}
+            <div className="lp-section-intro">
+              <h2 id="launch-pad-role-title" className="lp-section-title">{copy('launch_pad.role_title', 'How will you use AlloFlow today?')}</h2>
+            </div>
+            <div className="lp-role-grid">
+              <div className="lp-role-cell">
+                {renderRoleDoor({ key: 'teacher', icon: 'GraduationCap', title: copy('roles.teacher', 'Teacher'),
+                  description: teacherPrefersFull ? copy('launch_pad.teacher_return_full', 'Create and adapt lessons in your full workspace.') : copy('launch_pad.teacher_guided_desc', 'Create and adapt lessons with step-by-step guidance.'),
+                  onClick: function(event) { chooseRole(teacherPrefersFull ? 'teacher_full' : 'teacher', event); } })}
+                <button type="button" className="lp-role-link" onClick={function(event) { chooseRole(teacherPrefersFull ? 'teacher' : 'teacher_full', event); }}>
+                  {teacherPrefersFull ? copy('launch_pad.teacher_guided_link', 'Start Guided Mode instead') : copy('launch_pad.teacher_full_link', 'Open the full workspace instead')}
+                </button>
+              </div>
+              <div className="lp-role-cell">
+                {renderRoleDoor({ key: 'student', icon: 'Backpack', title: copy('roles.student', 'Student'),
+                  description: copy('launch_pad.student_desc', 'Join your class or explore learning activities.'), expanded: studentOpen, controls: 'launch-pad-student-panel',
+                  onClick: function() { setStudentOpen(!studentOpen); } })}
+              </div>
+              {studentOpen && (
+                <div id="launch-pad-student-panel" className="lp-student-panel" onKeyDown={function(event) {
+                  if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeStudentPanel(); }
+                }}>
+                  <div className="lp-student-options">
+                    <form className="lp-student-option" onSubmit={function(event) {
+                      event.preventDefault();
+                      if (classCodeReady) chooseRole('student_code', { currentTarget: event.currentTarget.querySelector('button[type="submit"]') }, { code: cleanClassCode });
+                    }}>
+                      <label htmlFor="launch-pad-class-code">{copy('launch_pad.student_code_label', 'I have a class code')}</label>
+                      <p id="launch-pad-class-code-hint">{copy('launch_pad.student_code_hint', 'Enter the 5 letters or numbers your teacher shared.')}</p>
+                      <div className="lp-code-row">
+                        <input ref={classCodeRef} id="launch-pad-class-code" className="lp-code-input" type="text" inputMode="text" autoComplete="off" autoCapitalize="characters" spellCheck={false}
+                          maxLength={12} value={classCode} aria-describedby="launch-pad-class-code-hint" placeholder="ABC12"
+                          onChange={function(event) { setClassCode(event.target.value); }} />
+                        <button type="submit" className="lp-download-button" disabled={!classCodeReady}>{copy('launch_pad.student_code_join', 'Join class')}</button>
+                      </div>
+                    </form>
+                    <div className="lp-student-option">
+                      <h3>{copy('launch_pad.student_explore_title', 'Explore on your own')}</h3>
+                      <p>{copy('launch_pad.student_explore_desc', 'Choose a private codename, then a learning activity.')}</p>
+                      <button type="button" className="lp-download-button" onClick={function(event) { chooseRole('student_explore', event); }}>{copy('launch_pad.student_explore', 'Explore activities')}</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="lp-role-cell">
+                {renderRoleDoor({ key: 'family', icon: 'Heart', title: copy('launch_pad.door_family', 'Family'),
+                  description: copy('launch_pad.door_family_desc', 'Support reading at home with stories, word lists, and simpler versions.'),
+                  onClick: function(event) { chooseRole('family', event); } })}
+              </div>
+              <div className="lp-role-cell">
+                {renderRoleDoor({ key: 'specialist', icon: 'ClipboardList', title: copy('launch_pad.professional_tools', 'Professional tools'),
+                  description: copy('launch_pad.professional_tools_desc', 'BehaviorLens, Report Writer, and tools for school support professionals.'),
+                  onClick: function(event) { chooseRole('specialist', event); } })}
+              </div>
+            </div>
+            <div className="lp-independent-entry">
+              <button type="button" className="lp-role-link" data-pathway="adult" data-lp-initial-focus={lastDoor === 'adult' ? 'true' : undefined}
+                aria-describedby={lastDoor === 'adult' ? 'launch-pad-adult-last' : undefined}
+                onClick={function(event) { chooseRole('adult', event); }}>{copy('launch_pad.learn_independently', 'Learn independently')}</button>
+              {lastDoor === 'adult' && <span id="launch-pad-adult-last" className="lp-role-last">{copy('roles.last_time', 'Last time')}</span>}
+            </div>
+          </section>
+          )}
           <section className="lp-voice-setup" aria-labelledby="launch-pad-offline-voice-title">
             <details className="lp-voice-disclosure">
             <summary id="launch-pad-offline-voice-title">
@@ -881,6 +1030,7 @@ function LaunchPadView(props) {
             <p style={{ margin: 0, textAlign: 'center', fontSize: '11px', color: '#94a3b8', fontWeight: 550 }}>{switchHint}</p>
           </div>
           </div>
+          {companion && <div data-launch-pad-companion="" style={{ position: 'relative', zIndex: 2147483002, colorScheme: 'light', margin: '24px 16px', maxWidth: 'calc(100% - 32px)' }}>{companion}</div>}
         </div>
   );
 }

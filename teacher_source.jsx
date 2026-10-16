@@ -1717,6 +1717,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             const optionLabel = typeof o === 'object' ? o.label : o;
             return <option key={optionValue} value={optionValue}>{optionLabel}</option>;
           })}
+          {typeof value === 'string' && value && !options.some(option => (typeof option === 'object' ? option.id : option) === value) && <option value={value}>{value}</option>}
         </select>
       ) : type === 'range' ? (
         <div className="flex-1 flex items-center gap-2">

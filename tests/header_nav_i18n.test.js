@@ -18,7 +18,8 @@ import { resolve } from 'node:path';
 
 let source, module_, ui;
 
-const NAV_KEYS = ['nav_ai', 'nav_tools', 'nav_learn', 'nav_bridge', 'nav_documents'];
+const NAV_KEYS = ['nav_ai', 'nav_learn', 'nav_bridge', 'nav_documents'];
+const ROLE_NAV_KEYS = ['nav_educator_tools', 'nav_home_behavior_tools'];
 
 beforeAll(() => {
   source = readFileSync(resolve(process.cwd(), 'view_header_source.jsx'), 'utf8');
@@ -39,6 +40,14 @@ describe('header nav labels are localized', () => {
     });
   }
 
+  for (const key of ROLE_NAV_KEYS) {
+    it(`${key} uses the key-aware localized label helper and is registered`, () => {
+      expect(source).toContain(`homeToolsText('header.${key}',`);
+      expect(module_).toContain(`homeToolsText("header.${key}",`);
+      expect(typeof ui.header?.[key]).toBe('string');
+    });
+  }
+
   it('the built module carries the same calls (source was rebuilt, not just edited)', () => {
     // A source edit that is never rebuilt DOES NOT SHIP: the CDN serves the
     // module, and every test that reads the source would still pass.
@@ -49,10 +58,12 @@ describe('header nav labels are localized', () => {
   });
 
   it('each nav label keeps an English fallback', () => {
-    for (const [key, english] of [['nav_ai', 'AI'], ['nav_tools', 'Tools'], ['nav_learn', 'Learn'],
+    for (const [key, english] of [['nav_ai', 'AI'], ['nav_learn', 'Learn'],
       ['nav_bridge', 'Bridge'], ['nav_documents', 'Documents']]) {
       expect(module_).toContain(`t("header.${key}") || "${english}"`);
     }
+    expect(module_).toContain('homeToolsText("header.nav_educator_tools", "Educator tools")');
+    expect(module_).toContain('homeToolsText("header.nav_home_behavior_tools", "Home behavior tools")');
   });
 });
 

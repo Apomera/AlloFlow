@@ -245,6 +245,7 @@ function HeaderBar(props) {
     setSessionData,
     setShowAIBackendModal,
     setBridgeSendOpen,
+    setShowBehaviorLens,
     setShowClassAnalytics,
     setShowEducatorHub,
     setShowExportMenu,
@@ -265,6 +266,7 @@ function HeaderBar(props) {
     showHelpOnboarding,
     showReadThisPage,
     showTextSettings,
+    isSpecialistMode,
     showVoiceSettings,
     sliderFontSize,
     startClassSession,
@@ -273,6 +275,16 @@ function HeaderBar(props) {
     voiceSpeed,
     voiceVolume
   } = props;
+  const homeBehaviorToolsAvailable = !!isTeacherMode && !!isParentMode && typeof setShowBehaviorLens === "function";
+  const homeToolsText = (key, fallback) => {
+    const value = t(key);
+    return value && value !== key ? value : fallback;
+  };
+  const homeBehaviorToolsLabel = homeToolsText("header.nav_home_behavior_tools", "Home behavior tools");
+  const homeBehaviorToolsTooltip = homeToolsText("header.home_behavior_tools_tooltip", "Open family behavior supports");
+  const openHomeBehaviorTools = () => {
+    if (homeBehaviorToolsAvailable) setShowBehaviorLens(true);
+  };
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
   const [headerCollapsed, setHeaderCollapsed] = React.useState(() => {
     try {
@@ -533,8 +545,10 @@ function HeaderBar(props) {
     setShowSetupPathMenu(false);
     setShowWizard(true);
   };
+  const canUseTeacherGuidedMode = isTeacherMode && !isParentMode && !isIndependentMode && !isSpecialistMode;
   const _guidedHasProgress = typeof guidedStep === "number" && guidedStep > 0 || Array.isArray(guidedSelectedIds) || Array.isArray(guidedCompletedIds) && guidedCompletedIds.length > 0;
   const restartGuidedModeFromHeader = () => {
+    if (!canUseTeacherGuidedMode) return;
     if (typeof resetGuidedProgress === "function") resetGuidedProgress();
     else {
       if (typeof setGuidedSelectedIds === "function") setGuidedSelectedIds(null);
@@ -546,6 +560,7 @@ function HeaderBar(props) {
     if (typeof addToast === "function") addToast(t("guided.started_from_header") || "Guided Mode started.", "success");
   };
   const startGuidedModeFromHeader = () => {
+    if (!canUseTeacherGuidedMode) return;
     if (!_guidedHasProgress) {
       restartGuidedModeFromHeader();
       return;
@@ -658,7 +673,7 @@ function HeaderBar(props) {
     }
   };
   const piiWarningText = t("header.pii_warning");
-  const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
+  const compactRoleLabel = isTeacherMode && isSpecialistMode ? homeToolsText("launch_pad.door_specialist", "Specialist") : isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
   const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : isIndependentMode ? t("common.progress") || "My Learning Progress" : isTeacherMode ? t("dashboard.title") || "Dashboard" : t("common.progress") || "My Learning Progress";
   const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
   const screeningLiveActive = Boolean(screenerSession && screenerSession.status !== "complete" && !isParentMode && !isIndependentMode);
@@ -736,7 +751,19 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 18, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, t("header.nav_learn") || "Learn")
-  ), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  ), homeBehaviorToolsAvailable && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: openHomeBehaviorTools,
+      "data-help-key": "header_home_behavior_tools",
+      className: "hidden xl:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-white/85 hover:bg-white/10 hover:text-white transition-colors",
+      title: homeBehaviorToolsTooltip,
+      "aria-label": homeBehaviorToolsLabel
+    },
+    /* @__PURE__ */ React.createElement(Heart, { size: 18, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold whitespace-nowrap" }, homeBehaviorToolsLabel)
+  ), isTeacherMode && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -752,7 +779,7 @@ function HeaderBar(props) {
       "aria-label": t("header.educator_tools_aria") || "Educator Tools"
     },
     /* @__PURE__ */ React.createElement(GraduationCap, { size: 18, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, t("header.nav_tools") || "Tools")
+    /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold whitespace-nowrap" }, homeToolsText("header.nav_educator_tools", "Educator tools"))
   ), !isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -829,11 +856,12 @@ function HeaderBar(props) {
       type: "button",
       onClick: () => setShowSetupPathMenu(true),
       "data-help-key": "header_rerun_wizard",
-      className: "hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors",
-      title: t("toolbar.start_setup") || "Start & setup"
+      className: "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors",
+      title: t("toolbar.start_setup") || "Start & setup",
+      "aria-label": t("toolbar.start_setup_aria") || "Open Start and setup options"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 16, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "max-w-[10rem] truncate" }, t("toolbar.start_setup") || "Start & setup")
+    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline max-w-[10rem] truncate" }, t("toolbar.start_setup") || "Start & setup")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1536,7 +1564,19 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Unplug, { size: 14, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_ai") || "AI")
-  ), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  ), homeBehaviorToolsAvailable && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: openHomeBehaviorTools,
+      "data-help-key": "header_home_behavior_tools",
+      className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
+      title: homeBehaviorToolsTooltip,
+      "aria-label": homeBehaviorToolsLabel
+    },
+    /* @__PURE__ */ React.createElement(Heart, { size: 14, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "whitespace-nowrap" }, homeBehaviorToolsLabel)
+  ), isTeacherMode && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1553,8 +1593,8 @@ function HeaderBar(props) {
       title: t("header.educator_tools_tooltip") || "Educator Tools (Symbol Studio, BehaviorLens, Report Writer)",
       "aria-label": t("header.educator_tools_aria") || "Educator Tools"
     },
-    /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F393}"),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_tools") || "Tools")
+    /* @__PURE__ */ React.createElement(GraduationCap, { size: 14, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "whitespace-nowrap" }, homeToolsText("header.nav_educator_tools", "Educator tools"))
   ), setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1706,7 +1746,7 @@ function HeaderBar(props) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), t("toolbar.rerun_wizard") || "Re-run Setup Wizard"),
         /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-100 mt-1 leading-relaxed" }, t("toolbar.quickstart_setup_desc") || "Set grade, source material, standards, languages, and personalization.")
-      ), /* @__PURE__ */ React.createElement(
+      ), canUseTeacherGuidedMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1724,7 +1764,7 @@ function HeaderBar(props) {
           className: "w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
         },
         /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-200" }, t("toolbar.guided_mode_start_over") || "Restart Guided Mode from step 1")
-      ))
+      )))
     )
   ));
 }

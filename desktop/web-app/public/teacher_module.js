@@ -1856,7 +1856,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const optionValue = typeof o === "object" ? o.id : o;
       const optionLabel = typeof o === "object" ? o.label : o;
       return /* @__PURE__ */ React.createElement("option", { key: optionValue, value: optionValue }, optionLabel);
-    })
+    }),
+    typeof value === "string" && value && !options.some((option) => (typeof option === "object" ? option.id : option) === value) && /* @__PURE__ */ React.createElement("option", { value }, value)
   ) : type === "range" ? /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {

@@ -320,11 +320,29 @@ describe('Guided Mode improvement wiring', () => {
   });
 });
 describe('Guided Mode controlled-journey safeguards', () => {
-  it('defaults automatic advancement on, persists the preference, and pauses on errors', () => {
-    expect(app).toContain("return saved === null ? true : saved === 'true'");
+  it('defaults automatic advancement off, preserves explicit opt-in, and pauses on errors', () => {
+    const start = app.indexOf('const [guidedAutoAdvance, setGuidedAutoAdvance] = useState(');
+    expect(start).toBeGreaterThan(-1);
+    const declaration = app.slice(start, app.indexOf('\n', start));
+    const initialize = localStorage => new Function('useState', 'localStorage', declaration + '\nreturn guidedAutoAdvance;')(value => [value(), () => {}], localStorage);
+    for (const [stored, expected] of [[null, false], ['false', false], ['true', true], ['invalid', false]]) {
+      expect(initialize({ getItem: () => stored })).toBe(expected);
+    }
+    expect(initialize({ getItem: () => { throw new Error('Storage denied'); } })).toBe(false);
+    expect(app.includes("localStorage.setItem('allo_guided_auto_advance', String(!!guidedAutoAdvance))"), 'Auto-advance preference is persisted').toBe(true);
     expect(app).toContain('if (!guidedAutoAdvance || guidedStepError) return;');
     expect(app).toContain('guidedAutoAdvance={guidedAutoAdvance}');
     expect(banner).toContain('role="switch" aria-checked={!!guidedAutoAdvance}');
+  });
+
+  it('leaves source review on an explicit Continue action without a timed advance', () => {
+    const start = app.indexOf('const [guidedEngaged, setGuidedEngaged] = useState(false)');
+    const end = app.indexOf('// Hands-on guided tutorial:', start);
+    expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
+    const sourceReview = app.slice(start, end);
+    expect(sourceReview).not.toContain('setTimeout');
+    expect(sourceReview).not.toContain('setGuidedStep');
+    expect(banner.includes('data-help-key="guided_next_step" onClick={() => handleGuidedSkip(false)}'), 'Continue invokes the explicit next-step action').toBe(true);
   });
 
   it('supports focused recovery, contextual adjustment, and actionable handoff', () => {

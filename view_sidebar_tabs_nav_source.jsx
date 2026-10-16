@@ -20,6 +20,9 @@ function SidebarTabsNav({
       activeSidebarTab,
   handleSetActiveSidebarTabToCreate,
   isHistoryPulsing,
+  isTeacherMode = true,
+  isParentMode = false,
+  isIndependentMode = false,
   setActiveSidebarTab,
   setIsHistoryPulsing,
   t,
@@ -32,7 +35,11 @@ function SidebarTabsNav({
     return value && value !== key ? value : fallback;
   };
   const createLabel = translatedLabel('sidebar.create_tab', 'Create');
-  const historyLabel = translatedLabel('sidebar.history_tab', 'History');
+  const historyLabel = !isTeacherMode || isIndependentMode
+    ? translatedLabel('sidebar.my_resources_tab', 'My Resources')
+    : isParentMode
+      ? translatedLabel('sidebar.materials_tab', 'Materials')
+      : translatedLabel('sidebar.class_materials_tab', 'Class & Materials');
   const createTabRef = React.useRef(null);
   const historyTabRef = React.useRef(null);
   const focusSiblingTab = (event, targetRef) => {
@@ -60,10 +67,10 @@ function SidebarTabsNav({
           if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'End') focusSiblingTab(event, historyTabRef);
           else if (event.key === 'Home') focusSiblingTab(event, createTabRef);
         }}
-        className={`relative min-h-11 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'}`}
+        className={`relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'}`}
         data-help-key="sidebar_tab_create"
       >
-        <Sparkles size={16} aria-hidden="true" /> <span>{createLabel}</span>
+        <Sparkles size={16} className="shrink-0" aria-hidden="true" /> <span className="min-w-0 break-words leading-tight">{createLabel}</span>
       </button>
       <button
         ref={historyTabRef}
@@ -81,10 +88,10 @@ function SidebarTabsNav({
           if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Home') focusSiblingTab(event, createTabRef);
           else if (event.key === 'End') focusSiblingTab(event, historyTabRef);
         }}
-        className={`relative min-h-11 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'} ${isHistoryPulsing ? 'ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100' : ''}`}
+        className={`relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'} ${isHistoryPulsing ? 'ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100' : ''}`}
         data-help-key="sidebar_tab_history"
       >
-        <History size={16} aria-hidden="true" /> <span>{historyLabel}</span>
+        <History size={16} className="shrink-0" aria-hidden="true" /> <span className="min-w-0 break-words leading-tight">{historyLabel}</span>
         {isHistoryPulsing && activeSidebarTab !== 'history' && (
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white" aria-hidden="true" />
         )}

@@ -447,6 +447,7 @@ describe('Cloudflare student shell build wiring', () => {
     expect(buildScript).toContain("const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app')");
     expect(buildScript).toContain("'index.html'");
     expect(buildScript).toContain("'static'");
+    expect(buildScript).toContain("'alloflow_update.js'");
     expect(buildScript).not.toContain("'alloflow_intro_teacher.mp4',");
     expect(buildScript).not.toContain("'alloflow_intro_family.mp4',");
   });

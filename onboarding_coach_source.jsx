@@ -468,7 +468,7 @@ function OnboardingCoach(props) {
           aria-label={t('onboarding.ask_allobot_aria') || 'Open AlloBot onboarding help'}
           data-help-key="onboarding_ask_allobot_button"
           style={{
-            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9000,
+            position: props.embedded ? 'relative' : 'fixed', bottom: props.embedded ? undefined : '24px', right: props.embedded ? undefined : '24px', zIndex: 9000,
             padding: '12px 20px', borderRadius: '999px',
             background: 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)',
             color: '#fff', border: 'none', fontWeight: 700, fontSize: '14px',

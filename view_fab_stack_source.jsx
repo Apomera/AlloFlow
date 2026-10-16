@@ -34,6 +34,13 @@ function FabStack(props) {
     showSocraticChat, showVisualSupports, stopPlayback, studentProjectSettings,
     studentAiFeaturesHidden, t,
   } = props;
+  const toolLabel = (key, fallback) => {
+    const value = t(key);
+    return value && value !== key ? value : fallback;
+  };
+  const toolsTitle = isTeacherMode ? toolLabel('student_tools.teacher_title', 'Reading tools') : toolLabel('student_tools.title', 'Student tools');
+  const toolsOpenLabel = isTeacherMode ? toolLabel('toolbar.reading_tools_open', 'Open reading tools') : t('toolbar.student_tools_open');
+  const toolsCloseLabel = isTeacherMode ? toolLabel('toolbar.reading_tools_close', 'Close reading tools') : t('toolbar.student_tools_close');
   const panelRef = React.useRef(null);
   const toggleRef = React.useRef(null);
   const dictationPhase = dictationStatus?.state || (isDictationMode ? 'listening' : 'idle');
@@ -231,14 +238,14 @@ function FabStack(props) {
                 <Wrench size={20} />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 id="alloflow-student-tools-title" className="text-sm font-black tracking-tight text-slate-900">{t('student_tools.title') || 'Student tools'}</h2>
-                <p className="mt-0.5 text-xs font-medium text-slate-500">{t('student_tools.subtitle') || 'Read, focus, and practice your way'}</p>
+                <h2 id="alloflow-student-tools-title" className="text-sm font-black text-slate-900">{toolsTitle}</h2>
+                {!isTeacherMode && <p className="mt-0.5 text-xs font-medium text-slate-500">{t('student_tools.subtitle') || 'Read, focus, and practice your way'}</p>}
               </div>
               <button
                 type="button"
                 onClick={closeStudentTools}
                 className="alloflow-student-tools-close inline-flex items-center justify-center rounded-xl text-2xl leading-none text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none"
-                aria-label={t('toolbar.student_tools_close')}
+                aria-label={toolsCloseLabel}
               >
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -455,12 +462,12 @@ function FabStack(props) {
           aria-haspopup="dialog"
           onClick={handleToggleIsFabExpanded}
           className={`alloflow-student-tools-launcher h-12 rounded-2xl px-3.5 text-white shadow-lg flex items-center gap-2.5 transition-all hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transition-none motion-reduce:transform-none ${dictationIsActive ? 'bg-gradient-to-br from-rose-600 to-red-700 shadow-rose-600/30' : 'bg-gradient-to-br from-indigo-600 to-violet-700 shadow-indigo-600/30 hover:from-indigo-700 hover:to-violet-800'}`}
-          aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
+          aria-label={isFabExpanded ? toolsCloseLabel : toolsOpenLabel}
           data-dictation-active={dictationIsActive ? 'true' : 'false'}
           data-help-key="fab_toggle"
         >
           <Wrench size={20} aria-hidden="true" />
-          <span className="text-sm font-black tracking-tight">{t('student_tools.title') || 'Student tools'}</span>
+          <span className="text-sm font-black">{toolsTitle}</span>
           {dictationIsActive && (
             <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black uppercase tracking-wide">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" aria-hidden="true"></span>

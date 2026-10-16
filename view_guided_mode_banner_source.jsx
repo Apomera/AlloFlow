@@ -32,10 +32,9 @@
  * The target highlight does not add an interactive overlay and goes static under
  * prefers-reduced-motion.
  */
-// A real starter passage for the source step's "Try this example" affordance — a teacher exploring
-// Guided Mode gets concrete text to run the *actual* tools on (no canned/faked tool output is ever
-// shown; everything downstream is genuinely generated from this). Content-rich + structured so the
-// analysis, glossary, organizer, etc. each have something meaningful to work with.
+// A starter passage for running the real tools. Its separately labeled prepared
+// analysis is a read-only preview, never counted as generated output or completion.
+// The passage gives analysis, glossary, and organizer tools meaningful source material.
 const GUIDED_SAMPLE_TEXT = "Photosynthesis is the process that plants, algae, and some bacteria use to turn sunlight into food. Inside a plant's leaves, a green pigment called chlorophyll captures energy from the sun. The plant takes in carbon dioxide from the air through tiny openings called stomata, and it absorbs water from the soil through its roots. Using the sun's energy, the plant combines the carbon dioxide and water to make glucose, a kind of sugar that stores energy for later. As a by-product, the plant releases oxygen back into the air — the same oxygen that animals and people need to breathe. Without photosynthesis, most life on Earth could not survive.";
 
 // GUIDED_DETAIL — polished, codebase-accurate "How it works" + "Worked Example"
@@ -713,7 +712,15 @@ function GuidedModeBanner({
   const [quickGuideBusy, setQuickGuideBusy] = React.useState(false);
   const [pendingClearGuidedData, setPendingClearGuidedData] = React.useState(false);
   const [showErrorDetails, setShowErrorDetails] = React.useState(false);
-  const [showInitialPath, setShowInitialPath] = React.useState(() => { try { return !!normalizeCompletionSummary(JSON.parse(localStorage.getItem('allo_guided_last_completion') || 'null')) || !localStorage.getItem('allo_guided_path_prompt_seen'); } catch (_) { return true; } });
+  const readAiTextReady = () => { try { const resolve = window.__alloResolveAiCapability; return typeof resolve === 'function' ? !!resolve().text : true; } catch (_) { return true; } };
+  const [aiTextReady, setAiTextReady] = React.useState(readAiTextReady);
+  React.useEffect(() => {
+    const refresh = () => setAiTextReady(readAiTextReady());
+    window.addEventListener('alloflow:ai-config-changed', refresh);
+    window.addEventListener('storage', refresh);
+    return () => { window.removeEventListener('alloflow:ai-config-changed', refresh); window.removeEventListener('storage', refresh); };
+  }, []);
+  const [showInitialPath, setShowInitialPath] = React.useState(false);
   const [showFeedbackHistory, setShowFeedbackHistory] = React.useState(false);
   const [feedbackEntries, setFeedbackEntries] = React.useState(() => { try { const value = JSON.parse(localStorage.getItem('allo_guided_feedback') || '[]'); return Array.isArray(value) ? value : []; } catch (_) { return []; } });
   const [lastCompletion, setLastCompletion] = React.useState(() => { try { return normalizeCompletionSummary(JSON.parse(localStorage.getItem('allo_guided_last_completion') || 'null')); } catch (_) { return null; } });
@@ -1150,6 +1157,8 @@ function GuidedModeBanner({
           : step.id === 'image' ? (t('guided.error_image') || 'Check the image settings or try a simpler visual request.') : (t('guided.error_default') || 'Review the source and settings, then retry. Your completed work is safe.');
   const presetStepIds = (preset) => Array.isArray(preset?.stepIds) ? Array.from(new Set(['source-input', ...preset.stepIds, 'directions', 'package-deliver', '_final'])) : allSteps.map(item => item.id);
   const isPresetActive = (preset) => { const a = presetStepIds(preset).slice().sort(); const b = (guidedSelectedIds || allSteps.map(item => item.id)).slice().sort(); return a.length === b.length && a.every((id, index) => id === b[index]); };
+  const activePreset = Array.isArray(guidedPresets) ? guidedPresets.find(isPresetActive) : null;
+  const currentPathLabel = (guidedPlanBrief && guidedPlanBrief.title) || (activePreset && (t('guided.preset_' + activePreset.id + '_label') || activePreset.label)) || (guidedSelectedIds ? (t('guided.path_custom') || 'Custom path') : (t('guided.path_all_steps') || 'All steps'));
   const rememberPathChoice = () => { setShowInitialPath(false); try { localStorage.setItem('allo_guided_path_prompt_seen', 'true'); } catch (_) {} };
   const choosePreset = (preset) => { if (guidedBusy) return; if (hasGuidedProgress && !isPresetActive(preset)) setPendingPreset(preset); else { applyGuidedPreset(preset); setShowPicker(false); rememberPathChoice(); } };
   const confirmPreset = () => { if (!pendingPreset) return; applyGuidedPreset(pendingPreset); setPendingPreset(null); setShowPicker(false); rememberPathChoice(); };
@@ -1538,6 +1547,12 @@ function GuidedModeBanner({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}><span style={{ fontSize: '12px', color: '#c7d2fe', fontWeight: 600 }}>{(t('guided.step_of') || 'Step {current} of {total}').replace('{current}', Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace('{total}', GUIDED_STEPS.length)}</span><button type="button" aria-expanded={!isCollapsed} aria-controls="guided-banner-details" aria-label={isCollapsed ? (t('guided.expand') || 'Expand Guided Mode') : (t('guided.collapse') || 'Collapse Guided Mode')} data-help-key="guided_collapse" onClick={() => setIsCollapsed(v => !v)} style={{ minWidth: '38px', minHeight: '38px', padding: '6px 9px', color: 'white', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', borderRadius: '9px', cursor: 'pointer' }}>{isCollapsed ? '▾' : '▴'}</button></div>
         </div>
         {!isCollapsed && <div id="guided-banner-details">
+        {Array.isArray(guidedPresets) && (
+          <div data-help-key="guided_path_summary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '8px', fontSize: '12px', color: '#c7d2fe' }}>
+            <span><strong style={{ color: 'white' }}>{t('guided.path_label') || 'Path'}:</strong> {currentPathLabel}</span>
+            <button type="button" disabled={guidedBusy} aria-expanded={hasGuidedProgress ? showPicker : showInitialPath} onClick={() => { if (hasGuidedProgress) setShowPicker(value => !value); else setShowInitialPath(value => !value); }} style={{ minHeight: '40px', padding: '6px 10px', borderRadius: '8px', border: '1px solid rgba(165,180,252,.4)', background: 'transparent', color: 'white', fontWeight: 700 }}>{t('guided.path_change_button') || 'Change path'}</button>
+          </div>
+        )}
         {showInitialPath && !hasGuidedProgress && Array.isArray(guidedPresets) && (
           <div role="region" data-help-key="guided_path_choice" aria-labelledby="guided-path-title" style={{ marginBottom: '11px', padding: '11px', borderRadius: '12px', background: 'rgba(15,23,42,.45)', border: '1px solid rgba(167,243,208,.4)' }}>
             <strong id="guided-path-title" style={{ display: 'block', color: 'white', fontSize: '13px', marginBottom: '3px' }}>{t('guided.choose_goal_title') || 'What would you like to build?'}</strong>
@@ -1652,6 +1667,29 @@ function GuidedModeBanner({
               <span style={{ display: 'block', fontSize: '14px', color: 'white', fontWeight: 600, lineHeight: '1.5' }}>{stepDone ? (step.success || step.action) : step.action}</span>
             </span>
           </div>
+        )}
+        {step.id === 'source-input' && !aiTextReady && (
+          <div data-help-key="guided_ai_status" role="status" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px', padding: '8px 10px', borderRadius: '8px', background: 'rgba(120,53,15,.28)', border: '1px solid rgba(251,191,36,.5)' }}>
+            <span style={{ fontSize: '12px', color: '#fef3c7', flex: '1 1 180px' }}>{t('guided.ai_status_none') || 'No AI is connected. You can add text or try the prepared example; generating new materials needs AI.'}</span>
+            {typeof window.__alloOpenAiSetup === 'function' && <button type="button" onClick={() => window.__alloOpenAiSetup()} style={{ minHeight: '40px', padding: '6px 10px', borderRadius: '8px', border: 0, color: '#1c1917', background: '#fcd34d', fontWeight: 800 }}>{t('guided.ai_status_setup') || 'Set up AI'}</button>}
+          </div>
+        )}
+        {step.id === 'analysis' && inputText === GUIDED_SAMPLE_TEXT && (
+          <details data-help-key="guided_sample_result" className="allo-guided-collapsible" style={{ marginBottom: '8px', color: '#e0e7ff', fontSize: '12px', lineHeight: 1.5 }}>
+            <summary>{t('guided.sample_summary') || 'Prepared example analysis'}</summary>
+            <div style={{ padding: '10px' }}>
+              <p style={{ margin: '0 0 8px', color: '#fde68a' }}>{t('guided.sample_note') || 'Prepared in advance for the example passage, not generated just now. This preview does not complete the analysis step or add a saved result.'}</p>
+              <p style={{ margin: '0 0 4px', fontWeight: 800, color: 'white' }}>{t('guided.sample_ideas_label') || 'Key ideas'}</p>
+              <ul style={{ margin: '0 0 8px', paddingInlineStart: '20px' }}>
+                <li>{t('guided.sample_idea_1') || 'Plants, algae, and some bacteria use light energy to make food.'}</li>
+                <li>{t('guided.sample_idea_2') || 'Chlorophyll captures light energy.'}</li>
+                <li>{t('guided.sample_idea_3') || 'Carbon dioxide enters through stomata; roots absorb water.'}</li>
+                <li>{t('guided.sample_idea_4') || 'Glucose stores energy, and oxygen is released.'}</li>
+              </ul>
+              <p style={{ margin: '0 0 4px', fontWeight: 800, color: 'white' }}>{t('guided.sample_reading_label') || 'Reading supports to consider'}</p>
+              <p style={{ margin: 0 }}>{t('guided.sample_reading_note') || 'Preview chlorophyll, stomata, and glucose. Split the longer sentences, then ask the reader to explain what a plant takes in and what it produces.'}</p>
+            </div>
+          </details>
         )}
         {typeof focusGuidedTarget === 'function' && !isLast && <button type="button" disabled={guidedBusy} onClick={focusGuidedTarget} style={{ width: '100%', marginBottom: '10px', padding: '9px 10px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.55)', background: 'rgba(99,102,241,.22)', color: 'white', fontWeight: 800 }}>{t('guided.focus_tool') || 'Show me where to click'}</button>}
         {guidedStepCostNote && <p style={{ fontSize: '11px', color: '#fcd34d', margin: '0 0 6px', fontWeight: 700 }}>{guidedStepCostNote}</p>}
