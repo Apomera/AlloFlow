@@ -62,7 +62,7 @@
           "height": 621,
           "colors": 124,
           "colored": 6637,
-          "hash": "13cb19f5ab98b306b956ad03f168c50ef1719845491b5f70a0c9742c3906c7d2"
+          "hash": "2d1c85c0394efcfd49fe119841dbc3ad5432c2ba80fa2df2795e27f46ab0f82a"
         },
         "projectedHeights": [
           0.33285589647010355,
@@ -75,8 +75,8 @@
       "detail": {
         "block": {
           "x": 624.6883845920379,
-          "y": 495.59375,
-          "distance": 6.012192843722906
+          "y": 507.5625,
+          "distance": 6.0121928437229055
         }
       }
     },
@@ -85,18 +85,18 @@
       "detail": [
         {
           "x": 75.6894951089547,
-          "y": 576.209884637612,
-          "distance": 2.5075838704232627
+          "y": 588.178634637612,
+          "distance": 2.5075838704232614
         },
         {
           "x": 523,
-          "y": 576.209884637612,
-          "distance": 1.9003171250553512
+          "y": 588.178634637612,
+          "distance": 1.9003171250553441
         },
         {
           "x": 922.3105048910453,
-          "y": 576.209884637612,
-          "distance": 2.4347202734832076
+          "y": 588.178634637612,
+          "distance": 2.4347202734832134
         }
       ]
     },
@@ -119,41 +119,41 @@
       "name": "desktop-ring",
       "width": 1054,
       "height": 621,
-      "colors": 143,
+      "colors": 144,
       "colored": 4692,
-      "hash": "3f8ab3fa353a1b32df007f85be609848e43345d36a19de3e40c1d78f730277a4"
+      "hash": "8bd39570b93ac1e637e0c8e61500df52abf6a3c4242a3679c77c0792bd203777"
     },
     {
       "name": "desktop-scale",
       "width": 1054,
       "height": 621,
-      "colors": 145,
+      "colors": 146,
       "colored": 7240,
-      "hash": "1e489ac55520add21d0843af877f3298c4c6490ec001941e9a4e952eda6a3e10"
+      "hash": "674716115168a908ddf2635756cf8fe9b1af497c13fbe75843b7dfc33cf681d2"
     },
     {
       "name": "desktop-occlusion",
       "width": 1054,
       "height": 621,
-      "colors": 122,
-      "colored": 2690,
-      "hash": "6e3ea88367ca3f180ac6f549d7a660e6159f216b4401d24f589d152a3f79f1fd"
+      "colors": 126,
+      "colored": 2689,
+      "hash": "b1defe7e0596357c2ba0cf58bba2d33df58fdbfad8e803ba3ae92f15cbc55be0"
     },
     {
       "name": "ring-before-movement",
       "width": 1054,
       "height": 621,
-      "colors": 143,
+      "colors": 144,
       "colored": 4692,
-      "hash": "3f8ab3fa353a1b32df007f85be609848e43345d36a19de3e40c1d78f730277a4"
+      "hash": "8bd39570b93ac1e637e0c8e61500df52abf6a3c4242a3679c77c0792bd203777"
     },
     {
       "name": "ring-after-movement",
       "width": 1054,
       "height": 621,
       "colors": 164,
-      "colored": 5479,
-      "hash": "da758b1690550ffa9cb8cb3119f8b0d192624b4d6a25ca46e01ad5c4c56305c6"
+      "colored": 5477,
+      "hash": "91a0ba2563848fbe573a709ca7f30b98cecbccfa571119df7a7cdf7722421291"
     },
     {
       "name": "ring-aligned",
@@ -161,23 +161,23 @@
       "height": 621,
       "colors": 124,
       "colored": 6637,
-      "hash": "13cb19f5ab98b306b956ad03f168c50ef1719845491b5f70a0c9742c3906c7d2"
+      "hash": "2d1c85c0394efcfd49fe119841dbc3ad5432c2ba80fa2df2795e27f46ab0f82a"
     },
     {
       "name": "scale-matched",
       "width": 1054,
       "height": 621,
-      "colors": 147,
+      "colors": 148,
       "colored": 8005,
-      "hash": "ef708d029a1aa7987d275f217aa2ce0ac656a0b96d8d8c9ac9f89f5be0fae0c7"
+      "hash": "90ab8ad04bb5af2fbe000f0c42e83b88a640fadb9345ec0e6a757ba59bcff52d"
     },
     {
       "name": "occlusion-wall",
       "width": 1054,
       "height": 621,
-      "colors": 105,
-      "colored": 2539,
-      "hash": "baed32ef56b1bcac3f65dca1cab1610e1932b5440b3b3bd9f28b2feda7b0bc90"
+      "colors": 109,
+      "colored": 2534,
+      "hash": "d871c98d9f5961f063f24bb6cbf52e515b09e46965a85f06f155cec221f46455"
     },
     {
       "name": "occlusion-collected",
@@ -185,7 +185,7 @@
       "height": 621,
       "colors": 87,
       "colored": 2399,
-      "hash": "2b1c27faefa278cdd4a91afbaebf6455b8da853f8b584c1d5dcc60a1805e9d17"
+      "hash": "2116e2827e5dff5b8aa6455cc458c2c76b56e083f473b2f527bc3bbf67123765"
     },
     {
       "name": "mobile-390",
@@ -193,7 +193,7 @@
       "height": 361,
       "colors": 105,
       "colored": 1756,
-      "hash": "188c2880ae661a5b3470fa5be9e3314f8868c9bdd790c476f5c565fee19e5e6e"
+      "hash": "075d73ba7d19c15107401393dada7e27fa3bea7783863c958920dd67e24c2778"
     },
     {
       "name": "mobile-320",
@@ -201,7 +201,7 @@
       "height": 321,
       "colors": 94,
       "colored": 1286,
-      "hash": "d887cd5106f626524a99fd7b2a42d44da8b65ef609251a54ef6d8d4b8e9d5b9e"
+      "hash": "be8666811b482918f8eafe235e8be45e6226b1e312b9acdbb5c3a56b42dfcc0f"
     }
   ],
   "errors": []

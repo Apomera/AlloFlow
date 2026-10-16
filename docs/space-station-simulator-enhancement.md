@@ -9,6 +9,662 @@ reduced-motion behavior and diagram alternatives remain.
 
 ## Physics and scope
 
+- **Module exterior detail:** Eleven cylindrical modules now have smoother
+  32-segment hulls, dedicated circular end surfaces and raised ochre handrails.
+  One shared square atlas provides shield segments, seals, mounting bolts and
+  a schematic closed pressure closure without stretching the side-wall skin
+  across the ends. Each module batches both end discs into one mesh and all
+  grips/supports into another; geometry is built once and uses ordinary scene
+  illumination and shadows. Hardware follows the original module orientation
+  on all three axes. Separate materials preserve per-module cutaway opacity,
+  with end surfaces ghosted along with the hull and their depth writes disabled
+  so they do not hide the rack interior. End-on selection includes the visible
+  discs and matching selection/hover cues while camera framing
+  remains anchored to the original module. This is visual detail; it does not
+  add operable hatches or change the simulation's physical state.
+  `node dev-tools/space_station_map_hull_qa.cjs --widths=1440,390` checks the
+  rendered geometry, native selection, three-axis close-ups, cutaway visibility,
+  preserved dynamics and resource cleanup.
+
+- **Live 3D heat flow:** Map's Heat flow toggle adds a radiator temperature
+  overlay, signed coolant-transfer arrows and outward infrared-emission arrows.
+  Equipment heat, coolant coupling and pump controls preserve stored temperatures
+  while pausing the shared clock. Play and +60 s advance the heat stores, orbital
+  phase, array motors and arm together; hiding the overlay does not stop the heat
+  model. Camera changes, phase edits and preview inspection preserve history.
+  Applying a forecast integrates from the original phase through any intervening
+  eclipse boundaries. Reset temperatures resets only the two thermal stores.
+  Cabin/equipment and radiator capacities are illustrative 24 and 6 MJ/K, starting
+  at 22 and 4 °C. Signed transfer uses up to 4 kW/K of coupling; pump off makes
+  transfer zero while radiation continues. Radiation uses absolute kelvin to the
+  fourth power, emissivity 0.85 and 262.4 m² of effective area. The illustrative
+  environment adds 6 W/m² continuously and another 25 W/m² in sunlight. RK4 steps
+  of at most five seconds split at analytical shadow crossings, and integrated
+  heat budgets track both reservoirs' energy conservation. Both visible panels
+  represent one aggregate radiator temperature and budget; colors and arrows are
+  explanatory overlays. This is separate from Operations' thermal scenario:
+  equipment heat is prescribed independently of the electrical bus, and detailed
+  coolant circuits, thermostats, radiative view factors and spatial gradients are
+  omitted. `tests/space_station_map_thermal.test.js` covers conservation,
+  continuity, convergence, shadow crossings and immutable state. The focused
+  browser checks are `node dev-tools/space_station_map_thermal_qa.cjs --widths=1440,390`.
+
+- **Saved arm pose comparison:** Save live pose captures the actual arm's
+  joint state and shared simulation time without pausing or changing motion.
+  An orange dashed arm and ring remain at that saved configuration; a line
+  joins its hand to the displayed live or preview hand. The comparison reports
+  signed station-frame X/Y displacement, straight-line separation, elapsed
+  simulated time, and shortest signed joint-angle differences in (-180, 180].
+  These are endpoint and orientation differences, not path length or total
+  rotation traveled. During a preview, elapsed time includes the selected
+  future offset while saving still captures the live state. Show/Clear only
+  change the inspection; Target saved pose pauses the clock and retargets the
+  existing controller, retaining current joint rates and the brake setting.
+  The panel remains available during previews and restores focus when a
+  control becomes unavailable. The reference overlay is excluded from camera
+  bounds. Fourteen comparison tests cover independent forward geometry, rigid
+  transformations, angle wrapping, fractional time, and immutable snapshots;
+  the comparison, braking, and preview suites pass all 50 tests.
+  `node dev-tools/space_station_map_arm_reference_qa.cjs --widths=1440,390`
+  passes desktop and phone checks for the rendered saved/live/future geometry,
+  unchanged live state during inspection, elapsed time while resting, saved
+  target restoration, keyboard/touch input, focus, layout, accessibility,
+  and WebGL cleanup.
+
+- **Arm controls beside the 3D view:** A compact live console sits directly
+  below the viewport when Arm reach is enabled. Its play/pause, playback-rate,
+  and quarter-second step controls use the same clock as the orbit and arrays.
+  Live hand speed, reachable-target gap, and separate shoulder/elbow stopping
+  bars use the actual joint state. Paused speed is explicitly labeled as stored
+  velocity, and unlatched stop times describe hypothetical braking. The bars
+  use a fixed zero-to-four-second scale so changes remain comparable.
+  Arm brakes, stop preview, Advance to rest, and camera framing are accessible
+  from this console. Opening a preview preserves the live state and moves
+  keyboard focus to its time control; closing or applying it returns focus to
+  the arm brake control. The violet preview controls now include Advance for
+  applying the selected time without scrolling. Array brake buttons in the
+  viewport explicitly name the arrays. No joint physics or actuator limits
+  change in this interface refinement.
+  `node dev-tools/space_station_map_arm_stage_qa.cjs --widths=1440,390`
+  checks native controls, exact shared-clock stepping, independent stop bars,
+  rendered arm geometry, preview isolation, zero-time Apply, keyboard focus,
+  responsive layout, structural accessibility, and cleanup. Both viewport
+  sizes pass, along with the existing arm-braking browser regression suite.
+
+- **Joint brakes and stopping path:** The arm can decelerate both joints to
+  rest while retaining its saved target. Each joint brakes independently at
+  the illustrative limit of 0.5 degrees/s²: stopping time is |v|/a and signed
+  angular drift is sign(v)·v²/(2a). With the existing 2 degrees/s speed limit,
+  either joint stops within four seconds and drifts at most four degrees.
+  Exact integration stops each joint at zero velocity without reversing or
+  returning toward its target; releasing the brakes restores target following.
+  The stopping-path overlay predicts the curved hand trajectory and final arm
+  pose from those independent joint motions. While brakes are released, it
+  shows the hypothetical result of engaging them from the current live pose
+  and rates. The live stopping overlay is hidden while an arm preview is open.
+  Opening, scrubbing, or playing a preview preserves live pose and stored
+  velocity. Advance steps the shared arm, array, and orbit clock by the selected
+  duration. Target current pose updates the saved configuration without
+  releasing the brakes. With brakes released, the servo may move past that
+  configuration and return while settling.
+  This remains a schematic kinematic model with illustrative actuator limits;
+  the stopping path does not calculate collisions or payload forces.
+  `tests/space_station_map_arm_braking.test.js` covers analytic stopping drift,
+  independent stop times, arbitrary time partitions, target retention, wrapped
+  angles, forecast agreement, and malformed inputs. The braking, arm, preview,
+  and velocity suites pass all 68 tests. The focused browser run
+  `node dev-tools/space_station_map_arm_braking_qa.cjs --widths=1440,390`
+  verifies rendered stopping geometry against independent equations, native
+  mouse/touch/keyboard controls, retained targets, preview isolation, exact
+  shared-clock advancement, responsive layout, structural accessibility,
+  and WebGL cleanup at both widths.
+
+- **Hand velocity and speed timeline:** The robotic arm inspector can display
+  the hand's instantaneous velocity in station coordinates. Cyan is the
+  shoulder contribution, gold is the elbow contribution, and green is their
+  vector sum. Shoulder motion rotates the entire chain; elbow motion rotates
+  only the distal boom. Each contribution is angular velocity crossed with
+  its lever arm to the hand. Dashed addition guides explain reinforcement and
+  cancellation; component speeds are not added as scalars. All arrows share
+  the selected display scale of 2, 5, or 10 seconds, and zero-length arrows
+  disappear. This scale multiplies velocity for display and is not a forecast.
+  Frame motion explicitly fits an envelope including the largest vectors.
+  Inspection settings leave the camera and simulation state unchanged.
+  The inspector follows the selected future hand when an arm preview is open,
+  and returns to the current hand when it closes. Pausing retains stored joint
+  velocity. The preview's speed chart connects one-second samples, while its
+  cursor solves the exact selected time. Pointer dragging selects quarter
+  seconds; arrows select seconds, Shift + arrows quarter seconds, Page Up/Down
+  ten seconds, and Home/End the horizon limits. Capture is released on hide,
+  close, cancellation, second-pointer interruption, scrolling, resize and blur.
+  `tests/space_station_map_arm_velocity.test.js` independently differentiates
+  each joint's hand position and checks cancellation, units and invariants.
+  `node dev-tools/space_station_map_arm_velocity_qa.cjs --widths=1440,390`
+  checks rendered vector geometry, addition guides, native chart interactions,
+  preview/live isolation, layout, accessibility, and resource cleanup.
+
+- **Arm motion preview:** A violet future arm and sampled hand path show the
+  next two minutes under the current joint commands. White dots along the path
+  mark ten-second intervals; bunching reveals slower hand motion. Panel and 3D
+  controls scrub in quarter-second steps or play the prediction at 10× while
+  live time stays paused. The future hand speed uses the two-link Jacobian;
+  the remaining gap is measured to the attainable target in schematic units.
+  The preview snapshots the same bounded servo as live motion, with 121
+  one-second path samples. Selection solves directly from that snapshot,
+  including fractional times, rather than interpolating joint poses. Advance
+  steps the shared arm, array, and orbit clock once by the selected duration.
+  Closing preserves live state; changing a physical control closes the preview.
+  Array and arm previews are mutually exclusive. Hiding Arm reach preserves
+  the selected preview but pauses its playback; reopening keeps it paused.
+  This visual path does not calculate collision clearance or payload dynamics.
+  `tests/space_station_map_arm_preview.test.js` checks independent velocity
+  derivatives, controller bounds, exact fractional advancement, and immutability.
+  `node dev-tools/space_station_map_arm_preview_qa.cjs --widths=1440,390`
+  checks rendered geometry, native controls, shared time, responsive layout,
+  accessibility, visibility changes, and resource disposal.
+
+- **Interactive robotic arm:** The map's existing two-boom arm now articulates
+  toward a draggable target in its fixed station-relative XY plane. Arm reach
+  opens the controls; Inspect arm frames the complete workspace. The requested
+  target T, a cyan reachable endpoint, and a dashed target configuration remain
+  distinct from the solid moving hardware and white actual-hand marker. Two
+  inverse-kinematics branches fold the elbow to opposite sides. The link lengths
+  are 1.4 and 1.2 schematic scene units, so reachable radii are 0.2 through 2.6.
+  Requests outside that annulus retain their requested position, turn amber,
+  and show the nearest attainable point. A request at the pivot uses +Y for
+  this projection. Sliders, presets, and arrow keys provide the same target
+  controls when the movement plane is edge-on. Dragging preserves the initial
+  grab offset; camera changes, scrolling, resize, blur, and additional pointers
+  release the gesture. Reach guides and visibility affect inspection only.
+  Shoulder angle is measured from +Y toward -X; elbow angle is relative to the
+  upper boom. Both joints follow the shortest angular error using independent
+  critically damped PD servos (response 0.5/s), capped at 2 degrees/s and
+  0.5 degrees/s². Trapezoidal position integration uses substeps at most 0.05 s.
+  Retargeting pauses the shared clock and preserves actual pose and angular
+  velocity. Target current pose requests the current pose while retaining
+  momentum and the joint brake setting. With brakes released, the servo brakes
+  and settles on that pose. Closing the inspector does not stop
+  the motors. Play and explicit clock steps advance the arm alongside the orbit
+  and arrays. Array preview playback leaves the actual arm fixed; Advance also
+  advances its clock by the selected preview duration. An arm target change
+  closes the existing array preview without changing actual array state.
+  This is a planar kinematics exercise with illustrative actuator limits, no
+  payload forces, torque, joint travel stops, structural flex, or collision
+  prevention. Elbow reconfiguration is a joint-space move and may intersect
+  station geometry. The real Canadarm2 has seven degrees of freedom; see the
+  [Canadian Space Agency data sheet](https://www.asc-csa.gc.ca/eng/iss/canadarm2/data-sheet.asp).
+  `tests/space_station_map_arm.test.js` checks independent forward/inverse
+  kinematics, reach boundaries, continuity, actuator limits and integration.
+  `node dev-tools/space_station_map_arm_qa.cjs --widths=1440,390` checks actual
+  rendered geometry, trusted controls, shared time, state isolation, responsive
+  layout, structural accessibility, and resource cleanup.
+- **3D map orbital lighting:** “Chase the sunrise” links the exterior WebGL
+  scene to a circular 420 km orbit. A phase slider, noon/midnight and transition
+  presets, and explicit 0.1×/1×/10×/60×/180× playback drive the Sun direction, atmosphere,
+  array orientation, shadow indicator and telemetry together. Beta (the Sun's
+  angle above the orbit plane) controls eclipse duration. Spherical Earth and
+  parallel rays from a point Sun give a cylindrical shadow; grazing orbits have
+  no eclipse. Shadow entry/exit presets seek 0.5° past the geometric event.
+  Direct station sunlight and solar input are zero in eclipse, while a separate
+  light illuminates Earth's day side. Default ideal tracking aligns the array
+  front normal with the Sun; the optional motor mode follows that target at a
+  limited joint speed. Park flat commands zero joint angles. Input uses the
+  actual panel's nonnegative front-face cosine, normalized to a Sun-facing panel,
+  following
+  [NASA's solar-incidence explanation](https://www.nasa.gov/smallsat-institute/sst-soa/power-subsystems/).
+  It is not an electrical-output or battery calculation. Joint limits, mutual
+  shadowing, penumbra and atmospheric refraction are omitted. Display geometry,
+  fill light and ground motion remain illustrative. The scene starts paused,
+  including under reduced motion; explicit playback uses elapsed time, clamps
+  long frame stalls and pauses when hidden. Selection, cutaway and camera
+  inspection remain available. GPU resources and captured pointer listeners
+  are released at teardown.
+- **3D camera and sunlight inspection:** dragging or arrow keys orbit the camera
+  around a persistent target while the station's attitude stays fixed. Viewing
+  changes do not advance or reset the orbit clock, change playback, or alter
+  array incidence. Center or F makes the selected module the target for
+  subsequent orbit and zoom; selecting another module leaves that target pinned
+  until another focus or view command. Zoom buttons, plus/minus keys, two-finger
+  pinch and the scroll wheel on the focused canvas change distance relative to
+  that target. Wheel input over an unfocused canvas remains page scrolling.
+  Home and Reset view restore the overview; the truss, labs, Russian-segment and
+  Earth-facing presets move only the camera. Preset/focus transitions interpolate
+  camera and target using elapsed time and are immediate under reduced motion.
+  Camera distances are schematic scene units, not physical range measurements.
+  Module size and field of view set focus framing and the near zoom limit;
+  a conservative y = -3.8 camera floor keeps viewing paths above the illustrated
+  Earth's atmosphere. This is an inspection constraint, not a flight or
+  collision-avoidance model. Pinch transitions and canceled gestures cannot
+  select modules accidentally; hiding or leaving the view releases captures.
+  Optional guides share an origin on an array face: the longer gold arrow points
+  toward the Sun and the shorter cyan arrow follows the array's outward normal.
+  They are direction overlays, not incoming light rays or thrust vectors; their
+  lengths do not represent physical magnitudes. A white arc and a 0–180°
+  reading show the angle between the unclipped directions, including angles
+  greater than 90 degrees when the panel faces away. Ideal tracking aligns both
+  arrows; motor tracking can leave an angle while the hardware catches its target.
+  The geometric angle remains meaningful in eclipse even though direct solar
+  input is zero. Toggling guides preserves the camera and all orbital inputs.
+- **Responsive framing and fine playback:** Fit station frames a fixed hardware
+  envelope containing the complete array sweep. Inspect array pair centers on
+  the representative joint used by the command, forecast and braking overlays;
+  short white brackets follow its actual pose. Both modes preserve the current
+  viewing direction and use the limiting horizontal/vertical perspective angle
+  to fit a padded sphere. Resizing refits the same subject; orbiting keeps the
+  fit, while zooming opts out. Motion never makes the camera chase the arrays.
+  An interrupted fit transition settles at the subject before manual orbit or
+  zoom begins. A range cap reports when the requested envelope cannot fit.
+  Camera actions preserve angles, rates, commands, braking, playback and forecast.
+  The clock strip below the scene adds slow motion, real time and tenfold speed,
+  synchronized with the original orbit speed selector. Phone layouts place help,
+  orientation and playback beneath the canvas so those controls cannot obscure
+  the inspected hardware. Rate-only changes preserve
+  forecasts. +1 s pauses playback and advances exactly one simulated second through
+  the existing orbit and joint integrator, including maximum braking; this is a
+  physical step and closes any forecast. These controls do not change the model's
+  schematic geometry or motor assumptions.
+- **3D array pointing workbench:** “Point the arrays” resolves two schematic
+  joint angles into the actual exterior wing pose. Rotation around the truss
+  spans -180° to +180° and feather spans -90° to +90°. The four large array pairs
+  share the same angles. The transform Rx(a) Rz(f) maps the front normal +Y to
+  (-sin f, cos a cos f, sin a cos f); the tracking target uses orbital phase for a
+  and the negative Sun beta angle for f. The +180° slider endpoint remains
+  available as an equivalent orientation to -180°.
+  Hold this pointing copies both actual angles. It cancels pending movement in
+  speed-only mode; with smooth motors it requests that angle while preserving
+  velocity, so moving joints brake and settle rather than stopping instantly.
+  Moving a slider from tracking captures the other actual angle before entering
+  manual mode; subsequent manual edits preserve the other commanded angle.
+  Manual targets stay fixed in the station frame as the orbit advances or its
+  phase/beta changes. Face Sun now, Edge-on now and Face away now set manual
+  targets for the current Sun direction; they do not continue tracking. Park flat
+  commands both angles to zero, matching the original tracking-off control;
+  Track the Sun restores a moving tracking target. Pointing changes pause the
+  orbit without resetting its phase or moving the camera. The default instant
+  mode adopts commands immediately; optional motor mode preserves actual pose
+  until simulated time advances. The Sun/normal guides follow actual hardware.
+  Gold cell fronts and silver backs distinguish the collecting face in the 3D
+  scene; bearing and hinge details make the joint locations visible.
+  A linked Sun-view diagram projects the actual joint orientation of a unit-square
+  patch. Projected silhouette area is |n·s|, while front-face collection is
+  max(0, n·s), for unit normal n and Sun direction s. Direct input is zero in
+  eclipse regardless of pointing. Thus a back-facing panel can retain 100%
+  projected area while collecting no modeled sunlight; an edge-on patch has zero
+  area. The diagram, full 0–180° face angle, solar-input readings and 3D normal
+  share the actual pose, including during a slew. Patch scale and arrow lengths
+  are illustrative.
+  These perpendicular joints demonstrate pointing geometry, not the exact ISS
+  mechanism layout or operating limits. The sliders specify angle representation
+  rather than certified hardware travel limits. Mechanical interference, mutual
+  shading, backside collection, electrical efficiency and batteries are omitted.
+  See [NASA's explanation of station solar-array pointing](https://www.nasa.gov/podcasts/houston-we-have-a-podcast/station-solar-arrays/).
+- **Optional array drive:** motor mode starts disabled, preserving instantaneous
+  pointing and tracking by default. Enabling it starts from the currently shown
+  pose. Smooth motors also start disabled, leaving the previous speed-only
+  response unchanged. The selectable 0.02, 0.08 and 0.2 degrees per simulated
+  second are illustrative requested speed limits for each joint, not measured
+  ISS drive limits. Rotation uses the shortest angular error across the ±180°
+  representation seam; feather stays within its schematic -90° to +90° range.
+  The speed-only integrator advances orbit and actual joints in substeps no
+  longer than 0.25 simulated seconds. Both axes move independently at bounded
+  speeds and stop on their targets; this mode does not model acceleration.
+  Optional smooth motors store each joint's angular velocity and integrate in
+  substeps no longer than 0.05 simulated seconds. A bounded proportional-
+  derivative controller combines angle error and velocity error, with the
+  orbital angular rate as feedforward for Sun-tracking rotation. Its unsaturated
+  gains describe a critically damped response; acceleration and requested speed
+  constraints also apply. Servo-driven joint position uses the average old and
+  new velocity over each substep. Static targets settle to small angle and speed tolerances;
+  abrupt retargeting can cause overshoot, braking and reversal.
+  The selectable acceleration limits are 0.0005, 0.002 and 0.008 degrees per
+  simulated second squared, with 0.002 as the default. These are illustrative
+  settings, not ISS specifications. Lowering a requested speed limit preserves
+  the current velocity and brakes toward the new limit over time; a joint can
+  temporarily exceed the newly selected limit. Signed velocity gauges show both
+  axes, with orange ticks for the requested limit. Each minimum braking-angle
+  reading is v²/(2a), using the current angular speed and selected acceleration.
+  It assumes maximum braking to rest in free motion; it is not a target-arrival
+  forecast and excludes travel-stop impacts.
+  Feather travel stops clamp the angle and cancel outward velocity as an
+  inelastic contact impulse, an explicit exception to the motor acceleration
+  bound. The model does not solve torque, joint or station inertia, structural
+  flex, reaction motion of the station, power draw, or mechanical coupling.
+  Orbit playback, including the stage play/pause control, drives the same clock
+  as the joints. The +60 s control pauses playback and advances that clock by
+  60 simulated seconds. Unless braking is latched, motors continue following their targets in eclipse;
+  actual solar input still becomes zero there. A slower drive can fall behind
+  the moving Sun target, making its loss of collecting area visible.
+  Commanded and actual angles remain distinct in the controls and readings.
+  A dashed violet outline with corner markers shows the target of one
+  representative array pair while its joints have a pending error; the solid
+  wings show actual orientation. This is an explanatory overlay, not extra
+  hardware or a shadow caster. The displayed joint error is the larger of the
+  two remaining joint-angle errors; it can differ from the angle between panel
+  normals.
+  Pausing freezes actual angles and stored velocities. Target edits, Hold this
+  pointing, phase/beta seeks, and speed/acceleration changes also pause while
+  preserving both. Seeking repositions the Sun and retargets tracking; it does
+  not rewind actuator history. Switching between motor modes clears stored
+  velocities; disabling motor mode also snaps the actual joints to the current
+  command. Camera, module and guide interactions preserve the drive state;
+  hiding the page pauses the shared clock, and teardown releases the ghost
+  geometry and materials.
+- **Maximum-braking experiment:** With motor-limited motion and Smooth motors
+  enabled, Apply brakes requests maximum deceleration on both joints without
+  replacing their saved pointing commands or tracking setting. The panel and
+  compact stage controls share the same brake latch. Engaging or releasing it
+  preserves actual angles, stored velocities, orbital phase and the current
+  Play/Pause state. A paused experiment reads "Brake armed · paused"; advancing
+  the shared clock runs the braking motion. Once both joints stop, the latch
+  holds their angles while the orbit and any saved Sun-tracking target continue
+  to advance. The status becomes "Braked · targets saved", even if the saved
+  target has substantial remaining error. Resume targets releases the latch
+  and lets the existing servo accelerate from the current state.
+  Explicit pointing edits, including presets, tracking changes and 3D handle
+  edits, clear the latch. Orbital phase/beta edits and speed/acceleration changes
+  retain it; those settings still pause the clock through the existing edit
+  behavior. Switching motion modes clears the latch and stored velocities.
+  Camera movement and the stopping-overlay toggle affect only inspection.
+  A shared analytical axis helper integrates constant deceleration independently
+  of target direction or a reduced requested speed ceiling. For signed initial
+  velocity v and acceleration magnitude a, motion lasts min(dt, |v|/a) within a
+  step. Displacement is v·t − sign(v)·a·t²/2, then velocity remains zero for the
+  rest of that step. This preserves the exact signed stopping travel v·|v|/(2a)
+  when the stopping instant falls between integration steps. Zero elapsed time
+  preserves velocity, including at a feather boundary. If feather reaches ±90°
+  before natural rest, an inelastic contact impulse cancels its outward velocity;
+  the contact is identified separately from acceleration-limited motor braking.
+  Rotation remains unwrapped inside this helper and is wrapped only for the
+  displayed joint pose. Orbital phase advances for the full elapsed duration,
+  including time after the joints have stopped.
+  An amber dashed array outline and panel-tip path show the predicted stopping
+  pose. "If you brake now" identifies the hypothetical result before engaging;
+  "Maximum braking" identifies an active maneuver. The violet saved-target
+  outline remains distinct. Prediction uses the same axis helper, including
+  feather contact, and covers the complete stopping duration even when it
+  exceeds the drive step's 3,600-second elapsed-time cap. The trajectory samples
+  the corner [0.45, 0.02, 3.7] through simultaneous Rx(alpha) Rz(feather) poses at
+  uniformly spaced times, with an adaptive point count for longer angular
+  travel. The overlay is hidden during cyan motion-forecast inspection and when
+  the joints are already at rest. Toggling it changes no physics, commands,
+  playback state or forecast data. Forecast generation copies the brake latch;
+  cached samples, fractional replay and Advance preserve that braking state and
+  its exact pose and velocity. The maneuver remains a schematic kinematic model:
+  it does not calculate motor torque, structural loads or station reaction motion.
+- **Actual array surface motion:** An optional inspector follows a material
+  point on the representative actual array pair. Select either panel half and
+  independently vary its 0–100% span from the inner edge to the tip and its
+  0–100% chord across the width. The point's local coordinates are
+  `[-0.45 + 0.9 * chord, 0.02, side * (0.3 + 3.4 * span)]`, with `side` equal
+  to −1 or +1 and both `span` and `chord` between 0 and 1. These are coordinates of the existing
+  schematic geometry, not measured ISS dimensions. Its actual joint transform
+  `Rx(alpha) Rz(feather)` gives the position `r` relative to the wing pivot.
+  Rotation contributes `(alphaRate * ex) × r`; feather contributes
+  `(featherRate * Rx(alpha) ez) × r`, with angular rates converted from degrees
+  to radians per simulated second. Their vector sum gives the material point's
+  instantaneous velocity relative to the station. This applies the angular-
+  velocity addition and rigid-body relation described in
+  [MIT's 3D Rigid Body Kinematics lecture](https://ocw.mit.edu/courses/16-07-dynamics-fall-2009/resources/mit16_07f09_lec25/).
+  The total speed is the magnitude of that sum: opposing joint contributions
+  can cancel even while both joints are moving. The readouts use scene units
+  per simulated second and exclude orbital translation and camera motion.
+  Playback speed changes how quickly time passes, without multiplying these
+  physical-state readings.
+  Rose, green and white arrows show rotation, feather and combined velocity
+  from the same actual point. Mesh shafts keep these arrows legible when WebGL
+  line widths are limited to one pixel. Optional dashed connectors show vector
+  addition; a pivot-to-point guide shows the radius. A cyan outline and crosshair
+  identify the selected panel half and the probe's span/chord position whenever
+  the 3D probe handle is shown. The 100, 300 and 600-second display
+  choices multiply all three velocity vectors by one common scale. If any
+  arrow would exceed 2.4 scene units, the effective scale becomes
+  `min(requestedScale, 2.4 / max(totalSpeed, rotationSpeed, featherSpeed))`.
+  The displayed scale reports this reduction; speed readings and the simulated
+  motion do not change. Arrow endpoints are instantaneous tangent constructions,
+  not predictions of the curved future path. Zero-length arrows are hidden
+  while the probe point remains available.
+  Moving outward along the span increases the rotation contribution at a fixed
+  width. Feather speed is independent of span, but decreases toward the width
+  midline as distance from its axis decreases. The small local y = 0.02 offset
+  means the midline's feather speed need not be exactly zero.
+  The native P button projects the same actual material point into the 3D view.
+  Dragging casts a camera ray into the current actual panel plane, inverting
+  `Rx(alpha) Rz(feather)` before intersecting local y = 0.02. The initial pointer
+  offset from P's center is retained in screen pixels, avoiding a jump when the
+  grab starts off-center. Each move uses the current actual pose, even during
+  playback. The captured panel half stays fixed; intersections outside its
+  rectangular span and width clamp to the nearest edge rather than jumping
+  across the central gap. Rays behind the camera, invalid rays, and near-edge-on
+  rays with an absolute normalized local y component below 0.08 are rejected.
+  P remains keyboard-accessible in an edge-on view: up/down change span and
+  left/right change chord by 0.01, Shift increases the step to 0.1, Home selects
+  both midpoints, and Escape ends the drag. Both sliders remain available when
+  the 3D handle is hidden or outside the viewport. Pointer release/cancellation,
+  lost capture, blur, scrolling, resize, camera changes, a second pointer and
+  scene cleanup release a captured drag. A pose that becomes edge-on also ends
+  the drag rather than amplifying an unstable intersection.
+  The inspector requires motor-limited motion with Smooth motors, because those
+  modes retain the actual angular velocities. Instant pointing and the
+  speed-only drive do not supply stored rates for this measurement. Pausing
+  freezes the pose and retains the velocities, so the inspector reports
+  "Stored velocity · paused" rather than replacing moving-joint readings with
+  zero. During a forecast, the probe continues to identify the live actual
+  panel, independently of the selected future pose. Toggling the inspector,
+  components or 3D handle, dragging or using the keyboard, selecting a panel
+  half, span, chord or display scale, and framing the motion
+  preserve the orbit, actual pose, stored rates, commands, brake latch, playback
+  and forecast. The separate action that enables Smooth motors changes the drive
+  mode through the existing controls.
+  Motion framing uses a fixed 4.8-scene-unit envelope around the representative
+  pivot, covering the actual array, probe and capped tangent arrows throughout
+  their motion. Resizing refits that envelope; orbiting retains it and manual
+  zoom opts out. It does not chase the moving material point. The added geometry
+  and materials are disposed with the station scene.
+- **Array surface speed map:** The motion inspector can color both halves of
+  the representative actual array by combined, rotation-only or feather-only
+  speed. Each half uses an 11-by-25 grid over the same material plane as P;
+  the surface interpolates colors between samples. Values are schematic scene
+  units per simulated second, not temperature, solar power or measured ISS
+  surface speeds. The model uses the angular-velocity addition and `v = omega
+  cross r` relation in the MIT rigid-body reference above. It transforms each
+  component's angular velocity into panel coordinates before evaluating the
+  cross product at each sample. The selected component's peak is calculated
+  at all eight corners of the two rectangles. This is an exact maximum for
+  this linear velocity field: its magnitude is convex over each rectangle.
+  The automatic color ceiling is the largest corner speed across both halves
+  and all three components. Changing components therefore retains a common
+  comparison scale at a given instant. Lock color scale captures that positive
+  ceiling and retains it across time and component changes, allowing braking
+  to darken the surface. Speeds above a locked ceiling saturate at the brightest
+  color and are reported explicitly; numerical readings retain the full values.
+  Unlocking returns to the current shared maximum. A zero-speed initial state
+  cannot create a new lock, but an existing lock remains available at rest.
+  The optional dashed cyan line shows the selected component's instantaneous
+  rotation axis through the joint pivot. The white line from P ends at its
+  perpendicular projection onto that axis. The readings satisfy
+  `speed at P = angular speed * perpendicular distance` when angular speed is
+  expressed in radians per simulated second; the displayed angular-speed
+  readout uses degrees per second. The axis can change as the actual joints
+  move and is undefined, and therefore hidden, when that component's angular
+  velocity is zero. This is an instantaneous kinematic axis, not a trajectory
+  or an extra physical joint.
+  Like the point probe, the map requires Smooth motors and uses stored actual
+  rates while paused. It follows the current hardware while a separate forecast
+  is open, not the selected future pose. Map, component, color-lock and axis
+  controls preserve commands, actual pose and rates, the brake latch, clock,
+  playback, camera and forecast. The map starts disabled. Its geometry and
+  materials are released by the existing scene cleanup.
+- **Material-point acceleration:** The motion inspector can replace the velocity
+  arrows with amber combined acceleration, cyan turning acceleration, and violet
+  changing-spin acceleration at the same draggable P. The calculation is
+  `a = omegaDot cross r + omega cross (omega cross r)`, in the station frame.
+  For `Rx(alpha) Rz(feather)`, angular velocity is
+  `[u, -v sin(alpha), v cos(alpha)]`, where `u` and `v` are the joint rates in
+  radians per second. Its derivative includes the moving-axis terms:
+  `[uDot, -vDot sin(alpha) - u v cos(alpha), vDot cos(alpha) - u v sin(alpha)]`.
+  These terms remain when both joint rates are constant. The MIT rigid-body
+  reference above derives this angular-velocity transport and the acceleration
+  relation; the visualization does not treat rotations about moving axes as
+  independent fixed-axis accelerations.
+  Joint accelerations are the right-hand instantaneous response of the existing
+  smooth servo, including its tracking feedforward, acceleration and speed limits,
+  braking toward a reduced speed limit, and maximum-brake latch. They are not
+  estimated from wall-clock frames and do not change the integrator. A stopped
+  feather joint cannot accelerate outward through its travel limit. Outward
+  nonzero velocity at a stop denotes an impact with undefined finite acceleration;
+  the inspector hides its arrows and numeric readings in that state. Instant and
+  speed-only drive modes also leave acceleration unavailable.
+  The controls preserve the actual pose, stored velocities, commands, clock,
+  camera, brake latch, and forecast. Paused readings describe the controller
+  response on resume. A stationary point may already have nonzero acceleration;
+  `v dot a / |v|` is left undefined at zero speed. Other speed-change values are
+  signed, unlike acceleration magnitudes. Acceleration can be nonzero at constant
+  speed. All three acceleration arrows share a requested scale of 1000, 10000,
+  or 50000 seconds squared, reduced together when necessary to cap their lengths
+  at 2.4 scene units. Mesh shafts and dark outlines keep the arrows visible
+  against the bright panel surface. Optional velocity arrows retain their own seconds-based
+  scale, so their lengths cannot be compared directly. This is schematic
+  station-relative kinematics, not force, flexible-panel, or orbital-gravity
+  modeling. The overlay starts disabled and its resources follow scene cleanup.
+  `tests/space_station_map_acceleration.test.js` checks independent second
+  position derivatives, moving-axis terms, pure-turning limits, normalization,
+  scaling, and servo/braking/contact edge cases.
+  `node dev-tools/space_station_map_acceleration_qa.cjs --widths=1440,390`
+  checks native controls, rendered vectors, preserved live and forecast state,
+  paused response, braking, lifecycle, layout, and structural accessibility.
+- **Local path curvature:** Inside the acceleration inspector, Path curvature
+  adds an emerald osculating arc at the same actual material point P. Select
+  a 30°, 90°, 180°, or full-circle view; optional guides show its center,
+  radius, and a fixed-length white tangent arrow. The circle is an instantaneous
+  geometric construction, not an integrated forecast, collision boundary, or
+  orbit. Neither velocity nor acceleration arrow magnification changes its size.
+  Following [MIT's intrinsic-coordinate treatment](https://ocw.mit.edu/courses/16-07-dynamics-fall-2009/resources/mit16_07f09_lec06/),
+  the model uses `T = v / |v|`, signed along-path acceleration `a dot T`,
+  `B = (T cross a) / |T cross a|`, and `N = B cross T`. Normal acceleration
+  has magnitude `n = |T cross a|`; curvature radius is `R = |v|² / n`, and
+  direction-turning rate is `n / |v|` radians per second (displayed in degrees).
+  This decomposition differs from the turning/changing-spin split: changing
+  angular velocity can contribute to normal as well as tangential acceleration.
+  The center is `C = P + R N`. The stable arc formula
+  `P + R sin(theta) T + 2 R sin²(theta/2) N` samples 97 points, with P at
+  index 48 and positive angle following the velocity. Because this material
+  point stays at fixed radius from the joint pivot, `P dot T = 0` and
+  `P dot N = -R`. Consequently every point of the osculating circle stays
+  on the same pivot-centered sphere. The existing motion-camera envelope
+  therefore contains the circle without artificially capping its radius.
+  Near-stationary speed (at most 1e-10 scene units/s) or unresolved normal
+  acceleration (at most `max(1e-14, |a| * 1e-10)` scene units/s²) suppresses
+  the Frenet geometry. Moving but unresolved cases retain signed along-path
+  acceleration. A valid radius below 0.005 scene units retains its true numeric
+  readings but hides the overlay. The tube uses six radial facets and a physical
+  thickness bounded by 0.018 scene units and 4% of R, with a dark outline.
+  Geometry buffers are reused and only updated while this inspection is visible.
+  All inspection controls preserve live dynamics, clock, camera, brake latch,
+  and forecast. Changing a paused motor target may change the on-resume local
+  curvature immediately while preserving the actual position and velocity.
+  Parent toggles and drive-mode changes hide the overlay without losing its
+  settings. Scene cleanup disposes its geometry and materials.
+  `tests/space_station_map_curvature.test.js` checks independent position
+  derivatives, exact single-axis circles, acceleration reconstruction, sphere
+  bounds, time reversal/scaling, numerical thresholds, and tiny radii.
+  `node dev-tools/space_station_map_curvature_qa.cjs --widths=1440,390`
+  checks native controls, real tube geometry, preserved physics and forecast,
+  probe changes, braking, layout, accessibility, and cleanup.
+- **Direct 3D array handles:** An optional control shows a rose rotation ring
+  and green feather arc on one representative array pivot. Native R/F buttons
+  follow their projected target positions; the full rotation ring and ±90°
+  feather arc use the same Rx(alpha) Rz(feather) convention as the panel model.
+  Dragging intersects the pointer ray with a frozen joint plane and applies
+  incremental, wrapped angular differences, so grabbing away from the center
+  does not snap the target. Feather commands clamp after every increment;
+  reversing immediately leaves a travel limit without an overshoot dead zone.
+  Nearly parallel rays, behind-camera intersections and the pivot itself are
+  rejected. Edge-on views retain keyboard control and explain how to continue.
+  Focused handles use arrows for 1°, Shift+arrows for 0.1°, and Home for zero.
+  Their accessible names include commanded angles. Grabbing pauses the shared
+  clock and preview; an edit switches to a held command, clears any brake latch
+  and invalidates the preview. Both commanded axes are supplied together, preserving the untouched
+  target when leaving tracking. With motors enabled, actual angles and stored
+  velocities remain unchanged until time advances through the existing drive
+  integrator. Camera movement, resize, scrolling, a second pointer, Escape, cancellation,
+  blur and hidden-page events release the drag. Off-screen handles are hidden;
+  disabling the overlay restores focus if necessary. The rings illustrate
+  commands, not added hardware, torque, joint inertia or mechanical clearance.
+- **Array motion preview:** Preview next 10 minutes pauses the live simulation
+  and copies its current angles, stored angular velocities, commands and brake latch. The
+  existing orbit, drive and lighting models propagate that copy into 41 cached
+  samples at 15-second intervals over 600 simulated seconds. A cyan outline
+  shows one future array pair, with a highlighted corner and its path in the
+  station frame. The solid station, current Sun and live readings stay unchanged
+  while a slider or either chart selects a time. The 3D view includes
+  its own slider, speed selector and Play/Pause controls. Preview playback is
+  opt-in, with synchronized 0.1×, 1×, 10× and 60× speed selectors in the panel
+  and 3D view (default 60×). Playback stops at the horizon; Play at
+  the end restarts from zero. Scrubbing pauses the preview, and hiding the page
+  also stops it. The error chart shows the larger remaining joint-angle error;
+  future solar input uses the selected actual panel normal, future Sun direction
+  and eclipse state.
+  Each intermediate pose is propagated from the preceding cached sample with
+  its stored velocities, using the same motor integrator. Seeking order cannot
+  accumulate drift, and exact snapshot times retain their original values.
+  Both sliders scrub in tenths of a second. Chart arrows step one second,
+  Shift + arrows step one tenth, Page Up/Down step one minute, and Home/End
+  select the endpoints. Displayed times include tenths; playback retains the
+  full fractional time when paused. The graph and corner path still connect
+  15-second samples, so a continuously solved cursor can depart slightly from
+  their straight connecting segments during acceleration.
+  Optional **Pause at shadow crossings** stops on the first analytical sunrise
+  or sunset crossed by a frame, even when a fast frame spans both ends of a
+  sub-second eclipse. It copies the exact event time, then solves that pose and
+  motor velocity through the existing forecast sampler. Play resumes past the
+  current event and can stop at the next one. An amber status and 3D badge
+  identify the crossing without claiming which side the exact boundary occupies.
+  Speed and crossing preferences persist across closing and regenerating a
+  preview. Changing either preserves the cursor, playback state, live physics
+  and camera while resetting the frame timestamp; no old elapsed wall time is
+  charged at the new rate. Speed scales the preview clock only, leaving motor
+  speed and acceleration in their physical units. Seeking, restarting or
+  regenerating clears the previous automatic-stop reason.
+  Advance applies that exact selected phase, pose and angular velocity, preserves
+  commands and motor settings, adds the preview duration to the motor clock
+  when enabled, and closes the preview with playback paused. Closing without
+  advancing leaves the live physical state unchanged. Physical edits, time
+  stepping and starting live-orbit playback close the preview; camera, module and guide
+  interactions preserve it. Generate another preview after a state change.
+  The solar-input chart shares the pose cursor and marks Earth shadow with blue
+  bands. Entry and exit times come from the circular-orbit shadow geometry,
+  independently of the 15-second pose spacing, so a short grazing eclipse is
+  retained even when it falls between samples. Separate sunlight and shadow
+  segments preserve the discontinuity at each boundary. Actual motor state is
+  propagated from the preceding cached sample to evaluate incidence at a
+  crossing. The graph lists crossing times and total shadow duration.
+  Each crossing has Before, Crossing and After controls. The side probes use
+  one second or half the distance to the adjacent event/horizon, whichever is
+  shorter, so even a sub-second grazing eclipse can be inspected on both sides.
+  These controls retain the exact analytical times rather than rounding to the
+  slider step, pause preview playback, and preserve the live simulation.
+  Translucent preview panels turn gold in sunlight and blue in shadow; this is
+  a visual cue, while the solid station and scene lighting remain at live time.
+  Optional future lighting guides start at the positive-side preview panel
+  center, Rx(a) Rz(f) [0, 0.02, 2] relative to its wing pivot. A cyan ring marks
+  that origin. Dashed gold and cyan arrows show the future Sun direction and
+  panel normal; a white arc and 0–180-degree reading show their geometric angle.
+  The guides are expressed in the station frame, independently of the camera
+  and current solid-panel pose. They remain geometric directions during shadow,
+  when the accompanying note identifies blocked direct light. Their lengths
+  and arc radius are illustrative, not physical magnitudes. Toggling them
+  preserves preview time, playback and the live state; they hide at time zero
+  and when the preview closes. The full angle remains meaningful for back-facing
+  panels even though front-face collection clamps to zero.
+  On narrow screens the preview transport sits below the canvas, keeping the
+  future array and lighting guides unobstructed; live controls and orientation
+  markers remain anchored to the canvas.
+  Solar input is relative to a Sun-facing panel, not electrical output. The
+  existing spherical-Earth, parallel-ray model omits penumbra, array self-shadowing
+  and electrical conversion; panels facing away can have zero input in sunlight.
+  The corner path joins sampled positions; it is not a swept collision volume.
+  This prediction reuses the schematic drive response and adds no torque,
+  structural flex, interference checks or guarantee of real hardware behavior.
 - **Momentum bench (Inside → Unity):** SI-unit impulse, coasting, and analytic
   one-dimensional contact between adjustable crew and cargo masses. Catching is
   perfectly inelastic; cushioned contact has an adjustable rebound ratio
@@ -76,9 +732,132 @@ reduced-motion behavior and diagram alternatives remain.
   with a selectable 30, 60, or 120-second window and all thrusters off, including
   rate hold. The path and accessible readings stop at first contact or approach
   zone exit, using the simulator's actual speed and alignment capture limits.
-  Rendezvous, final-approach, and cross-drift practice starts restore the vehicle
+  Rendezvous, final-approach, cross-drift, and flyby practice starts restore the vehicle
   and pause for inspection; retry repeats the selected start. Forecast controls
   never advance time or consume fuel.
+  The coast inspector samples any time up to that terminal point with partial
+  RK4 propagation from the preceding forecast knot; it does not interpolate a
+  straight chord through the curved orbit. A magenta outline capsule places its
+  nose at that physical position. Equally spaced time markers use 5, 10 or 20 s
+  intervals for the selected window; filled dots precede the inspected instant.
+  A chevron identifies a predicted point outside the current camera view.
+  Selected-time range, axis offset, speed and signed radial/along-track velocities
+  update together; the header retains the whole forecast outcome and end time.
+  A native range, half-second arrow keys, five-second Page keys, Now and exact
+  Forecast end controls do not alter live flight, fuel, Rate hold or pause state.
+  End follows the changing forecast endpoint; a fixed look-ahead stays relative
+  to the live spacecraft and is clamped to any earlier event. Practice resets
+  restore End, and a completed run disables future inspection.
+  On wide screens the forecast sits beside the live display so scrubbing and
+  motion can be observed together; narrow screens stack the same controls. The
+  maneuver-step controls follow this workbench, and the preview time label stays
+  above the scene to avoid covering the contact opening.
+  Fit coast path adds an isotropic camera containing the complete predicted
+  trajectory, live nose, station origin and both edges of the capture opening.
+  Its bounds do not depend on the selected time, so scrubbing cannot move the
+  view. A dark instrument face keeps speed and braking telemetry legible when
+  the recentered station silhouette passes behind it.
+  Native clicks or taps near the magenta path select a nearby forecast
+  time, using the closest visible segment in CSS pixels. The actual ghost state
+  still uses orbital propagation. The hit test clips to the flight scene and
+  ignores the wide-camera proximity inset; empty space, modified clicks and
+  completed runs cannot select a hidden future. Equal-distance ties choose the
+  earlier time. Border-aware coordinates preserve behavior across display sizes.
+  Path selection leaves flight time, fuel, Rate hold and thrust unchanged; the
+  keyboard slider remains the precise alternative to selecting the drawn curve.
+  Closest within forecast numerically refines the minimum station-origin range
+  within the existing coast and its first terminal event. It checks knots and
+  midpoints and bisects closing-to-opening roots of r·v using the same partial
+  RK4 sampler. The earliest equal minimum wins; stationary/retreating motion can
+  select Now and a monotone approach can select the exact terminal boundary.
+  This is range to the same reference origin as the telemetry, not clearance
+  from hardware, and it does not override the capture/contact outcome.
+  A cyan diamond identifies an interior minimum. Inspect closest fits the path
+  and selects that numeric look-ahead, showing the range to the reference origin;
+  it does not track a special closest-follow mode or alter live controls/fuel.
+  A zero-duration forecast disables the action. The result is cached with the
+  forecast, independently of camera and inspection selection. The new paused
+  Flyby start passes outside the station and exposes an interior range minimum.
+  A linked range-versus-time chart sits below the live flight controls. Its
+  horizontal axis ends at the exact forecast terminal time; range starts at zero.
+  Axis bounds come from the full forecast and stay fixed during inspection.
+  The curve includes forecast knots plus the exact selected and closest samples;
+  the magenta cursor, cyan minimum marker, time/range cards and signed closing
+  rate all follow the same coast sample. Positive closing rate means shrinking
+  station-origin range, not necessarily motion along the docking axis.
+  Captured mouse/touch drags select time horizontally, clamp at either end and
+  remain active outside the chart until release. Cancellation, capture loss,
+  focus loss, window/document hiding, reset and horizon changes end the gesture.
+  Arrow/Page/Home/End keys share the main inspector behavior; numeric endpoint
+  selection stays distinct from following End. End and Inspect closest also
+  cancel an active drag. Completed forecasts disable seeking without dividing
+  by a zero time span. The responsive SVG keeps a fixed 184-pixel height and
+  11-pixel axis labels at normal viewport widths, including phones.
+  Save coast freezes the unpowered forecast, its mission-time epoch, horizon,
+  terminal metadata and physics mode. Amber paths and outline capsules compare
+  that saved prediction with the current coast at the same absolute mission
+  time, including after pulses or coast steps advance the live clock.
+  The timeline crops the reference to the current forecast's shared interval,
+  samples its exact boundary and selected point, and never extends it beyond
+  the original contact, exit or horizon. A small endpoint circle identifies
+  the end of the visible reference. Range change is current minus saved range
+  at that shared mission time; it is not a difference between two unrelated
+  closest-approach events or a guarantee that a maneuver improves clearance.
+  Shared endpoint selects the last instant both forecasts cover. A valid
+  zero-width overlap remains inspectable when the current coast has a future;
+  unavailable selected times show dashes, and expired references are identified.
+  The range scale and fitted spatial camera include the visible saved path and
+  remain independent of inspection time. Save, replace, clear and shared seeking
+  preserve live flight, fuel and controls; horizon changes keep the snapshot,
+  while a scenario/reset/physics-mode change clears it. Saved data and public
+  snapshots are copied so later propagation cannot mutate the reference.
+  Range and Closing rate buttons switch the existing timeline without changing
+  the selected instant, forecast, live flight, camera or saved coast. The view
+  preference survives practice resets and horizon changes; switching ends an
+  active chart drag. Closing rate is −(x vx + y vy)/range: positive means closing,
+  negative means opening. Zero closing rate can coexist with sideways velocity;
+  the cyan closest marker retains its actual rate at Now/contact/horizon minima.
+  Closing mode uses shared symmetric axes, a solid zero line and fill toward
+  zero. Bounds are independent of inspection and cover every point in the current
+  and visible saved coasts. Since |closing rate| ≤ speed, a conservative speed
+  envelope supplies the limit: HCW Coriolis terms do no speed work, so
+  d(speed)/dt ≤ 3n²|x| and d|x|/dt ≤ speed. For each knot interval Δt, the bound is
+  speed₀ cosh(√3 n Δt) + √3 n |x₀| sinh(√3 n Δt), with a 5% display margin and
+  outward 1/2/5 rounding. In inertial mode it reduces to constant speed. This
+  bounds between-knot states too; selecting a sample never expands the axes.
+  A 0.05 m/s minimum half-span keeps stationary and completed plots finite.
+  The saved comparison follows the selected quantity with signed m/s values
+  and current − saved closing-rate change at the same mission time. Positive
+  change means closing faster or opening more slowly, not necessarily a safer
+  approach. Raw data retain full precision while displayed negative zero is
+  normalized. Mode buttons, units, title, help and accessible slider text stay
+  synchronized; time seeking uses the same pointer/touch and keyboard controls.
+  A linked velocity map plots along-track velocity horizontally and radial
+  velocity vertically in the rotating station frame. Both axes use one m/s
+  scale, including narrow nested phone panels: the SVG view width matches its
+  actual CSS width, rather than stretching a clamped coordinate system.
+  Current and saved velocity paths use the full visible forecast and a shared
+  speed envelope independent of inspection. The arrow from zero velocity ends
+  at the exact propagated sample; its length is total relative speed. Dashed
+  component guides can be hidden without changing flight, preview or camera.
+  The cyan closest-range marker retains its physical velocity, making nonzero
+  sideways motion visible even when closing rate is approximately zero. Zero
+  speed renders as an origin point without an arbitrary directional arrowhead.
+  Amber uses the same saved mission-time alignment and terminal clipping as the
+  other comparisons. An unavailable selected reference hides its vector while
+  retaining any shared portion of the saved velocity path.
+  Native clicks/taps within 18 CSS pixels of the current velocity path select
+  the closest projected segment; the resulting time uses the shared RK4 sampler.
+  Only the square plot region is eligible, and exact selected/closest samples
+  are added to the drawn paths without changing the base picking segments.
+  Velocity is not a unique clock: overlapping segment ties prefer the instant
+  nearest the existing selection, then the earlier time; zero-length segments
+  retain or clamp that selection. If every knot stays within 10⁻⁶ m/s of the
+  first velocity, the path does not pick at all, so constant inertial motion never
+  rewinds unexpectedly to Now. The existing time slider and diagram keyboard
+  arrows/Page/Home/End remain available for precise inspection. Completed runs,
+  empty-space and modified clicks preserve flight and selection. All paths are
+  unpowered predictions; vector arrows indicate velocity, not thrust or safety.
   An approach camera keeps the capsule and capture plane in view using the same
   metre scale on both axes; a wide view remains available. Range gates and the
   ±2.5 m alignment opening use that scale. The capsule's drawn nose meets the
@@ -307,24 +1086,339 @@ reduced-motion behavior and diagram alternatives remain.
   Map labels retain native screen sizes. The physical ruler chooses a 1/2/5
   length that fits the view, including submillimeter and very wide footprints.
   Reference visibility does not rescale the map or move the aperture.
-  A linked radial scan shows forward energy (J) or cloud mass (mg) as the same
+  A linked radial scan shows forward energy (J), sideways energy (J), or cloud
+  mass (mg) as the same
   aperture traverses either footprint. Map, chart and native range share one
   offset; pointer capture, touch and keyboard changes preserve playback and
-  the saved design. Current and reference curves share absolute linear axes,
-  including when the reference is hidden. No curve is normalized independently.
+  the saved design. Current and reference curves share absolute axes,
+  including when the reference is hidden. Linear is the default; Small signals
+  selects a shared soft-log view. No curve is normalized independently.
   The cursor uses an exact overlap evaluation rather than interpolating the
   drawn curve. Unit changes persist and do not move the aperture or shot clock.
-  Each uniform disk has a constant central region through |R − a|, a partial
+  Mass and forward-energy curves have a constant central region through |R − a|, a partial
   overlap falloff through R + a, then zero. This is the aperture response to a
   uniform cloud, not a radially fading cloud density. The current falloff is
   shaded. Each curve includes exact tangencies and 64 subdivisions within its
   own transition interval, resolving small footprints beside much larger ones.
-  Tests bound midpoint interpolation error below 0.1% of each curve's own peak
+  For mass and forward-energy scans, tests bound midpoint interpolation error
+  below 0.1% of each curve's own peak
   across narrow and wide aperture cases, alongside monotonicity, absolute units
   and mass/forward-energy consistency. Readouts retain small values even when
   a much stronger reference dominates the shared vertical scale.
+  Small signals uses log1p(1000 × value/high) / log1p(1000) for vertical
+  position. The common maximum stays unchanged, zero maps exactly to zero,
+  and tick values use the inverse transform in physical J or mg. Both curves
+  retain their absolute readings; the view is explicitly labeled nonlinear.
+  A value 1000 times smaller than the axis maximum occupies about 10% of the
+  plot height. This view does not imply proportional heights or equal ratios
+  between equally spaced ticks. Quarter/midpoint display-error checks add
+  samples recursively near curved edges, with a 0.312 plot-unit subdivision
+  threshold on the 208-unit plot and a depth cap of ten. Tests bound independently
+  sampled interpolation error below 0.4 plot units, including grazing lenses,
+  tiny footprints and zero spread. Exact cursor readings never use interpolation.
+  A comparison strip reports Current − reference and the current/reference
+  ratio at the same aperture position. A zero reference gives no ratio;
+  two zero readings are stated explicitly. Hiding the reference hides the
+  strip but preserves both axes. Scale, metric and aperture inspection preserve
+  playback, the saved setup and the clock; the scale preference persists.
+  The same instrument can compare two positions within the current design.
+  Mark position A retains a physical offset in meters; B is the live aperture.
+  A violet dashed aperture and scan cursor keep A visible, while a thin bracket
+  shows the A–B interval without changing the meaning of overlap shading.
+  Native A/B badges remain separate at coincident positions. Exact A and B
+  readings follow the selected mass or energy metric, with signed B − A and
+  displacement in millimeters. A uses the same analytic aperture evaluation as B;
+  it is never read from a curve or confused with the saved design reference.
+  Mark, replace, return and clear preserve playback, elapsed time and the saved
+  design. Metric, scale, reference visibility and view switches preserve A.
+  Physics or aperture-size edits clear A permanently with a status message.
+  Saving a different reference preserves A if it still fits the scan range;
+  otherwise A clears explicitly rather than silently moving. Restoring a prior
+  setup does not resurrect a cleared mark. Stored marks include a version,
+  radius and full current setup; invalid, nonfinite and stale marks are rejected.
+  Coincident positions and zero sideways energy return exact zero differences.
+  The scan now identifies the current design maximum and offers an inspect
+  action that moves the aperture to it without rounding to the drag increment.
+  A triangle marks the selected maximum; a capped line marks flat maximum
+  intervals. Mass and forward energy use exact containment plateaus from
+  zero through |R − a|. Sideways energy has the same whole-cloud plateau when
+  a ≥ R; equal radii yield a central maximum. Zero sideways energy is handled
+  separately with no peak marker and a disabled inspect action.
+  For a smaller aperture, the sideways peak is refined around the largest
+  sampled value using bracketed golden-section search (at most 48 iterations,
+  ending at a width of max(10⁻¹⁵ m, (R+a)×10⁻¹¹)). The original best sample
+  and every evaluated candidate remain eligible, so refinement cannot lower
+  the peak. Readings come directly from the aperture integral. The selected
+  peak enters the plotted sample set before shared-axis sizing and soft-log
+  refinement. A near-flat peak is reported as near a position, not as an
+  experimentally exact location. Dense offset searches, dimensional scaling,
+  equal-radius cases, plateaus and zero states validate the result. Inspecting
+  a maximum preserves A, the saved reference and playback; metric and scale
+  changes do not introduce a second clock or an independent axis.
+  A half-maximum span now brackets the radial offsets whose reading reaches
+  at least 50% of the current maximum. The dashed threshold line, capped ends
+  and baseline guides use the same physical coordinates as the aperture;
+  inspect actions move exactly to each boundary. If the center already meets
+  the threshold, the interval begins at zero and the action says Inspect center.
+  Zero energy has no half-maximum interval or boundary actions. This is a span
+  of nonnegative radial offsets, not a full-width diameter measurement.
+  Crossing positions use direct aperture evaluations and bracketed bisection
+  (at most 48 iterations, tolerance max(10⁻¹⁵ m, (R+a)×10⁻¹²)). Their samples
+  enter the plotted curve before display refinement. Half means half the
+  physical J or mg value; soft-log view changes neither the interval nor the
+  threshold. The result is specific to the current design, independent of
+  reference visibility and scale. Boundary inspection preserves A, the saved
+  reference and active playback. Tests check the analytic contained-aperture
+  inner crossing, physical residuals, extreme radius ratios and zero states.
+  An optional aperture-size comparison opens below the shared controls. It
+  holds the current physical cloud fixed and compares a smaller, current and
+  larger aperture. Alternative radii approximate half and double the current
+  radius, rounded to the existing 0.5 mm increment and bounded to 0.5–30 mm;
+  repeated limit values are removed and the current radius stays exact.
+  Curves use one linear physical axis and extend to the same outer offset
+  with a zero endpoint. Distinct line styles, labeled cards and peak markers
+  identify the apertures without relying on color alone. The cards report
+  collecting-area ratio, total peak reading and each curve's own half-maximum
+  radial span. The study contains only the current design; the saved reference
+  and main plot's display scale cannot change it. There is no claim that
+  half-maximum span grows monotonically with aperture size.
+  The comparison offers Total collected and Per cm² views. Per-area values
+  divide by each aperture's full area πa²×10⁴ cm², including uncovered regions.
+  Units are J/cm² or mg/cm²; sideways energy per area describes the modeled
+  lateral kinetic energy, not normal loading or pressure. Curves, live readings,
+  maxima and half-maximum thresholds receive the same positive scale factor
+  for each radius, preserving positions, widths, coverage and probe bounds.
+  The area view derives a shared rounded linear axis from the scaled peaks
+  with 2% headroom; the total view retains its existing axis. Zero scans use
+  finite unit-height axes, zero readings and unavailable half-maximum spans.
+  Physical aperture area remains visible on each card. Switching basis is a
+  view preference and preserves both probes, A, playback and the saved design.
+  Fully contained forward-energy and mass averages are radius-independent in
+  this uniform cloud; sideways energy per area retains the radial speed weighting.
+  The comparison now has an independent probe over its complete radial range,
+  including the outer tail of a larger candidate aperture. A neutral cursor and
+  filled square markers show exact readings at that offset; hollow circles
+  continue to identify maxima. Each card reports the live total and aperture
+  coverage, so a zero signal outside the cloud differs from zero sideways
+  energy in a covered aperture. Values come directly from the aperture integral,
+  not interpolation of a plotted line. Axis, domain, maxima and widths remain
+  unchanged while the cursor moves.
+  Captured mouse/touch gestures and a native offset slider share the probe:
+  arrows move 0.5 mm, Page keys 5 mm, Home centers, End reaches exact outer
+  tangency. Pointer dragging snaps intermediate positions to 0.5 mm; endpoints
+  and Match main position preserve full precision. The latter copies the main
+  aperture's offset without moving it or changing A, time, playback or baseline.
+  A main position beyond the comparison range disables matching with a visible
+  explanation. The stored comparison offset survives view/metric/radius changes;
+  the rendered value clamps to the current comparison range. Size buttons keep
+  their existing main-aperture behavior and do not copy this independent probe.
+  A spatial footprint map links to the same independent comparison probe. All
+  candidate apertures share a center, drawn on equal horizontal and vertical
+  physical scales. A fixed frame includes the full largest aperture even at the
+  outer limit (R + 2a_max from the cloud center); moving the probe never zooms
+  the cloud or changes relative circle sizes. Three distinct outlines show the
+  openings, with a single cloud-clipped fill for the current aperture's overlap.
+  That fill represents geometry, not an additive energy signal from three sensors.
+  Forward energy and mass use uniform field shading. Sideways-energy shading
+  qualitatively illustrates the radial speed gradient; numeric readings still
+  come from the exact aperture model. Zero sideways energy has a separate
+  neutral field and explanatory text. Shading is not a calibrated color scale.
+  Dragging the map uses its aspect-preserving SVG frame, including letterboxing,
+  and the same pointer capture, keyboard steps and endpoint clamps as the plot.
+  Center, Cloud rim and Outside all buttons inspect exact physical landmarks.
+  The map, plot, native range and cards stay synchronized without altering the
+  main detector position, A, simulation time, playback or saved reference.
+  The footprint map also offers First contact and Follow experiment modes.
+  First contact remains the default, independent of experiment time. Follow
+  experiment uses the existing shared clock and the same inspected physical
+  state as the main scene. Before bumper impact it shows the incoming particle;
+  afterward the transverse cloud projection grows as r0 + v_edge × flight time.
+  A dashed final-envelope circle and the apertures stay at the original physical
+  scale. This projection does not represent cloud material at the wall. The
+  filled overlap and numeric wall coverage appear only at first contact; before
+  then the map explicitly reports Pending arrival. Zero spread still has finite
+  flight time and pending coverage despite an unchanged cloud radius.
+  The comparison curves/cards remain first-contact predictions in both modes;
+  visible notes, chart labeling and the map's accessible value text say so.
+  A linked local time range and start/bumper/mid-flight/wall buttons use the
+  existing seek path, pausing playback and synchronizing the main time control.
+  Arrow keys seek 0.05 µs, Page keys 0.5 µs and Home/End select exact endpoints.
+  Mode, probe and basis changes preserve active playback. There is one playback
+  component and no second animation loop; a link returns to its main controls.
+  A synchronized side view places the particle/cloud along the axial flight path.
+  Its fixed isotropic frame includes the incoming sphere, final radial envelope
+  and full range of the current aperture slice. Dashed lines join the initial
+  cloud radius at the bumper to its radius at the wall. The cloud is represented
+  as a plane, and drawing strokes do not assert physical cloud/plate thickness.
+  The mint segment at the wall is a central slice through the selected aperture;
+  its length is not a captured mass/energy fraction or intersection area.
+  First contact mode presents a read-only image. Follow experiment presents a
+  time slider: captured mouse/touch dragging along the side view inverts the
+  physical axial trajectory. The incoming branch uses the incoming speed;
+  the post-bumper branch uses the entrained cloud's axial speed, continuous at
+  bumper contact. Seeking is clamped to exact start/contact and pauses the
+  existing clock; keyboard behavior matches the adjacent time range. SVG
+  letterboxing is included in pointer conversion. Time inspection leaves
+  comparison offsets, first-contact readings, position A and saved design intact.
+  The flight inspector offers Position, Speed history, Impact budget and Material
+  motion panels, displaying
+  only the selected view. Speed history plots forward speed and radial edge
+  speed against elapsed time on a common linear ordinate. Incoming speed is
+  the configured projectile speed; at the bumper, forward speed becomes p/M
+  and radial edge speed becomes sqrt(4K_radial/M). The latter is edge speed,
+  not mean or RMS speed. Separate horizontal path segments and open-before,
+  filled-after event markers represent the instantaneous idealized transition
+  without inventing a finite collision ramp. At exact impact the inspected
+  readings use the post-impact branch. At first wall contact the same speeds
+  remain; wall stopping/penetration are outside this model. Zero spread retains
+  a flat zero radial-speed trace. All speed readouts use km/s while helper
+  values stay in SI. Native-size markers and independent tick labels stay
+  legible when the chart stretches at different viewport widths.
+  Follow experiment makes the speed plot another shared-time slider, with
+  captured horizontal mouse/touch gestures and the existing keyboard steps.
+  First contact mode leaves it read-only. Release/cancel cleanup remains
+  active across mode switches. Switching flight-inspector panels preserves
+  playback, both probes, A, saved design and first-contact predictions; it does
+  not add an animation loop. The selected panel is retained as a view preference.
+  Impact budget pairs the incoming particle with the post-bumper cloud on
+  identical incoming-energy scales. The stationary bumper plug contributes
+  mass but no initial momentum or kinetic energy. Displayed forward momenta
+  satisfy m v = (m + plug) u; forward, radial and unresolved internal energies
+  sum to the incoming kinetic energy. Segments use exact fractions without
+  minimum visible widths, including literal zero sideways energy at zero spread.
+  Selecting a component highlights its segment and explains its meaning using
+  native buttons. The radial explanation distinguishes the spread setting's
+  available-collision-energy denominator from the bars' incoming-energy basis.
+  Internal energy is unresolved; heating, deformation and fragmentation are not
+  separately modeled. These whole-cloud quantities are independent of aperture
+  size, probe offset and total/per-area display. In Follow experiment, the
+  active card changes at exact bumper contact; beforehand the after card is
+  labeled Predicted. First contact always shows the after state. Component
+  focus is retained as a view preference without changing the shared clock,
+  playback, probes, A or saved design. Each inspector has a distinct root key
+  so switching views cannot reuse a node holding another panel's pointer capture.
+  Material motion follows a selected fraction f of the expanding disk radius.
+  Its sample radius is f R(t), outward velocity is f w, forward velocity is u,
+  resultant speed is sqrt(u² + (f w)²), and angle from forward is atan2(f w, u).
+  This is a local material speed, not a disk-average or RMS speed. A transverse
+  field uses a fixed spatial frame based on final radius, with symmetric sample
+  locations and opposing outward arrows. At the center, the locations merge
+  into one marker. Field-arrow lengths share a rim-speed scale within a design;
+  they are not spatial displacements. The separate velocity triangle uses one
+  speed scale for both axes, fixed across sample choices and flight phases.
+  Zero radial motion omits outward arrows; forward and resultant arrows coincide.
+  Before impact, material sampling is pending, no cloud markers are drawn, and
+  the velocity diagram shows the incoming particle. Native range and preset
+  buttons choose center, mid-radius or rim without changing physical setup,
+  time, playback, probes or saved comparisons. Arrow keys adjust 1 percentage
+  point, Page keys 10, and Home/End select center/rim. Only the selected inspector
+  is mounted; its position evolves with the existing shared clock. Markers sample
+  the continuous idealized cloud and do not predict fragments or fragment counts.
+  After impact, the transverse material field also acts as a vertical radius
+  selector. Captured pointer and touch gestures sample the absolute distance
+  above or below the center, rounded to one percentage point. The mapping
+  accounts for SVG letterboxing and uses the current cloud radius on every move,
+  so sampling while playback continues does not use an outdated radius. Keyboard
+  steps match the range. Before impact it remains a noninteractive image; the
+  separate range and presets retain the pending selection. Setup/mode guards,
+  primary-pointer ownership and always-mounted release/cancel handlers prevent
+  stale gestures from changing a different experiment. Sampling never seeks or
+  pauses the shared clock.
+  The second diagram can switch between Velocity and Path to wall. The path
+  frame uses one physical length scale on both axes; selected tracks extend from
+  the initial offset f r₀ at the bumper to f R_wall at first contact. Solid mint
+  progress and current points appear only after impact; hollow landing markers
+  remain predictions. The path slope is f w/u, and the remaining diagonal
+  distance equals the sample speed times remaining flight time. Endpoints clamp
+  to exact first contact with zero remaining time/distance. Center selection
+  deduplicates coincident tracks; zero spread leaves parallel straight paths.
+  No wall penetration, stopping or rebound is extrapolated. Diagram choice is a
+  retained view preference and preserves clock, playback, probes and references.
+  In Follow experiment, horizontal captured gestures on the path seek the shared
+  clock by physical forward position: the bumper maps to impact and the wall to
+  first contact. Pointer positions outside that interval clamp to those endpoints;
+  the path does not depict the incoming approach. Keyboard controls retain the
+  full clock domain: arrows step 0.05 microseconds, Page keys 0.5, Home returns to
+  launch and End to wall contact. Seeking pauses playback while retaining the
+  radial material sample, detector probes and saved comparisons. First contact
+  remains an image. Pointer ownership, letterbox-aware geometry, setup/mode guards
+  and keyed diagram roots isolate gestures across view or experiment changes.
+  A moving vertical cursor aligns with the sample position after impact. The
+  native time caption follows the inspected clock. A 1/2/5 physical scale bar
+  uses the same metric scale as both axes and remains fixed throughout a flight;
+  its drawn length is between 32 and 80 SVG units for readable setup comparisons.
+  Material motion can mark a post-impact instant for a displacement comparison.
+  The mark stores its physical setup and time, not a cached material radius or
+  energy. A strict version, finite-time and setup check rejects malformed or
+  incompatible marks. Amber diamonds, a dashed reference cloud ring and a path
+  cursor show the marked geometry. The current radial coordinate is used for both
+  instants, so changing the selected fraction still compares the same material.
+  Signed time, forward displacement and outward displacement are current minus
+  marked. Scrubbing backward gives negative deltas; coincidence gives exact zeros.
+  In free flight these obey delta-x = u delta-t and delta-r = f w delta-t, with
+  exact wall endpoints. Before impact the mark remains available, but ghosts are
+  hidden and displacement readings are pending. Mark and Clear preserve clock,
+  playback, detector probes and saved designs. Return to mark enters Follow
+  experiment and seeks the shared clock, pausing playback. Clear returns focus to
+  the radial coordinate range; no second playback clock or wall response is added.
+  A displacement triangle connects the marked and current upper sample (or center
+  sample at zero radius). Blue forward and purple outward legs use the same metric
+  scale as the path; a dashed amber resultant connects the two physical positions.
+  Arrows reverse when scrubbing earlier than the mark, zero-length legs are omitted,
+  and coincidence shows no triangle. These legs are vector components, not extra
+  travel. A fourth reading reports unsigned separation, hypot(delta-x, delta-r),
+  while the component and time differences retain their signs. Before impact all
+  four readings are pending. The guide follows the existing mark and clock.
+  An optional equal-time guide samples that same material at 0%, 25%, 50%, 75%
+  and 100% of bumper-to-wall flight. Five positions form four equal time intervals;
+  the first and last use exact impact and wall-contact times. These dots are
+  temporal samples, not fragments. Their uniform spatial spacing illustrates
+  constant free-flight velocity. Fixed-size hollow dots indicate upcoming samples;
+  filled dots have been reached in the currently displayed frame. Current points
+  and marked-instant diamonds stay on top. Before impact all guide dots are
+  predictions; the First contact view shows all reached. Five keyboard-accessible
+  buttons seek exact sample times, enter Follow experiment and pause playback.
+  Each accessible label gives flight progress, elapsed time and reached/upcoming
+  status, distinct from the separate radial material coordinate. Toggling the
+  guide or switching diagrams preserves time, playback, probes and the mark.
+  The guide is off by default and is only drawn in the path diagram; its buttons
+  wrap to three columns on a phone. No extra clock or automatic motion is added.
+  The radial range and presets sit inside the Across the cloud card, directly
+  beside the sample they control. This also keeps the range earlier in the mobile
+  reading order and balances the expanded path guide on a wide screen.
+  Closed comparisons skip all additional scan calculations. Applying a size
+  clears position A, clamps the offset to the new detector range (including
+  the saved footprint), and preserves the physical setup, saved design and
+  active playback. Focus returns to the persistent comparison toggle so an
+  option disappearing at a radius limit cannot strand keyboard focus.
   The map and scan sit beside each other on desktop, with shared controls below;
   they stack on narrow screens, retaining native-size chart labels and markers.
+  Sideways-energy mode also reveals a sampled velocity field on the map.
+  Sixteen arrows use the existing material velocities at first wall contact;
+  their positions follow the common map scale, and arrow lengths use a fixed
+  speed scale across designs. Brighter arrows begin inside the aperture. They
+  illustrate a continuous field rather than fragments or a particle count.
+  The Inside current rim control places an aperture wholly within the cloud
+  whenever it fits, making equal-mass center/rim measurements easy to compare.
+  An aperture can have equal mass and forward energy at both positions while
+  sampling much greater sideways energy near the rim.
+  With cloud radius R and radial edge speed w, the existing homologous model
+  gives local sideways speed wρ/R. Its aperture sideways energy is
+  M w²/(2πR⁴) times the integral of ρ² over the overlap. The mean squared
+  radius is R²/2 for the entire cloud and d² + a²/2 for an aperture wholly
+  inside it. Partial lenses use 16-point Gauss-Legendre quadrature on each
+  side of the radical axis after a sin² coordinate transform, with R scaled
+  to one. Only the mean squared radius comes from quadrature; the original
+  analytic overlap still supplies mass and forward energy. Cartesian strip
+  integration checks mean-squared-radius error below 5×10⁻⁷ R², including
+  extreme radius ratios and grazing lenses. RMS sideways speed is
+  w√(mean squared radius)/R; it is unavailable when no material is sampled.
+  The entire cloud recovers exactly M w²/4 and centered subdisks retain the
+  fourth-power radial-energy law. Sideways scans sample the central region
+  as well as the edge transition, fit off-center maxima on the common axis,
+  and reserve 2% headroom before rounding the axis maximum. Zero spread
+  gives a flat zero-energy curve with an explicit explanation and finite axis.
+  Neither sideways energy nor RMS speed is a wall-damage or pressure model.
   Measurements integrate overlap area A analytically. For the ideal uniform
   footprint of area Aw, mass is M A/Aw and forward kinetic energy is Kf A/Aw.
   The cloud fraction A/Aw is distinct from aperture coverage A/(πa²); a large
@@ -517,9 +1611,11 @@ departure altitude discards the old transfer state.
 - [NASA: standoff and debris-cloud spreading](https://ntrs.nasa.gov/citations/19930000787)
 - [NASA: impact regimes and Whipple shield performance](https://ntrs.nasa.gov/citations/20090024821)
 - [Wolfram MathWorld: circle–circle intersection area](https://mathworld.wolfram.com/Circle-CircleIntersection.html)
+- [OpenStax: kinetic energy of a particle and a system](https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy)
 - [NASA Glenn: drag equation](https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/)
 - [NASA Glenn: ideal rocket equation](https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/)
 - [NASA Glenn: torque and angular acceleration](https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/torque-moment/)
+- [MIT OpenCourseWare: 3D rigid-body kinematics, angular-velocity addition and instantaneous point velocity](https://ocw.mit.edu/courses/16-07-dynamics-fall-2009/resources/mit16_07f09_lec25/)
 - [OpenStax: conservation of angular momentum and changing inertia](https://openstax.org/books/university-physics-volume-1/pages/11-3-conservation-of-angular-momentum)
 
 ## Local review
@@ -527,6 +1623,121 @@ departure altitude discards the old transfer state.
 `node dev-tools/space_station_enhancement_qa.cjs --serve` provides a local
 working-tree preview. `--capture` exercises the actual browser implementation
 and saves desktop/mobile screenshots under `reports/space-station-enhancement-qa`.
+
+With that preview running at port 4179,
+`node dev-tools/space_station_map_framing_qa.cjs --widths=1440,390` checks fitted
+hardware projection, native framing and clock controls, preserved physics and
+forecasts, responsive fit versus manual zoom, exact shared-time progression,
+rendered focus brackets, accessibility and teardown. The independent perspective
+and playback validation cases are in `tests/space_station_map_framing.test.js`.
+`node dev-tools/space_station_map_camera_qa.cjs --widths=1440,390` checks camera
+orbit, target-relative zoom, native touch pinch/cancellation, focused wheel input,
+F/Home, independent lighting, direction guides, responsive controls and teardown.
+`node dev-tools/space_station_map_camera_motion_qa.cjs` checks rendered camera
+transitions with normal motion, module framing, native interruption and stable physics.
+`node dev-tools/space_station_map_arrays_qa.cjs` checks manual pointing, presets,
+held angles, projected silhouette versus solar input, rendered front/back faces,
+keyboard/touch interaction and preservation through camera and module changes.
+`node dev-tools/space_station_map_drive_qa.cjs` checks optional motor controls,
+command versus actual pose, shared-clock stepping, tracking lag, seek/hold
+semantics, the rendered target outline and cleanup.
+`node dev-tools/space_station_map_smooth_drive_qa.cjs` checks smooth-mode controls,
+velocity and braking-angle gauges, retargeting with stored velocity, speed-limit
+braking, pause/seek/hold semantics, rendered actual and commanded geometry, and
+cleanup on desktop and phone layouts. The pure
+`tests/space_station_map_smooth_drive.test.js` covers acceleration bounds, ramp-up,
+reversal, speed-limit changes, angular wrapping, hard-stop contact, static and
+moving-target convergence, input sanitization and partitioned-time agreement.
+`tests/space_station_map_braking.test.js` covers exact maximum deceleration,
+fractional stopping steps, signed travel, feather contact and zero-time boundary
+behavior, input limits, partition invariance, latched rest and resumed targets,
+simultaneous 3D corner trajectories, full stopping predictions beyond 3,600 seconds,
+and braking-mode propagation through cached and fractional forecast samples.
+`node dev-tools/space_station_map_braking_qa.cjs` checks native brake/resume
+controls, preserved commands and clock state, target-edit and setting lifecycle,
+real WebGL stopping geometry, visual-only overlay changes, forecast interaction,
+hard-stop reporting, and desktop/phone layout. Its browser results are recorded
+separately from the pure numerical checks.
+`npx vitest run tests/space_station_map_motion_probe.test.js --maxWorkers=1`
+checks independent central differences of the rotated material point,
+angular-velocity cross products, radial orthogonality, degree/radian conversion,
+both wings and span endpoints, feather-speed independence from span, exact
+cancellation with nonzero joint contributions, signed-rate reversal, input
+normalization, immutable results, shared arrow scaling and the 2.4-unit cap.
+With the local preview running,
+`node dev-tools/space_station_map_motion_probe_qa.cjs --widths=1440,390` checks
+native inspector controls, independently differentiated surface velocity,
+actual WebGL point and arrow geometry, the common display cap, motion framing
+and resize, playback-rate independence and paused stored velocities. It also
+checks the actual probe during future-pose inspection, exact +1 s braking,
+the stationary marker, motion-mode availability changes, desktop/phone layout,
+structural accessibility and scene disposal. Its browser results are recorded
+separately from the unit checks.
+`tests/space_station_map_surface_drag.test.js` checks independent forward-matrix
+recovery of span/chord through the inverse ray intersection, both panel halves
+and ray directions, normalized edge-on rejection, behind-camera and invalid
+inputs, locked-half edge clamps, positive ray-scale invariance, and material
+point velocity across the full panel width.
+`node dev-tools/space_station_map_surface_drag_qa.cjs --widths=1440,390` exercises
+trusted pointer and keyboard input on P, off-center capture, actual rendered
+point alignment, span/chord controls, edge-on behavior, drag interruption,
+preserved physics and forecast state, continued playback, responsive controls,
+accessibility and disposal. Browser run outcomes are recorded separately from
+the unit results.
+`tests/space_station_map_motion_field.test.js` covers surface-field kinematics,
+shared component scaling, corner maxima, locked-scale saturation and
+instantaneous-axis relationships. With the preview running,
+`node dev-tools/space_station_map_motion_field_qa.cjs --widths=1440,390` is the
+browser check for native field controls, rendered colors and axis geometry,
+probe linkage, preserved simulation and forecast state, mode availability,
+responsive layout and cleanup. Run outcomes are recorded separately from this
+description of the checks.
+`tests/space_station_map_joint_handles.test.js` covers ring bases, ray-plane
+projection, camera and ray-scale invariance, singular views, wrapped dragging,
+feather limit reversal and preserved velocity during retargeting.
+`node dev-tools/space_station_map_joint_handles_qa.cjs` checks native mouse,
+touch and keyboard handles, actual WebGL ring geometry, command versus actual
+motion, forecast invalidation, interrupted capture, layout and accessibility.
+`node dev-tools/space_station_map_forecast_qa.cjs` checks continuous-time inspection,
+rendered future geometry, keyboard/mouse/touch scrubbing, live-state preservation,
+exact selected-state advance, invalidation, accessibility and cleanup on desktop and phone.
+`tests/space_station_map_forecast.test.js` covers velocity-preserving propagation,
+future illumination and eclipse, corner transforms and angular wrapping, input
+sanitization and snapshot independence.
+`tests/space_station_map_continuous_forecast.test.js` covers fractional replay,
+cached-knot continuity, speed and acceleration bounds, braking, rigid geometry,
+grazing eclipses between samples, and order-independent, mutation-free seeking.
+`tests/space_station_map_forecast_inspection.test.js` covers event-side probes,
+sub-second eclipses, future panel-center transforms, full incidence angles,
+stable aligned/opposite direction arcs and immutable guide geometry.
+`node dev-tools/space_station_map_forecast_inspection_qa.cjs` checks the rendered
+future arrows, ring and arc, native crossing controls, guide visibility,
+live-state preservation, cleanup and desktop/phone layouts.
+`tests/space_station_map_forecast_playback.test.js` covers the four playback
+rates, sanitized elapsed time, exact crossing stops and resume, frame overshoot,
+closely spaced events, fractional horizons, immutable inputs and motor-state
+sampling at stopped events. `node dev-tools/space_station_map_forecast_playback_qa.cjs`
+checks both native speed selectors, automatic pauses through a 0.8-second
+grazing eclipse, exact position/velocity advancement, preference persistence,
+hidden-page pause, actual rendered geometry, accessibility and phone layout.
+It advances controlled timestamps through native animation frames so transport
+timing is repeatable while real WebGL renders each selected state.
+`tests/space_station_map_sun_timeline.test.js` covers analytical shadow intervals,
+short grazing eclipses, event boundaries, high-beta sunlight and motor-propagated
+incidence at crossings. `node dev-tools/space_station_map_sun_preview_qa.cjs`
+checks shared solar-chart scrubbing, continuous preview playback and stopping,
+fractional apply with preserved velocities, rendered preview fill, preserved live
+state, accessibility and desktop/phone layouts.
+`node dev-tools/space_station_map_lighting_qa.cjs --widths=1440,390` checks the
+shared eclipse/array model, controls and real planet/station render separation.
+`node dev-tools/space_station_map_bloom_qa.cjs` checks both preloaded and lazily
+loaded postprocessing, preserved color/depth between scene passes, final pixels
+and cleanup. It requires the six production Three r128 addons from the CDN and
+fails explicitly if they cannot be fetched. These standalone scripts accept
+`--base=http://127.0.0.1:4179` and `--out=reports/my-run` overrides and save their
+results and screenshots separately. Pure camera/lighting/array/drive checks can be run with
+`npx vitest run tests/space_station_map_camera.test.js tests/space_station_map_lighting.test.js tests/space_station_map_arrays.test.js tests/space_station_map_drive.test.js tests/space_station_map_smooth_drive.test.js tests/space_station_map_braking.test.js tests/space_station_map_forecast.test.js tests/space_station_map_sun_timeline.test.js tests/space_station_map_continuous_forecast.test.js --maxWorkers=1`.
+
 Use `--tabs=orbit --orbit-labs=drag` for the focused drag lab checks, including
 pointer/touch seeking, keyboard setup changes, burn inspection, and the model
 boundary. The default Orbit Lab check covers both transfer and drag experiments.
@@ -541,6 +1752,35 @@ checks and screenshots, including captured map/scan drag and touch, partial
 intersection, energy/mass switching, keyboard limits, shared axes and preservation
 of the clock and reference. The linked instrument opens at
 `?tab=operations&mode=debris#iss-debris-detector-title`.
+Use `--debris-sideways-only --widths=1440,820,390` for the focused sideways-energy
+checks: equal-mass center/rim sampling, RMS speed, the linked velocity field,
+mouse/touch chart dragging, keyboard limits, zero spread and structural axe.
+These checks also cover Small signals, unchanged physical readings, signed
+comparisons, zero-reference ratios and native tick-label widths. Position A/B
+checks exercise exact differences, coincident labels, pointer/touch movement,
+return/clear focus, marker invalidation, and preservation of the clock and saved
+design. Maximum checks inspect a refined peak at full precision, verify the
+flat-top/zero states and keep the A marker and experiment time unchanged.
+Half-maximum checks exercise both boundaries, central intervals, zero states,
+physical threshold placement on each scale and exact inspection offsets. Aperture
+comparison checks exercise keyboard opening/applying, common axes, radius limits,
+metric and zero states, saved-design independence and structural axe. The focused
+preview opens at
+`?tab=operations&mode=debris&scan=expansion&scale=softlog#iss-debris-detector-title`.
+Add `&aperture=compare#iss-debris-aperture-study-title` to open the size study.
+Use `--aperture-study-only --widths=1440,820,390` for native marker sizing,
+keyboard focus at the aperture limits, independent mouse/touch probing, exact
+main-position matching, total/per-area normalization, live readings, zero coverage
+states, spatial-map geometry, exact map landmarks and linked pointer/keyboard
+controls, shared-clock flight inspection, inverse axial seeking and pending-arrival
+semantics, speed-history steps and shared-time gestures, conserved impact budgets,
+component focus, exact zero-energy segments, material-following sample geometry,
+velocity triangles, sample keyboard and captured pointer controls, projected
+material paths and exact wall endpoints, horizontal path time scrubbing, physical
+scale-bar geometry and pointer lifecycle, marked-instant ghost geometry, signed
+displacements and return/clear behavior, signed displacement triangles and unsigned
+separation, equal-time guide spacing and exact-step
+seeking, plus comparison screenshots.
 The local preview accepts `?tab=operations&mode=power#iss-power-lab` and
 `?tab=operations&mode=thermal#iss-thermal-lab`. The pointing lab opens with
 `?tab=operations&mode=attitude#iss-attitude-lab`. The cabin air lab opens with

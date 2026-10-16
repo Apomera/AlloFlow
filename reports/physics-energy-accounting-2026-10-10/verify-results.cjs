@@ -20,7 +20,7 @@ assert.equal(hash(baseline), inputs.baselineSha256);
 assert.equal(prefix(source), prefix(baseline), 'Numerical source changed');
 assert.equal(hash(prefix(source)), inputs.numericalPrefixSha256);
 for (const spec of inputs.specs) assert.equal(hash(bytes(spec.file)), spec.sha256, 'Test changed after snapshot: ' + spec.file);
-assert.equal(inputs.expectedBrowserTests, 22);
+assert.equal(inputs.expectedBrowserTests, 23);
 assert.equal(inputs.expectedUnitTests, 356);
 assert.equal(inputs.expectedUnitFiles, 21);
 assert.equal(inputs.expectedPngs, 36);
@@ -29,7 +29,7 @@ assert.match(units, /Test Files\s+21 passed \(21\)/);
 assert.match(units, /Tests\s+356 passed \(356\)/);
 const browser = JSON.parse(fs.readFileSync(path.join(__dirname, 'browser-results.json'), 'utf8'));
 const outcomes = { expected: browser.stats.expected, unexpected: browser.stats.unexpected, flaky: browser.stats.flaky, skipped: browser.stats.skipped };
-assert.deepEqual(outcomes, { expected: 22, unexpected: 0, flaky: 0, skipped: 0 });
+assert.deepEqual(outcomes, { expected: 23, unexpected: 0, flaky: 0, skipped: 0 });
 const completed = [];
 function visit(suite) {
   for (const spec of suite.specs || []) for (const test of spec.tests || []) {
@@ -41,8 +41,8 @@ function visit(suite) {
   for (const child of suite.suites || []) visit(child);
 }
 browser.suites.forEach(visit);
-assert.equal(completed.length, 22);
-assert.equal(new Set(completed.map(test => test.file + ':' + test.title)).size, 22);
+assert.equal(completed.length, 23);
+assert.equal(new Set(completed.map(test => test.file + ':' + test.title)).size, 23);
 for (const spec of inputs.specs) {
   const wanted = path.basename(spec.file);
   assert.equal(completed.filter(test => path.basename(test.file) === wanted).length, spec.expectedTests, 'Missing complete cases: ' + wanted);

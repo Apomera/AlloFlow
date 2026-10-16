@@ -14,7 +14,7 @@ assert.equal(hash(baseline), 'e91d73525e07eb90f66ade539610f31847a0dcdba21d69c943
 assert.ok(source.equals(mirror), 'Source and desktop mirror differ');
 assert.equal(prefix(source), prefix(baseline), 'Numerical source changed');
 const specs = [
-  ['tests/e2e/physics-energy-accounting.spec.ts', 3],
+  ['tests/e2e/physics-energy-accounting.spec.ts', 4],
   ['tests/e2e/physics-energy-visuals.spec.ts', 9],
   ['tests/e2e/physics-analysis-workspace.spec.ts', 4],
   ['tests/e2e/physics-velocity-diagram.spec.ts', 3],
@@ -23,7 +23,7 @@ const specs = [
 const result = {
   sourceSha256: hash(source), mirrorSha256: hash(mirror), baselineSha256: hash(baseline),
   numericalPrefixSha256: hash(prefix(source)), numericalPrefixUnchanged: true,
-  specs, expectedBrowserTests: 22, expectedUnitTests: 356, expectedUnitFiles: 21, expectedPngs: 36,
+  specs, expectedBrowserTests: 23, expectedUnitTests: 356, expectedUnitFiles: 21, expectedPngs: 36,
 };
 const sourcePath = path.join(__dirname, 'validated-source.js');
 const manifestPath = path.join(__dirname, 'validation-inputs.json');
