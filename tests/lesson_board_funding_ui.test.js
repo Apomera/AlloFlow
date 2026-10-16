@@ -34,7 +34,9 @@ describe('Construction funding choices',()=>{
     await mount(UI.BoardView,{board,run,role:'solo',uid:'solo',roster:{solo:{}},onMove,t});
     await click('[data-ready-move=network]');
     expect(element.querySelector('[value=research]').checked).toBe(true);
-    expect(element.querySelector('[data-tabletop-forecast]').textContent).toContain('1 '+board.resources[0]+' · 0 '+board.resources[1]);
+    const forecast=element.querySelector('[data-tabletop-forecast]');   // Now -> After move layout: one balance element per resource
+    expect(forecast.textContent).toContain(board.resources[0]);
+    expect([0,1].map(index=>forecast.querySelector('[data-resource-after="'+index+'"]').textContent)).toEqual(['1','0']);
     await click('[data-board-move=network]');expect(onMove).toHaveBeenCalledWith('network','research');
     const built=engine.merge(run,engine.begin(board,run,'network','research'));
     await mount(UI.BoardView,{board,run:built,role:'solo',uid:'solo',roster:{solo:{}},t});
