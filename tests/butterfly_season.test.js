@@ -34,12 +34,19 @@ describe('Butterfly mowing and timing',()=>{
    expect(b.reason).toContain('nothing here to use');
  });
 
- it('fails a bare patch at the egg stage but a nectar patch at the caterpillar stage',()=>{
+ it('agrees with the life cycle: artificially placed eggs hatch before nonhost patches fail at the caterpillar stage',()=>{
    const s=BF.freshState();
    // Matches what the life cycle activity tells the learner: an egg on the
    // wrong plant still hatches; the caterpillar is the stage that starves.
-   expect(BF.seasonOutcome(BF.habitats(s).find(p=>p.id==='lawn'),'never').blocked).toBe('egg');
-   expect(BF.seasonOutcome(BF.habitats(s).find(p=>p.id==='bergamot'),'never').blocked).toBe('caterpillar');
+   for(const id of ['lawn','bergamot']){
+     const result=BF.seasonOutcome(BF.habitats(s).find(p=>p.id===id),'never');
+     expect(result.steps[0]).toMatchObject({id:'egg',resource:true,cleared:true});
+     expect(result.blocked).toBe('caterpillar');
+     expect(result.cutShort).toBe(false);
+     examined(s,id);BF.layEggs(s,id,'stalls');
+     while(BF.advanceStage(s).ok);
+     expect(s.lifecycle.stage).toBe(result.blocked);
+   }
  });
 
  it('refuses to run a season on a patch with no recorded evidence',()=>{
@@ -94,6 +101,9 @@ describe('Butterfly mowing and timing',()=>{
    BF.layEggs(t,'milkweed','complete');
    while(BF.advanceStage(t).ok);
    BF.broodResult(t);
+   examined(t,'bergamot');BF.layEggs(t,'bergamot','stalls');
+   while(BF.advanceStage(t).ok);
+   BF.broodResult(t);
    expect(BF.judgeClaim(t,'needs-both').tested).toBe(true);
    // ...and a brood says nothing about mowing timing.
    expect(BF.judgeClaim(t,'timing-irrelevant').tested).toBe(false);
@@ -113,7 +123,7 @@ describe('Butterfly mowing and timing',()=>{
    const s=examined(BF.freshState(),'milkweed');
    BF.runSeason(s,'milkweed','never','complete');
    const saved=BF.save(s);
-   expect(saved.version).toBe(4);
+   expect(saved.version).toBe(5);
    expect(BF.freshState(saved).season).toEqual(s.season);
    // Mutating the save must not reach back into live state.
    saved.season.runs[0].result='stop';
@@ -210,19 +220,21 @@ describe('Butterfly mowing and timing',()=>{
 
  it('stops counting a FOLLOWED GENERATION once its plot has been replanted',()=>{
    const s=BF.freshState();
+   examined(s,'bergamot');BF.layEggs(s,'bergamot','stalls');while(BF.advanceStage(s).ok);BF.broodResult(s);
    BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
    BF.layEggs(s,'restoration','complete');while(BF.advanceStage(s).ok);BF.broodResult(s);
    expect(BF.judgeClaim(s,'needs-both').tested).toBe(true);
-   expect(BF.judgeClaim(s,'needs-both').evidence.broods).toBe(1);
+   expect(BF.judgeClaim(s,'needs-both').evidence.broods).toBe(2);
    // Replant to bare lawn. Without this rule the evidence list carried two
    // contradictory lines: "no milkweed leaves" AND "reached the adult stage"
    // -- which is the exact misconception this tool exists to correct.
    BF.applyPlan(s,'lawn','neither');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
-   expect(s.lifecycle.broods).toHaveLength(1);      // kept as a record
+   expect(s.lifecycle.broods).toHaveLength(2);      // kept as a record
    expect(BF.broodFor(s,'restoration')).toBeNull(); // but not current
    const ev=BF.judgeClaim(s,'needs-both').evidence;
-   expect(ev.broods).toBe(0);
-   expect(ev.lines.filter(l=>l.kind==='brood')).toHaveLength(0);
+   expect(ev.broods).toBe(1);
+   expect(ev.lines.filter(l=>l.kind==='brood')).toHaveLength(1);
+   expect(ev.lines.filter(l=>l.kind==='brood')[0].text).toContain('Wild bergamot');
    expect(BF.judgeClaim(s,'needs-both').tested).toBe(false);
    // Replanting back makes it describe the ground again.
    BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
@@ -257,7 +269,7 @@ describe('Butterfly mowing and timing',()=>{
  it('offers no report until the learner has recorded something',()=>{
    const empty=render();
    expect(empty).toContain('Field report');
-   expect(empty).toContain('your records collect here');
+   expect(empty).toContain('notebook writing collect here');
    expect(empty).not.toContain('data-bf-report=');
    expect(BF.reportIsEmpty(BF.freshState())).toBe(true);
    const s=BF.freshState();s.observations.push('milkweed');

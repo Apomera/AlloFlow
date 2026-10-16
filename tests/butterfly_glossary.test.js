@@ -41,10 +41,11 @@ describe('Butterfly glossary',()=>{
    expect(find('Nectar plant').definition.toLowerCase()).toContain('not');
    // Milkweed is BOTH, which is why it is the one patch that carries a generation.
    expect(find('Milkweed').definition.toLowerCase()).toContain('nectar');
-   // The chrysalis entry must name the standing-plant dependency the season
-   // model turns on, or the two would teach different things.
+   // Distinguish the model's in-patch support assumption from the real
+   // caterpillar's ability to leave milkweed before pupating.
    expect(find('Chrysalis / pupa').definition.toLowerCase()).toContain('does not feed');
-   expect(find('Chrysalis / pupa').here.toLowerCase()).toContain('standing');
+   expect(find('Chrysalis / pupa').here.toLowerCase()).toContain('assumes mowing removes its support');
+   expect(find('Chrysalis / pupa').here.toLowerCase()).toContain('real caterpillars often leave');
    const s=BF.freshState();
    const plot=(BF.applyPlan(s,'mixed','both'),BF.habitats(s)[3]);
    expect(BF.seasonOutcome(plot,'mid').blocked).toBe('chrysalis');

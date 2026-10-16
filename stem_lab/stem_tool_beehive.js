@@ -89,6 +89,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-beehive-discovery-shell] [data-beehive-pulse] { gap:8px; }
       [data-beehive-discovery-shell] [data-beehive-vital] { min-height:0; padding:9px 12px 9px 16px; box-shadow:none; background:var(--bd-paper); border-color:var(--bd-line); backdrop-filter:none; }
       [data-beehive-discovery-shell] [data-beehive-vital-bar] { margin-top:5px; height:3px; }
+      [data-beehive-root] .bee-hero-heading { flex-wrap:wrap; }
+      [data-beehive-root] .bee-hero-copy { flex:1 1 16rem; }
+      [data-beehive-root] .bee-toolbox { --bt-ink:#233d37; --bt-paper:#fffef8; --bt-line:#a9b8aa; --bt-tint:#eef2e7; width:100%; min-width:0; border-top:1px solid var(--bt-line); padding-top:12px; color:var(--bt-ink); }
+      [data-beehive-theme="dark"] .bee-toolbox { --bt-ink:#edf5e9; --bt-paper:#172b26; --bt-line:#789187; --bt-tint:#22392f; }
+      [data-beehive-root] .bee-toolbox-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px; margin-bottom:10px; font-size:1rem; line-height:1.45; }
+      [data-beehive-root] .bee-toolbox-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,6.5rem),1fr)); gap:8px; }
+      [data-beehive-root] .bee-toolbox-button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-width:44px; min-height:64px; padding:10px 8px; border:1px solid var(--bt-line); border-bottom-width:3px; border-radius:10px; background:var(--bt-paper); color:var(--bt-ink); font-size:.875rem; font-weight:750; line-height:1.4; text-align:center; white-space:normal; overflow-wrap:normal; word-break:normal; }
+      [data-beehive-root] .bee-toolbox-button:hover { background:var(--bt-tint); }
+      [data-beehive-root] .bee-toolbox-button:is([aria-expanded="true"],[aria-pressed="true"]) { background:var(--bt-tint); border-color:var(--bt-ink); border-bottom-style:double; }
+      [data-beehive-root] .bee-toolbox-icon { font-size:1.25rem; line-height:1.2; }
+      [data-beehive-root] .bee-toolbox-label { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:0 .3em; max-width:100%; }
+      @media(forced-colors:active) { [data-beehive-root] .bee-toolbox { border-color:CanvasText; color:CanvasText; } [data-beehive-root] .bee-toolbox-button { background:ButtonFace; color:ButtonText; border-color:ButtonText; } [data-beehive-root] .bee-toolbox-button:is([aria-expanded="true"],[aria-pressed="true"]) { border-color:Highlight; border-bottom:3px double Highlight !important; } }
       .bee-discovery-grid { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:14px; }
       @container bee-shell (min-width:1050px) { .bee-discovery-grid { grid-template-columns:minmax(0,1fr) minmax(290px,330px); } }
       .bee-discovery-scene { min-width:0; }
@@ -272,6 +284,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-colony-explainer { margin-top:4px; padding:12px; border-left:3px solid var(--bc-focus); border-radius:8px; background:var(--bc-tint); font-size:.875rem; }
       .bee-colony-bands { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:10px; font-size:.8125rem; }
       .bee-colony-bands > div { min-width:0; padding:8px; border:1px solid var(--bc-line); border-radius:8px; }
+      .bee-colony-score-guide { margin-top:12px; }
+      .bee-colony-score-guide > summary { font-size:1rem; }
+      .bee-colony-score-guide .bee-colony-note { font-size:.875rem; }
+      .bee-colony-score-guide [data-score-inputs] { gap:12px; margin-top:12px; }
+      .bee-colony-score-guide [data-score-input] { padding:12px; border:2px solid var(--bc-line); background:var(--bc-paper); font-size:.875rem; line-height:1.55; }
+      .bee-colony-score-guide [data-score-lowest="true"] { border-style:dashed; border-color:var(--bc-focus); }
+      .bee-colony-score-heading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 12px; }
+      .bee-colony-score-heading strong { font-size:1rem; }
+      .bee-colony-score-guide [data-score-weight] { padding:2px 8px; border:1px solid var(--bc-line); border-radius:6px; color:var(--bc-muted); }
+      .bee-colony-score-guide [data-score-lowest-label] { display:inline-block; margin-top:6px; padding:2px 8px; border:1px dashed var(--bc-focus); border-radius:4px; font-weight:750; }
+      .bee-colony-score-guide [data-score-value] { display:block; margin-top:8px; color:var(--bc-ink); font-size:1rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-colony-score-meter { height:.75rem; margin-top:4px; border:1px solid var(--bc-focus); border-radius:3px; background:var(--bc-paper); overflow:hidden; }
+      .bee-colony-score-meter > span { display:block; height:100%; background:var(--bc-focus); }
+      .bee-colony-score-scale { display:flex; justify-content:space-between; font-size:.875rem; color:var(--bc-muted); }
+      .bee-colony-score-guide [data-score-contribution] { color:var(--bc-ink); font-weight:750; }
+      .bee-colony-score-total { margin-top:12px; padding:12px; border-left:3px solid var(--bc-focus); border-radius:6px; background:var(--bc-tint); }
+      .bee-colony-score-total strong { font-size:1rem; }
+      .bee-colony-score-total p { margin:6px 0 0; font-size:.875rem; color:var(--bc-muted); }
+      @media(forced-colors:active) { .bee-colony-score-meter > span { background:Highlight; forced-color-adjust:none; } }
+      .bee-colony-reserve-guide { margin-top:12px; }
+      .bee-colony-reserve-guide > summary { font-size:1rem; }
+      .bee-colony-reserve-guide .bee-colony-note { font-size:.875rem; }
+      .bee-colony-reserve-guide [data-reserve-readings] { gap:12px; margin-top:12px; }
+      .bee-colony-reserve-guide [data-reserve-reading] { padding:12px; border:2px solid var(--bc-line); background:var(--bc-paper); font-size:.875rem; line-height:1.55; }
+      .bee-colony-reserve-guide [data-reserve-reading] > strong { font-size:1rem; }
+      .bee-colony-reserve-guide [data-reserve-current] { display:block; margin-top:8px; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-colony-reserve-guide [data-reserve-status] { margin-top:6px; color:var(--bc-ink); font-weight:750; }
+      .bee-colony-reserve-meter { position:relative; height:1rem; margin:12px 0 6px; border:1px solid var(--bc-focus); border-radius:3px; background:var(--bc-paper); }
+      .bee-colony-reserve-meter [data-reserve-fill] { display:block; height:100%; border-radius:2px; background:var(--bc-focus); }
+      .bee-colony-reserve-meter [data-reserve-marker] { position:absolute; top:-3px; bottom:-3px; width:6px; transform:translateX(-50%); border-left:2px dashed var(--bc-ink); background:var(--bc-paper); }
+      .bee-colony-reserve-scale { display:flex; justify-content:space-between; gap:12px; color:var(--bc-muted); font-size:.875rem; }
+      .bee-colony-reserve-guide [data-reserve-guide-rounding] { margin-top:12px; }
+      @media(forced-colors:active) { .bee-colony-reserve-meter [data-reserve-fill] { background:Highlight; forced-color-adjust:none; } }
+      .bee-colony [data-colony-role-estimates] > h4 { font-size:1rem; }
+      .bee-colony [data-colony-role-estimates] > .bee-colony-note,.bee-colony [data-colony-role-estimates] .bee-colony-role-chips { font-size:.875rem; }
+      .bee-colony-workforce-guide { margin-top:12px; }
+      .bee-colony-workforce-guide > summary { font-size:1rem; }
+      .bee-colony-workforce-guide .bee-colony-note { font-size:.875rem; }
+      .bee-colony-workforce-guide [data-workforce-basis] { color:var(--bc-ink); font-weight:750; }
+      .bee-colony-workforce-guide [data-workforce-roles] { gap:12px; margin-top:12px; }
+      .bee-colony-workforce-guide [data-workforce-role] { padding:12px; border:2px solid var(--bc-line); border-left-width:4px; background:var(--bc-paper); font-size:.875rem; line-height:1.55; }
+      .bee-colony-workforce-guide [data-workforce-role] > strong { font-size:1rem; }
+      .bee-colony-workforce-guide [data-workforce-share] { color:var(--bc-ink); font-weight:750; }
+      .bee-colony-workforce-guide [data-workforce-count] { display:block; margin-top:8px; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-colony-workforce-guide [data-workforce-zero-share] { display:inline-block; margin-top:6px; padding:2px 8px; border:1px dashed var(--bc-line); border-radius:4px; }
+      .bee-colony-workforce-meter { height:.75rem; margin-top:10px; border:1px solid var(--bc-focus); border-radius:3px; background:var(--bc-paper); overflow:hidden; }
+      .bee-colony-workforce-meter > span { display:block; height:100%; background:var(--bc-focus); }
+      .bee-colony-workforce-scale { display:flex; justify-content:space-between; color:var(--bc-muted); font-size:.875rem; }
+      .bee-colony-workforce-guide [data-workforce-rounding] { margin-top:12px; }
+      @media(forced-colors:active) { .bee-colony-workforce-meter > span { background:Highlight; forced-color-adjust:none; } }
+      .bee-colony [data-colony-health-guide] > h4 { font-size:1rem; }
+      .bee-colony [data-colony-health-guide] .bee-colony-meter-status { font-size:.875rem; }
+      .bee-colony-stat-current { display:grid; gap:4px; margin:0 0 12px; padding:12px; border:1px solid var(--bc-line); border-radius:8px; background:var(--bc-paper); color:var(--bc-ink); }
+      .bee-colony-stat-current > span { font-size:.875rem; }
+      .bee-colony-stat-current > strong { font-size:1.125rem; line-height:1.4; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-colony [data-stat-direction] { margin:10px 0 0; font-weight:750; }
+      .bee-colony [data-stat-bonus-note] { margin:6px 0 0; }
+      .bee-colony [data-colony-health-guide] .bee-colony-bands { grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); font-size:.875rem; }
+      .bee-colony [data-colony-health-guide] .bee-colony-bands > div { padding:10px; border-width:3px; border-style:dashed; text-align:left; }
+      .bee-colony [data-colony-health-guide] .bee-colony-bands > [data-stat-current-band="true"] { border-style:solid; border-color:var(--bc-focus); }
+      .bee-colony [data-stat-current-label] { display:inline-block; margin-top:8px; padding:2px 6px; border:1px solid currentColor; border-radius:4px; font-weight:800; }
+      @media(forced-colors:active) {
+        .bee-colony [data-colony-health-guide] .bee-colony-meter > div[aria-hidden="true"] { background:Canvas; border:1px solid CanvasText; box-shadow:none!important; }
+        .bee-colony [data-colony-health-guide] .bee-colony-meter > div[aria-hidden="true"] > div { background:Highlight; forced-color-adjust:none; }
+      }
+      .bee-colony [data-colony-population-guide] > h4 { font-size:1rem; }
+      .bee-colony [data-population-scope] { margin:8px 0 0; color:var(--bc-muted); font-size:.875rem; }
+      .bee-colony [data-colony-population] { grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr)); gap:12px; margin-top:12px; }
+      .bee-colony [data-colony-population] dt { font-size:1rem; font-weight:750; color:var(--bc-ink); }
+      .bee-colony [data-population-value] { display:block; font-size:1.25rem; font-variant-numeric:tabular-nums; }
+      .bee-colony [data-population-unit],.bee-colony [data-population-context] { display:block; font-size:.875rem; line-height:1.55; font-weight:400; color:var(--bc-muted); }
+      .bee-colony [data-population-context] { margin-top:8px; }
+      .bee-colony-queen-condition { margin-top:12px; padding:12px; border:2px solid var(--bc-line); border-radius:10px; background:var(--bc-tint); }
+      .bee-colony-queen-condition dl { margin:0; }
+      .bee-colony-queen-condition dt { font-size:1rem; font-weight:750; }
+      .bee-colony-queen-condition dd { margin:6px 0 0; }
+      .bee-colony [data-queen-condition-value] { display:block; font-size:1.25rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-colony [data-queen-condition-unit] { display:block; font-size:.875rem; color:var(--bc-muted); }
+      .bee-colony-queen-condition p { margin:8px 0 0; font-size:.875rem; }
+      .bee-colony-queen-meter { height:.75rem; margin-top:12px; border:1px solid var(--bc-focus); border-radius:3px; background:var(--bc-paper); overflow:hidden; }
+      .bee-colony-queen-meter > span { display:block; height:100%; background:var(--bc-focus); }
+      .bee-colony-queen-scale { display:flex; justify-content:space-between; color:var(--bc-muted); font-size:.875rem; }
+      @container(max-width:380px) { .bee-colony [data-population-value] { font-size:1.125rem; } }
+      @media(forced-colors:active) { .bee-colony-queen-meter > span { background:Highlight; forced-color-adjust:none; } }
       .bee-colony :focus-visible { outline:3px solid var(--bc-focus); outline-offset:3px; }
       @container(min-width:560px) { .bee-colony-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
       @container(max-width:380px) { .bee-colony-bands { grid-template-columns:minmax(0,1fr); } }
@@ -410,6 +506,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
       .bee-interior,.bee-interior-entry { --hi-paper:#fffdf5; --hi-ink:#253c32; --hi-muted:#4d6256; --hi-line:#c9d5c2; --hi-tint:#f0f3e7; --hi-accent:#285740; --hi-on:#fff; color:var(--hi-ink); background:var(--hi-paper); border:1px solid var(--hi-line); border-radius:1rem; font-size:.875rem; line-height:1.6; overflow-wrap:anywhere; }
       [data-beehive-theme="dark"] :is(.bee-interior,.bee-interior-entry) { --hi-paper:#182b24; --hi-ink:#f0f5e8; --hi-muted:#bbd0c2; --hi-line:#496253; --hi-tint:#243c30; --hi-accent:#bce6b9; --hi-on:#173022; }
+      [data-beehive-root] .bee-3d-camera-controls { display:flex; flex-wrap:wrap; gap:.5rem; min-width:0; }
+      [data-beehive-root] .bee-3d-camera-controls > button { display:flex; flex:1 1 7rem; flex-wrap:wrap; align-items:center; justify-content:center; gap:.5rem; min-width:44px; min-height:44px; max-width:100%; padding:.5rem; font-size:.875rem; line-height:1.4; white-space:normal; }
+      .bee-3d-camera-symbol { flex:0 0 auto; font-size:1.125rem; line-height:1; }
+      .bee-3d-camera-label { flex:1 1 4.5rem; min-width:0; }
+      [data-beehive-root] .bee-3d-camera-controls > button:disabled { opacity:1!important; border-style:dashed; cursor:not-allowed; }
+      @media(forced-colors:active) { [data-beehive-root] .bee-3d-camera-controls > button:disabled { color:GrayText!important; border-color:GrayText!important; } }
+      .bee-3d-frame-navigator { --fn-ink:#78350f; --fn-paper:#fffbeb; --fn-line:#b45309; --fn-selected:#92400e; --fn-on:#fff; flex:1 1 100%; min-width:0; display:grid; gap:.75rem; padding:.75rem; border:1px solid var(--fn-line); border-radius:.75rem; background:var(--fn-paper); color:var(--fn-ink); font-size:.875rem; line-height:1.5; }
+      [data-beehive-theme="dark"] .bee-3d-frame-navigator { --fn-ink:#fef3c7; --fn-paper:#0f172a; --fn-line:#d97706; --fn-selected:#fde68a; --fn-on:#451a03; }
+      .bee-3d-frame-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:.5rem 1rem; }
+      .bee-3d-frame-readout { font-size:1rem; font-weight:800; }
+      .bee-3d-frame-direction { display:flex; justify-content:space-between; gap:1rem; margin-bottom:.25rem; }
+      .bee-3d-frame-positions { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:.25rem; }
+      .bee-3d-frame-positions > span { display:flex; align-items:center; justify-content:center; min-width:0; min-height:2rem; border:1px solid var(--fn-line); border-radius:.25rem; font-weight:700; }
+      .bee-3d-frame-positions > span[data-selected="true"] { background:var(--fn-selected); color:var(--fn-on); border:3px double var(--fn-on); outline:2px solid var(--fn-selected); outline-offset:-1px; }
+      .bee-3d-frame-note { margin:0; }
+      .bee-3d-frame-steps { display:flex; flex-wrap:wrap; gap:.5rem; }
+      [data-beehive-root] .bee-3d-frame-steps > button { display:flex; flex:1 1 10rem; flex-wrap:wrap; align-items:center; justify-content:center; gap:.5rem; min-width:44px; min-height:44px; max-width:100%; padding:.5rem; border:1px solid var(--fn-line); border-radius:.5rem; color:var(--fn-ink); background:var(--fn-paper); font-size:1rem; font-weight:700; line-height:1.4; white-space:normal; }
+      .bee-3d-frame-step-label { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+      [data-beehive-root] .bee-3d-frame-steps > button:disabled { opacity:1; border-style:dashed; cursor:not-allowed; }
+      @media(forced-colors:active) { [data-beehive-root] .bee-3d-frame-navigator { --fn-ink:CanvasText; --fn-paper:Canvas; --fn-line:CanvasText; --fn-selected:Highlight; --fn-on:HighlightText; } .bee-3d-frame-positions > span[data-selected="true"] { color:CanvasText; background:Canvas; outline:3px solid Highlight; border:3px double CanvasText; } [data-beehive-root] .bee-3d-frame-steps > button { color:ButtonText; background:ButtonFace; border-color:ButtonText; } [data-beehive-root] .bee-3d-frame-steps > button:disabled { color:GrayText; border-color:GrayText; } }
+      [data-beehive-root] .bee-guided-inspection { font-size:.875rem; line-height:1.6; }
+      [data-beehive-root] .bee-guided-inspection :is(li,[role="radiogroup"],button) { font-size:.875rem; line-height:1.5; }
+      [data-beehive-root] .bee-guided-inspection button { min-width:44px; min-height:44px; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+      [data-beehive-root] .bee-guided-inspection button[role="radio"][aria-checked="true"] { color:#fff; background:#92400e; border:3px double currentColor; }
+      [data-beehive-theme="dark"] .bee-guided-inspection button[role="radio"][aria-checked="true"] { color:#451a03; background:#fde68a; }
+      .bee-inspection-preparation { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:.75rem; margin-block:.75rem; }
+      .bee-inspection-prep-card { display:grid; align-content:start; gap:.75rem; min-width:0; padding:min(.75rem,12px); border:1px solid #64748b; border-radius:.65rem; background:#fff; }
+      [data-beehive-theme="dark"] .bee-inspection-prep-card { border-color:#94a3b8; background:#0f172a; }
+      .bee-inspection-prep-card :is(h4,p) { margin:0; }
+      .bee-inspection-prep-card h4 { font-size:1rem; font-weight:800; }
+      .bee-inspection-route-frames { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,7rem),1fr)); gap:.5rem; min-width:0; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-route-frame { display:grid; align-content:start; gap:.25rem; min-width:44px; padding:.5rem min(.5rem,8px); text-align:left; border:1px solid currentColor; border-radius:.5rem; background:transparent; color:inherit; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-route-frame[aria-pressed="true"] { border:3px double currentColor; background:#fef3c7; }
+      [data-beehive-theme="dark"] .bee-guided-inspection .bee-inspection-route-frame[aria-pressed="true"] { background:#451a03; }
+      .bee-inspection-route-frame strong { font-size:1rem; }
+      .bee-inspection-route-current { font-weight:800; }
+      .bee-inspection-prep-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-prep-actions button { padding:.5rem min(.75rem,12px); border:1px solid currentColor; border-radius:.5rem; background:transparent; color:inherit; font-weight:700; }
+      @media(forced-colors:active) { .bee-inspection-prep-card { border-color:CanvasText; background:Canvas; color:CanvasText; } [data-beehive-root] .bee-guided-inspection .bee-inspection-route-frame[aria-pressed="true"] { background:Canvas; color:CanvasText; } }
+      .bee-inspection-choices { display:grid; gap:.75rem; margin-top:.75rem; }
+      .bee-inspection-questions { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr)); gap:1rem; min-width:0; }
+      .bee-inspection-question { display:grid; align-content:start; gap:.5rem; min-width:0; }
+      .bee-inspection-bottom-bar { min-width:0; border:1px solid currentColor; border-radius:.5rem; background:#fff; }
+      [data-beehive-theme="dark"] .bee-inspection-bottom-bar { background:#0f172a; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-bottom-bar > summary { min-height:44px; min-width:44px; padding:.65rem min(.5rem,8px); cursor:pointer; list-style-position:inside; font-size:.875rem; line-height:1.5; font-weight:700; }
+      .bee-inspection-bottom-bar-content { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:.65rem; min-width:0; padding:.5rem min(.75rem,12px) min(.75rem,12px); }
+      .bee-inspection-bottom-bar-content :is(p,figure,figcaption) { margin:0; }
+      [data-inspection-bottom-bar-context] { grid-column:1/-1; }
+      .bee-inspection-bottom-bar-content figure { display:grid; gap:.5rem; min-width:0; }
+      .bee-inspection-bottom-bar-content svg { display:block; width:100%; height:auto; border:1px solid #64748b; border-radius:.35rem; background:#fffbeb; }
+      .bee-inspection-cue-comb { fill:none; stroke:#78350f; stroke-width:2; }
+      .bee-inspection-cue-bar { fill:#fde68a; stroke:#78350f; stroke-width:3; }
+      .bee-inspection-cue-form { fill:#92400e; stroke:#451a03; stroke-width:2; }
+      [data-beehive-theme="dark"] .bee-inspection-bottom-bar-content svg { background:#1e293b; border-color:#94a3b8; }
+      [data-beehive-theme="dark"] .bee-inspection-cue-comb { stroke:#fde68a; }
+      [data-beehive-theme="dark"] .bee-inspection-cue-bar { fill:#451a03; stroke:#fde68a; }
+      [data-beehive-theme="dark"] .bee-inspection-cue-form { fill:#fcd34d; stroke:#fffbeb; }
+      .bee-inspection-bottom-bar-help { margin:0; font-size:.875rem; line-height:1.6; }
+      @media(forced-colors:active) { .bee-inspection-bottom-bar svg, .bee-inspection-bottom-bar svg * { forced-color-adjust:auto; } .bee-inspection-bottom-bar, .bee-inspection-bottom-bar-content svg { background:Canvas; color:CanvasText; border-color:CanvasText; } .bee-inspection-cue-comb { stroke:CanvasText!important; } .bee-inspection-cue-bar { fill:Canvas!important; stroke:CanvasText!important; } .bee-inspection-cue-form { fill:CanvasText!important; stroke:CanvasText!important; } }
+      .bee-inspection-bottom-bar-content.bee-inspection-brood-content { grid-template-columns:minmax(0,1fr); }
+      .bee-inspection-brood-examples { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap:.75rem; min-width:0; }
+      .bee-inspection-brood-examples figure { padding:min(.75rem,12px); border:1px solid currentColor; border-radius:.5rem; align-content:start; }
+      .bee-inspection-brood-examples h5 { margin:0; font-size:1rem; font-weight:800; }
+      .bee-inspection-brood-examples svg { max-height:14rem; }
+      .bee-inspection-brood-overlay { display:grid; gap:.5rem; min-width:0; }
+      .bee-inspection-brood-overlay p { font-size:.875rem; line-height:1.6; }
+      .bee-inspection-brood-boundary,.bee-inspection-brood-gap { fill:none; stroke:#1d4ed8; stroke-width:2; vector-effect:non-scaling-stroke; }
+      .bee-inspection-brood-boundary { stroke-dasharray:5 3; stroke-linejoin:round; }
+      [data-beehive-theme="dark"] :is(.bee-inspection-brood-boundary,.bee-inspection-brood-gap) { stroke:#93c5fd; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-brood-content button[aria-pressed="true"] { border-width:2px; background:#dbeafe; color:#1e3a8a; }
+      [data-beehive-theme="dark"] .bee-guided-inspection .bee-inspection-brood-content button[aria-pressed="true"] { background:#172554; color:#dbeafe; }
+      @media(forced-colors:active) { .bee-inspection-brood-boundary,.bee-inspection-brood-gap { stroke:CanvasText!important; } [data-beehive-root] .bee-guided-inspection .bee-inspection-brood-content button[aria-pressed="true"] { background:ButtonFace; color:ButtonText; border:3px double ButtonText; } }
+      .bee-inspection-brood-cap { stroke:#fffbeb; stroke-width:2; }
+      [data-beehive-theme="dark"] .bee-inspection-brood-cap { stroke:#451a03; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-brood-content button { justify-self:start; padding:.5rem min(.75rem,12px); border:1px solid currentColor; border-radius:.5rem; color:inherit; background:transparent; font-weight:700; }
+      @media(forced-colors:active) { .bee-inspection-brood-cap { stroke:Canvas!important; } }
+      .bee-inspection-review-next { display:grid; gap:.75rem; min-width:0; padding:min(.75rem,12px); border:1px solid currentColor; border-radius:.65rem; background:#fff; }
+      [data-beehive-theme="dark"] .bee-inspection-review-next { background:#0f172a; }
+      .bee-inspection-review-next :is(h4,p) { margin:0; }
+      .bee-inspection-review-next h4 { font-size:1rem; font-weight:800; }
+      .bee-inspection-review-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap:.75rem; min-width:0; }
+      [data-beehive-root] .bee-guided-inspection :is(.bee-inspection-review-actions button,[data-inspection-review-return]) { padding:.65rem min(.75rem,12px); border:1px solid currentColor; border-radius:.5rem; background:transparent; color:inherit; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-review-actions button { display:grid; align-content:start; gap:.35rem; text-align:left; }
+      .bee-inspection-review-actions strong { font-weight:800; }
+      [data-inspection-review-return] { grid-column:1/-1; justify-self:start; font-weight:700; }
+      @media(forced-colors:active) { .bee-inspection-review-next { background:Canvas; color:CanvasText; border-color:CanvasText; } }
+      .bee-inspection-options { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr)); gap:.5rem; min-width:0; }
+      [data-beehive-root] .bee-guided-inspection .bee-inspection-choice { display:flex; align-items:center; gap:.5rem; width:100%; padding:.65rem min(.75rem,12px); text-align:left; }
+      .bee-inspection-choice-mark { display:grid; place-items:center; flex:none; width:1.25em; height:1.25em; border:2px solid currentColor; border-radius:50%; line-height:1; }
+      .bee-inspection-choice-label { min-width:0; }
+      .bee-inspection-choice-help,.bee-inspection-draft-status { margin:0; font-size:.875rem; line-height:1.6; }
+      .bee-inspection-draft-status { padding:.65rem min(.75rem,12px); border-inline-start:3px solid currentColor; }
+      .bee-inspection-choices > button { justify-self:start; }
+      .bee-inspection-review { --ir-ink:#1e293b; --ir-muted:#475569; --ir-paper:#fff; --ir-card:#f8fafc; --ir-line:#64748b; --ir-match:#15803d; --ir-review:#b45309; display:grid; gap:.75rem; margin-top:1rem; padding:min(1rem,16px); border:1px solid var(--ir-line); border-radius:.75rem; background:var(--ir-paper); color:var(--ir-ink); font-size:.875rem; line-height:1.6; }
+      [data-beehive-theme="dark"] .bee-inspection-review { --ir-ink:#f1f5f9; --ir-muted:#cbd5e1; --ir-paper:#0f172a; --ir-card:#1e293b; --ir-line:#94a3b8; --ir-match:#86efac; --ir-review:#fcd34d; }
+      .bee-inspection-review :is(h4,h5,p,dl,dd) { margin:0; }
+      .bee-inspection-review :is(h4,h5) { font-size:1rem; font-weight:800; }
+      .bee-inspection-review > p,.bee-inspection-result > p { color:var(--ir-muted); }
+      .bee-inspection-results { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:.75rem; min-width:0; }
+      .bee-inspection-result { display:grid; align-content:start; gap:.75rem; min-width:0; padding:min(.75rem,12px); background:var(--ir-card); border:1px solid var(--ir-line); border-radius:.5rem; overflow-wrap:anywhere; }
+      .bee-inspection-result[data-result="match"] { border-inline-start:4px solid var(--ir-match); }
+      .bee-inspection-result[data-result="review"] { border-inline-start:4px dashed var(--ir-review); }
+      .bee-inspection-result[data-result="unknown"] { border-inline-start:4px dotted var(--ir-line); }
+      .bee-inspection-result-head { display:grid; gap:.35rem; }
+      .bee-inspection-verdict { justify-self:start; max-width:100%; padding:.15rem min(.5rem,8px); border:1px solid var(--ir-line); border-radius:.35rem; font-weight:700; }
+      .bee-inspection-result dl { display:grid; gap:.75rem; }
+      .bee-inspection-result dt { color:var(--ir-muted); }
+      .bee-inspection-result dd { font-size:1rem; font-weight:700; }
+      @media(forced-colors:active) { [data-beehive-root] .bee-inspection-review { --ir-ink:CanvasText; --ir-muted:CanvasText; --ir-paper:Canvas; --ir-card:Canvas; --ir-line:CanvasText; --ir-match:CanvasText; --ir-review:CanvasText; } [data-beehive-root] .bee-guided-inspection button[role="radio"][aria-checked="true"] { color:ButtonText; background:ButtonFace; border-color:ButtonText; } }
       .bee-interior { container:bee-interior / inline-size; display:grid; gap:1rem; padding:1rem; }
       .bee-interior :is(p,h3,h4,figure,dl) { margin:0; }
       .bee-interior > *,.bee-interior-study > * { min-width:0; }
@@ -506,6 +711,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-position-reading dt { color:var(--hi-muted); }
       .bee-interior-position-reading dd { margin:0; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
       .bee-interior-position-pair { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-read-context { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.75rem; min-width:0; padding:.75rem; border:1px solid var(--hi-line); border-inline-start:4px solid var(--hi-accent); border-radius:.6rem; background:var(--hi-tint); }
+      .bee-interior-read-context > div { flex:1 1 15rem; display:grid; gap:.25rem; min-width:0; }
+      .bee-interior-read-context [data-interior-read-frame] { font-size:1rem; font-weight:800; }
+      .bee-interior-read-context [data-interior-read-study] { color:var(--hi-muted); }
+      .bee-interior-read-context > button { max-width:100%; white-space:normal; }
+      @container bee-interior (max-width:20rem) { .bee-interior-read-context { padding:8px; } .bee-interior-read-context > button { width:100%; } }
+      @media(forced-colors:active) { .bee-interior-read-context { border-color:CanvasText; border-inline-start-color:Highlight; } }
       .bee-interior-position-figure { border-width:2px; }
       .bee-interior-position-figure[data-selected="true"] { border-color:var(--hi-accent); }
       .bee-interior-position-figure .bee-interior-position-selection { padding:.15rem .5rem; border:1px solid var(--hi-line); border-radius:.35rem; font-weight:750; }
@@ -546,7 +758,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-key-symbol .bee-interior-cap-mark { stroke:var(--hi-paper); }
       .bee-interior-key-controls button[aria-pressed="true"] .bee-interior-cap-mark { stroke:var(--hi-accent); }
       .bee-interior-cell-detail { display:grid; gap:.5rem; border-top:1px solid var(--hi-line); padding-top:.75rem; }
-      .bee-interior-highlight-note { border-left:3px solid var(--hi-accent); padding-left:.65rem; }
+      .bee-interior-pattern-status { display:grid; gap:.5rem; min-width:0; padding:min(.625rem,10px); border:1px solid var(--hi-line); border-inline-start:3px solid var(--hi-accent); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-pattern-status > h5 { margin:0; font-size:1rem; line-height:1.5; font-weight:800; }
+      .bee-interior-pattern-label { justify-self:start; max-width:100%; padding:.2rem min(.5rem,8px); border:1px solid currentColor; border-radius:.3rem; font-weight:750; }
+      .bee-interior-pattern-status > button { justify-self:start; max-width:100%; }
+      @container bee-interior (max-width:20rem) { .bee-interior-pattern-status { padding:6px; } .bee-interior-pattern-label { padding-inline:4px; } .bee-interior-pattern-status > button { width:100%; } }
       .bee-interior-cell-detail p { color:var(--hi-muted); }
       .bee-interior-study-key { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:.5rem; min-width:0; margin:0; padding:0; list-style:none; }
       .bee-interior-study-key li { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; min-width:0; padding:min(.65rem,10px); border:1px solid var(--hi-line); border-radius:.5rem; color:var(--hi-ink); background:var(--hi-paper); }
@@ -597,6 +813,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-lens { display:grid; gap:.85rem; min-width:0; margin-top:.75rem; padding:min(1rem,16px); border:1px solid var(--hi-line); border-top:4px solid var(--hi-accent); border-radius:.75rem; background:var(--hi-tint); }
       .bee-interior-lens-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.65rem; }
       .bee-interior-lens-heading h4 { font-size:1.125rem; line-height:1.4; font-weight:800; }
+      .bee-interior-lens-actions { display:flex; flex-wrap:wrap; gap:.5rem; min-width:0; }
+      .bee-interior-lens-results { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-lens-verdict { display:grid; gap:.5rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-left:4px solid var(--hi-accent); border-radius:.6rem; background:var(--hi-paper); }
+      .bee-interior-lens-verdict > strong { justify-self:start; max-width:100%; padding:.2rem min(.5rem,8px); border:1px solid currentColor; border-radius:.3rem; font-size:1rem; font-weight:800; line-height:1.5; }
+      .bee-interior-lens-verdict[data-interior-lens-verdict="changed"] > strong { border:3px double currentColor; }
+      .bee-interior-lens-verdict[data-interior-lens-verdict="unavailable"] > strong { border-style:dashed; }
+      @container bee-interior (max-width:20rem) { .bee-interior-lens-verdict { padding:6px; } .bee-interior-lens-verdict > strong { padding-inline:4px; } }
+      .bee-interior-lens-results h5 { margin:0; font-size:1rem; line-height:1.5; font-weight:800; }
       .bee-interior-lens-navigation { display:grid; grid-template-columns:minmax(0,1fr); gap:.85rem; min-width:0; align-items:start; }
       .bee-interior-lens-map { display:grid; gap:.5rem; min-width:0; margin:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-radius:.6rem; background:var(--hi-paper); }
       .bee-interior-lens-map h5 { margin:0; font-size:1rem; line-height:1.4; font-weight:800; }
@@ -624,11 +848,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-beehive-root] .bee-interior .bee-interior-lens-steps button[aria-disabled="true"] { cursor:default; color:var(--hi-muted); background:var(--hi-tint); border-style:dashed; box-shadow:none; }
       @container bee-interior (max-width:20rem) { .bee-interior-lens-axis { padding:8px; } .bee-interior-lens-steps { grid-template-columns:minmax(0,1fr); } [data-beehive-root] .bee-interior .bee-interior-lens-steps button { padding:8px 4px; } }
       @media(forced-colors:active) { [data-beehive-root] .bee-interior .bee-interior-lens-steps button[aria-disabled="true"] { color:GrayText!important; border-color:GrayText!important; } }
+      .bee-interior-lens-change-guide { display:grid; gap:.65rem; min-width:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-left:4px solid var(--hi-accent); border-radius:.6rem; background:var(--hi-paper); }
+      .bee-interior-lens-change-guide .bee-interior-lens-steps button { flex-wrap:wrap; }
+      .bee-interior-lens-change-guide .bee-interior-lens-steps button > span:last-child { flex:1 1 7rem; }
+      .bee-interior-lens-change-guide h5 { margin:0; font-size:1rem; line-height:1.5; font-weight:800; }
+      .bee-interior-lens-change-guide [data-interior-lens-change-progress] { font-weight:750; font-variant-numeric:tabular-nums; }
+      .bee-interior-lens-change-guide .bee-interior-lens-change { padding:0; border:0; border-radius:0; background:transparent; }
+      @container bee-interior (max-width:20rem) { .bee-interior-lens-change-guide { padding:8px; } }
       .bee-interior-lens-pair { display:grid; gap:.75rem; min-width:0; }
-      .bee-interior-lens .bee-interior-figure { min-width:0; padding:8px; background:var(--hi-paper); }
-      .bee-interior-lens .bee-interior-figure > svg { display:block; width:100%; max-width:360px; height:auto; margin:.5rem auto; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
+      .bee-interior-lens .bee-interior-figure { display:flex; flex-direction:column; min-width:0; padding:8px; background:var(--hi-paper); }
+      .bee-interior-lens .bee-interior-figure > svg { display:block; flex:0 0 auto; width:100%; max-width:360px; height:auto; margin:auto auto .5rem; border:1px solid var(--hi-line); border-radius:.5rem; background:var(--hi-paper); }
       .bee-interior-lens figcaption { display:grid; gap:.4rem; }
-      .bee-interior-lens figcaption > strong { color:var(--hi-ink); font-size:1rem; }
+      .bee-interior-lens .bee-interior-lens-caption { padding:min(.5rem,8px) 0; }
+      .bee-interior-lens-mark-label { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; min-width:0; }
+      .bee-interior-lens-mark-label strong { flex:1 1 7rem; min-width:0; color:var(--hi-ink); font-size:1rem; line-height:1.5; }
+      .bee-interior-lens-mark-label .bee-interior-study-symbol { flex:0 0 min(3rem,48px); width:min(3rem,48px); height:min(3rem,48px); }
+      .bee-interior-lens-caption .bee-interior-figure-heading { padding:0 0 .5rem; }
+      @container bee-interior (max-width:20rem) { .bee-interior-lens-mark-label strong[data-lens-pattern-unavailable="true"] { font-size:.875rem; } }
+      @media(forced-colors:active) { .bee-interior-lens-caption .bee-interior-study-symbol .bee-interior-cap-mark { stroke:Canvas; } }
+      .bee-interior-lens-unknown { pointer-events:none; }
+      .bee-interior-lens-unknown rect { fill:var(--hi-paper); stroke:var(--hi-muted); stroke-width:1.5; stroke-dasharray:4 3; }
+      .bee-interior-lens-unknown text { fill:var(--hi-ink); stroke:none; font-size:40px; font-weight:800; }
+      @media(forced-colors:active) { .bee-interior-lens-unknown rect { fill:Canvas; stroke:CanvasText; } .bee-interior-lens-unknown text { fill:CanvasText; } }
       .bee-interior-lens-halo { fill:none; stroke:var(--hi-paper); stroke-width:6; pointer-events:none; }
       .bee-interior-lens-ring { fill:none; stroke:var(--hi-ink); stroke-width:2.5; stroke-dasharray:4 2; pointer-events:none; }
       @container bee-interior (min-width:28rem) { .bee-interior-lens-controls,.bee-interior-lens-pair[data-paired="true"] { grid-template-columns:repeat(2,minmax(0,1fr)); } }
@@ -655,6 +896,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       @media(forced-colors:active) { .bee-interior-cell .bee-interior-change-halo { stroke:Canvas; } .bee-interior-cell .bee-interior-change-line { stroke:CanvasText; } .bee-interior-change-controls input:focus-visible { outline-color:Highlight; } }
 
       .bee-interior-frame-pair { display:grid; gap:.75rem; min-width:0; }
+      .bee-interior-frame-pair > .bee-interior-figure { display:flex; flex-direction:column; }
+      .bee-interior-frame-pair > .bee-interior-figure > svg { flex:0 0 auto; margin-top:auto; }
+      .bee-interior-frame-pair .bee-interior-frame-caption { display:grid; gap:.5rem; min-width:0; padding:min(.5rem,8px); }
+      .bee-interior-frame-pair .bee-interior-frame-caption .bee-interior-figure-heading { min-width:0; padding:0; color:var(--hi-ink); }
       .bee-interior-figure-heading { display:flex; flex-wrap:wrap; gap:.25rem .75rem; justify-content:space-between; padding:.5rem; font-size:1rem; font-weight:800; }
       .bee-interior-figure-heading span { font-size:.875rem; font-weight:650; color:var(--hi-muted); }
       .bee-interior-figure[data-held="true"] { border-style:dashed; }
@@ -943,6 +1188,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         .bee-pulse [data-beehive-vital]::before { display:none; }
         .bee-pulse [data-beehive-vital-bar] > span { background:Highlight!important; forced-color-adjust:none; }
       }
+      [data-beehive-root] .bee-badges { --ba-ink:#172033; --ba-muted:#475569; --ba-paper:#fffef9; --ba-tint:#eef5e9; --ba-line:#94a3b8; --ba-earned:#28543c; padding:16px; border:1px solid var(--ba-line); border-radius:.9rem; color:var(--ba-ink); background:var(--ba-paper); font-size:.875rem; line-height:1.6; overflow-wrap:anywhere; }
+      [data-beehive-theme="dark"] .bee-badges { --ba-ink:#f1f5f9; --ba-muted:#cbd5e1; --ba-paper:#111e2e; --ba-tint:#1d352e; --ba-line:#64748b; --ba-earned:#a7e2b4; }
+      .bee-badges-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+      .bee-badges h2 { margin:0; font-size:1.125rem; line-height:1.5; font-weight:800; }
+      .bee-badges button { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; min-width:44px; min-height:44px; padding:8px 12px; border:1px solid var(--ba-line); border-radius:.5rem; background:var(--ba-paper); color:var(--ba-ink); font:inherit; font-weight:700; }
+      .bee-badges button kbd { padding:2px 6px; border:1px solid var(--ba-line); border-bottom-width:3px; border-radius:4px; font-size:.875rem; }
+      .bee-badges p { margin:8px 0 0; color:var(--ba-muted); }
+      .bee-badges-summary { margin-top:16px; padding:12px; border:1px solid var(--ba-line); border-radius:.6rem; background:var(--ba-tint); }
+      .bee-badges-counts { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 16px; }
+      .bee-badges [data-badges-earned-count] { font-size:1.25rem; line-height:1.5; }
+      .bee-badges [data-badges-remaining-count] { color:var(--ba-muted); }
+      .bee-badges [data-badges-progress] { height:.75rem; margin-top:12px; border:1px solid var(--ba-earned); border-radius:3px; background:var(--ba-paper); overflow:hidden; }
+      .bee-badges [data-badges-progress-fill] { display:block; height:100%; background:var(--ba-earned); }
+      .bee-badges [data-badges-history] { margin-top:12px; }
+      .bee-badges [data-badges-grid] { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:12px; padding:0; margin:16px 0 0; list-style:none; }
+      .bee-badges [data-badge-id] { min-width:0; padding:12px; border:2px dashed var(--ba-line); border-radius:.6rem; background:var(--ba-paper); }
+      .bee-badges [data-badge-earned="true"] { border-style:solid; border-color:var(--ba-earned); background:var(--ba-tint); }
+      .bee-badge-heading { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+      .bee-badge-heading > span { font-size:1.5rem; line-height:1.3; }
+      .bee-badges h3 { flex:1 1 10rem; min-width:0; margin:0; font-size:1rem; font-weight:750; line-height:1.5; }
+      .bee-badges [data-badge-status] { display:inline-block; padding:2px 8px; border:1px solid var(--ba-line); border-radius:4px; color:var(--ba-ink); font-weight:750; }
+      .bee-badges [data-badge-earned="true"] [data-badge-status] { border-color:var(--ba-earned); color:var(--ba-earned); }
+      .bee-badges [data-badge-earned-day] { padding-top:8px; border-top:1px solid var(--ba-line); }
+      @media(forced-colors:active) { [data-beehive-root] .bee-badges { --ba-ink:CanvasText; --ba-muted:CanvasText; --ba-paper:Canvas; --ba-tint:Canvas; --ba-line:CanvasText; --ba-earned:CanvasText; } .bee-badges button { background:ButtonFace; color:ButtonText; border-color:ButtonText; } .bee-badges [data-badges-progress-fill] { background:Highlight; forced-color-adjust:none; } }
+      [data-beehive-root] .bee-shortcuts { --bk-ink:#172033; --bk-muted:#475569; --bk-paper:#fffef9; --bk-soft:#f6f2e6; --bk-line:#94a3b8; --bk-accent:#854d0e; padding:16px; border:1px solid var(--bk-line); border-radius:.9rem; background:var(--bk-paper); color:var(--bk-ink); font-size:.875rem; line-height:1.6; overflow-wrap:anywhere; }
+      [data-beehive-theme="dark"] .bee-shortcuts { --bk-ink:#f1f5f9; --bk-muted:#cbd5e1; --bk-paper:#111e2e; --bk-soft:#253044; --bk-line:#64748b; --bk-accent:#fde68a; }
+      .bee-shortcuts-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.75rem; }
+      .bee-shortcuts h2 { margin:0; font-size:1.125rem; font-weight:800; line-height:1.5; }
+      .bee-shortcuts h3 { margin:0; font-size:1rem; font-weight:750; line-height:1.5; }
+      .bee-shortcuts p { margin:.5rem 0 0; color:var(--bk-muted); }
+      .bee-shortcuts button { display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:.5rem; min-width:44px; min-height:44px; padding:.5rem .75rem; border:1px solid var(--bk-line); border-radius:.5rem; background:var(--bk-soft); color:var(--bk-ink); font:inherit; font-weight:700; }
+      .bee-shortcuts [data-shortcuts-scope] { margin-top:1rem; padding:12px; border-inline-start:4px solid var(--bk-accent); background:var(--bk-soft); }
+      .bee-shortcuts [data-shortcuts-scope] strong { display:block; color:var(--bk-accent); font-size:1rem; }
+      .bee-shortcuts [data-shortcuts-scope] p { margin:.25rem 0 0; }
+      .bee-shortcuts-setting { margin-top:1rem; padding:12px; border:1px solid var(--bk-line); border-radius:.5rem; }
+      .bee-shortcuts-setting label { display:flex; align-items:center; gap:12px; min-height:44px; cursor:pointer; font-weight:700; }
+      .bee-shortcuts-setting input { width:1.25rem; height:1.25rem; flex-shrink:0; accent-color:var(--bk-accent); }
+      .bee-shortcuts-setting p { margin:.25rem 0 0; }
+      .bee-shortcuts [data-shortcuts-usage] { margin:1rem 0; }
+      .bee-shortcuts [data-shortcuts-usage] p:first-child { color:var(--bk-ink); }
+      .bee-shortcuts-groups { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:.75rem; }
+      .bee-shortcuts [data-shortcut-group] { min-width:0; padding:12px; border:1px solid var(--bk-line); border-radius:.6rem; }
+      .bee-shortcuts [data-shortcut-group="science"] { margin-top:.75rem; }
+      .bee-shortcuts dl { display:grid; gap:.5rem; margin:.75rem 0 0; }
+      .bee-shortcuts [data-shortcut-group="science"] dl { grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:.5rem 1.25rem; }
+      .bee-shortcuts [data-shortcut-key] { display:flex; flex-wrap:wrap; align-items:start; gap:.4rem .75rem; padding:.5rem 0; border-top:1px solid var(--bk-line); }
+      .bee-shortcuts dt { flex:0 0 auto; }
+      .bee-shortcuts dd { flex:1 1 8rem; min-width:0; margin:0; }
+      .bee-shortcuts kbd { display:inline-block; min-width:3.5rem; padding:.15rem .4rem; border:1px solid var(--bk-line); border-bottom-width:3px; border-radius:.3rem; background:var(--bk-soft); color:var(--bk-ink); font-family:ui-monospace,monospace; font-size:.875rem; font-weight:750; line-height:1.5; text-align:center; white-space:nowrap; }
+      .bee-shortcuts [data-shortcut-key] dd > span { display:block; color:var(--bk-muted); margin-top:.25rem; }
+      @media(forced-colors:active) { [data-beehive-root] .bee-shortcuts { --bk-ink:CanvasText; --bk-muted:CanvasText; --bk-paper:Canvas; --bk-soft:Canvas; --bk-line:CanvasText; --bk-accent:CanvasText; } .bee-shortcuts button { background:ButtonFace; color:ButtonText; border-color:ButtonText; } }
       [data-beehive-root] .bee-flow { --flow-ink:#172033; --flow-muted:#475569; --flow-paper:#fff; --flow-soft:#f8fafc; --flow-line:#94a3b8; --flow-accent:#92400e; container:bee-flow / inline-size; padding:.75rem; border:1px solid var(--flow-line); border-radius:.9rem; background:var(--flow-paper); color:var(--flow-ink); overflow-wrap:anywhere; }
       [data-beehive-theme="dark"] .bee-flow { --flow-ink:#f1f5f9; --flow-muted:#cbd5e1; --flow-paper:#0f172a; --flow-soft:#172033; --flow-line:#64748b; --flow-accent:#fcd34d; }
       .bee-flow-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:start; gap:.75rem 1rem; }
@@ -1219,7 +1515,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-management-timing-sample :is(circle,rect) { fill:var(--bf-paper); stroke:currentColor; stroke-width:2; }
       .bee-management-timing-chart { display:grid; gap:.5rem; padding:8px; border:1px solid var(--bf-line); border-radius:.6rem; background:var(--bf-paper); min-width:0; }
       .bee-management-timing-chart figcaption { font-weight:750; }
-      .bee-management-timing-chart > svg { display:block; width:100%; height:auto; border:1px solid var(--bf-line); border-radius:.4rem; }
+      .bee-management-timing-plot { min-width:0; padding:8px; border:1px solid var(--bf-line); border-radius:.4rem; }
+      .bee-management-timing-plot > svg { display:block; width:100%; height:240px; overflow:visible; }
+      .bee-management-timing-chart :is(.bee-timing-grid,.bee-timing-cursor,.bee-timing-baseline,.bee-timing-action) { vector-effect:non-scaling-stroke; }
       .bee-management-timing-range,.bee-management-timing-days { display:flex; flex-wrap:wrap; gap:.35rem 1rem; justify-content:space-between; min-width:0; font-variant-numeric:tabular-nums; }
       .bee-management-timing-range span,.bee-management-timing-days span { min-width:0; }
       .bee-management-timing-chart .bee-timing-grid { stroke:var(--bf-line); stroke-width:1; }
@@ -4470,50 +4768,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     if (document.getElementById('beehive-drone-decision-css')) return;
     var style = document.createElement('style'); style.id = 'beehive-drone-decision-css';
     style.textContent = `
-      #beehive-drone-playfield [data-flight-training],#beehive-drone-playfield [data-flight-renderer-badge],#beehive-drone-playfield [data-flight-quality-badge],#beehive-drone-playfield [data-beehive-flight-pause] { background:rgba(10,29,42,.94)!important; color:#f0f9ff!important; border-color:#819eaf!important; }
-      #beehive-drone-playfield > button[aria-label="End flight"] { background:#a91d3a!important; color:white!important; }
-      #beehive-drone-playfield [data-beehive-flight-pause]:focus-visible,#beehive-drone-playfield > button:focus-visible { outline:3px solid #7dd3fc; outline-offset:3px; }
-      #beehive-drone-playfield [data-flight-training-hint],#beehive-drone-playfield [data-beehive-flight-paused-overlay] p { color:#c4d8e7!important; }
-      .bee-flight-director { position:absolute; left:12px; right:12px; bottom:12px; z-index:12; display:flex; flex-wrap:wrap; align-items:center; gap:6px 20px; padding:10px 14px; border:1px solid #668a9e; border-radius:14px; background:linear-gradient(115deg,rgba(10,29,42,.98),rgba(18,46,56,.96)); box-shadow:0 8px 24px rgba(2,12,22,.2); color:#f0f9ff; pointer-events:none; font:12px/1.45 system-ui,sans-serif; }
-      .bee-flight-bearing { display:flex; align-items:center; gap:10px; flex:1 1 230px; }
-      .bee-flight-bearing svg { width:58px; height:58px; flex:0 0 58px; }
-      .bee-flight-bearing strong,.bee-flight-bearing span { display:block; }
-      .bee-flight-bearing strong { font-size:16px; font-weight:750; }
-      .bee-flight-director-label { color:#b3d3e5; font-size:10px; text-transform:uppercase; font-weight:750; letter-spacing:.08em; }
-      .bee-flight-director-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px 16px; flex:1 1 285px; }
-      .bee-flight-director-metrics strong,.bee-flight-director-metrics span { display:block; }
-      .bee-flight-director-metrics .bee-flight-director-label { min-height:29px; }
-      .bee-flight-director-metrics strong { font-size:15px; font-variant-numeric:tabular-nums; }
-      .bee-flight-director p { flex-basis:100%; margin:0; font-size:10px; color:#b3d3e5; }
-      [data-reserve-low="true"] [data-director-value="energy"] { color:#fda4af; }
-      [data-beehive-stage="drone"][data-flight-hud="clear"] [data-beehive-stage-chip], [data-beehive-stage="drone"][data-flight-hud="detailed"] .bee-flight-director, [data-flight-pacing="steps"] .bee-flight-director { display:none; }
-      [data-beehive-flight-paused-overlay] { inset:16px auto auto 50%; transform:translateX(-50%); width:max-content; max-width:76px; background:none; backdrop-filter:none; }
-      [data-beehive-flight-paused-overlay] > div { padding:5px 6px; border-radius:7px; max-width:none; box-shadow:none; white-space:nowrap; font:750 10px/1.4 system-ui,sans-serif; background:#102b3b; color:#f0f9ff; }
+      #beehive-drone-playfield [data-flight-renderer-badge],#beehive-drone-playfield [data-flight-quality-badge] {background:#102633;color:#f0f9ff;border-color:#819eaf;}
+      .bee-flight-command-header {--fc-paper:#f3f9fc;--fc-ink:#172b3a;--fc-muted:#425c6d;--fc-line:#9ab3c2;--fc-tint:#fff;--fc-action:#075985;--fc-on-action:#fff;--fc-danger:#a91d3a;--fc-warning:#881337;--fc-warning-bg:#fff1f2;display:grid;gap:12px;padding:12px 16px;border-bottom:2px solid var(--fc-line);background:var(--fc-paper);color:var(--fc-ink);font:400 1rem/1.5 system-ui,sans-serif;overflow-wrap:anywhere;}
+      [data-beehive-theme="dark"] .bee-flight-command-header {--fc-paper:#102633;--fc-ink:#f0f9ff;--fc-muted:#bdd6e5;--fc-line:#638294;--fc-tint:#173645;--fc-action:#7dd3fc;--fc-on-action:#082f49;--fc-danger:#9f1239;--fc-warning:#fecdd3;--fc-warning-bg:#4c1727;}
+      .bee-flight-command-header * {box-sizing:border-box;min-width:0;}
+      .bee-flight-command-title {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;}
+      .bee-flight-command-title h3 {margin:0;font:750 1.125rem/1.4 system-ui,sans-serif;}
+      #beehive-drone-playfield [data-flight-command-status] {position:static;inset:auto;transform:none;display:block;pointer-events:auto;width:auto;max-width:100%;padding:3px 8px;border:1px solid var(--fc-line);border-radius:6px;background:var(--fc-tint);color:var(--fc-ink);backdrop-filter:none;font:.875rem/1.5 system-ui,sans-serif;}
+      .bee-flight-command-actions {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:8px;}
+      #beehive-drone-playfield .bee-flight-command-actions button {min-height:44px;width:100%;min-width:0;margin:0;padding:8px 10px;border:1px solid var(--fc-action);border-radius:8px;background:var(--fc-action);color:var(--fc-on-action);font:750 .875rem/1.5 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;}
+      #beehive-drone-playfield .bee-flight-command-actions [data-flight-end] {background:var(--fc-tint);color:var(--fc-danger);border-color:var(--fc-danger);}
+      [data-beehive-theme="dark"] .bee-flight-command-actions [data-flight-end] {--fc-danger:#fda4af;}
+      .bee-flight-command-actions button:focus-visible {outline:3px solid var(--fc-action);outline-offset:3px;}
+      .bee-flight-command-actions button:hover {filter:brightness(.94);}
+      .bee-flight-conditions {grid-column:1/-1;min-width:0;}
+      .bee-flight-conditions[hidden],.bee-flight-conditions [data-flight-condition][hidden] {display:none;}
+      .bee-flight-conditions-heading {display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 16px;margin-bottom:8px;}
+      .bee-flight-conditions-heading h4 {margin:0;font:750 1rem/1.4 system-ui,sans-serif;}
+      .bee-flight-conditions-heading p {margin:0;color:var(--fc-muted);font-size:.875rem;}
+      .bee-flight-condition-list {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:8px;padding:0;margin:0;list-style:none;}
+      .bee-flight-condition-list [data-flight-condition] {padding:12px;border:2px solid #8a4b08;border-radius:8px;background:#fff7df;color:#713f12;font-size:.875rem;}
+      .bee-flight-condition-list [data-condition-tone="danger"] {border-color:var(--fc-warning);background:var(--fc-warning-bg);color:var(--fc-warning);}
+      [data-beehive-theme="dark"] .bee-flight-condition-list [data-condition-tone="warning"] {border-color:#d6b45d;background:#352913;color:#fde68a;}
+      .bee-flight-condition-title {display:flex;align-items:flex-start;gap:8px;}
+      .bee-flight-condition-title svg {flex:none;margin-top:2px;}
+      .bee-flight-condition-title strong {font-size:1rem;line-height:1.4;}
+      .bee-flight-condition-list p {margin:8px 0 0;}
+      .bee-flight-condition-evidence {font-weight:700;font-variant-numeric:tabular-nums;}
+      .bee-flight-condition-model-note {display:block;margin-top:8px;font-size:.875rem;line-height:1.5;}
+      @media(forced-colors:active) {.bee-flight-condition-list [data-flight-condition],[data-beehive-theme="dark"] .bee-flight-condition-list [data-flight-condition] {border-color:CanvasText;background:Canvas;color:CanvasText;forced-color-adjust:none;}}
+      .bee-flight-command-header [data-flight-training] {padding:12px;border:1px solid var(--fc-line);border-left:4px solid var(--fc-action);border-radius:8px;background:var(--fc-tint);color:var(--fc-ink);}
+      .bee-flight-training-heading {display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;}
+      .bee-flight-training-heading [data-flight-training-step] {font-size:.875rem;color:var(--fc-muted);}
+      .bee-flight-training-heading [data-flight-training-label] {font-size:1rem;font-weight:750;}
+      .bee-flight-command-header [data-flight-training-instruction] {margin:6px 0 0;font-size:.875rem;font-weight:650;}
+      .bee-flight-command-header [data-flight-training-hint] {margin:6px 0 0;font-size:.875rem;color:var(--fc-muted);}
+      .bee-flight-command-diagnostics {display:flex;flex-wrap:wrap;gap:8px;font-size:.875rem;}
+      .bee-flight-command-diagnostics>span {padding:4px 8px;border:1px solid var(--fc-line);border-radius:6px;}
+      @media(min-width:640px) {.bee-flight-command-header {grid-template-columns:minmax(0,1fr) minmax(240px,.7fr);align-items:center;}.bee-flight-command-header>.bee-flight-conditions,.bee-flight-command-header>[data-flight-training],.bee-flight-command-diagnostics {grid-column:1/-1;}}
+      [data-flight-pacing="steps"] .bee-flight-command-header {grid-template-columns:minmax(0,1fr);}
+      @media(forced-colors:active) {.bee-flight-command-header,[data-beehive-theme="dark"] .bee-flight-command-header {--fc-paper:Canvas;--fc-ink:CanvasText;--fc-muted:CanvasText;--fc-line:CanvasText;--fc-tint:Canvas;--fc-action:ButtonText;--fc-on-action:ButtonFace;--fc-danger:ButtonText;--fc-warning:CanvasText;--fc-warning-bg:Canvas;}#beehive-drone-playfield .bee-flight-command-actions button,#beehive-drone-playfield .bee-flight-command-actions [data-flight-end] {background:ButtonFace;color:ButtonText;border-color:ButtonText;forced-color-adjust:none;}#beehive-drone-playfield .bee-flight-command-diagnostics>span {background:Canvas;color:CanvasText;border-color:CanvasText;}.bee-flight-command-actions button:focus-visible {outline-color:Highlight;}}
+      .bee-flight-viewport {position:relative;height:clamp(440px,56vw,620px);overflow:hidden;isolation:isolate;}
+      [data-beehive-stage="drone"]::after {display:none;}
+      .bee-flight-director {--fd-paper:#f3f9fc;--fd-ink:#172b3a;--fd-muted:#425c6d;--fd-line:#9ab3c2;--fd-tint:#fff;--fd-accent:#075985;--fd-caution:#9f1239;position:relative;display:block;border-top:2px solid var(--fd-line);background:var(--fd-paper);color:var(--fd-ink);font:400 1rem/1.5 system-ui,sans-serif;overflow-wrap:anywhere;min-width:0;}
+      .bee-flight-director>summary {display:grid;gap:8px;padding:12px 16px;cursor:pointer;list-style:none;min-height:44px;}
+      .bee-flight-director>summary::-webkit-details-marker {display:none;}
+      .bee-flight-director>summary:focus-visible {outline:3px solid var(--fd-accent);outline-offset:-4px;}
+      .bee-flight-director [data-director-details] {padding:0 16px 16px;display:grid;gap:16px;}
+      .bee-flight-director-disclosure {font-size:.875rem;font-weight:700;color:var(--fd-accent);}
+      .bee-flight-director-disclosure:before {content:'▸';display:inline-block;margin-right:8px;}
+      .bee-flight-director[open] .bee-flight-director-disclosure:before {content:'▾';}
+      [data-beehive-theme="dark"] .bee-flight-director {--fd-paper:#102633;--fd-ink:#f0f9ff;--fd-muted:#bdd6e5;--fd-line:#638294;--fd-tint:#173645;--fd-accent:#7dd3fc;--fd-caution:#fda4af;}
+      .bee-flight-director * {box-sizing:border-box;min-width:0;}
+      .bee-flight-director-heading {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;}
+      .bee-flight-director-heading h3 {margin:0;font:750 1.125rem/1.4 system-ui,sans-serif;}
+      .bee-flight-director-heading [data-director-status] {font-size:.875rem;padding:4px 10px;border:1px solid var(--fd-line);border-radius:6px;color:var(--fd-muted);}
+      .bee-flight-bearing {display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:12px;}
+      .bee-flight-bearing-dial {display:grid;justify-items:center;gap:2px;color:var(--fd-accent);font-size:.875rem;font-weight:700;}
+      .bee-flight-bearing svg {width:48px;height:48px;display:block;}
+      .bee-flight-bearing strong,.bee-flight-bearing-copy>span {display:block;}
+      .bee-flight-bearing strong {font-size:1.125rem;font-weight:750;}
+      .bee-flight-bearing-copy [data-director-value="vertical"] {font-size:.875rem;margin-top:2px;}
+      .bee-flight-director-label {color:var(--fd-muted);font-size:.875rem;font-weight:650;}
+      .bee-flight-director-metrics {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:10px;}
+      .bee-flight-director-metrics>div {padding:12px;border:1px solid var(--fd-line);border-radius:8px;background:var(--fd-tint);}
+      .bee-flight-director-metrics strong,.bee-flight-director-metrics span {display:block;}
+      .bee-flight-director-metrics strong {font-size:1.2rem;font-weight:750;font-variant-numeric:tabular-nums;}
+      .bee-flight-director-metrics [data-director-reserve] {margin-top:4px;color:var(--fd-muted);font-size:.875rem;}
+      .bee-flight-director [data-director-energy-meter] {height:8px;border:1px solid var(--fd-accent);border-radius:2px;margin-top:8px;overflow:hidden;background:var(--fd-paper);}
+      .bee-flight-director [data-director-energy-fill] {height:100%;background:var(--fd-accent);}
+      .bee-flight-director[data-reserve-low="true"] [data-director-value="energy"],.bee-flight-director[data-reserve-low="true"] [data-director-reserve] {color:var(--fd-caution);font-weight:750;}
+      .bee-flight-director[data-reserve-low="true"] [data-director-energy-fill] {background:var(--fd-caution);}
+      .bee-flight-director p {margin:0;font-size:.875rem;color:var(--fd-muted);}
+      [data-beehive-stage="drone"][data-flight-hud="clear"] [data-beehive-stage-chip], [data-beehive-stage="drone"][data-flight-hud="detailed"] .bee-flight-director, [data-flight-pacing="steps"] .bee-flight-director {display:none;}
+      .bee-flight-approach {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));align-items:center;gap:16px;border-top:1px solid var(--fd-line);padding-top:16px;}
+      .bee-flight-approach [hidden] {display:none!important;}
+      .bee-flight-approach-label {color:var(--fd-ink);font-size:.875rem;font-weight:700;}
+      .bee-flight-altitude-track {position:relative;height:16px;margin:12px 6px 6px;border:1px solid #81a1b5;border-radius:3px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(16.666% - 1px),#55768a calc(16.666% - 1px),#55768a 16.666%),#102633;}
+      .bee-flight-altitude-band {position:absolute;top:-1px;bottom:-1px;border:1px solid #fef3c7;background:#c89119;}
+      .bee-flight-altitude-pointer {position:absolute;top:-6px;height:27px;width:3px;background:#fff;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1px #102633;}
+      .bee-flight-altitude-pointer:before {content:'';position:absolute;top:0;left:-3px;border-left:4.5px solid transparent;border-right:4.5px solid transparent;border-top:5px solid #fff;}
+      .bee-flight-altitude-scale {display:flex;justify-content:space-between;gap:4px;color:var(--fd-muted);font-size:.875rem;}
+      .bee-flight-approach-status strong {display:block;font-size:1rem;font-weight:750;}
+      .bee-flight-entry-conditions {display:grid;gap:6px;margin-top:8px;font-size:.875rem;}
+      .bee-flight-entry-conditions>span {padding:6px 10px;border:1px dashed var(--fd-line);border-radius:6px;background:var(--fd-tint);}
+      .bee-flight-entry-conditions [data-met="true"] {border-style:solid;font-weight:700;}
+      .bee-flight-approach-note {display:block;margin-top:6px;color:var(--fd-muted);font-size:.875rem;}
+      .bee-flight-approach[data-approach-recorded="true"] {grid-template-columns:1fr;}
+      @media(forced-colors:active) {.bee-flight-director,[data-beehive-theme="dark"] .bee-flight-director {--fd-paper:Canvas;--fd-ink:CanvasText;--fd-muted:CanvasText;--fd-line:CanvasText;--fd-tint:Canvas;--fd-accent:Highlight;--fd-caution:CanvasText;}.bee-flight-altitude-track {border-color:CanvasText;background:Canvas;}.bee-flight-altitude-band {background:Highlight;border-color:CanvasText;forced-color-adjust:none;}.bee-flight-altitude-pointer {background:CanvasText;box-shadow:0 0 0 1px Canvas;}.bee-flight-altitude-pointer:before {border-top-color:CanvasText;}.bee-flight-director [data-director-energy-fill] {background:Highlight;forced-color-adjust:none;}}
+
       [data-beehive-touch-controls] { --bf-ink:#173443; --bf-paper:#f5fbff; background:var(--bf-paper)!important; color:var(--bf-ink); }
       [data-beehive-theme="dark"] [data-beehive-touch-controls] { --bf-ink:#e0f2fe; --bf-paper:#122c3a; }
       [data-flight-control] { min-height:56px!important; }
       [data-beehive-touch-controls] [data-flight-comfort-details] { border-top:1px solid #8198a5; margin-top:12px; }
       [data-flight-comfort-details] > summary { min-height:44px; display:flex; align-items:center; cursor:pointer; font-size:12px; font-weight:750; }
       [data-flight-comfort-details] :focus-visible { outline:3px solid #0284c7; outline-offset:3px; }
-      @media(max-width:639px) { .bee-flight-director { left:8px; right:8px; bottom:8px; padding:8px 10px; gap:6px; } .bee-flight-bearing { flex-basis:100%; } .bee-flight-bearing svg { width:40px; height:40px; flex-basis:40px; } .bee-flight-bearing strong { font-size:14px; } .bee-flight-director-metrics { gap:6px; flex-basis:100%; } .bee-flight-director-metrics strong { font-size:12px; } .bee-flight-director-label { font-size:9px; } .bee-flight-director p { font-size:9px; } }
-      @media(forced-colors:active) { .bee-flight-director { background:Canvas; color:CanvasText; border-color:CanvasText; } .bee-flight-director :is(span,p,strong) { color:CanvasText!important; } .bee-flight-bearing svg * { stroke:CanvasText; } .bee-flight-bearing svg path { fill:CanvasText; } }
-
-      .bee-flight-approach { flex-basis:100%; display:grid; grid-template-columns:minmax(110px,.85fr) minmax(135px,1.15fr); align-items:center; gap:10px 20px; border-top:1px solid #55768a; padding-top:8px; }
-      .bee-flight-approach [hidden] { display:none!important; }
-      .bee-flight-approach-label { color:#fde68a; font-size:10px; font-weight:700; }
-      .bee-flight-altitude-track { position:relative; height:12px; margin:8px 6px 4px; border:1px solid #81a1b5; border-radius:3px; background:repeating-linear-gradient(90deg,transparent 0,transparent calc(16.666% - 1px),#55768a calc(16.666% - 1px),#55768a 16.666%),#102633; }
-      .bee-flight-altitude-band { position:absolute; top:-1px; bottom:-1px; border:1px solid #fef3c7; background:#c89119; }
-      .bee-flight-altitude-pointer { position:absolute; top:-6px; height:23px; width:3px; background:#fff; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 0 1px #102633; }
-      .bee-flight-altitude-pointer:before { content:''; position:absolute; top:0; left:-3px; border-left:4.5px solid transparent; border-right:4.5px solid transparent; border-top:5px solid #fff; }
-      .bee-flight-altitude-scale { display:flex; justify-content:space-between; gap:4px; color:#b3d3e5; font-size:9px; }
-      .bee-flight-approach-status strong { display:block; font-size:11px; color:#f0f9ff; }
-      .bee-flight-entry-conditions { display:flex; flex-wrap:wrap; gap:3px 12px; margin-top:3px; font-size:11px; color:#fef3c7; }
-      .bee-flight-entry-conditions [data-met="true"] { color:#a7f3d0; }
-      .bee-flight-approach-note { display:block; margin-top:2px; color:#b3d3e5; font-size:11px; }
-      .bee-flight-approach[data-approach-recorded="true"] { grid-template-columns:1fr; border-top-color:#659988; }
-      .bee-flight-approach[data-approach-recorded="true"] strong { color:#a7f3d0; }
-      @media(max-width:639px) { #beehive-drone-playfield[data-flight-hud="clear"][data-flight-pacing="live"] { min-height:580px; } .bee-flight-approach { gap:8px; padding-top:7px; } .bee-flight-entry-conditions { display:grid; gap:2px; } .bee-flight-approach-label,.bee-flight-approach-status strong,.bee-flight-entry-conditions { font-size:10px; } .bee-flight-altitude-scale { font-size:8px; } }
-      @media(forced-colors:active) { .bee-flight-altitude-track { border-color:CanvasText; background:Canvas; } .bee-flight-altitude-band { background:Highlight; border-color:CanvasText; forced-color-adjust:none; } .bee-flight-altitude-pointer { background:CanvasText; box-shadow:0 0 0 1px Canvas; } .bee-flight-altitude-pointer:before { border-top-color:CanvasText; } }
 
       [data-flight-inspection-active="true"] [data-flight-training] { display:none!important; }
       .bee-flight-inspection { margin-top:12px; padding:12px; border:1px solid #8198a5; border-radius:10px; background:var(--bf-paper); color:var(--bf-ink); font:12px/1.5 system-ui,sans-serif; }
@@ -4610,6 +4959,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       @media(max-width:700px) {.bee-route-layout {grid-template-columns:1fr;}.bee-route-content {padding:0 12px 14px;}.bfd.bee-flight-route > summary {padding:14px 12px;}.bee-route-checkpoints {gap:6px;}.bee-route-checkpoints li {grid-template-columns:1fr;}.bee-route-checkpoints [data-route-check-symbol] {grid-row:auto;}.bee-route-map svg {font-size:24px;}.bee-route-map .bee-route-axis {font-size:17px;}}
       @media(forced-colors:active) {.bee-route-checkpoints li[data-complete="true"] [data-route-check-symbol] {background:Highlight;border-color:Highlight;color:HighlightText;}.bee-route-entry > div[data-met="true"] {border-left-color:Highlight;}}
 
+      .bfd.bee-flight-briefing {padding:clamp(12px,2.4vw,26px);background:var(--bf-paper);border:2px solid var(--bf-line);}
+      .bee-flight-briefing .bee-flight-eyebrow {font-size:.875rem;font-weight:750;letter-spacing:.06em;color:var(--bf-accent);}
+      .bee-flight-briefing .bee-flight-hero {display:grid;grid-template-columns:1fr;gap:12px;align-items:center;}
+      .bee-flight-briefing .bee-flight-hero h3 {font-size:clamp(1.5rem,3vw,2rem);line-height:1.25;margin:8px 0;}
+      .bee-flight-briefing .bee-flight-hero p {max-width:62ch;color:var(--bf-muted);}
+      .bee-flight-briefing .bee-flight-schematic {margin:0;padding:12px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-tint);}
+      .bee-flight-briefing .bee-flight-schematic svg {display:block;width:100%;height:auto;max-height:150px;color:var(--bf-accent);}
+      .bee-flight-briefing figcaption {font-size:.875rem;color:var(--bf-muted);text-align:center;}
+      .bee-flight-briefing > section,.bee-flight-briefing > .bfd {margin-top:24px;padding:20px 0 0;border:0;border-top:1px solid var(--bf-line);border-radius:0;}
+      .bee-flight-briefing h4 {font-size:1.05rem;font-weight:750;margin:0 0 8px;line-height:1.4;}
+      .bee-flight-briefing .bee-flight-mission {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:12px;padding:0;margin:12px 0;list-style:none;}
+      .bee-flight-mission li {min-width:0;padding:16px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-tint);}
+      .bee-flight-mission .bee-flight-target-title {display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+      .bee-flight-mission .bee-flight-target-title > span {display:grid;place-items:center;flex:0 0 2.25rem;min-height:2.25rem;border:2px solid var(--bf-accent);border-radius:50%;font-weight:800;color:var(--bf-accent);}
+      .bee-flight-mission .bee-flight-target-title h4 {margin:0;}
+      .bee-flight-briefing .bee-flight-gates {display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0;}
+      .bee-flight-briefing .bee-flight-gates > div {padding:10px 12px;background:var(--bf-paper);border-left:3px solid var(--bf-accent);}
+      .bee-flight-briefing dt {font-size:.875rem;color:var(--bf-muted);}
+      .bee-flight-briefing dd {margin:0;font-weight:750;}
+      .bee-flight-briefing .bee-flight-optional {border:1px dashed var(--bf-line);border-radius:8px;padding:12px 16px;}
+      .bee-flight-briefing .bee-flight-optional p {margin-bottom:0;}
+      .bee-flight-briefing .bee-flight-choice-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px;margin-top:12px;}
+      .bee-flight-briefing .bee-flight-choice {text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;min-width:0;border:2px solid var(--bf-line);}
+      .bee-flight-briefing .bee-flight-choice[aria-checked="true"] {border-color:var(--bf-accent);background:var(--bf-tint);box-shadow:inset 0 0 0 1px var(--bf-accent);}
+      .bee-flight-briefing .bee-flight-choice small {font-size:.875rem;}
+      .bee-flight-briefing .bee-flight-choice-state {font-size:.875rem;color:var(--bf-accent);font-weight:750;margin-top:auto;padding-top:6px;}
+      .bee-flight-briefing .bee-flight-ready {margin:14px 0;padding:16px;border-left:4px solid var(--bf-accent);background:var(--bf-tint);border-radius:0 10px 10px 0;}
+      .bee-flight-briefing .bee-flight-ready p {margin:6px 0;}
+      .bee-flight-briefing .bee-flight-launch-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:12px;}
+      .bee-flight-briefing .bee-flight-launch {display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:left;min-width:0;padding:16px;border:2px solid var(--bf-accent);border-radius:12px;background:var(--bf-paper);}
+      .bee-flight-briefing .bee-flight-launch:hover {background:var(--bf-tint);}
+      .bee-flight-briefing .bee-flight-launch strong {font-size:1.125rem;}
+      .bee-flight-briefing .bee-flight-launch small {font-size:.875rem;}
+      .bee-flight-briefing .bee-flight-launch .bee-flight-budget {display:grid;gap:8px;padding-top:10px;border-top:1px solid var(--bf-line);margin-top:auto;}
+      .bee-flight-briefing .bee-flight-budget > span {display:block;}
+      .bee-flight-briefing .bee-flight-budget b {display:block;font-size:1.2rem;color:var(--bf-accent);font-variant-numeric:tabular-nums;}
+      .bee-flight-briefing .bee-flight-launch-cta {display:block;padding:8px 10px;border-radius:6px;background:var(--bf-accent);color:var(--bf-paper);font-weight:750;text-align:center;}
+      .bee-flight-briefing [data-flight-colony-context] {margin-top:20px;}
+      .bee-flight-briefing .bee-flight-context-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:12px;}
+      .bee-flight-briefing .bee-flight-context-grid > div {padding:12px;border:1px solid var(--bf-line);border-radius:8px;}
+      .bee-flight-briefing .bee-flight-record {display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:.875rem;color:var(--bf-muted);}
+      .bee-flight-briefing kbd {font:inherit;font-weight:700;border:1px solid var(--bf-line);border-bottom-width:3px;border-radius:4px;padding:1px 5px;}
+      @media(min-width:850px) {.bee-flight-briefing .bee-flight-hero {grid-template-columns:minmax(0,1.3fr) minmax(240px,1fr);}}
+      @media(forced-colors:active) {.bee-flight-briefing .bee-flight-launch-cta {background:ButtonFace;color:ButtonText;border:1px solid ButtonText;}.bee-flight-briefing .bee-flight-choice[aria-checked="true"] {outline:2px solid Highlight;outline-offset:-4px;}}
+
       .bfd {--bf-paper:#fff;--bf-ink:#172b3a;--bf-muted:#425466;--bf-line:#b7c7cf;--bf-tint:#eef7fa;--bf-accent:#075985;background:var(--bf-paper);color:var(--bf-ink);border:1px solid var(--bf-line);border-radius:18px;padding:clamp(16px,2.4vw,26px);font:400 1rem/1.55 system-ui,sans-serif;text-align:left;min-width:0;overflow-wrap:anywhere;}
       [data-beehive-theme="dark"] .bfd {--bf-paper:#10222d;--bf-ink:#f1f5f9;--bf-muted:#cbd5e1;--bf-line:#647b88;--bf-tint:#173443;--bf-accent:#7dd3fc;}
       .bfd * {box-sizing:border-box;} .bfd h3 {font-size:1.35rem;font-weight:750;margin:0 0 8px;} .bfd p {margin:10px 0;} .bfd small,.bfd-caption {font-size:.875rem;color:var(--bf-muted);} .bfd fieldset {border:0;margin:18px 0;padding:0;min-width:0;} .bfd legend {font-weight:700;margin-bottom:10px;}
@@ -4617,6 +5011,206 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bfd-options {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;} .bfd-option {display:flex;gap:10px;border:1px solid var(--bf-line);border-radius:10px;padding:12px;cursor:pointer;min-height:56px;} .bfd-option:has(input:checked) {background:var(--bf-tint);border:2px solid var(--bf-accent);padding:11px;} .bfd-option input {width:20px;height:20px;flex:0 0 20px;margin-top:3px;accent-color:#075985;} .bfd-option strong,.bfd-option small {display:block;}
       .bfd-actions {display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;} .bfd-map {background:var(--bf-tint);border:1px solid var(--bf-line);border-radius:12px;margin:16px 0;padding:12px;} .bfd-map svg {display:block;width:100%;height:auto;max-height:280px;font:14px system-ui,sans-serif;} .bfd-map figcaption {font-size:.875rem;color:var(--bf-muted);margin-top:10px;} .bfd-readings {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;} .bfd-readings>div {background:var(--bf-tint);padding:12px;border-radius:10px;} .bfd-readings span,.bfd-readings strong {display:block;} .bfd-readings span {font-size:.875rem;color:var(--bf-muted);} .bfd-readings strong {font-size:1.3rem;}
       .bfd-status {padding:12px 14px;border-left:4px solid var(--bf-accent);background:var(--bf-tint);} .bfd details {border-top:1px solid var(--bf-line);margin-top:18px;padding-top:8px;} .bfd summary {min-height:44px;padding:10px 0;cursor:pointer;font-weight:700;} .bfd-scroll {overflow:auto;max-width:100%;} .bfd table {width:100%;border-collapse:collapse;font-size:.875rem;} .bfd th,.bfd td {padding:9px;border-bottom:1px solid var(--bf-line);text-align:left;white-space:nowrap;} .bfd a {color:var(--bf-accent);text-decoration:underline;}
+      .bfd-plan-nav {display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+      .bfd .bfd-plan-nav button {display:flex;align-items:center;gap:8px;flex:1 1 9rem;text-align:left;padding:10px;font-size:.875rem;font-weight:700;line-height:1.4;}
+      .bfd-plan-number {display:grid;place-items:center;flex:0 0 1.65rem;min-height:1.65rem;border:1px solid var(--bf-line);border-radius:50%;color:var(--bf-accent);font-variant-numeric:tabular-nums;}
+      .bfd-plan-nav button:disabled {opacity:1;color:var(--bf-muted);border-style:dashed;}
+      .bfd .bfd-plan-unavailable {font-size:.875rem;color:var(--bf-muted);margin:-6px 0 16px;}
+      .bfd [data-flight-plan-route],.bfd [data-flight-maneuver-evidence],.bfd input[name="bee-flight-decision"] {scroll-margin:20px;}
+      .bfd [data-flight-plan-route]:focus,.bfd [data-flight-maneuver-evidence]:focus {outline:3px solid var(--bf-accent);outline-offset:4px;}
+      .bfd .bfd-plan-next {margin-top:16px;}
+      .bfd-ready {padding:16px;border:2px solid var(--bf-accent);border-radius:12px;background:var(--bf-tint);margin-top:18px;}
+      .bfd-ready h4 {font-size:.875rem;color:var(--bf-muted);margin:0 0 6px;font-weight:650;}
+      .bfd-ready strong {display:block;font-size:1.125rem;line-height:1.45;}
+      .bfd .bfd-ready p {font-size:.875rem;line-height:1.6;margin:8px 0 0;}
+      .bfd .bfd-plan-review {display:flex;align-items:center;gap:8px;margin:12px 0;}
+      .bfd-plan-review svg {flex:none;}
+      @media(max-width:480px) {.bfd .bfd-plan-nav button {flex-basis:100%;}}
+      .bfd .bee-plan-map {--bp-dca:#926000;--bp-dca-fill:#fff2c2;padding:14px;}
+      [data-beehive-theme="dark"] .bfd .bee-plan-map {--bp-dca:#fcd34d;--bp-dca-fill:#43391e;}
+      .bee-plan-map-header {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;}
+      .bee-plan-map-header h4 {margin:0;font-size:1.125rem;font-weight:750;}
+      .bee-plan-map-header span {font-size:.875rem;font-weight:650;color:var(--bf-accent);}
+      .bfd .bee-plan-map-orientation {font-size:.875rem;color:var(--bf-muted);margin:6px 0 12px;}
+      .bfd .bee-plan-map-plot {width:100%;height:auto;min-height:0;max-height:none;aspect-ratio:360/320;border:1px solid var(--bf-line);border-radius:10px;background:var(--bf-paper);}
+      .bfd .bee-plan-map figcaption {font-size:.875rem;line-height:1.55;color:var(--bf-muted);}
+      .bfd .bee-plan-map-scale {margin:8px 0 12px;font-size:.875rem;font-variant-numeric:tabular-nums;}
+      .bee-plan-map-key {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:10px 12px;margin:0;padding:0;list-style:none;}
+      .bee-plan-map-key li {display:flex;align-items:center;gap:8px;min-width:0;}
+      .bee-plan-map-key li[data-plan-map-line-key] {grid-column:1/-1;}
+      .bfd .bee-plan-map-key svg {display:block;flex:0 0 24px;width:24px;height:24px;min-height:0;max-height:none;}
+      .bee-plan-map-key [data-plan-map-key-symbol="dca"] {color:var(--bp-dca);}
+      .bfd .bee-plan-map-note {margin:12px 0 0;padding-top:12px;border-top:1px solid var(--bf-line);font-size:.875rem;}
+      .bfd .bee-plan-map-samples {font-size:.875rem;margin:10px 0 0;}
+      @media(forced-colors:active) {.bfd .bee-plan-map,[data-beehive-theme="dark"] .bfd .bee-plan-map {--bp-dca:CanvasText;--bp-dca-fill:Canvas;}}
+      .bee-plan-readings {margin:18px 0;--pr-band:#926000;--pr-band-fill:#fff2c2;--pr-warning:#9a3412;}
+      [data-beehive-theme="dark"] .bee-plan-readings {--pr-band:#fcd34d;--pr-band-fill:#43391e;--pr-warning:#fed7aa;}
+      .bee-plan-readings-heading {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;margin-bottom:10px;}
+      .bee-plan-readings-heading h4 {margin:0;font-size:1.125rem;font-weight:750;}
+      .bee-plan-readings-heading span {font-size:.875rem;color:var(--bf-muted);}
+      .bee-plan-readings-grid {display:flex;flex-wrap:wrap;gap:10px;}
+      .bee-plan-reading {flex:1 1 14rem;min-width:0;padding:14px;border:1px solid var(--bf-line);border-top:3px solid var(--bf-accent);border-radius:12px;background:var(--bf-paper);}
+      .bee-plan-reading[data-planning-reading="energy"] {flex-basis:100%;}
+      .bee-plan-reading h5 {display:flex;align-items:center;gap:8px;margin:0;font-size:1rem;font-weight:750;line-height:1.5;}
+      .bee-plan-reading h5 svg {flex:none;color:var(--bf-accent);}
+      .bfd .bee-plan-reading-value {font-size:1.625rem;font-weight:750;line-height:1.4;font-variant-numeric:tabular-nums;margin:8px 0;}
+      .bfd .bee-plan-reading-reference {font-size:.875rem;line-height:1.55;font-weight:700;margin:4px 0;}
+      .bfd .bee-plan-reading-detail {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:8px 0 0;}
+      .bee-plan-altitude-scale {display:block;width:100%;height:auto;margin-top:8px;}
+      .bee-plan-altitude-ticks {display:flex;justify-content:space-between;gap:8px;font-size:.875rem;font-variant-numeric:tabular-nums;color:var(--bf-muted);}
+      .bfd .bee-plan-altitude-key {font-size:.875rem;line-height:1.5;color:var(--bf-muted);margin:8px 0;}
+      .bee-plan-energy-meter {height:14px;border:1px solid var(--bf-line);border-radius:4px;overflow:hidden;background:var(--bf-tint);margin-top:12px;}
+      .bee-plan-energy-meter>span {display:block;height:100%;background:var(--bf-accent);}
+      .bee-plan-energy-status {display:inline-block;font-size:.875rem;font-weight:700;line-height:1.5;border:1px solid var(--bf-line);border-radius:6px;padding:4px 8px;margin-top:10px;background:var(--bf-tint);}
+      .bee-plan-reading[data-reading-status="low"] {border-top-color:var(--pr-warning);}
+      .bee-plan-reading[data-reading-status="low"] .bee-plan-energy-status {color:var(--pr-warning);border-color:var(--pr-warning);}
+      .bfd .bee-plan-readings-note {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:10px 0 0;}
+      @media(forced-colors:active) {.bee-plan-readings,[data-beehive-theme="dark"] .bee-plan-readings {--pr-band:CanvasText;--pr-band-fill:Canvas;--pr-warning:CanvasText;}.bee-plan-energy-meter>span {background:Highlight;forced-color-adjust:none;}}
+      .bfd .bee-maneuver-chooser {margin-top:22px;}
+      .bee-maneuver-chooser legend {font-size:1.125rem;}
+      .bfd .bee-maneuver-choice-help {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:0 0 12px;}
+      .bfd .bee-maneuver-option {border:2px solid var(--bf-line);border-radius:12px;padding:12px;align-items:flex-start;background:var(--bf-paper);}
+      .bfd .bee-maneuver-option[data-selected="true"] {border-color:var(--bf-accent);background:var(--bf-tint);padding:12px;}
+      .bee-maneuver-option:focus-within {outline:3px solid var(--bf-accent);outline-offset:3px;}
+      .bee-maneuver-option input {margin:7px 0 0;}
+      .bee-maneuver-choice-body {display:block;min-width:0;flex:1;overflow-wrap:anywhere;}
+      .bee-maneuver-choice-title {font-size:1rem;line-height:1.6;font-weight:750;}
+      .bee-maneuver-choice-title svg {display:inline-block;width:32px;height:32px;margin-right:8px;vertical-align:middle;color:var(--bf-accent);}
+      .bee-maneuver-choice-meta {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;margin:8px 0;}
+      .bee-maneuver-choice-time {display:inline-block;font-size:.875rem;line-height:1.5;font-weight:650;font-variant-numeric:tabular-nums;border:1px solid var(--bf-line);border-radius:6px;padding:4px 7px;background:var(--bf-paper);}
+      .bee-maneuver-choice-selected {font-size:.875rem;line-height:1.5;font-weight:750;color:var(--bf-accent);border-bottom:2px solid currentColor;visibility:hidden;}
+      .bee-maneuver-option[data-selected="true"] .bee-maneuver-choice-selected {visibility:visible;}
+      .bee-maneuver-choice-detail {font-size:.875rem;line-height:1.6;color:var(--bf-muted);}
+      .bfd .bee-maneuver-prediction {border-top:1px solid var(--bf-line);padding-top:10px;margin-top:10px;}
+      .bee-planning-surroundings {--bs-target:#926000;}
+      [data-beehive-theme="dark"] .bee-planning-surroundings {--bs-target:#fcd34d;}
+      .bfd .bee-surroundings-intro {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:8px 0 14px;}
+      .bee-surroundings-grid {display:flex;flex-wrap:wrap;gap:10px;}
+      .bee-surroundings-card {flex:1 1 14rem;min-width:0;padding:14px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-paper);}
+      .bee-surroundings-card h4 {display:flex;align-items:center;gap:8px;font-size:1rem;line-height:1.5;font-weight:750;margin:0 0 10px;}
+      .bee-surroundings-card h4 svg {flex:none;color:var(--bf-accent);}
+      .bee-surroundings-reading {display:flex;flex-wrap:wrap;align-items:center;gap:12px;}
+      .bee-surroundings-text {flex:1 1 9rem;min-width:0;overflow-wrap:anywhere;}
+      .bfd .bee-surroundings-value {font-size:1.125rem;font-weight:750;line-height:1.5;margin:0 0 8px;font-variant-numeric:tabular-nums;}
+      .bfd .bee-surroundings-detail {font-size:.875rem;line-height:1.65;margin:0;color:var(--bf-muted);}
+      .bee-surroundings-dial {flex:0 1 112px;max-width:100%;margin:0;}
+      .bee-surroundings-dial svg {display:block;width:112px;max-width:100%;height:auto;}
+      .bfd .bee-surroundings-key {font-size:.875rem;line-height:1.6;margin:8px 0 14px;color:var(--bf-muted);}
+      .bfd .bee-surroundings-note {font-size:.875rem;line-height:1.6;margin:12px 0;color:var(--bf-muted);}
+      .bee-surroundings-weather {border-left:3px solid var(--bf-line);padding:10px 12px;background:var(--bf-tint);margin:14px 0 0;}
+      .bee-surroundings-weather h4 {font-size:.875rem;font-weight:750;margin:0;}
+      .bfd .bee-surroundings-weather p {font-size:.875rem;line-height:1.6;margin:6px 0 0;color:var(--bf-muted);}
+      @media(forced-colors:active) {.bee-planning-surroundings,[data-beehive-theme="dark"] .bee-planning-surroundings {--bs-target:CanvasText;}}
+      .bfd.bee-recorded-snapshot {margin:18px 0;padding:16px;border-radius:12px;}
+      .bee-recorded-snapshot .bee-result-heading {margin:0;font-size:1.125rem;font-weight:750;line-height:1.5;}
+      .bee-recorded-snapshot .bee-result-intro,.bee-recorded-snapshot .bee-result-note {margin:8px 0 14px;font-size:.875rem;line-height:1.6;color:var(--bf-muted);}
+      .bee-result-milestones {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:10px;list-style:none;padding:0;margin:16px 0 10px;}
+      .bee-result-milestones li {display:flex;align-items:flex-start;gap:10px;min-width:0;padding:12px;border:1px solid var(--bf-line);border-left:4px solid var(--bf-accent);border-radius:9px;background:var(--bf-tint);}
+      .bee-result-milestones li[data-result-status="unknown"] {border-style:dashed;border-left-width:1px;}
+      .bee-result-milestones li>div {min-width:0;}
+      .bee-result-milestones svg {flex:none;margin-top:3px;color:var(--bf-accent);}
+      .bee-result-milestones h5 {font-size:.875rem;font-weight:650;line-height:1.5;margin:0;color:var(--bf-muted);}
+      .bee-recorded-snapshot .bee-result-milestones p {font-size:1.125rem;font-weight:750;line-height:1.5;margin:3px 0 0;}
+      .bee-result-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:12px;}
+      .bee-result-card {padding:14px;border:1px solid var(--bf-line);border-radius:10px;min-width:0;background:var(--bf-paper);}
+      .bee-result-card h5 {display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:1rem;font-weight:750;line-height:1.5;}
+      .bee-result-card h5 svg {flex:none;color:var(--bf-accent);}
+      .bee-recorded-snapshot .bee-result-value {font-size:1.5rem;font-weight:750;line-height:1.5;margin:8px 0;font-variant-numeric:tabular-nums;}
+      .bee-recorded-snapshot .bee-result-detail {font-size:.875rem;line-height:1.6;margin:8px 0 0;color:var(--bf-muted);}
+      .bee-result-energy-scale svg {display:block;width:100%;height:auto;max-height:36px;}
+      .bee-result-scale-labels {display:flex;justify-content:space-between;gap:12px;font-size:.875rem;line-height:1.5;color:var(--bf-muted);}
+      .bee-result-extra-grid {display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+      .bee-result-extra {flex:1 1 13rem;min-width:0;padding:12px;border:1px solid var(--bf-line);border-radius:8px;background:var(--bf-tint);}
+      .bee-result-extra h5 {font-size:.875rem;font-weight:750;line-height:1.5;margin:0;}
+      .bee-recorded-snapshot .bee-result-extra-value {font-size:1.125rem;font-weight:750;line-height:1.5;margin:6px 0;font-variant-numeric:tabular-nums;}
+      [data-flight-main-debrief] .bee-result-debrief-header {gap:16px;}
+      [data-flight-main-debrief] .bee-result-debrief-header>div {min-width:0;}
+      [data-flight-main-debrief] .bee-result-debrief-header>div:last-child {flex-wrap:wrap;}
+      [data-flight-main-debrief] .bee-result-debrief-header h3 {font-size:1.25rem;line-height:1.5;}
+      [data-flight-main-debrief] .bee-result-debrief-header p,[data-flight-main-debrief] .bee-result-debrief-header button,[data-flight-main-debrief] .bee-result-debrief-header>div>div:first-child {font-size:.875rem;line-height:1.6;}
+      .bee-flight-replay {--br-hazard:#be123c;min-width:0;margin-top:20px;padding:16px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-paper);color:var(--bf-ink);}
+      [data-beehive-theme="dark"] .bee-flight-replay {--br-hazard:#fda4af;}
+      .bfd.bee-flight-replay h4 {font-size:1.25rem;line-height:1.5;margin:0 0 8px;font-weight:800;}
+      .bfd.bee-flight-replay h5 {font-size:1rem;line-height:1.5;margin:0;font-weight:800;}
+      .bfd.bee-flight-replay p {font-size:.9375rem;line-height:1.6;margin:8px 0;overflow-wrap:anywhere;}
+      .bee-replay-intro,.bee-replay-chart-help,.bee-replay-note {color:var(--bf-muted);max-width:80ch;}
+      .bee-replay-navigation {padding:12px;margin:16px 0;border:1px solid var(--bf-line);border-radius:10px;background:var(--bf-tint);}
+      .bee-replay-navigation label {display:block;font-size:1rem;font-weight:800;line-height:1.5;}
+      .bfd .bee-replay-position {font-weight:750;font-variant-numeric:tabular-nums;}
+      [data-beehive-root] .bee-replay-navigation input[type="range"] {display:block;width:100%;min-width:0;min-height:44px;height:44px;margin:8px 0;accent-color:var(--bf-accent);cursor:pointer;}
+      .bee-replay-step-buttons {display:flex;gap:8px;flex-wrap:wrap;}
+      [data-beehive-root] .bee-flight-replay button {min-height:44px;min-width:0;padding:10px 14px;font-size:.9375rem;line-height:1.5;font-weight:750;white-space:normal;overflow-wrap:anywhere;}
+      .bee-replay-step-buttons button {flex:1 1 9rem;}
+      .bee-replay-step-buttons button[aria-disabled="true"] {border-style:dashed;color:var(--bf-muted);cursor:default;}
+      .bee-replay-bookmarks {display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0;}
+      .bee-replay-bookmarks h5 {flex:1 0 100%;}
+      .bee-replay-bookmarks button {flex:1 1 8rem;}
+      .bee-replay-bookmarks button[aria-pressed="true"] {border:3px double var(--bf-accent);padding:8px 12px;color:var(--bf-accent);background:var(--bf-tint);}
+      .bee-replay-moment {padding:14px;border:1px solid var(--bf-line);border-radius:10px;background:var(--bf-tint);}
+      .bee-replay-moment-heading {display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:1rem;line-height:1.5;}
+      .bee-replay-moment-heading>* {min-width:0;overflow-wrap:anywhere;}
+      .bee-replay-phase,.bee-replay-change {font-weight:750;}
+      .bee-replay-matches {color:var(--bf-accent);}
+      .bee-replay-lanes {display:grid;gap:12px;min-width:0;margin-top:14px;}
+      .bee-replay-lane {--br-trace:#92400e;min-width:0;margin:0;border:1px solid var(--bf-line);border-radius:10px;padding:14px;background:var(--bf-paper);}
+      .bee-replay-lane[data-replay-lane="energy"] {--br-trace:#047857;}
+      .bee-replay-lane[data-replay-lane="wind"] {--br-trace:#0369a1;}
+      [data-beehive-theme="dark"] .bee-replay-lane {--br-trace:#fcd34d;}
+      [data-beehive-theme="dark"] .bee-replay-lane[data-replay-lane="energy"] {--br-trace:#6ee7b7;}
+      [data-beehive-theme="dark"] .bee-replay-lane[data-replay-lane="wind"] {--br-trace:#7dd3fc;}
+      .bee-replay-lane-heading {display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;}
+      .bee-replay-lane-heading>* {min-width:0;}
+      .bfd.bee-flight-replay .bee-replay-value {font-size:1.25rem;font-weight:800;line-height:1.5;margin:0;font-variant-numeric:tabular-nums;}
+      .bfd.bee-flight-replay .bee-replay-unit {font-size:.875rem;color:var(--bf-muted);margin:4px 0 10px;}
+      .bee-replay-plot-row {display:grid;grid-template-columns:4.5ch minmax(0,1fr);gap:8px;min-width:0;}
+      .bee-replay-y-axis {display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:8px 0;font-size:.875rem;line-height:1.4;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0;}
+      .bee-replay-y-axis span {max-width:100%;}
+      .bee-replay-plot-row svg {display:block;width:100%;height:6rem;min-width:0;overflow:visible;}
+      .bee-replay-x-axis {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start;margin:8px 0 0 calc(4.5ch + 8px);font-size:.875rem;line-height:1.5;color:var(--bf-muted);font-variant-numeric:tabular-nums;}
+      .bee-replay-x-axis>span {min-width:0;max-width:100%;overflow-wrap:anywhere;}
+      .bee-replay-x-axis>span:last-child {text-align:right;}
+      .bfd.bee-flight-replay .bee-replay-axis-caption {font-size:.875rem;line-height:1.5;text-align:center;color:var(--bf-muted);margin:4px 0 0;}
+      .bee-replay-key {display:flex;gap:8px 18px;flex-wrap:wrap;margin-top:16px;font-size:.875rem;line-height:1.5;}
+      .bee-replay-key>span {display:flex;gap:8px;align-items:center;min-width:0;}
+      .bee-replay-key i {display:block;width:3px;min-height:1.5rem;flex:0 0 3px;}
+      .bee-replay-selected-key {border-inline-start:2px dashed var(--bf-ink);}
+      .bee-replay-hazard-key {border-inline-start:3px solid var(--br-hazard);}
+      .bee-replay-sr {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+      @media(forced-colors:active) {.bee-flight-replay,[data-beehive-theme="dark"] .bee-flight-replay {--br-hazard:CanvasText;} [data-beehive-root] .bee-replay-lane[data-replay-lane] {--br-trace:CanvasText;} .bee-replay-plot-row svg {forced-color-adjust:none;}}
+      .bee-flight-history {min-width:0;margin-top:12px;color:var(--bf-ink);}
+      .bee-flight-history .bee-history-intro {font-size:1rem;line-height:1.6;margin:0 0 16px;color:var(--bf-muted);max-width:70ch;}
+      .bee-history-toolbar {display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;padding:14px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-paper);}
+      .bee-history-picker {display:grid;gap:6px;flex:1 1 11rem;min-width:0;font-size:1rem;font-weight:800;line-height:1.5;}
+      .bee-history-picker select {width:100%;min-width:0;background:var(--bf-paper);color:var(--bf-ink);color-scheme:light;}
+      [data-beehive-theme="dark"] .bee-history-picker select {color-scheme:dark;}
+      [data-beehive-root] .bee-flight-history .bee-history-picker select:not([multiple]):not([size]) {appearance:auto;background-image:none;}
+      .bee-history-actions {display:flex;flex:3 1 26rem;flex-wrap:wrap;gap:8px;min-width:0;}
+      [data-beehive-root] .bee-history-actions button {flex:1 1 8rem;min-width:0;min-height:44px;font-size:.9375rem;line-height:1.5;overflow-wrap:anywhere;background:var(--bf-tint);color:var(--bf-accent);font-weight:800;}
+      .bee-history-actions button[aria-disabled="true"] {background:var(--bf-paper);color:var(--bf-muted);border-style:dashed;cursor:default;}
+      .bee-flight-history .bee-history-position {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;margin:16px 0 0;font-size:1rem;line-height:1.5;}
+      .bee-history-position span {padding:4px 10px;border:1px solid var(--bf-line);border-radius:6px;background:var(--bf-tint);color:var(--bf-accent);font-size:.875rem;font-weight:800;}
+      .bee-flight-history .bee-maneuver-evidence {margin:12px 0;}
+      .bee-flight-history .bee-history-note {margin:12px 0;font-size:.875rem;line-height:1.6;color:var(--bf-muted);max-width:80ch;}
+      .bee-flight-history .bee-history-notice {padding:12px;border-inline-start:4px solid var(--bf-accent);background:var(--bf-tint);font-size:.9375rem;line-height:1.6;}
+      .bee-history-announcement {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+      .bee-maneuver-evidence {margin:18px 0;padding:16px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-tint);color:var(--bf-ink);min-width:0;}
+      .bee-maneuver-heading {display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;}
+      .bee-maneuver-heading h4 {font-size:1.125rem;font-weight:750;line-height:1.4;margin:0;}
+      .bee-maneuver-heading>span {font-size:.875rem;color:var(--bf-muted);}
+      .bfd .bee-maneuver-name {font-size:1rem;font-weight:750;margin:8px 0 4px;}
+      .bfd .bee-maneuver-context {font-size:.875rem;color:var(--bf-muted);margin:0 0 12px;}
+      .bee-maneuver-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:10px;min-width:0;}
+      .bee-maneuver-card {min-width:0;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-paper);padding:12px;}
+      .bee-maneuver-card h5 {margin:0 0 10px;font-size:1rem;font-weight:750;line-height:1.4;}
+      .bee-maneuver-values {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,6rem),1fr));gap:10px;margin:0;}
+      .bee-maneuver-values>div {min-width:0;padding:8px;border:1px solid var(--bf-line);border-radius:6px;}
+      .bee-maneuver-values>div:last-child {border-top:3px solid var(--bf-accent);padding-top:6px;}
+      .bee-maneuver-values dt {font-size:.875rem;color:var(--bf-muted);}
+      .bee-maneuver-values dd {margin:4px 0 0;font-size:1.125rem;font-weight:750;line-height:1.5;font-variant-numeric:tabular-nums;}
+      .bfd .bee-maneuver-change {display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;font-size:.875rem;line-height:1.5;color:var(--bf-accent);}
+      .bee-maneuver-change svg {flex:none;}
+      .bee-maneuver-card[data-maneuver-trend="unknown"] .bee-maneuver-change {color:var(--bf-muted);}
+      .bfd .bee-maneuver-note,.bfd .bee-maneuver-footnote {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:12px 0 0;}
       [data-flight-pacing="steps"] [data-beehive-flight-paused-overlay] {display:none;} [data-flight-pacing="steps"] [data-flight-training] {display:none!important;} [data-beehive-stage="drone"][data-flight-pacing="steps"] canvas {filter:none!important;}
       @media(max-width:480px) {.bfd-readings {grid-template-columns:1fr;} .bfd-readings>div {display:flex;justify-content:space-between;align-items:center;gap:10px;} .bfd-map svg {min-height:180px;} .bfd-actions>button {width:100%;}}
       [data-flight-pacing="steps"] [data-beehive-stage-chip], [data-flight-pacing="steps"] [data-flight-quality-badge] {display:none!important;}
@@ -4635,6 +5229,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     { id: 'right', label: 'Turn right', seconds: 0.2, detail: 'Apply a short right correction.' },
     { id: 'descend', label: 'Descend', seconds: 0.5, detail: 'Apply downward control for half a model second.' }
   ];
+  // These symbols describe control inputs; they do not forecast a flight path.
+  var BEEHIVE_DRONE_CHOICE_GUIDANCE = {
+    navigate: { icon: 'M16 3V7M16 25V29M3 16H7M25 16H29M16 8A8 8 0 1 1 15.99 8M12 20L15 13L22 10L19 17Z',
+      prediction: 'Predict how height and energy will change with assistance. Compare the recorded results; horizontal range may use a new target after DCA entry.' },
+    forward: { icon: 'M6 11H25M19 5L25 11L19 17M6 21H17M6 27H13',
+      prediction: 'Predict how horizontal range and energy will change with forward thrust. Compare your prediction with the recorded result.' },
+    climb: { icon: 'M9 27V7M3 13L9 7L15 13M20 17V5M16 9L20 5L24 9M18 27H29',
+      prediction: 'Predict how height and energy will change with upward control and thrust. Compare your prediction with the recorded result.' },
+    coast: { icon: 'M4 11H14M20 11H28M24 7L28 11L24 15M4 21H10M16 21H20M26 21H28',
+      prediction: 'Predict how momentum will affect height and horizontal range when you ease thrust. Compare the recorded changes and energy use; easing thrust does not stop the flight.' },
+    left: { icon: 'M24 27V17Q24 9 16 9H5M11 3L5 9L11 15',
+      prediction: 'Predict how a left turn will change heading and horizontal range. After advancing, read the heading on the route map and compare the recorded range.' },
+    right: { icon: 'M8 27V17Q8 9 16 9H27M21 3L27 9L21 15',
+      prediction: 'Predict how a right turn will change heading and horizontal range. After advancing, read the heading on the route map and compare the recorded range.' },
+    descend: { icon: 'M16 3V23M9 16L16 23L23 16M5 29H27',
+      prediction: 'Predict how height and energy will change with downward control. Compare your prediction with the recorded result.' }
+  };
   function bhDroneNavigationTarget(state) {
     var s = state || {};
     var queen = s.reachedDca && (s.nearQueens || []).filter(function(q) { return !q.caught || s.reachedQueen; })[0];
@@ -4673,6 +5284,440 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       text: target.label + ' horizontal range ' + range + ' model m. Altitude ' + Math.round(s.y || 0) + ' ft; target ' + Math.round(target.y) + ' ft. Energy ' + Math.round(Math.max(0, s.energy || 0) / max * 100) + '% of the difficulty reserve.' };
   }
 
+  // A read-only view of retained flight samples; missing readings never become zero.
+  function bhDroneReplayModel(input, run, requestedIndex) {
+    var samples = Array.isArray(input) ? input.slice(-300).filter(function(sample) { return sample && typeof sample === 'object' && !Array.isArray(sample); }) : [];
+    if (!samples.length) return null;
+    run = run && typeof run === 'object' && !Array.isArray(run) ? run : {};
+    function rounded(value) { return Math.abs(value) <= Number.MAX_VALUE / 10 ? Math.round(value * 10) / 10 : value; }
+    function text(value) { return String(rounded(value)); }
+    function recordedText(value, suffix) { return Number.isFinite(value) ? text(value) + (suffix || '') : 'Not recorded'; }
+    var preference = requestedIndex == null ? samples.length - 1 : Number(requestedIndex);
+    var index = Math.max(0, Math.min(samples.length - 1, Math.floor(Number.isFinite(preference) ? preference : samples.length - 1)));
+    var sample = samples[index], prior = index > 0 ? samples[index - 1] : null;
+    var timed = samples.every(function(entry, position) { return Number.isFinite(entry.t) && (!position || entry.t >= samples[position - 1].t); });
+    var energyPercent = run.energyUnits === 'percent-of-difficulty-reserve';
+    var phase = sample.phase === 'flight' ? 'En route' : sample.phase === 'congregation' ? 'DCA reached' : sample.phase === 'mating' ? 'Queen intercepted' : sample.phase === 'end' ? 'Flight complete' : sample.phase === 'launch' ? 'Taking off' : 'Phase not recorded';
+    var action = typeof sample.action === 'string' && sample.action.trim() ? sample.action.trim() : 'Not recorded';
+    var impact = typeof sample.impact === 'string' ? sample.impact.trim() : '';
+    var advice = sample.hazard === true ? 'Hazard flagged in this sample: compare the recorded readings with your correction.' : impact || (!Number.isFinite(sample.energy) ? 'Energy was not recorded at this moment; a reserve or energy change cannot be inferred.' : !energyPercent ? 'Energy units were not recorded; this reading cannot be interpreted as a reserve percentage.' : sample.energy < 25 ? 'Energy warning: protect the reserve before adding altitude.' : phase === 'DCA reached' ? 'DCA moment: use smaller turns and follow the golden signal.' : 'Compare altitude gain with energy change before the next control decision.');
+    var hazardText = sample.hazard === true ? 'Hazard flagged' : sample.hazard === false ? 'No hazard flagged' : 'Hazard status not recorded';
+    var difference = prior && Number.isFinite(prior.energy) && Number.isFinite(sample.energy) ? sample.energy - prior.energy : null;
+    var delta = Number.isFinite(difference) ? rounded(difference) : null;
+    var changeText = delta == null ? 'Energy change not recorded' : delta === 0 ? 'Energy change: no rounded change' : energyPercent ? 'Energy change: ' + text(Math.abs(delta)) + ' percentage point' + (Math.abs(delta) === 1 ? '' : 's') + (delta < 0 ? ' lower' : ' higher') : 'Energy change: ' + (delta > 0 ? '+' : '') + text(delta) + ' (units not recorded)';
+    var lanes = [
+      { id: 'altitude', label: 'Altitude', unit: 'model ft', floor: 180, suffix: ' model ft' },
+      { id: 'energy', label: 'Energy', unit: energyPercent ? '% of difficulty reserve' : 'units not recorded', floor: energyPercent ? 100 : 1, suffix: energyPercent ? '%' : ' (units not recorded)' },
+      { id: 'wind', label: 'Wind', unit: 'm/s', floor: 2, suffix: ' m/s' }
+    ].map(function(lane) {
+      var min = 0, max = lane.floor;
+      samples.forEach(function(entry) { if (Number.isFinite(entry[lane.id])) { min = Math.min(min, entry[lane.id]); max = Math.max(max, entry[lane.id]); } });
+      return { id: lane.id, label: lane.label, unit: lane.unit, known: Number.isFinite(sample[lane.id]), value: recordedText(sample[lane.id], lane.suffix), min: min, max: max, scaleMinText: text(min), scaleMaxText: text(max) };
+    });
+    var bookmarks = [];
+    function addReplayBookmark(id, label, index, detail) {
+      if (index < 0 || index >= samples.length) return;
+      bookmarks.push({ id: id, label: label, index: index, detail: detail });
+    }
+    addReplayBookmark('launch', samples[0].phase === 'launch' ? 'Launch' : 'First sample', 0, samples[0].phase === 'launch' ? 'First retained sample records the launch phase' : 'First retained telemetry sample');
+    addReplayBookmark('first-hazard', 'First hazard', samples.findIndex(function(entry) { return entry.hazard === true; }), 'First retained sample with a recorded hazard flag');
+    var peakIndex = samples.reduce(function(best, entry, position) { return Number.isFinite(entry.altitude) && (best < 0 || entry.altitude > samples[best].altitude) ? position : best; }, -1);
+    addReplayBookmark('peak-altitude', 'Peak altitude', peakIndex, 'Highest altitude among retained samples; height alone does not establish DCA entry');
+    addReplayBookmark('dca', 'DCA approach', samples.findIndex(function(entry) { return entry.phase === 'congregation' || entry.phase === 'mating'; }), 'First retained sample recording the DCA or queen-intercept phase');
+    addReplayBookmark('finish', samples[samples.length - 1].phase === 'end' ? 'Flight end' : 'Last sample', samples.length - 1, 'Final retained telemetry sample');
+    return { samples: samples, count: samples.length, index: index, sample: sample, timed: timed, firstTime: timed ? samples[0].t : null, lastTime: timed ? samples[samples.length - 1].t : null, phase: phase, action: action, advice: advice, timeText: Number.isFinite(sample.t) ? text(sample.t) + ' model seconds' : 'Time not recorded', positionText: 'Sample ' + (index + 1) + ' of ' + samples.length + ' retained', energyPercent: energyPercent, hazardText: hazardText, changeText: changeText, lanes: lanes, bookmarks: bookmarks, selectedBookmarks: bookmarks.filter(function(bookmark) { return bookmark.index === index; }) };
+  }
+
+  function bhDroneHistorySelection(log, source, selection) {
+    var entries = Array.isArray(log) ? log : [];
+    var latest = { index: entries.length - 1, entry: entries.length ? entries[entries.length - 1] : null, count: entries.length, reason: '', followingLatest: true };
+    if (!entries.length || !selection || selection.source !== source || selection.entry == null) return latest;
+    var index = -1;
+    if (selection.log === log && Number.isInteger(selection.index) && selection.index >= 0 && selection.index < entries.length && entries[selection.index] === selection.entry) {
+      index = selection.index;
+    } else {
+      var matches = [];
+      entries.forEach(function(entry, i) { if (entry === selection.entry) matches.push(i); });
+      if (matches.length !== 1) {
+        latest.reason = matches.length ? 'ambiguous' : 'removed';
+        return latest;
+      }
+      index = matches[0];
+    }
+    return { index: index, entry: entries[index], count: entries.length, reason: '', followingLatest: false };
+  }
+
+  // A stable component keeps history navigation local and never writes flight data.
+  function BeeDroneHistoryInspector(props) {
+    var React = props.React, h = React.createElement;
+    var state = React.useState(null), selection = state[0], setSelection = state[1];
+    var id = React.useId();
+    var log = Array.isArray(props.log) ? props.log : [];
+    var current = bhDroneHistorySelection(log, props.source, selection);
+    if (!current.count) return null;
+    var position = 'Record ' + (current.index + 1) + ' of ' + current.count + ' retained';
+    var latest = current.index === current.count - 1;
+    function choose(index) {
+      if (!Number.isInteger(index) || index < 0 || index >= log.length) return;
+      var evidence = bhDroneManeuverEvidence(log[index]);
+      var announcement = 'Record ' + (index + 1) + ' of ' + log.length + ' retained. ' + (evidence ? evidence.title : 'Maneuver readings not recorded.');
+      setSelection({ source: props.source, log: log, index: index, entry: index === log.length - 1 ? null : log[index], announcement: announcement });
+    }
+    var announced = selection && selection.source === props.source && !current.reason;
+    return h('section', { className: 'bee-flight-history', 'data-flight-history': 'true', role: 'region', 'aria-label': 'Recorded maneuver history' },
+      h('p', { className: 'bee-history-intro' }, 'Look back at one maneuver at a time. Reviewing a record does not move the bee or replay the flight.'),
+      h('div', { className: 'bee-history-toolbar' },
+        h('label', { className: 'bee-history-picker', htmlFor: id + '-select' }, h('span', null, 'Choose a record'),
+          h('select', { id: id + '-select', 'data-history-select': 'true', value: String(current.index), 'aria-controls': id + '-comparison', onChange: function(event) { choose(Number(event.target.value)); } },
+            log.map(function(entry, index) { return h('option', { key: index, value: String(index) }, 'Record ' + (index + 1)); }))),
+        h('div', { className: 'bee-history-actions', role: 'group', 'aria-label': 'Browse recorded maneuvers' },
+          h('button', { type: 'button', 'data-history-previous': 'true', 'aria-controls': id + '-comparison', 'aria-disabled': current.index === 0, onClick: function() { if (current.index > 0) choose(current.index - 1); } }, 'Previous record'),
+          h('button', { type: 'button', 'data-history-next': 'true', 'aria-controls': id + '-comparison', 'aria-disabled': latest, onClick: function() { if (!latest) choose(current.index + 1); } }, 'Next record'),
+          h('button', { type: 'button', 'data-history-latest': 'true', 'aria-controls': id + '-comparison', 'aria-disabled': latest && !current.reason, onClick: function() { if (!latest || current.reason) choose(log.length - 1); } }, 'Latest record'))),
+      h('p', { className: 'bee-history-position', 'data-history-position': 'true', 'aria-live': 'off' },
+        h('strong', null, position), h('span', null, latest ? 'Latest record' : 'Earlier record')),
+      h('p', { className: 'bee-history-announcement', 'data-history-announcement': 'true', role: 'status', 'aria-atomic': 'true' },
+        announced ? selection.announcement : ''),
+      current.reason && h('p', { className: 'bee-history-notice', 'data-history-notice': 'true' }, current.reason === 'removed'
+        ? 'The selected record is no longer retained. Showing the latest retained record.'
+        : 'The selected record cannot be uniquely identified in this history. Showing the latest retained record.'),
+      h('div', { id: id + '-comparison' }, props.renderEvidence([current.entry], false, true) || h('p', null, 'Maneuver readings not recorded.')),
+      h('p', { className: 'bee-history-note' }, 'Up to 100 maneuvers are kept, oldest first. A record’s position in this list can differ from its maneuver number.'),
+      h('details', { 'data-history-table': 'true' }, h('summary', null, 'Full evidence table'), props.renderTable(log)));
+  }
+
+  function bhDroneManeuverEvidence(entry) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+    var fields = ['turn', 'action', 'seconds', 'altitudeBefore', 'altitude', 'energyBefore', 'energy', 'rangeBefore', 'range', 'targetBefore', 'target'];
+    if (!fields.some(function(key) { return Object.prototype.hasOwnProperty.call(entry, key); })) return null;
+    function recordedText(value) { return typeof value === 'string' ? value.trim() : ''; }
+    function rounded(value) { return Number.isFinite(value) ? Math.round(value) : null; }
+    var action = recordedText(entry.action);
+    var title = Number.isInteger(entry.turn) && entry.turn > 0 ? 'Maneuver ' + entry.turn : 'Recorded maneuver';
+    if (action) title += ' · ' + action;
+    var duration = Number.isFinite(entry.seconds) && entry.seconds >= 0
+      ? entry.seconds + ' model second' + (entry.seconds === 1 ? '' : 's') + ' recorded'
+      : 'Duration not recorded';
+    var targetBefore = recordedText(entry.targetBefore), targetAfter = recordedText(entry.target);
+    var sameTarget = !!targetBefore && targetBefore === targetAfter;
+    var rangeNote = sameTarget ? '' : targetBefore && targetAfter
+      ? 'Target label changed from ' + targetBefore + ' to ' + targetAfter + '. Range comparison is unavailable across this transition.'
+      : !targetBefore && !targetAfter ? 'The range targets were not recorded. These ranges cannot be compared.'
+      : !targetBefore ? 'The earlier target was not recorded. These ranges cannot be compared.'
+      : 'The later target was not recorded. These ranges cannot be compared.';
+    function row(id, label, beforeValue, afterValue, unit) {
+      var before = rounded(beforeValue), after = rounded(afterValue);
+      var beforeText = before === null ? 'Not recorded' : before + unit;
+      var afterText = after === null ? 'Not recorded' : after + unit;
+      if (id === 'range') {
+        beforeText += targetBefore ? ' to ' + targetBefore : ' · target not recorded';
+        afterText += targetAfter ? ' to ' + targetAfter : ' · target not recorded';
+      }
+      var delta = before === null || after === null || (id === 'range' && !sameTarget) ? null : after - before;
+      var trend = delta === null || !Number.isFinite(delta) ? 'unknown' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'same';
+      var deltaText = 'Comparison unavailable';
+      if (trend === 'same') deltaText = 'No rounded change';
+      else if (trend !== 'unknown') {
+        var amount = Math.abs(delta);
+        deltaText = id === 'energy' ? amount + ' percentage point' + (amount === 1 ? '' : 's') + (delta > 0 ? ' higher' : ' lower')
+          : id === 'range' ? amount + ' model m' + (delta > 0 ? ' farther' : ' closer')
+          : amount + ' model ft' + (delta > 0 ? ' higher' : ' lower');
+      }
+      return { id: id, label: label, before: before, after: after, beforeText: beforeText, afterText: afterText, deltaText: deltaText, trend: trend };
+    }
+    return { title: title, context: duration + ' · Readings rounded to whole units.', rows: [
+      row('altitude', 'Altitude', entry.altitudeBefore, entry.altitude, ' model ft'),
+      row('energy', 'Energy reserve', entry.energyBefore, entry.energy, '%'),
+      row('range', 'Horizontal range', entry.rangeBefore, entry.range, ' model m')
+    ], rangeNote: rangeNote };
+  }
+
+  function bhDronePlanMap(state) {
+    var s = state || {}, p = DRONE_FLIGHT_PARAMS;
+    function hasPosition(point) { return !!point && Number.isFinite(point.x) && Number.isFinite(point.z); }
+    var known = hasPosition(s);
+    var history = Array.isArray(s.decisionLog) ? s.decisionLog.slice(-100) : [];
+    var queens = Array.isArray(s.nearQueens) ? s.nearQueens.filter(function(q) { return q && typeof q === 'object'; }) : [];
+    var navigation = bhDroneNavigationTarget({ reachedDca: s.reachedDca, reachedQueen: s.reachedQueen, nearQueens: queens });
+    var queen = s.reachedDca && navigation.label !== 'DCA' && hasPosition(navigation) ? navigation : null;
+    var target = navigation.label === 'DCA' || queen ? navigation : null;
+    var positions = [
+      { x: 0, z: 0 },
+      { x: -p.dcaRadiusM, z: -p.dcaDistanceM - p.dcaRadiusM },
+      { x: p.dcaRadiusM, z: -p.dcaDistanceM + p.dcaRadiusM }
+    ];
+    if (known) positions.push(s);
+    history.forEach(function(entry) { if (hasPosition(entry)) positions.push(entry); });
+    if (queen) positions.push(queen);
+
+    // Normalize before finding spans: even opposing finite extremes must not
+    // overflow. Both axes share one scale and an 18-unit SVG symbol margin.
+    var magnitude = 1;
+    positions.forEach(function(point) { magnitude = Math.max(magnitude, Math.abs(point.x), Math.abs(point.z)); });
+    var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    positions.forEach(function(point) {
+      var x = point.x / magnitude, z = point.z / magnitude;
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+    });
+    var padding = 50 / magnitude;
+    minX -= padding; maxX += padding; minZ -= padding; maxZ += padding;
+    var fitScale = Math.min(276 / (maxX - minX), 236 / (maxZ - minZ));
+    var scale = fitScale / magnitude;
+    var centerX = minX / 2 + maxX / 2, centerZ = minZ / 2 + maxZ / 2;
+    function project(point) {
+      return { x: 180 + (point.x / magnitude - centerX) * fitScale,
+        y: 160 + (point.z / magnitude - centerZ) * fitScale };
+    }
+    var samples = [], segments = [], pending = [], gapCount = 0;
+    function finishSegment() {
+      if (pending.length > 1) segments.push(pending.map(function(point) { return point.x.toFixed(2) + ',' + point.y.toFixed(2); }).join(' '));
+      pending = [];
+    }
+    for (var i = 0; i < history.length; i++) {
+      var entry = history[i];
+      if (!hasPosition(entry)) { gapCount += 1; finishSegment(); continue; }
+      var point = project(entry); samples.push(point); pending.push(point);
+    }
+    finishSegment();
+    var obstacles = (Array.isArray(s.obstacles) ? s.obstacles : []).filter(hasPosition).map(project).filter(function(point) {
+      return Number.isFinite(point.x) && Number.isFinite(point.y) && point.x >= 24 && point.x <= 336 && point.y >= 24 && point.y <= 296;
+    });
+    var unit = Math.pow(10, Math.floor(Math.log10(60 / scale)));
+    var bars = [1, 2, 5, 10].map(function(factor) { var distance = factor * unit; return { distance: distance, width: distance * scale }; })
+      .filter(function(bar) { return Number.isFinite(bar.distance) && Number.isFinite(bar.width) && bar.width >= 40 && bar.width <= 100; });
+    bars.sort(function(a, b) { return Math.abs(a.width - 60) - Math.abs(b.width - 60); });
+    var bar = bars[0];
+    return {
+      known: known, player: known ? project(s) : null, hive: project({ x: 0, z: 0 }), dca: project({ x: 0, z: -p.dcaDistanceM }),
+      queen: queen ? project(queen) : null, target: target ? project(target) : null, targetLabel: navigation.label,
+      heading: Number.isFinite(s.yaw) ? (s.yaw % (Math.PI * 2)) * 180 / Math.PI : 0,
+      dcaRadius: p.dcaRadiusM * scale, dcaRadiusM: p.dcaRadiusM, dcaMinFt: p.dcaMinFt, dcaMaxFt: p.dcaMaxFt, scale: scale,
+      samples: samples, segments: segments, obstacles: obstacles, sampleCount: samples.length, gapCount: gapCount,
+      scaleBar: { distance: bar.distance, width: bar.width, label: String(Number(bar.distance.toPrecision(3))) + ' model m' }
+    };
+  }
+
+  // Planning instruments retain raw condition checks while displaying rounded
+  // values. Reading a condition never records a checkpoint or changes the run.
+  function bhDronePlanningReadings(state) {
+    var s = state && typeof state === 'object' && !Array.isArray(state) ? state : {};
+    var p = DRONE_FLIGHT_PARAMS;
+    var queens = Array.isArray(s.nearQueens) ? s.nearQueens.filter(function(q) { return q && typeof q === 'object' && !Array.isArray(q); }) : [];
+    var target = bhDroneNavigationTarget({ reachedDca: s.reachedDca, reachedQueen: s.reachedQueen, nearQueens: queens });
+    var isQueen = target.label !== 'DCA', dcaRecorded = !!s.reachedDca && !isQueen;
+    function rounded(value) { return value === null ? null : Math.round(value) || 0; }
+    function percent(value) { return Math.max(0, Math.min(100, value)); }
+    function gap(value) { return value < 1 ? '<1' : String(Math.ceil(value)); }
+    var rangeRaw = Number.isFinite(s.x) && Number.isFinite(s.z) && Number.isFinite(target.x) && Number.isFinite(target.z)
+      ? Math.hypot(target.x - s.x, target.z - s.z) : null;
+    if (!Number.isFinite(rangeRaw)) rangeRaw = null;
+    var rangeValue = rounded(rangeRaw), rangeStatus = 'unknown';
+    var rangeDetail = rangeRaw === null ? 'Horizontal range unavailable.' : '';
+    if (isQueen) {
+      if (rangeRaw !== null) rangeStatus = 'available';
+      rangeDetail += (rangeDetail ? ' ' : '') + 'Horizontal gap; the queen cue can move.';
+    }
+    else {
+      if (rangeRaw !== null) {
+        rangeStatus = rangeRaw <= p.dcaRadiusM ? 'within' : 'outside';
+        rangeDetail = rangeStatus === 'within' ? 'Within the ' + p.dcaRadiusM + ' model m horizontal boundary.'
+          : 'Move ' + gap(rangeRaw - p.dcaRadiusM) + ' model m closer to the DCA boundary.';
+      }
+      if (dcaRecorded) rangeDetail = 'DCA already recorded. This is a reference reading; returning is not required.';
+    }
+    var altitudeRaw = Number.isFinite(s.y) ? s.y : null, altitudeValue = rounded(altitudeRaw);
+    var cueHeight = isQueen && Number.isFinite(target.y) ? target.y : null;
+    var altitudeStatus = 'unknown', altitudeDetail = 'Altitude unavailable.';
+    if (isQueen) {
+      if (altitudeRaw !== null && cueHeight !== null) {
+        altitudeStatus = altitudeRaw < cueHeight ? 'below' : altitudeRaw > cueHeight ? 'above' : 'aligned';
+        altitudeDetail = (altitudeStatus === 'below' ? 'Below' : altitudeStatus === 'above' ? 'Above' : 'At') + ' cue height; check horizontal range.';
+      } else if (altitudeRaw !== null) altitudeDetail = 'Queen cue height unavailable; height comparison unavailable.';
+    } else {
+      if (altitudeRaw !== null) {
+        altitudeStatus = altitudeRaw < p.dcaMinFt ? 'below' : altitudeRaw > p.dcaMaxFt ? 'above' : 'within';
+        altitudeDetail = altitudeStatus === 'within' ? 'Within the DCA height band.'
+          : (altitudeStatus === 'below' ? 'Climb ' + gap(p.dcaMinFt - altitudeRaw) : 'Descend ' + gap(altitudeRaw - p.dcaMaxFt)) + ' model ft to the band.';
+      }
+      if (dcaRecorded) altitudeDetail = 'DCA already recorded. This height band is a reference; returning is not required.';
+    }
+    var altitudeOffScale = altitudeRaw !== null && (altitudeRaw < 0 || altitudeRaw > 300);
+    var cueOffScale = cueHeight !== null && (cueHeight < 0 || cueHeight > 300);
+    if (altitudeOffScale) altitudeDetail += ' Your altitude is outside the 0–300 model ft scale.';
+    if (cueOffScale) altitudeDetail += ' The queen cue height is outside the 0–300 model ft scale.';
+    var capacity = s.difficulty === 'easy' ? 125 : s.difficulty === 'hard' ? 82 : 105;
+    var energyRaw = Number.isFinite(s.energy) ? Math.max(0, s.energy) / capacity * 100 : null;
+    if (!Number.isFinite(energyRaw)) energyRaw = null;
+    var energyValue = rounded(energyRaw), low = energyRaw !== null && energyRaw < 25;
+    return {
+      targetLabel: target.label,
+      range: { value: rangeValue, text: rangeValue === null ? 'Unavailable' : rangeValue + ' model m', reference: isQueen ? 'To queen cue' : 'To DCA center', detail: rangeDetail, status: rangeStatus },
+      altitude: { value: altitudeValue, text: altitudeValue === null ? 'Unavailable' : altitudeValue + ' model ft',
+        reference: isQueen ? cueHeight === null ? 'Queen cue height unavailable' : 'Queen cue height: ' + rounded(cueHeight) + ' model ft'
+          : 'DCA entry band: ' + p.dcaMinFt + '–' + p.dcaMaxFt + ' model ft',
+        detail: altitudeDetail, status: altitudeStatus, markerPct: altitudeRaw === null ? null : percent(altitudeRaw / 3),
+        referencePct: cueHeight === null ? null : percent(cueHeight / 3), bandStartPct: p.dcaMinFt / 3, bandWidthPct: (p.dcaMaxFt - p.dcaMinFt) / 3,
+        kind: isQueen ? 'queen' : 'dca', offScale: altitudeOffScale || cueOffScale },
+      energy: { value: energyValue, text: energyValue === null ? 'Unavailable' : energyValue + '%', detail: energyValue === null ? 'Energy reserve unavailable.' : 'of this difficulty’s full reserve', fillPct: energyRaw === null ? null : percent(energyRaw), low: low },
+      roundingNote: 'Values are rounded; condition labels use unrounded readings.'
+    };
+  }
+
+  // Read-only, horizontal surroundings. These facts never steer the flight or
+  // substitute horizontal distance for obstacle clearance or collision checks.
+  function bhDronePlanningSurroundings(state) {
+    function record(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    var s = record(state) ? state : {};
+    var positionKnown = Number.isFinite(s.x) && Number.isFinite(s.z);
+    function gap(value, unit) { return (value > 0 && value < 1 ? '<1' : String(Math.round(value) || 0)) + ' model ' + unit; }
+    function direction(dx, dz) {
+      var range = Number.isFinite(dx) && Number.isFinite(dz) ? Math.hypot(dx, dz) : NaN;
+      if (!Number.isFinite(range)) return { value: 'Unavailable', degrees: null, known: false };
+      if (range === 0) return { value: 'Same horizontal position', degrees: null, known: true };
+      if (!Number.isFinite(s.yaw)) return { value: 'Unavailable', degrees: null, known: false };
+      var angle = Math.atan2(dx, -dz) - s.yaw;
+      var degrees = Math.atan2(Math.sin(angle), Math.cos(angle)) * 180 / Math.PI;
+      var rounded = Math.round(Math.abs(degrees));
+      return { value: rounded === 0 ? 'Ahead (0°)' : rounded === 180 ? 'Behind (180°)' : rounded + '° ' + (degrees < 0 ? 'left' : 'right') + ' of heading', degrees: degrees || 0, known: true };
+    }
+    function vectorTo(point) {
+      return positionKnown && record(point) && Number.isFinite(point.x) && Number.isFinite(point.z)
+        ? { x: point.x - s.x, z: point.z - s.z } : { x: NaN, z: NaN };
+    }
+    function bearingDetail(bearing) { return bearing.known ? bearing.value + '.' : 'Direction unavailable.'; }
+    var queens = Array.isArray(s.nearQueens) ? s.nearQueens.filter(record) : [];
+    var target = bhDroneNavigationTarget({ reachedDca: s.reachedDca, reachedQueen: s.reachedQueen, nearQueens: queens });
+    var isQueen = target.label !== 'DCA', dcaRecorded = !!s.reachedDca && !isQueen;
+    var targetVector = vectorTo(target), targetDirection = direction(targetVector.x, targetVector.z);
+    var targetDetail = dcaRecorded ? 'DCA already recorded. This is a reference direction; returning is not required.'
+      : isQueen ? (target.label === 'Queen intercepted' ? 'Queen interception recorded. ' : '') + 'Horizontal direction to the queen cue; the cue can move.'
+      : 'Horizontal direction to the DCA center; check the height band separately.';
+    if (!targetDirection.known) targetDetail += ' Direction unavailable.';
+
+    var wind = s.windNow === undefined || s.windNow === null ? s.wind : s.windNow;
+    var windMagnitude = record(wind) && Number.isFinite(wind.x) && Number.isFinite(wind.z) ? Math.hypot(wind.x, wind.z) : NaN;
+    var windKnown = Number.isFinite(windMagnitude), calm = windKnown && windMagnitude < 0.04;
+    var windDirection = windKnown && !calm ? direction(wind.x, wind.z) : { degrees: null, known: false };
+    var windValue = 'Unavailable', windDetail = 'Current wind unavailable.';
+    if (windKnown) {
+      var strength = calm ? windMagnitude === 0 ? '0' : '<0.04' : windMagnitude.toFixed(2);
+      windDetail = strength + ' model wind units. Model value, not a measured wind speed.';
+      if (calm) windValue = 'Very little modeled wind';
+      else if (!windDirection.known) { windValue = 'Direction unavailable'; windDetail += ' Heading unavailable; wind direction cannot be shown.'; }
+      else {
+        var roundedWind = Math.round(Math.abs(windDirection.degrees));
+        windValue = roundedWind === 0 ? 'Toward your front (0°)' : roundedWind === 180 ? 'Toward your rear (180°)' : 'Toward ' + windDirection.value;
+        windDetail += ' Direction shows where the wind is moving.';
+      }
+    }
+
+    function nearest(items, isTraffic) {
+      var label = isTraffic ? 'Nearest drone horizontally' : 'Nearest obstacle base';
+      var result = { label: label, value: 'Unavailable', detail: isTraffic ? 'Drone positions unavailable.' : 'Obstacle positions unavailable.', degrees: null, known: false, status: 'unavailable' };
+      if (!Array.isArray(items)) return result;
+      if (!items.length) {
+        result.value = 'None recorded'; result.detail = isTraffic ? 'No drones are recorded in this flight.' : 'No obstacles are recorded in this flight.'; result.status = 'none';
+        return result;
+      }
+      if (!positionKnown) { result.detail = 'Your horizontal position is unavailable.'; return result; }
+      var chosen = null, closest = Infinity, missing = false;
+      items.forEach(function(item) {
+        var vector = vectorTo(item), distance = Math.hypot(vector.x, vector.z);
+        if (!Number.isFinite(distance)) { missing = true; return; }
+        if (distance < closest) { chosen = item; closest = distance; }
+      });
+      if (!chosen) return result;
+      var vector = vectorTo(chosen), bearing = direction(vector.x, vector.z);
+      result.value = gap(closest, 'm'); result.degrees = bearing.degrees; result.known = true; result.status = missing ? 'partial' : 'available';
+      if (isTraffic) {
+        result.detail = 'Horizontal gap. ' + bearingDetail(bearing);
+        var heightDifference = Number.isFinite(s.y) && Number.isFinite(chosen.y) ? chosen.y - s.y : NaN;
+        result.detail += !Number.isFinite(heightDifference) ? ' Vertical separation unavailable.' : heightDifference === 0 ? ' At your height (0 model ft difference).'
+          : ' Drone is ' + gap(Math.abs(heightDifference), 'ft') + (heightDifference > 0 ? ' above you.' : ' below you.');
+      } else {
+        var kind = chosen.type === 'tree' ? 'Tree' : chosen.type === 'building' ? 'Building' : chosen.type === 'rock' ? 'Rock' : 'Obstacle';
+        result.detail = kind + ' base; horizontal gap, not surface clearance. ' + bearingDetail(bearing);
+      }
+      if (missing) result.detail += ' Nearest with a recorded position; some other positions are unavailable.';
+      return result;
+    }
+    return {
+      target: { label: isQueen ? 'Queen cue direction' : 'DCA direction', value: targetDirection.value, detail: targetDetail, degrees: targetDirection.degrees, known: targetDirection.known, status: targetDirection.known ? dcaRecorded ? 'recorded' : 'available' : 'unavailable' },
+      wind: { label: 'Current wind', value: windValue, detail: windDetail, degrees: windDirection.degrees, known: windKnown, status: !windKnown ? 'unavailable' : calm ? 'calm' : 'available' },
+      obstacle: nearest(s.obstacles, false), traffic: nearest(s.drones, true),
+      note: 'Direction markers show bearing relative to your heading; their length does not show distance or wind strength. Values are rounded. These readings do not predict a safe route.'
+    };
+  }
+
+  // Retained flight measurements describe the recorded run, not a live flight.
+  // Legacy energy values keep their original units unless the record identifies them.
+  function bhDroneRecordedSnapshot(run) {
+    run = run && typeof run === 'object' && !Array.isArray(run) ? run : {};
+    function number(value, suffix) {
+      if (!Number.isFinite(value)) return 'Not recorded';
+      var rounded = Math.abs(value) <= Number.MAX_VALUE / 10 ? Math.round(value * 10) / 10 : value;
+      return String(rounded) + (suffix || '');
+    }
+    function firstNumber(primary, legacy) { return Number.isFinite(primary) ? primary : Number.isFinite(legacy) ? legacy : null; }
+    function milestone(id, label, value, yes, no) {
+      return { id: id, label: label, value: value === true ? yes : value === false ? no : 'Not recorded', status: value === true ? 'recorded' : value === false ? 'not-reached' : 'unknown' };
+    }
+    var percent = run.energyUnits === 'percent-of-difficulty-reserve', energyKnown = Number.isFinite(run.energyLeft);
+    var markers = firstNumber(run.routeMarkers, run.nectar), markerGoal = firstNumber(run.routeMarkerGoal, run.nectarGoal);
+    var conflicts = Number.isFinite(run.obstacleHits) && Number.isFinite(run.trafficHits) ? run.obstacleHits + run.trafficHits : null;
+    var conflictsKnown = Number.isFinite(conflicts);
+    return {
+      milestones: [
+        milestone('dca', 'DCA entry', run.reachedDca, 'Reached', 'Not reached'),
+        milestone('queen', 'Queen intercept', run.success, 'Intercepted', 'Not intercepted')
+      ],
+      metrics: [
+        { id: 'peak', label: 'Peak altitude', value: number(run.maxAlt, ' model ft'), detail: 'Highest recorded height above ground; not the height at the finish.', known: Number.isFinite(run.maxAlt) },
+        { id: 'distance', label: 'Distance traveled', value: number(run.distance, ' model m'), detail: 'Accumulated horizontal travel; not the remaining gap to the DCA or queen.', known: Number.isFinite(run.distance) },
+        { id: 'energy', label: 'Energy left', value: number(run.energyLeft, percent ? '%' : ''),
+          detail: percent ? 'Recorded percentage of this difficulty\u2019s full energy reserve.' : energyKnown ? 'Energy units were not recorded; this value cannot be read as a percentage.' : 'Energy and its units were not recorded.',
+          known: energyKnown, meterPct: percent && energyKnown && run.energyLeft >= 0 && run.energyLeft <= 100 ? run.energyLeft : null }
+      ],
+      extras: [
+        { id: 'score', label: 'Score', value: number(run.score), detail: 'Recorded game score for this flight.', known: Number.isFinite(run.score) },
+        { id: 'markers', label: 'Route markers', value: number(markers) + ' / ' + number(markerGoal), detail: 'Optional gates passed / recorded goal. Markers do not restore energy.', known: Number.isFinite(markers) && Number.isFinite(markerGoal) },
+        { id: 'facts', label: 'Science facts', value: number(run.facts), detail: 'Science facts discovered during this flight.', known: Number.isFinite(run.facts) },
+        { id: 'conflicts', label: 'Hazard conflicts', value: number(conflicts),
+          detail: 'Obstacle conflicts: ' + number(run.obstacleHits) + '. Drone conflicts: ' + number(run.trafficHits) + '.' + (conflictsKnown ? ' Combined recorded total.' : ' A combined total requires both counts.'), known: conflictsKnown }
+      ],
+      note: 'Readings are rounded. Peak altitude and distance traveled do not establish DCA entry; use the recorded outcomes above.'
+    };
+  }
+
+  function bhDroneFlightConditions(state) {
+    var s = state || {};
+    var context = s.pacing === 'steps' ? 'Pause & plan · readings update after a maneuver.' : s.paused ? 'Paused readings · plan before resuming.' : 'Live readings · pause to plan a correction.';
+    var active = s.phase === 'launch' || s.phase === 'flight' || s.phase === 'congregation';
+    var reserve = s.difficulty === 'easy' ? 125 : s.difficulty === 'hard' ? 82 : 105;
+    var ground = active && s.phase !== 'launch' && Number.isFinite(s.y) && s.y < 30 && Number.isFinite(s.vy) && s.vy < -.5;
+    var climb = active && s.stallWarning === true;
+    var energy = active && Number.isFinite(s.energy) && s.energy / reserve < .25;
+    var items = [];
+    if (ground) items.push({
+      id: 'ground', title: 'Descending near the ground', tone: 'danger',
+      evidence: Math.round(s.y) + ' model ft high. Downward motion detected.',
+      advice: 'Use a short climb input, then check height and downward motion again.'
+    });
+    if (climb) items.push({
+      id: 'climb', title: 'Slow climb', tone: 'warning',
+      evidence: (Number.isFinite(s.speed) ? 'Model speed ' + s.speed.toFixed(1) + '.' : 'Model speed unavailable.') + ' The current climb has little forward speed.',
+      advice: ground ? 'First address the descent near the ground. Once clear, build forward speed before another climb.' : 'Ease the climb and build forward speed before trying another short climb.'
+    });
+    if (energy) items.push({
+      id: 'energy', title: 'Low energy reserve', tone: 'warning',
+      evidence: Math.round(s.energy / reserve * 100) + '% of the full reserve for this difficulty remains.',
+      advice: 'Use short thrust bursts and glide when possible. There is no in-flight refueling.'
+    });
+    var announcement = items.length ? context + ' ' + items.map(function(item) { return item.title + '. ' + item.advice; }).join(' ') : '';
+    return { context: context, ground: ground, climb: climb, energy: energy, items: items, announcement: announcement };
+  }
+
   function bhDroneFlightDirector(state) {
     var s = state || {}, target = bhDroneNavigationTarget(s);
     function number(v) { return Number.isFinite(v) ? v : 0; }
@@ -4680,7 +5725,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var error = range < 1 ? 0 : Math.atan2(Math.sin(Math.atan2(dx, -dz) - number(s.yaw)), Math.cos(Math.atan2(dx, -dz) - number(s.yaw)));
     var degrees = Math.round(error * 180 / Math.PI), height = Math.round(target.y - number(s.y));
     var direction = range < 1 ? 'At target horizontally' : Math.abs(degrees) <= 5 ? 'Target ahead' : (degrees < 0 ? 'Turn left ' : 'Turn right ') + Math.abs(degrees) + '°';
-    var vertical = Math.abs(height) <= 5 ? 'Near target altitude' : (height > 0 ? 'Target above · ' : 'Target below · ') + Math.abs(height) + ' ft';
+    var vertical = Math.abs(height) <= 5 ? 'Near target altitude' : (height > 0 ? 'Target above · ' : 'Target below · ') + Math.abs(height) + ' model ft';
+    // The accepted DCA height is a band, not just the navigation marker's midpoint.
+    if (target.label === 'DCA') {
+      var approach = bhDroneApproachGuide(s);
+      vertical = approach.known ? (approach.inBand ? 'Within DCA height band' : approach.heightText) : 'Height unavailable';
+    }
     var maxEnergy = s.difficulty === 'easy' ? 125 : s.difficulty === 'hard' ? 82 : 105;
     return { target: target.label, degrees: degrees, direction: direction, vertical: vertical,
       range: Math.round(range), altitude: Math.round(number(s.y)), energy: Math.max(0, Math.min(100, Math.round(number(s.energy) / maxEnergy * 100))),
@@ -4712,6 +5762,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   }
 
   // Equal-length direction pointers from the bee, not future trajectory points.
+  // Place scene captions without moving their projected markers or changing flight state.
+  function bhDroneCueLeaderPath(label, labels, reserved, bounds) {
+    function finite(n) { return typeof n === 'number' && Number.isFinite(n); }
+    function validRect(r) { return r && finite(r.x) && finite(r.y) && finite(r.width) && finite(r.height) && r.width > 0 && r.height > 0 && finite(r.x + r.width) && finite(r.y + r.height); }
+    function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+    function inBounds(p) { return finite(p.x) && finite(p.y) && p.x >= bounds.left && p.x <= bounds.right && p.y >= bounds.top && p.y <= bounds.bottom; }
+    function contains(r, p) { return p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height; }
+    if (!bounds || !['left', 'top', 'right', 'bottom'].every(function(k) { return finite(bounds[k]); }) || !finite(bounds.right - bounds.left) || !finite(bounds.bottom - bounds.top) || bounds.right <= bounds.left || bounds.bottom <= bounds.top || !validRect(label) || label.hidden || !finite(label.anchorX) || !finite(label.anchorY)) return [];
+    var start = { x: label.anchorX, y: label.anchorY };
+    var end = { x: clamp(start.x, label.x, label.x + label.width), y: clamp(start.y, label.y, label.y + label.height) };
+    if (!inBounds(start) || !inBounds(end) || (start.x === end.x && start.y === end.y)) return [];
+    var margin = 3, obstacles = [];
+    function addObstacle(r, ignoreOrigin) {
+      if (!validRect(r) || (ignoreOrigin && contains(r, start))) return;
+      var expanded = { left: r.x - margin, top: r.y - margin, right: r.x + r.width + margin, bottom: r.y + r.height + margin };
+      if ([expanded.left, expanded.top, expanded.right, expanded.bottom].every(finite)) obstacles.push(expanded);
+    }
+    (Array.isArray(labels) ? labels : []).forEach(function(r) {
+      if (r && !r.hidden && r !== label && !(label.id != null && r.id === label.id)) addObstacle(r, false);
+    });
+    (Array.isArray(reserved) ? reserved : []).forEach(function(r) { addObstacle(r, r && r.marker === true); });
+    // The leader may touch its own plaque edge, but it must not run through its text.
+    obstacles.push({ left: label.x, top: label.y, right: label.x + label.width, bottom: label.y + label.height });
+    function crosses(a, b, r) {
+      var enter = 0, leave = 1;
+      for (var axis = 0; axis < 2; axis++) {
+        var origin = axis === 0 ? a.x : a.y, delta = axis === 0 ? b.x - a.x : b.y - a.y;
+        var minimum = axis === 0 ? r.left : r.top, maximum = axis === 0 ? r.right : r.bottom;
+        if (delta === 0) {
+          if (origin <= minimum || origin >= maximum) return false;
+        } else {
+          var first = (minimum - origin) / delta, last = (maximum - origin) / delta;
+          enter = Math.max(enter, Math.min(first, last)); leave = Math.min(leave, Math.max(first, last));
+          if (enter >= leave) return false;
+        }
+      }
+      return enter < leave && leave > 0 && enter < 1;
+    }
+    var best = [], bestLength = Infinity;
+    function consider(points) {
+      var path = [], length = 0;
+      for (var i = 0; i < points.length; i++) {
+        var p = points[i], previous = path[path.length - 1];
+        if (!inBounds(p)) return;
+        if (!previous || p.x !== previous.x || p.y !== previous.y) path.push({ x: p.x, y: p.y });
+      }
+      if (path.length < 2) return;
+      for (var segment = 1; segment < path.length; segment++) {
+        var a = path[segment - 1], b = path[segment];
+        for (var obstacle = 0; obstacle < obstacles.length; obstacle++) if (crosses(a, b, obstacles[obstacle])) return;
+        length += Math.hypot(b.x - a.x, b.y - a.y);
+      }
+      if (length < bestLength) { best = path; bestLength = length; }
+    }
+    consider([start, end]);
+    if (best.length) return best;
+    consider([start, { x: end.x, y: start.y }, end]);
+    consider([start, { x: start.x, y: end.y }, end]);
+    if (best.length) return best;
+    var xs = [bounds.left, bounds.right], ys = [bounds.top, bounds.bottom];
+    for (var i = 0; i < obstacles.length; i++) { xs.push(obstacles[i].left, obstacles[i].right); ys.push(obstacles[i].top, obstacles[i].bottom); }
+    Array.from(new Set(xs)).forEach(function(x) { consider([start, { x: x, y: start.y }, { x: x, y: end.y }, end]); });
+    Array.from(new Set(ys)).forEach(function(y) { consider([start, { x: start.x, y: y }, { x: end.x, y: y }, end]); });
+    return best;
+  }
+
+  function bhDroneCueLabelLayout(labels, bounds, reserved) {
+    function finite(n) { return typeof n === 'number' && Number.isFinite(n); }
+    function validRect(r) { return r && finite(r.x) && finite(r.y) && finite(r.width) && finite(r.height) && r.width > 0 && r.height > 0 && finite(r.x + r.width) && finite(r.y + r.height); }
+    function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+    function byDistance(origin) { return function(a, b) { return Math.abs(a - origin) - Math.abs(b - origin) || a - b; }; }
+    var validBounds = bounds && ['left', 'top', 'right', 'bottom'].every(function(k) { return finite(bounds[k]); }) && finite(bounds.right - bounds.left) && finite(bounds.bottom - bounds.top) && bounds.right > bounds.left && bounds.bottom > bounds.top;
+    var gap = 5, nearby = 110;
+    var result = Array.from(Array.isArray(labels) ? labels : [], function(label) {
+      return Object.assign({}, label, { x: label && finite(label.x) ? label.x : (validBounds ? bounds.left : 0), y: label && finite(label.y) ? label.y : (validBounds ? bounds.top : 0), hidden: true, moved: false });
+    });
+    if (!validBounds) return result;
+    var obstacles = (Array.isArray(reserved) ? reserved : []).filter(validRect).map(function(r) { return { x: r.x, y: r.y, width: r.width, height: r.height }; });
+    var order = result.map(function(label, index) { return { index: index, priority: finite(label.priority) ? label.priority : 0 }; }).sort(function(a, b) { return b.priority - a.priority || a.index - b.index; });
+    for (var index = 0; index < order.length; index++) {
+      var original = labels[order[index].index], label = result[order[index].index];
+      if (!validRect(original) || label.width > bounds.right - bounds.left || label.height > bounds.bottom - bounds.top) continue;
+      var xMax = bounds.right - label.width, yMax = bounds.bottom - label.height;
+      var preferredX = clamp(original.x, bounds.left, xMax), preferredY = clamp(original.y, bounds.top, yMax);
+      var fits = function(x, y) {
+        var dx = x - original.x, dy = y - original.y;
+        if (label.optional && dx * dx + dy * dy > nearby * nearby) return false;
+        for (var obstacleIndex = 0; obstacleIndex < obstacles.length; obstacleIndex++) {
+          var r = obstacles[obstacleIndex];
+          if (x < r.x + r.width + gap && x + label.width + gap > r.x && y < r.y + r.height + gap && y + label.height + gap > r.y) return false;
+        }
+        return true;
+      };
+      // Most frames keep existing preferred positions; avoid candidate allocation and sorting there.
+      var placed = fits(preferredX, preferredY) ? { x: preferredX, y: preferredY } : null;
+      if (!placed) {
+        var alternates = (Array.isArray(label.alternates) ? label.alternates : []).filter(function(p) { return p && finite(p.x) && finite(p.y); });
+        var ys = [preferredY, bounds.top, yMax], xs = [preferredX, bounds.left, xMax];
+        for (var offset = 12; offset <= nearby; offset += 12) {
+          ys.push(original.y - offset, original.y + offset);
+          xs.push(original.x - offset, original.x + offset);
+        }
+        for (var oi = 0; oi < obstacles.length; oi++) {
+          var obstacle = obstacles[oi];
+          ys.push(obstacle.y - label.height - gap, obstacle.y + obstacle.height + gap);
+          xs.push(obstacle.x - label.width - gap, obstacle.x + obstacle.width + gap);
+        }
+        for (var ai = 0; ai < alternates.length; ai++) { ys.push(alternates[ai].y); xs.push(alternates[ai].x); }
+        var vertical = Array.from(new Set(ys.map(function(y) { return clamp(y, bounds.top, yMax); }))).sort(byDistance(original.y));
+        // Keep the label over its scene feature whenever an unobstructed vertical slot exists.
+        for (var yi = 0; yi < vertical.length; yi++) if (fits(preferredX, vertical[yi])) { placed = { x: preferredX, y: vertical[yi] }; break; }
+        if (!placed) for (ai = 0; ai < alternates.length; ai++) {
+          var alternateX = clamp(alternates[ai].x, bounds.left, xMax), alternateY = clamp(alternates[ai].y, bounds.top, yMax);
+          if (fits(alternateX, alternateY)) { placed = { x: alternateX, y: alternateY }; break; }
+        }
+        if (!placed) {
+          var horizontal = Array.from(new Set(xs.map(function(x) { return clamp(x, bounds.left, xMax); }))).sort(byDistance(original.x));
+          for (var xi = 0; xi < horizontal.length; xi++) {
+            for (yi = 0; yi < vertical.length; yi++) if (fits(horizontal[xi], vertical[yi])) { placed = { x: horizontal[xi], y: vertical[yi] }; break; }
+            if (placed) break;
+          }
+        }
+      }
+      if (!placed) continue;
+      label.x = placed.x; label.y = placed.y; label.hidden = false;
+      label.moved = label.x !== original.x || label.y !== original.y;
+      obstacles.push({ x: label.x, y: label.y, width: label.width, height: label.height });
+    }
+    return result;
+  }
+
   function bhDroneMotionReadout(state) {
     var s = state || {};
     function finite(value) { return Number.isFinite(value) ? value : 0; }
@@ -5449,6 +6630,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       readings: readings,
       text: title + ' | ' + context + ' | ' + readings.map(function(item) { return item.label + ': ' + item.value; }).join(' | '),
       guide: guide
+    };
+  }
+
+  // Visit marks persist with the colony. Invalid or duplicate slots never
+  // count as additional frames, and reading them never repairs saved data.
+  function bhHiveFrameVisits(value) {
+    return Array.isArray(value) ? Array.from(new Set(value.filter(function(frame) { return Number.isInteger(frame) && frame >= 0 && frame < 6; }))) : [];
+  }
+
+  // Recorded binary answers and strict correctness flags identify the model
+  // answer at recording time. Never reinterpret a saved result from live data.
+  function bhGuidedInspectionReview(record) {
+    var saved = record && typeof record === 'object' && !Array.isArray(record) ? record : {};
+    var fields = [
+      { id: 'brood', label: 'Brood pattern', values: ['solid', 'spotty'], labels: ['Solid, mostly continuous', 'Spotty, with gaps'] },
+      { id: 'cells', label: 'Queen cells', values: ['yes', 'no'], labels: ['Yes', 'No'] }
+    ];
+    return {
+      day: Number.isSafeInteger(saved.day) && saved.day >= 0 ? saved.day : null,
+      readings: fields.map(function(field) {
+        var index = field.values.indexOf(saved[field.id]);
+        var correct = saved[field.id + 'Correct'];
+        var known = index !== -1 && typeof correct === 'boolean';
+        return { id: field.id, label: field.label,
+          answer: index === -1 ? 'Not recorded' : field.labels[index],
+          expected: known ? field.labels[correct ? index : 1 - index] : 'Not recorded',
+          result: known ? correct ? 'match' : 'review' : 'unknown',
+          resultLabel: known ? correct ? 'Matches model' : 'Review answer' : 'Comparison not recorded' };
+      })
     };
   }
 
@@ -7945,7 +9155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 },
                 decisionLog: function(entry) {
                   if (!isRecord(entry)) return null;
-                  return cleanFields(entry, ['turn', 'seconds', 'altitudeBefore', 'altitude', 'energyBefore', 'energy', 'rangeBefore', 'range', 'x', 'z'], ['action', 'target', 'phase']);
+                  return cleanFields(entry, ['turn', 'seconds', 'altitudeBefore', 'altitude', 'energyBefore', 'energy', 'rangeBefore', 'range', 'x', 'z'], ['action', 'targetBefore', 'target', 'phase']);
                 }
               });
           }
@@ -10568,8 +11778,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       { id: 'score_50', label: 'Earn 50+ colony health points', icon: '\u2B50', check: function(d) { return (d.score || 0) >= 50; }, progress: function(d) { return (d.score || 0) + '/50 pts'; } },
       { id: 'handle_event', label: 'Successfully handle a colony threat event', icon: '\u26A0\uFE0F', check: function(d) { return (d.eventsHandled || 0) >= 1; }, progress: function(d) { return (d.eventsHandled || 0) >= 1 ? 'Handled!' : 'Waiting...'; } },
       { id: 'read_every_frame', label: 'Read every frame in the brood box', icon: '\uD83D\uDD0D',
-        check: function(d) { return ((d && d.hive3dFramesSeen) || []).length >= 6; },
-        progress: function(d) { return (((d && d.hive3dFramesSeen) || []).length) + '/6 frames'; } },
+        check: function(d) { return bhHiveFrameVisits(d && d.hive3dFramesSeen).length === 6; },
+        progress: function(d) { return bhHiveFrameVisits(d && d.hive3dFramesSeen).length + '/6 frames'; } },
       { id: 'find_the_queen', label: 'Find the marked queen on the comb', icon: '\uD83D\uDC51',
         check: function(d) { return !!(d && d.hive3dFoundQueen); },
         progress: function(d) { return (d && d.hive3dFoundQueen) ? 'Found her!' : 'Not yet spotted'; } }
@@ -11061,19 +12271,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var badges = d.badges || {};
         var BADGE_DEFS = [
           { id: 'first_day', icon: '🌅', label: __alloT('stem.beehive.first_dawn', 'First Dawn'), desc: __alloT('stem.beehive.advance_your_first_day', 'Advance your first day'), check: function() { return day >= 1; } },
-          { id: 'survive_30', icon: '📅', label: __alloT('stem.beehive.month_one', 'Month One'), desc: __alloT('stem.beehive.colony_survives_30_days', 'Colony survives 30 days'), check: function() { return day >= 30 && colonySurvived; } },
-          { id: 'survive_120', icon: '🏆', label: __alloT('stem.beehive.full_year', 'Full Year'), desc: __alloT('stem.beehive.survive_a_complete_year_120_days', 'Survive a complete year (120 days)'), check: function() { return day >= 120 && colonySurvived; } },
+          { id: 'survive_30', icon: '📅', label: __alloT('stem.beehive.month_one', 'Month One'), desc: __alloT('stem.beehive.colony_survives_30_days', 'Keep the colony alive through 30 model days'), check: function() { return day >= 30 && colonySurvived; } },
+          { id: 'survive_120', icon: '🏆', label: __alloT('stem.beehive.full_year', 'Full Year'), desc: __alloT('stem.beehive.survive_a_complete_year_120_days', 'Keep the colony alive through 120 model days (one model year)'), check: function() { return day >= 120 && colonySurvived; } },
           { id: 'honey_harvest', icon: '🍯', label: __alloT('stem.beehive.sweet_reward', 'Sweet Reward'), desc: __alloT('stem.beehive.harvest_honey_for_the_first_time', 'Harvest honey for the first time'), check: function() { return (d.totalHarvested || 0) > 0; } },
           { id: 'mite_evidence', icon: '🔎', label: __alloT('stem.beehive.mite_evidence', 'Mite Evidence'), desc: __alloT('stem.beehive.mite_evidence_description', 'Self-review a prediction, evidence, and explanation after an effective treatment at model mite pressure 20 or above. This recognizes reflection, not treatment frequency.'), check: function() { return bhMiteEvidenceReady(d); } },
           { id: 'conservationist', icon: '🌍', label: __alloT('stem.beehive.eco_warrior', 'Eco Warrior'), desc: __alloT('stem.beehive.complete_5_conservation_actions', 'Complete 5 conservation actions'), check: function() { return (d.conservationsDone || 0) >= 5; } },
           { id: 'garden_friend', icon: '🌱', label: __alloT('stem.beehive.garden_friend', 'Garden Friend'), desc: __alloT('stem.beehive.have_3_pollinator_plants_in_companion_', 'Have 3+ pollinator plants in Companion Planting'), check: function() { return gardenPollinators >= 3; } },
-          { id: 'thriving', icon: '✨', label: __alloT('stem.beehive.thriving_colony', 'Thriving Colony'), desc: __alloT('stem.beehive.reach_80_colony_health', 'Reach 80+ colony health'), check: function() { return colonyHealth >= 80; } },
+          { id: 'thriving', icon: '✨', label: __alloT('stem.beehive.thriving_colony', 'Thriving Colony'), desc: __alloT('stem.beehive.reach_80_colony_health', 'Reach a colony health score of 80 or above'), check: function() { return colonyHealth >= 80; } },
           { id: 'big_colony', icon: '🐝', label: __alloT('stem.beehive.mega_hive', 'Mega Hive'), desc: __alloT('stem.beehive.grow_colony_to_25_000_workers', 'Grow colony to 25,000+ workers'), check: function() { return workers >= 25000; } },
           { id: 'quiz_master', icon: '🎓', label: __alloT('stem.beehive.bee_scholar', 'Bee Scholar'), desc: __alloT('stem.beehive.score_8_on_the_bee_knowledge_quiz', 'Score 8+ on the Bee Knowledge Quiz'), check: function() { return (d.bestQuizScore || 0) >= 8; } },
           { id: 'inspector', icon: '🔬', label: __alloT('stem.beehive.hive_inspector', 'Hive Inspector'), desc: __alloT('stem.beehive.view_all_9_inspection_layers', 'View all 9 inspection layers'), check: function() { return (d.layersViewed || []).length >= 9; } },
-          { id: 'weather_wise', icon: '🌦️', label: __alloT('stem.beehive.weather_wise', 'Weather Wise'), desc: __alloT('stem.beehive.survive_3_weather_events', 'Survive 3 weather events'), check: function() { return (d.weatherEventsHandled || 0) >= 3; } },
+          { id: 'weather_wise', icon: '🌦️', label: __alloT('stem.beehive.weather_wise', 'Weather Wise'), desc: __alloT('stem.beehive.survive_3_weather_events', 'Acknowledge 3 weather events'), check: function() { return (d.weatherEventsHandled || 0) >= 3; } },
           { id: 'varietal_master', icon: '🍯', label: __alloT('stem.beehive.varietal_master', 'Varietal Master'), desc: __alloT('stem.beehive.harvest_4_different_honey_varietals', 'Harvest 4 different honey varietals'), check: function() { return Object.keys(d.varietals || {}).length >= 4; } },
-          { id: 'event_handler', icon: '⚡', label: __alloT('stem.beehive.crisis_manager', 'Crisis Manager'), desc: __alloT('stem.beehive.handle_5_colony_events', 'Handle 5 colony events'), check: function() { return (d.eventsHandled || 0) >= 5; } }
+          { id: 'event_handler', icon: '⚡', label: __alloT('stem.beehive.crisis_manager', 'Crisis Manager'), desc: __alloT('stem.beehive.handle_5_colony_events', 'Acknowledge 5 colony events'), check: function() { return (d.eventsHandled || 0) >= 5; } }
         ];
         // Badge award pass runs LATER, after the derived colony vars
         // (gardenPollinators, colonySurvived, colonyHealth) are computed —
@@ -12887,7 +14097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return function() {
             if (typeof window !== 'undefined' && window.__testHooks && window.__testHooks.beehive) delete window.__testHooks.beehive;
           };
-        });
+        }, []);
 
         React.useEffect(function() {
           BEEHIVE_DEBUG && console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
@@ -25600,23 +26810,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var markerGoal = Number.isFinite(run.routeMarkerGoal) ? run.routeMarkerGoal : run.nectarGoal;
           var markers = Number.isFinite(run.routeMarkers) ? run.routeMarkers : run.nectar;
           var boostGap = Number.isFinite(markerGoal) && Number.isFinite(markers) ? Math.max(0, markerGoal - markers) : null;
-          var energyKnown = Number.isFinite(run.energyLeft), failed = run.success === false;
+          var energyRecorded = Number.isFinite(run.energyLeft), energyKnown = energyRecorded && run.energyUnits === 'percent-of-difficulty-reserve', failed = run.success === false;
           var diagnosis;
           if (run.success === true && energyKnown && run.energyLeft >= 30 && hazardConflicts === 0) diagnosis = { id: 'repeatable-success', title: 'Repeatable intercept', summary: 'The route combined a healthy reserve, full separation, and queen acquisition.', planId: 'balanced', next: 'Repeat the route with fewer corrections and compare arrival energy.', criterion: 'Intercept again with at least ' + Math.round(run.energyLeft) + '% energy and zero conflicts.' };
           // A caught queen is a success first: the failure diagnoses below used to tell a
           // successful low-energy flight it "ended with too little reserve to finish the route".
           else if (run.success === true) diagnosis = { id: 'intercept-refine', title: 'Queen intercepted: now make it repeatable', summary: energyKnown && run.energyLeft < 30 ? 'You reached the queen with ' + Math.round(run.energyLeft) + '% energy left, a thin margin for the final approach.' : hazardConflicts != null && hazardConflicts > 0 ? hazardConflicts + ' conflict' + (hazardConflicts === 1 ? '' : 's') + ' cost energy on the way to the queen.' : 'The intercept was recorded. Some reserve or separation readings are unavailable, so they cannot explain this outcome.', planId: energyKnown && run.energyLeft < 30 ? 'thermal-first' : 'balanced', next: 'Fly the same course again and aim to arrive with at least 30% energy and no conflicts.', criterion: 'Record another intercept with at least 30% energy and zero conflicts.' };
-          else if (failed && energyKnown && run.energyLeft <= 10) diagnosis = { id: 'energy-budget', title: 'Energy was the limiting factor', summary: 'The flight ended with too little preflight reserve to finish the route reliably.', planId: 'thermal-first', next: 'Use the opening updraft, then coast between short thrust pulses. Route markers do not restore energy.', criterion: 'Reach the DCA with at least 25% energy remaining.' };
+          else if (failed && (energyKnown && run.energyLeft <= 10 || energyRecorded && run.energyLeft === 0)) diagnosis = { id: 'energy-budget', title: 'Review the low final reserve', summary: run.energyLeft === 0 ? 'The flight ended with zero recorded energy. Compare earlier readings before attributing the outcome to one control choice.' : 'The flight ended with a low recorded percentage of its energy reserve. Compare earlier readings before attributing the outcome to one control choice.', planId: 'thermal-first', next: 'Use the opening updraft, then coast between short thrust pulses. Route markers do not restore energy.', criterion: 'Reach the DCA with at least 25% energy remaining.' };
           else if (failed && run.reachedDca === false && Number.isFinite(run.maxAlt) && run.maxAlt < DRONE_FLIGHT_PARAMS.dcaMinFt) diagnosis = { id: 'altitude-gate', title: 'Altitude gate not reached', summary: 'The route never established the DCA altitude band.', planId: 'thermal-first', next: 'Use the first thermal for altitude, then trade climb for forward glide.', criterion: 'Enter the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft band before ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' m while keeping energy above 30%.' };
-          else if (failed && run.reachedDca === false && Number.isFinite(run.maxAlt) && Number.isFinite(run.distance)) diagnosis = { id: 'range-gate', title: 'Range gate not reached', summary: 'Altitude was available, but forward progress did not reach the congregation area.', planId: 'balanced', next: 'Hold a steadier heading and reduce lateral corrections after the climb.', criterion: 'Travel 600 m with no more than one traffic conflict.' };
+          else if (failed && run.reachedDca === false && Number.isFinite(run.maxAlt) && Number.isFinite(run.distance)) diagnosis = { id: 'range-gate', title: 'Review the DCA approach', summary: 'DCA entry was not recorded as reached. Peak altitude and total travel do not show where the flight met the entry height band.', planId: 'balanced', next: 'Hold a steadier heading and reduce lateral corrections after the climb.', criterion: 'Enter the DCA horizontal boundary and the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' model ft height band at the same time.' };
           else if (failed && hazardConflicts != null && hazardConflicts > 0) diagnosis = { id: 'separation', title: 'Traffic spacing limited the approach', summary: hazardConflicts + ' conflict' + (hazardConflicts === 1 ? '' : 's') + ' converted route energy into recovery maneuvers.', planId: 'balanced', next: 'Use the radar earlier and make one small avoidance correction instead of several late turns.', criterion: 'Reach the queen search with zero conflicts.' };
           else if (failed && run.reachedDca === true && boostGap != null && boostGap > 0) diagnosis = { id: 'marker-gap', title: 'Route control needs more evidence', summary: boostGap + ' training marker' + (boostGap === 1 ? '' : 's') + ' remained unpassed before the climb.', planId: 'boost-first', next: 'Pass the low-altitude markers with fewer corrections, then compare energy use on the DCA climb.', criterion: 'Meet the marker goal without treating markers as an energy source.' };
           else if (failed && run.reachedDca === true) diagnosis = { id: 'queen-tracking', title: 'Queen tracking needs smaller corrections', summary: 'The DCA was reached, but the golden queen signal was not held long enough for an intercept.', planId: 'balanced', next: 'Center the flight-path marker first, then use short steering taps toward the queen cue.', criterion: 'Keep the queen cue centered through the final approach.' };
           else diagnosis = { id: 'incomplete-evidence', title: 'Saved flight evidence is incomplete', summary: 'This record does not contain enough measured energy, gate, or outcome evidence to diagnose the route.', planId: 'balanced', next: 'Review the available readings, then record a new flight before attributing the result to one control choice.', criterion: 'Retain energy, DCA entry, conflicts, and outcome readings in the next completed flight.' };
           diagnosis.planLabel = DRONE_ROUTE_PLANS[diagnosis.planId].label;
           diagnosis.evidence = [
-            { label: 'Energy reserve', value: droneRecordedValue(run.energyLeft, '%'), state: !energyKnown ? 'unknown' : run.energyLeft >= 25 ? 'good' : 'caution' },
-            { label: 'DCA gate', value: run.reachedDca === true ? 'Reached' : run.reachedDca === false ? droneRecordedValue(run.maxAlt, ' ft') + ' / ' + droneRecordedValue(run.distance, ' m') : 'Not recorded', state: run.reachedDca === true ? 'good' : run.reachedDca === false ? 'caution' : 'unknown' },
+            { label: 'Energy reserve', value: droneRecordedValue(run.energyLeft, energyKnown ? '%' : energyRecorded ? ' (units not recorded)' : ''), state: !energyKnown ? 'unknown' : run.energyLeft >= 25 ? 'good' : 'caution' },
+            { label: 'DCA gate', value: run.reachedDca === true ? 'Reached' : run.reachedDca === false ? 'Not reached' : 'Not recorded', state: run.reachedDca === true ? 'good' : run.reachedDca === false ? 'caution' : 'unknown' },
             { label: 'Hazard conflicts', value: hazardConflicts == null ? 'Not recorded' : String(hazardConflicts), state: hazardConflicts == null ? 'unknown' : hazardConflicts === 0 ? 'good' : 'caution' }
           ];
           diagnosis.consequence = run.success === true ? 'Colony consequence: mating transfers this drone\'s haploid genes to the queen\'s stored sperm; the drone dies immediately afterward.' : failed ? 'Colony consequence: this flight used colony-fed energy without a mating contribution. The next route tests how behavior changes reproductive success.' : 'Colony consequence: the mating outcome was not recorded, so no reproductive contribution can be inferred.';
@@ -25781,98 +26991,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var routeBand = routeProgress >= 85 ? 'Near DCA' : routeProgress >= 45 ? 'Mid-route' : 'Far field';
           return { state: spatialState, primary: primary, maneuver: maneuver, obstacleText: obstacleText, trafficText: trafficText, dcaText: dcaText, routeProgress: routeProgress, routeBand: routeBand, camera: _droneCameraMode.current === 'chase' ? 'Chase' : 'Cockpit' };
         }
-        function droneReplayChart(samples, dark) {
-          samples = Array.isArray(samples) ? samples.slice(-300).filter(function(sample) { return sample && typeof sample === 'object'; }) : [];
-          if (!samples.length) return h('p', { className: 'mt-2 text-[0.625rem] ' + (dark ? 'text-slate-400' : 'text-slate-600') }, 'No telemetry was recorded for this run.');
-          var chartW = 640, chartH = 208, left = 76, right = 16, top = 16, bottom = 28, innerW = chartW - left - right;
-          var laneH = 46, laneGap = 8;
-          var timedSamples = samples.every(function(sample, index) { return Number.isFinite(sample.t) && (!index || sample.t >= samples[index - 1].t); });
-          var firstTime = timedSamples ? samples[0].t : null, lastTime = timedSamples ? samples[samples.length - 1].t : null;
-          var maxAltitude = Math.max(180, samples.reduce(function(max, sample) { return Number.isFinite(sample.altitude) ? Math.max(max, sample.altitude) : max; }, 0));
-          var maxWind = Math.max(2, samples.reduce(function(max, sample) { return Number.isFinite(sample.wind) ? Math.max(max, sample.wind) : max; }, 0));
-          var replayIndexValue = droneData.replayIndex == null ? samples.length - 1 : Number(droneData.replayIndex);
-          var selectedIndex = Math.max(0, Math.min(samples.length - 1, Math.floor(isFinite(replayIndexValue) ? replayIndexValue : samples.length - 1)));
-          var selectedSample = samples[selectedIndex] || samples[samples.length - 1];
-          var priorSample = samples[Math.max(0, selectedIndex - 1)] || selectedSample;
-          var energyDelta = selectedIndex > 0 && Number.isFinite(selectedSample.energy) && Number.isFinite(priorSample.energy) ? Math.round((selectedSample.energy - priorSample.energy) * 10) / 10 : null;
-          var selectedPhase = selectedSample.phase === 'flight' ? 'En route' : selectedSample.phase === 'congregation' ? 'DCA reached' : selectedSample.phase === 'mating' ? 'Queen intercepted' : selectedSample.phase === 'end' ? 'Flight complete' : selectedSample.phase === 'launch' ? 'Taking off' : 'Phase not recorded';
-          var selectedAction = selectedSample.action || 'Not recorded';
-          var selectedImpact = selectedSample.impact || '';
-          var selectedAdvice = selectedSample.hazard ? 'Hazard moment: compare the recorded readings with your correction.' : selectedImpact || (Number.isFinite(selectedSample.energy) && selectedSample.energy < 25 ? 'Energy warning: protect the reserve before adding altitude.' : selectedPhase === 'DCA reached' ? 'DCA moment: use smaller turns and follow the golden signal.' : !Number.isFinite(selectedSample.energy) ? 'Energy was not recorded at this moment; a reserve or energy change cannot be inferred.' : 'Compare altitude gain with energy change before the next control decision.');
-          var xAt = function(index) { return left + (samples.length === 1 || timedSamples && firstTime === lastTime ? innerW * 0.5 : timedSamples ? (samples[index].t - firstTime) / (lastTime - firstTime) * innerW : (index / (samples.length - 1)) * innerW); };
-
-          var replayBookmarks = [];
-          function addReplayBookmark(id, label, index, detail) {
-            if (index < 0 || index >= samples.length) return;
-            if (replayBookmarks.some(function(bookmark) { return bookmark.index === index; })) return;
-            replayBookmarks.push({ id: id, label: label, index: index, detail: detail });
+        function droneReplayChart(samples, dark, run) {
+          var model = bhDroneReplayModel(samples, run, droneData.replayIndex);
+          if (!model) return h('section', { className: 'bfd bee-flight-replay', 'data-flight-replay': 'true', 'data-replay-empty': 'true', role: 'region', 'aria-label': 'Recorded flight moments' },
+            h('h4', null, 'Recorded flight moments'), h('p', null, 'No telemetry was recorded for this run.'));
+          samples = model.samples;
+          var selectedIndex = model.index, selectedSample = model.sample;
+          var chartW = 640, chartH = 96, left = 12, right = 12, top = 12, bottom = 84;
+          function fraction(value, min, max) {
+            if (min === max) return 0.5;
+            var scale = Math.max(Math.abs(min), Math.abs(max), 1);
+            return Math.max(0, Math.min(1, (value / scale - min / scale) / (max / scale - min / scale)));
           }
-          addReplayBookmark('launch', samples[0].phase === 'launch' ? 'Launch' : 'First sample', 0, samples[0].phase === 'launch' ? 'Recorded launch moment' : 'First retained telemetry sample');
-          var firstHazardIndex = samples.findIndex(function(sample) { return !!sample.hazard; });
-          addReplayBookmark('first-hazard', 'First hazard', firstHazardIndex, 'Compare the hazard mark with your correction');
-          var peakAltitudeIndex = samples.reduce(function(bestIndex, sample, index) {
-            return Number.isFinite(sample.altitude) && (bestIndex < 0 || sample.altitude > samples[bestIndex].altitude) ? index : bestIndex;
-          }, -1);
-          addReplayBookmark('peak-altitude', 'Peak altitude', peakAltitudeIndex, 'Check whether the DCA altitude band was reached');
-          var dcaIndex = samples.findIndex(function(sample) { return sample.phase === 'congregation' || sample.phase === 'mating'; });
-          addReplayBookmark('dca', 'DCA approach', dcaIndex, 'Follow the queen signal with smaller corrections');
-          addReplayBookmark('finish', samples[samples.length - 1].phase === 'end' ? 'Flight end' : 'Last sample', samples.length - 1, 'Review the final retained readings');
-          var selectedBookmark = replayBookmarks.find(function(bookmark) { return bookmark.index === selectedIndex; }) || null;
-          var bookmarkLines = replayBookmarks.map(function(bookmark) {
-            return h('line', { key: 'bookmark-line-' + bookmark.id, x1: xAt(bookmark.index), y1: top, x2: xAt(bookmark.index), y2: top + 3 * laneH + 2 * laneGap, stroke: bookmark.id === 'first-hazard' ? '#fb7185' : (dark ? '#c4b5fd' : '#6366f1'), strokeWidth: bookmark.id === 'first-hazard' ? 2 : 1, strokeDasharray: bookmark.id === 'first-hazard' ? 'none' : '2 4', opacity: bookmark.id === 'first-hazard' ? 0.6 : 0.42 });
-          });
-          var lineSegments = function(value, maxValue, lane) {
-            var segments = [], current = [];
-            samples.forEach(function(sample, index) {
-              if (!Number.isFinite(sample[value])) { if (current.length) segments.push(current); current = []; return; }
-              var y = top + lane * (laneH + laneGap) + laneH - Math.max(0, Math.min(1, sample[value] / maxValue)) * laneH;
-              current.push(xAt(index).toFixed(1) + ',' + y.toFixed(1));
-            });
-            if (current.length) segments.push(current);
-            return segments;
-          };
-          var traceNodes = [];
-          [['altitude', maxAltitude, 0, '#fbbf24'], ['energy', 100, 1, '#34d399'], ['wind', maxWind, 2, '#67e8f9']].forEach(function(trace) {
-            lineSegments(trace[0], trace[1], trace[2]).forEach(function(segment, index) {
-              traceNodes.push(segment.length === 1 ? h('circle', { key: trace[0] + '-' + index, 'data-flight-replay-trace': trace[0], cx: Number(segment[0].split(',')[0]), cy: Number(segment[0].split(',')[1]), r: 3, fill: trace[3] }) : h('polyline', { key: trace[0] + '-' + index, 'data-flight-replay-trace': trace[0], points: segment.join(' '), fill: 'none', stroke: trace[3], strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }));
-            });
-          });
-          var yFor = function(value, maxValue, lane) { return top + lane * (laneH + laneGap) + laneH - Math.max(0, Math.min(1, (Number(value) || 0) / maxValue)) * laneH; };
-          var grid = [];
-          [0, 1, 2].forEach(function(lane) { var y = top + lane * (laneH + laneGap) + laneH; grid.push(h('line', { key: 'base-' + lane, x1: left, y1: y, x2: chartW - right, y2: y, stroke: dark ? '#334155' : '#cbd5e1', strokeWidth: 1 })); grid.push(h('line', { key: 'mid-' + lane, x1: left, y1: y - laneH / 2, x2: chartW - right, y2: y - laneH / 2, stroke: dark ? '#1e293b' : '#e2e8f0', strokeWidth: 1, strokeDasharray: '3 4' })); });
-          var hazards = samples.map(function(sample, index) { return sample.hazard ? h('line', { key: 'hazard-' + index, x1: xAt(index), y1: top, x2: xAt(index), y2: top + 3 * laneH + 2 * laneGap, stroke: '#fb7185', strokeWidth: 2, opacity: 0.72 }) : null; }).filter(Boolean);
-          return h('div', { 'data-flight-replay': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/35' : 'border-slate-200 bg-slate-50') },
-            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dark ? 'text-sky-300' : 'text-sky-800') }, 'Telemetry replay'), h('span', { className: 'text-[0.625rem] font-bold ' + (dark ? 'text-slate-400' : 'text-slate-600') }, timedSamples ? droneRecordedValue(firstTime, '–') + droneRecordedValue(lastTime, ' sec recorded') : 'Sample order; timestamps unavailable or unordered')),
-            h('label', { className: 'mt-2 block text-[0.625rem] font-black uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600'), htmlFor: 'beehive-drone-replay-range' }, 'Scrub to a flight moment'),
-            h('input', { id: 'beehive-drone-replay-range', 'data-flight-replay-range': 'true', type: 'range', min: 0, max: samples.length - 1, step: 1, value: selectedIndex, onChange: function(event) { updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { replayIndex: Number(event.target.value) }); }); }, 'aria-label': __alloT('stem.beehive.a11y_select_telemetry_replay_moment', 'Select telemetry replay moment'), 'aria-valuetext': droneRecordedValue(selectedSample.t, ' seconds') + ', ' + selectedPhase + ', control ' + selectedAction + ', altitude ' + droneRecordedValue(selectedSample.altitude, ' feet') + ', energy ' + droneRecordedValue(selectedSample.energy, ' percent'), className: 'mt-1 h-2 w-full cursor-pointer accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500' }),
-            h('div', { 'data-flight-replay-bookmarks': 'true', className: 'mt-2 flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_jump_to_key_flight_moments', 'Jump to key flight moments') },
-              h('span', { className: 'mr-1 text-[0.625rem] font-black uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Key moments'),
-              replayBookmarks.map(function(bookmark) {
+          var xAt = function(index) { return left + (chartW - left - right) * (samples.length === 1 ? 0.5 : model.timed ? fraction(samples[index].t, model.firstTime, model.lastTime) : index / (samples.length - 1)); };
+          function selectReplay(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= samples.length || index === selectedIndex && droneData.replayIndex === index) return;
+            updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { replayIndex: index }); });
+          }
+          var readout = model.lanes.map(function(lane) { return lane.label + ' ' + lane.value; }).join(' · ');
+          function axisTime(value) { return String(Math.abs(value) <= Number.MAX_VALUE / 10 ? Math.round(value * 10) / 10 : value); }
+          var axisStart = model.timed ? axisTime(model.firstTime) : '1';
+          var axisEnd = model.timed ? axisTime(model.lastTime) : String(samples.length);
+          return h('section', { 'data-flight-replay': 'true', className: 'bfd bee-flight-replay', role: 'region', 'aria-label': 'Recorded flight moments' },
+            h('h4', null, 'Recorded flight moments'),
+            h('p', { className: 'bee-replay-intro' }, 'Inspect the recorded readings. Moving through samples does not fly the bee or change the recorded outcome.'),
+            h('div', { className: 'bee-replay-navigation' },
+              h('label', { htmlFor: 'beehive-drone-replay-range' }, 'Choose a recorded sample'),
+              h('p', { 'data-replay-position': 'true', className: 'bee-replay-position', 'aria-live': 'off' }, model.positionText),
+              h('input', { id: 'beehive-drone-replay-range', 'data-flight-replay-range': 'true', type: 'range', min: 0, max: samples.length - 1, step: 1, value: selectedIndex,
+                onChange: function(event) { selectReplay(Number(event.target.value)); },
+                // The associated visible label also names this control for speech input.
+                'aria-controls': 'beehive-drone-replay-selected', 'aria-valuetext': model.positionText + ', ' + model.timeText + ', ' + model.phase + ', control ' + model.action + ', altitude ' + model.lanes[0].value + ', energy ' + model.lanes[1].value + ', wind ' + model.lanes[2].value }),
+              h('div', { className: 'bee-replay-step-buttons' },
+                h('button', { type: 'button', 'data-replay-previous': 'true', 'aria-controls': 'beehive-drone-replay-selected', 'aria-disabled': selectedIndex === 0, onClick: function() { selectReplay(selectedIndex - 1); } }, 'Previous sample'),
+                h('button', { type: 'button', 'data-replay-next': 'true', 'aria-controls': 'beehive-drone-replay-selected', 'aria-disabled': selectedIndex === samples.length - 1, onClick: function() { selectReplay(selectedIndex + 1); } }, 'Next sample'))),
+            h('div', { 'data-flight-replay-bookmarks': 'true', className: 'bee-replay-bookmarks', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_jump_to_key_flight_moments', 'Jump to key flight moments') },
+              h('h5', null, 'Key moments'), model.bookmarks.map(function(bookmark) {
                 var active = selectedIndex === bookmark.index;
-                return h('button', { key: bookmark.id, type: 'button', 'data-flight-replay-bookmark': bookmark.id, 'aria-pressed': active, 'aria-label': bookmark.label + ': ' + bookmark.detail, title: bookmark.detail, onClick: function() { updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { replayIndex: bookmark.index }); }); }, className: 'min-h-[44px] rounded-full border px-2.5 py-1 text-[0.625rem] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (active ? (dark ? 'border-indigo-400 bg-indigo-600 text-white' : 'border-indigo-600 bg-indigo-600 text-white') : (dark ? 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-500' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-400')) }, bookmark.label);
+                return h('button', { key: bookmark.id, type: 'button', 'data-flight-replay-bookmark': bookmark.id, 'aria-pressed': active, 'aria-label': bookmark.label + ': ' + bookmark.detail, title: bookmark.detail, 'aria-controls': 'beehive-drone-replay-selected', onClick: function() { selectReplay(bookmark.index); } }, bookmark.label);
               })),
-            h('svg', { viewBox: '0 0 ' + chartW + ' ' + chartH, role: 'img', 'aria-labelledby': 'beehive-drone-replay-title beehive-drone-replay-desc', className: 'mt-2 block w-full', style: { minHeight: '180px' } },
-              h('title', { id: 'beehive-drone-replay-title' }, 'Drone flight telemetry replay'),
-              h('desc', { id: 'beehive-drone-replay-desc' }, 'Recorded traces show altitude in feet, energy as a percentage, and wind speed in meters per second. Missing readings leave gaps. Pink vertical marks indicate recorded hazard moments. ' + (timedSamples ? 'Horizontal positions follow recorded model seconds.' : 'Horizontal positions show sample order because the timestamps are incomplete or unordered.')),
-              h('g', { 'aria-hidden': 'true' }, grid.concat(hazards, bookmarkLines),
-                traceNodes,
-                h('line', { x1: xAt(selectedIndex), y1: top, x2: xAt(selectedIndex), y2: top + 3 * laneH + 2 * laneGap, stroke: dark ? '#f8fafc' : '#0f172a', strokeWidth: 2, strokeDasharray: '4 3', opacity: 0.8 }),
-                Number.isFinite(selectedSample.altitude) && h('circle', { cx: xAt(selectedIndex), cy: yFor(selectedSample.altitude, maxAltitude, 0), r: 4, fill: '#fbbf24', stroke: dark ? '#0f172a' : '#ffffff', strokeWidth: 2 }),
-                h('text', { x: 8, y: top + 14, fill: dark ? '#f8fafc' : '#0f172a', fontSize: 11, fontWeight: 700 }, 'Altitude (ft)'),
-                h('text', { x: 8, y: top + laneH + laneGap + 14, fill: dark ? '#f8fafc' : '#0f172a', fontSize: 11, fontWeight: 700 }, 'Energy (%)'),
-                h('text', { x: 8, y: top + 2 * (laneH + laneGap) + 14, fill: dark ? '#f8fafc' : '#0f172a', fontSize: 11, fontWeight: 700 }, 'Wind (m/s)'),
-                h('text', { x: left, y: chartH - 7, fill: dark ? '#94a3b8' : '#475569', fontSize: 10 }, timedSamples ? droneRecordedValue(firstTime, ' sec') : 'First sample'),
-                h('text', { x: chartW - right, y: chartH - 7, textAnchor: 'end', fill: dark ? '#94a3b8' : '#475569', fontSize: 10 }, timedSamples ? droneRecordedValue(lastTime, ' sec') : 'Last sample'))),
-            h('div', { 'data-flight-replay-moment': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mt-2 rounded-lg border p-2.5 ' + (dark ? 'border-indigo-700/50 bg-indigo-950/30' : 'border-indigo-200 bg-indigo-50/70') },
-              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dark ? 'text-indigo-300' : 'text-indigo-800') }, (selectedBookmark ? selectedBookmark.label : 'Selected moment')), h('span', { className: 'text-[0.625rem] font-black tabular-nums ' + (dark ? 'text-white' : 'text-slate-900') }, droneRecordedValue(selectedSample.t, ' sec') + ' · ' + selectedPhase)),
-              h('p', { className: 'mt-1 text-[0.625rem] font-semibold leading-relaxed ' + (dark ? 'text-slate-200' : 'text-slate-700') }, 'Control: ' + selectedAction + '. ' + selectedAdvice),
-              h('p', { className: 'mt-1 text-[0.625rem] font-bold ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Altitude ' + droneRecordedValue(selectedSample.altitude, ' ft') + ' · Energy ' + droneRecordedValue(selectedSample.energy, '%') + (energyDelta == null ? ' · Energy change not recorded' : ' (' + (energyDelta > 0 ? '+' : '') + energyDelta + '%)') + ' · Wind ' + droneRecordedValue(selectedSample.wind, ' m/s') + (selectedSample.hazard === true ? ' · Hazard flagged' : selectedSample.hazard === false ? ' · No hazard flagged' : ' · Hazard status not recorded')),
-            h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.625rem] font-bold ' + (dark ? 'text-slate-300' : 'text-slate-600') },
-              h('span', null, h('span', { className: 'mr-1 text-amber-500', 'aria-hidden': 'true' }, '━'), 'Altitude'),
-              h('span', null, h('span', { className: 'mr-1 text-emerald-500', 'aria-hidden': 'true' }, '━'), 'Energy'),
-              h('span', null, h('span', { className: 'mr-1 text-cyan-500', 'aria-hidden': 'true' }, '━'), 'Wind'),
-              h('span', null, h('span', { className: 'mr-1 text-rose-500', 'aria-hidden': 'true' }, '┃'), 'Hazard')),
-            h('p', { className: 'mt-2 text-[0.625rem] font-semibold ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'Read the recorded traces together. Gaps mean a reading was not retained; they do not mean zero. Wind and hazard marks can help explain steering changes when those readings are available.')));
+            h('div', { id: 'beehive-drone-replay-selected', 'data-flight-replay-moment': 'true', className: 'bee-replay-moment', 'aria-live': 'off' },
+              h('div', { className: 'bee-replay-moment-heading' }, h('h5', null, 'Selected moment'), h('strong', null, model.timeText)),
+              h('p', { className: 'bee-replay-phase' }, model.phase),
+              model.selectedBookmarks.length > 0 && h('p', { className: 'bee-replay-matches', 'data-replay-matches': 'true' }, 'Key moments here: ' + model.selectedBookmarks.map(function(bookmark) { return bookmark.label; }).join(' · ')),
+              h('p', { 'data-replay-control': 'true' }, h('strong', null, 'Recorded control: '), model.action),
+              h('p', { 'data-replay-advice': 'true' }, model.advice),
+              h('p', { 'data-replay-energy-change': 'true', className: 'bee-replay-change' }, model.changeText),
+              h('p', { 'data-replay-hazard-status': 'true' }, model.hazardText),
+              h('p', { className: 'bee-replay-sr' }, readout)),
+            h('p', { className: 'bee-replay-sr', role: 'status', 'aria-atomic': 'true' }, model.positionText + '. ' + model.timeText + '. ' + model.phase + '.'),
+            h('p', { className: 'bee-replay-chart-help' }, 'Each chart has its own vertical scale. All three use the same horizontal positions. ' + (model.timed ? 'Spacing follows recorded model seconds.' : 'Spacing follows sample order; timestamps unavailable or unordered.')),
+            h('div', { className: 'bee-replay-lanes' }, model.lanes.map(function(lane) {
+              var yAt = function(value) { return bottom - fraction(value, lane.min, lane.max) * (bottom - top); };
+              var segments = [], segment = [];
+              samples.forEach(function(sample, index) {
+                if (!Number.isFinite(sample[lane.id])) { if (segment.length) segments.push(segment); segment = []; return; }
+                segment.push(xAt(index).toFixed(1) + ',' + yAt(sample[lane.id]).toFixed(1));
+              });
+              if (segment.length) segments.push(segment);
+              var dash = lane.id === 'energy' ? '9 5' : lane.id === 'wind' ? '2 5' : undefined;
+              return h('figure', { key: lane.id, className: 'bee-replay-lane', 'data-replay-lane': lane.id },
+                h('figcaption', null, h('div', { className: 'bee-replay-lane-heading' }, h('h5', null, lane.label), h('p', { 'data-replay-value': 'true', className: 'bee-replay-value' }, lane.value)),
+                  h('p', { className: 'bee-replay-unit' }, 'Vertical scale: ' + lane.unit)),
+                h('div', { className: 'bee-replay-plot-row' },
+                  h('div', { className: 'bee-replay-y-axis' }, h('span', { 'data-replay-scale-max': 'true' }, lane.scaleMaxText), h('span', { 'data-replay-scale-min': 'true' }, lane.scaleMinText)),
+                  h('svg', { 'data-replay-chart': lane.id, viewBox: '0 0 ' + chartW + ' ' + chartH, preserveAspectRatio: 'none', role: 'img', 'aria-labelledby': 'beehive-drone-replay-' + lane.id + '-title beehive-drone-replay-' + lane.id + '-desc' },
+                    h('title', { id: 'beehive-drone-replay-' + lane.id + '-title' }, lane.label + ' across recorded samples'),
+                    h('desc', { id: 'beehive-drone-replay-' + lane.id + '-desc' }, 'Vertical scale ' + lane.scaleMinText + ' to ' + lane.scaleMaxText + ' ' + lane.unit + '. ' + (model.timed ? 'Horizontal positions follow recorded model seconds.' : 'Horizontal positions show sample order.') + ' Missing readings leave gaps. The dashed vertical line marks the selected sample. Solid hazard marks show samples explicitly flagged as hazards.'),
+                    h('g', { 'aria-hidden': 'true' },
+                      [top, (top + bottom) / 2, bottom].map(function(y, index) { return h('line', { key: 'grid-' + index, x1: left, x2: chartW - right, y1: y, y2: y, stroke: 'var(--bf-line)', strokeWidth: 1, strokeDasharray: index === 1 ? '3 4' : undefined, vectorEffect: 'non-scaling-stroke' }); }),
+                      samples.map(function(sample, index) { return sample.hazard === true ? h('line', { key: 'hazard-' + index, 'data-replay-hazard': String(index), x1: xAt(index), x2: xAt(index), y1: top, y2: bottom, stroke: 'var(--br-hazard)', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }) : null; }),
+                      segments.map(function(points, index) { return points.length === 1 ? h('circle', { key: 'trace-' + index, 'data-flight-replay-trace': lane.id, cx: Number(points[0].split(',')[0]), cy: Number(points[0].split(',')[1]), r: 3, fill: 'var(--br-trace)', stroke: 'var(--br-trace)', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })
+                        : h('polyline', { key: 'trace-' + index, 'data-flight-replay-trace': lane.id, points: points.join(' '), fill: 'none', stroke: 'var(--br-trace)', strokeWidth: 3, strokeDasharray: dash, strokeLinejoin: 'round', strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke' }); }),
+                      h('line', { 'data-replay-selected': 'true', x1: xAt(selectedIndex), x2: xAt(selectedIndex), y1: top, y2: bottom, stroke: 'var(--bf-ink)', strokeWidth: 4, strokeDasharray: '5 4', vectorEffect: 'non-scaling-stroke' }),
+                      Number.isFinite(selectedSample[lane.id]) && h('circle', { cx: xAt(selectedIndex), cy: yAt(selectedSample[lane.id]), r: 4, fill: 'var(--bf-paper)', stroke: 'var(--br-trace)', strokeWidth: 3, vectorEffect: 'non-scaling-stroke' })))),
+                h('div', { className: 'bee-replay-x-axis', 'aria-label': 'Horizontal axis' }, h('span', null, axisStart), h('span', null, axisEnd)),
+                h('p', { className: 'bee-replay-axis-caption' }, model.timed ? 'Time (model seconds)' : 'Sample order'),
+                !samples.some(function(sample) { return Number.isFinite(sample[lane.id]); }) && h('p', { className: 'bee-replay-missing' }, 'No ' + lane.label.toLowerCase() + ' readings were retained.'));
+            })),
+            h('div', { className: 'bee-replay-key', 'aria-label': 'Chart marks' },
+              h('span', null, h('i', { 'aria-hidden': 'true', className: 'bee-replay-selected-key' }), 'Dashed vertical line: selected sample'),
+              h('span', null, h('i', { 'aria-hidden': 'true', className: 'bee-replay-hazard-key' }), 'Solid vertical mark: hazard flagged')),
+            h('p', { className: 'bee-replay-note' }, 'Gaps mean a reading was not retained; they do not mean zero. Changes compare neighboring retained samples, which may be several model seconds apart. These readings show what was recorded, not the exact timing or cause of every event.'));
         }
         function droneInstrumentPhase(state) {
           var phase = (state && state.phase) || 'launch';
@@ -25888,6 +27088,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var goal = state.nectarGoal || state.pollenGoal || 10;
           var dca = droneDcaStatus(state);
           var distance = Math.round(dca.planarDistance);
+          if (state.phase === 'end') return 'Review replay - revise the route';
+          if (state.phase === 'mating') return 'Queen signal acquired';
+          if (state.pacing === 'steps') return 'Pause & plan - choose the next maneuver';
           if (state.paused) return 'Paused - plan your next correction';
           if (state.phase === 'launch') return 'Flight objective - pass route markers low';
           if (state.phase === 'flight') return boosts < goal ? boosts + '/' + goal + ' markers - ' + distance + ' m to DCA' : Math.round(Number(state.y) || 0) + ' ft - ' + distance + ' m to DCA';
@@ -26000,7 +27203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { 'data-route-condition': 'altitude', 'data-met': String(r.inAltitude) }, h('strong', null, 'Altitude band'), h('span', { 'data-route-altitude': 'true' }, r.altitude + ' model ft · ' + r.minAltitude + '–' + r.maxAltitude + ' needed'), h('small', { 'data-route-altitude-status': 'true' }, r.inAltitude ? '✓ In band' : 'Adjust altitude'))),
                   h('div', { className: 'bee-route-scene-key', 'data-route-scene-key': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.read_the_flight_scene_guides','Read the flight scene guides') },
                     h('strong', null, 'Read the flight scene'),
-                    h('div', null, h('svg', { viewBox: '0 0 40 40', 'aria-hidden': 'true', className: 'bee-route-key-guide' }, h('path', { d: 'M8 15A14 14 0 0 1 15 8M25 8A14 14 0 0 1 32 15M32 25A14 14 0 0 1 25 32M15 32A14 14 0 0 1 8 25', fill: 'none', stroke: 'currentColor', strokeWidth: 3 })), h('p', null, h('b', null, 'Cyan open frames · optional'), 'Steering guides along the approach. Passing through one does not record a checkpoint.')),
+                    h('div', null, h('svg', { viewBox: '0 0 40 40', 'aria-hidden': 'true', className: 'bee-route-key-guide' }, h('path', { d: 'M8 15A14 14 0 0 1 15 8M25 8A14 14 0 0 1 32 15M32 25A14 14 0 0 1 25 32M15 32A14 14 0 0 1 8 25', fill: 'none', stroke: 'currentColor', strokeWidth: 3 })), h('p', null, h('b', null, 'Cyan open frames · optional'), 'Steering guides along the approach. Passing through one does not record a checkpoint. Thin callout lines connect labels to markers; they do not show a flight path.')),
                     h('div', null, h('svg', { viewBox: '0 0 40 40', 'aria-hidden': 'true', className: 'bee-route-key-dca' }, h('path', { d: 'M6 12V28M34 12V28', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }), h('ellipse', { cx: 20, cy: 12, rx: 14, ry: 5, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }), h('ellipse', { cx: 20, cy: 28, rx: 14, ry: 5, fill: 'none', stroke: 'currentColor', strokeWidth: 2 })), h('p', null, h('b', null, 'Gold volume · DCA checkpoint'), 'The modeled entry region. Meet both range and altitude conditions together.')),
                     h('div', null, h('svg', { viewBox: '0 0 40 40', 'aria-hidden': 'true', className: 'bee-route-key-dca' }, h('path', { d: 'M6 32L32 6', stroke: 'currentColor', strokeWidth: 2, strokeDasharray: '4 4' }), h('path', { d: 'M24 6H32V14', fill: 'none', stroke: 'currentColor', strokeWidth: 2 })), h('p', null, h('b', null, 'Dashed line · target bearing'), 'Points toward the target; check the scene for obstacles before following it.')),
                     h('small', null, 'These are human learning aids, not structures that bees see.')),
@@ -26219,29 +27422,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           node.querySelector('[data-lift-detail]').textContent = r.detail;
         }
 
+        function renderDroneFlightConditions(state) {
+          var conditions = bhDroneFlightConditions(state);
+          return h(React.Fragment, null,
+            h('section', { className: 'bee-flight-conditions', 'data-flight-conditions': 'true', hidden: !conditions.items.length, 'aria-labelledby': 'beehive-flight-conditions-title' },
+              h('div', { className: 'bee-flight-conditions-heading' }, h('h4', { id: 'beehive-flight-conditions-title' }, 'Flight conditions'),
+                h('p', { 'data-flight-conditions-context': 'true' }, conditions.context)),
+              h('ul', { className: 'bee-flight-condition-list', 'aria-live': 'off' }, ['ground', 'climb', 'energy'].map(function(id) {
+                var item = conditions.items.find(function(reading) { return reading.id === id; });
+                return h('li', { key: id, 'data-flight-condition': id, 'data-flight-energy-warning': id === 'energy' ? 'true' : undefined,
+                  'data-condition-tone': id === 'ground' ? 'danger' : 'warning', hidden: !item },
+                  h('div', { className: 'bee-flight-condition-title' },
+                    h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, 'aria-hidden': 'true', focusable: 'false' },
+                      h('path', { d: 'M12 3L22 21H2Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinejoin: 'round' }),
+                      h('path', { d: 'M12 9V14M12 17V18', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' })),
+                    h('strong', { 'data-condition-title': 'true' }, item ? item.title : '')),
+                  h('p', { 'data-condition-evidence': 'true', 'aria-live': 'off', className: 'bee-flight-condition-evidence' }, item ? item.evidence : ''),
+                  h('p', { 'data-condition-advice': 'true' }, item ? item.advice : ''),
+                  id === 'climb' && h('small', { className: 'bee-flight-condition-model-note' }, 'In this game, forward speed supports a climb. Real bees can hover.'));
+              }))),
+            h('span', { 'data-flight-conditions-announcement': 'true', className: 'sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, conditions.announcement));
+        }
+        function syncDroneFlightConditions(header, state) {
+          var conditions = bhDroneFlightConditions(state), panel = header.querySelector('[data-flight-conditions]');
+          if (!panel) return;
+          function text(node, value) { if (node && node.textContent !== value) node.textContent = value; }
+          var hidden = !conditions.items.length;
+          if (panel.hidden !== hidden) panel.hidden = hidden;
+          text(panel.querySelector('[data-flight-conditions-context]'), conditions.context);
+          ['ground', 'climb', 'energy'].forEach(function(id) {
+            var card = panel.querySelector('[data-flight-condition="' + id + '"]');
+            var item = conditions.items.find(function(reading) { return reading.id === id; });
+            if (card.hidden !== !item) card.hidden = !item;
+            if (!item) return;
+            ['title', 'evidence', 'advice'].forEach(function(key) { text(card.querySelector('[data-condition-' + key + ']'), item[key]); });
+          });
+          // Announce changed conditions or pacing, never each numeric telemetry update.
+          text(header.querySelector('[data-flight-conditions-announcement]'), conditions.announcement);
+        }
+        function droneScenePhaseLabel(state) {
+          return state.phase === 'end' ? 'Flight complete' : state.pacing === 'steps' ? 'Pause & plan' : state.paused ? 'Paused' : droneInstrumentPhase(state).label;
+        }
+        function syncDroneSceneStatus(state) {
+          var scenePhaseLabel = droneScenePhaseLabel(state), sceneCueDetail = droneSceneCueDetail(state);
+          var scenePhaseNode = document.querySelector('[data-flight-scene-phase="true"]');
+          if (scenePhaseNode && scenePhaseNode.textContent !== scenePhaseLabel) scenePhaseNode.textContent = scenePhaseLabel;
+          var sceneDetailNode = document.querySelector('[data-flight-scene-detail="true"]');
+          if (sceneDetailNode && sceneDetailNode.textContent !== sceneCueDetail) sceneDetailNode.textContent = sceneCueDetail;
+          var sceneChip = document.querySelector('[data-beehive-stage-chip="drone"]');
+          if (sceneChip) {
+            var phase = state.phase || 'launch', camera = _droneCameraMode.current === 'chase' ? 'chase' : 'cockpit';
+            if (sceneChip.getAttribute('data-flight-phase') !== phase) sceneChip.setAttribute('data-flight-phase', phase);
+            if (sceneChip.getAttribute('data-flight-camera') !== camera) sceneChip.setAttribute('data-flight-camera', camera);
+          }
+        }
+        function droneCommandStatus(state) {
+          if (state.phase === 'end') return 'Flight complete';
+          return state.pacing === 'steps' ? 'Pause & plan' : state.paused ? 'Paused' : 'Flying';
+        }
+        function renderDroneCommandHeader() {
+          var state = _droneState.current, cue = droneTrainingStatus(state);
+          return h('header', { className: 'bee-flight-command-header', 'data-flight-command-header': 'true', 'aria-label': 'Flight controls and guidance' },
+            h('div', { className: 'bee-flight-command-title' }, h('h3', null, 'Flight deck'),
+              h('span', { 'data-flight-command-status': 'true', 'data-beehive-flight-paused-overlay': dronePaused && dronePacing !== 'steps' ? 'true' : undefined, role: 'status', 'aria-live': 'off' }, droneCommandStatus(state))),
+            h('div', { className: 'bee-flight-command-actions' },
+              h('button', { type: 'button', 'data-flight-end': 'true', onClick: leaveDroneFlight, 'aria-label': __alloT('stem.beehive.end_flight', 'End flight') }, __alloT('stem.beehive.end_flight_2', '✕ End Flight')),
+              dronePacing !== 'steps' && h('button', { type: 'button', onClick: toggleDronePause, 'data-beehive-flight-pause': 'true', 'aria-label': dronePaused ? 'Resume flight' : 'Pause flight', 'aria-keyshortcuts': 'P' }, dronePaused ? '▶ Resume' : 'Ⅱ Pause')),
+            renderDroneFlightConditions(state),
+            h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none' } },
+              h('div', { className: 'bee-flight-training-heading' }, h('span', { 'data-flight-training-step': 'true' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('strong', { 'data-flight-training-label': 'true' }, cue.label)),
+              h('p', { 'data-flight-training-instruction': 'true' }, cue.instruction), h('p', { 'data-flight-training-hint': 'true' }, cue.hint)),
+            h('div', { className: 'bee-flight-command-diagnostics', style: droneData.detailedHud === true ? undefined : BH_VISUALLY_HIDDEN },
+              h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite' }, 'Preparing 3D'),
+              h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())));
+        }
+        function syncDroneCommandHeader(state) {
+          syncDroneSceneStatus(state);
+          var header = document.querySelector('[data-flight-command-header]');
+          if (!header) return;
+          var status = header.querySelector('[data-flight-command-status]'), label = droneCommandStatus(state);
+          if (status && status.textContent !== label) status.textContent = label;
+          syncDroneFlightConditions(header, state);
+        }
+        function closeDroneDirectionReadings() {
+          var guide = document.querySelector('[data-flight-director]');
+          if (guide && guide.open) guide.open = false;
+        }
+        function pauseDroneForDirectionReadings() {
+          var state = _droneState.current;
+          if (!state || state.paused || state.phase === 'end' || state.pacing === 'steps') return;
+          state.paused = true; _droneKeys.current = {};
+          updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { paused: true }); });
+          announceBee('Flight paused. Read the direction and entry details, then resume when ready.', false);
+        }
         function renderDroneDirector() {
-          var r = bhDroneFlightDirector(_droneState.current);
-          return h('div', { className: 'bee-flight-director', 'data-flight-director': 'true', role: 'group', 'aria-label': 'Flight direction guide. ' + r.text },
+          var state = _droneState.current, r = bhDroneFlightDirector(state), approach = bhDroneApproachGuide(state);
+          return h('details', { className: 'bee-flight-director', 'data-flight-director': 'true', 'data-reserve-low': String(r.energy < 25), 'aria-label': 'Flight direction guide. ' + r.text,
+            onToggle: function(event) { if (event.currentTarget.open) pauseDroneForDirectionReadings(); } },
+            h('summary', { 'data-director-summary': 'true', onClick: function(event) { if (!event.currentTarget.parentElement.open) pauseDroneForDirectionReadings(); } },
+            h('div', { className: 'bee-flight-director-heading' }, h('h3', null, 'Flight direction'),
+              h('span', { 'data-director-status': 'true' }, state.paused ? 'Paused' : 'Flying')),
             h('div', { className: 'bee-flight-bearing' },
-              h('svg', { viewBox: '0 0 64 64', 'aria-hidden': 'true' }, h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: '#55768a', strokeWidth: 1.5 }), h('path', { d: 'M32 3V9 M32 55V61 M3 32H9 M55 32H61', stroke: '#9db8c8', strokeWidth: 1.5 }),
-                h('g', { 'data-director-arrow': 'true', transform: 'rotate(' + r.degrees + ' 32 32)' }, h('path', { d: 'M32 13L42 39L32 34L22 39Z', fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 }))),
-              h('div', null, h('span', { className: 'bee-flight-director-label', 'data-director-value': 'target' }, r.target), h('strong', { 'data-director-value': 'direction' }, r.direction), h('span', { 'data-director-value': 'vertical' }, r.vertical))),
-            h('div', { className: 'bee-flight-director-metrics' }, [['range','Range · model m',String(r.range)],['altitude','Altitude',r.altitude + ' ft'],['energy','Energy',r.energy + '%'],['seconds','Time',r.seconds + ' s']].map(function(item) {
-              return h('div', { key: item[0] }, h('span', { className: 'bee-flight-director-label' }, item[1]), h('strong', { 'data-director-value': item[0] }, item[2]));
+              h('div', { className: 'bee-flight-bearing-dial', 'aria-hidden': 'true' }, h('span', null, 'Ahead'),
+                h('svg', { viewBox: '0 0 64 64', focusable: 'false' }, h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: 'var(--fd-line)', strokeWidth: 1.5 }), h('path', { d: 'M32 3V9 M32 55V61 M3 32H9 M55 32H61', stroke: 'var(--fd-muted)', strokeWidth: 1.5 }),
+                  h('g', { 'data-director-arrow': 'true', transform: 'rotate(' + r.degrees + ' 32 32)' }, h('path', { d: 'M32 13L42 39L32 34L22 39Z', fill: 'var(--fd-accent)', stroke: 'var(--fd-ink)', strokeWidth: 1 })))),
+              h('div', { className: 'bee-flight-bearing-copy' }, h('span', { className: 'bee-flight-director-label' }, 'Next target: ', h('span', { 'data-director-value': 'target' }, r.target)),
+                h('strong', { 'data-director-value': 'direction' }, r.direction), h('span', { 'data-director-value': 'vertical' }, r.vertical))),
+            h('p', { 'data-director-budget-summary': 'true' }, r.energy + '% energy' + (r.energy < 25 ? ' · Low reserve' : '') + ' · ' + r.seconds + ' model s left'),
+            h('span', { className: 'bee-flight-director-disclosure' }, 'Read flight details · pauses flight')),
+            h('div', { 'data-director-details': 'true' },
+            h('p', null, 'Opening these details pauses the flight. Resume with the flight controls when ready; the guide then folds away.'),
+            h('p', null, 'The arrow shows the turn from the bee’s heading toward the target. It does not show north or the camera’s viewing direction.'),
+            h('div', { className: 'bee-flight-director-metrics' }, [['range','Horizontal range · model m',String(r.range)],['altitude','Height above ground',r.altitude + ' model ft'],['energy','Energy reserve',r.energy + '%'],['seconds','Time remaining',r.seconds + ' model s']].map(function(item) {
+              return h('div', { key: item[0] }, h('span', { className: 'bee-flight-director-label' }, item[1]), h('strong', { 'data-director-value': item[0] }, item[2]),
+                item[0] === 'energy' && h('div', { 'data-director-energy-meter': 'true', role: 'meter', 'aria-label': 'Energy as a percentage of this difficulty’s capacity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': r.energy },
+                  h('span', { 'data-director-energy-fill': 'true', style: { width: r.energy + '%' } })),
+                item[0] === 'energy' && h('span', { 'data-director-reserve': 'true' }, r.energy < 25 ? 'Low reserve' : 'Reserve available'));
             })),
             renderDroneApproachGuide(),
-            h('p', { 'data-director-note': 'true' }, bhDroneApproachGuide(_droneState.current).note));
+            h('p', { 'data-director-note': 'true' }, approach.recorded || approach.complete ? 'Direction guide only · check obstacles before turning.' : approach.note),
+            h('p', null, 'Range is horizontal distance to the target center. Height and distance use game-model units; energy is a percentage of the selected difficulty’s capacity.')));
         }
         function syncDroneDirector(state) {
           var node = document.querySelector('[data-flight-director]'); if (!node) return;
           var r = bhDroneFlightDirector(state);
-          var values = { target: r.target, direction: r.direction, vertical: r.vertical, range: String(r.range), altitude: r.altitude + ' ft', energy: r.energy + '%', seconds: r.seconds + ' s' };
+          var values = { target: r.target, direction: r.direction, vertical: r.vertical, range: String(r.range), altitude: r.altitude + ' model ft', energy: r.energy + '%', seconds: r.seconds + ' model s' };
           Object.keys(values).forEach(function(key) { var item = node.querySelector('[data-director-value="' + key + '"]'); if (item) item.textContent = values[key]; });
           var arrow = node.querySelector('[data-director-arrow]'); if (arrow) arrow.setAttribute('transform', 'rotate(' + r.degrees + ' 32 32)');
           node.setAttribute('aria-label', 'Flight direction guide. ' + r.text);
           node.setAttribute('data-reserve-low', String(r.energy < 25));
+          node.querySelector('[data-director-reserve]').textContent = r.energy < 25 ? 'Low reserve' : 'Reserve available';
+          node.querySelector('[data-director-energy-meter]').setAttribute('aria-valuenow', String(r.energy));
+          node.querySelector('[data-director-energy-fill]').style.width = r.energy + '%';
+          node.querySelector('[data-director-status]').textContent = state.paused ? 'Paused' : 'Flying';
+          node.querySelector('[data-director-budget-summary]').textContent = r.energy + '% energy' + (r.energy < 25 ? ' · Low reserve' : '') + ' · ' + r.seconds + ' model s left';
           syncDroneApproachGuide(state, node);
         }
+
         function toggleDroneHud() {
           _droneHudDetail.current = !_droneHudDetail.current;
           updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { detailedHud: _droneHudDetail.current }); });
@@ -26253,6 +27570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!state || typeof document === 'undefined') return;
           if (state._nextInstrumentSync && now < state._nextInstrumentSync) return;
           state._nextInstrumentSync = now + 250;
+          syncDroneCommandHeader(state);
           syncDroneDirector(state);
           syncDroneRouteInspector(state);
           syncDroneLiftReadout(state);
@@ -26302,28 +27620,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var trafficText = nearestTraffic && nearestTraffic.distance < 180 ? Math.round(nearestTraffic.distance) + ' m nearest' : 'Clear';
           var dcaText = dcaStatus.inVolume ? 'Inside volume' : Math.round(dcaStatus.planarDistance) + ' m to center';
           var cameraMode = _droneCameraMode.current === 'chase' ? 'chase' : 'cockpit';
-          var scenePhaseLabel = state.paused ? 'Paused' : phaseInfo.label;
+          var scenePhaseLabel = droneScenePhaseLabel(state);
           var sceneCueDetail = droneSceneCueDetail(state);
-          var scenePhaseNode = document.querySelector('[data-flight-scene-phase="true"]');
-          if (scenePhaseNode) scenePhaseNode.textContent = scenePhaseLabel;
-          var sceneDetailNode = document.querySelector('[data-flight-scene-detail="true"]');
-          if (sceneDetailNode) sceneDetailNode.textContent = sceneCueDetail;
           var training = droneTrainingStatus(state);
           state.trainingCue = training;
           var trainingPanel = document.querySelector('[data-flight-training="true"]');
           if (trainingPanel) {
-            trainingPanel.style.display = training.active ? 'block' : 'none';
-            trainingPanel.setAttribute('aria-hidden', training.active ? 'false' : 'true');
-            trainingPanel.setAttribute('data-training-state', training.complete ? 'complete' : training.active ? 'active' : 'inactive');
-            trainingPanel.setAttribute('data-training-step', training.index >= 0 ? String(Math.min(training.total, training.index + 1)) : '0');
-            var trainingStepNode = trainingPanel.querySelector('[data-flight-training-step="true"]');
-            var trainingLabelNode = trainingPanel.querySelector('[data-flight-training-label="true"]');
-            var trainingInstructionNode = trainingPanel.querySelector('[data-flight-training-instruction="true"]');
-            var trainingHintNode = trainingPanel.querySelector('[data-flight-training-hint="true"]');
-            if (trainingStepNode) trainingStepNode.textContent = training.complete ? 'Complete' : 'Step ' + (training.index + 1) + ' / ' + training.total;
-            if (trainingLabelNode) trainingLabelNode.textContent = training.label;
-            if (trainingInstructionNode) trainingInstructionNode.textContent = training.instruction;
-            if (trainingHintNode) trainingHintNode.textContent = training.hint;
+            var trainingDisplay = training.active ? 'block' : 'none';
+            if (trainingPanel.style.display !== trainingDisplay) trainingPanel.style.display = trainingDisplay;
+            [['aria-hidden', training.active ? 'false' : 'true'],
+              ['data-training-state', training.complete ? 'complete' : training.active ? 'active' : 'inactive'],
+              ['data-training-step', training.index >= 0 ? String(Math.min(training.total, training.index + 1)) : '0']].forEach(function(item) {
+              if (trainingPanel.getAttribute(item[0]) !== item[1]) trainingPanel.setAttribute(item[0], item[1]);
+            });
+            // Keep the polite live region quiet until the lesson actually changes.
+            [['step', training.complete ? 'Complete' : 'Step ' + (training.index + 1) + ' / ' + training.total],
+              ['label', training.label], ['instruction', training.instruction], ['hint', training.hint]].forEach(function(item) {
+              var node = trainingPanel.querySelector('[data-flight-training-' + item[0] + '="true"]');
+              if (node && node.textContent !== item[1]) node.textContent = item[1];
+            });
             if (!training.complete && state._lastTrainingStep !== training.index) {
               announceBee('Flight school step ' + (training.index + 1) + ' of ' + training.total + ': ' + training.label + '. ' + training.instruction, false);
               state._lastTrainingStep = training.index;
@@ -26337,11 +27652,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (now >= (state.trainingCompleteUntil || 0)) state.trainingActive = false;
             }
-          }
-          var sceneChip = document.querySelector('[data-beehive-stage-chip="drone"]');
-          if (sceneChip) {
-            sceneChip.setAttribute('data-flight-phase', state.phase || 'launch');
-            sceneChip.setAttribute('data-flight-camera', cameraMode);
           }
           var values = { state: state.paused ? 'Paused' : phaseInfo.label, energy: Math.round(state.energy || 0) + ' / ' + maxEnergy, altitude: altitude + ' ft', distance: distance + ' m', time: Math.max(0, Math.ceil(state.timer || 0)) + ' sec', boosts: boosts + ' / ' + boostGoal, wind: windSpeed.toFixed(1) + ' m/s', clearance: clearanceText, traffic: trafficText, objective: phaseInfo.objective };
           Object.keys(values).forEach(function(key) { var node = panel.querySelector('[data-flight-readout="' + key + '"]'); if (node) node.textContent = values[key]; });
@@ -26428,7 +27738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         function renderDroneScienceBoundary() {
           return h('details', { 'data-flight-model-boundary': 'true' }, h('summary', null, 'Real bee biology and game simplifications'),
-            h('p', { 'data-flight-time-scale': 'true' }, __alloT('stem.beehive.drone_flight_budget_scale', 'This game uses a compressed flight budget. The base starting countdown is 75 to 150 seconds by difficulty; a 30-minute reference flight is 12 to 24 times longer. Energy use and nectar pickups can change your time in the game. Movement uses its own game scale, so displayed speeds are not measurements of real bee flight.')),
+            h('p', { 'data-flight-time-scale': 'true' }, __alloT('stem.beehive.drone_flight_budget_scale', 'This game uses a compressed flight budget. The base starting countdown is 75 to 150 seconds by difficulty; a 30-minute reference flight is 12 to 24 times longer. The countdown runs only while model time advances. Running out of time or energy ends the flight; route markers do not replenish either. Movement uses its own game scale, so displayed speeds are not measurements of real bee flight.')),
             h('p', null, 'Real honey bees use flapping wings and can hover. This game uses simplified thrust, drag, and flapping-lift controls; it does not solve wing-scale aerodynamics. Its “glide” and updraft controls are teaching devices, not evidence that drones normally soar like gliders.'),
             h('p', null, 'Real drones make orientation and mating flights; tracked drones can visit multiple congregation areas and return to the hive. This course has one fixed DCA target and a generous queen-intercept radius. Reaching that radius ends the game; it does not simulate mating mechanics or measure mating probability.'),
             h('p', null, 'Beacons, route gates, the map, and heading assistance are human learning aids. Flight time, energy losses, obstacle sizes, and displayed distances/altitudes are model scales, not calibrated biological measurements. Bee bodies, flowers, and wing motion are enlarged or slowed for legibility. Drones do not forage; markers and updrafts never refill energy. Unsuccessful flights are not necessarily fatal in nature.'),
@@ -26438,13 +27748,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('a', { href: 'https://pubmed.ncbi.nlm.nih.gov/16330767/', target: '_blank', rel: 'noopener noreferrer' }, 'Flapping flight and hovering (Altshuler et al., 2005)'), '; ',
               h('a', { href: 'https://elifesciences.org/articles/14449', target: '_blank', rel: 'noopener noreferrer' }, 'Airflow and visual motion (Roy Khurana & Sane, 2016)'), '.'));
         }
+        // The briefing and launch use the same deterministic budget; previews never advance the course RNG.
+        function droneLaunchReadout(difficulty) {
+          var maxEnergy = droneMaxEnergy(difficulty);
+          var carryover = droneFieldPrepared ? { label: 'Well-fed launch condition', energyScale: 1 }
+            : droneFieldStressed ? { label: 'Stressed launch condition', energyScale: 0.86 }
+            : { label: 'Watch-list launch condition', energyScale: 0.94 };
+          return { maxEnergy: maxEnergy, energy: Math.round(maxEnergy * carryover.energyScale), carryover: carryover,
+            timer: Math.max(45, (DRONE_FLIGHT_PARAMS.timerByDifficulty[difficulty] || 110) + (DRONE_SCENARIOS[droneScenario] || DRONE_SCENARIOS.clear).timerBonus) };
+        }
+        function renderDroneBriefing() {
+          var paceLabel = dronePacing === 'steps' ? 'Pause and plan' : 'Continuous flight';
+          var startBehavior = dronePacing === 'steps' ? 'Starts paused. Time moves only when you advance a maneuver.'
+            : prefersReducedMotion ? 'Starts paused for your reduced-motion preference. Resume flight when ready.'
+            : 'Starts moving immediately. Press P or use Pause flight whenever you need to stop and think.';
+          return h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield_briefing', 'Drone Flight playfield briefing'), 'data-beehive-stage': 'drone-briefing', className: 'bfd bee-flight-briefing' },
+            h('header', { className: 'bee-flight-hero' },
+              h('div', null, h('span', { className: 'bee-flight-eyebrow' }, 'FLIGHT LAB · MISSION BRIEFING'),
+                h('h3', null, __alloT('stem.beehive.drone_nuptial_flight', 'Drone Nuptial Flight')),
+                h('p', null, 'Fly from the hive to the Drone Congregation Area (DCA), then follow the queen signal. Practice conserving energy while controlling your direction and height.')),
+              h('figure', { className: 'bee-flight-schematic' },
+                h('svg', { viewBox: '0 0 420 140', 'aria-hidden': 'true', focusable: 'false' },
+                  h('path', { d: 'M20 116 H400 M59 104 Q105 104 134 77 T240 48 L359 35', fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeDasharray: '7 6' }),
+                  h('path', { d: 'M32 100 V69 L58 50 L84 69 V100 Z M25 71 L58 46 L91 71 M51 100 V82 H65 V100', fill: 'var(--bf-paper)', stroke: 'currentColor', strokeWidth: 3, strokeLinejoin: 'round' }),
+                  h('path', { d: 'M195 35 V74 C195 91 283 91 283 74 V35 M195 74 C195 57 283 57 283 74', fill: 'var(--bf-paper)', stroke: 'currentColor', strokeWidth: 3, strokeDasharray: '5 3' }),
+                  h('ellipse', { cx: 239, cy: 35, rx: 44, ry: 13, fill: 'var(--bf-tint)', stroke: 'currentColor', strokeWidth: 3 }),
+                  h('path', { d: 'M350 35 L365 20 L380 35 L365 50 Z', fill: 'var(--bf-paper)', stroke: 'currentColor', strokeWidth: 3 }),
+                  h('path', { d: 'M107 83 L117 76 L114 89 M310 35 L323 34 L316 44', fill: 'none', stroke: 'currentColor', strokeWidth: 3 })),
+                h('figcaption', null, 'Hive → DCA volume → queen cue', h('br'), 'Route schematic · not to scale'))),
+            h('section', { 'data-beehive-flight-plan': 'true', 'aria-label': 'Required flight targets and optional practice' },
+              h('h3', null, 'Preflight route'), h('p', null, 'Two required targets. Route markers are optional practice.'),
+              h('ol', { role: 'list', className: 'bee-flight-mission', 'data-mobile-rail': 'drone-preflight' },
+                h('li', null, h('div', { className: 'bee-flight-target-title' }, h('span', { 'aria-hidden': 'true' }, '01'), h('h4', null, 'Enter the DCA volume')),
+                  h('p', null, 'Meet both conditions at the same time:'),
+                  h('dl', { className: 'bee-flight-gates' },
+                    h('div', null, h('dt', null, 'Height'), h('dd', null, DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' model ft')),
+                    h('div', null, h('dt', null, 'Horizontal position'), h('dd', null, 'Within ' + DRONE_FLIGHT_PARAMS.dcaRadiusM + ' model m of the DCA center'))),
+                  h('small', null, 'The center is ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' model m forward of the hive. Total distance flown alone does not count as entry.')),
+                h('li', null, h('div', { className: 'bee-flight-target-title' }, h('span', { 'aria-hidden': 'true' }, '02'), h('h4', null, 'Acquire queen')),
+                  h('p', null, 'After DCA entry, follow the golden queen signal. Use small turns and keep enough energy for the approach.'),
+                  h('p', null, 'Reaching the queen cue completes this game route.'))),
+              h('aside', { className: 'bee-flight-optional', 'aria-label': 'Optional route marker practice' }, h('strong', null, 'Optional · Pass route markers'),
+                h('p', null, 'Glowing gates measure low-altitude control. They are not required for DCA entry and do not restore energy or time.'))),
+            renderDronePacing(),
+            h('section', { 'data-drone-scenarios': 'true', 'aria-labelledby': 'bee-flight-scenario-title' },
+              h('h3', { id: 'bee-flight-scenario-title' }, '2. Choose the conditions'), h('p', null, 'Compare scenarios using the same course and difficulty. A scenario can change more than one condition.'),
+              h('div', { className: 'bee-flight-choice-grid', role: 'radiogroup', 'aria-label': __alloT('stem.beehive.a11y_drone_mission_scenario', 'Drone mission scenario') }, Object.keys(DRONE_SCENARIOS).map(function(id) {
+                var option = DRONE_SCENARIOS[id], selected = droneScenario === id;
+                return h('button', { key: id, type: 'button', role: 'radio', 'data-drone-scenario': id, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1,
+                  onClick: function() { chooseDroneScenario(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_SCENARIOS), id, 'data-drone-scenario', chooseDroneScenario); }, className: 'bee-flight-choice', 'aria-label': option.label + ': ' + option.desc, 'aria-describedby': id === 'rescue' ? 'bee-flight-rescue-budget-note' : undefined },
+                  h('strong', null, option.label), h('small', null, option.desc), id === 'rescue' && h('small', { id: 'bee-flight-rescue-budget-note' }, '12 fewer model seconds at every difficulty.'),
+                  h('span', { className: 'bee-flight-choice-state', 'aria-hidden': 'true' }, selected ? '✓ Selected' : 'Select scenario'));
+              }))),
+            h('section', { 'data-drone-route-plans': 'true', 'aria-labelledby': 'bee-flight-route-priority-title' },
+              h('h3', { id: 'bee-flight-route-priority-title' }, '3. Choose a route emphasis'), h('p', null, 'Change the available practice gates and updrafts. The required DCA target stays in the same place.'),
+              h('div', { className: 'bee-flight-choice-grid', role: 'radiogroup', 'aria-label': __alloT('stem.beehive.a11y_preflight_route_priority', 'Preflight route priority') }, Object.keys(DRONE_ROUTE_PLANS).map(function(id) {
+                var plan = DRONE_ROUTE_PLANS[id], selected = droneRoutePlan === id;
+                return h('button', { key: id, type: 'button', role: 'radio', 'data-drone-route-plan': id, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1,
+                  onClick: function() { chooseDroneRoutePlan(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_ROUTE_PLANS), id, 'data-drone-route-plan', chooseDroneRoutePlan); }, className: 'bee-flight-choice', 'aria-label': plan.label + ': ' + plan.desc },
+                  h('strong', null, plan.label), h('small', null, plan.desc), h('span', { className: 'bee-flight-choice-state', 'aria-hidden': 'true' }, selected ? '✓ Selected' : 'Select route'));
+              }))),
+            h('section', { 'aria-labelledby': 'bee-flight-launch-title' },
+              h('h3', { id: 'bee-flight-launch-title' }, '4. Choose a difficulty to launch'),
+              h('div', { className: 'bee-flight-ready', 'data-flight-launch-summary': 'true', role: 'group', 'aria-label': 'Configured flight' },
+                h('strong', null, paceLabel + ' · ' + DRONE_SCENARIOS[droneScenario].label + ' · ' + DRONE_ROUTE_PLANS[droneRoutePlan].label),
+                h('p', { 'data-flight-start-behavior': 'true' }, startBehavior),
+                h('p', null, droneCarryoverBrief.label + '. Previewed energy includes the current colony condition.')),
+              h('div', { className: 'bee-flight-launch-grid', 'data-mobile-rail': 'drone-difficulty' }, [
+                { id: 'easy', label: 'Easy', desc: 'More time and energy; fewer birds and a closer queen.' },
+                { id: 'normal', label: 'Normal', desc: 'A middle flight budget and balanced challenge.' },
+                { id: 'hard', label: 'Hard', desc: 'Less time and energy; more birds and a farther queen.' }
+              ].map(function(diff) {
+                var budget = droneLaunchReadout(diff.id);
+                return h('button', { key: diff.id, type: 'button', className: 'bee-flight-launch', 'data-flight-launch': diff.id, 'aria-label': 'Launch ' + diff.label + ' flight', 'aria-describedby': 'bee-flight-launch-description-' + diff.id + ' bee-flight-launch-budget-' + diff.id,
+                  onClick: function() { startDroneFlight(diff.id); } },
+                  h('strong', null, diff.label), h('small', { id: 'bee-flight-launch-description-' + diff.id }, diff.desc),
+                  h('span', { id: 'bee-flight-launch-budget-' + diff.id, className: 'bee-flight-budget' },
+                    h('span', null, h('small', null, 'Starting countdown'), h('b', { 'data-flight-launch-time': 'true' }, budget.timer + ' model seconds')),
+                    h('span', null, h('small', null, 'Starting energy / capacity'), h('b', { 'data-flight-launch-energy': 'true' }, budget.energy + ' / ' + budget.maxEnergy))),
+                  h('span', { className: 'bee-flight-launch-cta', 'aria-hidden': 'true' }, 'Launch ' + diff.label + ' →'));
+              })),
+              h('p', { className: 'bfd-caption' }, 'These are game budgets, not real flight endurance. The flight ends when time or energy runs out, or when the queen is intercepted.'),
+              h('p', { className: 'bfd-caption' }, dronePacing === 'steps' ? 'After launch: choose a maneuver and use Advance maneuver. Each choice shows its time cost.' : 'After launch: arrows / WASD steer and control speed; Space climbs, Shift descends, P pauses. Hold the on-screen controls to fly.')),
+            h('details', { 'data-flight-colony-context': 'true' }, h('summary', null, 'Colony condition and a prediction to test'),
+              h('section', { 'data-drone-carryover-brief': 'true', role: 'note', 'aria-label': __alloT('stem.beehive.a11y_colony_network_colony_field_evidence_carried_in', 'Colony Network colony field evidence carried into Drone Flight') },
+                h('h4', null, 'Colony condition carried forward'), h('strong', null, droneCarryoverBrief.label), h('p', null, droneCarryoverBrief.advice),
+                h('div', { 'data-drone-carryover-hypothesis': 'true' }, h('h4', null, 'Prediction to test'), h('p', null, droneCarryoverBrief.hypothesis), h('p', null, 'Measure: ' + droneCarryoverBrief.measure)),
+                h('dl', { className: 'bee-flight-context-grid' }, [{ label: 'Field report', value: droneCarryoverBrief.fieldEvidence, marker: 'field' }, { label: 'DCA geometry', value: droneCarryoverBrief.distance }, { label: 'Colony effect on countdown', value: droneCarryoverBrief.time }, { label: 'Colony effect on hazards', value: droneCarryoverBrief.hazards }].map(function(item) {
+                  return h('div', { key: item.label, 'data-drone-command-evidence': item.marker || undefined }, h('dt', null, item.label), h('dd', null, item.value));
+                })))),
+            h('p', { className: 'bfd-caption' }, 'Biology boundary: real drones do not forage or carry pollen. Young adults are fed by workers; older drones can feed themselves from stored honey. Route markers are measurement gates only.'),
+            (droneHighScore > 0 || (droneData.attempts || 0) > 0) && h('div', { className: 'bee-flight-record', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_flight_record', 'Flight record') },
+              droneHighScore > 0 && h('span', null, 'High score: ' + droneHighScore),
+              h('span', null, (droneData.attempts || 0) + ' launches'), h('span', null, (droneData.successes || 0) + ' successful intercepts'),
+              droneData.bestDifficulty && h('span', null, 'Best difficulty: ' + droneData.bestDifficulty)));
+        }
+
         function renderDronePacing() {
           return h('section', { className: 'bfd', 'data-flight-pace-picker': 'true', 'aria-label': __alloT('stem.beehive.a11y_flight_pace_and_course', 'Flight pace and course') },
-            h('h3', null, 'Choose how time moves'),
+            h('h3', null, '1. Choose how time moves'),
             h('fieldset', null, h('legend', null, 'Same course and flight goals; choose your controls'),
               h('div', { className: 'bfd-options' }, [
-                { id: 'steps', label: 'Pause and plan', detail: 'Choose a maneuver, see its result, and take as long as you need. Optional navigation assistance uses the same physics.' },
-                { id: 'live', label: 'Continuous flight', detail: 'Steer while the world moves. Pause at any time. Difficulty is selected separately below.' }
+                { id: 'steps', label: 'Pause and plan', detail: 'Starts paused. Choose a maneuver, then advance its stated model time. Take as long as you need to read and decide.' },
+                { id: 'live', label: 'Continuous flight', detail: 'Hold keys or buttons to steer while the world moves. Pause at any time. With reduced motion enabled, launch starts paused.' }
               ].map(function(option) { return h('label', { key: option.id, className: 'bfd-option' },
                 h('input', { type: 'radio', name: 'bee-flight-pace', value: option.id, checked: dronePacing === option.id,
                   onChange: function() { updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { pacing: option.id }); }); } }),
@@ -26453,12 +27859,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('button', { type: 'button', onClick: function() { updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { courseSeed: bhFreshExperimentSeed(droneCourseSeed) }); }); } }, 'Choose a different course'),
             renderDroneScienceBoundary());
         }
+        function focusDronePlan(event, destination) {
+          var panel = event.currentTarget.closest('[data-flight-decision-panel]');
+          if (!panel) return;
+          var selector = destination === 'route' ? '[data-flight-plan-route]' : destination === 'choose' ? 'input[name="bee-flight-decision"]:checked' : '[data-flight-maneuver-evidence]';
+          var target = panel.querySelector(selector);
+          if (!target) return;
+          target.focus({ preventScroll: true });
+          target.scrollIntoView({ behavior: 'instant', block: destination === 'choose' ? 'center' : 'start', inline: 'nearest' });
+        }
+        function renderDroneManeuverEvidence(log, planning, history) {
+          var entry = Array.isArray(log) && log.length ? log[log.length - 1] : null;
+          var evidence = bhDroneManeuverEvidence(entry);
+          if (!evidence) return null;
+          return h('section', { className: 'bee-maneuver-evidence', 'data-flight-maneuver-evidence': history ? undefined : 'true', 'data-flight-history-comparison': history ? 'true' : undefined, role: 'region', 'aria-label': history ? 'Selected maneuver comparison' : 'Last maneuver comparison', 'aria-live': 'off', tabIndex: planning ? -1 : undefined },
+            h('div', { className: 'bee-maneuver-heading' }, h('h4', null, history ? 'Selected maneuver' : 'Last maneuver'), h('span', null, 'Recorded result')),
+            h('p', { className: 'bee-maneuver-name', 'data-maneuver-title': 'true' }, evidence.title),
+            h('p', { className: 'bee-maneuver-context', 'data-maneuver-context': 'true' }, evidence.context),
+            h('div', { className: 'bee-maneuver-grid' }, evidence.rows.map(function(row) {
+              var arrow = row.trend === 'up' ? 'M12 19V5M6 11L12 5L18 11' : row.trend === 'down' ? 'M12 5V19M6 13L12 19L18 13' : row.trend === 'same' ? 'M5 9H19M5 15H19' : 'M5 12H19';
+              return h('div', { key: row.id, className: 'bee-maneuver-card', 'data-maneuver-metric': row.id, 'data-maneuver-trend': row.trend },
+                h('h5', null, row.label),
+                h('dl', { className: 'bee-maneuver-values' },
+                  h('div', null, h('dt', null, 'Before'), h('dd', { 'data-maneuver-before': 'true' }, row.beforeText)),
+                  h('div', null, h('dt', null, 'After'), h('dd', { 'data-maneuver-after': 'true' }, row.afterText))),
+                h('p', { className: 'bee-maneuver-change' }, h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: arrow, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                  h('strong', { 'data-maneuver-change': 'true' }, row.deltaText)),
+                row.id === 'range' && evidence.rangeNote && h('p', { className: 'bee-maneuver-note', 'data-maneuver-range-note': 'true' }, evidence.rangeNote));
+            })),
+            h('p', { className: 'bee-maneuver-footnote' }, 'Horizontal gap is not distance traveled. The queen cue can move during a maneuver. No rounded change can still include smaller changes.'),
+            planning && h('button', { type: 'button', className: 'bfd-plan-next', 'data-flight-plan-next': 'true', onClick: function(e) { focusDronePlan(e, 'choose'); } }, 'Choose next maneuver'));
+        }
+        function renderDroneHistory(log, source, planning) {
+          var inspector = h(BeeDroneHistoryInspector, { React: React, log: log, source: source, renderEvidence: renderDroneManeuverEvidence, renderTable: renderDroneDecisionLog });
+          return planning ? inspector : h('details', { 'data-flight-history-disclosure': 'true' }, h('summary', null, 'Explore recorded maneuvers'), inspector);
+        }
         function renderDroneDecisionLog(log) {
           return h('div', { className: 'bfd-scroll', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.beehive.a11y_maneuver_evidence_table_scroll_for_all_columns', 'Maneuver evidence table; scroll for all columns') },
             h('table', null, h('caption', null, 'Decision evidence — most recent 100 maneuvers; rounded readings'),
               h('thead', null, h('tr', null, ['Maneuver', 'Model seconds', 'Altitude (ft)', 'Energy (%)', 'Next target', 'Range (model m)'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
               h('tbody', null, (log || []).map(function(entry, index) { return h('tr', { key: index }, h('th', { scope: 'row' }, (Number.isFinite(entry.turn) ? entry.turn + '. ' : '') + (entry.action || 'Maneuver not recorded')),
                 h('td', null, droneRecordedValue(entry.seconds)), h('td', null, droneRecordedValue(entry.altitudeBefore) + ' → ' + droneRecordedValue(entry.altitude)), h('td', null, droneRecordedValue(entry.energyBefore) + ' → ' + droneRecordedValue(entry.energy)), h('td', null, entry.target || 'Not recorded'), h('td', null, droneRecordedValue(entry.range))); }))));
+        }
+        function renderDroneRecordedSnapshot(run) {
+          var snapshot = bhDroneRecordedSnapshot(run);
+          var icons = {
+            peak: 'M7 21V3M3 7L7 3L11 7M15 5H21M15 11H19M15 17H21',
+            distance: 'M4 5H9Q17 5 17 12Q17 19 9 19H4M8 15L4 19L8 23M4 3V7',
+            energy: 'M4 7H19V19H4ZM19 11H22V15H19M7 10H10V16H7M13 10H16V16H13'
+          };
+          function icon(path) {
+            return h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false', 'data-result-icon': 'true' },
+              h('path', { d: path, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+          }
+          var route = run && Object.prototype.hasOwnProperty.call(DRONE_ROUTE_PLANS, run.routePlan) ? DRONE_ROUTE_PLANS[run.routePlan] : null;
+          var extras = snapshot.extras.concat([{ id: 'route', label: 'Route plan', value: route ? route.label : 'Not recorded', detail: 'The route plan saved with this flight.', known: !!route }]);
+          return h('section', { className: 'bfd bee-recorded-snapshot', 'data-flight-recorded-snapshot': 'true', role: 'region', 'aria-label': 'Recorded flight snapshot', 'aria-live': 'off' },
+            h('h4', { className: 'bee-result-heading' }, 'Recorded flight snapshot'),
+            h('p', { className: 'bee-result-intro' }, 'Read the outcome, then compare height, travel, and energy.'),
+            h('ul', { className: 'bee-result-milestones', 'aria-label': 'Recorded flight outcomes' }, snapshot.milestones.map(function(item) {
+              var path = item.status === 'recorded' ? 'M3 12L9 18L21 6' : item.status === 'not-reached' ? 'M6 6L18 18M18 6L6 18' : 'M9 8A3 3 0 1 1 14 10C12 11 12 12 12 14M12 18V19';
+              return h('li', { key: item.id, 'data-result-milestone': item.id, 'data-result-status': item.status },
+                icon(path), h('div', null, h('h5', null, item.label), h('p', { 'data-result-milestone-value': 'true' }, item.value)));
+            })),
+            h('p', { className: 'bee-result-note', 'data-result-note': 'true' }, snapshot.note),
+            h('div', { className: 'bee-result-grid' }, snapshot.metrics.map(function(row) {
+              return h('article', { key: row.id, className: 'bee-result-card', 'data-result-metric': row.id, 'data-result-known': String(row.known) },
+                h('h5', null, icon(icons[row.id]), row.label),
+                h('p', { className: 'bee-result-value', 'data-result-value': 'true' }, row.value),
+                row.id === 'energy' && Number.isFinite(row.meterPct) && h('div', { className: 'bee-result-energy-scale' },
+                  h('svg', { 'data-result-energy-meter': 'true', viewBox: '0 0 300 28', 'aria-hidden': 'true', focusable: 'false' },
+                    h('rect', { x: 8, y: 6, width: 284, height: 16, rx: 3, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 1.5 }),
+                    h('rect', { 'data-result-energy-fill': 'true', x: 8, y: 6, width: row.meterPct * 2.84, height: 16, rx: 3, fill: 'var(--bf-accent)' })),
+                  h('div', { className: 'bee-result-scale-labels', 'aria-hidden': 'true' }, h('span', null, '0%'), h('span', null, '100%'))),
+                h('p', { className: 'bee-result-detail', 'data-result-detail': 'true' }, row.detail));
+            })),
+            h('details', { 'data-result-more': 'true' }, h('summary', null, 'More recorded measurements'),
+              h('div', { className: 'bee-result-extra-grid' }, extras.map(function(row) {
+                return h('article', { key: row.id, className: 'bee-result-extra', 'data-result-extra': row.id, 'data-result-known': String(row.known) },
+                  h('h5', null, row.label), h('p', { className: 'bee-result-extra-value', 'data-result-value': 'true' }, row.value),
+                  h('p', { className: 'bee-result-detail', 'data-result-detail': 'true' }, row.detail));
+              }))));
         }
         function renderSavedDroneReview() {
           var run = droneLastRun;
@@ -26473,55 +27954,180 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('h3', { className: 'font-black' }, outcome),
               h('p', { className: 'text-xs leading-relaxed' }, 'Review saved measurements and decisions while the flight stays at preflight. This review does not run the flight or change its outcome. Missing readings are shown as not recorded.'),
               h('p', { className: 'text-xs leading-relaxed', 'data-drone-saved-conditions': 'true' }, 'Course ' + droneRecordedValue(run.courseSeed) + ' · Model ' + (run.flightModelVersion || 'Not recorded') + ' · Difficulty ' + (run.difficulty || 'Not recorded') + ' · Scenario ' + (run.scenario || 'Not recorded')),
-              h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Saved flight measurements' }, [
-                ['Score', droneRecordedValue(run.score)], ['Peak altitude', droneRecordedValue(run.maxAlt, ' ft')], ['Distance', droneRecordedValue(run.distance, ' m')],
-                ['Energy left', droneRecordedValue(run.energyLeft, '%')], ['Hazard conflicts', conflicts == null ? 'Not recorded' : String(conflicts)],
-                ['Route markers', droneRecordedValue(markerCount) + ' / ' + droneRecordedValue(markerGoal)]
-              ].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'min-w-0 rounded-lg border p-2.5 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') }, h('div', { className: 'text-xs font-bold' }, item[0]), h('div', { className: 'mt-1 break-words text-sm font-black' }, item[1])); })),
+              renderDroneRecordedSnapshot(run),
               droneDebrief && h('section', { 'data-drone-saved-coach': droneDebrief.id, 'aria-label': 'Coaching from recorded evidence', className: 'rounded-lg border p-3 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') }, h('h4', { className: 'font-black' }, droneDebrief.title), h('p', { className: 'mt-1 text-xs leading-relaxed' }, droneDebrief.summary), h('p', { className: 'mt-2 text-xs leading-relaxed' }, droneDebrief.next), h('p', { className: 'mt-2 text-xs leading-relaxed' }, droneDebrief.consequence)),
-              Array.isArray(run.decisionLog) && run.decisionLog.length > 0 ? h('section', { 'aria-label': 'Saved flight decisions' }, h('h4', { className: 'font-black' }, 'Your flight decisions'), renderDroneDecisionLog(run.decisionLog)) : h('p', { className: 'text-xs' }, 'No maneuver decisions were recorded for this flight.'),
-              droneReplayChart(run.telemetry, dk), renderDroneScienceBoundary()));
+              Array.isArray(run.decisionLog) && run.decisionLog.length > 0 ? h('section', { 'aria-label': 'Saved flight decisions' }, h('h4', { className: 'font-black' }, 'Your flight decisions'), renderDroneManeuverEvidence(run.decisionLog), renderDroneHistory(run.decisionLog, run)) : h('p', { className: 'text-xs' }, 'No maneuver decisions were recorded for this flight.'),
+              droneReplayChart(run.telemetry, dk, run), renderDroneScienceBoundary()));
+        }
+        function renderDronePlanMap(state) {
+          var r = bhDronePlanMap(state);
+          function at(point) { return 'translate(' + point.x + ' ' + point.y + ')'; }
+          function key(id, label, shape, line) {
+            return h('li', { key: id, 'data-plan-map-line-key': line ? 'true' : undefined },
+              h('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false', 'data-plan-map-key-symbol': id }, shape), h('span', null, label));
+          }
+          var description = 'Top-down map with the same distance scale in both horizontal directions. ' + (r.known ? 'Triangle: your position and heading. ' : 'Your position is unavailable. ') +
+            'Square: hive. Circle: the DCA horizontal entry boundary. ' + (r.queen ? 'Diamond: queen cue. ' : state.reachedDca ? 'The queen cue position is unavailable. ' : 'The queen cue unlocks after DCA entry. ') +
+            r.sampleCount + ' recorded maneuver endpoints. Solid lines join consecutive recorded endpoints; they do not show the exact path. ' + (r.player && r.target ? 'The dashed line points toward ' + r.targetLabel + '; it does not identify an obstacle-free route. ' : 'The bearing is unavailable because a position is missing. ') + 'Height is not shown.';
+          return h('figure', { className: 'bfd-map bee-plan-map', 'data-flight-plan-route': 'true', tabIndex: -1, 'aria-label': 'Top-down flight route' },
+            h('div', { className: 'bee-plan-map-header' }, h('h4', null, 'Route map'), h('span', null, 'Target: ' + r.targetLabel)),
+            h('p', { className: 'bee-plan-map-orientation' }, 'Top down · orientation stays fixed · equal distance scale'),
+            h('svg', { className: 'bee-plan-map-plot', 'data-flight-plan-map': 'true', viewBox: '0 0 360 320', role: 'img', 'aria-labelledby': 'bee-flight-map-title bee-flight-map-desc' },
+              h('title', { id: 'bee-flight-map-title' }, 'Top-down flight route'), h('desc', { id: 'bee-flight-map-desc' }, description),
+              h('defs', null, h('clipPath', { id: 'bee-plan-map-clip' }, h('rect', { x: 24, y: 24, width: 312, height: 272, rx: 8 }))),
+              h('rect', { x: 24, y: 24, width: 312, height: 272, rx: 8, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 1 }),
+              h('g', { clipPath: 'url(#bee-plan-map-clip)' },
+                h('circle', { 'data-plan-map-dca-area': 'true', cx: r.dca.x, cy: r.dca.y, r: r.dcaRadius, fill: 'var(--bp-dca-fill)', stroke: 'var(--bp-dca)', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }),
+                r.obstacles.map(function(point, i) { return h('g', { key: i, 'data-plan-map-obstacle': 'true', transform: at(point) }, h('path', { d: 'M-4 -4L4 4M4 -4L-4 4', fill: 'none', stroke: 'var(--bf-muted)', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' })); }),
+                r.segments.map(function(points, i) { return h('polyline', { key: i, 'data-plan-map-segment': 'true', points: points, fill: 'none', stroke: 'var(--bf-accent)', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }); }),
+                r.samples.map(function(point, i) { return h('circle', { key: i, 'data-plan-map-sample': 'true', cx: point.x, cy: point.y, r: 3, fill: 'var(--bf-accent)', stroke: 'var(--bf-paper)', strokeWidth: 1 }); }),
+                r.player && r.target && h('line', { 'data-plan-map-bearing': 'true', x1: r.player.x, y1: r.player.y, x2: r.target.x, y2: r.target.y, stroke: 'var(--bf-muted)', strokeWidth: 2, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }),
+                h('g', { 'data-plan-map-hive': 'true', transform: at(r.hive) }, h('rect', { x: -6, y: -6, width: 12, height: 12, fill: 'var(--bf-ink)', stroke: 'var(--bf-paper)', strokeWidth: 1.5 })),
+                h('g', { 'data-plan-map-dca': 'true', transform: at(r.dca) }, h('circle', { r: 3, fill: 'var(--bp-dca)' })),
+                r.queen && h('g', { 'data-plan-map-queen': 'true', transform: at(r.queen) }, h('path', { d: 'M0 -9L9 0L0 9L-9 0Z', fill: 'var(--bf-ink)', stroke: 'var(--bf-paper)', strokeWidth: 1.5 })),
+                r.player && h('g', { 'data-plan-map-player': 'true', transform: at(r.player) + ' rotate(' + r.heading + ')' }, h('path', { d: 'M0 -12L9 9L0 5L-9 9Z', fill: 'var(--bf-accent)', stroke: 'var(--bf-paper)', strokeWidth: 2 }))),
+              h('path', { 'data-plan-map-scale': 'true', d: 'M24 304V312M24 308h' + r.scaleBar.width + 'm0 -4v8', fill: 'none', stroke: 'var(--bf-ink)', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })),
+            h('figcaption', null,
+              h('p', { className: 'bee-plan-map-scale', 'data-plan-map-scale-label': 'true' }, 'Scale bar: ' + r.scaleBar.label),
+              h('ul', { className: 'bee-plan-map-key', 'data-plan-map-key': 'true', 'aria-label': 'Map symbols and lines' },
+                key('player', 'You · heading', h('path', { d: 'M12 3L20 21L12 17L4 21Z', fill: 'var(--bf-accent)' })),
+                key('hive', 'Hive', h('rect', { x: 5, y: 5, width: 14, height: 14, fill: 'currentColor' })),
+                key('dca', 'DCA range', h('circle', { cx: 12, cy: 12, r: 8, fill: 'none', stroke: 'currentColor', strokeWidth: 2 })),
+                key('queen', r.queen ? 'Queen cue' : state.reachedDca ? 'Queen cue · unavailable' : 'Queen cue · after DCA', h('path', { d: 'M12 3L21 12L12 21L3 12Z', fill: 'currentColor' })),
+                key('endpoint', 'Recorded endpoint', h('circle', { cx: 12, cy: 12, r: 4, fill: 'var(--bf-accent)' })),
+                key('obstacle', 'Course obstacle', h('path', { d: 'M6 6L18 18M18 6L6 18', fill: 'none', stroke: 'currentColor', strokeWidth: 2 })),
+                key('recorded', 'Solid links · recorded maneuver endpoints', h('path', { d: 'M2 12H22', stroke: 'var(--bf-accent)', strokeWidth: 2.5 }), true),
+                key('bearing', 'Dashed line · bearing to target', h('path', { d: 'M2 12H22', stroke: 'currentColor', strokeWidth: 2, strokeDasharray: '4 3' }), true)),
+              h('p', { className: 'bee-plan-map-samples', 'data-plan-map-sample-note': 'true' }, r.sampleCount ? r.sampleCount + ' recorded endpoint' + (r.sampleCount === 1 ? '' : 's') + ' shown. Links do not show the exact path between samples.' + (r.gapCount ? ' Missing positions leave gaps.' : '') : r.gapCount ? 'Recorded maneuvers have no usable positions. Their locations are not shown.' : 'No maneuver positions recorded yet. Advance a maneuver to begin the record.'),
+              h('p', { className: 'bee-plan-map-note' }, 'Circle: within ' + r.dcaRadiusM + ' model m of the DCA. Entry also needs ' + r.dcaMinFt + '–' + r.dcaMaxFt + ' model ft at the same time. Height is not shown. Crosses mark course obstacles; the bearing line does not guarantee a clear route. This map is a human learning aid.')));
+        }
+        function renderDronePlanningReadings(state) {
+          var r = bhDronePlanningReadings(state), altitude = r.altitude, energy = r.energy;
+          var scaleKey = (altitude.markerPct == null ? 'Current height unavailable' : 'Triangle: current height') + ' · ' + (altitude.kind === 'dca' ? 'outlined band: DCA entry.' : altitude.referencePct == null ? 'queen cue height unavailable.' : 'dashed mark: queen cue height.');
+          function icon(path) { return h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: path, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })); }
+          function x(pct) { return 16 + pct * 2.68; }
+          return h('section', { className: 'bee-plan-readings', 'data-flight-current-readings': 'true', 'aria-label': 'Current flight readings', 'aria-live': 'off' },
+            h('div', { className: 'bee-plan-readings-heading' }, h('h4', null, 'Current flight readings'), h('span', null, 'Before your next maneuver')),
+            h('div', { className: 'bee-plan-readings-grid' },
+              h('article', { className: 'bee-plan-reading', 'data-planning-reading': 'range', 'data-reading-status': r.range.status },
+                h('h5', null, icon('M3 12H21M7 8L3 12L7 16M17 8L21 12L17 16'), 'Horizontal range'),
+                h('p', { className: 'bee-plan-reading-value', 'data-planning-value': 'true' }, r.range.text),
+                h('p', { className: 'bee-plan-reading-reference', 'data-planning-reference': 'true' }, r.range.reference),
+                h('p', { className: 'bee-plan-reading-detail', 'data-planning-detail': 'true' }, r.range.detail)),
+              h('article', { className: 'bee-plan-reading', 'data-planning-reading': 'altitude', 'data-reading-status': altitude.status },
+                h('h5', null, icon('M7 20V4M3 8L7 4L11 8M3 16L7 20L11 16M16 4H21M16 10H19M16 16H21M16 22H19'), 'Height above ground'),
+                h('p', { className: 'bee-plan-reading-value', 'data-planning-value': 'true' }, altitude.text),
+                h('p', { className: 'bee-plan-reading-reference', 'data-planning-reference': 'true' }, altitude.reference),
+                h('svg', { className: 'bee-plan-altitude-scale', 'data-planning-altitude-scale': 'true', viewBox: '0 0 300 48', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { x: 16, y: 20, width: 268, height: 12, rx: 3, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 1.5 }),
+                  altitude.kind === 'dca' && h('rect', { 'data-planning-altitude-band': 'true', x: x(altitude.bandStartPct), y: 20, width: altitude.bandWidthPct * 2.68, height: 12, fill: 'var(--pr-band-fill)', stroke: 'var(--pr-band)', strokeWidth: 2 }),
+                  altitude.kind === 'queen' && altitude.referencePct != null && h('line', { 'data-planning-cue-height': 'true', x1: x(altitude.referencePct), x2: x(altitude.referencePct), y1: 10, y2: 40, stroke: 'var(--pr-band)', strokeWidth: 2.5, strokeDasharray: '4 3' }),
+                  altitude.markerPct != null && h('g', { 'data-planning-altitude-pointer': 'true', transform: 'translate(' + x(altitude.markerPct) + ' 20)' }, h('path', { d: 'M-7 -10L7 -10L0 0Z', fill: 'var(--bf-accent)', stroke: 'var(--bf-ink)', strokeWidth: 1.5 }))),
+                h('div', { className: 'bee-plan-altitude-ticks' }, h('span', null, '0'), h('span', null, '300 model ft')),
+                h('p', { className: 'bee-plan-altitude-key' }, scaleKey),
+                h('p', { className: 'bee-plan-reading-detail', 'data-planning-detail': 'true' }, altitude.detail)),
+              h('article', { className: 'bee-plan-reading', 'data-planning-reading': 'energy', 'data-reading-status': energy.value == null ? 'unknown' : energy.low ? 'low' : 'available' },
+                h('h5', null, icon('M3 7H19V17H3ZM19 10H22V14H19M7 10V14M11 10V14M15 10V14'), 'Energy reserve'),
+                h('p', { className: 'bee-plan-reading-value', 'data-planning-value': 'true' }, energy.text),
+                h('p', { className: 'bee-plan-reading-detail', 'data-planning-detail': 'true' }, energy.detail),
+                energy.fillPct != null && h('div', { className: 'bee-plan-energy-meter', 'data-planning-energy-meter': 'true', role: 'meter', 'aria-label': 'Energy as a percentage of this difficulty’s full reserve', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': energy.fillPct, 'aria-valuetext': energy.text + ' of this difficulty’s full reserve' },
+                  h('span', { 'data-planning-energy-fill': 'true', style: { width: energy.fillPct + '%' } })),
+                h('span', { className: 'bee-plan-energy-status', 'data-planning-energy-status': 'true' }, energy.value == null ? 'Reserve unavailable' : energy.low ? 'Low reserve' : 'Reserve remaining'))),
+            h('p', { className: 'bee-plan-readings-note' }, r.roundingNote));
+        }
+        function renderDronePlanningSurroundings(state) {
+          var r = bhDronePlanningSurroundings(state);
+          var icons = {
+            target: 'M12 3V6M12 18V21M3 12H6M18 12H21M12 6A6 6 0 1 1 11.99 6M9 15L11 10L16 8L14 13Z',
+            wind: 'M3 8H15Q20 8 20 5Q20 2 17 3M3 12H19Q23 12 22 16M3 16H11Q16 16 15 20Q14 23 11 21',
+            obstacle: 'M4 21V8L12 3L20 8V21ZM8 10H10M14 10H16M8 14H10M14 14H16M10 21V18H14V21',
+            traffic: 'M8 12C1 4 12 2 12 10C12 2 23 4 16 12M8 12Q4 20 12 22Q20 20 16 12ZM8 16H16M9 19H15'
+          };
+          function dial(id, reading) {
+            if ((id !== 'target' && id !== 'wind') || !Number.isFinite(reading.degrees)) return null;
+            var color = id === 'target' ? 'var(--bs-target)' : 'var(--bf-accent)';
+            return h('div', { className: 'bee-surroundings-dial' },
+              h('svg', { 'data-surroundings-dial': id, viewBox: '0 0 160 160', 'aria-hidden': 'true', focusable: 'false' },
+                h('circle', { cx: 80, cy: 80, r: 54, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 2 }),
+                h('path', { d: 'M80 26V134M26 80H134', fill: 'none', stroke: 'var(--bf-line)', strokeWidth: 1.5, strokeDasharray: '3 4' }),
+                h('path', { d: 'M74 18L80 8L86 18Z', fill: 'none', stroke: 'var(--bf-ink)', strokeWidth: 2, strokeLinejoin: 'round' }),
+                h('g', { 'data-surroundings-pointer': 'true', transform: 'rotate(' + reading.degrees + ' 80 80)' },
+                  h('path', { d: 'M80 80V36', fill: 'none', stroke: color, strokeWidth: 3.5, strokeLinecap: 'round' }),
+                  h('path', { d: id === 'target' ? 'M80 28L87 35L80 42L73 35Z' : 'M70 44L80 32L90 44', fill: id === 'target' ? color : 'none', stroke: color, strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' })),
+                h('circle', { cx: 80, cy: 80, r: 5, fill: 'var(--bf-paper)', stroke: 'var(--bf-ink)', strokeWidth: 2 })));
+          }
+          return h('details', { className: 'bee-planning-surroundings', 'data-flight-surroundings': 'true' },
+            h('summary', null, 'Read direction, wind, and nearby obstacles'),
+            h('div', { 'data-flight-surroundings-content': 'true', role: 'group', 'aria-label': 'Flight surroundings', 'aria-live': 'off' },
+              h('p', { className: 'bee-surroundings-intro' }, 'Current readings from this paused flight. Open this panel before a maneuver, then compare what changed.'),
+              h('p', { className: 'bee-surroundings-key', 'data-surroundings-dial-key': 'true' }, 'On both dials: top = ahead · center = your bee.'),
+              h('div', { className: 'bee-surroundings-grid' }, ['target', 'wind', 'obstacle', 'traffic'].map(function(id) {
+                var reading = r[id];
+                return h('article', { key: id, className: 'bee-surroundings-card', 'data-surroundings-card': id, 'data-reading-status': reading.status },
+                  h('h4', { 'data-surroundings-title': 'true' }, h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' },
+                    h('path', { d: icons[id], fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })), reading.label),
+                  h('div', { className: 'bee-surroundings-reading' }, dial(id, reading),
+                    h('div', { className: 'bee-surroundings-text' },
+                      h('p', { className: 'bee-surroundings-value', 'data-surroundings-value': 'true' }, reading.value),
+                      h('p', { className: 'bee-surroundings-detail', 'data-surroundings-detail': 'true' }, reading.detail))));
+              })),
+              h('p', { className: 'bee-surroundings-note', 'data-surroundings-note': 'true' }, r.note),
+              h('aside', { className: 'bee-surroundings-weather', 'data-surroundings-weather': 'true' }, h('h4', null, 'Course conditions'),
+                h('p', null, (DRONE_SCENARIOS[state.scenario] || DRONE_SCENARIOS.clear).weather))));
         }
         function renderDroneDecisionPanel() {
-          var state = _droneState.current, readout = bhDroneDecisionReadout(state), target = bhDroneNavigationTarget(state);
+          var state = _droneState.current, readout = bhDroneDecisionReadout(state);
           var action = BEEHIVE_DRONE_DECISIONS.filter(function(a) { return a.id === droneDecisionId; })[0];
-          var surroundings = droneSpatialReadout(state);
-          var queen = (state.nearQueens || [])[0], depth = Math.max(900, -(state.z || 0) + 80, queen ? -queen.z + 150 : 0);
-          var mapX = function(x) { return 320 + x * Math.min(0.44, 280 / Math.max(640, Math.abs(state.x || 0))); };
-          var mapY = function(z) { return 235 + z / depth * 205; };
+          var latest = state.decisionLog && state.decisionLog[state.decisionLog.length - 1];
+          var hasComparison = !!bhDroneManeuverEvidence(latest);
+
           return h('section', { className: 'bfd', 'data-flight-decision-panel': 'true', 'aria-labelledby': 'bee-flight-decision-title' },
             h('h3', { id: 'bee-flight-decision-title' }, 'Pause, read the route, choose a maneuver'),
             h('p', null, 'Nothing advances while you read. Each choice spends only its stated model time; there is no real-time response deadline.'),
-            h('div', { className: 'bfd-readings' },
-              h('div', null, h('span', null, 'Next: ' + readout.target), h('strong', null, readout.range + ' model m')),
-              h('div', null, h('span', null, 'Altitude / target'), h('strong', null, readout.altitude + ' / ' + readout.targetAltitude + ' ft')),
-              h('div', null, h('span', null, 'Energy reserve'), h('strong', null, readout.energy + '%'))),
-            h('figure', { className: 'bfd-map' },
-              h('svg', { viewBox: '0 0 640 265', role: 'img', 'aria-labelledby': 'bee-flight-map-title bee-flight-map-desc' },
-                h('title', { id: 'bee-flight-map-title' }, 'Top-down flight route'), h('desc', { id: 'bee-flight-map-desc' }, readout.text + ' Square: hive. Circle: DCA. Diamond: queen cue. Triangle: your position and heading. The dashed line shows your recorded maneuvers.'),
-                h('path', { d: 'M 320 235 L 320 ' + mapY(-600), fill: 'none', stroke: 'var(--bf-line)', strokeWidth: 2 }),
-                (state.obstacles || []).filter(function(ob) { return Math.abs(ob.x) < 650 && ob.z > -depth; }).map(function(ob,i) { return h('circle', { key: i, cx: mapX(ob.x), cy: mapY(ob.z), r: 3, fill: 'var(--bf-muted)', opacity: 0.55 }); }),
-                h('polyline', { points: [[0,0]].concat((state.decisionLog || []).map(function(e) { return [e.x || 0, e.z || 0]; })).map(function(p) { return mapX(p[0])+','+mapY(p[1]); }).join(' '), fill: 'none', stroke: 'var(--bf-accent)', strokeWidth: 2.5, strokeDasharray: '6 4' }),
-                h('rect', { x: 314, y: 229, width: 12, height: 12, fill: 'var(--bf-ink)' }), h('text', { x: 340, y: 240, fill: 'var(--bf-ink)' }, 'Hive'),
-                h('circle', { cx: 320, cy: mapY(-600), r: 11, fill: 'none', stroke: 'var(--bf-accent)', strokeWidth: 3 }), h('text', { x: 340, y: mapY(-600)+5, fill: 'var(--bf-ink)' }, 'DCA'),
-                queen && h('path', { d: 'M 0 -8 L 8 0 L 0 8 L -8 0 Z', transform: 'translate('+mapX(queen.x)+' '+mapY(queen.z)+')', fill: 'var(--bf-ink)' }),
-                queen && h('text', { x: mapX(queen.x)+18, y: mapY(queen.z)+5, fill: 'var(--bf-ink)' }, 'Queen cue'),
-                h('path', { d: 'M 0 -10 L 7 8 L 0 4 L -7 8 Z', transform: 'translate('+mapX(state.x)+' '+mapY(state.z)+') rotate('+(state.yaw*180/Math.PI)+')', fill: 'var(--bf-accent)', stroke: 'var(--bf-paper)', strokeWidth: 1.5 })),
-              h('figcaption', null, 'Square: hive · circle: DCA · diamond: queen cue · triangle: you. Dots mark course obstacles. The map is a learning aid, not bee vision.')),
-            h('details', { 'data-flight-surroundings': 'true' }, h('summary', null, 'Read direction, wind, and nearby obstacles'), h('p', null, surroundings.primary + '. ' + surroundings.maneuver), h('p', null, 'DCA: ' + surroundings.dcaText), h('p', null, 'Obstacle: ' + surroundings.obstacleText + '. Traffic: ' + surroundings.trafficText), h('p', null, (DRONE_SCENARIOS[state.scenario] || DRONE_SCENARIOS.clear).weather)),
-            h('fieldset', null, h('legend', null, 'Choose your next maneuver'), h('div', { className: 'bfd-options' }, BEEHIVE_DRONE_DECISIONS.map(function(option) {
-              return h('label', { key: option.id, className: 'bfd-option' }, h('input', { type: 'radio', name: 'bee-flight-decision', value: option.id, checked: droneDecisionId === option.id,
-                onChange: function() { updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { decision: option.id }); }); } }),
-                h('span', null, h('strong', null, option.label), h('small', null, option.seconds + ' model s · ' + option.detail)));
-            }))),
-            h('div', { className: 'bfd-actions' }, h('button', { type: 'button', className: 'bfd-primary', 'data-flight-advance-decision': 'true',
+            h('nav', { className: 'bfd-plan-nav', 'data-flight-plan-navigation': 'true', 'aria-label': 'Flight plan navigation' },
+              [{ id: 'route', label: 'Read route' }, { id: 'choose', label: 'Choose maneuver' }, { id: 'compare', label: 'Compare last maneuver' }].map(function(item, index) {
+                return h('button', { key: item.id, type: 'button', 'data-flight-plan-jump': item.id, disabled: item.id === 'compare' && !hasComparison,
+                  'aria-describedby': item.id === 'compare' && !hasComparison ? 'bee-flight-comparison-unavailable' : undefined,
+                  onClick: function(e) { focusDronePlan(e, item.id); } }, h('span', { className: 'bfd-plan-number', 'aria-hidden': 'true' }, index + 1), h('span', null, item.label));
+              })),
+            !hasComparison && h('p', { className: 'bfd-plan-unavailable', id: 'bee-flight-comparison-unavailable' }, 'Your first comparison appears after you advance a maneuver.'),
+            renderDronePlanningReadings(state),
+            renderDroneManeuverEvidence(state.decisionLog, true),
+            renderDronePlanMap(state),
+            renderDronePlanningSurroundings(state),
+            h('fieldset', { className: 'bee-maneuver-chooser', 'data-flight-maneuver-choices': 'true', 'aria-describedby': 'bee-flight-choice-help' },
+              h('legend', null, 'Choose your next maneuver'),
+              h('p', { id: 'bee-flight-choice-help', className: 'bee-maneuver-choice-help' }, 'Choose a control input. The icons show controls, not a predicted flight path. Selecting keeps the flight paused.'),
+              h('div', { className: 'bfd-options' }, BEEHIVE_DRONE_DECISIONS.map(function(option) {
+                var selected = droneDecisionId === option.id, prefix = 'bee-flight-choice-', guide = BEEHIVE_DRONE_CHOICE_GUIDANCE[option.id];
+                return h('label', { key: option.id, className: 'bfd-option bee-maneuver-option', 'data-flight-maneuver-option': option.id, 'data-selected': selected ? 'true' : 'false' },
+                  h('input', { type: 'radio', name: 'bee-flight-decision', value: option.id, checked: selected,
+                    'aria-labelledby': prefix + 'title-' + option.id, 'aria-describedby': prefix + 'time-' + option.id + ' ' + prefix + 'detail-' + option.id,
+                    onChange: function() { updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { decision: option.id }); }); } }),
+                  h('span', { className: 'bee-maneuver-choice-body' },
+                    h('strong', { id: prefix + 'title-' + option.id, className: 'bee-maneuver-choice-title', 'data-flight-choice-title': 'true' },
+                      h('svg', { width: 32, height: 32, viewBox: '0 0 32 32', 'data-flight-choice-icon': 'true', 'aria-hidden': 'true', focusable: 'false' },
+                        h('path', { d: guide.icon, fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' })), option.label),
+                    h('span', { className: 'bee-maneuver-choice-meta' },
+                      h('span', { id: prefix + 'time-' + option.id, className: 'bee-maneuver-choice-time', 'data-flight-choice-time': 'true' }, 'Up to ' + option.seconds + ' model second' + (option.seconds === 1 ? '' : 's')),
+                      h('span', { className: 'bee-maneuver-choice-selected', 'data-flight-choice-selected': 'true', 'aria-hidden': 'true' }, 'Selected')),
+                    h('small', { id: prefix + 'detail-' + option.id, className: 'bee-maneuver-choice-detail', 'data-flight-choice-detail': 'true' }, option.detail)));
+              }))),
+            h('section', { className: 'bfd-ready', 'data-flight-maneuver-ready': 'true', 'aria-labelledby': 'bee-flight-ready-title', 'aria-live': 'off' },
+              h('h4', { id: 'bee-flight-ready-title' }, 'Selected maneuver'),
+              h('strong', { id: 'bee-flight-selected-maneuver', 'data-flight-selected-maneuver': 'true' }, action.label),
+              h('p', null, 'Advance up to ' + action.seconds + ' model second' + (action.seconds === 1 ? '' : 's') + ', then pause to compare.'),
+              h('p', { id: 'bee-flight-prediction-prompt', className: 'bee-maneuver-prediction' }, BEEHIVE_DRONE_CHOICE_GUIDANCE[action.id].prediction)),
+            h('div', { className: 'bfd-actions' }, h('button', { type: 'button', className: 'bfd-primary', 'data-flight-advance-decision': 'true', 'aria-describedby': 'bee-flight-selected-maneuver bee-flight-prediction-prompt',
               onKeyDown: function(e) { if (e.repeat && (e.key === 'Enter' || e.key === ' ')) e.preventDefault(); },
               onClick: function() { if (_droneDecisionStep.current) _droneDecisionStep.current(droneDecisionId); } }, 'Advance maneuver · ' + action.seconds + ' s'),
               h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase' }, 'Chase camera'),
               h('button', { type: 'button', onClick: function() { if (_droneDecisionStep.current) _droneDecisionStep.current(null, true); } }, 'Record flight and debrief')),
             h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-flight-decision-feedback': 'true', className: 'bfd-status' }, state.decisionFeedback || 'Ready. Predict how your choice will change altitude, energy, or distance before you advance.'),
+            hasComparison && h('button', { type: 'button', className: 'bfd-plan-review', 'data-flight-plan-review': 'true', onClick: function(e) { focusDronePlan(e, 'compare'); } },
+              h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M12 19V5M6 11L12 5L18 11', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })), 'Review last maneuver'),
             h('p', { className: 'bfd-caption' }, readout.seconds + ' model seconds remain. Heading assistance makes control corrections; it does not skip obstacles or restore energy. Compare its energy use with your own maneuvers.'),
-            state.decisionLog && state.decisionLog.length > 0 && h('details', null, h('summary', null, 'Read maneuver evidence'), renderDroneDecisionLog(state.decisionLog)),
+            state.decisionLog && state.decisionLog.length > 0 && h('details', null, h('summary', null, 'Read maneuver evidence'), renderDroneHistory(state.decisionLog, state, true)),
             renderDroneScienceBoundary());
         }
 
@@ -26536,14 +28142,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var selectedRoutePlan = DRONE_ROUTE_PLANS[coachedRoutePlan] ? coachedRoutePlan : (DRONE_ROUTE_PLANS[droneRoutePlan] ? droneRoutePlan : 'balanced');
           var routeConfig = DRONE_ROUTE_PLANS[selectedRoutePlan];
           var scenarioConfig = DRONE_SCENARIOS[droneScenario] || DRONE_SCENARIOS.clear;
-          var fieldPrepared = colonyHealth >= 70 && varroaLevel < 20 && honey >= currentReserve;
-          var fieldStressed = colonyHealth < 50 || varroaLevel >= 35 || honey < currentReserve * 0.6;
-          var colonyCarryover = fieldPrepared
-            ? { label: 'Well-fed launch condition', energyScale: 1 }
-            : fieldStressed
-              ? { label: 'Stressed launch condition', energyScale: 0.86 }
-              : { label: 'Watch-list launch condition', energyScale: 0.94 };
-          var timerByDiff = DRONE_FLIGHT_PARAMS.timerByDifficulty;
+          var launchReadout = droneLaunchReadout(difficulty);
+          var colonyCarryover = launchReadout.carryover;
           var queenDistByDiff = { easy: 800, normal: 1200, hard: 1800 };
           var nectarGoalByDiff = { easy: 8, normal: 10, hard: 12 };
           var windScaleByDiff = { easy: 0.7, normal: 1, hard: 1.35 };
@@ -26580,7 +28180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var qDist = Math.round((queenDistByDiff[difficulty] || 1200) * scenarioConfig.queenDistanceScale);
           _droneState.current = {
             x: 0, y: 10, z: 0, vx: 0, vy: 2, vz: -2, yaw: 0, pitch: -0.1,
-            speed: 0, energy: Math.round(droneMaxEnergy(difficulty) * colonyCarryover.energyScale), phase: 'launch', cameraMode: _droneCameraMode.current || 'cockpit',
+            speed: 0, energy: launchReadout.energy, phase: 'launch', cameraMode: _droneCameraMode.current || 'cockpit',
             matingTarget: null,
             nearQueens: [{ x: (courseRand() - 0.5) * 150, y: 150 + courseRand() * 50, z: -qDist - courseRand() * 400, caught: false }],
             obstacles: obs, flowers: fls, clouds: clds, drones: otherDrones,
@@ -26591,7 +28191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             nectarCombo: 0, comboTimer: 0, boostTimer: 0, collectionFlash: 0,
             collectionText: '', particles: [],
             score: 0, distance: 0, maxAlt: 10, pacing: dronePacing, courseSeed: droneCourseSeed, randomState: courseRandom.getState(), simulationClock: 0, decisionLog: [], navigationAssists: 0,
-            timer: Math.max(45, (timerByDiff[difficulty] || 110) + scenarioConfig.timerBonus),
+            timer: launchReadout.timer,
             facts: [], factIdx: 0, telemetry: [], flightElapsed: 0, telemetryAccumulator: 0, difficulty: difficulty, routePlan: selectedRoutePlan, scenario: droneScenario, carryover: colonyCarryover.label,
             hitFlash: 0, obstacleHits: 0, trafficHits: 0, lastHazardText: '', nearestObstacle: null, nearestTraffic: null, dcaStatus: null, paused: startsPaused, reachedLaunch: false, reachedDca: false, reachedQueen: false, lastAnnouncedPhase: 'launch', routeHint: 'Pass optional training markers low, then climb toward the DCA',
             controlTurn: 0, controlPitch: 0, controlThrust: 0, groundEffect: 0, stallWarning: false,
@@ -26600,7 +28200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             trainingActive: difficulty === 'easy', trainingComplete: false, trainingStep: 0, _lastTrainingStep: -1 // red flash when hit by bird or obstacle
           };
           updAll({ drone: Object.assign({}, droneData, { active: true, discoveryRunSerial: bhExperimentRunSerial(droneData.discoveryRunSerial) + 1, paused: startsPaused, pacing: dronePacing, courseSeed: droneCourseSeed, interrupted: false, difficulty: difficulty, routePlan: selectedRoutePlan, scenario: droneScenario, carryover: colonyCarryover.label, replayIndex: 0, cameraMode: _droneCameraMode.current || 'cockpit', graphicsMode: _droneGraphicsMode.current, steeringSensitivity: _droneSteeringSensitivity.current, cameraStabilized: _droneCameraStabilized.current }) });
-          announceBee('Drone flight started on ' + difficulty + ' / ' + scenarioConfig.label + ' with ' + colonyCarryover.label + (startsPaused ? ' and is paused for your reduced-motion preference. Resume when ready.' : '. Pass optional route markers low, then climb toward the DCA.'), false);
+          announceBee('Drone flight started on ' + difficulty + ' / ' + scenarioConfig.label + ' with ' + colonyCarryover.label + (dronePacing === 'steps' ? '. Pause and plan is ready. Choose a maneuver, then advance when ready.' : startsPaused ? ' and is paused for your reduced-motion preference. Resume when ready.' : '. Flight is moving. Pause at any time. Pass optional route markers low, then climb toward the DCA.'), false);
         }
 
         // Drone flight canvas
@@ -26658,8 +28258,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var habitatLayout = _droneHabitatLayout.current;
           var threeWorld = null;
           var threeAlive = true;
-          var rendererBadge = par && par.querySelector ? par.querySelector('[data-flight-renderer-badge]') : null;
-          var qualityBadge = par && par.querySelector ? par.querySelector('[data-flight-quality-badge]') : null;
+          var flightRoot = cv.closest ? cv.closest('[data-beehive-focus-panel="playfield"]') || par : par;
+          var rendererBadge = flightRoot && flightRoot.querySelector ? flightRoot.querySelector('[data-flight-renderer-badge]') : null;
+          var qualityBadge = flightRoot && flightRoot.querySelector ? flightRoot.querySelector('[data-flight-quality-badge]') : null;
           function setDroneRendererState(state, label) {
             cv.setAttribute('data-flight-renderer', state);
             droneRendererState[1](state);
@@ -28307,6 +29908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var maxDroneEnergy = droneMaxEnergy(ds.difficulty);
 
             if (!viewOnly) advanceDronePhysics(dt, now, keys);
+            var flightConditions = bhDroneFlightConditions(ds), showFlightWarnings = !ds.paused && ds.pacing !== 'steps';
 
             // ── RENDER ──
             syncDroneInstruments(ds, now);
@@ -28656,7 +30258,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = 'rgba(9,27,39,0.94)'; c.fillRect(x - labelWidth / 2, baseline - 12, labelWidth, 17);
               c.fillStyle = color; c.fillText(text, x, baseline); c.restore();
             }
-            function drawSpatialCue(target, label, color) {
+            var flightCueLabels = [], flightCueMarkers = [];
+            function queueFlightCueLabel(text, centerX, top, color, meta) {
+              meta = meta || {};
+              c.save(); c.font = '700 12px system-ui';
+              var width = c.measureText(text).width + 16;
+              if (meta.detail) { c.font = '500 11px system-ui'; width = Math.max(width, c.measureText(meta.detail).width + 16); }
+              c.restore();
+              flightCueLabels.push({ id: meta.id, text: text, detail: meta.detail || '', color: color,
+                x: centerX - width / 2, y: top, width: width, height: meta.detail ? 40 : 22,
+                priority: meta.priority || 70, optional: !!meta.optional, anchorX: meta.anchorX, anchorY: meta.anchorY, anchorCandidates: meta.anchorCandidates || [],
+                alternates: (meta.alternates || []).map(function(point) { return { x: point.x - width / 2, y: point.y }; }) });
+            }
+            function paintFlightCueLabels() {
+              var detailed = _droneHudDetail.current;
+              var bounds = { left: 8, top: detailed ? 84 : 8, right: W - 8, bottom: H - (detailed ? 96 : 8) };
+              var reserved = [];
+              if (detailed) {
+                var radarRadius = Math.max(34, Math.min(52, Math.min(W * .16, H * .12)));
+                reserved.push({ x: 6, y: 132 - radarRadius - 18, width: radarRadius * 2 + 90, height: radarRadius * 2 + 38 });
+                reserved.push({ x: W - 72, y: halfH - 62, width: 70, height: 150 });
+              }
+              if (showFlightWarnings && flightConditions.climb) reserved.push({ x: halfW - 113, y: halfH + 33, width: 226, height: 30 });
+              if (showFlightWarnings && flightConditions.ground) {
+                c.save(); c.font = 'bold 16px system-ui';
+                var pullUpWidth = c.measureText('▲ PULL UP ▲').width + 8; c.restore();
+                reserved.push({ x: halfW - pullUpWidth / 2, y: halfH - 48, width: pullUpWidth, height: 24 });
+              }
+              flightCueMarkers.forEach(function(marker) {
+                if ((marker.visible || marker.kind === 'edge') && isFinite(marker.x) && isFinite(marker.y)) {
+                  var radius = marker.kind === 'target' ? 16 : marker.kind === 'heading' ? 7 : 12;
+                  reserved.push({ x: marker.x - radius, y: marker.y - radius, width: radius * 2, height: radius * 2, marker: true });
+                }
+              });
+              // Completion messages take precedence over navigation captions.
+              var labels = ds.phase === 'mating' || ds.phase === 'end' ? [] : bhDroneCueLabelLayout(flightCueLabels, bounds, reserved);
+              c.save(); c.shadowBlur = 0; c.lineJoin = 'round'; c.lineCap = 'round'; c.setLineDash([]);
+              labels.forEach(function(label) {
+                label.leader = false; label.leaderPath = [];
+                if (label.hidden || !label.moved) return;
+                var anchors = label.anchorCandidates.length ? label.anchorCandidates : [{ x: label.anchorX, y: label.anchorY }];
+                var shortest = Infinity;
+                anchors.forEach(function(anchor) {
+                  var candidate = Object.assign({}, label, { anchorX: anchor.x, anchorY: anchor.y });
+                  var route = bhDroneCueLeaderPath(candidate, labels, reserved, bounds), length = 0;
+                  for (var i = 1; i < route.length; i++) length += Math.hypot(route[i].x - route[i - 1].x, route[i].y - route[i - 1].y);
+                  if (route.length > 1 && length >= 3 && length < shortest) { shortest = length; label.leaderPath = route; label.anchorX = anchor.x; label.anchorY = anchor.y; }
+                });
+                if (!label.leaderPath.length) return;
+                label.leader = true;
+                c.beginPath(); c.moveTo(label.leaderPath[0].x, label.leaderPath[0].y);
+                label.leaderPath.slice(1).forEach(function(point) { c.lineTo(point.x, point.y); });
+                c.strokeStyle = '#092634'; c.lineWidth = 3; c.stroke();
+                c.strokeStyle = label.color; c.lineWidth = 1; c.stroke();
+              });
+              labels.forEach(function(label) {
+                if (label.hidden) return;
+                c.fillStyle = 'rgba(9,27,39,0.94)'; c.fillRect(label.x, label.y, label.width, label.height);
+                c.strokeStyle = label.color; c.lineWidth = 1; c.strokeRect(label.x + .5, label.y + .5, label.width - 1, label.height - 1);
+                c.font = '700 12px system-ui'; c.textAlign = 'center'; c.fillStyle = label.color;
+                c.fillText(label.text, label.x + label.width / 2, label.y + 15);
+                if (label.detail) { c.font = '500 11px system-ui'; c.fillStyle = '#e4eef5'; c.fillText(label.detail, label.x + label.width / 2, label.y + 31); }
+              });
+              c.restore();
+              if (typeof window !== 'undefined' && window.__testHooks && window.__testHooks.beehive) {
+                window.__testHooks.beehive.droneSceneCueLayout = { bounds: bounds, reserved: reserved, labels: labels, markers: flightCueMarkers };
+              }
+            }
+            function drawSpatialCue(target, label, color, id, priority) {
               if (!target) return;
               var projected = project(target.x, target.y, target.z);
               if (usingThreeScene) {
@@ -28670,7 +30339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (projected) {
                 var relX = projected.x - halfW, relY = projected.y - halfH;
                 sx = usingThreeScene ? projected.x : halfW + relX * rollCos - relY * rollSin; sy = usingThreeScene ? projected.y : halfH + relX * rollSin + relY * rollCos;
-                visible = sx > 34 && sx < W - 34 && sy > 96 && sy < H - 92;
+                visible = sx > 34 && sx < W - 34 && sy > (_droneHudDetail.current ? 96 : 34) && sy < H - (_droneHudDetail.current ? 92 : 34);
               }
               var bearing = Math.atan2(target.x - ds.x, -(target.z - ds.z)) - ds.yaw;
               var dist = Math.hypot(target.x - ds.x, target.z - ds.z);
@@ -28682,20 +30351,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var edgeR = Math.max(44, Math.min(halfW - 30, halfH - 72));
                 sx = halfW + Math.sin(bearing) * edgeR; sy = halfH - Math.cos(bearing) * edgeR;
                 c.translate(sx, sy); c.rotate(bearing);
-                c.beginPath(); c.moveTo(0, -10); c.lineTo(7, 7); c.lineTo(0, 4); c.lineTo(-7, 7); c.closePath(); c.fill(); c.rotate(-bearing); drawCuePlaque(label, 0, 25, color, false);
+                c.beginPath(); c.moveTo(0, -10); c.lineTo(7, 7); c.lineTo(0, 4); c.lineTo(-7, 7); c.closePath(); c.fill();
+                queueFlightCueLabel(label, sx, sy + 18, color, { id: id, priority: priority, anchorX: sx, anchorY: sy });
               } else {
                 var arm = Math.max(8, Math.min(15, 8 + (projected.s || 0) * 3));
                 c.beginPath(); c.moveTo(sx - arm, sy - arm); c.lineTo(sx - arm * 0.35, sy - arm); c.moveTo(sx + arm * 0.35, sy - arm); c.lineTo(sx + arm, sy - arm); c.moveTo(sx - arm, sy + arm); c.lineTo(sx - arm * 0.35, sy + arm); c.moveTo(sx + arm * 0.35, sy + arm); c.lineTo(sx + arm, sy + arm); c.stroke();
-                drawCuePlaque(label, sx, sy - arm - 9, color, false); drawCuePlaque(Math.round(dist) + ' model m', sx, sy + arm + 18, '#e4eef5', true);
+                queueFlightCueLabel(label, sx, sy - arm - 54, color, { id: id, priority: priority, detail: Math.round(dist) + ' model m', anchorX: sx, anchorY: sy });
               }
               c.restore();
+              flightCueMarkers.push({ id: id, x: sx, y: sy, kind: visible ? 'target' : 'edge', visible: visible });
             }
             var nextApproach = bhDroneApproachCues(ds).next;
             if (nextApproach && nextApproach.opacity > 0.25) {
-              function projectGuideLabel(height) {
-                var label = project(nextApproach.x, height, nextApproach.z);
+              function projectGuideLabel(height, offsetX) {
+                var guideX = nextApproach.x + (offsetX || 0);
+                var label = project(guideX, height, nextApproach.z);
                 if (usingThreeScene) {
-                  var point = new threeWorld.THREE.Vector3(nextApproach.x, height, nextApproach.z);
+                  var point = new threeWorld.THREE.Vector3(guideX, height, nextApproach.z);
                   var depth = -point.clone().applyMatrix4(threeWorld.camera.matrixWorldInverse).z;
                   point.project(threeWorld.camera);
                   return depth > 1 ? { x: (point.x + 1) * halfW, y: (1 - point.y) * halfH } : null;
@@ -28705,25 +30377,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return { x: halfW + gx * Math.cos(-roll) - gy * Math.sin(-roll), y: halfH + gx * Math.sin(-roll) + gy * Math.cos(-roll) };
               }
               function guideLabelFits(label) {
-                return label && label.x > 80 && label.x < W - 80 && label.y > 100 && label.y < H - (_droneHudDetail.current ? 100 : W < 640 ? 255 : 195);
+                return label && label.x > 28 && label.x < W - 28 && label.y > (_droneHudDetail.current ? 100 : 28) && label.y < H - (_droneHudDetail.current ? 100 : 28);
               }
-              var guideLabel = projectGuideLabel(nextApproach.y + 39);
-              // A close frame can extend above the viewport. Try its lower edge
-              // before dropping the label, without moving the actual frame.
-              if (!guideLabelFits(guideLabel)) guideLabel = projectGuideLabel(nextApproach.y - 40);
-              if (guideLabelFits(guideLabel)) drawCuePlaque('GUIDE ' + nextApproach.number + ' · OPTIONAL', guideLabel.x, guideLabel.y, '#a5f3fc', false);
+              var upperGuideLabel = projectGuideLabel(nextApproach.y + 39), lowerGuideLabel = projectGuideLabel(nextApproach.y - 40);
+              // Keep the open frame fixed. Its optional caption can use either edge.
+              var guideLabel = guideLabelFits(upperGuideLabel) ? upperGuideLabel : lowerGuideLabel;
+              var guideAnchor = projectGuideLabel(nextApproach.y), guideId = 'guide-' + nextApproach.number;
+              // Attach moved callouts to the visible frame arcs, not their empty center.
+              var guideArcAnchors = [45, 135, 225, 315].map(function(degrees) {
+                var angle = degrees * Math.PI / 180;
+                return projectGuideLabel(nextApproach.y + Math.sin(angle) * nextApproach.radius, Math.cos(angle) * nextApproach.radius);
+              }).filter(function(point) { return point && point.x > 8 && point.x < W - 8 && point.y > 8 && point.y < H - 8; });
+              if (guideAnchor) flightCueMarkers.push({ id: guideId, x: guideAnchor.x, y: guideAnchor.y, kind: 'frame', visible: guideAnchor.x > 0 && guideAnchor.x < W && guideAnchor.y > 0 && guideAnchor.y < H });
+              if (guideLabelFits(guideLabel)) queueFlightCueLabel('GUIDE ' + nextApproach.number + ' · OPTIONAL', guideLabel.x, guideLabel.y - 16, '#a5f3fc', {
+                id: guideId, priority: 10, optional: true, anchorCandidates: guideArcAnchors, anchorX: guideAnchor ? guideAnchor.x : guideLabel.x, anchorY: guideAnchor ? guideAnchor.y : guideLabel.y,
+                alternates: [upperGuideLabel, lowerGuideLabel].filter(guideLabelFits).map(function(point) { return { x: point.x, y: point.y - 16 }; })
+              });
             }
 
             var liveDcaCue = droneDcaStatus(ds);
-            if (ds.phase !== 'mating' && ds.phase !== 'end' && !ds.reachedDca) drawSpatialCue({ x: 0, y: DRONE_FLIGHT_PARAMS.dcaMarkerFt, z: -DRONE_FLIGHT_PARAMS.dcaDistanceM }, liveDcaCue.inVolume ? 'DCA INSIDE' : 'DCA VOLUME', liveDcaCue.inVolume ? '#22c55e' : '#fbbf24');
-            (ds.nearQueens || []).forEach(function(q) { if (!q.caught && (ds.phase === 'congregation' || ds.reachedDca)) drawSpatialCue(q, 'QUEEN SIGNAL', '#f59e0b'); });
+            if (ds.phase !== 'mating' && ds.phase !== 'end' && !ds.reachedDca) drawSpatialCue({ x: 0, y: DRONE_FLIGHT_PARAMS.dcaMarkerFt, z: -DRONE_FLIGHT_PARAMS.dcaDistanceM }, liveDcaCue.inVolume ? 'DCA INSIDE' : 'DCA VOLUME', liveDcaCue.inVolume ? '#22c55e' : '#fbbf24', 'dca', 100);
+            (ds.nearQueens || []).forEach(function(q, index) { if (!q.caught && (ds.phase === 'congregation' || ds.reachedDca)) drawSpatialCue(q, 'QUEEN SIGNAL', '#f59e0b', 'queen-' + index, 100); });
             var nearestObstacleCue = ds.nearestObstacle || droneNearestObstacle(ds);
-            if (nearestObstacleCue && nearestObstacleCue.obstacle && nearestObstacleCue.horizontalDistance < 150 && nearestObstacleCue.clearance < 90) drawSpatialCue({ x: nearestObstacleCue.obstacle.x, y: nearestObstacleCue.targetY, z: nearestObstacleCue.obstacle.z }, nearestObstacleCue.clearance < 0 ? 'OBSTACLE IMPACT' : 'OBSTACLE', '#fb7185');
+            if (nearestObstacleCue && nearestObstacleCue.obstacle && nearestObstacleCue.horizontalDistance < 150 && nearestObstacleCue.clearance < 90) drawSpatialCue({ x: nearestObstacleCue.obstacle.x, y: nearestObstacleCue.targetY, z: nearestObstacleCue.obstacle.z }, nearestObstacleCue.clearance < 0 ? 'OBSTACLE IMPACT' : 'OBSTACLE', '#fb7185', 'obstacle', 120);
             var nearestTrafficCue = ds.nearestTraffic || droneNearestTraffic(ds);
-            if (nearestTrafficCue && nearestTrafficCue.drone && nearestTrafficCue.distance < 120) drawSpatialCue({ x: nearestTrafficCue.drone.x, y: nearestTrafficCue.drone.y, z: nearestTrafficCue.drone.z }, nearestTrafficCue.distance < 28 ? 'TRAFFIC CONFLICT' : 'DRONE TRAFFIC', '#fb923c');
+            if (nearestTrafficCue && nearestTrafficCue.drone && nearestTrafficCue.distance < 120) drawSpatialCue({ x: nearestTrafficCue.drone.x, y: nearestTrafficCue.drone.y, z: nearestTrafficCue.drone.z }, nearestTrafficCue.distance < 28 ? 'TRAFFIC CONFLICT' : 'DRONE TRAFFIC', '#fb923c', 'traffic', 120);
             var nearestHazard = null, nearestHazardDistance = Infinity;
             (ds.birds || []).forEach(function(bird) { var hdx = ds.x - bird.x, hdy = ds.y - bird.y, hdz = ds.z - bird.z; var hd = Math.sqrt(hdx * hdx + hdy * hdy + hdz * hdz); if (hd < nearestHazardDistance) { nearestHazardDistance = hd; nearestHazard = bird; } });
-            if (nearestHazard && nearestHazardDistance < 130) drawSpatialCue(nearestHazard, 'BIRD HAZARD', '#ef4444');
+            if (nearestHazard && nearestHazardDistance < 130) drawSpatialCue(nearestHazard, 'BIRD HAZARD', '#ef4444', 'bird', 120);
 
             // ── Bird hit flash ──
             if (ds.hitFlash > 0) {
@@ -28747,11 +30428,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var rx = raw.x - halfW, ry = raw.y - halfH, cs = Math.cos(-roll), sn = Math.sin(-roll);
                 p = { x: halfW + rx * cs - ry * sn, y: halfH + rx * sn + ry * cs };
               }
-              p.visible = p.x > 28 && p.x < W - 28 && p.y > 96 && p.y < H - (_droneHudDetail.current ? 92 : W < 640 ? 245 : 185);
+              p.visible = p.x > 28 && p.x < W - 28 && p.y > (_droneHudDetail.current ? 96 : 28) && p.y < H - (_droneHudDetail.current ? 92 : 28);
               return p;
             }
             var headingPoint = projectMotionPoint(motionReadout.heading), motionPoint = projectMotionPoint(motionReadout.motion);
             var headingVisible = headingPoint && headingPoint.visible, motionVisible = motionPoint && motionPoint.visible;
+            if (headingPoint) flightCueMarkers.push({ id: 'heading', x: headingPoint.x, y: headingPoint.y, kind: 'heading', visible: !!headingVisible });
+            if (motionPoint) flightCueMarkers.push({ id: 'motion', x: motionPoint.x, y: motionPoint.y, kind: 'motion', visible: !!motionVisible });
             var cueGap = headingVisible && motionVisible ? Math.hypot(headingPoint.x - motionPoint.x, headingPoint.y - motionPoint.y) : Infinity;
             var motionBelowHeading = headingVisible && motionVisible && cueGap > 24 && motionPoint.y - headingPoint.y > 16 && Math.abs(motionPoint.x - headingPoint.x) < 80;
             c.save(); c.lineJoin = 'round'; c.lineCap = 'round';
@@ -28768,16 +30451,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               strokeMotionShape(function() { var x = headingPoint.x, y = headingPoint.y; c.moveTo(x, y - 6); c.lineTo(x + 6, y); c.lineTo(x, y + 6); c.lineTo(x - 6, y); c.closePath(); }, '#ffffff');
               var headingLabel = !motionReadout.moving ? 'HEADING · MOTION LOW' : !motionVisible ? 'HEADING · MOTION OFF VIEW' : cueGap <= 24 ? 'HEADING + MOTION' : 'HEADING';
               if (!motionReadout.known) headingLabel = 'HEADING · MOTION UNKNOWN';
-              drawCuePlaque(headingLabel, headingPoint.x, headingPoint.y + (motionBelowHeading ? -18 : 28), '#f0f9ff', false);
+              queueFlightCueLabel(headingLabel, headingPoint.x, headingPoint.y + (motionBelowHeading ? -34 : 12), '#f0f9ff', { id: 'heading', priority: 70, anchorX: headingPoint.x, anchorY: headingPoint.y });
             }
             if (motionVisible) {
               strokeMotionShape(function() { c.arc(motionPoint.x, motionPoint.y, 11, 0, Math.PI * 2); }, '#67e8f9');
-              if (!headingVisible || cueGap > 24) drawCuePlaque('MOTION', motionPoint.x, motionBelowHeading && motionPoint.y + 28 < H - (_droneHudDetail.current ? 96 : W < 640 ? 249 : 189) ? motionPoint.y + 28 : motionPoint.y - 18, '#a5f3fc', false);
+              if (!headingVisible || cueGap > 24) queueFlightCueLabel('MOTION', motionPoint.x, motionBelowHeading && motionPoint.y + 28 < H - (_droneHudDetail.current ? 96 : 28) ? motionPoint.y + 12 : motionPoint.y - 34, '#a5f3fc', { id: 'motion', priority: 70, anchorX: motionPoint.x, anchorY: motionPoint.y });
             }
             c.restore();
             ds.flightPathCue = { x: motionPoint ? Math.round(motionPoint.x - halfW) : null, y: motionPoint ? Math.round(motionPoint.y - halfH) : null,
               slip: Math.round(motionReadout.side * 10) / 10, moving: motionReadout.moving, visible: !!motionVisible,
               heading: headingPoint, motion: motionPoint };
+            paintFlightCueLabels();
 
             if (_droneHudDetail.current) {
             // ── Compass / Queen bearing indicator (bottom-right) ──
@@ -29147,21 +30831,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             } // Detailed cockpit HUD
             // Low-energy red vignette warning (flashes when energy < 25%)
-            if (ds.energy / maxDroneEnergy < .25 && ds.phase !== 'end') {
+            if (flightConditions.energy) {
               var warnPulse = (prefersReducedMotion || ds.paused) ? 1 : (Math.sin(now * 0.012) + 1) * 0.5;
               var warnAlpha = (1 - ds.energy / (maxDroneEnergy * .25)) * 0.3 * warnPulse;
               var warnG = c.createRadialGradient(halfW, halfH, Math.min(W, H) * 0.3, halfW, halfH, Math.max(W, H) * 0.7);
               warnG.addColorStop(0, 'rgba(220,38,38,0)');
               warnG.addColorStop(1, 'rgba(220,38,38,' + warnAlpha + ')');
               c.fillStyle = warnG; c.fillRect(0, 0, W, H);
-              // Warning text
-              c.fillStyle = 'rgba(220,38,38,' + (0.7 + warnPulse * 0.3) + ')';
-              c.font = 'bold 14px system-ui'; c.textAlign = 'center';
-              c.fillText('⚠ LOW ENERGY', halfW, 90);
+              // Readable warning text lives in the flow header above the scene.
             }
 
             // Altitude warning: pull up! (if falling fast)
-            if (ds.y < 30 && ds.vy < -0.5 && ds.phase !== 'launch' && ds.phase !== 'end' && ds.phase !== 'mating') {
+            if (showFlightWarnings && flightConditions.ground) {
               var pullPulse = (prefersReducedMotion || ds.paused) ? 1 : (Math.sin(now * 0.02) + 1) * 0.5;
               c.fillStyle = 'rgba(220,38,38,' + (0.7 + pullPulse * 0.3) + ')';
               c.font = 'bold 16px system-ui'; c.textAlign = 'center';
@@ -29169,7 +30850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // ═══ FLIGHT HUD: artificial horizon + altimeter + airspeed + compass ═══
-            if (ds.stallWarning && ds.phase !== 'end') {
+            if (showFlightWarnings && flightConditions.climb) {
               var stallPulse = prefersReducedMotion ? 1 : 0.72 + (Math.sin(now * 0.014) + 1) * 0.14;
               c.save(); c.fillStyle = 'rgba(15,23,42,0.82)'; c.fillRect(halfW - 112, halfH + 34, 224, 28);
               c.strokeStyle = 'rgba(251,191,36,' + stallPulse + ')'; c.lineWidth = 2; c.strokeRect(halfW - 112, halfH + 34, 224, 28);
@@ -29216,7 +30897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var difficultyRank = { easy: 1, normal: 2, hard: 3 };
                 var priorBestDifficulty = droneData.bestDifficulty || null;
                 var nextBestDifficulty = flightSucceeded && (!priorBestDifficulty || difficultyRank[runSummary.difficulty] > difficultyRank[priorBestDifficulty]) ? runSummary.difficulty : priorBestDifficulty;
-                updFn(function(b) { var prior = b.drone || {}; b.drone = Object.assign({}, prior, { highScore: Math.max(prior.highScore || 0, runSummary.score), lastRun: runSummary, paused: ds.pacing === 'steps', attempts: (prior.attempts || 0) + 1, successes: (prior.successes || 0) + (flightSucceeded ? 1 : 0), bestDifficulty: nextBestDifficulty }); });
+                updFn(function(b) { var prior = b.drone || {}; b.drone = Object.assign({}, prior, { highScore: Math.max(prior.highScore || 0, runSummary.score), lastRun: runSummary, paused: ds.pacing === 'steps', attempts: (prior.attempts || 0) + 1, successes: (prior.successes || 0) + (flightSucceeded ? 1 : 0) }, nextBestDifficulty ? { bestDifficulty: nextBestDifficulty } : {}); });
               }
               // Award XP once per completed flight (mini-games were earning none).
               if (!ds._xpAwarded) {
@@ -29373,7 +31054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var after = bhDroneDecisionReadout(ds);
                 var entry = { turn: (ds.decisionCount || 0) + 1, action: action.label, seconds: Math.round(((ds.simulationClock || 0) - beforeTime) * 10) / 10,
                   altitudeBefore: before.altitude, altitude: after.altitude, energyBefore: before.energy, energy: after.energy,
-                  rangeBefore: before.range, range: after.range, x: ds.x, z: ds.z, target: after.target, phase: ds.phase };
+                  rangeBefore: before.range, range: after.range, x: ds.x, z: ds.z, targetBefore: before.target, target: after.target, phase: ds.phase };
                 ds.decisionCount = entry.turn;
                 ds.decisionLog = (ds.decisionLog || []).concat(entry).slice(-100);
                 ds.decisionFeedback = 'Maneuver ' + entry.turn + ': ' + action.label + '. Altitude ' + before.altitude + ' to ' + after.altitude + ' ft; energy ' + before.energy + ' to ' + after.energy + '%. ' + after.text;
@@ -29394,13 +31075,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // browser report 'W'; named keys (ArrowUp, Shift, ' ') pass through.
           function dkNorm(e) { var k = e.key; return (k && k.length === 1) ? k.toLowerCase() : k; }
           function dkIsTyping(e) { var tg = e.target; return !!(tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || tg.isContentEditable)); }
+          var flightFocusPanel = cv.closest ? cv.closest('[data-beehive-focus-panel="playfield"]') : par;
           function dkHasInteractiveFocus() {
             var active = document.activeElement;
-            return !!(active && active !== cv && active !== par && active.matches && active.matches('button, a[href], input, select, textarea, [contenteditable="true"], [role="button"], [role="tab"]'));
+            return !!(active && active !== cv && active !== par && active !== flightFocusPanel && active.matches && active.matches('button, a[href], input, select, textarea, [contenteditable="true"], [role="button"], [role="tab"]'));
           }
           function dkOwnsFlightFocus() {
             var active = document.activeElement;
-            return !!(active && (active === cv || active === par));
+            return !!(active && (active === cv || active === par || active === flightFocusPanel));
           }
           function dkDown(e) {
             // Flight keys belong to the focused playfield, never the whole page.
@@ -29416,6 +31098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (k === 'p' && ds.pacing === 'steps') { e.preventDefault(); return; }
             if (k === 'p' && !e.repeat) {
               ds.paused = !ds.paused;
+              if (!ds.paused) closeDroneDirectionReadings();
               _droneKeys.current = {};
               updFn(function(b) { b.drone = Object.assign({}, b.drone || {}, { paused: ds.paused }); });
               announceBee(ds.paused ? 'Drone flight paused.' : 'Drone flight resumed.', false);
@@ -29481,6 +31164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!droneFlightActive || (_droneState.current && _droneState.current.phase === 'end')) return;
           if (_droneState.current && _droneState.current.pacing === 'steps') { announceBee('Pause-and-plan mode waits for your next maneuver.', false); return; }
           var nextPaused = !dronePaused;
+          if (!nextPaused) closeDroneDirectionReadings();
           _droneKeys.current = {};
           if (_droneState.current) _droneState.current.paused = nextPaused;
           updAll({ drone: Object.assign({}, droneData, { paused: nextPaused }) });
@@ -30363,10 +32047,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var hive3dPart = d.hive3dPart || null;
         var hive3dExploded = d.hive3dExploded === true;
         var show3dHive = d.show3dHive !== false;
+        var inspectionBroodGuideState = React.useState(false);
+        var inspectionBroodGuideShown = inspectionBroodGuideState[0], setInspectionBroodGuideShown = inspectionBroodGuideState[1];
         var hiveInteriorTopicState = React.useState('brood');
         var hiveInteriorTopic = hiveInteriorTopicState[0], setHiveInteriorTopic = hiveInteriorTopicState[1];
         var hiveInteriorRoleState = React.useState(null);
         var hiveInteriorRole = hiveInteriorRoleState[0], setHiveInteriorRole = hiveInteriorRoleState[1];
+        var hiveInteriorLensReturnRef = React.useRef(null);
         var hiveInteriorLensState = React.useState(false);
         var hiveInteriorLensOpen = hiveInteriorLensState[0], setHiveInteriorLensOpen = hiveInteriorLensState[1];
         var hiveInteriorPositionsState = React.useState(false);
@@ -30740,9 +32427,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function selectHiveInteriorFrame(index) {
           updFn(function(b) {
             b.hive3dFrame = index; b.hive3dPart = 'brood_frames'; b.hive3dExploded = true;
-            var seen = Array.isArray(b.hive3dFramesSeen) ? b.hive3dFramesSeen.filter(function(value) { return Number.isInteger(value) && value >= 0 && value < 6; }) : [];
-            b.hive3dFramesSeen = Array.from(new Set(seen.concat([index])));
+            b.hive3dFramesSeen = bhHiveFrameVisits(bhHiveFrameVisits(b.hive3dFramesSeen).concat([index]));
           });
+        }
+        function inspectGuidedHiveFrame(index, event) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!root || !Number.isInteger(index) || index < 0 || index >= 6) return;
+          forecastStudyFocusRef.current = { root: root, selector: '#beehive-interior-read-title' };
+          selectHiveInteriorFrame(index);
+        }
+        function focusHiveInspectionTarget(event, selector) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          var target = root && root.querySelector(selector);
+          if (!target || target.disabled) return;
+          target.focus();
+          if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+        }
+        function returnToHivePositions(index, event) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (!root) return;
+          var target = (index === 0 || index === 2) && root.querySelector('[data-position-study-inspect="' + index + '"]');
+          var disclosure = target && target.closest('[data-interior-position-study-disclosure]');
+          if (target && (!disclosure || !disclosure.open)) target = null;
+          if (!target) target = root.querySelector('[data-interior-position-study-toggle]');
+          if (!target) return;
+          forecastStudyFocusRef.current = null;
+          target.focus();
+          if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
         }
         function inspectHivePositionFrame(index, event) {
           var root = event.currentTarget.closest('[data-beehive-root]');
@@ -30750,14 +32461,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           forecastStudyFocusRef.current = { root: root, selector: '#beehive-interior-read-title' };
           selectHiveInteriorFrame(index);
         }
-        function selectNextHivePatternFrame(event) {
+        function selectNextHivePatternFrame(event, readPattern) {
           var root = event.currentTarget.closest('[data-beehive-root]');
           if (!root) return;
           var live = _beeStateRef.current || d;
           var currentFrame = Number.isInteger(live.hive3dFrame) && live.hive3dFrame >= 0 && live.hive3dFrame < 6 ? live.hive3dFrame : hive3dFrame;
           var guide = bhHiveInteriorFrameGuide(live, currentFrame, hiveInteriorTopic, hiveInteriorRole);
           if (!guide.available || guide.nextFrame === null) { announceBee(guide.reason, false); return; }
-          forecastStudyFocusRef.current = { root: root, selector: '[data-interior-frame="' + guide.nextFrame + '"]' };
+          forecastStudyFocusRef.current = { root: root, selector: readPattern === true ? '[data-interior-read-title]' : '[data-interior-frame="' + guide.nextFrame + '"]' };
           selectHiveInteriorFrame(guide.nextFrame);
           announceBee('Frame ' + (guide.nextFrame + 1) + ' selected. ' + guide.label + ' marks are shown in the current model pattern. Colony readings and action points are unchanged.', false);
         }
@@ -30785,7 +32496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!lens.available) return;
           selectHiveInteriorRole(lens.roleId, { row: row, col: col });
         }
-        function inspectHiveDiagramChange(direction, event) {
+        function inspectHiveDiagramChange(direction, event, keepFocus) {
           if (!hiveInteriorHeld) return;
           var guide = bhHiveInteriorDiagramChanges(hiveInteriorHeld, _beeStateRef.current || d, hive3dFrame);
           if (!guide.available || !guide.changes.length) return;
@@ -30798,11 +32509,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           selectHiveInteriorRole(target.role, { row: target.row, col: target.col });
           setHiveInteriorChangesShown(true);
-          focusHiveInteriorLens(event, true);
+          if (keepFocus) forecastStudyFocusRef.current = null;
+          else focusHiveInteriorLens(event, true);
         }
-        function focusHiveInteriorLens(event, opening) {
+        function inspectHiveMatchingMark(event) {
           var root = event.currentTarget.closest('[data-beehive-root]');
-          forecastStudyFocusRef.current = root ? { root: root, selector: opening ? '#beehive-interior-lens-title' : '[data-interior-lens-toggle]' } : null;
+          if (!root) return;
+          var live = _beeStateRef.current || d;
+          var currentFrame = Number.isInteger(live.hive3dFrame) && live.hive3dFrame >= 0 && live.hive3dFrame < 6 ? live.hive3dFrame : hive3dFrame;
+          var guide = bhHiveInteriorFrameGuide(live, currentFrame, hiveInteriorTopic, hiveInteriorRole);
+          if (!guide.available || !guide.mapped || guide.frames[currentFrame].status !== 'shown') return;
+          var model = bhHiveInteriorFrameModel(live, currentFrame);
+          var matches = model.cells.filter(function(cell) {
+            if (hiveInteriorRole) return hiveInteriorRole === 'empty' ? cell.role === 'empty' || cell.role === 'foundation' : cell.role === hiveInteriorRole;
+            var cellTopic = cell.role === 'honey' ? 'food' : cell.role === 'pollen' ? 'pollen' : /brood/.test(cell.role) ? 'brood' : null;
+            return cellTopic === hiveInteriorTopic;
+          });
+          matches.sort(function(a, b) { return Math.abs(a.row - hiveInteriorCell.row) + Math.abs(a.col - hiveInteriorCell.col) - Math.abs(b.row - hiveInteriorCell.row) - Math.abs(b.col - hiveInteriorCell.col) || a.row - b.row || a.col - b.col; });
+          if (!matches.length) return;
+          // A closer look changes local position only; keep the selected study.
+          setHiveInteriorCell({ row: matches[0].row, col: matches[0].col });
+          focusHiveInteriorLens(event, true, '[data-interior-inspect-matching]');
+        }
+        function focusHiveInteriorLens(event, opening, returnSelector) {
+          var root = event.currentTarget.closest('[data-beehive-root]');
+          if (opening) hiveInteriorLensReturnRef.current = root && returnSelector ? { root: root, selector: returnSelector } : null;
+          var origin = hiveInteriorLensReturnRef.current;
+          var closeSelector = origin && origin.root === root && root.querySelector(origin.selector) ? origin.selector : '[data-interior-lens-toggle]';
+          forecastStudyFocusRef.current = root ? { root: root, selector: opening ? '[data-interior-lens-title]' : closeSelector } : null;
+          if (!opening) hiveInteriorLensReturnRef.current = null;
           setHiveInteriorLensOpen(opening);
         }
         function openHiveManagement(event) {
@@ -31065,7 +32800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               !patternKnown && h('p', { className: 'bee-interior-note' }, 'Key symbols only · the current pattern is unavailable.'));
           }
           function renderPositionStudy() {
-            return h('details', { 'data-interior-position-study-disclosure': 'true', className: 'bee-interior-position-disclosure', open: hiveInteriorPositionsOpen,
+            return h('details', { id: 'beehive-interior-positions', 'data-interior-position-study-disclosure': 'true', className: 'bee-interior-position-disclosure', open: hiveInteriorPositionsOpen,
               onToggle: function(event) { if (event.currentTarget.open !== hiveInteriorPositionsOpen) setHiveInteriorPositionsOpen(event.currentTarget.open); } },
               h('summary', { 'data-interior-position-study-toggle': 'true' }, 'Compare current outside and centre frames'),
               hiveInteriorPositionsOpen && h('div', { 'data-interior-position-study': 'true', className: 'bee-interior-position-study', role: 'group', 'aria-labelledby': 'beehive-interior-position-study-title' },
@@ -31103,17 +32838,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var props = { viewBox: '0 0 610 325', role: 'img', 'aria-label': (held ? 'Held reference. ' : 'Current colony. ') + 'Frame ' + (hive3dFrame + 1) + ' of 6, ' + study.frameKind.toLowerCase() + ' frame. ' + (!drawn.patternKnown ? 'Pattern unavailable. ' : '') + 'Schematic comb pattern. Plus signs mark food, slashes pollen, hollow circles open brood, small filled circles capped brood, and larger circles drone brood. Blank cells group empty comb and foundation. Use the labeled cell key for the same selection.', preserveAspectRatio: 'xMidYMid meet' };
             props[lens ? held ? 'data-interior-held-lens' : 'data-interior-current-lens' : held ? 'data-interior-held-diagram' : 'data-hive-interior-diagram'] = 'true';
             if (lens) { props.viewBox = lens.viewBox; props['aria-label'] = (held ? 'Held reference' : 'Current colony') + ' close-up. Frame ' + (hive3dFrame + 1) + ' of 6. Illustration row ' + (lens.row + 1) + ', column ' + (lens.col + 1) + '. ' + lens.label + '. Diagram coordinates are not measured cell locations. Use the row and column controls to inspect another position.'; }
+            if (lens && !lens.available) props['aria-label'] += ' The question mark means missing readings, not empty comb.';
             if (hiveInteriorChangesShown && diagramChanges && diagramChanges.available && diagramChanges.changes.length) props['aria-label'] += ' An extra inner hexagon outlines positions with changed diagram marks. Use Previous or Next changed mark to inspect them.';
             var inspected = bhHiveInteriorLens(sourceData, hive3dFrame, hiveInteriorCell.row, hiveInteriorCell.col);
             var locatorProps = { cx: inspected.x, cy: inspected.y, r: 16, className: 'bee-interior-lens-ring', 'aria-hidden': 'true' };
             locatorProps[lens ? 'data-lens-ring' : 'data-interior-lens-locator'] = held ? 'held' : 'current';
+            var figureHeading = h('div', { className: 'bee-interior-figure-heading' }, h('strong', null, held ? 'Held reference' : 'Current colony'), h('span', null, 'Day ' + (Number.isSafeInteger(sourceData.day) && sourceData.day >= 0 ? sourceData.day : 'not recorded') + ' · Frame ' + (hive3dFrame + 1)));
             return h('figure', { className: 'bee-interior-figure', 'data-held': held ? 'true' : 'false' },
-              (lens || comparison && comparison.available) && h('div', { className: 'bee-interior-figure-heading' }, h('strong', null, held ? 'Held reference' : 'Current colony'), h('span', null, 'Day ' + (Number.isSafeInteger(sourceData.day) && sourceData.day >= 0 ? sourceData.day : 'not recorded') + ' · Frame ' + (hive3dFrame + 1))),
-              h('svg', props, h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-wood' }),
-                h('rect', { x: 27, y: 31, width: 556, height: 256, rx: 4, className: 'bee-interior-comb' }), h('g', { 'aria-hidden': 'true' }, drawn.cells), h('path', { d: 'M12 27H598 M20 310H590', className: 'bee-interior-bar' }),
+              lens ? h('figcaption', { className: 'bee-interior-lens-caption', 'data-lens-caption': held ? 'held' : 'current' },
+                figureHeading,
+                h('div', { className: 'bee-interior-lens-mark-label' },
+                  lens.available && h('svg', { 'data-lens-caption-symbol': held ? 'held' : 'current', 'data-role': lens.roleId, viewBox: '0 0 32 32', className: 'bee-interior-key-symbol bee-interior-study-symbol', 'aria-hidden': 'true', focusable: 'false' }, h('polygon', { points: '16,2 28,9 28,23 16,30 4,23 4,9' }), mark(lens.roleId, 16, 16, 1.4)),
+                  h('strong', { 'data-lens-mark': held ? 'held' : 'current', 'data-lens-pattern-unavailable': lens.available ? undefined : 'true' }, (held ? 'Held mark: ' : 'Current mark: ') + lens.label)),
+                h('span', { 'data-lens-caption-description': held ? 'held' : 'current' }, lens.description),
+                !lens.available && h('span', { 'data-lens-unknown-help': held ? 'held' : 'current' }, 'The question mark means missing readings, not empty comb.')) : h('figcaption', { className: 'bee-interior-frame-caption', 'data-frame-caption': held ? 'held' : 'current' },
+                figureHeading,
+                h('span', { 'data-frame-caption-description': held ? 'held' : 'current' }, !drawn.patternKnown ? 'Pattern unavailable: one or more colony readings were not recorded.' : held ? 'A fixed illustration from the held readings. Selecting another frame redraws that same reference.' : 'A model pattern, not a photograph or cell census. Six frames simplify a hive. Their layout and cell marks illustrate structure; real layouts vary.')),
+              h('svg', props,
+                h('g', { 'data-lens-artwork': lens ? held ? 'held' : 'current' : undefined, visibility: lens && !lens.available ? 'hidden' : undefined, 'aria-hidden': 'true' },
+                  h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-wood' }),
+                  h('rect', { x: 27, y: 31, width: 556, height: 256, rx: 4, className: 'bee-interior-comb' }), h('g', { 'aria-hidden': 'true' }, drawn.cells), h('path', { d: 'M12 27H598 M20 310H590', className: 'bee-interior-bar' })),
+                lens && !lens.available && h('g', { 'data-lens-unknown': held ? 'held' : 'current', className: 'bee-interior-lens-unknown', 'aria-hidden': 'true' },
+                  h('rect', { x: lens.x - 45, y: lens.y - 38, width: 90, height: 76, rx: 5 }),
+                  h('text', { x: lens.x, y: lens.y + 13, textAnchor: 'middle' }, '?')),
                 hiveInteriorLensOpen && inspected.available && h(React.Fragment, null,
-                  h('circle', { cx: inspected.x, cy: inspected.y, r: 16, className: 'bee-interior-lens-halo', 'aria-hidden': 'true' }), h('circle', locatorProps))),
-              lens ? h('figcaption', null, h('strong', { 'data-lens-mark': held ? 'held' : 'current' }, (held ? 'Held mark: ' : 'Current mark: ') + lens.label), h('span', null, lens.description)) : h('figcaption', null, !drawn.patternKnown ? 'Pattern unavailable: one or more colony readings were not recorded.' : held ? 'A fixed illustration from the held readings. Selecting another frame redraws that same reference.' : 'A model pattern, not a photograph or cell census. Six frames simplify a hive. Their layout and cell marks illustrate structure; real layouts vary.'));
+                  h('circle', { cx: inspected.x, cy: inspected.y, r: 16, className: 'bee-interior-lens-halo', 'aria-hidden': 'true' }), h('circle', locatorProps))));
           }
           function renderCellLens() {
             if (!hiveInteriorLensOpen) return null;
@@ -31123,10 +32872,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var canNavigate = lens.available || heldLens && heldLens.available;
             var changedHere = changedPositions[hiveInteriorCell.row + ':' + hiveInteriorCell.col];
             var changeStatus = !diagramChanges || !diagramChanges.available ? diagramChanges && diagramChanges.reason : changedHere ? 'Diagram mark changed: ' + changedHere.beforeLabel + ' → ' + changedHere.label + '.' : 'Same diagram mark at this position: ' + lens.label + '.';
+            var changesKnown = !!(diagramChanges && diagramChanges.available), changeTotal = changesKnown ? diagramChanges.changes.length : 0;
+            var changeIndex = changedHere && changesKnown ? diagramChanges.changes.indexOf(changedHere) : -1;
+            var canFindChange = changesKnown && changeTotal > 0;
+            var changeProgress = !changesKnown ? 'Change count unavailable.' : !changeTotal ? 'No changed marks in this frame.' : changeIndex >= 0 ? 'Changed mark ' + (changeIndex + 1) + ' of ' + changeTotal + '.' : changeTotal + ' changed ' + (changeTotal === 1 ? 'mark' : 'marks') + ' in this frame.';
             return h('section', { id: 'beehive-interior-cell-lens', 'data-interior-cell-lens': 'true', className: 'bee-interior-lens', 'aria-labelledby': 'beehive-interior-lens-title' },
-              h('div', { className: 'bee-interior-lens-heading' }, h('h4', { id: 'beehive-interior-lens-title', tabIndex: -1 }, 'Cell close-up'),
-                h('button', { type: 'button', 'data-interior-lens-close': 'true', onClick: function(event) { focusHiveInteriorLens(event, false); } }, 'Close close-up')),
-              h('p', null, 'The dashed ring locates this close-up on the frame. Use the arrows for one step, or choose any row and column. Each direction stops at the edge. These are illustration coordinates, not measured cell locations.'),
+              h('div', { className: 'bee-interior-lens-heading' }, h('h4', { id: 'beehive-interior-lens-title', 'data-interior-lens-title': 'true', 'data-beehive-focus-panel': 'true', tabIndex: -1 }, 'Cell close-up'),
+                h('div', { className: 'bee-interior-lens-actions' },
+                  h('button', { type: 'button', 'data-interior-lens-view-cells': 'true', 'aria-controls': 'beehive-interior-lens-results', onClick: function(event) { focusHiveInspectionTarget(event, '[data-interior-lens-results-title]'); } }, 'View enlarged cells'),
+                  h('button', { type: 'button', 'data-interior-lens-close': 'true', onClick: function(event) { focusHiveInteriorLens(event, false); } }, 'Close close-up'))),
+              h('p', null, 'The dashed ring locates this close-up on the frame. The row and column arrows move one step and stop at the edge. You can also choose a row and column directly. These are illustration coordinates, not measured cell locations.'),
               h('div', { 'data-interior-lens-navigation': 'true', className: 'bee-interior-lens-navigation' },
                 h('figure', { 'data-interior-lens-map': 'true', className: 'bee-interior-lens-map' },
                   h('h5', null, 'Where this close-up sits'),
@@ -31159,13 +32914,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   })));
               }))),
               h('p', { 'data-interior-lens-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Frame ' + (hive3dFrame + 1) + ' · Illustration row ' + (hiveInteriorCell.row + 1) + ', column ' + (hiveInteriorCell.col + 1) + '. ' + (paired ? 'Both close-ups use this same position. ' : '') + (lens.available ? 'Current mark: ' + lens.label + '.' : lens.reason)),
-              paired && h('p', { 'data-interior-lens-change': 'true', className: 'bee-interior-lens-change' }, changeStatus),
-              h('div', { className: 'bee-interior-lens-pair', 'data-paired': paired ? 'true' : 'false' }, paired && frameFigure(true, true), frameFigure(false, true)));
+              paired && h('div', { 'data-interior-lens-change-guide': 'true', className: 'bee-interior-lens-change-guide' },
+                h('h5', null, 'Browse changed marks'),
+                h('p', { id: 'beehive-interior-lens-change-progress', 'data-interior-lens-change-progress': 'true' }, changeProgress),
+                h('p', { 'data-interior-lens-change': 'true', className: 'bee-interior-lens-change' }, changeStatus),
+                h('div', { className: 'bee-interior-lens-steps', role: 'group', 'aria-label': 'Browse changed diagram marks' }, [
+                  { id: 'previous', label: 'Previous changed mark', symbol: '←', direction: -1 },
+                  { id: 'next', label: 'Next changed mark', symbol: '→', direction: 1 }
+                ].map(function(step) {
+                  return h('button', { key: step.id, type: 'button', 'data-interior-lens-change-step': step.id, disabled: !canFindChange, 'aria-describedby': 'beehive-interior-lens-change-progress beehive-interior-lens-change-help',
+                    onClick: function(event) { if (canFindChange) inspectHiveDiagramChange(step.direction, event, true); } }, h('span', { className: 'bee-interior-lens-step-icon', 'aria-hidden': 'true' }, step.symbol), h('span', null, step.label));
+                })),
+                h('p', { id: 'beehive-interior-lens-change-help', className: 'bee-interior-note' }, (canFindChange ? 'Order: left to right, then the next row down. At either end, navigation wraps. ' : '') + 'Counts refer to diagram positions, not physical cells.')),
+              h('div', { id: 'beehive-interior-lens-results', 'data-interior-lens-results': 'true', className: 'bee-interior-lens-results' },
+                h('div', { className: 'bee-interior-lens-heading' },
+                  h('h5', { id: 'beehive-interior-lens-results-title', 'data-interior-lens-results-title': 'true', 'data-beehive-focus-panel': 'true', tabIndex: -1, 'aria-describedby': 'beehive-interior-lens-results-context' + (paired ? ' beehive-interior-lens-verdict' : '') }, 'Enlarged cells'),
+                  h('button', { type: 'button', 'data-interior-lens-return-controls': 'true', 'aria-controls': 'beehive-interior-lens-title', onClick: function(event) { focusHiveInspectionTarget(event, '[data-interior-lens-title]'); } }, 'Back to close-up controls')),
+                h('p', { id: 'beehive-interior-lens-results-context', 'data-interior-lens-results-context': 'true', className: 'bee-interior-note' }, 'Frame ' + (hive3dFrame + 1) + ' · Illustration row ' + (hiveInteriorCell.row + 1) + ', column ' + (hiveInteriorCell.col + 1) + '. ' + (paired ? 'Both close-ups use this same position.' : 'The close-up uses this illustration position.')),
+                paired && h('div', { id: 'beehive-interior-lens-verdict', 'data-interior-lens-verdict': !changesKnown ? 'unavailable' : changedHere ? 'changed' : 'same', className: 'bee-interior-lens-verdict' },
+                  h('strong', { 'data-lens-verdict-title': 'true' }, !changesKnown ? 'Cannot compare marks' : changedHere ? 'Different diagram marks' : 'Same diagram mark'),
+                  h('p', { 'data-lens-verdict-detail': 'true' }, changesKnown ? 'Held mark: ' + heldLens.label + ' → Current mark: ' + lens.label + '.' : changeStatus),
+                  changesKnown && h('p', { 'data-lens-verdict-limit': 'true', className: 'bee-interior-note' }, 'Diagram categories, not tracked physical cells. Small reading changes may leave marks unchanged.')),
+                h('div', { className: 'bee-interior-lens-pair', 'data-paired': paired ? 'true' : 'false' }, paired && frameFigure(true, true), frameFigure(false, true))));
           }
           study = bhHiveInteriorEvidence(d, hive3dFrame, topic.id, selectedRole && selectedRole.id, selectedShown);
           var append = bhAppendNotebookEvidence(d.notebook && d.notebook.beekeeper, study.text);
           var saveHint = !study.available ? 'A recorded day and this topic’s colony reading are needed before adding evidence. Missing values stay marked Not recorded.' : append.status === 'full' ? 'Make room for ' + append.needed + ' more characters in your evidence. The notebook holds 1,200; your current writing is kept.' : append.status === 'duplicate' ? 'This exact record is already in your Science Notebook evidence.' : 'Adds exactly this preview to Beekeeper evidence. Your prediction and explanation are kept; the evidence review mark is cleared.';
-          var highlightNote = !patternKnown ? 'Pattern unavailable: a required colony reading is not recorded.' : !selectedRole && topic.id === 'queen' ? 'Queen topic selected. The cutaway does not mark the queen’s location.' : selectedShown ? (selectedRole ? selectedRole.label : topic.label) + ' highlighted in this model frame.' : (selectedRole ? selectedRole.label : topic.label) + ': no matching cells are shown in this model frame. Try another frame to compare the pattern.';
+          var patternState = !frameGuide.available ? 'unavailable' : !frameGuide.mapped ? 'unmapped' : selectedShown ? 'shown' : frameGuide.nextFrame !== null ? 'elsewhere' : 'absent';
+          var patternLabel = { shown: 'Shown here', elsewhere: 'Shown on another frame', absent: 'No matching marks', unmapped: 'Queen not mapped', unavailable: 'Unavailable' }[patternState];
+          var highlightNote = patternState === 'unavailable' ? 'Pattern unavailable: a required colony reading is not recorded.' : patternState === 'unmapped' ? 'Queen topic selected. The cutaway does not mark the queen’s location.' : patternState === 'shown' ? frameGuide.label + ' highlighted in this model frame.' : patternState === 'elsewhere' ? frameGuide.label + ': no matching cells are shown in this model frame. Matching marks are shown on another current frame.' : 'No matching marks for ' + frameGuide.label + ' are shown across the six current model frames. This drawing does not measure cell counts.';
           var clock = bhBeekeeperNotebookCapture(d).sourceLabel.replace('Current colony · ', '');
           return h('section', { 'data-hive-interior': 'true', 'data-interior-season': season === 3 ? 'winter' : 'active', className: 'bee-interior', 'aria-labelledby': 'beehive-interior-title' },
             h('header', { className: 'bee-interior-heading' },
@@ -31206,7 +32983,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('p', { 'data-interior-frame-note': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-frame-note' }, 'Frame ' + (hive3dFrame + 1) + ' of 6 · ' + study.frameKind + '. ' + (patternKnown ? 'The drawing uses the same model pattern as the 3D frame below.' : 'Pattern unavailable: one or more colony readings were not recorded.') + ' Changing frames changes the illustration, not the whole-colony reading.'),
             renderHiveReference(),
             h('section', { id: 'beehive-interior-read', className: 'bee-interior-step', 'aria-labelledby': 'beehive-interior-read-title' },
-              h('h4', { id: 'beehive-interior-read-title', tabIndex: -1 }, '2 · Read the comb'),
+              h('h4', { id: 'beehive-interior-read-title', 'data-interior-read-title': 'true', 'data-beehive-focus-panel': 'true', tabIndex: -1, 'aria-describedby': 'beehive-interior-read-frame beehive-interior-read-study' }, '2 · Read the comb'),
+              h('div', { 'data-interior-read-context': 'true', className: 'bee-interior-read-context' },
+                h('div', null,
+                  h('p', { id: 'beehive-interior-read-frame', 'data-interior-read-frame': 'true' }, 'Frame ' + (study.frame + 1) + ' of 6 · ' + study.frameKind),
+                  h('p', { id: 'beehive-interior-read-study', 'data-interior-read-study': 'true' }, 'Studying: ' + (selectedRole ? selectedRole.label : topic.label))),
+                season !== 3 && h('button', { type: 'button', 'data-interior-inspection-return': 'true', onClick: function(event) { focusHiveInspectionTarget(event, '#beehive-guided-inspection-title'); } }, 'Return to guided inspection'),
+                hiveInteriorPositionsOpen && h('button', { type: 'button', 'data-interior-position-return': 'true', 'aria-controls': 'beehive-interior-positions', onClick: function(event) { returnToHivePositions(study.frame, event); } }, 'Back to frame positions')),
               h('div', { className: 'bee-interior-study', 'data-comparing': comparison && comparison.available ? 'true' : 'false' },
                 h('div', { className: 'bee-interior-visuals' },
                   h('div', { className: 'bee-interior-cell-toolbar' },
@@ -31222,7 +33005,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('strong', null, selectedRole ? selectedRole.label + ' · Read this mark' : 'Read the highlighted pattern'),
                       renderStudySymbols(),
                       selectedRole && h('p', null, selectedRole.description),
-                      h('p', { 'data-interior-highlight-note': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-highlight-note' }, highlightNote)),
+                      h('div', { 'data-interior-pattern-status': patternState, className: 'bee-interior-pattern-status' },
+                        h('h5', { 'data-interior-pattern-context': 'true' }, 'Current model · Frame ' + (hive3dFrame + 1) + ' of 6'),
+                        h('span', { 'data-interior-pattern-label': 'true', className: 'bee-interior-pattern-label' }, patternLabel),
+                        h('p', { id: 'beehive-interior-pattern-note', 'data-interior-highlight-note': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bee-interior-highlight-note' }, highlightNote),
+                        patternState === 'shown' && h('button', { type: 'button', 'data-interior-inspect-matching': 'true', 'aria-expanded': hiveInteriorLensOpen ? 'true' : 'false', 'aria-controls': hiveInteriorLensOpen ? 'beehive-interior-cell-lens' : undefined, 'aria-describedby': 'beehive-interior-pattern-note', onClick: inspectHiveMatchingMark }, 'Open matching close-up'),
+                        patternState === 'elsewhere' && h('button', { type: 'button', 'data-interior-show-matching': 'true', 'aria-describedby': 'beehive-interior-pattern-note', onClick: function(event) { selectNextHivePatternFrame(event, true); } }, 'Show matching frame'))),
                     renderTopicReadings(),
                     topic.id === 'food' && h('p', null, 'Fed syrup already included: ' + (Number.isFinite(d.syrup) && d.syrup >= 0 && Number.isFinite(d.honey) && d.honey >= d.syrup && d.honey <= 1000000 ? d.syrup.toLocaleString('en-US', { maximumFractionDigits: 3 }) + ' honey-equivalent lb' : 'Not recorded') + '.'),
                     topic.id === 'queen' && h('p', null, season === 3 ? 'The cutaway does not locate a live queen. The 3D queen finder is unavailable in the winter model, when the bees form a cluster.' : hive3dStatus === 'ready' ? 'The cutaway does not locate a live queen. In the 3D view, use Find the queen to inspect the illustrated bee.' : 'The cutaway does not locate a live queen. The 3D queen finder needs graphics support; this reading remains available here.'))))),
@@ -31292,14 +33080,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       : (BEE_3D_MISSING === 'host'
                         ? __alloT('stem.beehive.bay3d_host_too_old', 'The 3D view needs a newer STEAM Lab host than this build has. Everything else in this simulation still works.')
                         : cfg.fallback)))),
-              h('div', { role: 'group', 'aria-label': cfg.title + ' camera controls', className: 'flex flex-wrap gap-1' },
-                controls.map(function(control) {
+              h('div', { 'data-bee-3d-camera-controls': cfg.id, role: 'group', 'aria-label': cfg.title + ' camera controls', className: 'bee-3d-camera-controls' },
+                controls.map(function(control, index) {
                   return h('button', {
-                    key: control[1], type: 'button', 'aria-label': control[1], title: control[1],
+                    key: control[1], type: 'button', 'data-bee-3d-camera-action': String(index), 'aria-label': control[1], title: control[1],
                     disabled: !ready, onClick: control[2],
-                    className: 'min-h-[44px] min-w-[44px] rounded-lg border px-3 text-[0.6875rem] font-bold ' + accent.button,
-                    style: { opacity: ready ? 1 : 0.45 }
-                  }, control[0]);
+                    className: 'min-h-[44px] min-w-[44px] rounded-lg border px-3 font-bold ' + accent.button
+                  }, h('span', { className: 'bee-3d-camera-symbol', 'aria-hidden': 'true' }, control[0]), h('span', { className: 'bee-3d-camera-label' }, control[1]));
                 }).concat(cfg.extraControls || [])),
               cfg.layers,
               cfg.afterScene,
@@ -32395,10 +34182,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('p', null, 'Set up one controlled visit. Change one condition and trace what reaches the flower. This case assumes viable pollen and a receptive stigma.'),
             h('fieldset', { style: { border: 0, padding: 0 } }, h('legend', { style: { fontWeight: 800, marginBottom: '.5rem' } }, 'Choose a controlled case'),
               h('div', { className: 'bee-pollen-controls' }, choice('pollen', 'Loose pollen on bee', 'Grains available on the body for transfer.'), choice('contact', 'Bee contacts stigma', 'The stigma is the pollen-receiving surface.'), choice('compatible', 'Pollen compatible', 'Compatibility affects the next step after deposition.'))),
-            h('div', { className: 'bee-pollen-path', 'aria-label': 'Trace the pollen path' },
+            h('div', { className: 'bee-pollen-path', role: 'group', 'aria-label': 'Trace the pollen path' },
               h('figure', { className: 'bee-pollen-step', 'data-pollination-step': 'carried', 'data-step-state': r.pollen ? 'present' : 'absent' }, stepHeading('1 · Carried on the bee', r.pollen ? 'Available' : 'None carried', ['pollen'], 'Input:'), beePicture, h('figcaption', null, h('strong', null, r.pollen ? 'Loose grains available' : 'No loose grains carried'), 'Anthers produce pollen. Some grains can cling to a visiting bee; these dots represent loose grains, not a leg basket.')),
               h('figure', { className: 'bee-pollen-step', 'data-pollination-step': 'deposited', 'data-step-state': r.transferred ? 'shown' : 'not-shown' }, stepHeading('2 · Deposited on the stigma', r.transferred ? 'Shown' : 'Not shown', ['pollen', 'contact'], 'Needs both:'), flowerPicture,
-                h('div', { className: 'bee-pollen-part', 'aria-label': 'Diagram key' }, h('span', null, h('i', { 'aria-hidden': 'true' }), 'Round · stigma'), h('span', null, h('i', { 'data-anther': 'true', 'aria-hidden': 'true' }), 'Rectangles · anthers'), h('span', null, h('i', { 'data-grain': 'true', 'aria-hidden': 'true' }), 'Small rings · pollen')),
+                h('div', { className: 'bee-pollen-part', role: 'group', 'aria-label': 'Diagram key' }, h('span', null, h('i', { 'aria-hidden': 'true' }), 'Round · stigma'), h('span', null, h('i', { 'data-anther': 'true', 'aria-hidden': 'true' }), 'Rectangles · anthers'), h('span', null, h('i', { 'data-grain': 'true', 'aria-hidden': 'true' }), 'Small rings · pollen')),
                 h('figcaption', null, h('strong', null, r.outcome), r.reason)),
               h('figure', { className: 'bee-pollen-step', 'data-pollination-step': 'later', 'data-step-state': 'not-observed' }, stepHeading('3 · What could happen later?', 'Not observed', ['compatible'], 'After deposition:'), laterPicture, h('figcaption', null, h('strong', null, 'Fertilization is not observed'), r.next))),
             h('output', { className: 'bee-pollen-result', 'data-pollination-outcome': r.transferred ? 'transfer' : 'no-transfer', htmlFor: 'bee-pollen-pollen bee-pollen-contact bee-pollen-compatible', 'aria-live': 'polite', 'aria-atomic': 'true' }, h('strong', null, r.outcome), h('span', null, r.reason), h('span', null, r.possible ? 'Next step possible · no seed or fruit result is predicted.' : r.transferred ? 'Compatibility limits the next step · transfer still occurred.' : 'Try changing pollen carried or contact while holding the other conditions fixed.')),
@@ -32518,7 +34305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             !calendar.available ? h('p', { className: 'bee-brood-question', 'data-brood-calendar-unavailable': 'true' }, calendar.reason) : h(React.Fragment, null,
               h('p', { className: 'bee-brood-note', 'data-brood-calendar-context': 'true' }, 'Read on Day ' + calendar.startDay + ' · ' + count(calendar.broodTotal) + ' brood in the saved model. Next 7 days: ' + count(calendar.totals.total) + ' scheduled adults; ' + count(calendar.later) + ' remain for later.'),
               h('figure', null,
-                h('div', { className: 'bee-brood-legend', 'aria-label': 'Chart legend' },
+                h('div', { className: 'bee-brood-legend', role: 'group', 'aria-label': 'Chart legend' },
                   h('span', null, h('i', { className: 'bee-brood-swatch bee-brood-worker', 'aria-hidden': 'true' }), 'Workers · solid'),
                   h('span', null, h('i', { className: 'bee-brood-swatch bee-brood-drone', 'aria-hidden': 'true' }), 'Drones · striped')),
                 h('ol', { className: 'bee-brood-bars', 'data-large-counts': String(peak >= 10000), 'aria-hidden': 'true' }, calendar.rows.map(function(row) {
@@ -32752,50 +34539,200 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // questions. The student reads the frames, finds the queen, then JUDGES the brood and the
         // queen cells before the readout gives its verdict (it used to announce the answer).
         function renderGuidedInspection() {
-          var framesSeen = (d.hive3dFramesSeen || []).length;
+          var visitedFrames = bhHiveFrameVisits(d.hive3dFramesSeen);
+          var framesSeen = visitedFrames.length;
           var foundQueen = !!d.hive3dFoundQueen;
           var record = d.lastInspection && d.lastInspection.day === day ? d.lastInspection : null;
+          var inspectionReview = record ? bhGuidedInspectionReview(record) : null;
           var broodTruth = queenHealth >= 85 ? 'solid' : 'spotty';
           var cellsTruth = hive3dSwarmPressure > 0.55 && season !== 3 ? 'yes' : 'no';
           var draft = d.inspectionDraft || {};
+          var chosen = { brood: draft.brood === 'solid' || draft.brood === 'spotty', cells: draft.cells === 'yes' || draft.cells === 'no' };
+          var answersChosen = Number(chosen.brood) + Number(chosen.cells);
+          var draftHint = answersChosen === 2 ? 'Ready to record. Your choices will be compared with the model.'
+            : !chosen.brood && !chosen.cells ? (record ? 'To record again, choose a brood pattern and a queen-cell answer.' : 'Choose a brood pattern and a queen-cell answer to enable Record inspection.')
+            : !chosen.brood ? 'Choose a brood pattern to enable Record inspection.' : 'Choose a queen-cell answer to enable Record inspection.';
           var tone = dk ? 'border-amber-700/40 bg-slate-900/70 text-slate-200' : 'border-amber-200 bg-amber-50/60 text-slate-800';
           function choose(key, value) { var next = Object.assign({}, draft); next[key] = value; upd('inspectionDraft', next); }
           function recordInspection() {
+            if (answersChosen !== 2) return;
             var rec = { day: day, framesRead: framesSeen, queenFound: foundQueen, brood: draft.brood, cells: draft.cells, broodCorrect: draft.brood === broodTruth, cellsCorrect: draft.cells === cellsTruth };
             updAll({ lastInspection: rec, inspectionDraft: {}, inspectionsDone: (d.inspectionsDone || 0) + 1 });
             announceBee('Inspection recorded. Brood: ' + (rec.broodCorrect ? 'your reading matches the frames.' : 'look again at the gaps.') + ' Queen cells: ' + (rec.cellsCorrect ? 'your reading matches.' : 'look again at the bottom bars.'), false);
             if (awardStemXP) awardStemXP('beehive', 6 + (rec.broodCorrect ? 4 : 0) + (rec.cellsCorrect ? 4 : 0), 'Guided hive inspection');
           }
           function choice(key, value, label) {
+            var values = key === 'brood' ? ['solid', 'spotty'] : ['yes', 'no'];
             var on = draft[key] === value;
-            return h('button', { key: value, type: 'button', role: 'radio', 'aria-checked': on ? 'true' : 'false', 'data-inspection-choice': key + ':' + value, onClick: function() { choose(key, value); },
-              className: 'min-h-[44px] rounded-lg border px-3 py-1.5 text-xs font-bold ' + (on ? 'border-amber-600 bg-amber-600 text-white' : (dk ? 'border-slate-600 bg-slate-800 text-slate-100' : 'border-slate-300 bg-white text-slate-800')) }, label);
+            return h('button', { key: value, type: 'button', role: 'radio', 'aria-checked': on ? 'true' : 'false', tabIndex: on || !chosen[key] && value === values[0] ? 0 : -1,
+              'data-inspection-choice': key + ':' + value, onClick: function() { choose(key, value); },
+              onKeyDown: function(event) { handleBeeTabKey(event, values.map(function(item) { return key + ':' + item; }), key + ':' + value, 'data-inspection-choice', function(nextId) { choose(key, nextId.slice(key.length + 1)); }); },
+              className: 'bee-inspection-choice min-h-[44px] rounded-lg border px-3 py-1.5 text-xs font-bold ' + (on ? 'border-amber-600 bg-amber-600 text-white' : (dk ? 'border-slate-600 bg-slate-800 text-slate-100' : 'border-slate-300 bg-white text-slate-800')) },
+              h('span', { className: 'bee-inspection-choice-mark', 'aria-hidden': 'true' }, on ? '\u2713' : ''), h('span', { className: 'bee-inspection-choice-label' }, label));
           }
-          if (season === 3) return h('section', { 'data-beehive-guided-inspection': 'winter', role: 'region', 'aria-label': 'Guided inspection', className: 'rounded-xl border p-3 text-xs ' + tone },
+          function openInspectionReviewResource(id, event) {
+            var selector = id === 'brood' ? '[data-inspection-brood-guide]' : id === 'cells' ? '[data-inspection-bottom-bar]' : null;
+            var root = event.currentTarget.closest('[data-beehive-root]');
+            var disclosure = root && selector && root.querySelector(selector);
+            if (!disclosure) return;
+            disclosure.open = true;
+            focusHiveInspectionTarget(event, selector + ' > summary');
+          }
+          function returnToInspectionReview(id) {
+            return inspectionReview && h('button', { type: 'button', 'data-inspection-review-return': id, onClick: function(event) { focusHiveInspectionTarget(event, '[data-inspection-review-title]'); } }, 'Return to recorded inspection');
+          }
+          function broodPatternGuide() {
+            // Fixed teaching patches: never derive an answer from the current colony.
+            var guideDescription = 'Dashed boundary: example brood area. Ring: unmarked cell inside that area. Blank margins lie outside.';
+            var examples = [
+              { id: 'solid', title: 'Solid example', gaps: [17], description: 'Brood marks form a mostly continuous patch.' },
+              { id: 'spotty', title: 'Spotty example', gaps: [9, 11, 17, 23, 25], description: 'Several blank cells interrupt the brood patch.' }
+            ];
+            return h('details', { 'data-inspection-brood-guide': 'true', className: 'bee-inspection-bottom-bar bee-inspection-brood-guide' },
+              h('summary', { 'data-inspection-brood-guide-toggle': 'true' }, 'Compare brood patterns'),
+              h('div', { 'data-inspection-brood-guide-content': 'true', className: 'bee-inspection-bottom-bar-content bee-inspection-brood-content' },
+                h('p', { 'data-inspection-brood-guide-scope': 'true' }, h('strong', null, 'Teaching examples only. '), 'These patches explain the answer labels; they are not this colony’s readings.'),
+                h('div', { className: 'bee-inspection-brood-overlay' },
+                  h('button', { type: 'button', 'data-inspection-brood-overlay-toggle': 'true', 'aria-pressed': inspectionBroodGuideShown ? 'true' : 'false', 'aria-controls': 'beehive-inspection-brood-examples', 'aria-describedby': 'beehive-inspection-brood-overlay-help', onClick: function() { setInspectionBroodGuideShown(function(shown) { return !shown; }); } }, 'Show brood area guide'),
+                  h('p', { id: 'beehive-inspection-brood-overlay-help', 'data-inspection-brood-overlay-help': 'true' }, inspectionBroodGuideShown ? guideDescription : 'Turn on the guide to separate gaps within the patch from blank margins.')),
+                h('div', { id: 'beehive-inspection-brood-examples', className: 'bee-inspection-brood-examples' }, examples.map(function(example) {
+                  return h('figure', { key: example.id, 'data-inspection-brood-example': example.id },
+                    h('h5', null, example.title),
+                    h('svg', { 'data-inspection-brood-diagram': example.id, viewBox: '0 0 240 170', role: 'img', 'aria-label': 'Teaching example, not the current colony. ' + example.title + '. ' + example.description + ' Blank margins surround both patches.' + (inspectionBroodGuideShown ? ' ' + guideDescription : ''), preserveAspectRatio: 'xMidYMid meet' },
+                      h('g', { 'aria-hidden': 'true' }, Array.from({ length: 35 }, function(_, index) {
+                        var row = Math.floor(index / 7), col = index % 7;
+                        var x = 25 + col * 28 + (row % 2 ? 14 : 0), y = 25 + row * 27;
+                        var broodMark = row >= 1 && row <= 3 && col >= 1 && col <= 5 && example.gaps.indexOf(index) === -1;
+                        var points = Array.from({ length: 6 }, function(_, vertex) { var angle = (vertex * 60 + 30) * Math.PI / 180; return (x + 15 * Math.cos(angle)).toFixed(1) + ',' + (y + 15 * Math.sin(angle)).toFixed(1); }).join(' ');
+                        return h('g', { key: index },
+                          h('polygon', { 'data-brood-guide-cell': broodMark ? 'brood' : 'blank', 'data-brood-guide-position': row + ':' + col, points: points, className: 'bee-inspection-cue-comb' }),
+                          broodMark && h('circle', { cx: x, cy: y, r: 6, className: 'bee-inspection-cue-form' }),
+                          broodMark && h('path', { d: 'M' + (x - 3) + ' ' + y + 'h6', className: 'bee-inspection-brood-cap' }),
+                          inspectionBroodGuideShown && example.gaps.indexOf(index) !== -1 && h('circle', { 'data-brood-guide-gap': row + ':' + col, cx: x, cy: y, r: 9, className: 'bee-inspection-brood-gap' }));
+                      }), inspectionBroodGuideShown && h('polygon', { 'data-brood-guide-boundary': 'true', points: '53,35 194,35 194,64 180,64 180,94 194,94 194,123 53,123 53,94 38,94 38,64 53,64', className: 'bee-inspection-brood-boundary' }))),
+                    h('figcaption', null, example.description));
+                })),
+                h('p', null, h('strong', null, 'Read the symbols: '), 'a filled circle with a short bar marks brood; a blank hexagon is unmarked. Example marks do not measure cell counts.'),
+                h('p', null, 'In this model, outside frames can show little or no brood. Look for gaps within a brood area, rather than blank space outside it.'),
+                h('button', { type: 'button', 'data-inspection-brood-inspect': 'true', onClick: function(event) { inspectHiveReadingTopic('brood', event); } }, 'Inspect current brood'),
+                returnToInspectionReview('brood')));
+          }
+          function bottomBarObservation() {
+            // Read the same cue used by the 3D scene and this question's grader.
+            // The disclosure is presentation only; it never selects an answer.
+            var shown = cellsTruth === 'yes';
+            var observation = shown ? 'Drawing: hanging forms beneath the bar.' : 'Drawing: bar without hanging forms.';
+            return h('details', { 'data-inspection-bottom-bar': 'true', className: 'bee-inspection-bottom-bar' },
+              h('summary', { 'data-inspection-bottom-bar-toggle': 'true' }, 'Observe the bottom bar'),
+              h('div', { 'data-inspection-bottom-bar-content': 'true', className: 'bee-inspection-bottom-bar-content' },
+                h('p', { 'data-inspection-bottom-bar-context': 'true' }, h('strong', null, 'Current model · Day ' + day + ' · Frame ' + (hive3dFrame + 1) + ' of 6')),
+                h('figure', null,
+                  h('svg', { 'data-inspection-bottom-bar-diagram': 'true', 'data-shown': shown ? 'true' : 'false', viewBox: '0 0 400 150', role: 'img', 'aria-label': 'Current model bottom-bar observation. ' + observation + ' Hanging shapes represent queen cells in this illustration. Their number and size are illustrative.', preserveAspectRatio: 'xMidYMid meet' },
+                    h('g', { 'aria-hidden': 'true' },
+                      h('path', { d: 'M30 12H370V38H30Z M60 12V38 M100 12V38 M140 12V38 M180 12V38 M220 12V38 M260 12V38 M300 12V38 M340 12V38', className: 'bee-inspection-cue-comb' }),
+                      h('rect', { x: 20, y: 38, width: 360, height: 20, rx: 3, className: 'bee-inspection-cue-bar' }),
+                      shown && [80, 140, 200, 260, 320].map(function(x, index) {
+                        return h('path', { key: index, 'data-inspection-hanging-form': String(index), d: 'M' + (x - 8) + ' 58 Q' + (x - 10) + ' 72 ' + (x - 12) + ' 88 Q' + x + ' 124 ' + (x + 12) + ' 88 Q' + (x + 10) + ' 72 ' + (x + 8) + ' 58Z', className: 'bee-inspection-cue-form' });
+                      }))),
+                  h('figcaption', { 'data-inspection-bottom-bar-description': 'true' }, observation)),
+                h('p', null, 'Look below the horizontal bar. Hanging shapes represent queen cells; the round drone-brood marks inside the cutaway comb are a different symbol.'),
+                h('p', null, 'This illustration uses the same current model cue as the 3D view. Shape count and size are illustrative, not measured cell counts. Management actions can change this observation; saved inspection answers stay as recorded.'),
+                returnToInspectionReview('cells')));
+          }
+          if (season === 3) return h('section', { 'data-beehive-guided-inspection': 'winter', role: 'region', 'aria-label': 'Guided inspection', className: 'bee-guided-inspection rounded-xl border p-3 text-xs ' + tone },
             h('strong', null, 'Guided inspection: winter'), ' Keep the hive closed. Opening it chills the cluster, so a beekeeper only heft-tests the weight and checks the entrance.');
-          return h('section', { 'data-beehive-guided-inspection': record ? 'recorded' : 'open', role: 'region', 'aria-labelledby': 'beehive-guided-inspection-title', className: 'space-y-2 rounded-xl border p-3 ' + tone },
-            h('h3', { id: 'beehive-guided-inspection-title', className: 'text-sm font-black' }, 'Guided inspection' + (d.colonyName ? ' \u00b7 ' + String(d.colonyName) : '')),
-            h('ol', { className: 'grid gap-1 text-xs sm:grid-cols-2' },
-              h('li', { 'data-inspection-step': 'frames', 'data-done': framesSeen >= 6 ? 'true' : 'false' }, (framesSeen >= 6 ? '\u2713 ' : '1. ') + 'Read all six frames (' + Math.min(6, framesSeen) + '/6): step with \u25c0 \u25b6'),
-              h('li', { 'data-inspection-step': 'queen', 'data-done': foundQueen ? 'true' : 'false' }, (foundQueen ? '\u2713 ' : '2. ') + 'Find the queen (the long bee with the paint dot)')),
-            h('div', { role: 'radiogroup', 'aria-label': 'Brood pattern', className: 'flex flex-wrap items-center gap-2 text-xs' }, h('span', { className: 'font-bold' }, '3. The brood pattern is'), choice('brood', 'solid', 'Solid, wall to wall'), choice('brood', 'spotty', 'Spotty, with gaps')),
-            h('div', { role: 'radiogroup', 'aria-label': 'Queen cells', className: 'flex flex-wrap items-center gap-2 text-xs' }, h('span', { className: 'font-bold' }, '4. Queen cells on the bottom bars?'), choice('cells', 'yes', 'Yes'), choice('cells', 'no', 'No')),
-            h('button', { type: 'button', 'data-inspection-record': 'true', disabled: !draft.brood || !draft.cells, onClick: recordInspection,
-              className: 'min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-50 ' + (dk ? 'bg-amber-700' : 'bg-amber-700') }, 'Record inspection'),
-            record && h('div', { role: 'status', 'data-inspection-feedback': 'true', className: 'space-y-1 text-xs' },
-              h('p', null, (record.broodCorrect ? '\u2713 ' : '\u2717 ') + (broodTruth === 'solid' ? 'The brood is solid: a well-laying queen.' : 'The brood is spotty: the first sign of a failing queen. Consider requeening.')),
-              h('p', null, (record.cellsCorrect ? '\u2713 ' : '\u2717 ') + (cellsTruth === 'yes' ? 'Queen cells are hanging off the bottom bars: the colony is crowded and preparing to swarm. Add a super.' : 'No queen cells: the colony is not preparing to swarm.'))));
+          return h('section', { 'data-beehive-guided-inspection': record ? 'recorded' : 'open', role: 'region', 'aria-labelledby': 'beehive-guided-inspection-title', className: 'bee-guided-inspection space-y-2 rounded-xl border p-3 ' + tone },
+            h('h3', { id: 'beehive-guided-inspection-title', tabIndex: -1, className: 'text-sm font-black' }, 'Guided inspection' + (d.colonyName ? ' \u00b7 ' + String(d.colonyName) : '')),
+            h('div', { className: 'bee-inspection-preparation', 'data-inspection-preparation': 'true' },
+              h('section', { className: 'bee-inspection-prep-card', 'data-inspection-step': 'frames', 'data-done': framesSeen === 6 ? 'true' : 'false', 'aria-labelledby': 'beehive-inspection-frames-title' },
+                h('h4', { id: 'beehive-inspection-frames-title' }, '1. Explore the six frames'),
+                h('p', { 'data-inspection-frame-progress': 'true' }, h('strong', null, 'Frames explored: ' + framesSeen + ' of 6')),
+                h('p', null, 'Choose a frame to open its cutaway. Previous frame and Next frame also work in the 3D view when available.'),
+                h('div', { className: 'bee-inspection-route-frames', role: 'group', 'aria-label': 'Explore frames for the guided inspection' }, Array.from({ length: 6 }, function(_, index) {
+                  var visited = visitedFrames.indexOf(index) !== -1;
+                  return h('button', { key: index, type: 'button', 'data-inspection-frame': String(index), 'data-visited': visited ? 'true' : 'false', 'aria-pressed': index === hive3dFrame ? 'true' : 'false', className: 'bee-inspection-route-frame', onClick: function(event) { inspectGuidedHiveFrame(index, event); } },
+                    h('strong', null, 'Frame ' + (index + 1)), h('span', null, index === 0 || index === 5 ? 'Outside' : index === 1 || index === 4 ? 'Shoulder' : 'Centre'),
+                    h('span', null, h('span', { 'aria-hidden': 'true' }, visited ? '\u2713 ' : '\u25cb '), visited ? 'Visited' : 'Not yet visited'),
+                    index === hive3dFrame && h('span', { className: 'bee-inspection-route-current' }, 'Current'));
+                })),
+                h('p', null, 'Visit marks track frame selections across this colony run.')),
+              h('section', { className: 'bee-inspection-prep-card', 'data-inspection-step': 'queen', 'data-done': foundQueen ? 'true' : 'false', 'aria-labelledby': 'beehive-inspection-queen-title' },
+                h('h4', { id: 'beehive-inspection-queen-title' }, '2. Explore the queen'),
+                h('p', { 'data-inspection-queen-status': 'true' }, h('strong', null, foundQueen ? 'Illustrated queen selected during this colony run.' : 'No queen selection recorded.'), ' ', hive3dStatus === 'ready' ? 'The 3D queen finder is available.' : hive3dStatus === 'loading' ? 'The 3D queen finder is loading.' : 'The 3D queen finder is unavailable.'),
+                h('p', null, 'Find the queen selects the marked bee in the 3D view. The cutaway shows a queen-health reading; it does not show her location.'),
+                h('div', { className: 'bee-inspection-prep-actions' },
+                  hive3dStatus === 'ready' && h('button', { type: 'button', 'data-inspection-queen-link': 'true', onClick: function(event) { focusHiveInspectionTarget(event, '[data-hive-queen-finder]'); } }, 'Go to queen finder'),
+                  h('button', { type: 'button', 'data-inspection-queen-reading': 'true', onClick: function(event) { inspectHiveReadingTopic('queen', event); } }, 'Read queen health')),
+                h('p', null, 'You can record your two answers with any number of visited frames and without selecting the queen.'))),
+            h('div', { className: 'bee-inspection-choices', 'data-inspection-choices': 'true' },
+              broodPatternGuide(),
+              bottomBarObservation(),
+              h('div', { className: 'bee-inspection-questions' },
+                h('div', { role: 'radiogroup', 'aria-label': 'Brood pattern', 'aria-required': 'true', 'aria-describedby': 'beehive-inspection-choice-help beehive-inspection-brood-guide-help', className: 'bee-inspection-question' },
+                  h('span', { className: 'font-bold' }, '3. The brood pattern is'),
+                  h('p', { id: 'beehive-inspection-brood-guide-help', className: 'bee-inspection-bottom-bar-help' }, 'Compare the examples above, then inspect the current brood before choosing.'),
+                  h('div', { className: 'bee-inspection-options' }, choice('brood', 'solid', 'Solid, mostly continuous'), choice('brood', 'spotty', 'Spotty, with gaps'))),
+                h('div', { role: 'radiogroup', 'aria-label': 'Queen cells', 'aria-required': 'true', 'aria-describedby': 'beehive-inspection-choice-help beehive-inspection-bottom-bar-help', className: 'bee-inspection-question' },
+                  h('span', { className: 'font-bold' }, '4. Queen cells on the bottom bars?'),
+                  h('p', { id: 'beehive-inspection-bottom-bar-help', className: 'bee-inspection-bottom-bar-help' }, 'Open the observation above to inspect the current model, with or without 3D.'),
+                  h('div', { className: 'bee-inspection-options' }, choice('cells', 'yes', 'Yes'), choice('cells', 'no', 'No')))),
+              h('p', { id: 'beehive-inspection-choice-help', className: 'bee-inspection-choice-help' }, 'Keyboard: Tab between questions; arrow keys change an answer.'),
+              h('p', { id: 'beehive-inspection-draft-status', 'data-inspection-draft-status': 'true', className: 'bee-inspection-draft-status' }, h('strong', null, 'Answers chosen: ' + answersChosen + ' of 2.'), ' ' + draftHint),
+              h('button', { type: 'button', 'data-inspection-record': 'true', 'aria-describedby': 'beehive-inspection-draft-status', disabled: answersChosen !== 2, onClick: recordInspection,
+                className: 'min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-50 ' + (dk ? 'bg-amber-700' : 'bg-amber-700') }, 'Record inspection')),
+            inspectionReview && h('div', { role: 'status', 'aria-atomic': 'true', 'data-inspection-feedback': 'true', className: 'bee-inspection-review' },
+              h('h4', { id: 'beehive-inspection-review-title', 'data-inspection-review-title': 'true', 'data-beehive-focus-panel': 'true', tabIndex: -1 }, 'Recorded inspection · Day ' + (inspectionReview.day === null ? 'not recorded' : inspectionReview.day)),
+              h('p', null, 'Saved answers and the model comparison made when this inspection was recorded.'),
+              h('div', { className: 'bee-inspection-results' }, inspectionReview.readings.map(function(reading) {
+                return h('div', { key: reading.id, 'data-inspection-result': reading.id, 'data-result': reading.result, className: 'bee-inspection-result' },
+                  h('div', { className: 'bee-inspection-result-head' }, h('h5', null, reading.label), h('span', { 'data-inspection-verdict': 'true', className: 'bee-inspection-verdict' }, reading.resultLabel)),
+                  h('dl', null,
+                    h('div', null, h('dt', null, 'Your answer'), h('dd', { 'data-inspection-answer': 'true' }, reading.answer)),
+                    h('div', null, h('dt', null, 'Model answer when recorded'), h('dd', { 'data-inspection-expected': 'true' }, reading.expected))),
+                  reading.result === 'unknown' && h('p', null, 'The saved record does not contain enough information to reconstruct this comparison.'));
+              }))),
+            inspectionReview && h('section', { 'data-inspection-review-next': 'true', className: 'bee-inspection-review-next', 'aria-labelledby': 'beehive-inspection-review-next-title' },
+              h('h4', { id: 'beehive-inspection-review-next-title' }, 'Review with evidence'),
+              h('p', null, 'Saved results stay as recorded. Current observations can change after management actions.'),
+              h('div', { className: 'bee-inspection-review-actions' },
+                h('button', { type: 'button', 'data-inspection-review-resource': 'brood', onClick: function(event) { openInspectionReviewResource('brood', event); } }, h('strong', null, 'Review brood examples'), h('span', null, 'Open the example patterns.')),
+                h('button', { type: 'button', 'data-inspection-review-resource': 'cells', onClick: function(event) { openInspectionReviewResource('cells', event); } }, h('strong', null, 'Observe current bottom bar'), h('span', null, 'Open the current model drawing.')))));
+
         }
 
         function renderColonyFoodBalance() {
-          var food = bhFoodBudget(honey, d.syrup, honey, 0, 0);
-          var readings = [['Combined food', honey], ['Nectar honey', food.nectarHoney], ['Fed syrup', food.syrup], ['Seasonal reserve', currentReserve]];
+          var readings = [['Combined food', honey], ['Nectar honey', harvestableNectar], ['Fed syrup', storedSyrup], ['Seasonal reserve', currentReserve]];
+          var reserveScale = Math.max(honey, currentReserve, 1);
+          var reserveRows = [
+            { id: 'combined', label: 'Food available to the colony', name: 'Combined food', amount: honey, origin: 'Includes fed syrup.' },
+            { id: 'nectar', label: 'Nectar honey for harvesting', name: 'Nectar honey', amount: harvestableNectar, origin: 'Excludes fed syrup.' }
+          ];
+          function reserveReading(amount) { return (Math.round(amount * 10) / 10).toLocaleString(); }
           return h('section', { 'data-colony-food-origins': 'true', className: 'bee-colony-group', 'aria-labelledby': 'beehive-food-balance-title' },
             h('h4', { id: 'beehive-food-balance-title' }, 'Food balance'),
             h('dl', { className: 'bee-colony-grid' }, readings.map(function(reading) {
-              return h('div', { key: reading[0] }, h('dt', null, reading[0]), h('dd', null, reading[1].toLocaleString() + ' lb'));
+              return h('div', { key: reading[0] }, h('dt', null, reading[0]), h('dd', null, reserveReading(reading[1]) + ' lb'));
             })),
-            h('p', { className: 'bee-colony-note' }, 'Combined food is measured in honey-equivalent pounds. The model consumes fed syrup first; syrup cannot be harvested as honey.'),
+            h('p', { className: 'bee-colony-note' }, 'Combined food is measured in honey-equivalent pounds. The model consumes fed syrup first; syrup cannot be harvested as honey. Food readings are rounded to one decimal place.'),
+            h('details', { 'data-colony-reserve-guide': 'true', className: 'bee-colony-role-guide bee-colony-reserve-guide' },
+              h('summary', null, 'Compare food with the reserve'),
+              h('p', { className: 'bee-colony-note', 'data-reserve-guide-scale': 'true' }, 'Both bars use the same scale. The dashed line marks the ' + currentReserve + ' lb reserve for ' + currentReserveWhy + '.'),
+              h('ul', { 'data-reserve-readings': 'true' }, reserveRows.map(function(row) {
+                var comparison = row.amount < currentReserve ? 'below' : row.amount > currentReserve ? 'above' : 'at';
+                var status = comparison.charAt(0).toUpperCase() + comparison.slice(1) + ' the reserve';
+                return h('li', { key: row.id, 'data-reserve-reading': row.id, 'data-reserve-state': comparison },
+                  h('strong', null, row.label),
+                  h('span', { 'data-reserve-current': 'true' }, 'About ' + reserveReading(row.amount) + ' lb'),
+                  h('p', { 'data-reserve-origin': 'true' }, row.origin),
+                  h('p', { 'data-reserve-status': 'true' }, status),
+                  h('div', { className: 'bee-colony-reserve-meter', 'data-reserve-meter': row.id, role: 'meter', 'aria-label': row.name + ' compared with seasonal reserve', 'aria-valuemin': 0, 'aria-valuemax': reserveScale, 'aria-valuenow': row.amount,
+                    'aria-valuetext': 'About ' + reserveReading(row.amount) + ' lb. ' + status + ' of ' + currentReserve + ' lb. ' + row.origin },
+                    h('span', { 'data-reserve-fill': 'true', style: { width: (row.amount / reserveScale * 100) + '%' } }),
+                    h('span', { 'data-reserve-marker': 'true', 'aria-hidden': 'true', style: { left: (currentReserve / reserveScale * 100) + '%' } })),
+                  h('div', { className: 'bee-colony-reserve-scale', 'aria-hidden': 'true' }, h('span', null, '0 lb'), h('span', null, reserveReading(reserveScale) + ' lb')));
+              })),
+              h('p', { className: 'bee-colony-note', 'data-reserve-guide-rounding': 'true' }, 'Readings are rounded to one decimal place. Bars and reserve comparisons use full readings. Use the harvestable surplus below for the amount available to harvest.'),
+              h('p', { className: 'bee-colony-note' }, 'A reserve comparison is one part of colony care. Check daily food use and colony condition too.')),
             h('p', { 'data-colony-harvest-balance': 'true', className: 'bee-colony-note bee-colony-food-status' },
               harvestableSurplus > 0
                 ? harvestableSurplus.toLocaleString() + ' lb nectar honey above the reserve. Harvest leaves ' + currentReserve + ' lb nectar honey for ' + currentReserveWhy + ' and all fed syrup. ' + (actionPoints >= 1 ? 'Costs 1 action point.' : 'Need 1 action point; advance a day to refresh the budget.')
@@ -34258,15 +36195,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('li', null, sample('action'), h('span', null, preview.action.label + ' · solid line and square'))),
             h('figure', { className: 'bee-management-timing-chart' },
               h('figcaption', null, timeline.metric.label + ' · Same scale for both scenarios'),
-              h('div', { className: 'bee-management-timing-range' }, h('span', null, 'Top: ' + reading(timeline.max)), h('span', null, 'Bottom: ' + reading(timeline.min))),
-              h('svg', { 'data-management-preview-chart': 'true', viewBox: '0 0 600 240', role: 'img', 'aria-label': 'Event-free projection of ' + timeline.metric.label + ' from Day ' + first.day + ' to Day ' + last.day + '. Do nothing is dashed with a circle; ' + preview.action.label + ' is solid with a square. Both use the same scale. Exact projected values for Day ' + selected.day + ' are below.' },
-                h('g', { 'aria-hidden': 'true' },
-                  [16, 120, 224].map(function(at) { return h('path', { key: at, d: 'M16 ' + at + 'H584', className: 'bee-timing-grid' }); }),
-                  h('path', { 'data-preview-timeline-cursor': 'true', d: 'M' + x(selected).toFixed(2) + ' 16V224', className: 'bee-timing-cursor' }),
-                  h('path', { 'data-preview-timeline-series': 'baseline', d: pathFor('baseline'), className: 'bee-timing-baseline' }),
-                  h('path', { 'data-preview-timeline-series': 'action', d: pathFor('withAction'), className: 'bee-timing-action' }),
-                  Number.isFinite(selected.baseline) && h('circle', { 'data-preview-timeline-point': 'baseline', cx: x(selected), cy: y(selected.baseline), r: 6, className: 'bee-timing-point' }),
-                  Number.isFinite(selected.withAction) && h('rect', { 'data-preview-timeline-point': 'action', x: x(selected) - 5, y: y(selected.withAction) - 5, width: 10, height: 10, className: 'bee-timing-point' }))),
+              h('div', { className: 'bee-management-timing-range', 'data-preview-timeline-bound': 'top' }, h('span', null, 'Top: ' + reading(timeline.max))),
+              h('div', { className: 'bee-management-timing-plot' },
+                h('svg', { 'data-management-preview-chart': 'true', role: 'img', focusable: 'false', 'aria-label': 'Event-free projection of ' + timeline.metric.label + ' from Day ' + first.day + ' to Day ' + last.day + '. Do nothing is dashed with a circle; ' + preview.action.label + ' is solid with a square. Both use the same scale. Vertical scale from ' + reading(timeline.min) + ' to ' + reading(timeline.max) + '. Exact projected values for Day ' + selected.day + ' are below.' },
+                  h('g', { 'aria-hidden': 'true' },
+                    h('svg', { 'data-preview-timeline-plot': 'true', viewBox: '0 0 600 240', preserveAspectRatio: 'none', width: '100%', height: '100%', focusable: 'false' },
+                      [16, 120, 224].map(function(at) { return h('path', { key: at, d: 'M16 ' + at + 'H584', className: 'bee-timing-grid' }); }),
+                      h('path', { 'data-preview-timeline-cursor': 'true', d: 'M' + x(selected).toFixed(2) + ' 16V224', className: 'bee-timing-cursor' }),
+                      h('path', { 'data-preview-timeline-series': 'baseline', d: pathFor('baseline'), className: 'bee-timing-baseline' }),
+                      h('path', { 'data-preview-timeline-series': 'action', d: pathFor('withAction'), className: 'bee-timing-action' })),
+                    Number.isFinite(selected.baseline) && h('circle', { 'data-preview-timeline-point': 'baseline', cx: (x(selected) / 600 * 100) + '%', cy: (y(selected.baseline) / 240 * 100) + '%', r: 6, className: 'bee-timing-point' }),
+                    Number.isFinite(selected.withAction) && h('rect', { 'data-preview-timeline-point': 'action', x: (x(selected) / 600 * 100) + '%', y: (y(selected.withAction) / 240 * 100) + '%', width: 10, height: 10, transform: 'translate(-5 -5)', className: 'bee-timing-point' })))),
+              h('div', { className: 'bee-management-timing-range', 'data-preview-timeline-bound': 'bottom' }, h('span', null, 'Bottom: ' + reading(timeline.min))),
               h('div', { className: 'bee-management-timing-days' }, h('span', null, 'Day ' + first.day), h('span', null, 'Day ' + last.day)),
               h('p', { 'data-preview-timeline-scale-note': 'true' }, 'The vertical range fits these projections and may not start at zero. Changing the measure or choice can change the scale. Lines can overlap when readings agree; missing values leave gaps.')),
             h('section', { 'data-preview-timeline-inspector': 'true', className: 'bee-timing-inspector', 'aria-labelledby': 'beehive-management-inspector-title' },
@@ -35656,12 +37596,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         var pollinationCanvasReading = beeView === 'pollination' ? bhPollinationReading(d.pollinationLab) : null;
-        var beeWorkspace = h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '99', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_beehive_simulations_and_learning_environment', 'Beehive simulations and learning environment'), className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
+        var beeWorkspace = h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '140', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_beehive_simulations_and_learning_environment', 'Beehive simulations and learning environment'), className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
-          h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
-            h('div', { className: 'flex items-center gap-3 min-w-0' },
+          h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
+            h('div', { className: 'bee-hero-heading flex items-center gap-3 min-w-0' },
               h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'grid min-h-[44px] min-w-[44px] shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
-              h('div', { className: 'min-w-0' },
+              h('div', { className: 'bee-hero-copy min-w-0' },
                 h('div', { className: 'mb-1 flex flex-wrap items-center gap-1.5' },
                   h('span', { className: 'rounded-full bg-amber-500/15 px-2 py-0.5 text-[0.625rem] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Interactive systems lab'),
                   h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wide ' + (dk ? 'text-emerald-300' : 'text-emerald-700') }, '3 connected perspectives'),
@@ -35673,29 +37613,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'mt-0.5 text-xs font-medium sm:text-sm ' + (dk ? 'text-slate-200' : 'text-slate-600') }, (viewMode === 'queen' ? __alloT('stem.beehive.tagline_network', 'A strategy game: balance workers, comb and chemical signals to out-compete a rival colony')
                   : viewMode === 'drone' ? __alloT('stem.beehive.tagline_drone', 'Fly a drone bee to the congregation area and reach a queen before his energy runs out')
                   : d.colonyName ? String(d.colonyName) + (d.queenName ? ' · Queen ' + String(d.queenName) : '') + ' · ' + __alloT('stem.beehive.tagline_named', 'keep your colony alive for a whole year') : __alloT('stem.beehive.tagline_year', 'Keep a honeybee colony alive for a whole year: 10,000 workers and one queen to start'))))),
-            // Header action buttons
-            h('div', { className: 'flex flex-wrap items-center gap-1 rounded-xl border p-1 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70 shadow-sm') },
-              viewMode === 'beekeeper' && h('button', { type: 'button', 'data-open-honey-lab': 'true', onClick: openHoneyLab, className: 'min-h-[44px] rounded-lg border border-amber-700 bg-amber-700 px-3 py-2 text-sm font-bold text-white' }, d.honeyInvestigation ? 'Resume investigation' : 'Investigate falling stores'),
-              // Sound toggle
-              h('button', { type: 'button', onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': __alloT('stem.beehive.a11y_sound_effects', 'Sound effects'), 'aria-pressed': soundOn ? 'true' : 'false', title: soundOn ? 'Mute sound effects' : 'Enable sound effects',
-                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600') }, soundOn ? '🔊' : '🔇'),
-              // Quiz button
-              h('button', { type: 'button', onClick: function() { if (quizOpen) closeAccessibleBeePanel('quiz'); else startQuiz(); }, 'aria-label': __alloT('stem.beehive.a11y_bee_knowledge_quiz', 'Bee knowledge quiz'), 'aria-expanded': quizOpen ? 'true' : 'false', 'aria-controls': 'beehive-quiz-panel', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
-                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '🎓'),
-              // Badges button
-              h('button', { type: 'button', onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_achievement_badges_of_earned', 'Achievement badges, {value1} of {value2} earned'), { value1: badgeCount, value2: BADGE_DEFS.length }), 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'beehive-badges-panel', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
-                className: 'relative grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') },
-                '🏅',
-                badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[0.625rem] font-bold flex items-center justify-center text-white bg-amber-700' }, badgeCount)),
-              // Export colony report
-              h('button', { onClick: exportColonyReport, 'aria-label': __alloT('stem.beehive.a11y_export_colony_report', 'Export colony report'), title: __alloT('stem.beehive.export_colony_report_to_clipboard', 'Export colony report to clipboard'),
-                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📄'),
-              // Keyboard help
-              h('button', { type: 'button', onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': __alloT('stem.beehive.keyboard_shortcuts', 'Keyboard shortcuts'), 'aria-expanded': d.showKeys ? 'true' : 'false', 'aria-controls': 'beehive-shortcuts-panel', title: __alloT('stem.beehive.keyboard_shortcuts_2', 'Keyboard shortcuts'),
-                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '⌨️'),
-              // Field Guide — surfaces the encyclopedia data tables (species, anatomy, waggle dance, …)
-              h('button', { type: 'button', onClick: function() { upd('showGuide', !d.showGuide); }, 'aria-label': __alloT('stem.beehive.bee_field_guide', 'Bee field guide'), 'aria-expanded': d.showGuide ? 'true' : 'false', 'aria-controls': 'beehive-field-guide', title: __alloT('stem.beehive.field_guide', 'Field Guide — species, anatomy, waggle dance, and more'),
-                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📖'))),
+            // Named tools keep their existing panel and focus lifecycles.
+            h('div', { 'data-beehive-tools': 'true', className: 'bee-toolbox', role: 'group', 'aria-labelledby': 'beehive-tools-title' },
+              h('div', { className: 'bee-toolbox-heading' },
+                h('strong', { id: 'beehive-tools-title' }, __alloT('stem.beehive.tools_help', 'Tools & help')),
+                viewMode === 'beekeeper' && h('button', { type: 'button', 'data-open-honey-lab': 'true', onClick: openHoneyLab, className: 'min-h-[44px] rounded-lg border border-amber-700 bg-amber-700 px-3 py-2 text-sm font-bold text-white' }, d.honeyInvestigation ? 'Resume investigation' : 'Investigate falling stores')),
+              h('div', { 'data-beehive-tools-grid': 'true', className: 'bee-toolbox-grid' },
+                h('button', { 'data-beehive-tool': 'sound', type: 'button', onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': __alloT('stem.beehive.a11y_sound_effects', 'Sound effects'), 'aria-pressed': soundOn ? 'true' : 'false', title: soundOn ? 'Mute sound effects' : 'Enable sound effects', className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                  h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, soundOn ? '🔊' : '🔇'),
+                  h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_sound_label', 'Sound effects')), h('span', { 'data-beehive-tool-state': 'true', 'aria-hidden': 'true' }, soundOn ? '(On)' : '(Off)'))),
+                h('button', { 'data-beehive-tool': 'quiz', type: 'button', onClick: function() { if (quizOpen) closeAccessibleBeePanel('quiz'); else startQuiz(); }, 'aria-label': __alloT('stem.beehive.a11y_bee_knowledge_quiz', 'Bee knowledge quiz'), 'aria-expanded': quizOpen ? 'true' : 'false', 'aria-controls': 'beehive-quiz-panel', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''), className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                  h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, '🎓'),
+                  h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_quiz_label', 'Quiz')))),
+                h('button', { 'data-beehive-tool': 'badges', type: 'button', onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': __alloFill(__alloT('stem.beehive.a11y_achievement_badges_of_earned', 'Achievement badges, {value1} of {value2} earned'), { value1: badgeCount, value2: BADGE_DEFS.length }), 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'beehive-badges-panel', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length, className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                  h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, '🏅'),
+                  h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_badges_label', 'Badges')), badgeCount > 0 && h('span', { 'data-beehive-tool-count': 'true', 'aria-hidden': 'true' }, '(' + badgeCount + ')'))),
+                h('button', { 'data-beehive-tool': 'report', type: 'button', onClick: exportColonyReport, 'aria-label': __alloT('stem.beehive.a11y_export_colony_report', 'Export colony report'), title: __alloT('stem.beehive.export_colony_report_to_clipboard', 'Export colony report to clipboard'), className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                  h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, '📄'),
+                  h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_report_label', 'Colony report')))),
+                h('button', { 'data-beehive-tool': 'shortcuts', type: 'button', onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': __alloT('stem.beehive.keyboard_shortcuts', 'Keyboard shortcuts'), 'aria-expanded': d.showKeys ? 'true' : 'false', 'aria-controls': 'beehive-shortcuts-panel', title: __alloT('stem.beehive.keyboard_shortcuts_2', 'Keyboard shortcuts'), className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                  h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, '⌨️'),
+                  h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_shortcuts_label', 'Keyboard shortcuts')))),
+                h('button', { 'data-beehive-tool': 'guide', type: 'button', onClick: function() { upd('showGuide', !d.showGuide); }, 'aria-label': __alloT('stem.beehive.bee_field_guide', 'Bee field guide'), 'aria-expanded': d.showGuide ? 'true' : 'false', 'aria-controls': 'beehive-field-guide', title: __alloT('stem.beehive.field_guide', 'Field Guide — species, anatomy, waggle dance, and more'), className: 'bee-toolbox-button min-h-[44px] min-w-[44px]' },
+                  h('span', { className: 'bee-toolbox-icon', 'aria-hidden': 'true' }, '📖'),
+                  h('span', { className: 'bee-toolbox-label' }, h('span', { 'data-beehive-tool-label': 'true' }, __alloT('stem.beehive.tools_guide_label', 'Field guide'))))))),
 
           // ═══ MODE SELECTOR TABS ═══
           prefersReducedMotion && h('div', { 'data-beehive-motion-notice': 'true', role: 'note', className: 'flex items-start gap-2 rounded-xl border px-3 py-2 text-xs leading-relaxed ' + (dk ? 'border-sky-700/50 bg-sky-950/30 text-sky-100' : 'border-sky-200 bg-sky-50 text-sky-900') },
@@ -35936,7 +37877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               style: { opacity: hive3dStatus === 'ready' ? 1 : 0.45 }
             }, hive3dExploded ? __alloT('stem.beehive.hive3d_close_label', '⇊ Close hive') : __alloT('stem.beehive.hive3d_open_label', '⇈ Open hive')),
             h('button', {
-              key: 'hive-find-queen',
+              key: 'hive-find-queen', 'data-hive-queen-finder': 'true',
               type: 'button',
               onClick: function() {
                 var next = hive3dPart === 'queen' ? null : 'queen';
@@ -35965,19 +37906,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 : (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50')),
               style: { opacity: hive3dStatus === 'ready' && season !== 3 ? 1 : 0.45 }
             }, season === 3 ? __alloT('stem.beehive.hive3d_queen_cluster_label', '❄ Queen in cluster') : '\uD83D\uDC51 Find the queen'),
-            h('span', { key: 'hive-frame-group', role: 'group', 'aria-label': __alloT('stem.beehive.hive3d_frame_group_aria', 'Choose which brood frame to read'), className: 'inline-flex items-center gap-1' },
-              [['◀', -1, __alloT('stem.beehive.hive3d_frame_prev', 'Previous frame, toward the front of the box')], ['▶', 1, __alloT('stem.beehive.hive3d_frame_next', 'Next frame, toward the back of the box')]].map(function(step, stepIndex) {
+            h('div', { key: 'hive-frame-group', 'data-hive-frame-navigation': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.hive3d_frame_group_aria', 'Choose which brood frame to read'), className: 'bee-3d-frame-navigator' },
+              h('div', { className: 'bee-3d-frame-heading' },
+                h('strong', null, __alloT('stem.beehive.hive3d_frame_heading', 'Read a brood frame')),
+                h('span', { 'data-hive-frame-readout': 'true', role: 'status', 'aria-atomic': 'true', className: 'bee-3d-frame-readout' },
+                  'Frame ' + (hive3dFrame + 1) + '/' + HIVE_3D_FRAME_COUNT + ' · ' + (hive3dFrameDepth > 0.75 ? __alloT('stem.beehive.hive3d_frame_outside', 'Outside frame') : hive3dFrameDepth > 0.35 ? __alloT('stem.beehive.hive3d_frame_shoulder', 'Shoulder frame') : __alloT('stem.beehive.hive3d_frame_centre', 'Centre frame')))),
+              h('div', { 'aria-hidden': 'true' },
+                h('div', { className: 'bee-3d-frame-direction' }, h('span', null, __alloT('stem.beehive.hive3d_frame_front', 'Front of box')), h('span', null, __alloT('stem.beehive.hive3d_frame_back', 'Back of box'))),
+                h('div', { className: 'bee-3d-frame-positions' }, Array.from({ length: HIVE_3D_FRAME_COUNT }, function(_, index) {
+                  return h('span', { key: index, 'data-hive-frame-position': String(index), 'data-selected': index === hive3dFrame ? 'true' : 'false' }, String(index + 1));
+                }))),
+              h('p', { className: 'bee-3d-frame-note' }, __alloT('stem.beehive.hive3d_frame_shared', 'The cutaway above and this 3D view share the selected frame.')),
+              h('div', { className: 'bee-3d-frame-steps' },
+              [['◀', -1, __alloT('stem.beehive.hive3d_frame_prev', 'Previous frame, toward the front of the box'), __alloT('stem.beehive.hive3d_frame_prev_label', 'Previous frame')], ['▶', 1, __alloT('stem.beehive.hive3d_frame_next', 'Next frame, toward the back of the box'), __alloT('stem.beehive.hive3d_frame_next_label', 'Next frame')]].map(function(step, stepIndex) {
                 var nextFrame = Math.max(0, Math.min(HIVE_3D_FRAME_COUNT - 1, hive3dFrame + step[1]));
                 var atEnd = nextFrame === hive3dFrame;
                 return h('button', {
                   key: 'hive-frame-' + stepIndex,
-                  type: 'button',
+                  type: 'button', 'data-hive-frame-step': stepIndex === 0 ? 'previous' : 'next',
                   onClick: function() {
                     if (atEnd) return;
                     updFn(function(b) {
                       b.hive3dFrame = nextFrame;
                       b.hive3dPart = 'brood_frames'; b.hive3dExploded = true;
-                      var seen = Array.isArray(b.hive3dFramesSeen) ? b.hive3dFramesSeen.slice() : [];
+                      var seen = bhHiveFrameVisits(b.hive3dFramesSeen);
                       [hive3dFrame, nextFrame].forEach(function(idx) {
                         if (seen.indexOf(idx) === -1) seen.push(idx);
                       });
@@ -35992,16 +37944,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   'aria-label': step[2],
                   title: step[2],
                   disabled: hive3dStatus !== 'ready' || atEnd,
-                  className: 'min-h-[44px] min-w-[44px] rounded-lg border text-[0.6875rem] font-black ' + (dk ? 'border-amber-600/45 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50'),
-                  style: { opacity: hive3dStatus === 'ready' && !atEnd ? 1 : 0.4 }
-                }, step[0]);
-              }).concat([
-                h('span', {
-                  key: 'hive-frame-readout',
-                  role: 'status',
-                  className: 'px-1 text-[0.6875rem] font-black ' + (dk ? 'text-amber-200' : 'text-amber-800')
-                }, 'Frame ' + (hive3dFrame + 1) + '/' + HIVE_3D_FRAME_COUNT)
-              ]))],
+                  className: 'min-h-[44px] min-w-[44px]'
+                }, h('span', { 'aria-hidden': 'true' }, step[0]), h('span', { className: 'bee-3d-frame-step-label' }, step[3]));
+              })))],
             readout: h('p', { className: 'text-sm leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') },
               '3D schematic · Frame ' + (hive3dFrame + 1) + ' of ' + HIVE_3D_FRAME_COUNT + '. Cell colors and moving bees illustrate the model; they are not measured cell counts or mite prevalence. Use the cutaway’s colony readings above.')
           }),
@@ -36020,90 +37965,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'drone' && h('div', { key: 'beehive-drone-ui', 'data-beehive-simulation-body': 'drone', 'data-flight-workspace': droneFlightActive && _droneState.current.phase !== 'end' ? dronePacing : 'briefing', className: 'space-y-3' },
             // Drone canvas (or launch screen)
             !droneFlightActive
-              ? h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield_briefing', 'Drone Flight playfield briefing'), 'data-beehive-stage': 'drone-briefing', className: 'rounded-2xl border-2 p-5 sm:p-8 text-center space-y-4 overflow-hidden ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-600/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300') },
-                  h('div', { className: 'text-5xl mb-2' }, '🚀'),
-                  h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, __alloT('stem.beehive.drone_nuptial_flight', 'Drone Nuptial Flight')),
-                  h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
-                    __alloT('stem.beehive.experience_life_as_a_drone_bee_your_so', 'Experience life as a drone bee. Fly into the game’s ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft Drone Congregation Area target and find a queen. Flight time varies by difficulty: ' + DRONE_FLIGHT_PARAMS.timerByDifficulty.easy + ' / ' + DRONE_FLIGHT_PARAMS.timerByDifficulty.normal + ' / ' + DRONE_FLIGHT_PARAMS.timerByDifficulty.hard + ' seconds.')),
-                  h('p', { className: 'text-[0.6875rem] max-w-lg mx-auto leading-relaxed rounded-lg border px-3 py-2 ' + (dk ? 'text-indigo-200 bg-indigo-950/35 border-indigo-700/40' : 'text-indigo-800 bg-white/70 border-indigo-200') },
-                    'Biology boundary: real drones do not forage or carry pollen. Young adults are fed by workers; older drones can feed themselves from stored honey. Glowing route markers are measurement gates only and never restore energy.'),
-                  renderDronePacing(),
-                  h('section', { 'data-drone-carryover-brief': 'true', role: 'note', className: 'mx-auto w-full max-w-2xl rounded-2xl border p-4 text-left ' + (droneCarryoverBrief.tone === 'success' ? (dk ? 'border-emerald-700/45 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/80') : droneCarryoverBrief.tone === 'warning' ? (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50/80') : (dk ? 'border-sky-700/45 bg-sky-950/25' : 'border-sky-200 bg-sky-50/80')), 'aria-label': __alloT('stem.beehive.a11y_colony_network_colony_field_evidence_carried_in', 'Colony Network colony field evidence carried into Drone Flight') },
-                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-                      h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (droneCarryoverBrief.tone === 'success' ? (dk ? 'text-emerald-300' : 'text-emerald-800') : droneCarryoverBrief.tone === 'warning' ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-sky-300' : 'text-sky-800')) }, 'Colony condition carried forward'), h('div', { className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneCarryoverBrief.label)),
-                      h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide ' + (droneCarryoverBrief.tone === 'success' ? 'bg-emerald-700 text-white' : droneCarryoverBrief.tone === 'warning' ? 'bg-amber-600 text-slate-950' : 'bg-sky-700 text-white') }, 'Colony → Drone')),
-                    h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, droneCarryoverBrief.advice),
-                    h('div', { 'data-drone-carryover-hypothesis': 'true', role: 'group', 'aria-labelledby': 'drone-carryover-hypothesis-title', 'aria-describedby': 'drone-carryover-hypothesis-text', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/75') },
-                      h('div', { id: 'drone-carryover-hypothesis-title', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-200' : 'text-indigo-800') }, 'Prediction to test'),
-                      h('p', { id: 'drone-carryover-hypothesis-text', className: 'mt-1 text-[0.625rem] font-bold leading-relaxed ' + (dk ? 'text-white' : 'text-slate-900') }, droneCarryoverBrief.hypothesis),
-                      h('p', { className: 'mt-1 text-[0.625rem] font-semibold leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Measure: ' + droneCarryoverBrief.measure)),
-                    h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_controlled_flight_conditions_and_launch_reserve', 'Controlled flight conditions and launch reserve') },
-                      [{ label: 'Field report', value: droneCarryoverBrief.fieldEvidence, marker: 'field' }, { label: 'DCA geometry', value: droneCarryoverBrief.distance }, { label: 'Flight window', value: droneCarryoverBrief.time }, { label: 'Hazards', value: droneCarryoverBrief.hazards }].map(function(item) {
-                        return h('div', { key: item.label, role: 'listitem', 'data-drone-command-evidence': item.marker || undefined, className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.label), h('div', { className: 'mt-1 text-[0.625rem] font-black ' + (dk ? 'text-slate-100' : 'text-slate-800') }, item.value));
-                      })) ),
-                  h('section', { 'data-beehive-flight-plan': 'true', className: 'mx-auto w-full max-w-2xl rounded-2xl border p-4 text-left ' + (dk ? 'border-indigo-700/45 bg-slate-950/35' : 'border-indigo-200 bg-white/75'), 'aria-label': __alloT('stem.beehive.a11y_three_step_drone_flight_preflight_route', 'Three-step Drone Flight preflight route') },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                      h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (dk ? 'text-sky-300' : 'text-sky-700') }, 'Preflight route'), h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Mark control, conserve energy, follow gold')),
-                      h('span', { className: 'rounded-full bg-indigo-600 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide text-white' }, '3 checkpoints')),
-                    h('div', { 'data-mobile-rail': 'drone-preflight', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'relative mt-4 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
-                      h('div', { className: 'pointer-events-none absolute left-[16%] right-[16%] top-5 hidden h-0.5 bg-gradient-to-r from-lime-400 via-sky-400 to-amber-400 sm:block', 'aria-hidden': 'true' }),
-                      [
-                        { n: '01', icon: '\u26A1', title: 'Pass route markers', detail: 'Use optional glowing gates to measure low-altitude control; energy is unchanged', tone: 'from-lime-500 to-emerald-500' },
-                        { n: '02', icon: '\u2191', title: 'Reach the DCA', detail: 'Enter ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' ft and travel ' + DRONE_FLIGHT_PARAMS.dcaDistanceM + ' m', tone: 'from-sky-500 to-indigo-500' },
-                        { n: '03', icon: '\uD83D\uDC51', title: 'Acquire queen', detail: 'Follow the golden signal with small turns', tone: 'from-amber-400 to-orange-500' }
-                      ].map(function(stage) {
-                        return h('div', { key: stage.n, className: 'relative snap-start rounded-xl border p-3 sm:snap-none ' + (dk ? 'border-white/10 bg-slate-900/85' : 'border-slate-200 bg-white') },
-                          h('div', { className: 'flex items-center gap-2 sm:flex-col sm:text-center' },
-                            h('span', { className: 'relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br text-sm font-black text-white shadow-lg ' + stage.tone, 'aria-hidden': 'true' }, stage.icon),
-                            h('div', { className: 'min-w-0' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-widest ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Checkpoint ' + stage.n), h('div', { className: 'text-[0.6875rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, stage.title), h('p', { className: 'mt-0.5 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stage.detail))));
-                      }))),
-                  droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
-                  (droneData.attempts || 0) > 0 && h('div', { role: 'group', className: 'mx-auto flex max-w-lg flex-wrap items-center justify-center gap-2', 'aria-label': __alloT('stem.beehive.a11y_flight_record', 'Flight record') },
-                    h('span', { className: 'rounded-full border px-2.5 py-1 text-[0.625rem] font-black ' + (dk ? 'border-indigo-700 bg-slate-900 text-indigo-200' : 'border-indigo-200 bg-white text-indigo-800') }, (droneData.attempts || 0) + ' launches'),
-                    h('span', { className: 'rounded-full border px-2.5 py-1 text-[0.625rem] font-black ' + ((droneData.successes || 0) > 0 ? 'border-emerald-800 bg-emerald-700 text-white' : (dk ? 'border-slate-700 bg-slate-900 text-slate-300' : 'border-slate-200 bg-white text-slate-600')) }, (droneData.successes || 0) + ' successful intercepts'),
-                    droneData.bestDifficulty && h('span', { className: 'rounded-full bg-indigo-600 px-2.5 py-1 text-[0.625rem] font-black uppercase text-white' }, 'Best: ' + droneData.bestDifficulty)),
-                  h('section', { 'data-drone-route-plans': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70'), 'aria-label': __alloT('stem.beehive.a11y_choose_a_preflight_route_plan', 'Choose a preflight route plan') },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Route planning'), h('span', { className: 'text-[0.625rem] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Choose your first priority')),
-                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'radiogroup', 'aria-label': __alloT('stem.beehive.a11y_preflight_route_priority', 'Preflight route priority') }, Object.keys(DRONE_ROUTE_PLANS).map(function(planId) { var plan = DRONE_ROUTE_PLANS[planId]; var selected = droneRoutePlan === planId; return h('button', { key: planId, type: 'button', role: 'radio', 'data-drone-route-plan': planId, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': plan.label + ': ' + plan.desc, onClick: function() { chooseDroneRoutePlan(planId); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_ROUTE_PLANS), planId, 'data-drone-route-plan', chooseDroneRoutePlan); }, className: 'min-w-0 min-h-[68px] rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (selected ? (dk ? 'border-sky-400 bg-sky-900/50 text-white' : 'border-sky-400 bg-white text-sky-950 shadow-sm') : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-300 hover:border-sky-700' : 'border-slate-200 bg-white/80 text-slate-700 hover:border-sky-300')) }, h('div', { className: 'break-words text-[0.625rem] font-black uppercase tracking-wide' }, plan.label), h('div', { className: 'mt-1 break-words text-[0.625rem] leading-relaxed opacity-80' }, plan.desc)); }))),
-                  h('section', { 'data-drone-scenarios': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': __alloT('stem.beehive.a11y_choose_drone_flight_scenario', 'Choose Drone Flight scenario') },
-                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Choose mission scenario'), h('span', { className: 'text-[0.625rem] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Change one flight variable')),
-                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'radiogroup', 'aria-label': __alloT('stem.beehive.a11y_drone_mission_scenario', 'Drone mission scenario') }, Object.keys(DRONE_SCENARIOS).map(function(id) { var option = DRONE_SCENARIOS[id]; var selected = droneScenario === id; return h('button', { key: id, type: 'button', role: 'radio', 'data-drone-scenario': id, onClick: function() { chooseDroneScenario(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_SCENARIOS), id, 'data-drone-scenario', chooseDroneScenario); }, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': option.label + ': ' + option.desc, className: 'min-w-0 rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (selected ? 'ring-2 ring-indigo-500 ' + (dk ? 'border-indigo-400 bg-indigo-900/45' : 'border-indigo-400 bg-indigo-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-indigo-600' : 'border-slate-200 bg-white hover:border-indigo-300')) }, h('div', { className: 'text-[0.625rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 break-words text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-indigo-600 px-2 py-0.5 text-[0.625rem] font-black text-white' }, 'SELECTED')); })) ),
-                  // Difficulty selector
-                  h('div', { 'data-mobile-rail': 'drone-difficulty', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'flex gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:overflow-visible sm:pb-0' },
-                    [
-                      { id: 'easy', label: __alloT('stem.beehive.easy', '🌱 Easy'), desc: __alloT('stem.beehive.150s_fewer_birds_closer_queen', DRONE_FLIGHT_PARAMS.timerByDifficulty.easy + 's, fewer birds, closer queen'), col: 'green' },
-                      { id: 'normal', label: __alloT('stem.beehive.normal', '🐝 Normal'), desc: __alloT('stem.beehive.110s_balanced_challenge', DRONE_FLIGHT_PARAMS.timerByDifficulty.normal + 's, balanced challenge'), col: 'amber' },
-                      { id: 'hard', label: __alloT('stem.beehive.hard', '🔥 Hard'), desc: __alloT('stem.beehive.75s_more_birds_distant_queen', DRONE_FLIGHT_PARAMS.timerByDifficulty.hard + 's, more birds, distant queen'), col: 'red' }
-                    ].map(function(diff) {
-                      return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
-                        className: 'min-h-[88px] min-w-[78%] flex-1 snap-center px-4 py-3 rounded-xl sm:min-w-0 sm:snap-none font-bold text-sm shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ' + droneDiffStyle(diff.id),
-                        title: diff.desc
-                      },
-                        h('div', null, diff.label),
-                        h('div', { className: 'text-[0.625rem] mt-0.5 opacity-70' }, diff.desc));
-                    })),
-                  h('p', { className: 'text-[0.6875rem] ' + (dk ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Glowing route markers score control evidence but do not restore energy.')))
-              : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-flight-hud': droneData.detailedHud === true ? 'detailed' : 'clear', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', 'data-flight-inspection-active': droneInspectionView !== 'flight' ? 'true' : 'false', 'data-flight-height-inspection': droneInspectionView === 'height' ? 'true' : 'false', 'data-flight-bird-inspection': droneInspectionView === 'bird' ? 'true' : 'false', 'data-flight-butterfly-inspection': droneInspectionView === 'butterfly' ? 'true' : 'false', 'data-flight-plant-inspection': ['shrub','grass','reed'].indexOf(droneInspectionView)>=0 ? 'true' : 'false', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(440px, 56vw, 620px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
-                  renderDroneDirector(),renderDroneButterflyToolbar(),
+              ? renderDroneBriefing()
+              : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-flight-hud': droneData.detailedHud === true ? 'detailed' : 'clear', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', 'data-flight-inspection-active': droneInspectionView !== 'flight' ? 'true' : 'false', 'data-flight-height-inspection': droneInspectionView === 'height' ? 'true' : 'false', 'data-flight-bird-inspection': droneInspectionView === 'bird' ? 'true' : 'false', 'data-flight-butterfly-inspection': droneInspectionView === 'butterfly' ? 'true' : 'false', 'data-flight-plant-inspection': ['shrub','grass','reed'].indexOf(droneInspectionView)>=0 ? 'true' : 'false', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'auto', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
+                  renderDroneCommandHeader(),
+                  h('div', { 'data-flight-viewport': 'true', className: 'bee-flight-viewport' }, renderDroneButterflyToolbar(),
                   h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
-                  h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: droneData.detailedHud === true ? { position: 'absolute', top: '58px', right: '8px', zIndex: 20 } : BH_VISUALLY_HIDDEN, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
-                  h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: droneData.detailedHud === true ? { position: 'absolute', top: '58px', left: '8px', zIndex: 20 } : BH_VISUALLY_HIDDEN, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
-                  (function() { var cue = droneTrainingStatus(_droneState.current); return h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none', position: 'absolute', top: '82px', left: '50%', zIndex: 20, width: 'min(360px,calc(100% - 24px))', transform: 'translateX(-50%)', pointerEvents: 'none' }, className: 'rounded-xl border border-cyan-300/35 bg-slate-950/88 px-3 py-2 text-left text-white shadow-xl backdrop-blur-md' },
-                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[0.625rem] font-black text-amber-200' }, cue.label)),
-                    h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[0.625rem] font-semibold leading-snug text-white' }, cue.instruction),
-                    h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[0.625rem] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
-                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, dronePacing === 'steps' ? 'The scene waits for your choices. Use the pause-and-plan panel after the scene to choose and advance a maneuver. The map, direction descriptions, and evidence table provide the flight information in text. No held keys are required.' : 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. The scene uses a 3D or 2D flight view. While paused, the inspection controls offer left, right and overhead 3D viewpoints without moving the bee. Height above ground fits the bee and model ground in one view, with a vertical ruler and an equivalent text readout. Observe bee-eater frames the nearest predator without moving either animal. Observe butterfly frames an existing visible butterfly to explore its four wings and antennae. In that view, select Forewings, Hindwings or Antennae to reveal labels attached to the model and a text explanation below the scene. Select the same feature again to hide its labels. Plant close-ups frame existing shrubs, seed grasses or streamside reeds, with observation prompts below the scene. Resuming restores your flight camera. Open Route map & checkpoints to pause and inspect your recent path, heading, and DCA entry conditions. Easy mode includes a five-step flight-school cue, and a white heading diamond and cyan motion ring compare orientation with actual movement. A cyan trail connects recent recorded positions as a learning overlay. Open Heading, motion & wind below the controls for an explanation and a trail visibility switch. Flight controls follow the scene. Display settings include a clear view, detailed HUD, graphics quality, steering sensitivity, and camera stabilization. The optional detailed HUD includes radar with distinct shapes for route targets, predator birds, thermals, and route markers, plus an arrow for wind drift. Three cyan open frames are optional approach guides; the gold volume marks the modeled DCA entry region. The route map explains the symbols. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas. Open Meadow life and bee predators to pause and explore plant layers, harmless butterflies, bee-eating birds, and the practice encounter rules.'),
+                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, dronePacing === 'steps' ? 'The scene waits for your choices. Use the pause-and-plan panel after the scene to choose and advance a maneuver. The map, direction descriptions, and evidence table provide the flight information in text. No held keys are required.' : 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. The scene uses a 3D or 2D flight view. While paused, the inspection controls offer left, right and overhead 3D viewpoints without moving the bee. Height above ground fits the bee and model ground in one view, with a vertical ruler and an equivalent text readout. Observe bee-eater frames the nearest predator without moving either animal. Observe butterfly frames an existing visible butterfly to explore its four wings and antennae. In that view, select Forewings, Hindwings or Antennae to reveal labels attached to the model and a text explanation below the scene. Select the same feature again to hide its labels. Plant close-ups frame existing shrubs, seed grasses or streamside reeds, with observation prompts below the scene. Resuming restores your flight camera. Open Route map & checkpoints to pause and inspect your recent path, heading, and DCA entry conditions. The header above the scene contains End Flight, Pause/Resume, and Flight conditions with observed readings and control tips. Live ground-descent and slow-climb warnings also appear in the scene. While paused or planning a maneuver, read these conditions above the scene; their central warning text is hidden to make inspection easier. Easy mode includes a readable five-step flight-school cue there. A white heading diamond and cyan motion ring compare orientation with actual movement. A cyan trail connects recent recorded positions as a learning overlay. Open Heading, motion & wind below the controls for an explanation and a trail visibility switch. The Flight direction panel below the scene gives bee-relative turn guidance, horizontal range, energy, and DCA entry conditions. Flight controls follow this guide. Display settings include a clear view, detailed HUD, graphics quality, steering sensitivity, and camera stabilization. The optional detailed HUD includes radar with distinct shapes for route targets, predator birds, thermals, and route markers, plus an arrow for wind drift. Three cyan open frames are optional approach guides; the gold volume marks the modeled DCA entry region. The route map explains the symbols. Scene captions move aside to stay readable; thin callout lines connect a moved caption to its marker, not a flight path. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas. Open Meadow life and bee predators to pause and explore plant layers, harmless butterflies, bee-eating birds, and the practice encounter rules.'),
                   h('div', { 'data-beehive-stage-chip': 'drone', style: { position: 'absolute', left: '50%', bottom: '12px', zIndex: 20, maxWidth: 'calc(100% - 24px)', transform: 'translateX(-50%)' }, 'aria-hidden': 'true' },
                     h('span', { 'data-stage-dot': 'true' }),
-                    h('span', { 'data-flight-scene-phase': 'true', className: 'shrink-0 text-[0.625rem] font-black text-amber-200' }, droneFlightActive && _droneState.current && _droneState.current.phase !== 'launch' ? droneInstrumentPhase(_droneState.current).label : 'Flight objective'),
+                    h('span', { 'data-flight-scene-phase': 'true', className: 'shrink-0 text-[0.625rem] font-black text-amber-200' }, droneFlightActive && _droneState.current ? droneScenePhaseLabel(_droneState.current) : 'Flight objective'),
                   h('span', { 'aria-hidden': 'true', className: 'h-3 w-px shrink-0 bg-white/25' }),
                   h('span', { 'data-flight-scene-detail': 'true', className: 'hidden min-w-0 truncate normal-case tracking-normal opacity-75 sm:inline' }, droneFlightActive && _droneState.current ? droneSceneCueDetail(_droneState.current) : 'Pass markers -> reach DCA -> track queen')),
-                  dronePaused && dronePacing !== 'steps' && h('div', { 'data-beehive-flight-paused-overlay': 'true', 'aria-hidden': 'true' }, h('div', null, 'Ⅱ Paused')),
-                  dronePacing !== 'steps' && h('button', { onClick: toggleDronePause, 'data-beehive-flight-pause': 'true', style: { position: 'absolute', top: '8px', right: '8px', zIndex: 20 },
-                    className: 'min-h-[44px] min-w-[104px] rounded-lg border border-white/20 bg-slate-950/82 px-3 py-2 text-[0.6875rem] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-slate-900', 'aria-label': dronePaused ? 'Resume flight' : 'Pause flight', 'aria-keyshortcuts': 'P' }, dronePaused ? '\u25B6 Resume' : '\u23F8 Pause'),
-                  // Stop button overlay
-                  h('button', { type: 'button', onClick: leaveDroneFlight, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 20 },
-                    className: 'min-h-[44px] rounded-lg bg-red-700/88 px-3 py-2 text-[0.6875rem] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2', 'aria-label': __alloT('stem.beehive.end_flight', 'End flight') }, __alloT('stem.beehive.end_flight_2', '✕ End Flight'))),
+                  ), renderDroneDirector()),
             droneFlightActive && dronePacing !== 'steps' && _droneState.current && _droneState.current.phase !== 'end' && h('section', { 'data-beehive-touch-controls': 'true', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': __alloT('stem.beehive.a11y_drone_flight_controls', 'Drone flight controls') },
               h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
                 h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Flight controls'), h('p', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Hold buttons to steer. Keyboard: arrows/WASD, Space climb, Shift descend, P pause, V camera.'))),
@@ -36225,12 +38098,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'mt-0.5', 'aria-hidden': 'true' }, '\uD83C\uDFAF'),
                   h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Current objective'), h('p', { 'data-flight-readout': 'objective', className: 'mt-0.5 text-[0.6875rem] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentPhase.objective))));
             })(),
-            droneFlightActive && droneLastRun && droneLastRun.decisionLog && droneLastRun.decisionLog.length > 0 && _droneState.current.phase === 'end' && h('section', { className: 'bfd', 'data-flight-decision-debrief': 'true', tabIndex: -1, 'aria-label': __alloT('stem.beehive.a11y_saved_flight_decision_evidence', 'Saved flight decision evidence') }, h('h3', null, 'Your flight decisions'), h('p', null, 'Course ' + droneRecordedValue(droneLastRun.courseSeed) + ' · Pause and plan · Navigation assistance used ' + droneRecordedValue(droneLastRun.navigationAssists) + ' times. Decisions are saved with this flight.'), renderDroneDecisionLog(droneLastRun.decisionLog), renderDroneScienceBoundary()),
+            droneFlightActive && droneLastRun && droneLastRun.decisionLog && droneLastRun.decisionLog.length > 0 && _droneState.current.phase === 'end' && h('section', { className: 'bfd', 'data-flight-decision-debrief': 'true', tabIndex: -1, 'aria-label': __alloT('stem.beehive.a11y_saved_flight_decision_evidence', 'Saved flight decision evidence') }, h('h3', null, 'Your flight decisions'), h('p', null, 'Course ' + droneRecordedValue(droneLastRun.courseSeed) + ' · Pause and plan · Navigation assistance used ' + droneRecordedValue(droneLastRun.navigationAssists) + ' times. Decisions are saved with this flight.'), renderDroneManeuverEvidence(droneLastRun.decisionLog), renderDroneHistory(droneLastRun.decisionLog, droneLastRun), renderDroneScienceBoundary()),
             droneFlightActive && droneLastRun && _droneState.current && _droneState.current.phase === 'end' && h('section', { className: 'rounded-2xl border-2 p-4 ' + (droneLastRun.success ? (dk ? 'border-emerald-600 bg-emerald-950/30' : 'border-emerald-300 bg-emerald-50') : (dk ? 'border-amber-600 bg-amber-950/30' : 'border-amber-300 bg-amber-50')), 'data-flight-main-debrief': 'true', 'aria-label': __alloT('stem.beehive.a11y_flight_debrief', 'Flight debrief') },
-              h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between' },
+              h('div', { className: 'bee-result-debrief-header flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between' },
                 h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider ' + (droneLastRun.success ? 'text-emerald-600' : 'text-amber-600') }, 'Flight debrief'), h('h3', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneLastRun.success ? 'Queen intercepted - route complete' : 'Queen not reached - revise and retry'), h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, droneLastRun.success ? 'You reached the congregation area with enough control to acquire the queen signal.' : (droneLastRun.energyLeft <= 0 ? 'Energy reached zero. Coast between corrections and use updrafts; route markers do not refuel the drone.' : !droneLastRun.reachedDca ? 'The route never entered the DCA. Be within ' + DRONE_FLIGHT_PARAMS.dcaRadiusM + ' model m of its center and inside the ' + DRONE_FLIGHT_PARAMS.dcaMinFt + '–' + DRONE_FLIGHT_PARAMS.dcaMaxFt + ' model ft altitude band at the same time.' : 'You reached the DCA; use smaller turns and follow the golden queen cue more closely.'))),
                 h('div', { className: 'flex gap-2' }, h('button', { type: 'button', onClick: function() { startDroneFlight(droneLastRun.difficulty, droneDebrief && droneDebrief.planId); }, className: 'rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2' }, 'Apply plan & fly again'), h('button', { type: 'button', onClick: leaveDroneFlight, className: 'rounded-lg border px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dk ? 'border-slate-600 text-slate-200' : 'border-slate-300 text-slate-700') }, 'Change difficulty'))),
-              h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7 text-center', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_flight_debrief_measurements', 'Flight debrief measurements') }, [[droneRecordedValue(droneLastRun.score), 'score'], [droneRecordedValue(droneLastRun.maxAlt, ' ft'), 'altitude'], [droneRecordedValue(droneLastRun.distance, ' m'), 'distance'], [droneRecordedValue(Number.isFinite(droneLastRun.routeMarkers) ? droneLastRun.routeMarkers : droneLastRun.nectar) + '/' + droneRecordedValue(Number.isFinite(droneLastRun.routeMarkerGoal) ? droneLastRun.routeMarkerGoal : droneLastRun.nectarGoal), 'route markers'], [droneRecordedValue(droneLastRun.facts) + '/' + DRONE_FACTS.length, 'facts'], [droneRecordedValue(droneLastRun.trafficHits), 'traffic conflicts'], [DRONE_ROUTE_PLANS[droneLastRun.routePlan] ? DRONE_ROUTE_PLANS[droneLastRun.routePlan].label : 'Not recorded', 'route plan']].map(function(stat) { return h('div', { key: stat[1], role: 'listitem', className: 'min-w-0 rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white/80') }, h('div', { className: 'break-words text-sm font-black leading-tight ' + (dk ? 'text-white' : 'text-slate-900') }, stat[0]), h('div', { className: 'text-[0.625rem] uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, stat[1])); })),
+              renderDroneRecordedSnapshot(droneLastRun),
               droneDebrief && h('section', { 'data-drone-debrief-coach': droneDebrief.id, role: 'region', 'aria-labelledby': 'drone-debrief-coach-title', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/45 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/70') },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Priority coaching'), h('div', { id: 'drone-debrief-coach-title', className: 'mt-0.5 text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, droneDebrief.title)), h('span', { className: 'rounded-full bg-indigo-700 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide text-white' }, droneDebrief.planLabel)),
                 h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, droneDebrief.summary),
@@ -36240,7 +38113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ),
               h('p', { className: 'mt-3 text-[0.6875rem] font-bold ' + (dk ? 'text-indigo-200' : 'text-indigo-800') }, 'Explain it: which mattered most on this run - energy budgeting, altitude, hazard avoidance, traffic spacing, or steering precision?'),
               h('p', { 'data-drone-debrief-traffic': 'true', className: 'mt-2 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, !Number.isFinite(droneLastRun.trafficHits) ? 'Traffic evidence: conflicts were not recorded, so separation cannot be assessed.' : droneLastRun.trafficHits > 0 ? 'Traffic evidence: ' + droneLastRun.trafficHits + ' conflict' + (droneLastRun.trafficHits === 1 ? '' : 's') + ' drained energy and score. Compare the telemetry replay with your altitude and lateral corrections.' : 'Traffic evidence: no drone conflicts recorded. Your separation choices preserved energy for the DCA approach.'),
-              droneReplayChart(droneLastRun.telemetry, dk)),
+              droneReplayChart(droneLastRun.telemetry, dk, droneLastRun)),
 
             renderSavedDroneReview(),
             // Drone science sidebar
@@ -36844,56 +38717,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               className: 'p-2 rounded border ' + (dk ? 'bg-slate-900 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800') })),
 
           // ═══ KEYBOARD SHORTCUTS OVERLAY ═══
-          d.showKeys && h('div', { className: 'rounded-xl border p-4 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), id: 'beehive-shortcuts-panel', 'data-beehive-focus-panel': 'shortcuts', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.keyboard_shortcuts_3', 'Keyboard shortcuts') },
-            h('div', { className: 'flex items-center justify-between mb-1' },
-              h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.beehive.keyboard_shortcuts_4', '⌨️ Keyboard Shortcuts')),
-              h('button', { type: 'button', onClick: function() { upd('showKeys', false); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[0.6875rem] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_shortcuts', 'Close shortcuts') }, '✕')),
-            h('label', { className: 'flex items-start gap-2 rounded-lg border px-3 py-2 text-[0.6875rem] ' + (dk ? 'border-slate-600 bg-slate-900/40 text-slate-200' : 'border-slate-300 bg-slate-50 text-slate-700') },
-              h('input', { type: 'checkbox', checked: d.oneKeyShortcuts !== false, onChange: function(e) { upd('oneKeyShortcuts', e.target.checked); }, className: 'mt-0.5 h-4 w-4' }),
-              h('span', null, h('strong', null, 'Enable one-key simulation shortcuts. '), 'Shortcuts work only while focus is inside Bee and never override focused buttons or form controls.')),
-            h('div', { className: 'grid grid-cols-1 gap-1 sm:grid-cols-2' },
+          d.showKeys && h('div', { className: 'bee-shortcuts', id: 'beehive-shortcuts-panel', 'data-beehive-focus-panel': 'shortcuts', 'data-shortcuts-perspective': viewMode, tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.keyboard_shortcuts_3', 'Keyboard shortcuts') },
+            h('div', { className: 'bee-shortcuts-header' },
+              h('h2', null, __alloT('stem.beehive.keyboard_shortcuts_3', 'Keyboard shortcuts')),
+              h('button', { type: 'button', onClick: function() { upd('showKeys', false); }, 'aria-label': __alloT('stem.beehive.close_shortcuts', 'Close shortcuts') }, 'Close', h('kbd', { 'aria-hidden': 'true' }, 'Esc'))),
+            h('div', { 'data-shortcuts-scope': 'true' },
+              h('strong', null, viewMode === 'beekeeper' ? 'Beekeeper controls' : 'Beekeeper reference'),
+              h('p', null, viewMode === 'beekeeper' ? 'The keys below control the Beekeeper simulation and its science views.' : 'You are in ' + (viewMode === 'queen' ? 'Colony Network' : 'Drone Flight') + '. Use the controls in that playfield. The reference below describes Beekeeper.')),
+            h('div', { className: 'bee-shortcuts-setting' },
+              h('label', null,
+                h('input', { type: 'checkbox', checked: d.oneKeyShortcuts !== false, onChange: function(e) { upd('oneKeyShortcuts', e.target.checked); }, 'aria-describedby': 'beehive-shortcuts-setting-note' }),
+                h('span', null, 'Enable one-key simulation shortcuts.')),
+              h('p', { id: 'beehive-shortcuts-setting-note' }, 'Also enables the Shift + number science-view shortcuts below. The ? help key remains available in Beekeeper when this is off.')),
+            h('div', { 'data-shortcuts-usage': 'true' },
+              h('p', null, 'In Beekeeper, close this guide, then choose Play in Move around the lab. Keep focus on the playfield to use these keys.'),
+              h('p', null, 'Other open panels block these keys. Focused buttons, links and form controls keep their usual keyboard behavior.')),
+            h('div', { className: 'bee-shortcuts-groups' },
               [
-                ['N', 'Next Day'], ['T', 'Treat Varroa'], ['S', 'Add Super'],
-                ['H', 'Harvest Honey'], ['F', 'Feed Bees'], ['I', 'Inspect Hive'],
-                ['Q', 'Take Quiz'], ['B', 'View Badges'], ['M', 'Toggle Sound'],
-                ['P', 'Pause / resume visuals'], ['5', 'Advance +5 Days'], ['3', 'Advance +30 Days'], ['?', 'This Help']
-              ].map(function(pair) {
-                return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[0.6875rem] py-0.5' },
-                  h('kbd', { className: 'inline-flex items-center justify-center w-6 h-6 rounded font-mono font-bold text-[0.6875rem] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
-                  h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
+                { id: 'time', title: 'Time and visuals', rows: [
+                  ['N', 'Next day'], ['5', 'Advance up to 5 days'], ['3', 'Advance up to 30 days'],
+                  ['Space', 'Start / stop automatic days', 'Changes model time. Opening this guide does not stop automatic days.'],
+                  ['P', 'Pause / resume visuals', 'Canvas animation only; automatic days can keep running.']
+                ] },
+                { id: 'care', title: 'Colony care', note: 'The same availability rules and action costs apply as with the on-screen controls.', rows: [
+                  ['T', 'Open mite treatment'], ['S', 'Add a super'], ['H', 'Harvest honey'], ['F', 'Feed bees'], ['I', 'Open inspection']
+                ] },
+                { id: 'tools', title: 'Tools and help', rows: [
+                  ['Q', 'Take a quiz'], ['B', 'Open badges'], ['M', 'Toggle sound'], ['?', 'Open this guide']
+                ] }
+              ].map(function(group) {
+                return h('section', { key: group.id, 'data-shortcut-group': group.id, 'aria-labelledby': 'beehive-shortcuts-' + group.id },
+                  h('h3', { id: 'beehive-shortcuts-' + group.id }, group.title),
+                  group.note && h('p', null, group.note),
+                  h('dl', null, group.rows.map(function(row) {
+                    return h('div', { key: row[0], 'data-shortcut-key': row[0] }, h('dt', null, h('kbd', null, row[0])),
+                      h('dd', null, row[1], row[2] && h('span', null, row[2])));
+                  })));
               })),
-            // Educational view shortcuts (added alongside the simulation shortcuts above)
-            h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.educational_views', '🔬 Educational Views')),
-            h('div', { className: 'grid grid-cols-1 gap-1 sm:grid-cols-2' },
-              [
-                ['Shift+1', 'Scene'], ['Shift+2', 'Anatomy'],
-                ['Shift+3', 'Flight Physics'], ['Shift+4', 'Lifecycle'],
-                ['Shift+5', 'Honey'], ['Shift+6', 'Waggle Dance'],
-                ['Shift+7', 'Thermoregulation'], ['Shift+8', 'Castes'],
-                ['Shift+9', 'Pheromones'], ['Shift+0', 'Threats']
-              ].map(function(pair) {
-                return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[0.6875rem] py-0.5' },
-                  h('kbd', { className: 'inline-flex items-center justify-center px-1.5 h-6 rounded font-mono font-bold text-[0.625rem] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
-                  h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
-              }))),
+            h('section', { 'data-shortcut-group': 'science', 'aria-labelledby': 'beehive-shortcuts-science' },
+              h('h3', { id: 'beehive-shortcuts-science' }, 'Science views'),
+              h('p', null, 'Hold Shift and press a number on the top row of your keyboard. Find all views in the Bee science explorer.'),
+              h('dl', null, BEE_VIEWS.slice(0, 10).map(function(view, index) {
+                var keyLabel = 'Shift+' + (index === 9 ? '0' : index + 1);
+                return h('div', { key: view.id, 'data-shortcut-key': keyLabel }, h('dt', null, h('kbd', null, keyLabel)), h('dd', null, view.label));
+              })))),
 
           // ═══ BADGES PANEL ═══
-          showBadges && h('div', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), id: 'beehive-badges-panel', 'data-beehive-focus-panel': 'badges', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.achievement_badges', 'Achievement badges') },
-            h('div', { className: 'flex items-center justify-between mb-1' },
-              h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🏅 Badges · ' + badgeCount + '/' + BADGE_DEFS.length),
-              h('button', { type: 'button', onClick: function() { upd('showBadges', false); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[0.6875rem] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_badges', 'Close badges') }, '✕')),
-            // Progress bar
-            h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), role: 'progressbar', 'aria-label': __alloT('stem.beehive.a11y_badges_earned', 'Badges earned'), 'aria-valuemin': 0, 'aria-valuemax': BADGE_DEFS.length, 'aria-valuenow': badgeCount },
-              h('div', { style: { width: Math.round(badgeCount / BADGE_DEFS.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all' })),
-            h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3' },
+          showBadges && h('div', { className: 'bee-badges', id: 'beehive-badges-panel', 'data-beehive-focus-panel': 'badges', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.achievement_badges', 'Achievement badges') },
+            h('div', { className: 'bee-badges-header' },
+              h('h2', null, __alloT('stem.beehive.achievement_badges', 'Achievement badges')),
+              h('button', { type: 'button', onClick: function() { upd('showBadges', false); }, 'aria-label': __alloT('stem.beehive.close_badges', 'Close badges') }, 'Close', h('kbd', { 'aria-hidden': 'true' }, 'Esc'))),
+            h('p', { 'data-badges-scope': 'true' }, 'Badges record Beekeeper and shared learning milestones. They are shared across perspectives, not a grade or a reading of current colony condition.'),
+            h('div', { className: 'bee-badges-summary' },
+              h('div', { className: 'bee-badges-counts' },
+                h('strong', { 'data-badges-earned-count': 'true' }, badgeCount + ' of ' + BADGE_DEFS.length + ' earned'),
+                h('span', { 'data-badges-remaining-count': 'true' }, (BADGE_DEFS.length - badgeCount) + ' not yet earned')),
+              h('div', { 'data-badges-progress': 'true', role: 'progressbar', 'aria-label': __alloT('stem.beehive.a11y_badges_earned', 'Badges earned'), 'aria-valuemin': 0, 'aria-valuemax': BADGE_DEFS.length, 'aria-valuenow': badgeCount,
+                'aria-valuetext': badgeCount + ' of ' + BADGE_DEFS.length + ' badges earned; ' + (BADGE_DEFS.length - badgeCount) + ' not yet earned.' },
+                h('span', { 'data-badges-progress-fill': 'true', style: { width: (100 * badgeCount / BADGE_DEFS.length) + '%' } }))),
+            h('p', { 'data-badges-history': 'true' }, 'Earned badges remain saved when you start a new colony. A recorded model day may belong to an earlier colony.'),
+            h('ul', { role: 'list', 'data-badges-grid': 'true', 'aria-label': 'Badge requirements and saved achievements' },
               BADGE_DEFS.map(function(bd) {
-                var earned = !!(newBadges[bd.id]);
-                return h('div', { key: bd.id, className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' + (earned ? (dk ? 'bg-amber-900/30 border-amber-600/40' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-slate-800/60 border-slate-600/70' : 'bg-slate-50 border-slate-300')), title: bd.desc },
-                  h('span', { className: 'text-xl ' + (earned ? '' : 'grayscale') }, bd.icon),
-                  h('div', null,
-                    h('div', { className: 'text-[0.6875rem] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-300' : 'text-slate-600')) }, bd.label),
-                    h('div', { className: 'text-[0.6875rem] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, bd.desc),
-                    earned && newBadges[bd.id].day !== undefined && h('div', { className: 'text-[0.625rem] ' + (dk ? 'text-amber-500' : 'text-amber-600') }, '✓ Day ' + newBadges[bd.id].day)));
+                var record = newBadges[bd.id], earned = !!record;
+                var recordedDay = record && typeof record === 'object' ? record.day : null;
+                var dayKnown = Number.isSafeInteger(recordedDay) && recordedDay >= 0 && recordedDay <= 10000000;
+                return h('li', { key: bd.id, 'data-badge-id': bd.id, 'data-badge-earned': String(earned) },
+                  h('div', { className: 'bee-badge-heading' }, h('span', { 'aria-hidden': 'true' }, bd.icon), h('h3', null, bd.label)),
+                  h('p', { 'data-badge-status': 'true' }, earned ? 'Earned' : 'Not yet earned'),
+                  h('p', { 'data-badge-requirement': 'true' }, bd.desc),
+                  earned && h('p', { 'data-badge-earned-day': 'true' }, dayKnown ? 'Recorded on model Day ' + recordedDay : 'Model day unavailable.'));
               }))),
 
           // ═══ FIELD GUIDE (encyclopedia) ═══
@@ -37065,28 +38957,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var sorted = dims.slice().sort(function(a, b) { return b.score - a.score; });
               var weakest = sorted[sorted.length - 1];
               var weakest2 = sorted[sorted.length - 2];
+              var lowestCount = dims.filter(function(input) { return input.score === weakest.score; }).length;
+              var equalInputs = lowestCount === dims.length;
               var sentence = colonyHealth >= 80 ? 'Overall model score is strong. ' : colonyHealth >= 55 ? 'Overall model score is stable. ' : colonyHealth >= 35 ? 'Overall model score indicates stress. ' : 'Overall model score is critical. ';
-              sentence += 'Lowest scoring input: ' + weakest.label + ' (' + weakest.value + ').';
-              if (colonyHealth < 55) sentence += ' Also review ' + weakest2.label + ' (' + weakest2.value + ') and the next step in the coach.';
+              if (equalInputs) sentence += 'All five input scores are equal.';
+              else if (lowestCount > 1) sentence += 'Joint lowest scoring inputs: ' + dims.filter(function(input) { return input.score === weakest.score; }).map(function(input) { return input.label + ' (' + input.value + ')'; }).join('; ') + '.';
+              else sentence += 'Lowest scoring input: ' + weakest.label + ' (' + weakest.value + ').';
+              if (colonyHealth < 55) sentence += equalInputs || lowestCount > 1 ? ' Review these inputs and the next step in the coach.' : ' Also review ' + weakest2.label + ' (' + weakest2.value + ') and the next step in the coach.';
               // Poisoning is not one of the five scored dimensions, so it used to go unnamed while it
               // killed workers every day (a poisoned colony was told to "smoke, feed, or check the queen").
               if (pesticideExposure > 20) sentence = 'Pesticide poisoning is killing workers every day (exposure ' + Math.round(pesticideExposure) + ' of 100). A no-spray zone cuts it. ' + sentence;
               return h('div', null,
                 h('p', { 'data-colony-diagnosis': 'true', className: 'bee-colony-diagnosis', role: 'status' }, sentence),
-                h('details', { 'data-colony-score-guide': 'true', className: 'bee-colony-role-guide' },
+                h('details', { 'data-colony-score-guide': 'true', className: 'bee-colony-role-guide bee-colony-score-guide' },
                   h('summary', null, 'How the model score works'),
                   h('p', { className: 'bee-colony-note' }, 'Five inputs are weighted and rounded to one score. A strong average can hide a weak system. The food input does not check the seasonal reserve; use Food balance for that decision.'),
-                  h('ul', null, dims.map(function(input) {
-                    return h('li', { key: input.id }, h('strong', null, input.label + ' · ' + input.weight + '% weight'),
-                      h('p', null, input.method + ': ' + (Math.round(input.score * 10) / 10) + '/100 input points.'));
-                  }))));
+                  h('p', { className: 'bee-colony-note', 'data-score-scale-note': 'true' }, 'Bars compare input scores on the same 0–100 scale. Weights determine how much each input adds to the total.'),
+                  equalInputs && h('p', { className: 'bee-colony-note', 'data-score-equal': 'true' }, 'All five input scores are equal.'),
+                  h('ul', { 'data-score-inputs': 'true' }, dims.map(function(input) {
+                    var points = Math.round(input.score * 10) / 10;
+                    var contribution = Math.round(input.score * (input.weight / 100) * 10) / 10;
+                    var lowest = !equalInputs && input.score === weakest.score;
+                    return h('li', { key: input.id, 'data-score-input': input.id, 'data-score-lowest': lowest ? 'true' : 'false' },
+                      h('div', { className: 'bee-colony-score-heading' }, h('strong', { id: 'beehive-score-input-' + input.id }, input.label.charAt(0).toUpperCase() + input.label.slice(1)), h('span', { 'data-score-weight': 'true' }, input.weight + '% weight')),
+                      lowest && h('span', { 'data-score-lowest-label': 'true' }, lowestCount > 1 ? 'Joint lowest input' : 'Lowest input'),
+                      h('p', { 'data-score-reading': 'true' }, 'Current reading: ' + input.value),
+                      h('span', { 'data-score-value': 'true' }, points + '/100 input points'),
+                      h('div', { className: 'bee-colony-score-meter', 'data-score-meter': input.id, role: 'meter', 'aria-label': input.label + ' input score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': input.score,
+                        'aria-valuetext': points + ' of 100 input points. ' + input.weight + '% weight. Adds about ' + contribution + ' of ' + input.weight + ' possible score points.' }, h('span', { style: { width: input.score + '%' } })),
+                      h('div', { className: 'bee-colony-score-scale', 'aria-hidden': 'true' }, h('span', null, '0'), h('span', null, '100')),
+                      h('p', { 'data-score-contribution': 'true' }, 'Adds about ' + contribution + ' of ' + input.weight + ' possible score points'),
+                      h('p', { 'data-score-method': 'true' }, input.method + '.'));
+                  })),
+                  h('div', { className: 'bee-colony-score-total', 'data-score-total': 'true' }, h('strong', null, 'Overall model score: ' + colonyHealth + '/100'),
+                    h('p', null, 'Contributions are shown to at most one decimal place. The total uses full values, then rounds once.'))));
             })(),
-            h('section', { className: 'bee-colony-group', 'aria-labelledby': 'beehive-population-title' },
-              h('h4', { id: 'beehive-population-title' }, 'Colony population'),
+            h('section', { className: 'bee-colony-group', 'data-colony-population-guide': 'true', 'aria-labelledby': 'beehive-population-title' },
+              h('h4', { id: 'beehive-population-title' }, 'Population and queen condition'),
+              h('p', { 'data-population-scope': 'true' }, 'Whole-colony model readings for Day ' + day + '.'),
               h('dl', { className: 'bee-colony-grid', 'data-colony-population': 'true' },
-                [['Workers', workers.toLocaleString()], ['Developing brood', brood.toLocaleString()], ['Drones', drones.toLocaleString()], ['Queen condition', queenHealth + '/100']].map(function(reading) {
-                  return h('div', { key: reading[0] }, h('dt', null, reading[0]), h('dd', null, reading[1]));
-                }))),
+                [
+                  { id: 'workers', label: 'Workers', value: workers, unit: 'adult workers', context: 'Includes workers doing jobs inside and outside the hive.' },
+                  { id: 'brood', label: 'Developing brood', value: brood, unit: 'developing bees', context: 'All modeled brood; separate from the adult counts.' },
+                  { id: 'drones', label: 'Drones', value: drones, unit: 'adult drones', context: 'Adult drones are separate from the worker count.' }
+                ].map(function(reading) {
+                  return h('div', { key: reading.id, 'data-population-reading': reading.id }, h('dt', null, reading.label),
+                    h('dd', null, h('span', { 'data-population-value': 'true' }, reading.value.toLocaleString()),
+                      h('span', { 'data-population-unit': 'true' }, reading.unit),
+                      h('span', { 'data-population-context': 'true' }, reading.context)));
+                })),
+              h('div', { className: 'bee-colony-queen-condition', 'data-colony-queen-condition': 'true' },
+                h('dl', null, h('dt', null, 'Queen condition'),
+                  h('dd', null, h('span', { 'data-queen-condition-value': 'true' }, queenHealth + ' / 100'),
+                    h('span', { 'data-queen-condition-unit': 'true' }, 'condition points'))),
+                h('p', { 'data-queen-condition-basis': 'true' }, 'A model condition score, not a population count.'),
+                h('div', { className: 'bee-colony-queen-meter', 'data-queen-condition-meter': 'true', role: 'meter', 'aria-label': 'Queen condition model score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': queenHealth,
+                  'aria-valuetext': queenHealth + ' of 100 condition points. Higher values indicate better modeled condition.' }, h('span', { style: { width: queenHealth + '%' } })),
+                h('div', { className: 'bee-colony-queen-scale', 'aria-hidden': 'true' }, h('span', null, '0'), h('span', null, '100')),
+                h('p', { 'data-queen-condition-direction': 'true' }, 'Higher values indicate better queen condition in this model.'))),
             renderColonyFoodBalance(),
             // ── Workforce by Role (seasonal distribution) ──
             // Bee roles are age-based AND season-modulated. Showing the
@@ -37154,11 +39082,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     );
                   })
                 ),
-                h('details', { 'data-colony-role-guide': 'true', className: 'bee-colony-role-guide' },
+                h('details', { 'data-colony-role-guide': 'true', className: 'bee-colony-role-guide bee-colony-workforce-guide' },
                   h('summary', null, 'Explore worker roles'),
-                  h('ul', null, segments.map(function(r) {
-                    return h('li', { key: r.id }, h('strong', null, r.label + ' · ' + dist[r.id] + '% seasonal estimate'), h('p', null, r.note));
-                  })))
+                  h('p', { className: 'bee-colony-note', 'data-workforce-basis': 'true' }, 'Based on ' + workers.toLocaleString() + ' current workers.'),
+                  h('p', { className: 'bee-colony-note', 'data-workforce-template': 'true' }, seasonNames[season] + ' template: bars compare fixed seasonal shares, not tracked bee assignments.'),
+                  workers === 0 && h('p', { className: 'bee-colony-note', 'data-workforce-empty': 'true' }, 'There are no current workers to allocate. The bars show the seasonal illustration; all worker estimates are zero.'),
+                  h('ul', { 'data-workforce-roles': 'true' }, roleDefs.map(function(r) {
+                    var pct = dist[r.id] || 0;
+                    var count = Math.round(workers * pct / 100);
+                    return h('li', { key: r.id, 'data-workforce-role': r.id, 'data-workforce-zero': pct === 0 ? 'true' : 'false', style: { borderLeftColor: r.color } },
+                      h('strong', null, r.label),
+                      h('p', { 'data-workforce-share': 'true' }, pct + '% of the seasonal allocation'),
+                      h('span', { 'data-workforce-count': 'true' }, 'About ' + count.toLocaleString() + ' workers'),
+                      pct === 0 && h('span', { 'data-workforce-zero-share': 'true' }, 'Not allocated in this seasonal illustration.'),
+                      h('div', { className: 'bee-colony-workforce-meter', 'data-workforce-meter': r.id, role: 'meter', 'aria-label': r.label + ' seasonal share', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct,
+                        'aria-valuetext': pct + ' of every 100 workers in this seasonal illustration. About ' + count.toLocaleString() + ' workers from the current workforce.' }, h('span', { style: { width: pct + '%' } })),
+                      h('div', { className: 'bee-colony-workforce-scale', 'aria-hidden': 'true' }, h('span', null, '0%'), h('span', null, '100%')),
+                      h('p', { 'data-workforce-role-note': 'true' }, r.note));
+                  })),
+                  h('p', { className: 'bee-colony-note', 'data-workforce-rounding': 'true' }, 'Each worker estimate is rounded separately, so the displayed counts may not add up to the current workforce.'))
               );
             })(),
             // Meters
@@ -37174,6 +39116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               function meterRow(id, color, emoji, label, valueStr, dangerCls, gradientCls, widthPct, explainer) {
                 var isOpen = openExp === id;
                 var arrow = isOpen ? '▼' : '▶';
+                var currentBand = explainer.status === 'Needs attention' ? 'danger' : explainer.status === 'Watch' ? 'watch' : 'healthy';
                 return h('div', { className: 'rounded-md ' + (isOpen ? (dk ? 'bg-slate-800/40' : 'bg-slate-50') : '') },
                   h('button', {
                     type: 'button', 'data-colony-stat-toggle': id,
@@ -37198,17 +39141,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     className: 'bee-colony-explainer',
                     role: 'region', 'aria-label': label + ' explanation'
                   },
+                    h('div', { className: 'bee-colony-stat-current', 'data-stat-current': 'true' },
+                      h('span', null, 'Current reading'),
+                      h('strong', { 'data-stat-reading': 'true' }, explainer.reading),
+                      h('span', null, 'Model status: ' + explainer.status)),
                     h('p', { className: 'mb-1 ' + (dk ? 'text-slate-100' : 'text-slate-700') }, explainer.what),
+                    h('p', { 'data-stat-direction': 'true' }, explainer.direction),
+                    id === 'foraging' && h('p', { 'data-stat-bonus-note': 'true' }, 'The bar includes the garden bonus and stops at 100%. These ranges use base efficiency only.'),
                     h('div', { className: 'bee-colony-bands' },
-                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-emerald-900/30 text-emerald-200' : 'bg-emerald-50 text-emerald-800') },
+                      h('div', { 'data-stat-band': 'healthy', 'data-stat-current-band': currentBand === 'healthy' ? 'true' : 'false', className: 'rounded p-1 text-center ' + (dk ? 'bg-emerald-900/30 text-emerald-200' : 'bg-emerald-50 text-emerald-800') },
                         h('div', { className: 'font-bold' }, __alloT('stem.beehive.healthy', '✓ Healthy')),
-                        h('div', null, explainer.healthy)),
-                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-amber-900/30 text-amber-200' : 'bg-amber-50 text-amber-800') },
+                        h('div', null, explainer.healthy),
+                        currentBand === 'healthy' && h('span', { 'data-stat-current-label': 'true' }, 'Current range')),
+                      h('div', { 'data-stat-band': 'watch', 'data-stat-current-band': currentBand === 'watch' ? 'true' : 'false', className: 'rounded p-1 text-center ' + (dk ? 'bg-amber-900/30 text-amber-200' : 'bg-amber-50 text-amber-800') },
                         h('div', { className: 'font-bold' }, __alloT('stem.beehive.watch', '⚠ Watch')),
-                        h('div', null, explainer.watch)),
-                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-red-900/30 text-red-200' : 'bg-red-50 text-red-800') },
+                        h('div', null, explainer.watch),
+                        currentBand === 'watch' && h('span', { 'data-stat-current-label': 'true' }, 'Current range')),
+                      h('div', { 'data-stat-band': 'danger', 'data-stat-current-band': currentBand === 'danger' ? 'true' : 'false', className: 'rounded p-1 text-center ' + (dk ? 'bg-red-900/30 text-red-200' : 'bg-red-50 text-red-800') },
                         h('div', { className: 'font-bold' }, __alloT('stem.beehive.danger', '⛔ Danger')),
-                        h('div', null, explainer.danger))
+                        h('div', null, explainer.danger),
+                        currentBand === 'danger' && h('span', { 'data-stat-current-label': 'true' }, 'Current range'))
                     ),
                     h('p', { className: 'mt-2 italic ' + (dk ? 'text-slate-200' : 'text-slate-600') },
                       h('strong', null, __alloT('stem.beehive.what_to_do', 'What to do: ')), explainer.action)
@@ -37216,7 +39168,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 );
               }
               var widthFor = Math.min(100, foragingEfficiency + gardenBonus);
-              return h('div', { className: 'bee-colony-group space-y-2' },
+              return h('div', { className: 'bee-colony-group space-y-2', 'data-colony-health-guide': 'true' },
                 h('h4', null, 'Health and forage · select a metric to learn more'),
                 meterRow('varroa',
                   dk ? 'text-red-400' : 'text-red-700', '🦟', 'Varroa Pressure',
@@ -37226,6 +39178,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   varroaLevel,
                   {
                     status: varroaLevel >= 20 ? 'Needs attention' : varroaLevel >= 10 ? 'Watch' : 'Healthy range',
+                    reading: varroaLevel + ' / 100 pressure points',
+                    direction: "Lower pressure is the healthier direction on this model scale.",
                     cardCls: dk ? 'bg-red-900/15 border-red-500' : 'bg-red-50/70 border-red-300',
                     what: 'A 0–100 model index of mite pressure, not mites per 100 sampled bees. Varroa feed on bee fat-body tissue and can transmit damaging viruses. Rising model pressure increases simulated mortality.',
                     // One scale everywhere: Treat unlocks at 10, and the coach, tutorial and
@@ -37244,6 +39198,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   morale,
                   {
                     status: morale < 40 ? 'Needs attention' : morale < 70 ? 'Watch' : 'Healthy range',
+                    reading: morale + ' / 100 stability points',
+                    direction: "Higher stability is the healthier direction on this model scale.",
                     cardCls: dk ? 'bg-amber-900/15 border-amber-500' : 'bg-amber-50/70 border-amber-300',
                     what: 'A 0–100 model stability index, stored internally as morale. It summarizes food, queen condition, parasites, and recent stressors. It does not measure bee feelings or a directly observed biological percentage.',
                     healthy: '70–100 points',
@@ -37260,6 +39216,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   widthFor,
                   {
                     status: foragingEfficiency < 40 ? 'Needs attention' : foragingEfficiency < 70 ? 'Watch' : 'Healthy range',
+                    reading: foragingEfficiency + '% base efficiency',
+                    direction: "Higher base efficiency is the healthier direction on this model scale.",
                     cardCls: dk ? 'bg-emerald-900/15 border-emerald-500' : 'bg-emerald-50/70 border-emerald-300',
                     what: 'A model percentage that scales food collection. Weather, bloom availability, and pesticide exposure affect the simulated forage yield. The garden bonus is shown separately; this guide describes the base efficiency.',
                     healthy: '70–100%',
@@ -37276,6 +39234,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   diseaseRisk,
                   {
                     status: diseaseRisk > 45 ? 'Needs attention' : diseaseRisk >= 25 ? 'Watch' : 'Healthy range',
+                    reading: diseaseRisk + ' / 100 pressure points',
+                    direction: "Lower pressure is the healthier direction on this model scale.",
                     cardCls: dk ? 'bg-purple-900/15 border-purple-500' : 'bg-purple-50/70 border-purple-300',
                     what: 'A 0–100 model pressure index, not an outbreak probability. The daily model combines stressors and uses a separate event trigger above 45 points. A value of 60 does not mean a 60% chance of disease.',
                     healthy: 'Below 25 points',
@@ -37956,6 +39916,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhQueenNotebookCapture: bhQueenNotebookCapture,
       bhDroneNotebookCapture: bhDroneNotebookCapture,
       bhHiveInteriorSnapshot: bhHiveInteriorSnapshot, bhHiveInteriorFrameModel: bhHiveInteriorFrameModel, bhHiveInteriorLens: bhHiveInteriorLens, bhHiveInteriorDiagramChanges: bhHiveInteriorDiagramChanges, bhHiveInteriorComparison: bhHiveInteriorComparison,
+      bhHiveFrameVisits: bhHiveFrameVisits,
+      bhGuidedInspectionReview: bhGuidedInspectionReview,
       bhHiveInteriorEvidence: bhHiveInteriorEvidence, bhHiveInteriorFrameGuide: bhHiveInteriorFrameGuide, bhHiveInteriorReadingScale: bhHiveInteriorReadingScale, BH_HIVE_INTERIOR_ROLES: BH_HIVE_INTERIOR_ROLES,
       bhAppendNotebookEvidence: bhAppendNotebookEvidence, BH_COLONY_OBSERVATION_LIMIT: BH_COLONY_OBSERVATION_LIMIT,
       BH_FORECAST_STUDY_METRICS: BH_FORECAST_STUDY_METRICS,
@@ -37981,7 +39943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhSeedFromInput: bhSeedFromInput,
       bhFreshExperimentSeed: bhFreshExperimentSeed,
       bhCreateSeededRandom: bhCreateSeededRandom,
-      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneApproachGuide: bhDroneApproachGuide, bhDroneApproachCues: bhDroneApproachCues, bhDroneInspectionCamera: bhDroneInspectionCamera, bhDroneHeightGuide: bhDroneHeightGuide, bhDroneHabitatLayout: bhDroneHabitatLayout, bhDroneVegetationMesh: bhDroneVegetationMesh, bhDroneStreamDetail: bhDroneStreamDetail, bhDroneStreamSurface: bhDroneStreamSurface, bhDroneStreamTexture: bhDroneStreamTexture, bhDroneStreamOffset: bhDroneStreamOffset, bhDronePlantSubject: bhDronePlantSubject, bhDroneHabitatFraction: bhDroneHabitatFraction, bhDronePredatorReadout: bhDronePredatorReadout, bhDroneNearestBird: bhDroneNearestBird, bhDroneButterflyVisible: bhDroneButterflyVisible, bhDroneButterflyPose: bhDroneButterflyPose, bhDroneButterflySubject: bhDroneButterflySubject, bhDroneButterflyWing: bhDroneButterflyWing, bhDroneButterflyAnatomy: bhDroneButterflyAnatomy, bhDroneButterflyCallouts: bhDroneButterflyCallouts, bhDroneMotionReadout: bhDroneMotionReadout, bhDroneFlightTrail: bhDroneFlightTrail, bhDroneThermalSample: bhDroneThermalSample, bhDroneLiftReadout: bhDroneLiftReadout, bhDroneRouteOverview: bhDroneRouteOverview,
+      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneManeuverEvidence: bhDroneManeuverEvidence, bhDroneHistorySelection: bhDroneHistorySelection, bhDroneReplayModel: bhDroneReplayModel, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightConditions: bhDroneFlightConditions, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneApproachGuide: bhDroneApproachGuide, bhDroneCueLeaderPath: bhDroneCueLeaderPath, bhDroneCueLabelLayout: bhDroneCueLabelLayout, bhDroneApproachCues: bhDroneApproachCues, bhDroneInspectionCamera: bhDroneInspectionCamera, bhDroneHeightGuide: bhDroneHeightGuide, bhDroneHabitatLayout: bhDroneHabitatLayout, bhDroneVegetationMesh: bhDroneVegetationMesh, bhDroneStreamDetail: bhDroneStreamDetail, bhDroneStreamSurface: bhDroneStreamSurface, bhDroneStreamTexture: bhDroneStreamTexture, bhDroneStreamOffset: bhDroneStreamOffset, bhDronePlantSubject: bhDronePlantSubject, bhDroneHabitatFraction: bhDroneHabitatFraction, bhDronePredatorReadout: bhDronePredatorReadout, bhDroneNearestBird: bhDroneNearestBird, bhDroneButterflyVisible: bhDroneButterflyVisible, bhDroneButterflyPose: bhDroneButterflyPose, bhDroneButterflySubject: bhDroneButterflySubject, bhDroneButterflyWing: bhDroneButterflyWing, bhDroneButterflyAnatomy: bhDroneButterflyAnatomy, bhDroneButterflyCallouts: bhDroneButterflyCallouts, bhDroneMotionReadout: bhDroneMotionReadout, bhDroneFlightTrail: bhDroneFlightTrail, bhDroneThermalSample: bhDroneThermalSample, bhDroneLiftReadout: bhDroneLiftReadout, bhDroneRouteOverview: bhDroneRouteOverview, bhDronePlanMap: bhDronePlanMap, bhDronePlanningReadings: bhDronePlanningReadings, bhDronePlanningSurroundings: bhDronePlanningSurroundings, bhDroneRecordedSnapshot: bhDroneRecordedSnapshot,
       bhRunHoneyLab: bhRunHoneyLab, bhNewHoneyLab: bhNewHoneyLab,
       bhNormalizeHoneyLab: bhNormalizeHoneyLab, bhHoneyLabReady: bhHoneyLabReady,
       bhHoneyLabPlan: bhHoneyLabPlan, bhHoneyLabComparison: bhHoneyLabComparison,

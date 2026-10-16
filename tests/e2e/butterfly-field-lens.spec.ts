@@ -10,7 +10,7 @@ async function mount(page:any,fallback=false,saved:any={}){
  await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-renderer',fallback?'map':'three');
 }
 async function audit(page:any){expect(await page.evaluate(async()=>{const r=await (window as any).axe.run(document.querySelector('[data-butterfly-root]'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return r.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>n.failureSummary)}));})).toEqual([]);}
-async function arrive(page:any,name:string){await page.getByRole('region',{name:'Habitat destinations'}).getByRole('button',{name:new RegExp(name)}).click();await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-paused','true',{timeout:70000});await page.getByRole('button',{name:'Land here',exact:true}).click();}
+async function arrive(page:any,name:string){await page.getByRole('region',{name:'Habitat destinations'}).locator('.bf-destination').filter({hasText:name}).click();await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-paused','true',{timeout:70000});await page.getByRole('button',{name:'Land here',exact:true}).click();}
 
 test('field lens moves only the camera, targets flowers and leaves, and retains its reading after context loss',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await mount(page);

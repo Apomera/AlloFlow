@@ -1,5 +1,6 @@
-/* Shared procedural feather painting for BirdLab and Raptor Lab.
- * Pure canvas artwork: no renderer, GPU resources, flight state or global RNG.
+/* Shared procedural feather painting and surface grain for both bird labs.
+ * Canvas artwork and shader composition: no renderer, GPU resources,
+ * flight state or global RNG. Shader hooks belong to the calling material.
  * Every call creates new canvases; each lab owns its resulting GPU textures.
  */
 (function (global) {
@@ -112,9 +113,65 @@
     return { normal: normalCanvas, roughness: roughCanvas };
   }
 
+  function vaneGrainOptions(options) {
+    options = options || {};
+    var variants = options.variants === undefined ? 4 : options.variants;
+    if (variants !== 1 && variants !== 4) throw new RangeError('AvianFeatherArt variants must be 1 or 4.');
+    return { variants: variants, contourFeather: !!options.contourFeather };
+  }
+  function vaneGrainCacheKey(options) {
+    var settings = vaneGrainOptions(options);
+    return 'avian-vane-grain-v2-' + settings.variants + (settings.contourFeather ? '-contour' : '-flight');
+  }
+  // Whole-feather UVs and four-tile atlases share one surface treatment.
+  // Pigment hooks can compose around the normal color chunk; no global
+  // ShaderChunk changes, uniforms, maps or per-frame updates are needed.
+  function applyVaneGrain(shader, options) {
+    var settings = vaneGrainOptions(options), key = vaneGrainCacheKey(settings);
+    if (!shader || typeof shader.fragmentShader !== 'string') throw new TypeError('AvianFeatherArt requires a fragment shader.');
+    var marker = '// avian-vane-grain:' + key;
+    if (shader.fragmentShader.indexOf('// avian-vane-grain:') !== -1) {
+      if (shader.fragmentShader.indexOf(marker + '\n') !== -1) return shader;
+      throw new Error('AvianFeatherArt grain is already applied with different options.');
+    }
+    if (shader.fragmentShader.indexOf('#include <color_fragment>') === -1) throw new Error('AvianFeatherArt requires the color_fragment shader chunk.');
+    shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' + [
+      marker,
+      'float blVane=fract(vUv.x*' + settings.variants + '.0),blAlong=1.0-vUv.y;',
+      'float blAcross=abs(blVane-0.5)*2.0;',
+      'float blVariant=floor(vUv.x*' + settings.variants + '.0);',
+      // Slight curvature and uneven bundle spacing break up machine-ruled
+      // stripes. Both frequencies fade when their spacing becomes subpixel.
+      'float blBend=sin(blAlong*9.0+blVariant*1.7)*blAcross*0.24;',
+      'float blBarb=blAlong*42.0-blAcross*(6.8+blAlong*3.2)+blVariant*0.73+blBend;',
+      'float blFine=1.0-smoothstep(0.22,0.65,fwidth(blBarb));',
+      'float blBundle=blAlong*11.0-blAcross*2.4+blVariant*0.73+sin(blAlong*7.0+blVariant*2.1)*0.18;',
+      'float blBroad=1.0-smoothstep(0.22,0.65,fwidth(blBundle));',
+      'float blFiber=sin(blBarb*6.2831853)*blFine*0.045+sin(blBundle*6.2831853)*blBroad*0.028;',
+      'float blRoot=smoothstep(0.04,0.22,blAlong);',
+      'diffuseColor.rgb*=1.0+blFiber*blRoot;',
+      'float blAA=max(fwidth(blAcross),0.012);',
+      'float blMargin=smoothstep(0.83-blAA,0.99+blAA,blAcross)*smoothstep(0.24,0.64,blAlong);',
+      'float blTip=smoothstep(0.79,0.99,blAlong)*(0.72+0.28*sin(blVane*19.0+blVariant));',
+      settings.contourFeather ? [
+        'float blShaft=(1.0-smoothstep(0.015,0.065+blAA,blAcross))*blRoot*(1.0-smoothstep(0.70,0.96,blAlong));',
+        'diffuseColor.rgb*=1.0-blShaft*0.075;',
+        'float blWear=max(blMargin*0.16,blTip*0.25);',
+        'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.45,1.33,1.16),blWear);'
+      ].join('\n') : [
+        // Neutral worn edges retain each caller's species colors and bands.
+        'float blWear=max(blMargin*0.055,blTip*0.035);',
+        'diffuseColor.rgb*=1.0+blWear;'
+      ].join('\n')
+    ].join('\n'));
+    return shader;
+  }
+
   global.AvianFeatherArt = {
-    version: '1.0.0',
+    version: '1.1.0',
     createFlightFeatherCanvas: createFlightFeatherCanvas,
-    createVaneDetailCanvases: createVaneDetailCanvases
+    createVaneDetailCanvases: createVaneDetailCanvases,
+    applyVaneGrain: applyVaneGrain,
+    vaneGrainCacheKey: vaneGrainCacheKey
   };
 })(typeof window !== 'undefined' ? window : globalThis);

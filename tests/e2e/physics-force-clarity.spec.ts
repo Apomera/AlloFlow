@@ -125,15 +125,22 @@ function formatted(value: number) {
 
 async function assertForces(page: Page, phase?: string) {
   await redraw(page);
-  const { sample, point, parameters } = await page.evaluate(() => {
+  const { sample, point, parameters, points } = await page.evaluate(() => {
     const inspection = (document.getElementById('physicsCanvas') as any)._inspection;
-    return { sample: inspection.snapshot, point: inspection.trail[inspection.snapshot.index], parameters: inspection.trail.parameters };
+    return { sample: inspection.snapshot, point: inspection.trail[inspection.snapshot.index],
+      parameters: inspection.trail.parameters, points: [...inspection.trail] };
   });
   const speed = Math.hypot(point.mVx, point.mVy), k = parameters.drag ? .004 : 0;
   const gravity = { x: 0, y: -parameters.mass * parameters.gravity, magnitude: parameters.mass * parameters.gravity };
   const drag = { x: -k * speed * point.mVx, y: -k * speed * point.mVy, magnitude: k * speed * speed };
   const net = { x: gravity.x + drag.x, y: gravity.y + drag.y, magnitude: Math.hypot(gravity.x + drag.x, gravity.y + drag.y) };
-  const scale = Math.max(gravity.magnitude, drag.magnitude, net.magnitude);
+  // Independently derive the shared scale from every original observation, including ones omitted by plot decimation.
+  const scale = points.reduce((maximum: number, recorded: any) => {
+    const recordedSpeed = Math.hypot(recorded.mVx, recorded.mVy);
+    const dragX = -k * recordedSpeed * recorded.mVx, dragY = -k * recordedSpeed * recorded.mVy;
+    return Math.max(maximum, parameters.mass * parameters.gravity, k * recordedSpeed * recordedSpeed,
+      Math.hypot(dragX, -parameters.mass * parameters.gravity + dragY));
+  }, 0);
   expect(scale).toBeGreaterThanOrEqual(0);
   for (const [field, value] of Object.entries({ gravityFx: gravity.x, gravityFy: gravity.y,
     dragFx: drag.x, dragFy: drag.y, fx: net.x, fy: net.y, ax: net.x / parameters.mass, ay: net.y / parameters.mass })) {
@@ -151,7 +158,7 @@ async function assertForces(page: Page, phase?: string) {
     await expect(page.locator('[data-physics-phase-help]')).toBeVisible();
     await expect(page.locator('[data-physics-phase-value="ay"]')).toHaveAttribute('data-value', String(sample.ay));
     await expect(page.locator('[data-physics-vertical-balance] strong')).toHaveText(
-      formatted(gravity.y) + ' N + (' + formatted(drag.y) + ' N) = ' + formatted(net.y) + ' N');
+      formatted(gravity.y) + ' N + (' + formatted(drag.y) + ' N) ≈ ' + formatted(net.y) + ' N');
   } finally {
     await selectAnalysisView(page, 'forces');
     await phaseFocus.evaluate(node => { if (node?.isConnected && node.getClientRects().length) node.focus(); });

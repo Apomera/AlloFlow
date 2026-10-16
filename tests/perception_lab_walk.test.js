@@ -124,7 +124,7 @@ describe('first-person perception models', () => {
 
   it('extends the walkable bounds through the eighteenth bay without changing existing spawns', () => {
     expect(walk.spawn('parallax')).toEqual({ x: 24, z: 9, yaw: 0, pitch: 0 });
-    expect(walk.normalizePlayer({ x: 999, z: 9, yaw: 0, pitch: 0 }).x).toBe(199.3);
+    expect(walk.normalizePlayer({ x: 999, z: 9, yaw: 0, pitch: 0 }).x).toBe(223.3);
     expect(walk.normalizePlayer({ x: -99, z: 9, yaw: 0, pitch: 0 }).x).toBe(-19.3);
     expect(walk.movePlayer({ x: 24, z: 9, yaw: 0, pitch: 0 }, 'right', 2, -1).x).toBeCloseTo(26);
     expect(walk.spawn('scale')).toEqual({ x: 0, z: 9, yaw: 0, pitch: 0 });
@@ -158,10 +158,10 @@ describe('first-person perception models', () => {
     ] } };
     const before = structuredClone(raw), normalized = walk.normalize(raw);
     expect(normalized.precise).toBe(true);
-    expect(normalized.parallax).toEqual({ choice: 'C', samples: [
+    expect(normalized.parallax).toEqual({ round: 0, completed: [], choice: 'C', samples: [
       { x: 24, z: 9, yaw: 0, pitch: 0 }, { x: 25.4, z: 9, yaw: 0, pitch: 0 }
     ] });
-    expect(walk.normalize({ precise: 'true', parallax: { choice: 'other', samples: [null, { x: NaN, z: 9 }, { x: 30, z: 9 }] } }).parallax).toEqual({ choice: '', samples: [] });
+    expect(walk.normalize({ precise: 'true', parallax: { choice: 'other', samples: [null, { x: NaN, z: 9 }, { x: 30, z: 9 }] } }).parallax).toEqual({ round: 0, completed: [], choice: '', samples: [] });
     expect(walk.normalize({ precise: 'true' }).precise).toBe(false);
     for (const invalid of [{ x: 24.4, z: 9 }, { x: 26, z: 9.4 }]) {
       expect(walk.normalize({ parallax: { samples: [{ x: 24, z: 9 }, invalid] } }).parallax.samples).toHaveLength(1);
@@ -200,7 +200,7 @@ describe('first-person perception models', () => {
     expect(Object.values(state.player).every(Number.isFinite)).toBe(true);
     expect(state.notes.ring.length).toBeLessThanOrEqual(1000);
     expect(walk.normalize({ blockZ: -10 }).blockZ).toBe(-1);
-    expect(Object.keys(walk.normalize(null).progress)).toEqual(['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length']);
+    expect(Object.keys(walk.normalize(null).progress)).toEqual(['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis']);
   });
 
   it('normalizes puzzle rotations and matching choices without retaining invalid saved values', () => {
@@ -454,7 +454,7 @@ describe('first-person perception models', () => {
   });
 
   it('computes a facing direction independently of player position and saved work', () => {
-    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture']) {
+    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis']) {
       const seed = walk.normalize({ activity, player: { x: 4, z: 11, yaw: 160, pitch: 20 }, blockZ: 2 });
       const before = structuredClone(seed), faced = walk.faceExhibit(seed);
       expect(faced.x).toBe(seed.player.x); expect(faced.z).toBe(seed.player.z); expect(faced.pitch).toBe(0);
@@ -714,7 +714,7 @@ describe('first-person perception interactions', () => {
     expect(latest.perceptionWalk.parallax.choice).toBe('B');
     expect(query('[data-walk-choice="B"]').checked).toBe(true);
     await click('[data-walk-record]'); await click('[data-walk-reveal]'); await click('[data-walk-reset]');
-    expect(latest.perceptionWalk.parallax).toEqual({ samples: [], choice: '' });
+    expect(latest.perceptionWalk.parallax).toEqual({ round: 0, completed: [], samples: [], choice: '' });
     expect(latest.perceptionWalk.progress.parallax).toEqual({ solved: false, assisted: false, hints: 0 });
     expect(latest.perceptionWalk.notes.parallax).toBe('Nearer objects shift more.');
     expect(latest.perceptionWalk.progress.ring.solved).toBe(true);
@@ -839,7 +839,7 @@ describe('first-person perception interactions', () => {
 
   it('changes activities without overwriting other tools and returns to the gallery', async () => {
     await mount();
-    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture']) {
+    for (const activity of ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis']) {
       await click('[data-walk-activity="' + activity + '"]');
       expect(latest.perceptionWalk.activity).toBe(activity);
       expect(query('[data-walk-stage]')).toBeTruthy();

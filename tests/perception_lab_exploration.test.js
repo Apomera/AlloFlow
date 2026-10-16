@@ -43,7 +43,7 @@ async function mount(activity = 'ring', patch = {}) {
 function allSolved(activity = 'ring') {
   const state = seed(activity);
   for (const id of Object.keys(state.progress)) state.progress[id].solved = true;
-  for (const id of ['rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length']) state[id].completed = [0, 1];
+  for (const id of ['rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis']) state[id].completed = [0, 1];
   state.change.completed = [0, 1, 2];
   return walk.normalize(state);
 }
@@ -108,7 +108,7 @@ describe('room itinerary', () => {
   it('keeps every room reachable in the compact strip and expands it without changing saved state', async () => {
     await mount('weave', { notes: { weave: 'Crossings matter.' } });
     const before = structuredClone(latest), toggle = query('[data-walk-all-rooms]');
-    expect(host.querySelectorAll('[data-walk-activity]')).toHaveLength(18);
+    expect(host.querySelectorAll('[data-walk-activity]')).toHaveLength(20);
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     const nav = document.getElementById(toggle.getAttribute('aria-controls')); expect(nav).toBeTruthy();
     await click('[data-walk-all-rooms]'); expect(toggle.getAttribute('aria-expanded')).toBe('true');
@@ -123,7 +123,9 @@ describe('room itinerary', () => {
     await click('[data-walk-next-room]'); expect(latest.perceptionWalk.activity).toBe('scale'); expect(latest.perceptionWalk.player).toEqual(walk.spawn('scale'));
     await click('[data-walk-next-unsolved]'); expect(latest.perceptionWalk.activity).toBe('occlusion');
     await click('[data-walk-previous-room]'); expect(latest.perceptionWalk.activity).toBe('scale');
-    await click('[data-walk-activity="length"]'); expect(query('[data-walk-next-room]').disabled).toBe(true);
+    await click('[data-walk-activity="length"]'); expect(query('[data-walk-next-room]').disabled).toBe(false);
+    await click('[data-walk-next-room]'); expect(latest.perceptionWalk.activity).toBe('silhouette'); expect(query('[data-walk-next-room]').disabled).toBe(false);
+    await click('[data-walk-next-room]'); expect(latest.perceptionWalk.activity).toBe('anamorphosis'); expect(query('[data-walk-next-room]').disabled).toBe(true);
     expect(latest.perceptionWalk.weave).toEqual(original.weave); expect(latest.perceptionWalk.notes).toEqual(original.notes);
     expect(latest.perceptionWalk.progress).toEqual(original.progress); expect(latest.otherTool).toEqual({ preserved: 37 });
   });
@@ -137,7 +139,7 @@ describe('room itinerary', () => {
 
   it.each([
     ['scale', '[data-walk-previous-room]', 'ring'],
-    ['aperture', '[data-walk-next-room]', 'length']
+    ['silhouette', '[data-walk-next-room]', 'anamorphosis']
   ])('moves focus from the disabled edge command when leaving %s', async (from, selector, destination) => {
     await mount(from); query(selector).focus(); await click(selector);
     expect(query(selector).disabled).toBe(true);

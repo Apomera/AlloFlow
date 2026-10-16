@@ -1,0 +1,231 @@
+import { test, expect, Page, Locator } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_beehive.js', toolId: 'beehive',
+  preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['node_modules/axe-core/axe.min.js'],
+  appStyles: true, layout: 'document', width: 980, height: 1800 });
+const artifacts = path.resolve(process.env.BEE_BOTTOM_BAR_ARTIFACTS || '.codex-artifacts/bee-bottom-bar-2026-10-14');
+
+test.describe.configure({ timeout: 480000, retries: 0 });
+test.use({ viewport: { width: 980, height: 1800 }, reducedMotion: 'reduce', video: 'off', trace: 'off' });
+test.beforeAll(() => harness.start()); test.afterAll(() => harness.stop());
+test.afterEach(async ({ page }, info) => { if (info.error) console.error(info.error.message); await harness.destroy(page); });
+
+function observation(page: Page) { return page.locator('[data-inspection-bottom-bar="true"]'); }
+function toggle(page: Page) { return page.locator('[data-inspection-bottom-bar-toggle="true"]'); }
+function content(page: Page) { return page.locator('[data-inspection-bottom-bar-content="true"]'); }
+function review(page: Page) { return page.locator('[data-inspection-feedback="true"]'); }
+async function work(page: Page) { return page.evaluate(() => JSON.parse(JSON.stringify((window as any).__toolData))); }
+async function awards(page: Page) { return page.evaluate(() => (window as any).__bottomBarAwards); }
+async function patch(page: Page, value: Record<string, unknown>) {
+  await page.evaluate(value => { const w = window as any; w.ReactDOM.flushSync(() => w.__ctx.updateMulti('beehive', value)); }, value);
+}
+
+async function mount(page: Page) {
+  await page.addInitScript(() => { (window as any).__RR_TEST_EXPORTS__ = {}; });
+  await page.goto(harness.url + '/__harness', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    const w = window as any, BH = w.__RR_TEST_EXPORTS__.beehive;
+    w.StemLab.ensureThree = () => Promise.reject(new Error('Use the supported bottom-bar observation fallback'));
+    w.THREE.WebGLRenderer = function() { throw new Error('No WebGL in the bottom-bar observation test'); };
+    const colony = { ...BH.bhCreateNewColonyState(777, 3, 0),
+      viewMode: 'beekeeper', beeView: 'pollination', tutorialDone: true, soundOn: false,
+      motionPaused: true, autoAdvance: false, focusLayout: false, notebookOpen: false,
+      missionBriefOpen: false, journeyOpen: false, day: 40, workers: 12000, capacity: 80,
+      honey: 40, syrup: 5, pollen: 12, brood: 6000, queenHealth: 100,
+      queenTransition: null, activeEvent: null, actionPoints: 3,
+      badges: { first_day: { earned: true, day: 1 }, survive_30: { earned: true, day: 30 }, thriving: { earned: true, day: 30 } },
+      show3dHive: false, hive3dExploded: true, hive3dFrame: 2,
+      hive3dFramesSeen: [0, 2], hive3dPart: 'brood_frames', hive3dFoundQueen: false,
+      inspectionDraft: { brood: 'spotty', cells: 'no' }, inspectionsDone: 2,
+      lastInspection: { day: 40, framesRead: 1, queenFound: false, brood: 'solid', cells: 'yes', broodCorrect: true, cellsCorrect: true },
+      notebook: { beekeeper: { prediction: 'Keep my prediction.', evidence: 'Keep <strong>my observation</strong>.',
+        explanation: 'Keep my reasoning.', review: { prediction: true, evidence: true, explanation: true }, custom: { retained: true } },
+        queen: { evidence: 'Keep my network writing.' }, drone: { evidence: 'Keep my flight writing.' }, synthesis: 'Keep my synthesis.' },
+      queen: { active: false }, drone: { active: false, pacing: 'steps', graphicsMode: 'eco' },
+    };
+    Object.assign(document.getElementById('wrap')!.style, { width: '100%', height: 'auto', display: 'block' });
+    w.ReactDOM.flushSync(() => w.__mount({ beehive: colony, otherTool: { retained: 'Another tool’s work.' } }));
+    w.__bottomBarAwards = []; w.__bottomBarWrites = [];
+    w.__ctx.awardXP = (...args: any[]) => { w.__bottomBarAwards.push(args); };
+    for (const name of ['update', 'updateMulti', 'setToolData', 'setLabToolData']) {
+      const original = w.__ctx[name];
+      w.__ctx[name] = function(...args: any[]) { w.__bottomBarWrites.push(name); return original.apply(this, args); };
+    }
+    w.__ctx.gradeLevel = '7th Grade'; w.__rerender();
+  });
+  await page.locator('[data-hive-interior-open]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('#beehive-interior-title')).toBeFocused();
+  await expect(page.locator('[data-beehive-3d-bay="hive"]')).toHaveAttribute('data-beehive-3d-status', 'failed', { timeout: 30000 });
+  await expect(observation(page)).toBeVisible();
+}
+
+async function keyboardActivate(page: Page, control: Locator, key: 'Enter' | 'Space') {
+  // Establish keyboard modality after any management action used a pointer.
+  await page.keyboard.press('Tab'); await control.focus(); await expect(control).toBeFocused();
+  const focus = await control.evaluate(node => { const css = getComputedStyle(node); return { width: parseFloat(css.outlineWidth), style: css.outlineStyle }; });
+  expect(focus.width).toBeGreaterThanOrEqual(2); expect(focus.style).not.toBe('none'); await page.keyboard.press(key);
+}
+
+async function checkObservation(page: Page, shown: boolean, frame: number) {
+  const diagram = page.locator('[data-inspection-bottom-bar-diagram="true"]');
+  await expect(content(page)).toBeVisible();
+  await expect(observation(page)).toHaveJSProperty('open', true);
+  await expect(diagram).toHaveAttribute('role', 'img');
+  await expect(diagram).toHaveAccessibleName(/bottom[- ]bar/i);
+  await expect(diagram).toHaveAttribute('data-shown', String(shown));
+  await expect(diagram.locator('path[data-inspection-hanging-form]')).toHaveCount(shown ? 5 : 0);
+  await expect(page.locator('[data-inspection-bottom-bar-description]')).toHaveText(shown
+    ? 'Drawing: hanging forms beneath the bar.' : 'Drawing: bar without hanging forms.');
+  const context = page.locator('[data-inspection-bottom-bar-context]');
+  await expect(context).toContainText('Day 40'); await expect(context).toContainText('Frame ' + (frame + 1));
+  // These qualifications distinguish observing this current model from the
+  // frozen answer comparison saved earlier in the colony run.
+  await expect(content(page)).toContainText(/model/i);
+  await expect(content(page)).toContainText(/current/i);
+  await expect(content(page)).toContainText(/count/i);
+}
+
+async function readOnlyToggle(page: Page, open: boolean, key: 'Enter' | 'Space') {
+  const before = await work(page), beforeAwards = await awards(page);
+  await page.evaluate(() => { (window as any).__bottomBarWrites = []; });
+  await keyboardActivate(page, toggle(page), key);
+  await expect(observation(page)).toHaveJSProperty('open', open);
+  await expect(toggle(page)).toBeFocused();
+  if (open) await expect(content(page)).toBeVisible(); else await expect(content(page)).not.toBeVisible();
+  expect(await work(page)).toEqual(before); expect(await awards(page)).toEqual(beforeAwards);
+  expect(await page.evaluate(() => (window as any).__bottomBarWrites)).toEqual([]);
+}
+
+async function checkReadOnlyRender(page: Page) {
+  const before = await work(page), beforeAwards = await awards(page);
+  await page.evaluate(async () => {
+    const w = window as any; w.__bottomBarWrites = []; w.ReactDOM.flushSync(() => w.__rerender());
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+  });
+  expect(await work(page)).toEqual(before); expect(await awards(page)).toEqual(beforeAwards);
+  expect(await page.evaluate(() => (window as any).__bottomBarWrites)).toEqual([]);
+  await expect(observation(page)).toHaveJSProperty('open', true);
+}
+
+async function audit(page: Page, mode: string) {
+  const result = await observation(page).evaluate(async node => {
+    const checked = await (window as any).axe.run(node, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] }, rules: { region: { enabled: false } } });
+    const font = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const words: { word: string; context: string; rects: { bottom: number; width: number }[] }[] = [];
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT); let textNode: Node | null;
+    while ((textNode = walker.nextNode())) {
+      // SVG title/description provide the accessible image name; they are not
+      // painted text and therefore have no visual line-box requirement.
+      if (textNode.parentElement?.closest('svg')) continue;
+      const text = textNode.textContent || '';
+      for (const match of text.matchAll(/\S+/g)) {
+        const range = document.createRange(); range.setStart(textNode, match.index!); range.setEnd(textNode, match.index! + match[0].length);
+        words.push({ word: match[0], context: textNode.parentElement?.textContent || text,
+          rects: Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0).map(rect => ({ bottom: rect.bottom, width: rect.width })) });
+      }
+    }
+    return {
+      violations: checked.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, reason: n.failureSummary })) })),
+      overflow: [node, ...Array.from(node.querySelectorAll('*'))].filter(el => el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1).map(el => ({ text: el.textContent, extra: el.scrollWidth - el.clientWidth })), words,
+      text: Array.from(node.querySelectorAll('summary,h3,h4,h5,p,strong,span,figcaption')).filter(el => el.textContent?.trim()).map(el => {
+        const css = getComputedStyle(el); return { text: el.textContent, size: parseFloat(css.fontSize) / font, ellipsis: css.textOverflow, whiteSpace: css.whiteSpace };
+      }),
+      targets: Array.from(node.querySelectorAll('summary,button')).map(el => { const box = el.getBoundingClientRect(); return { width: box.width, height: box.height }; }),
+      forcedAdjustments: window.matchMedia('(forced-colors: active)').matches ? [node, ...Array.from(node.querySelectorAll('*'))].map(el => ({ text: el.textContent, adjustment: getComputedStyle(el).forcedColorAdjust })) : [],
+      pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  fs.mkdirSync(artifacts, { recursive: true }); fs.writeFileSync(path.join(artifacts, 'bottom-bar-layout-' + mode + '.json'), JSON.stringify(result, null, 2));
+  expect(result.violations).toEqual([]); expect(result.overflow).toEqual([]); expect(result.pageOverflow).toBeLessThanOrEqual(1);
+  for (const item of result.text) { expect(item.size, item.text || '').toBeGreaterThanOrEqual(.875); expect(item.ellipsis).not.toBe('ellipsis'); expect(item.whiteSpace).not.toBe('nowrap'); }
+  expect(result.words.length).toBeGreaterThan(0);
+  for (const item of result.words) {
+    expect(item.rects.length, item.word + ' must have visible text in ' + item.context).toBeGreaterThan(0);
+    for (const rect of item.rects) expect(Math.abs(rect.bottom - item.rects[0].bottom), item.word + ' must stay on one line in ' + item.context).toBeLessThanOrEqual(1);
+  }
+  expect(result.targets.length).toBeGreaterThan(0);
+  for (const item of result.targets) { expect(item.width).toBeGreaterThanOrEqual(44); expect(item.height).toBeGreaterThanOrEqual(44); }
+  for (const item of result.forcedAdjustments) expect(item.adjustment, item.text || '').toBe('auto');
+}
+
+async function capture(page: Page, mode: string) {
+  fs.mkdirSync(artifacts, { recursive: true });
+  // Keep the summary focus outline inside the screenshot edge.
+  const pad = 6;
+  const position = await observation(page).evaluate((node, pad) => { const box = node.getBoundingClientRect(); return { top: box.top + window.scrollY - pad, height: box.height + pad * 2 }; }, pad);
+  const tiles: { file: string; offset: number; height: number }[] = []; let offset = 0;
+  while (offset < position.height) {
+    expect(tiles.length).toBeLessThan(8); await page.evaluate(top => window.scrollTo(0, Math.floor(top)), position.top + offset);
+    const box = await observation(page).boundingBox(); expect(box).not.toBeNull(); const y = box!.y - pad + offset; expect(y).toBeGreaterThanOrEqual(0);
+    const height = Math.min(1000, position.height - offset, page.viewportSize()!.height - y); expect(height).toBeGreaterThan(0);
+    const x = Math.max(0, box!.x - pad), width = Math.min(page.viewportSize()!.width - x, box!.width + pad * 2);
+    const file = 'preview-bottom-bar-' + mode + (tiles.length ? '-' + (tiles.length + 1) : '') + '.png';
+    await page.screenshot({ path: path.join(artifacts, file), animations: 'disabled', fullPage: false, clip: { x, y, width, height }, timeout: 120000 });
+    tiles.push({ file, offset, height }); offset += height;
+  }
+  fs.writeFileSync(path.join(artifacts, 'preview-bottom-bar-' + mode + '-tiles.json'), JSON.stringify({ viewport: page.viewportSize(), contextHeight: position.height, tiles }, null, 2));
+}
+
+test('bottom-bar observation stays read-only while its current drawing follows real management and frame changes', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await mount(page);
+  await expect(observation(page)).toHaveJSProperty('tagName', 'DETAILS');
+  await expect(toggle(page)).toHaveJSProperty('tagName', 'SUMMARY');
+  await expect(toggle(page)).toHaveAccessibleName('Observe the bottom bar');
+  await expect(observation(page)).toHaveJSProperty('open', false); await expect(content(page)).not.toBeVisible();
+  const initial = await work(page), initialAwards = await awards(page), savedText = await review(page).innerText();
+  await readOnlyToggle(page, true, 'Enter'); await checkObservation(page, true, 2);
+  await readOnlyToggle(page, false, 'Space'); await readOnlyToggle(page, true, 'Space');
+  await checkReadOnlyRender(page); expect(await work(page)).toEqual(initial); expect(await awards(page)).toEqual(initialAwards);
+
+  // Selecting a frame uses the real cutaway route. It may update viewing
+  // fields, but must not answer or record the inspection automatically.
+  await keyboardActivate(page, page.locator('[data-inspection-frame="4"]'), 'Enter');
+  await expect(page.locator('#beehive-interior-read-title')).toBeFocused();
+  const routed = JSON.parse(JSON.stringify(initial));
+  Object.assign(routed.beehive, { hive3dFrame: 4, hive3dPart: 'brood_frames', hive3dExploded: true, hive3dFramesSeen: [0, 2, 4] });
+  expect(await work(page)).toEqual(routed); expect(await awards(page)).toEqual(initialAwards);
+  await keyboardActivate(page, page.locator('[data-interior-inspection-return]'), 'Enter');
+  await expect(page.locator('#beehive-guided-inspection-title')).toBeFocused();
+  await checkObservation(page, true, 4); expect(await work(page)).toEqual(routed);
+  expect(await review(page).innerText()).toBe(savedText);
+
+  await page.locator('[data-management-choice="add_super"]').click();
+  await expect.poll(async () => (await work(page)).beehive.capacity).toBe(120);
+  await expect.poll(async () => (await work(page)).beehive.bkAnim, { timeout: 10000 }).toBeNull();
+  const managed = await work(page);
+  expect(managed.beehive).toMatchObject({ day: 40, workers: 12000, capacity: 120, actionPoints: 2,
+    inspectionDraft: initial.beehive.inspectionDraft, lastInspection: initial.beehive.lastInspection, inspectionsDone: 2,
+    hive3dFrame: 4, hive3dFramesSeen: [0, 2, 4], hive3dFoundQueen: false, notebook: initial.beehive.notebook });
+  expect(managed.otherTool).toEqual(initial.otherTool);
+  expect(await awards(page)).toEqual([...initialAwards, ['beehive', 5, 'Added super']]);
+  await checkObservation(page, false, 4); expect(await review(page).innerText()).toBe(savedText);
+  await expect(review(page).locator('[data-inspection-result="cells"] [data-inspection-expected]')).toHaveText('Yes');
+  await readOnlyToggle(page, false, 'Enter'); await readOnlyToggle(page, true, 'Enter');
+  await checkReadOnlyRender(page); expect(await work(page)).toEqual(managed);
+  // A compact normal-width preview also covers the visually distinct empty bar.
+  await audit(page, 'absent'); await capture(page, 'absent');
+  const finalAwards = await awards(page); await patch(page, { day: 90 });
+  await expect(page.locator('[data-beehive-guided-inspection]')).toHaveAttribute('data-beehive-guided-inspection', 'winter');
+  await expect(observation(page)).toHaveCount(0); await expect(page.locator('[data-inspection-choice]')).toHaveCount(0);
+  expect((await work(page)).beehive.inspectionDraft).toEqual(initial.beehive.inspectionDraft);
+  expect((await work(page)).beehive.lastInspection).toEqual(initial.beehive.lastInspection);
+  expect(await awards(page)).toEqual(finalAwards); expect(errors).toEqual([]);
+});
+
+test('bottom-bar observation stays legible and keyboard accessible across five display modes', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); await mount(page);
+  const before = await work(page), beforeAwards = await awards(page); await readOnlyToggle(page, true, 'Enter');
+  for (const mode of ['wide', 'mobile', 'dark', 'forced', 'large']) {
+    await page.setViewportSize({ width: mode === 'wide' ? 980 : 320, height: 1800 });
+    await page.emulateMedia({ forcedColors: mode === 'forced' ? 'active' : 'none' });
+    await page.evaluate(mode => { const w = window as any; w.__ctx.isDark = mode === 'dark'; document.documentElement.style.fontSize = mode === 'large' ? '32px' : ''; w.ReactDOM.flushSync(() => w.__rerender()); }, mode);
+    await checkObservation(page, true, 2);
+    await readOnlyToggle(page, false, 'Space'); await readOnlyToggle(page, true, 'Enter');
+    await audit(page, mode); await capture(page, mode); await checkReadOnlyRender(page);
+    expect(await work(page)).toEqual(before); expect(await awards(page)).toEqual(beforeAwards);
+  }
+  expect(errors).toEqual([]);
+});

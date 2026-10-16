@@ -13,7 +13,7 @@ function capture(text) {
   const anchor = "window.StemLab.registerTool('dinoLab'";
   if (!text.includes(anchor)) throw new Error('Dino Lab registration anchor missing');
   window.StemLab = { registerTool() {} };
-  new Function(text.replace(anchor, 'globalThis.__dinoFrillCamber = { DINOS, cranialSurfaceProfileFor, dinoFrillGeometry, dinoBonyFrillGeometry, dinoDisplayShellGeometry, dinoConnectedCranialPose };' + anchor))();
+  new Function(text.replace(anchor, 'globalThis.__dinoFrillCamber = { DINOS, cranialSurfaceProfileFor, dinoFrillGeometry, dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry, dinoProtoceratopsFrillGeometry, dinoDisplayShellGeometry, dinoConnectedCranialPose };' + anchor))();
   const result = globalThis.__dinoFrillCamber; delete globalThis.__dinoFrillCamber; return result;
 }
 const art = capture(source), oldArt = capture(baselineSource);
@@ -72,7 +72,7 @@ function caller(data, isBone = false, baseline = false, hasFrill = true) {
   const context = { THREE, vec, model, head: data.head, len: data.len, ht: data.ht, surfaceBodyDepth: data.bodyDepth,
     cranialSurface: data.profile, props: { species: data.dn }, boneMat,
     hasAnatomyPart: id => id === 'frill' && hasFrill,
-    dinoFrillGeometry: (baseline ? oldArt : art).dinoFrillGeometry, dinoBonyFrillGeometry: (baseline ? oldArt : art).dinoBonyFrillGeometry, cranialMotionParts: [] };
+    dinoFrillGeometry: (baseline ? oldArt : art).dinoFrillGeometry, dinoBonyFrillGeometry: (baseline ? oldArt : art).dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry: (baseline ? oldArt : art).dinoStyracosaurusBonyFrillGeometry, dinoProtoceratopsFrillGeometry: (baseline ? oldArt : art).dinoProtoceratopsFrillGeometry, cranialMotionParts: [] };
   context.dinoMarkSpecialPart = inContext(block(source, 'function dinoMarkSpecialPart(mesh, id) {', 'function dinoTagSpecialParts(before, id) {'), 'dinoMarkSpecialPart', context);
   const motion = inContext(block(source, 'function registerCranialMotion(part) {', 'scene.add(model);'), '({registerCranialMotion, captureCranialMotion})', context);
   const build = inContext(block(source, 'function addFrillSurface(mat, size) {', 'var hasHighSail ='), 'addFrillSurface', context);

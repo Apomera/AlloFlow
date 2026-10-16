@@ -1,13 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 /**
  * Two measured visual defects in the 3D flight view.
  *
  * 1. STARS IN DAYLIGHT. The star dome faded on its own curve, `1 - brightness *
- *    1.4`, while every other consumer in the tool keys off getDayNight's bands
- *    (isNight < 0.2, isDusk 0.2-0.4). Measured at 8AM: sky luminance 98 (fully
- *    blue) with 600 stars drawn over it at 0.46 opacity.
+ *    1.4`. A later brightness-band fade still exposed hundreds of stars after
+ *    sunrise: at 7AM the sun was already 17 degrees above the horizon. Solar
+ *    elevation now fades them through twilight and prevents altitude from
+ *    restoring stars to a bright daytime sky.
  *
  * 2. FEATURELESS GROUND. The field/road detail map tiles once per 24,000 ft. A
  *    raycast at 400 ft AGL put the terrain 122-204 ft from the camera, so the
@@ -22,27 +24,31 @@ const PATHS = [
   'desktop/web-app/public/stem_lab/stem_tool_flightsim.js',
 ];
 const eachSource = (fn) => PATHS.forEach((p) => fn(readFileSync(p, 'utf8'), p));
+let api;
+beforeAll(() => {
+  resetStemLab(); window.__RR_TEST_EXPORTS__ = {};
+  loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim'); api = window.__RR_TEST_EXPORTS__.flightSim;
+});
 
 describe('flightsim sky', () => {
-  it('fades stars on the tool\'s own daylight bands', () => {
-    eachSource((source, path) => {
-      expect(source, `${path}: stars are back on an independent fade curve`)
-        .not.toMatch(/starNight = Math\.max\(0, 1 - dnBright \* 1\.4\)/);
-      // 0.4 and 0.2 are getDayNight's isDusk boundaries — the same numbers city
-      // lights and the bloom threshold switch on.
-      expect(source).toContain('var starDusk = Math.max(0, Math.min(1, (0.4 - dnBright) / 0.2));');
-      expect(source).toContain('var starNight = Math.pow(starDusk, 1.6);');
-    });
+  it('fades stars continuously below the solar horizon', () => {
+    const samples = [17.99, 18.001, 18.1, 18.2, 18.5, 22].map(hour =>
+      api.getFlightCelestialFrame(hour, { type: 'clear', visibility: 1 }, 0).starOpacity);
+    expect(samples[0]).toBe(0); expect(samples.at(-1)).toBe(1);
+    expect(samples[1]).toBeLessThan(0.001);
+    expect(samples.some(value => value > 0 && value < 1)).toBe(true);
+    for (let index = 1; index < samples.length; index++) expect(samples[index]).toBeGreaterThanOrEqual(samples[index - 1]);
+    for (const value of samples) { expect(Number.isFinite(value)).toBe(true); expect(value).toBeGreaterThanOrEqual(0); expect(value).toBeLessThanOrEqual(1); }
   });
 
-  it('keeps stars at high altitude regardless of daylight', () => {
-    eachSource((source, path) => {
-      // The altitude term is a separate, deliberate effect (thin air above
-      // 20,000 ft) and must not be collateral damage of the daylight fix.
-      expect(source, `${path}: the high-altitude star term was lost`)
-        .toContain('var starAltF = Math.max(0, Math.min(1, ((state.altitude || 0) - 20000) / 20000)) * 0.7;');
-      expect(source).toContain('Math.max(starNight, starAltF)');
-    });
+  it('allows altitude to strengthen twilight stars without restoring daylight stars', () => {
+    const weather = { type: 'clear', visibility: 1 };
+    for (const altitude of [0, 20000, 40000, 65000]) {
+      for (const hour of [6, 7, 12, 17, 18]) expect(api.getFlightCelestialFrame(hour, weather, altitude).starOpacity).toBe(0);
+      expect(api.getFlightCelestialFrame(22, weather, altitude).starOpacity).toBeGreaterThan(0);
+    }
+    expect(api.getFlightCelestialFrame(18.1, weather, 40000).starOpacity)
+      .toBeGreaterThanOrEqual(api.getFlightCelestialFrame(18.1, weather, 0).starOpacity);
   });
 });
 

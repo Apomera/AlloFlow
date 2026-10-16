@@ -31,8 +31,9 @@ describe('BirdLab 3D continuous flight course', () => {
       check(Math.abs(sample.pose.headYaw) <= .5, 'excessive head turn');
       check(sample.pose.gazePitch >= 0 && sample.pose.gazePitch <= .22, 'excessive downward gaze');
       check(Math.abs(sample.pose.airLift) <= 1 && Math.abs(sample.pose.airRoll) <= 1, 'excessive airflow response');
+      check(Math.abs(sample.pose.rollControl) <= 1, 'excessive roll correction');
       check(sample.wind[0] >= .108 && sample.wind[0] <= .178 && sample.wind[2] >= .03525 && sample.wind[2] <= .07525, 'breeze outside gentle bounds');
-      for (const key of ['flapAmplitude', 'fold', 'tailFan', 'feet', 'breath', 'crouch', 'touchdown', 'brake', 'grip']) {
+      for (const key of ['flapAmplitude', 'fold', 'tailFan', 'feet', 'breath', 'crouch', 'touchdown', 'brake', 'grip', 'wingSweep', 'wingSupport']) {
         check(sample.pose[key] >= 0 && sample.pose[key] <= 1, `${key} outside 0–1`);
       }
     }
@@ -99,6 +100,79 @@ describe('BirdLab 3D continuous flight course', () => {
     expect(checked).toBeGreaterThan(100);
   });
 
+  it('carries bank angular velocity and acceleration through every attitude-table join', () => {
+    const h=.0001;
+    for(let tick=0;tick<=880;tick++) {
+      const time=tick*.05,at=sampleFlight(time).bank;
+      const before=[1,2,3].map(n=>sampleFlight(time-n*h).bank);
+      const after=[1,2,3].map(n=>sampleFlight(time+n*h).bank);
+      const arriving=(3*at-4*before[0]+before[1])/(2*h);
+      const departing=(-3*at+4*after[0]-after[1])/(2*h);
+      const accelerationIn=(2*at-5*before[0]+4*before[1]-before[2])/(h*h);
+      const accelerationOut=(2*at-5*after[0]+4*after[1]-after[2])/(h*h);
+      if(Math.abs(arriving-departing)>.00001)throw new Error(`Bank angular velocity jumped at ${time}s`);
+      if(Math.abs(accelerationIn-accelerationOut)>.00005)throw new Error(`Bank angular acceleration jumped at ${time}s`);
+    }
+  });
+
+  it('corrects into and out of a bank instead of holding the same roll command', () => {
+    const corrections=[];
+    for(let time=9;time<33;time+=.07) {
+      const sample=sampleFlight(time),h=.00001;
+      const rate=(sampleFlight(time+h).bank-sampleFlight(time-h).bank)/(2*h);
+      corrections.push(sample.pose.rollControl);
+      if(Math.abs(rate)>.005)expect(sample.pose.rollControl*rate,`roll direction at ${time}s`).toBeGreaterThan(0);
+    }
+    expect(Math.min(...corrections)).toBeLessThan(-.5);
+    expect(Math.max(...corrections)).toBeGreaterThan(.5);
+    // Both times are positively banked, but one enters and the other exits.
+    expect(sampleFlight(10).bank).toBeGreaterThan(0);
+    expect(sampleFlight(12).bank).toBeGreaterThan(0);
+    expect(sampleFlight(10).pose.rollControl).toBeGreaterThan(0);
+    expect(sampleFlight(12).pose.rollControl).toBeLessThan(0);
+  });
+
+  it('relaxes the tail fan smoothly when a turn passes through level flight', () => {
+    let crossings=0;
+    for(let start=9;start<33;start+=.25) {
+      let left=start,right=start+.25;
+      if(sampleFlight(left).bank*sampleFlight(right).bank>=0)continue;
+      for(let step=0;step<32;step++) {
+        const middle=(left+right)/2;
+        if(sampleFlight(left).bank*sampleFlight(middle).bank<=0)right=middle;else left=middle;
+      }
+      const time=(left+right)/2,h=.0001,fan=t=>sampleFlight(t).pose.tailFan;
+      const at=fan(time),arriving=(3*at-4*fan(time-h)+fan(time-2*h))/(2*h);
+      const departing=(-3*at+4*fan(time+h)-fan(time+2*h))/(2*h);
+      expect(Math.abs(arriving-departing),`fan velocity at ${time}s`).toBeLessThan(.00001);
+      expect(Math.abs(arriving)).toBeLessThan(.00001);
+      expect(at).toBeCloseTo(.14,10);crossings++;
+    }
+    expect(crossings).toBeGreaterThanOrEqual(2);
+  });
+
+  it('blends speed and turn trim smoothly while preserving launch, approach and perch poses', () => {
+    const keys=['wingSweep','wingSupport','rollControl'];
+    for(const time of [0,2.7,3.12,5,7,35,36.8,38,38.18,39.4,43.9]) {
+      for(const key of keys)expect(sampleFlight(time).pose[key],`${key} at ${time}s`).toBe(0);
+    }
+    expect(sampleFlight(18.56).pose.wingSweep).toBeGreaterThan(.99);
+    expect(sampleFlight(25.91).pose.wingSweep).toBe(0);
+    expect(sampleFlight(10.9).pose.wingSupport).toBeGreaterThan(.5);
+    expect(sampleFlight(14).pose.wingSupport).toBeLessThan(.03);
+    const h=.0001;
+    for(let tick=140;tick<=700;tick++) {
+      const time=tick*.05;
+      for(const key of keys) {
+        const at=sampleFlight(time).pose[key];
+        const before=sampleFlight(time-h).pose[key],earlier=sampleFlight(time-2*h).pose[key];
+        const after=sampleFlight(time+h).pose[key],later=sampleFlight(time+2*h).pose[key];
+        const arriving=(3*at-4*before+earlier)/(2*h),departing=(-3*at+4*after-later)/(2*h);
+        if(Math.abs(arriving-departing)>.001)throw new Error(`${key} velocity jumped at ${time}s`);
+      }
+    }
+  });
+
   it('moves through the full observation sequence and reaches the same perch at rest', () => {
     const sequence = [0, 2.7, 4, 7, 15, 25, 33, 37, 39, 42].map(time => sampleFlight(time).phase);
     expect(sequence).toEqual(['perched', 'preparing', 'takeoff', 'climbing', 'gliding', 'banking', 'approaching', 'landing', 'settling', 'perched']);
@@ -141,15 +215,54 @@ describe('BirdLab 3D continuous flight course', () => {
     expect(sampleFlight(3.22).pose.crouch).toBe(0);
     for (let t=3.23;t<4.6;t+=.02) expect(sampleFlight(t+.01).airspeed).toBeGreaterThan(sampleFlight(t).airspeed);
     expect(sampleFlight(37.9).pose.touchdown).toBe(0);
-    expect(sampleFlight(38.13).pose.touchdown).toBe(1);
+    expect(sampleFlight(38.13).pose.touchdown).toBeGreaterThan(.95);
     expect(sampleFlight(38.13).position).toEqual([0,0,0]);
-    expect(sampleFlight(38.7).pose.touchdown).toBe(0);
+    expect(sampleFlight(38.75).pose.touchdown).toBe(0);
     expect(sampleFlight(37.5).pose.brake).toBe(1);
     expect(sampleFlight(39.3).pose.brake).toBe(0);
     expect(sampleFlight(2.9).pose.grip).toBe(1);
     expect(sampleFlight(3.2).pose.grip).toBe(0);
     expect(sampleFlight(37.8).pose.grip).toBe(0);
     expect(sampleFlight(38.3).pose.grip).toBe(1);
+  });
+
+  it('absorbs contact in one uninterrupted compression and recovery with the feet planted', () => {
+    const samples=Array.from({length:145},(_,i)=>sampleFlight(38+i*.005));
+    const values=samples.map(sample=>sample.pose.touchdown);
+    const peak=values.indexOf(Math.max(...values));
+    expect(peak*.005).toBeGreaterThan(.10);
+    expect(peak*.005).toBeLessThan(.20);
+    expect(values[peak]).toBeGreaterThan(.99);
+    for(let i=1;i<values.length;i++) {
+      expect(samples[i].position).toEqual([0,0,0]);
+      expect(samples[i].pose.feet).toBe(1);
+      if(i<=peak)expect(values[i],`compression at ${i*.005}s`).toBeGreaterThan(values[i-1]);
+      else expect(values[i],`recovery at ${i*.005}s`).toBeLessThan(values[i-1]);
+    }
+    const step=.00001;
+    for(const boundary of [38,38.72]) {
+      const at=sampleFlight(boundary).pose.touchdown;
+      const before=sampleFlight(boundary-step).pose.touchdown;
+      const after=sampleFlight(boundary+step).pose.touchdown;
+      expect(Math.abs((after-before)/(2*step))).toBeLessThan(.00001);
+      expect(Math.abs((after-2*at+before)/(step*step))).toBeLessThan(.05);
+    }
+    // Grip follows contact and becomes secure while the legs are still
+    // recovering, rather than closing on empty air before the perch.
+    for(const time of [37.98,37.99,38])expect(sampleFlight(time).pose.grip).toBe(0);
+    expect(sampleFlight(38.13).pose.grip).toBeCloseTo(.5,10);
+    expect(sampleFlight(38.26).pose.grip).toBeCloseTo(1,12);
+    expect(sampleFlight(38.26).pose.touchdown).toBeGreaterThan(.25);
+  });
+
+  it('keeps its landing sightline until the wing fold settles before scanning again', () => {
+    for(const time of [36,37.5,38,38.3,38.8,39.2,39.3]) {
+      expect(sampleFlight(time).pose.headYaw).toBe(0);
+    }
+    expect(sampleFlight(39.3).pose.fold).toBeGreaterThan(.98);
+    expect(sampleFlight(39.7).pose.headYaw).toBeCloseTo(.12,10);
+    expect(sampleFlight(39.85).pose.headYaw).toBe(sampleFlight(39.7).pose.headYaw);
+    expect(sampleFlight(40.4).pose.headYaw).toBeCloseTo(-.18,10);
   });
 
   it('aligns with the perch smoothly as it brakes, without a heading reset after landing', () => {
@@ -267,6 +380,43 @@ describe('BirdLab 3D continuous flight course', () => {
     }
   });
 
+  it('looks into the upcoming course turn before the body finishes the preceding bank', () => {
+    const angle=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
+    // Use intervals where the separate observational scan holds a known
+    // sightline, and derive the upcoming turn from the public trajectory.
+    for(const [time,scan] of [[8.6,-.12],[9.2,-.12],[11.6,.05],[12,.05],[14,.16],
+      [16,-.09],[20,.02],[23.2,0],[26,0],[29,0],[31.8,0]]) {
+      const current=sampleFlight(time),ahead=sampleFlight(time+.45);
+      const upcoming=angle(ahead.yaw,current.yaw),lead=current.pose.headYaw-scan;
+      expect(Math.abs(lead)).toBeLessThan(.24);
+      expect(lead*upcoming).toBeGreaterThan(0);
+      // Interpolation should preserve the look-ahead direction and modest
+      // angular gain, rather than introducing a different wandering gaze.
+      expect(Math.abs(lead-.24*Math.tanh(upcoming*.85/.24))).toBeLessThan(.001);
+    }
+    const reversal=sampleFlight(29.3);
+    expect(reversal.bank).toBeLessThan(0);
+    expect(reversal.pose.headYaw).toBeGreaterThan(.02);
+    for(const time of [34,35,37.9,38,38.4,39.2])expect(sampleFlight(time).pose.headYaw).toBe(0);
+  });
+
+  it('carries head-turn velocity and acceleration smoothly through course joins and gaze gates', () => {
+    const h=.0001;
+    // The shifted times are where the look-ahead crosses a course join.
+    // These samples avoid the intentionally separate short scanning turns.
+    for(const time of [5.5,7.05,7.5,8,11.55,12,16.55,17,21.55,22,26.55,27,30.55,31,32,34]) {
+      const at=sampleFlight(time).pose.headYaw;
+      const before=[1,2,3].map(n=>sampleFlight(time-n*h).pose.headYaw);
+      const after=[1,2,3].map(n=>sampleFlight(time+n*h).pose.headYaw);
+      const incoming=(3*at-4*before[0]+before[1])/(2*h);
+      const outgoing=(-3*at+4*after[0]-after[1])/(2*h);
+      const accelerationIn=(2*at-5*before[0]+4*before[1]-before[2])/(h*h);
+      const accelerationOut=(2*at-5*after[0]+4*after[1]-after[2])/(h*h);
+      expect(Math.abs(incoming-outgoing),`head angular velocity at ${time}s`).toBeLessThan(.00001);
+      expect(Math.abs(accelerationIn-accelerationOut),`head angular acceleration at ${time}s`).toBeLessThan(.0001);
+    }
+  });
+
   it('uses a deterministic wingbeat phase for timeline seeking and uneven frame rates', () => {
     const reference=sampleWingPhase(4.2);
     for(const step of [.01,.02,.05]) {
@@ -279,6 +429,43 @@ describe('BirdLab 3D continuous flight course', () => {
     }
     expect(sampleWingPhase(Infinity)).toBe(0);
     expect(sampleWingPhase(-1)).toBe(0);
+  });
+
+  it('keeps wingbeat velocity and acceleration continuous through clock samples and the circuit seam', () => {
+    const delta=(value,reference)=>Math.atan2(Math.sin(value-reference),Math.cos(value-reference));
+    let largestVelocityJump=0,largestAccelerationJump=0;
+    // Include every former 25 ms interpolation seam, especially the changing
+    // cadence at takeoff and landing, plus the end of the repeated course.
+    for(let tick=1;tick<=1760;tick++) {
+      const time=tick*.025,at=sampleWingPhase(time),h=.00005,a=.0005;
+      const offset=dt=>delta(sampleWingPhase(time+dt),at);
+      const leftVelocity=(-4*offset(-h)+offset(-2*h))/(2*h);
+      const rightVelocity=(4*offset(h)-offset(2*h))/(2*h);
+      const leftAcceleration=(-5*offset(-a)+4*offset(-2*a)-offset(-3*a))/(a*a);
+      const rightAcceleration=(-5*offset(a)+4*offset(2*a)-offset(3*a))/(a*a);
+      largestVelocityJump=Math.max(largestVelocityJump,Math.abs(leftVelocity-rightVelocity));
+      largestAccelerationJump=Math.max(largestAccelerationJump,Math.abs(leftAcceleration-rightAcceleration));
+    }
+    expect(largestVelocityJump).toBeLessThan(.00003);
+    expect(largestAccelerationJump).toBeLessThan(.002);
+  });
+
+  it('advances the smoothed wingbeat clock monotonically at the intended cadence', () => {
+    const step=.00625,tau=Math.PI*2;
+    let previous=sampleWingPhase(0),turns=0,slowest=Infinity,fastest=0;
+    for(let tick=1;tick<=courseDuration/step;tick++) {
+      const current=sampleWingPhase(tick*step);
+      const advance=Math.atan2(Math.sin(current-previous),Math.cos(current-previous));
+      const cadence=advance/(step*tau);
+      slowest=Math.min(slowest,cadence);fastest=Math.max(fastest,cadence);
+      turns+=advance/tau;previous=current;
+    }
+    expect(slowest).toBeGreaterThan(2);
+    expect(fastest).toBeLessThan(2.8);
+    expect(turns).toBeCloseTo(Math.round(turns),9);
+    const poweredCadence=Math.atan2(Math.sin(sampleWingPhase(4+step)-sampleWingPhase(4)),
+      Math.cos(sampleWingPhase(4+step)-sampleWingPhase(4)))/(step*tau);
+    expect(poweredCadence).toBeCloseTo(sampleFlight(4).wingbeat,9);
   });
 });
 

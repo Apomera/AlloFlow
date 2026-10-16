@@ -28,17 +28,17 @@ describe('Butterfly restoration investigation',()=>{
  it('pauses a redesign without consuming time, energy, or moving the player horizontally',()=>{
    const s=BF.freshState();Object.assign(s,{paused:false,clock:13,energy:61,target:'bergamot',x:-10,z:27});BF.applyPlan(s,'mixed','both');
    expect(s).toMatchObject({paused:true,target:null,clock:13,energy:61,x:-10,z:27});
-   visit(s);BF.applyPlan(s,'lawn','neither');expect(s.landed).toBeNull();expect(s.y).toBe(6);expect(s.x).toBe(-42);expect(s.z).toBe(38);
+   visit(s);const perch={x:s.x,z:s.z};BF.applyPlan(s,'lawn','neither');expect(s.landed).toBeNull();expect(s.y).toBe(6);expect({x:s.x,z:s.z}).toEqual(perch);
  });
  it('guides the learner to the redesigned plot and uses its current landing behavior',()=>{
    const s=BF.freshState();BF.applyPlan(s,'flowers','nectar');Object.assign(s,{paused:false,target:'restoration'});
    for(let i=0;i<1000&&!s.paused;i++)BF.step(s,.05,{});
-   expect(s.paused).toBe(true);expect(BF.nearest(s).plant.id).toBe('restoration');expect(BF.land(s).ok).toBe(true);expect(s.y).toBe(3.5);
+   expect(s.paused).toBe(true);expect(BF.nearest(s).plant.id).toBe('restoration');const perch=BF.landingPose(s,BF.nearest(s).plant);expect(BF.land(s).ok).toBe(true);expect(s).toMatchObject(perch);
  });
  it('round-trips pending predictions and historical results without aliasing saves',()=>{
    const s=BF.freshState({version:1,observations:['milkweed']});expect(s.restoration).toEqual({design:'lawn',prediction:null,trials:[]});
    BF.applyPlan(s,'lawn','nectar');visit(s);BF.applyPlan(s,'mixed','both');const saved=BF.save(s),restored=BF.freshState(saved);
-   expect(saved.version).toBe(4);expect(restored.restoration).toEqual(s.restoration);expect(restored.paused).toBe(true);expect(restored.landed).toBeNull();
+   expect(saved.version).toBe(5);expect(restored.restoration).toEqual(s.restoration);expect(restored.paused).toBe(true);expect(restored.landed).toBeNull();
    saved.restoration.trials[0].prediction='both';expect(s.restoration.trials[0].prediction).toBe('nectar');expect(restored.restoration.trials[0].prediction).toBe('nectar');
  });
  it('rejects unknown saved designs, predictions and record fields, and bounds history',()=>{

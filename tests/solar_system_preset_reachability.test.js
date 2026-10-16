@@ -15,9 +15,11 @@ const PATHS = [
 ];
 
 function habitableZone(source) {
-  const at = source.indexOf('var Lstar = d.hzLum');
+  const at = source.indexOf('var Lstar =');
   expect(at, 'the habitable-zone tool must exist').toBeGreaterThan(-1);
-  const block = source.slice(at, at + 9000);
+  const end = source.indexOf('// === MINI-TOOL:', at);
+  expect(end, 'the next mini-tool must delimit the full habitable-zone block').toBeGreaterThan(at);
+  const block = source.slice(at, end);
 
   const sliders = {};
   const sliderRe = /val: (\w+), key: '(\w+)', min: ([\d.]+), max: ([\d.]+)/g;
@@ -170,24 +172,17 @@ describe('every preset in the tool is a value its own slider can reach', () => {
     });
 
     it(`keeps the telescope drawing inside its frame at every aperture (${path})`, () => {
-      // 1.5 px per cm drew a 995 px tube for JWST on a 400 px canvas.
-      expect(source).not.toContain('var apXp = 20 + aperture * 1.5;');
-      const from = source.indexOf('var apFrac =');
-      expect(from, 'the aperture scale must exist').toBeGreaterThan(-1);
-      // Aperture sizes the tube. The eyepiece disc is magnification's job now, and
-      // is covered in solar_system_chart_scales.
-      const to = source.indexOf(';', source.indexOf('var apXp =')) + 1;
-      // eslint-disable-next-line no-new-func
-      const tubeFor = new Function('aperture', source.slice(from, to) + ' return apXp;');
-
-      for (const cm of [2, 10, 35, 100, 240, 650]) {
-        const tube = tubeFor(cm);
-        expect(30 + tube, `${cm} cm tube runs off the canvas`).toBeLessThanOrEqual(400);
-        expect(tube, `${cm} cm tube has no length`).toBeGreaterThan(0);
+      const selected = source.match(/cx: 140, cy: 120, r: (.+?), className: 'solar-ts-aperture'/);
+      const reference = source.match(/cx: 420, cy: 120, r: (.+?), className: 'solar-ts-reference'/);
+      expect(selected).not.toBeNull();expect(reference).not.toBeNull();
+      const radiiFor = new Function('aperture', 'return [' + selected[1] + ',' + reference[1] + '];');
+      for (const cm of [2, 5, 10, 20, 35, 100, 240, 650, 700]) {
+        const [radius, ref] = radiiFor(cm);
+        expect(radius).toBeGreaterThan(0);expect(ref).toBeGreaterThan(0);
+        expect(radius).toBeLessThanOrEqual(100);expect(ref).toBeLessThanOrEqual(100);
+        expect(radius / ref).toBeCloseTo(cm / 10, 12);
+        expect((radius / ref) ** 2).toBeCloseTo((cm / 10) ** 2, 9);
       }
-      // A bigger mirror draws a bigger telescope - strictly.
-      expect(tubeFor(650)).toBeGreaterThan(tubeFor(240));
-      expect(tubeFor(240)).toBeGreaterThan(tubeFor(10));
     });
   }
 });

@@ -69,7 +69,7 @@ describe('brain atlas canvas loops', () => {
       expect(source).not.toContain("ctx.fillText('Visual pathway and field cuts', W * 0.5, H * 0.055);");
     });
   });
-  it('wraps cross-lateral headings and scales the fixation inset by available height', () => {
+  it('wraps cross-lateral headings and reserves a separate fixation experiment band', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
@@ -77,13 +77,15 @@ describe('brain atlas canvas loops', () => {
       expect(source).toContain('var headerH = Math.max(48, Math.min(66, H * 0.11));');
       expect(source).toContain('var subtitleLines = subtitle ? brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2) : [];');
       expect(source).toContain("brainAtlasDrawCompactCanvasHeading('CROSS-LATERALIZATION'");
-      expect(source).toContain('var brCx = W * 0.5, brCy = H * 0.33');
-      expect(source).toContain('var bh = Math.max(96, H * 0.190);');
+      expect(source).toContain('var crossDiagramH = H - 260;');
+      expect(source).toContain('var brCx = W * 0.5, brCy = crossDiagramH * 0.33');
+      expect(source).toContain('var by = crossDiagramH + 56;');
+      expect(source).toContain('var bh = H - by - 24;');
       expect(source).toContain('var insetHeaderH = Math.max(36, Math.min(44, bh * 0.38));');
       expect(source).toContain("var insetBodyLines = brainAtlasWrapCanvasLabel('Callosotomy blocks transfer");
       expect(source).toContain('sy = by + insetHeaderH + 2');
       expect(source).toContain('outcomeBox(ox, by + bh * 0.610');
-      expect(source).toContain("brainAtlasDrawPathLabel(bx + bw * 0.43, by + bh * 0.60, 'LVF -> right hemisphere'");
+      expect(source).toContain("brainAtlasDrawPathLabel(sx + sw * 0.50, by + bh - 14, 'LVF -> right hemisphere'");
       expect(source).not.toContain("ctx.fillText('CROSS-LATERALIZATION', W * 0.5, H * 0.045)");
       expect(source).not.toContain("ctx.fillText('Callosotomy blocks transfer; intact callosum shares the cue.'");
     });
@@ -93,7 +95,7 @@ describe('brain atlas canvas loops', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('sh = bh - insetHeaderH - 24;');
+      expect(source).toContain('sh = bh - insetHeaderH - 44;');
       expect(source).toContain('var visualFieldLabelY = sy + sh + 11;');
       expect(source).toContain("brainAtlasDrawBoundedNodeLabel(sx + sw * 0.25, visualFieldLabelY, sw * 0.48, 20, 'left visual field'");
       expect(source).toContain("brainAtlasDrawBoundedNodeLabel(sx + sw * 0.75, visualFieldLabelY, sw * 0.48, 20, 'right visual field'");
@@ -138,7 +140,7 @@ describe('brain atlas canvas loops', () => {
       expect(source).toContain('var cursorY = chipY + Math.max(1, (h - textHeight) / 2);');
       expect(source).toContain('ctx.fillRect(chipX + 9, chipY + 5, Math.max(18, w - 18), 2);');
       expect(source).toContain("ctx.shadowColor = active ? color + '55' : 'rgba(15,23,42,0.07)'");
-      expect(source).toContain("ctx.fillStyle = active ? color + '14' : 'rgba(255,255,255,0.95)'");
+      expect(source).toContain("ctx.fillStyle = currentView.isNeuron ? '#ffffff' : (active ? color + '14' : 'rgba(255,255,255,0.95)')");
       expect(source).toContain("ctx.lineWidth = active ? 1.8 : 1.15;");
       expect(source).not.toContain('ctx.fillText(sub, x + w / 2, y + H * 0.031);');
     });
@@ -150,7 +152,7 @@ describe('brain atlas canvas loops', () => {
       const bannerCalls = source.match(/brainAtlasDrawDecoderBannerText\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawDecoderBannerText(x, y, w, h, title, subtitle, accent)');
-      expect(bannerCalls).toHaveLength(7);
+      expect(bannerCalls).toHaveLength(6);
       expect(source).toContain('var sideBySide = titleWidth + subtitleWidth + 22 <= maxTextWidth;');
       expect(source).toContain('var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 1);');
       expect(source).toContain('var subtitleLines = brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2);');
@@ -159,15 +161,15 @@ describe('brain atlas canvas loops', () => {
       expect(source).not.toContain("ctx.fillText('SLEEP ARCHITECTURE DECODER', sleepDecoderX + W * 0.018");
     });
   });
-  it('routes the animated neuron decoder through wrapped shared layouts', () => {
+  it('gives all six neuron phases a readable decoder with wrapped chips', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('boxH = Math.max(74, H * 0.118);');
+      expect(source).toContain('boxW = W * 0.91, boxH = H * 0.13;');
       expect(source).toContain('var decoderHeaderH = Math.max(30, Math.min(36, boxH * 0.44));');
-      expect(source).toContain("brainAtlasDrawDecoderBannerText(boxX + 5, boxY + 5, boxW - 10, decoderHeaderH, 'SPIKE CYCLE DECODER'");
+      expect(source).toContain("ctx.fillText('SPIKE CYCLE DECODER', boxX + 18");
       expect(source).toContain('var chipPadding = Math.max(8, boxW * 0.025);');
-      expect(source).toContain('var chipW = (boxW - chipPadding * 2 - chipGap * 4) / 5;');
+      expect(source).toContain('var chipW = (boxW - chipPadding * 2 - chipGap * 5) / 6;');
       expect(source).toContain('brainAtlasDrawDecoderChip(cx, cy, chipW, chipH, ch.label, ch.sub, ch.color, isPhase);');
       expect(source).not.toContain("ctx.fillText('SPIKE CYCLE DECODER', boxX + 12");
       expect(source).not.toContain('ctx.fillText(ch.label, cx + chipW / 2');
@@ -203,7 +205,7 @@ describe('brain atlas canvas loops', () => {
       expect(source).toContain('var cardY = Math.max(8, Math.min(H - h - 8, y));');
       expect(source).toContain("var bodyText = Array.isArray(body) ? body.join(' ') : String(body || '');");
       expect(source).toContain('var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);');
-      expect(source).toContain('var bodyLines = brainAtlasWrapCanvasLabel(bodyText, maxTextWidth, 2);');
+      expect(source).toContain('var bodyLines = brainAtlasWrapCanvasLabel(bodyText, maxTextWidth, maxAnnotationLines);');
       expect(source).toContain('var cursorY = cardY + Math.max(2, (h - textHeight) / 2);');
       expect(source).toContain('ctx.fillRect(cardX + 9, cardY + Math.max(8, h * 0.18), 3, Math.max(18, h * 0.64));');
       expect(source).not.toContain('ctx.fillText(line1, x + W * 0.014');
@@ -217,7 +219,7 @@ describe('brain atlas canvas loops', () => {
       const nodeLabelCalls = source.match(/brainAtlasDrawBoundedNodeLabel\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawBoundedNodeLabel(cx, cy, w, h, title, subtitle, titleColor, subtitleColor)');
-      expect(nodeLabelCalls).toHaveLength(20);
+      expect(nodeLabelCalls).toHaveLength(21);
       expect(source).toContain('var maxTextWidth = Math.max(32, w - 14);');
       expect(source).toContain('var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);');
       expect(source).toContain('var subtitleLines = subtitle ? brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2) : [];');
@@ -237,12 +239,12 @@ describe('brain atlas canvas loops', () => {
 
       expect(source).toContain("brainAtlasDrawCanvasHeading('Penfield stimulation response map'");
       expect(source).toContain('var stimStartX = W * 0.52, stimCapY = Math.max(96, H * 0.145)');
-      expect(source).toContain('var labelW = Math.max(80, Math.min(118, W * 0.24');
+      expect(source).toContain('var labelW = Math.max(110, Math.min(190, W * 0.26');
       expect(source).toContain("brainAtlasDrawBoundedNodeLabel(labelX, labelY, labelW, labelH, z.label, z.sub");
       expect(source).toContain('var readoutSplitX = readoutX + readoutW * 0.58;');
       expect(source).toContain('var targetReadout = brainAtlasEllipsizeCanvasText');
       expect(source).toContain('var responseReadout = brainAtlasEllipsizeCanvasText');
-      expect(source).toContain('brainAtlasDrawBoundedNodeLabel(cx + cw / 2, cy + 13.5, cw - 8, 27');
+      expect(source).toContain('brainAtlasDrawBoundedNodeLabel(cx + cw / 2, cy + 23, cw - 8, 46');
       expect(source).not.toContain('ctx.roundRect(labelX - 42, labelY - 17, 84, 31, 7)');
       expect(source).not.toContain("ctx.fillText(activeStimZone.label + ' -> ' + activeStimZone.sub");
     });
@@ -272,7 +274,7 @@ describe('brain atlas canvas loops', () => {
       const teachingCardCalls = source.match(/brainAtlasDrawTeachingCard\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawTeachingCard(x, y, w, h, title, body, color, tinted)');
-      expect(teachingCardCalls).toHaveLength(5);
+      expect(teachingCardCalls).toHaveLength(4);
       expect(source).toContain("var bodyText = Array.isArray(body) ? body.join(' ') : String(body || '');");
       expect(source).toContain('var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);');
       expect(source).toContain('var availableBodyHeight = Math.max(bodyLineHeight, h - titleLines.length * titleLineHeight - 9);');
@@ -292,7 +294,7 @@ describe('brain atlas canvas loops', () => {
       const pathLabelCalls = source.match(/brainAtlasDrawPathLabel\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawPathLabel(cx, cy, text, color, maxWidth)');
-      expect(pathLabelCalls).toHaveLength(30);
+      expect(pathLabelCalls).toHaveLength(27);
       expect(source).toContain("var value = String(text || '').trim();");
       expect(source).toContain('var widthLimit = Math.max(48, maxWidth || W * 0.18);');
       expect(source).toContain('var safeText = brainAtlasEllipsizeCanvasText(value, widthLimit - 18);');
@@ -312,7 +314,7 @@ describe('brain atlas canvas loops', () => {
 
       expect(source).toContain("var sleepHeading = brainAtlasEllipsizeCanvasText('Sleep Hypnogram");
       expect(source).toContain('brainAtlasDrawPathLabel(dotX, dotY - 16, curLabel, curCyc.c');
-      expect(source).toContain("brainAtlasDrawCompactCanvasHeading('EEG");
+      expect(source).toContain("brainAtlasDrawCompactCanvasHeading('Illustrative EEG rhythms");
       expect(source).toContain('brainAtlasDrawBoundedNodeLabel(eMarginL * 0.5, yBase, eMarginL - 12');
       expect(source).not.toContain('ctx.roundRect(dotX - clW/2, dotY - 24, clW, 16, 4)');
       expect(source).not.toContain('ctx.fillText(band.name, eMarginL - 10, yBase - 4)');
@@ -333,17 +335,16 @@ describe('brain atlas canvas loops', () => {
     });
   });
 
-  it('reserves measured gutters and pills for action-potential graph labels', () => {
+  it('separates action-potential axes, curve, and phase explanations', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('pw2=gw2*0.58');
-      expect(source).toContain('var voltageLabelX=px2+pw2+gw2*0.10,voltageLabelW=gw2*0.17;');
-      expect(source).toContain("brainAtlasDrawBoundedNodeLabel(voltageLabelX,py2+ph2*0.70,voltageLabelW,18,'Resting'");
-      expect(source).toContain("brainAtlasDrawBoundedNodeLabel(voltageLabelX,py2+ph2*0.58,voltageLabelW,18,'Threshold'");
-      expect(source).toContain("brainAtlasDrawPathLabel(px2+0.38*pw2,py2+ph2*0.05,'Depolarization'");
-      expect(source).toContain("brainAtlasDrawPathLabel(px2+0.61*pw2,py2+ph2*0.42,'Repolarization'");
-      expect(source).toContain("brainAtlasDrawPathLabel(px2+0.75*pw2,py2+ph2*0.90,'Hyperpolarization'");
+      expect(source).toContain('gw2 = W * 0.93');
+      expect(source).toContain('canvas._brainActionPotential =');
+      expect(source).toContain('var apVoltageY = function (voltage)');
+      expect(source).toContain("title:'1  Depolarization'");
+      expect(source).toContain("title:'2  Repolarization'");
+      expect(source).toContain("title:'3  Hyperpolarization'");
       expect(source).not.toContain("ctx.fillText('Threshold',px2+pw2+8");
       expect(source).not.toContain("ctx.fillText('Hyperpol.'");
     });
@@ -372,8 +373,8 @@ describe('brain atlas canvas loops', () => {
       expect(source).toContain("brainAtlasDrawPathLabel(medLabelX, medLabelY, 'Medulla Pyramids'");
       expect(source).toContain("brainAtlasDrawPathLabel(brCx - brRx * 0.65, brCy - brRy * 0.50, 'Broca");
       expect(source).toContain("brainAtlasDrawPathLabel(brCx - brRx * 0.25, brCy + brRy * 0.25, 'Wernicke");
-      expect(source).toContain("brainAtlasDrawPathLabel(brCx - W * 0.30, H * 0.92, '\\u2190 LEFT BODY'");
-      expect(source).toContain("brainAtlasDrawPathLabel(brCx + W * 0.30, H * 0.92, 'RIGHT BODY \\u2192'");
+      expect(source).toContain("brainAtlasDrawPathLabel(brCx - W * 0.30, crossDiagramH * 0.92, '\\u2190 LEFT BODY'");
+      expect(source).toContain("brainAtlasDrawPathLabel(brCx + W * 0.30, crossDiagramH * 0.92, 'RIGHT BODY \\u2192'");
       expect(source).not.toContain("ctx.fillText('LEFT', brCx - brRx * 0.52");
       expect(source).not.toContain("ctx.fillText('Medulla Pyramids', medLabelX");
       expect(source).not.toContain("ctx.fillText('\\u2190 LEFT BODY'");
@@ -385,7 +386,7 @@ describe('brain atlas canvas loops', () => {
       const legendGridCalls = source.match(/brainAtlasDrawLegendGrid\(/g) || [];
 
       expect(source).toContain('function brainAtlasDrawLegendGrid(x, y, w, items, textColor, maxItemWidth)');
-      expect(legendGridCalls).toHaveLength(5);
+      expect(legendGridCalls).toHaveLength(4);
       expect(source).toContain('var rowHeight = fontPx + 9;');
       expect(source).toContain('var widthLimit = Math.max(56, Math.min(maxItemWidth || w / 2, w));');
       expect(source).toContain("var label = String(item.label || item.name || '');");
@@ -404,7 +405,7 @@ describe('brain atlas canvas loops', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain("brainAtlasDrawCompactCanvasHeading('Synapse density across the lifespan'");
+      expect(source).toContain("brainAtlasDrawCompactCanvasHeading('Illustrative synapse-density patterns'");
       expect(source).toContain('var lifespanLegendY = Math.max(66, Math.min(y0 - 36, H * 0.12));');
       expect(source).toContain("brainAtlasDrawLegendGrid(x0 + 8, lifespanLegendY, pW - 16");
       expect(source).toContain('function tag(x, y, text, color)');
@@ -429,13 +430,13 @@ describe('brain atlas canvas loops', () => {
       expect(source).not.toContain('ctx.fillText(label, pt.x, pt.y - 13)');
     });
   });
-  it('routes custom neuron and lifespan legends through adaptive shared layouts', () => {
+  it('keeps neuron phase notes and lifespan legends in dedicated layout areas', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('var ionLegendItems = [');
-      expect(source).toContain("brainAtlasDrawLegendGrid(lgX + 10, lgY + 8, lgW - 20, ionLegendItems, '#475569', lgW - 20);");
-      expect(source).toContain("brainAtlasDrawTeachingCard(lgX + 10, lgY + 64, lgW - 20, lgH - 74");
+      expect(source).toContain('var apCards = [');
+      expect(source).toContain('apCardX = gx2 + gw2 * 0.705');
+      expect(source).toContain("ctx.fillText('ALL-OR-NOTHING', gx2 + 18, gy2 + gh2 - 13)");
       expect(source).toContain('var lifespanLegendItems = [');
       expect(source).toContain("brainAtlasDrawLegendGrid(x0 + 8, lifespanLegendY, pW - 16, lifespanLegendItems, '#cbd5e1', (pW - 24) / 2);");
       expect(source).not.toContain('function ionRow(color, label, textColor, rowY)');

@@ -6050,9 +6050,24 @@ window.StemLab = window.StemLab || {
     if (/Ceratops/i.test(clade)) {
       var hornless = /hornless|no (?:big )?horns/i.test(descriptor);
       var noFrill = /^aquilops$/i.test(speciesId) || /no horns or frill/i.test(descriptor);
-      profile.frillScale = noFrill ? 0.05 : (/Ceratopsidae/i.test(clade) ? 1 : (/Protoceratops/i.test(clade) ? 0.62 : 0.36));
+      profile.frillScale = noFrill ? 0.05 : (/^Ceratopsidae$/i.test(clade) ? 1 : (/Protoceratops/i.test(clade) ? 0.62 : 0.36));
       profile.browHornScale = hornless ? 0 : (/brow horn|two long|eye horn/i.test(descriptor) ? 1 : (/Ceratopsidae/i.test(clade) && /horn/i.test(descriptor) ? 0.52 : 0));
       profile.noseHornScale = hornless ? 0 : (/nose horn|nasal horn/i.test(descriptor) ? 0.68 : 0);
+    }
+    if (speciesId === 'protoceratops') {
+      // Skull form varies between specimens; these proportions are interpretive.
+      // https://www.amnh.org/explore/ology/paleontology/face-to-fossil2/do-you-have-any-secrets-to-share
+      profile.shortLabel = 'Compact frilled head';
+      profile.label = 'Protoceratops beaked head with a compact, gently undulating frill';
+      profile.note = 'Protoceratops lacked large facial horns. Its skull proportions and frill inclination vary between specimens; this compact frill is one representative reconstruction. Exact size, marginal contour, thickness, skin, and colors remain inferred.';
+    }
+    if (speciesId === 'styracosaurus') {
+      // Species-level ornaments follow NHM; geometry remains an interpretive reconstruction.
+      // https://www.nhm.ac.uk/discover/dino-directory/styracosaurus.html
+      profile.browHornScale = 0; profile.noseHornScale = 1; profile.frillSpikes = 6;
+      profile.shortLabel = 'Nasal horn and spiked frill';
+      profile.label = 'Styracosaurus nasal horn with six representative frill spikes';
+      profile.note = 'A long nasal horn and six representative frill spikes distinguish this Styracosaurus reconstruction; individual spike count and shape vary. Ornament lengths, angles, coverings, and colors remain inferred.';
     }
     if (/Hadrosaur|Lambeosaur/i.test(clade)) {
       var crestless = /crestless|no (?:hollow |head )?crest|without (?:a )?crest/i.test(descriptor);
@@ -8096,6 +8111,226 @@ var CLASSIFY_CASES = [
     ];
   }
 
+  // The ordinary dorsal spines retain their anchors and a circular attachment root.
+  // A compressed, rounded blade is a surface proxy, not specimen-specific laminar anatomy.
+  function dinoDorsalSpineGeometry(THREE, length, startRadius, endRadius) {
+    if (![length, startRadius, endRadius].every(function (value) { return value > 0 && isFinite(value); })) return null;
+    var lengthSegments = 20, radialSegments = 16, positions = [], indices = [];
+    for (var row = 0; row < lengthSegments; row++) {
+      var t = (1 - Math.cos(row / lengthSegments * Math.PI)) * 0.5;
+      var blend = Math.min(1, t / 0.16); blend = blend * blend * (3 - 2 * blend);
+      var radius = startRadius + (endRadius - startRadius) * t;
+      var bladeWidth = startRadius * 2.10 * (1 - t) + endRadius * 3.50 * t;
+      var width = radius + (bladeWidth - radius) * blend;
+      var depth = radius * (1 - blend * 0.28);
+      var crown = Math.max(0, (t - 0.90) / 0.10), roundTip = Math.sqrt(Math.max(0, 1 - crown * crown));
+      var exponent = 1 - blend * 0.35;
+      for (var column = 0; column < radialSegments; column++) {
+        var angle = column / radialSegments * Math.PI * 2, cosine = Math.cos(angle), sine = Math.sin(angle);
+        if (Math.abs(cosine) < 1e-12) cosine = 0;
+        if (Math.abs(sine) < 1e-12) sine = 0;
+        positions.push(Math.sign(cosine) * Math.pow(Math.abs(cosine), exponent) * width * roundTip,
+          (t - 0.5) * length, -Math.sign(sine) * Math.pow(Math.abs(sine), exponent) * depth * roundTip);
+        if (row < lengthSegments - 1) {
+          var a = row * radialSegments + column, b = row * radialSegments + (column + 1) % radialSegments;
+          var c = a + radialSegments, d = b + radialSegments;
+          indices.push(a, b, c, b, d, c);
+        }
+      }
+    }
+    var pole = positions.length / 3;
+    positions.push(0, length * 0.5, 0);
+    for (var column = 0; column < radialSegments; column++) {
+      var a = (lengthSegments - 1) * radialSegments + column, b = (lengthSegments - 1) * radialSegments + (column + 1) % radialSegments;
+      indices.push(a, b, pole);
+    }
+    var capCenter = positions.length / 3;
+    positions.push(0, -length * 0.5, 0);
+    for (var column = 0; column < radialSegments; column++) positions.push(positions[column * 3], positions[column * 3 + 1], positions[column * 3 + 2]);
+    for (var column = 0; column < radialSegments; column++) indices.push(capCenter, capCenter + 1 + (column + 1) % radialSegments, capCenter + 1 + column);
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    var normals = geometry.attributes.normal;
+    for (var column = 0; column <= radialSegments; column++) normals.setXYZ(capCenter + column, 0, -1, 0);
+    normals.needsUpdate = true;
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoDorsalSpineSurface = { lengthSegments: lengthSegments, radialSegments: radialSegments };
+    return geometry;
+  }
+
+
+  // A conservative blade surface within the existing scapular dimensions.
+  // Flat faces and rounded margins refine the proxy without adding species-specific landmarks.
+  function dinoScapularBladeGeometry(THREE) {
+    var lengthSegments = 24, radialSegments = 24, positions = [], indices = [];
+    for (var row = 0; row < lengthSegments; row++) {
+      var t = (1 - Math.cos(row / lengthSegments * Math.PI)) * 0.5, y = t * 2 - 1;
+      var blend = Math.min(1, t / 0.25); blend = blend * blend * (3 - 2 * blend);
+      var width = 0.34 + (Math.sqrt(Math.max(0, 1 - Math.pow(y, 4))) - 0.34) * blend;
+      var depth = 0.62 + (Math.sqrt(Math.max(0, 1 - y * y)) - 0.62) * blend;
+      for (var column = 0; column < radialSegments; column++) {
+        var angle = column / radialSegments * Math.PI * 2, cosine = Math.cos(angle), sine = Math.sin(angle);
+        if (Math.abs(cosine) < 1e-12) cosine = 0;
+        if (Math.abs(sine) < 1e-12) sine = 0;
+        positions.push(width * cosine, y, -Math.sign(sine) * Math.pow(Math.abs(sine), 0.62) * depth);
+        if (row < lengthSegments - 1) {
+          var a = row * radialSegments + column, b = row * radialSegments + (column + 1) % radialSegments;
+          var c = a + radialSegments, d = b + radialSegments;
+          indices.push(a, b, c, b, d, c);
+        }
+      }
+    }
+    // A shared distal pole rounds the tip; the finite proximal neck seats into the shaft.
+    var pole = positions.length / 3;
+    positions.push(0, 1, 0);
+    for (var column = 0; column < radialSegments; column++) {
+      var a = (lengthSegments - 1) * radialSegments + column;
+      var b = (lengthSegments - 1) * radialSegments + (column + 1) % radialSegments;
+      indices.push(a, b, pole);
+    }
+    var capCenter = positions.length / 3;
+    positions.push(0, -1, 0);
+    for (var column = 0; column < radialSegments; column++) positions.push(positions[column * 3], positions[column * 3 + 1], positions[column * 3 + 2]);
+    for (var column = 0; column < radialSegments; column++) indices.push(capCenter, capCenter + 1 + (column + 1) % radialSegments, capCenter + 1 + column);
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    var normals = geometry.attributes.normal;
+    for (var column = 0; column <= radialSegments; column++) normals.setXYZ(capCenter + column, 0, -1, 0);
+    normals.needsUpdate = true;
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoScapularSurface = { lengthSegments: lengthSegments, radialSegments: radialSegments };
+    return geometry;
+  }
+
+
+  function dinoCurvedBoneGeometry(THREE, points, startRadius, endRadius) {
+    if (!points || points.length < 2 || ![startRadius, endRadius].every(function (r) { return r > 0 && isFinite(r); })) return null;
+    if (!points.every(function (point, index) {
+      if (!point || !point.isVector3 || ![point.x, point.y, point.z].every(isFinite)) return false;
+      var span = index ? point.distanceToSquared(points[index - 1]) : 1;
+      return span > 0 && isFinite(span);
+    })) return null;
+    var curve = new THREE.CatmullRomCurve3(points.map(function (point) { return point.clone(); }), false, 'centripetal');
+    var lengthSegments = (points.length - 1) * 8, radialSegments = 12;
+    var positions = [], indices = [], previousTangent = null, previousNormal = null;
+    for (var row = 0; row <= lengthSegments; row++) {
+      var t = row / lengthSegments, center = curve.getPoint(t), tangent = curve.getTangent(t).normalize();
+      if (![center.x, center.y, center.z, tangent.x, tangent.y, tangent.z].every(isFinite) || !tangent.lengthSq()) return null;
+      var normal;
+      if (previousNormal) {
+        normal = previousNormal.clone().applyQuaternion(new THREE.Quaternion().setFromUnitVectors(previousTangent, tangent));
+        normal.addScaledVector(tangent, -normal.dot(tangent)).normalize();
+      } else {
+        normal = new THREE.Vector3().crossVectors(Math.abs(tangent.z) < 0.9 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0), tangent).normalize();
+      }
+      var binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
+      previousTangent = tangent.clone(); previousNormal = normal.clone();
+      // Use control-point time for both the section and its frame, retaining each landmark's taper.
+      var radius = startRadius + (endRadius - startRadius) * t;
+      for (var column = 0; column < radialSegments; column++) {
+        var angle = column / radialSegments * Math.PI * 2;
+        var vertex = center.clone().addScaledVector(normal, Math.cos(angle) * radius).addScaledVector(binormal, Math.sin(angle) * radius);
+        positions.push(vertex.x, vertex.y, vertex.z);
+        if (row < lengthSegments) {
+          var a = row * radialSegments + column, b = row * radialSegments + (column + 1) % radialSegments;
+          var c = a + radialSegments, d = b + radialSegments;
+          indices.push(a, b, c, b, d, c);
+        }
+      }
+    }
+    // Weld the side rings; keep flat end-cap normals separate from the curved shaft.
+    [0, lengthSegments].forEach(function (capRow) {
+      var center = points[capRow ? points.length - 1 : 0], centerIndex = positions.length / 3;
+      positions.push(center.x, center.y, center.z);
+      var ringStart = positions.length / 3;
+      for (var column = 0; column < radialSegments; column++) {
+        var offset = (capRow * radialSegments + column) * 3;
+        positions.push(positions[offset], positions[offset + 1], positions[offset + 2]);
+      }
+      for (var column = 0; column < radialSegments; column++) {
+        var a = ringStart + column, b = ringStart + (column + 1) % radialSegments;
+        if (capRow) indices.push(centerIndex, a, b);
+        else indices.push(centerIndex, b, a);
+      }
+    });
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    // Use the analytic cap plane so small Float32 triangles shade uniformly.
+    var normals = geometry.attributes.normal;
+    [0, 1].forEach(function (end) {
+      var capNormal = curve.getTangent(end).normalize().multiplyScalar(end ? 1 : -1);
+      var offset = (lengthSegments + 1) * radialSegments + end * (radialSegments + 1);
+      for (var column = 0; column <= radialSegments; column++) normals.setXYZ(offset + column, capNormal.x, capNormal.y, capNormal.z);
+    });
+    normals.needsUpdate = true;
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoCurvedBone = { points: points.map(function (point) { return point.toArray(); }), startRadius: startRadius, endRadius: endRadius, lengthSegments: lengthSegments, radialSegments: radialSegments };
+    return geometry;
+  }
+
+
+  function dinoLongBoneGeometry(THREE, start, end, midpoint, proximalRadius, midRadius, distalRadius) {
+    var axis = new THREE.Vector3().subVectors(end, start);
+    var length = axis.length();
+    if (!(length > 0) || !isFinite(length)) return null;
+    if (![proximalRadius, midRadius, distalRadius].every(function (radius) { return radius > 0 && isFinite(radius); })) return null;
+    var bow = midpoint.clone().sub(start.clone().add(end).multiplyScalar(0.5));
+    var direction = axis.clone().multiplyScalar(1 / length);
+    var binormal = new THREE.Vector3().crossVectors(direction, bow);
+    if (binormal.lengthSq() <= bow.lengthSq() * 1e-12) {
+      var reference = Math.abs(direction.x) <= Math.abs(direction.y) && Math.abs(direction.x) <= Math.abs(direction.z)
+        ? new THREE.Vector3(1, 0, 0) : (Math.abs(direction.y) <= Math.abs(direction.z) ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, 0, 1));
+      binormal.crossVectors(direction, reference);
+    }
+    binormal.normalize();
+    var lengthSegments = 12, radialSegments = 16, positions = [], indices = [];
+    for (var row = 0; row <= lengthSegments; row++) {
+      var t = row / lengthSegments;
+      // The quadratic passes through the established joint centers and bowed midpoint.
+      var center = start.clone().lerp(end, t).addScaledVector(bow, 4 * t * (1 - t));
+      var tangent = axis.clone().addScaledVector(bow, 4 * (1 - 2 * t)).normalize();
+      var normal = new THREE.Vector3().crossVectors(binormal, tangent).normalize();
+      var u = t <= 0.5 ? t * 2 : (t - 0.5) * 2;
+      var blend = u * u * (3 - 2 * u);
+      var radius = t <= 0.5 ? proximalRadius + (midRadius - proximalRadius) * blend : midRadius + (distalRadius - midRadius) * blend;
+      for (var column = 0; column < radialSegments; column++) {
+        var angle = column / radialSegments * Math.PI * 2;
+        var point = center.clone().addScaledVector(normal, Math.cos(angle) * radius).addScaledVector(binormal, Math.sin(angle) * radius);
+        positions.push(point.x, point.y, point.z);
+        if (row < lengthSegments) {
+          var a = row * radialSegments + column, b = row * radialSegments + (column + 1) % radialSegments;
+          var c = a + radialSegments, d = b + radialSegments;
+          indices.push(a, b, c, b, d, c);
+        }
+      }
+    }
+    // Separate cap vertices keep their flat normals out of the continuous shaft shading.
+    [0, lengthSegments].forEach(function (capRow) {
+      var capCenter = capRow ? end : start, centerIndex = positions.length / 3;
+      positions.push(capCenter.x, capCenter.y, capCenter.z);
+      var ringStart = positions.length / 3;
+      for (var column = 0; column < radialSegments; column++) {
+        var offset = (capRow * radialSegments + column) * 3;
+        positions.push(positions[offset], positions[offset + 1], positions[offset + 2]);
+      }
+      for (var column = 0; column < radialSegments; column++) {
+        var a = ringStart + column, b = ringStart + (column + 1) % radialSegments;
+        if (capRow) indices.push(centerIndex, a, b);
+        else indices.push(centerIndex, b, a);
+      }
+    });
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoLongBone = { start: start.toArray(), end: end.toArray(), midpoint: midpoint.toArray(), proximalRadius: proximalRadius, midRadius: midRadius, distalRadius: distalRadius, lengthSegments: lengthSegments, radialSegments: radialSegments };
+    return geometry;
+  }
+
   function dinoSurfaceGeometry(THREE, points, radii, options) {
     var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
     options = options || {};
@@ -8103,6 +8338,7 @@ var CLASSIFY_CASES = [
     var previousTangent = null, previousNormal = null;
     var chestEnd = options.compactChest === true && points.length === 7 ? 1 / 6 : 0;
     var chestSpan = chestEnd ? points[1].x - points[0].x : 0;
+    var dorsalWaist = options.dorsalWaist === true && options.smoothProfile === true && points.length === 7 && radii.length === 7;
     function surfaceCenter(t) {
       var center = curve.getPoint(t);
       // Shorten the anterior closure without changing the shoulder or the rest of the trunk.
@@ -8138,9 +8374,25 @@ var CLASSIFY_CASES = [
         var rootScale = 0.75 + 0.25 * rootT * rootT * (3 - 2 * rootT);
         ry *= rootScale; rz *= rootScale;
       }
+      // A ventral waist need not make an equal saddle in the upper skin contour.
+      // Bridge the existing thorax/pelvis heights with matching flat radius slopes;
+      // native torso stations run forward along +X, with normal.y pointing upward.
+      // This contour is interpretive; the belly, breadth, and centerline stay fixed.
+      var dorsalLift = 0;
+      if (dorsalWaist && t > 2 / 6 && t < 4 / 6) {
+        var bridgeT = (t - 2 / 6) * 3;
+        bridgeT = bridgeT * bridgeT * (3 - 2 * bridgeT);
+        var chestHeight = Array.isArray(radii[2]) ? radii[2][0] : radii[2];
+        var pelvisHeight = Array.isArray(radii[4]) ? radii[4][0] : radii[4];
+        dorsalLift = Math.max(0, chestHeight + (pelvisHeight - chestHeight) * bridgeT - ry);
+      }
       for (var j = 0; j <= sides; j++) {
         var angle = j / sides * Math.PI * 2;
         var vertex = center.clone().addScaledVector(normal, Math.cos(angle) * ry).addScaledVector(binormal, Math.sin(angle) * rz);
+        if (dorsalLift > 0) {
+          var dorsalWeight = Math.max(0, Math.cos(angle));
+          vertex.y += normal.y * dorsalLift * dorsalWeight * dorsalWeight;
+        }
         if (options.sculpt) options.sculpt(vertex);
         vertices.push(vertex.x, vertex.y, vertex.z); uv.push(t, j / sides);
         if (i < rings && j < sides) {
@@ -8151,6 +8403,8 @@ var CLASSIFY_CASES = [
     }
     [0, rings].forEach(function (ring) {
       var center = surfaceCenter(ring / rings), ci = vertices.length / 3;
+      // Optional whole-surface deformations must also close at the deformed cap.
+      if (options.sculptCaps === true && options.sculpt) options.sculpt(center);
       vertices.push(center.x, center.y, center.z); uv.push(ring / rings, 0.5);
       for (var side = 0; side < sides; side++) {
         var start = ring * (sides + 1) + side;
@@ -8171,6 +8425,7 @@ var CLASSIFY_CASES = [
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     geometry.userData.dinoSmoothProfile = !!options.smoothProfile;
     geometry.userData.dinoTransportedFrame = true;
+    if (dorsalWaist) geometry.userData.dinoDorsalWaist = { start: 2 / 6, end: 4 / 6, inferred: true };
     return geometry;
   }
   // Close the back of the cranial loft inside the existing neck volume.
@@ -8262,6 +8517,17 @@ var CLASSIFY_CASES = [
   // and its landmarks are constructed separately. A fixed species profile keeps
   // this volume independent of the selectable soft-tissue hypotheses.
   function dinoCranialDisplayProfile(THREE, species, head, snout, length, height, depth, detailScale, isTheropod) {
+    if (isTheropod === true && cranialSurfaceProfileFor(species).id === 'slender-theropod') {
+      // Compact interpretive fill for a low, narrow skull. Keep the separately
+      // constructed bone frame and all head/snout landmarks unchanged.
+      return {
+        refined: true,
+        vaultCenter: head.clone().add(new THREE.Vector3(-length * 0.06, 0, 0)),
+        vaultScale: new THREE.Vector3(length * 0.30, height * 0.48, depth * 0.56),
+        rostrumCenter: head.clone().lerp(snout, 0.64),
+        rostrumScale: new THREE.Vector3(length * 0.40, height * 0.26, depth * 0.25)
+      };
+    }
     var refined = !!species && species.id === 'triceratops';
     return {
       refined: refined,
@@ -8285,8 +8551,12 @@ var CLASSIFY_CASES = [
 
   // Broad cheek relief is part of the head skin, with no overlapping cheek pieces.
   function dinoCranialGeometry(THREE, points, radii, shape) {
+    var rostrumX = points.length === 6 ? points[4].x : 0;
+    var rostrumSpan = points.length === 6 ? rostrumX - points[5].x : 0;
+    var compactRostrum = shape.compactRostrum === true && radii.length === 6 &&
+      isFinite(rostrumX) && isFinite(rostrumSpan) && rostrumSpan > 0;
     var geometry = dinoSurfaceGeometry(THREE, points, radii, {
-      rings: 72, sides: 40, smoothProfile: true,
+      rings: 72, sides: 40, smoothProfile: true, sculptCaps: compactRostrum,
       sculpt: function (vertex) {
         var x = (vertex.x - shape.center.x) / (shape.length * 0.85);
         var y = (vertex.y - shape.center.y) / (shape.height * 0.62);
@@ -8295,6 +8565,13 @@ var CLASSIFY_CASES = [
         var sideWeight = Math.min(1, Math.abs(z) / (shape.depth * 0.6));
         sideWeight = sideWeight * sideWeight * (3 - 2 * sideWeight);
         vertex.z += Math.sign(z) * shape.depth * 0.15 * shape.cheek * falloff * falloff * falloff * sideWeight;
+        // Compact only the extra skin closure beyond the existing snout landmark.
+        // Keep the long, tapering rostrum; this cap length remains illustrative.
+        // The monotone map matches position and slope at the unchanged boundary.
+        if (compactRostrum && vertex.x < rostrumX) {
+          var distance = rostrumX - vertex.x;
+          vertex.x = rostrumX - distance / (1 + 1.5 * distance / rostrumSpan);
+        }
       }
     });
     geometry.userData.dinoCranialSurface = { rings: 72, sides: 40, cheekRelief: shape.cheek };
@@ -9479,6 +9756,62 @@ var CLASSIFY_CASES = [
     return geometry;
   }
 
+  // Styracosaurus has a long nasal horn, no large brow horns, and variable frill spikes:
+  // https://www.nhm.ac.uk/discover/dino-directory/styracosaurus.html
+  // These six representative spikes use interpretive lengths and angles, not specimen measurements.
+  function dinoStyracosaurusOrnaments(THREE, speciesId, head, snout, headHeight, length, height, frillScale, bodyDepth) {
+    if (speciesId !== 'styracosaurus' || !head || !snout ||
+      ![head.x,head.y,head.z,snout.x,snout.y,snout.z].every(Number.isFinite) ||
+      ![headHeight,length,height,frillScale,bodyDepth].every(function (value) { return Number.isFinite(value) && value > 0; })) return [];
+    var nasalBase = head.clone().lerp(snout, 0.58).add(new THREE.Vector3(0,headHeight * 0.50,0));
+    var landmarks = [{ id:'nasal', placement:'nasal', pair:0, side:0, base:nasalBase,
+      direction:new THREE.Vector3(-length * 0.008,height * 0.22,0), radius:headHeight * 0.34 }];
+    var frillHeight = height * 0.20 * frillScale, frillWidth = bodyDepth * 0.86 * frillScale, bow = length * 0.010;
+    var center = head.clone().add(new THREE.Vector3(length * 0.025 * frillScale,height * 0.052,0));
+    var normal = new THREE.Vector3(1,-0.60,0).normalize();
+    [15,45,75].forEach(function (degrees, pair) {
+      [-1,1].forEach(function (side) {
+        var angle = degrees / 180 * Math.PI, r = 0.86, edge = 1 + 0.025 * Math.cos(angle * 14) * r * r;
+        var y = Math.sin(angle) * frillHeight * r * edge, z = Math.cos(angle) * frillWidth * r * edge;
+        var base = center.clone().add(new THREE.Vector3(y * 0.60 + bow * r * r + frillHeight * 0.024 * (1-r*r),y,side*z));
+        var reach = [0.48,0.68,0.86][pair];
+        var rise = frillHeight * Math.sin(angle) * reach, spread = frillWidth * Math.cos(angle) * reach;
+        landmarks.push({ id:'frill-' + pair + '-' + side, placement:'frill', pair:pair, side:side, base:base,
+          direction:new THREE.Vector3(rise * 0.60 + bow * reach,rise,side*spread),
+          radius:frillHeight * [0.064,0.076,0.080][pair], rootNormal:normal.clone(),
+          // Keep the buried cap near the shared mid-surface, including the narrower bone rim.
+          rootDepth:Math.min(frillHeight,frillWidth) * 0.045 * 0.01 });
+      });
+    });
+    return landmarks;
+  }
+
+  function dinoStyracosaurusOrnamentGeometry(THREE, landmark, core) {
+    if (!landmark || !landmark.direction) return null;
+    var coverage = core ? 0.86 : 1;
+    var geometry = dinoKeratinGeometry(THREE,landmark.direction,landmark.radius * (core ? 0.68 : 1),'horn',coverage);
+    if (!geometry) return null;
+    if (landmark.placement === 'frill' && landmark.rootNormal && landmark.rootDepth > 0) {
+      var positions = geometry.attributes.position, normal = landmark.rootNormal;
+      // Bury the broad root in the existing thin frill; release its round section gradually.
+      // Apply the same plane to the smaller bony core so the two surfaces remain nested.
+      for (var i = 0; i < positions.count; i++) {
+        var row = Math.floor(i / 24), t = Math.min(1,row * coverage / 6), weight = 1 - t*t*(3-2*t);
+        if (!weight) continue;
+        var point = new THREE.Vector3().fromBufferAttribute(positions,i), depth = point.dot(normal);
+        var limit = landmark.rootDepth * (core ? 0.68 : 1);
+        var seatedDepth = Math.max(-limit,Math.min(limit,depth));
+        point.addScaledVector(normal,(seatedDepth-depth)*weight);
+        positions.setXYZ(i,point.x,point.y,point.z);
+      }
+      geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    }
+    geometry.userData.dinoCranialOrnament = { species:'styracosaurus', id:landmark.id, placement:landmark.placement,
+      pair:landmark.pair, side:landmark.side, core:!!core, interpretive:true, representativeFrillSpikes:6 };
+    return geometry;
+  }
+
+
   // Blunt keratin terminals retain the prior nail bounds and digit placement.
   // The shallow crown and rounded, broad lower edge are an interpretive sheath.
   function dinoBluntTerminalGeometry(THREE, radiusX, radiusY, radiusZ) {
@@ -9607,18 +9940,24 @@ var CLASSIFY_CASES = [
       var shade = 0.90 + random() * 0.12, blades = pennaceous ? 1 : 3;
       for (var blade = 0; blade < blades; blade++) {
         var start = positions.length / 3, fan = pennaceous ? 0 : (blade - 1) * 0.22;
-        var breadth = length * (pennaceous ? 0.18 : 0.055), rows = pennaceous ? 8 : 5, columns = pennaceous ? 2 : 1;
+        var breadth = length * (pennaceous ? 0.18 : 0.014), rows = pennaceous ? 8 : 5, columns = pennaceous ? 2 : 1;
         // A narrow, cambered vane lays along the skin instead of reading as a flat scale.
         for (var row = 0; row <= rows; row++) {
           var t = row / rows, envelope = Math.sin(Math.PI * t);
-          var width = breadth * Math.pow(envelope, pennaceous ? 0.85 : 0.9) * (pennaceous ? 1 - t * 0.24 : 1);
+          // Simple filaments narrow toward the tip rather than widening into a vane.
+          // Diameter and curvature remain illustrative; seeded roots and coverage stay fixed.
+          var width = pennaceous ? breadth * Math.pow(envelope, 0.85) * (1 - t * 0.24) : breadth * (1 - t * t);
           var lift = length * (pennaceous ? 0.015 + 0.18 * t - 0.10 * t * t + 0.065 * envelope : 0.015 + 0.64 * t - 0.08 * t * t);
           var point = root.clone().addScaledVector(along, length * t).addScaledVector(n, lift).addScaledVector(across, fan * length * t * t);
+          // Light each filament along its curved strip, independently of the skin
+          // normal retained below for rooted pigment and regional pattern sampling.
+          var stripNormal = pennaceous ? n : new THREE.Vector3().crossVectors(across,
+            along.clone().addScaledVector(n, 0.64 - 0.16 * t).addScaledVector(across, 2 * fan * t)).normalize();
           for (var column = 0; column <= columns; column++) {
             var side = column / columns * 2 - 1;
             var p = point.clone().addScaledVector(across, width * side)
               .addScaledVector(n, pennaceous ? length * 0.028 * envelope * (1 - side * side) : 0);
-            positions.push(p.x, p.y, p.z); normalData.push(n.x, n.y, n.z);
+            positions.push(p.x, p.y, p.z); normalData.push(stripNormal.x, stripNormal.y, stripNormal.z);
             rootPositions.push(root.x, root.y, root.z); rootNormals.push(n.x, n.y, n.z);
             var tone = shade * (pennaceous ? 0.96 + 0.04 * t : 0.92 + 0.08 * t); colors.push(tone, tone, tone); uvs.push(rootU, (side + 1) / 2);
             vanes.push(side, t, pennaceous ? 1 : 0);
@@ -9807,6 +10146,24 @@ var CLASSIFY_CASES = [
     }
     return geometry;
   }
+  // A compact Protoceratops frill with continuous, modest marginal undulations.
+  // The proportions and repeated rim contour are representative, not a specimen scan.
+  function dinoProtoceratopsFrillGeometry(THREE, height, width, bow) {
+    var normal = new THREE.Vector3(1,-0.60,0).normalize();
+    var thickness = Math.min(height,width) * 0.045;
+    var geometry = dinoDisplayShellGeometry(THREE,function (r,angle) {
+      var edge = 1 + 0.025 * Math.cos(angle * 14) * r*r;
+      // Span the clipped skull-root boundary with radial rows. Clipping each
+      // row independently folds the lower sheet and can expose its bony layer.
+      var y = r * Math.max(-height * 0.48,Math.sin(angle) * height * edge);
+      return new THREE.Vector3(y * 0.60 + bow * r*r + height * 0.024 * (1-r*r),y,Math.cos(angle) * width * r * edge);
+    },normal,thickness,null,128);
+    geometry.userData.dinoDisplayShell.feature = 'frill';
+    geometry.userData.dinoDisplayShell.speciesProfile = 'protoceratops';
+    geometry.userData.dinoDisplayShell.maxThickness = thickness * 1.12;
+    return geometry;
+  }
+
   // Build the bony Triceratops frill between corresponding skin faces. A
   // separately scaled curved sheet can cross the skin even when its outline is smaller.
   // Reuse the inner seven rings and close at the 0.96 ring; each face remains
@@ -9857,6 +10214,52 @@ var CLASSIFY_CASES = [
     });
     return geometry;
   }
+  // The lower rings of the Styracosaurus skin are clipped at the skull root.
+  // Give its inner bony layer a smaller radial footprint there, then seat both
+  // faces in the actual triangular skin envelope. The upper frill is unchanged.
+  function dinoStyracosaurusBonyFrillGeometry(THREE, surface, height) {
+    var geometry = dinoBonyFrillGeometry(THREE, surface);
+    var positions = geometry.attributes.position, uv = geometry.attributes.uv;
+    var sides = surface.userData.dinoDisplayShell.angularSamples === 128 ? 128 : 64;
+    var backOffset = 1 + 7 * sides, normal = new THREE.Vector3(1,-0.60,0).normalize();
+    var material = new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
+    var shell = new THREE.Mesh(surface,material), caster = new THREE.Raycaster();
+    var reach = surface.boundingSphere.radius * 4, point = new THREE.Vector3();
+    shell.updateMatrixWorld(true);
+    for (var index=0; index<positions.count; index++) {
+      var u = uv.getX(index)*2-1, v = uv.getY(index)*2-1;
+      var radius = Math.sqrt(u*u+v*v);
+      if (radius < 1e-6) continue;
+      var angle = Math.atan2(v,u), edge = 1 + 0.025*Math.cos(angle*14)*radius*radius;
+      var beforeY = Math.max(-height*0.48, Math.sin(angle)*height*radius*edge);
+      var afterY = radius*Math.max(-height*0.44, Math.sin(angle)*height*edge);
+      if (Math.abs(afterY-beforeY) < height*1e-7) continue;
+      point.fromBufferAttribute(positions,index);
+      var face = index < backOffset ? 1 : -1;
+      var localIndex = face > 0 ? index : index-backOffset;
+      var ring = localIndex ? Math.floor((localIndex-1)/sides) : -1;
+      var weight = ring===6 ? 0 : ring===5 ? 0.40 : 0.58;
+      point.y += afterY-beforeY; point.x += (afterY-beforeY)*0.60;
+      caster.set(point.clone().addScaledVector(normal,-reach),normal);
+      var hits = caster.intersectObject(shell,false), distances = [];
+      for (var h=0; h<hits.length; h++) if (!distances.length || hits[h].distance-distances[distances.length-1]>height*1e-7) distances.push(hits[h].distance);
+      var best = -1, distance = Infinity;
+      for (var h=0; h+1<distances.length; h+=2) {
+        var separation = Math.abs((distances[h]+distances[h+1])*0.5-reach);
+        if (separation < distance) { distance=separation; best=h; }
+      }
+      if (best >= 0) {
+        var middle = (distances[best]+distances[best+1])*0.5;
+        var halfDepth = (distances[best+1]-distances[best])*0.5;
+        point.addScaledVector(normal,middle-reach+face*weight*halfDepth);
+        positions.setXYZ(index,point.x,point.y,point.z);
+      }
+    }
+    material.dispose(); positions.needsUpdate=true;
+    geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+
   function dinoPlateGeometry(THREE, width, height, thickness) {
     var shape = new THREE.Shape();
     shape.moveTo(-width * 0.28, 0);
@@ -13931,7 +14334,7 @@ var CLASSIFY_CASES = [
               skinBumpTexture = makeSkinTexture(document.createElement('canvas'), skinPixels.bump, 'bump');
               skinRoughnessTexture = makeSkinTexture(document.createElement('canvas'), skinPixels.roughness, 'roughness');
             }
-            var boneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xe9dfc7, emissive: 0x171b1a, emissiveIntensity: 0.18, roughness: 0.72, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xe9dfc7, emissive: 0x171b1a, shininess: 18 });
+            var boneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc7b99c, roughness: 0.90, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc7b99c, shininess: 6 });
             var jointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc9b990, roughness: 0.76, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc9b990, shininess: 12 });
             var costalJointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x9fb8aa, transparent: true, opacity: 0.72, roughness: 0.84, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0x9fb8aa, transparent: true, opacity: 0.72, shininess: 8 });
             var cranialAccentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xd8c39a, roughness: 0.72, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xd8c39a, shininess: 14 });
@@ -13959,6 +14362,12 @@ var CLASSIFY_CASES = [
             var mouthCreaseMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x302821).convertSRGBToLinear(), transparent: headMat.transparent, opacity: headMat.opacity, depthWrite: headMat.depthWrite, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
             var skeletonCavityMat = new THREE.MeshBasicMaterial({ color: 0x211f1a, transparent: true, opacity: 0.90, depthWrite: false });
             var toothMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xfff5d6, roughness: 0.48, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xfff5d6, shininess: 24 });
+            // Convert the skeletal display palette once, before materials are cloned.
+            // Matte, non-emissive bone keeps overlap and curvature visible under studio lights.
+            [boneMat, jointMat, costalJointMat, cranialAccentMat, jawJointMat, hyoidMat, toothMat].forEach(function (material) {
+              material.color.convertSRGBToLinear();
+              material.userData.dinoSkeletalMaterial = true;
+            });
             var muscleMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), roughness: 0.92, metalness: 0, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), shininess: 4, depthWrite: false });
             var lungMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x70465c, transparent: true, opacity: Math.min(0.48, 0.16 + inferenceOpacity * 0.50), roughness: 0.86, metalness: 0, side: THREE.DoubleSide, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x70465c, transparent: true, opacity: Math.min(0.48, 0.16 + inferenceOpacity * 0.50), shininess: 5, side: THREE.DoubleSide, depthWrite: false });
             var airSacMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xbdeff2, transparent: true, opacity: Math.min(0.34, 0.09 + inferenceOpacity * 0.34), roughness: 0.58, metalness: 0, side: THREE.DoubleSide, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0xbdeff2, transparent: true, opacity: Math.min(0.34, 0.09 + inferenceOpacity * 0.34), shininess: 18, side: THREE.DoubleSide, depthWrite: false });
@@ -14108,14 +14517,13 @@ var CLASSIFY_CASES = [
             }
             function addCurvedBone(points, startRadius, endRadius, mat) {
               if (!props.showSkeleton || !points || points.length < 2) return null;
-              var segmentTotal = points.length - 1;
-              for (var curvedIndex = 0; curvedIndex < segmentTotal; curvedIndex++) {
-                var radiusT0 = curvedIndex / segmentTotal;
-                var radiusT1 = (curvedIndex + 1) / segmentTotal;
-                var radius0 = startRadius + (endRadius - startRadius) * radiusT0;
-                var radius1 = startRadius + (endRadius - startRadius) * radiusT1;
-                addTaperedBoneSegment(points[curvedIndex], points[curvedIndex + 1], radius0, radius1, mat || boneMat);
-              }
+              var geometry = dinoCurvedBoneGeometry(THREE, points, startRadius, endRadius);
+              if (!geometry) return null;
+              var bone = new THREE.Mesh(geometry, mat || boneMat);
+              bone.name = 'continuous-curved-bone';
+              bone.userData.dinoCurvedBone = geometry.userData.dinoCurvedBone;
+              bone.castShadow = true;
+              model.add(bone);
               return points[Math.floor(points.length / 2)];
             }
             function addLongBone(a, b, radius, bowAmount, bowSide, proximalScale, distalScale) {
@@ -14131,8 +14539,13 @@ var CLASSIFY_CASES = [
               var proximalRadius = radius * (proximalScale || 1.30);
               var midshaftRadius = radius * 0.76;
               var distalRadius = radius * (distalScale || 1.18);
-              addTaperedBoneSegment(a, shaftMid, proximalRadius, midshaftRadius, boneMat);
-              addTaperedBoneSegment(shaftMid, b, midshaftRadius, distalRadius, boneMat);
+              var geometry = dinoLongBoneGeometry(THREE, a, b, shaftMid, proximalRadius, midshaftRadius, distalRadius);
+              if (!geometry) return null;
+              var shaft = new THREE.Mesh(geometry, boneMat);
+              shaft.name = 'continuous-long-bone';
+              shaft.userData.dinoLongBone = geometry.userData.dinoLongBone;
+              shaft.castShadow = true;
+              model.add(shaft);
               return shaftMid;
             }
             function addLimbJoint(p, axis, radius, hingeScale) {
@@ -14151,6 +14564,22 @@ var CLASSIFY_CASES = [
               if (!skeletalProfile.longBoneDetail) return null;
               return addSkeletonCone(base, tip, radius, boneMat);
             }
+            function addScapularBlade(a, b, width, thickness, mat) {
+              if (!props.showSkeleton || !skeletalProfile.girdleDetail) return null;
+              var bladeAxis = new THREE.Vector3().subVectors(b, a);
+              var bladeLength = bladeAxis.length();
+              if (!(bladeLength > 0) || !isFinite(bladeLength) || ![width, thickness].every(function (value) { return value > 0 && isFinite(value); })) return null;
+              var blade = new THREE.Mesh(dinoScapularBladeGeometry(THREE), mat || boneMat);
+              blade.position.copy(a).add(b).multiplyScalar(0.5);
+              blade.scale.set(width, bladeLength * 0.50, thickness);
+              blade.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), bladeAxis.normalize());
+              blade.name = 'scapular-blade';
+              blade.userData.dinoScapularBlade = { start: a.toArray(), end: b.toArray(), width: width, thickness: thickness };
+              blade.castShadow = true;
+              model.add(blade);
+              return blade;
+            }
+
             function addGirdleBlade(a, b, width, thickness, mat) {
               if (!props.showSkeleton || !skeletalProfile.girdleDetail) return null;
               var bladeAxis = new THREE.Vector3().subVectors(b, a);
@@ -14206,6 +14635,21 @@ var CLASSIFY_CASES = [
               model.add(mesh);
               return mesh;
             }
+            function addDorsalSpine(a, b, startRadius, endRadius, mat) {
+              if (!props.showSkeleton) return null;
+              var dir = new THREE.Vector3().subVectors(b, a), dist = dir.length();
+              var geometry = dinoDorsalSpineGeometry(THREE, dist, startRadius, endRadius);
+              if (!geometry) return null;
+              var spine = new THREE.Mesh(geometry, mat || boneMat);
+              spine.position.copy(a).add(b).multiplyScalar(0.5);
+              spine.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              spine.name = 'dorsal-neural-spine';
+              spine.userData.dinoDorsalSpine = { start: a.toArray(), end: b.toArray(), startRadius: startRadius, endRadius: endRadius };
+              spine.castShadow = true;
+              model.add(spine);
+              return spine;
+            }
+
             function addVertebralChain(start, end, count, startRadius, endRadius, processScale, region) {
               if (!props.showSkeleton) return;
               var chainAxis = new THREE.Vector3().subVectors(end, start);
@@ -14228,7 +14672,8 @@ var CLASSIFY_CASES = [
                   var spineHeight = radius * (processScale || 1.5) * (region === 'caudal' ? 0.72 : 1);
                   var spineTip = archCenter.clone().add(vec(0, spineHeight, 0));
                   if (region === 'caudal') spineTip.add(chainAxis.clone().multiplyScalar(radius * 0.30));
-                  addTaperedBoneSegment(archCenter, spineTip, Math.max(0.004, radius * 0.20), Math.max(0.003, radius * 0.09), boneMat);
+                  if (region === 'dorsal') addDorsalSpine(archCenter, spineTip, Math.max(0.004, radius * 0.20), Math.max(0.003, radius * 0.09), boneMat);
+                  else addTaperedBoneSegment(archCenter, spineTip, Math.max(0.004, radius * 0.20), Math.max(0.003, radius * 0.09), boneMat);
                   if (region === 'dorsal' && vertebraIndex % 2 === 0) {
                     [-1, 1].forEach(function (processSide) {
                       addTaperedBoneSegment(archCenter, archCenter.clone().add(vec(0, -radius * 0.08, processSide * radius * 1.38)), Math.max(0.004, radius * 0.16), Math.max(0.003, radius * 0.08), boneMat);
@@ -14555,7 +15000,8 @@ var CLASSIFY_CASES = [
             ];
             var torsoRadii = dinoTorsoRadii(surfaceBodyHeight, surfaceBodyDepth, postcranialSurface);
             var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat, null,
-              isSauropod && postcranialSurface.id === 'long-low-sauropod' ? { smoothProfile: true, compactChest: true } : null)[0] || null;
+              isSauropod && postcranialSurface.id === 'long-low-sauropod' ? { smoothProfile: true, compactChest: true } :
+                postcranialSurface.id === 'powerful-theropod' ? { smoothProfile: true, dorsalWaist: true } : null)[0] || null;
             if (bodyShell) bodyShell.userData.dinoRegion = 'torso';
             if (bodyShell) bodyShell.name = 'continuous-torso';
             if (bodyShell) {
@@ -14631,14 +15077,17 @@ var CLASSIFY_CASES = [
             }
             function addFrillSurface(mat, size) {
               if (!hasAnatomyPart('frill')) return null;
-              var nestedBone = mat === boneMat && props.species.id === 'triceratops';
+              var nestedBone = mat === boneMat && (props.species.id === 'triceratops' || props.species.id === 'styracosaurus' || props.species.id === 'protoceratops');
               var frillScale = cranialSurface.frillScale * (nestedBone ? 1 : size);
               var center = head.clone().add(vec(len * 0.025 * frillScale, ht * 0.052, 0));
               var height = ht * 0.20 * frillScale, width = surfaceBodyDepth * 0.86 * frillScale;
-              var geometry = dinoFrillGeometry(THREE, height, width, len * 0.010, props.species.id === 'triceratops');
+              var geometry = props.species.id === 'protoceratops' ?
+                dinoProtoceratopsFrillGeometry(THREE,height,width,len * 0.010 * frillScale) :
+                dinoFrillGeometry(THREE, height, width, len * 0.010, props.species.id === 'triceratops');
               if (nestedBone) {
                 var envelope = geometry;
-                geometry = dinoBonyFrillGeometry(THREE,envelope);
+                if (props.species.id === 'styracosaurus') envelope.userData.dinoDisplayShell.maxThickness = envelope.userData.dinoDisplayShell.thickness * 1.12;
+                geometry = props.species.id === 'styracosaurus' ? dinoStyracosaurusBonyFrillGeometry(THREE,envelope,height) : dinoBonyFrillGeometry(THREE,envelope);
                 envelope.dispose();
               }
               geometry.translate(center.x, center.y, center.z);
@@ -14648,6 +15097,26 @@ var CLASSIFY_CASES = [
               dinoMarkSpecialPart(frill, 'frill');
               model.add(frill);
               return frill;
+            }
+            function addStyracosaurusOrnaments(core) {
+              if (props.species.id !== 'styracosaurus') return;
+              var landmarks = dinoStyracosaurusOrnaments(THREE,props.species.id,head,surfaceSnout,surfaceHeadHeight,len,ht,cranialSurface.frillScale,surfaceBodyDepth);
+              landmarks.forEach(function (landmark) {
+                var part = landmark.placement === 'frill' ? 'frill' : 'horns';
+                if (!hasAnatomyPart(part)) return;
+                var geometry = dinoStyracosaurusOrnamentGeometry(THREE,landmark,core);
+                if (!geometry) return;
+                var mesh = new THREE.Mesh(geometry,core ? boneMat : keratinMat);
+                mesh.name = 'styracosaurus-' + landmark.id + (core ? '-core' : '-sheath');
+                mesh.position.copy(landmark.base);
+                mesh.userData.dinoFeature = landmark.placement === 'frill' ? (core ? 'frill-spike-core' : 'frill-spike') : (core ? 'nasal-horn-core' : 'keratin-horn');
+                mesh.userData.dinoCranialOrnament = Object.assign({},geometry.userData.dinoCranialOrnament);
+                mesh.userData.dinoRegion = 'head';
+                dinoMarkSpecialPart(mesh,part);
+                mesh.castShadow = true; mesh.receiveShadow = true; mesh.renderOrder = core ? 8 : 10;
+                model.add(mesh);
+                if (!core && landmark.placement === 'nasal') dinoSeatHornRoot(THREE,mesh,headShell);
+              });
             }
             var hasHighSail = hasAnatomyPart('sail');
             var surfaceHeadFactor = reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale;
@@ -14663,7 +15132,8 @@ var CLASSIFY_CASES = [
             var neckRadii = cervicalEnvelope.radii;
             var neckJunction = dinoNeckJunction(THREE, neckPoints, neckRadii, surfaceHeadLength * 1.10);
             var cranialShape = { center: head.clone().lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, 0)),
-              length: surfaceHeadLength, height: surfaceHeadHeight, depth: surfaceHeadDepth, cheek: isSauropod ? 0 : cranialSurface.cheekScale };
+              length: surfaceHeadLength, height: surfaceHeadHeight, depth: surfaceHeadDepth, cheek: isSauropod ? 0 : cranialSurface.cheekScale,
+              compactRostrum: cranialSurface.id === 'slender-theropod' };
             var headShell = isTheropod ? addSoftTissueChain([
               neckJunction.point, head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout, surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.28, 0, 0))
@@ -15061,7 +15531,8 @@ if (/Ceratops/i.test(cladeName)) {
                   var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * surfaceHeadDepth * 0.62));
                   dinoSeatHornRoot(THREE, addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.061 * cranialSurface.browHornScale), Math.max(0.06 * detailScale, ht * 0.061 * cranialSurface.browHornScale), side * bodyDepth * 0.11 * cranialSurface.browHornScale)), Math.max(0.024 * detailScale, ht * 0.016 * Math.sqrt(cranialSurface.browHornScale)), 'horn'), headShell);
                 });
-                if (hasAnatomyPart('horns') && cranialSurface.noseHornScale > 0.08) {
+                if (props.species.id === 'styracosaurus') addStyracosaurusOrnaments(false);
+                else if (hasAnatomyPart('horns') && cranialSurface.noseHornScale > 0.08) {
                   var noseHornBase = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.58).add(vec(0, surfaceHeadHeight * 0.60, 0));
                   dinoSeatHornRoot(THREE, addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)), 'horn'), headShell);
                 }
@@ -15316,7 +15787,8 @@ if (/Ceratops/i.test(cladeName)) {
                   var hornCore = head.clone().add(vec(-len * 0.018, ht * 0.055, hornSide * skullDepth * 0.62));
                   dinoMarkSpecialPart(addSkeletonCone(hornCore, hornCore.clone().add(vec(-Math.max(0.10 * detailScale, len * 0.052 * cranialSurface.browHornScale), Math.max(0.05 * detailScale, ht * 0.048 * cranialSurface.browHornScale), hornSide * skullDepth * 0.08 * cranialSurface.browHornScale)), Math.max(0.016 * detailScale, ht * 0.010 * Math.sqrt(cranialSurface.browHornScale)), boneMat), 'horns');
                 });
-                if (hasAnatomyPart('horns') && cranialSurface.noseHornScale > 0.08) dinoMarkSpecialPart(addSkeletonCone(snout.clone().add(vec(0, skullHeight * 0.35, 0)), snout.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.022 * cranialSurface.noseHornScale), skullHeight * (0.35 + 0.41 * cranialSurface.noseHornScale), 0)), Math.max(0.014 * detailScale, ht * 0.008 * Math.sqrt(cranialSurface.noseHornScale)), boneMat), 'horns');
+                if (props.species.id === 'styracosaurus') addStyracosaurusOrnaments(true);
+                else if (hasAnatomyPart('horns') && cranialSurface.noseHornScale > 0.08) dinoMarkSpecialPart(addSkeletonCone(snout.clone().add(vec(0, skullHeight * 0.35, 0)), snout.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.022 * cranialSurface.noseHornScale), skullHeight * (0.35 + 0.41 * cranialSurface.noseHornScale), 0)), Math.max(0.014 * detailScale, ht * 0.008 * Math.sqrt(cranialSurface.noseHornScale)), boneMat), 'horns');
                 captureCranialMotion(cranialFeatureBefore);
                 } else if (/Spinosaur/i.test(cladeName)) {
                 var spinosaurRostrum = new THREE.Vector3().copy(head).lerp(snout, 0.76);
@@ -15421,12 +15893,17 @@ if (/Ceratops/i.test(cladeName)) {
                   } else {
                     addBone(ribSpine, ribNeck, ribBoneRadius);
                   }
-                  addCurvedBone([ribNeck, ribUpper, ribLateral, ribLower, ribVentral], ribBoneRadius, ribBoneRadius * 0.55, boneMat);
+                  var ribPoints = [ribNeck, ribUpper, ribLateral, ribLower, ribVentral];
+                  addCurvedBone(ribPoints, ribBoneRadius, ribBoneRadius * 0.55, boneMat);
                   ribDistalAnchors[ribIndex][ribSide > 0 ? 1 : 0] = ribVentral.clone();
                   if (skeletalProfile.uncinateProcesses && ribIndex >= 1 && ribIndex < 1 + skeletalProfile.uncinateCount) {
-                    var uncinateBase = new THREE.Vector3().copy(ribUpper).lerp(ribLateral, 0.54);
+                    var uncinateOriginalBase = new THREE.Vector3().copy(ribUpper).lerp(ribLateral, 0.54);
+                    var uncinateT = (1 + 0.54) / (ribPoints.length - 1);
+                    // Seat the process on the curved rib while retaining its direction and span.
+                    var uncinateBase = new THREE.CatmullRomCurve3(ribPoints, false, 'centripetal').getPoint(uncinateT);
                     var uncinateTip = uncinateBase.clone().add(vec(uncinateCaudalSign * Math.max(0.11 * detailScale, bodyLen * 0.12), bodyHeight * 0.12, -ribSide * Math.max(0.010 * detailScale, bodyDepth * 0.035)));
-                    addGirdleBlade(uncinateBase, uncinateTip, Math.max(0.018 * detailScale, ht * 0.0065), Math.max(0.005 * detailScale, ht * 0.0018), boneMat);
+                    var uncinateBlade = addGirdleBlade(uncinateBase, uncinateTip, Math.max(0.018 * detailScale, ht * 0.0065), Math.max(0.005 * detailScale, ht * 0.0018), boneMat);
+                    if (uncinateBlade) uncinateBlade.userData.dinoCurvedBoneAttachment = { points: ribPoints.map(function (point) { return point.toArray(); }), t: uncinateT, originalBase: uncinateOriginalBase.toArray(), base: uncinateBase.toArray(), tip: uncinateTip.toArray() };
                   }
                 });
               }
@@ -15552,7 +16029,7 @@ if (/Ceratops/i.test(cladeName)) {
                 var scapulaTip = shoulder.clone().add(vec(len * 0.115, bodyHeight * 0.56, girdleSide * shoulderHalf * 0.68));
                 var scapularWidth = Math.max(0.050 * detailScale, bodyHeight * 0.15) * skeletalProfile.scapularBladeScale;
                 addTaperedBoneSegment(shoulderSocket, scapulaMid, Math.max(0.034 * detailScale, ht * 0.012), Math.max(0.025 * detailScale, ht * 0.009), boneMat);
-                addGirdleBlade(scapulaMid, scapulaTip, scapularWidth, Math.max(0.018 * detailScale, bodyDepth * 0.055), boneMat);
+                addScapularBlade(scapulaMid, scapulaTip, scapularWidth, Math.max(0.018 * detailScale, bodyDepth * 0.055), boneMat);
                 var coracoidCenter = shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.31, girdleSide * shoulderHalf * 0.90));
                 var coracoidTip = shoulder.clone().add(vec(-len * 0.025, -bodyHeight * 0.61, girdleSide * shoulderHalf * 0.82));
                 addGirdleBlade(shoulderSocket, coracoidTip, Math.max(0.052 * detailScale, bodyHeight * 0.14) * skeletalProfile.coracoidPlateScale, Math.max(0.020 * detailScale, bodyDepth * 0.065), boneMat);
@@ -16079,7 +16556,8 @@ if (/Ceratops/i.test(cladeName)) {
                   mesh: upperLimbShell,
                   baseRotation: upperLimbShell.rotation.clone(),
                   front: !!front,
-                  forelimbBlendWidth: front && isSauropod ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,
+                  forelimbBlendWidth: front && (isSauropod || /Ceratops/i.test(cladeName)) ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,
+                  hindlimbBlendWidth: !front && postcranialSurface.id === 'powerful-theropod' ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,
                   side: sideSign
                 });
                 if (!front && !surfaceHypothesis.featureScales) addContourPlumage(upperLimbShell, 240, thighRadius * 0.80, false, null, 0.46);
@@ -16331,13 +16809,24 @@ if (/Ceratops/i.test(cladeName)) {
               }
             }
 
-            // Join the resting forelimb lighting to the sauropod trunk after planting.
+            // Join the resting forelimb lighting to sauropod and ceratopsian trunks after planting.
             // Keep the trunk normal field fixed so its neck transition stays intact.
-            if (isSauropod && bodyShell) {
+            if ((isSauropod || /Ceratops/i.test(cladeName)) && bodyShell) {
               idleMotion.legs.forEach(function (legEntry) {
                 if (!(legEntry.forelimbBlendWidth > 0)) return;
                 legEntry.mesh.userData.dinoForelimbNormalBlend = dinoBlendSurfaceNormals(THREE,
                   bodyShell, legEntry.mesh, legEntry.forelimbBlendWidth, null, true);
+              });
+            }
+
+            // Soften the inferred hip-to-thigh transition in tyrannosauroids.
+            // Transfer only nearby trunk normals after planting and detail seating;
+            // retain the pelvic shading, limb shape, and existing motion pivots.
+            if (postcranialSurface.id === 'powerful-theropod' && bodyShell) {
+              idleMotion.legs.forEach(function (legEntry) {
+                if (!(legEntry.hindlimbBlendWidth > 0)) return;
+                legEntry.mesh.userData.dinoHindlimbNormalBlend = dinoBlendSurfaceNormals(THREE,
+                  bodyShell, legEntry.mesh, legEntry.hindlimbBlendWidth, null, true);
               });
             }
 
@@ -16360,6 +16849,8 @@ if (/Ceratops/i.test(cladeName)) {
                 dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld, part.userData.dinoRegion === 'tail');
                 part.receiveShadow = true;
               }
+              // Inter-bone shadows clarify fossil anatomy; translucent skin still casts an opaque shadow.
+              if (!props.showBody && part.material && part.material.userData.dinoSkeletalMaterial) part.receiveShadow = true;
               if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
               specimenBounds.union(part.geometry.boundingBox.clone().applyMatrix4(part.matrixWorld));
             });

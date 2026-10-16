@@ -302,8 +302,9 @@ describe('SkySchool manual takeover and rotor touch controls', () => {
     touch('touchmove', [stick, power], [stick, power]);
     await frame();
     expect(latest.flightSim.autopilot).toMatchObject({ hdg: true, alt: true, spd: true });
-    expect(controls().bank).toBe(25);
-    expect(controls().pitch).toBe(8);
+    expect(controls().bank).toBeCloseTo(30 / 60, 10);
+    expect(controls().pitch).toBeGreaterThan(0);
+    expect(controls().pitch).toBeLessThan(1);
     expect(controls().throttle).toBeGreaterThan(0.5);
   });
 

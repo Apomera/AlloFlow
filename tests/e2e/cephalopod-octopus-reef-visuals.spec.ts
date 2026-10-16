@@ -186,7 +186,7 @@ for (const quality of ['low', 'balanced'] as const) {
       expect(audit.programs[kind].program.normalMatrix.every(Number.isFinite)).toBe(true);
     }
     expect(audit.eyeKeys).toEqual(['cl-octopus-pupil-water-v13', 'cl-octopus-pupil-water-v13']);
-    expect(audit.rockKeys).toEqual(['cl-rock-surface-v1']);
+    expect(audit.rockKeys).toEqual(['cl-rock-minerals-v2']);
     expect(audit.rocks.every((rock: any) => Number.isFinite(rock.radius) && rock.radius > 0 && rock.shadow)).toBe(true);
     const eyeShader = audit.programs.eye.program.shaders.map((shader: any) => shader.source).join('\n');
     const rockShader = audit.programs.rock.program.shaders.map((shader: any) => shader.source).join('\n');

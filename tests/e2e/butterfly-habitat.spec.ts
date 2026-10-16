@@ -7,7 +7,7 @@ test.beforeAll(async()=>{mkdirSync('scratch/butterfly-habitat',{recursive:true})
 test.afterAll(()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
 async function mount(page:any,fallback=false,saved:any={}){await page.goto(harness.url+'/__harness');await page.evaluate(({fallback,saved})=>{const w=window as any;if(fallback)w.StemLab.ensureThree=()=>Promise.reject(new Error('Test fallback'));w.__mount({butterfly:saved});Object.assign(document.getElementById('wrap')!.style,{width:'100%',height:'auto',display:'block'});},{fallback,saved});await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-renderer',fallback?'map':'three');}
 async function audit(page:any){const violations=await page.evaluate(async()=>{const w=window as any,r=await w.axe.run(document.querySelector('[data-butterfly-root]'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return r.violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>n.failureSummary)}));});expect(violations).toEqual([]);}
-async function visit(page:any,name:string){await page.getByRole('button',{name:new RegExp(name)}).click();await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-paused','true',{timeout:70000});await page.getByRole('button',{name:'Land here',exact:true}).click();await page.getByRole('button',{name:'Examine patch',exact:true}).click();}
+async function visit(page:any,name:string){await page.locator('.bf-destination').filter({hasText:name}).click();await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-paused','true',{timeout:70000});await page.getByRole('button',{name:'Land here',exact:true}).click();await page.getByRole('button',{name:'Examine patch',exact:true}).click();}
 test('3D flight responds to keyboard, pauses exactly, and changes camera without changing the session',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await mount(page);const stage=page.locator('.bf-stage');
  await page.locator('.bfl').screenshot({path:'scratch/butterfly-habitat/desktop.png'});await audit(page);
@@ -310,7 +310,8 @@ test('the glossary is collapsed by default, opens to real definitions, and audit
  const entry=gloss.locator('[data-gloss-term="Chrysalis / pupa"]');
  await expect(entry).toBeVisible();
  await expect(entry).toContainText('does not feed');
- await expect(entry).toContainText('standing');
+ await expect(entry).toContainText('assumes mowing removes its support');
+ await expect(entry).toContainText('often leave their milkweed plant');
  await expect(gloss.locator('[data-gloss-term]')).toHaveCount(12);
  // Axe with the panel OPEN: a collapsed details hides its contents from the
  // audit, so checking only the closed state would prove nothing.

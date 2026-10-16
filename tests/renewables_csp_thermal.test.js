@@ -112,9 +112,10 @@ describe('CSP thermal flow follows delivered heat',()=>{
 
   it('smoothly strengthens positive heat changes while preserving paused phase and exact heat metadata',()=>{
     const f=fixture();f.update(5850/16,100,.1);const [hot,returned]=f.plumbing.routes,marker=markers(hot)[0],before=marker.userData.flowRate;
-    f.update(5850,2047.5,.02);expect(marker.userData.flowRate).toBeGreaterThan(before);expect(marker.userData.flowRate).toBeLessThan(marker.userData.targetFlowRate);expect(marker.userData.targetFlowRate).toBeCloseTo(.03,12);expect(f.plumbing.group.userData.thermalPower).toBe(5850);
-    expect(markers(returned)[0].userData.flowRate).toBe(marker.userData.flowRate);
-    const phase=marker.userData.progress;f.update(5850*4,8190,0,false);expect(marker.userData.progress).toBe(phase);expect(marker.userData.flowRate).toBeCloseTo(.06,12);
+    f.update(5850,2047.5,.02);expect(marker.userData.flowRate).toBeGreaterThan(before);expect(marker.userData.flowRate).toBeLessThan(marker.userData.targetFlowRate);expect(marker.userData.targetWorldFlowRate).toBeCloseTo(.75,12);expect(marker.userData.targetFlowRate*5*hot.curve.getLength()).toBeCloseTo(.75,12);expect(f.plumbing.group.userData.thermalPower).toBe(5850);
+    expect(markers(returned)[0].userData.worldFlowRate).toBe(marker.userData.worldFlowRate);
+    const phase=marker.userData.progress;f.update(5850*4,8190,0,false);expect(marker.userData.progress).toBe(phase);expect(marker.userData.worldFlowRate).toBeCloseTo(1.5,12);
+    f.update(5850*4,8190,.1,false);expect((marker.userData.progress-phase)*hot.curve.getLength()).toBeCloseTo(.15,12);
     for(const route of f.plumbing.routes){const dot=markers(route)[0];expect(dot.position.distanceTo(route.curve.getPointAt(dot.userData.progress))).toBeLessThan(1e-12);}
   });
 

@@ -67,7 +67,7 @@ describe('saved viewpoint normalization', () => {
 
   it('rejects malformed slots and incomplete, nonfinite, nonnumeric, and out-of-world poses', () => {
     const valid = { x: 0, z: 9, yaw: 0, pitch: 0 };
-    const invalid = [null, [], 'pose', 5, true, {}, { x: 0, z: 9, yaw: 0 }, { ...valid, x: -19.31 }, { ...valid, x: 199.31 }, { ...valid, z: -7.31 }, { ...valid, z: 13.31 }, { ...valid, pitch: -45.01 }, { ...valid, pitch: 45.01 }];
+    const invalid = [null, [], 'pose', 5, true, {}, { x: 0, z: 9, yaw: 0 }, { ...valid, x: -19.31 }, { ...valid, x: 223.31 }, { ...valid, z: -7.31 }, { ...valid, z: 13.31 }, { ...valid, pitch: -45.01 }, { ...valid, pitch: 45.01 }];
     for (const coordinate of ['x', 'z', 'yaw', 'pitch']) for (const value of [null, undefined, '', ' ', 'bad', NaN, Infinity, -Infinity, [], {}, true]) invalid.push({ ...valid, [coordinate]: value });
     for (const pose of invalid) expect(seed('scale', { viewpoints: { scale: { A: pose } } }).viewpoints.scale).toEqual({ A: null, B: null });
     for (const viewpoints of [null, [], 'bad', { scale: [] }, { scale: 'bad' }]) expect(seed('scale', { viewpoints }).viewpoints.scale).toEqual({ A: null, B: null });
@@ -87,7 +87,7 @@ describe('saved viewpoint normalization', () => {
         expect(seed(id, { viewpoints: { [id]: { A: { ...pose, x: boundary + 0.0001 } } } }).viewpoints[id].A).toEqual({ ...pose, x: boundary + 0.0001 });
       }
     }
-    const edges = { ring: { x: -19.3, z: -7.3, yaw: 0, pitch: -45 }, length: { x: 199.3, z: 13.3, yaw: 0, pitch: 45 } };
+    const edges = { ring: { x: -19.3, z: -7.3, yaw: 0, pitch: -45 }, anamorphosis: { x: 223.3, z: 13.3, yaw: 0, pitch: 45 } };
     for (const [id, pose] of Object.entries(edges)) expect(seed(id, { viewpoints: { [id]: { A: pose } } }).viewpoints[id].A).toEqual(pose);
   });
 
@@ -104,6 +104,18 @@ describe('saved viewpoint normalization', () => {
     expect(walk.recallViewpoint(state, 'A').player).toEqual(pose);
     expect(walk.normalize(JSON.parse(JSON.stringify(state)))).toEqual(state);
     expect(walk.canSaveViewpoint({ ...state, player: pose })).toBe(false);
+  });
+
+  it('retains saved length viewpoints beside its former end wall without allowing new cross-room saves', () => {
+    for (const x of [198.0001, 199.3]) {
+      const pose = { x, z: 10, yaw: -20, pitch: 5 };
+      const state = seed('length', { viewpoints: { length: { A: pose, B: { ...pose, x: 199.31 } } } });
+      expect(state.viewpoints.length).toEqual({ A: pose, B: null });
+      expect(walk.recallViewpoint(state, 'A').player).toEqual(pose);
+      expect(walk.normalize(JSON.parse(JSON.stringify(state)))).toEqual(state);
+      expect(walk.canSaveViewpoint({ ...state, player: pose })).toBe(false);
+      expect(walk.saveViewpoint({ ...state, player: pose }, 'B').viewpoints.length.B).toBeNull();
+    }
   });
 });
 

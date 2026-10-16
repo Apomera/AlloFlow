@@ -60,8 +60,8 @@ describe('aperture motion geometry', () => {
   it('upgrades aperture saves and preserves earlier puzzle saves without mutation', () => {
     const old = { activity: 'landing', landing: { heights: [1.25, 2.7, 1.9], lightAngle: 12, completed: [0] }, notes: { landing: 'A moving shadow.' } }, before = structuredClone(old), state = walk.normalize(old);
     expect(state.aperture).toEqual(defaults()); expect(state.notes.landing).toBe(old.notes.landing); expect(state.landing.completed).toEqual([0]); expect(state.landing.lightAngle).toBe(12); expect(old).toEqual(before);
-    expect(walk.activities.at(-1).id).toBe('length'); expect(walk.nextRoom(seed(), 1)).toBe('length'); expect(walk.nextRoom(walk.normalize(old), 1)).toBe('aperture');
-    expect(walk.normalizePlayer({ x: 999 }).x).toBe(199.3); expect(walk.normalize(state)).toEqual(state);
+    expect(walk.activities.at(-1).id).toBe('anamorphosis'); expect(walk.nextRoom(seed(), 1)).toBe('length'); expect(walk.nextRoom(walk.normalize(old), 1)).toBe('aperture');
+    expect(walk.normalizePlayer({ x: 999 }).x).toBe(223.3); expect(walk.normalize(state)).toEqual(state);
   });
 
   it('uses distinct horizontal and vertical translations with the same visible central line', () => {

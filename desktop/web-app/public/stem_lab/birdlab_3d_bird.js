@@ -8,7 +8,8 @@
 
   function create(THREE) {
     var featherArt = global.AvianFeatherArt;
-    if (!featherArt || typeof featherArt.createFlightFeatherCanvas !== 'function' || typeof featherArt.createVaneDetailCanvases !== 'function') {
+    if (!featherArt || typeof featherArt.createFlightFeatherCanvas !== 'function' || typeof featherArt.createVaneDetailCanvases !== 'function' ||
+        typeof featherArt.applyVaneGrain !== 'function' || typeof featherArt.vaneGrainCacheKey !== 'function') {
       throw new Error('BirdLab 3D requires avian_feather_art.js before creating a bird.');
     }
     var root = new THREE.Group();
@@ -38,6 +39,32 @@
     function addMesh(parent, g, m, name) {
       var mesh = new THREE.Mesh(g, m); mesh.name = name;
       mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
+    }
+    function smoothSphereNormals(g) {
+      // Deformed spheres retain duplicate vertices at the UV seam and poles.
+      // Share their area-weighted face normals without welding the geometry,
+      // so texture coordinates, pigment and the sculpted silhouette stay put.
+      g.computeVertexNormals();
+      var p = g.attributes.position, n = g.attributes.normal, index = g.index;
+      var groups = Object.create(null), keys = [], a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+      for (var i = 0; i < p.count; i++) {
+        // The tiny tolerance absorbs sin(2*pi) roundoff at coincident points.
+        var key = Math.round(p.getX(i) * 1e8) + ',' + Math.round(p.getY(i) * 1e8) + ',' + Math.round(p.getZ(i) * 1e8);
+        keys.push(key);
+        if (!groups[key]) groups[key] = { count: 0, normal: new THREE.Vector3() };
+        groups[key].count++;
+      }
+      for (var face = 0; face < index.count; face += 3) {
+        var ia = index.getX(face), ib = index.getX(face + 1), ic = index.getX(face + 2);
+        a.fromBufferAttribute(p, ia); b.fromBufferAttribute(p, ib); c.fromBufferAttribute(p, ic);
+        b.sub(a).cross(c.sub(a));
+        groups[keys[ia]].normal.add(b); groups[keys[ib]].normal.add(b); groups[keys[ic]].normal.add(b);
+      }
+      Object.keys(groups).forEach(function (key) { if (groups[key].count > 1) groups[key].normal.normalize(); });
+      for (var i = 0; i < p.count; i++) {
+        var group = groups[keys[i]];
+        if (group.count > 1) n.setXYZ(i, group.normal.x, group.normal.y, group.normal.z);
+      }
     }
 
     // Neutral relief, rather than painted black outlines, separates individual
@@ -110,14 +137,26 @@
     var vaneDetails = featherArt.createVaneDetailCanvases(unbarredVaneArt);
     var normalCanvas = vaneDetails.normal, roughCanvas = vaneDetails.roughness;
     var vaneNormal = texture(normalCanvas, 'hawk-vane-normal', true), vaneRough = texture(roughCanvas, 'hawk-vane-roughness', true);
+    // The atlas supplies sub-millimetre relief. Broader, feather-local barb
+    // bundles and quiet worn margins remain legible as the atlas mipmaps out.
+    // Filter each frequency in screen space so moving vanes do not shimmer.
+    function vaneGrain(shader, contourFeather) {
+      featherArt.applyVaneGrain(shader, { variants: 4, contourFeather: contourFeather });
+    }
     function featherMaterial(color, map) {
-      return material({ color: color, map: map || vane, normalMap: vaneNormal, normalScale: new THREE.Vector2(0.36, 0.36),
+      var m = material({ color: color, map: map || vane, normalMap: vaneNormal, normalScale: new THREE.Vector2(0.36, 0.36),
         roughnessMap: vaneRough, roughness: 0.92, metalness: 0, side: THREE.DoubleSide, vertexColors: true, morphTargets: true, morphNormals: true });
+      m.extensions = { derivatives: true };
+      m.onBeforeCompile = function (shader) { vaneGrain(shader, false); };
+      m.customProgramCacheKey = function () { return featherArt.vaneGrainCacheKey({ variants: 4 }); };
+      return m;
     }
     var wingMaterial = featherMaterial(0xffffff), primaryMaterial = featherMaterial(0xffffff);
     var tailMaterial = featherMaterial(0xb86b42, tailTexture);
     var contourVane = texture(unbarredVaneArt, 'hawk-unbarred-contour-vane');
     var contourMaterial = featherMaterial(0xffffff, contourVane);
+    contourMaterial.onBeforeCompile = function (shader) { vaneGrain(shader, true); };
+    contourMaterial.customProgramCacheKey = function () { return featherArt.vaneGrainCacheKey({ variants: 4, contourFeather: true }); };
     // The same surface is brown above and buff below. Its pigmentation follows
     // the mesh through flapping/folding; there are no floating marking decals.
     var foldedPigment = { value: 1 };
@@ -125,13 +164,30 @@
       m.extensions = { derivatives: true };
       m.onBeforeCompile = function (shader) {
         shader.uniforms.blFoldedPigment = foldedPigment;
-        shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 birdWingCoord;\nvarying vec2 vBirdWingCoord;')
-          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBirdWingCoord=birdWingCoord;');
-        shader.fragmentShader = 'uniform float blFoldedPigment;\nvarying vec2 vBirdWingCoord;\n' + shader.fragmentShader;
+        shader.uniforms.blCovertMap = { value: contourVane };
+        shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 birdWingCoord;\nattribute vec2 birdFeatherStyle;\nvarying vec2 vBirdWingCoord;\nvarying vec2 vBirdFeatherStyle;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBirdWingCoord=birdWingCoord;\nvBirdFeatherStyle=birdFeatherStyle;');
+        shader.fragmentShader = 'uniform float blFoldedPigment;\nuniform sampler2D blCovertMap;\nvarying vec2 vBirdWingCoord;\nvarying vec2 vBirdFeatherStyle;\n' + shader.fragmentShader;
+        // Small coverts have quiet, unbarred vanes. Reuse the existing atlas
+        // in the same batch; their feather-local markings follow every fold.
+        shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.replace(
+          'texture2D( map, vUv )', 'mix(texture2D(map,vUv),texture2D(blCovertMap,vUv),vBirdFeatherStyle.x)'));
         // These coordinates belong to the fully spread, authored wing. They
         // are interpolated on the same vertices through both wing morphs, so
         // the pigment never slides when a wrist bends or a wing folds.
         shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' + [
+          'if (vBirdFeatherStyle.x>0.5) {',
+          '  float shaft=1.0-vUv.y,across=abs(fract(vUv.x*4.0)-0.5)*2.0;',
+          '  float vaneAA=max(fwidth(shaft),0.004),crossAA=max(fwidth(across),0.015);',
+          '  float tipStart=0.78+vBirdFeatherStyle.y*0.07;',
+          '  float tipWave=sin(across*8.0+vBirdFeatherStyle.y*12.0)*0.018;',
+          '  float tipAA=max(fwidth(shaft-tipWave),vaneAA);',
+          '  float fringe=smoothstep(tipStart+tipWave-tipAA,0.995+tipAA,shaft)*(0.22+vBirdFeatherStyle.y*0.10);',
+          '  float margin=smoothstep(0.78-crossAA,1.0+crossAA,across)*smoothstep(0.26,0.68,shaft)*(0.09+vBirdFeatherStyle.y*0.06);',
+          '  float center=(1.0-smoothstep(0.10-crossAA,0.38+crossAA,across))*smoothstep(0.10,0.30,shaft)*(1.0-smoothstep(0.76,0.96,shaft));',
+          '  diffuseColor.rgb*=1.0-center*(0.11+vBirdFeatherStyle.y*0.07);',
+          '  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.43,0.32,0.20)*texelColor.rgb,max(fringe,margin));',
+          '}',
           'if (!gl_FrontFacing) {',
           '  float span=vBirdWingCoord.x,chord=vBirdWingCoord.y;',
           '  float shaft=1.0-vUv.y;',
@@ -153,8 +209,9 @@
           '  diffuseColor.rgb=mix(diffuseColor.rgb,underColor*texelColor.rgb,0.93*(1.0-blFoldedPigment));',
           '}'
         ].join('\n'));
+        vaneGrain(shader, false);
       };
-      m.customProgramCacheKey = function () { return 'birdlab-underwing-markings-v2-' + dark; };
+      m.customProgramCacheKey = function () { return 'birdlab-underwing-covert-markings-v5-' + dark + '|' + featherArt.vaneGrainCacheKey({ variants: 4 }); };
     }
     underwing(wingMaterial, false); underwing(primaryMaterial, true);
 
@@ -171,7 +228,7 @@
       var pale = (1 - smooth(-0.32, 0.23, by)) * (1 - smooth(0.50, 0.9, bz));
       shade.copy(dorsal).lerp(breast, pale); colors.push(shade.r, shade.g, shade.b);
     }
-    bodyGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); bodyGeo.computeVertexNormals();
+    bodyGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); smoothSphereNormals(bodyGeo);
     var bodyMaterial = material({ color: 0xffffff, vertexColors: true, roughness: 0.96, map: contour, bumpMap: contour, bumpScale: 0.00065 });
     bodyMaterial.onBeforeCompile = function (shader) {
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vBirdBody;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvBirdBody=position;');
@@ -203,16 +260,25 @@
     addMesh(torso, bodyGeo, bodyMaterial, 'continuous-mantle-and-streaked-breast');
 
     var head = new THREE.Group(); head.name = 'hawk-head-gaze'; head.position.set(0, 0.068, -0.202); torso.add(head);
+    // Keep the skin and its short overlying feathers on the same sculpted
+    // surface. Lift is measured along the original ellipsoid's radial axis;
+    // eye, brow and bill landmarks stay in their authored positions.
+    function headSurface(hx, hy, hz, lift) {
+      var cheek = smooth(-0.35, -0.9, hy);
+      var forehead = smooth(-0.18, -0.85, hz) * smooth(-0.12, 0.72, hy);
+      return [hx * 0.059 * (1 - cheek * 0.31) + hx * lift,
+        hy * 0.058 - smooth(0.20, 1, hy) * 0.017 + cheek * 0.018 - forehead * 0.005 + hy * lift,
+        hz * 0.076 - Math.max(0, hy) * 0.009 + cheek * 0.007 + hz * lift];
+    }
     var headGeo = geometry(new THREE.SphereGeometry(1, 36, 26)), hp = headGeo.attributes.position, hc = [];
     for (var hi = 0; hi < hp.count; hi++) {
       var hx = hp.getX(hi), hy = hp.getY(hi), hz = hp.getZ(hi);
-      var cheek = smooth(-0.35, -0.9, hy);
-      var forehead = smooth(-0.18, -0.85, hz) * smooth(-0.12, 0.72, hy);
-      hp.setXYZ(hi, hx * 0.059 * (1 - cheek * 0.31), hy * 0.058 - smooth(0.20, 1, hy) * 0.017 + cheek * 0.018 - forehead * 0.005, hz * 0.076 - Math.max(0, hy) * 0.009 + cheek * 0.007);
+      var headPoint = headSurface(hx, hy, hz, 0);
+      hp.setXYZ(hi, headPoint[0], headPoint[1], headPoint[2]);
       shade.copy(dorsal).lerp(breast, (1 - smooth(-0.64, 0.14, hy)) * (1 - smooth(0.0, 0.7, hz)) * 0.73);
       hc.push(shade.r, shade.g, shade.b);
     }
-    headGeo.setAttribute('color', new THREE.Float32BufferAttribute(hc, 3)); headGeo.computeVertexNormals();
+    headGeo.setAttribute('color', new THREE.Float32BufferAttribute(hc, 3)); smoothSphereNormals(headGeo);
     var headMaterial = material({ color: 0xffffff, vertexColors: true, roughness: 0.98, map: headRelief, bumpMap: headRelief, bumpScale: 0.0004 });
     headMaterial.onBeforeCompile = function (shader) {
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vHawkHead;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvHawkHead=position;');
@@ -255,7 +321,36 @@
     irisMat.customProgramCacheKey = function () { return 'birdlab-hawk-radial-iris-v1'; };
     var pupilMat = material({ color: 0x0b0c0b, roughness: 0.11 });
     var browMat = material({ color: 0x604839, map: headRelief, bumpMap: headRelief, bumpScale: 0.00024, roughness: 0.97 });
-    var eyes = [];
+    var eyes = [], eyelids = [], blinkClosure = { value: 0 };
+    // The lower lid travels over a fixed globe. Its curved surface is sampled
+    // in the vertex shader, so the iris and pupil keep their shape during a
+    // blink and no vertex buffers need rebuilding in the animation loop.
+    var lidGeometry = geometry(new THREE.PlaneGeometry(1, 1, 24, 14));
+    // Keep CPU bounds/inspection in metres too; the shader uses these UVs
+    // to move only the lid's leading edge over the same ellipsoid.
+    for (var lidVertex = 0; lidVertex < lidGeometry.attributes.position.count; lidVertex++) {
+      var lidUV = lidGeometry.attributes.uv, lidY = -0.0079 + 0.0158 * lidUV.getY(lidVertex);
+      var lidSpan = Math.sqrt(Math.max(0.000001, 1 - lidY * lidY / (0.0080 * 0.0080)));
+      var lidX = (lidUV.getX(lidVertex) * 2 - 1) * 0.0094 * lidSpan;
+      var lidZ = 0.0004 + 0.0062 * Math.sqrt(Math.max(0.000001, 1 - lidX * lidX / (0.0094 * 0.0094) - lidY * lidY / (0.0080 * 0.0080)));
+      lidGeometry.attributes.position.setXYZ(lidVertex, lidX, lidY, lidZ);
+    }
+    lidGeometry.computeVertexNormals();
+    lidGeometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0.003), 0.014);
+    var lidMat = material({ color: 0x71654e, roughness: 0.96, side: THREE.DoubleSide });
+    lidMat.onBeforeCompile = function (shader) {
+      shader.uniforms.blBlinkClosure = blinkClosure;
+      shader.vertexShader = 'uniform float blBlinkClosure;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <beginnormal_vertex>', [
+        'float lidY=mix(-0.0079,mix(-0.0077,0.0079,blBlinkClosure),uv.y);',
+        'float lidSpan=sqrt(max(0.000001,1.0-lidY*lidY/(0.0080*0.0080)));',
+        'float lidX=(uv.x*2.0-1.0)*0.0094*lidSpan;',
+        'float lidZ=0.0004+0.0062*sqrt(max(0.000001,1.0-lidX*lidX/(0.0094*0.0094)-lidY*lidY/(0.0080*0.0080)));',
+        'vec3 objectNormal=normalize(vec3(lidX/(0.0094*0.0094),lidY/(0.0080*0.0080),(lidZ-0.0004)/(0.0062*0.0062)));'
+      ].join('\n'));
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', 'vec3 transformed=vec3(lidX,lidY,lidZ);');
+    };
+    lidMat.customProgramCacheKey = function () { return 'birdlab-curved-lower-eyelid-v1'; };
     [-1, 1].forEach(function (side) {
       var normal = new THREE.Vector3(side * 0.86, 0.14, -0.50).normalize();
       var eyeRig = new THREE.Group(); eyeRig.name = 'hawk-eye-' + side;
@@ -263,6 +358,8 @@
       var orbit = addMesh(eyeRig, eyeGeo, orbitMat, 'fine-orbital-rim'); orbit.scale.set(0.0094, 0.0080, 0.003);
       var iris = addMesh(eyeRig, eyeGeo, irisMat, 'amber-iris'); iris.scale.set(0.0072, 0.0066, 0.0028); iris.position.z = 0.0019;
       var pupil = addMesh(eyeRig, eyeGeo, pupilMat, 'small-pupil'); pupil.scale.set(0.0042, 0.0043, 0.0017); pupil.position.z = 0.0041;
+      var lid = addMesh(eyeRig, lidGeometry, lidMat, 'curved-lower-eyelid');
+      lid.castShadow = false; lid.receiveShadow = false; lid.visible = false; eyelids.push(lid);
       // The supraorbital ridge shades a raptor's eye and breaks the round,
       // toy-like face. It is part of the head, so a blink never squeezes it.
       var brow = addMesh(head, eyeGeo, browMat, 'feathered-supraorbital-ridge-' + side);
@@ -289,26 +386,73 @@
     billMat.customProgramCacheKey = function () { return 'birdlab-hawk-keratin-jaw-v1'; };
     var cereMat = material({ color: 0xb99a58, map: keratin, bumpMap: keratin, bumpScale: 0.00007, roughness: 0.82 });
     var cere = addMesh(head, eyeGeo, cereMat, 'subdued-yellow-cere'); cere.scale.set(0.023, 0.014, 0.019); cere.position.set(0, -0.008, -0.062);
-    // A narrow upper bill with a downturned tip, adapted from Raptor Lab's
-    // cross-section method; its profile never becomes a cartoon cone.
+    // Sweep the keratin around a turning centerline. Rings follow the curve
+    // into the hook instead of pinching across fixed planes near the tip.
+    // Keep the original root, tip and facial attachment inside their bounds.
     var billP = [], billUV = [], billI = [];
-    var sections = [[-0.057,-0.006,0.024,0.016],[-0.077,-0.008,0.018,0.014],[-0.097,-0.012,0.010,0.012],[-0.109,-0.021,0.005,0.011],[-0.106,-0.039,0.0008,0.0015]];
-    sections.forEach(function (s, row) {
-      for (var j = 0; j < 16; j++) {
-        var a = j / 16 * Math.PI * 2; billP.push(Math.cos(a) * s[2], s[1] + Math.sin(a) * s[3], s[0]); billUV.push(j / 16, row / 4);
-        if (row < 4) { var a0 = row * 16 + j, a1 = row * 16 + (j + 1) % 16; billI.push(a0, a0 + 16, a1, a1, a0 + 16, a1 + 16); }
+    var sections = [[-0.057,-0.006,0.024,0.016],[-0.077,-0.008,0.018,0.014],[-0.094,-0.012,0.010,0.010],[-0.102,-0.022,0.005,0.005],[-0.106,-0.039,0.0008,0.0015]];
+    var billTangents = sections.map(function (s, index) {
+      return s.map(function (value, component) {
+        if (index === 0) return sections[1][component] - value;
+        if (index === sections.length - 1) return value - sections[index - 1][component];
+        var before = value - sections[index - 1][component], after = sections[index + 1][component] - value;
+        return before * after > 0 ? 2 * before * after / (before + after) : 0;
+      });
+    });
+    billTangents[0][1] = 0; // The concealed attachment remains in its original plane.
+    var billSamples = [], billFrames = [], billDistance = [0], billRadial = 24, billStride = billRadial + 1;
+    for (var billRow = 0; billRow <= 24; billRow++) {
+      var billSegment = Math.min(3, Math.floor(billRow / 6)), billT = billRow / 6 - billSegment;
+      var billT2 = billT * billT, billT3 = billT2 * billT;
+      var sample = sections[billSegment].map(function (value, component) {
+        return (2 * billT3 - 3 * billT2 + 1) * value + (billT3 - 2 * billT2 + billT) * billTangents[billSegment][component] +
+          (-2 * billT3 + 3 * billT2) * sections[billSegment + 1][component] + (billT3 - billT2) * billTangents[billSegment + 1][component];
+      });
+      var billDZ = (6 * billT2 - 6 * billT) * sections[billSegment][0] + (3 * billT2 - 4 * billT + 1) * billTangents[billSegment][0] +
+        (-6 * billT2 + 6 * billT) * sections[billSegment + 1][0] + (3 * billT2 - 2 * billT) * billTangents[billSegment + 1][0];
+      var billDY = (6 * billT2 - 6 * billT) * sections[billSegment][1] + (3 * billT2 - 4 * billT + 1) * billTangents[billSegment][1] +
+        (-6 * billT2 + 6 * billT) * sections[billSegment + 1][1] + (3 * billT2 - 2 * billT) * billTangents[billSegment + 1][1];
+      var billSpeed = Math.hypot(billDZ, billDY);
+      billFrames.push([-billDZ / billSpeed, billDY / billSpeed]);
+      billSamples.push(sample);
+      if (billRow) billDistance.push(billDistance[billRow - 1] + Math.hypot(sample[0] - billSamples[billRow - 1][0], sample[1] - billSamples[billRow - 1][1]));
+    }
+    var billTip = [0, sections[4][1] + billFrames[24][1] * 0.001, sections[4][0] - billFrames[24][0] * 0.001];
+    var billLength = billDistance[24] + 0.001;
+    billSamples.forEach(function (s, row) {
+      for (var j = 0; j <= billRadial; j++) {
+        // Duplicate the hidden underside seam for UV wrapping. Its two
+        // positions are identical, and their shading normals are welded below.
+        var a = (j === billRadial ? 0 : j / billRadial) * Math.PI * 2 - Math.PI / 2;
+        billP.push(Math.cos(a) * s[2], s[1] + Math.sin(a) * s[3] * billFrames[row][0], s[0] + Math.sin(a) * s[3] * billFrames[row][1]);
+        billUV.push(j / billRadial, billDistance[row] / billLength);
+        if (row < 24 && j < billRadial) {
+          var a0 = row * billStride + j, a1 = a0 + 1;
+          billI.push(a0, a0 + billStride, a1, a1, a0 + billStride, a1 + billStride);
+        }
       }
     });
+    // A minute rounded end closes the keratin surface; the hidden root ring
+    // remains embedded in the cere, whose position and proportions are intact.
+    var billTipIndex = billP.length / 3; billP.push(billTip[0], billTip[1], billTip[2]); billUV.push(0.5, 1);
+    for (var billCap = 0; billCap < billRadial; billCap++) billI.push(24 * billStride + billCap, billTipIndex, 24 * billStride + billCap + 1);
     var billGeo = geometry(new THREE.BufferGeometry()); billGeo.setAttribute('position', new THREE.Float32BufferAttribute(billP, 3)); billGeo.setAttribute('uv', new THREE.Float32BufferAttribute(billUV, 2)); billGeo.setIndex(billI); billGeo.computeVertexNormals();
+    var billNormals = billGeo.attributes.normal, billSeamNormal = new THREE.Vector3();
+    for (var billSeam = 0; billSeam <= 24; billSeam++) {
+      var billFirst = billSeam * billStride, billLast = billFirst + billRadial;
+      billSeamNormal.set(billNormals.getX(billFirst) + billNormals.getX(billLast), billNormals.getY(billFirst) + billNormals.getY(billLast), billNormals.getZ(billFirst) + billNormals.getZ(billLast)).normalize();
+      billNormals.setXYZ(billFirst, billSeamNormal.x, billSeamNormal.y, billSeamNormal.z);
+      billNormals.setXYZ(billLast, billSeamNormal.x, billSeamNormal.y, billSeamNormal.z);
+    }
     addMesh(head, billGeo, billMat, 'curved-keratin-hook');
     [-1, 1].forEach(function (side) {
       var nostril = addMesh(head, eyeGeo, orbitMat, 'nostril-' + side); nostril.position.set(side * 0.0203, -0.005, -0.068); nostril.scale.set(0.0012, 0.0025, 0.0035);
     });
 
-    function batch() { return { p: [], uv: [], c: [], i: [] }; }
+    function batch() { return { p: [], uv: [], c: [], i: [], style: [] }; }
     // Shared curved vane construction: seven stations and a ridge down the
     // shaft. Layered vanes are batched, while slotted tips keep quill pivots.
-    function appendFeather(b, start, end, width, color, camber, handedness) {
+    function appendFeather(b, start, end, width, color, camber, handedness, covertSeed) {
       featherCount++;
       var vaneVariant = Math.floor(noise(featherCount, 23) * 4), pigment = 0.97 + noise(featherCount, 37) * 0.055;
       var dx = end[0] - start[0], dz = end[2] - start[2], length = Math.hypot(dx, dz);
@@ -322,10 +466,16 @@
           // with it so both wings retain the same anatomical leading edge.
           var cross = col / 2 - 1, asymmetric = cross * (handedness || 1) < 0 ? 0.83 : 1;
           var bend = Math.sin(t * Math.PI) * (camber || 0.0035);
+          // A fine physical shaft breaks up the broad plate-like highlight
+          // on small coverts. Existing columns carry the crest; roots, tips
+          // and edges stay attached, with no extra vertices or moving decal.
+          var shaftCrest = covertSeed === undefined ? 0 : (0.00022 + covertSeed * 0.00016) *
+            Math.pow(Math.sin(t * Math.PI), 2) * Math.pow(1 - Math.abs(cross), 3.6);
           b.p.push(start[0] + dx * t + acrossX * cross * width * widths[row] * asymmetric,
-            start[1] + (end[1] - start[1]) * t + bend * (1 - cross * cross * 0.55),
+            start[1] + (end[1] - start[1]) * t + bend * (1 - cross * cross * 0.55) + shaftCrest,
             start[2] + dz * t + acrossZ * cross * width * widths[row] * asymmetric);
           b.uv.push((vaneVariant + 0.008 + col / 4 * 0.984) / 4, 1 - t);
+          b.style.push(covertSeed === undefined ? 0 : 1, covertSeed === undefined ? 0 : covertSeed);
           var edge = (0.965 + (1 - Math.abs(cross)) * 0.025 + Math.pow(t, 6) * 0.035) * pigment;
           edge *= 0.97 + smooth(0.02, 0.44, t) * 0.03;
           b.c.push(tint.r * edge, tint.g * edge, tint.b * edge);
@@ -338,6 +488,43 @@
       g.setAttribute('position', new THREE.Float32BufferAttribute(b.p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(b.uv, 2));
       g.setAttribute('color', new THREE.Float32BufferAttribute(b.c, 3)); g.setIndex(b.i); g.computeVertexNormals(); return g;
     }
+    // Crown feathers run back toward the nape rather than radiating as a
+    // crest. Only their free tips lift from the head, adding a fine broken
+    // silhouette while leaving the eyes, brow and cere unobstructed. One
+    // batch shares the mantle's unbarred vane material and detail textures.
+    var crownFeathers = batch(), crownRows = [0, 0.18, 0.40, 0.62, 0.81, 0.95, 1];
+    for (var crownRow = 0; crownRow < 7; crownRow++) {
+      var crownExtent = [0.65, 0.80, 1.32, 1.72, 1.84, 1.90, 1.94][crownRow];
+      for (var crownLane = 0; crownLane < 17; crownLane++) {
+        var crownAngle = (crownLane - 8 + (crownRow % 2) * 0.35) * crownExtent / 8;
+        var crownStart = -0.70 + crownRow * 0.23 + (noise(crownRow + 103, crownLane) - 0.5) * 0.016;
+        var crownLength = 0.255 + noise(crownLane + 67, crownRow) * 0.032;
+        var crownBase = crownFeathers.p.length / 3;
+        var crownTint = new THREE.Color([0x624b38, 0x674e3b, 0x604938, 0x6a513e][(crownRow + crownLane) % 4]).convertSRGBToLinear();
+        var crownVariant = Math.floor(noise(crownRow + 59, crownLane + 31) * 4);
+        featherCount++;
+        for (var crownStation = 0; crownStation < crownRows.length; crownStation++) {
+          var crownT = crownRows[crownStation], crownTip = [0.64, 0.90, 1, 0.93, 0.73, 0.30, 0.025][crownStation];
+          var crownZ = crownStart + crownLength * crownT;
+          var crownRadius = Math.sqrt(Math.max(0.001, 1 - crownZ * crownZ));
+          for (var crownCross = 0; crownCross < 5; crownCross++) {
+            var crownAcross = crownCross / 2 - 1;
+            var crownA = crownAngle + crownAcross * crownTip * crownExtent * 0.088;
+            var crownLift = 0.00022 + Math.sin(crownT * Math.PI) * 0.00036 + Math.pow(crownT, 3) * 0.00065 + (1 - crownAcross * crownAcross) * crownTip * 0.00020;
+            var crownPoint = headSurface(Math.sin(crownA) * crownRadius, Math.cos(crownA) * crownRadius, crownZ, crownLift);
+            crownFeathers.p.push(crownPoint[0], crownPoint[1], crownPoint[2]);
+            crownFeathers.uv.push((crownVariant + 0.008 + crownCross / 4 * 0.984) / 4, 1 - crownT);
+            var crownEdge = 0.97 + Math.pow(crownT, 5) * 0.10 + (1 - Math.abs(crownAcross)) * 0.018;
+            crownFeathers.c.push(crownTint.r * crownEdge, crownTint.g * crownEdge, crownTint.b * crownEdge);
+            if (crownStation < crownRows.length - 1 && crownCross < 4) {
+              var crownVertex = crownBase + crownStation * 5 + crownCross;
+              crownFeathers.i.push(crownVertex, crownVertex + 5, crownVertex + 1, crownVertex + 1, crownVertex + 5, crownVertex + 6);
+            }
+          }
+        }
+      }
+    }
+    addMesh(head, finishBatch(crownFeathers), contourMaterial, 'layered-crown-and-nape-plumes');
     // Scapulars and flank feathers follow the actual torso surface. Their
     // staggered, slightly lifted tips create a feathered silhouette and catch
     // grazing light without adding hundreds of separate draw calls.
@@ -377,6 +564,48 @@
       }
     }
     addMesh(torso, finishBatch(mantleFeathers), contourMaterial, 'layered-scapular-mantle-and-flank-plumes');
+    // Short, closely shingled breast feathers wrap the underside. These are
+    // finer than the long scapulars above, with subdued individual tip lift
+    // rather than broad, evenly spaced scales across the chest.
+    var breastFeathers = batch();
+    for (var breastRow = 0; breastRow < 12; breastRow++) {
+      for (var breastLane = 0; breastLane < 25; breastLane++) {
+        var breastAngle = Math.PI + (breastLane - 12 + (breastRow % 2) * 0.5) * 0.13;
+        var breastStart = -0.173 + breastRow * 0.0235 + (noise(breastRow + 91, breastLane) - 0.5) * 0.003;
+        var breastLength = 0.033 + noise(breastLane + 57, breastRow) * 0.006;
+        var breastLay = (noise(breastRow + 181, breastLane + 23) - 0.5) * 0.018;
+        var breastLift = 0.82 + noise(breastLane + 71, breastRow + 67) * 0.30;
+        var breastBase = breastFeathers.p.length / 3;
+        var breastTint = new THREE.Color(0xd6cbb0).convertSRGBToLinear();
+        breastTint.multiplyScalar(0.97 + noise(breastRow + 27, breastLane) * 0.055);
+        var breastVariant = Math.floor(noise(breastRow + 11, breastLane + 43) * 4);
+        featherCount++;
+        for (var breastStation = 0; breastStation < contourRows.length; breastStation++) {
+          var breastT = contourRows[breastStation], breastTip = [0.66, 0.90, 1, 0.93, 0.73, 0.30, 0.025][breastStation];
+          for (var breastCross = 0; breastCross < 5; breastCross++) {
+            var breastAcross = breastCross / 2 - 1;
+            var breastPoint = contourPoint(breastStart + breastLength * breastT,
+              breastAngle + breastAcross * breastTip * 0.087 + breastLay * breastT * breastT,
+              0.00035 + (Math.sin(breastT * Math.PI) * 0.00048 + breastT * breastT * 0.00082) * breastLift + (1 - breastAcross * breastAcross) * 0.00022);
+            breastFeathers.p.push(breastPoint[0], breastPoint[1], breastPoint[2]);
+            breastFeathers.uv.push((breastVariant + 0.008 + breastCross / 4 * 0.984) / 4, 1 - breastT);
+            var breastEdge = 0.99 + Math.pow(breastT, 5) * 0.035;
+            breastFeathers.c.push(breastTint.r * breastEdge, breastTint.g * breastEdge, breastTint.b * breastEdge);
+            if (breastStation < contourRows.length - 1 && breastCross < 4) {
+              var breastVertex = breastBase + breastStation * 5 + breastCross;
+              breastFeathers.i.push(breastVertex, breastVertex + 5, breastVertex + 1, breastVertex + 1, breastVertex + 5, breastVertex + 6);
+            }
+          }
+        }
+      }
+    }
+    var breastMaterial = featherMaterial(0xffffff, contourVane);
+    // The belly band is anchored to body coordinates on both the skin and
+    // the overlying plumes, so markings stay coherent between feather rows.
+    var breastPigment = bodyMaterial.onBeforeCompile;
+    breastMaterial.onBeforeCompile = function (shader) { breastPigment(shader); vaneGrain(shader, true); };
+    breastMaterial.customProgramCacheKey = function () { return 'birdlab-hawk-breast-plumes-v3|' + featherArt.vaneGrainCacheKey({ variants: 4, contourFeather: true }); };
+    addMesh(torso, finishBatch(breastFeathers), breastMaterial, 'layered-breast-and-belly-plumes');
     // Closed pose wraps every layer around the flank. It is authored once;
     // animation only changes morph weights and joint rotations.
     function addClosedMorph(g, offset, side) {
@@ -408,29 +637,110 @@
       }
       var g = finishBatch(b);
       g.setAttribute('birdWingCoord', new THREE.Float32BufferAttribute(wingCoords, 2));
+      g.setAttribute('birdFeatherStyle', new THREE.Float32BufferAttribute(b.style, 2));
       addClosedMorph(g, offset, side);
       var mesh = addMesh(parent, g, m, name); mesh.updateMorphTargets(); return mesh;
     }
     function addPrimaryFlex(mesh) {
-      var g = mesh.geometry, positions = g.attributes.position.clone(), uv = g.attributes.uv;
-      // A second morph bends the distal vane while keeping the quill root
-      // anchored. It combines with the closed-wing morph without per-frame
-      // geometry allocation or the rigid-paddle motion of a simple rotation.
-      for (var vertex = 0; vertex < positions.count; vertex++) {
-        var along = 1 - uv.getY(vertex), bend = along * along * along;
-        positions.setY(vertex, positions.getY(vertex) + bend * 0.020);
-        positions.setZ(vertex, positions.getZ(vertex) + bend * 0.004);
+      var g = mesh.geometry, source = g.attributes.position, positions = source.clone(), uv = g.attributes.uv;
+      // Curve each feather along its own shaft, shortening its projected
+      // reach as it bends. A fixed Z offset stretched the aft fingers
+      // instead of following each shaft. Author the loaded shape once;
+      // playback only interpolates the retained morph and closed-wing shape.
+      var centers = [], loaded = [];
+      for (var row = 0; row < source.count; row += 5) {
+        var center = new THREE.Vector3().fromBufferAttribute(source, row + 2);
+        var along = 1 - uv.getY(row + 2), bent = center.clone(); bent.y += along * along * along * 0.020;
+        if (row) {
+          var previous = centers[centers.length - 1], previousBent = loaded[loaded.length - 1];
+          var dx = center.x - previous.x, dz = center.z - previous.z, dy = center.y - previous.y;
+          var bendDY = bent.y - previousBent.y, horizontal = Math.hypot(dx, dz);
+          var reach = Math.sqrt(Math.max(0, dx * dx + dy * dy + dz * dz - bendDY * bendDY));
+          bent.x = previousBent.x + dx * reach / horizontal; bent.z = previousBent.z + dz * reach / horizontal;
+        }
+        centers.push(center); loaded.push(bent);
+      }
+      var oldTangent = new THREE.Vector3(), newTangent = new THREE.Vector3(), barb = new THREE.Vector3(), bendRotation = new THREE.Quaternion();
+      for (var station = 1; station < centers.length; station++) {
+        var before = station - 1, after = Math.min(station + 1, centers.length - 1);
+        oldTangent.copy(centers[after]).sub(centers[before]).normalize();
+        newTangent.copy(loaded[after]).sub(loaded[before]).normalize();
+        bendRotation.setFromUnitVectors(oldTangent, newTangent);
+        // Carry the vanes around the bending shaft instead of sliding their
+        // edges vertically. The entire root row remains exactly anchored.
+        for (var cross = 0; cross < 5; cross++) {
+          var vertex = station * 5 + cross;
+          barb.fromBufferAttribute(source, vertex).sub(centers[station]).applyQuaternion(bendRotation).add(loaded[station]);
+          positions.setXYZ(vertex, barb.x, barb.y, barb.z);
+        }
       }
       var curved = new THREE.BufferGeometry(); curved.setAttribute('position', positions); curved.setIndex(g.index.clone()); curved.computeVertexNormals();
       g.morphAttributes.position.push(curved.attributes.position); g.morphAttributes.normal.push(curved.attributes.normal);
       curved.dispose(); mesh.updateMorphTargets();
+    }
+    function makeCarpalBridge(mesh, wrist) {
+      var g = mesh.geometry, positions = g.attributes.position, span = g.attributes.birdWingCoord;
+      var weights = new Float32Array(positions.count);
+      for (var vertex = 0; vertex < weights.length; vertex++) weights[vertex] = smooth(0.47, 0.65, span.getX(vertex));
+      positions.setUsage(THREE.DynamicDrawUsage); g.attributes.normal.setUsage(THREE.DynamicDrawUsage);
+      // The small belt keeps the original feather shapes and closed morph.
+      // Its fixed endpoints follow the arm and hand; the middle bends across
+      // the carpus instead of exposing a slit between two rigid feather fans.
+      g.computeBoundingSphere(); g.boundingSphere.radius += 0.18;
+      return { mesh: mesh, wrist: wrist, source: positions.array.slice(), closed: g.morphAttributes.position[0].array.slice(), weights: weights,
+        previous: new THREE.Quaternion(), fold: 0 };
+    }
+    function updateCarpalBridge(wing, fold) {
+      var bridge = wing.bridge, wrist = bridge.wrist;
+      // Blend the authored closed shape before the joint bend, exactly as
+      // the neighboring rigid meshes do. Leaving this blend on the GPU would
+      // make the outer anchor detach again during a partly folded stroke.
+      bridge.mesh.morphTargetInfluences[0] = 0;
+      if (bridge.previous.equals(wrist.quaternion) && bridge.fold === fold) return;
+      bridge.previous.copy(wrist.quaternion); bridge.fold = fold;
+      var g = bridge.mesh.geometry, positions = g.attributes.position, normals = g.attributes.normal;
+      var p = positions.array, n = normals.array, index = g.index.array, q = wrist.quaternion;
+      var px = wrist.position.x, py = wrist.position.y, pz = wrist.position.z;
+      for (var vertex = 0; vertex < positions.count; vertex++) {
+        var offset = vertex * 3, weight = bridge.weights[vertex];
+        var x = bridge.source[offset] * (1 - fold) + bridge.closed[offset] * fold - px;
+        var y = bridge.source[offset + 1] * (1 - fold) + bridge.closed[offset + 1] * fold - py;
+        var z = bridge.source[offset + 2] * (1 - fold) + bridge.closed[offset + 2] * fold - pz;
+        // Normalized quaternion blending follows the modest wrist rotation
+        // with a smooth bend and exact rigid endpoints, without
+        // per-vertex trigonometry or temporary object allocations.
+        var qx = q.x * weight, qy = q.y * weight, qz = q.z * weight, qw = 1 + (q.w - 1) * weight;
+        var scale = 1 / Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+        qx *= scale; qy *= scale; qz *= scale; qw *= scale;
+        var tx = 2 * (qy * z - qz * y), ty = 2 * (qz * x - qx * z), tz = 2 * (qx * y - qy * x);
+        p[offset] = x + qw * tx + qy * tz - qz * ty + px;
+        p[offset + 1] = y + qw * ty + qz * tx - qx * tz + py;
+        p[offset + 2] = z + qw * tz + qx * ty - qy * tx + pz;
+      }
+      // Recompute the actual bent surface normals, including the changing
+      // spanwise tangent. Rotating the old normals alone makes a hard crease.
+      n.fill(0);
+      for (var triangle = 0; triangle < index.length; triangle += 3) {
+        var a = index[triangle] * 3, b = index[triangle + 1] * 3, c = index[triangle + 2] * 3;
+        var ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
+        var vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+        var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+        n[a] += nx; n[a + 1] += ny; n[a + 2] += nz;
+        n[b] += nx; n[b + 1] += ny; n[b + 2] += nz;
+        n[c] += nx; n[c + 1] += ny; n[c + 2] += nz;
+      }
+      for (var normal = 0; normal < n.length; normal += 3) {
+        var length = Math.sqrt(n[normal] * n[normal] + n[normal + 1] * n[normal + 1] + n[normal + 2] * n[normal + 2]) || 1;
+        n[normal] /= length; n[normal + 1] /= length; n[normal + 2] /= length;
+      }
+      positions.needsUpdate = true; normals.needsUpdate = true;
     }
     [-1, 1].forEach(function (side) {
       var shoulder = new THREE.Group(); shoulder.name = (side < 0 ? 'left' : 'right') + '-shoulder'; shoulder.position.set(side * 0.064, 0.025, -0.085); upperBody.add(shoulder);
       var wrist = new THREE.Group(); wrist.name = 'articulated-wrist'; wrist.position.set(side * 0.265, 0.013, -0.027); shoulder.add(wrist);
       var shoulderOffset = shoulder.position.clone(), wristOffset = shoulder.position.clone().add(wrist.position);
       var rig = { side: side, shoulder: shoulder, wrist: wrist, meshes: [], primaries: [] };
-      var inner = batch(), outer = batch();
+      var inner = batch(), outer = batch(), carpal = batch();
       // Full remiges below three staggered rows of coverts. Irregular lengths
       // and subtly changing pigment prevent a stamped, sawtooth appearance.
       for (var layer = 0; layer < 4; layer++) {
@@ -441,11 +751,14 @@
           var start = wingSurface(u, rootV, side), end = wingSurface(u + 0.015, tipV + noise(f, layer) * 0.026, side);
           var lift = layer * 0.003; start[1] += lift; end[1] += lift;
           var palette = layer === 0 ? [0x645544,0x6c5c48,0x5e4c3d] : [0x6f5741,0x775d44,0x67513e,0x7b624b];
-          appendFeather(u < 0.55 ? inner : outer, start, end, 0.48 / count * 0.70, palette[(f + layer) % palette.length], 0.0025, side);
+          appendFeather(u < 0.42 ? inner : u > 0.70 ? outer : carpal, start, end, 0.48 / count * 0.70, palette[(f + layer) % palette.length], 0.0025, side,
+            layer ? noise(f + 41, layer + 83) : undefined);
         }
       }
       rig.meshes.push(meshInJoint(shoulder, inner, wingMaterial, 'layered-inner-wing-feathers', shoulderOffset, side));
       rig.meshes.push(meshInJoint(wrist, outer, wingMaterial, 'layered-outer-wing-feathers', wristOffset, side));
+      var carpalMesh = meshInJoint(shoulder, carpal, wingMaterial, 'continuous-carpal-feathers', shoulderOffset, side);
+      rig.meshes.push(carpalMesh); rig.bridge = makeCarpalBridge(carpalMesh, wrist);
       // The thumb feathers lift at low speed. Kept on a separate pivot, they
       // follow the wrist and lie flush along the leading edge while gliding.
       var alula = new THREE.Group(); alula.name = 'thumb-alula-' + side;
@@ -459,6 +772,9 @@
       }
       rig.meshes.push(meshInJoint(alula, thumbFeathers, wingMaterial, 'three-thumb-feathers', new THREE.Vector3(alulaStart[0], alulaStart[1], alulaStart[2]), side));
       rig.alula = alula;
+      alula.userData.restPosition = alula.position.clone();
+      alula.userData.quillRoot = new THREE.Vector3().fromBufferAttribute(alula.children[0].geometry.attributes.position, 2);
+      alula.userData.closedQuillRoot = new THREE.Vector3().fromBufferAttribute(alula.children[0].geometry.morphAttributes.position[0], 2);
       // Eight primaries overlap at their roots and separate toward their tips.
       for (var primary = 0; primary < 8; primary++) {
         var t = primary / 7;
@@ -466,33 +782,135 @@
         var end = [side * (0.605 + Math.sin(t * Math.PI) * 0.017 - t * 0.105), 0.064 + Math.sin(t * Math.PI) * 0.008, -0.09 + t * 0.265];
         var pivot = new THREE.Group(); pivot.name = 'primary-quill-' + primary;
         pivot.position.set(start[0] - wristOffset.x, start[1] - wristOffset.y, start[2] - wristOffset.z); wrist.add(pivot);
+        // The fingers point in different directions. Retain each actual
+        // shaft axis so recovery feathering turns its vane without swinging
+        // the quill away from its attachment or borrowing a wing-wide axis.
+        pivot.userData.quillAxis = new THREE.Vector3(end[0] - start[0], end[1] - start[1], end[2] - start[2]).normalize();
+        pivot.userData.quillRotation = new THREE.Quaternion();
         var feather = batch(); appendFeather(feather, start, end, 0.022 - t * 0.004, [0x453e33,0x514638,0x4b4235][primary % 3], 0.008, side);
         var mesh = meshInJoint(pivot, feather, primaryMaterial, 'slotted-primary-' + primary, new THREE.Vector3(start[0], start[1], start[2]), side);
         addPrimaryFlex(mesh); pivot.userData.vane = mesh;
+        pivot.userData.restPosition = pivot.position.clone();
+        pivot.userData.quillRoot = new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position, 2);
+        pivot.userData.closedQuillRoot = new THREE.Vector3().fromBufferAttribute(mesh.geometry.morphAttributes.position[0], 2);
         rig.meshes.push(mesh); rig.primaries.push(pivot);
       }
       wings.push(rig);
     });
 
+    function addTailFlex(mesh) {
+      var g = mesh.geometry, source = g.attributes.position, curved = source.clone(), uv = g.attributes.uv;
+      // Rectrices yield along the shaft, with a stiff, fixed quill and a
+      // progressively softer tip. Preserve each shaft segment's length when
+      // authoring the loaded curve instead of stretching it like rubber.
+      var previousY = 0, previousZ = 0, previousBentY = 0, bentZ = 0;
+      for (var row = 0; row < source.count; row += 5) {
+        var center = row + 2, along = 1 - uv.getY(center), bend = 0.014 * along * along * along;
+        var y = source.getY(center), z = source.getZ(center), bentY = y + bend;
+        if (row) {
+          var dy = y - previousY, dz = z - previousZ, bentDY = bentY - previousBentY;
+          bentZ += Math.sqrt(Math.max(0, dy * dy + dz * dz - bentDY * bentDY));
+        }
+        for (var col = 0; col < 5; col++) {
+          curved.setY(row + col, source.getY(row + col) + bend);
+          curved.setZ(row + col, source.getZ(row + col) + bentZ - z);
+        }
+        previousY = y; previousZ = z; previousBentY = bentY;
+      }
+      var bent = new THREE.BufferGeometry(); bent.setAttribute('position', curved); bent.setIndex(g.index.clone()); bent.computeVertexNormals();
+      g.morphAttributes.position = [curved]; g.morphAttributes.normal = [bent.attributes.normal];
+      bent.dispose(); mesh.updateMorphTargets();
+    }
     var tail = new THREE.Group(); tail.name = 'twelve-feather-rust-tail'; tail.position.set(0, -0.012, 0.172); upperBody.add(tail);
     for (var tf = 0; tf < 12; tf++) {
       var across = (tf / 11 - 0.5) * 2, tb = batch();
       appendFeather(tb, [0, 0, 0], [0, -0.005, 0.184 - Math.abs(across) * 0.012], 0.0185, 0xffffff, 0.004);
       var tm = addMesh(tail, finishBatch(tb), tailMaterial, 'rectrix-' + (tf + 1));
+      addTailFlex(tm);
       tm.position.set(across * 0.019, (1 - Math.abs(across)) * 0.001, -Math.abs(across) * 0.006);
       tailFeathers.push({ mesh: tm, across: across });
     }
 
     var legMat = material({ color: 0xaa8a4b, roughness: 0.9, morphTargets: true, morphNormals: true }), clawMat = material({ color: 0x37332c, roughness: 0.49 });
+    // Scale coordinates follow each curved digit, including the crouched
+    // tarsus morph. Broad scutes face forward/up; smaller staggered scales
+    // wrap the sides. Fade the fine pattern before it becomes subpixel.
+    legMat.extensions = { derivatives: true };
+    legMat.onBeforeCompile = function (shader) {
+      shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec3 birdScaleCoord;\nvarying vec3 vHawkScale;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvHawkScale=birdScaleCoord;');
+      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vHawkScale;')
+        .replace('#include <color_fragment>', '#include <color_fragment>\n' + [
+          'float scaleRow=vHawkScale.x+0.10*cos(vHawkScale.y*1.04719755);',
+          'float scaleAlong=fract(scaleRow),scaleAcross=fract(vHawkScale.y+mod(floor(scaleRow),2.0)*0.5);',
+          'float scaleAA=max(fwidth(scaleRow),0.025),scaleCrossAA=max(fwidth(vHawkScale.y),0.025);',
+          'float scaleDetail=1.0-smoothstep(0.22,0.65,max(scaleAA,scaleCrossAA));',
+          'float scaleRim=1.0-smoothstep(0.035,0.11+scaleAA,min(scaleAlong,1.0-scaleAlong));',
+          'float scaleSide=1.0-smoothstep(0.025,0.09+scaleCrossAA,min(scaleAcross,1.0-scaleAcross));',
+          'float scaleSeam=max(scaleRim,scaleSide*(1.0-vHawkScale.z*0.92));',
+          'float scaleLip=smoothstep(0.48,0.70,scaleAlong)*(1.0-smoothstep(0.75,0.92,scaleAlong));',
+          'diffuseColor.rgb*=1.0+scaleDetail*(scaleLip*0.09-scaleSeam*0.30);'
+        ].join('\n'));
+    };
+    legMat.customProgramCacheKey = function () { return 'birdlab-tarsus-digit-scales-v1'; };
     var legPlumeMat = material({ color: 0xd0c2a6, map: contour, bumpMap: contour, bumpScale: 0.0009, roughness: 0.98 });
+    // Short thigh feathers follow the existing oval and move with its hock.
+    // Author one shared layer in the oval's unit space: the parent's scale
+    // keeps the cuff small, including while the feet tuck into the belly.
+    var thighFeathers = batch(), thighRows = [0, 0.25, 0.53, 0.80, 1];
+    for (var thighRow = 0; thighRow < 8; thighRow++) for (var thighLane = 0; thighLane < 14; thighLane++) {
+      var thighStart = 0.19 + thighRow * 0.34, thighAngle = (thighLane + (thighRow % 2) * 0.5) * Math.PI * 2 / 14;
+      var thighLength = 0.43 + noise(thighRow + 71, thighLane + 41) * 0.035;
+      var thighLay = (noise(thighRow + 51, thighLane + 121) - 0.5) * 0.045;
+      var thighBase = thighFeathers.p.length / 3, thighVariant = Math.floor(noise(thighRow + 171, thighLane + 5) * 4);
+      var thighTint = new THREE.Color(0xd0c2a6).convertSRGBToLinear().multiplyScalar(0.97 + noise(thighLane + 7, thighRow + 101) * 0.055);
+      featherCount += 2;
+      for (var thighStation = 0; thighStation < thighRows.length; thighStation++) {
+        var thighT = thighRows[thighStation], thighTip = [0.68, 1, 0.96, 0.66, 0.035][thighStation];
+        var theta = thighStart + thighLength * thighT;
+        for (var thighCross = 0; thighCross < 5; thighCross++) {
+          var thighAcross = thighCross / 2 - 1, phi = thighAngle + thighAcross * thighTip * 0.275 + thighLay * thighT * thighT;
+          var thighLift = 0.006 + Math.sin(thighT * Math.PI) * 0.006 + thighT * thighT * 0.010;
+          var thighRadius = 1 + thighLift;
+          thighFeathers.p.push(Math.sin(phi) * Math.sin(theta) * thighRadius, Math.cos(theta) * thighRadius, Math.cos(phi) * Math.sin(theta) * thighRadius);
+          thighFeathers.uv.push((thighVariant + 0.008 + thighCross * 0.246) / 4, 1 - thighT);
+          var thighEdge = 0.98 + Math.pow(thighT, 4) * 0.035;
+          thighFeathers.c.push(thighTint.r * thighEdge, thighTint.g * thighEdge, thighTint.b * thighEdge);
+          if (thighStation < thighRows.length - 1 && thighCross < 4) {
+            var thighVertex = thighBase + thighStation * 5 + thighCross;
+            thighFeathers.i.push(thighVertex, thighVertex + 5, thighVertex + 1, thighVertex + 1, thighVertex + 5, thighVertex + 6);
+          }
+        }
+      }
+    }
+    var thighGeometry = finishBatch(thighFeathers);
     function tube(parent, points, radius, m, name) {
       var curve = new THREE.CatmullRomCurve3(points.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
-      return addMesh(parent, geometry(new THREE.TubeGeometry(curve, 12, radius, 7, false)), m, name);
+      var g = geometry(new THREE.TubeGeometry(curve, 12, radius, 12, false));
+      var p = g.attributes.position, uv = g.attributes.uv, n = g.attributes.normal, scaleCoord = [];
+      var isTalon = m === clawMat, isTarsus = name === 'tarsus', scaleRows = curve.getLength() * 270;
+      for (var vertex = 0; vertex < p.count; vertex++) {
+        var along = uv.getX(vertex);
+        if (isTalon) {
+          // Preserve the claw's curved centreline and its attachment while
+          // narrowing to a fine tip instead of ending in a blunt cylinder.
+          var center = curve.getPointAt(along), taper = 0.04 + 0.96 * Math.pow(1 - along, 0.75);
+          p.setXYZ(vertex, center.x + (p.getX(vertex) - center.x) * taper,
+            center.y + (p.getY(vertex) - center.y) * taper, center.z + (p.getZ(vertex) - center.z) * taper);
+        } else {
+          var exposed = isTarsus ? -n.getZ(vertex) : n.getY(vertex);
+          scaleCoord.push(along * scaleRows, uv.getY(vertex) * 6, smooth(0.15, 0.8, exposed));
+        }
+      }
+      if (isTalon) smoothSphereNormals(g);
+      else g.setAttribute('birdScaleCoord', new THREE.Float32BufferAttribute(scaleCoord, 3));
+      return addMesh(parent, g, m, name);
     }
     [-1, 1].forEach(function (side) {
       var foot = new THREE.Group(); foot.name = 'anatomical-foot-' + side; foot.position.set(side * 0.044, -0.068, 0.012); root.add(foot);
       foot.userData.side = side; foot.userData.digits = [];
       var legPlume = addMesh(foot, eyeGeo, legPlumeMat, 'feathered-upper-leg-' + side); legPlume.position.set(0, -0.008, 0.004); legPlume.scale.set(0.017, 0.046, 0.022);
+      addMesh(legPlume, thighGeometry, contourMaterial, 'layered-thigh-feathers-' + side);
       var leg = tube(foot, [[0,0,0],[0,-0.028,0.013],[0,-0.070,0.007],[0,-0.099,-0.005]], 0.0065, legMat, 'tarsus');
       var bentPositions = leg.geometry.attributes.position.clone(), legUV = leg.geometry.attributes.uv;
       for (var legVertex = 0; legVertex < bentPositions.count; legVertex++) {
@@ -514,10 +932,31 @@
     });
 
     function strokeCycle(phase) { return ((phase / (Math.PI * 2) + 0.21) % 1 + 1) % 1; }
-    function strokeAt(phase) {
-      var cycle = strokeCycle(phase);
-      return cycle < 0.42 ? Math.cos(Math.PI * cycle / 0.42) : -Math.cos(Math.PI * (cycle - 0.42) / 0.58);
+    function strokeAngle(phase) {
+      var angle = strokeCycle(phase) * Math.PI * 2;
+      // A periodic phase warp keeps the loaded stroke at 42% of the cycle,
+      // with continuous acceleration at both reversals and the loop seam.
+      return angle + 0.08 * Math.PI * 2 / (1 - Math.cos(0.42 * Math.PI * 2)) * (1 - Math.cos(angle));
     }
+    function strokeAt(phase) {
+      return Math.cos(strokeAngle(phase));
+    }
+    function featherPressure(phase) {
+      var load = Math.sin(strokeAngle(phase));
+      // Unload the vane gradually through reversal, retaining only a little
+      // reverse flex on recovery. The feather never snaps between two loads.
+      return load * (0.58 + 0.42 * Math.tanh(4 * load) / Math.tanh(4));
+    }
+    function recoveryAt(phase) {
+      var cycle = strokeCycle(phase), value = clamp((cycle - 0.42) / 0.58, 0, 1);
+      // A rounded recovery arc keeps wrist folding and feather pitch moving
+      // throughout the upstroke, with zero speed/acceleration at either end.
+      return Math.pow(Math.sin(Math.PI * value), 4);
+    }
+    var headEuler = new THREE.Euler(), headParentFrame = new THREE.Quaternion(), headNeckFrame = new THREE.Quaternion();
+    var headSightline = new THREE.Quaternion(), headRestPose = new THREE.Quaternion();
+    var primaryFrame = new THREE.Quaternion(), primaryAnchor = new THREE.Vector3(), primaryOffset = new THREE.Vector3();
+    var alulaFrame = new THREE.Quaternion(), alulaAnchor = new THREE.Vector3(), alulaOffset = new THREE.Vector3();
     var elapsed = 0, state = { fold: 1, headYaw: 0, gazePitch: 0, feet: 1, fan: 0.2 };
     function update(pose, dt) {
       if (disposed) return;
@@ -545,45 +984,130 @@
       // The loaded downstroke occupies 42% of a cycle; the longer recovery
       // folds and twists at the wrist. Both turnarounds have zero velocity.
       var stroke = strokeAt(phase) * 0.82, wristStroke = strokeAt(phase - 0.38) * 0.38;
-      var cycle = strokeCycle(phase), recoveryPhase = clamp((cycle - 0.42) / 0.58, 0, 1);
-      var recovery = smooth(0, 0.18, recoveryPhase) * (1 - smooth(0.82, 1, recoveryPhase));
+      var recovery = recoveryAt(phase);
+      // The hand is still rising after the shoulder reverses. Let its fold
+      // and feathering follow that recovery instead of straightening early.
+      // This modest delay still leads the hand's elevation reversal, ready
+      // for the next downstroke; landing retains its authored flare timing.
+      var handRecovery = recovery + (recoveryAt(phase - 0.24) - recovery) * (1 - brake);
+      // Weak maintenance beats keep the hand broad enough to carry lift.
+      // Let recovery folding and vane release settle before stroke depth:
+      // the last small beats blend into the supporting glide instead of
+      // repeatedly curling the wrist. Full power and landing keep their
+      // authored articulation, and this envelope needs no frame history.
+      var recoveryArticulation = 1 - (1 - amplitude) * (1 - amplitude) * (1 - brake);
+      handRecovery *= recoveryArticulation;
       var glideLoad = (1 - amplitude) * open;
       // Shared airflow comes from the same continuous field that moves the
       // habitat. Positive lift loads both wings; positive roll loads the
       // right wing more. No independent flutter clock or frame history.
       var airLift = clamp(Number(pose.airLift) || 0, -1, 1);
       var airRoll = clamp(Number(pose.airRoll) || 0, -1, 1);
+      // Cruise carriage follows speed and turn demand. The signed roll cue
+      // relaxes again in a held bank; it is not another continuous flap.
+      // Fade these small corrections out before the landing flare.
+      var cruiseLoad = glideLoad * (1 - brake);
+      var sweep = clamp(Number(pose.wingSweep) || 0, 0, 1) * cruiseLoad;
+      var support = clamp(Number(pose.wingSupport) || 0, 0, 1) * cruiseLoad;
+      var roll = clamp(Number(pose.rollControl) || 0, -1, 1) * cruiseLoad;
+      // Carry the loaded wing slightly forward, then sweep it back through
+      // recovery. The hand follows the shoulder's pressure arc a little later,
+      // giving powered strokes depth without adding another animation clock.
+      // Leave the landing flare and its carefully placed tips undisturbed.
+      var poweredSweep = amplitude * open * (1 - brake);
+      var shoulderSweep = featherPressure(phase - 0.08) * poweredSweep * 0.040;
+      var handSweep = featherPressure(phase - 0.22) * poweredSweep * 0.025;
+      var alulaLift = Math.max(clamp(Number(pose.alula) || 0, 0, 1), brake * 0.85);
+      // The thumb first lifts clear of the wing, then protracts forward.
+      // Its restrained sweep follows the existing low-speed command, so
+      // cruise stays flush and the slot closes smoothly before folding.
+      var alulaSweep = smooth(0.16, 0.82, alulaLift) * 0.38 * open * open;
       wings.forEach(function (wing) {
         var side = wing.side;
         var airLoad = (airLift * 0.010 + side * airRoll * 0.006) * glideLoad;
-        wing.shoulder.rotation.z = side * ((0.075 + stroke * amplitude + brake * 0.16) * open + airLoad);
-        wing.shoulder.rotation.y = -side * amplitude * recovery * 0.11 * open;
-        wing.shoulder.rotation.x = (brake * 0.20 + recovery * amplitude * 0.065) * open;
-        wing.wrist.rotation.z = side * (wristStroke * amplitude * open + airLoad * 0.65);
-        wing.wrist.rotation.y = -side * (recovery * amplitude * 0.34 + brake * 0.08) * open;
-        wing.wrist.rotation.x = (recovery * amplitude * 0.20 - (1 - recovery) * amplitude * 0.035 + brake * 0.12) * open +
-          (airLift * 0.010 + side * airRoll * 0.004) * glideLoad;
-        wing.alula.rotation.z = side * Math.max(clamp(Number(pose.alula) || 0, 0, 1), brake * 0.85) * 0.42 * open;
+        wing.shoulder.rotation.z = side * ((0.075 + stroke * amplitude + brake * 0.16) * open + airLoad + support * 0.020) + roll * 0.012;
+        wing.shoulder.rotation.y = -side * (amplitude * recovery * 0.11 * open + sweep * 0.024) + side * shoulderSweep;
+        wing.shoulder.rotation.x = (brake * 0.20 + recovery * amplitude * 0.065) * open + side * roll * 0.028;
+        wing.wrist.rotation.z = side * (wristStroke * amplitude * open + airLoad * 0.65 + support * 0.045) + roll * 0.020;
+        wing.wrist.rotation.y = -side * ((handRecovery * amplitude * 0.34 + brake * 0.08) * open + sweep * 0.16) + side * handSweep;
+        wing.wrist.rotation.x = (handRecovery * amplitude * 0.20 - (1 - handRecovery) * amplitude * 0.035 + brake * 0.12) * open +
+          (airLift * 0.010 + side * airRoll * 0.004) * glideLoad + support * 0.012 + side * roll * 0.048;
+        wing.alula.rotation.y = 0;
+        wing.alula.rotation.z = side * alulaLift * 0.42 * open;
+        wing.alula.position.copy(wing.alula.userData.restPosition);
+        if (alulaSweep) {
+          alulaFrame.copy(wing.alula.quaternion);
+          wing.alula.rotation.y = side * alulaSweep;
+          // The closed morph moves the visible thumb away from its open
+          // pivot. Protract around that attachment instead of displacing
+          // it during the last partially folded takeoff/landing strokes.
+          alulaAnchor.copy(wing.alula.userData.quillRoot).lerp(wing.alula.userData.closedQuillRoot, fold);
+          alulaOffset.copy(alulaAnchor).applyQuaternion(alulaFrame);
+          wing.alula.position.add(alulaOffset).sub(alulaAnchor.applyQuaternion(wing.alula.quaternion));
+        }
         wing.meshes.forEach(function (mesh) { mesh.morphTargetInfluences[0] = fold; });
+        updateCarpalBridge(wing, fold);
         wing.primaries.forEach(function (primary, i) {
           var tipLoad = clamp(Number(pose.bank) || 0, -1, 1) * side * (0.016 + i * 0.003);
           var tipResponse = 1 - i * 0.045;
-          primary.rotation.z = side * (strokeAt(phase - 0.62 - i * 0.032) * amplitude * 0.09 + tipLoad) * open + side * airLoad * tipResponse * 0.35;
-          primary.rotation.x = (Math.sin(phase - 0.52) * amplitude * 0.105 + (i - 3.5) * 0.007 + tipLoad * 0.35) * open;
-          var loadCycle = strokeCycle(phase - 0.16 - i * 0.025);
-          var pressure = loadCycle < 0.42 ? Math.sin(Math.PI * loadCycle / 0.42) : -Math.sin(Math.PI * (loadCycle - 0.42) / 0.58) * 0.16;
+          primary.rotation.z = side * (strokeAt(phase - 0.62 - i * 0.032) * amplitude * 0.09 + tipLoad) * open + side * (airLoad * 0.35 + support * 0.025) * tipResponse;
+          // Fan the fingers about their quills without moving their roots.
+          // Differential incidence raises the right leading edge for a
+          // positive roll, then reverses as the bird levels its wings.
+          // Open the slotted tips with the landing flare after cruise trim
+          // has faded. Relax a little during recovery, then close the fan
+          // before the folded vanes settle against the body.
+          var flareFan = brake * open * open * (1 - recovery * amplitude * 0.35);
+          primary.rotation.y = side * (3.5 - i) * support * 0.024;
+          primary.rotation.x = (Math.sin(phase - 0.52) * amplitude * 0.105 + recoveryAt(phase - 0.12 - i * 0.018) * amplitude * recoveryArticulation * 0.12 + (i - 3.5) * 0.007 + tipLoad * 0.35) * open + side * roll * 0.026 * tipResponse;
+          if (flareFan) {
+            primaryFrame.copy(primary.quaternion);
+            primary.rotation.y += side * (3.5 - i) * flareFan * 0.035;
+          }
+          // Release the vane through recovery, with a small delay along the
+          // fingers, then lie flat for the next loaded stroke. Local quill
+          // twist follows the existing carriage and is mirrored by side.
+          var quillRelease = recoveryAt(phase - 0.18 - i * 0.026) * amplitude * recoveryArticulation * open * open * (0.13 + i * 0.045 / 7);
+          if (quillRelease) {
+            primary.userData.quillRotation.setFromAxisAngle(primary.userData.quillAxis, side * quillRelease);
+            primary.quaternion.multiply(primary.userData.quillRotation);
+            if (flareFan) primaryFrame.multiply(primary.userData.quillRotation);
+          }
+          var pressure = featherPressure(phase - 0.16 - i * 0.025);
           primary.userData.vane.morphTargetInfluences[1] = (pressure * amplitude * 0.72 +
-            (airLift * 0.14 + side * airRoll * 0.06) * glideLoad * tipResponse + tipLoad * 2.0) * open;
+            (airLift * 0.14 + side * airRoll * 0.06) * glideLoad * tipResponse + tipLoad * 2.0 +
+            (support * 0.10 + side * roll * 0.07) * tipResponse) * open;
+          // The folding morph carries the visible quill away from its open
+          // pivot. Fan around that actual attachment, including while the
+          // wing settles, so the new spread cannot pull a root out of place.
+          primary.position.copy(primary.userData.restPosition);
+          if (flareFan) {
+            primaryAnchor.copy(primary.userData.quillRoot).lerp(primary.userData.closedQuillRoot, fold);
+            primaryOffset.copy(primaryAnchor).applyQuaternion(primaryFrame);
+            primary.position.add(primaryOffset).sub(primaryAnchor.applyQuaternion(primary.quaternion));
+          }
         });
       });
+      // Let the rectrices share the wing's existing cruise trim: tuck the
+      // fan slightly during a swept pass, and broaden it as turn load grows.
+      // Multiplying available spread preserves the fan's bounds without a
+      // hard clamp. Cruise trim already fades before flaring or folding.
+      fan = fan * (1 - sweep * 0.36) + (1 - fan) * support * 0.16;
+      var tailTrim = support * 0.045 - sweep * 0.014;
       // Tail extends along +Z: positive X lowers its tip during braking.
-      tail.rotation.x = -0.06 - fan * 0.11 + brake * 0.42 + strokeAt(phase - 0.65) * amplitude * 0.025 * open + airLift * 0.021 * glideLoad;
+      tail.rotation.x = -0.06 - fan * 0.11 + brake * 0.42 + strokeAt(phase - 0.65) * amplitude * 0.025 * open + airLift * 0.021 * glideLoad + tailTrim;
       tail.rotation.z = clamp(Number(pose.bank) || 0, -1, 1) * -0.18 - airRoll * 0.028 * glideLoad;
-      tail.rotation.y = clamp(Number(pose.bank) || 0, -1, 1) * 0.065 * open + airRoll * 0.012 * glideLoad;
+      tail.rotation.y = clamp(Number(pose.bank) || 0, -1, 1) * 0.065 * open + airRoll * 0.012 * glideLoad + roll * 0.018;
       tailFeathers.forEach(function (feather) {
         feather.mesh.rotation.y = feather.across * (0.045 + fan * 0.40);
         feather.mesh.rotation.x = Math.abs(feather.across) * fan * 0.022 + strokeAt(phase - 0.8 - Math.abs(feather.across) * 0.12) * amplitude * open * 0.012 +
           (airLift * 0.010 * (0.3 + Math.abs(feather.across) * 0.7) + airRoll * feather.across * 0.006) * glideLoad;
+        // Pressure lifts the free end while the fan and quill remain attached.
+        // Outer feathers respond a little more slowly to the same downstroke;
+        // the shared breeze supplies the small left/right difference in glide.
+        var tailPressure = featherPressure(phase - 0.65 - Math.abs(feather.across) * 0.10);
+        feather.mesh.morphTargetInfluences[0] = (brake * 0.72 + tailPressure * amplitude * 0.18 +
+          (airLift * 0.10 + airRoll * feather.across * 0.055) * glideLoad + support * 0.14) * open;
       });
       // The hocks lift and draw forwards into the belly. Rotation alone left
       // the yellow toes hanging in the airflow, especially on a shallow glide.
@@ -603,16 +1127,33 @@
           digit.joint.rotation.y = -digit.angle * spread;
         });
       });
-      head.rotation.y = clamp(state.headYaw, -0.8, 0.8);
-      head.rotation.x = -clamp(Number(pose.pitch) || 0, -0.6, 0.6) * 0.68 - upperBody.rotation.x * 0.58 - state.gazePitch;
-      head.rotation.z = -clamp(Number(pose.bank) || 0, -1, 1) * 0.48 * open;
+      var headBodyPitch = clamp(Number(pose.pitch) || 0, -0.6, 0.6), headBodyBank = clamp(Number(pose.bank) || 0, -1, 1);
+      // Aim in the heading frame before removing the body's compound pitch,
+      // bank and neck carriage. A sideways glance then keeps its elevation
+      // and partial horizon stabilization instead of acquiring a new roll.
+      // Retain a little body motion: 32% of pitch and 52% of bank.
+      headParentFrame.setFromEuler(headEuler.set(headBodyPitch, 0, headBodyBank, 'YXZ'));
+      headNeckFrame.setFromEuler(headEuler.set(upperBody.rotation.x, 0, 0, 'XYZ'));
+      headParentFrame.multiply(headNeckFrame).invert();
+      headSightline.setFromEuler(headEuler.set(headBodyPitch * 0.32 + upperBody.rotation.x * 0.42 - state.gazePitch,
+        state.headYaw, headBodyBank * 0.52, 'YXZ'));
+      head.quaternion.copy(headParentFrame).multiply(headSightline);
+      // Folding restores the exact authored perch neck and scanning pose.
+      // This spatial blend is sampled directly; pausing and seeking do not
+      // accumulate a spring, lag or quaternion history.
+      headRestPose.setFromEuler(headEuler.set(-headBodyPitch * 0.68 - upperBody.rotation.x * 0.58 - state.gazePitch,
+        state.headYaw, -headBodyBank * 0.48 * open, 'XYZ'));
+      head.quaternion.slerp(headRestPose, smooth(0, 1, fold));
       head.position.y = 0.068 + compression * 0.006 - recoil * 0.60;
       head.position.z = -0.202 - compression * 0.005;
       var breath = Number.isFinite(pose.breath) ? pose.breath : (Math.sin(elapsed * 2.1) + 1) * 0.5;
       torso.scale.y = 1 + clamp(breath, 0, 1) * 0.006 * fold;
-      // A short, occasional blink; its clock advances only while update runs.
-      var blinkPhase = elapsed % 8.4, blink = 1 - smooth(7.92, 7.98, blinkPhase) * (1 - smooth(8.04, 8.11, blinkPhase));
-      eyes.forEach(function (eye) { eye.scale.y = Math.max(0.08, blink); });
+      // Occasional blinks follow the observation clock, including repeated
+      // seeks. Closing the lid leaves the globe, iris and orbital rim fixed.
+      var blinkPhase = elapsed % 8.4;
+      blinkClosure.value = Number.isFinite(pose.blink) ? clamp(pose.blink, 0, 1) :
+        smooth(7.92, 7.98, blinkPhase) * (1 - smooth(8.04, 8.11, blinkPhase));
+      eyelids.forEach(function (lid) { lid.visible = blinkClosure.value > 0.0001; });
       state.fold = fold; state.feet = footExtension; state.fan = fan;
     }
     function dispose() {

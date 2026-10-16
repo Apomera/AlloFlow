@@ -13,7 +13,7 @@ beforeAll(() => {
 });
 
 function recordingCtx() {
-  const commands = [], properties = {};
+  const commands = [], properties = { globalAlpha: 1 };
   const ctx = new Proxy(properties, {
     get(target, key) {
       if (/^create(?:Linear|Radial|Conic)Gradient$/.test(String(key))) return (...coords) => ({

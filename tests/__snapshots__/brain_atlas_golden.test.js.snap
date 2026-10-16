@@ -2,286 +2,286 @@
 
 exports[`brainAtlas render goldens > detail panel: cerebellum (ACCURACY LOCK — ~80%, not 50%) 1`] = `
 {
-  "buttons": 63,
+  "buttons": 70,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 160,
-  "sha": "58dfbaf750ba88b7",
-  "svgs": 0,
+  "lengthBucket": 196,
+  "sha": "7696705fe268c58e",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > detail panel: dopamine (ACCURACY LOCK — no "pleasure chemical" overclaim) 1`] = `
 {
-  "buttons": 64,
+  "buttons": 66,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 190,
-  "sha": "4877b7ef42f1d820",
-  "svgs": 1,
+  "lengthBucket": 216,
+  "sha": "d2ca63a42a8d4752",
+  "svgs": 2,
 }
 `;
 
 exports[`brainAtlas render goldens > quiz mode renders a question + options 1`] = `
 {
-  "buttons": 62,
+  "buttons": 69,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 147,
-  "sha": "b86f198a6d555dcc",
-  "svgs": 0,
+  "lengthBucket": 171,
+  "sha": "4bdc5bf3d75da8d1",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: basalGangliaLoop renders + pins a digest 1`] = `
 {
-  "buttons": 61,
+  "buttons": 63,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 190,
-  "sha": "8ce86344af53c06d",
-  "svgs": 0,
+  "lengthBucket": 204,
+  "sha": "126722291707a672",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: brainstemCrossSection renders + pins a digest 1`] = `
 {
-  "buttons": 57,
+  "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 172,
-  "sha": "9ee78a86c0165bd8",
-  "svgs": 0,
+  "lengthBucket": 186,
+  "sha": "33604264daa84040",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: cerebellumClinic renders + pins a digest 1`] = `
 {
-  "buttons": 57,
+  "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 171,
-  "sha": "a3e4c49505d897f1",
-  "svgs": 0,
+  "lengthBucket": 185,
+  "sha": "7cbdc10c3fa94b3b",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: cranialNervesWillis renders + pins a digest 1`] = `
 {
-  "buttons": 66,
+  "buttons": 68,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 205,
-  "sha": "ebc811b8246ad13f",
-  "svgs": 0,
+  "lengthBucket": 221,
+  "sha": "7174ba28588dc7f9",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: crossLateral renders + pins a digest 1`] = `
 {
-  "buttons": 57,
+  "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 174,
-  "sha": "06690624d44ae63d",
-  "svgs": 0,
+  "lengthBucket": 188,
+  "sha": "b5a1dba577e201b1",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: csfHydrocephalus renders + pins a digest 1`] = `
 {
-  "buttons": 57,
+  "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 173,
-  "sha": "e54206fc21b0f650",
-  "svgs": 0,
+  "lengthBucket": 187,
+  "sha": "01e11d66e110db9e",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: eegWaves renders + pins a digest 1`] = `
 {
-  "buttons": 64,
+  "buttons": 66,
   "canvases": 2,
   "inputs": 1,
-  "lengthBucket": 182,
-  "sha": "73d5a715e3639330",
-  "svgs": 0,
+  "lengthBucket": 195,
+  "sha": "8bffed1095ee0746",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: homunculus renders + pins a digest 1`] = `
 {
-  "buttons": 59,
+  "buttons": 61,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 168,
-  "sha": "2d313af25516c2a8",
-  "svgs": 0,
+  "lengthBucket": 183,
+  "sha": "03d5bceb2aacbf30",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: inferior renders + pins a digest 1`] = `
 {
-  "buttons": 66,
+  "buttons": 73,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 180,
-  "sha": "9f9e8a5e106bf436",
-  "svgs": 0,
+  "lengthBucket": 205,
+  "sha": "ac91d14487fe841f",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: languageNetwork renders + pins a digest 1`] = `
 {
-  "buttons": 63,
+  "buttons": 65,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 188,
-  "sha": "08c39d0b6d97b212",
-  "svgs": 0,
+  "lengthBucket": 203,
+  "sha": "cba1cd340b2eb5c6",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: lateral renders + pins a digest 1`] = `
 {
-  "buttons": 71,
+  "buttons": 78,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 196,
-  "sha": "157c11679139654d",
-  "svgs": 0,
+  "lengthBucket": 222,
+  "sha": "e96bf77baae2f59e",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: limbicPapezLoop renders + pins a digest 1`] = `
 {
-  "buttons": 64,
+  "buttons": 66,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 204,
-  "sha": "2b49b406ea59e052",
-  "svgs": 0,
+  "lengthBucket": 220,
+  "sha": "dd4581dc4f76d047",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: medial renders + pins a digest 1`] = `
 {
-  "buttons": 70,
+  "buttons": 77,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 193,
-  "sha": "7c6befe39932b2a5",
-  "svgs": 0,
+  "lengthBucket": 219,
+  "sha": "17d8562cfdc0b027",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: neuromyths renders + pins a digest 1`] = `
 {
-  "buttons": 59,
+  "buttons": 61,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 195,
-  "sha": "4903bf2bad393913",
-  "svgs": 0,
+  "lengthBucket": 207,
+  "sha": "a192511e19805ea4",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: neuron renders + pins a digest 1`] = `
 {
-  "buttons": 57,
+  "buttons": 66,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 176,
-  "sha": "9d7c9806ffd6e038",
-  "svgs": 0,
+  "lengthBucket": 198,
+  "sha": "1f87ffb79b2416d1",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: neurotransmitters renders + pins a digest 1`] = `
 {
-  "buttons": 78,
+  "buttons": 80,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 265,
-  "sha": "78f3cc2057d4ae00",
-  "svgs": 1,
+  "lengthBucket": 281,
+  "sha": "a8aae68baf6e4a4e",
+  "svgs": 2,
 }
 `;
 
 exports[`brainAtlas render goldens > view: prenatalDevelopment renders + pins a digest 1`] = `
 {
-  "buttons": 58,
+  "buttons": 60,
   "canvases": 1,
   "inputs": 2,
-  "lengthBucket": 168,
-  "sha": "38eb1202bf29a2c2",
-  "svgs": 0,
+  "lengthBucket": 180,
+  "sha": "dfb8eac2cc6f4b9f",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: sleepStages renders + pins a digest 1`] = `
 {
-  "buttons": 55,
+  "buttons": 57,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 162,
-  "sha": "0a5acc2a1773daa0",
-  "svgs": 0,
+  "lengthBucket": 175,
+  "sha": "86d11a8fc6013b96",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: stimulate renders + pins a digest 1`] = `
 {
-  "buttons": 60,
+  "buttons": 62,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 178,
-  "sha": "8c846533cef9c52b",
-  "svgs": 0,
+  "lengthBucket": 192,
+  "sha": "cc2c9b3a8a252977",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: strokeTerritories renders + pins a digest 1`] = `
 {
-  "buttons": 57,
+  "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 172,
-  "sha": "fc86190a6b8119ce",
-  "svgs": 0,
+  "lengthBucket": 186,
+  "sha": "4abb6b3f5d96605d",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: superior renders + pins a digest 1`] = `
 {
-  "buttons": 63,
+  "buttons": 69,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 165,
-  "sha": "f4c99c5fa11a5dc1",
-  "svgs": 0,
+  "lengthBucket": 188,
+  "sha": "a9337cd3c6e492b2",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: synapses renders + pins a digest 1`] = `
 {
-  "buttons": 56,
+  "buttons": 58,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 163,
-  "sha": "3cf890a8ce65c200",
-  "svgs": 0,
+  "lengthBucket": 176,
+  "sha": "f16856b86154dd83",
+  "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > view: visualPathway renders + pins a digest 1`] = `
 {
-  "buttons": 62,
+  "buttons": 64,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 184,
-  "sha": "eec39b86eb2dbf21",
-  "svgs": 0,
+  "lengthBucket": 199,
+  "sha": "ffce59cd644ea7fe",
+  "svgs": 1,
 }
 `;

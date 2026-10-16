@@ -104,7 +104,7 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} moray and m
     const shaderText = row.shaders.map((shader: any) => shader.source).join('\n'); expect(shaderText).not.toContain('#define DOUBLE_SIDED');
     if (index === 0) expect(shaderText).toContain('#define FLIP_SIDED'); else expect(shaderText).not.toContain('#define FLIP_SIDED');
   }
-  const homeProgram = anatomy.programs.find((row: any) => row.kind === 'home'); expect(homeProgram.key).toBe('cl-rock-surface-v1'); expect(homeProgram.shaders.map((shader: any) => shader.source).join('\n')).toContain('clRockValueNoise');
+  const homeProgram = anatomy.programs.find((row: any) => row.kind === 'home'); expect(homeProgram.key).toBe('cl-rock-minerals-v2'); expect(homeProgram.shaders.map((shader: any) => shader.source).join('\n')).toContain('clRockValueNoise');
   const initial = await state(page); stable(initial, initial.textures); await advance(page, 8); const living = await state(page); stable(living, initial.textures);
   expect(living.phases).not.toEqual(initial.phases); expect(living.jellyWorld).not.toEqual(initial.jellyWorld); expect(living.bell).not.toEqual(initial.bell);
   await page.evaluate(() => { const w = window as any; Object.assign(w.__mjMoray.userData, { state: 'attacking', stateTimer: 0, cooldownUntil: 0, awareness: 1, lostFor: 0, lastSeen: w.__mjPlayer.position.clone() }); });
@@ -146,7 +146,7 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} moray and m
     expect(ground.groundError).not.toBeNull(); expect(ground.groundError!).toBeLessThan(.025); expect(ground.light).toBeGreaterThan(.3);
     expect(await freshDraws(page, ['den-0', 'den-1', 'den-2', 'den-3', 'den-4'])).toBe(true);
     const denPrograms = await page.evaluate(() => [...(window as any).__mjPrograms.values()].filter((row: any) => row.kind.startsWith('den-'))); expect(denPrograms).toHaveLength(5); programs(denPrograms);
-    for (const row of denPrograms.filter((row: any) => ['den-0', 'den-1', 'den-2'].includes(row.kind))) { expect(row.key).toBe('cl-rock-surface-v1'); expect(row.shaders.map((shader: any) => shader.source).join('\n')).toContain('clRockValueNoise'); }
+    for (const row of denPrograms.filter((row: any) => ['den-0', 'den-1', 'den-2'].includes(row.kind))) { expect(row.key).toBe('cl-rock-minerals-v2'); expect(row.shaders.map((shader: any) => shader.source).join('\n')).toContain('clRockValueNoise'); }
     await page.keyboard.press('Escape');
     await page.evaluate(async () => { const w = window as any, m = w.__mjMoray; m.position.copy(w.__mjPlayer.position).add(new w.THREE.Vector3(0, 0, .7)); Object.assign(m.userData, { state: 'attacking', stateTimer: 0, cooldownUntil: 0, awareness: 1, lostFor: 0, lastSeen: w.__mjPlayer.position.clone() }); w.__mjStep = .05; do { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); } while (w.__mjStep !== 0); });
     await page.keyboard.press('Escape'); await expect(page.locator('[data-hud=status]')).toContainText('IN DEN'); const defended = await state(page); expect(defended.canBite).toBe(false); expect(defended.state).toBe('returning'); expect(defended.health).toBeGreaterThanOrEqual(sheltered.health); stable(defended, initial.textures);

@@ -1,0 +1,66 @@
+{
+  "description": "Five-feature excerpt of a successful bounded real OpenStreetMap Overpass response; NOT the complete raw HTTP response.",
+  "retrievedDate": "2026-10-15",
+  "source": "https://overpass.private.coffee/api/interpreter",
+  "method": "GET",
+  "query": "[out:json][timeout:12][maxsize:16777216];(way[building](43.6560,-70.2595,43.6570,-70.2580);way[highway](43.6560,-70.2595,43.6570,-70.2580););out geom 50;",
+  "bbox": [
+    43.656,
+    -70.2595,
+    43.657,
+    -70.258
+  ],
+  "center": [
+    43.6565,
+    -70.25875
+  ],
+  "responseMetadata": {
+    "status": 200,
+    "contentType": "application/json",
+    "accessControlAllowOrigin": "*",
+    "accessControlMaxAge": 600,
+    "serverDate": "Thu, 15 Oct 2026 11:59:59 GMT",
+    "worker": "h3",
+    "osmBaseTimestamp": "2026-07-15T15:22:01Z"
+  },
+  "transform": "Five fully observed ways copied from the successful tool response; bounds and node ids removed; tags reduced to rendering-relevant subset. All retained coordinates and tag values were observed in that response. Not synthesized geography. Initial full response was not persisted, and subsequent probe output overwrote successful saved file.",
+  "elementIds": [
+    11390906,
+    348747900,
+    747136475,
+    747136476,
+    1192744679
+  ],
+  "elementCount": 5,
+  "buildingCount": 4,
+  "roadCount": 1,
+  "sha256": "cb593410f97403f69d4674ca5947aebba40390c3d1f8bdffaa997141d2da1b81",
+  "bytes": 3983,
+  "license": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "copyrightUrl": "https://www.openstreetmap.org/copyright",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "transportNotes": "GET returned HTTP 200 with Access-Control-Allow-Origin:* on multiple probes. POST probes returned HTTP500 without CORS headers; later GET probes also intermittently returned500. Do not infer reliable availability or POST browser success from this fixture.",
+  "sources": [
+    {
+      "url": "https://photon.komoot.io/",
+      "note": "Official operator page permits projects with reasonable usage; no availability guarantee."
+    },
+    {
+      "url": "https://github.com/komoot/photon/blob/master/docs/api-v1.md",
+      "note": "Official Photon API docs; use city/locality layers."
+    },
+    {
+      "url": "https://private.coffee/services.html",
+      "note": "Official operator lists Overpass service."
+    },
+    {
+      "url": "https://private.coffee/terms.html",
+      "note": "Official operator terms apply to service; no guaranteed uptime."
+    },
+    {
+      "url": "https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances",
+      "note": "OSM project directory lists Private.coffee any-project use, no rate limit, contact before large-scale use."
+    }
+  ]
+}

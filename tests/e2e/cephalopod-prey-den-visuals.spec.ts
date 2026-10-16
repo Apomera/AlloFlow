@@ -161,7 +161,7 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} fish and sh
     if (program.kind === 'den-rock' || program.kind.startsWith('fish')) {
       expect(program.materialType).toBe('MeshStandardMaterial'); expect(program.normal).toHaveLength(9); expect(program.normal.every(Number.isFinite)).toBe(true); expect(Math.abs(program.determinant)).toBeGreaterThan(1e-8);
     }
-    if (program.kind === 'den-rock') { expect(program.key).toBe('cl-rock-surface-v1'); expect(source).toContain('clRockPosition'); expect(source).toContain('clRockValueNoise'); }
+    if (program.kind === 'den-rock') { expect(program.key).toBe('cl-rock-minerals-v2'); expect(source).toContain('clRockPosition'); expect(source).toContain('clRockValueNoise'); }
     if (program.kind.startsWith('fish') || program.kind === 'den-shadow') expect(source).toContain('#define USE_COLOR');
     if (program.kind.startsWith('fish')) { expect(program.key).toBe('cl-fish-surface-v1'); expect(source).toContain('clFishPosition'); expect(source).toContain('clFishFinish'); expect(source).toContain('#define CL_FISH_FILTERED 1'); }
     if (program.kind === 'den-shadow') expect(program.materialType).toBe('MeshBasicMaterial');

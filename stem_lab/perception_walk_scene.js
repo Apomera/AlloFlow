@@ -2,7 +2,7 @@
   'use strict';
 
   var Lab = window.StemLab = window.StemLab || {};
-  var EYE_Y = 1.65, REFERENCE_Z = 9, INTERACTION_RANGE = 7, PANEL_RANGE = 10, CONTINUITY_RANGE = 12, CHANGE_RANGE = 14, ROTATION_RANGE = 14, RELIEF_RANGE = 14, SHAPE_RANGE = 14, MOTION_RANGE = 14, FRAME_RANGE = 14, WEAVE_RANGE = 16, LANDING_RANGE = 16, APERTURE_RANGE = 18, LENGTH_RANGE = 18, INSPECTION_RANGE = 20;
+  var EYE_Y = 1.65, REFERENCE_Z = 9, INTERACTION_RANGE = 7, PANEL_RANGE = 10, CONTINUITY_RANGE = 12, CHANGE_RANGE = 14, ROTATION_RANGE = 14, RELIEF_RANGE = 14, SHAPE_RANGE = 14, MOTION_RANGE = 14, FRAME_RANGE = 14, WEAVE_RANGE = 16, LANDING_RANGE = 16, APERTURE_RANGE = 18, LENGTH_RANGE = 18, SILHOUETTE_RANGE = 20, ANAMORPHOSIS_RANGE = 20, INSPECTION_RANGE = 20;
   var COLORS = { teal: 0x208e87, coral: 0xe87967, gold: 0xe9b342, ink: 0x324d50,
     floor: 0xe8ece9, wall: 0xf6f8f5, metal: 0xadbdb6 };
 
@@ -21,7 +21,20 @@
 
   // Lift an image-space circle along reference-eye rays. Its disconnected
   // pieces line up at that eye, but their different depths produce parallax.
-  function ringParts() {
+  function ringConfiguration(round) {
+    if (Lab.PerceptionWalk && typeof Lab.PerceptionWalk.ringConfiguration === 'function') return Lab.PerceptionWalk.ringConfiguration(round);
+    return { round: 0, eye: { x: -12, z: REFERENCE_Z, yaw: 0, pitch: 0 }, radius: 1.35, depths: [-3, 0, 3] };
+  }
+
+  function ringPoint(round, index, t) {
+    if (Lab.PerceptionWalk && typeof Lab.PerceptionWalk.ringPoint === 'function') return Lab.PerceptionWalk.ringPoint(round, index, t);
+    var depth = [-3, 0, 3][index % 3], scale = (REFERENCE_Z - depth) / REFERENCE_Z;
+    var theta = Math.PI / 6 + (index + t) * Math.PI / 6;
+    return { x: -12 + 1.35 * Math.cos(theta) * scale, y: EYE_Y + 1.35 * Math.sin(theta) * scale, z: depth };
+  }
+
+  function ringParts(round) {
+    if (Lab.PerceptionWalk && typeof Lab.PerceptionWalk.ringParts === 'function') return Lab.PerceptionWalk.ringParts(round);
     var parts = [];
     for (var index = 0; index < 12; index++) {
       var depth = [-3, 0, 3][index % 3], scale = (REFERENCE_Z - depth) / REFERENCE_Z;
@@ -49,7 +62,8 @@
     });
   }
 
-  function parallaxObjects() {
+  function parallaxObjects(round) {
+    if (Lab.PerceptionWalk && typeof Lab.PerceptionWalk.parallaxObjects === 'function') return Lab.PerceptionWalk.parallaxObjects(round);
     return [
       { id: 'parallax-A', choice: 'A', x: 22.4, y: EYE_Y, z: 1, radius: 0.56 },
       { id: 'parallax-B', choice: 'B', x: 24, y: EYE_Y, z: -3, radius: 0.84 },
@@ -86,7 +100,7 @@
 
   function createViewer() {
     if (typeof Lab.makeOrbitViewer !== 'function') return null;
-    if (!Lab.PerceptionWalk || ['shadowGeometry', 'shadowProfile', 'shadowOutline', 'changeObjects', 'changeTarget', 'rotationObjects', 'rotationMatch', 'reliefObjects', 'reliefSurface', 'reliefLight', 'reliefShade', 'shapeObjects', 'shapePoint', 'shapeTarget', 'motionObjects', 'motionTargets', 'frameObjects', 'frameDefaults', 'weaveObjects', 'weaveOrder', 'landingObjects', 'landingLight', 'apertureObjects', 'lengthObjects'].some(function (key) { return typeof Lab.PerceptionWalk[key] !== 'function'; })) return null;
+    if (!Lab.PerceptionWalk || ['shadowGeometry', 'shadowProfile', 'shadowOutline', 'changeObjects', 'changeTarget', 'rotationObjects', 'rotationMatch', 'reliefObjects', 'reliefSurface', 'reliefLight', 'reliefShade', 'shapeObjects', 'shapePoint', 'shapeTarget', 'motionObjects', 'motionTargets', 'frameObjects', 'frameDefaults', 'weaveObjects', 'weaveOrder', 'landingObjects', 'landingLight', 'apertureObjects', 'lengthObjects', 'silhouetteObjects', 'silhouetteReference', 'silhouetteTarget', 'anamorphosisObjects', 'anamorphosisTargets'].some(function (key) { return typeof Lab.PerceptionWalk[key] !== 'function'; })) return null;
     var sceneState = null, attachedHost = null, attachment = 0;
     var layout = [], layoutSignature = '', layoutNotify = null, statusNotify = null;
 
@@ -103,7 +117,7 @@
     }
 
     function projectLayout(THREE, S) {
-      publishLayout(['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length'].map(function (id, index) {
+      publishLayout(['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis'].map(function (id, index) {
         var anchor = new THREE.Vector3((index - 1) * 12, 4.9, 0);
         var distance = anchor.distanceTo(S.camera.position);
         var point = anchor.project(S.camera);
@@ -114,9 +128,10 @@
     }
 
     function build(THREE, S, data) {
-      var materials = {}, flatMaterials = {}, solids = [], parallaxLabels = [], panelLabels = [], changeLabels = [], rotationLabels = [], reliefLabels = [], shapeLabels = [], motionLabels = [], weaveLabels = [], landingLabels = [];
+      var materials = {}, flatMaterials = {}, solids = [], parallaxLabels = [], parallaxMeshes = [], panelLabels = [], changeLabels = [], rotationLabels = [], reliefLabels = [], shapeLabels = [], motionLabels = [], weaveLabels = [], landingLabels = [], silhouetteLabels = [], referenceLabels = [], anamorphosisLabels = [];
+      var parallaxRound = Math.floor(clamp(number(data.parallaxRound, 0), 0, 2));
       var collected = Array.isArray(data.collected) ? data.collected : [];
-      var activity = ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length'].indexOf(data.activity) >= 0 ? data.activity : 'ring';
+      var activity = ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis'].indexOf(data.activity) >= 0 ? data.activity : 'ring';
 
       function material(color) {
         if (!materials[color]) {
@@ -210,22 +225,22 @@
       }
 
       function architecture() {
-        box(90, -0.15, 3, 220.4, 0.3, 22.4, COLORS.floor);
-        box(90, 2.8, -8.2, 220.4, 5.6, 0.4, COLORS.wall);
-        box(90, 2.8, 14.2, 220.4, 5.6, 0.4, COLORS.wall);
+        box(102, -0.15, 3, 244.4, 0.3, 22.4, COLORS.floor);
+        box(102, 2.8, -8.2, 244.4, 5.6, 0.4, COLORS.wall);
+        box(102, 2.8, 14.2, 244.4, 5.6, 0.4, COLORS.wall);
         box(-20.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4);
-        box(200.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4);
-        box(90, 5.65, 3, 220.4, 0.2, 22.4, 0xf8faf7);
-        box(90, 0.12, -7.96, 220, 0.24, 0.06, 0xcbd7d0);
-        box(90, 0.12, 13.96, 220, 0.24, 0.06, 0xcbd7d0);
-        for (var gx = -20; gx <= 200; gx += 2) box(gx, 0.003, 3, 0.012, 0.006, 22, 0xcbd6cf);
-        for (var gz = -8; gz <= 14; gz += 2) box(90, 0.004, gz, 220, 0.006, 0.012, 0xcbd6cf);
-        [-18, -6, 6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198].forEach(function (x) {
+        box(224.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4);
+        box(102, 5.65, 3, 244.4, 0.2, 22.4, 0xf8faf7);
+        box(102, 0.12, -7.96, 244, 0.24, 0.06, 0xcbd7d0);
+        box(102, 0.12, 13.96, 244, 0.24, 0.06, 0xcbd7d0);
+        for (var gx = -20; gx <= 224; gx += 2) box(gx, 0.003, 3, 0.012, 0.006, 22, 0xcbd6cf);
+        for (var gz = -8; gz <= 14; gz += 2) box(102, 0.004, gz, 244, 0.006, 0.012, 0xcbd6cf);
+        [-18, -6, 6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222].forEach(function (x) {
           box(x, 2.75, -7.76, 0.24, 5.5, 0.25, 0xd2ded6);
           box(x, 5.35, 2.8, 0.19, 0.25, 21.4, 0xd6e0da);
         });
-        [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192].forEach(function (x, index) {
-          var color = [COLORS.gold, COLORS.teal, COLORS.coral, COLORS.ink, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.teal, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.gold][index];
+        [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216].forEach(function (x, index) {
+          var color = [COLORS.gold, COLORS.teal, COLORS.coral, COLORS.ink, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.teal, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.gold, COLORS.teal, COLORS.coral][index];
           box(x, 3.35, -7.95, 9, 3.1, 0.045, 0xeaf0eb);
           box(x, 4.92, -7.88, 9, 0.13, 0.11, color);
           box(x, 0.017, 5.75, 8.6, 0.018, 0.075, color);
@@ -239,8 +254,8 @@
           box(x, 5.48, 8.5, 6.5, 0.06, 0.55, 0xffffff);
         });
         // Shallow wall reliefs keep the exhibits legible while turning around.
-        [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192].forEach(function (x, index) {
-          var color = [COLORS.gold, COLORS.teal, COLORS.coral, COLORS.ink, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.teal, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.gold][index];
+        [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216].forEach(function (x, index) {
+          var color = [COLORS.gold, COLORS.teal, COLORS.coral, COLORS.ink, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.teal, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.gold, COLORS.teal, COLORS.coral][index];
           for (var bar = 0; bar < 7; bar++) {
             box(x - 2.4 + bar * 0.8, 2.5, 13.96, 0.09, 1.1 + (bar % 3) * 0.48, 0.05, color);
           }
@@ -248,30 +263,38 @@
       }
 
       function ringExhibit() {
-        var parts = ringParts();
+        var config = ringConfiguration(data.ringRound), parts = ringParts(config.round), meshes = [], revealTarget = null, revealDirection = null;
         parts.forEach(function (part) {
           var path = new THREE.Curve();
           path.getPoint = function (t, target) {
             target = target || new THREE.Vector3();
-            var theta = Math.PI / 6 + (part.index + t) * Math.PI / 6;
-            var scale = (REFERENCE_Z - part.depth) / REFERENCE_Z;
-            return target.set(-12 + 1.35 * Math.cos(theta) * scale,
-              EYE_Y + 1.35 * Math.sin(theta) * scale, part.depth);
+            var point = ringPoint(config.round, part.index, t);
+            return target.set(point.x, point.y, point.z);
           };
-          add(new THREE.TubeGeometry(path, 20, part.radius, 12, false), COLORS.gold);
+          meshes.push({ part: part, mesh: add(new THREE.TubeGeometry(path, 20, part.radius, 12, false), COLORS.gold) });
           var top = part.points.reduce(function (highest, point) { return point.y > highest.y ? point : highest; });
           rod(top, { x: top.x, y: 4.25, z: top.z }, 0.007, 0xc2ccc4);
         });
-        [-3, 0, 3].forEach(function (z) { box(-12, 4.27, z, 4.7, 0.07, 0.08, COLORS.metal); });
+        config.depths.forEach(function (z) {
+          var span = parts.filter(function (part) { return part.depth === z; }).reduce(function (bounds, part) {
+            part.points.forEach(function (point) { bounds[0] = Math.min(bounds[0], point.x); bounds[1] = Math.max(bounds[1], point.x); });
+            return bounds;
+          }, [Infinity, -Infinity]);
+          var center = config.round ? (span[0] + span[1]) / 2 : -12;
+          var width = config.round ? Math.max(0.5, span[1] - span[0] + 0.5) : 4.7;
+          box(center, 4.27, z, width, 0.07, 0.08, COLORS.metal);
+        });
         if (activity === 'ring' && data.reveal) {
-          floorRing(-12, REFERENCE_Z, 0.38, COLORS.gold, 0.04);
-          box(-12, 0.027, REFERENCE_Z - 0.48, 0.07, 0.018, 0.24, COLORS.gold);
+          var yaw = config.eye.yaw * Math.PI / 180;
+          revealTarget = floorRing(config.eye.x, config.eye.z, 0.38, COLORS.gold, 0.04);
+          revealDirection = add(new THREE.BoxGeometry(0.07, 0.018, 0.24), COLORS.gold,
+            { x: config.eye.x + Math.sin(yaw) * 0.48, y: 0.027, z: config.eye.z - Math.cos(yaw) * 0.48 }, null, { y: -yaw });
           parts.forEach(function (part) {
             var p = part.points[8];
-            rod({ x: -12, y: EYE_Y, z: REFERENCE_Z }, p, 0.005, 0xc7ac69);
+            rod({ x: config.eye.x, y: EYE_Y, z: config.eye.z }, p, 0.005, 0xc7ac69);
           });
         }
-        return parts;
+        return { parts: parts, meshes: meshes, config: config, revealTarget: revealTarget, revealDirection: revealDirection };
       }
 
       function scaleExhibit() {
@@ -340,10 +363,11 @@
       }
 
       function parallaxExhibit() {
-        var objects = parallaxObjects();
+        var objects = parallaxObjects(parallaxRound);
         objects.forEach(function (object, index) {
           var color = [COLORS.coral, COLORS.gold, COLORS.teal][index];
           var sphere = add(new THREE.SphereGeometry(object.radius, 32, 24), color, object, object.id);
+          parallaxMeshes.push({ object: object, mesh: sphere });
           if (activity === 'parallax' && data.parallaxChoice === object.choice) {
             var outlineMaterial = new THREE.MeshBasicMaterial({ color: COLORS.ink, side: THREE.BackSide });
             outlineMaterial.color.convertSRGBToLinear();
@@ -1047,12 +1071,179 @@
           reference: reference, adjustable: adjustable, handle: handle, toggle: toggle, guide: guide };
       }
 
+      function silhouetteExhibit() {
+        var model = Lab.PerceptionWalk, round = clamp(Math.round(number(data.silhouetteRound, 0)), 0, 1);
+        var set = clamp(Math.round(number(data.silhouetteSet, 0)), 0, 1);
+        var angle = clamp(number(data.silhouetteAngle, 0), 0, 90), objects = model.silhouetteObjects(round, angle, set);
+        var reference = model.silhouetteReference(round, set), sculptures = [], panels = [], revealed = activity === 'silhouette' && data.reveal;
+        var board = flatBox(204, 2.65, -2, 10.5, 5.1, 0.16, 0xf6f8f5);
+        function projection(cells, x, title) {
+          var minU = Math.min.apply(Math, cells.map(function (cell) { return cell[0]; }));
+          var maxU = Math.max.apply(Math, cells.map(function (cell) { return cell[0]; }));
+          var minY = Math.min.apply(Math, cells.map(function (cell) { return cell[1]; }));
+          var maxY = Math.max.apply(Math, cells.map(function (cell) { return cell[1]; }));
+          var cellSize = Math.min(0.46, 1.5 / (maxY - minY + 1), 2.8 / (maxU - minU + 1));
+          var panel = flatBox(x, 3.35, -1.89, 3.6, 1.75, 0.03, 0xe4ebe5);
+          var squares = cells.map(function (cell) {
+            var square = flatBox(x + (cell[0] - (minU + maxU) / 2) * cellSize,
+              3.35 + (cell[1] - (minY + maxY) / 2) * cellSize, -1.86, cellSize, cellSize, 0.025, COLORS.ink);
+            if (revealed) {
+              var outlineMaterial = new THREE.LineBasicMaterial({ color: COLORS.gold, toneMapped: false });
+              outlineMaterial.color.convertSRGBToLinear();
+              square.add(new THREE.LineSegments(new THREE.EdgesGeometry(square.geometry), outlineMaterial));
+            }
+            return square;
+          });
+          var sprite = label(title, x, 4.595, -1.85, 1.4, 0.5);
+          if (sprite) referenceLabels.push({ sprite: sprite, x: x, z: -1.85 });
+          panels.push({ panel: panel, squares: squares, cells: cells });
+        }
+        projection(reference.front, 201.8, data.silhouetteFrontLabel || 'Front');
+        projection(reference.side, 206.2, data.silhouetteSideLabel || 'Side');
+        objects.forEach(function (object) {
+          var group = new THREE.Group(), cubes = [], correct = object.choice === model.silhouetteTarget(round, set);
+          group.position.set(object.x, object.y, object.z);
+          group.rotation.y = angle * Math.PI / 180;
+          S.model.add(group);
+          object.cells.forEach(function (cell) {
+            var mesh = box((cell[0] - 1) * object.cellSize, cell[1] * object.cellSize, (cell[2] - 1) * object.cellSize,
+              object.cellSize, object.cellSize, object.cellSize, COLORS.teal, 'silhouette-' + object.choice);
+            group.add(mesh);
+            var outlineMaterial = new THREE.LineBasicMaterial({ color: revealed && correct ? COLORS.gold : COLORS.ink, toneMapped: false });
+            outlineMaterial.color.convertSRGBToLinear();
+            var outline = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), outlineMaterial);
+            mesh.add(outline);
+            cubes.push(mesh);
+          });
+          var baseHeight = object.y - object.cellSize / 2;
+          add(new THREE.CylinderGeometry(1.6, 1.6, baseHeight, 64), 0xc5d3cb, { x: object.x, y: baseHeight / 2, z: object.z }, 'silhouette-' + object.choice);
+          floorRing(object.x, object.z, 1.63, COLORS.teal, 0.025);
+          var selection = floorRing(object.x, object.z, 1.73, COLORS.ink, 0.05);
+          selection.visible = activity === 'silhouette' && data.silhouetteChoice === object.choice;
+          if (revealed && correct) floorRing(object.x, object.z, 1.85, COLORS.gold, 0.06);
+          var top = object.y + Math.max.apply(Math, object.cells.map(function (cell) { return cell[1] * object.cellSize; })) + object.cellSize / 2;
+          var sculpture = { object: object, group: group, cubes: cubes, top: top, selection: selection };
+          sculptures.push(sculpture);
+          var sprite = label(object.choice, object.x + (object.choice === 'A' ? -1.95 : 1.95), 1.4, object.z, 0.42, 0.42);
+          if (sprite) silhouetteLabels.push({ sprite: sprite, sculpture: sculpture });
+        });
+        var dial = { x: 204, y: 1.15, z: 3, radius: 0.58, arm: 0.4 };
+        box(dial.x, 0.07, dial.z - 0.15, 0.7, 0.14, 0.6, COLORS.metal);
+        rod({ x: dial.x, y: 0.08, z: dial.z - 0.15 }, { x: dial.x, y: dial.y, z: dial.z - 0.15 }, 0.07, COLORS.metal);
+        var face = add(new THREE.CircleGeometry(dial.radius, 64), 0xf6f8f5, dial, 'silhouette-dial');
+        face.material = flatMaterial(0xf6f8f5);
+        add(new THREE.TorusGeometry(dial.radius, 0.045, 10, 64), COLORS.gold, dial, 'silhouette-dial');
+        [0, 45, 90].forEach(function (tick) {
+          var radians = tick * Math.PI / 180;
+          var mark = flatBox(dial.x + Math.sin(radians) * 0.48, dial.y + Math.cos(radians) * 0.48,
+            dial.z + 0.025, 0.035, 0.1, 0.025, COLORS.ink, 'silhouette-dial');
+          mark.rotation.z = -radians;
+        });
+        var radians = angle * Math.PI / 180, handlePoint = { x: dial.x + Math.sin(radians) * dial.arm,
+          y: dial.y + Math.cos(radians) * dial.arm, z: dial.z + 0.08 };
+        dial.pointer = rod({ x: dial.x, y: dial.y, z: handlePoint.z }, handlePoint, 0.045, COLORS.ink, 'silhouette-dial');
+        dial.pointer.material = flatMaterial(COLORS.ink);
+        dial.handle = add(new THREE.SphereGeometry(0.09, 20, 14), COLORS.gold, handlePoint, 'silhouette-dial');
+        add(new THREE.SphereGeometry(0.075, 16, 12), COLORS.gold, { x: dial.x, y: dial.y, z: dial.z + 0.08 }, 'silhouette-dial');
+        floorRing(204, 11, 0.34, COLORS.teal, 0.035);
+        return { set: set, round: round, angle: angle, choice: /^[AB]$/.test(data.silhouetteChoice) ? data.silhouetteChoice : null,
+          objects: objects, reference: reference, board: board, panels: panels, sculptures: sculptures, dial: dial };
+      }
+
+      function anamorphosisExhibit() {
+        var model = Lab.PerceptionWalk, round = clamp(Math.round(number(data.anamorphosisRound, 0)), 0, 1);
+        var set = clamp(Math.round(number(data.anamorphosisSet, 0)), 0, 2);
+        var objects = model.anamorphosisObjects(round, data.anamorphosisOffsets, set), targetOffsets = model.anamorphosisTargets(round, set);
+        var targets = model.anamorphosisObjects(round, targetOffsets, set);
+        var selected = clamp(Math.round(number(data.anamorphosisSelected, 0)), 0, 1), beams = [], guides = [], rails = [], pivots = [], depthGuides = [];
+        objects.forEach(function (object, index) {
+          var group = new THREE.Group(), fixed = object.index < 0, id = fixed ? null : object.id;
+          var color = fixed ? COLORS.coral : COLORS.teal, scale = object.radius / 0.085;
+          var center = { x: (object.from.x + object.to.x) / 2, y: (object.from.y + object.to.y) / 2, z: object.from.z };
+          function member(mesh) { group.add(mesh); return mesh; }
+          S.model.add(group);
+          var mesh = member(rod(object.from, object.to, object.radius, color, id));
+          var caps = [object.from, object.to].map(function (point) { return member(add(new THREE.SphereGeometry(object.radius, 16, 10), color, point, id)); });
+          if (set === 2) {
+            // The pivot and suspension stay fixed while only the beam rotates.
+            var mount = { x: center.x, y: center.y, z: center.z - 0.24 };
+            member(rod(center, mount, 0.045 * scale, COLORS.metal));
+            member(rod(mount, { x: mount.x, y: 4.95, z: mount.z }, 0.009, 0xb8c7bf));
+            member(box(mount.x, 4.98, mount.z, 0.5, 0.06, 0.16, COLORS.metal));
+            if (!fixed) {
+              var pivotRadius = 0.25 * scale, pivotZ = center.z + object.radius * 1.2;
+              var pivotRing = member(add(new THREE.TorusGeometry(pivotRadius, 0.018 * scale, 8, 40), COLORS.metal,
+                { x: center.x, y: center.y, z: pivotZ }, id));
+              for (var tick = 0; tick < 8; tick++) {
+                var angle = tick * Math.PI / 4, inner = pivotRadius + 0.025 * scale, outer = pivotRadius + 0.075 * scale;
+                member(rod({ x: center.x + Math.cos(angle) * inner, y: center.y + Math.sin(angle) * inner, z: pivotZ },
+                  { x: center.x + Math.cos(angle) * outer, y: center.y + Math.sin(angle) * outer, z: pivotZ }, 0.01 * scale, COLORS.metal, id));
+              }
+              pivots.push({ choice: object.choice, center: center, ring: pivotRing, radius: pivotRadius });
+            }
+          } else {
+            var targetCenter = (targets[index].from.x + targets[index].to.x) / 2;
+            var depthRail = set === 1 && !fixed;
+            var railZ = depthRail ? targets[index].from.z - targetOffsets[object.index] : center.z;
+            var rail = box(targetCenter, 0.045, railZ, depthRail ? 0.16 : fixed ? 0.9 : 3.6 * scale, 0.07, depthRail ? 2.8 : 0.16, 0xb9c9c0);
+            rails.push({ choice: object.choice, mesh: rail, axis: depthRail ? 'z' : 'x' });
+            member(box(center.x, 0.12, center.z, 0.5, 0.16, 0.34, COLORS.metal));
+            // Supports stay outside the triangle's vertical span.
+            var supportEnd = round === 0 && fixed ? object.from : object.from.y > object.to.y ? object.from : object.to;
+            var supportY = round === 0 && fixed ? 0.2 : 4.95;
+            member(rod(supportEnd, { x: supportEnd.x, y: supportY, z: supportEnd.z }, 0.009, 0xb8c7bf));
+            if (supportY > 4) member(box(supportEnd.x, 4.98, supportEnd.z, 0.5, 0.06, 0.16, COLORS.metal));
+          }
+          var handle = null, selection = null;
+          if (!fixed) {
+            var handlePoint = { x: center.x, y: center.y, z: center.z + object.radius * 1.1 };
+            handle = member(add(new THREE.SphereGeometry(0.115 * scale, 20, 12), COLORS.teal, handlePoint, id));
+            selection = member(add(new THREE.TorusGeometry(0.175 * scale, 0.022 * scale, 8, 32), COLORS.gold,
+              { x: center.x, y: center.y, z: center.z + object.radius * 1.6 }, id));
+            selection.visible = activity === 'anamorphosis' && selected === object.index;
+          }
+          var beam = { object: object, group: group, mesh: mesh, caps: caps, handle: handle, selection: selection, originX: center.x, originZ: center.z };
+          beams.push(beam);
+          if (!fixed) {
+            var sprite = label(object.choice, center.x, center.y, center.z, 0.42, 0.42);
+            if (sprite) anamorphosisLabels.push({ sprite: sprite, beam: beam });
+          }
+        });
+        if (activity === 'anamorphosis' && data.reveal) {
+          targets.forEach(function (object) {
+            var a = new THREE.Vector3(object.from.x, object.from.y, object.from.z), b = new THREE.Vector3(object.to.x, object.to.y, object.to.z);
+            var direction = new THREE.Vector3().subVectors(b, a);
+            var guideMaterial = new THREE.MeshBasicMaterial({ color: COLORS.gold, transparent: true, opacity: 0.42, depthWrite: false, toneMapped: false });
+            guideMaterial.color.convertSRGBToLinear();
+            var guide = new THREE.Mesh(new THREE.CylinderGeometry(object.radius * 1.3, object.radius * 1.3, direction.length(), 12), guideMaterial);
+            guide.position.copy(a).add(b).multiplyScalar(0.5);
+            guide.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+            S.model.add(guide);
+            guides.push({ object: object, mesh: guide });
+            var points = [object.from.x, object.from.y, object.from.z, object.from.x, 0.04, object.from.z,
+              object.to.x, object.to.y, object.to.z, object.to.x, 0.04, object.to.z];
+            var geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+            var depthMaterial = new THREE.LineDashedMaterial({ color: COLORS.gold, dashSize: 0.12, gapSize: 0.1, toneMapped: false });
+            depthMaterial.color.convertSRGBToLinear();
+            var depth = new THREE.LineSegments(geometry, depthMaterial);
+            depth.computeLineDistances();
+            S.model.add(depth);
+            depthGuides.push(depth);
+          });
+        }
+        floorRing(216, 10, 0.34, COLORS.gold, 0.035);
+        floorRing(220.4, 8, 0.34, COLORS.teal, 0.035);
+        return { set: set, round: round, offsets: objects.slice(1).map(function (object) { return object.offset; }), selected: selected,
+          objects: objects, beams: beams, guides: guides, rails: rails, pivots: pivots, depthGuides: depthGuides };
+      }
+
       architecture();
-      var parts = ringExhibit(), objects = scaleExhibit(), tokens = occlusionExhibit(), parallax = parallaxExhibit();
-      var contour = contourExhibit(), context = contextExhibit(), continuity = continuityExhibit(), shadow = shadowExhibit(), change = changeExhibit(), rotation = rotationExhibit(), relief = reliefExhibit(), shape = shapeExhibit(), motion = motionExhibit(), frame = frameExhibit(), weave = weaveExhibit(), landing = landingExhibit(), aperture = apertureExhibit(), length = lengthExhibit();
-      S.walk = { ring: parts, blocks: objects, tokens: tokens, parallax: parallax, contour: contour,
-        context: context.objects, contextSwitch: context.toggle, continuity: continuity, shadow: shadow, change: change, rotation: rotation, relief: relief, shape: shape, motion: motion, frame: frame, weave: weave, landing: landing, aperture: aperture, length: length,
-        labels: parallaxLabels, panelLabels: panelLabels, changeLabels: changeLabels, rotationLabels: rotationLabels, reliefLabels: reliefLabels, shapeLabels: shapeLabels, motionLabels: motionLabels, weaveLabels: weaveLabels, landingLabels: landingLabels, solids: solids };
+      var ring = ringExhibit(), objects = scaleExhibit(), tokens = occlusionExhibit(), parallax = parallaxExhibit();
+      var contour = contourExhibit(), context = contextExhibit(), continuity = continuityExhibit(), shadow = shadowExhibit(), change = changeExhibit(), rotation = rotationExhibit(), relief = reliefExhibit(), shape = shapeExhibit(), motion = motionExhibit(), frame = frameExhibit(), weave = weaveExhibit(), landing = landingExhibit(), aperture = apertureExhibit(), length = lengthExhibit(), silhouette = silhouetteExhibit(), anamorphosis = anamorphosisExhibit();
+      S.walk = { ring: ring.parts, ringGeometry: ring, blocks: objects, tokens: tokens, parallax: parallax, parallaxRound: parallaxRound, parallaxMeshes: parallaxMeshes, contour: contour,
+        context: context.objects, contextSwitch: context.toggle, continuity: continuity, shadow: shadow, change: change, rotation: rotation, relief: relief, shape: shape, motion: motion, frame: frame, weave: weave, landing: landing, aperture: aperture, length: length, silhouette: silhouette, anamorphosis: anamorphosis,
+        labels: parallaxLabels, panelLabels: panelLabels, changeLabels: changeLabels, rotationLabels: rotationLabels, reliefLabels: reliefLabels, shapeLabels: shapeLabels, motionLabels: motionLabels, weaveLabels: weaveLabels, landingLabels: landingLabels, silhouetteLabels: silhouetteLabels, referenceLabels: referenceLabels, anamorphosisLabels: anamorphosisLabels, solids: solids };
       S.target.set(0, EYE_Y, 0);
       S.fitPts = [];
     }
@@ -1077,6 +1268,53 @@
       length.handle.position.set(object.to.x, object.to.y, object.to.z);
       length.objects = objects;
       length.value = value;
+    }
+
+    function updateSilhouette(S, data) {
+      var silhouette = S.walk && S.walk.silhouette;
+      if (!silhouette) return;
+      var angle = clamp(number(data.silhouetteAngle, 0), 0, 90), choice = /^[AB]$/.test(data.silhouetteChoice) ? data.silhouetteChoice : null;
+      if (angle === silhouette.angle && choice === silhouette.choice) return;
+      var objects = Lab.PerceptionWalk.silhouetteObjects(silhouette.round, angle, silhouette.set);
+      silhouette.sculptures.forEach(function (sculpture, index) {
+        sculpture.object = objects[index];
+        sculpture.group.rotation.y = angle * Math.PI / 180;
+        sculpture.selection.visible = data.activity === 'silhouette' && choice === sculpture.object.choice;
+      });
+      var dial = silhouette.dial, radians = angle * Math.PI / 180;
+      var dx = Math.sin(radians) * dial.arm, dy = Math.cos(radians) * dial.arm;
+      dial.pointer.position.set(dial.x + dx / 2, dial.y + dy / 2, dial.z + 0.08);
+      dial.pointer.rotation.set(0, 0, -radians);
+      dial.handle.position.set(dial.x + dx, dial.y + dy, dial.z + 0.08);
+      silhouette.objects = objects;
+      silhouette.angle = angle;
+      silhouette.choice = choice;
+    }
+
+    function updateAnamorphosis(S, data) {
+      var anamorphosis = S.walk && S.walk.anamorphosis;
+      if (!anamorphosis) return;
+      var objects = Lab.PerceptionWalk.anamorphosisObjects(anamorphosis.round, data.anamorphosisOffsets, anamorphosis.set);
+      var selected = clamp(Math.round(number(data.anamorphosisSelected, 0)), 0, 1);
+      anamorphosis.beams.forEach(function (beam, index) {
+        var object = objects[index];
+        if (anamorphosis.set === 2) {
+          var a = new S.THREE.Vector3(object.from.x, object.from.y, object.from.z), b = new S.THREE.Vector3(object.to.x, object.to.y, object.to.z);
+          var direction = new S.THREE.Vector3().subVectors(b, a);
+          beam.mesh.position.copy(a).add(b).multiplyScalar(0.5);
+          beam.mesh.quaternion.setFromUnitVectors(new S.THREE.Vector3(0, 1, 0), direction.normalize());
+          beam.caps[0].position.copy(a);
+          beam.caps[1].position.copy(b);
+        } else {
+          beam.group.position.x = (object.from.x + object.to.x) / 2 - beam.originX;
+          beam.group.position.z = object.from.z - beam.originZ;
+        }
+        beam.object = object;
+        if (beam.selection) beam.selection.visible = data.activity === 'anamorphosis' && selected === object.index;
+      });
+      anamorphosis.objects = objects;
+      anamorphosis.offsets = objects.slice(1).map(function (object) { return object.offset; });
+      anamorphosis.selected = selected;
     }
 
     function updateAperture(S, data) {
@@ -1190,6 +1428,59 @@
         label.sprite.position.addScaledVector(right, offset * label.perPixel);
         label.sphere.targetLabelBounds = { left: label.x - label.halfWidth, right: label.x + label.halfWidth,
           top: label.y - label.halfHeight, bottom: label.y + label.halfHeight, offsetX: offset };
+      });
+    }
+
+    function placeAnamorphosisLabels(THREE, S) {
+      var width = S.renderer.domElement.clientWidth, height = S.renderer.domElement.clientHeight;
+      if (!width || !height || !S.walk || !S.walk.anamorphosis) return;
+      var tangent = Math.tan(S.camera.fov * Math.PI / 360), right = new THREE.Vector3().setFromMatrixColumn(S.camera.matrixWorld, 0);
+      var up = new THREE.Vector3().setFromMatrixColumn(S.camera.matrixWorld, 1), bounds = { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity };
+      S.walk.anamorphosis.beams.forEach(function (beam) {
+        beam.mesh.updateWorldMatrix(true, false);
+        beam.caps.forEach(function (cap) {
+          var center = cap.getWorldPosition(new THREE.Vector3()), radius = cap.geometry.parameters.radius;
+          [-1, 1].forEach(function (x) { [-1, 1].forEach(function (y) { [-1, 1].forEach(function (z) {
+            var point = center.clone().add(new THREE.Vector3(x * radius, y * radius, z * radius));
+            if (point.clone().applyMatrix4(S.camera.matrixWorldInverse).z >= -S.camera.near) return;
+            var projected = point.project(S.camera), px = (projected.x + 1) * width / 2, py = (1 - projected.y) * height / 2;
+            bounds.left = Math.min(bounds.left, px); bounds.right = Math.max(bounds.right, px);
+            bounds.top = Math.min(bounds.top, py); bounds.bottom = Math.max(bounds.bottom, py);
+          }); }); });
+        });
+      });
+      var labels = S.walk.anamorphosisLabels.map(function (marker) {
+        var center = marker.beam.mesh.getWorldPosition(new THREE.Vector3()), point = center.clone().applyMatrix4(S.camera.matrixWorldInverse);
+        var projected = center.clone().project(S.camera), perPixel = -2 * point.z * tangent / height;
+        marker.bounds = null;
+        marker.sprite.visible = point.z < -S.camera.near && bounds.right >= 0 && bounds.left <= width && bounds.bottom >= 0 && bounds.top <= height;
+        var size = Math.max(0.42, 20 * perPixel), half = size / perPixel / 2;
+        marker.sprite.scale.set(size, size, 1);
+        marker.sprite.position.copy(center);
+        return { marker: marker, center: center, perPixel: perPixel, half: half,
+          x: (projected.x + 1) * width / 2, y: (1 - projected.y) * height / 2 };
+      }).filter(function (label) { return label.marker.sprite.visible; });
+      labels.sort(function (a, b) { return a.x - b.x || a.marker.beam.object.index - b.marker.beam.object.index; });
+      var placed = [];
+      function overlaps(a, b) { return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }
+      // Place badges outside the complete beam silhouette, not between crossing rods.
+      labels.forEach(function (label, index) {
+        var half = label.half, gap = 10, y = clamp(label.y, half + 3, height - half - 3), x = clamp(label.x, half + 3, width - half - 3);
+        var left = { x: bounds.left - gap - half, y: y }, rightSide = { x: bounds.right + gap + half, y: y };
+        var candidates = index ? [rightSide, left] : [left, rightSide];
+        candidates.push({ x: x, y: bounds.top - gap - half }, { x: x, y: bounds.bottom + gap + half });
+        var position = candidates.find(function (candidate) {
+          var rect = { left: candidate.x - half, right: candidate.x + half, top: candidate.y - half, bottom: candidate.y + half };
+          if (rect.left < 3 || rect.right > width - 3 || rect.top < 3 || rect.bottom > height - 3 || overlaps(rect, bounds)) return false;
+          if (placed.some(function (other) { return overlaps(rect, { left: other.left - 3, right: other.right + 3, top: other.top - 3, bottom: other.bottom + 3 }); })) return false;
+          label.marker.bounds = rect;
+          return true;
+        });
+        label.marker.sprite.visible = !!position;
+        if (!position) return;
+        label.marker.sprite.position.addScaledVector(right, (position.x - label.x) * label.perPixel);
+        label.marker.sprite.position.addScaledVector(up, (label.y - position.y) * label.perPixel);
+        placed.push(label.marker.bounds);
       });
     }
 
@@ -1310,18 +1601,22 @@
       updateLanding(S, data);
       updateAperture(S, data);
       updateLength(S, data);
+      updateSilhouette(S, data);
+      updateAnamorphosis(S, data);
       var player = data.player || {}, direction = cameraDirection(player);
-      var x = clamp(number(player.x, -12), -20, 200), z = clamp(number(player.z, 9), -8, 14);
+      var x = clamp(number(player.x, -12), -20, 224), z = clamp(number(player.z, 9), -8, 14);
       S.camera.position.set(x, EYE_Y, z);
       S.camera.lookAt(new THREE.Vector3(x + direction.x, EYE_Y + direction.y, z + direction.z));
-      S.camera.fov = data.activity === 'aperture' || data.activity === 'length' ? Math.max(52, 2 * Math.atan(Math.tan(34 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
+      S.camera.fov = data.activity === 'anamorphosis' && data.anamorphosisSet === 2 ? Math.max(48, 2 * Math.atan(Math.tan(28 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
+        : data.activity === 'silhouette' || data.activity === 'anamorphosis' ? Math.max(56, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
+        : data.activity === 'aperture' || data.activity === 'length' ? Math.max(52, 2 * Math.atan(Math.tan(34 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
         : data.activity === 'landing' ? Math.max(52, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
         : data.activity === 'weave' ? Math.max(76, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
         : ['parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame'].indexOf(data.activity) >= 0
         ? Math.max(62, 2 * Math.atan(Math.tan((data.activity === 'shadow' || data.activity === 'change' ? 30 : data.activity === 'rotation' || data.activity === 'relief' || data.activity === 'shape' || data.activity === 'motion' || data.activity === 'frame' ? 32 : 40) * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
         : 62;
       S.camera.near = 0.04;
-      S.camera.far = 240;
+      S.camera.far = 260;
       S.camera.updateProjectionMatrix();
       S.camera.updateMatrixWorld(true);
       // Keep identification letters readable in narrow views without enlarging the spheres.
@@ -1404,6 +1699,27 @@
           targetLabel.position.y = 0.09 + targetSize / 2;
         }
       });
+      var hideSilhouetteLabels = data.activity === 'silhouette' && (/^[AB]$/.test(data.silhouetteInspection)
+        || S.walk && S.walk.silhouette.sculptures.some(function (sculpture) { return Math.hypot(x - sculpture.object.x, z - sculpture.object.z) <= 5.5; }));
+      if (S.walk) S.walk.silhouetteLabels.forEach(function (marker) {
+        marker.sprite.visible = !hideSilhouetteLabels;
+        var object = marker.sculpture.object, point = new THREE.Vector3(object.x, object.y, object.z).applyMatrix4(S.camera.matrixWorldInverse);
+        var height = S.renderer.domElement.clientHeight || 360;
+        var perPixel = 2 * Math.max(0.2, -point.z) * Math.tan(S.camera.fov * Math.PI / 360) / height;
+        var size = Math.max(0.42, 20 * perPixel);
+        marker.sprite.scale.set(size, size, 1);
+        marker.sprite.position.set(object.x + (object.choice === 'A' ? -1.95 : 1.95), 1.4, object.z);
+      });
+      if (S.walk) S.walk.referenceLabels.forEach(function (marker) {
+        marker.sprite.visible = !hideSilhouetteLabels;
+        var point = new THREE.Vector3(marker.x, 4.225, marker.z).applyMatrix4(S.camera.matrixWorldInverse);
+        var height = S.renderer.domElement.clientHeight || 360;
+        var perPixel = 2 * Math.max(0.2, -point.z) * Math.tan(S.camera.fov * Math.PI / 360) / height;
+        var size = Math.min(1.15, Math.max(0.5, 16 * perPixel));
+        marker.sprite.scale.set(size * 2.8, size, 1);
+        marker.sprite.position.set(marker.x, 4.345 + size / 2, marker.z);
+      });
+      placeAnamorphosisLabels(THREE, S);
       separateLandingLabels(THREE, S);
       S.scene.updateMatrixWorld(true);
       sceneState = S;
@@ -1440,7 +1756,53 @@
                 to: pointData(mesh.localToWorld(new S.THREE.Vector3(0, half, 0))) };
             }) };
         }
+        function silhouetteCubeData(mesh) {
+          mesh.updateWorldMatrix(true, false);
+          var size = mesh.geometry.parameters, corners = [];
+          [-size.width / 2, size.width / 2].forEach(function (x) {
+            [-size.height / 2, size.height / 2].forEach(function (y) {
+              [-size.depth / 2, size.depth / 2].forEach(function (z) {
+                corners.push(pointData(mesh.localToWorld(new S.THREE.Vector3(x, y, z))));
+              });
+            });
+          });
+          return { center: pointData(mesh.getWorldPosition(new S.THREE.Vector3())), corners: corners };
+        }
+        var silhouetteObjects = S.walk.silhouette.sculptures.map(function (sculpture) {
+          return { choice: sculpture.object.choice, x: sculpture.group.position.x, y: sculpture.group.position.y,
+            z: sculpture.group.position.z, angle: sculpture.group.rotation.y * 180 / Math.PI, cellSize: sculpture.object.cellSize,
+            cells: sculpture.object.cells.map(function (cell) { return cell.slice(); }),
+            selected: sculpture.selection.visible, cubes: sculpture.cubes.map(silhouetteCubeData) };
+        });
         var lengthBoardBounds = new S.THREE.Box3().setFromObject(S.walk.length.board);
+        function anamorphosisBeamData(beam) {
+          beam.mesh.updateWorldMatrix(true, false);
+          var half = beam.mesh.geometry.parameters.height / 2;
+          return { id: beam.object.id, choice: beam.object.choice, index: beam.object.index, offset: beam.object.offset,
+            from: pointData(beam.mesh.localToWorld(new S.THREE.Vector3(0, -half, 0))),
+            to: pointData(beam.mesh.localToWorld(new S.THREE.Vector3(0, half, 0))),
+            center: pointData(beam.mesh.getWorldPosition(new S.THREE.Vector3())),
+            radius: beam.mesh.geometry.parameters.radiusTop, selected: !!(beam.selection && beam.selection.visible) };
+        }
+        var anamorphosisObjects = S.walk.anamorphosis.beams.map(anamorphosisBeamData);
+        var ringGeometry = S.walk.ringGeometry, ringEye = ringGeometry.config.eye;
+        function ringMeshData(entry) {
+          var mesh = entry.mesh, parameters = mesh.geometry.parameters, position = mesh.geometry.getAttribute('position'), points = [];
+          mesh.updateWorldMatrix(true, false);
+          // Average each tube cross-section, excluding its duplicated seam vertex.
+          for (var segment = 0; segment <= parameters.tubularSegments; segment++) {
+            var point = new S.THREE.Vector3();
+            for (var radial = 0; radial < parameters.radialSegments; radial++) {
+              var index = segment * (parameters.radialSegments + 1) + radial;
+              point.x += position.getX(index); point.y += position.getY(index); point.z += position.getZ(index);
+            }
+            point.divideScalar(parameters.radialSegments);
+            points.push(pointData(mesh.localToWorld(point)));
+          }
+          return { index: entry.part.index, depth: entry.part.depth, radius: parameters.radius, points: points };
+        }
+        var ringDirection = ringGeometry.revealDirection;
+        if (ringDirection) ringDirection.updateWorldMatrix(true, false);
         return { activity: S.data && S.data.activity, blockZ: S.data && S.data.blockZ,
           selected: !!(S.data && S.data.selected),
           parallaxChoice: S.data && /^[ABC]$/.test(S.data.parallaxChoice) ? S.data.parallaxChoice : null,
@@ -1451,6 +1813,13 @@
           collected: S.data && S.data.collected ? S.data.collected.slice() : [], static: !!(S.data && S.data.static),
           camera: { x: S.camera.position.x, y: S.camera.position.y, z: S.camera.position.z, fov: S.camera.fov,
             yaw: S.data && S.data.player && S.data.player.yaw, pitch: S.data && S.data.player && S.data.player.pitch },
+          ringRound: ringGeometry.config.round,
+          ringObjects: ringGeometry.meshes.map(ringMeshData),
+          ringTarget: { x: ringEye.x, y: EYE_Y, z: ringEye.z, yaw: ringEye.yaw, pitch: ringEye.pitch },
+          ringRevealTarget: ringGeometry.revealTarget ? pointData(ringGeometry.revealTarget.getWorldPosition(new S.THREE.Vector3())) : null,
+          ringRevealDirection: ringDirection ? { center: pointData(ringDirection.getWorldPosition(new S.THREE.Vector3())),
+            from: pointData(ringDirection.localToWorld(new S.THREE.Vector3(0, 0, -0.12))),
+            to: pointData(ringDirection.localToWorld(new S.THREE.Vector3(0, 0, 0.12))) } : null,
           ringProjected: S.walk.ring.map(function (part) { return part.points.map(projected); }),
           ringDepths: S.walk.ring.map(function (part) { return part.depth; }),
           scaleObjects: S.walk.blocks.map(function (object) { return Object.assign({}, object); }),
@@ -1463,7 +1832,20 @@
             return { id: token.id, index: token.index, center: projected(token),
               collected: !!(S.data && S.data.collected && S.data.collected.indexOf(token.index) >= 0) };
           }),
+          parallaxRound: S.walk.parallaxRound,
           parallaxObjects: S.walk.parallax.map(function (object) { return Object.assign({}, object); }),
+          parallaxRendered: S.walk.parallaxMeshes.map(function (entry) {
+            var mesh = entry.mesh;
+            mesh.updateWorldMatrix(true, false);
+            return { id: entry.object.id, choice: entry.object.choice,
+              center: pointData(mesh.getWorldPosition(new S.THREE.Vector3())),
+              radius: mesh.geometry.parameters.radius * mesh.getWorldScale(new S.THREE.Vector3()).x };
+          }),
+          parallaxLabels: S.walk.labels.map(function (marker) {
+            var sprite = marker.sprite, position = sprite.getWorldPosition(new S.THREE.Vector3());
+            return { choice: marker.object.choice, visible: sprite.visible, position: pointData(position),
+              scale: pointData(sprite.getWorldScale(new S.THREE.Vector3())), projected: projected(position) };
+          }),
           parallaxProjected: S.walk.parallax.map(function (object) {
             return { id: object.id, choice: object.choice, center: projected(object),
               top: projected({ x: object.x, y: object.y + object.radius, z: object.z }),
@@ -1667,7 +2049,56 @@
           lengthProjected: { referenceFrom: projected(S.walk.length.reference.caps[0].position), referenceTo: projected(S.walk.length.reference.caps[1].position),
             from: projected(S.walk.length.adjustable.caps[0].position), to: projected(S.walk.length.adjustable.caps[1].position),
             center: projected(S.walk.length.adjustable.beam.position), handle: projected(S.walk.length.handle.position), switch: projected(S.walk.length.toggle) },
-          solidCount: S.walk.solids.length, interactionRange: INTERACTION_RANGE, panelRange: PANEL_RANGE, continuityRange: CONTINUITY_RANGE, changeRange: CHANGE_RANGE, rotationRange: ROTATION_RANGE, reliefRange: RELIEF_RANGE, shapeRange: SHAPE_RANGE, motionRange: MOTION_RANGE, frameRange: FRAME_RANGE, weaveRange: WEAVE_RANGE, landingRange: LANDING_RANGE, apertureRange: APERTURE_RANGE, lengthRange: LENGTH_RANGE, inspectionRange: INSPECTION_RANGE,
+          silhouetteSet: S.walk.silhouette.set,
+          silhouetteInspection: S.data && /^[AB]$/.test(S.data.silhouetteInspection) ? S.data.silhouetteInspection : null,
+          silhouetteInspectionSide: S.data && /^(front|side)$/.test(S.data.silhouetteInspectionSide) ? S.data.silhouetteInspectionSide : null,
+          silhouetteRound: S.walk.silhouette.round,
+          silhouetteAngle: S.walk.silhouette.angle,
+          silhouetteChoice: S.walk.silhouette.choice,
+          silhouetteRevealed: !!(S.data && S.data.activity === 'silhouette' && S.data.reveal),
+          silhouetteObjects: silhouetteObjects,
+          silhouetteReference: { front: S.walk.silhouette.reference.front.map(function (cell) { return cell.slice(); }),
+            side: S.walk.silhouette.reference.side.map(function (cell) { return cell.slice(); }) },
+          silhouettePanels: S.walk.silhouette.panels.map(function (panel) {
+            var bounds = new S.THREE.Box3().setFromObject(panel.panel);
+            return { min: pointData(bounds.min), max: pointData(bounds.max), squares: panel.squares.map(silhouetteCubeData) };
+          }),
+          silhouetteDial: { x: S.walk.silhouette.dial.x, y: S.walk.silhouette.dial.y, z: S.walk.silhouette.dial.z,
+            radius: S.walk.silhouette.dial.radius, handle: pointData(S.walk.silhouette.dial.handle.position) },
+          silhouetteProjected: { A: projected(silhouetteObjects[0].cubes[0].center), B: projected(silhouetteObjects[1].cubes[0].center),
+            dial: projected(S.walk.silhouette.dial), handle: projected(S.walk.silhouette.dial.handle.position) },
+          silhouetteLabels: S.walk.silhouetteLabels.map(function (marker) {
+            return { choice: marker.sculpture.object.choice, visible: marker.sprite.visible, position: pointData(marker.sprite.position), scale: pointData(marker.sprite.scale),
+              projected: projected(marker.sprite.position) };
+          }),
+          silhouetteReferenceLabels: S.walk.referenceLabels.map(function (marker) {
+            return { visible: marker.sprite.visible, position: pointData(marker.sprite.position), scale: pointData(marker.sprite.scale), projected: projected(marker.sprite.position) };
+          }),
+          anamorphosisSet: S.walk.anamorphosis.set,
+          anamorphosisRound: S.walk.anamorphosis.round,
+          anamorphosisOffsets: S.walk.anamorphosis.offsets.slice(),
+          anamorphosisSelected: S.walk.anamorphosis.selected,
+          anamorphosisRevealed: !!(S.data && S.data.activity === 'anamorphosis' && S.data.reveal),
+          anamorphosisObjects: anamorphosisObjects,
+          anamorphosisGuides: S.walk.anamorphosis.guides.map(anamorphosisBeamData),
+          anamorphosisDepthGuides: S.walk.anamorphosis.depthGuides.map(function (guide) {
+            return Array.prototype.slice.call(guide.geometry.getAttribute('position').array);
+          }),
+          anamorphosisRails: S.walk.anamorphosis.rails.map(function (rail) {
+            var bounds = new S.THREE.Box3().setFromObject(rail.mesh);
+            return { choice: rail.choice, axis: rail.axis, min: pointData(bounds.min), max: pointData(bounds.max) };
+          }),
+          anamorphosisPivots: S.walk.anamorphosis.pivots.map(function (pivot) {
+            var bounds = new S.THREE.Box3().setFromObject(pivot.ring);
+            return { choice: pivot.choice, center: pointData(pivot.center), radius: pivot.radius, projected: projected(pivot.center),
+              ringCenter: pointData(pivot.ring.getWorldPosition(new S.THREE.Vector3())), min: pointData(bounds.min), max: pointData(bounds.max) };
+          }),
+          anamorphosisProjected: { B: projected(anamorphosisObjects[1].center), C: projected(anamorphosisObjects[2].center) },
+          anamorphosisLabels: S.walk.anamorphosisLabels.map(function (marker) {
+            return { choice: marker.beam.object.choice, visible: marker.sprite.visible, bounds: marker.bounds ? Object.assign({}, marker.bounds) : null,
+              position: pointData(marker.sprite.position), scale: pointData(marker.sprite.scale), projected: projected(marker.sprite.position) };
+          }),
+          solidCount: S.walk.solids.length, interactionRange: INTERACTION_RANGE, panelRange: PANEL_RANGE, continuityRange: CONTINUITY_RANGE, changeRange: CHANGE_RANGE, rotationRange: ROTATION_RANGE, reliefRange: RELIEF_RANGE, shapeRange: SHAPE_RANGE, motionRange: MOTION_RANGE, frameRange: FRAME_RANGE, weaveRange: WEAVE_RANGE, landingRange: LANDING_RANGE, apertureRange: APERTURE_RANGE, lengthRange: LENGTH_RANGE, silhouetteRange: SILHOUETTE_RANGE, anamorphosisRange: ANAMORPHOSIS_RANGE, inspectionRange: INSPECTION_RANGE,
           waypoints: layoutSnapshot() };
       },
       failMessage: 'The first-person perception space could not start its 3D view.'
@@ -1734,7 +2165,9 @@
       if (/^landing-[ABC]$/.test(id) && (!S.data || S.data.activity !== 'landing')) return null;
       if (/^aperture-(rod|screen|dial)$/.test(id) && (!S.data || S.data.activity !== 'aperture')) return null;
       if (/^length-(rod|handle|fins)$/.test(id) && (!S.data || S.data.activity !== 'length')) return null;
-      var range = /^parallax-[ABC]$/.test(id) ? INSPECTION_RANGE : /^length-(rod|handle|fins)$/.test(id) ? LENGTH_RANGE : /^aperture-(rod|screen|dial)$/.test(id) ? APERTURE_RANGE : /^landing-[ABC]$/.test(id) ? LANDING_RANGE : /^weave-([ABC]|rail-[0-2])$/.test(id) ? WEAVE_RANGE : /^frame-(rod|surround)$/.test(id) ? FRAME_RANGE : /^motion-([A-F]|dial)$/.test(id) ? MOTION_RANGE : /^shape-[AB]$/.test(id) ? SHAPE_RANGE : /^relief-(A|B|light)$/.test(id) ? RELIEF_RANGE : /^rotation-[AB]$/.test(id) ? ROTATION_RANGE : /^change-[ABCDE]$/.test(id) ? CHANGE_RANGE : id === 'continuity-rod' || /^shadow-block-\d+$/.test(id) ? CONTINUITY_RANGE
+      if (/^silhouette-(A|B|dial)$/.test(id) && (!S.data || S.data.activity !== 'silhouette')) return null;
+      if (/^anamorphosis-[BC]$/.test(id) && (!S.data || S.data.activity !== 'anamorphosis')) return null;
+      var range = /^parallax-[ABC]$/.test(id) ? INSPECTION_RANGE : /^anamorphosis-[BC]$/.test(id) ? ANAMORPHOSIS_RANGE : /^silhouette-(A|B|dial)$/.test(id) ? SILHOUETTE_RANGE : /^length-(rod|handle|fins)$/.test(id) ? LENGTH_RANGE : /^aperture-(rod|screen|dial)$/.test(id) ? APERTURE_RANGE : /^landing-[ABC]$/.test(id) ? LANDING_RANGE : /^weave-([ABC]|rail-[0-2])$/.test(id) ? WEAVE_RANGE : /^frame-(rod|surround)$/.test(id) ? FRAME_RANGE : /^motion-([A-F]|dial)$/.test(id) ? MOTION_RANGE : /^shape-[AB]$/.test(id) ? SHAPE_RANGE : /^relief-(A|B|light)$/.test(id) ? RELIEF_RANGE : /^rotation-[AB]$/.test(id) ? ROTATION_RANGE : /^change-[ABCDE]$/.test(id) ? CHANGE_RANGE : id === 'continuity-rod' || /^shadow-block-\d+$/.test(id) ? CONTINUITY_RANGE
         : /^(contour-[0-3]|context-[ABCD]|context-switch)$/.test(id) ? PANEL_RANGE : INTERACTION_RANGE;
       return id && hits[0].distance <= range ? { id: id, distance: hits[0].distance } : null;
     };
@@ -1762,6 +2195,38 @@
       if (!ray || !S.data || S.data.activity !== 'length' || Math.abs(ray.ray.direction.z) < 0.08) return null;
       var point = ray.ray.intersectPlane(new S.THREE.Plane(new S.THREE.Vector3(0, 0, 1), -0.2), new S.THREE.Vector3());
       return point && isFinite(point.x) && point.distanceTo(ray.ray.origin) <= LENGTH_RANGE ? point.x : null;
+    };
+    viewer.silhouetteCoordinate = function (clientX, clientY) {
+      var ray = pointerRay(clientX, clientY), S = sceneState;
+      if (!ray || !S.data || S.data.activity !== 'silhouette' || Math.abs(ray.ray.direction.z) < 0.08) return null;
+      var dial = S.walk.silhouette.dial;
+      var point = ray.ray.intersectPlane(new S.THREE.Plane(new S.THREE.Vector3(0, 0, 1), -dial.z), new S.THREE.Vector3());
+      if (!point || !isFinite(point.x) || !isFinite(point.y) || point.distanceTo(ray.ray.origin) > SILHOUETTE_RANGE ||
+          Math.hypot(point.x - dial.x, point.y - dial.y) < 0.1) return null;
+      return clamp(Math.atan2(point.x - dial.x, point.y - dial.y) * 180 / Math.PI, 0, 90);
+    };
+    viewer.anamorphosisCoordinate = function (clientX, clientY, index) {
+      var ray = pointerRay(clientX, clientY), S = sceneState;
+      if (!ray || !S.data || S.data.activity !== 'anamorphosis' || [0, 1].indexOf(index) < 0) return null;
+      var beam = S.walk.anamorphosis.beams[index + 1], center = beam.mesh.getWorldPosition(new S.THREE.Vector3()), point;
+      if (S.walk.anamorphosis.set === 1) {
+        // This plane contains the depth rail and stays fixed as the beam moves along it.
+        var normal = new S.THREE.Vector3(center.x - S.camera.position.x, center.y - S.camera.position.y, 0);
+        if (normal.lengthSq() < 0.0001) return null;
+        normal.normalize();
+        if (Math.abs(normal.dot(ray.ray.direction)) < 0.015) return null;
+        var plane = new S.THREE.Plane().setFromNormalAndCoplanarPoint(normal, center);
+        point = ray.ray.intersectPlane(plane, new S.THREE.Vector3());
+        return point && isFinite(point.z) && point.distanceTo(ray.ray.origin) <= ANAMORPHOSIS_RANGE ? point.z : null;
+      }
+      if (Math.abs(ray.ray.direction.z) < 0.08) return null;
+      point = ray.ray.intersectPlane(new S.THREE.Plane(new S.THREE.Vector3(0, 0, 1), -center.z), new S.THREE.Vector3());
+      if (S.walk.anamorphosis.set === 2) {
+        if (!point || !isFinite(point.x) || !isFinite(point.y) || point.distanceTo(ray.ray.origin) > ANAMORPHOSIS_RANGE ||
+            Math.hypot(point.x - center.x, point.y - center.y) < 0.12) return null;
+        return Math.atan2(point.y - center.y, point.x - center.x) * 180 / Math.PI;
+      }
+      return point && isFinite(point.x) && point.distanceTo(ray.ray.origin) <= ANAMORPHOSIS_RANGE ? (point.x - 216) / ((10 - center.z) / 10) : null;
     };
     viewer.apertureCoordinate = function (clientX, clientY) {
       var ray = pointerRay(clientX, clientY), S = sceneState;

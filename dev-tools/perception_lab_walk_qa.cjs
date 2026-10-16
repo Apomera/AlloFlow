@@ -65,9 +65,14 @@ async function run(url) {
   const fit = async () => {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, 'No horizontal overflow');
     const bad = await page.locator('[data-perception-walk] button').evaluateAll(nodes => nodes.filter(node => {
-      const rect = node.getBoundingClientRect(); return rect.width && (rect.left < -1 || rect.right > innerWidth + 1 || node.scrollWidth > node.clientWidth + 2);
+      const rect = node.getBoundingClientRect(), strip = node.closest('.pw-nav[data-expanded="false"]');
+      return rect.width && (node.scrollWidth > node.clientWidth + 2 || !strip && (rect.left < -1 || rect.right > innerWidth + 1));
     }).map(node => node.outerHTML));
     assert.deepEqual(bad, [], 'Visible buttons and their labels fit');
+    assert(await page.locator('.pw-nav').evaluate(nav => {
+      const active = nav.querySelector('[aria-pressed="true"]').getBoundingClientRect(), bounds = nav.getBoundingClientRect();
+      return active.left >= bounds.left - 1 && active.right <= bounds.right + 1;
+    }), 'The selected room remains visible within the scrollable navigation strip');
   };
   const open = async () => {
     await click('[data-perception-open-gallery]'); await click('[data-gallery-open-walk]');

@@ -802,6 +802,7 @@ describe('Cephalopod Lab ethogram recorder', () => {
 // ── Challenge tracker checked against real dives ──
 describe('Cephalopod Lab challenge tracker', () => {
   const KEY = 'allo.cephalopodlab.leaderboard.v1';
+  const MODE_KEY = 'allo.cephalopodlab.leaderboard.v2';
   const renderChal = () => {
     const c = document.createElement('div');
     c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'challenges' } });
@@ -817,20 +818,53 @@ describe('Cephalopod Lab challenge tracker', () => {
     expect(c.textContent).not.toMatch(/✓ done/);
   });
 
-  it('ticks only the challenges the dive record can actually settle', () => {
-    window.localStorage.setItem(KEY, JSON.stringify({
+  it('retains legacy camouflage and participation without classifying old survival records', () => {
+    const legacy = JSON.stringify({
       commonOcto: { bestScore: 18, bestSurvivalMs: 372000, bestCamoEff: 0.94, totalDives: 4, totalCatches: 22 },
       cuttlefish: { bestScore: 9, bestSurvivalMs: 141000, bestCamoEff: 0.71, totalDives: 2, totalCatches: 7 },
-    }));
+    });
+    window.localStorage.setItem(KEY, legacy);
     const c = renderChal();
-    // 6.2 minutes best dive clears the 5-minute target but not 10 or 15;
-    // 94% camouflage clears 90%; 2 of 12 species is short
-    expect(c.textContent).toMatch(/2 \/ 5 met/);
-    expect(c.textContent).toMatch(/6\.2 \/ 5\.0 min best dive/);
-    expect(c.textContent).toMatch(/6\.2 \/ 10\.0 min best dive/);
+    // Old durations have no mode, so they cannot establish survival with
+    // hunger/injury active. Camouflage and species participation remain valid.
+    expect(c.textContent).toMatch(/1 \/ 5 met/);
+    expect(c.textContent).toMatch(/0\.0 \/ 5\.0 min best dive/);
+    expect(c.textContent).toMatch(/0\.0 \/ 10\.0 min best dive/);
     expect(c.textContent).toMatch(/94% \/ 90% best camouflage/);
     expect(c.textContent).toMatch(/2 \/ 12 species dived/);
+    expect(c.textContent).toContain('Survival challenges use Reef mission and Free exploration. Field study and older unclassified records count toward camouflage and species participation only.');
+    expect(window.localStorage.getItem(KEY)).toBe(legacy);
     window.localStorage.removeItem(KEY);
+  });
+
+  it('uses classified survival while combining camouflage and unique known species across modes', () => {
+    const record = (bestSurvivalMs, bestCamoEff) => ({ bestScore: 4, bestSurvivalMs, bestCamoEff, totalDives: 1, totalCatches: 1 });
+    const legacy = JSON.stringify({ commonOcto: record(1800000, 0.85), nautilus: record(2400000, 0.8) });
+    window.localStorage.setItem(KEY, legacy);
+    const byMode = {
+      reefMission: { commonOcto: record(372000, 0.7) },
+      free: { commonOcto: record(660000, 0.8) },
+      observe: { commonOcto: record(3600000, 0.95), vampireSquid: record(1800000, 0.93), unknownSpecies: record(7200000, 1) },
+    };
+    window.localStorage.setItem(MODE_KEY, JSON.stringify({ version: 2, byMode }));
+    const mixed = renderChal();
+    expect(mixed.textContent).toMatch(/3 \/ 5 met/);
+    expect(mixed.textContent).toMatch(/11\.0 \/ 5\.0 min best dive/);
+    expect(mixed.textContent).toMatch(/11\.0 \/ 10\.0 min best dive/);
+    expect(mixed.textContent).toMatch(/11\.0 \/ 15\.0 min best dive/);
+    expect(mixed.textContent).toMatch(/95% \/ 90% best camouflage/);
+    expect(mixed.textContent).toMatch(/3 \/ 12 species dived/);
+
+    // Reef mission contributes independently when no Free exploration record exists.
+    byMode.free = {};
+    window.localStorage.setItem(MODE_KEY, JSON.stringify({ version: 2, byMode }));
+    const reef = renderChal();
+    expect(reef.textContent).toMatch(/2 \/ 5 met/);
+    expect(reef.textContent).toMatch(/6\.2 \/ 5\.0 min best dive/);
+    expect(reef.textContent).toMatch(/6\.2 \/ 10\.0 min best dive/);
+    expect(reef.textContent).toMatch(/95% \/ 90% best camouflage/);
+    expect(reef.textContent).toMatch(/3 \/ 12 species dived/);
+    expect(window.localStorage.getItem(KEY)).toBe(legacy);
   });
 
   it('marks the ten it cannot verify as the reader’s to check, never as done', () => {

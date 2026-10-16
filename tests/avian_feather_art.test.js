@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { createRequire } from 'node:module';
+import { describe, expect, it, vi } from 'vitest';
 
 const source = readFileSync('stem_lab/avian_feather_art.js', 'utf8');
+const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 
 // Canvas is the boundary here, not the implementation under test. Vector
 // painting is recorded for deterministic ownership checks; the data-texture
@@ -94,6 +96,8 @@ describe('Shared avian feather artwork', () => {
     expect(Object.keys(window)).toEqual(['AvianFeatherArt']);
     expect(typeof api.createFlightFeatherCanvas).toBe('function');
     expect(typeof api.createVaneDetailCanvases).toBe('function');
+    expect(typeof api.applyVaneGrain).toBe('function');
+    expect(typeof api.vaneGrainCacheKey).toBe('function');
     expect(created).toHaveLength(0);
   });
 
@@ -186,5 +190,109 @@ describe('Shared avian feather artwork', () => {
     expect(digest(pixelsOf(first.normal))).toBe(previousNormal);
     expect(digest(pixelsOf(first.roughness))).toBe(previousRoughness);
     expect(digest(pixelsOf(source))).toBe(before);
+  });
+});
+
+function standardShader() {
+  return {
+    uniforms: { speciesPigment: { value: 'consumer-owned' } },
+    vertexShader: THREE.ShaderLib.standard.vertexShader,
+    fragmentShader: THREE.ShaderLib.standard.fragmentShader,
+  };
+}
+
+describe('Shared avian feather shader detail', () => {
+  it('supports the atlas and whole-vane UV layouts with distinct contour and flight programs', () => {
+    const { api } = canvasBoundary();
+    const programs = new Map();
+    for (const variants of [1, 4]) for (const contourFeather of [false, true]) {
+      const shader = standardShader();
+      const options = { variants, contourFeather };
+      expect(api.applyVaneGrain(shader, options)).toBe(shader);
+      const key = api.vaneGrainCacheKey(options);
+      expect(shader.fragmentShader).toContain(`avian-vane-grain:${key}`);
+      // The two consumers lay out their vanes differently; deriving local
+      // coordinates with the wrong tile count would paint four shafts on a
+      // Raptor feather, or stretch one shaft across BirdLab's whole atlas.
+      expect(shader.fragmentShader).toContain(`fract(vUv.x*${variants}.0)`);
+      programs.set(key, shader.fragmentShader);
+    }
+    expect(programs.size).toBe(4);
+    expect(new Set(programs.values()).size).toBe(4);
+    expect(api.vaneGrainCacheKey()).toBe(api.vaneGrainCacheKey({ variants: 4, contourFeather: false }));
+    expect(api.vaneGrainCacheKey({ contourFeather: true, variants: 1 }))
+      .toBe(api.vaneGrainCacheKey({ variants: 1, contourFeather: true }));
+  });
+
+  it('is deterministic, allocates no resources and leaves shared shader state untouched', () => {
+    const { api, created } = canvasBoundary();
+    const chunks = { ...THREE.ShaderChunk };
+    const template = { ...THREE.ShaderLib.standard };
+    const random = vi.spyOn(Math, 'random');
+    try {
+      const first = standardShader(), uniforms = first.uniforms;
+      const vertex = first.vertexShader;
+      api.applyVaneGrain(first, { variants: 1 });
+      api.applyVaneGrain(standardShader(), { variants: 4, contourFeather: true });
+      const repeated = standardShader();
+      api.applyVaneGrain(repeated, { variants: 1 });
+      expect(first.fragmentShader).toBe(repeated.fragmentShader);
+      expect(first.vertexShader).toBe(vertex);
+      expect(first.uniforms).toBe(uniforms);
+      expect(first.uniforms).toEqual({ speciesPigment: { value: 'consumer-owned' } });
+      expect(created).toHaveLength(0);
+      expect(random).not.toHaveBeenCalled();
+      expect(THREE.ShaderChunk).toEqual(chunks);
+      expect(THREE.ShaderLib.standard).toEqual(template);
+    } finally { random.mockRestore(); }
+  });
+
+  it('applies once to a program and refuses an incompatible second UV layout', () => {
+    const { api } = canvasBoundary(), shader = standardShader();
+    api.applyVaneGrain(shader, { variants: 1, contourFeather: true });
+    const first = shader.fragmentShader;
+    api.applyVaneGrain(shader, { contourFeather: true, variants: 1 });
+    expect(shader.fragmentShader).toBe(first);
+    expect(shader.fragmentShader.match(/avian-vane-grain:/g)).toHaveLength(1);
+    expect(() => api.applyVaneGrain(shader, { variants: 4, contourFeather: true })).toThrow();
+    expect(shader.fragmentShader).toBe(first);
+  });
+
+  it('keeps consumer pigment, deformation and downstream lighting while filtering fine detail', () => {
+    const { api } = canvasBoundary(), shader = standardShader();
+    shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\n// existing articulated feather deformation');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <map_fragment>', '#include <map_fragment>\n// existing species atlas sampling')
+      .replace('#include <color_fragment>', '// existing chest and underwing field marks\n#include <color_fragment>')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n// existing scene contrast');
+    api.applyVaneGrain(shader, { variants: 1 });
+    expect(shader.vertexShader).toContain('existing articulated feather deformation');
+    for (const text of ['existing species atlas sampling', 'existing chest and underwing field marks', 'existing scene contrast']) {
+      expect(shader.fragmentShader).toContain(text);
+    }
+    // Both fine barbs and broader bundles fade with pixel footprint; the
+    // shader should not leave an unfiltered periodic pattern at a distance.
+    expect(shader.fragmentShader).toMatch(/fwidth\(blBarb\)/);
+    expect(shader.fragmentShader).toMatch(/fwidth\(blBundle\)/);
+    expect(shader.fragmentShader).toMatch(/fwidth\(blAcross\)/);
+    expect(shader.fragmentShader.match(/#include <color_fragment>/g)).toHaveLength(1);
+    expect(shader.fragmentShader.indexOf('existing chest and underwing field marks'))
+      .toBeLessThan(shader.fragmentShader.indexOf('float blFiber='));
+    expect(shader.fragmentShader.indexOf('float blFiber='))
+      .toBeLessThan(shader.fragmentShader.indexOf('existing scene contrast'));
+  });
+
+  it('rejects invalid layouts and incompatible shader inputs without partially changing the program', () => {
+    const { api } = canvasBoundary();
+    for (const variants of [0, 2, -1, NaN, '4']) {
+      const shader = standardShader(), before = { ...shader };
+      expect(() => api.vaneGrainCacheKey({ variants })).toThrow();
+      expect(() => api.applyVaneGrain(shader, { variants })).toThrow();
+      expect(shader).toEqual(before);
+    }
+    for (const shader of [null, {}, { fragmentShader: 'void main() {}' }]) {
+      expect(() => api.applyVaneGrain(shader)).toThrow();
+    }
   });
 });

@@ -41,7 +41,10 @@ const url = 'http://127.0.0.1:47931/dev-tools/perception_lab_gallery_preview.htm
     await check('compact navigation, responsive selection and expanded room overview', async () => {
       assert(await page.locator('[data-walk-previous-room]').isDisabled());
       await click('[data-walk-next-room]'); assert.equal((await state()).perceptionWalk.activity, 'scale');
-      await click('[data-walk-activity="length"]'); assert(await page.locator('[data-walk-next-room]').isDisabled());
+      assert.equal(await page.locator('[data-walk-activity]').count(), 20);
+      await click('[data-walk-activity="length"]'); assert(!(await page.locator('[data-walk-next-room]').isDisabled()));
+      await click('[data-walk-next-room]'); assert.equal((await state()).perceptionWalk.activity, 'silhouette'); assert(!(await page.locator('[data-walk-next-room]').isDisabled()));
+      await click('[data-walk-next-room]'); assert.equal((await state()).perceptionWalk.activity, 'anamorphosis'); assert(await page.locator('[data-walk-next-room]').isDisabled());
       assert(await inStrip());
       for (const width of [1440, 390, 320]) {
         await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 }); await page.waitForTimeout(200);
@@ -51,7 +54,7 @@ const url = 'http://127.0.0.1:47931/dev-tools/perception_lab_gallery_preview.htm
         await page.locator('[data-perception-walk]').screenshot({ path: path.join(out, 'layout-' + width + '.png') });
         await click('[data-walk-all-rooms]'); assert.equal(await page.locator('[data-walk-all-rooms]').getAttribute('aria-expanded'), 'true');
         await click('[data-walk-activity="ring"]'); await click('[data-walk-all-rooms]'); assert(await inStrip());
-        await click('[data-walk-activity="length"]'); assert(await inStrip());
+        await click('[data-walk-activity="anamorphosis"]'); assert(await inStrip());
       }
     });
     await check('next unsolved wraps and preserves notes and unfinished arrangements', async () => {

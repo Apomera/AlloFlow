@@ -3346,23 +3346,32 @@ window.StemLab = window.StemLab || {
                 { key: 'net', label: __alloT('stem.physics.force_net', 'Net force'),
                   description: __alloT('stem.physics.force_sets_acceleration', 'Sets acceleration'), x: sample.fx, y: sample.fy, magnitude: Math.hypot(sample.fx, sample.fy), dash: null }
               ];
-              var forceScale = Math.max.apply(null, forceVectors.map(function(vector) { return vector.magnitude; }));
+              var forceScale = 0, forceScaleSupported = true;
+              // Keep a completed recording comparable across selections, including observations omitted from chart curves.
+              for (var forceIndex = 0; forceIndex < trail.length; forceIndex++) {
+                var forcePoint = physInspectSample(trail, forceIndex);
+                if (!forcePoint) { forceScaleSupported = false; break; }
+                var peakForce = Math.max(forcePoint.gravityForce, forcePoint.dragForce, Math.hypot(forcePoint.fx, forcePoint.fy));
+                if (!isFinite(peakForce)) { forceScaleSupported = false; break; }
+                forceScale = Math.max(forceScale, peakForce);
+              }
+              function forceColor(key) { return 'var(--phys-force-' + key + ')'; }
               function forceCard(vector) {
-                var length = forceScale > 0 ? 42 * (vector.magnitude / forceScale) : 0;
-                var endX = 64 + (forceScale > 0 ? 42 * (vector.x / forceScale) : 0);
-                var endY = 64 - (forceScale > 0 ? 42 * (vector.y / forceScale) : 0);
+                var length = forceScaleSupported && forceScale > 0 ? 42 * (vector.magnitude / forceScale) : 0;
+                var endX = 64 + (forceScaleSupported && forceScale > 0 ? 42 * (vector.x / forceScale) : 0);
+                var endY = 64 - (forceScaleSupported && forceScale > 0 ? 42 * (vector.y / forceScale) : 0);
                 var direction = Math.atan2(-vector.y, vector.x), head = Math.min(6, length / 3);
                 function component(field, label, value) {
                   return h('div', { key: field }, h('dt', null, label),
-                    h('dd', { 'data-physics-force-component': vector.key + '-' + field, 'data-value': value }, physFormatSampleValue(value) + ' N'));
+                    h('dd', { 'data-physics-force-component': vector.key + '-' + field, 'data-value': value }, isFinite(value) ? physFormatSampleValue(value) + ' N' : __alloT('stem.physics.force_range_unavailable', 'Beyond the display range')));
                 }
                 return h('section', { key: vector.key, 'data-physics-force-card': vector.key, 'aria-label': vector.label },
                   h('div', { className: 'phys-force-title' }, h('h5', null, vector.label), h('p', null, vector.description)),
                   h('div', { className: 'phys-force-body' },
                     h('svg', { 'data-physics-force-vector': vector.key, viewBox: '0 0 128 128', 'aria-hidden': true, focusable: 'false' },
-                      h('circle', { cx: 64, cy: 64, r: 51, fill: 'none', stroke: 'var(--phys-line)' }),
+                      h('circle', { 'data-physics-force-card-scale': vector.key, 'data-value': forceScaleSupported ? forceScale : undefined, cx: 64, cy: 64, r: 42, fill: 'none', stroke: 'var(--phys-muted)', strokeDasharray: '5 4' }),
                       h('path', { d: 'M12 64H116M64 12V116', fill: 'none', stroke: 'var(--phys-line)', strokeDasharray: '2 4' }),
-                      vector.magnitude > 0 && h('g', { fill: 'none', stroke: 'var(--phys-accent)', strokeWidth: vector.key === 'net' ? 3 : 2.5 },
+                      forceScaleSupported && vector.magnitude > 0 && h('g', { fill: 'none', stroke: forceColor(vector.key), strokeWidth: vector.key === 'net' ? 3 : 2.5 },
                         h('line', { 'data-physics-force-arrow': vector.key, 'data-fx': vector.x, 'data-fy': vector.y,
                           'data-magnitude': vector.magnitude, 'data-scale': forceScale, x1: 64, y1: 64, x2: endX, y2: endY, strokeDasharray: vector.dash }),
                         h('path', { d: 'M' + (endX - Math.cos(direction - .45) * head) + ' ' + (endY - Math.sin(direction - .45) * head) +
@@ -3372,9 +3381,69 @@ window.StemLab = window.StemLab || {
                       component('x', __alloT('stem.physics.force_horizontal', 'Horizontal · x'), vector.x),
                       component('y', __alloT('stem.physics.force_vertical', 'Vertical · y'), vector.y),
                       component('magnitude', __alloT('stem.physics.force_magnitude', 'Magnitude'), vector.magnitude))),
-                  vector.magnitude === 0 ? h('p', { className: 'phys-force-note', 'data-physics-force-zero': vector.key },
+                  !forceScaleSupported ? h('p', { className: 'phys-force-note' }, __alloT('stem.physics.force_diagram_range_note', 'The flight scale is unavailable; the recorded components retain their values.')) : vector.magnitude === 0 ? h('p', { className: 'phys-force-note', 'data-physics-force-zero': vector.key },
                     __alloT('stem.physics.force_zero', 'Zero force: no arrow.')) : length < 4.5 ? h('p', { className: 'phys-force-note' },
                     __alloT('stem.physics.force_tiny', 'The arrow is too short to see clearly at this scale; the values above retain its size.')) : null);
+              }
+              function forceConstruction() {
+                var originX = 160, originY = 110, radius = 70;
+                function offset(value) { return forceScaleSupported && forceScale > 0 ? radius * (value / forceScale) : 0; }
+                var gravityEnd = { x: originX + offset(sample.gravityFx), y: originY - offset(sample.gravityFy) };
+                var netEnd = { x: originX + offset(sample.fx), y: originY - offset(sample.fy) };
+                function arrow(vector) {
+                  if (vector.magnitude === 0) return null;
+                  var start = vector.key === 'drag' ? gravityEnd : { x: originX, y: originY };
+                  var end = vector.key === 'gravity' ? gravityEnd : netEnd;
+                  var length = radius * (vector.magnitude / forceScale), head = Math.min(8, length / 3);
+                  var direction = Math.atan2(-vector.y, vector.x);
+                  return h('g', { key: vector.key, fill: 'none', stroke: forceColor(vector.key), strokeWidth: vector.key === 'net' ? 5 : 3 },
+                    h('line', { 'data-physics-force-construction-arrow': vector.key, 'data-fx': vector.x, 'data-fy': vector.y,
+                      'data-magnitude': vector.magnitude, 'data-scale': forceScale, x1: start.x, y1: start.y, x2: end.x, y2: end.y,
+                      strokeDasharray: vector.key === 'gravity' ? '8 4' : vector.key === 'drag' ? '2 5' : undefined }),
+                    h('path', { 'data-physics-force-construction-head': vector.key, 'data-length': head, 'data-vector-length': length,
+                      d: 'M' + (end.x - Math.cos(direction - .45) * head) + ' ' + (end.y - Math.sin(direction - .45) * head) +
+                        'L' + end.x + ' ' + end.y + 'L' + (end.x - Math.cos(direction + .45) * head) + ' ' + (end.y - Math.sin(direction + .45) * head) }));
+                }
+                return h('figure', { 'data-physics-force-construction': true, className: 'phys-force-construction', 'data-run': sample.run == null ? 'unfinished' : sample.run,
+                    'data-sample-index': sample.index, 'data-time': sample.t, 'aria-labelledby': 'physics-force-construction-heading',
+                    'aria-describedby': 'physics-force-construction-range physics-force-construction-help physics-force-scale-help' },
+                  h('figcaption', null, h('h5', { id: 'physics-force-construction-heading' }, __alloT('stem.physics.force_construction_title', 'Adding the recorded forces')),
+                    h('p', null, (selected ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.energy_latest_sample', 'Latest recorded sample')) + ' · t = ' + sample.t.toFixed(3) + ' s')),
+                  h('div', { className: 'phys-force-construction-layout' },
+                    h('div', { className: 'phys-force-construction-visual' }, forceScaleSupported && h('svg', { 'data-physics-force-construction-graph': true, 'data-scale-force': forceScale, viewBox: '0 0 320 220', role: 'img', focusable: 'false',
+                      'aria-label': __alloT('stem.physics.force_construction_aria', 'Recorded force addition') + ': t = ' + sample.t.toFixed(3) + ' s; ' +
+                        forceVectors.map(function(vector) { return vector.label + ': Fx = ' + physFormatSampleValue(vector.x) + ' N, Fy = ' + physFormatSampleValue(vector.y) + ' N'; }).join('; '),
+                      'aria-describedby': 'physics-force-construction-range physics-force-construction-help physics-force-scale-help' },
+                      h('circle', { 'data-physics-force-construction-scale': true, 'data-value': forceScale, cx: originX, cy: originY, r: radius, fill: 'none', stroke: 'var(--phys-muted)', strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                      h('path', { d: 'M78 110H242M160 28V192', fill: 'none', stroke: 'var(--phys-line)', strokeDasharray: '2 4' }),
+                      h('g', { fill: 'var(--phys-muted)', fontSize: 20, fontWeight: 700 },
+                        h('text', { x: 252, y: 116 }, '+x'), h('text', { x: 40, y: 116 }, '−x'), h('text', { x: 172, y: 22 }, '+y'), h('text', { x: 172, y: 212 }, '−y')),
+                      [forceVectors[2], forceVectors[0], forceVectors[1]].map(arrow),
+                      h('circle', { cx: originX, cy: originY, r: 3, fill: 'var(--phys-ink)' })),
+                      h('p', { id: 'physics-force-construction-range', 'data-physics-force-construction-range': true, 'data-value': forceScaleSupported ? forceScale : undefined },
+                        !forceScaleSupported ? __alloT('stem.physics.force_construction_range_unavailable', 'The flight scale is unavailable because another recorded observation is unsupported. The selected component readings remain available.')
+                          : forceScale > 0 ? __alloT('stem.physics.force_construction_range', 'Circle radius:') + ' ' + physFormatSampleValue(forceScale) + ' N'
+                            : __alloT('stem.physics.force_construction_all_zero', 'All recorded forces are zero; no arrows are drawn.'))),
+                    h('div', null,
+                      h('ul', { className: 'phys-force-construction-key', 'aria-label': __alloT('stem.physics.force_construction_key', 'Force arrow key') }, forceVectors.map(function(vector) {
+                        return h('li', { key: vector.key }, h('span', { 'aria-hidden': true, style: { borderColor: forceColor(vector.key), borderTopStyle: vector.key === 'gravity' ? 'dashed' : vector.key === 'drag' ? 'dotted' : 'solid' } }),
+                          vector.label + ' · ' + (vector.key === 'gravity' ? __alloT('stem.physics.line_dashed', 'dashed') : vector.key === 'drag' ? __alloT('stem.physics.line_dotted', 'dotted') : __alloT('stem.physics.line_solid', 'solid')));
+                      })),
+                      h('p', { id: 'physics-force-construction-help' }, forceScaleSupported
+                        ? __alloT('stem.physics.force_construction_help', 'Start with gravity, then place the air drag arrow at its tip. Moving the drag arrow preserves its size and direction. Net force reaches the same endpoint from the origin.')
+                        : __alloT('stem.physics.force_construction_components_only', 'Use the selected components below to inspect the force balance. A diagram needs supported observations throughout the recording.')),
+                      h('p', { className: 'phys-force-components-caption' }, __alloT('stem.physics.force_components_caption', 'Gravity + air drag ≈ net force in each direction.')),
+                      h('dl', { 'data-physics-force-component-balances': true, className: 'phys-force-component-balances' }, ['x', 'y'].map(function(axis) {
+                        var gravity = axis === 'x' ? sample.gravityFx : sample.gravityFy;
+                        var drag = axis === 'x' ? sample.dragFx : sample.dragFy;
+                        var net = axis === 'x' ? sample.fx : sample.fy;
+                        return h('div', { key: axis }, h('dt', null, axis === 'x' ? __alloT('stem.physics.force_balance_horizontal', 'Horizontal · Fx') : __alloT('stem.physics.force_balance_vertical', 'Vertical · Fy')),
+                          h('dd', { 'data-physics-force-balance-axis': axis, 'data-gravity': gravity, 'data-drag': drag, 'data-net': net },
+                            h('span', null, physFormatSampleValue(gravity) + ' N'), h('span', null, ' + '),
+                            h('span', null, '(' + physFormatSampleValue(drag) + ' N)'), h('span', null, ' ≈ '), h('strong', null, physFormatSampleValue(net) + ' N')));
+                      })),
+                      forceScaleSupported && sample.dragForce === 0 && sample.gravityForce > 0 && h('p', { 'data-physics-force-construction-overlap': true }, __alloT('stem.physics.force_construction_overlap', 'With zero air drag, gravity and net force overlap. Their dashed and solid strokes share the same endpoint.')),
+                      forceScaleSupported && forceVectors[2].magnitude === 0 && h('p', { 'data-physics-force-construction-zero-net': true }, __alloT('stem.physics.force_construction_zero_net', 'Net force is zero: the construction returns to the origin, so there is no net force arrow.')))));
               }
               function energyPaint(key) {
                 return key === 'ke' ? 'var(--phys-energy-ke)' : 'repeating-linear-gradient(' + (key === 'pe' ? '0deg' : '135deg') + ',var(--phys-energy-' + key + '),var(--phys-energy-' + key + ') 4px,var(--phys-panel) 4px,var(--phys-panel) 6px)';
@@ -3574,7 +3643,7 @@ window.StemLab = window.StemLab || {
                     h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²'))),
                   h('div', { 'data-physics-vertical-balance': true },
                     h('p', null, __alloT('stem.physics.force_vertical_equation', 'Gravity + vertical air drag = net vertical force')),
-                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) = ' + physFormatSampleValue(sample.fy) + ' N'))), h('section', { className: 'phys-measured-card', 'data-physics-motion-readings': true, 'aria-labelledby': 'physics-sample-motion' },
+                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) ≈ ' + physFormatSampleValue(sample.fy) + ' N'))), h('section', { className: 'phys-measured-card', 'data-physics-motion-readings': true, 'aria-labelledby': 'physics-sample-motion' },
                     h('h4', { id: 'physics-sample-motion' }, __alloT('stem.physics.sample_motion', 'Position & velocity')),
                     h('div', { className: 'phys-motion-readings' }, velocityDiagram(), h('dl', null,
                       measurement('x', __alloT('stem.physics.sample_horizontal_position', 'Horizontal position · x'), sample.x, 'm'),
@@ -3585,15 +3654,18 @@ window.StemLab = window.StemLab || {
                     h('p', { 'data-physics-velocity-formula': true, 'data-value': sample.speed, className: 'phys-velocity-formula' }, __alloT('stem.physics.velocity_speed_equation', 'Speed = √(vx² + vy²)') + ' = ' + physFormatSampleValue(sample.speed) + ' m/s.'))),
               forces: h('details', { 'data-physics-sample-forces': true, open: analysisView === 'forces' },
                   h('summary', null, __alloT('stem.physics.sample_forces', 'Forces & acceleration')),
-                  h('section', { 'data-physics-force-balance': true, 'data-force-scale': forceScale, 'aria-labelledby': 'physics-force-heading' },
+                  h('section', { 'data-physics-force-balance': true, 'data-force-scale': forceScaleSupported ? forceScale : undefined, 'data-scale-supported': forceScaleSupported ? 'true' : 'false', 'aria-labelledby': 'physics-force-heading' },
                     h('h4', { id: 'physics-force-heading' }, __alloT('stem.physics.force_heading', 'Forces at this recorded moment')),
                     h('p', { className: 'phys-force-explanation' }, __alloT('stem.physics.force_equation', 'Gravity + air drag = net force. Acceleration = net force ÷ recorded mass.')),
                     h('p', { className: 'phys-force-phase-help' }, phaseHelp),
+                    forceConstruction(),
                     h('div', { className: 'phys-force-cards' }, forceVectors.map(forceCard)),
-                    h('p', { className: 'phys-force-scale' }, (forceScale > 0 ? __alloT('stem.physics.force_scale', 'All arrows share one scale; the longest represents') + ' ' + physFormatSampleValue(forceScale) + ' N. ' : __alloT('stem.physics.force_all_zero', 'All recorded forces are zero.') + ' ') +
-                      __alloT('stem.physics.force_axes', 'Right and up are positive. The scale updates when you choose another moment.')),
+                    h('p', { id: 'physics-force-scale-help', className: 'phys-force-scale' }, !forceScaleSupported
+                      ? __alloT('stem.physics.force_scale_unavailable', 'This flight includes a force outside the diagram\'s supported range. The recorded readings remain available.')
+                      : (forceScale > 0 ? __alloT('stem.physics.force_flight_scale', 'One force range for this flight: each dashed circle represents') + ' ' + physFormatSampleValue(forceScale) + ' N. ' : __alloT('stem.physics.force_all_zero', 'All recorded forces are zero.') + ' ') +
+                        __alloT('stem.physics.force_fixed_axes', 'Right and up are positive. Selecting another recorded moment keeps this scale.') + (sample.run == null ? ' ' + __alloT('stem.physics.force_growing_scale', 'The scale updates as new points are recorded.') : '')),
                     h('p', { className: 'phys-force-mass' }, __alloT('stem.physics.force_recorded_mass', 'Recorded mass') + ': ' + parameters.mass + ' kg · ay = ' + physFormatSampleValue(sample.fy) +
-                      ' N ÷ ' + parameters.mass + ' kg = ' + physFormatSampleValue(sample.ay) + ' m/s²')),
+                      ' N ÷ ' + parameters.mass + ' kg ≈ ' + physFormatSampleValue(sample.ay) + ' m/s²')),
                   h('div', { className: 'phys-measured-grid' },
                     h('div', { className: 'phys-measured-card' }, h('dl', null,
                       measurement('ax', __alloT('stem.physics.sample_horizontal_acceleration', 'Horizontal acceleration · ax'), sample.ax, 'm/s²'),
@@ -3893,8 +3965,10 @@ window.StemLab = window.StemLab || {
                 }, style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + graphColors.axis, color: graphColors.ink, background: graphColors.surface, fontSize: 14, fontWeight: 700 } }, __alloT('stem.physics.graph_open_data', 'Open the flight data table'))),
               energy: (function() {
                   var current = physInspectSample(pts, graphIndex);
-                  function unavailableEnergy() { return React.createElement('div', { 'data-physics-energy-unavailable': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
-                    React.createElement('p', { style: { margin: 0, color: graphColors.muted, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.physics.energy_unavailable', 'The energy timeline needs original launch settings and supported recorded samples.'))); }
+                  function unavailableEnergy(reason) { return React.createElement('div', { 'data-physics-energy-unavailable': true, 'data-reason': reason, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
+                    React.createElement('p', { style: { margin: 0, color: graphColors.muted, fontSize: 13, lineHeight: 1.6 } }, reason === 'energy-range'
+                      ? __alloT('stem.physics.energy_timeline_range_unavailable', 'The recorded energy sum is beyond the timeline display range. Individual readings remain available above.')
+                      : __alloT('stem.physics.energy_unavailable', 'The energy timeline needs original launch settings and supported recorded samples.'))); }
                   if (!current) return unavailableEnergy();
                   var energies = [];
                   for (var i = 0; i < plotIndices.length; i++) {
@@ -3910,12 +3984,21 @@ window.StemLab = window.StemLab || {
                   var p = current.parameters;
                   var eW = 300, eH = 226, eL = 58, eR = 16, eT = 34, eB = 52;
                   var eIW = eW - eL - eR, eIH = eH - eT - eB, eZero = eT + eIH;
-                  var eMax = current.initialEnergy, eScale = eIH / eMax, kilo = eMax >= 1000;
+                  // Use every original observation so inspecting a new point cannot change a completed flight's scale.
+                  var eMax = current.initialEnergy;
+                  for (var scaleIndex = 0; scaleIndex < pts.length; scaleIndex++) {
+                    var scalePoint = physInspectSample(pts, scaleIndex);
+                    if (!scalePoint) return unavailableEnergy();
+                    var scaleSum = scalePoint.totalEnergy + scalePoint.dragLoss;
+                    if (!isFinite(scaleSum)) return unavailableEnergy('energy-range');
+                    eMax = Math.max(eMax, scaleSum);
+                  }
+                  var kilo = eMax >= 1000;
                   var colors = { ke: graphColors.vx, pe: graphColors.vy, dragLoss: graphColors.range };
                   var labels = { ke: __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), pe: __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), dragLoss: __alloT('stem.physics.energy_transferred', 'Transferred by drag') };
                   var patterns = { pe: 'physics-energy-potential-pattern', dragLoss: 'physics-energy-transfer-pattern' };
                   function energyX(point) { return eL + point.t / tMax * eIW; }
-                  function energyY(value) { return eZero - value * eScale; }
+                  function energyY(value) { return eMax > 0 ? eZero - (value / eMax) * eIH : eZero; }
                   function cumulative(point, part) { return part === 'ke' ? point.ke : part === 'pe' ? point.totalEnergy : point.totalEnergy + point.dragLoss; }
                   function lower(point, part) { return part === 'ke' ? 0 : part === 'pe' ? point.ke : point.totalEnergy; }
                   function area(part) {
@@ -3941,22 +4024,22 @@ window.StemLab = window.StemLab || {
                       'm = ' + p.mass + ' kg · v₀ = ' + p.velocity + ' m/s · g = ' + p.gravity + ' m/s² · h₀ = ' + p.launchHeight + ' m · ' + (p.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
                     React.createElement('div', { className: 'phys-energy-layout' },
                       React.createElement('div', null,
-                        energies.length > 1 ? React.createElement('svg', Object.assign({ 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': eMax,
+                        energies.length > 1 ? React.createElement('svg', Object.assign({ 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': current.initialEnergy, 'data-scale-energy': eMax,
                           onClick: graphCanInspect ? function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); } : undefined,
                           viewBox: '0 0 ' + eW + ' ' + eH,
                           style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: graphCanInspect ? 'crosshair' : 'default' } }, graphControlProps(__alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight'),
-                            labels.ke + ' = ' + physFormatSampleValue(current.ke) + ' J; ' + labels.pe + ' = ' + physFormatSampleValue(current.pe) + ' J; ' + labels.dragLoss + ' = ' + physFormatSampleValue(current.dragLoss) + ' J', 'physics-energy-chart-description physics-energy-sampling-help')),
+                            labels.ke + ' = ' + physFormatSampleValue(current.ke) + ' J; ' + labels.pe + ' = ' + physFormatSampleValue(current.pe) + ' J; ' + labels.dragLoss + ' = ' + physFormatSampleValue(current.dragLoss) + ' J', 'physics-energy-chart-description physics-energy-scale-help physics-energy-sampling-help')),
                           React.createElement('defs', null, ['pe', 'dragLoss'].map(function(part) {
                             return React.createElement('pattern', { key: part, id: patterns[part], patternUnits: 'userSpaceOnUse', width: 8, height: 8 },
                               React.createElement('rect', { width: 8, height: 8, fill: colors[part] }),
                               React.createElement('line', { x1: part === 'pe' ? 0 : -2, y1: part === 'pe' ? 3 : 8, x2: part === 'pe' ? 8 : 8, y2: part === 'pe' ? 3 : -2, stroke: graphColors.surface, strokeWidth: 2 }));
                           })),
-                          [0, .5, 1].map(function(fraction) { var y = energyY(eMax * fraction); return React.createElement('g', { key: fraction },
-                            axisLine(eL, y, eW - eR, y, fraction > 0 && fraction < 1), lbl(eL - 8, y + 5, String(Number((eMax * fraction / (kilo ? 1000 : 1)).toFixed(!kilo && eMax >= 100 ? 0 : 2))), 'end')); }),
+                          (eMax > 0 ? [0, .5, 1] : [0]).map(function(fraction) { var y = energyY(eMax * fraction), magnitude = eMax * fraction / (kilo ? 1000 : 1); return React.createElement('g', { key: fraction },
+                            axisLine(eL, y, eW - eR, y, fraction > 0 && fraction < 1), lbl(eL - 8, y + 5, magnitude > 0 && magnitude < .01 ? physFormatSampleValue(magnitude) : String(Number(magnitude.toFixed(!kilo && eMax >= 100 ? 0 : 2))), 'end')); }),
                           ['dragLoss', 'pe', 'ke'].map(function(part) { return React.createElement('path', { key: part, 'data-physics-energy-area': part,
                             d: area(part), fill: part === 'ke' ? colors.ke : 'url(#' + patterns[part] + ')', stroke: graphColors.surface, strokeWidth: 1 }); }),
                           React.createElement('line', { 'data-physics-energy-origin': true, x1: eL, x2: eW - eR, y1: eZero, y2: eZero, stroke: graphColors.axis, strokeWidth: 1.25 }),
-                          React.createElement('line', { 'data-physics-energy-initial': true, x1: eL, x2: eW - eR, y1: eT, y2: eT, stroke: graphColors.ink, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                          React.createElement('line', { 'data-physics-energy-initial': true, 'data-value': current.initialEnergy, x1: eL, x2: eW - eR, y1: energyY(current.initialEnergy), y2: energyY(current.initialEnergy), stroke: graphColors.ink, strokeWidth: 1.5, strokeDasharray: '5 4' }),
                           axisLine(eL, eT, eL, eZero),
                           [0, .5, 1].map(function(fraction) { return React.createElement('g', { key: fraction }, lbl(eL + fraction * eIW, eH - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')); }),
                           lbl(eL, 22, kilo ? __alloT('stem.physics.energy_axis_kj', 'energy (kJ)') : __alloT('stem.physics.energy_axis_j', 'energy (J)'), 'start'),
@@ -3977,6 +4060,9 @@ window.StemLab = window.StemLab || {
                     selectedPoint && energies.length > 1 && React.createElement('p', { 'data-physics-energy-selection-key': true, className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.ink, borderTopStyle: 'solid' } }),
                       __alloT('stem.physics.energy_selected_guide', 'Solid guide: selected recorded time. Dashed horizontal line: initial energy.')),
                     React.createElement('p', { id: 'physics-energy-chart-description', className: 'phys-energy-help', style: { color: graphColors.muted } }, description),
+                    React.createElement('p', { id: 'physics-energy-scale-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, eMax > 0
+                      ? __alloT('stem.physics.energy_timeline_scale_help', 'The vertical scale covers the largest initial or recorded energy sum in this flight') + ': ' + physFormatSampleValue(eMax) + ' J. ' + __alloT('stem.physics.energy_timeline_reference_help', 'The dashed line marks the original launch energy.') + (current.run == null ? ' ' + __alloT('stem.physics.energy_timeline_growing_help', 'The scale updates as new points are recorded.') : '')
+                      : __alloT('stem.physics.energy_timeline_zero_help', 'All recorded energies are zero; the timeline rests on the zero-energy baseline.')),
                     React.createElement('p', { className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_budget_help', 'Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.')),
                     React.createElement('p', { id: 'physics-energy-sampling-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_sampling_help', 'The timeline connects a representative set of recorded samples. The time control uses every recorded point.')),
                     current.impact && React.createElement('p', { 'data-physics-energy-impact': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_impact_note', 'The final flight sample is at ground contact, before collision energy is redistributed.')));
@@ -4564,9 +4650,28 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer [data-physics-vertical-balance]{border-top:1px solid var(--phys-accent);padding-top:10px;min-width:0}
               #physics-fs-outer [data-physics-vertical-balance] p{margin:0 0 5px;font-size:12px;line-height:1.6}
               #physics-fs-outer [data-physics-vertical-balance] strong{font-size:16px;line-height:1.6;font-weight:750;overflow-wrap:anywhere}
-              #physics-fs-outer [data-physics-force-balance]{margin:4px 0 14px}
+              #physics-fs-outer [data-physics-force-balance]{margin:4px 0 14px;--phys-force-gravity:#793dbb;--phys-force-drag:#a95b05;--phys-force-net:#1767b2}
+              #physics-fs-outer[data-physics-theme="dark"] [data-physics-force-balance]{--phys-force-gravity:#cfb4ff;--phys-force-drag:#fbbf24;--phys-force-net:#67b8ff}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-force-balance]{--phys-force-gravity:#fff;--phys-force-drag:#ff0;--phys-force-net:#ff0}
               #physics-fs-outer [data-physics-force-balance]>h4{font-size:16px;font-weight:750;line-height:1.5;margin:0 0 5px;color:var(--phys-ink)}
               #physics-fs-outer [data-physics-force-balance]>p{font-size:12px;line-height:1.65;color:var(--phys-muted);margin:7px 0;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-force-construction{margin:14px 0;padding:14px;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-panel);min-width:0}
+              #physics-fs-outer .phys-force-construction h5{margin:0;font-size:15px;font-weight:750;line-height:1.5;color:var(--phys-ink)}
+              #physics-fs-outer .phys-force-construction p{margin:7px 0 0;font-size:12px;line-height:1.65;color:var(--phys-muted);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-force-construction-layout{display:grid;grid-template-columns:minmax(200px,1fr) minmax(220px,1fr);align-items:center;gap:16px;margin-top:10px}
+              #physics-fs-outer .phys-force-construction-visual{min-width:0}
+              #physics-fs-outer [data-physics-force-construction-range]{padding:8px 10px;border:1px solid var(--phys-line);border-radius:8px;background:var(--phys-soft);color:var(--phys-ink);font-weight:700;font-variant-numeric:tabular-nums}
+              #physics-fs-outer .phys-force-construction .phys-force-components-caption{margin-top:14px;color:var(--phys-ink)}
+              #physics-fs-outer .phys-force-component-balances{display:grid;gap:10px;margin:10px 0 0;min-width:0}
+              #physics-fs-outer .phys-force-component-balances>div{padding:9px 10px;border:1px solid var(--phys-line);border-radius:8px;background:var(--phys-soft);min-width:0}
+              #physics-fs-outer .phys-force-component-balances dt{font-size:12px;line-height:1.65;font-weight:700;color:var(--phys-muted)}
+              #physics-fs-outer .phys-force-component-balances dd{display:flex;flex-wrap:wrap;gap:3px 5px;align-items:baseline;margin:5px 0 0;font-size:13px;line-height:1.65;color:var(--phys-ink);font-variant-numeric:tabular-nums}
+              #physics-fs-outer .phys-force-component-balances dd>:is(span,strong){max-width:100%;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-force-construction-graph]{display:block;width:100%;max-width:320px;height:auto;margin:auto;background:var(--phys-panel)}
+              #physics-fs-outer .phys-force-construction-key{list-style:none;padding:0;margin:0 0 12px;display:grid;gap:8px;font-size:13px;line-height:1.6;color:var(--phys-ink)}
+              #physics-fs-outer .phys-force-construction-key li{display:flex;align-items:center;gap:8px;min-width:0}
+              #physics-fs-outer .phys-force-construction-key li>span{display:block;flex:none;width:26px;border-top-width:4px}
+              @container(max-width:620px){#physics-fs-outer .phys-force-construction-layout{grid-template-columns:minmax(0,1fr);gap:12px}#physics-fs-outer .phys-force-construction{padding:10px}}
               #physics-fs-outer .phys-force-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
               #physics-fs-outer [data-physics-force-card]{min-width:0;padding:12px;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-panel)}
               #physics-fs-outer [data-physics-force-card="net"]{border-color:var(--phys-accent);background:var(--phys-selected)}

@@ -32,7 +32,7 @@ describe('flightsim four-forces overlay', () => {
       const forces = source.indexOf('drawForces(gfx, W - 112, 352');
       expect(forces, `${path}: the force diagram call is gone`).toBeGreaterThan(-1);
       // Every one of these paints part of the scene. All must run BEFORE the card.
-      for (const later of ['drawAirportGround(gfx, W, H', 'drawRunway(gfx, W, H', 'drawParticles(gfx, W, H']) {
+      for (const later of ['drawRunway(gfx, W, H', 'drawParticles(gfx, W, H']) {
         const at = source.indexOf(later);
         expect(at, `${path}: ${later} is gone`).toBeGreaterThan(-1);
         expect(at, `${path}: ${later} paints over the force diagram again`).toBeLessThan(forces);

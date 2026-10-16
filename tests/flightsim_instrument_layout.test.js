@@ -77,7 +77,7 @@ afterEach(async () => {
   vi.restoreAllMocks(); vi.unstubAllGlobals();
   delete window.__testHooks; delete window.__RR_TEST_EXPORTS__;
 });
-async function drawFlight(width, chase, parked = false, altitudeOffset = parked ? 0 : 300, config = {}) {
+async function drawFlight(width, chase, parked = false, altitudeOffset = parked ? 0 : 5 + Math.tan(3 * Math.PI / 180) * (1.5 * 6076.12 + 1000), config = {}) {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   window.__testHooks = {};
   delete window.THREE;
@@ -111,9 +111,11 @@ async function drawFlight(width, chase, parked = false, altitudeOffset = parked 
   Object.defineProperty(canvas, 'clientHeight', { value: 500, configurable: true });
   const hooks = window.__testHooks.flightSim;
   const airport = api.WAYPOINTS[0];
-  hooks.flightRef.current = { ...hooks.flightRef.current, lat: airport.lat - (parked ? 0 : 0.01), lon: airport.lon,
+  const runway = api.getFlightRunway(airport), end = runway.ends[0];
+  const position = api.getFlightRunwayPosition(runway, 0, end.thresholdAlongFt - end.sign * (parked ? -150 : 1.5 * 6076.12));
+  hooks.flightRef.current = { ...hooks.flightRef.current, ...position,
     altitude: airport.alt + altitudeOffset, fieldElev: airport.alt, speed: parked ? 0 : 140,
-    heading: 0, vsi: 0, onGround: parked, ...config.state };
+    heading: end.headingDeg, vsi: 0, onGround: parked, ...config.state };
   hooks.controlsRef.current = { throttle: 0.4, pitch: 0, bank: parked ? 25 : 0, flaps: 0, brake: 0, ...config.controls };
   expect(frame).toBeTypeOf('function');
   await React.act(async () => frame());
@@ -127,7 +129,14 @@ describe('SkySchool painted flight cues', () => {
     expect(commands.some(c => c.method === 'translate' && c.args[0] === layout.horizon.x && c.args[1] === layout.horizon.y)).toBe(true);
     const starts = commands.filter(c => c.method === 'moveTo' && c.stroke === '#a855f7');
     const ends = commands.filter(c => c.method === 'lineTo' && c.stroke === '#a855f7');
-    expect(commands.some(c => c.method === 'fillText' && String(c.args[0]).includes('°C OAT') && c.args[1] === layout.auxiliary.x && c.args[2] === layout.auxiliary.y + 2)).toBe(true);
+    // On short phones the auxiliary stack yields if its measured top would
+    // enter the 216px throttle/engine band; full-size decks retain the cluster.
+    const auxiliaryFits = !layout.compact || layout.auxiliary.y - 42 >= 216;
+    const oat = commands.filter(c => c.method === 'fillText' && String(c.args[0]).includes('°C OAT'));
+    expect(oat).toHaveLength(auxiliaryFits ? 1 : 0);
+    if (auxiliaryFits) expect(oat[0].args.slice(1)).toEqual([layout.auxiliary.x, layout.auxiliary.y + 2]);
+    const runway = api.getFlightRunway(api.WAYPOINTS[0]);
+    expect(commands.some(c => c.method === 'fillText' && c.args[0] === 'APP ' + runway.airport.code + ' ' + runway.ends[0].designator)).toBe(true);
     expect(starts).toHaveLength(2); expect(ends).toHaveLength(2);
     expect((starts[0].args[1] + ends[0].args[1]) / 2).toBeCloseTo(layout.horizon.y, 8);
     expect((starts[1].args[0] + ends[1].args[0]) / 2).toBeCloseTo(layout.horizon.x, 8);
@@ -135,19 +144,19 @@ describe('SkySchool painted flight cues', () => {
   it('paints the airport world before the cockpit instruments in Canvas mode', async () => {
     const commands = await drawFlight(800, false, true);
     const layout = api.getFlightInstrumentLayout(800, 500, false);
-    const airportSign = commands.findIndex(c => c.method === 'fillText' && c.args[0] === api.WAYPOINTS[0].code);
+    const airportSurface = commands.findIndex(c => c.method === 'fill' && c.fill === '#30343b');
     const attitude = commands.findIndex(c => c.method === 'translate' && c.args[0] === layout.horizon.x && c.args[1] === layout.horizon.y);
-    expect(airportSign).toBeGreaterThanOrEqual(0);
-    expect(attitude).toBeGreaterThan(airportSign);
+    expect(airportSurface).toBeGreaterThanOrEqual(0);
+    expect(attitude).toBeGreaterThan(airportSurface);
   });
   it('paints the parked chase aircraft above the airport and below the instruments', async () => {
     const commands = await drawFlight(800, true, true);
     const layout = api.getFlightInstrumentLayout(800, 500, true);
-    const airportSign = commands.findIndex(c => c.method === 'fillText' && c.args[0] === api.WAYPOINTS[0].code);
+    const airportSurface = commands.findIndex(c => c.method === 'fill' && c.fill === '#30343b');
     const aircraft = commands.findIndex(c => c.method === 'translate' && c.args[0] === 400 && c.args[1] === 300);
     const attitude = commands.findIndex(c => c.method === 'translate' && c.args[0] === layout.horizon.x && c.args[1] === layout.horizon.y);
-    expect(airportSign).toBeGreaterThanOrEqual(0);
-    expect(aircraft).toBeGreaterThan(airportSign);
+    expect(airportSurface).toBeGreaterThanOrEqual(0);
+    expect(aircraft).toBeGreaterThan(airportSurface);
     expect(attitude).toBeGreaterThan(aircraft);
   });
   it.each([[320, 0], [800, 5000], [320, 20000]])('keeps altitude labels legible at width%i and altitude offset%i', async (width, offset) => {

@@ -55,7 +55,7 @@ function numerical(enabled){
 const nativeFloor=section(source,'        var floor = new THREE.Mesh(floorGeo,','        // Fine rough mineral variation');
 function liveMaterial(webgl2,extension){
   const requests=[],renderer={capabilities:{isWebGL2:webgl2},extensions:{has(name){requests.push(name);return extension;}}},floorGeo=new THREE.PlaneGeometry(200,200,80,80),sandTex=new THREE.Texture(),scene=new THREE.Scene();
-  const live=new Function('THREE','Math','renderer','floorGeo','sandTex','scene',nativeFloor+';return {floor,sandDownwelling};')(THREE,visualMath,renderer,floorGeo,sandTex,scene);
+  const live=new Function('THREE','Math','renderer','floorGeo','sandTex','scene',nativeFloor+';return {floor,sandDownwelling,sandHabitat};')(THREE,visualMath,renderer,floorGeo,sandTex,scene);
   return {...live,requests,floorGeo,sandTex,scene,dispose(){floorGeo.dispose();sandTex.dispose();live.floor.material.dispose();}};
 }
 const xs=[-500,-18,0,23.9999,24,24.0001,24.5,25,26,30,35.5,40,45,46,46.9999,47,47.0001,60,500],zs=[-500,-18,-6,0,3.17,6,18,500];
@@ -69,9 +69,9 @@ describe('Cephalopod Hunter world-anchored seafloor geology',()=>{
       const live=liveMaterial(webgl2,extension);try{
         assert.deepEqual(live.requests,webgl2?[]:['OES_standard_derivatives']);assert.equal(live.floor.geometry,live.floorGeo);assert.equal(live.floor.material.map,live.sandTex);assert.equal(live.scene.children.length,1);
         assert.equal(live.floor.material.defines.CL_SAND_DERIVATIVES,defined);assert.equal(live.floor.material.extensions.derivatives,!!defined);assert.equal(live.floor.material.transparent,false);assert.equal(live.floor.material.depthWrite,true);assert.equal(live.floor.receiveShadow,true);
-        const first=plain(),second=plain();live.floor.material.onBeforeCompile(first);live.floor.material.onBeforeCompile(second);assert.equal(first.uniforms.clSandDownwelling,live.sandDownwelling);assert.equal(second.uniforms.clSandDownwelling,live.sandDownwelling);assert.deepEqual(Object.keys(first.uniforms),['sentinel','clSandDownwelling']);live.sandDownwelling.value=.21;assert.equal(first.uniforms.clSandDownwelling.value,.21);
+        const first=plain(),second=plain();live.floor.material.onBeforeCompile(first);live.floor.material.onBeforeCompile(second);assert.equal(first.uniforms.clSandDownwelling,live.sandDownwelling);assert.equal(second.uniforms.clSandDownwelling,live.sandDownwelling);assert.deepEqual(Object.keys(first.uniforms),['sentinel','clSandDownwelling','clSandHabitat']);assert.equal(first.uniforms.clSandHabitat,live.sandHabitat);assert.equal(second.uniforms.clSandHabitat,live.sandHabitat);assert.equal(live.sandHabitat.value.length,5);live.sandDownwelling.value=.21;assert.equal(first.uniforms.clSandDownwelling.value,.21);
         for(const chunk of ['color_fragment','roughnessmap_fragment','normal_fragment_maps'])assert.ok(first.fragmentShader.includes('#include <'+chunk+'>'));assert.ok(first.vertexShader.includes('clSandWorld=(modelMatrix*vec4(position,1.0)).xyz;'));assert.ok(!first.fragmentShader.includes('\\n'));
-        assert.equal((first.fragmentShader.match(/texture2D\s*\(/g)||[]).length,(THREE.ShaderLib.standard.fragmentShader.match(/texture2D\s*\(/g)||[]).length);assert.equal(live.floor.material.customProgramCacheKey(),'cl-shelf-geology-v61');
+        assert.equal((first.fragmentShader.match(/texture2D\s*\(/g)||[]).length,(THREE.ShaderLib.standard.fragmentShader.match(/texture2D\s*\(/g)||[]).length);assert.equal(live.floor.material.customProgramCacheKey(),'cl-shelf-geology-v61-habitat-v1');
       }finally{live.dispose();}
     }
   });

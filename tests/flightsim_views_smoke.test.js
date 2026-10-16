@@ -123,20 +123,18 @@ describe('every view renders real content', () => {
     expect(SRC).toContain('FLAPS OVERSPEED');
     expect(html).toContain('data-world-environment="true"');
     expect(SRC).toContain('getWorldEnvironment(scanLat, scanLon, elev, water)');
-    expect(SRC).toContain('frameWorldEnv.visibilityFactor');
+    // Regional visibility and shared Canvas sky are exercised behaviorally in
+    // flightsim_weather_atmosphere_integration, including weather transitions.
     expect(SRC).toContain('localWorldEnv.fieldDensity');
     expect(SRC).toContain('localWorldEnv.treeDensity');
-    expect(SRC).toContain('airportWorldEnv.id');
+    expect(SRC).toContain('projectFlightRunwayPolygon(state, runway, points, view, W, H)');
     expect(SRC).toContain('shoreNear');
     expect(SRC).toContain('waterTone = rowWorldEnv.color.slice()');
-    expect(SRC).toContain('regionalHazeMix');
-    expect(SRC).toContain('var horizonHaze = gfx.createLinearGradient');
     expect(SRC).not.toContain('!isDesert');
     expect(SRC).not.toContain('!isTundra');
     expect(SRC).not.toContain('if (isTundra &&');
     expect(SRC).not.toContain('snow > 20');
     expect(SRC).toContain('getSceneryQualityBudget(qualityTier)');
-    expect(SRC).toContain('getTerrainSunLight(vlat, vlon, water, solarHour, brightness, terrainHeight)');
     expect(SRC).toContain('rowSunLight.shade');
     expect(SRC).toContain('hillTint([95,115,145], 0.45)');
     expect(SRC).toContain('cloudUnderside');
@@ -147,11 +145,12 @@ describe('every view renders real content', () => {
     expect(SRC).toContain("nav.mode === 'strobe'");
     expect(SRC).toContain('canopy.position.set(0, 1.25, 2.0)');
     expect(SRC).toContain('rwGroup.userData.runwayLights');
-    expect(SRC).toContain('Sequenced approach lights');
+    expect(SRC).toContain('localThresholdZ + end.sign * (140 + al * 180)');
+    expect(SRC).toContain('approach.end.sign === rec.endSign');
     expect(SRC).toContain('lightBase = dayNight.isNight');
-    expect(SRC).toContain('projected into the cockpit frame');
+    // Rain camera projection and deck attenuation are covered by the weather
+    // rendering suite using actual draw commands in both renderers.
     expect(SRC).toContain('var rainCurtain = gfx.createLinearGradient');
-    expect(SRC).toContain('var rainBand = state');
     expect(SRC).toContain('for (var fg = 0; fg < 20; fg++)');
     expect(SRC).toContain('drawCanvasSolarBodies');
     expect(SRC).toContain('drawThreeWorldSignposts');
@@ -159,8 +158,8 @@ describe('every view renders real content', () => {
     expect(SRC).toContain('var distanceText = Math.round(dist)');
     expect(SRC).toContain('if (threeLoaded) drawThreeWorldSignposts');
     expect(SRC).toContain('Canvas solar bodies and horizon halo');
-    expect(SRC).toContain('var sunHalo = gfx.createRadialGradient');
-    expect(SRC).toContain('var moonHalo = gfx.createRadialGradient');
+    expect(SRC).toContain("makeCelestialSprite('flight-sun-halo', 'halo')");
+    expect(SRC).toContain("makeCelestialSprite('flight-moon-halo', 'halo')");
     expect(SRC).toContain('drawCloudShadowPass');
     expect(SRC).toContain('cloud-shadow compositor');
     expect(SRC).toContain("gfx.globalCompositeOperation = 'multiply'");

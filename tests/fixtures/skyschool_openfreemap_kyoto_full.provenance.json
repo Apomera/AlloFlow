@@ -1,0 +1,58 @@
+{
+  "purpose": "Genuine bounded four-tile regression fixture for the built-in Kyoto destination; exposed dense-district input-budget failure.",
+  "downloadedAt": "2026-10-15T13:13:26.942Z",
+  "requestUserAgent": "SkySchool-map-provider-validation/1.0",
+  "source": "OpenFreeMap using OpenMapTiles schema and OpenStreetMap data",
+  "attribution": "© OpenStreetMap contributors · OpenMapTiles · OpenFreeMap",
+  "license": "ODbL-1.0 map data; CC-BY-4.0 OpenMapTiles schema",
+  "providerTerms": "https://openfreemap.org/tos/",
+  "center": {
+    "lat": 35.032,
+    "lon": 135.748
+  },
+  "bbox": [
+    35.023915199425076,
+    135.73812641810486,
+    35.04008480057492,
+    135.75787358189513
+  ],
+  "encoding": "Decoded protobuf bytes from HTTP content encoding",
+  "tiles": [
+    {
+      "file": "skyschool_openfreemap_kyoto_14_14369_6487.pbf",
+      "z": 14,
+      "x": 14369,
+      "y": 6487,
+      "url": "https://tiles.openfreemap.org/planet/20261011_080001_pt/14/14369/6487.pbf",
+      "bytes": 579240,
+      "sha256": "ecfa612c61c570faf45c184a9e8152732f9bbeab1cb2ae65323a375df61ad4bb"
+    },
+    {
+      "file": "skyschool_openfreemap_kyoto_14_14370_6487.pbf",
+      "z": 14,
+      "x": 14370,
+      "y": 6487,
+      "url": "https://tiles.openfreemap.org/planet/20261011_080001_pt/14/14370/6487.pbf",
+      "bytes": 679599,
+      "sha256": "6db6cd8906e22905556b111a934207f0c780cad5a03c4cd78ca530cbc3451b26"
+    },
+    {
+      "file": "skyschool_openfreemap_kyoto_14_14369_6488.pbf",
+      "z": 14,
+      "x": 14369,
+      "y": 6488,
+      "url": "https://tiles.openfreemap.org/planet/20261011_080001_pt/14/14369/6488.pbf",
+      "bytes": 799949,
+      "sha256": "51fc2a49934113ff3544f0c31e92e1a81c364d8bae7f1901512650f9498cd3f6"
+    },
+    {
+      "file": "skyschool_openfreemap_kyoto_14_14370_6488.pbf",
+      "z": 14,
+      "x": 14370,
+      "y": 6488,
+      "url": "https://tiles.openfreemap.org/planet/20261011_080001_pt/14/14370/6488.pbf",
+      "bytes": 786661,
+      "sha256": "751065d3bca53cea746a0f7731301d87c10f173ae5afe9647cf8377b20b7aa4d"
+    }
+  ]
+}

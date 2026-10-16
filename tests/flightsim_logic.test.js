@@ -615,12 +615,12 @@ describe('getTerrainSunLight (shared relief shading)', () => {
   });
 });
 
-describe('isWaterMask (Natural Earth 0.1° land/water mask)', () => {
+describe('isWaterMask (Natural Earth 0.01° land/water mask)', () => {
   it('knows the continents', () => {
     expect(FS.isWaterMask(38, -98)).toBe(false);    // Kansas
     expect(FS.isWaterMask(51.5, -0.1)).toBe(false); // London
     expect(FS.isWaterMask(25, 10)).toBe(false);     // Sahara
-    expect(FS.isWaterMask(43.65, -70.25)).toBe(false); // Portland ME peninsula
+    expect(FS.isWaterMask(43.665, -70.255)).toBe(false); // Portland ME city cell, verified from source polygons
     expect(FS.isWaterMask(-33.87, 151.1)).toBe(false); // Sydney
   });
   it('knows the oceans, seas, and Great Lakes', () => {
@@ -628,6 +628,7 @@ describe('isWaterMask (Natural Earth 0.1° land/water mask)', () => {
     expect(FS.isWaterMask(0, -160)).toBe(true);     // central Pacific
     expect(FS.isWaterMask(35, 18)).toBe(true);      // Mediterranean
     expect(FS.isWaterMask(43.2, -69.3)).toBe(true); // Gulf of Maine
+    expect(FS.isWaterMask(43.65, -70.25)).toBe(true); // Portland waterfront water, previously hidden by the coarse grid
     expect(FS.isWaterMask(47.6, -87.5)).toBe(true); // Lake Superior
   });
   it('handles poles and antimeridian without throwing', () => {

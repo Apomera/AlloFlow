@@ -13,8 +13,9 @@ import { readFileSync } from 'node:fs';
  * that renders that string. Several of these live on canvas, where no DOM sweep
  * can reach them at all.
  *
- * Two shapes are legitimate and must NOT be reported:
+ * These shapes are legitimate and must NOT be reported:
  *   - a chain of several .replace() calls whose arguments contain ')';
+ *   - a conditional template assigned to a variable and filled later;
  *   - a template assigned to a variable and filled later:
  *       tachUnit = __alloT(..., '{n} RPM');  ... tachUnit.replace('{n}', v)
  * An earlier version of this check reported 54 findings, all false, by trying
@@ -40,7 +41,7 @@ const findUnfilled = (src) => {
       checked++;
       for (const tok of tokens) {
         if (stmt.includes(`replace('${tok}'`) || stmt.includes(`replace("${tok}"`)) continue;
-        const assign = /(?:var\s+)?([A-Za-z_$][\w$]*)\s*=\s*$/.exec(stmt.slice(0, m.index));
+        const assign = /(?:var\s+)?([A-Za-z_$][\w$]*)\s*=\s*(?:[^;=]*\?[\s\S]*)?$/.exec(stmt.slice(0, m.index));
         if (assign && new RegExp(`${assign[1]}\\.replace\\(\\s*'${tok.replace(/[{}]/g, '\\$&')}'`).test(src)) continue;
         unfilled.push(`${m[1]}  ${tok}`);
       }
@@ -61,6 +62,13 @@ describe('flightsim template placeholders', () => {
   it('fills every placeholder it declares', () => {
     const { unfilled } = findUnfilled(src);
     expect(unfilled, 'these render a literal {token} to the user').toEqual([]);
+  });
+
+  it('recognizes a conditional template assignment and catches a missing fill', () => {
+    const conditional = "var message = rotor ? __alloT('stem.flightsim.radio_rotor_start', '{field} training radio') : __alloT('stem.flightsim.radio_taxi', '{field} training radio'); message.replace('{field}', field);";
+    expect(findUnfilled(conditional).unfilled).toEqual([]);
+    expect(findUnfilled(conditional.replace("message.replace('{field}', field)", 'message')).unfilled)
+      .toContain('radio_rotor_start  {field}');
   });
 
   it('would catch a removed .replace (the check can fail)', () => {

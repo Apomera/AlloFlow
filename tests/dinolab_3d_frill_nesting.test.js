@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(process.env.DINO_FRILL_NESTING_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 window.StemLab = { registerTool() {} };
-new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__frillNesting = { DINOS, cranialSurfaceProfileFor, dinoFrillGeometry, dinoBonyFrillGeometry };window.StemLab.registerTool('dinoLab'"))();
+new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__frillNesting = { DINOS, cranialSurfaceProfileFor, dinoFrillGeometry, dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry, dinoProtoceratopsFrillGeometry };window.StemLab.registerTool('dinoLab'"))();
 const api = globalThis.__frillNesting; delete globalThis.__frillNesting;
 // Oblique rays avoid coinciding with the shared edges of frill rings.
 const axis = new THREE.Vector3(1.031, -.577, .137).normalize(), measurements = [];
@@ -65,7 +65,7 @@ function build(id, isBone, observe) {
     vec:(x,y,z)=>new THREE.Vector3(x,y,z),hasAnatomyPart:()=>true,
     dinoMarkSpecialPart:(mesh,id)=>{mesh.userData.dinoPartIds=[id];},
     dinoFrillGeometry:(...args)=>{const g=api.dinoFrillGeometry(...args);if(observe)observe(g);return g;},
-    dinoBonyFrillGeometry:api.dinoBonyFrillGeometry};
+    dinoBonyFrillGeometry:api.dinoBonyFrillGeometry,dinoStyracosaurusBonyFrillGeometry:api.dinoStyracosaurusBonyFrillGeometry,dinoProtoceratopsFrillGeometry:api.dinoProtoceratopsFrillGeometry};
   const start=source.indexOf('function addFrillSurface(mat, size) {'),end=source.indexOf('var hasHighSail =',start);
   const create=new Function('context','with(context){'+source.slice(start,end)+'return addFrillSurface;}')(context);
   const mesh=create(isBone?boneMat:bodyMat,isBone?.95:1);
@@ -119,8 +119,22 @@ describe('Dino Lab nested Triceratops frill',()=>{
       expect(bone.mesh.castShadow&&bone.mesh.receiveShadow).toBe(true);
     } finally {disposeBuilt(body);disposeBuilt(bone);}
   });
+  it('nests the Styracosaurus bony frill inside the same life frill used by its spikes',()=>{
+    const body=build('styracosaurus',false),bone=build('styracosaurus',true);
+    try {
+      closed(bone.mesh.geometry,1);
+      const samples=Array.from({length:bone.mesh.geometry.attributes.position.count},(_,i)=>point(bone.mesh.geometry,i));
+      const index=bone.mesh.geometry.index.array;
+      for(let i=0;i<index.length;i+=3) samples.push(point(bone.mesh.geometry,index[i]).add(point(bone.mesh.geometry,index[i+1])).add(point(bone.mesh.geometry,index[i+2])).multiplyScalar(1/3));
+      measurements.push({kind:'styracosaurus-caller',...checkContained(body.mesh.geometry,samples,1)});
+      expect(bone.mesh.geometry.userData.dinoDisplayShell.depthProfile).toBe('nested-bony-frill');
+      expect(bone.mesh.geometry.userData.dinoDisplayShell.maxThickness).toBeGreaterThan(0);
+      expect(bone.mesh.geometry.userData.dinoDisplayShell.maxThickness).toBeLessThan(body.mesh.geometry.userData.dinoDisplayShell.thickness);
+      expect(bone.mesh.userData.dinoPartIds).toEqual(['frill']);
+    } finally {disposeBuilt(body);disposeBuilt(bone);}
+  });
   it('retains the existing scaled bony frill for other ceratopsians',()=>{
-    for(const id of ['styracosaurus','protoceratops']) {
+    for(const id of ['psittacosaurus','aquilops']) {
       const b=build(id,true),s=b.profile.frillScale*.95;
       const expected=api.dinoFrillGeometry(THREE,b.ht*.20*s,b.depth*.86*s,b.len*.010,false);
       expected.translate(b.head.x+b.len*.025*s,b.head.y+b.ht*.052,b.head.z);

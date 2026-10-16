@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_brainatlas.js');
 const publicPath = path.join(process.cwd(), 'desktop', 'web-app', 'public', 'stem_lab', 'stem_tool_brainatlas.js');
@@ -12,29 +13,23 @@ describe('Brain Atlas diagram overlap regressions', () => {
     expect(readSource()).toBe(fs.readFileSync(publicPath, 'utf8'));
   });
 
-  it('gives 3D cutaway labels a fixed measured box instead of a wrapping height mismatch', () => {
-    const source = readSource();
-
-    expect(source).toContain('.brainatlas-3d-section-label{position:absolute;display:grid;align-content:center;');
-    expect(source).toContain('box-sizing:border-box;width:min(220px,35%);height:64px;');
-    expect(source).toContain('padding:5px 7px;overflow:hidden;');
-    expect(source).toContain('.brainatlas-3d-section-label strong{-webkit-line-clamp:2;');
-    expect(source).toContain('.brainatlas-3d-section-label small{-webkit-line-clamp:2;');
-  });
-
-  it('reserves overlay blockers and reduces label density before placing collision-free boxes', () => {
-    const source = readSource();
-
-    expect(source).toContain('var labelHeight = 64;');
-    expect(source).toContain('var labelGap = 8;');
-    expect(source).toContain("stage.querySelector(side === 'left' ? '[data-brainatlas-3d-slice-badge]' : '.brainatlas-3d-credit')");
-    expect(source).toContain("stage.querySelector('.brainatlas-3d-selection')");
-    expect(source).toContain('Math.floor((availableHeight + labelGap) / (labelHeight + labelGap))');
-    expect(source).toContain('visibleEntries.push(entries[Math.round(sampleIndex * (entries.length - 1) / (maxLabels - 1))]);');
-    expect(source).toContain('var top = Math.max(desiredTop, previousBottom + labelGap);');
-    expect(source).toContain('previousBottom = top + labelHeight;');
-    expect(source).toContain("overlay.setAttribute('data-visible', overlay.childNodes.length ? 'true' : 'false')");
-    expect(source).not.toContain('Math.min(height - 64, Math.max(entry.y - 20, previousTop))');
+  it('keeps complete cutaway names selectable outside the unobscured model viewport', () => {
+    resetStemLab();
+    const tool = loadTool('stem_lab/stem_tool_brainatlas.js', 'brainAtlas');
+    const items = Array.from({ length: 18 }, (_, i) => ({ key: 'structure_' + i, label: 'Complete anatomical structure name ' + i, family: 'Named anatomy', icon: 'A' }));
+    const store = newStore({ brainAtlas: { view: 'lateral', atlasDisplayMode: '3d', brain3DSliceAxis: 'sagittal', brain3DCutawaySection: { total: items.length, items } } });
+    const flatten = node => !node || typeof node !== 'object' ? [] : Array.isArray(node) ? node.flatMap(flatten) : [node, ...flatten(node.props?.children)];
+    const nodes = flatten(tool.render(makeCtx({}, store)));
+    const stage = nodes.find(el => el.props?.['data-brainatlas-3d-stage'] === 'true');
+    const rail = nodes.find(el => el.props?.['data-brainatlas-3d-section-rail'] === 'true');
+    const cards = flatten(rail).filter(el => el.props?.className === 'brainatlas-3d-section-item');
+    expect(cards).toHaveLength(items.length);
+    cards.forEach((card, i) => {
+      expect(flatten(card).some(el => el.props?.children === items[i].label)).toBe(true);
+      expect(card.props.onClick).toBeTypeOf('function');
+    });
+    expect(flatten(stage)).not.toContain(rail);
+    expect(flatten(stage).some(el => el.props?.['data-brainatlas-3d-section-labels'])).toBe(false);
   });
 
   it('moves the neurotransmitter mitochondria and truncates the drug note into dedicated lanes', () => {

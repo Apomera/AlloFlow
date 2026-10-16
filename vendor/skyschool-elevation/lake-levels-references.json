@@ -1,0 +1,18 @@
+{
+  "format": "skyschool-lake-level-references-v1",
+  "references": [
+    {
+      "neId": "1159126747",
+      "expectedName": "Dead Sea",
+      "interiorPoint": {"lat": 31.5, "lon": 35.5},
+      "levelMeters": -441,
+      "observationDate": "2026-07-01",
+      "provider": "Israel Water Authority / Government of Israel open data",
+      "url": "https://www.gov.il/he/pages/dead_sea_report",
+      "sourceTitle": "Dead Sea water level since 1976",
+      "sourceRow": {"measurementDate": "01/07/2026", "waterLevelMeters": -441},
+      "verticalDatum": "Source-reported elevation relative to sea level; no transformation to EGM2008 applied",
+      "note": "A dated observation used as a fixed illustrative surface for the northern basin. It is not a live measurement. The separately mapped southern evaporation basin retains its DEM-derived estimate."
+    }
+  ]
+}

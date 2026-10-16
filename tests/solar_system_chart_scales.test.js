@@ -159,14 +159,26 @@ describe('mini-tool scales cover their own input range', () => {
       expect(source).toContain('rings on a log scale');
     });
 
-    it(`moves the Doppler source across its whole velocity slider (${path})`, () => {
-      // 1 px per 5 km/s saturated at 500, on a slider running to 50,000.
-      expect(source).not.toContain('Math.min(Math.abs(vel) / 5, 100)');
-      const offsetFor = (vel) => Math.min(Math.abs(vel) / 500, 100);
-      expect(source).toContain('Math.min(Math.abs(vel) / 500, 100)');
-      expect(offsetFor(50000)).toBeCloseTo(100, 6); // reaches the end, does not overrun
-      expect(offsetFor(5000)).toBeGreaterThan(offsetFor(500));
-      expect(offsetFor(500)).toBeGreaterThan(0);
+    it(`keeps Doppler wavelength shifts distinct across the whole velocity slider (${path})`, () => {
+      // The source is now a fixed-position snapshot. Wavelength carries the
+      // magnitude; a separate arrow carries direction. DOM geometry is checked
+      // in solar_system_doppler.test.js.
+      const helper = source.indexOf('function buildSolarDoppler()');
+      const from = source.indexOf('var speedOfLight =', helper);
+      const to = source.indexOf('var palette =', from);
+      expect(helper).toBeGreaterThan(-1); expect(to).toBeGreaterThan(from);
+      // eslint-disable-next-line no-new-func
+      const modelFor = new Function('d', source.slice(from, to) + 'return { observed, direction, overviewMin, overviewMax };');
+      const velocities = [-50000, -5000, -500, 0, 500, 5000, 50000];
+      const models = velocities.map(dopplerVel => modelFor({ dopplerVel, dopplerRestNm: 650 }));
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i];
+        expect(model.observed).toBeGreaterThan(model.overviewMin);
+        expect(model.observed).toBeLessThan(model.overviewMax);
+        expect(model.direction).toBe(velocities[i] < 0 ? 'approaching' : velocities[i] > 0 ? 'receding' : 'rest');
+        if (i) expect(model.observed).toBeGreaterThan(models[i - 1].observed);
+      }
+      expect(models[3].observed).toBe(650);
     });
   }
 });
@@ -210,19 +222,20 @@ describe('sliders move the picture, not just the caption', () => {
     });
 
     it(`magnifies with the magnification slider, not the aperture one (${path})`, () => {
-      const m = source.match(/var apDiscR = ([^;]+);/);
-      expect(m, 'the eyepiece disc must exist').not.toBeNull();
-      // Aperture governs resolution and light grasp; it must not be what enlarges
-      // the image, or the magnification control has nothing to do.
+      const m = source.match(/var eyepieceScale = ([^;]+);/);
+      expect(m, 'the apparent-angle scale must exist').not.toBeNull();
       expect(m[1]).not.toContain('aperture');
-      expect(m[1]).toContain('magnif');
-      // eslint-disable-next-line no-new-func
-      const discFor = new Function('magnif', 'return ' + m[1] + ';');
-      expect(discFor(500)).toBeGreaterThan(discFor(100));
-      expect(discFor(100)).toBeGreaterThan(discFor(10));
-      // And it stays inside the eyepiece, which has radius 50.
-      expect(discFor(500)).toBeLessThan(50);
-      expect(discFor(10)).toBeGreaterThan(0);
+      const scaleFor = new Function('magnif', 'fieldArcmin', 'return ' + m[1] + ';');
+      expect(scaleFor(500, 120) / scaleFor(100, 120)).toBeCloseTo(5, 12);
+      expect(scaleFor(100, 120) / scaleFor(10, 120)).toBeCloseTo(10, 12);
+      // Centers stay in the fixed field. Ring boundaries may crop, explicitly.
+      for (const magnif of [10, 50, 200, 500]) {
+        const scale = scaleFor(magnif, 120);
+        expect(scale).toBeGreaterThan(0);
+        expect(310 - 10 * scale / 2).toBeGreaterThan(24);
+        expect(310 + 10 * scale / 2).toBeLessThan(596);
+        expect(572 / scale * magnif / 60).toBeCloseTo(120, 10);
+      }
     });
   }
 });

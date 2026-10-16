@@ -1,0 +1,258 @@
+{
+  "description": "Independent polygon ray casting at exact raster cell centres; no raster lookup used to obtain expectedWater.",
+  "resolutionDegrees": 0.01,
+  "sourceArchives": [
+    {
+      "file": "ne_10m_land.zip",
+      "version": "5.1.1",
+      "sha256": "e547d749445eaa0964aba76738090ec88f5e63c4585122170f98c67a7ea922dc"
+    },
+    {
+      "file": "ne_10m_lakes.zip",
+      "version": "5.0.0",
+      "sha256": "0803a06f9c3cb4671d89b68c48b142aad9366ba40f665245e12a913fbc61722a"
+    }
+  ],
+  "points": [
+    {
+      "name": "Portland Maine city",
+      "lat": 43.665,
+      "lon": -70.255,
+      "expectedWater": false
+    },
+    {
+      "name": "Portland ocean east",
+      "lat": 43.645,
+      "lon": -70.095,
+      "expectedWater": true
+    },
+    {
+      "name": "Casco Bay generalized small-island cell",
+      "lat": 43.655,
+      "lon": -70.195,
+      "expectedWater": true
+    },
+    {
+      "name": "Casco Bay between islands",
+      "lat": 43.685,
+      "lon": -70.175,
+      "expectedWater": true
+    },
+    {
+      "name": "Boston city",
+      "lat": 42.365,
+      "lon": -71.055,
+      "expectedWater": false
+    },
+    {
+      "name": "Boston harbor",
+      "lat": 42.335,
+      "lon": -70.945,
+      "expectedWater": true
+    },
+    {
+      "name": "San Francisco city",
+      "lat": 37.775,
+      "lon": -122.415,
+      "expectedWater": false
+    },
+    {
+      "name": "San Francisco bay",
+      "lat": 37.755,
+      "lon": -122.315,
+      "expectedWater": true
+    },
+    {
+      "name": "San Francisco Pacific",
+      "lat": 37.765,
+      "lon": -122.535,
+      "expectedWater": true
+    },
+    {
+      "name": "Honolulu Oahu",
+      "lat": 21.305,
+      "lon": -157.855,
+      "expectedWater": false
+    },
+    {
+      "name": "Honolulu ocean",
+      "lat": 21.195,
+      "lon": -157.865,
+      "expectedWater": true
+    },
+    {
+      "name": "Lake Michigan",
+      "lat": 43.495,
+      "lon": -86.995,
+      "expectedWater": true
+    },
+    {
+      "name": "Lake Superior",
+      "lat": 47.695,
+      "lon": -87.495,
+      "expectedWater": true
+    },
+    {
+      "name": "Isle Royale",
+      "lat": 47.995,
+      "lon": -88.815,
+      "expectedWater": false
+    },
+    {
+      "name": "Lake Victoria",
+      "lat": -1.105,
+      "lon": 33.005,
+      "expectedWater": true
+    },
+    {
+      "name": "Bali",
+      "lat": -8.405,
+      "lon": 115.185,
+      "expectedWater": false
+    },
+    {
+      "name": "Bali Sea",
+      "lat": -8.005,
+      "lon": 115.205,
+      "expectedWater": true
+    },
+    {
+      "name": "Tokyo",
+      "lat": 35.675,
+      "lon": 139.655,
+      "expectedWater": false
+    },
+    {
+      "name": "Tokyo Bay",
+      "lat": 35.395,
+      "lon": 139.855,
+      "expectedWater": true
+    },
+    {
+      "name": "South Island New Zealand",
+      "lat": -43.505,
+      "lon": 171.505,
+      "expectedWater": false
+    },
+    {
+      "name": "Cook Strait",
+      "lat": -41.355,
+      "lon": 174.555,
+      "expectedWater": true
+    },
+    {
+      "name": "Dateline Pacific east",
+      "lat": -0.005,
+      "lon": 179.995,
+      "expectedWater": true
+    },
+    {
+      "name": "Dateline Pacific west",
+      "lat": -0.005,
+      "lon": -179.995,
+      "expectedWater": true
+    },
+    {
+      "name": "Antarctic inland",
+      "lat": -89.995,
+      "lon": 0.005,
+      "expectedWater": false
+    },
+    {
+      "name": "Arctic Ocean",
+      "lat": 89.985,
+      "lon": 0.005,
+      "expectedWater": true
+    },
+    {
+      "name": "Lake hole Manitoulin Island",
+      "lat": 45.795,
+      "lon": -82.195,
+      "expectedWater": false
+    },
+    {
+      "name": "Long Island land",
+      "lat": 40.795,
+      "lon": -73.195,
+      "expectedWater": false
+    },
+    {
+      "name": "Long Island Sound",
+      "lat": 40.995,
+      "lon": -73.195,
+      "expectedWater": true
+    },
+    {
+      "name": "Singapore land",
+      "lat": 1.345,
+      "lon": 103.825,
+      "expectedWater": false
+    },
+    {
+      "name": "Singapore strait",
+      "lat": 1.195,
+      "lon": 103.825,
+      "expectedWater": true
+    },
+    {
+      "name": "Hong Kong Island",
+      "lat": 22.245,
+      "lon": 114.205,
+      "expectedWater": false
+    },
+    {
+      "name": "Victoria Harbour",
+      "lat": 22.295,
+      "lon": 114.155,
+      "expectedWater": true
+    },
+    {
+      "name": "Great Salt Lake",
+      "lat": 41.145,
+      "lon": -112.495,
+      "expectedWater": true
+    },
+    {
+      "name": "Lake Titicaca",
+      "lat": -15.855,
+      "lon": -69.395,
+      "expectedWater": true
+    },
+    {
+      "name": "Caspian Sea",
+      "lat": 41.995,
+      "lon": 51.005,
+      "expectedWater": true
+    },
+    {
+      "name": "Samoa Savaii",
+      "lat": -13.625,
+      "lon": -172.445,
+      "expectedWater": false
+    },
+    {
+      "name": "Samoa ocean",
+      "lat": -13.205,
+      "lon": -172.445,
+      "expectedWater": true
+    },
+    {
+      "name": "Iceland inland",
+      "lat": 64.795,
+      "lon": -18.595,
+      "expectedWater": false
+    },
+    {
+      "name": "Iceland offshore",
+      "lat": 64.795,
+      "lon": -24.995,
+      "expectedWater": true
+    },
+    {
+      "name": "Mount Desert Island",
+      "lat": 44.345,
+      "lon": -68.295,
+      "expectedWater": false
+    }
+  ]
+}

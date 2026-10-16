@@ -71,7 +71,8 @@ describe('flightsim mission HUDs', () => {
       expect(source, `${path}: the gauge no longer reads the aircraft's powerplant`)
         .toContain("var engineKind = currentAC.engine || 'piston';");
       expect(source, `${path}: an engineless aircraft gets an engine gauge again`)
-        .toContain("if (engineKind !== 'none') {");
+        // The compact layout may also suppress this secondary gauge.
+        .toContain("if (engineKind !== 'none' && (!instruments.compact || instruments.vsi.y - instruments.vsi.r >= 216)) {");
       // The piston numbers must only apply to the piston branch.
       expect(source, `${path}: the piston tachometer range is unconditional again`)
         .not.toMatch(/var tachIdle = 700, tachMax = 2700, tachRed = 2800;/);

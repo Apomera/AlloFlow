@@ -1,0 +1,46 @@
+{
+  "format": "skyschool-osm-source-v1",
+  "region": "Portland peninsula, Maine, USA",
+  "bbox": {
+    "south": 43.643,
+    "west": -70.285,
+    "north": 43.669,
+    "east": -70.245
+  },
+  "coordinateReferenceSystem": "EPSG:4326",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "method": "POST",
+  "requestEncoding": "application/x-www-form-urlencoded; data=query",
+  "userAgent": "SkySchool-offline-city-provenance/1.0",
+  "retrievedAt": "2026-10-15T03:24:48.231Z",
+  "osmBaseTimestamp": "2026-10-15T03:21:55Z",
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "queryFile": "portland-query.overpassql",
+  "querySha256": "3d1c3a3ce2b0e7595ead8448d159b5826800158ed5a60dd3ac3d848a83d334f1",
+  "responseFile": "portland-osm.json",
+  "responseBytes": 4603977,
+  "responseSha256": "98f8638db2a2ad1dd91af437b1470ac7187a64f541ed998642a411f2303e8c59",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "license": "ODbL-1.0",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors",
+  "attributionUrl": "https://www.openstreetmap.org/copyright",
+  "attributionGuidelinesUrl": "https://osmfoundation.org/wiki/Licence/Attribution_Guidelines",
+  "counts": {
+    "elements": 4685,
+    "buildingWays": 3936,
+    "roadWays": 736,
+    "buildingMultipolygonRelations": 13,
+    "wayGeometryPoints": 43639,
+    "buildingWaysWithHeight": 7,
+    "buildingWaysWithLevels": 293
+  },
+  "scope": "One bounded offline source extract. The query selects features with at least one node in the bbox; complete returned way geometry may extend beyond it. No live runtime API usage.",
+  "heightSemantics": "OSM height is physical height above the lowest ground point including roof, not MSL elevation. Untagged units are metres. building:levels counts above-ground facade storeys excluding roof/basement. Converting levels/defaults to metres is an estimate.",
+  "notes": [
+    "No response remark/error returned. Response contains complete geometry for returned ways and relation members.",
+    "Raw source retains OSM tags and IDs for provenance; the runtime converter should keep only fields necessary for scenery.",
+    "Keep raw and derived OSM datasets under ODbL-1.0 and provide corresponding downloadable data/rebuild material when publicly distributing or using derived data.",
+    "The building/road query is a one-time small development extraction; runtime must use bundled offline results."
+  ]
+}

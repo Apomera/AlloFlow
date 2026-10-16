@@ -3341,7 +3341,7 @@
                 },
                 decisionLog: function(entry) {
                   if (!isRecord(entry)) return null;
-                  return cleanFields(entry, ['turn', 'seconds', 'altitudeBefore', 'altitude', 'energyBefore', 'energy', 'rangeBefore', 'range', 'x', 'z'], ['action', 'target', 'phase']);
+                  return cleanFields(entry, ['turn', 'seconds', 'altitudeBefore', 'altitude', 'energyBefore', 'energy', 'rangeBefore', 'range', 'x', 'z'], ['action', 'targetBefore', 'target', 'phase']);
                 }
               });
           }

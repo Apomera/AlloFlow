@@ -143,7 +143,7 @@ async function nightEvidence(page: Page) {
     const isolated = board('earth-night-isolated', 590, 'City emission · isolated native Canvas evidence',
       'Four Sun directions; light disappears in daylight, fades at the horizon, and is dimmed by the seeded cloud cover. Lower row: 4× native detail.');
     const catalog = P.earthCityCatalog(), rows: any[] = [], globeRows: any[] = [];
-    const angles = [0, Math.PI / 2, Math.PI, -Math.PI / 2], ticks = [1100, 3100, 5300, 1400];
+    const angles = [0, Math.PI / 2, Math.PI, -Math.PI / 2], ticks = [1100, 3100, 1000, 1400];
     const D = Math.PI / 180, tilt = 12 * D, r = 170, cx = 210, cy = 210;
     function smooth(value: number) { const t = Math.max(0, Math.min(1, value)); return t * t * (3 - 2 * t); }
     for (let col = 0; col < angles.length; col++) {

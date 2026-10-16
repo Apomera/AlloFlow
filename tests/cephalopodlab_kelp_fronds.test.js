@@ -53,7 +53,7 @@ describe('Cephalopod Hunter attached kelp fronds', () => {
       const geometry = build(THREE, 'kelp', height, variant);
       try {
         const p = geometry.attributes.position, normal = geometry.attributes.normal;
-        assert.equal(p.count, 277);assert.equal(geometry.index.count / 3, 424);assert.deepEqual(Object.keys(geometry.attributes).sort(), ['color', 'normal', 'position', 'uv']);
+        assert.equal(p.count, 301);assert.equal(geometry.index.count / 3, 456);assert.deepEqual(Object.keys(geometry.attributes).sort(), ['color', 'normal', 'position', 'uv']);
         const { clKelpBladders, ...originalMetadata } = geometry.userData;
         assert.deepEqual(originalMetadata, { clPlantKind: 'kelp', clPlantHeight: height, clPlantVariant: variant, clPlantSections: 18, clPlantColumns: 3 });
         assert.deepEqual({ version: clKelpBladders.version, sides: clKelpBladders.sides, latitudeIntervals: clKelpBladders.latitudeIntervals }, { version: 1, sides: 8, latitudeIntervals: 5 });
@@ -94,12 +94,17 @@ describe('Cephalopod Hunter attached kelp fronds', () => {
           const middle = start + 9, edgeCenter = new THREE.Vector3().fromBufferAttribute(positions, middle).add(new THREE.Vector3().fromBufferAttribute(positions, middle + 2)).multiplyScalar(.5);
           assert.ok(new THREE.Vector3().fromBufferAttribute(positions, middle + 1).distanceTo(edgeCenter) > .02);
           const tip = new THREE.Vector3().fromBufferAttribute(positions, start + 19);
-          assert.ok((tip.x - anchor.x) * side >= .479999);assert.ok(tip.y - anchor.y > height * .20);assert.ok(tip.y < height);
+          // The approved distal curl returns the narrow tip into its own leaf hull.
+          // The first five rows and root remain exact; the dedicated tip-form suite
+          // checks the complete curved surface against the frozen accepted factory.
+          assert.ok((tip.x - anchor.x) * side > .43 && (tip.x - anchor.x) * side < .51);
+          assert.ok(tip.y - anchor.y > height * .15 && tip.y - anchor.y < height * .18);assert.ok(tip.y < height);
+          assert.ok(tip.y < positions.getY(281 + leaf * 6), 'The final sampled segment recurs downward');
           for (let row = 0; row <= 6; row++) for (let column = 0; column < 3; column++) {
             const index = start + row * 3 + column;
             assert.equal(geometry.attributes.uv.getX(index), column / 2);assert.equal(geometry.attributes.uv.getY(index), Math.fround(row / 6));
             assert.equal(positions.getY(index), positions.getY(start + row * 3));
-            if (row) assert.ok(positions.getY(index) > positions.getY(index - 3));
+            if (row && row <= 4) assert.ok(positions.getY(index) > positions.getY(index - 3));
           }
         }
         const duplicate = build(THREE, 'kelp', height, variant);

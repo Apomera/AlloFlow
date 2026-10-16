@@ -1,0 +1,31 @@
+{
+  "packages": [
+    {
+      "name": "@mapbox/vector-tile",
+      "version": "2.0.4",
+      "folder": "vector-tile",
+      "integrity": "sha512-AkOLcbgGTdXScosBWwmmD7cDlvOjkg/DetGva26pIRiZPdeJYjYKarIlb4uxVzi6bwHO6EWH82eZ5Nuv4T5DUg==",
+      "url": "https://registry.npmjs.org/@mapbox/vector-tile/-/vector-tile-2.0.4.tgz",
+      "downloadedAt": "2026-10-15T12:52:11.379Z",
+      "sha256": "1211fe2263f9adec48b0936004dd1683929194c309119b04ac84f8da8a0c8582"
+    },
+    {
+      "name": "pbf",
+      "version": "4.0.1",
+      "folder": "pbf",
+      "integrity": "sha512-SuLdBvS42z33m8ejRbInMapQe8n0D3vN/Xd5fmWM3tufNgRQFBpaW2YVJxQZV4iPNqb0vEFvssMEo5w9c6BTIA==",
+      "url": "https://registry.npmjs.org/pbf/-/pbf-4.0.1.tgz",
+      "downloadedAt": "2026-10-15T12:52:11.997Z",
+      "sha256": "f8fbe1dd8eb0da8c2ddf6edb067d225ccb1bbc73ffc789491aea7f776e8164f3"
+    },
+    {
+      "name": "@mapbox/point-geometry",
+      "version": "1.1.0",
+      "folder": "point-geometry",
+      "integrity": "sha512-YGcBz1cg4ATXDCM/71L9xveh4dynfGmcLDqufR+nQQy3fKwsAZsWd/x4621/6uJaeB9mwOHE6hPeDgXz9uViUQ==",
+      "url": "https://registry.npmjs.org/@mapbox/point-geometry/-/point-geometry-1.1.0.tgz",
+      "downloadedAt": "2026-10-15T12:52:12.245Z",
+      "sha256": "9bf202082ba414ef99d82ca466445bfeddff3631922cfa74f9b4ce5caafde038"
+    }
+  ]
+}

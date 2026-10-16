@@ -16,7 +16,7 @@ beforeAll(() => {
 });
 
 function recordingCtx(conic = true) {
-  const commands = [], gradients = [], properties = {};
+  const commands = [], gradients = [], properties = { globalAlpha: 1 };
   const ctx = new Proxy(properties, {
     get(target, key) {
       if (key === 'createConicGradient' && !conic) return undefined;

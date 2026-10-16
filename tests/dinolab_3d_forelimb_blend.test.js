@@ -9,7 +9,7 @@ const registration = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(registration)) throw new Error('Dino Lab registration missing');
 window.StemLab = { registerTool() {} };
 new Function(source.replace(registration,
-  'globalThis.__forelimbBlend = { DINOS, skeletalAnatomyProfileFor, postcranialSurfaceProfileFor, dinoFootSurfaceProfileFor, dinoIguanodontThumbEnabled, dinoCeratopsianForelegRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoPlantLimbSurface, dinoBlendSurfaceNormals, dinoSkinCoordinates };' + registration))();
+  'globalThis.__forelimbBlend = { DINOS, skeletalAnatomyProfileFor, postcranialSurfaceProfileFor, dinoFootSurfaceProfileFor, dinoIguanodontThumbEnabled, dinoCeratopsianForelegRadii, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii, dinoPlantLimbSurface, dinoBlendSurfaceNormals, dinoSkinCoordinates, dinoBeakSkinClosure };' + registration))();
 const art = globalThis.__forelimbBlend;
 delete globalThis.__forelimbBlend;
 const vec = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -23,7 +23,8 @@ const chainCode = section('function addSoftTissueChain(', 'function addContourGr
 const torsoCode = section('var cladeName = String(dn.clade', 'function dorsalSurfacePoint(t)');
 const legCode = section('function addLeg(x, z, front) {', 'var stance =');
 const finishCode = section('// Soften only the rear cranial join', 'var studyBounds =');
-const forelimbCode = section('// Join the resting forelimb lighting', '// Frame anatomy, not sprites');
+// Isolate the shoulder phase; full finish() tests still execute all later phases.
+const forelimbCode = section('// Join the resting forelimb lighting', '// Soften the inferred hip-to-thigh transition');
 const inContext = (code, result, context) => new Function('context', 'with (context) {' + code + '\nreturn ' + result + ';}')(context);
 
 // Construct the native torso and planted leg surfaces. Decoration-only helpers
@@ -103,8 +104,8 @@ function checkNormals(mesh) {
 }
 function anchors(built) { return built.records.anchors.map(a => ({ point: a.getWorldPosition(vec()).toArray(), local: a.position.toArray(), parent: a.parent.uuid })); }
 
-describe('Dino Lab local sauropod forelimb shading', () => {
-  for (const id of ['brachiosaurus', 'diplodocus']) for (const scale of [.03, 1, 12]) {
+describe('Dino Lab local weight-bearing forelimb shading', () => {
+  for (const id of ['brachiosaurus', 'diplodocus', 'protoceratops', 'triceratops', 'styracosaurus', 'psittacosaurus']) for (const scale of [.03, 1, 12]) {
     it('smooths both planted shoulders and preserves all surface positions at scale ' + scale + ' for ' + id, () => {
       const built = build(id, scale), { bodyShell, idleMotion } = built.context;
       const meshes = [bodyShell, ...idleMotion.legs.map(e => e.mesh)], before = meshes.map(snapshot), anchorBefore = anchors(built);
@@ -138,13 +139,13 @@ describe('Dino Lab local sauropod forelimb shading', () => {
     finally { built.dispose(); }
   });
 
-  for (const id of ['triceratops', 'parasaurolophus', 'tyrannosaurus']) it('leaves every actual off-group surface byte-identical for ' + id, () => {
+  for (const id of ['parasaurolophus', 'tyrannosaurus']) it('leaves every actual off-group surface byte-identical for ' + id, () => {
     const built = build(id), meshes = [built.context.bodyShell, ...built.context.idleMotion.legs.map(e => e.mesh)], before = meshes.map(snapshot);
     try { built.blendOnly(); expect(built.records.blends).toHaveLength(0); expect(built.context.idleMotion.legs.every(e => e.forelimbBlendWidth === 0)).toBe(true); meshes.forEach((mesh, i) => preserved(mesh, before[i], true)); }
     finally { built.dispose(); }
   });
 
-  it('does not blend positive-width entries when the sauropod guard is disabled', () => {
+  it('does not blend positive-width entries outside the eligible clades', () => {
     const built = build(), meshes = [built.context.bodyShell, ...built.context.idleMotion.legs.map(e => e.mesh)], before = meshes.map(snapshot);
     try { built.context.isSauropod = false; built.blendOnly(); expect(built.records.blends).toHaveLength(0); meshes.forEach((m, i) => preserved(m, before[i], true)); }
     finally { built.dispose(); }
@@ -156,21 +157,21 @@ describe('Dino Lab local sauropod forelimb shading', () => {
     finally { built.dispose(); }
   });
 
-  it('creates no skin, motion entries or blending in the skeleton-only construction path', () => {
-    const built = build('brachiosaurus', 1, false);
+  for (const id of ['brachiosaurus', 'protoceratops']) it('creates no skin, motion entries or blending in the skeleton-only construction path for ' + id, () => {
+    const built = build(id, 1, false);
     try { expect(built.context.bodyShell).toBeNull(); expect(built.context.idleMotion.legs).toHaveLength(0); built.blendOnly(); expect(built.records.blends).toHaveLength(0); expect(built.records.planted).toHaveLength(0); }
     finally { built.dispose(); }
   });
 
-  it('uses the planted coordinate frame under an existing transformed model without moving anchors', () => {
-    const built = build('brachiosaurus', 1, true, true), meshes = [built.context.bodyShell, ...built.context.idleMotion.legs.map(e => e.mesh)];
+  for (const id of ['brachiosaurus', 'protoceratops']) it('uses the planted coordinate frame under an existing transformed model without moving anchors for ' + id, () => {
+    const built = build(id, 1, true, true), meshes = [built.context.bodyShell, ...built.context.idleMotion.legs.map(e => e.mesh)];
     const before = meshes.map(snapshot), anchorBefore = anchors(built);
     try { built.blendOnly(); expect(built.records.blends).toHaveLength(2); for (const call of built.records.blends) expect(call.result.changed[1]).toBeGreaterThan(0); meshes.forEach((mesh, i) => { preserved(mesh, before[i], i < 3); checkNormals(mesh); }); expect(anchors(built)).toEqual(anchorBefore); }
     finally { built.dispose(); }
   });
 
-  it('finishes head and neck joins before forelimbs and bakes their resulting normal fields once', () => {
-    const built = build();
+  for (const id of ['brachiosaurus', 'protoceratops', 'triceratops', 'styracosaurus']) it('finishes head and neck joins before forelimbs and bakes their resulting normal fields once for ' + id, () => {
+    const built = build(id);
     for (const region of ['head', 'neck']) {
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(.1, 12, 8), built.material); mesh.position.set(-4, 2, 0); mesh.userData.dinoRegion = region; built.model.add(mesh);
       if (region === 'head') built.context.headShell = mesh; else built.context.neckMeshes = [mesh];

@@ -37,6 +37,18 @@ describe('Solar System surface-ops immersive layout', () => {
   let originalCancelAnimationFrame;
   let originalResizeObserver;
 
+  function expectTouchFloor(el, name) {
+    expect(el, name + ' should render').toBeTruthy();
+    if (el.matches('.solar-cosmos .solar-quiz button, .solar-checkpoint :is(button,select)')) {
+      // The redesigned quiz/checkpoint controls use rendered scoped CSS rather
+      // than Tailwind utilities. Check the applied floor, not an obsolete class.
+      expect(Number.parseFloat(window.getComputedStyle(el).minHeight), name + ' needs the 44px touch floor')
+        .toBeGreaterThanOrEqual(44);
+    } else {
+      expect(el.className, name + ' needs the 44px touch floor').toContain('min-h-[44px]');
+    }
+  }
+
   const renderWith = async (solarSystem) => {
     const config = window.StemLab._registry.solarSystem;
     function Host() {
@@ -247,7 +259,7 @@ describe('Solar System surface-ops immersive layout', () => {
     const source = readFileSync(SOURCE, 'utf8');
     // The declaration is built by concatenation, so take the whole statement up
     // to its terminating semicolon rather than the first quoted run.
-    const caption = source.match(/soundDesc\.style\.cssText = (.*);\n/);
+    const caption = source.match(/soundDesc\.style\.cssText = (.*);\r?\n/);
     expect(caption, 'could not read the sound caption style').toBeTruthy();
     const css = caption[1];
 
@@ -376,7 +388,7 @@ describe('Solar System surface-ops immersive layout', () => {
     // cluster has to opt back in or the buttons cannot be clicked at all.
     // Built by concatenation, so take the whole statement, not the first
     // quoted run.
-    const controls = source.match(/factControls\.style\.cssText = (.*);\n/);
+    const controls = source.match(/factControls\.style\.cssText = (.*);\r?\n/);
     expect(controls, 'the ticker needs a control cluster').toBeTruthy();
     expect(controls[1], 'controls must opt back into pointer events')
       .toMatch(/pointer-events:auto/);
@@ -526,17 +538,24 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(claim, 'the inquiry card should render on the drone tab').not.toBeNull();
     expect(frame.contains(claim), 'the inquiry card must not sit inside the clipped scene frame').toBe(false);
 
-    const quiz = Array.from(host.querySelectorAll('button')).find((b) => /Quiz Mode/.test(b.textContent));
-    expect(quiz, 'Quiz Mode should render').toBeTruthy();
-    expect(frame.contains(quiz), 'Quiz Mode must not sit inside the clipped scene frame').toBe(false);
+    const quiz = host.querySelector('[data-solar-quiz] button[data-quiz-draw]');
+    expect(quiz, 'the planet quiz start control should render').toBeTruthy();
+    expect(quiz.textContent).toBe('Start quiz');
+    expect(quiz.disabled, 'the planet quiz must be actionable').toBe(false);
+    expect(frame.contains(quiz), 'the quiz must not sit inside the clipped scene frame').toBe(false);
+    const concepts = Array.from(host.querySelectorAll('[data-solar-concept]'));
+    expect(concepts.length, 'Earth should offer science concept disclosures').toBeGreaterThan(0);
+    concepts.forEach(button => expect(frame.contains(button), 'concepts must stay outside the clipped scene frame').toBe(false));
   }, RENDER_TIMEOUT);
 
   it('shows the inquiry card and quiz on every planet view, not only the rover tab', async () => {
     for (const viewTab of ['overview', 'surface', 'interior']) {
       await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab });
       expect(host.querySelector('#solar-poe-prediction-Earth'), `the inquiry card should render on the ${viewTab} tab`).not.toBeNull();
-      const quiz = Array.from(host.querySelectorAll('button')).find((b) => /Quiz Mode/.test(b.textContent));
-      expect(quiz, `Quiz Mode should render on the ${viewTab} tab`).toBeTruthy();
+      const quiz = host.querySelector('[data-solar-quiz] button[data-quiz-draw]');
+      expect(quiz, `the planet quiz should render on the ${viewTab} tab`).toBeTruthy();
+      expect(quiz.textContent).toBe('Start quiz');
+      expect(quiz.disabled, `the planet quiz must be actionable on the ${viewTab} tab`).toBe(false);
       await React.act(async () => root.unmount());
       root = null;
       host.innerHTML = '';
@@ -577,14 +596,14 @@ describe('Solar System surface-ops immersive layout', () => {
     // These controls were hidden from April until the scene-frame fix, so no
     // touch-target gate ever saw them: measured in Chromium, 10 of 11 were under
     // this tool's 44px floor, the compare swap at 27x26. jsdom has no layout, so
-    // assert the class that the browser measurement showed resolves to 44px.
+    // assert utility floors or the rendered scoped CSS used by redesigned controls.
     await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'overview' });
     const byText = (re) => Array.from(host.querySelectorAll('button')).find((b) => re.test(b.textContent || ''));
     const byLabel = (label) => host.querySelector('[aria-label="' + label + '"]');
     const controls = {
       'Lock claim': byText(/Lock claim/),
       'Skip for now': byText(/Skip for now/),
-      'Start quiz': byText(/Quiz Mode/),
+      'Start quiz': host.querySelector('[data-solar-quiz] button[data-quiz-draw]'),
       'first compare select': byLabel('First planet to compare'),
       'second compare select': byLabel('Second planet to compare'),
       'swap compared worlds': byLabel('Swap compared worlds'),
@@ -607,8 +626,7 @@ describe('Solar System surface-ops immersive layout', () => {
     });
 
     for (const [name, el] of Object.entries(controls)) {
-      expect(el, name + ' should render').toBeTruthy();
-      expect(el.className, name + ' needs the 44px touch floor').toContain('min-h-[44px]');
+      expectTouchFloor(el, name);
     }
     // The swap button is icon-only and narrow: it needs a width floor too.
     expect(controls['swap compared worlds'].className, 'the icon-only swap needs a width floor').toContain('min-w-[44px]');
@@ -620,13 +638,17 @@ describe('Solar System surface-ops immersive layout', () => {
     // pack no planet misconception could ever appear. jsdom's t() returns the raw
     // key, which reproduces that exactly. Earth has a trigger, so it must show.
     await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'overview' });
-    const buttons = Array.from(host.querySelectorAll('button'));
-    const yes = buttons.find((b) => /\bTrue\b/.test(b.textContent || ''));
-    const no = buttons.find((b) => /\bFalse\b/.test(b.textContent || ''));
+    const checkpoint = host.querySelector('[data-solar-checkpoint="Earth"]');
+    expect(checkpoint, 'the localized world must select the Earth checkpoint').toBeTruthy();
+    const yes = checkpoint.querySelector('[data-checkpoint-choice="true"]');
+    const no = checkpoint.querySelector('[data-checkpoint-choice="false"]');
     expect(yes, "Earth's misconception check should offer True").toBeTruthy();
     expect(no, "Earth's misconception check should offer False").toBeTruthy();
-    expect(yes.className, 'the True answer needs the 44px floor').toContain('min-h-[44px]');
-    expect(no.className, 'the False answer needs the 44px floor').toContain('min-h-[44px]');
+    expect(yes.textContent).toBe('True'); expect(no.textContent).toBe('False');
+    expect(yes.disabled).toBe(false); expect(no.disabled).toBe(false);
+    expectTouchFloor(yes, 'the True answer');
+    expectTouchFloor(no, 'the False answer');
+    expectTouchFloor(checkpoint.querySelector('#solar-checkpoint-select'), 'the checkpoint selector');
   }, RENDER_TIMEOUT);
 
   it('keeps the 44px floor on controls that only appear later in the flow', async () => {
@@ -637,10 +659,7 @@ describe('Solar System surface-ops immersive layout', () => {
     await renderWith({ tutorialDismissed: true, selectedPlanet: EARTH, viewTab: 'overview' });
     const find = (re) => Array.from(host.querySelectorAll('button')).find((b) => re.test(b.textContent || ''));
     const click = async (el) => { await React.act(async () => { el.click(); await Promise.resolve(); }); };
-    const floored = (el, name) => {
-      expect(el, name + ' should appear').toBeTruthy();
-      expect(el.className, name + ' needs the 44px touch floor').toContain('min-h-[44px]');
-    };
+    const floored = expectTouchFloor;
 
     // Inquiry card: commit a claim, reveal the model, reach the revision step.
     const claim = host.querySelector('#solar-poe-prediction-Earth');
@@ -656,13 +675,24 @@ describe('Solar System surface-ops immersive layout', () => {
     floored(find(/Save inquiry cycle/), 'Save inquiry cycle');
 
     // Misconception check: answering it shows the follow-up.
-    await click(find(/\bTrue\b/));
-    floored(find(/Got it/), 'misconception "Got it"');
+    await click(host.querySelector('[data-solar-checkpoint="Earth"] [data-checkpoint-choice="true"]'));
+    const reviewed = host.querySelector('[data-checkpoint-mark-reviewed]');
+    floored(reviewed, 'Mark explanation reviewed');
+    expect(reviewed.disabled).toBe(false);
+    const explanation = host.querySelector('[data-checkpoint-explanation]');
+    expect(explanation, 'answering must expose the checkpoint explanation').toBeTruthy();
+    Array.from(explanation.querySelectorAll('button')).forEach(button => floored(button, button.textContent));
+    await click(reviewed);
+    expect(host.querySelector('[data-checkpoint-complete]'), 'reviewing should complete the checkpoint').toBeTruthy();
+    floored(host.querySelector('[data-checkpoint-review]'), 'Review explanation');
 
     // Quiz: starting it shows the answer options.
-    await click(find(/Quiz Mode/));
-    const answers = Array.from(host.querySelectorAll('button[aria-label^="Select answer"]'));
+    await click(host.querySelector('[data-solar-quiz] button[data-quiz-draw]'));
+    const answers = Array.from(host.querySelectorAll('[data-solar-quiz] button[data-quiz-option]'));
     expect(answers.length, 'the quiz should offer answers').toBeGreaterThan(1);
-    answers.forEach((b, i) => floored(b, 'quiz answer ' + (i + 1)));
+    answers.forEach((b, i) => { floored(b, 'quiz answer ' + (i + 1)); expect(b.disabled).toBe(false); });
+    await click(answers[0]);
+    expect(host.querySelector('[data-quiz-feedback]'), 'answering should expose quiz feedback').toBeTruthy();
+    floored(host.querySelector('[data-quiz-continue]'), 'Next question');
   }, RENDER_TIMEOUT);
 });

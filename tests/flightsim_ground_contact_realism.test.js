@@ -223,7 +223,14 @@ describe('landing and rollout feedback in the production frame loop', () => {
       expect(texts.some(text => text.startsWith('Ground contact ·'))).toBe(true);
       hooks().pausedRef.current = true;
       const pausedTime = hooks().timeRef.current;
-      await frame(); await frame();
+      await frame();
+      expect(texts.some(text => text.startsWith('Ground contact ·'))).toBe(true);
+      await frame();
+      expect(texts).toHaveLength(0); // A held pause frame retains the previous canvas.
+      for (const canvas of host.querySelectorAll('canvas')) {
+        Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: 1260 });
+      }
+      await frame(); // Resizing must repaint the contact summary without advancing time.
       expect(hooks().timeRef.current).toBe(pausedTime);
       expect(texts.some(text => text.startsWith('Ground contact ·'))).toBe(true);
       expect(window._alloHaptic).toHaveBeenCalledTimes(1);

@@ -54,6 +54,7 @@ const approvedRockShadowPolicy={"before":"          var rockMesh = new THREE.Mes
 function reverseApprovedRockShadowPolicy(value){assert.equal(value.split(approvedRockShadowPolicy.after).length,2,'Approved rock shadow face guard missing or changed');return value.replace(approvedRockShadowPolicy.after,approvedRockShadowPolicy.before);}
 const reefHelpers=region('function createCLReefFootprint(','function createCLHuntAnimal(');
 const composition=region('        // Five rock-rooted groves','        function updateGround(){');
+const habitatGrounding=region('        var sandHabitat=','        function shadeCLHuntSandLight(');
 const terrain=region('        function terrainHeight(','        function distance3(');
 const grassSpawn=region('        var grass = [];','        // Terrain-conforming caustics:');
 const kelpSpawn=region('        var kelpStrands = [];','        // ─── Hydrothermal vent');
@@ -77,7 +78,7 @@ function construct(seed=2741){
   const denPositions=region('        var DEN_POSITIONS = [','        var dens = [];');
   const speciesHelper=source.match(/function isDeepSpecies\(speciesId\) \{\s*return[^;]+;\s*\}/)?.[0];
   assert.ok(speciesHelper,'Actual species habitat helper missing');
-  const result=new Function('THREE','Math',plantHelpers+reefHelpers+terrain+speciesHelper+`
+  const result=new Function('THREE','Math',plantHelpers+reefHelpers+terrain+speciesHelper+habitatGrounding+`
     var scene=new THREE.Scene(),renderer={capabilities:{isWebGL2:false},extensions:{has:function(){return false;}}};
     var speciesId='commonOcto',reefRefuge=null,landmarks=[];
     function reefSurface(){}

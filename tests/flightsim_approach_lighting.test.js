@@ -68,7 +68,7 @@ async function mountFlight(airportCode, three) {
   host = document.createElement('div'); document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
   function App() {
-    const [data, setData] = React.useState({ flightSim: { view: 'menu', takeoffTutorialDismissed: true, railCollapsed: true } });
+    const [data, setData] = React.useState({ flightSim: { view: 'menu', thirdPerson: false, takeoffTutorialDismissed: true, railCollapsed: true } });
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
       update: (id, key, value) => setData(old => ({ ...old, [id]: { ...old[id], [key]: value } })),
       updateMulti: (id, patch) => setData(old => ({ ...old, [id]: { ...old[id], ...patch } })),
@@ -83,11 +83,13 @@ async function mountFlight(airportCode, three) {
   const hooks = window.__testHooks.flightSim;
   Object.assign(hooks.controlsRef.current, { throttle: 0.4, pitch: 0, bank: 0, flaps: 0, brake: 0 });
   function position(angle, distanceNm = 1.5) {
-    const lat = airport.lat - distanceNm / 60;
-    const distance = api.haversineNm(lat, airport.lon, airport.lat, airport.lon);
-    Object.assign(hooks.flightRef.current, { lat, lon: airport.lon, altitude: airport.alt + heightForAngle(angle, distance),
-      fieldElev: airport.alt, speed: distanceNm ? 140 : 0, heading: 0, vsi: 0, onGround: distanceNm === 0 });
-    return distance;
+    const model = api.getFlightRunway(airport), end = model.ends[0];
+    const distanceFt = distanceNm ? distanceNm * 6076.12 : -150;
+    const location = api.getFlightRunwayPosition(model, 0, end.thresholdAlongFt - end.sign * distanceFt,
+      distanceNm ? 5 + heightForAngle(angle, (distanceFt + 1000) / 6076.12) : 0);
+    Object.assign(hooks.flightRef.current, { ...location, fieldElev: airport.alt, speed: distanceNm ? 140 : 0,
+      heading: end.headingDeg, vsi: 0, onGround: distanceNm === 0 });
+    return (distanceFt + 1000) / 6076.12;
   }
   async function draw() {
     commands.length = 0;
@@ -102,27 +104,34 @@ describe('SkySchool painted approach lighting', () => {
     const flight = await mountFlight(code);
     flight.position(3);
     await flight.draw();
-    expect(commands.some(c => c.method === 'fillText' && c.args[0] === code + ' RWY')).toBe(true);
-    // The first RAF advances a real simulation step; derive the painted
-    // runway position from that frame instead of assuming the aircraft froze.
+    expect(commands.some(c => c.method === 'fill' && c.fill === '#30343b')).toBe(true);
+    // Compare the actual physical PAPI row after the real simulation step.
     const state = window.__testHooks.flightSim.flightRef.current;
-    const paintedDistance = api.haversineNm(state.lat, state.lon, flight.airport.lat, flight.airport.lon);
-    const relativeBearing = ((api.bearing(state.lat, state.lon, flight.airport.lat, flight.airport.lon) - state.heading + 540) % 360) - 180;
-    const screenX = 400 + relativeBearing / 60 * 400;
-    const runwayWidth = 8 + (1 - paintedDistance / 10) * 30;
-    const papiStartX = screenX - runwayWidth / 2 - 26;
-    const lights = commands.filter(c => c.method === 'arc' && c.args[2] === 3 &&
-      c.args[0] >= papiStartX - 0.0001 && c.args[0] <= papiStartX + 18.0001 && ['#fff', '#ef4444'].includes(c.fill));
+    const approach = api.getFlightRunwayApproach(state, flight.airport);
+    const view = api.getFlightViewBasis(state.heading, 0, 0); view.offset = { x: 0, y: 6, z: 0 };
+    const points = Array.from({ length: 4 }, (_, index) => api.projectFlightRunwayPoint(state, approach.runway,
+      { crossFt: -approach.end.sign * (180 - index * 20), alongFt: approach.end.papiAlongFt, heightFt: 5 }, view, 800, 500));
+    expect(points.every(Boolean)).toBe(true);
+    const lights = points.map(point => commands.find(c => c.method === 'arc' && ['#fff', '#ef4444'].includes(c.fill)
+      && Math.abs(c.args[0] - point.x) < 1e-4 && Math.abs(c.args[1] - point.y) < 1e-4));
     expect(lights).toHaveLength(4);
+    expect(lights.every(Boolean)).toBe(true);
     expect(lights.map(light => light.fill)).toEqual(['#fff', '#fff', '#ef4444', '#ef4444']);
-    expect(new Set(lights.map(light => light.args[1])).size).toBe(1);
+    expect(lights.every(light => Number.isFinite(light.args[1]))).toBe(true);
   });
   it('paints four red close-up lights when parked instead of a false high-path cue', async () => {
     const flight = await mountFlight('DEN');
     flight.position(0, 0); await flight.draw();
-    const lights = commands.filter(c => c.method === 'fillRect' && c.fill === 'rgba(239,68,68,0.95)' && c.args[2] === 5 && c.args[3] === 5);
-    expect(lights).toHaveLength(4);
-    expect(new Set(lights.map(light => light.args[1])).size).toBe(1);
+    const state = window.__testHooks.flightSim.flightRef.current, approach = api.getFlightRunwayApproach(state, flight.airport);
+    const view = api.getFlightViewBasis(state.heading, 0, 0); view.offset = { x: 0, y: 6, z: 0 };
+    const lights = Array.from({ length: 4 }, (_, index) => {
+      const point = api.projectFlightRunwayPoint(state, approach.runway,
+        { crossFt: -approach.end.sign * (180 - index * 20), alongFt: approach.end.papiAlongFt, heightFt: 5 }, view, 800, 500);
+      return commands.find(c => c.method === 'arc' && c.fill === '#ef4444'
+        && Math.abs(c.args[0] - point.x) < 1e-4 && Math.abs(c.args[1] - point.y) < 1e-4);
+    });
+    expect(lights.every(Boolean)).toBe(true);
+    expect(approach.papi.redCount).toBe(4);
   });
   it('uses the same red-count sequence in WebGL and places the four lights in a lateral row', async () => {
     const renderer = { domElement: {}, shadowMap: {}, capabilities: { getMaxAnisotropy: () => 1 },
@@ -132,7 +141,9 @@ describe('SkySchool painted approach lighting', () => {
       flight.position(angle); await flight.draw();
       expect(renderer.render).toHaveBeenCalled();
       const scene = renderer.render.mock.calls.at(-1)[0];
-      const lights = scene.children.filter(item => item.geometry?.type === 'SphereGeometry' && item.geometry.parameters.radius === 3 && item.material.fog === false);
+      const allLights = scene.children.filter(item => item.geometry?.type === 'SphereGeometry' && item.geometry.parameters.radius === 3 && item.material.fog === false);
+      expect(allLights).toHaveLength(8);
+      const lights = allLights.filter(light => light.visible);
       expect(lights).toHaveLength(4);
       expect(lights.filter(light => light.material.color.getHex() === 0xef4444)).toHaveLength(expected);
       const firstGap = lights[1].position.clone().sub(lights[0].position);

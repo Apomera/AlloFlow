@@ -489,6 +489,21 @@ describe('Moon Mission loops', () => {
     const { frames } = run({ missionPhase: 1 }, (p) => !!p['data-launch-canvas'], count);
     const hudKm = (f) => Number(f.dataset.launchAltitude) / 1000;
     const rgb = (s) => s.match(/\d+/g).map(Number);
+    // Find a tangent by bisecting the independent ray/sphere discriminant.
+    // The default test canvas is 500 x 400, with eye level at 0.6 H.
+    const tangentY = (km, x) => {
+      if (km <= 0) return 240;
+      const distance = 1 + km / 6371, focal = 200 * Math.sqrt(3);
+      const dx = (x - 250) / focal;
+      let above = 240, below = 2000;
+      for (let j = 0; j < 60; j++) {
+        const middle = (above + below) / 2, dy = -(middle - 240) / focal;
+        const a = dx * dx + dy * dy + 1, b = 2 * distance * dy;
+        const discriminant = b * b - 4 * a * (distance * distance - 1);
+        if (discriminant < 0) above = middle; else below = middle;
+      }
+      return (above + below) / 2;
+    };
     const flying = frames.filter((f) => f.text.some((t) => t.s === 'ALTITUDE'));
     expect(flying.length).toBeGreaterThan(300);
     let checked = 0;
@@ -498,11 +513,15 @@ describe('Moon Mission loops', () => {
       const sky = f.grads.find((g) => g.stops.length === 2 && g.stops.every((c) => /^rgb\(/.test(c)));
       expect(sky, km + ' km: a sky').toBeTruthy();
       rgb(sky.stops[0]).forEach((c, k) => expect(Math.abs(c - rgb(want.top)[k]), km + ' km zenith').toBeLessThanOrEqual(3));
-      // The Earth is the smallest huge circle (the limb glow is a larger one); its top
-      // sits acos(R / (R + h)) below eye level (0.6 H), at 0.87 H per radian.
-      const earth = f.arcs.filter((a) => a.r > 1000).reduce((a, b) => (!a || b.r < a.r ? b : a), null);
-      expect(earth, km + ' km: the Earth is in view').toBeTruthy();
-      expect(Math.abs(earth.y - earth.r - (400 * 0.6 + 400 * 0.87 * Math.acos(6371 / (6371 + km)))), km + ' km horizon').toBeLessThan(2);
+      // The ground follows tangent rays at the center and padded right edge.
+      // A huge decorative circle cannot supply the correct camera projection.
+      expect(f.arcs.some((a) => a.r > 1000), km + ' km: no giant Earth circle').toBe(false);
+      for (const x of [250, 520]) {
+        const expected = tangentY(km, x);
+        const error = f.lines.filter((point) => Math.abs(point[0] - x) < 1e-8)
+          .reduce((best, point) => Math.min(best, Math.abs(point[1] - expected)), Infinity);
+        expect(error, km + ' km horizon at x=' + x).toBeLessThan(2);
+      }
       // The Vehicle Assembly Building is on the pad view, not seen from 6 km up.
       const vab = f.rects.some((r) => r.fill === '#d6d3ce');
       if (km > 6.5) expect(vab, km + ' km: no VAB').toBe(false);
@@ -510,13 +529,21 @@ describe('Moon Mission loops', () => {
     });
     expect(checked).toBeGreaterThan(15);
     expect(frames[0].rects.some((r) => r.fill === '#d6d3ce'), 'the VAB stands on the horizon at the pad').toBe(true);
-    // The kerosene plume fades as it spreads, by mmPlumeGrow at the height on the HUD.
+    // The outer F-1 jet uses the physical sample's ambient pressure and per-engine
+    // thrust. Center-engine cutoff changes the projected center column only.
+    const plumeProfile = P.launchProfile();
     const plume = flying.filter((f) => f.text.some((t) => t.s === 'STAGE 1/3'))
-      .map((f) => ({ km: hudKm(f), g: f.grads.find((g) => /^rgba\(255,120,0,/.test(g.stops[0])) })).filter((x) => x.g);
+      .map((f) => ({ sample: P.launchSample(plumeProfile, Number(f.dataset.launchTime)),
+        g: f.grads.find((g) => /^rgba\(255,120,0,/.test(g.stops[0])) })).filter((x) => x.g);
     expect(plume.length).toBeGreaterThan(80);
     const alpha = (g) => Number(g.stops[0].split(',')[3].replace(')', ''));
-    plume.forEach(({ km, g }) => expect(Math.abs(alpha(g) - 0.8 / Math.sqrt(P.plumeGrow(km))), km + ' km plume').toBeLessThan(0.02));
-    expect(alpha(plume[0].g) - alpha(plume[plume.length - 1].g), 'thinner by staging').toBeGreaterThan(0.3);
+    plume.forEach(({ sample, g }) => {
+      const ambient = Math.max(0, Math.min(1, sample.pressure / 101325));
+      const expansion = 1 + 2.5 * (1 - Math.sqrt(ambient));
+      const perEnginePower = (sample.thrust / sample.engineCount) / (P.launch.stages[0].vacuumThrust / 5);
+      expect(Math.abs(alpha(g) - 0.46 * perEnginePower / Math.sqrt(expansion)), sample.time + ' s plume').toBeLessThan(1e-9);
+    });
+    expect(alpha(plume[0].g) - alpha(plume[plume.length - 1].g), 'the outer jet thins as ambient pressure falls').toBeGreaterThan(0.1);
   }, 120_000);
 
   it('launch: on a narrow canvas the Mach / Max Q banner sits clear of both HUD boxes', () => {

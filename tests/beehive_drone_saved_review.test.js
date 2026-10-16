@@ -41,7 +41,7 @@ describe('Recorded Drone coaching', () => {
   });
 
   it('explains a thin final-approach reserve without suggesting a mating drone returns home', () => {
-    const result = droneDebriefCoach({ success: true, energyLeft: 4, obstacleHits: 0, trafficHits: 0 });
+    const result = droneDebriefCoach({ success: true, energyLeft: 4, energyUnits: 'percent-of-difficulty-reserve', obstacleHits: 0, trafficHits: 0 });
     expect(result.summary).toContain('thin margin for the final approach');
     expect(result.summary).not.toContain('fly home');
     expect(result.consequence).toContain('dies immediately afterward');
@@ -50,6 +50,43 @@ describe('Recorded Drone coaching', () => {
   it('respects actual zero marker totals over older alternate totals', () => {
     expect(droneDebriefCoach({ success: false, energyLeft: 50, reachedDca: true, obstacleHits: 0, trafficHits: 0,
       routeMarkers: 0, routeMarkerGoal: 0, nectar: 10, nectarGoal: 20 }).id).toBe('queen-tracking');
+  });
+
+  it('does not apply percentage thresholds to a positive legacy energy value', () => {
+    for (const energyUnits of [undefined, '', 'model-units']) {
+      const failed = droneDebriefCoach({ success: false, energyLeft: 4, energyUnits });
+      expect(failed.id).toBe('incomplete-evidence');
+      expect(failed.evidence.find(item => item.label === 'Energy reserve')).toMatchObject({ value: '4 (units not recorded)', state: 'unknown' });
+      const success = droneDebriefCoach({ success: true, energyLeft: 4, energyUnits, obstacleHits: 0, trafficHits: 0 });
+      expect(success.id).toBe('intercept-refine');
+      expect(success.summary).not.toMatch(/4%|thin margin/);
+      expect(droneDebriefCoach({ success: true, energyLeft: 60, energyUnits, obstacleHits: 0, trafficHits: 0 }).id).toBe('intercept-refine');
+    }
+  });
+
+  it('uses the exact percent marker for low and healthy reserve comparisons', () => {
+    const energyUnits = 'percent-of-difficulty-reserve';
+    const low = droneDebriefCoach({ success: false, energyLeft: 4, energyUnits });
+    expect(low.id).toBe('energy-budget');
+    expect(low.title).toBe('Review the low final reserve');
+    expect(low.summary).toContain('low recorded percentage');
+    expect(droneDebriefCoach({ success: true, energyLeft: 60, energyUnits, obstacleHits: 0, trafficHits: 0 }).id).toBe('repeatable-success');
+  });
+
+  it('reports a raw zero without inventing percentage units or a causal diagnosis', () => {
+    const result = droneDebriefCoach({ success: false, energyLeft: 0 });
+    expect(result.id).toBe('energy-budget');
+    expect(result.summary).toContain('zero recorded energy');
+    expect(result.summary).toContain('before attributing');
+    expect(result.evidence[0]).toMatchObject({ value: '0 (units not recorded)', state: 'unknown' });
+  });
+
+  it('does not mistake peak altitude and total travel for a measured DCA approach', () => {
+    const result = droneDebriefCoach({ success: false, reachedDca: false, maxAlt: 120, distance: 800 });
+    expect(result.id).toBe('range-gate');
+    expect(result.summary).toContain('do not show where');
+    expect(result.summary).not.toContain('forward progress did not reach');
+    expect(result.evidence.find(item => item.label === 'DCA gate').value).toBe('Not reached');
   });
 });
 
@@ -116,7 +153,7 @@ describe('Saved Drone review at preflight', () => {
   });
 
   it('draws gaps for missing readings and places irregular samples by recorded time', async () => {
-    await mount({ lastRun: { telemetry: [{ t: 0, altitude: 10, energy: 80 }, { t: 2, altitude: 100 }, { t: 10, altitude: 80, energy: 0 }] } });
+    await mount({ lastRun: { energyUnits: 'percent-of-difficulty-reserve', telemetry: [{ t: 0, altitude: 10, energy: 80 }, { t: 2, altitude: 100 }, { t: 10, altitude: 80, energy: 0 }] } });
     const energyTraces = panel().querySelectorAll('[data-flight-replay-trace="energy"]');
     expect(energyTraces).toHaveLength(2);
     expect([...energyTraces].every(node => node.tagName.toLowerCase() === 'circle')).toBe(true);
@@ -130,7 +167,7 @@ describe('Saved Drone review at preflight', () => {
 
   it('keeps legacy altitude-only records honest and avoids invented launch or end bookmarks', async () => {
     await mount({ lastRun: { telemetry: [{ t: 4, altitude: 108 }] } });
-    expect(moment()).toContain('108 ft');
+    expect(moment()).toContain('108 model ft');
     expect(moment()).toContain('Energy Not recorded');
     expect(moment()).toContain('Wind Not recorded');
     expect(panel().querySelector('[data-flight-replay-bookmark="launch"]').textContent).toBe('First sample');
@@ -138,15 +175,21 @@ describe('Saved Drone review at preflight', () => {
     expect(panel().querySelector('[data-flight-replay-trace="energy"]')).toBeNull();
     expect(panel().textContent).not.toContain('0%');
     const handoff = host.querySelector('[data-beehive-notebook-handoff]');
-    expect(handoff.textContent).toContain('mating outcome was not recorded');
+    expect(panel().querySelector('[data-drone-saved-coach="incomplete-evidence"]').textContent).toContain('mating outcome was not recorded');
+    const result = handoff.querySelector('[data-capture-reading="result"]');
+    expect(result.querySelector('dt').textContent).toBe('Result');
+    expect(result.querySelector('[data-capture-value]').textContent).toBe('Not recorded');
+    expect(handoff.querySelector('[data-capture-text]').textContent).toContain('Result: Not recorded');
+    expect(latest.beehive.drone.lastRun).not.toHaveProperty('success');
     expect(handoff.textContent).toContain('Not recorded');
     expect(handoff.textContent).not.toContain('0%');
   });
 
   it('calculates recorded consecutive energy changes and retains a measured zero wind', async () => {
-    await mount({ lastRun: { telemetry: [{ t: 0, altitude: 10, energy: 20, wind: 0 }, { t: 2, altitude: 90, energy: 0, wind: 0, phase: 'end' }] } });
+    await mount({ lastRun: { energyUnits: 'percent-of-difficulty-reserve', telemetry: [{ t: 0, altitude: 10, energy: 20, wind: 0 }, { t: 2, altitude: 90, energy: 0, wind: 0, phase: 'end' }] } });
     await bookmark('peak-altitude');
-    expect(moment()).toContain('Energy 0% (-20%)');
+    expect(moment()).toContain('Energy 0%');
+    expect(moment()).toContain('Energy change: 20 percentage points lower');
     expect(moment()).toContain('Wind 0 m/s');
     expect(moment()).toContain('Energy warning');
   });
@@ -184,7 +227,7 @@ describe('Saved Drone review at preflight', () => {
 
   it('safely bounds a fractional replay preference to a recorded sample', async () => {
     await mount({ replayIndex: 0.5, lastRun: { telemetry: [{ t: 0, altitude: 10 }, { t: 2, altitude: 90 }] } });
-    expect(moment()).toContain('Altitude 10 ft');
+    expect(moment()).toContain('Altitude 10 model ft');
     expect(panel().querySelector('[data-flight-replay-range]').value).toBe('0');
   });
 });

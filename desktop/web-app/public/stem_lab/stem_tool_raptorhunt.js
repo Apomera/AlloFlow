@@ -1435,7 +1435,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   var raptorFeatherArtPromise = null;
   function hasRaptorFeatherArt() {
     return !!(window.AvianFeatherArt && typeof window.AvianFeatherArt.createFlightFeatherCanvas === 'function' &&
-      typeof window.AvianFeatherArt.createVaneDetailCanvases === 'function');
+      typeof window.AvianFeatherArt.createVaneDetailCanvases === 'function' &&
+      typeof window.AvianFeatherArt.applyVaneGrain === 'function' &&
+      typeof window.AvianFeatherArt.vaneGrainCacheKey === 'function');
   }
   function ensureRaptorFeatherArt() {
     if (hasRaptorFeatherArt()) return Promise.resolve();
@@ -1457,11 +1459,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     return raptorFeatherArtPromise;
   }
 
+  var raptorWoodlandBirdsPromise = null;
+  function hasRaptorWoodlandBirds() {
+    var birds = window.AvianWoodlandBirds;
+    return !!(birds && birds.version === '1.0.0' && typeof birds.create === 'function' &&
+      typeof birds.supports === 'function' && birds.supports('mourningDove') && birds.supports('grouse'));
+  }
+  function ensureRaptorWoodlandBirds() {
+    if (hasRaptorWoodlandBirds()) return Promise.resolve();
+    if (raptorWoodlandBirdsPromise) return raptorWoodlandBirdsPromise;
+    raptorWoodlandBirdsPromise = new Promise(function(resolve, reject) {
+      var script = document.createElement('script'), finished = false;
+      var timer = window.setTimeout(function() { finish(new Error('Woodland birds took too long to load.')); }, 20000);
+      function finish(error) {
+        if (finished) return; finished = true;
+        window.clearTimeout(timer); script.onload = script.onerror = null;
+        if (error) { script.remove(); reject(error); } else resolve();
+      }
+      script.src = RAPTOR_MODULE_BASE + 'avian_woodland_birds.js';
+      script.async = true; script.setAttribute('data-raptor-woodland-birds', 'true');
+      script.onload = function() { finish(hasRaptorWoodlandBirds() ? null : new Error('Woodland birds are unavailable.')); };
+      script.onerror = function() { finish(new Error('Woodland birds could not load.')); };
+      document.head.appendChild(script);
+    }).catch(function(error) { raptorWoodlandBirdsPromise = null; throw error; });
+    return raptorWoodlandBirdsPromise;
+  }
+
   // ─── Three.js loader (shared bootstrap) ───
   function ensureThreeJS(onReady, onError) {
     // Shared resilient loader: multi-CDN fallback + timeout (host provides it).
     var three = window.THREE ? Promise.resolve() : window.StemLab.ensureThree({ orbit: false });
-    Promise.all([three, ensureRaptorFeatherArt()]).then(function () { onReady(); }).catch(function () { console.error('[RaptorHunt] 3D assets failed to load'); if (onError) onError(); });
+    Promise.all([three, ensureRaptorFeatherArt(), ensureRaptorWoodlandBirds()]).then(function () { onReady(); }).catch(function () { console.error('[RaptorHunt] 3D assets failed to load'); if (onError) onError(); });
   }
 
   // ───────────────────────────────────────────────────────────
@@ -2018,6 +2046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     // ── NEW v0.18 prey types ──
     largeInsect:   { id: 'largeInsect',   label: 'Cicada/Dragonfly', color: 0x84cc16, sizeM: 0.04, speedMps: 4.0, behavior: 'wander',        points: 4,  terrain: 'grassland' },
     mourningDove:  { id: 'mourningDove',  label: 'Mourning Dove',    color: 0xa8a29e, sizeM: 0.15, speedMps: 9.0, behavior: 'flee-on-sight', points: 7,  terrain: 'forest' },
+    blueJay:       { id: 'blueJay',       label: 'Blue Jay',         color: 0x5281b5, sizeM: 0.15, speedMps: 8.0, behavior: 'flee-on-sight', points: 7,  terrain: 'forest' },
     lemming:       { id: 'lemming',       label: 'Lemming',          color: 0x713f12, sizeM: 0.10, speedMps: 3.5, behavior: 'wander',        points: 7,  terrain: 'tundra' },
     ptarmigan:     { id: 'ptarmigan',     label: 'Ptarmigan',        color: 0xe7e5e4, sizeM: 0.32, speedMps: 14.0, behavior: 'flee-on-sight', points: 14, terrain: 'tundra' },
     arcticHare:    { id: 'arcticHare',    label: 'Arctic Hare',      color: 0xfafaf9, sizeM: 0.40, speedMps: 13.0, behavior: 'flee-on-sight', points: 15, terrain: 'tundra' },
@@ -2037,7 +2066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     osprey:          ['fish'],
     // NEW v0.18
     kestrel:         ['rodent', 'largeInsect', 'songbird', 'snake'],
-    coopersHawk:     ['pigeon', 'songbird', 'mourningDove'],
+    coopersHawk:     ['pigeon', 'songbird', 'mourningDove', 'blueJay'],
     snowyOwl:        ['lemming', 'arcticHare', 'duck', 'ptarmigan'],
     gyrfalcon:       ['ptarmigan', 'duck', 'shorebird'],
     missKite:        ['cicada', 'dragonfly', 'largeInsect', 'songbird'],
@@ -9374,7 +9403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
-      var threeLoadState = React.useState(window.THREE && hasRaptorFeatherArt() ? 'ready' : 'idle');
+      var threeLoadState = React.useState(window.THREE && hasRaptorFeatherArt() && hasRaptorWoodlandBirds() ? 'ready' : 'idle');
       var threeLoadStatus = threeLoadState[0];
       var setThreeLoadStatus = threeLoadState[1];
       var threeRetryState = React.useState(0);
@@ -9628,13 +9657,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (enter) enter.call(stage);
         }
       }
-      var threeReady = threeLoadStatus === 'ready' && !!window.THREE && hasRaptorFeatherArt();
+      var threeReady = threeLoadStatus === 'ready' && !!window.THREE && hasRaptorFeatherArt() && hasRaptorWoodlandBirds();
 
       // Load Three.js as soon as the Hunt section opens. Readiness is ephemeral:
       // persisted tool data must never claim a missing global is ready.
       useEffect(function() {
         if (activeSection !== 'hunt') return;
-        if (window.THREE && hasRaptorFeatherArt()) {
+        if (window.THREE && hasRaptorFeatherArt() && hasRaptorWoodlandBirds()) {
           setThreeLoadStatus('ready');
           return;
         }
@@ -9642,7 +9671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         setThreeLoadStatus('loading');
         ensureThreeJS(
           function() {
-            if (!cancelled) setThreeLoadStatus(window.THREE && hasRaptorFeatherArt() ? 'ready' : 'error');
+            if (!cancelled) setThreeLoadStatus(window.THREE && hasRaptorFeatherArt() && hasRaptorWoodlandBirds() ? 'ready' : 'error');
           },
           function() {
             if (!cancelled) setThreeLoadStatus('error');
@@ -15428,6 +15457,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           };
           tail.material.customProgramCacheKey=function(){return 'raptor-tail-bands-v1';};
         }
+        // These vanes have one feather per UV square, unlike the tiled torso and
+        // whole-wing surface. Share BirdLab's filtered barb detail without changing
+        // species colors, feather geometry or the existing relief textures.
+        function finishRaptorVaneGrain(material) {
+          if(!material)return;
+          material.extensions=material.extensions||{};
+          material.extensions.derivatives=true;
+          var previousCompile=material.onBeforeCompile,programKey=material.customProgramCacheKey();
+          var grainOptions={variants:1,contourFeather:false};
+          material.onBeforeCompile=function(shader,renderer) {
+            // Install first: the species hook then inserts its pigment before the
+            // grain at color_fragment. Osprey's pale underwing retains the grain
+            // after its color replacement; tail bands still precede both.
+            window.AvianFeatherArt.applyVaneGrain(shader,grainOptions);
+            previousCompile.call(this,shader,renderer);
+          };
+          material.customProgramCacheKey=function(){return programKey+'-'+window.AvianFeatherArt.vaneGrainCacheKey(grainOptions);};
+        }
+        [layeredFeatherMaterial,fingerMat,tail.material].forEach(finishRaptorVaneGrain);
         // Share visibility support across contour and flight feathers. White birds
         // need shaded contours over snow; dark birds need a little fill at night.
         // One lighting adjustment reaches the existing body and batched feathers,
@@ -16205,7 +16253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (preyData.id === 'fish') return 'fish';
           if (preyData.id === 'snake') return 'snake';
           if (preyData.id === 'cicada' || preyData.id === 'dragonfly' || preyData.id === 'largeInsect') return 'insect';
-          if (preyData.id === 'songbird' || preyData.id === 'pigeon' || preyData.id === 'mourningDove' ||
+          if (preyData.id === 'songbird' || preyData.id === 'pigeon' || preyData.id === 'mourningDove' || preyData.id === 'blueJay' ||
               preyData.id === 'ptarmigan' || preyData.id === 'grouse' || preyData.id === 'duck' ||
               preyData.id === 'waterfowl' || preyData.id === 'shorebird' || preyData.id === 'smallOwl') return 'bird';
           if (preyData.id === 'rabbit' || preyData.id === 'hare' || preyData.id === 'arcticHare') return 'rabbit';
@@ -16263,6 +16311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var rows={
             pigeon:[0x697885,0xb7bbb7,0x5c6b76,0x53776c,0x39444e,0x29343e,0x51575a,0xa6aaa8],
             mourningDove:[0x9a8e7e,0xd8c8b1,0xa59a8b,0xb8a38e,0x655e57,0x403c38,0x55504a,0xc9b299],
+            blueJay:[0x537eb1,0xd5d8d1,0x648ebd,0xcfd9e1,0x3d6090,0xdce4e8,0x303a42,0xc9d1d7],
             songbird:[0x8b7050,0xe1c894,0x887457,0xe4d3aa,0x5b5146,0xd0be99,0x65523b,0xc4a370],
             shorebird:[0x827b6b,0xe4e0ce,0x918979,0xe8e2ce,0x555b58,0xd9d5c5,0x48473e,0xd4ccb7],
             duck:[0x7b7770,0xcac2ad,0x2f6350,0xe3dfc5,0x464b4a,0x47587c,0xb5a24d,0x775344],
@@ -16279,6 +16328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var shapes={
             pigeon:[1,1,1,1,1,0.055,0.20,1,0,1,1,0.65,1,0.86,0.88,0.045],
             mourningDove:[0.90,1.09,0.90,0.90,0.90,0.047,0.20,1,0,1.07,0.90,0.82,1.08,0.62,1.48,0.28],
+            blueJay:[0.91,0.93,0.97,1.02,0.98,0.045,0.24,1,0,0.94,0.94,0.74,0.93,0.79,1.30,0.055],
             songbird:[0.90,0.90,0.96,0.96,0.95,0.050,0.16,1,0,0.96,0.92,0.74,0.91,0.74,0.96,0.045],
             shorebird:[0.86,1.09,0.84,0.86,0.88,0.027,0.42,0.85,0.025,1.08,0.82,0.82,1.06,0.70,0.77,0.055],
             duck:[1.15,1.11,0.94,1.00,1.08,0.095,0.30,1.35,0,1.05,1.10,0.70,0.93,0.82,0.67,0.075],
@@ -16916,6 +16966,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function applyBirdPreyHeadPose(animation) {
           if(!animation.birdHead||!animation.birdLook)return;
+          if(animation.sharedBird){
+            animation.sharedPose.lookYaw=animation.birdLook.yaw;
+            animation.sharedPose.lookPitch=animation.birdLook.pitch;
+            return;
+          }
           var look=animation.birdLook;animation.birdHead.rotation.set(look.pitch,look.yaw,look.roll,'YXZ');
         }
         function updateBirdPreyHead(prey,dt,reduced) {
@@ -16923,7 +16978,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if(!animation.birdLook)return;
           if(prey.alerted&&!reduced){
             prey.visual.updateWorldMatrix(true,false);
-            headAnchorWorld.copy(animation.birdHead.position).applyMatrix4(prey.visual.matrixWorld);
+            if(animation.sharedBird)animation.birdHead.getWorldPosition(headAnchorWorld);
+            else headAnchorWorld.copy(animation.birdHead.position).applyMatrix4(prey.visual.matrixWorld);
             headLookMatrix.copy(prey.visual.matrixWorld).invert();
             headLookDirection.set(raptor.x,raptor.y,raptor.z).sub(headAnchorWorld).transformDirection(headLookMatrix);
             bearing=Math.atan2(headLookDirection.x,headLookDirection.z);
@@ -17132,8 +17188,240 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var state=animation.insect;animation.root.position.y=state.bob;animation.root.rotation.x=state.pitch;animation.root.rotation.z=bank*state.clearanceMix;
           animation.wings.forEach(function(wing){var side=wing.userData.side;wing.rotation.set(0,side*state.sweep,side*(wing.userData.hind?state.hindAngle:state.foreAngle),'YXZ');});
         }
+        function buildSharedWoodlandPrey(preyData,size) {
+          // The factory owns anatomy and articulation in both labs. Raptor keeps
+          // its enlarged visibility scale, collision size and original ground plane.
+          var shared=window.AvianWoodlandBirds.create(THREE,preyData.id,{quality:'low'});
+          var jay=preyData.id==='blueJay',grouse=preyData.id==='grouse',anatomy=shared.profile;
+          // Raptor's visibility and handling scale is a game proxy. Anatomy
+          // supplies the jay's ankle and stride without inheriting grouse feet.
+          var profile={foldedLength:jay?1.85:(grouse?1.6748555:1.99938),
+            ankleY:jay?anatomy.ankleY:-(grouse?.056:.034)+.003,ankleZ:jay?anatomy.ankleZ:.002,
+            reach:jay?anatomy.walkReach:(grouse?.034:.022),lift:jay?anatomy.stepLift:(grouse?.016:.011),
+            strideRate:jay?anatomy.strideRate:(grouse?9:11),strideLength:jay?.17:(grouse?.21:.16),
+            cruise:jay?anatomy.wingbeatCruise:(grouse?7.4:5.8),burst:jay?anatomy.wingbeatBurst:(grouse?8.5:6.8),
+            rateRange:jay?anatomy.wingbeatBurst-anatomy.wingbeatCruise:(grouse?1.1:1.0),
+            effort:jay?.73:(grouse?.80:.72),tail:jay?.12:(grouse?.18:.10),approachTail:jay?.20:(grouse?.30:.19),
+            lookRate:jay?1.05:(grouse?.85:.90)};
+          var root=new THREE.Group();root.name='prey-bird-'+preyData.id;
+          var bounds=new THREE.Box3().setFromObject(shared.root);
+          var length=Math.max(0.001,bounds.max.z-bounds.min.z);
+          // Preserve the existing dove/grouse bill-to-tail length and give
+          // the jay a similar visibility scale with its own body proportions.
+          var scale=size*profile.foldedLength/length;
+          shared.root.scale.multiplyScalar(scale);
+          shared.root.position.y=-size*0.42*0.72-bounds.min.y*scale;
+          root.add(shared.root);
+          var sharedPose={flight:0,phase:0,effort:0,bank:0,lookYaw:0,lookPitch:0,peck:0,stride:0,walking:0,tailSpread:0,landing:0,footTargets:null,footTargetBlend:0};
+          shared.update(sharedPose);
+          // Walking contacts belong to this moving scene instance. Keep their
+          // world anchors separate from the shared, seekable anatomy poses.
+          var sharedWalk={active:false,observed:false,grounded:false,releasing:false,acquiring:false,blend:0,acquireBlendStart:0,releaseBlendStart:0,releaseElapsed:0,acquireElapsed:0,next:0,swing:-1,elapsed:0,duration:.2,
+            origin:new THREE.Vector3(),previous:new THREE.Vector3(),direction:new THREE.Vector3(0,0,1),
+            inverse:new THREE.Matrix4(),local:new THREE.Vector3(),releaseOrigin:new THREE.Vector3(),ankle:new THREE.Vector3(0,profile.ankleY,profile.ankleZ),targets:[],feet:[]};
+          for(var footIndex=0;footIndex<2;footIndex++){
+            var restFoot=shared.feet[footIndex].position.clone();
+            sharedWalk.targets.push({x:restFoot.x,y:restFoot.y,z:restFoot.z,swing:-1,yaw:0});
+            sharedWalk.feet.push({rest:restFoot,clearance:restFoot.y+sharedWalk.ankle.y-bounds.min.y,yaw:0,startYaw:0,swing:-1,startSwing:-1,
+              anchor:new THREE.Vector3(),start:new THREE.Vector3(),end:new THREE.Vector3(),desired:new THREE.Vector3(),current:new THREE.Vector3()});
+          }
+          return {root:root,kind:'bird',body:shared.body,head:null,look:null,birdHead:shared.head,
+            birdLook:{phase:null,rate:0,activity:0,yaw:0,pitch:0,roll:0,lookSide:0,
+              rateScale:profile.lookRate,yawLimit:0.27,pitchLimit:0.075,rollLimit:0.12},
+            fins:[],wings:[],legs:[],tail:null,gait:null,slither:null,insect:null,
+            sharedBird:shared,sharedPose:sharedPose,sharedDisposed:false,sharedWalk:sharedWalk,sharedProfile:profile,
+            sharedMotion:{phase:null,rate:Math.PI*2*profile.burst,effort:0,walking:0,pitch:0,tail:0,scanReady:1},
+            pose:{heading:null,bank:0,spread:0,wingAngle:0.08,wingFlex:0,tailGather:0,tailGatherResponse:0,tailSpeed:null,
+              tailReferenceSpeed:Math.max(0.1,Number(preyData.speedMps)||1),phase:null,rate:8,wingAmplitude:0.3,motionBlend:1},
+            float:{height:0,slopeX:0,slopeZ:0,pitch:0,roll:0,offset:0,contact:0}};
+        }
+        function applySharedWoodlandPreyPose(prey,dt,reduced) {
+          var animation=prey.animation;if(!animation.sharedBird||animation.sharedDisposed)return;
+          var pose=animation.pose,target=animation.sharedPose,speed=Math.hypot(prey.vx,prey.vz);
+          var flight=Math.max(0,Math.min(1,pose.spread)),blend=reduced?0:pose.motionBlend,profile=animation.sharedProfile;
+          var motion=animation.sharedMotion,step=Math.max(0,dt),work=Math.max(0,Math.min(1,(pose.rate-8)/10));
+          if(motion.phase===null)motion.phase=prey.bobPhase||0;
+          if(!reduced){
+            // Integrate frequency rather than multiplying the flight clock by
+            // a changing rate, preserving wingbeat phase as the bird escapes.
+            var rateGoal=Math.PI*2*(profile.cruise+work*profile.rateRange),decay=Math.exp(-6*step);
+            motion.phase+=rateGoal*step+(motion.rate-rateGoal)*(1-decay)/6;
+            motion.rate=rateGoal+(motion.rate-rateGoal)*decay;
+            var launch=prey.alerted?4*flight*(1-flight):0,approach=prey.alerted?0:flight;
+            var effortGoal=Math.min(1,profile.effort+work*.18+launch*.10-approach*.08);
+            var walkGoal=Math.min(1,speed/Math.max(.1,prey.data.speedMps*.32));
+            motion.effort+=(effortGoal-motion.effort)*(1-decay);
+            motion.walking+=(walkGoal-motion.walking)*(1-decay);
+            var slope=-Math.atan2(prey.vy||0,Math.max(.3,speed))*.22;
+            var pitchGoal=flight*(Math.max(-.22,Math.min(.16,slope))-.10*approach*(1-flight));
+            motion.pitch+=(pitchGoal-motion.pitch)*(1-Math.exp(-8*step));
+            var tailGoal=flight*(profile.tail+profile.approachTail*approach+Math.abs(pose.bank)*.7);
+            motion.tail+=(tailGoal-motion.tail)*(1-decay);
+            target.stride+=Math.min(profile.strideRate,speed/Math.max(.05,prey.visualSize*profile.strideLength))*step;
+          }
+          // Height controls contact independently of the lagged wing spread.
+          // A rising escape keeps its feet free to tuck; a settling bird reaches
+          // the ground before the last wingbeats and body bob have subsided.
+          var altitude=Number.isFinite(prey.flightHeight)?Math.max(0,prey.flightHeight):Infinity;
+          var close=Math.max(0,Math.min(1,1-altitude/Math.max(.15,prey.visualSize*.25)));
+          close=close*close*close*(10+close*(-15+6*close));
+          var rising=prey.alerted?Math.max(0,Math.min(1,((prey.vy||0)-.02)/.18)):0;
+          rising=rising*rising*rising*(10+rising*(-15+6*rising));
+          var stillFolding=Math.max(0,Math.min(1,flight/.08));
+          stillFolding=stillFolding*stillFolding*stillFolding*(10+stillFolding*(-15+6*stillFolding));
+          target.landing=close*(1-rising)*stillFolding;
+          target.flight=flight;target.phase=reduced?0:motion.phase;
+          target.effort=motion.effort*blend;
+          target.bank=reduced?0:pose.bank;
+          target.walking=reduced?0:(1-flight)*motion.walking;
+          target.tailSpread=reduced?0:motion.tail;
+          animation.root.rotation.x=reduced?0:motion.pitch*blend*(1-target.landing);
+          animation.root.rotation.z=reduced?0:pose.bank*(1-target.landing);
+          var quietReady=Math.max(0,Math.min(1,1-flight/.12));
+          quietReady=quietReady*quietReady*quietReady*(10+quietReady*(-15+6*quietReady));
+          var tailQuiet=Math.max(0,Math.min(1,1-motion.tail/.10));
+          tailQuiet=tailQuiet*tailQuiet*tailQuiet*(10+tailQuiet*(-15+6*tailQuiet));
+          quietReady*=tailQuiet;
+          if(!reduced)motion.scanReady+=(quietReady-motion.scanReady)*(1-Math.exp(-8*step));
+          var alertLook=animation.birdLook?Math.max(0,Math.min(1,animation.birdLook.activity)):0;
+          var gazeReady=quietReady*motion.scanReady;
+          gazeReady+=alertLook*(1-gazeReady);
+          target.lookYaw=reduced?0:(animation.birdLook?animation.birdLook.yaw:0)*gazeReady;
+          target.lookPitch=(reduced?0:(animation.birdLook?animation.birdLook.pitch:0)*gazeReady)-animation.root.rotation.x*.75;
+          // The shared feet handle the gait. Keep their contact plane stable;
+          // the generic prey bob would otherwise make a walking bird hover.
+          animation.root.position.y=reduced?0:animation.root.position.y*flight*(1-target.landing);
+          var walkState=animation.sharedWalk,sharedRoot=animation.sharedBird.root;
+          target.footTargets=null;target.footTargetBlend=0;
+          var groundWalk=!reduced&&flight<.015&&altitude<.025&&prey.mesh.name!=='raptor-carried-prey';
+          if(groundWalk){animation.root.rotation.x=0;animation.root.rotation.z=0;}
+          sharedRoot.updateWorldMatrix(true,false);
+          walkState.origin.setFromMatrixPosition(sharedRoot.matrixWorld);
+          var worldScale=Math.sqrt(sharedRoot.matrixWorld.elements[0]*sharedRoot.matrixWorld.elements[0]+
+            sharedRoot.matrixWorld.elements[1]*sharedRoot.matrixWorld.elements[1]+sharedRoot.matrixWorld.elements[2]*sharedRoot.matrixWorld.elements[2]);
+          var worldYaw=Math.atan2(sharedRoot.matrixWorld.elements[8],sharedRoot.matrixWorld.elements[10]);
+          var travelX=walkState.origin.x-walkState.previous.x,travelZ=walkState.origin.z-walkState.previous.z;
+          var distance=walkState.observed?Math.hypot(travelX,travelZ):0;
+          var reach=profile.reach*worldScale;
+          var relocated=distance>reach*2.5||Math.abs(walkState.origin.y-walkState.previous.y)>reach*2.5;
+          var clearContacts=reduced||relocated||prey.mesh.name==='raptor-carried-prey';
+          if(clearContacts){walkState.active=false;walkState.releasing=false;walkState.acquiring=false;walkState.blend=0;walkState.swing=-1;}
+          else if(groundWalk){
+            for(var wf=0;wf<2;wf++)walkState.feet[wf].desired.copy(walkState.feet[wf].rest).add(walkState.ankle).applyMatrix4(sharedRoot.matrixWorld);
+            if(distance>1e-7){walkState.direction.set(travelX/distance,0,travelZ/distance);}
+            if(!walkState.active&&(distance>1e-7||!walkState.grounded)){
+              var reversing=walkState.releasing&&walkState.blend>0;
+              walkState.acquireBlendStart=reversing?walkState.blend:0;
+              walkState.active=true;walkState.acquiring=true;walkState.releasing=false;walkState.acquireElapsed=0;walkState.next=0;walkState.swing=-1;
+              for(var seedFoot=0;seedFoot<2;seedFoot++){
+                var initialFoot=walkState.feet[seedFoot];initialFoot.end.copy(initialFoot.desired);
+                if(typeof terrainHeightAt==='function'){
+                  var initialGround=terrainHeightAt(initialFoot.end.x,initialFoot.end.z);
+                  if(Number.isFinite(initialGround))initialFoot.end.y=initialGround+initialFoot.clearance*worldScale;
+                }
+                initialFoot.start.copy(reversing?initialFoot.current:initialFoot.end);initialFoot.startYaw=reversing?initialFoot.yaw:worldYaw;
+                initialFoot.startSwing=reversing?initialFoot.swing:-1;initialFoot.anchor.copy(initialFoot.end);
+              }
+            }
+            if(walkState.active){
+              var actualSpeed=step>0?distance/step:0;
+              if(!walkState.acquiring&&walkState.swing<0&&distance>1e-7){
+                var choice=walkState.next,other=1-choice;
+                var chosenLag=walkState.feet[choice].desired.distanceTo(walkState.feet[choice].anchor);
+                var otherLag=walkState.feet[other].desired.distanceTo(walkState.feet[other].anchor);
+                if(otherLag>reach*.95&&otherLag>chosenLag){choice=other;chosenLag=otherLag;}
+                if(chosenLag>reach*.38){
+                  var movingFoot=walkState.feet[choice];walkState.swing=choice;walkState.elapsed=0;
+                  walkState.duration=Math.max(.075,Math.min(.28,reach/Math.max(.001,actualSpeed*1.6)));
+                  movingFoot.start.copy(movingFoot.anchor);movingFoot.end.copy(movingFoot.desired);movingFoot.startYaw=movingFoot.yaw;
+                  var lead=Math.min(reach*.78,actualSpeed*walkState.duration*.60+reach*.22);
+                  movingFoot.end.addScaledVector(walkState.direction,lead);
+                  if(typeof terrainHeightAt==='function'){
+                    var footGround=terrainHeightAt(movingFoot.end.x,movingFoot.end.z);
+                    if(Number.isFinite(footGround))movingFoot.end.y=footGround+movingFoot.clearance*worldScale;
+                  }
+                }
+              }
+              var contactsReachable=true;
+              if(walkState.acquiring)walkState.acquireElapsed=Math.min(.12,walkState.acquireElapsed+step);
+              var acquire=walkState.acquireElapsed/.12;acquire=acquire*acquire*acquire*(10+acquire*(-15+acquire*6));
+              walkState.blend=walkState.acquiring?walkState.acquireBlendStart+(1-walkState.acquireBlendStart)*acquire:1;
+              for(var contactFoot=0;contactFoot<2;contactFoot++){
+                var contact=walkState.feet[contactFoot];
+                contact.current.copy(contact.anchor);contact.swing=-1;
+                if(walkState.acquiring){
+                  contact.current.lerpVectors(contact.start,contact.end,acquire);
+                  contact.yaw=contact.startYaw+Math.atan2(Math.sin(worldYaw-contact.startYaw),Math.cos(worldYaw-contact.startYaw))*acquire;
+                  contact.swing=contact.startSwing<0?-1:contact.startSwing+(1-contact.startSwing)*acquire;
+                } else if(walkState.swing===contactFoot){
+                  walkState.elapsed+=step;
+                  var swing=Math.min(1,walkState.elapsed/walkState.duration),ease=swing*swing*swing*(10+swing*(-15+swing*6));
+                  contact.current.lerpVectors(contact.start,contact.end,ease);
+                  contact.yaw=contact.startYaw+Math.atan2(Math.sin(worldYaw-contact.startYaw),Math.cos(worldYaw-contact.startYaw))*ease;
+                  var lift=Math.sin(Math.PI*swing);contact.current.y+=lift*lift*profile.lift*worldScale;
+                  contact.swing=swing;
+                  if(swing===1){contact.anchor.copy(contact.end);walkState.swing=-1;walkState.next=1-contactFoot;contact.swing=-1;}
+                }
+                if(contact.current.distanceTo(contact.desired)>reach*2)contactsReachable=false;
+              }
+              if(walkState.acquiring&&walkState.acquireElapsed===.12)walkState.acquiring=false;
+              // A discontinuous scene correction must never stretch an old
+              // planted leg beyond the short stride the anatomy can support.
+              if(!contactsReachable){walkState.active=false;walkState.releasing=false;walkState.blend=0;walkState.swing=-1;}
+            }
+          } else if(walkState.active||walkState.releasing){
+            // Release the last world contact instead of snapping both feet to
+            // the airborne formula at the walking threshold. An interrupted
+            // launch can reverse this same blend without losing its footholds.
+            if(!walkState.releasing){walkState.releaseElapsed=0;walkState.releaseBlendStart=walkState.blend;walkState.releaseOrigin.copy(walkState.previous);}
+            walkState.active=false;walkState.acquiring=false;walkState.releasing=true;
+            walkState.releaseElapsed=Math.min(.12,walkState.releaseElapsed+step);
+            var release=walkState.releaseElapsed/.12;release=release*release*release*(10+release*(-15+release*6));
+            // Fast escape translation can cover more than a leg's reach long
+            // before the short time blend ends. Fade by distance as well,
+            // continuously, so a small bird never drags a foot far behind.
+            var releaseDistance=Math.max(0,Math.min(1,(walkState.origin.distanceTo(walkState.releaseOrigin)-reach*.5)/reach));
+            releaseDistance=releaseDistance*releaseDistance*releaseDistance*(10+releaseDistance*(-15+releaseDistance*6));
+            walkState.blend=walkState.releaseBlendStart*(1-release)*(1-releaseDistance);
+            if(walkState.blend===0)walkState.releasing=false;
+          }
+          if(walkState.active||walkState.releasing){
+            var contactBlend=walkState.blend;
+            var airborneRelease=Math.max(0,Math.min(1,(flight-.55)/.45));
+            airborneRelease=airborneRelease*airborneRelease*airborneRelease*(10+airborneRelease*(-15+airborneRelease*6));
+            contactBlend*=1-airborneRelease;
+            walkState.blend=contactBlend;
+            if(contactBlend>0){
+              walkState.inverse.copy(sharedRoot.matrixWorld).invert();
+              for(var projectedFoot=0;projectedFoot<2;projectedFoot++){
+                var projected=walkState.feet[projectedFoot],outputFoot=walkState.targets[projectedFoot];
+                walkState.local.copy(projected.current).applyMatrix4(walkState.inverse).sub(walkState.ankle);
+                outputFoot.x=walkState.local.x;outputFoot.y=walkState.local.y;outputFoot.z=walkState.local.z;
+                outputFoot.yaw=Math.atan2(Math.sin(projected.yaw-worldYaw),Math.cos(projected.yaw-worldYaw));outputFoot.swing=projected.swing;
+              }
+              target.footTargets=walkState.targets;target.footTargetBlend=contactBlend;
+            } else if(!groundWalk){walkState.releasing=false;walkState.blend=0;}
+          }
+          walkState.previous.copy(walkState.origin);walkState.observed=groundWalk&&!relocated;walkState.grounded=groundWalk&&!clearContacts;
+          animation.sharedBird.update(target);
+        }
+        function releaseSharedWoodlandPrey(prey) {
+          var animation=prey.animation;
+          if(!animation||!animation.sharedBird||animation.sharedDisposed)return;
+          animation.sharedDisposed=true;
+          if(animation.sharedWalk){animation.sharedWalk.active=false;animation.sharedWalk.observed=false;animation.sharedWalk.grounded=false;animation.sharedWalk.releasing=false;animation.sharedWalk.acquiring=false;animation.sharedWalk.blend=0;animation.sharedWalk.swing=-1;}
+          animation.sharedPose.footTargets=null;animation.sharedPose.footTargetBlend=0;
+          var root=animation.sharedBird.root;
+          if(root.parent)root.parent.remove(root);
+          animation.sharedBird.dispose();
+        }
         function buildPreyVisual(preyData, size) {
           var kind = preyKindFor(preyData);
+          // Production startup requires this module. Keeping the legacy path
+          // permits isolated geometry fixtures to exercise the other species.
+          if(typeof window!=='undefined'&&window.AvianWoodlandBirds&&window.AvianWoodlandBirds.supports(preyData.id)){
+            return buildSharedWoodlandPrey(preyData,size);
+          }
           var root = new THREE.Group();
           root.name = 'prey-' + kind + '-' + preyData.id;
           var material = new THREE.MeshStandardMaterial({
@@ -17222,7 +17510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             birdHead.position.set(0, size * 0.10, size*(0.44+0.08*birdShape.bodyLength));
             root.add(birdHead);
             var birdGazeProfiles={
-              pigeon:[1,0.28,0.08],mourningDove:[0.90,0.26,0.075],songbird:[1.20,0.30,0.09],
+              pigeon:[1,0.28,0.08],mourningDove:[0.90,0.26,0.075],blueJay:[1.05,0.27,0.075],songbird:[1.20,0.30,0.09],
               shorebird:[1.05,0.22,0.06],duck:[0.80,0.24,0.055],waterfowl:[0.75,0.25,0.06],
               grouse:[0.85,0.27,0.075],ptarmigan:[0.85,0.26,0.075],smallOwl:[0.65,0.45,0.10]
             },birdGaze=birdGazeProfiles[preyData.id]||birdGazeProfiles.pigeon;
@@ -18262,6 +18550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function clearCarriedPrey() {
           if (!carriedPrey) return;
           if(carriedPrey.feet)carriedPrey.feet.forEach(function(foot){foot.morphTargetInfluences[0]+=foot.morphTargetInfluences[1];foot.morphTargetInfluences[1]=0;});
+          if(carriedPrey.prey.animation.sharedBird)releaseSharedWoodlandPrey(carriedPrey.prey);
           var root = carriedPrey.prey.mesh;
           if (root.parent) root.parent.remove(root);
           var resources = new Set();
@@ -18295,11 +18584,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             wing.rotation.set(0,side*1.15,side*0.08); wing.scale.x=0.3;
             wing.morphTargetInfluences[0]=wing.morphTargetInfluences[1]=0;
           });
-          if(prey.animation.kind==='bird'){
+          if(prey.animation.kind==='bird'&&!prey.animation.sharedBird){
             prey.animation.pose.wingFlex=0;prey.animation.pose.tailGather=0;prey.animation.pose.tailGatherResponse=0;prey.animation.pose.tailSpeed=null;
             prey.animation.tail.morphTargetInfluences[0]=0;prey.animation.tail.rotation.set(0,0,0);
           }
           if(prey.animation.birdLook){advanceBirdPreyHead(prey.animation.birdLook,0,0,0,false,0,0,true,prey.bobPhase);applyBirdPreyHeadPose(prey.animation);}
+          if(prey.animation.sharedBird){
+            Object.keys(prey.animation.sharedPose).forEach(function(key){prey.animation.sharedPose[key]=0;});
+            prey.animation.sharedPose.footTargets=null;prey.animation.sharedPose.footTargetBlend=0;
+            if(prey.animation.sharedWalk){prey.animation.sharedWalk.active=false;prey.animation.sharedWalk.observed=false;prey.animation.sharedWalk.grounded=false;prey.animation.sharedWalk.releasing=false;prey.animation.sharedWalk.acquiring=false;prey.animation.sharedWalk.blend=0;prey.animation.sharedWalk.swing=-1;}
+            prey.animation.sharedBird.update(prey.animation.sharedPose);
+          }
           if(prey.animation.kind==='fish'){advanceFishSwim(prey.animation.swim,0,prey.data.speedMps,0,true,prey.bobPhase);applyFishSwim(prey.animation);}
           if(prey.animation.gait){prey.animation.legs.forEach(function(leg){setGroundPreyLegPose(leg,0);});prey.animation.tail.rotation.z=0;}
           if(prey.animation.look){advanceGroundPreyHead(prey.animation.look,0,0,0,false,0,true,prey.bobPhase);applyGroundPreyHeadPose(prey.animation);}
@@ -20194,7 +20489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             birdPreyHeads:preyMeshes.filter(function(prey){return !!prey.animation.birdLook;}).map(function(prey){var look=prey.animation.birdLook;return {id:prey.data.id,phase:look.phase,rate:look.rate,activity:look.activity,yaw:look.yaw,pitch:look.pitch,roll:look.roll,lookSide:look.lookSide,alerted:prey.alerted};}),
             groundPreyHeads:preyMeshes.filter(function(prey){return !!prey.animation.look;}).map(function(prey){var look=prey.animation.look;return {id:prey.data.id,phase:look.phase,rate:look.rate,activity:look.activity,yaw:look.yaw,pitch:look.pitch,roll:look.roll,lookSide:look.lookSide,alerted:prey.alerted};}),
             groundPreyGaits: preyMeshes.filter(function(prey){return !!prey.animation.gait;}).map(function(prey){var g=prey.animation.gait;return {id:prey.data.id,phase:g.phase,rate:g.rate,effort:g.effort,bob:g.bob,front:g.front,hind:g.hind,strides:g.strides?g.strides.slice():null};}),
-            preyVisualPoses: preyMeshes.map(function(prey){return {kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,wingFlex:prey.animation.pose.wingFlex,tailGather:prey.animation.pose.tailGather,phase:prey.animation.pose.phase,rate:prey.animation.pose.rate,motionBlend:prey.animation.pose.motionBlend,height:prey.flightHeight};}),
+            preyVisualPoses: preyMeshes.map(function(prey){return {id:prey.data.id,sharedModel:!!prey.animation.sharedBird,kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,wingFlex:prey.animation.pose.wingFlex,tailGather:prey.animation.pose.tailGather,phase:prey.animation.pose.phase,rate:prey.animation.pose.rate,motionBlend:prey.animation.pose.motionBlend,height:prey.flightHeight};}),
             activeTargetIndex: snapshotTarget ? snapshotTarget.index : -1,
             visibleBeaconCount: countVisiblePreyBeacons(),
             precipitationMode: precipitationMode,
@@ -20916,9 +21211,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var pose=prey.animation.pose;pose.bank=0;pose.wingAngle=0.08;pose.wingFlex=0;pose.tailGather=0;pose.tailGatherResponse=0;pose.tailSpeed=null;pose.motionBlend=0;prey.visual.rotation.z=0;
               prey.visual.position.y=prey.surfaceMode==='water-surface'?prey.animation.float.offset:0;
               prey.animation.wings.forEach(function(wing,i){var side=i===0?-1:1;wing.rotation.z=side*0.08;wing.rotation.y=side*1.15*(1-pose.spread);wing.scale.x=0.3+0.7*pose.spread;wing.morphTargetInfluences[0]=wing.morphTargetInfluences[1]=0;});
-              prey.animation.tail.morphTargetInfluences[0]=0;prey.animation.tail.rotation.set(0,0,0);
+              if(prey.animation.tail){prey.animation.tail.morphTargetInfluences[0]=0;prey.animation.tail.rotation.set(0,0,0);}
             }});
             preyMeshes.forEach(function(prey){if(prey.animation.look)updateGroundPreyHead(prey,0,true);if(prey.animation.birdLook)updateBirdPreyHead(prey,0,true);});
+            preyMeshes.forEach(function(prey){if(prey.animation.sharedBird)applySharedWoodlandPreyPose(prey,0,true);});
             preyMeshes.forEach(function(prey){if(prey.animation.kind==='fish'){var swim=prey.animation.swim;advanceFishSwim(swim,0,prey.data.speedMps,0,true,prey.bobPhase);applyFishSwim(prey.animation);prey.visual.rotation.y=prey.animation.pose.heading||0;prey.visual.rotation.z=0;prey.visual.position.y=0;}});
             preyMeshes.forEach(function(prey){if(prey.animation.insect){advanceInsectFlight(prey.animation.insect,Math.hypot(prey.vx,prey.vz),prey.data.speedMps,prey.flightHeight,0,true,prey.bobPhase);applyInsectFlight(prey.animation,0);}});
             waterWakeEntries.forEach(function(entry){entry.state.opacity=0;entry.wake.visible=false;entry.wake.material.opacity=0;});
@@ -22367,11 +22663,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               if(pm2.animation.gait&&pm2.surfaceMode==='terrain')applyGroundPreyTerrain(pm2,dt,_rmFX);
               if(pm2.animation.look)updateGroundPreyHead(pm2,dt,_rmFX);
               if(pm2.animation.birdLook)updateBirdPreyHead(pm2,dt,_rmFX);
+              if(pm2.animation.sharedBird)applySharedWoodlandPreyPose(pm2,dt,_rmFX);
               if(pm2.animation.slither){advanceSnakeSlither(pm2.animation.slither,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,dt,_rmFX);applySnakePreySurface(pm2);}
             }
             // Despawn ancient prey
             if (motionNow - pm2.spawnedAt > 60000) {
               scene.remove(pm2.mesh);
+              if(pm2.animation.sharedBird)releaseSharedWoodlandPrey(pm2);
               pm2.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
               preyMeshes.splice(pi3, 1); pi3--;
             }
@@ -23128,6 +23426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if (material.dispose) material.dispose();
           }
           clearCarriedPrey();
+          preyMeshes.forEach(function(prey){if(prey.animation.sharedBird)releaseSharedWoodlandPrey(prey);});
           scene.remove(strikeFxPoints);
           strikeFxGeometry.dispose();
           strikeFxMaterial.dispose();

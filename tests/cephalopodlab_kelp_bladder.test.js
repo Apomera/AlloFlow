@@ -16,6 +16,11 @@ const helpers=region('function shadeCLHuntPlantFlex(','function createCLHuntMari
 const noRandom=Object.create(Math);noRandom.random=()=>{throw new Error('Decorative plant geometry must not consume dive RNG');};
 const actual=new Function('Math',helpers+';return{build:createCLHuntPlantGeometry,configure:createCLHuntPlantFlex,shade:shadeCLHuntPlantFlex};')(noRandom);
 const oldBuild=new Function('Math',accepted.factorySource+';return createCLHuntPlantGeometry;')(noRandom);
+const floatReference=JSON.parse(readFileSync('tests/fixtures/cephalopod_kelp_tip_reference.json','utf8'));
+assert.equal(floatReference.version,1);assert.equal(floatReference.baselineSourceSha256,'fa90fb91fca4bf3ccda593d2d5cf1cf1703625a1b6148cdd00716481d447323f');
+assert.equal(floatReference.factorySha256,'622d96130f8e39162cf4d483be96eec889f4ea9b923f378b8f9b5f502a82dc13');
+assert.equal(createHash('sha256').update(floatReference.factorySource).digest('hex'),floatReference.factorySha256,'Frozen accepted floats must stay exact');
+const floatReferenceBuild=new Function('Math',floatReference.factorySource+';return createCLHuntPlantGeometry;')(noRandom);
 // Retain the original grass oracle; exclude only the exact approved static insertion.
 // Actual live grass is checked independently by cephalopodlab_seagrass_straps.test.js.
 const grassReferenceSource=restoreOriginalSeagrassSource(source),grassReferenceAt=grassReferenceSource.indexOf('function shadeCLHuntPlantFlex('),grassReferenceEnd=grassReferenceSource.indexOf('function createCLHuntMarineSnowGeometry(',grassReferenceAt);
@@ -25,6 +30,7 @@ const oldHelpers=helpers.slice(0,helpers.indexOf('function createCLHuntPlantGeom
 function point(geometry,index){return new THREE.Vector3().fromBufferAttribute(geometry.attributes.position,index);}
 function bytes(array,count=array.length){return Buffer.from(array.buffer,array.byteOffset,count*array.BYTES_PER_ELEMENT);}
 function samePrefix(current,previous,count){assert.ok(bytes(current,count).equals(bytes(previous,count)),'Accepted buffer prefix changed');}
+function sameRange(current,previous,first,count){samePrefix(current.subarray(first,first+count),previous.subarray(first,first+count),count);}
 function triangles(geometry,part){
   const result=[];
   for(let at=part.indexStart;at<part.indexStart+part.indexCount;at+=3){const ids=[0,1,2].map(offset=>geometry.index.getX(at+offset));result.push({ids,points:ids.map(index=>point(geometry,index))});}
@@ -67,7 +73,7 @@ const pauseGuard=source.slice(pauseAt,source.indexOf('\n',pauseAt));
 const liveSway=new Function('kelpStrands','grass','gameState','now','dt=0.05',helpers+';'+pauseGuard+'\n'+region('            kelpStrands.forEach(function(k) {','            // Vent plume rises')+region('            grass.forEach(function(g) {','            // ─── Floor + caustics follow')+'\n}');
 
 describe('Cephalopod Hunter attached kelp gas bladders',()=>{
-  it('keeps every accepted141 kelp attribute and504indices byte-exact, with original grass checked through the approved insertion reversal',()=>{
+  it('keeps accepted central, proximal blade and float bytes exact, with only approved distal tip exceptions and original grass checked through the approved insertion reversal',()=>{
     for(let variant=0;variant<80;variant++){
       const height=.6+variant/79*1.3,current=grassReferenceBuild(THREE,'grass',height,variant),previous=oldBuild(THREE,'grass',height,variant);
       try{
@@ -77,18 +83,25 @@ describe('Cephalopod Hunter attached kelp gas bladders',()=>{
       }finally{current.dispose();previous.dispose();}
     }
     for(const height of [5,7,9])for(let variant=0;variant<25;variant++){
-      const current=actual.build(THREE,'kelp',height,variant),previous=oldBuild(THREE,'kelp',height,variant);
+      const current=actual.build(THREE,'kelp',height,variant),previous=oldBuild(THREE,'kelp',height,variant),previousFloats=floatReferenceBuild(THREE,'kelp',height,variant);
       try{
         assert.equal(previous.attributes.position.count,141);assert.equal(previous.index.count,504);
-        assert.equal(current.attributes.position.count,277);assert.equal(current.index.count/3,424);
-        assert.ok(current.attributes.position.count<=300&&current.index.count/3<=430);
+        assert.equal(current.attributes.position.count,301);assert.equal(current.index.count/3,456);
+        assert.equal(current.attributes.position.count-previousFloats.attributes.position.count,24);assert.equal((current.index.count-previousFloats.index.count)/3,32);
         assert.deepEqual(Object.keys(current.attributes).sort(),['color','normal','position','uv']);
-        for(const [name,attr] of Object.entries(previous.attributes))samePrefix(current.attributes[name].array,attr.array,141*attr.itemSize);
-        samePrefix(current.index.array,previous.index.array,504);
+        for(const [name,attr] of Object.entries(previous.attributes)){
+          samePrefix(current.attributes[name].array,attr.array,57*attr.itemSize);
+          for(let leaf=0;leaf<4;leaf++)sameRange(current.attributes[name].array,attr.array,(57+leaf*21)*attr.itemSize,(name==='normal'?12:15)*attr.itemSize);
+          sameRange(current.attributes[name].array,previousFloats.attributes[name].array,141*attr.itemSize,136*attr.itemSize);
+        }
+        samePrefix(current.index.array,previous.index.array,216);
+        for(let leaf=0;leaf<4;leaf++)sameRange(current.index.array,previous.index.array,216+leaf*72,48);
+        sameRange(current.index.array,previousFloats.index.array,504,768);
+        assert.deepEqual(current.boundingBox,previousFloats.boundingBox);assert.deepEqual(current.boundingSphere,previousFloats.boundingSphere);
         const {clKelpBladders,...oldMetadata}=current.userData;assert.deepEqual(oldMetadata,previous.userData);
         assert.deepEqual(Object.keys(clKelpBladders).sort(),['latitudeIntervals','parts','sides','version']);assert.equal(clKelpBladders.version,1);assert.equal(clKelpBladders.sides,8);assert.equal(clKelpBladders.latitudeIntervals,5);
         assert.equal(current.boundingBox.min.y,previous.boundingBox.min.y);assert.equal(current.boundingBox.max.y,previous.boundingBox.max.y);
-      }finally{current.dispose();previous.dispose();}
+      }finally{current.dispose();previous.dispose();previousFloats.dispose();}
     }
   },90000);
 

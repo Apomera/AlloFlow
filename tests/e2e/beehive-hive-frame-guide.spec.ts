@@ -1,7 +1,7 @@
 import { test, expect, Page, Locator } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 
-const artifacts = '.codex-artifacts/bee-frame-guide-2026-10-11';
+const artifacts = process.env.BEE_FRAME_GUIDE_ARTIFACTS || '.codex-artifacts/bee-frame-guide-2026-10-11';
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_beehive.js', toolId: 'beehive',
   preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['node_modules/axe-core/axe.min.js'],

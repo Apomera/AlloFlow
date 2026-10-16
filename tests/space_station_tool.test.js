@@ -171,7 +171,7 @@ describe('space station tool', () => {
       expect(source).toContain('iss-quiz-answer-state');
       expect(source).toContain("role: 'application'");
       expect(source).toContain("'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation'");
-      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home'");
+      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home F'");
       expect(source).toContain("id: 'iss-map-status'");
       expect(source).toContain("upd({ mapView: 'overview' })");
       expect(source).toContain('cv._issCleanup = cleanup');
@@ -188,9 +188,8 @@ describe('space station tool', () => {
       expect(source).toContain('_axisOrigin');
       expect(source).toContain("cv.addEventListener('keydown', onKey)");
       // Touch parity: without touchAction the browser steals the drag for page
-      // scrolling and drag-to-rotate is dead on touchscreen Chromebooks. And
-      // pointercancel must clear `dragging`, or the idle auto-rotation (gated on
-      // !dragging) freezes for the rest of the session.
+      // scrolling and camera orbit is unavailable on touchscreens. Cancellation
+      // must release the active gesture so subsequent input can take over.
       expect(source).toContain("cv.style.touchAction = 'none'");
       expect(source).toContain("window.addEventListener('pointercancel', onUp)");
       expect(source).toContain("window.removeEventListener('pointercancel', onUp)");
@@ -214,15 +213,18 @@ describe('space station tool', () => {
       expect(source).toContain('renderer._alloComposer');
       expect(source).toContain('window.AlloPostFXEnabled === false');
       // Never let a post-FX failure blank the station.
-      expect(source).toContain('else renderer.render(scene, camera);');
+      expect(source).toContain('else renderMapScene();');
+      expect(source).toContain('renderer.render(planetScene, camera);');
+      expect(source).toContain('stationPass.clear = false');
       // Composer must track canvas resizes or bloom detaches from the viewport.
       expect(source).toContain('composer.setSize(');
       // Reduced motion must not redraw an identical frame forever.
       expect(source).toContain('_lastFrameSig');
       expect(source).toContain('tick % 120 !== 0');
-      // Sun-glint decomposes one quaternion per wing, not per panel.
-      expect(source).toContain('wingPanelMats');
-      expect(source).not.toContain('panelMats[pi].wing');
+      // Solar arrays track through a group transform; their material reflects
+      // sunlight rather than emitting an artificial glow in eclipse.
+      expect(source).toContain('wings[wi].quaternion.setFromEuler(arrayEuler)');
+      expect(source).not.toContain('0.16 + 0.62 * glint');
       // Canadarm2's booms must grow from a SHARED elbow. They previously had
       // independently-set centres, so their ends never met and the arm drew as
       // two disconnected sticks. Pin the derivation, and that the old
@@ -283,23 +285,20 @@ describe('space station tool', () => {
       // Painted once per quality tier and reused across mounts.
       expect(source).toContain('_issEarthCanvases[key]');
 
-      // City lights ride the same daylight term as the windows and the array
-      // glint: fixed emissive either blows them white over the day side or
+      // City lights ride the same daylight term as the windows:
+      // fixed emissive either blows them white over the day side or
       // leaves them invisible over the night side.
       expect(source).toContain('earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn');
 
-      // The day/night sweep must circle in a plane containing the Earth-station
-      // line. The old horizontal sweep kept the Sun above the planet forever,
-      // so the ground below never had a night side at all.
-      expect(source).toContain('sun.position.set(Math.cos(sa) * 10, Math.sin(sa) * 9.5, Math.cos(sa) * 4.5)');
-      expect(source).not.toContain('sun.position.set(Math.cos(sa) * 10, 6, Math.sin(sa) * 10)');
-      // A constant z kept the Sun behind the camera for the whole orbit, so the
-      // sun billboard never rendered in the view students land on.
-      expect(source).not.toContain('Math.sin(sa) * 9.5, 4.5)');
+      // The same modeled Sun direction lights both rendered scenes. Physical
+      // orbit/beta/shadow geometry is covered by the focused lighting tests.
+      expect(source).toContain('sun.position.copy(_sunDir).multiplyScalar(40)');
+      expect(source).toContain('earthSun.position.copy(sun.position)');
+      expect(source).toContain('sun.intensity = lightModel.eclipse ? 0 : 1.35');
 
       // Earth's surface is at y = -4.5 here, so an "Earth-facing" camera below
       // that sits inside the planet and renders a flat wash.
-      expect(source).toContain('nadir: { camera: [0, -3.9, 5.6]');
+      expect(source).toContain('nadir: { camera: [0, -3.8, 5.6]');
       expect(source).not.toContain('nadir: { camera: [0, -11.5, 2.5]');
 
       // Per-renderer textures must be released with the renderer.

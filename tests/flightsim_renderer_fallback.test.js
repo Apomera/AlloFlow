@@ -36,7 +36,15 @@ async function click(text) {
   expect(button).toBeTruthy();
   await act(async () => button.click());
 }
-const fullCanvasFill = () => context.fillRect.mock.calls.some((args, index) => args[0] === 0 && args[1] === 0 && args[2] === 800 && args[3] === 500 && context.fillRect.mock.results[index].value === 'linear');
+// The sky paints inside the padded, banked world pass. Corner coverage is
+// checked in the weather atmosphere integration suite; here we witness its paint.
+const hasCanvasSkyPaint = () => context.fillRect.mock.calls.some((args, index) => {
+  const paint = context.fillRect.mock.results[index].value;
+  return args[0] === 0 && args[1] === 0 && args[2] > 0 && args[3] > 0 &&
+    paint?.kind === 'linear' && paint.stops.length === 17 &&
+    paint.stops[0][0] === 0 && paint.stops[16][0] === 1 &&
+    paint.stops.every(([offset, color]) => offset >= 0 && offset <= 1 && /^rgb\(/.test(color));
+});
 function workingRenderer() {
   let pixelRatio = 1;
   const renderer = {
@@ -56,8 +64,8 @@ beforeEach(() => {
   vi.stubGlobal('AlloPostFXEnabled', false);
   context = new Proxy({
     measureText: text => ({ width: String(text).length * 6 }),
-    createLinearGradient: () => ({ kind: 'linear', addColorStop() {} }),
-    createRadialGradient: () => ({ kind: 'radial', addColorStop() {} }), fillRect: vi.fn(() => context.fillStyle?.kind),
+    createLinearGradient: () => ({ kind: 'linear', stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } }),
+    createRadialGradient: () => ({ kind: 'radial', addColorStop() {} }), fillRect: vi.fn(() => context.fillStyle),
     createImageData: (width, height) => ({ data: new Uint8ClampedArray(width * height * 4) }),
   }, { get: (target, property) => property in target ? target[property] : () => {}, set: (target, property, value) => { target[property] = value; return true; } });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
@@ -79,7 +87,7 @@ describe('SkySchool WebGL failure fallback', () => {
     expect(status().textContent).toContain('Canvas');
     await frame();
     expect(WebGLRenderer).toHaveBeenCalledTimes(1);
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     expect(status().textContent).not.toContain('3D terrain');
     const start = hooks().flightRef.current.lon;
     for (let index = 0; index < 25; index++) await frame();
@@ -107,7 +115,7 @@ describe('SkySchool WebGL failure fallback', () => {
     await mount({ ...Three, WebGLRenderer, Scene: function() { throw new Error('Scene initialization failed'); } });
     await frame();
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     await frame(); await frame();
     expect(WebGLRenderer).toHaveBeenCalledTimes(1);
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
@@ -122,7 +130,7 @@ describe('SkySchool WebGL failure fallback', () => {
     await frame(); await frame();
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
     expect(WebGLRenderer).toHaveBeenCalledTimes(1);
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     expect(status().textContent).toContain('Canvas');
   });
 
@@ -135,12 +143,12 @@ describe('SkySchool WebGL failure fallback', () => {
     expect(warnings.mock.calls).toEqual([]);
     expect(renderer.render).toHaveBeenCalled();
     expect(status().textContent).toContain('3D terrain');
-    expect(fullCanvasFill()).toBe(false);
+    expect(hasCanvasSkyPaint()).toBe(false);
     renderer.render.mockImplementation(() => { throw new Error('GPU render failed'); });
     context.fillRect.mockClear();
     await frame();
     expect(status().textContent).toContain('Canvas');
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
     const renderCalls = renderer.render.mock.calls.length;
     await frame(); await frame();
@@ -158,7 +166,7 @@ describe('SkySchool WebGL failure fallback', () => {
     context.fillRect.mockClear();
     await frame();
     expect(status().textContent).toContain('Canvas');
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
     expect(warnings).toHaveBeenCalledTimes(1);
   });
@@ -172,7 +180,7 @@ describe('SkySchool WebGL failure fallback', () => {
     await frame();
     expect(renderer.render).toHaveBeenCalledTimes(1);
     expect(status().textContent).toContain('Canvas');
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
     expect(warnings).toHaveBeenCalledTimes(1);
   });
@@ -199,7 +207,7 @@ describe('SkySchool WebGL failure fallback', () => {
     expect(hooks().getLogRef().current).toEqual(pausedPractice);
     expect(latest.flightChallenge).toEqual(pausedChallenge);
     expect(status().textContent).toContain('Canvas');
-    expect(fullCanvasFill()).toBe(true);
+    expect(hasCanvasSkyPaint()).toBe(true);
     expect(renderer.dispose).toHaveBeenCalledTimes(1);
     expect(warnings).toHaveBeenCalledTimes(1);
     const fills = context.fillRect.mock.calls.length;
@@ -289,7 +297,15 @@ describe('SkySchool viewport and chase camera rendering', () => {
     expect(camera.position.y).toBeGreaterThanOrEqual(hooks().flightRef.current.fieldElev + 6);
     const aircraft = renderer.render.mock.calls[0][0].children.find(item => item.userData.type === 'cessna172');
     const chaseDistance = window.__RR_TEST_EXPORTS__.flightSim.getChaseCameraDistance(aircraft.userData.visualRadius, camera.aspect, camera.fov, camera.near);
-    expect(camera.position.y).toBeCloseTo(aircraft.position.y + chaseDistance * 8 / 30, 5);
+    // First-frame placement is immediate, with room for the near-plane footprint.
+    const firstEyeHeight = Math.max(aircraft.position.y + chaseDistance * 8 / 30,
+      hooks().flightRef.current.fieldElev + camera.near * 2);
+    expect(camera.position.y).toBeCloseTo(firstEyeHeight, 5);
+    camera.updateMatrixWorld(true);
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+      const corner = new Three.Vector3(sx, sy, -1).unproject(camera);
+      expect(corner.y).toBeGreaterThan(hooks().flightRef.current.fieldElev);
+    }
     expect(Math.hypot(camera.position.x, camera.position.z)).toBeCloseTo(chaseDistance, 5);
     const parkedBounds = new Three.Box3().setFromObject(aircraft);
     expect(parkedBounds.min.y).toBeGreaterThanOrEqual(hooks().flightRef.current.fieldElev + 2 - 1e-6);

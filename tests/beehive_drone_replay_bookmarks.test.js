@@ -18,6 +18,6 @@ describe('Drone telemetry replay key moments', () => {
     expect(source).toContain("'data-flight-replay-bookmark': bookmark.id");
     expect(source).toContain(`'aria-label': __alloT('stem.beehive.a11y_jump_to_key_flight_moments', 'Jump to key flight moments')`);
     expect(source).toContain("'aria-pressed': active");
-    expect(source.indexOf('var xAt = function(index)')).toBeLessThan(source.indexOf('var bookmarkLines ='));
+    expect(source).toContain("'aria-controls': 'beehive-drone-replay-selected'");
   });
 });

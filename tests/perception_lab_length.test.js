@@ -53,10 +53,10 @@ afterEach(async () => {
 describe('length room geometry and saved state', () => {
   it('adds the eighteenth room without mutating earlier room saves', () => {
     const raw = { activity: 'aperture', aperture: { phase: 90, speed: 0.5, completed: [0] }, notes: { aperture: 'Trace the endpoints.' } }, before = structuredClone(raw), state = walk.normalize(raw);
-    expect(state.length).toEqual(defaults()); expect(walk.activities).toHaveLength(18); expect(walk.activities.at(-1).id).toBe('length');
-    expect(walk.nextRoom(state, 1)).toBe('length'); expect(walk.nextRoom(seed(), 1)).toBeNull();
+    expect(state.length).toEqual(defaults()); expect(walk.activities).toHaveLength(20); expect(walk.activities[17].id).toBe('length'); expect(walk.activities.at(-1).id).toBe('anamorphosis');
+    expect(walk.nextRoom(state, 1)).toBe('length'); expect(walk.nextRoom(seed(), 1)).toBe('silhouette');
     expect(state.aperture).toMatchObject(raw.aperture); expect(state.notes.aperture).toBe(raw.notes.aperture); expect(raw).toEqual(before); expect(walk.normalize(state)).toEqual(state);
-    expect(walk.normalizePlayer({ x: 999 }).x).toBe(199.3);
+    expect(walk.normalizePlayer({ x: 999 }).x).toBe(223.3);
   });
 
   it('normalizes bounds, observation bits and unique earned rounds', () => {

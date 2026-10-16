@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "baselineSourceSha256": "de5409680da19fd16afbfe5bf3e1120bd681911b78ea2f9abae3053e6245ff9d",
+  "factorySha256": "a704bd4d143411f9b7520863aef0a32e50d5bb4369617bb90014c817b3e1ce0b",
+  "flexSha256": "2c4797d731c1aef417b5fff9a5f08aea51e13051be307cc79eb0e6077909501a",
+  "updateSha256": "a57ab78b7c667bb9746b5379d40fd15011e6b62643661e949fe7eb5d9815250f",
+  "geometrySha256": "feca75ad1bd3bcf17601b37e14d9837903017a2066e9aa090eb129e05aaeeb36",
+  "supportedShader": {
+    "vertex": "ed7dff2bfa2c06a79bb5c4381c86c3cabe063477be5f11a709ef437be53916e8",
+    "fragment": "8fb0c8d68def813b6ce0e6a9ed0742af538167645d27fb0d49f9f1ebe28e3cc8"
+  },
+  "unsupportedShader": {
+    "vertex": "4dfc52b532d3b6285bb153f5e92456d6fbcd43965fa5c73901521121ad74ec6c",
+    "fragment": "d5f81ea94567068599de39c733fa46a5fe65b52911576a9117148d62e3109d3b"
+  },
+  "placementSha256": "627099bdca919e586117731e82abbe8df1cb12c24cc7de674765bb5fcd8614e6",
+  "swaySha256": "19b8d3711fad5846a298f7d3f20c2c2d35cf16e1371557abde7f513845b1905f"
+}

@@ -61,9 +61,9 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('.theme-dark .brainatlas-tool-shell');
     expect(src).toContain('.theme-contrast .brainatlas-tool-shell');
     expect(src).toContain('.brainatlas-tool-shell .bg-white');
-    expect(src).toContain('.brainatlas-detail-panel{border-radius:14px!important;background:var(--ba-surface)!important');
+    expect(src).toContain('.brainatlas-detail-panel{border-radius:20px!important;border-width:1px!important;background:var(--ba-surface)!important');
     expect(src).toContain('.brainatlas-detail-takeaways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}');
-    expect(src).toContain('.brainatlas-view-panel{border:1px solid var(--ba-border);border-radius:14px;');
+    expect(src).toContain('.brainatlas-view-panel{border:1px solid var(--ba-border);border-radius:16px;');
     expect(src).toContain('.brainatlas-view-button{display:inline-flex;');
     expect(src).toContain('.brainatlas-detail-focus-header{display:grid;');
   });
@@ -113,8 +113,8 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('brainAtlasDrawLegendGrid(x0 + 8, lifespanLegendY, pW - 16, lifespanLegendItems');
     expect(src).toContain('spike_cycle_decoder_neuron');
     expect(src).toContain('SPIKE CYCLE DECODER');
-    expect(src).toContain('Threshold -55');
-    expect(src).toContain('Refractory');
+    expect(src).toContain('Threshold \\u221255');
+    expect(src).toContain("label: 'Recovery', sub: 'returns to rest'");
 
     const spike = render({ view: 'neuron', selectedRegion: 'spike_cycle_decoder_neuron' });
     expect(spike).toMatch(/Spike Cycle Decoder/);
@@ -175,7 +175,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toContain('data-brainatlas-canvas-status="true"');
     expect(html).toContain('data-brainatlas-learning-footer="true"');
     expect(html).toContain('data-brainatlas-has-selection="false"');
-    expect(src).toContain('.brainatlas-region-item-copy{font-size:14px;line-height:1.5');
+    expect(src).toContain('.brainatlas-region-item-copy{font-size:13px;line-height:1.6');
     expect(src).not.toContain('line-clamp-1');
 
     const selected = render({ view: 'lateral', selectedRegion: 'frontal' });
@@ -197,8 +197,11 @@ describe('brainAtlas refinement contracts', () => {
     // clueChipY now derives from the banner-relative cwChipY (legibility
     // refactor) instead of a fixed H-proportion.
     expect(src).toContain('var clueChipY = cwChipY;');
-    expect(src).toContain('var disorderChipY = H * 0.165;');
-    expect(src).toContain('var limbicChipY = H * 0.165;');
+    expect(src).toContain('var bgDecoderY = bgHeading.bottom + 10;');
+    expect(src).toContain('var bgChipY = bgDecoderY + bgDecoderH + 8;');
+    expect(src).toContain('var disorderChipY = bgChipY;');
+    expect(src).toContain('var limbicBandY = limbicHeading.bottom + 10;');
+    expect(src).toContain('var limbicChipY = limbicChipTop;');
     expect(src).toContain('var safePulseLabelMargin = Math.max(70, W * 0.085);');
   });
 
@@ -267,7 +270,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('function scrollToBrainAtlasDiagram()');
     expect(src).toContain("el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });");
     expect(src).toContain('scroll-margin-top:16px');
-    expect(src).toContain('.brainatlas-topbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;');
+    expect(src).toContain('.brainatlas-topbar{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;');
     expect(src).toContain('.brainatlas-canvas-eyebrow{');
   });
 
@@ -375,9 +378,11 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/Active state: Studying/);
     expect(html).toContain('data-brainatlas-eeg-readout="true"');
     expect(html).toMatch(/Studying readout/);
-    expect(html).toMatch(/Beta\/gamma increase with focus/);
+    expect(html).toMatch(/An example of faster activity/);
+    expect(html).toMatch(/changes vary with task, cortical location, and recording conditions/);
     expect(html).toMatch(/Interpretation caution/);
-    expect(html).toMatch(/stress, caffeine, and artifact/i);
+    expect(html).toMatch(/cannot measure concentration or establish a diagnosis/i);
+    expect(html).toMatch(/muscle activity can contribute similar fast signals/i);
     expect(src).toContain('var EEG_ACTIVITY_MODES = [');
     expect(src).toContain('var EEG_STATE_READOUTS = {');
     expect(src).toContain('activeEegReadout');
@@ -598,7 +603,8 @@ describe('brainAtlas refinement contracts', () => {
 
     const decoder = render({ view: 'basalGangliaLoop', selectedRegion: 'movement_disorder_decoder_bg' });
     expect(decoder).toMatch(/Movement Disorder Decoder/);
-    expect(decoder).toMatch(/too little dopamine/i);
+    expect(decoder).toMatch(/nigrostriatal and broader network dysfunction/i);
+    expect(decoder).toMatch(/do not uniquely identify a broken circuit node/i);
     expect(decoder).toMatch(/hemiballismus/i);
   });
 
@@ -641,7 +647,7 @@ describe('brainAtlas refinement contracts', () => {
 
     expect(html).toContain('Cross-Lateralization');
     expect(html).toContain('width="1040"');
-    expect(html).toContain('height="780"');
+    expect(html).toContain('height="1040"');
     expect(html).toMatch(/Corpus Callosum/i);
     expect(html).toMatch(/Split-Brain Phenomenon/i);
     expect(html).toMatch(/8 targets/);
@@ -686,9 +692,10 @@ describe('brainAtlas refinement contracts', () => {
 
     const decoder = render({ view: 'sleepStages', selectedRegion: 'sleep_architecture_decoder_sleep' });
     expect(decoder).toMatch(/Sleep Architecture Decoder/);
-    expect(decoder).toMatch(/90 minutes/i);
-    expect(decoder).toMatch(/Fragmented sleep/i);
-    expect(decoder).toMatch(/glymphatic/i);
+    expect(decoder).toMatch(/ninety to one hundred twenty minutes/i);
+    expect(decoder).toMatch(/substantial variation/i);
+    expect(decoder).toMatch(/repeated awakenings may matter/i);
+    expect(decoder).toMatch(/stage is not itself a diagnosis/i);
   });
 
   it('adds a Penfield stimulation response map to the Stimulation Lab', () => {
@@ -712,8 +719,9 @@ describe('brainAtlas refinement contracts', () => {
 
     const detail = render({ view: 'stimulate', selectedRegion: 'stim_language_map' });
     expect(detail).toMatch(/Language Disruption Zone/);
-    expect(detail).toMatch(/Broca-area stimulation/i);
-    expect(detail).toMatch(/Wernicke-area stimulation/i);
+    expect(detail).toMatch(/interrupt articulation, naming, repetition, reading, or comprehension/i);
+    expect(detail).toMatch(/vary by person and task/i);
+    expect(detail).toMatch(/cannot be predicted reliably from Broca or Wernicke labels alone/i);
   });
 
   it('keeps simulation views discoverable as one grouped visual-support path', () => {

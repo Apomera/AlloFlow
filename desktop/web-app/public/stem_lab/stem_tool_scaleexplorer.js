@@ -84,8 +84,8 @@
       describe: "The gap from our Solar System to the centre of the nearest large galaxy. Explore both galactic discs at a shared physical scale, then cross the intervening space with the virtual camera.",
       note: "About 2.54 million light-years in this rounded distance reference. Galaxy extents depend on how their faint outskirts are defined; the illustrated discs use roughly 100,000 and 220,000 light-years. The line measures Solar System to Andromeda centre, not galaxy edge to edge." },
     { id: 'milkyway', emoji: '🌀', name: 'The Milky Way galaxy', size: 9.5e20, dim: 'across', group: 'cosmic',
-      describe: 'Our own galaxy: a flat spiral of a few hundred billion stars, with our Sun about halfway out from the centre.',
-      note: 'Roughly 100,000 light years across. The edge is fuzzy, so the number depends on where you decide the galaxy stops.' },
+      describe: "Explore our barred spiral galaxy from outside its stellar disc, then approach the central bar and our Solar System’s neighbourhood. A layer sweep reveals its depth, while a dust-reduced view exposes hidden starlight.",
+      note: "The roughly 100,000-light-year disc is an illustrated reference with a fuzzy outer extent. Spiral paths, colours and vertical structure are interpretive. Enlarged points sample stellar populations; the galaxy’s extended halo is outside this model." },
     { id: 'galactic-centre', emoji: '🎯', name: 'Distance to the centre of the Milky Way', size: 2.5e20, dim: 'distance', group: 'cosmic',
       describe: "Travel inward from our Solar System through the Milky Way’s disc, central bar, molecular clouds and dense nuclear star cluster. Nested reference scales lead to a one-parsec view around Sagittarius A*.",
       note: "The retained distance is about 26,400 light-years, a rounded teaching reference rather than a precision measurement. Dust hides much of the centre in visible light. The illustrated map draws on structures studied at infrared and radio wavelengths." },
@@ -103,7 +103,7 @@
     { id: 'light-month', emoji: '🗓️', name: 'One light month', size: 7.77e14, dim: 'distance', group: 'cosmic',
       describe: 'How far light travels in thirty days. No spacecraft has gone this far: Voyager 1, the most distant, is under one light day out after nearly fifty years of flight.' },
     { id: 'lightyear', emoji: '📏', name: 'One light year', size: 9.461e15, dim: 'distance', group: 'cosmic',
-      describe: 'How far light travels in a year, and the ruler astronomers reach for once kilometres stop being useful. Light crosses this whole distance in the time Earth takes to go once around the Sun.' },
+      describe: "Follow a light signal from the scale of planetary orbits into interstellar distances. Explore six viewpoints and move along a year-long route with time and distance linked by the speed of light.", note: "The catalog keeps a rounded 9.461 quadrillion metre reference. A light-year is defined using a 365.25-day Julian year; travel time here is calculated from the retained distance. Signal width, location markers and the background sky are illustrative." },
     { id: 'heliosphere', emoji: '🛡️', name: 'The heliosphere', size: 3.64e13, dim: 'across', group: 'cosmic',
       describe: 'The region around the Sun dominated by its outward solar wind. The heliopause separates this wind from interstellar plasma; the Sun’s gravity reaches much farther.',
       note: 'The displayed 243 AU diameter is a reference based on the roughly 122 AU crossing distance. The actual boundary varies with direction and time; the whole heliosphere has not been directly mapped.' },
@@ -112,8 +112,8 @@
     { id: 'betelgeuse', emoji: '🔴', name: 'The star Betelgeuse', size: 1.06e12, dim: 'across', group: 'cosmic',
       describe: 'A red supergiant in Orion. If it replaced the Sun, it would swallow the orbits of the inner planets.',
       note: 'Genuinely uncertain: published radii run from about 640 to about 887 times the Sun\'s. Even famous stars are hard to measure.' },
-    { id: 'light-minute', emoji: '⏱️', name: 'One light minute', size: 1.799e10, dim: 'distance', group: 'cosmic',
-      describe: 'How far light travels in one minute: about 18 million kilometres, or nearly fifty times the distance to the Moon. Sunlight is a little over eight of these old when it reaches you.' },
+    { id: 'light-minute', emoji: '⏱️', name: 'One light minute', size: 17987547480, dim: 'distance', group: 'cosmic',
+      describe: "Explore the distance light travels in one minute in vacuum. Earth and Moon share a physical scale with a sixty-second ruler, and a time slider connects elapsed seconds with distance.", note: "One light minute is exactly 17,987,547,480 metres. Earth and Moon use mean diameters and a 384,400 km centre-to-centre reference separation. Their arrangement and the luminous time marker are illustrative." },
     { id: 'au', emoji: '📍', name: 'Distance from the Earth to the Sun', size: 1.496e11, dim: 'distance', group: 'cosmic',
       describe: "Explore the space between the Sun and Earth: a rounded 149.6 million km reference, crossed by light in about 8 minutes 19 seconds. Approach either body while their physical sizes stay fixed.",
       note: "An astronomical unit is exactly 149,597,870,700 metres. This entry keeps a rounded 149.6-million-kilometre reference. Earth’s actual distance changes through its orbit; the scene is a fixed distance study." },
@@ -155,9 +155,9 @@
     { id: 'door', emoji: '🚪', name: 'A doorway', size: 2.0, dim: 'tall', group: 'built',
       describe: 'A standard interior door, a handy everyday ruler you walk through several times a day.' },
     { id: 'human', emoji: '🧍', name: 'A person', size: 1.7, dim: 'tall', group: 'life',
-      describe: 'An adult human of roughly average height. This is the scale everything else here is easiest to feel from.' },
+      describe: "A representative 1.7-metre figure with a detailed external surface. Explore its silhouette, approach the head, hands and feet, or set your own height to make it a personal reference for scale." },
     { id: 'basketball', emoji: '🏀', name: 'A basketball', size: 0.24, dim: 'across', group: 'built',
-      describe: 'A regulation basketball, about a seventh of a person\'s height. It is a useful rung on this ladder because almost everyone has held one and knows how big it feels.' },
+      describe: "Explore the textured surface of a familiar 24 cm ball, then open a virtual cutaway through its cover, supporting rubber, thread windings and hollow air bladder.", note: "A representative laminated basketball. Internal thicknesses, thread spacing and colours are illustrative; the fixed 24 cm outside diameter remains the comparison reference." },
     { id: 'mouse', emoji: '🐭', name: 'A house mouse', size: 0.08, dim: 'long', group: 'life',
       describe: 'A house mouse, measured head to rump; the tail adds about as much again. It is roughly the smallest mammal most people ever see indoors.' },
     { id: 'egg', emoji: '🥚', name: 'A chicken egg', size: 0.057, dim: 'long', group: 'life',
@@ -368,8 +368,8 @@
     var a = Math.abs(m);
     // A light year and up gets word-scaled ("93 billion light years"); the
     // stretch below that still reads best in light years, but as a fraction.
-    if (a >= 9.461e15) return bigCount(m / 9.461e15) + ' light years';
-    if (a >= 1e14) return round2(m / 9.461e15) + ' light years';
+    if (a >= 9.461e15) { var lightYearCount=bigCount(m / 9.461e15); return lightYearCount + (Number(lightYearCount)===1?' light year':' light years'); }
+    if (a >= 1e14) { var lightYearFractionText=round2(m / 9.461e15); return lightYearFractionText + (Number(lightYearFractionText)===1?' light year':' light years'); }
     if (a >= 1.496e11) {
       var au = m / 1.496e11;
       // "1 times the Earth–Sun distance" read badly on the AU rung itself.
@@ -2791,6 +2791,90 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
 
   // The crossing keeps its catalogue distance. The cluster window and galaxy
   // envelopes are illustrative scales, not a catalogue of individual distances.
+  // Distance is defined by a vacuum light-travel time. Planet sizes use mean
+  // diameters; the lunar semimajor axis is a reference, not a live ephemeris.
+  // Camera regions measured against the normalized, posed MakeHuman surface.
+  // These points are viewing targets, not anatomical or population measurements.
+  // A light-year uses a Julian year; keep the existing catalog diameter.
+  // Retain the catalog's rounded distance, and derive every travel time from c.
+  var BASKETBALL_STUDY_SOURCE='https://ftlstaticweb.blob.core.windows.net/spalding-website/catalog/26%20Spalding%20Domestic%20Team%20Catalog_edit_lowres.pdf#page=5';
+  var BASKETBALL_SITES=[
+    {id:'basketball-whole',key:'whole',label:'Whole ball',opening:0,at:[0,0,0],view:[.40,.25,1],zoom:1,body:'Orbit the finished ball, then open a window through its construction. The pebbled cover, supporting rubber, wound threads and air bladder work together. The outside diameter remains 24 cm throughout the study.'},
+    {id:'basketball-cover',key:'cover',label:'Pebbled cover',opening:0,at:[-.17508826919599796,.17008574721896946,.4352194120014806],view:[-.35,.34,.87],zoom:4,body:'Approach the small raised pebbles in the orange composite cover. Surface texture helps the hand grip the ball. The relief and panel pattern are illustrative; they do not reproduce a particular manufacturer’s product.'},
+    {id:'basketball-channel',key:'channel',label:'Panel channels',opening:0,at:[0,.1496913181553132,.47601839173389593],view:[0,.3,.954],zoom:4.5,body:'Follow a recessed channel between cover panels. Its rounded shoulders meet the textured surface. Return to the cutaway to see how the cover rests on a supporting rubber layer.'},
+    {id:'basketball-valve',key:'valve',label:'Inflation valve',opening:0,at:[.19904098598140352,.17913688738326317,.4198769599277707],view:[.4,.36,.8438],zoom:6,body:'Find the small rubber opening used to inflate the inner bladder. This enlarged view illustrates the valve’s location and surface lip. Its internal passage and sealing mechanism are not reconstructed.'},
+    {id:'basketball-inside',key:'inside',label:'Inside the ball',opening:100,at:[0,0,0],view:[.40,.25,1],zoom:1.15,body:'A stepped opening reveals four material layers and the hollow air space. The rubber carcass supports the cover, windings reinforce the ball, and the inner bladder retains air. The cuts are virtual; layer thicknesses are enlarged for clarity.'},
+    {id:'basketball-windings',key:'windings',label:'Thread windings',opening:80,at:[.30,-.01,.33],view:[.65,.18,1],zoom:2.2,body:'Move close to the pale threads wound around the bladder. Their many crossing directions help the ball keep its shape. This pattern illustrates reinforcement; it is not a measured winding path or a literal thread count.'}
+  ];
+  function basketballStudyOpening(value){return typeof value==='number'&&isFinite(value)?Math.round(clamp(value,0,100)):0;}
+  function basketballStudyIndex(id){if(typeof id!=='string'||!/^basketball-open-(\d{1,3})$/.test(id))return null;var value=id.slice(16),n=Number(value);return n>=0&&n<=100&&String(n)===value?n:null;}
+  function basketballStudyPoint(id){var n=basketballStudyIndex(id),site=BASKETBALL_SITES.filter(function(s){return s.id===id;})[0];if(n!==null)return{opening:n,at:[0,0,0],view:[.40,.25,1],zoom:1.15};if(!site)site=BASKETBALL_SITES[0];return{opening:site.opening,at:site.at.slice(),view:site.view.slice(),zoom:site.zoom};}
+
+  var LIGHTYEAR_M=9.461e15,LIGHTYEAR_C=299792458,LIGHTYEAR_AU_M=149597870700,LIGHTYEAR_DAYS=LIGHTYEAR_M/LIGHTYEAR_C/86400;
+  var LIGHTYEAR_SOURCE='https://science.nasa.gov/exoplanets/what-is-a-light-year/';
+  var LIGHTYEAR_SITES=[
+    {id:'lightyear-overview',key:'overview',label:'Whole journey',fraction:.5,at:[0,0,0],view:[.65,.38,1],zoom:1,body:'Follow a signal across a light-year. The gold trail marks distance already travelled; the blue rail shows the remaining route. Each major interval is thirty days of light travel. The selected moment starts halfway through the journey.'},
+    {id:'lightyear-solar',key:'solar',label:'Sun & planets',fraction:30.07*LIGHTYEAR_AU_M/LIGHTYEAR_M,at:[-.5,0,0],view:[.12,.72,1],zoom:800,body:'Zoom into the departure point. The reference circles place Earth, Jupiter, Saturn, Uranus and Neptune at their approximate mean distances from the Sun. Light reaches Neptune’s roughly 30 AU distance in about 4.2 hours. Orbit radii retain the journey’s scale; location markers are enlarged.'},
+    {id:'lightyear-day',key:'day',label:'One day out',fraction:LIGHTYEAR_C*86400/LIGHTYEAR_M,view:[.1,.6,1],zoom:140,body:'One day of light travel spans about 173 astronomical units. The 122 AU circle provides a reference from Voyager 1’s heliopause crossing, about seventeen light-hours from the Sun. It is not a map of the heliopause in every direction.'},
+    {id:'lightyear-month',key:'month',label:'Thirty days',fraction:LIGHTYEAR_C*86400*30/LIGHTYEAR_M,view:[-.18,.26,1],zoom:5,body:'Thirty days carry the signal about 5,194 astronomical units from the origin. This is a fixed thirty-day interval, not a calendar month. Move around the gold marker to see the depth of the display, then continue outward with the progress slider.'},
+    {id:'lightyear-ride',key:'ride',label:'Ride the signal',fraction:.5,view:[-1,.065,.13],zoom:4,body:'Look along the route from a camera near the selected signal. This is an observer’s navigation view, not a reference frame travelling at light speed. The transverse disc marks where the signal has reached; its visible width is an illustration.'},
+    {id:'lightyear-arrival',key:'arrival',label:'Arrival',fraction:1,view:[-.65,.28,1],zoom:2.5,body:'The signal reaches the end of the rounded 9.461 quadrillion metre reference after about 365.26 days. The endpoint is a measuring mark in space. No nearby star is implied at this location, and the background stars are an illustrative sky.'}
+  ];
+  function lightYearFraction(value){return typeof value==='number'&&isFinite(value)?clamp(value,0,1):0;}
+  function lightYearIndex(id){if(typeof id!=='string'||!/^lightyear-time-(\d{1,4})$/.test(id))return null;var str=id.slice(15),n=Number(str);return n>=0&&n<=1000&&String(n)===str?n:null;}
+  function lightYearPosition(fraction){return [-.5+lightYearFraction(fraction),0,0];}
+  function lightYearPoint(id){var n=lightYearIndex(id),site=LIGHTYEAR_SITES.filter(function(s){return s.id===id;})[0];if(n!==null){var fraction=n/1000;return {at:lightYearPosition(fraction),view:[.05,.32,1],zoom:2.3,fraction:fraction,days:fraction*LIGHTYEAR_DAYS};}if(!site)site=LIGHTYEAR_SITES[0];return {at:site.at?site.at.slice():lightYearPosition(site.fraction),view:site.view.slice(),zoom:site.zoom,fraction:site.fraction,days:site.fraction*LIGHTYEAR_DAYS};}
+
+  var MILKYWAY_REFERENCE_LY=9.5e20/(299792458*31557600);
+  var MILKYWAY_SOURCE='https://www.esa.int/ESA_Multimedia/Images/2025/01/The_best_Milky_Way_map_by_Gaia';
+  var MILKYWAY_SITES=[
+    {id:'galaxy-overview',key:'overview',label:'Whole galaxy',at:[0,0,0],view:[.12,.82,1],zoom:1,heightLy:0,cut:false,dust:1,body:'Explore an illustrated stellar disc about 100,000 light-years across. A warm central bar sits among uneven spiral structures, dark dust lanes and pockets of young stars. We observe our galaxy from within it; this outside view is an interpretation.'},
+    {id:'spiral-arms',key:'arms',label:'Spiral structure',at:[0,0,0],view:[0,1,0],zoom:1.12,heightLy:0,cut:false,dust:1,body:'Look down on the disc to trace irregular arms and branches. Recent Gaia work suggests more arms and a less prominent spiral pattern than older illustrations. The composed paths here convey structure without claiming an exact map of every arm.'},
+    {id:'central-bar',key:'bar',label:'Central bar',at:[0,0,0],view:[.18,.34,1],zoom:3,heightLy:0,cut:false,dust:1,body:'Approach the elongated bar and the thicker central bulge. Warm light represents older stellar populations. The central black hole is far too small to resolve here; this view shows the surrounding galactic structure.'},
+    {id:'solar-neighbourhood',key:'sun',label:'Our neighbourhood',at:[.216,0,.145],view:[.15,.55,1],zoom:4,heightLy:0,cut:false,dust:1,body:'The gold locator places our Solar System about 26,000 light-years from the centre, near the Local Arm or Orion Spur. Its marker is enlarged. Individual stars and planets cannot be shown at their physical diameters in this view.'},
+    {id:'galactic-disc',key:'disc',label:'Edge-on disc',at:[0,0,0],view:[0,.012,1],zoom:1.3,heightLy:0,cut:false,dust:1,body:'Along the disc, a narrow dust lane obscures starlight while the central bulge rises above and below it. The illustrated disc bends slightly toward its outskirts. Compare this view with Through the dust to see what extinction hides.'},
+    {id:'dust-window',key:'dust',label:'Through the dust',at:[0,0,0],view:[0,.012,1],zoom:1.3,heightLy:0,cut:false,dust:.12,body:'Dust absorption is reduced to reveal the stars behind the lane. The camera, stellar positions and physical reference scale match the edge-on view. This is a visibility aid, not a reconstruction at a specific infrared wavelength.'}
+  ];
+  function milkyWayIndex(id){if(typeof id!=='string'||!/^galaxy-slice-(\d{1,3})$/.test(id))return null;var text=id.slice(13),n=Number(text);return n>=0&&n<=100&&String(n)===text?n:null;}
+  function milkyWayHeight(value){return typeof value==='number'&&isFinite(value)?clamp(value,-4000,4000):0;}
+  function milkyWayPoint(id){var n=milkyWayIndex(id),site=MILKYWAY_SITES.filter(function(s){return s.id===id;})[0];if(n!==null)return {at:[0,0,0],view:[.1,.34,1],zoom:1.15,heightLy:-4000+n*80,cut:true,dust:1};if(!site)site=MILKYWAY_SITES[0];return {at:site.at.slice(),view:site.view.slice(),zoom:site.zoom,heightLy:site.heightLy,cut:site.cut,dust:site.dust};}
+
+  var HUMAN_STUDY_SOURCE='https://github.com/makehumancommunity/makehuman/blob/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/3dobjs/base.obj';
+  var HUMAN_STUDY_SITES=[
+    {id:'human-whole',key:'whole',label:'Whole figure',at:[0,0,0],view:[.2,.12,1],zoom:1,fraction:1,body:'A familiar starting point for scale: the reference figure starts at 170 cm tall. Set your own height below to resize the same surface uniformly. The ruler runs from the soles to the crown.'},
+    {id:'human-head',key:'head',label:'Head',at:[0,.423,-.025],view:[.25,.02,1],zoom:5,fraction:.923,body:'Orbit the head to see how the brow, nose, chin and ears shape the silhouette. Soft studio lighting reveals the modeled surface. The gold guide marks the selected height above the ground.'},
+    {id:'human-shoulders',key:'shoulders',label:'Shoulders',at:[0,.291,-.045],view:[.28,.10,1],zoom:3,fraction:.791,body:'Explore the shoulders and the relaxed, angled arm pose. Turn the figure to compare the width seen from the front with the depth seen from the side. These proportions belong to this generic model.'},
+    {id:'human-hand',key:'hand',label:'Hand',at:[.272,.104,.095],view:[.30,.15,1],zoom:6,fraction:.604,body:'Approach the fingers, thumb and wrist. Rotate the view to follow their individual contours and the spaces between them. Changing stature scales these details together with the rest of the figure.'},
+    {id:'human-knee',key:'knee',label:'Knee',at:[.10,-.235,-.05],view:[.32,.10,1],zoom:5,fraction:.265,body:'Follow the external transition from thigh to knee and lower leg. This is a surface study; the model contains no internal bones or muscles. Use the height guide to relate this view to the full figure.'},
+    {id:'human-foot',key:'foot',label:'Foot',at:[.12,-.478,-.024],view:[.32,.46,1],zoom:5,fraction:.022,body:'Explore the toes, instep and heel close to the ground plane. Zero centimetres is the lowest point of the model. The full stature is measured vertically, from this level to the crown.'}
+  ];
+  function humanHeightIndex(id){if(typeof id!=='string'||!/^human-height-(\d{1,3})$/.test(id))return null;var text=id.slice(13),n=Number(text);return n>=0&&n<=100&&String(n)===text?n:null;}
+  function humanStudyHeight(value){return typeof value==='number'&&isFinite(value)&&value>=.5&&value<=2.5?value:1.7;}
+  function humanHeightPoint(fraction){return [0,(typeof fraction==='number'&&isFinite(fraction)?clamp(fraction,0,1):0)-.5,0];}
+  function humanStudyPoint(id){var n=humanHeightIndex(id),site=HUMAN_STUDY_SITES.filter(function(s){return s.id===id;})[0];if(n!==null)return {at:humanHeightPoint(n/100),view:[.22,.16,1],zoom:2.6,fraction:n/100};if(!site)site=HUMAN_STUDY_SITES[0];return {at:site.at.slice(),view:site.view.slice(),zoom:site.zoom,fraction:site.fraction};}
+
+
+  var LIGHT_SPEED_M_S=299792458,LIGHT_MINUTE_M=LIGHT_SPEED_M_S*60;
+  var LIGHT_MINUTE_EARTH_M=12742000,LIGHT_MINUTE_MOON_M=3474800,LIGHT_MINUTE_MOON_DISTANCE_M=384400000;
+  var LIGHT_MINUTE_SITES=[
+    {id:'light-minute-overview',key:'overview',label:'The full light minute',at:[0,0,0],view:[0,.24,1],zoom:1,seconds:60,body:'Light travels 17,987,547 km in one minute in vacuum. Follow the ruler from Earth’s centre to the far marker. Earth and Moon keep their physical sizes, so they become tiny at this scale.',source:'https://physics.nist.gov/cgi-bin/cuu/Value?c'},
+    {id:'light-minute-pair',key:'pair',label:'Earth and Moon',at:[-.5+LIGHT_MINUTE_MOON_DISTANCE_M/LIGHT_MINUTE_M/2,0,0],view:[0,.17,1],zoom:65,seconds:LIGHT_MINUTE_MOON_DISTANCE_M/LIGHT_SPEED_M_S,body:'The Moon’s reference distance is 384,400 km from Earth’s centre: about 30 Earth diameters, or 1.282 light seconds. The lunar orbit changes this separation. Both worlds and the space between them share one scale.',source:'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html'},
+    {id:'light-minute-earth',key:'earth',label:'Earth · the starting point',at:[-.5,0,0],view:[.18,.15,1],zoom:1100,seconds:0,body:'The blue planet is 12,742 km across in this mean-diameter reference. Light crosses that diameter in about 42.5 milliseconds. Earth’s centre is the zero point of the distance ruler.',source:'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html'},
+    {id:'light-minute-moon',key:'moon',label:'Moon · 1.282 seconds',at:[-.5+LIGHT_MINUTE_MOON_DISTANCE_M/LIGHT_MINUTE_M,0,0],view:[-.16,.12,1],zoom:3300,seconds:LIGHT_MINUTE_MOON_DISTANCE_M/LIGHT_SPEED_M_S,body:'Approach a world 3,474.8 km across. The marker at its centre represents 1.282 seconds of vacuum light travel from Earth’s centre. Surface-to-surface timing would be slightly shorter; this study uses body centres.',source:'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html'},
+    {id:'light-minute-ten',key:'ten',label:'Beyond the Moon · 10 s',at:[-.5+10/60,0,0],view:[-.32,.23,1],zoom:4,seconds:10,body:'After ten seconds, light has travelled almost 3 million km in vacuum: about 7.8 times the Earth–Moon reference distance. The clock and distance readout remain linked as you move the time slider.',source:'https://physics.nist.gov/cgi-bin/cuu/Value?c'},
+    {id:'light-minute-end',key:'end',label:'The minute marker · 60 s',at:[.5,0,0],view:[-.8,.23,1],zoom:3,seconds:60,body:'One full minute spans about 46.8 Earth–Moon reference distances. It is about 0.12024 astronomical units. The final marker sits in open space; it is a distance reference, without a planet at the endpoint.',source:'https://iauarchive.eso.org/public/themes/measuring/'}
+  ];
+  function lightMinuteIndex(id){if(typeof id!=='string'||!/^light-minute-time-(\d{1,3})$/.test(id))return null;var str=id.slice(18),n=Number(str);return n>=0&&n<=600&&String(n)===str?n:null;}
+  function lightMinuteSeconds(value){return typeof value==='number'&&isFinite(value)?clamp(value,0,60):0;}
+  function lightMinutePosition(seconds){return [-.5+lightMinuteSeconds(seconds)/60,0,0];}
+  function lightMinuteClipNear(distance){return Math.max(1e-9,Math.min(.002,(typeof distance==='number'&&isFinite(distance)&&distance>0?distance:6.8)*.0004));}
+  function lightMinutePoint(id){
+    var n=lightMinuteIndex(id),site=LIGHT_MINUTE_SITES.filter(function(s){return s.id===id;})[0];
+    if(n!==null){var seconds=n/10;return {at:lightMinutePosition(seconds),view:[-.12,.22,1],zoom:4+26*Math.exp(-seconds/2.5),seconds:seconds,fraction:seconds/60};}
+    if(!site)site=LIGHT_MINUTE_SITES[0];
+    return {at:site.at.slice(),view:site.view.slice(),zoom:site.zoom,seconds:site.seconds,fraction:site.seconds/60};
+  }
+
   var COMA_DISTANCE_M=3e24,COMA_LY_M=9460730472580800,COMA_CLUSTER_RADIUS_LY=10000000;
   var COMA_CORE=[{"id":"ngc4874","name":"NGC 4874","at":[0.5,-0.00012947640367091663,0.0007894222720930871],"diameterLY":216000,"axisRatio":0.9675925925925926,"positionAngleDeg":63},{"id":"ngc4889","name":"NGC 4889","at":[0.5,0.0001807850986005465,-0.0012908220656789244],"diameterLY":270000,"axisRatio":0.6222222222222222,"positionAngleDeg":75}];
   var COMA_SITES=[{"id":"coma-overview","key":"overview","label":"The full crossing","at":[0,0,0],"view":[0.02,0.48,1],"zoom":1,"fraction":0,"body":"Our neighbourhood and the Coma Cluster are separated by about 317 million light-years in this rounded reference. The galaxies stay small beside the gap. Endpoint markers locate the two regions; ticks mark 50 million light-years.","source":"https://www.chandra.harvard.edu/photo/2019/coma/"},{"id":"coma-home","key":"home","label":"Our galactic neighbourhood","at":[-0.5,0,0],"view":[0.1,0.8,1],"zoom":2600,"fraction":0,"body":"A 100,000-light-year Milky Way illustration sets the starting scale. Coma is more than 3,000 of these galactic widths away. This composed orientation is a neighbourhood reference, not a map of the sightline through our disc.","source":"https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/"},{"id":"coma-halfway","key":"halfway","label":"Halfway across","at":[0,0,0],"view":[-1,0.08,0.08],"zoom":2,"fraction":0.5,"body":"The reference point is about 159 million light-years from either endpoint. Orbit here to look along the long crossing. The dark space represents an unsurveyed part of this illustration; it is not a claim that intergalactic space is empty.","source":"https://esahubble.org/news/heic0813/"},{"id":"coma-cluster","key":"cluster","label":"The galaxy swarm","at":[0.5,0,0],"view":[-1,0.15,0.12],"zoom":27,"fraction":1,"body":"Approach a rich cluster containing more than a thousand galaxies. Warm ellipticals dominate its crowded centre; cooler disc galaxies become more common outside. The composed population occupies a 20-million-light-year reference window. Coma extends beyond it.","source":"https://esahubble.org/news/heic0813/"},{"id":"coma-core","key":"core","label":"The twin-giant core","at":[0.5,0.00002565434746481493,-0.00025069989679291863],"view":[-1,0,0],"zoom":360,"fraction":1,"body":"NGC 4874 and NGC 4889 dominate the central view. Their sky positions imply a projected separation of about 670,000 light-years at the adopted distance. Both are placed at one reference depth; their true three-dimensional separation can be greater.","source":"https://science.nasa.gov/photojournal/coma-cluster-of-galaxies/"},{"id":"coma-ngc4874","key":"ngc4874","label":"NGC 4874 · diffuse halo","at":[0.5,-0.00012947640367091663,0.0007894222720930871],"view":[-1,0,0],"zoom":1600,"fraction":1,"body":"This nearly round giant elliptical has a bright centre and a broad, hazy stellar halo. Its adopted optical span is about 216,000 light-years. The faint outer light has no sharp edge. Orbit to inspect the illustrative three-dimensional envelope.","source":"https://esahubble.org/images/potw1138a/"},{"id":"coma-ngc4889","key":"ngc4889","label":"NGC 4889 · giant elliptical","at":[0.5,0.0001807850986005465,-0.0012908220656789244],"view":[-1,0,0],"zoom":1250,"fraction":1,"body":"A more elongated giant elliptical, shown with an adopted optical span of about 270,000 light-years. Its smooth light comes from an enormous stellar population. The central black hole is far too small to resolve here; the luminous core is starlight.","source":"https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-35/"},{"id":"coma-outskirts","key":"outskirts","label":"The outer population","at":[0.5,0.01,0.01],"view":[-1,0.25,0.2],"zoom":55,"fraction":1,"body":"Move away from the crowded core to a sparser mixture of galaxy shapes and colours. These unnamed galaxies are illustrative representatives with composed positions, depths and sizes. Their discs and ellipticals preserve their adopted dimensions as you approach.","source":"https://esahubble.org/news/heic0813/"}];
@@ -3169,7 +3253,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
   }
 
   function orbitPitch(value,id){var limit=id==='virgo-sc'||id==='laniakea'?1.56:1.1;return clamp(value,-limit,limit);}
-  function inspectionLimit(id) { return id==='coma-dist'?6000:id==='galactic-centre'?60000:id==='paramecium'?8:id==='ecoli'?64:id==='alpha-cen-dist'?500000000:id==='au'?20000:id==='andromeda-dist'?64:id==='universe'?8:id==='laniakea'?12:id==='proton'?5:id==='virgo-sc'?10:id==='local-bubble'?12:id==='carbon'?6:id==='heliosphere'?6:id==='oort'?12:isElectromagneticWave(id)?4:id==='door'?8:id==='sand'?5:id==='rice'?5:id==='basketball'?6:id==='reef'?64:id==='football-pitch'?24:id==='jupiter'?6:id==='moon'?8:id==='nucleus'?6:id==='hydrogen'?8:id==='water'?6:id==='rbc'?12:id==='flea'||id==='dust-mite'||id==='mouse'||id==='trex'||id==='giraffe'||id==='elephant'||id==='honeybee'||id==='ladybird'||id==='hair'||id==='egg'?8:id==='solar-system'?32:id==='liberty'?24:id==='pyramid'?18:id==='eiffel'?16:id==='grand-canyon'||id==='sequoia'?12:id==='everest'?5:id==='dna'||id==='mitochondrion'||id==='ribosome'||id==='pollen'||id==='virus'||id==='chicxulub'||id==='blue-whale'?5:2.5; }
+  function inspectionLimit(id) { return id==='lightyear'?4000:id==='milkyway'?8:id==='human'?8:id==='light-minute'?6000:id==='coma-dist'?6000:id==='galactic-centre'?60000:id==='paramecium'?8:id==='ecoli'?64:id==='alpha-cen-dist'?500000000:id==='au'?20000:id==='andromeda-dist'?64:id==='universe'?8:id==='laniakea'?12:id==='proton'?5:id==='virgo-sc'?10:id==='local-bubble'?12:id==='carbon'?6:id==='heliosphere'?6:id==='oort'?12:isElectromagneticWave(id)?4:id==='door'?8:id==='sand'?5:id==='rice'?5:id==='basketball'?6:id==='reef'?64:id==='football-pitch'?24:id==='jupiter'?6:id==='moon'?8:id==='nucleus'?6:id==='hydrogen'?8:id==='water'?6:id==='rbc'?12:id==='flea'||id==='dust-mite'||id==='mouse'||id==='trex'||id==='giraffe'||id==='elephant'||id==='honeybee'||id==='ladybird'||id==='hair'||id==='egg'?8:id==='solar-system'?32:id==='liberty'?24:id==='pyramid'?18:id==='eiffel'?16:id==='grand-canyon'||id==='sequoia'?12:id==='everest'?5:id==='dna'||id==='mitochondrion'||id==='ribosome'||id==='pollen'||id==='virus'||id==='chicxulub'||id==='blue-whale'?5:2.5; }
   var SOLAR_SITES=[
   {
     "id": "system-overview",
@@ -3348,6 +3432,8 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
 {id:'au-approach',auSite:true,marker:false,at:auPoint('au-approach').at,view:auPoint('au-approach').view,zoom:auPoint('au-approach').zoom,label:S('atlas_au_approach',"Approach Earth"),body:S('atlas_au_approach_body',"Move the camera close enough to resolve Earth against the gap. Its mean diameter remains 12,742 km, about 1/11,741 of the reference distance. The direction of sunlight stays fixed toward the Sun as you orbit."),source:"https://science.nasa.gov/earth/facts/"},
 {id:'au-earth',auSite:true,marker:false,at:auPoint('au-earth').at,view:auPoint('au-earth').view,zoom:auPoint('au-earth').zoom,label:S('atlas_au_earth',"Earth in sunlight"),body:S('atlas_au_earth_body',"Look toward Earth from its sunlit side. NASA’s Blue Marble imagery supplies the surface colours. The globe and its thin atmospheric glow keep their dimensions as the camera approaches; the surface is a composite rather than current weather."),source:"https://science.nasa.gov/earth/facts/"},
 {id:'au-terminator',auSite:true,marker:false,at:auPoint('au-terminator').at,view:auPoint('au-terminator').view,zoom:auPoint('au-terminator').zoom,label:S('atlas_au_terminator',"Across the terminator"),body:S('atlas_au_terminator_body',"Orbit toward the boundary between day and night. The same Sun direction lights the globe throughout the scene. NASA’s 2016 Black Marble composite becomes visible on the dark side, with a subtle illuminated atmospheric rim."),source:"https://science.nasa.gov/earth/facts/"}].concat(Array.from({length:101},function(_,n){var p=auPoint('au-passage-'+n);return {id:'au-passage-'+n,auSite:true,auSample:true,marker:false,at:p.at,view:p.view,zoom:p.zoom,label:S('atlas_au_passage_label',"Across one astronomical unit · {percent}%",{percent:n}),body:S('atlas_au_passage_body',"The marker selects a point along the centre-to-centre reference distance. The camera orbits that point and moves closer near the endpoints. Distances and light times describe the fixed diagram; the camera has no physical travel speed."),source:"https://science.nasa.gov/earth/facts/"};}));
+    if(id==='human')return HUMAN_STUDY_SITES.map(function(site){return Object.assign({humanStudySite:true,marker:false,label:S('atlas_human_'+site.key,site.label),body:S('atlas_human_'+site.key+'_body',site.body),source:HUMAN_STUDY_SOURCE,id:site.id},humanStudyPoint(site.id));}).concat(Array.from({length:101},function(_,n){return Object.assign({id:'human-height-'+n,humanStudySite:true,humanHeightSample:true,marker:false,label:S('atlas_human_level','Height guide · {percent}%',{percent:n}),body:S('atlas_human_level_body','The gold guide marks a fraction of the figure’s full stature, measured vertically from the ground. Its centimetre readout updates when you change the person’s height. The figure keeps the same proportions throughout.'),source:HUMAN_STUDY_SOURCE},humanStudyPoint('human-height-'+n));}));
+    if(id==='light-minute')return LIGHT_MINUTE_SITES.map(function(site){return Object.assign({lightMinuteSite:true,marker:false,label:S('atlas_lightminute_'+site.key,site.label),body:S('atlas_lightminute_'+site.key+'_body',site.body),source:site.source,id:site.id},lightMinutePoint(site.id));}).concat(Array.from({length:601},function(_,n){return Object.assign({id:'light-minute-time-'+n,lightMinuteSite:true,lightMinuteSample:true,marker:false,label:S('atlas_lightminute_time','Light-travel time · {seconds} s',{seconds:(n/10).toFixed(1)}),body:S('atlas_lightminute_time_body','The gold marker tracks distance travelled in vacuum: time multiplied by 299,792,458 metres per second. Scrubbing changes the selected time and moves the camera. Body sizes stay fixed throughout the journey.'),source:'https://physics.nist.gov/cgi-bin/cuu/Value?c'},lightMinutePoint('light-minute-time-'+n));}));
     if(id==='coma-dist')return COMA_SITES.map(function(site){return Object.assign({comaSite:true,marker:false,label:S('atlas_coma_'+site.key,site.label),body:S('atlas_coma_'+site.key+'_body',site.body),source:site.source,id:site.id},comaPoint(site.id));}).concat(Array.from({length:101},function(_,n){return Object.assign({id:'coma-passage-'+n,comaSite:true,comaSample:true,marker:false,label:S('atlas_coma_passage','The crossing · {percent}%',{percent:n}),body:S('atlas_coma_passage_body','Move a reference point along the full distance. The virtual camera approaches either endpoint to reveal its structure while all galaxy dimensions stay fixed. This is a static distance illustration, without an elapsed travel time.'),source:'https://www.chandra.harvard.edu/photo/2019/coma/'},comaPoint('coma-passage-'+n));}));
     if(id==='andromeda-dist')return [{id:'andromeda-overview',andromedaSite:true,marker:false,at:andromedaPoint('andromeda-overview').at,view:andromedaPoint('andromeda-overview').view,zoom:andromedaPoint('andromeda-overview').zoom,label:S('atlas_andromeda_overview',"The full crossing"),body:S('atlas_andromeda_overview_body',"Our Solar System and Andromeda’s centre are about 2.54 million light-years apart. Both galaxies keep their adopted physical diameters, so they look small beside the gap. The line is a distance guide, with a small tick every 100,000 light-years."),source:"https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/"},
 {id:'andromeda-home',andromedaSite:true,marker:false,at:andromedaPoint('andromeda-home').at,view:andromedaPoint('andromeda-home').view,zoom:andromedaPoint('andromeda-home').zoom,label:S('atlas_andromeda_home',"Our place in the disc"),body:S('atlas_andromeda_home_body',"Begin at our Solar System, away from the Milky Way’s centre. The adopted galactic disc is about 100,000 light-years across. Its warm central bar, blue spiral light and intervening dust are a procedural illustration. The gold local marker is enlarged to locate our Sun."),source:"https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/"},
@@ -3409,9 +3495,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
 {id:'sand-fracture',sandSite:true,marker:false,at:[0.1,-0.04,0.39],view:[0.18,0.1,1],zoom:2.7,label:S('atlas_sand_fracture',"Fracture surfaces"),body:S('atlas_sand_fracture_body',"Approach the uneven face and turn the grain to catch the changing highlights. Smooth and rough patches help show its three-dimensional shape. The modeled faces and shallow hollow are illustrative fracture features, not a regular crystal form."),source:"https://qrius.si.edu/taxonomy/term/11943"},
 {id:'sand-edges',sandSite:true,marker:false,at:[-0.36,0.13,0.13],view:[-1,0.2,0.45],zoom:2.3,label:S('atlas_sand_edges',"Edges shaped by transport"),body:S('atlas_sand_edges_body',"Explore the partly worn edges. Repeated collisions during transport can round grains, while recently broken fragments can remain angular. Shape alone cannot tell the full journey of an individual grain; this model represents one possible form."),source:"https://www.nps.gov/articles/coastal-sediments-parent-material.htm"}];
     if(id==='rice')return RICE_SITES.map(function(site){return Object.assign({id:site.id,riceSite:true,marker:false,label:S('atlas_rice_anatomy_'+site.key,site.label),body:S('atlas_rice_anatomy_'+site.key+'_body',site.body),source:site.source},riceSitePoint(site.id));});
-    if(id==='basketball')return [{id:'basketball-cover',basketballSite:true,marker:false,at:[-0.17508826919599796,0.17008574721896946,0.4352194120014806],view:[-0.35,0.34,0.87],zoom:4,label:S('atlas_basketball_cover',"Pebbled grip"),body:S('atlas_basketball_cover_body',"Move close to the small raised pebbles on the cover. Their texture and the recessed channels help the hand grip the ball. This is an illustrative composite-covered ball; its pebble pattern and panel layout do not copy a particular manufacturer."),source:"https://www.wilson.com/en-us/products/evolution-game-basketball-wz10012"},
-{id:'basketball-channel',basketballSite:true,marker:false,at:[0,0.1496913181553132,0.47601839173389593],view:[0,0.3,0.954],zoom:4.5,label:S('atlas_basketball_channel',"Recessed panel channels"),body:S('atlas_basketball_channel_body',"Follow the dark channel around the curved surface. The channel sits below the orange cover, with a softened shoulder on either side. The model uses channels about 4.5 mm wide on a ball about 24 cm across; small manufacturing details are illustrative."),source:"https://www.wilson.com/sites/default/files/2021_Wilson_Team%20Sports_Catalog_Standard_20-1329%20Single%20Page_2.17%20%282%29.pdf"},
-{id:'basketball-valve',basketballSite:true,marker:false,at:[0.19904098598140352,0.17913688738326317,0.4198769599277707],view:[0.4,0.36,0.8438],zoom:6,label:S('atlas_basketball_valve',"Inflation valve"),body:S('atlas_basketball_valve_body',"Find the small dark valve and its rubber lip. Air enters here to inflate the ball. The close-up shows an illustrative valve, rather than a measured construction drawing. Return to the whole view to see how small it is compared with the ball."),source:"https://au.wilson.com/pages/how-to-choose-a-basketball/1000"}];
+    if(id==='basketball')return BASKETBALL_SITES.map(function(site){return Object.assign({id:site.id,basketballSite:true,marker:false,label:S('atlas_basketball_'+site.key,site.label),body:S('atlas_basketball_'+site.key+'_body',site.body),source:BASKETBALL_STUDY_SOURCE},basketballStudyPoint(site.id));}).concat(Array.from({length:101},function(_,n){return Object.assign({id:'basketball-open-'+n,basketballSite:true,basketballSample:true,marker:false,label:S('atlas_basketball_section','Cutaway · {percent}% open',{percent:n}),body:S('atlas_basketball_section_body','Move the opening to expose the layers beneath the cover. Each edge shows a different material; the centre is hollow. The outer size remains fixed while the virtual section changes.'),source:BASKETBALL_STUDY_SOURCE},basketballStudyPoint('basketball-open-'+n));}));
     if(id==='betelgeuse')return [{id:'betelgeuse-convection',betelgeuseSite:true,marker:false,at:[0,0,0.49],view:[0,0,1],zoom:2.5,label:S('atlas_betelgeuse_convection',"Giant convection cells"),body:S('atlas_betelgeuse_convection_body',"Explore broad, bright regions separated by cooler, darker areas. Hot gas rises and cooled gas sinks in enormous convection cells. This procedural surface illustrates that uneven character; its pattern and slow animation are not an observed map or a physical clock."),source:'https://www.eso.org/public/news/eso0927/'},
 {id:'betelgeuse-limb',betelgeuseSite:true,marker:false,at:[0.4,0.04,0.27],view:[0,0,1],zoom:2.5,label:S('atlas_betelgeuse_limb',"The soft stellar limb"),body:S('atlas_betelgeuse_limb_body',"Look across the edge of the visible surface. The darker limb and faint warm haze suggest a gaseous atmosphere with no solid ground. The haze is illustrative and does not measure the full extent of the material surrounding Betelgeuse."),source:'https://www.eso.org/public/news/eso0927/'},
 {id:'betelgeuse-overview',betelgeuseSite:true,marker:false,at:[0,0,0],view:[0,0.12,1],zoom:1,label:S('atlas_betelgeuse_overview',"An uneven red supergiant"),body:S('atlas_betelgeuse_overview_body',"Return to the whole star to see the large surface patterns together. The catalog uses a nominal diameter: estimates of this extended, variable star depend on wavelength and on the layer being measured. The model is an interpretation, not a prediction of its appearance today."),source:'https://www.eso.org/public/news/eso0927/'}];
@@ -3427,12 +3511,8 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       return d;
     });
 
-    if(id==='milkyway')return [
-      {id:'solar-neighbourhood',at:[.216,0,.145],view:[0,1,0],zoom:2.3,label:S('atlas_detail_galaxy_sun', 'Our Sun’s neighbourhood'),body:S('atlas_detail_galaxy_sun_body', 'Our Sun lies about 26,000 light-years from the galactic centre, near the Orion Spur between larger spiral arms. This marker locates our neighbourhood; the Sun and its planets are far too small to resolve at this scale. Visit the Solar System to continue the journey inward.'),source:'https://science.nasa.gov/solar-system/solar-system-facts/'},
-      {id:'central-bar',at:[-.06,.025,-.03],view:[0,.7,1],zoom:2,label:S('atlas_detail_galaxy_bar', 'Central bar & bulge'),body:S('atlas_detail_galaxy_bar_body', 'The Milky Way is a barred spiral galaxy. A crowded, elongated central population rises above and below the disc. Warm light distinguishes the illustrated older stars here. The central black hole is much too small to resolve in this view.'),source:'https://www.esa.int/Science_Exploration/Space_Science/Gaia/Guide_to_our_galaxy'},
-      {id:'spiral-arms',at:[-.20,.005,-.21],viewAim:[0,0,0],view:[0,1,0],zoom:1.1,label:S('atlas_detail_galaxy_arms', 'Spiral arms from above'),body:S('atlas_detail_galaxy_arms_body', 'Look down on the disc to follow its curved arms. Young stars, gas and dust help trace this structure. The broad stellar arms and finer branches are an interpretation of an evolving map: we observe our own galaxy from inside it, so this is not an exterior photograph.'),source:'https://science.nasa.gov/resource/the-milky-way-galaxy/'},
-      {id:'galactic-disc',at:[.33,0,-.05],viewAim:[0,0,0],view:[0,0,1],zoom:1.25,label:S('atlas_detail_galaxy_disc', 'The disc seen edge-on'),body:S('atlas_detail_galaxy_disc_body', 'Seen along its plane, the broad galaxy becomes a thin band with a thicker central bulge. Dust in the disc absorbs light from stars behind it. Orbit gently above or below the plane to see the dark lane open into the spiral pattern.'),source:'https://www.esa.int/ESA_Multimedia/Images/2015/07/Stellar_density_map'}
-    ];
+    if(id==='lightyear')return LIGHTYEAR_SITES.map(function(site){return Object.assign({lightYearSite:true,marker:false,label:S('atlas_lightyear_'+site.key,site.label),body:S('atlas_lightyear_'+site.key+'_body',site.body),source:site.source||LIGHTYEAR_SOURCE,id:site.id},lightYearPoint(site.id));}).concat(Array.from({length:1001},function(_,n){return Object.assign({id:'lightyear-time-'+n,lightYearSite:true,lightYearSample:true,marker:false,label:S('atlas_lightyear_time','Signal position · {days} days',{days:(n/1000*LIGHTYEAR_DAYS).toFixed(2)}),body:S('atlas_lightyear_time_body','The camera follows the selected signal. Elapsed time and distance are linked by the speed of light in vacuum. The gold trail grows along the same fixed reference route, while the signal marker remains enlarged for visibility.'),source:'https://www.nist.gov/pml/owm/si-units-length'},lightYearPoint('lightyear-time-'+n));}));
+    if(id==='milkyway')return MILKYWAY_SITES.map(function(site){return Object.assign({milkyWaySite:true,marker:false,label:S('atlas_milkyway_'+site.key,site.label),body:S('atlas_milkyway_'+site.key+'_body',site.body),source:MILKYWAY_SOURCE,id:site.id},milkyWayPoint(site.id));}).concat(Array.from({length:101},function(_,n){var height=-4000+n*80;return Object.assign({id:'galaxy-slice-'+n,milkyWaySite:true,milkyWaySample:true,marker:false,label:S('atlas_milkyway_layer','Galactic layer · {height} ly',{height:(height>0?'+':'')+height.toLocaleString()}),body:S('atlas_milkyway_layer_body','The blue plane sets a structural cutaway: starlight and dust above its height are hidden together. Sweep from below the galactic plane to above it to see the thicker central bulge emerge. The Solar System locator remains visible for orientation. Choose Whole galaxy to restore every layer.'),source:MILKYWAY_SOURCE},milkyWayPoint('galaxy-slice-'+n));}));
     if(id==='orion-nebula')return [
       {id:'trapezium',at:[-.006,.014,.135],reveal:true,zoom:2.4,label:S('atlas_detail_orion_trapezium', 'Trapezium stars'),body:S('atlas_detail_orion_trapezium_body', 'Four bright stars mark the heart of this illustrated cluster. Their ultraviolet light energizes the surrounding gas. Reveal embedded stars reduces the cloud’s opacity so you can explore the stars behind it. The light points are enlarged to remain visible.'),source:'https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-42/'},
       {id:'stellar-cavity',at:[.11,.11,-.03],reveal:false,label:S('atlas_detail_orion_cavity', 'Sculpted stellar cavity'),body:S('atlas_detail_orion_cavity_body', 'Orbit around the hollow in the cloud. Radiation and winds from the central stars have carved a bowl-like cavity into the molecular cloud. This volume is an interpretation of that structure; its depth and orientation are illustrative.'),source:'https://www.jpl.nasa.gov/news/nasa-space-telescopes-provide-a-3-d-journey-through-the-orion-nebula/'},
@@ -4427,28 +4507,170 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       }
       var tex=track(new T.CanvasTexture(cv));tex.encoding=T.sRGBEncoding;return tex;
     }
-    function loadHumanSurface(root) {
-      var g=root.userData.model;
-      var ready=T.GLTFLoader?Promise.resolve():window.StemLab.loadScriptResilient?window.StemLab.loadScriptResilient([new URL('../../../vendor/three-r128/GLTFLoader.js',atlasAssetBase).href],{cacheKey:'three-gltf-loader',check:function(){return !!T.GLTFLoader;}}):Promise.reject(new Error('Model loader unavailable'));
-      ready.then(function(){
-        if(disposed||g.userData.released)return;
-        new T.GLTFLoader().load(new URL('../anatomy/body-surface/makehuman-body-surface.glb',atlasAssetBase).href,function(asset){
-          if(disposed||g.userData.released){asset.scene.traverse(function(n){if(n.geometry)n.geometry.dispose();if(n.material)n.material.dispose();});return;}
-          var bounds=new T.Box3().setFromObject(asset.scene),height=bounds.max.y-bounds.min.y,center=bounds.getCenter(new T.Vector3());
-          g.clear();g.position.set(0,0,0);g.scale.setScalar(1);g.rotation.set(0,-.18,0);
-          var bronze=material('#a49b80',{metalness:.36,roughness:.52});root.userData.resources.push(bronze);
-          asset.scene.traverse(function(n){if(n.isMesh){
-            n.geometry.translate(-center.x,-center.y,-center.z);n.geometry.scale(1/height,1/height,1/height);
-            n.material.dispose();n.material=bronze;n.castShadow=n.receiveShadow=true;track(n.geometry);root.userData.resources.push(n.geometry);
-          }});
-          g.add(asset.scene);root.userData.floor=-.5;root.userData.materials=[];
-          g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;root.userData.materials.push(n);}});
-          g.userData.surfaceReady=true;invalidate();
-        },undefined,function(){ /* Retain the procedural figure when the local asset is unavailable. */ });
-      }).catch(function(){ /* A loader failure leaves the atlas interactive. */ });
+    // A normalized surface study: the soles and crown always span one unit.
+    // The measuring apparatus is context, never part of the physical bounds.
+    function humanStudyLocalBounds(g,body) {
+      g.updateMatrixWorld(true);
+      var inverse=new T.Matrix4().copy(g.matrixWorld).invert(),bounds=new T.Box3(),matrix=new T.Matrix4();
+      bounds.makeEmpty();
+      body.traverse(function(n){
+        if(!n.isMesh||!n.geometry)return;
+        if(!n.geometry.boundingBox)n.geometry.computeBoundingBox();
+        matrix.multiplyMatrices(inverse,n.matrixWorld);
+        bounds.union(n.geometry.boundingBox.clone().applyMatrix4(matrix));
+      });
+      return bounds;
     }
-    // Body length is exactly one local unit. Appendages and illustrative
-    // organelles must never change the measured dimensions of these cells.
+    function humanStudyMaterial() {
+      return material('#d0cabc',{roughness:.64,metalness:0,emissive:'#403d35',emissiveIntensity:.025,side:T.DoubleSide});
+    }
+    function humanStudyModel(g) {
+      var body=new T.Group(),context=new T.Group(),fallback=new T.Group();
+      body.name='human-study-body';context.name='human-study-guides';context.userData.unmeasured=true;fallback.name='human-procedural-fallback';
+      g.add(body);g.add(context);body.add(fallback);
+      var porcelain=humanStudyMaterial();
+      // A quiet, continuous fallback in the same relaxed pose as the local
+      // MakeHuman surface. The detailed asset replaces only this body group.
+      ball(fallback,porcelain,0,.422,-.021,.112,.154,.119);
+      organic(fallback,[[0,.281,-.018,.036,.033],[0,.323,-.022,.031,.030],[0,.354,-.025,.035,.033]],porcelain,'y');
+      organic(fallback,[[0,-.080,-.026,.079,.060],[0,-.015,-.031,.096,.065],[0,.089,-.047,.065,.049],[0,.192,-.041,.091,.066],[0,.271,-.030,.114,.058],[0,.304,-.026,.054,.041]],porcelain,'y');
+      [-1,1].forEach(function(side){
+        organic(fallback,[[side*.057,-.030,-.028,.052,.061],[side*.080,-.131,-.042,.048,.057],[side*.097,-.232,-.047,.030,.034],[side*.109,-.320,-.039,.032,.041],[side*.123,-.423,-.057,.020,.026],[side*.126,-.469,-.055,.018,.021]],porcelain,'y');
+        ball(fallback,porcelain,side*.127,-.481,-.017,.055,.037,.123);
+        organic(fallback,[[side*.091,.268,-.021,.036,.040],[side*.141,.238,-.010,.038,.037],[side*.183,.183,.012,.026,.028],[side*.218,.148,.031,.028,.025],[side*.246,.123,.052,.016,.019]],porcelain,'y');
+        var palm=ball(fallback,porcelain,side*.262,.112,.071,.050,.034,.050);palm.rotation.z=-side*.30;
+        for(var finger=0;finger<4;finger++){
+          var x=side*(.263+finger*.008),y=.106-finger*.005,z=.075+finger*.005,length=.035-Math.abs(finger-1.5)*.004;
+          organic(fallback,[[x,y,z,.005,.005],[x+side*.008,y-length*.5,z+.013,.0046,.0046],[x+side*.010,y-length,z+.021,.0032,.0032]],porcelain,'y');
+        }
+        organic(fallback,[[side*.244,.111,.070,.008,.008],[side*.247,.092,.092,.006,.006],[side*.258,.084,.102,.004,.004]],porcelain,'y');
+      });
+      var firstBounds=humanStudyLocalBounds(g,body),height=firstBounds.max.y-firstBounds.min.y,centre=firstBounds.getCenter(new T.Vector3());
+      fallback.scale.setScalar(1/height);fallback.position.copy(centre).multiplyScalar(-1/height);
+      var bounds=humanStudyLocalBounds(g,body);
+      bounds.min.y=-.5;bounds.max.y=.5;
+      // A fading studio floor provides contact shadows without a hard horizon.
+      var floorCanvas=document.createElement('canvas');floorCanvas.width=floorCanvas.height=128;
+      var floorContext=floorCanvas.getContext('2d'),fade=floorContext.createRadialGradient(64,64,20,64,64,63);
+      fade.addColorStop(0,'#ffffff');fade.addColorStop(.55,'#999999');fade.addColorStop(1,'#000000');
+      floorContext.fillStyle=fade;floorContext.fillRect(0,0,128,128);
+      var floorAlpha=track(new T.CanvasTexture(floorCanvas)),studioFloor=mesh(context,track(new T.PlaneGeometry(1.5,1.5)),material('#172d38',{roughness:1,transparent:true,opacity:.8,alphaMap:floorAlpha,depthWrite:false}),0,-.5008,0);
+      studioFloor.name='human-studio-floor';studioFloor.rotation.x=-Math.PI/2;studioFloor.castShadow=false;studioFloor.receiveShadow=true;
+      function lineGeometry(points){var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(points,3));geo.computeBoundingBox();geo.computeBoundingSphere();return geo;}
+      function lineMaterial(color,opacity){return track(new T.LineBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:opacity,depthWrite:false}));}
+      function lines(parent,name,points,mat){var value=new T.LineSegments(lineGeometry(points),mat);value.name=name;value.castShadow=value.receiveShadow=false;parent.add(value);return value;}
+      var heightGuide=new T.Group();heightGuide.name='human-centimetre-rule';context.add(heightGuide);
+      var ruleMat=lineMaterial('#a9bdc4',.42),majorMat=lineMaterial('#d8d0b7',.72),amber=lineMaterial('#dbad70',.68);
+      var rulerX=.371,rulerZ=.047;
+      lines(heightGuide,'human-height-rule-spine',[rulerX,-.5,rulerZ,rulerX,.5,rulerZ],ruleMat);
+      lines(heightGuide,'human-height-rule-caps',[rulerX-.038,-.5,rulerZ,rulerX+.024,-.5,rulerZ,rulerX-.038,.5,rulerZ,rulerX+.024,.5,rulerZ],majorMat);
+      var ticks=lines(heightGuide,'human-centimetre-ticks',new Float32Array(252*6),ruleMat);
+      ticks.geometry.setDrawRange(0,0);ticks.frustumCulled=false;
+      var fiftyTicks=lines(heightGuide,'human-half-metre-ticks',new Float32Array(6*6),majorMat);
+      fiftyTicks.geometry.setDrawRange(0,0);fiftyTicks.frustumCulled=false;
+      // A floor plan gives a resting datum without adding a plinth to stature.
+      var floorRingPoints=[];
+      for(var a=0;a<144;a++){var angle=a/144*Math.PI*2;floorRingPoints.push(Math.cos(angle)*.326,-.5005,Math.sin(angle)*.181);}
+      var floorRing=new T.LineLoop(lineGeometry(floorRingPoints),lineMaterial('#9dafb9',.20));floorRing.name='human-sole-datum';context.add(floorRing);
+      var ringPoints=[];
+      for(var i=0;i<160;i++){var theta=i/160*Math.PI*2;ringPoints.push(Math.cos(theta)*.335,0,Math.sin(theta)*.158);}
+      var guide=new T.LineLoop(lineGeometry(ringPoints),amber);guide.name='human-selected-height-ring';guide.renderOrder=4;guide.visible=false;context.add(guide);
+      var heightLeader=lines(context,'human-selected-height-leader',[.335,0,0,rulerX+.026,0,rulerZ],amber);
+      var selectedTick=lines(context,'human-selected-height-tick',[rulerX-.018,0,rulerZ,rulerX+.03,0,rulerZ],amber);
+      var materials=[],geometries=[],meshes=[];
+      body.traverse(function(n){if(n.isMesh){meshes.push(n);if(materials.indexOf(n.material)<0)materials.push(n.material);if(geometries.indexOf(n.geometry)<0)geometries.push(n.geometry);}});
+      var state={detail:'human-whole',comparison:false,heightM:1.7,fraction:1,selectedY:.5,selectedHeightM:1.7};
+      var data={body:body,context:context,fallback:fallback,bounds:bounds,status:'fallback',guide:guide,heightGuide:heightGuide,ticks:ticks,fiftyTicks:fiftyTicks,heightLeader:heightLeader,selectedTick:selectedTick,floorRing:floorRing,meshes:meshes,geometries:geometries,materials:materials,state:state,dimensions:{referenceHeightM:1.7,normalizedHeight:1,sourceVertexCount:0,sourceTriangleCount:0,source:'MakeHuman Community generic body surface (CC0)',centimetreStepM:.01}};
+      data.update=function(detailId,comparison,heightMeters){
+        var id=typeof detailId==='string'&&detailId?detailId:'human-whole',heightM=humanStudyHeight(heightMeters);
+        var point=humanStudyPoint(id),fraction=point.fraction;
+        fraction=Math.max(0,Math.min(1,fraction));
+        context.visible=!comparison;guide.visible=heightLeader.visible=selectedTick.visible=!comparison&&id!=='human-whole';
+        guide.position.y=heightLeader.position.y=selectedTick.position.y=fraction-.5;
+        if(state.heightM!==heightM||!data.ruleReady){
+          var attr=ticks.geometry.attributes.position,large=fiftyTicks.geometry.attributes.position,count=0,largeCount=0,cmHeight=heightM*100;
+          for(var cm=0;cm<=Math.floor(cmHeight+.000001);cm++){
+            var y=cm/cmHeight-.5,length=cm%10===0?.021:.008;
+            attr.setXYZ(count++,rulerX-length,y,rulerZ);attr.setXYZ(count++,rulerX,y,rulerZ);
+            if(cm%50===0){large.setXYZ(largeCount++,rulerX-.030,y,rulerZ);large.setXYZ(largeCount++,rulerX+.009,y,rulerZ);}
+          }
+          attr.needsUpdate=large.needsUpdate=true;ticks.geometry.setDrawRange(0,count);fiftyTicks.geometry.setDrawRange(0,largeCount);
+          // Buffer capacities remain fixed as a personal height changes.
+          ticks.geometry.computeBoundingSphere();fiftyTicks.geometry.computeBoundingSphere();
+          data.ruleReady=true;data.tickCount=count/2;data.majorTickCount=largeCount/2;
+        }
+        state.detail=id;state.comparison=!!comparison;state.heightM=heightM;state.fraction=fraction;state.selectedY=fraction-.5;state.selectedHeightM=heightM*fraction;
+        return state;
+      };
+      g.userData.humanStudy=data;g.userData.dimension='y';g.userData.extent=1;g.userData.measureCenter=0;
+      data.update('human-whole',false,1.7);
+    }
+    function loadHumanSurface(root) {
+      var g=root&&root.userData.model,data=g&&g.userData.humanStudy;
+      if(!data)return Promise.resolve(false);
+      if(data.loadPromise)return data.loadPromise;
+      data.status='loading';
+      function unavailable(){if(!disposed&&!g.userData.released){data.status='failed';g.userData.surfaceReady=false;invalidate();}return false;}
+      var ready=T.GLTFLoader?Promise.resolve():window.StemLab&&window.StemLab.loadScriptResilient?window.StemLab.loadScriptResilient([new URL('../../../vendor/three-r128/GLTFLoader.js',atlasAssetBase).href],{cacheKey:'three-gltf-loader',check:function(){return !!T.GLTFLoader;}}):Promise.reject(new Error('Body surface loader unavailable'));
+      data.loadPromise=ready.then(function(){
+        if(disposed||g.userData.released)return false;
+        return new Promise(function(resolve){
+          new T.GLTFLoader().load(new URL('../anatomy/body-surface/makehuman-body-surface.glb',atlasAssetBase).href,function(asset){
+            var source=asset&&asset.scene,sourceGeometries=new Set(),sourceMaterials=new Set(),sourceTextures=new Set(),originalDisposed=false;
+            if(source)source.traverse(function(n){
+              if(n.geometry)sourceGeometries.add(n.geometry);
+              (Array.isArray(n.material)?n.material:[n.material]).forEach(function(m){
+                if(!m)return;sourceMaterials.add(m);
+                Object.keys(m).forEach(function(key){var value=m[key];if(value&&value.isTexture)sourceTextures.add(value);});
+                if(m.uniforms)Object.keys(m.uniforms).forEach(function(key){var value=m.uniforms[key]&&m.uniforms[key].value;if(value&&value.isTexture)sourceTextures.add(value);});
+              });
+            });
+            function discardSource(){if(originalDisposed)return;originalDisposed=true;sourceGeometries.forEach(function(v){v.dispose();});sourceMaterials.forEach(function(v){v.dispose();});sourceTextures.forEach(function(v){v.dispose();});}
+            if(disposed||g.userData.released){discardSource();resolve(false);return;}
+            var incoming=new T.Group(),newResources=new Set(),importedMeshes=[],sourceVertexCount=0,sourceTriangleCount=0;
+            incoming.name='human-makehuman-surface';
+            function own(value){track(value);newResources.add(value);return value;}
+            try {
+              if(!source)throw new Error('Empty body surface');
+              source.updateMatrixWorld(true);
+              var sourceBounds=new T.Box3().setFromObject(source),height=sourceBounds.max.y-sourceBounds.min.y,centre=sourceBounds.getCenter(new T.Vector3());
+              if(!isFinite(height)||height<.000001)throw new Error('Invalid body surface bounds');
+              var porcelain=own(humanStudyMaterial()),normalizedBounds=new T.Box3();normalizedBounds.makeEmpty();
+              source.traverse(function(n){
+                if(!n.isMesh||!n.geometry)return;
+                var original=n.geometry,position=original.attributes.position;
+                if(!position||!position.count)return;
+                // Each copy receives the full source transform before a common
+                // normalization. Shared GLTF buffers are never edited in place.
+                var geometry=own(original.clone());geometry.applyMatrix4(n.matrixWorld);geometry.translate(-centre.x,-centre.y,-centre.z);geometry.scale(1/height,1/height,1/height);
+                geometry.computeBoundingBox();geometry.computeBoundingSphere();
+                if(!geometry.attributes.normal)geometry.computeVertexNormals();
+                normalizedBounds.union(geometry.boundingBox);
+                var surface=new T.Mesh(geometry,porcelain);surface.name='human-detailed-body-'+importedMeshes.length;surface.castShadow=surface.receiveShadow=true;
+                incoming.add(surface);importedMeshes.push(surface);sourceVertexCount+=position.count;sourceTriangleCount+=(geometry.index?geometry.index.count:position.count)/3;
+              });
+              if(!importedMeshes.length||normalizedBounds.isEmpty())throw new Error('Body surface has no renderable mesh');
+              // Keep the model and context roots intact. A delayed local asset
+              // must not remove the active ruler or invalidate saved viewpoints.
+              data.body.clear();data.body.add(incoming);data.fallback.visible=false;
+              normalizedBounds.min.y=-.5;normalizedBounds.max.y=.5;data.bounds.copy(normalizedBounds);
+              data.meshes=importedMeshes;data.geometries=Array.from(newResources).filter(function(v){return v.isBufferGeometry;});data.materials=[porcelain];
+              data.dimensions.sourceVertexCount=sourceVertexCount;data.dimensions.sourceTriangleCount=sourceTriangleCount;
+              var owned=new Set(root.userData.resources);newResources.forEach(function(value){if(!owned.has(value)){root.userData.resources.push(value);owned.add(value);}});
+              root.userData.floor=-.5;root.userData.materials=[];
+              g.traverse(function(n){if(n.material){n.userData.baseOpacity=n.material.opacity;n.userData.baseTransparent=n.material.transparent;if(n.material.uniforms&&n.material.uniforms.uOpacity)n.userData.baseUniformOpacity=n.material.uniforms.uOpacity.value;root.userData.materials.push(n);}});
+              data.status='ready';g.userData.surfaceReady=true;comparisonLayoutKey='';discardSource();invalidate();resolve(true);
+            }catch(error){
+              incoming.clear();newResources.forEach(function(value){value.dispose();resources.delete(value);});
+              root.userData.resources=root.userData.resources.filter(function(value){return !newResources.has(value);});
+              if(!data.body.children.length){data.fallback.visible=true;data.body.add(data.fallback);}
+              discardSource();resolve(unavailable());
+            }
+          },undefined,function(){resolve(unavailable());});
+        });
+      }).catch(unavailable);
+      return data.loadPromise;
+    }
     function microbePoint(id,x,angle) {
       var r=id==='ecoli'?Math.sqrt(Math.max(0,.16*.16-Math.pow(Math.max(0,Math.abs(x)-.34),2))):.19*Math.sqrt(Math.max(0,1-4*x*x))*(1-.28*x);
       if(id==='paramecium')r-=.048*Math.exp(-Math.pow((x+.025)/.19,2)-Math.pow((angle-2.13)/.3,2));
@@ -5200,6 +5422,263 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       system.update(focused?state.solarYears:0,focused&&state.showDetails?state.detailId:'',!!state.comparison,focused?cameraZoom:1);
     }
 
+    function lightYearModel(g){
+      // A light year is a distance. Only the rail endpoints define its size;
+      // luminous waves, star sprites and navigation symbols are illustrations.
+      var body=new T.Group(),context=new T.Group();
+      body.name='light-year-fixed-distance';context.name='light-year-illustrative-navigation';context.userData.unmeasured=true;g.add(body,context);
+      var finish=['#include <tonemapping_fragment>','#include <encodings_fragment>','}'];
+      var geometries=[],materials=[];
+      function geo(value){geometries.push(value);return track(value);}
+      function mat(value){materials.push(value);return track(value);}
+      function lineMat(color,opacity){return mat(new T.LineBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:opacity,depthWrite:false}));}
+      function pointGeo(positions){var value=geo(new T.BufferGeometry());value.setAttribute('position',new T.Float32BufferAttribute(positions,3));return value;}
+      var pathGeometry=pointGeo([-.5,0,0,.5,0,0]);
+      var path=new T.Line(pathGeometry,lineMat('#80c2d4',.78));path.name='light-year-fixed-reference';body.add(path);
+
+      // Regular day intervals, not calendar months. The last interval is the
+      // remainder between day 360 and the catalogue's rounded light year.
+      var positions=[],colors=[],tickDays=[],tickMajor=new T.Color('#b8d5df').convertSRGBToLinear(),tickMinor=new T.Color('#567588').convertSRGBToLinear();
+      for(var d=0;d<=360;d+=30){var x=-.5+d/LIGHTYEAR_DAYS,h=d%90===0?.008:.0043,c=d%90===0?tickMajor:tickMinor;positions.push(x,-h,0,x,h,0);colors.push(c.r,c.g,c.b,c.r,c.g,c.b);tickDays.push(d);}
+      positions.push(.5,-.012,0,.5,.012,0);colors.push(tickMajor.r,tickMajor.g,tickMajor.b,tickMajor.r,tickMajor.g,tickMajor.b);tickDays.push(LIGHTYEAR_DAYS);
+      var tickGeometry=pointGeo(positions);tickGeometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+      var ticks=new T.LineSegments(tickGeometry,mat(new T.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.66,depthWrite:false})));ticks.name='light-year-thirty-day-reference';ticks.userData={unmeasured:true,days:tickDays};context.add(ticks);
+
+      // Three softly glowing sheets make the elapsed ray visible from varied
+      // camera directions. Their apparent thickness is a drawing convention.
+      var fractionUniform={value:.5},trailGeometry=geo(new T.PlaneGeometry(1,.075,1,1));
+      var trailMaterial=mat(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,uniforms:{uFraction:fractionUniform,uOpacity:{value:.93}},
+        vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[
+          'uniform float uFraction;uniform float uOpacity;varying vec2 vUv;',
+          'void main(){if(vUv.x>uFraction||uFraction<=0.)discard;float transverse=abs(vUv.y-.5)*2.;float core=exp(-transverse*transverse*110.);float bloom=exp(-transverse*transverse*10.);float elapsed=clamp(vUv.x/max(uFraction,.000001),0.,1.);float head=exp(-(uFraction-vUv.x)*32.);float brightness=.42+.44*pow(elapsed,.7)+head*.31;vec3 color=mix(vec3(.08,.47,.63),vec3(1.75,.69,.10),smoothstep(.02,.48,elapsed));color=mix(color,vec3(1.9,1.32,.43),core*.40);gl_FragColor=vec4(color,(core*.71+bloom*.32)*brightness*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var trail=new T.Group();trail.name='light-year-elapsed-light';trail.userData={unmeasured:true,illustrative:true};context.add(trail);
+      for(var sheet=0;sheet<3;sheet++){var beam=new T.Mesh(trailGeometry,trailMaterial);beam.rotation.x=sheet*Math.PI/3;beam.frustumCulled=false;trail.add(beam);}
+
+      var pulse=new T.Group();pulse.name='light-year-selected-light-front';pulse.userData={unmeasured:true,illustrative:true};context.add(pulse);
+      var pulseGeometry=pointGeo([0,0,0]);
+      var pulseMaterial=mat(new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:false,blending:T.AdditiveBlending,uniforms:{uOpacity:{value:.96}},
+        vertexShader:'void main(){gl_PointSize=61.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[
+          'uniform float uOpacity;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float core=exp(-r*r*190.);float halo=exp(-r*r*22.)*.42;float cross=exp(-abs(p.x)*100.)*exp(-abs(p.y)*11.)+exp(-abs(p.y)*100.)*exp(-abs(p.x)*11.);float edge=1.-smoothstep(.36,.5,r);vec3 color=mix(vec3(1.45,.53,.055),vec3(1.9,1.65,.95),core);gl_FragColor=vec4(color,(core+halo+cross*.09)*edge*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var locator=new T.Points(pulseGeometry,pulseMaterial);locator.name='light-year-enlarged-wavefront-locator';locator.frustumCulled=false;locator.renderOrder=12;pulse.add(locator);
+      var waveMaterial=mat(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending,uniforms:{uOpacity:{value:.96}},
+        vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[
+          'uniform float uOpacity;varying vec2 vUv;',
+          'void main(){vec2 p=vUv*2.-1.;float r=length(p);if(r>1.)discard;float di=(r-.61)*65.,dout=(r-.91)*76.,da=(r-.64)*8.;float inner=exp(-di*di);float outer=exp(-dout*dout);float annulus=exp(-da*da)*.17;float atmosphere=exp(-r*r*4.)*.062;float angle=atan(p.y,p.x);float sector=.56+.44*pow(abs(sin(angle*2.5+.7)),5.);vec3 color=mix(vec3(.08,.95,1.18),vec3(1.55,.79,.20),1.-smoothstep(.64,.84,r));float alpha=inner*.96+outer*sector*.57+annulus+atmosphere;gl_FragColor=vec4(color,alpha*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var wavefront=new T.Mesh(geo(new T.PlaneGeometry(2,2)),waveMaterial);wavefront.name='light-year-illustrative-transverse-wavefront';wavefront.rotation.y=Math.PI/2;wavefront.userData={unmeasured:true,illustrative:true,physicalRadius:false};pulse.add(wavefront);
+      var reticlePositions=[];
+      for(var axis=0;axis<4;axis++){var a=axis*Math.PI/2;reticlePositions.push(0,Math.cos(a)*.98,Math.sin(a)*.98,0,Math.cos(a)*1.1,Math.sin(a)*1.1);}
+      var reticle=new T.LineSegments(pointGeo(reticlePositions),lineMat('#85d7e1',.55));reticle.name='light-year-wavefront-reading-guide';pulse.add(reticle);
+
+      // Endpoint marks remain screen-sized. They mark positions, not objects
+      // with a diameter comparable to a light year.
+      var endpointGeometry=pointGeo([-.5,0,0,.5,0,0]);endpointGeometry.setAttribute('aEnd',new T.Float32BufferAttribute([0,1],1));
+      var endpointMaterial=mat(new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:false,blending:T.AdditiveBlending,uniforms:{uOpacity:{value:.82}},
+        vertexShader:'attribute float aEnd;varying float vEnd;void main(){vEnd=aEnd;gl_PointSize=23.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[
+          'uniform float uOpacity;varying float vEnd;void main(){float r=length(gl_PointCoord-.5);if(r>.5)discard;float delta=(r-.30)*65.;float ring=exp(-delta*delta);float centre=exp(-r*r*220.);float halo=exp(-r*r*30.)*.09;vec3 color=mix(vec3(.45,.82,.94),vec3(.71,.81,.92),vEnd);gl_FragColor=vec4(color,(ring*.35+centre*.67+halo)*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var endpoints=new T.Points(endpointGeometry,endpointMaterial);endpoints.name='light-year-endpoint-locators';endpoints.frustumCulled=false;endpoints.userData={unmeasured:true,illustrative:true};context.add(endpoints);
+
+      var solarContext=new T.Group();solarContext.name='light-year-solar-distance-references';solarContext.userData={unmeasured:true,illustrative:true,orbitalPhaseIllustrative:true};context.add(solarContext);
+      var orbitDefinitions=[{name:'Earth',au:1,angle:2.9,color:'#8bc4e9'},{name:'Jupiter',au:5.2,angle:5.63,color:'#d8b994'},{name:'Saturn',au:9.58,angle:2.05,color:'#e2cba0'},{name:'Uranus',au:19.2,angle:4.56,color:'#a4dbdf'},{name:'Neptune',au:30.07,angle:.62,color:'#759fde'}];
+      var orbitLines=[],planetPositions=[],planetColors=[],planetSizes=[];
+      orbitDefinitions.forEach(function(orbit){
+        orbit.radius=orbit.au*LIGHTYEAR_AU_M/LIGHTYEAR_M;
+        var points=[];for(var i=0;i<=256;i++){var angle=i/256*Math.PI*2;points.push(-.5+Math.cos(angle)*orbit.radius,0,Math.sin(angle)*orbit.radius);}
+        var line=new T.Line(pointGeo(points),lineMat(orbit.color,.40));line.name='light-year-'+orbit.name.toLowerCase()+'-orbit-reference';line.userData={unmeasured:true,au:orbit.au,radius:orbit.radius,circularReference:true};solarContext.add(line);orbitLines.push(line);
+        var x=-.5+Math.cos(orbit.angle)*orbit.radius,z=Math.sin(orbit.angle)*orbit.radius,c=new T.Color(orbit.color).convertSRGBToLinear();orbit.position=[x,0,z];planetPositions.push(x,0,z);planetColors.push(c.r,c.g,c.b);planetSizes.push(orbit.name==='Jupiter'?12:9);
+      });
+      var heliopauseRadius=122*LIGHTYEAR_AU_M/LIGHTYEAR_M,helioPoints=[];
+      for(var h=0;h<192;h++){var a=h/192*Math.PI*2,b=(h+.52)/192*Math.PI*2;helioPoints.push(-.5+Math.cos(a)*heliopauseRadius,0,Math.sin(a)*heliopauseRadius,-.5+Math.cos(b)*heliopauseRadius,0,Math.sin(b)*heliopauseRadius);}
+      var heliopause=new T.LineSegments(pointGeo(helioPoints),lineMat('#739aaf',.32));heliopause.name='light-year-voyager-122-au-reference';heliopause.userData={unmeasured:true,au:122,radius:heliopauseRadius,referenceOnly:true,sphericalBoundary:false};solarContext.add(heliopause);
+      var planetGeometry=pointGeo(planetPositions);planetGeometry.setAttribute('color',new T.Float32BufferAttribute(planetColors,3));planetGeometry.setAttribute('aSize',new T.Float32BufferAttribute(planetSizes,1));
+      var planetMaterial=mat(new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:false,vertexColors:true,blending:T.AdditiveBlending,
+        vertexShader:'attribute float aSize;varying vec3 vColor;void main(){vColor=color;gl_PointSize=aSize;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:['varying vec3 vColor;void main(){float r=length(gl_PointCoord-.5);if(r>.5)discard;float core=exp(-r*r*100.);float halo=exp(-r*r*13.)*.12;gl_FragColor=vec4(vColor*1.4,core*.78+halo);'].concat(finish).join('\n')}));
+      var planets=new T.Points(planetGeometry,planetMaterial);planets.name='light-year-enlarged-planet-locators';planets.frustumCulled=false;solarContext.add(planets);
+      var solarLocator=new T.Points(pointGeo([-.5,0,0]),pulseMaterial);solarLocator.name='light-year-enlarged-sun-locator';solarLocator.frustumCulled=false;solarContext.add(solarLocator);
+
+      // Sparse, deterministic stars give orientation without suggesting a
+      // measured catalogue or a dense population along this one-year path.
+      var starRng=random(961315),starCount=640,starPositions=[],starColors=[],starSizes=[];
+      var palette=['#bacce1','#d2dce7','#b9cdde','#dfd4c4','#a6bddb'].map(function(c){return new T.Color(c).convertSRGBToLinear();});
+      for(var si=0;si<starCount;si++){var az=starRng()*Math.PI*2,el=starRng()*2-1,radial=Math.sqrt(1-el*el),radius=5+starRng()*2,colour=palette[si%palette.length],prominence=Math.pow(starRng(),6);starPositions.push(Math.cos(az)*radial*radius,el*radius,Math.sin(az)*radial*radius);starColors.push(colour.r,colour.g,colour.b);starSizes.push(1.3+prominence*3.2);}
+      var starGeometry=pointGeo(starPositions);starGeometry.setAttribute('color',new T.Float32BufferAttribute(starColors,3));starGeometry.setAttribute('aSize',new T.Float32BufferAttribute(starSizes,1));
+      var starMaterial=mat(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uOpacity:{value:.66}},
+        vertexShader:'attribute float aSize;varying vec3 vColor;void main(){vColor=color;gl_PointSize=aSize;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:['uniform float uOpacity;varying vec3 vColor;void main(){float r=length(gl_PointCoord-.5);if(r>.5)discard;float light=exp(-r*r*11.);gl_FragColor=vec4(vColor,light*uOpacity);'].concat(finish).join('\n')}));
+      var stars=new T.Points(starGeometry,starMaterial);stars.name='light-year-illustrative-distant-stars';stars.userData={unmeasured:true,illustrative:true,catalogue:false,count:starCount};stars.frustumCulled=false;context.add(stars);
+      var bounds=new T.Box3(new T.Vector3(-.5,0,0),new T.Vector3(.5,0,0));
+      var state={detail:'',fraction:.5,days:LIGHTYEAR_DAYS*.5,comparison:false,measure:true,zoom:1};
+      var data={body:body,context:context,bounds:bounds,path:path,ticks:ticks,trail:trail,pulse:pulse,wavefront:wavefront,solarContext:solarContext,stars:stars,state:state,pathGeometry:pathGeometry,trailGeometry:trailGeometry,trailMaterial:trailMaterial,locator:locator,reticle:reticle,endpoints:endpoints,orbitLines:orbitLines,planets:planets,solarLocator:solarLocator,heliopause:heliopause,geometries:geometries,materials:materials,textures:[],dimensions:{referenceM:LIGHTYEAR_M,lightSpeedMPS:LIGHTYEAR_C,auM:LIGHTYEAR_AU_M,days:LIGHTYEAR_DAYS,referenceFrom:[-.5,0,0],referenceTo:[.5,0,0],physicalReference:true,adaptiveRescale:false,solarOrbits:orbitDefinitions,heliopauseAU:122,heliopauseRadius:heliopauseRadius,heliopauseReferenceOnly:true,thirtyDayTicks:tickDays,guideThicknessIllustrative:true},stats:{backgroundStars:starCount,solarOrbitReferences:5,thirtyDayIntervals:12,independentClock:false}};
+      var lastDetail=null,point=null;
+      data.update=function(detailId,comparison,measure,zoom){
+        var id=typeof detailId==='string'?detailId:detailId&&detailId.id||'';
+        if(id!==lastDetail){point=lightYearPoint(id);lastDetail=id;}
+        var fraction=comparison?.5:point&&isFinite(point.fraction)?Math.max(0,Math.min(1,point.fraction)):.5;
+        var magnification=typeof zoom==='number'&&isFinite(zoom)?Math.max(1,zoom):point&&point.zoom||1;
+        state.detail=id;state.fraction=fraction;state.days=fraction*LIGHTYEAR_DAYS;state.comparison=!!comparison;state.measure=measure!==false;state.zoom=magnification;
+        context.visible=!comparison;
+        path.visible=true;ticks.visible=state.measure&&magnification<18;reticle.visible=state.measure;heliopause.visible=state.measure;solarContext.visible=magnification>=24;
+        trail.visible=fraction>0;fractionUniform.value=fraction;
+        var x=-.5+fraction;pulse.position.set(x,0,0);
+        // Guide radii follow the camera for legibility, never the measured
+        // distance. The physical reference and orbital radii remain fixed.
+        var guideRadius=.14/magnification;
+        wavefront.scale.setScalar(guideRadius);reticle.scale.setScalar(guideRadius);
+        trail.scale.set(1,1/magnification,1/magnification);
+        pulse.visible=true;endpoints.visible=magnification<50;
+        data.fraction=fraction;data.days=state.days;data.paused=true;
+      };
+      g.userData.lightYear=data;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';g.rotation.set(0,0,0);
+      data.update('',false,true,1);
+    }
+
+    function paintLightYearPins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;var occupied=[];
+      Array.prototype.forEach.call(host.querySelectorAll('[data-lightyear-pin]'),function(pin){
+        var active=!!root&&state.focusId==='lightyear'&&!state.comparison&&!state.flight&&state.measure&&Math.abs(log10(LIGHTYEAR_M)-state.exp)<.08;
+        if(active){var key=pin.dataset.lightyearPin,point=lightYearPoint(state.detailId),zoom=root.userData.model.userData.lightYear.state.zoom,at=key==='signal'?lightYearPosition(point.fraction):key==='arrival'?[.5,0,0]:key==='neptune'?[-.5+30.07*LIGHTYEAR_AU_M/LIGHTYEAR_M,0,0]:key==='heliopause'?[-.5+122*LIGHTYEAR_AU_M/LIGHTYEAR_M,0,0]:[-.5,0,0];
+          active=key==='neptune'?zoom>=100:key==='heliopause'?zoom>=50&&zoom<400:key==='arrival'?zoom<20:true;
+          if(key==='signal'&&point.fraction===0)active=false;
+          markerPoint.fromArray(at);root.userData.model.localToWorld(markerPoint);markerPoint.project(camera);var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height+(key==='signal'?-48:key==='departure'?32:key==='neptune'?36:key==='heliopause'?58:32),half=key==='heliopause'?94:key==='neptune'?76:65;
+          active=active&&markerPoint.z>-1&&markerPoint.z<1&&x>half+5&&x<width-half-5&&y>155&&y<height-65&&!occupied.some(function(p){return Math.abs(p.x-x)<p.half+half+8&&Math.abs(p.y-y)<30;});
+          if(active){pin.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) translateX(-50%)';occupied.push({x:x,y:y,half:half});}
+        }pin.hidden=!active;
+      });
+    }
+
+    function milkyWayModel(g) {
+      // A structural illustration of the stellar disc, not a measured star
+      // catalogue. The 100,000 ly reference is shared with the item catalogue.
+      // Stars and dust use the same asymmetric arm field and outer-disc warp.
+      var body=new T.Group(),context=new T.Group();body.name='milky-way-stellar-disc';context.name='milky-way-navigation-guides';context.userData.unmeasured=true;g.add(body,context);
+      var geometries=[],materials=[],textures=[];
+      function own(value){track(value);if(value.isBufferGeometry)geometries.push(value);else if(value.isMaterial)materials.push(value);else if(value.isTexture)textures.push(value);return value;}
+      function hash(x,y,z){var n=Math.imul(x,73856093)^Math.imul(y,19349663)^Math.imul(z,83492791);n=Math.imul(n^(n>>>16),0x45d9f3b);return ((n^(n>>>16))>>>0)/4294967295;}
+      function noise(x,y,z){var ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z),fx=x-ix,fy=y-iy,fz=z-iz;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);fz=fz*fz*(3-2*fz);var a=hash(ix,iy,iz)*(1-fx)+hash(ix+1,iy,iz)*fx,b=hash(ix,iy+1,iz)*(1-fx)+hash(ix+1,iy+1,iz)*fx,d=hash(ix,iy,iz+1)*(1-fx)+hash(ix+1,iy,iz+1)*fx,e=hash(ix,iy+1,iz+1)*(1-fx)+hash(ix+1,iy+1,iz+1)*fx;return(a*(1-fy)+b*fy)*(1-fz)+(d*(1-fy)+e*fy)*fz;}
+      function smooth(a,b,v){var t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
+      var barAngle=1.10,barCos=Math.cos(barAngle),barSin=Math.sin(barAngle),armStrength=[1,.58,.83,.49];
+      function armAngle(r,k){return (2.50+k*.055)*Math.log(Math.max(.065,r)/.115)+barAngle+k*Math.PI*.5+.18*Math.sin(r*16+k*1.7)+.095*Math.sin(r*34-k*.8);}
+      function column(px,pz){
+        var r=Math.hypot(px,pz),a=Math.atan2(pz,px),broad=noise(px*19+5,2,pz*19+7),fine=noise(px*77+9,4,pz*77+1),grain=broad*.70+fine*.30;
+        var arms=0,lanes=0;
+        for(var k=0;k<4;k++){
+          var delta=a-armAngle(r,k)+(broad-.5)*.25,width=24+5*k,segment=(.28+1.02*smooth(.29,.70,broad))*(.76+.24*Math.sin(r*31+k*2.3));
+          arms+=Math.pow(.5+.5*Math.cos(delta),width)*armStrength[k]*segment;
+          lanes+=Math.pow(.5+.5*Math.cos(delta+.10+(fine-.5)*.14),width*1.55)*armStrength[k]*(.55+grain);
+        }
+        var armStart=smooth(.070,.140,r),envelope=Math.exp(-r*4.1)*(1-smooth(.410,.497,r));
+        arms*=armStart;lanes*=armStart;
+        // Patchy spurs interrupt the arm ridges without making another perfect
+        // logarithmic spiral. This is deliberately not an arm-location claim.
+        var spur=Math.pow(.5+.5*Math.cos(a-2.8*Math.log(Math.max(.065,r)/.115)-.33),110)*smooth(.14,.21,r)*(1-smooth(.32,.39,r))*.23;
+        arms+=spur;
+        var bx=px*barCos+pz*barSin,bz=-px*barSin+pz*barCos;
+        var bar=Math.exp(-Math.pow(Math.abs(bx)/.138,3.1)-Math.pow(bz/.030,2));
+        var bulge=Math.exp(-Math.pow(r/.062,1.55));
+        return {r:r,warp:.010*Math.pow(Math.min(1,r/.5),3)*Math.sin(a-.9),grain:grain,arms:arms,envelope:envelope,disc:envelope*(.64+arms*1.24)*(.72+grain*.56),young:clamp(.04+arms*.98,0,.94),dust:envelope*(.34+lanes*1.65)*(.35+grain*.98),bar:bar,bulge:bulge,hii:envelope*arms*smooth(.56,.77,fine)*smooth(.12,.19,r)*1.65};
+      }
+      var columns=[],data=new Uint8Array(1024*1024*4),densityTotal=0,dustTotal=0,hiiTotal=0;
+      for(var z=0;z<128;z++)for(var x=0;x<128;x++)columns.push(column(x/127-.5,z/127-.5));
+      for(var y=0;y<64;y++)for(var z=0;z<128;z++)for(var x=0;x<128;x++){
+        var f=columns[z*128+x],py=(y/63-.5)*.16,dy=py-f.warp;
+        var thin=Math.exp(-Math.abs(dy)/(.0036+f.r*.0021)),thick=Math.exp(-Math.abs(dy)/.012);
+        var disc=f.disc*thin,oldDisc=f.envelope*.19*thick,bar=f.bar*Math.exp(-Math.pow(py/.0185,2)),bulge=f.bulge*Math.exp(-Math.pow(Math.abs(py)/.027,1.5));
+        var starlight=disc+oldDisc+bar*.60+bulge*.96,young=clamp(disc*f.young/(starlight+.00001),0,1);
+        var dust=f.dust*Math.exp(-Math.pow(dy/.0043,2)),hii=f.hii*Math.exp(-Math.pow(dy/.0035,2));
+        var index=((Math.floor(y/8)*128+z)*1024+(y%8)*128+x)*4;
+        // Square-root encoding retains faint outer populations in eight-bit
+        // storage. The shader decodes density before extinction integration.
+        data[index]=Math.round(Math.sqrt(clamp(starlight/1.85,0,1))*255);data[index+1]=Math.round(young*255);data[index+2]=Math.round(Math.sqrt(clamp(dust/1.4,0,1))*255);data[index+3]=Math.round(Math.sqrt(clamp(hii/.38,0,1))*255);
+        densityTotal+=starlight;dustTotal+=dust;hiiTotal+=hii;
+      }
+      var texture=own(new T.DataTexture(data,1024,1024,T.RGBAFormat));texture.name='milky-way-light-dust-and-hii-volume';texture.minFilter=texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;texture.needsUpdate=true;
+      var volumeMap={value:texture},eye={value:new T.Vector3()},direction={value:new T.Vector3(0,0,-1)},orthographic={value:0},reveal={value:1},viewport={value:600};
+      var sliceHeight={value:0},cut={value:0},dustStrength={value:1};
+      var sample=[
+        'uniform sampler2D uVolume;uniform vec3 uEye;uniform vec3 uDirection;uniform float uOrthographic;uniform float uSliceHeight;uniform float uCut;uniform float uDust;',
+        'float galaxyMask(vec3 p){return mix(1.,1.-smoothstep(uSliceHeight-.0007,uSliceHeight+.0007,p.y),uCut);}',
+        'vec4 galaxyField(vec3 p){vec3 q=p/vec3(1.,.16,1.)+.5;if(any(lessThan(q,vec3(0.)))||any(greaterThan(q,vec3(1.))))return vec4(0.);q*=vec3(127.,63.,127.);float layer=floor(q.y),next=min(layer+1.,63.);vec2 uvA=(vec2(mod(layer,8.),floor(layer/8.))*128.+q.xz+.5)/1024.;vec2 uvB=(vec2(mod(next,8.),floor(next/8.))*128.+q.xz+.5)/1024.;vec4 f=mix(texture2D(uVolume,uvA),texture2D(uVolume,uvB),fract(q.y));float mask=galaxyMask(p);return vec4(f.r*f.r*1.85*mask,f.g,f.b*f.b*1.4*uDust*mask,f.a*f.a*.38*mask);}'
+      ].join('\n');
+      var finish=['#include <tonemapping_fragment>','#include <encodings_fragment>','}'];
+      var volumeMaterial=own(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.BackSide,uniforms:{uVolume:volumeMap,uEye:eye,uDirection:direction,uOrthographic:orthographic,uOpacity:{value:1},uSliceHeight:sliceHeight,uCut:cut,uDust:dustStrength},
+        vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[sample,'uniform float uOpacity;varying vec3 vP;',
+          'void main(){vec3 rd=normalize(mix(normalize(vP-uEye),uDirection,uOrthographic)),origin=mix(uEye,vP-rd*3.,uOrthographic);vec3 inv=1./(rd+vec3(.000001)),a=(-vec3(.5,.08,.5)-origin)*inv,b=(vec3(.5,.08,.5)-origin)*inv,lo=min(a,b),hi=max(a,b);float near=max(0.,max(lo.x,max(lo.y,lo.z))),far=min(hi.x,min(hi.y,hi.z));if(far<=near)discard;float stepSize=(far-near)/96.;vec3 p=origin+rd*(near+stepSize*.5);vec4 sum=vec4(0.);',
+          'for(int i=0;i<96;i++){vec4 f=galaxyField(p);float stellar=f.r*10.5,dust=f.b*400.,extinction=stellar+dust,alpha=1.-exp(-extinction*stepSize);vec3 color=mix(vec3(1.04,.49,.20),vec3(.32,.62,1.22),smoothstep(.07,.56,f.g));float bulgeLight=1.+.60*exp(-dot(p.xz,p.xz)/.012)*smoothstep(.004,.018,abs(p.y));vec3 emission=color*stellar*6.8*bulgeLight+vec3(1.40,.13,.40)*f.a*44.;sum.rgb+=(1.-sum.a)*alpha*emission/(extinction+.0001);sum.a+=(1.-sum.a)*alpha;p+=rd*stepSize;}if(sum.a<.0001)discard;gl_FragColor=vec4(sum.rgb/max(sum.a,.0001),sum.a*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var volume=mesh(body,own(new T.BoxGeometry(1,.16,1)),volumeMaterial);volume.name='milky-way-volumetric-starlight-and-dust';volume.castShadow=volume.receiveShadow=false;volume.renderOrder=10;
+      var rng=random(61937),positions=[],sizes=[],colors=[],populations={thinDisc:0,thickDisc:0,bulge:0,bar:0};
+      function gaussian(){return Math.sqrt(-2*Math.log(Math.max(.00001,rng())))*Math.cos(2*Math.PI*rng());}
+      for(var j=0;j<29000;j++){
+        var px,pz,py,f,young=false,age;
+        if(j<21600){
+          // Rejection sampling follows the same smooth arm/disc field used by
+          // the volume; there is no separate overlaid pinwheel of point stars.
+          do{var r=Math.sqrt(rng())*.493,angle=rng()*Math.PI*2;px=Math.cos(angle)*r;pz=Math.sin(angle)*r;f=column(px,pz);}while(rng()>Math.min(1,f.disc*.82));
+          py=f.warp+gaussian()*(.0018+f.r*.0018);young=rng()<f.young*.80;age='thinDisc';
+        }else if(j<25000){
+          var r=Math.min(.487,-Math.log(Math.max(.0001,rng()*rng()))*.074),angle=rng()*Math.PI*2;px=Math.cos(angle)*r;pz=Math.sin(angle)*r;f=column(px,pz);py=f.warp+gaussian()*.012;age='thickDisc';
+        }else if(j<27700){
+          px=gaussian()*.037;pz=gaussian()*.037;py=gaussian()*.023;age='bulge';
+        }else{
+          var bx=gaussian()*.064,bz=gaussian()*.013;px=bx*barCos-bz*barSin;pz=bx*barSin+bz*barCos;py=gaussian()*.012;age='bar';
+        }
+        px=clamp(px,-.497,.497);pz=clamp(pz,-.497,.497);py=clamp(py,-.078,.078);positions.push(px,py,pz);populations[age]++;
+        // Every point is an enlarged population sample; its screen footprint
+        // is explicitly not a stellar radius at the galaxy's physical scale.
+        sizes.push(.00036+Math.pow(rng(),5)*.00145);
+        var light=.38+rng()*.61,temperature=rng();
+        colors.push(light*(young?.64:1.16),light*(young?.82:.91+temperature*.07),light*(young?1.30:.66+temperature*.16));
+      }
+      var starGeometry=own(new T.BufferGeometry());starGeometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));starGeometry.setAttribute('aSize',new T.Float32BufferAttribute(sizes,1));starGeometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));starGeometry.computeBoundingBox();starGeometry.computeBoundingSphere();
+      var starMaterial=own(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uVolume:volumeMap,uEye:eye,uDirection:direction,uOrthographic:orthographic,uViewport:viewport,uOpacity:{value:1},uSliceHeight:sliceHeight,uCut:cut,uDust:dustStrength},
+        vertexShader:[sample,'uniform float uViewport;attribute float aSize;varying vec3 vColor;varying float vVisibility;varying float vEnergy;',
+          'void main(){vec3 rd=normalize(mix(normalize(uEye-position),-uDirection,uOrthographic)),inv=1./(rd+vec3(.000001)),a=(-vec3(.5,.08,.5)-position)*inv,b=(vec3(.5,.08,.5)-position)*inv,far=max(a,b);float exitDistance=max(0.,min(far.x,min(far.y,far.z))),distance=mix(min(length(uEye-position),exitDistance),exitDistance,uOrthographic),stepSize=distance/12.,depth=0.;for(int i=0;i<12;i++){depth+=galaxyField(position+rd*(float(i)+.5)*stepSize).b*400.*stepSize;}vVisibility=exp(-depth)*galaxyMask(position);vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.);float scale=length(modelViewMatrix[0].xyz),projection=mix(projectionMatrix[1][1]*.5/max(.012,-mv.z),projectionMatrix[1][1]*.5,uOrthographic);float diameter=aSize*scale*uViewport*projection;vEnergy=min(1.,diameter*diameter);gl_PointSize=clamp(diameter,1.,13.);gl_Position=projectionMatrix*mv;}'
+        ].join('\n'),fragmentShader:['uniform float uOpacity;varying vec3 vColor;varying float vVisibility;varying float vEnergy;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float light=exp(-r*r*31.);gl_FragColor=vec4(vColor,light*vVisibility*vEnergy*uOpacity*.13);'].concat(finish).join('\n')}));
+      var stars=new T.Points(starGeometry,starMaterial);stars.name='milky-way-enlarged-stellar-population-samples';stars.userData.illustrativeGlyphs=true;stars.renderOrder=11;stars.frustumCulled=false;body.add(stars);
+      var solarLocator=new T.Group();solarLocator.name='milky-way-sun-locator';solarLocator.userData.unmeasured=true;solarLocator.position.set(.216,0,.145);context.add(solarLocator);
+      var sunCore=mesh(solarLocator,own(new T.SphereGeometry(.00135,12,8)),own(new T.MeshBasicMaterial({color:'#fff1b5',transparent:true,opacity:.96,depthTest:false,depthWrite:false})));sunCore.name='milky-way-sun-position';sunCore.renderOrder=15;
+      var sunHalo=new T.Sprite(own(new T.SpriteMaterial({map:glowTexture,color:'#f4c979',transparent:true,opacity:.38,depthTest:false,depthWrite:false,blending:T.AdditiveBlending})));sunHalo.name='milky-way-sun-locator-glow';sunHalo.scale.set(.023,.023,1);sunHalo.renderOrder=14;solarLocator.add(sunHalo);
+      var sunRing=mesh(solarLocator,own(new T.RingGeometry(.0042,.0047,48)),own(new T.MeshBasicMaterial({color:'#f3d28d',side:T.DoubleSide,transparent:true,opacity:.80,depthTest:false,depthWrite:false})));sunRing.rotation.x=-Math.PI/2;sunRing.renderOrder=15;sunRing.name='milky-way-sun-position-ring';
+      var guide=new T.Group();guide.name='milky-way-height-slice-guide';guide.userData.unmeasured=true;context.add(guide);
+      var plane=mesh(guide,own(new T.CircleGeometry(.495,128)),own(new T.MeshBasicMaterial({color:'#83bcc8',side:T.DoubleSide,transparent:true,opacity:.037,depthWrite:false,depthTest:true})));plane.rotation.x=-Math.PI/2;plane.name='milky-way-height-slice-plane';plane.renderOrder=9;
+      var rimPoints=[];for(var i=0;i<160;i++){var angle=i/160*Math.PI*2;rimPoints.push(Math.cos(angle)*.495,0,Math.sin(angle)*.495);}
+      var rimGeometry=own(new T.BufferGeometry());rimGeometry.setAttribute('position',new T.Float32BufferAttribute(rimPoints,3));
+      var rim=new T.LineLoop(rimGeometry,own(new T.LineDashedMaterial({color:'#8bbcc7',transparent:true,opacity:.38,dashSize:.006,gapSize:.006,depthWrite:false})));rim.name='milky-way-height-slice-outline';rim.computeLineDistances();rim.renderOrder=12;guide.add(rim);
+      var gaugePoints=[];for(var i=0;i<=8;i++){var h=(i-4)*1000/MILKYWAY_REFERENCE_LY;gaugePoints.push(.515,h,-.018,.515+(i===4?.015:.008),h,-.018);}gaugePoints.push(.515,-4000/MILKYWAY_REFERENCE_LY,-.018,.515,4000/MILKYWAY_REFERENCE_LY,-.018);
+      var gaugeGeometry=own(new T.BufferGeometry());gaugeGeometry.setAttribute('position',new T.Float32BufferAttribute(gaugePoints,3));var gauge=new T.LineSegments(gaugeGeometry,own(new T.LineBasicMaterial({color:'#adc8cd',transparent:true,opacity:.38,depthWrite:false})));gauge.name='milky-way-height-reference-ticks';gauge.userData.unmeasured=true;context.add(gauge);
+      var bounds=new T.Box3(new T.Vector3(-.5,-.08,-.5),new T.Vector3(.5,.08,.5));
+      var state={detail:'galaxy-overview',comparison:false,measure:true,heightLy:0,sliceHeight:0,cut:false,dust:1};
+      var study={body:body,context:context,bounds:bounds,volume:volume,stars:stars,texture:texture,guide:guide,solarLocator:solarLocator,gauge:gauge,state:state,geometries:geometries,materials:materials,textures:textures,populations:populations,dimensions:{referenceLy:MILKYWAY_REFERENCE_LY,volumeCells:[128,64,128],texturePixels:[1024,1024],raySteps:96,barAngle:barAngle,discIllustration:true},fieldStatistics:{density:densityTotal,dust:dustTotal,hii:hiiTotal}};
+      study.update=function(detailId,comparison,measure){
+        var point=milkyWayPoint(detailId||'galaxy-overview'),full=!!comparison,show=measure!==false,heightLy=full?0:point.heightLy||0;
+        state.detail=typeof detailId==='string'?detailId:'galaxy-overview';state.comparison=full;state.measure=show;state.heightLy=heightLy;state.sliceHeight=heightLy/MILKYWAY_REFERENCE_LY;state.cut=!full&&!!point.cut;state.dust=full?1:point.dust===.12?.12:1;
+        sliceHeight.value=state.sliceHeight;cut.value=state.cut?1:0;dustStrength.value=state.dust;
+        context.visible=!full&&show;guide.visible=state.cut;guide.position.y=state.sliceHeight;gauge.visible=state.cut;
+        solarLocator.visible=true;solarLocator.userData.heightLy=0;
+        return state;
+      };
+      g.userData.milkyWay=study;g.userData.galaxy={cloud:volume,stars:stars,eye:eye,direction:direction,orthographic:orthographic,reveal:reveal,viewport:viewport};
+      g.rotation.x=.68;g.rotation.z=-.22;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';study.update('galaxy-overview',false,true);
+    }
+
+    function paintMilkyWayPins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;
+      Array.prototype.forEach.call(host.querySelectorAll('[data-milkyway-pin]'),function(pin){
+        var active=!!root&&state.focusId==='milkyway'&&!state.comparison&&!state.flight&&state.measure&&Math.abs(log10(9.5e20)-state.exp)<.08;
+        if(active){markerPoint.set(.216,0,.145);root.userData.model.localToWorld(markerPoint);markerPoint.project(camera);var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height-34;active=markerPoint.z>-1&&markerPoint.z<1&&x>92&&x<width-92&&y>155&&y<height-70;if(active)pin.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) translateX(-50%)';}
+        pin.hidden=!active;
+      });
+    }
+
     function galaxyModel(g) {
       // 128 x 32 x 128 cells; height slices fit a WebGL 1-compatible 2D texture.
       var data=new Uint8Array(1024*512*4),c=Math.cos(.45),s=Math.sin(.45);
@@ -5258,7 +5737,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     function lightVolumes(visible,state,height) {
       var settling=false;
       visible.forEach(function(root){
-        var g=root.userData.model;lightGalcentreVolumes(g,height);lightAndromedaVolumes(g,height);lightComaVolumes(g,height);lightAuWorlds(g);var n=g.userData.nebula||g.userData.galaxy;if(!n)return;var goal=g.userData.nebula&&state.nebulaReveal?.16:1;
+        var g=root.userData.model;lightGalcentreVolumes(g,height);lightAndromedaVolumes(g,height);lightComaVolumes(g,height);lightMinuteLighting(g);lightAuWorlds(g);var n=g.userData.nebula||g.userData.galaxy;if(!n)return;var goal=g.userData.nebula&&state.nebulaReveal?.16:1;
         n.eye.value.copy(activeCamera.position);g.worldToLocal(n.eye.value);
         activeCamera.getWorldDirection(n.direction.value).add(activeCamera.position);g.worldToLocal(n.direction.value).sub(n.eye.value).normalize();
         n.orthographic.value=activeCamera.isOrthographicCamera?1:0;
@@ -9697,6 +10176,137 @@ return plaza;
       });
     }
 
+    function lightMinuteModel(g){
+      // A centre-to-centre distance study. Physical bodies retain their exact
+      // radii at every inspection level; only the camera changes scale.
+      var referenceM=299792458*60,earthDiameterM=12742000,moonDiameterM=3474800,moonDistanceM=384400000;
+      var earthDiameter=earthDiameterM/referenceM,moonDiameter=moonDiameterM/referenceM,moonX=-.5+moonDistanceM/referenceM;
+      var body=new T.Group(),context=new T.Group();body.name='light-minute-physical-distance-and-worlds';context.name='light-minute-navigation-guides';context.userData.unmeasured=true;g.add(body,context);
+      var earth=new T.Group(),moon=new T.Group();earth.name='light-minute-earth';earth.position.set(-.5,0,0);earth.scale.setScalar(earthDiameter);earth.rotation.set(0,2.8,.12);body.add(earth);
+      moon.name='light-minute-moon';moon.position.set(moonX,0,0);moon.scale.setScalar(moonDiameter);moon.rotation.set(0,-Math.PI/2,0);body.add(moon);
+      earth.userData={physicalSize:true,diameterM:earthDiameterM};moon.userData={physicalSize:true,diameterM:moonDiameterM};
+      var finish=['#include <tonemapping_fragment>','#include <encodings_fragment>','}'];
+      var vertex=[
+        'varying vec3 vNormal;varying vec3 vViewNormal;varying vec3 vView;varying vec2 vUV;',
+        'void main(){vNormal=normal;vUV=uv;vec4 p=modelViewMatrix*vec4(position,1.);vViewNormal=normalize(normalMatrix*normal);vView=isOrthographic?vec3(0.,0.,1.):-p.xyz;gl_Position=projectionMatrix*p;}'
+      ].join('\n');
+      var sunLocal={value:new T.Vector3(-.42,.48,.77).normalize()},nightReady={value:0};
+      var dayMap=planetTexture('earth'),nightMap=track(new T.DataTexture(new Uint8Array([0,0,0,255]),1,1));dayMap.encoding=T.LinearEncoding;nightMap.needsUpdate=true;
+      var earthMaterial=track(new T.ShaderMaterial({uniforms:{uDayMap:{value:dayMap},uNightMap:{value:nightMap},uNightReady:nightReady,uSunLocal:sunLocal,uOpacity:{value:1}},vertexShader:vertex,
+        fragmentShader:[
+          'uniform sampler2D uDayMap;uniform sampler2D uNightMap;uniform float uNightReady;uniform vec3 uSunLocal;uniform float uOpacity;varying vec3 vNormal;varying vec3 vViewNormal;varying vec3 vView;varying vec2 vUV;',
+          'vec3 toLinear(vec3 c){return mix(c/12.92,pow((c+.055)/1.055,vec3(2.4)),step(vec3(.04045),c));}',
+          'void main(){vec3 n=normalize(vNormal);float daylight=dot(n,normalize(uSunLocal));vec3 albedo=toLinear(texture2D(uDayMap,vUV).rgb);float diffuse=pow(max(0.,daylight),.82);vec3 col=albedo*(.003+diffuse*1.22);vec3 night=toLinear(texture2D(uNightMap,vUV).rgb);float lights=smoothstep(.018,.19,max(night.r,max(night.g,night.b)));float darkness=1.-smoothstep(-.14,.035,daylight);col+=night*lights*darkness*uNightReady*.88;float rim=pow(1.-max(0.,dot(normalize(vViewNormal),normalize(vView))),3.5);col+=vec3(.007,.035,.085)*rim*smoothstep(-.08,.28,daylight);gl_FragColor=vec4(col,uOpacity);'
+        ].concat(finish).join('\n')}));
+      var surfaceGeometry=track(new T.SphereGeometry(.5,128,80));
+      var earthSurface=mesh(earth,surfaceGeometry,earthMaterial);earthSurface.name='light-minute-earth-surface';earthSurface.castShadow=earthSurface.receiveShadow=false;
+      // A 76 km reference shell gives the atmospheric limb a restrained depth.
+      // This rendering of scattered light is excluded from measured bounds.
+      var atmosphereMaterial=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{uSunLocal:sunLocal,uOpacity:{value:1}},vertexShader:vertex,
+        fragmentShader:[
+          'uniform vec3 uSunLocal;uniform float uOpacity;varying vec3 vNormal;varying vec3 vViewNormal;varying vec3 vView;',
+          'void main(){float mu=max(0.,dot(normalize(vViewNormal),normalize(vView)));float rim=pow(1.-mu,4.8);float daylight=dot(normalize(vNormal),normalize(uSunLocal));float lit=smoothstep(-.14,.25,daylight);vec3 color=mix(vec3(.42,.12,.025),vec3(.045,.28,.94),smoothstep(-.08,.20,daylight));gl_FragColor=vec4(color,rim*lit*.52*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var atmosphere=mesh(earth,track(new T.SphereGeometry(.506,96,64)),atmosphereMaterial);atmosphere.name='light-minute-earth-atmospheric-limb';atmosphere.userData.unmeasured=true;atmosphere.castShadow=atmosphere.receiveShadow=false;
+      var moonMaterial=track(new T.MeshStandardMaterial({color:0xffffff,map:planetTexture('moon'),roughness:1,metalness:0}));
+      var moonSurface=mesh(moon,surfaceGeometry,moonMaterial);moonSurface.name='light-minute-lunar-surface';moonSurface.castShadow=moonSurface.receiveShadow=false;
+      function lineMaterial(color,opacity){return track(new T.LineBasicMaterial({color:new T.Color(color).convertSRGBToLinear(),transparent:true,opacity:opacity,depthWrite:false}));}
+      var pathGeometry=track(new T.BufferGeometry().setFromPoints([new T.Vector3(-.5,0,0),new T.Vector3(.5,0,0)]));
+      var path=new T.Line(pathGeometry,lineMaterial('#98b9c6',.38));path.name='light-minute-fixed-sixty-second-reference';body.add(path);
+      // One-second ticks and ten-second accents use one batch. They are a
+      // reference ruler, with no implied physical thickness or orbital plane.
+      var tickPositions=[],tickColors=[],majorColor=new T.Color('#b8d8df').convertSRGBToLinear(),minorColor=new T.Color('#5f7d91').convertSRGBToLinear();
+      for(var s=0;s<=60;s++){var major=s%10===0,h=major?.005:.0022,x=-.5+s/60,c=major?majorColor:minorColor;tickPositions.push(x,-h,0,x,h,0);tickColors.push(c.r,c.g,c.b,c.r,c.g,c.b);}
+      var tickGeometry=track(new T.BufferGeometry());tickGeometry.setAttribute('position',new T.Float32BufferAttribute(tickPositions,3));tickGeometry.setAttribute('color',new T.Float32BufferAttribute(tickColors,3));
+      var ticks=new T.LineSegments(tickGeometry,track(new T.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.68,depthWrite:false})));ticks.name='light-minute-one-second-ruler';ticks.userData.unmeasured=true;context.add(ticks);
+      var trailGeometry=track(new T.BufferGeometry());trailGeometry.setAttribute('position',new T.Float32BufferAttribute([-.5,0,0,-.5,0,0],3));
+      var trail=new T.Line(trailGeometry,lineMaterial('#efc478',.78));trail.name='light-minute-elapsed-distance';trail.userData.unmeasured=true;context.add(trail);
+      // A point-sized locator and a transparent transverse ring illustrate the
+      // selected wavefront. Neither is a photon diameter or a physical sphere.
+      var pulse=new T.Group();pulse.name='light-minute-selected-wavefront';pulse.userData.unmeasured=true;context.add(pulse);
+      var pulseGeometry=track(new T.BufferGeometry());pulseGeometry.setAttribute('position',new T.Float32BufferAttribute([0,0,0],3));
+      var pulseMaterial=track(new T.ShaderMaterial({transparent:true,depthWrite:false,depthTest:false,blending:T.AdditiveBlending,uniforms:{uOpacity:{value:.84}},
+        vertexShader:'void main(){gl_PointSize=15.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:[
+          'uniform float uOpacity;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float core=exp(-r*r*180.),halo=exp(-r*r*24.)*.3;float edge=1.-smoothstep(.35,.5,r);gl_FragColor=vec4(vec3(.95,.65,.28),(core+halo)*edge*uOpacity);'
+        ].concat(finish).join('\n')}));
+      var locator=new T.Points(pulseGeometry,pulseMaterial);locator.name='light-minute-wavefront-navigation-point';locator.frustumCulled=false;locator.renderOrder=20;pulse.add(locator);
+      var wavePoints=[];for(var w=0;w<=128;w++){var angle=w/128*Math.PI*2;wavePoints.push(0,Math.cos(angle)*.006,Math.sin(angle)*.006);}
+      var waveGeometry=track(new T.BufferGeometry());waveGeometry.setAttribute('position',new T.Float32BufferAttribute(wavePoints,3));
+      var wavefront=new T.Line(waveGeometry,lineMaterial('#e0af63',.27));wavefront.name='light-minute-illustrative-transverse-wavefront';wavefront.userData.unmeasured=true;pulse.add(wavefront);
+      // Quiet background points establish a dark sky without adding measured
+      // objects. Positions and colours illustrate distant stars, not a chart.
+      var starCount=220,starRng=random(601031),starPositions=[],starColors=[],starSizes=[];
+      var starPalette=['#d8e5f3','#e7e3d9','#e7d6ba','#c5d7ed'].map(function(c){return new T.Color(c).convertSRGBToLinear();});
+      for(var si=0;si<starCount;si++){var az=starRng()*Math.PI*2,z=starRng()*2-1,radial=Math.sqrt(1-z*z),radius=6+starRng()*.6,colour=starPalette[si%starPalette.length];starPositions.push(Math.cos(az)*radial*radius,z*radius,Math.sin(az)*radial*radius);starColors.push(colour.r,colour.g,colour.b);starSizes.push(1.15+starRng()*.65);}
+      var starGeometry=track(new T.BufferGeometry());starGeometry.setAttribute('position',new T.Float32BufferAttribute(starPositions,3));starGeometry.setAttribute('color',new T.Float32BufferAttribute(starColors,3));starGeometry.setAttribute('aSize',new T.Float32BufferAttribute(starSizes,1));
+      var starMaterial=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uOpacity:{value:.2}},
+        vertexShader:'attribute float aSize;varying vec3 vColor;void main(){vColor=color;gl_PointSize=aSize;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:['uniform float uOpacity;varying vec3 vColor;void main(){float r=length(gl_PointCoord-.5);if(r>.5)discard;float light=exp(-r*r*9.);gl_FragColor=vec4(vColor,light*uOpacity);'].concat(finish).join('\n')}));
+      var stars=new T.Points(starGeometry,starMaterial);stars.name='light-minute-illustrative-background-stars';stars.userData={unmeasured:true,illustrative:true,catalogue:false,count:starCount};context.add(stars);
+      var bounds=new T.Box3(new T.Vector3(-.5-earthDiameter/2,-earthDiameter/2,-earthDiameter/2),new T.Vector3(.5,earthDiameter/2,earthDiameter/2));
+      var data={body:body,context:context,bounds:bounds,earth:earth,moon:moon,earthSurface:earthSurface,moonSurface:moonSurface,atmosphere:atmosphere,path:path,ticks:ticks,pulse:pulse,locator:locator,wavefront:wavefront,trail:trail,stars:stars,earthMaterial:earthMaterial,moonMaterial:moonMaterial,sunLocal:sunLocal,worldSun:new T.Vector3(),localSun:new T.Vector3(),inverseEarth:new T.Quaternion(),textureStatus:{earth:'loading',night:'loading',moon:'loading',relief:'loading'},stats:{physicalBodies:2,surfaceTriangles:40448,maximumDrawCalls:9,oneSecondTicks:61,tenSecondAccents:7,pulseIllustrative:true,illustrativeBackgroundStars:starCount},dimensions:{referenceM:referenceM,lightSpeedMPS:299792458,earthDiameterM:earthDiameterM,moonDiameterM:moonDiameterM,moonDistanceM:moonDistanceM,earthDiameter:earthDiameter,moonDiameter:moonDiameter,moonPosition:[moonX,0,0],referenceFrom:[-.5,0,0],referenceTo:[.5,0,0],physicalRadii:true,adaptiveRescale:false}};
+      var lastDetail=null,point=null,previousSeconds=null;
+      data.update=function(detailId,comparison,motion,time,zoom){
+        var id=typeof detailId==='string'?detailId:detailId&&detailId.id||'';
+        if(id!==lastDetail){point=lightMinutePoint(id);lastDetail=id;}
+        var seconds=point&&isFinite(point.seconds)?Math.max(0,Math.min(60,point.seconds)):0,x=-.5+seconds/60;
+        var magnification=typeof zoom==='number'&&isFinite(zoom)?Math.max(1,zoom):point&&point.zoom||1;
+        data.detail=id;data.seconds=seconds;data.fraction=seconds/60;data.comparison=!!comparison;data.zoom=magnification;
+        context.visible=!comparison;path.visible=!!comparison||magnification<=100;
+        ticks.visible=magnification<=20;trail.visible=seconds>0&&magnification<=100;
+        pulse.visible=seconds>0;wavefront.visible=magnification<=20;locator.visible=magnification<=100&&id!=='light-minute-pair';
+        if(seconds!==previousSeconds){pulse.position.set(x,0,0);trailGeometry.attributes.position.setXYZ(1,x,0,0);trailGeometry.attributes.position.needsUpdate=true;trailGeometry.computeBoundingSphere();previousSeconds=seconds;}
+        // Time is chosen by the slider. Ambient animation never advances it.
+        data.paused=true;
+      };
+      g.userData.lightMinute=data;g.userData.extent=1;g.userData.measureCenter=0;g.userData.dimension='x';g.rotation.set(0,0,0);
+      g.updateMatrixWorld(true);lightMinuteLighting(g);data.update('',false,false,0,1);
+      function refreshStatus(){data.status=data.textureStatus.earth==='failed'||data.textureStatus.moon==='failed'?'fallback':data.textureStatus.earth==='ready'&&data.textureStatus.moon==='ready'?'ready':'loading';}
+      function loadTexture(file,kind){
+        var texture=track(new T.TextureLoader().load(atlasAssetBase+file,function(tex){
+          if(disposed||g.userData.released){tex.dispose();return;}
+          tex.encoding=kind==='moon'?T.sRGBEncoding:T.LinearEncoding;tex.wrapS=kind==='night'?T.ClampToEdgeWrapping:T.RepeatWrapping;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+          if(kind==='night'){tex.minFilter=T.LinearFilter;tex.generateMipmaps=false;tex.wrapT=T.ClampToEdgeWrapping;}
+          if(kind==='earth')earthMaterial.uniforms.uDayMap.value=tex;
+          else if(kind==='night'){earthMaterial.uniforms.uNightMap.value=tex;nightReady.value=1;}
+          else if(kind==='moon'){moonMaterial.map=tex;moonMaterial.needsUpdate=true;}
+          else {moonMaterial.bumpMap=tex;moonMaterial.bumpScale=.0015*moonDiameter*g.matrixWorld.getMaxScaleOnAxis();moonMaterial.needsUpdate=true;}
+          data.textureStatus[kind]='ready';refreshStatus();invalidate();
+        },undefined,function(){if(disposed||g.userData.released)return;data.textureStatus[kind]='failed';refreshStatus();invalidate();}));
+        texture.encoding=kind==='moon'?T.sRGBEncoding:T.LinearEncoding;
+        if(kind==='night'){texture.minFilter=T.LinearFilter;texture.generateMipmaps=false;texture.wrapS=texture.wrapT=T.ClampToEdgeWrapping;}
+      }
+      loadTexture('earth-bluemarble-2k.png','earth');loadTexture('earth-blackmarble-2016.jpg','night');loadTexture('moon-lroc-color-2k.jpg','moon');loadTexture('moon-lola-height-1k.jpg','relief');
+    }
+    function lightMinuteLighting(g){
+      var data=g.userData.lightMinute;if(!data)return;
+      // Match the studio's single sunlight direction in the rotated globe's
+      // frame. Lighting follows the physical scene, rather than the camera.
+      data.worldSun.copy(key.position).sub(key.target.position).normalize();data.earth.getWorldQuaternion(data.inverseEarth).invert();
+      data.sunLocal.value.copy(data.worldSun).applyQuaternion(data.inverseEarth).normalize();
+      // Three.js bump derivatives use view-space distances. Convert this
+      // fraction of lunar diameter into world units before perturbing normals.
+      data.moonMaterial.bumpScale=.0015*data.dimensions.moonDiameter*g.matrixWorld.getMaxScaleOnAxis();
+    }
+
+    function paintLightMinutePins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;var placed=[];
+      Array.prototype.forEach.call(host.querySelectorAll('[data-lightminute-pin]'),function(pin){
+        var kind=pin.dataset.lightminutePin,active=!!root&&state.focusId==='light-minute'&&!state.comparison&&!state.flight&&Math.abs(log10(LIGHT_MINUTE_M)-state.exp)<.08;
+        if(active){
+          var seconds=kind==='earth'?0:kind==='moon'?LIGHT_MINUTE_MOON_DISTANCE_M/LIGHT_SPEED_M_S:Number(kind),at=lightMinutePosition(seconds);
+          active=kind==='moon'?cameraZoom>=8&&cameraZoom<200:kind==='earth'?cameraZoom<200:cameraZoom<8;
+          if(active){markerPoint.fromArray(at);root.userData.model.localToWorld(markerPoint);markerPoint.project(camera);var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height,offset=kind==='moon'?35:-42;
+            for(var j=0;j<placed.length;j++)if(Math.abs(x-placed[j][0])<95&&Math.abs(y+offset-placed[j][1])<30)offset=placed[j][1]+34-y;
+            active=markerPoint.z>-1&&markerPoint.z<1&&x>55&&x<width-55&&y+offset>160&&y+offset<height-70;
+            if(active){pin.style.transform='translate('+x.toFixed(1)+'px,'+(y+offset).toFixed(1)+'px) translateX(-50%)';placed.push([x,y+offset]);}
+          }
+        }
+        pin.hidden=!active;
+      });
+    }
+
     function comaModel(g){
       // All distances stay in the fixed observer-to-cluster coordinate frame.
       // Galaxy placement, morphology and adopted sizes illustrate a cluster;
@@ -9743,15 +10353,15 @@ return plaza;
       var populationGeo=track(new T.BufferGeometry());populationGeo.setAttribute('position',new T.BufferAttribute(positions,3));populationGeo.setAttribute('aCorner',new T.BufferAttribute(corners,2));populationGeo.setAttribute('aProfile',new T.BufferAttribute(profiles,4));populationGeo.setAttribute('color',new T.BufferAttribute(colours,3));populationGeo.boundingBox=populationBounds.clone();populationGeo.boundingSphere=populationBounds.getBoundingSphere(new T.Sphere());
       var populationMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,side:T.DoubleSide,uniforms:{uOpacity:{value:1}},
         vertexShader:[
-          'attribute vec2 aCorner;attribute vec4 aProfile;varying vec2 vP;varying vec3 vColor;varying vec2 vShape;',
-          'void main(){vP=aCorner;vColor=color;vShape=vec2(aProfile.y,aProfile.w);vec4 mv=modelViewMatrix*vec4(position,1.);float c=cos(aProfile.z),s=sin(aProfile.z);vec2 q=vec2(c*aCorner.x-s*aCorner.y,s*aCorner.x+c*aCorner.y);mv.xy+=q*aProfile.x*.5*length(modelViewMatrix[0].xyz);gl_Position=projectionMatrix*mv;}'
+          'attribute vec2 aCorner;attribute vec4 aProfile;varying vec2 vP;varying vec3 vColor;varying vec2 vShape;varying float vNearFade;',
+          'void main(){vP=aCorner;vColor=color;vShape=vec2(aProfile.y,aProfile.w);vec4 mv=modelViewMatrix*vec4(position,1.);float worldDiameter=aProfile.x*length(modelViewMatrix[0].xyz);vNearFade=smoothstep(3.,7.,length(mv.xyz)/max(worldDiameter,.0000001));float c=cos(aProfile.z),s=sin(aProfile.z);vec2 q=vec2(c*aCorner.x-s*aCorner.y,s*aCorner.x+c*aCorner.y);mv.xy+=q*aProfile.x*.5*length(modelViewMatrix[0].xyz);gl_Position=projectionMatrix*mv;}'
         ].join('\n'),
         fragmentShader:[
-          'uniform float uOpacity;varying vec2 vP;varying vec3 vColor;varying vec2 vShape;',
-          'void main(){vec2 p=vec2(vP.x,vP.y/vShape.x);float r=length(p);if(r>=1.)discard;float edge=1.-smoothstep(.68,1.,r);float nucleus=exp(-r*r*460.);float envelope=exp(-3.9*pow(r,.66));float light=envelope*.92+nucleus*.58;vec3 tint=mix(vColor,vec3(1.25,1.07,.79),1.-smoothstep(.025,.25,r));',
+          'uniform float uOpacity;varying vec2 vP;varying vec3 vColor;varying vec2 vShape;varying float vNearFade;',
+          'void main(){vec2 p=vec2(vP.x,vP.y/vShape.x);float r=length(p);if(r>=1.)discard;float edge=1.-smoothstep(.68,1.,r);float nucleus=exp(-r*r*460.);float envelope=exp(-3.9*pow(r,.66));float light=envelope*.65+nucleus*.20;vec3 tint=mix(vColor*.78,vec3(.78,.48,.20),1.-smoothstep(.025,.25,r));',
           'if(vShape.y>.25&&vShape.y<.75){float disc=exp(-r*4.8);light+=disc*.16;tint=mix(tint,vColor*.94,smoothstep(.15,.65,r)*.36);}',
-          'if(vShape.y>.75){float angle=atan(p.y,p.x);float phase=angle-3.4*log(max(.055,r));float arms=pow(.5+.5*cos(phase*2.),9.);float young=arms*smoothstep(.10,.24,r)*(1.-smoothstep(.72,1.,r));light=envelope*.56+nucleus*.67+young*exp(-r*3.2)*.84;tint=mix(tint,vec3(.35,.64,1.05),young*.76);}',
-          'float alpha=min(.94,light*edge)*uOpacity;if(alpha<.0006)discard;gl_FragColor=vec4(tint*1.35,alpha);'
+          'if(vShape.y>.75){float angle=atan(p.y,p.x);float phase=angle-3.4*log(max(.055,r));float arms=pow(.5+.5*cos(phase*2.),9.);float young=arms*smoothstep(.10,.24,r)*(1.-smoothstep(.72,1.,r));light=envelope*.48+nucleus*.23+young*exp(-r*3.2)*.70;tint=mix(tint,vec3(.35,.64,1.05),young*.76);}',
+          'float alpha=min(.72,light*edge)*uOpacity*vNearFade;if(alpha<.0006)discard;gl_FragColor=vec4(tint,alpha);'
         ].concat(finish).join('\n')}));
       var population=new T.Mesh(populationGeo,populationMat);population.name='coma-1078-illustrative-member-galaxies';population.castShadow=population.receiveShadow=false;population.frustumCulled=false;population.renderOrder=12;body.add(population);
       population.userData={illustrative:true,catalogue:false,count:count,adoptedDiameterRangeLY:[22000,155000],physicalSize:true};
@@ -9767,7 +10377,7 @@ return plaza;
         var galaxy=new T.Group();galaxy.name='coma-'+spec.id+'-elliptical-galaxy';galaxy.position.fromArray(spec.at);galaxy.scale.setScalar(spec.diameterLY*unit);
         var pa=spec.positionAngleDeg*Math.PI/180;galaxy.quaternion.setFromRotationMatrix(new T.Matrix4().makeBasis(new T.Vector3(0,Math.cos(pa),-Math.sin(pa)),new T.Vector3(0,Math.sin(pa),Math.cos(pa)),new T.Vector3(1,0,0)));body.add(galaxy);
         var eye={value:new T.Vector3()},direction={value:new T.Vector3(0,0,-1)},orth={value:0};
-        var innerColor=new T.Color(index?'#ffe7c8':'#ffedcf').convertSRGBToLinear(),outerColor=new T.Color(index?'#c69869':'#d4a776').convertSRGBToLinear();
+        var innerColor=new T.Color(index?'#ffdaa3':'#ffe0ad').convertSRGBToLinear(),outerColor=new T.Color(index?'#b9854e':'#c59353').convertSRGBToLinear();
         var coreMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,side:T.BackSide,uniforms:{uEye:eye,uDirection:direction,uOrthographic:orth,uAxes:{value:axes},uInner:{value:innerColor},uOuter:{value:outerColor},uOpacity:{value:1}},
           vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
           fragmentShader:[
@@ -9775,7 +10385,7 @@ return plaza;
             'float erfApprox(float x){float t=1./(1.+.3275911*abs(x));float p=(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t;return sign(x)*(1.-p*exp(-x*x));}',
             'float layer(vec3 o,vec3 d,float a,float b,float sigma){float aa=dot(d,d),t=-dot(o,d)/aa;vec3 hit=o+d*t;float s=sigma*1.41421356;float column=erfApprox((b-t)*sqrt(aa)/s)-erfApprox((a-t)*sqrt(aa)/s);return exp(-dot(hit,hit)/(2.*sigma*sigma))*column*.5/sqrt(aa);}',
             'void main(){vec3 rd=normalize(mix(normalize(vP-uEye),uDirection,uOrthographic));vec3 origin=mix(uEye,vP-rd*6.,uOrthographic);vec3 inv=1./(rd+vec3(.0000001));vec3 lo=min((-1.2*uAxes-origin)*inv,(1.2*uAxes-origin)*inv),hi=max((-1.2*uAxes-origin)*inv,(1.2*uAxes-origin)*inv);float near=max(0.,max(lo.x,max(lo.y,lo.z))),far=min(hi.x,min(hi.y,hi.z));if(far<=near)discard;vec3 o=origin/uAxes,d=rd/uAxes;',
-            'float nucleus=layer(o,d,near,far,.012)*1.45;float inner=layer(o,d,near,far,.043)*.91;float body=layer(o,d,near,far,.126)*.55;float halo=layer(o,d,near,far,.28)*.145;float light=nucleus+inner+body+halo;float alpha=(1.-exp(-light*1.18))*uOpacity;if(alpha<.00015)discard;vec3 color=(uInner*(nucleus+inner+body*.65)+uOuter*(body*.35+halo))/max(.000001,light);color*=1.32+min(.45,nucleus*.28);gl_FragColor=vec4(color,alpha);'
+            'float nucleus=layer(o,d,near,far,.009)*2.3;float inner=layer(o,d,near,far,.036)*1.35;float body=layer(o,d,near,far,.118)*.56;float halo=layer(o,d,near,far,.28)*.09;float light=nucleus+inner+body+halo;float alpha=(1.-exp(-light*1.18))*uOpacity;if(alpha<.00015)discard;vec3 color=(uInner*(nucleus+inner+body*.65)+uOuter*(body*.35+halo))/max(.000001,light);color*=1.08+min(.22,nucleus*.12);gl_FragColor=vec4(color,alpha);'
           ].concat(finish).join('\n')}));
         var cloud=mesh(galaxy,track(new T.BoxGeometry(2.4,2.4*q,2.4*depth)),coreMat);cloud.name='coma-'+spec.id+'-continuous-stellar-light';cloud.renderOrder=10+index;cloud.castShadow=cloud.receiveShadow=false;
         galaxy.userData={id:spec.id,adoptedDiameterLY:spec.diameterLY,axisRatio:q,positionAngleDeg:spec.positionAngleDeg,illustrativeDepthAxis:depth,haloExtentFactor:2.4,physicalSize:true,volume:cloud};
@@ -10566,6 +11176,10 @@ return plaza;
     }
 
     function basketballModel(g){
+      var geometries=[],materials=[],textures=[];
+      function geometry(value){geometries.push(value);return track(value);}
+      function surface(color,options){var value=material(color,options);materials.push(value);return value;}
+      function node(parent,name,geo,mat,radius){var value=mesh(parent,geo,mat);value.name=name;if(radius)value.scale.setScalar(radius);value.castShadow=false;value.receiveShadow=false;return value;}
       var width=2048,height=1024,rng=random(24107);
       var coverCanvas=document.createElement('canvas'),bumpCanvas=document.createElement('canvas');
       coverCanvas.width=bumpCanvas.width=width;coverCanvas.height=bumpCanvas.height=height;
@@ -10591,6 +11205,10 @@ return plaza;
       var valve=new T.Vector3(.4,.36,.8438).normalize();
       function channel(x,y,z){return Math.min(Math.abs(x),Math.abs(y),Math.abs(.68*x+.733212111*z));}
       function smooth(a,b,v){var q=clamp((v-a)/(b-a),0,1);return q*q*(3-2*q);}
+      function coverSurfaceRadius(nx,ny,nz){
+        var seamDepth=.003*(1-smooth(.006,.028,channel(nx,ny,nz))),vd=1-(nx*valve.x+ny*valve.y+nz*valve.z);
+        var valveDepth=.0025*(1-smooth(.00016,.0005,vd));return .5-Math.max(seamDepth,valveDepth);
+      }
       for(var y=0;y<height;y++){
         var theta=(y+.5)/height*Math.PI,sy=Math.sin(theta),ny=Math.cos(theta);
         for(var x=0;x<width;x++){
@@ -10603,22 +11221,188 @@ return plaza;
         }
       }
       ctx.putImageData(color,0,0);bctx.putImageData(bump,0,0);
-      var cover=track(new T.CanvasTexture(coverCanvas)),relief=track(new T.CanvasTexture(bumpCanvas));
+      var cover=track(new T.CanvasTexture(coverCanvas)),relief=track(new T.CanvasTexture(bumpCanvas));textures.push(cover,relief);
       cover.encoding=T.sRGBEncoding;[cover,relief].forEach(function(tex){tex.wrapS=T.RepeatWrapping;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());});
-      var leather=material('#ffffff',{map:cover,bumpMap:relief,bumpScale:.0015,roughness:.83,metalness:0});
-      var geo=track(new T.SphereGeometry(.5,256,160)),position=geo.attributes.position;
+      var leather=surface('#ffffff',{map:cover,bumpMap:relief,bumpScale:.0015,roughness:.83,metalness:0});
+      var geo=geometry(new T.SphereGeometry(.5,256,160)),position=geo.attributes.position;
       for(var i=0;i<position.count;i++){
         var nx=position.getX(i)*2,ny=position.getY(i)*2,nz=position.getZ(i)*2;
-        var seamDepth=.003*(1-smooth(.006,.028,channel(nx,ny,nz))),vd=1-(nx*valve.x+ny*valve.y+nz*valve.z);
-        var valveDepth=.0025*(1-smooth(.00016,.0005,vd)),r=.5-Math.max(seamDepth,valveDepth);
+        var r=coverSurfaceRadius(nx,ny,nz);
         position.setXYZ(i,nx*r,ny*r,nz*r);
       }
-      geo.computeVertexNormals();var body=mesh(g,geo,leather);body.name='basketball-pebbled-cover';
+      geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();
+      var body=node(g,'basketball-pebbled-cover',geo,leather);
       // The cover texture supplies the dark opening; this small embedded lip catches light.
-      var lip=mesh(g,track(new T.TorusGeometry(.011,.0009,8,48)),material('#29251f',{roughness:.88}));
-      lip.name='basketball-valve-lip';lip.position.copy(valve).multiplyScalar(.4981);lip.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),valve);
-      g.userData.basketball={body:body,valve:valve,cover:cover,relief:relief};g.userData.extent=1;g.userData.measureCenter=0;
+      var lip=node(g,'basketball-valve-lip',geometry(new T.TorusGeometry(.011,.0009,8,48)),surface('#29251f',{roughness:.88}));
+      lip.position.copy(valve).multiplyScalar(.4981);lip.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),valve);
+
+      // A construction study. Radial thickness, yarn size, and material colors are
+      // enlarged teaching cues; the unchanged outside sphere remains the 24 cm reference.
+      var layers=[
+        {id:'cover',outerRadius:.5,innerRadius:.478,maxAngle:1.48,angle:{value:0}},
+        {id:'carcass',outerRadius:.4775,innerRadius:.450,maxAngle:1.14,angle:{value:0}},
+        {id:'windings',outerRadius:.4495,innerRadius:.419,maxAngle:.81,angle:{value:0}},
+        {id:'bladder',outerRadius:.4185,innerRadius:.396,maxAngle:.50,angle:{value:0}}
+      ];
+      var layerGroup=new T.Group();layerGroup.name='basketball-construction-layers';g.add(layerGroup);
+      var shellGeometry=geometry(new T.SphereGeometry(1,144,96));
+      var caps=[],labelHeights=[.12,.08,-.01,-.11],labelPositions={cover:[0,0,0],carcass:[0,0,0],windings:[0,0,0],bladder:[0,0,0],cavity:[0,0,-.396]};
+      function finish(mat,angle,kind){
+        mat.onBeforeCompile=function(shader){
+          shader.uniforms.uBasketballAngle=angle;
+          shader.vertexShader='varying vec3 vBasketballPoint;\n'+shader.vertexShader;
+          shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBasketballPoint=position;');
+          shader.fragmentShader='varying vec3 vBasketballPoint;\nuniform float uBasketballAngle;\n'+shader.fragmentShader;
+          shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(uBasketballAngle>.00001&&abs(atan(vBasketballPoint.x,vBasketballPoint.z))<uBasketballAngle)discard;');
+          if(kind!=='cover'){
+            var lines=['#include <color_fragment>','vec3 bp=normalize(vBasketballPoint);','float grit=fract(sin(dot(floor(bp*1800.),vec3(127.1,311.7,74.7)))*43758.5453);'];
+            if(kind==='windings'){
+              lines.push('float bphi=atan(bp.x,bp.z);float blat=asin(clamp(bp.y,-1.,1.));','float bu=bphi*58.+blat*96.;float bv=bphi*61.-blat*103.;','float warp=.5+.5*cos(bu);float weft=.5+.5*cos(bv);','float high=max(warp,weft);float stitch=step(warp,weft);','diffuseColor.rgb*=.70+.25*high+.11*grit;','diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.055,1.015,.92),stitch*.45);');
+            }else if(kind==='bladder-inner'){
+              lines.push('float mold=exp(-abs(bp.y+.06)*190.)+exp(-abs(bp.x*.83+bp.z*.56)*170.);','float scuff=.5+.5*sin(bp.x*38.+sin(bp.z*31.)*2.+bp.y*16.);','diffuseColor.rgb*=.88+.12*grit+.09*scuff+.15*min(mold,1.);');
+            }else{
+              lines.push('float mottled=.5+.5*sin(bp.x*37.+sin(bp.y*31.)+bp.z*27.);','diffuseColor.rgb*=.88+.10*grit+.08*mottled;');
+            }
+            shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',lines.join('\n'));
+          }
+        };
+        mat.customProgramCacheKey=function(){return 'basketball-layer-study-v1-'+kind;};return mat;
+      }
+      function edgeSurface(color,kind){
+        var mat=surface(color,{roughness:.82,side:T.DoubleSide});
+        mat.onBeforeCompile=function(shader){
+          shader.vertexShader='varying vec2 vBasketballEdge;\n'+shader.vertexShader;
+          shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBasketballEdge=uv;');
+          shader.fragmentShader='varying vec2 vBasketballEdge;\n'+shader.fragmentShader;
+          var lines=['#include <color_fragment>','vec2 e=vBasketballEdge;','float fibre=fract(sin(dot(floor(e*vec2(380.,3100.)),vec2(127.1,311.7)))*43758.5453);'];
+          if(kind==='windings')lines.push('float ply=.5+.5*cos(e.x*63.);','diffuseColor.rgb*=.77+.14*fibre+.20*ply;');
+          else lines.push('float edgeLight=smoothstep(0.,.08,e.x)*(1.-smoothstep(.88,1.,e.x));','diffuseColor.rgb*=.91+.10*fibre+.07*edgeLight;');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',lines.join('\n'));
+        };
+        mat.customProgramCacheKey=function(){return 'basketball-layer-edge-v1-'+kind;};return mat;
+      }
+      // A half-annular ribbon closes each cut face. Its two copies rotate with
+      // the clipping plane, without regenerating the sphere or changing its bounds.
+      function edgeGeometry(inner,outer){
+        var vertices=[],uv=[],indices=[],segments=144;
+        for(var j=0;j<=segments;j++){
+          var a=j/segments*Math.PI,sy=Math.cos(a),sz=Math.sin(a);
+          vertices.push(0,inner*sy,inner*sz,0,outer*sy,outer*sz);uv.push(0,j/segments,1,j/segments);
+          if(j<segments){var n=j*2;indices.push(n,n+1,n+2,n+1,n+3,n+2);}
+        }
+        var value=new T.BufferGeometry();value.setAttribute('position',new T.Float32BufferAttribute(vertices,3));value.setAttribute('uv',new T.Float32BufferAttribute(uv,2));value.setIndex(indices);value.computeVertexNormals();value.computeBoundingSphere();return geometry(value);
+      }
+      function fitCoverEdge(cap,angle){
+        var attribute=cap.geometry.attributes.position,segments=attribute.count/2-1,sinAngle=Math.sin(angle),cosAngle=Math.cos(angle);
+        for(var j=0;j<=segments;j++){
+          var polar=j/segments*Math.PI,ny=Math.cos(polar),radial=Math.sin(polar);
+          var radius=coverSurfaceRadius(radial*sinAngle,ny,radial*cosAngle);
+          attribute.setXYZ(j*2+1,0,ny*radius,radial*radius);
+        }
+        // The ribbon remains planar, so its existing normals remain exact. The
+        // original .5-radius bounding sphere conservatively contains every fit.
+        attribute.needsUpdate=true;
+      }
+      var outerColors=['#ffffff','#34322e','#d6c29a','#494844'];
+      var innerColors=['#945f3c','#302c27','#b5a180','#343d40'];
+      var edgeColors=['#b47948','#55504a','#cbb48c','#687174'];
+      for(var layerIndex=0;layerIndex<layers.length;layerIndex++){
+        var layer=layers[layerIndex],kind=layer.id;
+        var outerMat=layerIndex===0?leather:surface(outerColors[layerIndex],{roughness:layerIndex===2?.91:.79,emissive:layerIndex===3?'#3a4142':'#000000',emissiveIntensity:layerIndex===3?.025:0});
+        finish(outerMat,layer.angle,kind);
+        layer.outer=layerIndex===0?body:node(layerGroup,'basketball-'+kind+'-outer',shellGeometry,outerMat,layer.outerRadius);
+        var inside=surface(innerColors[layerIndex],{side:T.BackSide,roughness:.90,emissive:layerIndex===3?'#56676b':'#000000',emissiveIntensity:layerIndex===3?.055:0});
+        finish(inside,layer.angle,kind==='bladder'?'bladder-inner':kind);
+        layer.inner=node(layerGroup,'basketball-'+kind+'-inner',shellGeometry,inside,layer.innerRadius);
+        var edgeGeo=edgeGeometry(layer.innerRadius,layer.outerRadius),edgeMat=edgeSurface(edgeColors[layerIndex],kind);
+        var oppositeEdgeGeo=layerIndex===0?geometry(edgeGeo.clone()):edgeGeo;
+        layer.caps=[node(layerGroup,'basketball-'+kind+'-cut-left',edgeGeo,edgeMat),node(layerGroup,'basketball-'+kind+'-cut-right',oppositeEdgeGeo,edgeMat)];
+        caps.push(layer.caps[0],layer.caps[1]);
+      }
+
+      // Two families of gently curved yarns follow the spherical winding layer.
+      // They are one indexed draw, with a fine procedural weave between the yarns.
+      var threadPositions=[],threadNormals=[],threadIndices=[],threadColors=[];
+      var threadRadius=.00058,threadCentre=layers[2].outerRadius+.00050,threadSides=5,threadSegments=128;
+      for(var family=0;family<2;family++)for(var strand=0;strand<44;strand++){
+        var phase=strand/44*Math.PI*2,start=threadPositions.length/3;
+        for(var step=0;step<=threadSegments;step++){
+          var latitude=-Math.PI*.487+step/threadSegments*Math.PI*.974,dy=Math.sin(latitude),rr=Math.cos(latitude);
+          var azimuth=phase+(family===0?1:-1)*latitude*1.12;
+          var p=new T.Vector3(Math.sin(azimuth)*rr,dy,Math.cos(azimuth)*rr);
+          var tangent=new T.Vector3(Math.cos(azimuth)*rr*(family===0?1.12:-1.12)-Math.sin(azimuth)*dy,rr,-Math.sin(azimuth)*rr*(family===0?1.12:-1.12)-Math.cos(azimuth)*dy).normalize();
+          var sideways=new T.Vector3().crossVectors(p,tangent).normalize();
+          var crossing=.00018*Math.sin(latitude*88+phase*4+(family===0?0:Math.PI));
+          for(var side=0;side<threadSides;side++){
+            var a=side/threadSides*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a);
+            var n=p.clone().multiplyScalar(ca).addScaledVector(sideways,sa);
+            threadPositions.push(p.x*(threadCentre+crossing)+n.x*threadRadius,p.y*(threadCentre+crossing)+n.y*threadRadius,p.z*(threadCentre+crossing)+n.z*threadRadius);
+            threadNormals.push(n.x,n.y,n.z);var shade=family===0?.99:.83;threadColors.push(shade,shade,shade);
+            if(step<threadSegments){var index=start+step*threadSides+side,next=start+step*threadSides+(side+1)%threadSides;threadIndices.push(index,index+threadSides,next,next,index+threadSides,next+threadSides);}
+          }
+        }
+      }
+      var threadGeometry=new T.BufferGeometry();threadGeometry.setAttribute('position',new T.Float32BufferAttribute(threadPositions,3));threadGeometry.setAttribute('normal',new T.Float32BufferAttribute(threadNormals,3));threadGeometry.setAttribute('color',new T.Float32BufferAttribute(threadColors,3));threadGeometry.setIndex(threadIndices);threadGeometry.computeBoundingSphere();geometry(threadGeometry);
+      var threadMaterial=finish(surface('#e4d4b0',{roughness:.94,vertexColors:true}),layers[2].angle,'windings');
+      var threads=node(layerGroup,'basketball-wound-fibres',threadGeometry,threadMaterial);
+      var bounds=geo.boundingBox.clone();
+      var state={detail:'basketball-whole',opening:0,fraction:0,comparison:false,measure:true,initialized:false};
+      var data={body:body,valve:valve,cover:cover,relief:relief,lip:lip,layers:layers,layerGroup:layerGroup,carcass:layers[1].outer,windings:layers[2].outer,bladder:layers[3].outer,cavity:layers[3].inner,caps:caps,threads:threads,labelPositions:labelPositions,bounds:bounds,geometries:geometries,materials:materials,textures:textures,state:state,
+        dimensions:{diameterM:.24,outerRadius:.5,reference:'outer-diameter',layerOrder:['cover','carcass','windings','bladder'],innerCavityRadius:layers[3].innerRadius,thicknessIllustrative:true,colorsIllustrative:true,threadScaleIllustrative:true,hollow:true,physicalReference:true,adaptiveRescale:false},
+        stats:{layers:layers.length,caps:caps.length,threadStrands:88,threadDrawCalls:1}
+      };
+      data.update=function(detailId,comparison,measure){
+        var id=typeof detailId==='string'?detailId:'basketball-whole';
+        if(state.initialized&&state.detail===id&&state.comparison===!!comparison&&state.measure===(measure!==false))return state;
+        var point=basketballStudyPoint(id),opening=comparison?0:clamp(Math.round(point.opening||0),0,100),fraction=opening/100;
+        var openingChanged=!state.initialized||state.opening!==opening;
+        state.detail=id;state.opening=opening;state.fraction=fraction;state.comparison=!!comparison;state.measure=measure!==false;state.initialized=true;
+        layerGroup.visible=opening>0;
+        for(var j=0;j<layers.length;j++){
+          var layer=layers[j],angle=layer.maxAngle*fraction;layer.angle.value=angle;
+          layer.caps[0].rotation.y=-angle;layer.caps[1].rotation.y=angle;
+          if(j===0&&openingChanged){fitCoverEdge(layer.caps[0],-angle);fitCoverEdge(layer.caps[1],angle);}
+          layer.caps[0].visible=layer.caps[1].visible=opening>0;
+          var labelAngle=j===0?angle+.10:(layers[j-1].maxAngle+layer.maxAngle)*fraction*.5;
+          var labelY=labelHeights[j],labelR=Math.sqrt(layer.outerRadius*layer.outerRadius-labelY*labelY),label=labelPositions[layer.id];
+          label[0]=Math.sin(labelAngle)*labelR;label[1]=labelY;label[2]=Math.cos(labelAngle)*labelR;
+        }
+        lip.visible=opening===0||Math.abs(Math.atan2(valve.x,valve.z))>=layers[0].angle.value+.025;
+        return state;
+      };
+      data.update('basketball-whole',false,true);g.userData.basketball=data;g.userData.extent=1;g.userData.measureCenter=0;
       g.rotation.set(.15,-.48,-.17);
+    }
+
+    var basketballPinCamera=new T.Vector3();
+    // Test the same spherical layers and cut angles as the renderer. A label
+    // anchored inside the cut must disappear when an intact surface hides it.
+    function basketballPinVisible(origin,at,data){
+      var dx=at[0]-origin.x,dy=at[1]-origin.y,dz=at[2]-origin.z,a=dx*dx+dy*dy+dz*dz;if(a<1e-12)return false;
+      for(var i=0;i<data.layers.length;i++){
+        var layer=data.layers[i],r=layer.outerRadius,b=2*(origin.x*dx+origin.y*dy+origin.z*dz);
+        for(var surface=0;surface<2;surface++){var radius=surface?layer.innerRadius:r,c=origin.lengthSq()-radius*radius,disc=b*b-4*a*c;
+          if(disc>=0)for(var rootSign=-1;rootSign<=1;rootSign+=2){var t=(-b+rootSign*Math.sqrt(disc))/(2*a);if(t>.00001&&t<.999){var x=origin.x+t*dx,z=origin.z+t*dz;if(Math.abs(Math.atan2(x,z))>=layer.angle.value-.0001)return false;}}
+        }
+        for(var side=-1;side<=1;side+=2){var angle=layer.angle.value*side,sine=Math.sin(angle),cosine=Math.cos(angle),den=dx*cosine-dz*sine;
+          if(Math.abs(den)>1e-9){var u=-(origin.x*cosine-origin.z*sine)/den;if(u>.00001&&u<.999){var px=origin.x+u*dx,py=origin.y+u*dy,pz=origin.z+u*dz,radiusSq=px*px+py*py+pz*pz;
+            if(px*sine+pz*cosine>=0&&radiusSq>layer.innerRadius*layer.innerRadius&&radiusSq<r*r)return false;
+          }}
+        }
+      }return true;
+    }
+    function paintBasketballPins(root,state,width,height){
+      var host=canvas.parentElement;if(!host)return;var occupied=[];
+      if(root&&root.userData.model.userData.basketball){basketballPinCamera.copy(camera.position);root.userData.model.worldToLocal(basketballPinCamera);}
+      Array.prototype.forEach.call(host.querySelectorAll('[data-basketball-pin]'),function(pin){
+        var data=root&&root.userData.model.userData.basketball,active=!!data&&state.focusId==='basketball'&&!state.comparison&&!state.flight&&state.measure&&data.state.opening>=25&&Math.abs(log10(.24)-state.exp)<.08;
+        if(active){var key=pin.dataset.basketballPin,at=data.labelPositions&&data.labelPositions[key];active=!!at&&basketballPinVisible(basketballPinCamera,at,data);
+          if(active){markerPoint.fromArray(at);root.userData.model.localToWorld(markerPoint);markerPoint.project(camera);var x=(markerPoint.x*.5+.5)*width,y=(-markerPoint.y*.5+.5)*height,half=key==='cover'?31:58;
+            active=markerPoint.z>-1&&markerPoint.z<1&&x>half+8&&x<width-half-8&&y>156&&y<height-62&&!occupied.some(function(p){return Math.abs(p.x-x)<p.half+half+10&&Math.abs(p.y-y)<33;});
+            if(active){pin.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) translate(-50%,-50%)';occupied.push({x:x,y:y,half:half});}
+          }
+        }pin.hidden=!active;
+      });
     }
 
     function betelgeuseModel(g){
@@ -10669,6 +11453,10 @@ return plaza;
     }
 
     function atlasModelBounds(g){
+      if(g.userData.lightYear)return g.userData.lightYear.bounds.clone().applyMatrix4(g.matrixWorld);
+      if(g.userData.milkyWay)return g.userData.milkyWay.bounds.clone().applyMatrix4(g.matrixWorld);
+      if(g.userData.humanStudy)return g.userData.humanStudy.bounds.clone().applyMatrix4(g.matrixWorld);
+      if(g.userData.lightMinute)return g.userData.lightMinute.bounds.clone().applyMatrix4(g.matrixWorld);
       if(g.userData.coma)return g.userData.coma.bounds.clone().applyMatrix4(g.matrixWorld);
       if(g.userData.solarSystem)return g.userData.solarSystem.bounds.clone().applyMatrix4(g.matrixWorld);
       if(g.userData.rice)return g.userData.rice.bounds.clone().applyMatrix4(g.matrixWorld);
@@ -10701,7 +11489,11 @@ return plaza;
       var previousResources = new Set(resources);
       var g=new T.Group(), id=item.id, a=material('#8cd9ce'), b=material('#d49b69'), dark=material('#293f4b'), white=material('#eceadf');
       var j, k, theta, m;
-      if(id==='coma-dist'){
+      if(id==='lightyear'){
+        lightYearModel(g);
+      } else if(id==='light-minute'){
+        lightMinuteModel(g);
+      } else if(id==='coma-dist'){
         comaModel(g);
       } else if(id==='galactic-centre'){
         galcentreModel(g);
@@ -10746,7 +11538,7 @@ return plaza;
       } else if(id==='betelgeuse') {
         betelgeuseModel(g);
       } else if(id==='milkyway') {
-        galaxyModel(g);
+        milkyWayModel(g);
       } else if(id==='virgo-sc') {
         virgoModel(g);
       } else if(id==='laniakea') {
@@ -10788,15 +11580,7 @@ return plaza;
       } else if(id==='virus') {virusModel(g);
       } else if(id==='liberty') {libertyModel(g);
       } else if(id==='human') {
-        var suit=material('#a49b80',{roughness:.55,metalness:.3});
-        ball(g,suit,0,.414,0,.113,.145,.116);rod(g,[0,.30,0],[0,.36,0],.027,suit);
-        organic(g,[[0,-.055,0,.055,.09],[0,.015,0,.068,.09],[0,.13,0,.05,.079],[0,.24,0,.064,.117],[0,.3,0,.03,.08]],suit,'y');
-        [-1,1].forEach(function(s){
-          organic(g,[[s*.054,.02,0,.047],[s*.067,-.12,.008,.045],[s*.076,-.25,.01,.028],[s*.075,-.35,0,.034],[s*.077,-.45,0,.02]],suit,'y');
-          ball(g,suit,s*.079,-.472,.026,.055,.046,.12);
-          organic(g,[[s*.096,.269,0,.038],[s*.145,.20,0,.035],[s*.175,.10,0,.023],[s*.2,.035,.01,.025],[s*.213,-.045,.015,.013]],suit,'y');
-          ball(g,suit,s*.219,-.078,.017,.032,.067,.022);
-        });
+        humanStudyModel(g);
       } else if(id==='door') {
         doorModel(g);
       } else if(id==='basketball') {
@@ -10944,6 +11728,11 @@ return plaza;
         if(root.userData.model.userData.galcentre)root.userData.model.userData.galcentre.update('',0,true,false,0,1);
         if(root.userData.model.userData.centauri)root.userData.model.userData.centauri.update('',0,true,false,0,1);
         if(root.userData.model.userData.au)root.userData.model.userData.au.update('',true,false,0,1);
+        if(root.userData.model.userData.basketball)root.userData.model.userData.basketball.update('',true,state.measure);
+        if(root.userData.model.userData.lightYear)root.userData.model.userData.lightYear.update('',true,state.measure,1);
+        if(root.userData.model.userData.milkyWay)root.userData.model.userData.milkyWay.update('',true,state.measure);
+        if(root.userData.model.userData.humanStudy)root.userData.model.userData.humanStudy.update('',true,item.size);
+        if(root.userData.model.userData.lightMinute)root.userData.model.userData.lightMinute.update('',true,false,0,1);
         if(root.userData.model.userData.coma)root.userData.model.userData.coma.update('',true,false,0,1);
         if(root.userData.model.userData.andromeda)root.userData.model.userData.andromeda.update('',true,false,0);
         if(root.userData.model.userData.universe)root.userData.model.userData.universe.update('',true,false,0);
@@ -10985,7 +11774,7 @@ return plaza;
           left += bounds.max.x - bounds.min.x + .65;
         });
         scene.updateMatrixWorld(true); comparisonBounds.makeEmpty();
-        visible.forEach(function (root) { root.userData.comparisonBodyBounds=atlasModelBounds(root.userData.model);if(root.userData.model.userData.pyramid||root.userData.model.userData.nucleus||root.userData.model.userData.door||root.userData.model.userData.wave||root.userData.model.userData.oort||root.userData.model.userData.heliosphere||root.userData.model.userData.carbon||root.userData.model.userData.localBubble||root.userData.model.userData.virgo||root.userData.model.userData.proton||root.userData.model.userData.laniakea||root.userData.model.userData.universe||root.userData.model.userData.andromeda||root.userData.model.userData.au||root.userData.model.userData.centauri||root.userData.model.userData.ecoli||root.userData.model.userData.paramecium||root.userData.model.userData.rice||root.userData.model.userData.coma||root.userData.model.userData.solarSystem||root.userData.model.userData.galcentre){comparisonBounds.union(atlasModelBounds(root.userData.model));if(root.userData.ruler.visible)comparisonBounds.union(new T.Box3().setFromObject(root.userData.ruler));}else comparisonBounds.union(new T.Box3().setFromObject(root)); });
+        visible.forEach(function (root) { root.userData.comparisonBodyBounds=atlasModelBounds(root.userData.model);if(root.userData.model.userData.pyramid||root.userData.model.userData.nucleus||root.userData.model.userData.door||root.userData.model.userData.wave||root.userData.model.userData.oort||root.userData.model.userData.heliosphere||root.userData.model.userData.carbon||root.userData.model.userData.localBubble||root.userData.model.userData.virgo||root.userData.model.userData.proton||root.userData.model.userData.laniakea||root.userData.model.userData.universe||root.userData.model.userData.andromeda||root.userData.model.userData.au||root.userData.model.userData.centauri||root.userData.model.userData.ecoli||root.userData.model.userData.paramecium||root.userData.model.userData.rice||root.userData.model.userData.lightYear||root.userData.model.userData.milkyWay||root.userData.model.userData.humanStudy||root.userData.model.userData.lightMinute||root.userData.model.userData.coma||root.userData.model.userData.solarSystem||root.userData.model.userData.galcentre){comparisonBounds.union(atlasModelBounds(root.userData.model));if(root.userData.ruler.visible)comparisonBounds.union(new T.Box3().setFromObject(root.userData.ruler));}else comparisonBounds.union(new T.Box3().setFromObject(root)); });
         comparisonBounds.getCenter(comparisonCenter);
         comparisonRadius = Math.max(1.5, comparisonBounds.getSize(new T.Vector3()).length() / 2);
       }
@@ -11201,7 +11990,7 @@ return plaza;
       canvas.dataset.atlasFlightProgress=flight?flight.progress.toFixed(4):'';
 
       if(state.inspectionZoom!==lastZoomInput){zoomGoal=clamp(state.inspectionZoom||1,1,state.comparison?2.5:inspectionLimit(state.focusId));lastZoomInput=state.inspectionZoom;}
-      if((state.focusId==='solar-system'||state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='galactic-centre')&&!state.reduceMotion&&!state.comparison)cameraZoom*=Math.pow(zoomGoal/cameraZoom,cameraEase);
+      if((state.focusId==='lightyear'||state.focusId==='solar-system'||state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='galactic-centre')&&!state.reduceMotion&&!state.comparison)cameraZoom*=Math.pow(zoomGoal/cameraZoom,cameraEase);
       else cameraZoom+= (zoomGoal-cameraZoom)*(state.reduceMotion||state.comparison?1:cameraEase);
       if(Math.abs(zoomGoal-cameraZoom)<.0001)cameraZoom=zoomGoal;
       var ratio=renderer.getPixelRatio();if(canvas.width!==Math.floor(width*ratio)||canvas.height!==Math.floor(height*ratio)){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
@@ -11336,7 +12125,7 @@ return plaza;
         hemisphere.intensity=.48;rim.intensity=.5;fill.intensity=.2;key.intensity=1.3;
       }
       if(focal&&focal.id==='orion-nebula'){distance-=1.35*close;scene.background.set(state.contrast?'#000000':'#080d19');haze.material.opacity=.025;haze2.material.opacity=.02;}
-      if(focal&&focal.id==='milkyway'){distance-=.7*close;scene.background.set(state.contrast?'#000000':'#070b14');haze.material.opacity=.015;haze2.material.opacity=.01;}
+      if(focal&&focal.id==='milkyway'){distance-=1.15*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#070b14');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=false;}
       if(focal&&focal.id==='solar-system'){distance-=1.1*close*(1-clamp((cameraZoom-1)/3,0,1));scene.background.set(state.contrast?'#000000':'#070f19');haze.material.opacity=.008;haze2.material.opacity=.008;}
       if(focal&&focal.id==='galactic-centre'){
         distance+=11.2*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#060b15');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=false;
@@ -11351,6 +12140,15 @@ return plaza;
       }
       if(focal&&focal.id==='au'){
         ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#060f1b');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=false;
+      }
+      if(focal&&focal.id==='human'){
+        ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#172a34');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=true;key.shadow.normalBias=.001;hemisphere.intensity=.66;fill.intensity=.38;rim.intensity=.7;key.intensity=2.0;key.color.set('#fff0db');key.position.set(-3,4,5);key.target.position.set(0,0,0);
+      }
+      if(focal&&focal.id==='lightyear'){
+        distance-=2.2*close;ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#050f1c');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=false;hemisphere.intensity=.12;key.intensity=1.65;
+      }
+      if(focal&&focal.id==='light-minute'){
+        ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#06111d');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=false;hemisphere.intensity=.025;fill.intensity=.02;rim.intensity=0;key.intensity=1.65;key.color.set('#fff1de');key.position.set(-3.8,5.5,5);key.target.position.set(0,0,0);
       }
       if(focal&&focal.id==='coma-dist'){
         ground.visible=garden.visible=motes.visible=microBackdrop.visible=false;scene.background.set(state.contrast?'#000000':'#060d18');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;key.castShadow=false;
@@ -11396,6 +12194,7 @@ return plaza;
         ground.visible=garden.visible=motes.visible=false;scene.background.set(state.contrast?'#000000':'#13282e');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;hemisphere.intensity=.5;key.intensity=1.5;fill.intensity=.24;rim.intensity=.75;key.castShadow=false;
       }
       if(focal&&focal.id==='basketball'){
+        distance-=.9*close;
         ground.visible=garden.visible=motes.visible=false;scene.background.set(state.contrast?'#000000':'#15212b');scene.fog=null;haze.material.opacity=haze2.material.opacity=0;hemisphere.intensity=.48;key.intensity=1.7;fill.intensity=.24;rim.intensity=.65;key.castShadow=false;
       }
       if(focal&&focal.id==='reef'){
@@ -11415,19 +12214,19 @@ return plaza;
         key.position.set(Math.sin(alpineAngle)*7,4,Math.cos(alpineAngle)*7);key.target.position.set(0,1,0);distance+=3*close;
       }
       // Leave a quiet band for the heading and fit narrow portrait screens.
-      distance*=Math.max(1,(focal&&isElectromagneticWave(focal.id)?1.15:focal&&focal.id==='liberty'&&state.detailId?.62:focal&&focal.id==='pyramid'&&state.detailId?.42:focal&&(focal.id==='liberty'||focal.id==='sequoia'||focal.id==='eiffel')?.50:.95)/camera.aspect);
+      distance*=Math.max(1,(focal&&focal.id==='human'&&(!state.detailId||state.detailId==='human-whole')?.64:focal&&isElectromagneticWave(focal.id)?1.15:focal&&focal.id==='liberty'&&state.detailId?.62:focal&&focal.id==='pyramid'&&state.detailId?.42:focal&&(focal.id==='liberty'||focal.id==='sequoia'||focal.id==='eiffel')?.50:.95)/camera.aspect);
       distance/=cameraZoom;
       camera.fov=state.focusId==='orion-nebula'&&state.nebulaInside?62:state.focusId==='everest'&&state.detailId==='everest-flight'?58:43;
-      camera.near=focal&&focal.id==='coma-dist'?comaClipNear(distance):focal&&focal.id==='galactic-centre'?galcentreClipNear(distance):focal&&focal.id==='ecoli'?ecoliClipNear(distance):focal&&focal.id==='alpha-cen-dist'?centauriClipNear(distance):focal&&focal.id==='au'?auClipNear(distance):focal&&(specimenActive||(focal.id==='reef'||focal.id==='football-pitch'||focal.id==='basketball'||focal.id==='rice'||focal.id==='sand'||focal.id==='door'||focal.id==='oort'||focal.id==='heliosphere'||focal.id==='carbon'||focal.id==='proton'||focal.id==='local-bubble'||focal.id==='virgo-sc'||focal.id==='laniakea'||focal.id==='universe'||focal.id==='andromeda-dist')&&!!state.detailId||focal.id==='solar-system'||focal.id==='liberty'||focal.id==='sequoia'||focal.id==='eiffel'||focal.id==='pyramid'||focal.id==='orion-nebula'&&state.nebulaInside)?.002:state.focusId==='everest'&&state.detailId==='everest-flight'?.006:.05;camera.updateProjectionMatrix();
+      camera.near=focal&&focal.id==='lightyear'?lightMinuteClipNear(distance):focal&&focal.id==='milkyway'?.002:focal&&focal.id==='human'?.002:focal&&focal.id==='light-minute'?lightMinuteClipNear(distance):focal&&focal.id==='coma-dist'?comaClipNear(distance):focal&&focal.id==='galactic-centre'?galcentreClipNear(distance):focal&&focal.id==='ecoli'?ecoliClipNear(distance):focal&&focal.id==='alpha-cen-dist'?centauriClipNear(distance):focal&&focal.id==='au'?auClipNear(distance):focal&&(specimenActive||(focal.id==='reef'||focal.id==='football-pitch'||focal.id==='basketball'||focal.id==='rice'||focal.id==='sand'||focal.id==='door'||focal.id==='oort'||focal.id==='heliosphere'||focal.id==='carbon'||focal.id==='proton'||focal.id==='local-bubble'||focal.id==='virgo-sc'||focal.id==='laniakea'||focal.id==='universe'||focal.id==='andromeda-dist')&&!!state.detailId||focal.id==='solar-system'||focal.id==='liberty'||focal.id==='sequoia'||focal.id==='eiffel'||focal.id==='pyramid'||focal.id==='orion-nebula'&&state.nebulaInside)?.002:state.focusId==='everest'&&state.detailId==='everest-flight'?.006:.05;camera.updateProjectionMatrix();
       var detailKey=state.focusId+':'+state.detailId+(state.detailId==='jupiter-scan'?':'+jupiterLatitudeValue(state.jupiterLatitude):'')+(state.detailId==='lunar-surface'?':'+JSON.stringify(lunarPosition(state.lunarPoint)):'')+(state.detailId==='river-journey'?':'+canyonRouteKm(state.riverKm):''),detailChanged=detailKey!==previousDetail;
-      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:state.focusId==='coma-dist'?{yaw:0,pitch:.12}:state.focusId==='galactic-centre'?{yaw:.12,pitch:.98}:state.focusId==='paramecium'?{yaw:.08,pitch:.18}:state.focusId==='ecoli'?{yaw:.08,pitch:.18}:state.focusId==='alpha-cen-dist'?{yaw:.04,pitch:.20}:state.focusId==='au'?{yaw:.02,pitch:.22}:state.focusId==='andromeda-dist'?{yaw:.04,pitch:.58}:state.focusId==='universe'?{yaw:.675,pitch:.32}:state.focusId==='laniakea'?{yaw:-.4,pitch:.32}:state.focusId==='virgo-sc'?{yaw:-.38,pitch:.42}:state.focusId==='local-bubble'?{yaw:-.2,pitch:.28}:state.focusId==='proton'?{yaw:.22,pitch:.14}:state.focusId==='carbon'?{yaw:.2,pitch:.18}:state.focusId==='heliosphere'?{yaw:.52,pitch:.24}:state.focusId==='oort'?{yaw:.5,pitch:.2}:isElectromagneticWave(state.focusId)?{yaw:-.16,pitch:.40}:state.focusId==='moon'?{yaw:Math.PI/2,pitch:0}:state.focusId==='everest'?{yaw:.2,pitch:.5}:state.focusId==='mitochondrion'?{yaw:.32,pitch:.22}:state.focusId==='ribosome'?{yaw:.18,pitch:.12}:state.focusId==='pollen'?{yaw:.3,pitch:.18}:state.focusId==='virus'?{yaw:.22,pitch:.14}:state.focusId==='chicxulub'?{yaw:.18,pitch:.48}:state.focusId==='blue-whale'?{yaw:-.25,pitch:.40}:state.focusId==='sequoia'?{yaw:.24,pitch:.10}:state.focusId==='eiffel'?{yaw:.60,pitch:.12}:state.focusId==='pyramid'?{yaw:.70,pitch:.30}:state.focusId==='liberty'?{yaw:.28,pitch:.12}:state.focusId==='mouse'?{yaw:-.18,pitch:.22}:state.focusId==='dust-mite'?{yaw:.12,pitch:.70}:state.focusId==='flea'?{yaw:-.12,pitch:.06}:state.focusId==='trex'?{yaw:-.14,pitch:.13}:state.focusId==='giraffe'?{yaw:-.22,pitch:.08}:state.focusId==='elephant'?{yaw:-.24,pitch:.12}:state.focusId==='honeybee'?{yaw:-.18,pitch:.20}:state.focusId==='ladybird'?{yaw:-.20,pitch:.34}:state.focusId==='hair'?{yaw:.18,pitch:.10}:state.focusId==='egg'?{yaw:-.20,pitch:.14}:state.focusId==='rbc'?{yaw:.28,pitch:.15}:state.focusId==='water'?{yaw:.16,pitch:.10}:state.focusId==='hydrogen'?{yaw:.28,pitch:.18}:state.focusId==='nucleus'?{yaw:-.20,pitch:.12}:null;
+      if(detailChanged)orbitGoal=state.detailId?{yaw:0,pitch:.12}:state.focusId==='basketball'?{yaw:0,pitch:.30}:state.focusId==='lightyear'?{yaw:.55,pitch:.30}:state.focusId==='milkyway'?{yaw:.10,pitch:.14}:state.focusId==='human'?{yaw:.1974,pitch:.117}:state.focusId==='light-minute'?{yaw:0,pitch:.20}:state.focusId==='coma-dist'?{yaw:0,pitch:.12}:state.focusId==='galactic-centre'?{yaw:.12,pitch:.98}:state.focusId==='paramecium'?{yaw:.08,pitch:.18}:state.focusId==='ecoli'?{yaw:.08,pitch:.18}:state.focusId==='alpha-cen-dist'?{yaw:.04,pitch:.20}:state.focusId==='au'?{yaw:.02,pitch:.22}:state.focusId==='andromeda-dist'?{yaw:.04,pitch:.58}:state.focusId==='universe'?{yaw:.675,pitch:.32}:state.focusId==='laniakea'?{yaw:-.4,pitch:.32}:state.focusId==='virgo-sc'?{yaw:-.38,pitch:.42}:state.focusId==='local-bubble'?{yaw:-.2,pitch:.28}:state.focusId==='proton'?{yaw:.22,pitch:.14}:state.focusId==='carbon'?{yaw:.2,pitch:.18}:state.focusId==='heliosphere'?{yaw:.52,pitch:.24}:state.focusId==='oort'?{yaw:.5,pitch:.2}:isElectromagneticWave(state.focusId)?{yaw:-.16,pitch:.40}:state.focusId==='moon'?{yaw:Math.PI/2,pitch:0}:state.focusId==='everest'?{yaw:.2,pitch:.5}:state.focusId==='mitochondrion'?{yaw:.32,pitch:.22}:state.focusId==='ribosome'?{yaw:.18,pitch:.12}:state.focusId==='pollen'?{yaw:.3,pitch:.18}:state.focusId==='virus'?{yaw:.22,pitch:.14}:state.focusId==='chicxulub'?{yaw:.18,pitch:.48}:state.focusId==='blue-whale'?{yaw:-.25,pitch:.40}:state.focusId==='sequoia'?{yaw:.24,pitch:.10}:state.focusId==='eiffel'?{yaw:.60,pitch:.12}:state.focusId==='pyramid'?{yaw:.70,pitch:.30}:state.focusId==='liberty'?{yaw:.28,pitch:.12}:state.focusId==='mouse'?{yaw:-.18,pitch:.22}:state.focusId==='dust-mite'?{yaw:.12,pitch:.70}:state.focusId==='flea'?{yaw:-.12,pitch:.06}:state.focusId==='trex'?{yaw:-.14,pitch:.13}:state.focusId==='giraffe'?{yaw:-.22,pitch:.08}:state.focusId==='elephant'?{yaw:-.24,pitch:.12}:state.focusId==='honeybee'?{yaw:-.18,pitch:.20}:state.focusId==='ladybird'?{yaw:-.20,pitch:.34}:state.focusId==='hair'?{yaw:.18,pitch:.10}:state.focusId==='egg'?{yaw:-.20,pitch:.14}:state.focusId==='rbc'?{yaw:.28,pitch:.15}:state.focusId==='water'?{yaw:.16,pitch:.10}:state.focusId==='hydrogen'?{yaw:.28,pitch:.18}:state.focusId==='nucleus'?{yaw:-.20,pitch:.12}:null;
       var occupied=[], visible=[];paintCount++;
       Object.keys(models).forEach(function(id){models[id].visible=false;});
       candidates.forEach(function(it){
         var delta=log10(it.size)-e;
         if(occupied.some(function(d){return Math.abs(d-delta)<0.27;}))return;
         occupied.push(delta);var root=models[it.id]||model(it), scale=3*Math.pow(10,delta);
-        root.visible=true;root.userData.lastSeen=paintCount;root.scale.setScalar(scale);root.userData.ruler.visible=occupied.length===1&&state.measure&&!((it.id==='coma-dist'||it.id==='basketball'||it.id==='rice'||it.id==='sand'||it.id==='door'||it.id==='oort'||it.id==='heliosphere'||it.id==='carbon'||it.id==='proton'||it.id==='local-bubble'||it.id==='virgo-sc'||it.id==='laniakea'||it.id==='universe'||it.id==='andromeda-dist'||it.id==='au'||it.id==='alpha-cen-dist'||it.id==='galactic-centre'||it.id==='ecoli'||it.id==='paramecium'||isElectromagneticWave(it.id)&&state.detailId!=='wave-wavelength')&&state.detailId);
+        root.visible=true;root.userData.lastSeen=paintCount;root.scale.setScalar(scale);root.userData.ruler.visible=occupied.length===1&&state.measure&&it.id!=='lightyear'&&it.id!=='human'&&!((it.id==='lightyear'||it.id==='milkyway'||it.id==='light-minute'||it.id==='coma-dist'||it.id==='basketball'||it.id==='rice'||it.id==='sand'||it.id==='door'||it.id==='oort'||it.id==='heliosphere'||it.id==='carbon'||it.id==='proton'||it.id==='local-bubble'||it.id==='virgo-sc'||it.id==='laniakea'||it.id==='universe'||it.id==='andromeda-dist'||it.id==='au'||it.id==='alpha-cen-dist'||it.id==='galactic-centre'||it.id==='ecoli'||it.id==='paramecium'||isElectromagneticWave(it.id)&&state.detailId!=='wave-wavelength')&&state.detailId);
         if(it.group==='cosmic' && it.dim!=='distance'&&!isPlanetaryWorld(it.id)&&it.id!=='sun'&&it.id!=='betelgeuse'&&it.id!=='orion-nebula'&&it.id!=='milkyway'&&it.id!=='solar-system'&&it.id!=='oort'&&it.id!=='heliosphere'&&it.id!=='local-bubble'&&it.id!=='virgo-sc'&&it.id!=='laniakea'&&it.id!=='universe')root.userData.model.rotation.y=root.userData.initialYaw+time*0.018;
         if(root.userData.model.userData.starMaterial)root.userData.model.userData.starMaterial.uniforms.uTime.value=time;
         if(root.userData.model.userData.outerMembrane)root.userData.model.userData.outerMembrane.visible=!state.cutaway;
@@ -11460,6 +12259,11 @@ return plaza;
         if(root.userData.model.userData.galcentre)root.userData.model.userData.galcentre.update(it.id===state.focusId?state.detailId:'',galcentreRouteIndex(state.detailId)||0,false,state.motion&&!state.reduceMotion&&!state.flight,time,it.id===state.focusId?cameraZoom:1);
         if(root.userData.model.userData.centauri)root.userData.model.userData.centauri.update(it.id===state.focusId?state.detailId:'',it.id===state.focusId?state.centauriPhase:0,false,state.motion&&!state.reduceMotion,time,it.id===state.focusId?cameraZoom:1);
         if(root.userData.model.userData.au)root.userData.model.userData.au.update(it.id===state.focusId?state.detailId:'',false,state.motion&&!state.reduceMotion,time,it.id===state.focusId?cameraZoom:1);
+        if(root.userData.model.userData.basketball)root.userData.model.userData.basketball.update(it.id===state.focusId?state.detailId:'',false,state.measure);
+        if(root.userData.model.userData.lightYear){root.userData.model.userData.lightYear.update(it.id===state.focusId?state.detailId:'',false,state.measure,it.id===state.focusId?cameraZoom:1);root.userData.model.userData.lightYear.context.visible=it.id===state.focusId&&!state.comparison;}
+        if(root.userData.model.userData.milkyWay){root.userData.model.userData.milkyWay.update(it.id===state.focusId?state.detailId:'',false,state.measure);root.userData.model.userData.milkyWay.context.visible=it.id===state.focusId&&state.measure;}
+        if(root.userData.model.userData.humanStudy){var humanData=root.userData.model.userData.humanStudy;humanData.update(it.id===state.focusId?state.detailId:'',false,it.size);humanData.context.visible=it.id===state.focusId;humanData.heightGuide.visible=state.measure;humanData.guide.visible=humanData.heightLeader.visible=humanData.selectedTick.visible=humanData.guide.visible&&state.measure;}
+        if(root.userData.model.userData.lightMinute)root.userData.model.userData.lightMinute.update(it.id===state.focusId?state.detailId:'',false,state.motion&&!state.reduceMotion,time,it.id===state.focusId?cameraZoom:1);
         if(root.userData.model.userData.coma)root.userData.model.userData.coma.update(it.id===state.focusId?state.detailId:'',false,state.motion&&!state.reduceMotion,time,cameraZoom);
         if(root.userData.model.userData.andromeda)root.userData.model.userData.andromeda.update(it.id===state.focusId?state.detailId:'',false,state.motion&&!state.reduceMotion,time);
         if(root.userData.model.userData.universe)root.userData.model.userData.universe.update(it.id===state.focusId?state.detailId:'',false,state.motion&&!state.reduceMotion,time);
@@ -11494,7 +12298,7 @@ return plaza;
       // Landmarks live in the model's own coordinates, so labels and the orbit
       // centre follow its normalization, rotation, and scale without drift.
       var activeRoot=visible.filter(function(r){return r.userData.itemId===state.focusId;})[0];
-      if(activeRoot&&(state.focusId==='coma-dist'||state.focusId==='door'||state.focusId==='oort'||state.focusId==='heliosphere'||state.focusId==='carbon'||state.focusId==='proton'||state.focusId==='local-bubble'||state.focusId==='virgo-sc'||state.focusId==='laniakea'||state.focusId==='universe'||state.focusId==='andromeda-dist'||state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='ecoli'||state.focusId==='galactic-centre'||isElectromagneticWave(state.focusId))&&close>.8)floor.visible=false;
+      if(activeRoot&&(state.focusId==='lightyear'||state.focusId==='milkyway'||state.focusId==='light-minute'||state.focusId==='coma-dist'||state.focusId==='door'||state.focusId==='oort'||state.focusId==='heliosphere'||state.focusId==='carbon'||state.focusId==='proton'||state.focusId==='local-bubble'||state.focusId==='virgo-sc'||state.focusId==='laniakea'||state.focusId==='universe'||state.focusId==='andromeda-dist'||state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='ecoli'||state.focusId==='galactic-centre'||isElectromagneticWave(state.focusId))&&close>.8)floor.visible=false;
       var footballActive=!!activeRoot&&state.focusId==='football-pitch'&&close>.8&&!state.neighbors&&!state.flight;
       if(footballActive){floor.visible=ground.visible=garden.visible=motes.visible=false;scene.fog=null;if(state.detailId)activeRoot.userData.ruler.visible=false;}
       var libertyActive=!!activeRoot&&state.focusId==='liberty'&&close>.8&&!state.neighbors&&!state.flight;
@@ -11525,7 +12329,7 @@ return plaza;
       var planetary=!!activeRoot&&isPlanetaryWorld(state.focusId)&&close>.8;
       var reefActive=!!activeRoot&&state.focusId==='reef'&&close>.8;
       var alpine=!!activeRoot&&state.focusId==='everest'&&close>.8;
-      var imagery=activeRoot&&state.focusId==='au'?activeRoot.userData.model.userData.au.dayStatus:reefActive?activeRoot.userData.model.userData.reef.status:alpine?activeRoot.userData.model.userData.everest.status:planetary?(activeRoot.userData.model.userData.imageryReady?'ready':activeRoot.userData.model.userData.imageryError?'failed':'loading'):'';
+      var imagery=activeRoot&&state.focusId==='human'?activeRoot.userData.model.userData.humanStudy.status:activeRoot&&state.focusId==='au'?activeRoot.userData.model.userData.au.dayStatus:reefActive?activeRoot.userData.model.userData.reef.status:alpine?activeRoot.userData.model.userData.everest.status:planetary?(activeRoot.userData.model.userData.imageryReady?'ready':activeRoot.userData.model.userData.imageryError?'failed':'loading'):'';
       var lunarRelief=planetary&&state.focusId==='moon'?activeRoot.userData.model.userData.lunar.status:'';
       var earthNight=activeRoot&&state.focusId==='au'?activeRoot.userData.model.userData.au.nightStatus:planetary&&state.focusId==='earth'?activeRoot.userData.model.userData.earthNight.status:'';
       var imageryKey=state.focusId+':'+imagery+':'+lunarRelief+':'+earthNight;
@@ -11542,6 +12346,9 @@ return plaza;
       scene.updateMatrixWorld(true);if(activeRoot&&activeRoot.userData.model.userData.ribosome)ribosomeSlice(activeRoot.userData.model.userData.ribosome);aimGoal.set(0,alpine?.9:state.focusId==='dna'?.9:.2,0);if(specimenActive&&!selected&&activeRoot){aimGoal.set(state.focusId==='mouse'?.4:state.focusId==='elephant'?-.12:0,state.focusId==='flea'?-.13:state.focusId==='mouse'?-.02:0,0);activeRoot.userData.model.localToWorld(aimGoal);}
       if(planetary){globeCenter.set(0,0,0);activeRoot.userData.model.localToWorld(globeCenter);}
       if(activeRoot&&state.focusId==='galactic-centre'&&!selected){aimGoal.set(.5,0,0);activeRoot.userData.model.localToWorld(aimGoal);}
+      if(activeRoot&&state.focusId==='lightyear'&&!selected){aimGoal.set(0,0,0);activeRoot.userData.model.localToWorld(aimGoal);}
+      if(activeRoot&&state.focusId==='milkyway'&&!selected){aimGoal.set(0,0,0);activeRoot.userData.model.localToWorld(aimGoal);}
+      if(activeRoot&&state.focusId==='human'&&!selected){aimGoal.set(0,0,0);activeRoot.userData.model.localToWorld(aimGoal);}
       if(activeRoot&&state.focusId==='ecoli'&&!selected){aimGoal.set(0,0,0);activeRoot.userData.model.localToWorld(aimGoal);}
       if(activeRoot&&state.focusId==='local-bubble'&&!selected){activeRoot.userData.model.userData.localBubble.bounds.getCenter(aimGoal);activeRoot.userData.model.localToWorld(aimGoal);}
       if(activeRoot&&state.focusId==='virgo-sc'&&!selected){activeRoot.userData.model.userData.virgo.bounds.getCenter(aimGoal);activeRoot.userData.model.localToWorld(aimGoal);}
@@ -11561,8 +12368,9 @@ return plaza;
       if(state.focusId==='solar-system'&&selected&&/-orbit$/.test(selected.id)&&(detailChanged||previousSolarYears!==solarYearsValue(state.solarYears)))cameraAim.copy(aimGoal);
       previousSolarYears=state.focusId==='solar-system'?solarYearsValue(state.solarYears):null;
       if(state.focusId==='galactic-centre'&&selected&&detailChanged&&zoomGoal>500)cameraAim.copy(aimGoal);
+      if(state.focusId==='lightyear'&&selected&&detailChanged&&(zoomGoal>30||cameraZoom>30))cameraAim.copy(aimGoal);
       cameraAim.lerp(aimGoal,state.reduceMotion?1:cameraEase);
-      var aimMoving=cameraAim.distanceToSquared(aimGoal)>(state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='galactic-centre'?Math.pow(distance*1e-5,2):.000001);
+      var aimMoving=cameraAim.distanceToSquared(aimGoal)>(state.focusId==='lightyear'||state.focusId==='au'||state.focusId==='alpha-cen-dist'||state.focusId==='galactic-centre'?Math.pow(distance*1e-5,2):.000001);
       if(!aimMoving)cameraAim.copy(aimGoal);
       cameraSettling=aimMoving||!!orbitGoal||cameraZoom!==zoomGoal||riverMoving||doorMoving;
       var cameraPitch=alpine&&state.detailId==='everest-explore'?Math.max(.12,pitch):ground.visible?Math.max(-.1,pitch):pitch;
@@ -11616,7 +12424,7 @@ return plaza;
       // the viewing plane so a polar inspection cannot project it across land.
       visible.forEach(function(root){if(isPlanetaryWorld(root.userData.itemId)||root.userData.itemId==='sun'||root.userData.itemId==='orion-nebula'||root.userData.itemId==='milkyway'||root.userData.itemId==='solar-system'||root.userData.itemId==='oort'||root.userData.itemId==='heliosphere'||root.userData.itemId==='carbon'||root.userData.itemId==='proton'||root.userData.itemId==='universe')root.userData.ruler.quaternion.copy(camera.quaternion);});
       if(!focusRing){focusRing=ring(scene,.085,'#d7e9bd',0);focusRing.material.depthTest=false;focusRing.material.depthWrite=false;focusRing.renderOrder=101;focusRing.castShadow=focusRing.receiveShadow=false;}
-      focusRing.visible=!nebulaActive&&!!selected&&!selected.lunarOverview&&!selected.dnaPair&&!selected.mitoFold&&!selected.mitoEnergy&&!selected.pollenSite&&!selected.virusSite&&!selected.craterSite&&!selected.whaleSite&&!selected.sequoiaSite&&!selected.eiffelSite&&!selected.pyramidSite&&!selected.libertySite&&!selected.footballSite&&!selected.reefSite&&!selected.betelgeuseSite&&!selected.basketballSite&&!selected.riceSite&&!selected.doorSite&&!selected.waveSite&&!selected.oortSite&&!selected.helioSite&&!selected.carbonSite&&!selected.protonSite&&!selected.bubbleSite&&!selected.virgoSite&&!selected.laniakeaSite&&!selected.universeSite&&!selected.comaSite&&!selected.andromedaSite&&!selected.auSite&&!selected.centauriSite&&!selected.galcentreSite&&!selected.parameciumSite&&!selected.ecoliSite&&!selected.sandSite&&!selected.specimenSite&&(!selected.riboRoute||selected.id==='peptide-center')&&selected.id!=='river-journey'&&selected.id!=='everest-flight'&&state.showDetails&&!(state.focusId==='solar-system'&&selected.marker===false);
+      focusRing.visible=!nebulaActive&&!!selected&&!selected.lunarOverview&&!selected.dnaPair&&!selected.mitoFold&&!selected.mitoEnergy&&!selected.pollenSite&&!selected.virusSite&&!selected.craterSite&&!selected.whaleSite&&!selected.sequoiaSite&&!selected.eiffelSite&&!selected.pyramidSite&&!selected.libertySite&&!selected.footballSite&&!selected.reefSite&&!selected.betelgeuseSite&&!selected.basketballSite&&!selected.riceSite&&!selected.doorSite&&!selected.waveSite&&!selected.oortSite&&!selected.helioSite&&!selected.carbonSite&&!selected.protonSite&&!selected.bubbleSite&&!selected.virgoSite&&!selected.laniakeaSite&&!selected.universeSite&&!selected.lightYearSite&&!selected.milkyWaySite&&!selected.humanStudySite&&!selected.lightMinuteSite&&!selected.comaSite&&!selected.andromedaSite&&!selected.auSite&&!selected.centauriSite&&!selected.galcentreSite&&!selected.parameciumSite&&!selected.ecoliSite&&!selected.sandSite&&!selected.specimenSite&&(!selected.riboRoute||selected.id==='peptide-center')&&selected.id!=='river-journey'&&selected.id!=='everest-flight'&&state.showDetails&&!(state.focusId==='solar-system'&&selected.marker===false);
       if(state.focusId==='jupiter'&&state.jupiterEarth)focusRing.visible=false;
       if(selected&&selected.surface)focusRing.visible=focusRing.visible&&lightView.copy(aimGoal).sub(globeCenter).dot(lightSide.copy(camera.position).sub(aimGoal))>0;
       if(selected&&state.focusId==='sun')focusRing.visible=focusRing.visible&&solarFeatureVisible(activeRoot,selected,state.cutaway);
@@ -11651,7 +12459,7 @@ return plaza;
       paintVirgoPins(activeRoot,state,width,height);
       paintLaniakeaPins(activeRoot,state,width,height);
       paintUniversePins(activeRoot,state,width,height);
-      paintAndromedaPins(activeRoot,state,width,height);paintComaPins(activeRoot,state,width,height);
+      paintAndromedaPins(activeRoot,state,width,height);paintComaPins(activeRoot,state,width,height);paintLightMinutePins(activeRoot,state,width,height);paintMilkyWayPins(activeRoot,state,width,height);paintLightYearPins(activeRoot,state,width,height);paintBasketballPins(activeRoot,state,width,height);
       paintAuPins(activeRoot,state,width,height);
       paintCentauriPins(activeRoot,state,width,height);
       paintGalcentrePins(activeRoot,state,width,height);
@@ -11705,6 +12513,11 @@ return plaza;
       if(waterActive){var waterPose=activeRoot.userData.model.userData.specimen.pose;canvas.dataset.atlasWaterView=waterViewValue(state.waterView);canvas.dataset.atlasWaterGuides=[waterPose.angleGuide.visible?'angle':'',waterPose.polarityGuide.visible?'polarity':''].filter(Boolean).join(',');}else{delete canvas.dataset.atlasWaterView;delete canvas.dataset.atlasWaterGuides;}
       var hydrogenActive=!!activeRoot&&state.focusId==='hydrogen'&&close>.8;
       if(hydrogenActive){canvas.dataset.atlasHydrogenView=hydrogenViewValue(state.hydrogenView);canvas.dataset.atlasHydrogenProbability=String(hydrogenProbabilityValue(state.hydrogenProbability));canvas.dataset.atlasHydrogenRadius=(hydrogenRadius(state.hydrogenProbability)*HYDROGEN_BOHR_PM).toFixed(4);}else{delete canvas.dataset.atlasHydrogenView;delete canvas.dataset.atlasHydrogenProbability;delete canvas.dataset.atlasHydrogenRadius;}
+      if(activeRoot&&state.focusId==='basketball'){canvas.dataset.atlasBasketballOpening=String(activeRoot.userData.model.userData.basketball.state.opening);}else{delete canvas.dataset.atlasBasketballOpening;}
+      if(activeRoot&&state.focusId==='lightyear'){var lyState=activeRoot.userData.model.userData.lightYear.state;canvas.dataset.atlasLightyearFraction=String(lyState.fraction);canvas.dataset.atlasLightyearDays=String(lyState.days);}else{delete canvas.dataset.atlasLightyearFraction;delete canvas.dataset.atlasLightyearDays;}
+      if(activeRoot&&state.focusId==='milkyway'){var mwState=activeRoot.userData.model.userData.milkyWay.state;canvas.dataset.atlasMilkywayCut=String(mwState.cut);canvas.dataset.atlasMilkywayHeight=String(mwState.heightLy);canvas.dataset.atlasMilkywayDust=String(mwState.dust);}else{delete canvas.dataset.atlasMilkywayCut;delete canvas.dataset.atlasMilkywayHeight;delete canvas.dataset.atlasMilkywayDust;}
+      if(activeRoot&&state.focusId==='human'){canvas.dataset.atlasHumanHeight=String(activeRoot.userData.model.userData.humanStudy.state.heightM);canvas.dataset.atlasHumanGuide=String(activeRoot.userData.model.userData.humanStudy.state.fraction);}else{delete canvas.dataset.atlasHumanHeight;delete canvas.dataset.atlasHumanGuide;}
+      if(activeRoot&&state.focusId==='light-minute')canvas.dataset.atlasLightminuteSeconds=String(lightMinutePoint(state.detailId).seconds);else delete canvas.dataset.atlasLightminuteSeconds;
       if(activeRoot&&state.focusId==='coma-dist')canvas.dataset.atlasComaPosition=String(comaPoint(state.detailId).fraction);else delete canvas.dataset.atlasComaPosition;
       if(activeRoot&&state.focusId==='solar-system')canvas.dataset.atlasSolarYears=String(solarYearsValue(state.solarYears));else delete canvas.dataset.atlasSolarYears;
       if(activeRoot&&state.focusId==='alpha-cen-dist')canvas.dataset.atlasCentauriPhase=String(centauriPhaseValue(state.centauriPhase));else delete canvas.dataset.atlasCentauriPhase;
@@ -12473,7 +13286,7 @@ return plaza;
       var sortedRef = React.useRef(sorted); sortedRef.current = sorted;
       var focused = byId[focusId] || byId.human;
       var details=atlasDetails(focusId,S,terrainRelief,riverKm,terrainPoint,lunarPoint,jupiterLatitude).map(function(d){return focusId==='solar-system'?solarDetail(d,solarYears):d;}),selectedDetail=details.filter(function(d){return d.id===detailId;})[0];
-      var availableDetails=details.filter(function(d){return !d.comaSample&&!d.universeSample&&!d.andromedaSample&&!d.auSample&&!d.galcentreSample&&d.id!=='jupiter-scan'&&(!d.night||planetImagery.earthNight==='ready')&&d.id!=='lunar-surface'&&!d.lunarOverview&&!d.dnaPair&&!d.mitoFold&&!d.mitoEnergy&&!d.riboRoute&&!d.pollenSite&&!d.virusSite&&!d.craterSite&&!d.whaleSite&&!d.sequoiaSite&&!d.eiffelSite&&!d.pyramidSite&&!d.libertySite&&(!(d.surface||d.terrain)||(planetImagery.id===focusId&&planetImagery.status==='ready'));});
+      var availableDetails=details.filter(function(d){return !d.basketballSample&&!d.lightYearSample&&!d.milkyWaySample&&!d.humanHeightSample&&!d.lightMinuteSample&&!d.comaSample&&!d.universeSample&&!d.andromedaSample&&!d.auSample&&!d.galcentreSample&&d.id!=='jupiter-scan'&&(!d.night||planetImagery.earthNight==='ready')&&d.id!=='lunar-surface'&&!d.lunarOverview&&!d.dnaPair&&!d.mitoFold&&!d.mitoEnergy&&!d.riboRoute&&!d.pollenSite&&!d.virusSite&&!d.craterSite&&!d.whaleSite&&!d.sequoiaSite&&!d.eiffelSite&&!d.pyramidSite&&!d.libertySite&&(!(d.surface||d.terrain)||(planetImagery.id===focusId&&planetImagery.status==='ready'));});
       React.useEffect(function(){setFeatureNoteOpen(false);},[focusId,viewMode,comparisonActive]);
       var observationDetail = viewMode === 'atlas' && selectedDetail ? selectedDetail.id : '';
       var currentObservationKey = observationKey(focused.id, observationDetail);
@@ -12526,7 +13339,7 @@ return plaza;
         var item = byId[entry.itemId];
         if (!item) return;
         if (entry.itemId === 'human') {
-          var cm = entry.you ? entry.size * 100 : null;
+          var cm = entry.you ? Number((entry.size * 100).toPrecision(12)) : null;
           setYourCm(cm);
           updateSlice(function (cur) { if (cm) cur.yourHeightCm = cm; else delete cur.yourHeightCm; });
           item = observationItem(entry);
@@ -12845,7 +13658,7 @@ return plaza;
           h('p', { role: 'status', 'aria-atomic': 'true', style: { margin: 0, minHeight: '1.5em', fontSize: '.75rem' } }, backupMessage));
       }
 
-      function chooseDetail(detail,force){
+      function chooseDetail(detail,force,preserveViewport){
         setNebulaInside(false);
         if(detail.night&&planetImagery.earthNight!=='ready')return;
         if((detail.surface||detail.terrain)&&(planetImagery.id!==focusId||planetImagery.status!=='ready'))return;
@@ -12861,7 +13674,7 @@ return plaza;
         if(force&&atlasRef.current)atlasRef.current.approach();
         say(detail.label+'. '+detail.body);
         var cv=atlasCanvasRef.current;
-        if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}
+        if(cv&&!preserveViewport){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}
       }
       function moveLunar(point){
         if(planetImagery.id!=='moon'||planetImagery.status!=='ready')return;
@@ -13966,6 +14779,97 @@ return plaza;
           h('footer',null,h('span',null,S('atlas_au_scope','Proportional bodies · location guides enlarged')),h('span',null,S('atlas_au_reference','149.6 million km · 8 min 19 s at light speed'))));
       }
 
+      function heightForm(){return h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: '0.71875rem', color: P.dim } },
+              h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
+                S('you_label', 'Make the person your height:'),
+                h('input', { type: 'number', min: 50, max: 250, step: 1, inputMode: 'numeric', value: heightDraft, placeholder: yourCm ? String(yourCm) : '170',
+                  'aria-label': S('you_input_aria', 'Your height in centimetres'),
+                  onChange: function (e) { setHeightDraft(e.target.value); },
+                  onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); submitHeight(); } },
+                  style: { width: 64, padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.75rem' } }),
+                S('you_cm', 'cm')),
+              h('button', { type: 'button', onClick: submitHeight, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_apply', 'Use my height')),
+              yourCm ? h('button', { type: 'button', onClick: function () { applyHeight(null); }, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_reset', 'Back to average')) : null);}
+      function basketballStudy(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='basketball')return null;
+        var opening=basketballStudyPoint(detailId).opening;
+        return h('section',{className:'sx-basketball-study','aria-label':S('atlas_basketball_study','Basketball workshop')},
+          h('header',null,h('div',null,h('span',{className:'sx-basketball-eyebrow'},S('atlas_basketball_kicker','Materials beneath the surface')),h('strong',null,S('atlas_basketball_heading','Inside a familiar object'))),h('span',{className:'sx-basketball-span'},'24',h('small',null,S('atlas_basketball_cm','cm across')))),
+          h('div',{className:'sx-basketball-views'},details.filter(function(d){return !d.basketballSample;}).map(function(d,i){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id||!detailId&&i===0,onClick:function(){chooseDetail(d,true);}},h('small',{'aria-hidden':true},String(i+1).padStart(2,'0')),d.label);})),
+          h('div',{className:'sx-basketball-opening'},h('label',null,h('span',null,S('atlas_basketball_opening','Cutaway opening'),h('output',null,opening+'%')),h('input',{type:'range',min:0,max:100,step:1,value:opening,'aria-label':S('atlas_basketball_opening','Cutaway opening'),'aria-valuetext':S('atlas_basketball_opening_value','{percent}% open; the outside diameter remains 24 centimetres',{percent:opening}),onChange:function(ev){var d=details.filter(function(d){return d.id==='basketball-open-'+basketballStudyOpening(Number(ev.target.value));})[0];if(d)chooseDetail(d,true,true);}})),
+            h('div',{className:'sx-basketball-ends'},h('span',null,S('atlas_basketball_closed','Closed surface')),h('span',null,S('atlas_basketball_open','Layers revealed')))),
+          h('div',{className:'sx-basketball-actions'},h('button',{type:'button',onClick:function(){chooseDetail(details.filter(function(d){return d.id==='basketball-open-0';})[0],true,true);}},S('atlas_basketball_close','Close the cutaway')),h('span',null,S('atlas_basketball_fixed','Fixed outer size · virtual section'))),
+          h('ol',{className:'sx-basketball-layers','aria-label':S('atlas_basketball_layers','Layers from outside to inside')},[
+            ['#cb7d42','cover',S('atlas_basketball_layer_cover','Cover'),S('atlas_basketball_role_cover','Textured grip')],
+            ['#77756d','carcass',S('atlas_basketball_layer_carcass','Rubber carcass'),S('atlas_basketball_role_carcass','Support and shape')],
+            ['#ded0a8','windings',S('atlas_basketball_layer_windings','Thread windings'),S('atlas_basketball_role_windings','Reinforcement')],
+            ['#687174','bladder',S('atlas_basketball_layer_bladder','Air bladder'),S('atlas_basketball_role_bladder','Air retention')]
+          ].map(function(layer,i){return h('li',{key:layer[1]},h('i',{'aria-hidden':true,style:{background:layer[0]}}),h('span',null,h('b',null,layer[2]),h('small',null,layer[3])));})),
+          h('p',{className:'sx-basketball-reading'},selectedDetail?selectedDetail.body:S('atlas_basketball_intro','Explore the grip, approach the valve, or open a cutaway through the ball. Drag to orbit and inspect each exposed material from another angle.')),
+          h('p',{className:'sx-basketball-scope'},S('atlas_basketball_scope','An illustrative laminated basketball. Internal thicknesses and thread spacing are enlarged, and material colours are chosen for visibility. The outside diameter stays at the catalog’s 24 cm reference. The opening does not simulate pressure or deformation.')),
+          h('footer',null,h('span',null,S('atlas_basketball_hollow','Hollow centre · air inside')),h('a',{href:BASKETBALL_STUDY_SOURCE,target:'_blank',rel:'noopener noreferrer'},S('atlas_basketball_source','Spalding · ball construction ↗'))));
+      }
+
+      function lightYearStudy(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='lightyear')return null;
+        var point=lightYearPoint(detailId),days=point.days,au=point.fraction*LIGHTYEAR_M/LIGHTYEAR_AU_M,progress=Math.round(point.fraction*1000);
+        var timeValue=days>0&&days<1?(days*24).toFixed(2):days.toFixed(2),timeUnit=days>0&&days<1?S('atlas_lightyear_hours','hours'):S('atlas_lightyear_days','days');
+        return h('section',{className:'sx-lightyear-study','aria-label':S('atlas_lightyear_study','Light-year voyage')},
+          h('header',null,h('div',null,h('span',{className:'sx-lightyear-eyebrow'},S('atlas_lightyear_kicker','Distance, made of time')),h('strong',null,S('atlas_lightyear_heading','A year in the light'))),h('span',{className:'sx-lightyear-span'},'1',h('small',null,S('atlas_lightyear_unit','light-year')))),
+          h('div',{className:'sx-lightyear-views'},details.filter(function(d){return !d.lightYearSample;}).map(function(d,i){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id||!detailId&&i===0,onClick:function(){chooseDetail(d,true);}},h('small',{'aria-hidden':true},String(i+1).padStart(2,'0')),d.label);})),
+          h('div',{className:'sx-lightyear-readouts'},h('div',null,h('small',null,S('atlas_lightyear_elapsed','Elapsed light-travel time')),h('output',null,timeValue,h('span',null,' '+timeUnit))),h('div',null,h('small',null,S('atlas_lightyear_distance','Distance from departure')),h('output',null,au.toLocaleString(undefined,{maximumFractionDigits:au<100?2:0}),h('span',null,' AU')))),
+          h('label',{className:'sx-lightyear-slider'},S('atlas_lightyear_progress','Journey progress'),h('input',{type:'range',min:0,max:1000,step:1,value:progress,'aria-label':S('atlas_lightyear_progress','Journey progress'),'aria-valuetext':S('atlas_lightyear_progress_value','{percent}% of the route; {days} days of light travel',{percent:(point.fraction*100).toFixed(1),days:days.toFixed(2)}),onChange:function(ev){var n=Math.round(lightYearFraction(Number(ev.target.value)/1000)*1000),d=details.filter(function(d){return d.id==='lightyear-time-'+n;})[0];if(d)chooseDetail(d,true,true);}})),
+          h('div',{className:'sx-lightyear-ends'},h('span',null,S('atlas_lightyear_departure','Departure')),h('span',null,S('atlas_lightyear_midway','Halfway')),h('span',null,S('atlas_lightyear_end','≈365 days'))),
+          h('div',{className:'sx-lightyear-actions'},h('button',{type:'button',onClick:function(){chooseDetail(details.filter(function(d){return d.id==='lightyear-time-0';})[0],true,true);}},S('atlas_lightyear_restart','Return to departure')),h('span',null,S('atlas_lightyear_speed','299,792,458 m/s · in vacuum'))),
+          h('p',{className:'sx-lightyear-reading'},selectedDetail?selectedDetail.body:S('atlas_lightyear_intro','Travel from the scale of planetary orbits into the space between stars. Choose a viewpoint or move the signal along the route; the elapsed time and distance change together.')),
+          h('p',{className:'sx-lightyear-scope'},S('atlas_lightyear_scope','The route and orbit radii share a physical scale. Signal width, locators and the background sky are illustrative. A light-year uses a 365.25-day Julian year; this catalog keeps a rounded distance, with travel time calculated from the speed of light.')),
+          h('footer',null,h('span',null,h('i',{'aria-hidden':true}),S('atlas_lightyear_gold','Gold · distance travelled')),h('span',null,h('i',{'aria-hidden':true,style:{background:'#8dcbd7'}}),S('atlas_lightyear_blue','Blue · reference route')),h('a',{href:LIGHTYEAR_SOURCE,target:'_blank',rel:'noopener noreferrer'},S('atlas_lightyear_source','NASA · What is a light-year? ↗'))));
+      }
+
+      function milkyWayStudy(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='milkyway')return null;
+        var point=milkyWayPoint(detailId),height=point.heightLy,heightText=(height>0?'+':height<0?'−':'')+Math.abs(height).toLocaleString(),mode=point.cut?S('atlas_milkyway_cut','Layer cutaway'):point.dust<1?S('atlas_milkyway_revealed','Dust reduced'):S('atlas_milkyway_full','Full depth');
+        return h('section',{className:'sx-milkyway-study','aria-label':S('atlas_milkyway_study','Milky Way structure study')},
+          h('header',null,h('div',null,h('span',{className:'sx-milkyway-eyebrow'},S('atlas_milkyway_kicker','Our galaxy, in depth')),h('strong',null,S('atlas_milkyway_heading','Through the Milky Way'))),h('span',{className:'sx-milkyway-span'},'≈100,000',h('small',null,S('atlas_milkyway_unit','light-years across')))),
+          h('div',{className:'sx-milkyway-views'},details.filter(function(d){return !d.milkyWaySample;}).map(function(d,i){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id||!detailId&&i===0,onClick:function(){chooseDetail(d,true);}},h('small',{'aria-hidden':true},String(i+1).padStart(2,'0')),d.label);})),
+          h('div',{className:'sx-milkyway-readout'},h('div',null,h('small',null,S('atlas_milkyway_height','Cut height from the galactic plane')),h('output',null,point.cut?heightText:'—',point.cut?h('span',null,' ly'):null)),h('div',null,h('small',null,S('atlas_milkyway_mode','Visible structure')),h('strong',null,mode))),
+          h('button',{type:'button',className:'sx-milkyway-start',onClick:function(){chooseDetail(details.filter(function(d){return d.id==='galaxy-slice-50';})[0],true,true);}},S('atlas_milkyway_start','Cut at the galactic plane')),
+          h('label',{className:'sx-milkyway-slider'},S('atlas_milkyway_slider','Galactic layer height'),h('input',{type:'range',min:-4000,max:4000,step:80,value:height,'aria-label':S('atlas_milkyway_slider','Galactic layer height'),'aria-valuetext':point.cut?S('atlas_milkyway_value','Cut at {height} light-years from the galactic plane; material above the plane is hidden',{height:heightText}):S('atlas_milkyway_inactive','Full depth; move the slider to start a cutaway'),onChange:function(ev){var n=clamp(Math.round((milkyWayHeight(Number(ev.target.value))+4000)/80),0,100),d=details.filter(function(d){return d.id==='galaxy-slice-'+n;})[0];if(d)chooseDetail(d,true,true);}})),
+          h('div',{className:'sx-milkyway-ends'},h('span',null,S('atlas_milkyway_below','−4,000 ly · below')),h('span',null,S('atlas_milkyway_plane','Galactic plane')),h('span',null,S('atlas_milkyway_above','+4,000 ly · above'))),
+          h('p',{className:'sx-milkyway-reading'},selectedDetail?selectedDetail.body:S('atlas_milkyway_intro','Orbit the stellar disc, move into the central bar, or approach our neighbourhood. Then sweep a cut through the disc and bulge to reveal their vertical structure.')),
+          h('p',{className:'sx-milkyway-scope'},S('atlas_milkyway_scope','An illustrated disc at a fixed reference scale. Arm paths, colours and vertical structure are interpretive. Light points and locators are enlarged; the extended stellar halo is outside this model. Whole galaxy restores the uncut view.')),
+          h('footer',null,h('span',null,h('i',{'aria-hidden':true}),S('atlas_milkyway_legend','Gold · Solar System locator')),h('span',null,h('i',{'aria-hidden':true,style:{background:'#8bbcc7',boxShadow:'none'}}),S('atlas_milkyway_layer_legend','Blue · cut height')),h('a',{href:MILKYWAY_SOURCE,target:'_blank',rel:'noopener noreferrer'},S('atlas_milkyway_source','ESA · Gaia’s view of our galaxy ↗'))));
+      }
+
+      function humanStudy(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='human')return null;
+        var point=humanStudyPoint(detailId),height=humanStudyHeight(focused.size),centimetres=height*100*point.fraction;
+        return h('section',{className:'sx-human-study','aria-label':S('atlas_human_study','Human stature study')},
+          h('header',null,h('div',null,h('span',{className:'sx-human-eyebrow'},S('atlas_human_kicker','A familiar measure')),h('strong',null,S('atlas_human_heading','The scale of a person'))),h('span',{className:'sx-human-stature'},Math.round(height*100),h('small',null,' cm'))),
+          planetImagery.id==='human'&&planetImagery.status==='ready'?null:h('p',{className:'sx-human-load',role:'status'},planetImagery.id==='human'&&planetImagery.status==='failed'?S('atlas_human_failed','Detailed surface unavailable. A simplified figure remains interactive.'):S('atlas_human_loading','Loading the detailed surface…')),
+          h('div',{className:'sx-human-views'},details.filter(function(d){return !d.humanHeightSample;}).map(function(d,i){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id||!detailId&&i===0,onClick:function(){chooseDetail(d,true);}},h('small',{'aria-hidden':true},String(i+1).padStart(2,'0')),d.label);})),
+          h('div',{className:'sx-human-readout'},h('div',null,h('small',null,S('atlas_human_selected_height','Selected height')),h('output',null,centimetres.toFixed(1),h('span',null,' cm'))),h('div',null,h('small',null,S('atlas_human_fraction','Share of full stature')),h('strong',null,(point.fraction*100).toFixed(1),h('span',null,' %')))),
+          h('label',{className:'sx-human-slider'},S('atlas_human_slider','Height above the ground'),h('input',{type:'range',min:0,max:100,step:1,value:Math.round(point.fraction*100),'aria-label':S('atlas_human_slider','Height above the ground'),'aria-valuetext':S('atlas_human_value','{cm} centimetres above the ground; {percent} percent of full stature',{cm:centimetres.toFixed(1),percent:(point.fraction*100).toFixed(1)}),onChange:function(ev){var id='human-height-'+clamp(Math.round(Number(ev.target.value)),0,100),d=details.filter(function(d){return d.id===id;})[0];if(d)chooseDetail(d,true);}})),
+          h('div',{className:'sx-human-ends'},h('span',null,S('atlas_human_ground','Ground · 0 cm')),h('span',null,S('atlas_human_crown','Crown · {cm} cm',{cm:Math.round(height*100)}))),
+          h('p',{className:'sx-human-reading'},selectedDetail&&detailId!=='human-whole'?selectedDetail.body:S('atlas_human_intro','Orbit a detailed surface, approach a landmark, or move the gold guide up the figure. The fine ruler marks centimetres; longer ticks mark ten centimetres.')),
+          h('div',{className:'sx-human-personal'},heightForm()),
+          h('p',{className:'sx-human-scope'},S('atlas_human_scope','A generic posed character surface. Your height changes the scale uniformly; it does not personalize the body’s proportions. Viewing regions describe this model’s exterior.')),
+          h('footer',null,h('span',null,h('i',{'aria-hidden':true}),S('atlas_human_legend','Gold · selected height')),h('a',{href:HUMAN_STUDY_SOURCE,target:'_blank',rel:'noopener noreferrer'},S('atlas_human_source','MakeHuman · CC0 surface ↗'))));
+      }
+
+      function lightMinuteStudy(){
+        if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='light-minute')return null;
+        var point=lightMinutePoint(detailId),km=point.seconds*LIGHT_SPEED_M_S/1000;
+        return h('section',{className:'sx-lightminute-study','aria-label':S('atlas_lightminute_study','Light-minute observatory')},
+          h('header',null,h('div',null,h('span',{className:'sx-lightminute-eyebrow'},S('atlas_lightminute_kicker','Distance, made visible')),h('strong',null,S('atlas_lightminute_heading','A minute at the speed of light'))),h('span',{className:'sx-lightminute-constant'},'c',h('b',null,'299,792,458 m/s'))),
+          h('div',{className:'sx-lightminute-views'},details.filter(function(d){return !d.lightMinuteSample;}).map(function(d,i){return h('button',{key:d.id,type:'button','aria-pressed':detailId===d.id||!detailId&&i===0,onClick:function(){chooseDetail(d,true);}},h('small',{'aria-hidden':true},String(i+1).padStart(2,'0')),d.label);})),
+          h('div',{className:'sx-lightminute-clock'},h('div',null,h('small',null,S('atlas_lightminute_elapsed','Vacuum light-travel time')),h('output',null,point.seconds.toFixed(detailId==='light-minute-moon'||detailId==='light-minute-pair'?3:1),h('span',null,' s'))),h('div',null,h('small',null,S('atlas_lightminute_distance','Distance from the origin')),h('strong',null,Math.round(km).toLocaleString(),h('span',null,' km')))),
+          h('div',{className:'sx-lightminute-route'},h('label',null,h('span',null,S('atlas_lightminute_slider','Elapsed light time')),h('input',{type:'range',min:0,max:60,step:.1,value:Math.round(point.seconds*10)/10,'aria-label':S('atlas_lightminute_slider','Elapsed light time'),'aria-valuetext':S('atlas_lightminute_value','{seconds} seconds; {km} kilometres from Earth’s centre',{seconds:point.seconds.toFixed(3),km:Math.round(km).toLocaleString()}),onChange:function(ev){var id='light-minute-time-'+clamp(Math.round(Number(ev.target.value)*10),0,600),d=details.filter(function(d){return d.id===id;})[0];if(d)chooseDetail(d,true);}})),h('div',{className:'sx-lightminute-ends'},h('span',null,S('atlas_lightminute_start','Earth’s centre · 0 s')),h('span',null,S('atlas_lightminute_end','One light minute · 60 s')))),
+          selectedDetail?h('p',{className:'sx-lightminute-reading'},selectedDetail.body):h('p',{className:'sx-lightminute-reading'},S('atlas_lightminute_intro','Start with Earth and Moon, then pull back to see how far light travels in a minute. Scrub the clock to move the luminous distance marker through space.')),
+          h('p',{className:'sx-lightminute-scope'},S('atlas_lightminute_scope','Body sizes and separation share one scale. The Moon uses a 384,400 km reference distance, and its arrangement is illustrative. Distances use body centres. The luminous route is a visual guide; light does not leave a visible trail in empty space.')),
+          h('footer',null,h('span',null,h('i',{'aria-hidden':true}),S('atlas_lightminute_legend','Gold · elapsed distance')),h('span',null,S('atlas_lightminute_static','Scrub time to explore')),h('a',{href:'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html',target:'_blank',rel:'noopener noreferrer'},S('atlas_lightminute_source','NASA · Earth and Moon ↗'))));
+      }
+
       function comaStudy(){
         if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='coma-dist')return null;
         var point=comaPoint(detailId),n=comaRouteIndex(detailId),distance=COMA_DISTANCE_M/COMA_LY_M/1e6;
@@ -14094,7 +14998,7 @@ return plaza;
         var readLabel=selectedDetail?S('atlas_feature_about', 'About {part}',{part:selectedDetail.label}):S('atlas_feature_start', 'Explore landmarks');
         return h('nav',{className:'sx-feature-nav','aria-label':S('atlas_feature_navigation', 'Landmark navigator'),onKeyDown:onFeatureKey},
           h('button',{ref:featureButtonRef,type:'button',className:'sx-feature-title',disabled:!availableDetails.length,'aria-label':readLabel,'aria-expanded':selectedDetail?featureNoteOpen:undefined,'aria-controls':selectedDetail&&featureNoteOpen?descId+'-feature-note':undefined,onClick:function(){if(selectedDetail)setFeatureNoteOpen(!featureNoteOpen);else stepFeature(1);}},
-            h('span',{className:'sx-feature-count'},selectedDetail?(selectedDetail.comaSample?(featureNoteOpen?S('atlas_coma_passage_close','Crossing position · Close notes'):S('atlas_coma_passage_read','Crossing position · Read more')):selectedDetail.galcentreSample?(featureNoteOpen?S('atlas_galcentre_passage_close','Journey position · Close notes'):S('atlas_galcentre_passage_read','Journey position · Read more')):selectedDetail.auSample?(featureNoteOpen?S('atlas_au_passage_close','Crossing position · Close notes'):S('atlas_au_passage_read','Crossing position · Read more')):selectedDetail.andromedaSample?(featureNoteOpen?S('atlas_andromeda_passage_close','Crossing position · Close notes'):S('atlas_andromeda_passage_read','Crossing position · Read more')):selectedDetail.universeSample?(featureNoteOpen?S('atlas_universe_sample_close','Epoch exploration · Close notes'):S('atlas_universe_sample_read','Epoch exploration · Read more')):(featureNoteOpen?S('atlas_feature_count_open', 'Landmark {n} of {total} · Close notes',{n:position,total:availableDetails.length}):S('atlas_feature_count', 'Landmark {n} of {total} · Read more',{n:position,total:availableDetails.length}))):S('atlas_feature_available', '{n} places to explore',{n:availableDetails.length})),
+            h('span',{className:'sx-feature-count'},selectedDetail?(selectedDetail.basketballSample?(featureNoteOpen?S('atlas_basketball_section_close','Cutaway · Close notes'):S('atlas_basketball_section_read','Cutaway · Read more')):selectedDetail.lightYearSample?(featureNoteOpen?S('atlas_lightyear_time_close','Selected moment · Close notes'):S('atlas_lightyear_time_read','Selected moment · Read more')):selectedDetail.milkyWaySample?(featureNoteOpen?S('atlas_milkyway_layer_close','Selected layer · Close notes'):S('atlas_milkyway_layer_read','Selected layer · Read more')):selectedDetail.humanHeightSample?(featureNoteOpen?S('atlas_human_level_close','Height guide · Close notes'):S('atlas_human_level_read','Height guide · Read more')):selectedDetail.lightMinuteSample?(featureNoteOpen?S('atlas_lightminute_time_close','Selected time · Close notes'):S('atlas_lightminute_time_read','Selected time · Read more')):selectedDetail.comaSample?(featureNoteOpen?S('atlas_coma_passage_close','Crossing position · Close notes'):S('atlas_coma_passage_read','Crossing position · Read more')):selectedDetail.galcentreSample?(featureNoteOpen?S('atlas_galcentre_passage_close','Journey position · Close notes'):S('atlas_galcentre_passage_read','Journey position · Read more')):selectedDetail.auSample?(featureNoteOpen?S('atlas_au_passage_close','Crossing position · Close notes'):S('atlas_au_passage_read','Crossing position · Read more')):selectedDetail.andromedaSample?(featureNoteOpen?S('atlas_andromeda_passage_close','Crossing position · Close notes'):S('atlas_andromeda_passage_read','Crossing position · Read more')):selectedDetail.universeSample?(featureNoteOpen?S('atlas_universe_sample_close','Epoch exploration · Close notes'):S('atlas_universe_sample_read','Epoch exploration · Read more')):(featureNoteOpen?S('atlas_feature_count_open', 'Landmark {n} of {total} · Close notes',{n:position,total:availableDetails.length}):S('atlas_feature_count', 'Landmark {n} of {total} · Read more',{n:position,total:availableDetails.length}))):S('atlas_feature_available', '{n} places to explore',{n:availableDetails.length})),
             h('strong',null,selectedDetail?selectedDetail.label:S('atlas_feature_start', 'Explore landmarks'))),
           h('button',{type:'button',className:'sx-feature-arrow','aria-label':S('atlas_feature_previous', 'Previous landmark'),'aria-keyshortcuts':'ArrowLeft',title:S('atlas_feature_previous', 'Previous landmark'),disabled:!selectedDetail||availableDetails.length<2,onClick:function(){stepFeature(-1);}},h('span',{'aria-hidden':'true'},'‹')),
           h('button',{type:'button',className:'sx-feature-arrow','aria-label':S('atlas_feature_next', 'Next landmark'),'aria-keyshortcuts':'ArrowRight',title:S('atlas_feature_next', 'Next landmark'),disabled:!availableDetails.length||!!selectedDetail&&availableDetails.length<2,onClick:function(){stepFeature(1);}},h('span',{'aria-hidden':'true'},'›')),
@@ -15490,6 +16394,11 @@ return plaza;
         h('style',null,".sx-stage.sx-stage-andromeda{height:clamp(900px,100vh,1080px)}\n.sx-stage-andromeda .sx-hud h3{font-size:clamp(24px,2.5vw,34px);max-width:760px}\n.sx-andromeda-study{flex:none;position:relative;z-index:3;padding:15px 19px;background:linear-gradient(120deg,#152832,#202639);border-top:1px solid #516d7d;color:#d7e7ea}\n.sx-andromeda-study header,.sx-andromeda-study footer{display:flex;align-items:center;justify-content:space-between;gap:10px 20px;flex-wrap:wrap}\n.sx-andromeda-study header strong{display:block;font-size:15px;color:#eedcc2;margin-top:4px}\n.sx-andromeda-eyebrow{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#9fc4cb}\n.sx-andromeda-study a{font-size:10px;color:#bfdae0;text-underline-offset:3px}\n.sx-andromeda-views{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:13px 0}\n.sx-andromeda-views button{font:inherit;font-size:11px;line-height:1.45;text-align:left;min-height:48px;padding:8px 10px;border:1px solid #677b89;border-radius:6px;background:#233644;color:#dfecf0;cursor:pointer}\n.sx-andromeda-views button span{font:10px ui-monospace,monospace;opacity:.65;margin-right:6px}.sx-andromeda-views button[aria-pressed=true]{color:#142d36;background:#d8c6a4;border-color:#eddbbc}\n.sx-andromeda-views button:focus-visible,.sx-andromeda-study input:focus-visible,.sx-andromeda-study a:focus-visible{outline:3px solid #98dfd6;outline-offset:3px}\n.sx-andromeda-route label{display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px;font-size:11px}.sx-andromeda-route output{color:#e7d1a5}\n.sx-andromeda-route input{grid-column:1/-1;width:100%;min-height:28px;margin:0;accent-color:#d5bd97;cursor:ew-resize}\n.sx-andromeda-route-ends{display:flex;justify-content:space-between;gap:12px;font-size:9px;color:#a9bec7}\n.sx-andromeda-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border-top:1px solid #425565;border-bottom:1px solid #425565;padding:12px 0;margin:14px 0 9px}\n.sx-andromeda-metrics small{display:block;font-size:9px;color:#b3cad1;margin-bottom:5px}.sx-andromeda-metrics strong{font:17px ui-monospace,monospace;color:#f2d6aa;font-weight:500}.sx-andromeda-metrics strong span{font:10px system-ui,sans-serif;color:#b7cbd4}.sx-andromeda-metrics>div:last-child strong{font-size:12px}\n.sx-andromeda-reading{font-size:10px;line-height:1.65;color:#ccdce3;margin:8px 0}.sx-andromeda-study footer{font-size:9px;color:#a4bdc8}\n.sx-andromeda-pin{position:absolute;left:0;top:0;z-index:2;pointer-events:none;border:1px solid #87b1b6;background:#081923e6;border-radius:4px;padding:5px 8px;color:#c6e6e5;font:10px system-ui,sans-serif;white-space:nowrap}.sx-andromeda-pin[data-andromeda-pin=destination]{border-color:#c4a580;color:#f0d5af}.sx-andromeda-pin[hidden]{display:none}\n@media(max-width:600px){.sx-stage.sx-stage-andromeda{height:1160px}.sx-stage-andromeda .sx-hud h3{font-size:24px}.sx-andromeda-study{padding:12px}.sx-andromeda-study header strong{font-size:12px}.sx-andromeda-eyebrow{font-size:8px;letter-spacing:1px}.sx-andromeda-views{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:11px 0}.sx-andromeda-views button{font-size:10px;min-height:46px}.sx-andromeda-metrics{grid-template-columns:repeat(2,1fr);gap:12px}.sx-andromeda-metrics>div:last-child{grid-column:1/-1}.sx-andromeda-metrics strong{font-size:16px}.sx-andromeda-route label{font-size:10px}.sx-andromeda-study footer{gap:6px}}\n"),
         h('style',null,".sx-stage.sx-stage-au{height:clamp(900px,100vh,1080px)}.sx-au-study{padding:22px;background:linear-gradient(120deg,#172431,#122637 55%,#202430);color:#ebf1ef;border-top:1px solid #3d5362}.sx-au-study header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.sx-au-eyebrow{display:block;font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;color:#91cbd7;margin-bottom:6px}.sx-au-study header strong{font-size:.93rem;color:#efd8ad}.sx-au-study a{color:#bddce8;font-size:.7rem}.sx-au-views{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.sx-au-views button{display:flex;align-items:center;gap:8px;min-height:48px;padding:10px;border:1px solid #577182;border-radius:6px;background:#233c4a;color:#edf4f5;font-size:.72rem;text-align:left;cursor:pointer}.sx-au-views button span{font-size:.61rem;font-family:monospace;opacity:.65}.sx-au-views button[aria-pressed=true]{background:#dfcba4;border-color:#f0ddb7;color:#20282c}.sx-au-study button:focus-visible,.sx-au-study input:focus-visible{outline:3px solid #a0dace;outline-offset:3px}.sx-au-route{margin-top:18px}.sx-au-route label{display:grid;grid-template-columns:1fr auto;gap:10px;font-size:.73rem}.sx-au-route output{color:#eed5a2;font-variant-numeric:tabular-nums}.sx-au-route input{grid-column:1/-1;width:100%;accent-color:#dfc695;cursor:pointer;min-height:22px}.sx-au-route-ends{display:flex;justify-content:space-between;font-size:.63rem;color:#b8d4df;margin-top:2px}.sx-au-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 0;margin-top:14px;border-block:1px solid #405864}.sx-au-metrics small{display:block;font-size:.63rem;color:#b4d1dc;margin-bottom:8px}.sx-au-metrics strong{font-family:monospace;font-size:1.02rem;font-weight:400;color:#f1dab0}.sx-au-metrics strong span{font-family:inherit;font-size:.67rem;color:#d0e0e7}.sx-au-reading{font-size:.7rem;line-height:1.65;margin:14px 0 10px}.sx-au-study footer{display:flex;justify-content:space-between;gap:14px;color:#a9cbd7;font-size:.64rem;line-height:1.5}.sx-au-pin{position:absolute;left:0;top:0;pointer-events:none;border:1px solid #a8c6c9;border-radius:4px;padding:7px 9px;color:#e4f0f2;background:rgba(11,30,40,.92);font-size:.7rem;white-space:nowrap;z-index:3}.sx-au-pin[data-au-pin=sun]{border-color:#cfb886;color:#efd8ad}.sx-au-pin[hidden]{display:none}@media(max-width:600px){.sx-stage.sx-stage-au{height:1320px}.sx-au-study{padding:16px}.sx-au-study header{align-items:flex-start;flex-direction:column;gap:8px}.sx-au-views{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.sx-au-metrics{grid-template-columns:repeat(2,1fr);gap:14px}.sx-au-metrics>div:last-child{grid-column:1/-1}.sx-au-study footer{flex-direction:column;gap:5px}.sx-au-reading{font-size:.71rem}}\n"),
         h('style',null,".sx-stage.sx-stage-centauri{height:clamp(1000px,108vh,1160px)}.sx-centauri-study{padding:20px 22px;background:linear-gradient(120deg,#19252e,#142939 57%,#29252c);color:#e7efef;border-top:1px solid #49606b}.sx-centauri-study header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px}.sx-centauri-eyebrow{display:block;font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;color:#98c9d6;margin-bottom:6px}.sx-centauri-study header strong{font-size:.96rem;color:#ecd3ad}.sx-centauri-study a{color:#c4dae5;font-size:.7rem}.sx-centauri-views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.sx-centauri-views button{display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 12px;border:1px solid #577182;border-radius:6px;background:#233c4a;color:#edf4f5;font-size:.72rem;text-align:left;cursor:pointer}.sx-centauri-views button span{font-size:.6rem;font-family:monospace;opacity:.7}.sx-centauri-views button[aria-pressed=true]{background:#e0c49d;border-color:#efd9b7;color:#20282c}.sx-centauri-study button:focus-visible,.sx-centauri-study input:focus-visible{outline:3px solid #b4e5dc;outline-offset:3px}.sx-centauri-phase{margin-top:18px}.sx-centauri-phase label{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:.73rem}.sx-centauri-phase output{color:#eed5a2;font-variant-numeric:tabular-nums}.sx-centauri-phase input{grid-column:1/-1;width:100%;accent-color:#dfc695;cursor:pointer;min-height:24px}.sx-centauri-phase-ends{display:flex;justify-content:space-between;gap:12px;font-size:.6rem;color:#b8d4df;margin-top:2px}.sx-centauri-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:15px 0;margin-top:14px;border-block:1px solid #405864}.sx-centauri-metrics small{display:block;font-size:.63rem;color:#b4d1dc;margin-bottom:8px}.sx-centauri-metrics strong{font-family:monospace;font-size:1.07rem;font-weight:400;color:#f1dab0}.sx-centauri-metrics strong span{font-family:inherit;font-size:.7rem;color:#d0e0e7}.sx-centauri-reading{font-size:.7rem;line-height:1.65;margin:12px 0 10px}.sx-centauri-study footer{display:flex;justify-content:space-between;gap:14px;color:#acc9d4;font-size:.63rem;line-height:1.5}.sx-centauri-pin{position:absolute;left:0;top:0;pointer-events:none;border:1px solid #9fbac5;border-radius:4px;padding:7px 9px;color:#e5eef0;background:rgba(11,27,39,.93);font-size:.68rem;white-space:nowrap;z-index:3}.sx-centauri-pin[data-centauri-pin=proxima]{border-color:#ca997e;color:#efc5ac}.sx-centauri-pin[data-centauri-pin=a],.sx-centauri-pin[data-centauri-pin=sun]{border-color:#caba96;color:#e9dabb}.sx-centauri-pin[hidden]{display:none}@media(max-width:600px){.sx-stage.sx-stage-centauri{height:1480px}.sx-centauri-study{padding:16px}.sx-centauri-study header{align-items:flex-start;flex-direction:column;gap:8px}.sx-centauri-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-centauri-views button:last-child{grid-column:1/-1}.sx-centauri-metrics{grid-template-columns:repeat(2,1fr);gap:14px}.sx-centauri-metrics>div:last-child{grid-column:1/-1}.sx-centauri-study footer{flex-direction:column;gap:5px}.sx-centauri-reading{font-size:.71rem}.sx-centauri-phase-ends{font-size:.56rem;gap:8px}}\n"),
+        h('style',null,".sx-stage.sx-stage-basketball{height:clamp(1250px,150vh,1470px);min-height:1250px}.sx-stage-basketball>.sx-basketball-study{flex:none;position:relative;z-index:3;margin:0;border-radius:0 0 15px 15px}.sx-basketball-study{box-sizing:border-box;border:1px solid #375b6b;background:linear-gradient(125deg,#132b38fa,#101f32fc);color:#e9edef;padding:22px;text-align:left}.sx-basketball-study header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}.sx-basketball-eyebrow{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#9fc7d0;margin-bottom:6px}.sx-basketball-study header strong{display:block;font:400 27px Georgia,serif;color:#eee6d8}.sx-basketball-span{font:32px ui-monospace,monospace;color:#e8c999;white-space:nowrap;text-align:right}.sx-basketball-span small{display:block;font:10px system-ui,sans-serif;color:#bad0db;margin-top:3px}.sx-basketball-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sx-basketball-views button{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px;border:1px solid #4c7180;border-radius:7px;background:#1d3949;color:#e5eff2;cursor:pointer;font:inherit;font-size:12px;text-align:left;white-space:normal}.sx-basketball-views small{font-size:9px;color:#9dc7d5}.sx-basketball-views button[aria-pressed=true]{background:#dce8e8;border-color:#dce8e8;color:#193347}.sx-basketball-views button[aria-pressed=true] small{color:#4b6975}.sx-basketball-study button:focus-visible,.sx-basketball-study input:focus-visible,.sx-basketball-study a:focus-visible{outline:3px solid #ffe0a5;outline-offset:3px}.sx-basketball-slider{display:block;font-size:11px;color:#d7e7ef}.sx-basketball-slider input{display:block;width:100%;min-width:0;min-height:34px;accent-color:#e7c995;margin:2px 0}.sx-basketball-ends{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#a6c0ce}.sx-basketball-actions{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:16px 0 10px}.sx-basketball-actions button{border:1px solid #527a88;background:#1b3949;color:#dcebf0;border-radius:6px;padding:10px 12px;min-height:44px;font:inherit;font-size:11px;cursor:pointer}.sx-basketball-actions span{font-size:10px;color:#9fbfcb;text-align:right}.sx-basketball-reading{font-size:12px;line-height:1.7;margin:16px 0 10px;color:#e0eaef;min-height:4.7em}.sx-basketball-scope{font-size:10px;line-height:1.65;color:#a7bfce;margin:10px 0 13px}.sx-basketball-study footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:10px;color:#b6cdd9}.sx-basketball-study footer i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#edcd98;margin-right:6px}.sx-basketball-study a{color:#c7e3ed;text-underline-offset:3px}.sx-basketball-pin{position:absolute;left:0;top:0;color:#d4e6ea;font-size:10px;white-space:nowrap;border:1px solid #527181;background:#0c1b2de8;padding:5px 8px;border-radius:5px;pointer-events:none}.sx-basketball-pin[hidden]{display:none}.sx-basketball-pin[data-basketball-pin=signal]{color:#f3dbb7;border-color:#8c714a;background:#241e1beb}@media(max-width:640px){.sx-stage.sx-stage-basketball{height:1600px;min-height:1600px}.sx-stage-basketball>.sx-basketball-study{padding:16px}.sx-basketball-study header strong{font-size:23px}.sx-basketball-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-basketball-views button{min-height:50px;font-size:11px}.sx-basketball-readouts{gap:10px;min-height:68px}.sx-basketball-readouts small{min-height:26px}.sx-basketball-readouts output{font-size:20px}.sx-basketball-reading{font-size:11px;min-height:7em}.sx-basketball-actions{gap:8px}.sx-basketball-actions span{max-width:125px}.sx-basketball-ends{font-size:9px}}\n\n.sx-basketball-study{background:linear-gradient(130deg,#263138,#152330);border-color:#5b635f}.sx-basketball-study header strong{color:#f3dcc3}.sx-basketball-span{color:#e8b986}.sx-basketball-views button{background:#263e49;border-color:#597079}.sx-basketball-views button[aria-pressed=true]{background:#efdbc4;border-color:#efdbc4;color:#293b46}.sx-basketball-opening{padding-top:20px;margin-top:18px;border-top:1px solid #4b5b60}.sx-basketball-opening label{font-size:12px}.sx-basketball-opening label>span{display:flex;justify-content:space-between;align-items:center}.sx-basketball-opening output{font:23px ui-monospace,monospace;color:#ebbd8d;min-width:5ch;text-align:right}.sx-basketball-opening input{display:block;width:100%;min-height:38px;margin:5px 0;accent-color:#e6b989}.sx-basketball-layers{list-style:none;margin:17px 0 0;padding:16px 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;border-top:1px solid #4b5b60;border-bottom:1px solid #4b5b60}.sx-basketball-layers li{display:flex;gap:8px;align-items:flex-start}.sx-basketball-layers i{width:8px;height:30px;border-radius:3px;flex:none}.sx-basketball-layers b{display:block;font-size:11px;font-weight:500}.sx-basketball-layers small{display:block;color:#b3c5cf;font-size:10px;margin-top:4px}.sx-basketball-reading{min-height:5.2em}.sx-basketball-pin{background:#172630eb;border-color:#a39278;color:#eed9bd}@media(max-width:640px){.sx-basketball-layers{grid-template-columns:1fr 1fr;gap:16px 8px}.sx-basketball-study header strong{font-size:22px}.sx-basketball-reading{min-height:9em}.sx-basketball-span{font-size:28px}}\n"),
+        h('style',null,".sx-stage.sx-stage-lightyear{height:clamp(1170px,143vh,1390px);min-height:1170px}.sx-stage-lightyear>.sx-lightyear-study{flex:none;position:relative;z-index:3;margin:0;border-radius:0 0 15px 15px}.sx-lightyear-study{box-sizing:border-box;border:1px solid #375b6b;background:linear-gradient(125deg,#132b38fa,#101f32fc);color:#e9edef;padding:22px;text-align:left}.sx-lightyear-study header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}.sx-lightyear-eyebrow{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#9fc7d0;margin-bottom:6px}.sx-lightyear-study header strong{display:block;font:400 27px Georgia,serif;color:#eee6d8}.sx-lightyear-span{font:32px ui-monospace,monospace;color:#e8c999;white-space:nowrap;text-align:right}.sx-lightyear-span small{display:block;font:10px system-ui,sans-serif;color:#bad0db;margin-top:3px}.sx-lightyear-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sx-lightyear-views button{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px;border:1px solid #4c7180;border-radius:7px;background:#1d3949;color:#e5eff2;cursor:pointer;font:inherit;font-size:12px;text-align:left;white-space:normal}.sx-lightyear-views small{font-size:9px;color:#9dc7d5}.sx-lightyear-views button[aria-pressed=true]{background:#dce8e8;border-color:#dce8e8;color:#193347}.sx-lightyear-views button[aria-pressed=true] small{color:#4b6975}.sx-lightyear-study button:focus-visible,.sx-lightyear-study input:focus-visible,.sx-lightyear-study a:focus-visible{outline:3px solid #ffe0a5;outline-offset:3px}.sx-lightyear-readouts{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px 0 16px;margin-top:16px;border-top:1px solid #3b5869;min-height:57px}.sx-lightyear-readouts small{display:block;font-size:10px;color:#adc8d4;margin-bottom:7px}.sx-lightyear-readouts output{font:25px ui-monospace,monospace;color:#edcf9e;font-variant-numeric:tabular-nums}.sx-lightyear-readouts span{font-size:12px;color:#bccfda}.sx-lightyear-slider{display:block;font-size:11px;color:#d7e7ef}.sx-lightyear-slider input{display:block;width:100%;min-width:0;min-height:34px;accent-color:#e7c995;margin:2px 0}.sx-lightyear-ends{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#a6c0ce}.sx-lightyear-actions{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:16px 0 10px}.sx-lightyear-actions button{border:1px solid #527a88;background:#1b3949;color:#dcebf0;border-radius:6px;padding:10px 12px;min-height:44px;font:inherit;font-size:11px;cursor:pointer}.sx-lightyear-actions span{font-size:10px;color:#9fbfcb;text-align:right}.sx-lightyear-reading{font-size:12px;line-height:1.7;margin:16px 0 10px;color:#e0eaef;min-height:4.7em}.sx-lightyear-scope{font-size:10px;line-height:1.65;color:#a7bfce;margin:10px 0 13px}.sx-lightyear-study footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:10px;color:#b6cdd9}.sx-lightyear-study footer i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#edcd98;margin-right:6px}.sx-lightyear-study a{color:#c7e3ed;text-underline-offset:3px}.sx-lightyear-pin{position:absolute;left:0;top:0;color:#d4e6ea;font-size:10px;white-space:nowrap;border:1px solid #527181;background:#0c1b2de8;padding:5px 8px;border-radius:5px;pointer-events:none}.sx-lightyear-pin[hidden]{display:none}.sx-lightyear-pin[data-lightyear-pin=signal]{color:#f3dbb7;border-color:#8c714a;background:#241e1beb}@media(max-width:640px){.sx-stage.sx-stage-lightyear{height:1490px;min-height:1490px}.sx-stage-lightyear>.sx-lightyear-study{padding:16px}.sx-lightyear-study header strong{font-size:23px}.sx-lightyear-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-lightyear-views button{min-height:50px;font-size:11px}.sx-lightyear-readouts{gap:10px;min-height:68px}.sx-lightyear-readouts small{min-height:26px}.sx-lightyear-readouts output{font-size:20px}.sx-lightyear-reading{font-size:11px;min-height:7em}.sx-lightyear-actions{gap:8px}.sx-lightyear-actions span{max-width:125px}.sx-lightyear-ends{font-size:9px}}\n"),
+        h('style',null,".sx-stage.sx-stage-milkyway{height:clamp(1160px,138vh,1370px);min-height:1160px}.sx-stage-milkyway>.sx-milkyway-study{flex:none;position:relative;z-index:3;margin:0;border-radius:0 0 15px 15px}.sx-milkyway-study{box-sizing:border-box;border:1px solid #454e72;border-radius:16px;background:linear-gradient(120deg,#17253bfa,#171b32fc);color:#e6eaf5;padding:22px;text-align:left}.sx-milkyway-study header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}.sx-milkyway-eyebrow{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#adbce0;margin-bottom:6px}.sx-milkyway-study header strong{display:block;font:400 26px Georgia,serif;color:#f1eee9}.sx-milkyway-span{font:23px ui-monospace,monospace;color:#ead0a1;white-space:nowrap;text-align:right}.sx-milkyway-span small{display:block;font:10px system-ui,sans-serif;color:#bdc8de;margin-top:5px}.sx-milkyway-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sx-milkyway-views button{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px;border:1px solid #56638a;border-radius:7px;background:#263452;color:#e7edf5;cursor:pointer;font:inherit;font-size:12px;text-align:left;white-space:normal}.sx-milkyway-views small{font-size:9px;color:#acbddd}.sx-milkyway-views button[aria-pressed=true]{background:#d9dfef;border-color:#d9dfef;color:#1b2b43}.sx-milkyway-views button[aria-pressed=true] small{color:#4d5d79}.sx-milkyway-study button:focus-visible,.sx-milkyway-study input:focus-visible,.sx-milkyway-study a:focus-visible{outline:3px solid #ffe0a5;outline-offset:3px}.sx-milkyway-readout{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px 0 16px;margin-top:16px;border-top:1px solid #454f6e}.sx-milkyway-readout small{display:block;font-size:10px;color:#bcc9df;margin-bottom:7px}.sx-milkyway-readout output{font:25px ui-monospace,monospace;color:#ecd09e;font-variant-numeric:tabular-nums}.sx-milkyway-readout strong{font:19px Georgia,serif;color:#dce5f6}.sx-milkyway-readout span{font-size:12px;color:#c0cbe0}.sx-milkyway-slider{display:block;font-size:11px;color:#d7e2ef}.sx-milkyway-slider input{display:block;width:100%;min-width:0;min-height:34px;accent-color:#e9cf9b;margin:2px 0}.sx-milkyway-ends{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#b2c1db}.sx-milkyway-reading{font-size:12px;line-height:1.7;margin:16px 0 10px;color:#e1e8f0}.sx-milkyway-scope{font-size:10px;line-height:1.65;color:#b0bdd4;margin:10px 0 13px}.sx-milkyway-study footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:10px;color:#c0cde4}.sx-milkyway-study footer i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ecd09a;box-shadow:0 0 8px #ecd09a66;margin-right:6px}.sx-milkyway-study a{color:#d0def4;text-underline-offset:3px}.sx-milkyway-pin{position:absolute;left:0;top:0;color:#ecdaba;font-size:10px;white-space:nowrap;border:1px solid #766952;background:#171c2bea;padding:5px 8px;border-radius:5px;pointer-events:none}.sx-milkyway-pin[hidden]{display:none}@media(max-width:640px){.sx-stage.sx-stage-milkyway{height:1440px;min-height:1440px}.sx-stage-milkyway>.sx-milkyway-study{padding:16px}.sx-milkyway-study header{gap:10px}.sx-milkyway-study header strong{font-size:21px}.sx-milkyway-span{font-size:18px}.sx-milkyway-span small{font-size:9px}.sx-milkyway-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-milkyway-views button{min-height:50px;font-size:11px}.sx-milkyway-readout{gap:10px}.sx-milkyway-readout output{font-size:21px}.sx-milkyway-readout strong{font-size:17px}.sx-milkyway-reading{font-size:11px}.sx-milkyway-ends{font-size:9px}}\n.sx-milkyway-start{border:1px solid #647b91;background:#26384d;color:#dcebf0;border-radius:6px;padding:10px 12px;min-height:44px;font:inherit;font-size:11px;cursor:pointer;margin:0 0 12px}\r\n"),
+        h('style',null,".sx-stage.sx-stage-human{height:clamp(1250px,143vh,1480px);min-height:1250px}.sx-stage-human>.sx-human-study{flex:none;position:relative;z-index:3;margin:0;border-radius:0 0 15px 15px}.sx-human-study{box-sizing:border-box;border:1px solid #4f626a;border-radius:16px;background:linear-gradient(125deg,#1e343efb,#152630fc);color:#e3eded;padding:22px;text-align:left}.sx-human-study header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.sx-human-eyebrow{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#acc7cd;margin-bottom:6px}.sx-human-study header strong{display:block;font:400 26px Georgia,serif;color:#f1eee4}.sx-human-stature{font:30px ui-monospace,monospace;color:#e8d4af;white-space:nowrap}.sx-human-stature small{font:11px ui-monospace,monospace;color:#bdd0d4}.sx-human-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sx-human-views button{display:flex;align-items:center;gap:10px;min-height:46px;padding:10px;border:1px solid #536d77;border-radius:7px;background:#263f49;color:#e4eeee;cursor:pointer;font:inherit;font-size:12px;text-align:left}.sx-human-views small{font-size:9px;color:#a9c5cc}.sx-human-views button[aria-pressed=true]{background:#e3d7bd;border-color:#e3d7bd;color:#24353b}.sx-human-views button[aria-pressed=true] small{color:#56615f}.sx-human-study button:focus-visible,.sx-human-study input:focus-visible,.sx-human-study a:focus-visible{outline:3px solid #ffe1a3;outline-offset:3px}.sx-human-readout{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px 0 16px;margin-top:16px;border-top:1px solid #455b63}.sx-human-readout small{display:block;font-size:10px;color:#b9cfd4;margin-bottom:7px}.sx-human-readout output,.sx-human-readout strong{font:26px ui-monospace,monospace;font-weight:400;color:#efd5a5;font-variant-numeric:tabular-nums}.sx-human-readout span{font-size:12px;color:#c2d1d4}.sx-human-slider{display:block;font-size:11px;color:#d5e4e7}.sx-human-slider input{display:block;width:100%;min-width:0;min-height:34px;accent-color:#e8c889;margin:2px 0}.sx-human-ends{display:flex;justify-content:space-between;gap:15px;font-size:10px;color:#b0c8ce}.sx-human-reading{font-size:12px;line-height:1.7;margin:16px 0 12px;color:#e3ebed}.sx-human-personal{padding:12px;border:1px solid #455e66;border-radius:8px;background:#122832}.sx-human-personal label{color:#cddde1}.sx-human-personal input{min-height:30px}.sx-human-scope{font-size:10px;line-height:1.65;color:#b5cad1;margin:12px 0}.sx-human-study footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;font-size:10px;color:#bdd3d9}.sx-human-study footer i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ecd09a;margin-right:6px}.sx-human-study a{color:#d7e8ed;text-underline-offset:3px}@media(max-width:640px){.sx-stage.sx-stage-human{height:1400px;min-height:1400px}.sx-stage-human>.sx-human-study{padding:16px}.sx-human-study header strong{font-size:21px}.sx-human-stature{font-size:24px}.sx-human-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-human-views button{min-height:48px;font-size:11px}.sx-human-readout{gap:10px}.sx-human-readout strong,.sx-human-readout output{font-size:22px}.sx-human-reading{font-size:11px}.sx-human-ends{font-size:9px}}\n.sx-human-load{font-size:11px;line-height:1.5;color:#e6cea4;margin:0 0 12px}\r\n"),
+        h('style',null,".sx-stage.sx-stage-lightminute{height:clamp(1160px,138vh,1370px);min-height:1160px}.sx-stage-lightminute>.sx-lightminute-study{flex:none;position:relative;z-index:3;margin:0;border-radius:0 0 15px 15px}.sx-lightminute-study{box-sizing:border-box;border:1px solid #35536b;border-radius:16px;background:linear-gradient(120deg,#112b3bf7,#102031f7);color:#e0edf2;padding:22px;text-align:left}.sx-lightminute-study header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:18px}.sx-lightminute-eyebrow{display:block;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#a5cddd;line-height:1.5;margin-bottom:6px}.sx-lightminute-study header strong{display:block;font-family:Georgia,serif;font-size:25px;font-weight:400;color:#edf4f1}.sx-lightminute-constant{font:italic 23px Georgia,serif;color:#f1d396;text-align:right}.sx-lightminute-constant b{display:block;font:11px ui-monospace,monospace;color:#b5cfd8;margin-top:4px;white-space:nowrap}.sx-lightminute-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sx-lightminute-views button{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px;border:1px solid #4b697e;border-radius:7px;background:#193d50;color:#e2edf0;cursor:pointer;font:inherit;font-size:12px;text-align:left;white-space:normal}.sx-lightminute-views small{font-size:9px;color:#a9cad7}.sx-lightminute-views button[aria-pressed=true]{background:#d2e8ed;border-color:#d2e8ed;color:#15313f}.sx-lightminute-views button[aria-pressed=true] small{color:#436675}.sx-lightminute-study button:focus-visible,.sx-lightminute-study input:focus-visible,.sx-lightminute-study a:focus-visible{outline:3px solid #ffe1a3;outline-offset:3px}.sx-lightminute-clock{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:20px 0 16px;margin-top:16px;border-top:1px solid #3e5c6c}.sx-lightminute-clock small{display:block;font-size:10px;color:#bdd3dc;margin-bottom:7px}.sx-lightminute-clock output,.sx-lightminute-clock strong{font:26px ui-monospace,monospace;color:#f2d59e;font-weight:400;font-variant-numeric:tabular-nums}.sx-lightminute-clock span{font-size:12px;color:#becfd4}.sx-lightminute-route label{display:flex;flex-wrap:wrap;gap:7px;font-size:11px;color:#d4e5eb}.sx-lightminute-route input{display:block;width:100%;min-width:0;min-height:30px;accent-color:#efd395;margin:0}.sx-lightminute-ends{display:flex;justify-content:space-between;gap:15px;font-size:10px;color:#a9c4d0}.sx-lightminute-reading{font-size:12px;line-height:1.7;margin:16px 0 9px;color:#e0eaec}.sx-lightminute-scope{font-size:10px;line-height:1.65;color:#b0c6d0;margin:8px 0 13px}.sx-lightminute-study footer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:10px;color:#bdd6df}.sx-lightminute-study footer i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ecd49a;box-shadow:0 0 8px #f2d59e80;margin-right:6px}.sx-lightminute-study a{color:#cce4f0;text-underline-offset:3px}.sx-lightminute-pin{position:absolute;left:0;top:0;color:#d7e9ef;font-size:11px;white-space:nowrap;border:1px solid #426478;background:#0d2130e8;padding:5px 8px;border-radius:5px;pointer-events:none}.sx-lightminute-pin[hidden]{display:none}@media(max-width:640px){.sx-stage.sx-stage-lightminute{height:1560px;min-height:1560px}.sx-stage-lightminute>.sx-lightminute-study{padding:16px}.sx-lightminute-study header{gap:10px}.sx-lightminute-study header strong{font-size:21px}.sx-lightminute-constant{font-size:20px}.sx-lightminute-constant b{font-size:9px}.sx-lightminute-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-lightminute-views button{min-height:54px;font-size:11px}.sx-lightminute-clock{gap:10px}.sx-lightminute-clock strong,.sx-lightminute-clock output{font-size:19px}.sx-lightminute-clock small{font-size:9px}.sx-lightminute-reading{font-size:11px}.sx-lightminute-ends{font-size:9px}}\n"),
         h('style',null,".sx-stage.sx-stage-coma{height:clamp(1300px,146vh,1480px);min-height:1300px}.sx-stage-coma>.sx-coma-study{flex:none;position:relative;z-index:3;margin:0;border-radius:0 0 15px 15px}.sx-coma-study{box-sizing:border-box;border:1px solid #344b60;border-radius:16px;background:linear-gradient(125deg,#122435f5,#182a38f5);color:#e9ebe7;padding:21px 23px;box-shadow:0 18px 50px #03091050;text-align:left}.sx-coma-study header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:17px}.sx-coma-eyebrow{display:block;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#a9c2d0;line-height:1.5;margin-bottom:7px}.sx-coma-study header strong{display:block;font-family:Georgia,serif;font-weight:400;font-size:25px;color:#f0d8aa}.sx-coma-distance{text-align:right;font-size:10px;color:#b7c7ce;line-height:1.6}.sx-coma-distance b{display:block;font-family:ui-monospace,monospace;font-size:15px;font-weight:500;color:#e8d3af}.sx-coma-views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.sx-coma-views button{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px;border:1px solid #526979;border-radius:7px;background:#203b4a;color:#e1e8e7;cursor:pointer;font:inherit;font-size:12px;text-align:left;white-space:normal}.sx-coma-views small{font-size:9px;color:#b7d1d8}.sx-coma-views button[aria-pressed=true]{background:#e3c998;border-color:#e3c998;color:#192c37}.sx-coma-views button[aria-pressed=true] small{color:#39505d}.sx-coma-study button:focus-visible,.sx-coma-study input:focus-visible,.sx-coma-study a:focus-visible{outline:3px solid #b5f2ef;outline-offset:3px}.sx-coma-route{margin-top:18px;padding-top:16px;border-top:1px solid #415766}.sx-coma-route label{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px}.sx-coma-route output{font:16px ui-monospace,monospace;color:#ead2a4}.sx-coma-route input{display:block;width:100%;min-width:0;min-height:30px;accent-color:#dfc592;margin:0}.sx-coma-ends{display:flex;justify-content:space-between;gap:20px;font-size:10px;color:#bbd1d9}.sx-coma-facts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.sx-coma-facts small{display:block;color:#b7cbd2;font-size:10px;margin-bottom:6px}.sx-coma-facts strong{font:17px ui-monospace,monospace;color:#f0d9ab}.sx-coma-facts strong span{font-size:11px;color:#bbced4}.sx-coma-reading{font-size:12px;line-height:1.7;color:#d5e0e2;margin:14px 0 9px}.sx-coma-scope{font-size:10px;line-height:1.6;color:#a9bdc8;margin:8px 0 13px}.sx-coma-study footer{display:flex;align-items:center;flex-wrap:wrap;gap:8px 17px;font-size:10px;color:#c3d4db}.sx-coma-study footer i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.sx-coma-gold{background:#efd2a6;box-shadow:0 0 7px #c69b64}.sx-coma-blue{background:#a4cce9;box-shadow:0 0 7px #559ec6}.sx-coma-study a{color:#bfd9e4;text-underline-offset:3px}.sx-coma-pin{position:absolute;left:0;top:0;color:#d5e2e7;font-size:11px;white-space:nowrap;border:1px solid #4b6777;background:#10212cdb;padding:5px 8px;border-radius:5px;pointer-events:none}.sx-coma-pin[hidden]{display:none}@media(max-width:640px){.sx-stage.sx-stage-coma{height:1730px;min-height:1730px}.sx-stage-coma>.sx-coma-study{padding:16px}.sx-coma-study header{gap:10px}.sx-coma-study header strong{font-size:20px}.sx-coma-distance b{font-size:12px}.sx-coma-distance{max-width:98px}.sx-coma-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-coma-views button{min-height:53px;font-size:11px}.sx-coma-facts{gap:10px}.sx-coma-facts strong{font-size:14px}.sx-coma-reading{font-size:11px}.sx-coma-scope{font-size:10px}.sx-coma-ends{font-size:9px}}@media(prefers-reduced-motion:reduce){.sx-coma-study *{scroll-behavior:auto}}\n"),
         h('style',null,".sx-stage.sx-stage-solar{height:clamp(1280px,145vh,1450px)}\n.sx-solar-study{padding:19px 22px;background:linear-gradient(115deg,#132532,#172b37 65%,#26343c);color:#e5edf0;border-top:1px solid #526d7b}\n.sx-solar-study header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px}\n.sx-solar-eyebrow{display:block;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:#adc9d6;margin-bottom:6px}\n.sx-solar-study header strong{font-family:Georgia,serif;font-size:1.2rem;color:#f1dcaf;font-weight:400}\n.sx-solar-reference{font:1rem ui-monospace,monospace;color:#e9d1a1;text-align:right;white-space:nowrap}\n.sx-solar-reference small{display:block;font:.63rem system-ui;color:#c1d3da;margin-top:4px}\n.sx-solar-overviews,.sx-solar-worlds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:8px}\n.sx-solar-study button{min-height:44px;padding:8px 10px;border:1px solid #5e7b89;border-radius:6px;background:#203947;color:#e5eff2;font:inherit;font-size:.70rem;text-align:left;cursor:pointer}\n.sx-solar-study button[aria-pressed=true]{background:#decda5;border-color:#f0ddb2;color:#1c303b}\n.sx-solar-study button:disabled{opacity:.45;cursor:default}\n.sx-solar-study button:focus-visible,.sx-solar-study input:focus-visible{outline:3px solid #f0d4a1;outline-offset:3px}\n.sx-solar-worlds button{display:flex;align-items:center;gap:9px}\n.sx-solar-worlds i{flex:none;width:9px;height:9px;border-radius:50%;border:1px solid #ffffff66;box-shadow:inset -2px -1px 3px #0006}\n.sx-solar-worlds small{display:block;font-size:.59rem;opacity:.85;margin-top:4px}\n.sx-solar-time{margin:16px 0 10px;padding-top:13px;border-top:1px solid #415e6c}\n.sx-solar-time-top{display:flex;align-items:center;justify-content:space-between;gap:14px}\n.sx-solar-time label{font-size:.73rem;color:#d0e0e6}\n.sx-solar-time output{font:1rem ui-monospace,monospace;color:#ead4a6;margin-left:12px}\n.sx-solar-windows{display:flex;gap:5px}\n.sx-solar-windows button{font-size:.63rem;padding:7px 9px}\n.sx-solar-time input{width:100%;height:32px;accent-color:#dac18f;margin:4px 0;cursor:ew-resize}\n.sx-solar-time-ends{display:flex;justify-content:space-between;gap:10px;color:#b3cbd5;font-size:.60rem}\n.sx-solar-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}\n.sx-solar-actions button{font-size:.65rem}\n.sx-solar-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:13px 0;border-top:1px solid #415e6c}\n.sx-solar-facts small{display:block;color:#b9d1dd;font-size:.60rem;margin-bottom:6px}\n.sx-solar-facts strong{font:.85rem ui-monospace,monospace;color:#eee0bc}\n.sx-solar-key{display:flex;flex-wrap:wrap;gap:8px 15px;font-size:.59rem;color:#bed2dc;margin:0 0 12px}\n.sx-solar-key span{display:flex;align-items:center;gap:6px}\n.sx-solar-key i{display:inline-block;width:6px;height:6px;transform:rotate(45deg);background:#e7bd78}.sx-solar-key .sx-solar-apo{background:#84bacc}\n.sx-solar-intro,.sx-solar-earth-note{font-size:.68rem;line-height:1.55;color:#c7dbe4;margin:12px 0}\n.sx-solar-study footer{font-size:.64rem;line-height:1.55;color:#b8cdd7;margin:2px 0 10px}\n.sx-solar-links{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}\n.sx-solar-links a{font-size:.66rem;color:#d2e4ec}\n@media(max-width:600px){.sx-stage.sx-stage-solar{height:1770px}.sx-solar-study{padding:16px}.sx-solar-study header{gap:8px}.sx-solar-study header strong{font-size:1.04rem}.sx-solar-eyebrow{font-size:.56rem;letter-spacing:.08em;max-width:170px;line-height:1.5}.sx-solar-reference{font-size:.82rem}.sx-solar-reference small{max-width:92px;white-space:normal;font-size:.58rem}.sx-solar-overviews,.sx-solar-worlds{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-solar-time-top{align-items:flex-start;flex-direction:column;gap:10px}.sx-solar-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.sx-solar-study button{font-size:.68rem}.sx-solar-worlds small{font-size:.56rem}.sx-solar-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}\n"),
         h('style',null,".sx-stage.sx-stage-rice{height:clamp(1050px,115vh,1220px)}\n.sx-rice-study{padding:19px 22px;background:linear-gradient(115deg,#302b22,#353528 65%,#283329);color:#ede9d9;border-top:1px solid #817658}\n.sx-rice-study header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px}\n.sx-rice-eyebrow{display:block;font-size:.63rem;letter-spacing:.14em;text-transform:uppercase;color:#d1c29c;margin-bottom:6px}\n.sx-rice-study header strong{font-family:Georgia,serif;font-size:1.2rem;color:#f2e4c2;font-weight:400}\n.sx-rice-reference{font-family:ui-monospace,monospace;font-size:1rem;color:#ebd4a0;text-align:right;white-space:nowrap}\n.sx-rice-reference small{display:block;font-family:system-ui;font-size:.63rem;color:#d3d1b9;margin-top:4px}\n.sx-rice-views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}\n.sx-rice-views button,.sx-rice-actions button{min-height:44px;padding:9px 11px;border:1px solid #827754;border-radius:6px;background:#393b2c;color:#eeecd9;font:inherit;font-size:.72rem;text-align:left;cursor:pointer}\n.sx-rice-views button{display:flex;align-items:center;gap:9px}\n.sx-rice-views button span{font:.6rem ui-monospace,monospace;opacity:.75}\n.sx-rice-views button[aria-pressed=true],.sx-rice-actions button[aria-pressed=true]{background:#dacc9e;border-color:#eee2bc;color:#2c3425}\n.sx-rice-study button:focus-visible{outline:3px solid #f0d4a1;outline-offset:3px}\n.sx-rice-actions{display:flex;align-items:center;gap:15px;margin:15px 0}\n.sx-rice-actions button{flex-shrink:0}\n.sx-rice-actions p{font-size:.7rem;line-height:1.55;margin:0;color:#ded9bc}\n.sx-rice-key{display:flex;flex-wrap:wrap;gap:9px 18px;padding:12px 0;border-top:1px solid #625d44;font-size:.66rem;color:#e5e4ce}\n.sx-rice-key>span{display:flex;align-items:center;gap:6px}\n.sx-rice-swatch{width:8px;height:8px;border-radius:50%;border:1px solid #ffffff66;background:#d5ac69}\n.sx-rice-bran{background:#ba8751}.sx-rice-endosperm{background:#ece4d0}.sx-rice-embryo{background:#b8b28b}\n.sx-rice-study footer{font-size:.64rem;line-height:1.55;color:#c8c5a9;margin:1px 0 8px}\n.sx-rice-study a{font-size:.66rem;color:#e4dab9}\n@media(max-width:600px){.sx-stage.sx-stage-rice{height:1300px}.sx-rice-study{padding:16px}.sx-rice-study header{gap:8px}.sx-rice-study header strong{font-size:1.02rem}.sx-rice-eyebrow{font-size:.59rem;letter-spacing:.10em}.sx-rice-reference{font-size:.85rem}.sx-rice-reference small{font-size:.59rem;white-space:normal;max-width:100px}.sx-rice-views{grid-template-columns:repeat(2,minmax(0,1fr))}.sx-rice-views button:last-child{grid-column:1/-1}.sx-rice-actions{align-items:flex-start;flex-direction:column;gap:9px}.sx-rice-key{gap:9px 13px}}\n"),
@@ -15519,7 +16428,7 @@ return plaza;
               viewMode === 'atlas' ? h('button', { type: 'button', style: btn, 'aria-pressed': ambient && !reduceMotion, disabled: reduceMotion, onClick: function () { setAmbient(!ambient); updateSlice(function (cur) { cur.ambient = !ambient; }); } }, reduceMotion ? S('atlas_still', 'Reduced motion') : ambient ? S('atlas_motion_pause', 'Pause ambience') : S('atlas_motion_play', 'Resume ambience')) : null),
             atlasStatus === 'failed' ? h('p', { role: 'status', style: { margin: 0, color: P.dim, fontSize: '0.8125rem' } }, S('atlas_failed', 'The 3D view is unavailable. The scale chart and all destinations are ready to explore.')) : null,
             routeNavigation(),
-            h('div', { ref:nebulaStageRef,'data-nebula-cockpit':nebulaInside?(nebulaCockpit?'on':'off'):undefined,className: 'sx-stage'+(viewMode==='atlas'&&!comparisonActive&&focusId==='coma-dist'?' sx-stage-coma':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='solar-system'?' sx-stage-solar':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='rice'?' sx-stage-rice':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='paramecium'?' sx-stage-paramecium':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='galactic-centre'?' sx-stage-galcentre':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='ecoli'?' sx-stage-ecoli':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='alpha-cen-dist'?' sx-stage-centauri':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='au'?' sx-stage-au':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='andromeda-dist'?' sx-stage-andromeda':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='universe'?' sx-stage-universe':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='laniakea'?' sx-stage-laniakea':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='proton'?' sx-stage-proton':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='virgo-sc'?' sx-stage-virgo':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='local-bubble'?' sx-stage-bubble':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='carbon'?' sx-stage-carbon':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='heliosphere'?' sx-stage-helio':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='oort'?' sx-stage-oort':'')+(viewMode==='atlas'&&!comparisonActive&&isElectromagneticWave(focusId)?' sx-stage-wave':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='liberty'?' sx-stage-liberty':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='pyramid'?' sx-stage-pyramid':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='eiffel'?' sx-stage-eiffel':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='sequoia'?' sx-stage-sequoia':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='blue-whale'?' sx-stage-whale':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='chicxulub'?' sx-stage-crater':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='virus'&&virusRouteIndex(detailId)?' sx-stage-virus-inspect':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='pollen'&&pollenRouteIndex(detailId)?' sx-stage-pollen-inspect'+(detailId==='pollen-tube'?' sx-stage-pollen-tube':''):'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='ribosome'&&riboRouteIndex(detailId)?' sx-stage-ribo-inspect':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='mitochondrion'&&(mitoDetailFold(detailId)||mitoEnergyIndex(detailId))?' sx-stage-mito-inspect':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='dna'?' sx-stage-dna'+(dnaDetailPair(detailId)?' sx-stage-dna-pair':''):'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='river-journey'?' sx-stage-river':'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-explore'?' sx-stage-terrain':'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-flight'?' sx-stage-air':'')+(viewMode==='atlas'&&!comparisonActive&&nebulaInside?' sx-stage-space'+(nebulaCockpit?' sx-stage-cockpit':''):'')+(viewMode==='atlas'&&!comparisonActive&&selectedDetail&&selectedDetail.visit?' sx-stage-portal':'') },
+            h('div', { ref:nebulaStageRef,'data-nebula-cockpit':nebulaInside?(nebulaCockpit?'on':'off'):undefined,className: 'sx-stage'+(viewMode==='atlas'&&!comparisonActive&&focusId==='basketball'?' sx-stage-basketball':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='lightyear'?' sx-stage-lightyear':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='milkyway'?' sx-stage-milkyway':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='human'?' sx-stage-human':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='light-minute'?' sx-stage-lightminute':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='coma-dist'?' sx-stage-coma':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='solar-system'?' sx-stage-solar':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='rice'?' sx-stage-rice':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='paramecium'?' sx-stage-paramecium':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='galactic-centre'?' sx-stage-galcentre':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='ecoli'?' sx-stage-ecoli':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='alpha-cen-dist'?' sx-stage-centauri':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='au'?' sx-stage-au':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='andromeda-dist'?' sx-stage-andromeda':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='universe'?' sx-stage-universe':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='laniakea'?' sx-stage-laniakea':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='proton'?' sx-stage-proton':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='virgo-sc'?' sx-stage-virgo':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='local-bubble'?' sx-stage-bubble':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='carbon'?' sx-stage-carbon':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='heliosphere'?' sx-stage-helio':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='oort'?' sx-stage-oort':'')+(viewMode==='atlas'&&!comparisonActive&&isElectromagneticWave(focusId)?' sx-stage-wave':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='liberty'?' sx-stage-liberty':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='pyramid'?' sx-stage-pyramid':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='eiffel'?' sx-stage-eiffel':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='sequoia'?' sx-stage-sequoia':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='blue-whale'?' sx-stage-whale':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='chicxulub'?' sx-stage-crater':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='virus'&&virusRouteIndex(detailId)?' sx-stage-virus-inspect':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='pollen'&&pollenRouteIndex(detailId)?' sx-stage-pollen-inspect'+(detailId==='pollen-tube'?' sx-stage-pollen-tube':''):'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='ribosome'&&riboRouteIndex(detailId)?' sx-stage-ribo-inspect':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='mitochondrion'&&(mitoDetailFold(detailId)||mitoEnergyIndex(detailId))?' sx-stage-mito-inspect':'')+(viewMode==='atlas'&&!comparisonActive&&focusId==='dna'?' sx-stage-dna'+(dnaDetailPair(detailId)?' sx-stage-dna-pair':''):'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='river-journey'?' sx-stage-river':'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-explore'?' sx-stage-terrain':'')+(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-flight'?' sx-stage-air':'')+(viewMode==='atlas'&&!comparisonActive&&nebulaInside?' sx-stage-space'+(nebulaCockpit?' sx-stage-cockpit':''):'')+(viewMode==='atlas'&&!comparisonActive&&selectedDetail&&selectedDetail.visit?' sx-stage-portal':'') },
               viewMode==='atlas'&&nebulaInside&&!comparisonActive?h('div',{className:'sx-nebula-cockpit-bar','data-nebula-cockpit-bar':true},
                 h('div',null,h('strong',null,S('atlas_nebula_flight_deck', 'Orion flight deck')),h('span',null,S('atlas_nebula_flight_deck_scale', '24 ly illustrated volume'))),
                 h('button',{type:'button','aria-pressed':nebulaCockpit,'aria-controls':descId+'-nebula-instruments',title:S('atlas_nebula_cockpit_hint', 'Keep the cloud and instruments together. Your camera and passage stay in place.'),onPointerDown:function(ev){if(ev.button===0)ev.preventDefault();},onClick:toggleNebulaCockpit},S('atlas_nebula_cockpit', 'Flight cockpit')),
@@ -15544,6 +16453,10 @@ return plaza;
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='alpha-cen-dist'?h('div',{'aria-hidden':'true'},['sun','ab','proxima','a','b'].map(function(id){return h('div',{key:id,'data-centauri-pin':id,className:'sx-centauri-pin',hidden:true},S('atlas_centauri_pin_'+id,{"sun":"Sun · position guide","ab":"A/B · position guide","a":"A · position guide","b":"B · position guide","proxima":"Proxima · position guide"}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='au'?h('div',{'aria-hidden':'true'},['sun','earth','cursor'].map(function(id){return h('div',{key:id,'data-au-pin':id,className:'sx-au-pin',hidden:true},S('atlas_au_pin_'+id,{sun:'Sun',earth:'Earth · position guide',cursor:'Inspection point'}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='galactic-centre'?h('div',{'aria-hidden':'true'},['home','centre','cursor'].map(function(id){return h('div',{key:id,'data-galcentre-pin':id,className:'sx-galcentre-pin',hidden:true},S('atlas_galcentre_pin_'+id,{"home":"Our Solar System","centre":"Sagittarius A* location","cursor":"Journey position"}[id]));})):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='basketball'?h('div',{'aria-hidden':'true'},['cover','carcass','windings','bladder'].map(function(key){return h('div',{key:key,'data-basketball-pin':key,className:'sx-basketball-pin',hidden:true},key==='cover'?S('atlas_basketball_layer_cover','Cover'):key==='carcass'?S('atlas_basketball_layer_carcass','Rubber carcass'):key==='windings'?S('atlas_basketball_layer_windings','Thread windings'):S('atlas_basketball_layer_bladder','Air bladder'));})):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='lightyear'?h('div',{'aria-hidden':'true'},['signal','departure','arrival','neptune','heliopause'].map(function(key){return h('div',{key:key,'data-lightyear-pin':key,className:'sx-lightyear-pin',hidden:true},key==='signal'?S('atlas_lightyear_pin_signal','Selected signal'):key==='departure'?S('atlas_lightyear_pin_sun','Sun · departure'):key==='arrival'?S('atlas_lightyear_pin_arrival','One light-year'):key==='neptune'?S('atlas_lightyear_pin_neptune','Neptune orbit · 30 AU'):S('atlas_lightyear_pin_heliopause','Heliopause reference · 122 AU'));})):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='milkyway'?h('div',{'aria-hidden':'true'},h('div',{'data-milkyway-pin':'sun',className:'sx-milkyway-pin',hidden:true},S('atlas_milkyway_sun_pin','Solar System · enlarged locator'))):null,
+              viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='light-minute'?h('div',{'aria-hidden':'true'},['earth','moon','10','20','30','40','50','60'].map(function(id){return h('div',{key:id,'data-lightminute-pin':id,className:'sx-lightminute-pin',hidden:true},id==='earth'?S('atlas_lightminute_pin_earth','Earth · 0 s'):id==='moon'?S('atlas_lightminute_pin_moon','Moon · 1.282 s'):id+' s');})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='coma-dist'?h('div',{'aria-hidden':'true'},['home','destination','ngc4874','ngc4889'].map(function(id){return h('div',{key:id,'data-coma-pin':id,className:'sx-coma-pin',hidden:true},S('atlas_coma_pin_'+id,{home:'Our neighbourhood',destination:'Coma Cluster',ngc4874:'NGC 4874',ngc4889:'NGC 4889'}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='andromeda-dist'?h('div',{'aria-hidden':'true'},['home','destination','cursor'].map(function(id){return h('div',{key:id,'data-andromeda-pin':id,className:'sx-andromeda-pin',hidden:true},S('atlas_andromeda_pin_'+id,{home:'Our Solar System',destination:'Andromeda centre',cursor:'Journey position'}[id]));})):null,
               viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='universe'?h('div',{'aria-hidden':'true'},['home','cmb','epoch'].map(function(id){return h('div',{key:id,'data-universe-pin':id,className:'sx-universe-pin',hidden:true},S('atlas_universe_pin_'+id,{home:'Our observer · today',cmb:'Microwave background',epoch:'Selected distance'}[id]));})):null,
@@ -15565,7 +16478,7 @@ return plaza;
                     h('span',null,itemText(item,'name')),h('strong',null,lengthText(item.size)),h('small',null,dimensionText(item,S)))];
               }) : null) : null,
               viewMode === 'atlas' || comparisonActive ? h('div', { className: 'sx-hud', 'aria-hidden': 'true' },
-                h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, scaleFlight ? S('atlas_flight_heading', 'Journey through scale') : comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : nebulaInside?S('atlas_nebula_nav_badge', 'Inside Orion · a stellar nursery'):focusId==='coma-dist'?S('atlas_coma_study','Coma Cluster atlas'):focusId==='galactic-centre'?S('atlas_galcentre_study','Galactic Centre journey'):focusId==='ecoli'?S('atlas_ecoli_study','E. coli cell atlas'):focusId==='alpha-cen-dist'?S('atlas_centauri_study','Alpha Centauri observatory'):focusId==='au'?S('atlas_au_study','Earth–Sun crossing'):focusId==='andromeda-dist'?S('atlas_andromeda_study','Andromeda crossing'):focusId==='universe'?S('atlas_universe_study','Observable universe atlas'):focusId==='laniakea'?S('atlas_laniakea_study','Laniakea flow atlas'):focusId==='virgo-sc'?S('atlas_virgo_study','Virgo neighbourhood atlas'):focusId==='local-bubble'?S('atlas_bubble_study','Local Bubble dust atlas'):focusId==='proton'?S('atlas_proton_study','Proton structure study'):focusId==='carbon'?S('atlas_carbon_study','Carbon orbital study'):focusId==='heliosphere'?S('atlas_helio_study','Heliosphere study'):focusId==='oort'?S('atlas_oort_study','Oort Cloud study'):isElectromagneticWave(focusId)?S('atlas_wave_study','Electromagnetic wave study'):focusId==='door'?S('atlas_door_study','Doorway study'):focusId==='sand'?S('atlas_sand_study', 'Mineral grain study'):S('atlas_realm_' + realm.id, realm.name)),
+                h('p', { style: { color: comparisonActive ? '#a5dcd8' : theme === 'contrast' ? '#ffffff' : realm.color, textTransform: 'uppercase', fontWeight: 700 } }, scaleFlight ? S('atlas_flight_heading', 'Journey through scale') : comparisonActive ? S('atlas_comparison_studio', 'Comparison studio') : nebulaInside?S('atlas_nebula_nav_badge', 'Inside Orion · a stellar nursery'):focusId==='basketball'?S('atlas_basketball_study','Basketball workshop'):focusId==='lightyear'?S('atlas_lightyear_study','Light-year voyage'):focusId==='milkyway'?S('atlas_milkyway_study','Milky Way structure study'):focusId==='human'?S('atlas_human_study','Human stature study'):focusId==='light-minute'?S('atlas_lightminute_study','Light-minute observatory'):focusId==='coma-dist'?S('atlas_coma_study','Coma Cluster atlas'):focusId==='galactic-centre'?S('atlas_galcentre_study','Galactic Centre journey'):focusId==='ecoli'?S('atlas_ecoli_study','E. coli cell atlas'):focusId==='alpha-cen-dist'?S('atlas_centauri_study','Alpha Centauri observatory'):focusId==='au'?S('atlas_au_study','Earth–Sun crossing'):focusId==='andromeda-dist'?S('atlas_andromeda_study','Andromeda crossing'):focusId==='universe'?S('atlas_universe_study','Observable universe atlas'):focusId==='laniakea'?S('atlas_laniakea_study','Laniakea flow atlas'):focusId==='virgo-sc'?S('atlas_virgo_study','Virgo neighbourhood atlas'):focusId==='local-bubble'?S('atlas_bubble_study','Local Bubble dust atlas'):focusId==='proton'?S('atlas_proton_study','Proton structure study'):focusId==='carbon'?S('atlas_carbon_study','Carbon orbital study'):focusId==='heliosphere'?S('atlas_helio_study','Heliosphere study'):focusId==='oort'?S('atlas_oort_study','Oort Cloud study'):isElectromagneticWave(focusId)?S('atlas_wave_study','Electromagnetic wave study'):focusId==='door'?S('atlas_door_study','Doorway study'):focusId==='sand'?S('atlas_sand_study', 'Mineral grain study'):S('atlas_realm_' + realm.id, realm.name)),
                 h('h3', null, comparisonActive ? (comparisonStyle==='silhouette'&&compare.a.id!==compare.b.id?S('atlas_silhouette_heading',SPECIMEN_COPY.atlas_silhouette_heading):S('atlas_comparison_shared', 'One shared scale')) : focused.id==='dna'?S('atlas_dna_title', 'DNA double helix'):itemText(focused, 'name')),
                 h('p', null, scaleFlight ? S('atlas_flight_origin', 'From {name}',{name:lowerArticle(itemText(byId[scaleFlight.origin.itemId],'name'))}) : comparisonActive ? (viewMode === 'atlas' ? (comparisonStyle==='silhouette'&&compare.a.id!==compare.b.id?S('atlas_silhouette_projection',SPECIMEN_COPY.atlas_silhouette_projection):S('atlas_comparison_projection', 'Measured proportions · parallel projection')) : S('atlas_comparison_diagram_tag', 'Measured lengths · one shared unit')) : focused.id==='everest'?S('atlas_alpine_height', '8,849 m above sea level'):focused.id==='galactic-centre'?S('atlas_galcentre_distance_label',"26,400 light-years · rounded Sun–centre reference"):focused.id==='alpha-cen-dist'?S('atlas_centauri_distance_label',"4.33 light-years · Sun to the A/B barycentre"):focused.id==='rice'?S('atlas_rice_anatomy_measurement','7 mm polished-kernel reference'):focused.id==='au'?S('atlas_au_distance_label','1 AU · 149.6 million km between centres'):lengthText(focused.size) + ' ' + dimensionText(focused,S)),
                 !scaleFlight&&!comparisonActive&&focused.id==='solar-system'?h('p',{style:{color:'#e3cba5',marginTop:10}},selectedDetail&&selectedDetail.au?S('atlas_orbit_au_label', '{au} AU · current model distance',{au:selectedDetail.au.toFixed(2)}):S('atlas_orbit_stage_label', 'Elliptical, inclined orbits · enlarged worlds')):null,
@@ -15589,7 +16502,7 @@ return plaza;
                 atlasStatus === 'loading' ? h('p', { style: { marginTop: 20 } }, S('atlas_loading', 'Preparing your observatory…')) : null) : null,
               viewMode === 'atlas' && !scaleFlight ? h('div', { className: 'sx-stage-note', 'aria-hidden': 'true' },
                 h('span', null, comparisonActive ? S('atlas_comparison_gesture', 'Drag to orbit · Scroll to inspect · Esc to explore') : S('atlas_gesture', 'Drag to orbit · Pinch to inspect · Scroll to travel')),
-                h('span', null, (comparisonActive?(compare.a.id==='coma-dist'||compare.b.id==='coma-dist'):focusId==='coma-dist')?S('atlas_coma_badge','One distance scale · illustrated galaxy population'):(comparisonActive?(compare.a.id==='galactic-centre'||compare.b.id==='galactic-centre'):focusId==='galactic-centre')?S('atlas_galcentre_badge','One distance scale · illustrated stars and dust'):(comparisonActive?(compare.a.id==='ecoli'||compare.b.id==='ecoli'):focusId==='ecoli')?S('atlas_ecoli_badge','Body and envelope to scale · illustrative anatomy'):(comparisonActive?(compare.a.id==='alpha-cen-dist'||compare.b.id==='alpha-cen-dist'):focusId==='alpha-cen-dist')?S('atlas_centauri_badge','Proportional stars · illustrative surfaces'):(comparisonActive?(compare.a.id==='au'||compare.b.id==='au'):focusId==='au')?S('atlas_au_badge','Proportional Sun and Earth · reference distance'):(comparisonActive?(compare.a.id==='andromeda-dist'||compare.b.id==='andromeda-dist'):focusId==='andromeda-dist')?S('atlas_andromeda_badge','One distance scale · illustrated galaxies'):(comparisonActive?(compare.a.id==='universe'||compare.b.id==='universe'):focusId==='universe')?S('atlas_universe_badge','Comoving distances · illustrated past light cone'):(comparisonActive?(compare.a.id==='laniakea'||compare.b.id==='laniakea'):focusId==='laniakea')?S('atlas_laniakea_badge','Cosmicflows-4 · 2023 reconstruction'):(comparisonActive?(compare.a.id==='proton'||compare.b.id==='proton'):focusId==='proton')?S('atlas_proton_badge','1.68 fm reference · illustrated structure'):(comparisonActive?(compare.a.id==='virgo-sc'||compare.b.id==='virgo-sc'):focusId==='virgo-sc')?S('atlas_virgo_badge','Cosmicflows-4 · measured galaxy distances'):(comparisonActive?(compare.a.id==='local-bubble'||compare.b.id==='local-bubble'):focusId==='local-bubble')?S('atlas_bubble_badge','2024 dust map · 1,004 ly reference'):(comparisonActive?(compare.a.id==='carbon'||compare.b.id==='carbon'):focusId==='carbon')?S('atlas_carbon_badge','140 pm reference · illustrative orbitals'):(comparisonActive?(compare.a.id==='heliosphere'||compare.b.id==='heliosphere'):focusId==='heliosphere')?S('atlas_helio_badge','Boundary model · markers enlarged'):(comparisonActive?(compare.a.id==='oort'||compare.b.id==='oort'):focusId==='oort')?S('atlas_oort_badge','Inferred structure · markers enlarged'):(comparisonActive?(isElectromagneticWave(compare.a.id)||isElectromagneticWave(compare.b.id)):isElectromagneticWave(focusId))?S('atlas_wave_stage_note','Field diagram · wavelength to scale'):focused.id==='liberty'&&!comparisonActive?S("atlas_liberty_stage_note","93 m reference / explore the sculpture"):focused.id==='pyramid'&&!comparisonActive?S('atlas_pyramid_stage_note','230 m base reference / explore known architecture'):focused.id==='eiffel'&&!comparisonActive?S('atlas_eiffel_stage_note','330 m full height / three real visitor platforms'):focused.id==='sequoia'&&!comparisonActive?S('atlas_sequoia_stage_note','84 m reference / ascend through the forest'):focused.id==='blue-whale'&&!comparisonActive?S('atlas_whale_stage_note', '25 m reference / orbit the anatomy'):focused.id==='chicxulub'&&!comparisonActive?S('atlas_crater_stage_note', '180 km horizontal reference / vertical scale 15×'):focused.id==='virus'&&!comparisonActive?S('atlas_virus_stage_note', '100 nm particle / illustrated proteins & RNA'):focused.id==='pollen'&&!comparisonActive?S('atlas_pollen_stage_note', '25 μm grain / illustrated wall & cells'):focused.id==='ribosome'&&!comparisonActive?S('atlas_ribo_stage_note', 'PDB 4V5D / 25 nm assembled reference'):focused.id==='mitochondrion'&&!comparisonActive?S('atlas_mito_stage_note', 'Illustrated compartments / 1 μm length reference'):focused.id==='dna'&&!comparisonActive?S('atlas_dna_stage_note', 'Experimental atom positions / schematic bonds'):focused.id==='everest'&&!comparisonActive?S('atlas_alpine_stage_note', 'Elevation data / illustrated snow & light'):S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null),
+                h('span', null, (comparisonActive?(compare.a.id==='light-minute'||compare.b.id==='light-minute'):focusId==='light-minute')?S('atlas_lightminute_badge','Physical world sizes · light-travel distance'):(comparisonActive?(compare.a.id==='coma-dist'||compare.b.id==='coma-dist'):focusId==='coma-dist')?S('atlas_coma_badge','One distance scale · illustrated galaxy population'):(comparisonActive?(compare.a.id==='galactic-centre'||compare.b.id==='galactic-centre'):focusId==='galactic-centre')?S('atlas_galcentre_badge','One distance scale · illustrated stars and dust'):(comparisonActive?(compare.a.id==='ecoli'||compare.b.id==='ecoli'):focusId==='ecoli')?S('atlas_ecoli_badge','Body and envelope to scale · illustrative anatomy'):(comparisonActive?(compare.a.id==='alpha-cen-dist'||compare.b.id==='alpha-cen-dist'):focusId==='alpha-cen-dist')?S('atlas_centauri_badge','Proportional stars · illustrative surfaces'):(comparisonActive?(compare.a.id==='au'||compare.b.id==='au'):focusId==='au')?S('atlas_au_badge','Proportional Sun and Earth · reference distance'):(comparisonActive?(compare.a.id==='andromeda-dist'||compare.b.id==='andromeda-dist'):focusId==='andromeda-dist')?S('atlas_andromeda_badge','One distance scale · illustrated galaxies'):(comparisonActive?(compare.a.id==='universe'||compare.b.id==='universe'):focusId==='universe')?S('atlas_universe_badge','Comoving distances · illustrated past light cone'):(comparisonActive?(compare.a.id==='laniakea'||compare.b.id==='laniakea'):focusId==='laniakea')?S('atlas_laniakea_badge','Cosmicflows-4 · 2023 reconstruction'):(comparisonActive?(compare.a.id==='proton'||compare.b.id==='proton'):focusId==='proton')?S('atlas_proton_badge','1.68 fm reference · illustrated structure'):(comparisonActive?(compare.a.id==='virgo-sc'||compare.b.id==='virgo-sc'):focusId==='virgo-sc')?S('atlas_virgo_badge','Cosmicflows-4 · measured galaxy distances'):(comparisonActive?(compare.a.id==='local-bubble'||compare.b.id==='local-bubble'):focusId==='local-bubble')?S('atlas_bubble_badge','2024 dust map · 1,004 ly reference'):(comparisonActive?(compare.a.id==='carbon'||compare.b.id==='carbon'):focusId==='carbon')?S('atlas_carbon_badge','140 pm reference · illustrative orbitals'):(comparisonActive?(compare.a.id==='heliosphere'||compare.b.id==='heliosphere'):focusId==='heliosphere')?S('atlas_helio_badge','Boundary model · markers enlarged'):(comparisonActive?(compare.a.id==='oort'||compare.b.id==='oort'):focusId==='oort')?S('atlas_oort_badge','Inferred structure · markers enlarged'):(comparisonActive?(isElectromagneticWave(compare.a.id)||isElectromagneticWave(compare.b.id)):isElectromagneticWave(focusId))?S('atlas_wave_stage_note','Field diagram · wavelength to scale'):focused.id==='liberty'&&!comparisonActive?S("atlas_liberty_stage_note","93 m reference / explore the sculpture"):focused.id==='pyramid'&&!comparisonActive?S('atlas_pyramid_stage_note','230 m base reference / explore known architecture'):focused.id==='eiffel'&&!comparisonActive?S('atlas_eiffel_stage_note','330 m full height / three real visitor platforms'):focused.id==='sequoia'&&!comparisonActive?S('atlas_sequoia_stage_note','84 m reference / ascend through the forest'):focused.id==='blue-whale'&&!comparisonActive?S('atlas_whale_stage_note', '25 m reference / orbit the anatomy'):focused.id==='chicxulub'&&!comparisonActive?S('atlas_crater_stage_note', '180 km horizontal reference / vertical scale 15×'):focused.id==='virus'&&!comparisonActive?S('atlas_virus_stage_note', '100 nm particle / illustrated proteins & RNA'):focused.id==='pollen'&&!comparisonActive?S('atlas_pollen_stage_note', '25 μm grain / illustrated wall & cells'):focused.id==='ribosome'&&!comparisonActive?S('atlas_ribo_stage_note', 'PDB 4V5D / 25 nm assembled reference'):focused.id==='mitochondrion'&&!comparisonActive?S('atlas_mito_stage_note', 'Illustrated compartments / 1 μm length reference'):focused.id==='dna'&&!comparisonActive?S('atlas_dna_stage_note', 'Experimental atom positions / schematic bonds'):focused.id==='everest'&&!comparisonActive?S('atlas_alpine_stage_note', 'Elevation data / illustrated snow & light'):S('atlas_model_tag', 'Illustrated models / measured dimensions'))) : null),
               scenePortal(),
               riverNavigator(),
               terrainNavigator(),
@@ -15618,6 +16531,11 @@ return plaza;
               virgoStudy(),
               laniakeaStudy(),
               universeStudy(),
+              basketballStudy(),
+              lightYearStudy(),
+              milkyWayStudy(),
+              humanStudy(),
+              lightMinuteStudy(),
               comaStudy(),
               andromedaStudy(),
               auStudy(),
@@ -15687,7 +16605,7 @@ return plaza;
               focused.id==='everest'&&(planetImagery.id!==focused.id||planetImagery.status!=='ready')?h('div',{role:'status',style:{fontSize:'.8rem',lineHeight:1.6,color:P.dim}},
                 h('p',null,planetImagery.id===focused.id&&planetImagery.status==='failed'?S('atlas_alpine_failed', 'The elevation data could not load. Retry to explore the terrain, or use the scale chart.'):S('atlas_alpine_loading', 'Loading the local elevation grid…')),
                 planetImagery.id===focused.id&&planetImagery.status==='failed'?h('button',{type:'button',style:btn,onClick:function(){if(atlasRef.current)atlasRef.current.retryTerrain();}},S('atlas_alpine_retry', 'Retry terrain')):null):null,
-              h('div',{className:'sx-detail-choices'},details.filter(function(d){return !d.comaSite&&!d.solarSite&&!d.riceSite&&!d.parameciumSite&&!d.universeSample&&!d.andromedaSample&&!d.auSample&&!d.galcentreSample&&d.id!=='jupiter-scan'&&!d.night&&!d.dnaPair&&!d.mitoFold&&!d.mitoEnergy&&!d.riboRoute&&!d.pollenSite&&!d.virusSite&&!d.craterSite&&!d.whaleSite&&!d.sequoiaSite&&!d.eiffelSite&&!d.pyramidSite&&!d.libertySite;}).map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,disabled:(detail.surface||detail.terrain)&&(planetImagery.id!==focused.id||planetImagery.status!=='ready'),'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
+              h('div',{className:'sx-detail-choices'},details.filter(function(d){return !d.basketballSite&&!d.lightYearSite&&!d.milkyWaySite&&!d.humanStudySite&&!d.lightMinuteSite&&!d.comaSite&&!d.solarSite&&!d.riceSite&&!d.parameciumSite&&!d.universeSample&&!d.andromedaSample&&!d.auSample&&!d.galcentreSample&&d.id!=='jupiter-scan'&&!d.night&&!d.dnaPair&&!d.mitoFold&&!d.mitoEnergy&&!d.riboRoute&&!d.pollenSite&&!d.virusSite&&!d.craterSite&&!d.whaleSite&&!d.sequoiaSite&&!d.eiffelSite&&!d.pyramidSite&&!d.libertySite;}).map(function(detail,index){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,disabled:(detail.surface||detail.terrain)&&(planetImagery.id!==focused.id||planetImagery.status!=='ready'),'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail);}},h('span',{'aria-hidden':'true',style:{opacity:.7,marginRight:6}},String(index+1).padStart(2,'0')),detail.label);})),
               selectedDetail?h('div',{className:'sx-detail-note',style:{borderLeft:'2px solid '+P.accent,paddingLeft:12}},h('p',{style:{fontSize:'0.875rem',lineHeight:1.65,margin:'10px 0 6px'}},selectedDetail.body),h('a',{href:selectedDetail.source,target:'_blank',rel:'noopener noreferrer',style:{fontSize:'0.75rem',color:P.accent}},S('atlas_detail_source', 'Read the science source'))):h('p',{style:{fontSize:'0.8rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_detail_invite', 'Choose a numbered landmark to move closer. Orbit around the feature, then use Fit object to see the whole specimen.'))):null,
             viewMode==='atlas'&&focused.id==='mitochondrion'?h('p',{style:{margin:0,fontSize:'0.75rem',lineHeight:1.5,color:P.dim}},cutaway?S('atlas_cutaway_open', 'Inside: the inner membrane encloses the matrix and folds into connected cristae. Explore their curved rims, then close the cutaway to see the enclosing surface.'):S('atlas_cutaway_closed', 'Outside: the outer membrane encloses the organelle. Open the cutaway to explore the folds within.')):null,
             viewMode==='atlas'&&!comparisonActive&&isMicrobe(focused.id)?h('p',{className:'sx-cell-note',style:{margin:0,fontSize:'.75rem',lineHeight:1.6,color:P.dim}},S('atlas_cell_scope', 'The ruler measures cell body length. Colors, organelle sizes and motion are illustrated to make the anatomy readable. Open the cutaway to explore inside; Pause ambience holds the motion still.')):null,
@@ -15720,13 +16638,6 @@ return plaza;
               h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},details.map(function(detail){return h('button',{key:detail.id,type:'button',style:detailId===detail.id?goBtn:btn,'aria-pressed':detailId===detail.id,onClick:function(){chooseDetail(detail,true);}},detail.label);})),
               h('p',{style:{fontSize:'.75rem',lineHeight:1.6,color:P.dim,margin:'12px 0 8px'}},S('atlas_water_scope',SPECIMEN_COPY.atlas_water_scope)),
               h('a',{href:'https://cccbdb.nist.gov/expgeom2x.asp?casno=7732185',target:'_blank',rel:'noopener noreferrer',style:{fontSize:'.75rem',color:P.accent}},S('atlas_water_source',SPECIMEN_COPY.atlas_water_source))):null,
-             viewMode==='atlas'&&!comparisonActive&&focused.id==='milkyway'?h('section',{className:'sx-galaxy-controls','aria-label':S('atlas_galaxy_controls', 'Galaxy viewpoint'),style:{padding:'14px 16px',border:'1px solid '+P.line,borderRadius:12,background:P.panel}},
-              h('h3',{style:{fontSize:'.9rem',margin:'0 0 10px'}},S('atlas_galaxy_controls', 'Galaxy viewpoint')),
-              h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
-                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='spiral-arms';})[0],true);}},S('atlas_galaxy_above', 'View from above')),
-                h('button',{type:'button',style:btn,onClick:function(){chooseDetail(details.filter(function(d){return d.id==='galactic-disc';})[0],true);}},S('atlas_galaxy_edge', 'View edge-on')),
-                h('button',{type:'button',style:goBtn,onClick:function(){travelTo(byId['solar-system']);}},S('atlas_galaxy_visit', 'Visit the Solar System'))),
-              h('p',{style:{fontSize:'.75rem',lineHeight:1.6,color:P.dim,margin:'10px 0 0'}},S('atlas_galaxy_scope', 'An illustrated stellar disc, approximately 100,000 light-years across. Arm paths, dust, colors and vertical structure are interpretive. Light points represent stellar populations; the Sun marker is enlarged. The extended halo is outside this model.'))):null,
             viewMode==='atlas'&&!comparisonActive&&focused.id==='orion-nebula'?h('div',{className:'sx-nebula-controls',role:'group','aria-label':S('atlas_nebula_controls', 'Nebula view'),style:{display:'flex',flexDirection:'column',gap:9}},
               !nebulaInside?h('button',{type:'button',style:goBtn,onClick:enterNebula},S('atlas_nebula_nav_enter', 'Enter the nebula')):null,
               h('button',{type:'button',style:nebulaReveal?goBtn:btn,'aria-pressed':nebulaReveal,onClick:function(){setNebulaReveal(!nebulaReveal);var cv=atlasCanvasRef.current;if(cv){var rect=cv.getBoundingClientRect();if(rect.top< -40||rect.bottom>window.innerHeight+40)cv.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});}}},S('atlas_nebula_reveal', 'Reveal embedded stars')),
@@ -15824,6 +16735,11 @@ return plaza;
                    focused.id === 'ecoli' ? S('atlas_ecoli_model_note',"The body, adopted envelope depths and appendage diameters share one scale. The 34 nm envelope includes outer and inner membranes and a periplasm containing peptidoglycan. Values are rounded from microscopy and vary between preparations. DNA strands are thickened and sampled; ribosome positions, surface texture, motor parts, colours and slowed filament motion are illustrative. The section removes half the envelope; it does not stretch the layers.") :
                    focused.id === 'alpha-cen-dist' ? S('atlas_centauri_model_note',"The four stars retain their adopted diameters on the 4.1 × 10¹⁶ m reference scale. Close views move the camera. Position guides and glows are enlarged visual aids. The A/B pair follows an ideal two-body Kepler orbit using published mass and orbital parameters; phase starts at periastron without a calendar epoch. The wide companion stays fixed. The system orientation, surface patterns and colours are illustrative. Proxima’s adopted empirical radius has measurement uncertainty.") :
                    focused.id === 'au' ? S('atlas_au_model_note',"The rounded 149.6-million-kilometre reference joins body centres. Sun and mean Earth diameters remain on this same scale. Close views move the camera; location guides are enlarged. Solar texture, sunspots, corona and atmospheric shading are illustrative. Earth imagery is a NASA composite; positions, weather and activity are not a live ephemeris. Light travel readouts use distance divided by light speed, while camera movement has no physical clock.") :
+                   focused.id === 'basketball' ? S('atlas_basketball_model_note',"The cutaway reveals a layered shell around an air space. Internal layers are enlarged for inspection; opening the section does not change the ball’s outer size.") :
+                   focused.id === 'lightyear' ? S('atlas_lightyear_model_note',"The gold signal advances along one fixed scale. In the Solar System view, orbit radii show approximate mean distances; the drawn positions are a teaching arrangement, not a dated sky map.") :
+                   focused.id === 'milkyway' ? S('atlas_milkyway_model_note',"Warm light traces the illustrated bulge and bar. Cooler light and sparse pink regions trace younger populations. Dust absorbs starlight along each viewing direction.") :
+                   focused.id === 'human' ? S('atlas_human_model_note',"The CC0 MakeHuman surface is a generic posed character. Changing stature scales it uniformly; its proportions are illustrative and do not describe an individual person.") :
+                   focused.id === 'light-minute' ? S('atlas_lightminute_model_note',"One light minute is exactly 17,987,547,480 metres. Earth and Moon use mean diameters and a 384,400 km centre-to-centre reference separation. Their arrangement and the luminous time marker are illustrative.") :
                    focused.id === 'coma-dist' ? S('atlas_coma_model_note',"A rounded 317-million-light-year distance reference. Named galaxy sky positions and optical dimensions inform this illustrated cluster. The unnamed population, line-of-sight depths and faint halos are composed; the 20-million-light-year viewing window is not a measured edge.") :
                    focused.id === 'andromeda-dist' ? S('atlas_andromeda_model_note',"The 2.54-million-light-year gap runs from our Solar System to Andromeda’s centre. Disc dimensions and the sightline share one scale; adopted galaxy edges are approximate. Andromeda’s 77° inclination and 38° sky position angle follow observational references. Starlight, spiral structure, dust and enlarged location markers are illustrative. The camera journey and moving light cue have no physical clock and do not forecast galaxy motion.") :
                    focused.dim === 'distance' ? S('atlas_distance_note', 'This is a gap, shown as a ruler. Endpoint markers are illustrative, not scaled objects.') :
@@ -15896,17 +16812,7 @@ return plaza;
 
             // Your height: the one personalisation that changes what every other
             // number means. Shown when the person is in focus, and always once set.
-            (focused.id === 'human' || yourCm) ? h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: '0.71875rem', color: P.dim } },
-              h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
-                S('you_label', 'Make the person your height:'),
-                h('input', { type: 'number', min: 50, max: 250, step: 1, inputMode: 'numeric', value: heightDraft, placeholder: yourCm ? String(yourCm) : '170',
-                  'aria-label': S('you_input_aria', 'Your height in centimetres'),
-                  onChange: function (e) { setHeightDraft(e.target.value); },
-                  onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); submitHeight(); } },
-                  style: { width: 64, padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.75rem' } }),
-                S('you_cm', 'cm')),
-              h('button', { type: 'button', onClick: submitHeight, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_apply', 'Use my height')),
-              yourCm ? h('button', { type: 'button', onClick: function () { applyHeight(null); }, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_reset', 'Back to average')) : null) : null,
+            (focused.id === 'human' || yourCm) && !(viewMode==='atlas'&&!comparisonActive&&!scaleFlight&&focusId==='human') ? heightForm() : null,
 
             workspacePanel('notebook', h(React.Fragment, null,
             h('section', { className: 'sx-notebook', 'aria-label': S('atlas_notebook_heading', 'Field notebook'), style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },

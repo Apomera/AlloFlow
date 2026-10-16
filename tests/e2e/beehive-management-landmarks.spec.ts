@@ -115,7 +115,7 @@ async function verifyTimeline(page: Page) {
   await expect(timing(page).locator('[data-preview-timeline-reading="action"]')).toHaveText(reading(selected.withAction, data.metric.suffix));
   await expect(timing(page).locator('[data-preview-timeline-reading="difference"]')).toHaveText(reading(selected.delta, data.metric.suffix, true));
   const chart = timing(page).locator('[data-management-preview-chart]');
-  await expect(chart).toHaveAttribute('role', 'img'); await expect(chart).toHaveAttribute('viewBox', '0 0 600 240');
+  await expect(chart).toHaveAttribute('role', 'img'); await expect(chart.locator('[data-preview-timeline-plot]')).toHaveAttribute('viewBox', '0 0 600 240');
   await expect(chart).toHaveAccessibleName(new RegExp(data.metric.label));
   const firstDay = data.points[0].day, lastDay = data.points[data.points.length - 1].day;
   const x = (day: number) => lastDay === firstDay ? 300 : 16 + (day - firstDay) / (lastDay - firstDay) * 568;

@@ -80,7 +80,7 @@ describe('Scale Explorer notebook recovers persisted student work', () => {
   it('retains a recorded personal height and bounds damaged camera and note values', () => {
     const notes = readObservations([{ itemId: 'human', you: true, size: 1.23, note: 'x'.repeat(2000), zoom: 20, yaw: Infinity, pitch: -5 },
       { itemId: 'earth', size: 1, zoom: NaN }, { itemId: 'human', detailId: 'bad' }]);
-    expect(notes[0]).toMatchObject({ size: 1.23, you: true, zoom: 2.5, yaw: 0, pitch: -1.1 });
+    expect(notes[0]).toMatchObject({ size: 1.23, you: true, zoom: 8, yaw: 0, pitch: -1.1 });
     expect(notes[0].note).toHaveLength(1200);
     expect(notes[1].size).toBe(items.find(i => i.id === 'earth').size);
     expect(notes[1].zoom).toBe(1);

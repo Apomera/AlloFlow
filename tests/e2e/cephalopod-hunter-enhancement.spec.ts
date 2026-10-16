@@ -69,8 +69,9 @@ test('new rigs have distinct anatomy, render without shader errors and release e
 });
 test('voluntary surfacing persists results and releases the actual WebGL context',async({page})=>{
   await mount(page);const contexts=await harness.glContexts(page);expect(contexts.some(c=>!c.lost)).toBe(true);await page.getByRole('button',{name:/End run \+ surface/}).click();
+  await expect(page.getByRole('dialog',{name:'End of dive',exact:true})).toBeVisible();await page.getByRole('button',{name:/Pick different species/}).click();
   await expect(page.getByRole('heading',{name:'Last dive',exact:true})).toBeVisible();
-  await expect(page.getByRole('combobox',{name:'Mode',exact:true})).toBeVisible();
+  await expect(page.getByRole('combobox',{name:'Dive mode',exact:true})).toBeVisible();
   await expect(page.getByRole('combobox',{name:'Graphics',exact:true})).toBeVisible();
   await expect(page.getByRole('spinbutton',{name:'World seed',exact:true})).toBeVisible();
   await expect.poll(async()=>(await harness.glContexts(page)).filter(c=>!c.lost).length).toBe(0);

@@ -1056,6 +1056,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // An exhaust plume spreads until its pressure matches the air around it, so it
   // balloons as the air thins: over twice as wide by Max Q, 3.5 times in near-vacuum.
   function mmPlumeGrow(altKm) { return 1 + 2.5 * (1 - Math.sqrt(mmAirAbove(Math.max(0, altKm)))); }
+  // Schematic exhaust driven by the flight sample, never by spacecraft speed.
+  // Three columns project the five-engine cross: the middle column combines
+  // front, center and rear engines, so it dims (3 -> 2) at center-engine cutoff.
+  // Expansion and radiance are bounded teaching visuals, not a nozzle-flow model.
+  function mmLaunchPlumeGeometry(sample, scale, seconds) {
+    if (!sample || !Number.isFinite(scale) || scale <= 0 || !Number.isFinite(seconds) ||
+        ![1, 2, 3].includes(sample.stage) || !Number.isFinite(sample.pressure) || sample.pressure < 0 ||
+        !Number.isFinite(sample.thrust) || sample.thrust < 0 || !Number.isInteger(sample.engineCount)) return null;
+    var stageData = MM_LAUNCH.stages[sample.stage - 1], engines = sample.engineCount;
+    if (engines < 0 || engines > stageData.engines || (engines > 0 && sample.stage < 3 && engines < 3)) return null;
+    var fuel = sample.stage === 1 ? 'kerosene' : 'hydrogen';
+    var ambientRatio = Math.max(0, Math.min(1, sample.pressure / 101325));
+    var expansion = 1 + 2.5 * (1 - Math.sqrt(ambientRatio));
+    var active = seconds >= 0 && sample.engineOn === true && engines > 0 && sample.thrust > 0;
+    var power = active ? Math.max(0, Math.min(1, (sample.thrust / engines) / (stageData.vacuumThrust / stageData.engines))) : 0;
+    var bell = MM_SATURN_BELLS[sample.stage === 1 ? 's1' : sample.stage === 2 ? 's2' : 's4b'];
+    var mouthHalfWidth = bell[1] * scale / 2;
+    var pulse = 1 + 0.018 * Math.sin(seconds * 13.1) + 0.012 * Math.sin(seconds * 23.7 + 0.8);
+    var length = scale * (fuel === 'kerosene' ? 46 : 34) * (0.35 + 0.65 * Math.sqrt(power)) * (1 + 0.22 * (expansion - 1)) * pulse;
+    var tailHalfWidth = mouthHalfWidth * (1.8 + 2.4 * (expansion - 1));
+    var singleOpacity = (fuel === 'kerosene' ? 0.46 : 0.12) * power / Math.sqrt(expansion);
+    var coreSingleOpacity = (fuel === 'kerosene' ? 0.68 : 0.21) * power / Math.sqrt(expansion);
+    var offsets = sample.stage === 3 ? [0] : [-0.33 * MM_LAUNCH.diameter * scale, 0, 0.33 * MM_LAUNCH.diameter * scale];
+    if (![mouthHalfWidth, length, tailHalfWidth].concat(offsets).every(Number.isFinite)) return null;
+    var jets = active ? offsets.map(function(x, index) {
+      var weight = sample.stage === 3 ? 1 : index === 1 ? engines - 2 : 1;
+      return { x: x, weight: weight, mouthHalfWidth: mouthHalfWidth, tailHalfWidth: tailHalfWidth, length: length,
+        opacity: 1 - Math.pow(1 - singleOpacity, weight), coreOpacity: 1 - Math.pow(1 - coreSingleOpacity, weight) };
+    }) : [];
+    return { active: active, stage: sample.stage, fuel: fuel, engineCount: active ? engines : 0,
+      ambientRatio: ambientRatio, expansion: expansion, power: power, mouthHalfWidth: mouthHalfWidth,
+      length: active ? length : 0, tailHalfWidth: active ? tailHalfWidth : 0,
+      singleOpacity: singleOpacity, coreSingleOpacity: coreSingleOpacity,
+      trailOpacity: active && fuel === 'kerosene' ? 0.16 * Math.sqrt(ambientRatio) * power : 0,
+      jets: jets };
+  }
+  function mmDrawLaunchPlume(ctx, cx, nozzle, geometry) {
+    if (!ctx || !geometry || !Number.isFinite(cx) || !Number.isFinite(nozzle)) return null;
+    if (!geometry.active) return geometry;
+    var g = geometry, kero = g.fuel === 'kerosene';
+    if (!Array.isArray(g.jets) || !g.jets.length || !Number.isFinite(g.length) || !Number.isFinite(g.tailHalfWidth) ||
+        !Number.isFinite(nozzle + g.length * 5) || !g.jets.every(function(jet) {
+          return jet && [jet.x, jet.mouthHalfWidth, jet.tailHalfWidth, jet.length, jet.opacity, jet.coreOpacity,
+            cx + jet.x - jet.tailHalfWidth, cx + jet.x + jet.tailHalfWidth, nozzle + jet.length].every(Number.isFinite);
+        }) || !Number.isFinite(Math.abs(cx) + (Math.abs(g.jets[0].x) + g.tailHalfWidth * 0.7) * 2.6)) return null;
+    ctx.save();
+    // The caller's alpha, transform, clipping and compositing remain in force.
+    function gradient(x, y0, y1, stops) {
+      var paint = typeof ctx.createLinearGradient === 'function' ? ctx.createLinearGradient(x, y0, x, y1) : null;
+      if (paint && typeof paint.addColorStop === 'function') {
+        stops.forEach(function(stop) { paint.addColorStop(stop[0], stop[1]); });
+        return paint;
+      }
+      return stops[0][1];
+    }
+    if (g.trailOpacity > 0) {
+      var trailTop = nozzle + g.length * 0.65, trailEnd = nozzle + g.length * 5;
+      var trailWidth = Math.abs(g.jets[0].x) + g.tailHalfWidth * 0.7;
+      ctx.fillStyle = gradient(cx, trailTop, trailEnd, [[0, 'rgba(205,211,220,' + g.trailOpacity + ')'], [1, 'rgba(205,211,220,0)']]);
+      ctx.beginPath(); ctx.moveTo(cx - trailWidth, trailTop); ctx.lineTo(cx + trailWidth, trailTop);
+      ctx.bezierCurveTo(cx + trailWidth * 1.3, trailTop + g.length, cx + trailWidth * 2.4, trailEnd - g.length, cx + trailWidth * 2.6, trailEnd);
+      ctx.lineTo(cx - trailWidth * 2.6, trailEnd);
+      ctx.bezierCurveTo(cx - trailWidth * 2.4, trailEnd - g.length, cx - trailWidth * 1.3, trailTop + g.length, cx - trailWidth, trailTop);
+      ctx.closePath(); ctx.fill();
+    }
+    g.jets.forEach(function(jet) {
+      var x = cx + jet.x, mouth = jet.mouthHalfWidth, wide = jet.tailHalfWidth, end = nozzle + jet.length;
+      ctx.fillStyle = gradient(x, nozzle, end, [
+        [0, kero ? 'rgba(255,120,0,' + jet.opacity + ')' : 'rgba(172,205,255,' + jet.opacity + ')'],
+        [0.3, kero ? 'rgba(255,162,44,' + jet.opacity * 0.76 + ')' : 'rgba(153,180,248,' + jet.opacity * 0.7 + ')'],
+        [0.75, kero ? 'rgba(238,103,38,' + jet.opacity * 0.22 + ')' : 'rgba(129,151,224,' + jet.opacity * 0.15 + ')'],
+        [1, kero ? 'rgba(225,85,30,0)' : 'rgba(129,151,224,0)']
+      ]);
+      // Finite-width exhaust fans out past each bell; no candle-like pointed tip.
+      ctx.beginPath(); ctx.moveTo(x - mouth, nozzle); ctx.lineTo(x + mouth, nozzle);
+      ctx.bezierCurveTo(x + mouth * 1.3, nozzle + jet.length * 0.12, x + wide, nozzle + jet.length * 0.58, x + wide, end);
+      ctx.lineTo(x - wide, end);
+      ctx.bezierCurveTo(x - wide, nozzle + jet.length * 0.58, x - mouth * 1.3, nozzle + jet.length * 0.12, x - mouth, nozzle);
+      ctx.closePath(); ctx.fill();
+      var coreEnd = nozzle + jet.length * (kero ? 0.64 : 0.46);
+      ctx.fillStyle = gradient(x, nozzle, coreEnd, [
+        [0, kero ? 'rgba(255,249,221,' + jet.coreOpacity + ')' : 'rgba(219,235,255,' + jet.coreOpacity + ')'],
+        [0.35, kero ? 'rgba(255,225,137,' + jet.coreOpacity * 0.65 + ')' : 'rgba(193,217,255,' + jet.coreOpacity * 0.35 + ')'],
+        [1, kero ? 'rgba(255,180,65,0)' : 'rgba(170,198,255,0)']
+      ]);
+      ctx.beginPath(); ctx.moveTo(x - mouth * 0.72, nozzle); ctx.lineTo(x + mouth * 0.72, nozzle);
+      ctx.bezierCurveTo(x + mouth, nozzle + jet.length * 0.14, x + wide * 0.28, coreEnd, x + wide * 0.3, coreEnd);
+      ctx.lineTo(x - wide * 0.3, coreEnd);
+      ctx.bezierCurveTo(x - wide * 0.28, coreEnd, x - mouth, nozzle + jet.length * 0.14, x - mouth * 0.72, nozzle);
+      ctx.closePath(); ctx.fill();
+    });
+    ctx.restore();
+    return geometry;
+  }
+
   // The trans-Earth coast readouts came from three unrelated formulas: distance fell
   // in a straight line, "closing speed" was 3,200 + p^2 * 36,700 km/h, and the clock
   // counted to 3 days. Integrating that speed over that time covers 1.1 million km,
@@ -1937,7 +2032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       }
       cache.set(ctx,mask);
     }
-    var mask=cache.get(ctx);if(!mask)return;
+    mask=cache.get(ctx);if(!mask)return;
     var co=Math.cos(bank),si=Math.sin(bank),height=surfaceY-pivotY;
     var along=-MM_DESCENT_SUN.x/MM_DESCENT_SUN.y;
     var depth=0.12*MM_DESCENT_SUN.z/MM_DESCENT_SUN.y;
@@ -3279,7 +3374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var grade = total >= 90 ? 'A+' : total >= 80 ? 'A' : total >= 70 ? 'B' : total >= 50 ? 'C' : 'D';
     return { total: total, grade: grade, parts: parts };
   }
-  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, descentFrame: mmDescentFrame, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnSurfaceNormal: mmSaturnSurfaceNormal, saturnMaterialGradient: mmSaturnMaterialGradient, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, returnView: mmReturnView, phaseLitAt: mmPhaseLitAt, entryPeakG: mmEntryPeakG, descent: MM_DESCENT, descentStep: mmDescentStep, descentFrame: mmDescentFrame, lunarGravity: mmLunarGravity, descentMass: mmDescentMass, descentGuidance: mmDescentGuidance, landingScore: mmLandingScore, earthLandPaths: mmEarthLandPaths, earthClouds: mmEarthClouds, drawEarth: drawDetailedEarth, saturnV: mmDrawSaturnV, saturnSurfaceNormal: mmSaturnSurfaceNormal, saturnMaterialGradient: mmSaturnMaterialGradient, saturnVHeight: function () { return MM_SATURN_V_H; }, moonProject: mmMoonProject, moonMaria: mmMoonMariaPaths, moonSites: function () { return MM_MOON_SITES; }, terminatorLon: function () { return MM_TERMINATOR_LON; }, craftInShadow: mmCraftInShadow, splashPose: mmSplashPose, entryState: mmEntryState, coastAt: mmCoastAt, coastSpeed: mmCoastSpeed, soundSpeed: mmSoundSpeed, dynamicPressure: mmDynamicPressure, airAbove: mmAirAbove, skyAt: mmSkyAt, plumeGrow: mmPlumeGrow, launchPlumeGeometry: mmLaunchPlumeGeometry, drawLaunchPlume: mmDrawLaunchPlume, equalPull: function () { return MM_EQUAL_PULL; } }); } catch (e) {}
 
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
@@ -5048,7 +5143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var labels = opts.labels !== false, selected = mmLunarAtlasSite(opts.site), selectedSite = MM_MOON_SITES.filter(function(s) { return s.m === selected; })[0];
     var radius = Math.min((H - 100) / 2, (W - 36) / 2), cx = W / 2, cy = H / 2 + 4;
     ctx.save(); ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#030919'; ctx.fillRect(0, 0, W, H);
-    drawStarfield(ctx, W, H, 0, 55); drawDetailedMoon(ctx, cx, cy, radius, true); mmMoonNight(ctx, cx, cy, radius, MM_TERMINATOR_LON);
+    drawStarfield(ctx, W, H, 0, 55); drawDetailedMoon(ctx, cx, cy, radius, true); mmMoonNight(ctx, cx, cy, radius, MM_TERMINATOR_LON, { craterRelief: true });
     // Geographic graticule shares the exact orthographic projection of the sites.
     ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.clip();
     ctx.strokeStyle = 'rgba(203,213,225,0.18)'; ctx.lineWidth = 0.7;
@@ -5097,7 +5192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
     orbitalCraftLight: mmOrbitalCraftLight, orbitalCraftMaterial: mmOrbitalCraftMaterial,
     lunarOrbitSurfaceLight: mmLunarOrbitSurfaceLight, drawLunarOrbitLight: mmDrawLunarOrbitLight,
-    drawLOIScene: mmDrawLOIScene, drawLOIStack: mmDrawLOIStack, drawLunarAtlas: mmDrawLunarAtlas, lunarLight: mmLunarLight, lunarSurfaceLight: mmLunarSurfaceLight, lunarAtlasSite: mmLunarAtlasSite, lunarSeas: mmLunarSeas, drawLunarLighting: mmMoonNight
+    drawLOIScene: mmDrawLOIScene, drawLOIStack: mmDrawLOIStack, drawLunarAtlas: mmDrawLunarAtlas, lunarLight: mmLunarLight, lunarSurfaceLight: mmLunarSurfaceLight, lunarBowlLight: mmLunarBowlLight, lunarCraterRelief: mmLunarCraterRelief, lunarAtlasSite: mmLunarAtlasSite, lunarSeas: mmLunarSeas, drawLunarLighting: mmMoonNight
   }); } catch (e) {}
 
   var _mmTransitPictureBounds = typeof WeakMap === 'function' ? new WeakMap() : null;
@@ -5590,6 +5685,1126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return gradient;
   }
 
+  // Launch is a teaching side view. Keep the Sun at a fixed direction under
+  // width changes; its disc is an angular-size guide for a nominal 60-degree
+  // vertical field. Haze and optical glare are illustrative display exposure.
+  // The same nominal focal scale as the Sun; width changes crop a level view.
+  // Horizon rays are tangent to the flight model's spherical Earth.
+  function mmLaunchHorizonGeometry(altitude, W, H) {
+    if (![W, H].every(mmNum) || W <= 0 || H <= 0) return null;
+    var h = mmNum(altitude) ? Math.max(0, altitude) : 0, R = MM_LAUNCH.radius;
+    var q = h / R, tangent = Math.sqrt(q) * Math.sqrt(q + 2);
+    var g = { width: W, height: H, altitude: h, radius: R, focal: H / (2 * Math.tan(Math.PI / 6)),
+      eyeY: H * 0.6, fieldDegrees: 60, tangent: tangent, dipDegrees: Math.atan(tangent) / MM_DEG, earth: [] };
+    if (![g.focal, g.eyeY, tangent].every(mmNum) || g.focal <= 0) return null;
+    var segments = Math.min(1024, Math.max(16, 2 * Math.ceil((W + 40) / 32)));
+    for (var i = 0; i <= segments; i++) {
+      var x = -20 + (W + 40) * (i / segments), y = mmLaunchHorizonAt(g, x);
+      if (![x, y].every(mmNum)) return null;
+      g.earth.push({ x: x, y: y });
+    }
+    return g;
+  }
+  function mmLaunchHorizonAt(g, x) {
+    if (!g || !mmNum(x)) return null;
+    return g.eyeY + g.tangent * Math.hypot(g.focal, x - g.width / 2);
+  }
+  function mmLaunchHorizonPath(ctx, g, close, offset) {
+    if (!ctx || !g || !g.earth || !g.earth.length) return false;
+    offset = mmNum(offset) ? offset : 0;
+    var points = g.earth;
+    ctx.beginPath();
+    points.forEach(function (p, i) { if (i) ctx.lineTo(p.x, p.y + offset); else ctx.moveTo(p.x, p.y + offset); });
+    if (close) {
+      var first = points[0], last = points[points.length - 1];
+      var bottom = Math.max(g.height + 20, first.y + offset + 20, last.y + offset + 20);
+      ctx.lineTo(last.x, bottom); ctx.lineTo(first.x, bottom); ctx.closePath();
+    }
+    return true;
+  }
+  // Width and brightness of this glow are illustrative exposure, not a
+  // physical atmospheric thickness or an integrated scattering calculation.
+  function mmDrawLaunchHorizonGlow(ctx, g, exposure) {
+    if (!ctx || !g) return null;
+    exposure = mmNum(exposure) ? Math.max(0, Math.min(1, exposure)) : 0;
+    var inherited = mmNum(ctx.globalAlpha) ? Math.max(0, Math.min(1, ctx.globalAlpha)) : 1;
+    if (exposure === 0 || inherited === 0) return g;
+    ctx.save(); ctx.globalAlpha = 1;
+    var previous = 0, bands = 24;
+    for (var i = 1; i <= bands; i++) {
+      var target = 0.9 * exposure * inherited * i / bands;
+      var alpha = (target - previous) / (1 - previous);
+      ctx.fillStyle = 'rgba(147,197,253,' + alpha + ')';
+      mmLaunchHorizonPath(ctx, g, true, -g.height * 0.05 * (1 - i / bands)); ctx.fill();
+      previous = target;
+    }
+    ctx.restore(); return g;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchHorizonGeometry: mmLaunchHorizonGeometry, launchHorizonAt: mmLaunchHorizonAt,
+    launchHorizonPath: mmLaunchHorizonPath, drawLaunchHorizonGlow: mmDrawLaunchHorizonGlow
+  }); } catch (e) {}
+
+  // Spherical exponential air column, integrated only inside a finite shell.
+  // Rayleigh-like color and fixed exposure are illustrative; sunlight attenuation,
+  // aerosols, multiple scattering, refraction and weather are not simulated.
+  var MM_LAUNCH_AIR = { radius: 6371000, top: 120000, scaleHeight: 8000,
+    coefficients: [0.0000069, 0.0000135, 0.0000301] };
+  function mmLaunchAtmosphereColumn(altitude, mu) {
+    if (![altitude, mu].every(Number.isFinite) || altitude < 0 || altitude > 1000000 || mu < -1 || mu > 1) return null;
+    var A = MM_LAUNCH_AIR, D = A.radius + altitude, b = D * mu;
+    var tangentMu = -Math.sqrt(altitude * (2 * A.radius + altitude)) / D;
+    var blocked = mu < tangentMu - 1e-14;
+    var result = { altitude: altitude, mu: mu, blocked: blocked, entry: 0, exit: 0, column: 0,
+      transmission: blocked ? [0, 0, 0] : [1, 1, 1], samples: 0 };
+    if (blocked) return result;
+    var outer = A.radius + A.top, impactSquared = D * D * (1 - mu * mu);
+    var discriminant = outer * outer - impactSquared;
+    if (discriminant <= 0) return result;
+    var root = Math.sqrt(discriminant), entry = Math.max(0, -b - root), end = -b + root;
+    if (end <= entry) return result;
+    result.entry = entry; result.exit = end;
+    var nearest = Math.max(entry, Math.min(end, -b)), impact = Math.sqrt(Math.max(0, impactSquared));
+    // Two intervals concentrate quadrature near the densest point of the path.
+    [entry - nearest, end - nearest].forEach(function (length) {
+      if (length === 0) return;
+      for (var i = 0; i < 32; i++) {
+        var u0 = i / 32, u1 = (i + 1) / 32;
+        var s0 = nearest + length * u0 * u0, s1 = nearest + length * u1 * u1;
+        var height = Math.max(0, Math.hypot(impact, (s0 + s1) * 0.5 + b) - A.radius);
+        result.column += Math.exp(-height / A.scaleHeight) * Math.abs(s1 - s0);
+        result.samples++;
+      }
+    });
+    result.transmission = A.coefficients.map(function (beta) { return Math.exp(-beta * result.column); });
+    return result;
+  }
+  function mmLaunchAtmosphereCamera(altitude, W, H) {
+    if (![altitude, W, H].every(Number.isFinite) || altitude < 0 || altitude > 1000000 ||
+        W <= 0 || H <= 0 || W > 8192 || H > 8192) return null;
+    var focal = H * Math.sqrt(3) / 2;
+    if (focal === 0 || !Number.isFinite(1 / focal) || !Number.isFinite(W / focal)) return null;
+    var D = MM_LAUNCH_AIR.radius + altitude;
+    return { altitude: altitude, width: W, height: H, focal: focal, eyeY: H * 0.6,
+      minMu: altitude === 0 ? 0 : -Math.sqrt(altitude * (2 * MM_LAUNCH_AIR.radius + altitude)) / D };
+  }
+  function mmLaunchAtmosphereShade(direction, column, blocked) {
+    var sunLength = Math.hypot(0.2, 0.47, Math.sqrt(3) / 2);
+    var cosine = (direction[0] * 0.2 + direction[1] * 0.47 + direction[2] * Math.sqrt(3) / 2) / sunLength;
+    var phase = 0.75 * (1 + cosine * cosine);
+    var transmission = MM_LAUNCH_AIR.coefficients.map(function (beta) { return Math.exp(-beta * column); });
+    // Composite contrast is a teaching exposure, distinct from transmission.
+    // Bright air hides stars locally; the high-altitude sky retains them.
+    var opacity = blocked ? 1 : -Math.expm1(-column * 0.0015);
+    var base = [2, 4, 14], ceiling = [165, 198, 239], rgb = [];
+    for (var c = 0; c < 3; c++) {
+      var signal = Math.pow(1 - Math.exp(-(1 - transmission[c]) * phase * 1.6), 1 / 2.2);
+      rgb[c] = base[c] + (ceiling[c] - base[c]) * signal;
+      opacity = Math.max(opacity, (rgb[c] - base[c]) / (255 - base[c]));
+    }
+    var alpha = Math.max(0, Math.min(1, opacity));
+    var rgba = rgb.map(function (v, c) { return alpha > 0 ? Math.round(Math.max(0, Math.min(255, (v - base[c] * (1 - alpha)) / alpha))) : 0; });
+    rgba.push(Math.round(alpha * 255));
+    return { phase: phase, opacity: alpha, transmission: transmission, rgba: rgba };
+  }
+  function mmLaunchAtmospherePoint(altitude, W, H, x, y) {
+    var camera = mmLaunchAtmosphereCamera(altitude, W, H);
+    if (!camera || ![x, y].every(Number.isFinite) || x < 0 || x > W || y < 0 || y > H) return null;
+    var direction = [(x - W / 2) / camera.focal, (camera.eyeY - y) / camera.focal, 1];
+    var norm = Math.hypot.apply(Math, direction);
+    if (!Number.isFinite(norm) || norm === 0) return null;
+    direction = direction.map(function (v) { return v / norm; });
+    var ray = mmLaunchAtmosphereColumn(altitude, direction[1]);
+    // Earth is painted later. Extend tangent color underneath it to avoid a
+    // transparent seam when the bounded image is magnified at the curved limb.
+    var colorColumn = ray.blocked ? mmLaunchAtmosphereColumn(altitude, camera.minMu).column : ray.column;
+    return Object.assign({ direction: direction, mu: direction[1], column: ray.column, blocked: ray.blocked },
+      mmLaunchAtmosphereShade(direction, colorColumn, ray.blocked), { transmission: ray.transmission });
+  }
+  function mmLaunchAtmosphereGeometry(altitude, W, H) {
+    var camera = mmLaunchAtmosphereCamera(altitude, W, H); if (!camera) return null;
+    var field = { altitude: altitude, width: W, height: H, columns: Math.min(256, Math.max(1, Math.ceil(W / 3))),
+      rows: Math.min(200, Math.max(1, Math.ceil(H / 2))), minMu: camera.minMu, maxMu: 1, profile: [] };
+    // Radial symmetry makes the air column depend only on ray elevation.
+    // Quadratic spacing resolves the narrow bright limb without a full ray march
+    // per pixel. At most 192 columns of air and 51,200 color pixels are computed.
+    for (var i = 0; i < 192; i++) {
+      var u = i / 191, mu = i === 191 ? 1 : camera.minMu + (1 - camera.minMu) * u * u;
+      var ray = mmLaunchAtmosphereColumn(altitude, mu);
+      field.profile.push({ mu: mu, column: ray.column });
+    }
+    // A small color table avoids per-pixel exponential/power evaluations.
+    // Store premultiplied colors so interpolation cannot create bright fringes.
+    var colors = new Float32Array(192 * 8 * 4);
+    for (var p = 0; p < 192; p++) {
+      for (var angle = 0; angle < 8; angle++) {
+        var phase = 0.75 + 0.75 * angle / 7;
+        var transmission = MM_LAUNCH_AIR.coefficients.map(function (beta) { return Math.exp(-beta * field.profile[p].column); });
+        var alpha = -Math.expm1(-field.profile[p].column * 0.0015), rgb = [], base = [2, 4, 14], ceiling = [165, 198, 239];
+        for (var channel = 0; channel < 3; channel++) {
+          var signal = Math.pow(1 - Math.exp(-(1 - transmission[channel]) * phase * 1.6), 1 / 2.2);
+          rgb[channel] = base[channel] + (ceiling[channel] - base[channel]) * signal;
+          alpha = Math.max(alpha, (rgb[channel] - base[channel]) / (255 - base[channel]));
+        }
+        var offset = (p * 8 + angle) * 4;
+        for (var channel = 0; channel < 3; channel++) colors[offset + channel] = rgb[channel] - base[channel] * (1 - alpha);
+        colors[offset + 3] = alpha;
+      }
+    }
+    field.pixels = new Uint8ClampedArray(field.columns * field.rows * 4);
+    var sunLength = Math.hypot(0.2, 0.47, Math.sqrt(3) / 2), sx = 0.2 / sunLength, sy = 0.47 / sunLength, sz = Math.sqrt(3) / 2 / sunLength;
+    for (var row = 0; row < field.rows; row++) {
+      var y = (row + 0.5) * H / field.rows, dy = (camera.eyeY - y) / camera.focal;
+      for (var col = 0; col < field.columns; col++) {
+        var x = (col + 0.5) * W / field.columns, dx = (x - W / 2) / camera.focal;
+        var norm = Math.hypot(dx, dy, 1), mu = dy / norm;
+        var blocked = mu < camera.minMu, t = Math.sqrt(Math.max(0, Math.min(1, (mu - camera.minMu) / (1 - camera.minMu)))) * 191;
+        var a = Math.min(190, Math.floor(t)), weight = t - a;
+        var cosine = (dx * sx + dy * sy + sz) / norm, phaseIndex = Math.min(7, Math.max(0, cosine * cosine * 7));
+        var phaseA = Math.min(6, Math.floor(phaseIndex)), phaseWeight = phaseIndex - phaseA;
+        var o0 = (a * 8 + phaseA) * 4, o1 = o0 + 32, index = (row * field.columns + col) * 4;
+        var alpha = 0;
+        for (var channel = 3; channel >= 0; channel--) {
+          var low = colors[o0 + channel] * (1 - phaseWeight) + colors[o0 + 4 + channel] * phaseWeight;
+          var high = colors[o1 + channel] * (1 - phaseWeight) + colors[o1 + 4 + channel] * phaseWeight;
+          var value = low * (1 - weight) + high * weight;
+          if (channel === 3) { alpha = value; field.pixels[index + 3] = blocked ? 255 : Math.round(alpha * 255); }
+          else field.pixels[index + channel] = alpha > 0 ? Math.round(value / alpha) : 0;
+        }
+      }
+    }
+    return field;
+  }
+  function mmDrawLaunchAtmosphere(ctx, field) {
+    if (!ctx || !ctx.canvas || !field || ctx.globalAlpha === 0 || ![field.width, field.height].every(Number.isFinite) ||
+        field.width <= 0 || field.height <= 0 || field.width > 8192 || field.height > 8192 ||
+        !Number.isInteger(field.columns) || !Number.isInteger(field.rows) || field.columns < 1 || field.columns > 256 ||
+        field.rows < 1 || field.rows > 200 || !(field.pixels instanceof Uint8ClampedArray) ||
+        field.pixels.length !== field.columns * field.rows * 4 || typeof ctx.drawImage !== 'function') return null;
+    var cache = ctx.canvas._mmLaunchAtmosphereRaster;
+    if (!cache) {
+      var doc = ctx.canvas.ownerDocument || (typeof document !== 'undefined' ? document : null);
+      if (!doc || typeof doc.createElement !== 'function') return null;
+      var canvas = doc.createElement('canvas'), raster = canvas.getContext('2d'); if (!raster) return null;
+      cache = { canvas: canvas, context: raster, field: null }; ctx.canvas._mmLaunchAtmosphereRaster = cache;
+    }
+    if (cache.field !== field) {
+      if (cache.canvas.width !== field.columns) cache.canvas.width = field.columns;
+      if (cache.canvas.height !== field.rows) cache.canvas.height = field.rows;
+      var data = cache.context.createImageData(field.columns, field.rows); data.data.set(field.pixels);
+      cache.context.putImageData(data, 0, 0); cache.field = field;
+    }
+    ctx.save(); ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(cache.canvas, 0, 0, field.width, field.height);
+    ctx.restore(); return field;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchAtmosphereColumn: mmLaunchAtmosphereColumn, launchAtmospherePoint: mmLaunchAtmospherePoint,
+    launchAtmosphereGeometry: mmLaunchAtmosphereGeometry, drawLaunchAtmosphere: mmDrawLaunchAtmosphere
+  }); } catch (e) {}
+
+
+  // Fixed, varied cumulus silhouettes. Smooth lobes rise from a common body;
+  // one outline prevents overlapping translucent discs from showing through.
+  // Shapes, placement and shading are illustrative, not reconstructed weather.
+  var _mmLaunchCloudShapes = {};
+  function mmLaunchCloudGeometry(seed) {
+    if (!Number.isInteger(seed) || seed < 0 || seed > 2147483647) return null;
+    // Five visual variants keep the cache bounded for every caller.
+    seed = seed % 5;
+    if (_mmLaunchCloudShapes[seed]) return _mmLaunchCloudShapes[seed];
+    function variation(i) { var n = Math.sin((seed + 1) * 17.13 + i * 43.71) * 43758.5453; return n - Math.floor(n); }
+    var lobes = [{ x: 0, y: 0.16, rx: 2.4, ry: 0.48 }];
+    [-1.5, -0.62, 0.35, 1.4].forEach(function(x, i) {
+      var primary = i === 1 + seed % 2, inner = i === 1 || i === 2;
+      var center = x + (variation(i + 12) - 0.5) * 0.18;
+      // One broad rising crest and lower shoulders avoid a regular ridge.
+      var rx = Math.min(2.35 - Math.abs(center), 0.68 + variation(i + 1) * 0.16 + (primary ? 0.3 : inner ? 0.15 : 0));
+      var ry = 0.5 + variation(i + 7) * 0.24 + (primary ? 0.5 : inner ? 0.18 : 0);
+      lobes.push({ x: center,
+        y: 0.34 - ry * (0.78 + variation(i + 19) * 0.24), rx: rx, ry: ry });
+    });
+    var top = [], bottom = [], minY = Infinity, baseY = 0.44;
+    for (var i = 0; i <= 128; i++) {
+      var x = -2.4 + 4.8 * i / 128;
+      var bodyHeight = 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4)));
+      var bodyTop = 0.16 - bodyHeight, upper = bodyTop, lower = 0.16 + bodyHeight;
+      lobes.slice(1).forEach(function(lobe) {
+        var q = (x - lobe.x) / lobe.rx;
+        if (Math.abs(q) >= 1) return;
+        // Each crest fades back into the body at its sides, avoiding a step
+        // where an elevated ellipse would first enter the outer envelope.
+        var centerTop = 0.16 - 0.48 * Math.sqrt(1 - (lobe.x / 2.4) * (lobe.x / 2.4));
+        var height = Math.max(0.1, centerTop - (lobe.y - lobe.ry));
+        upper = Math.min(upper, bodyTop - height * Math.pow(1 - q * q, 1.15));
+      });
+      top.push(Object.freeze({ x: x, y: upper }));
+      bottom.push(Object.freeze({ x: x, y: Math.min(baseY, lower) }));
+      minY = Math.min(minY, upper);
+    }
+    var shape = Object.freeze({ seed: seed, lobes: Object.freeze(lobes.map(Object.freeze)),
+      top: Object.freeze(top), bottom: Object.freeze(bottom), minX: -2.4, maxX: 2.4,
+      minY: minY, maxY: baseY, baseY: baseY });
+    _mmLaunchCloudShapes[seed] = shape; return shape;
+  }
+  function mmLaunchCloudPath(ctx, geometry) {
+    ctx.beginPath(); ctx.moveTo(geometry.top[0].x, geometry.top[0].y);
+    geometry.top.slice(1).forEach(function(point) { ctx.lineTo(point.x, point.y); });
+    for (var i = geometry.bottom.length - 1; i >= 0; i--) ctx.lineTo(geometry.bottom[i].x, geometry.bottom[i].y);
+    ctx.closePath();
+  }
+  function mmDrawLaunchCloud(ctx, x, y, size, seed, light) {
+    var geometry = mmLaunchCloudGeometry(seed);
+    if (!ctx || !geometry || ![x, y, size].every(Number.isFinite) || size <= 0 ||
+        ![x - size * 3, x + size * 3, y - size * 3, y + size].every(Number.isFinite)) return null;
+    light = light || mmLaunchSunlight(0);
+    if (![light.x, light.y].every(Number.isFinite)) return null;
+    var length = Math.hypot(light.x, light.y);
+    if (!Number.isFinite(length) || length <= 0) return null;
+    var lx = light.x / length, ly = light.y / length;
+    var result = { x: x, y: y, size: size, geometry: geometry, light: { x: lx, y: ly } };
+    if (ctx.globalAlpha === 0) return result;
+    function gradient(kind, args, stops, fallback) {
+      var value = typeof ctx[kind] === 'function' ? ctx[kind].apply(ctx, args) : null;
+      if (!value || typeof value.addColorStop !== 'function') return fallback;
+      stops.forEach(function(stop) { value.addColorStop(stop[0], stop[1]); }); return value;
+    }
+    ctx.save(); ctx.translate(x, y); ctx.scale(size, size);
+    // A narrow antialiased fringe softens the outline without a broad glow.
+    mmLaunchCloudPath(ctx, geometry);
+    ctx.lineJoin = 'round'; ctx.lineWidth = 0.075;
+    ctx.strokeStyle = 'rgba(221,233,243,0.14)'; ctx.stroke();
+    var low = Infinity, high = -Infinity;
+    geometry.top.concat(geometry.bottom).forEach(function(p) { var t = p.x * lx + p.y * ly; low = Math.min(low, t); high = Math.max(high, t); });
+    ctx.fillStyle = gradient('createLinearGradient', [lx * high, ly * high, lx * low, ly * low], [
+      [0, 'rgba(255,253,244,0.98)'], [0.32, 'rgba(242,247,250,0.98)'],
+      [0.68, 'rgba(192,208,224,0.98)'], [1, 'rgba(137,160,185,0.98)']
+    ], '#e6edf3');
+    ctx.fill(); ctx.clip();
+    // Soft interior lobes merge into the common silhouette. Their gradients
+    // fade to zero instead of adding hard circular boundaries inside the cloud.
+    geometry.lobes.slice(1).forEach(function(lobe) {
+      var radius = Math.max(lobe.rx, lobe.ry) * 1.35, hx = lobe.x + lx * lobe.rx * 0.28, hy = lobe.y + ly * lobe.ry * 0.28;
+      var highlight = gradient('createRadialGradient', [hx, hy, 0, hx, hy, radius], [
+        [0, 'rgba(255,255,252,0.3)'], [0.42, 'rgba(250,252,255,0.16)'], [1, 'rgba(246,250,255,0)']
+      ], null);
+      if (highlight) { ctx.fillStyle = highlight; ctx.fillRect(hx - radius, hy - radius, radius * 2, radius * 2); }
+    });
+    ctx.fillStyle = gradient('createLinearGradient', [0, 0.05, 0, geometry.baseY], [
+      [0, 'rgba(92,116,144,0)'], [1, 'rgba(92,116,144,0.18)']
+    ], 'rgba(92,116,144,0.05)');
+    ctx.fillRect(geometry.minX, 0.05, geometry.maxX - geometry.minX, geometry.baseY - 0.05);
+    ctx.restore(); return result;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchCloudGeometry: mmLaunchCloudGeometry, drawLaunchCloud: mmDrawLaunchCloud
+  }); } catch (e) {}
+
+
+  // Illustrative exhaust and condensation from the flame trench. The field
+  // is evaluated at simulation time, so seeking never accumulates particles.
+  function mmLaunchGroundExhaustGeometry(time, width, height, altitude, engineOn) {
+    if (![time, width, height, altitude].every(Number.isFinite) || time < 0 || altitude < 0 ||
+        width <= 0 || height <= 0 || width > 1000000 || height > 1000000 ||
+        (engineOn !== undefined && typeof engineOn !== 'boolean')) return null;
+    var age = Math.min(time, 90), growth = 1 - Math.exp(-age / 6), scale = height / 400;
+    var x = width * 0.5, y = height * 0.8 + altitude * 1.2 / 9.25;
+    if (![x, y, scale].every(Number.isFinite)) return null;
+    var span = 20 + 240 * growth, top = [], bottom = [], billows = [];
+    var onset = Math.min(1, time / 1.2); onset = onset * onset * (3 - 2 * onset);
+    var opacity = 0.9 * onset * Math.exp(-Math.max(0, time - 12) / 24);
+    var heat = engineOn === false ? 0 : onset * Math.exp(-altitude / 100);
+    [-1, 1].forEach(function(side) {
+      [0.25, 0.52, 0.78].forEach(function(u, i) {
+        var phase = age * (0.35 + i * 0.04) + i * 2.1 + side * 0.9;
+        var center = u + Math.sin(phase) * 0.025 * growth;
+        // Keep every crest inside the common body as its center rolls outward.
+        billows.push({ x: side * span * center, radius: span * Math.min(0.15 + i * 0.025, 0.98 - center),
+          rise: (8 + i * 6 + Math.sin(phase + 1.1) * 3) * growth,
+          phase: phase });
+      });
+    });
+    var minY = 0, maxY = 0;
+    for (var i = 0; i <= 160; i++) {
+      // Keep the joined endpoints exact despite subtraction roundoff.
+      var px = i === 0 ? -span : i === 160 ? span : -span + span * 2 * i / 160, u = px / span;
+      var envelope = Math.sqrt(Math.max(0, 1 - u * u));
+      var rise = (6 + growth * 12) * envelope;
+      billows.forEach(function(billow) {
+        var q = (px - billow.x) / billow.radius;
+        if (Math.abs(q) < 1) rise += billow.rise * Math.pow(1 - q * q, 1.4);
+      });
+      var low = (5 + 8 * growth + 2 * growth * Math.sin(u * 8 + age * 0.25)) * envelope;
+      top.push({ x: px, y: -rise }); bottom.push({ x: px, y: low });
+      minY = Math.min(minY, -rise); maxY = Math.max(maxY, low);
+    }
+    var visible = opacity > 0.001 && y + (minY - 8) * scale < height && time < 90;
+    return { time: time, x: x, y: y, scale: scale, span: span, growth: growth,
+      opacity: opacity, heat: heat, minY: minY, maxY: maxY, visible: visible,
+      top: top, bottom: bottom, billows: billows };
+  }
+  function mmDrawLaunchGroundExhaust(ctx, geometry) {
+    if (!ctx || !geometry || !geometry.visible || ctx.globalAlpha === 0) return null;
+    var g = geometry;
+    if (![g.x, g.y, g.scale, g.span, g.opacity, g.heat, g.minY, g.maxY].every(Number.isFinite) ||
+        g.scale <= 0 || g.span <= 0 || g.opacity <= 0 || g.opacity > 1 || g.heat < 0 || g.heat > 1 ||
+        !Array.isArray(g.top) || !Array.isArray(g.bottom) || !Array.isArray(g.billows) ||
+        g.top.length < 2 || g.top.length !== g.bottom.length ||
+        !g.top.concat(g.bottom).every(function(p) { return p && Number.isFinite(p.x) && Number.isFinite(p.y); }) ||
+        !g.billows.every(function(b) {
+          if (!b || ![b.x, b.radius, b.rise].every(Number.isFinite) || b.radius <= 0) return false;
+          var radius = Math.max(12, b.radius * 0.9);
+          return [radius * 2, b.x - radius - 5, b.x + radius + 5,
+            -b.rise * 0.65 - radius - 5, -b.rise * 0.65 + radius + 5].every(Number.isFinite);
+        }) ||
+        ![g.x - g.span * g.scale, g.x + g.span * g.scale, g.y + g.minY * g.scale, g.y + g.maxY * g.scale].every(Number.isFinite)) return null;
+    function gradient(kind, args, stops, fallback) {
+      var value = typeof ctx[kind] === 'function' ? ctx[kind].apply(ctx, args) : null;
+      if (!value || typeof value.addColorStop !== 'function') return fallback;
+      stops.forEach(function(stop) { value.addColorStop(stop[0], stop[1]); }); return value;
+    }
+    ctx.save(); ctx.translate(g.x, g.y); ctx.scale(g.scale, g.scale);
+    ctx.globalAlpha *= g.opacity;
+    ctx.beginPath(); ctx.moveTo(g.top[0].x, g.top[0].y);
+    g.top.slice(1).forEach(function(p) { ctx.lineTo(p.x, p.y); });
+    for (var i = g.bottom.length - 1; i >= 0; i--) ctx.lineTo(g.bottom[i].x, g.bottom[i].y);
+    ctx.closePath();
+    // Thin, low-opacity fringes soften a connected silhouette without rings.
+    ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(221,230,237,0.06)'; ctx.lineWidth = 8; ctx.stroke();
+    ctx.strokeStyle = 'rgba(229,235,240,0.12)'; ctx.lineWidth = 3; ctx.stroke();
+    var light = mmLaunchSunlight(0), low = Infinity, high = -Infinity;
+    g.top.concat(g.bottom).forEach(function(p) {
+      var projection = p.x * light.x + p.y * light.y;
+      low = Math.min(low, projection); high = Math.max(high, projection);
+    });
+    ctx.fillStyle = gradient('createLinearGradient', [light.x * high, light.y * high, light.x * low, light.y * low], [
+      [0, '#f4f6f5'], [0.45, '#d9e0e5'], [1, '#9dabb7']
+    ], '#d4dde4');
+    ctx.fill(); ctx.clip();
+    g.billows.forEach(function(billow) {
+      var bx = billow.x + light.x * 5, by = -billow.rise * 0.65 + light.y * 5;
+      var radius = Math.max(12, billow.radius * 0.9);
+      var fill = gradient('createRadialGradient', [bx, by, 0, bx, by, radius], [
+        [0, 'rgba(255,255,250,0.4)'], [0.4, 'rgba(246,250,251,0.18)'], [1, 'rgba(242,247,251,0)']
+      ], null);
+      if (fill) { ctx.fillStyle = fill; ctx.fillRect(bx - radius, by - radius, radius * 2, radius * 2); }
+    });
+    if (g.heat > 0) {
+      var warm = gradient('createRadialGradient', [0, -2, 0, 0, -2, 38], [
+        [0, 'rgba(255,201,118,' + (g.heat * 0.45) + ')'],
+        [0.4, 'rgba(255,185,97,' + (g.heat * 0.2) + ')'], [1, 'rgba(255,174,80,0)']
+      ], null);
+      if (warm) { ctx.fillStyle = warm; ctx.fillRect(-38, -40, 76, 76); }
+    }
+    ctx.restore(); return g;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchGroundExhaustGeometry: mmLaunchGroundExhaustGeometry, drawLaunchGroundExhaust: mmDrawLaunchGroundExhaust
+  }); } catch (e) {}
+
+
+  // Fixed illustrative cloud footprints on the spherical Earth. The level
+  // camera uses the same focal length and observer altitude as the limb.
+  // Cloud height and weather evolution are deliberately not modeled here.
+  function mmLaunchCloudDeckGeometry(altitude, downrange, width, height) {
+    if (![altitude, downrange, width, height].every(Number.isFinite) || altitude < 0 || altitude > 1000000 ||
+        Math.abs(downrange) > 100000000 || width <= 0 || height <= 0 || width > 8192 || height > 8192) return null;
+    var fade = Math.min(1, Math.max(0, (altitude - 12000) / 38000));
+    fade = fade * fade * (3 - 2 * fade);
+    var field = { altitude: altitude, downrange: downrange, width: width, height: height, opacity: fade, patches: [] };
+    if (fade === 0) return field;
+    var R = MM_LAUNCH.radius, D = R + altitude, focal = height / (2 * Math.tan(Math.PI / 6));
+    if (height * 0.6 + focal * Math.sqrt(altitude / R * (altitude / R + 2)) > height + 4) return field;
+    var theta = downrange / R, eastStep = 260000, northStep = 240000;
+    var reach = R * Math.acos(R / D), column = Math.floor(downrange / eastStep);
+    var columns = Math.ceil(reach / eastStep) + 2, rows = Math.ceil(reach / northStep) + 1;
+    function noise(c, r, salt) {
+      var n = Math.sin(c * 127.1 + r * 311.7 + salt * 74.7) * 43758.5453;
+      return n - Math.floor(n);
+    }
+    function project(lon, lat) {
+      var cl = Math.cos(lat), X = R * cl * Math.sin(lon - theta), Y = R * cl * Math.cos(lon - theta), Z = R * Math.sin(lat);
+      var distance = Math.hypot(X, Y - D, Z), facing = D * Y / R - R;
+      if (Z <= 0 || facing <= 0) return null;
+      return { x: width / 2 + focal * X / Z, y: height * 0.6 + focal * (D - Y) / Z,
+        longitude: lon, latitude: lat, distance: distance, mu: facing / distance };
+    }
+    for (var row = 0; row < rows; row++) {
+      for (var col = column - columns; col <= column + columns; col++) {
+        var east = (col + 0.5) * eastStep + (noise(col, row, 1) - 0.5) * 110000;
+        var north = (row + 0.5) * northStep + (noise(col, row, 2) - 0.5) * 90000;
+        var lon = east / R, lat = north / R, center = project(lon, lat);
+        if (!center) continue;
+        var rx = 42000 + noise(col, row, 3) * 44000, ry = 26000 + noise(col, row, 4) * 25000;
+        var phase = noise(col, row, 5) * Math.PI * 2, points = [], minMu = 1;
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (var i = 0; i < 48; i++) {
+          var angle = i * Math.PI / 24;
+          var lobe = 1 + 0.16 * Math.sin(angle * 3 + phase) + 0.1 * Math.cos(angle * 5 - phase) + 0.055 * Math.sin(angle * 9 + phase);
+          var p = project(lon + Math.cos(angle) * rx * lobe / (R * Math.cos(lat)), lat + Math.sin(angle) * ry * lobe / R);
+          if (!p) { points = []; break; }
+          points.push({ x: p.x, y: p.y, longitude: p.longitude, latitude: p.latitude });
+          minMu = Math.min(minMu, p.mu); minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+          minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+        }
+        if (points.length !== 48 || maxX < -4 || minX > width + 4 || maxY < 0 || minY > height + 4) continue;
+        // Fade the whole footprint before any edge reaches the tangent plane.
+        // This prevents a clipped, straight cloud edge appearing at the limb.
+        var limbFade = Math.min(1, minMu / 0.055); limbFade = limbFade * limbFade * (3 - 2 * limbFade);
+        points.push({ x: points[0].x, y: points[0].y, longitude: points[0].longitude, latitude: points[0].latitude });
+        field.patches.push({ id: col + ':' + row, column: col, row: row, longitude: lon, latitude: lat,
+          x: center.x, y: center.y, minX: minX, maxX: maxX, minY: minY, maxY: maxY,
+          width: maxX - minX, height: maxY - minY, distance: center.distance, mu: center.mu, minMu: minMu,
+          opacity: fade * limbFade * (0.24 + 0.5 * Math.sqrt(center.mu)), points: points });
+      }
+    }
+    field.patches.sort(function(a, b) { return b.distance - a.distance; });
+    return field;
+  }
+  function mmDrawLaunchCloudDeck(ctx, field) {
+    if (!ctx || !field || ctx.globalAlpha === 0 || !Array.isArray(field.patches) || field.patches.length > 1024 ||
+        !field.patches.every(function(p) {
+          return p && [p.x, p.y, p.minX, p.maxX, p.minY, p.maxY, p.width, p.height, p.opacity, p.column, p.row].every(Number.isFinite) &&
+            Math.abs(p.column) <= 10000000 && Math.abs(p.row) <= 10000000 &&
+            [p.x, p.y, p.minX, p.maxX, p.minY, p.maxY].every(function(v) { return Math.abs(v) <= 10000000; }) &&
+            p.width > 0 && p.height > 0 && p.width <= 1000000 && p.height <= 1000000 && p.opacity >= 0 && p.opacity <= 1 &&
+            Array.isArray(p.points) && p.points.length === 49 && p.points.every(function(q) { return q && Number.isFinite(q.x) && Number.isFinite(q.y) && Math.abs(q.x) <= 10000000 && Math.abs(q.y) <= 10000000; });
+        })) return null;
+    function gradient(kind, args, stops, fallback) {
+      var value = typeof ctx[kind] === 'function' ? ctx[kind].apply(ctx, args) : null;
+      if (!value || typeof value.addColorStop !== 'function') return fallback;
+      stops.forEach(function(stop) { value.addColorStop(stop[0], stop[1]); }); return value;
+    }
+    var sun = mmLaunchSunlight(0);
+    field.patches.forEach(function(patch) {
+      if (patch.opacity <= 0) return;
+      ctx.save(); ctx.globalAlpha *= patch.opacity;
+      ctx.beginPath(); ctx.moveTo(patch.points[0].x, patch.points[0].y);
+      patch.points.slice(1).forEach(function(p) { ctx.lineTo(p.x, p.y); }); ctx.closePath();
+      ctx.lineJoin = 'round'; ctx.lineWidth = Math.min(1.6, Math.max(0.4, patch.height * 0.06));
+      ctx.strokeStyle = 'rgba(228,241,250,0.14)'; ctx.stroke();
+      // Emphasize the foreshortened cloud top. A gradient across its full
+      // horizontal span would erase nearly all relief at grazing angles.
+      ctx.fillStyle = gradient('createLinearGradient', [patch.x + sun.x * patch.height * 0.3, patch.minY,
+        patch.x - sun.x * patch.height * 0.3, patch.maxY], [
+        [0, '#f6faf9'], [0.3, '#dae8ef'], [0.7, '#aec6d8'], [1, '#7e9fb9']
+      ], '#d9e5ed');
+      ctx.fill(); ctx.clip();
+      // All soft detail is clipped to one body, so translucent oval seams
+      // cannot build up where the interior highlights overlap.
+      for (var i = 0; i < 9; i++) {
+        var wave = Math.sin(i * 2.3 + patch.column * 0.7 + patch.row * 1.9);
+        var hx = patch.minX + patch.width * (0.1 + i * 0.1), hy = patch.minY + patch.height * (0.35 + wave * 0.1);
+        var radius = Math.max(0.6, Math.min(patch.width * 0.2, patch.height * (0.6 + wave * 0.12)));
+        var fill = gradient('createRadialGradient', [hx, hy, 0, hx, hy, radius], [
+          [0, 'rgba(255,255,249,0.55)'], [0.4, 'rgba(247,252,255,0.24)'], [1, 'rgba(243,250,255,0)']
+        ], null);
+        if (fill) { ctx.fillStyle = fill; ctx.fillRect(hx - radius, hy - radius, radius * 2, radius * 2); }
+      }
+      ctx.restore();
+    });
+    return field;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchCloudDeckGeometry: mmLaunchCloudDeckGeometry, drawLaunchCloudDeck: mmDrawLaunchCloudDeck
+  }); } catch (e) {}
+
+
+  // A bounded surface raster shares the launch limb's finite-distance camera.
+  // The regional coast and lagoons are illustrative, not surveyed geography.
+  function mmLaunchSurfaceCamera(altitude, downrange, width, height) {
+    if (![altitude, downrange, width, height].every(Number.isFinite) || altitude < 0 || altitude > 1000000 ||
+        Math.abs(downrange) > 100000000 || width <= 0 || height <= 0 || width > 8192 || height > 8192) return null;
+    var q = altitude / MM_LAUNCH.radius, f = height * Math.sqrt(3) / 2;
+    var sunLength = Math.hypot(0.2, 0.47, Math.sqrt(3) / 2);
+    var haze = mmSkyAt(altitude / 1000).limb.match(/[\d.]+/g).map(Number);
+    return { altitude: altitude, downrange: downrange, width: width, height: height,
+      q: q, D: 1 + q, focal: f, eye: height * 0.6, tangent: Math.sqrt(q * (q + 2)),
+      sun: [0.2 / sunLength, 0.47 / sunLength, Math.sqrt(3) / 2 / sunLength], haze: haze };
+  }
+  function mmLaunchSurfaceSmooth(value) { var u = Math.max(0, Math.min(1, value)); return u * u * (3 - 2 * u); }
+  function mmLaunchWaterReflectionUnit(normal, view, sun) {
+    var nl = normal[0] * sun[0] + normal[1] * sun[1] + normal[2] * sun[2];
+    var nv = normal[0] * view[0] + normal[1] * view[1] + normal[2] * view[2];
+    var hx = sun[0] + view[0], hy = sun[1] + view[1], hz = sun[2] + view[2], length = Math.hypot(hx, hy, hz);
+    if (length < 1e-12 || nl <= 0 || nv <= 0) return { strength: 0, fresnel: 0, halfCosine: 0, sunCosine: nl, viewCosine: nv };
+    hx /= length; hy /= length; hz /= length;
+    var nh = Math.max(0, Math.min(1, normal[0] * hx + normal[1] * hy + normal[2] * hz));
+    var vh = Math.max(0, Math.min(1, view[0] * hx + view[1] * hy + view[2] * hz));
+    var fresnel = 0.0204 + 0.9796 * Math.pow(1 - vh, 5);
+    // A fixed roughness lobe broadens the reflection. Exposure and roughness
+    // are display choices; this is not a wind or wave-height simulation.
+    var lobe = nh > 0 ? Math.exp(-(1 - nh * nh) / (nh * nh * 0.0144)) : 0;
+    return { strength: Math.min(1, lobe * fresnel / 0.09), fresnel: fresnel,
+      halfCosine: nh, sunCosine: nl, viewCosine: nv };
+  }
+  function mmLaunchWaterReflection(normal, view, sun) {
+    var vectors = [normal, view, sun];
+    if (!vectors.every(function(v) { return Array.isArray(v) && v.length === 3 && v.every(Number.isFinite) && Math.hypot(v[0], v[1], v[2]) > 0 && Math.hypot(v[0], v[1], v[2]) < 1e100; })) return null;
+    vectors = vectors.map(function(v) { var length = Math.hypot(v[0], v[1], v[2]); return v.map(function(n) { return n / length; }); });
+    return mmLaunchWaterReflectionUnit(vectors[0], vectors[1], vectors[2]);
+  }
+  var MM_LAUNCH_COAST = [[0,2400],[15000,-4000],[45000,-20000],[100000,-45000],[200000,-80000],
+    [320000,-90000],[450000,-20000],[650000,100000],[1000000,320000],[2000000,650000],[4000000,1100000]];
+  function mmLaunchSurfaceAt(camera, x, y) {
+    var c = camera;
+    if (!c || c.q === 0 || !Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > c.width || y < 0 || y > c.height) return null;
+    var dx = (x - c.width / 2) / c.focal, dy = (c.eye - y) / c.focal;
+    var a = dx * dx + dy * dy + 1, b = 2 * c.D * dy, constant = c.q * (c.q + 2);
+    var discriminant = b * b - 4 * a * constant;
+    if (![a, b, discriminant].every(Number.isFinite) || b >= 0 || discriminant < 0) return null;
+    // Stable near root avoids cancellation while climbing close to the pad.
+    var t = 2 * constant / (-b + Math.sqrt(discriminant));
+    var normal = [dx * t, c.D + dy * t, t], rayLength = Math.sqrt(a);
+    var view = [-dx / rayLength, -dy / rayLength, -1 / rayLength];
+    var longitude = Math.atan2(normal[0], normal[1]) + c.downrange / MM_LAUNCH.radius;
+    var latitude = Math.asin(Math.max(-1, Math.min(1, normal[2])));
+    var east = longitude * MM_LAUNCH.radius, north = latitude * MM_LAUNCH.radius;
+    var shore = MM_LAUNCH_COAST[MM_LAUNCH_COAST.length - 1][1];
+    for (var i = 1; i < MM_LAUNCH_COAST.length; i++) {
+      if (north <= MM_LAUNCH_COAST[i][0]) {
+        var p = MM_LAUNCH_COAST[i - 1], next = MM_LAUNCH_COAST[i];
+        shore = p[1] + (next[1] - p[1]) * mmLaunchSurfaceSmooth((north - p[0]) / (next[0] - p[0])); break;
+      }
+    }
+    var inland = shore - east, coastBlend = mmLaunchSurfaceSmooth((c.altitude - 1500) / 4500);
+    var coastInland = inland;
+    if (coastBlend < 1) {
+      // Morph one signed shoreline during the close-camera handoff. Fading
+      // two different land silhouettes leaves a second, ghost coastline.
+      var lift = c.altitude * 1.2 / 9.25, drop = c.height * 0.2 + lift;
+      var horizon = c.eye + c.focal * c.tangent;
+      var legacyShore = c.width / 2 + (c.width * 1.43 - lift * 0.9) * (y - horizon) / drop;
+      var legacyInland = (legacyShore - x) * MM_LAUNCH.radius * t / c.focal;
+      coastInland = legacyInland + (inland - legacyInland) * coastBlend;
+    }
+    var land = mmLaunchSurfaceSmooth((coastInland + 250) / 500);
+    var lagoonEnvelope = mmLaunchSurfaceSmooth((north - 3000) / 7000) * (1 - mmLaunchSurfaceSmooth((north - 75000) / 20000));
+    var lagoonWidth = (1800 + 900 * Math.sin(north / 16000)) * lagoonEnvelope;
+    var lagoonDistance = Math.abs(inland - (6500 + 1400 * Math.sin(north / 18000)));
+    var lagoon = lagoonWidth > 0 ? 1 - mmLaunchSurfaceSmooth((lagoonDistance - lagoonWidth + 250) / 500) : 0;
+    var inlet = (1 - mmLaunchSurfaceSmooth((Math.abs(north - 63000 + inland * 0.12) - 700) / 600)) *
+      mmLaunchSurfaceSmooth((inland + 1000) / 1000) * (1 - mmLaunchSurfaceSmooth((inland - 8000) / 3000));
+    land *= 1 - Math.max(lagoon, inlet) * coastBlend;
+    var reflection = mmLaunchWaterReflectionUnit(normal, view, c.sun);
+    var glint = reflection.strength * (1 - land), mu = Math.max(0, reflection.viewCosine);
+    var shallows = Math.exp(-Math.abs(coastInland) / 6500) * (1 - land);
+    var variation = 0.5 + 0.25 * Math.sin(east / 17000 + Math.sin(north / 31000)) + 0.25 * Math.sin(north / 11000 - east / 43000);
+    var beach = Math.exp(-Math.pow(coastInland / 800, 2)) * land;
+    var water = [20 + shallows * 12, 59 + shallows * 27, 91 + shallows * 26];
+    var ground = [58 + variation * 23 + beach * 76, 83 + variation * 20 + beach * 63, 47 + variation * 14 + beach * 49];
+    var haze = Math.exp(-mu / 0.065) * 0.94;
+    var rgba = water.map(function(value, index) {
+      var color = value + (ground[index] - value) * land;
+      color += ([239,241,226][index] - color) * glint * 0.62;
+      return Math.round(color + (c.haze[index] - color) * haze);
+    }); rgba.push(255);
+    return { normal: normal, view: view, sun: c.sun.slice(), longitude: longitude, latitude: latitude, east: east, north: north,
+      distance: MM_LAUNCH.radius * t * rayLength, mu: mu, coastBlend: coastBlend, landFraction: land, glint: glint,
+      reflection: reflection, rgba: rgba };
+  }
+  function mmLaunchSurfacePoint(altitude, downrange, width, height, x, y) {
+    return mmLaunchSurfaceAt(mmLaunchSurfaceCamera(altitude, downrange, width, height), x, y);
+  }
+  function mmLaunchSurfaceGeometry(altitude, downrange, width, height) {
+    var camera = mmLaunchSurfaceCamera(altitude, downrange, width, height); if (!camera) return null;
+    var opacity = mmLaunchSurfaceSmooth((altitude - 1500) / 100);
+    var top = Math.max(0, Math.floor(camera.eye + camera.focal * camera.tangent - 2));
+    var field = { altitude: altitude, downrange: downrange, width: width, height: height, opacity: opacity,
+      coastBlend: mmLaunchSurfaceSmooth((altitude - 1500) / 4500),
+      top: Math.min(height, top), columns: 0, rows: 0, pixels: new Uint8ClampedArray(0),
+      antialiasedPixels: new Uint8Array(0), antialiasCount: 0, landPixels: 0, waterPixels: 0, maxGlint: 0 };
+    if (opacity === 0 || top >= height) return field;
+    field.columns = Math.min(400, Math.max(1, Math.ceil(width / Math.max(1, height / 140))));
+    field.rows = Math.min(140, Math.max(1, Math.ceil((height - top) / Math.max(1, height / 140))));
+    field.pixels = new Uint8ClampedArray(field.columns * field.rows * 4);
+    field.antialiasedPixels = new Uint8Array(field.columns * field.rows);
+    var landMask = new Float32Array(field.columns * field.rows);
+    for (var row = 0; row < field.rows; row++) {
+      var y = top + (row + 0.5) * (height - top) / field.rows;
+      for (var col = 0; col < field.columns; col++) {
+        var point = mmLaunchSurfaceAt(camera, (col + 0.5) * width / field.columns, y);
+        if (!point) continue;
+        field.pixels.set(point.rgba, (row * field.columns + col) * 4);
+        landMask[row * field.columns + col] = point.landFraction;
+        if (point.landFraction >= 0.5) field.landPixels++; else field.waterPixels++;
+        field.maxGlint = Math.max(field.maxGlint, point.glint);
+      }
+    }
+    // Supersample only material boundaries. Interior water/land retains one
+    // ray per cell; four subpixel rays soften beaches and narrow lagoon edges.
+    for (var ar = 0; ar < field.rows; ar++) {
+      for (var ac = 0; ac < field.columns; ac++) {
+        var index = ar * field.columns + ac, material = landMask[index];
+        if (field.pixels[index * 4 + 3] === 0) continue;
+        var edge = material > 0.01 && material < 0.99;
+        for (var dr = -1; dr <= 1 && !edge; dr++) {
+          for (var dc = -1; dc <= 1; dc++) {
+            var nr = ar + dr, nc = ac + dc;
+            if (nr >= 0 && nr < field.rows && nc >= 0 && nc < field.columns &&
+                field.pixels[(nr * field.columns + nc) * 4 + 3] && Math.abs(material - landMask[nr * field.columns + nc]) > 0.25) edge = true;
+          }
+        }
+        if (!edge) continue;
+        var sum = [0, 0, 0], valid = 0;
+        for (var sy = 0; sy < 2; sy++) {
+          for (var sx = 0; sx < 2; sx++) {
+            var sub = mmLaunchSurfaceAt(camera, (ac + 0.25 + sx * 0.5) * width / field.columns,
+              top + (ar + 0.25 + sy * 0.5) * (height - top) / field.rows);
+            if (sub) { valid++; for (var channel = 0; channel < 3; channel++) sum[channel] += sub.rgba[channel]; }
+          }
+        }
+        if (valid === 4) {
+          for (var channel = 0; channel < 3; channel++) field.pixels[index * 4 + channel] = sum[channel] / 4;
+          field.antialiasedPixels[index] = 1; field.antialiasCount++;
+        }
+      }
+    }
+    return field;
+  }
+  function mmDrawLaunchSurface(ctx, field) {
+    if (!ctx || !ctx.canvas || !field || ctx.globalAlpha === 0 || ![field.width, field.height, field.top, field.opacity].every(Number.isFinite) ||
+        field.width <= 0 || field.height <= 0 || field.width > 8192 || field.height > 8192 || field.top < 0 || field.top >= field.height ||
+        field.opacity <= 0 || field.opacity > 1 || !Number.isInteger(field.columns) || !Number.isInteger(field.rows) ||
+        field.columns < 1 || field.columns > 400 || field.rows < 1 || field.rows > 140 ||
+        !(field.pixels instanceof Uint8ClampedArray) || field.pixels.length !== field.columns * field.rows * 4 || typeof ctx.drawImage !== 'function') return null;
+    var cache = ctx.canvas._mmLaunchSurfaceRaster;
+    if (!cache) {
+      var doc = ctx.canvas.ownerDocument || (typeof document !== 'undefined' ? document : null);
+      if (!doc || typeof doc.createElement !== 'function') return null;
+      var canvas = doc.createElement('canvas'), raster = canvas.getContext('2d'); if (!raster) return null;
+      cache = { canvas: canvas, context: raster, field: null }; ctx.canvas._mmLaunchSurfaceRaster = cache;
+    }
+    if (cache.field !== field) {
+      if (cache.canvas.width !== field.columns) cache.canvas.width = field.columns;
+      if (cache.canvas.height !== field.rows) cache.canvas.height = field.rows;
+      var data = cache.context.createImageData(field.columns, field.rows); data.data.set(field.pixels);
+      cache.context.putImageData(data, 0, 0); cache.field = field;
+    }
+    ctx.save(); ctx.globalAlpha *= field.opacity; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(cache.canvas, 0, field.top, field.width, field.height - field.top);
+    ctx.restore(); return field;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchSurfacePoint: mmLaunchSurfacePoint, launchSurfaceGeometry: mmLaunchSurfaceGeometry,
+    launchWaterReflection: mmLaunchWaterReflection, drawLaunchSurface: mmDrawLaunchSurface
+  }); } catch (e) {}
+
+
+  function mmLaunchSunGeometry(W, H, haze) {
+    if (![W, H].every(mmNum) || W <= 0 || H <= 0) return null;
+    haze = mmNum(haze) ? Math.max(0, Math.min(1, haze)) : 0;
+    var angularRadius = Math.asin(MM_LUNAR_ENV.sunRadius / MM_LUNAR_ENV.sunDistance);
+    var radius = H / (2 * Math.tan(Math.PI / 6)) * Math.tan(angularRadius);
+    return { x: W * 0.5 + H * 0.2, y: H * 0.13, discRadius: radius,
+      opticalRadius: radius * 4, haloRadius: radius + H * 0.22 * haze,
+      haloOpacity: 0.36 * haze * haze, haze: haze, angularDiameter: angularRadius * 2, fieldDegrees: 60 };
+  }
+  function mmLaunchSunlight(rotation) {
+    rotation = mmNum(rotation) ? rotation : 0;
+    var length = Math.hypot(0.2, 0.37), x = 0.2 / length, y = -0.37 / length;
+    var c = Math.cos(rotation), s = Math.sin(rotation);
+    // Inverse of the Canvas rotation, including a detached stage's tumble.
+    return { x: c * x + s * y, y: -s * x + c * y, fraction: 1 };
+  }
+  function mmDrawLaunchSun(ctx, W, H, haze) {
+    var sun = mmLaunchSunGeometry(W, H, haze);
+    if (!sun) return null;
+    var inherited = mmNum(ctx.globalAlpha) ? ctx.globalAlpha : 1;
+    if (inherited === 0) return sun;
+    ctx.save();
+    function glow(radius, opacity, warm) {
+      if (opacity <= 0 || typeof ctx.createRadialGradient !== 'function') return;
+      var gradient = ctx.createRadialGradient(sun.x, sun.y, sun.discRadius, sun.x, sun.y, radius);
+      if (!gradient || typeof gradient.addColorStop !== 'function') return;
+      var rgb = warm ? '255,237,203' : '255,249,232';
+      gradient.addColorStop(0, 'rgba(' + rgb + ',' + opacity + ')');
+      gradient.addColorStop(0.2, 'rgba(' + rgb + ',' + opacity * 0.32 + ')');
+      gradient.addColorStop(0.6, 'rgba(' + rgb + ',' + opacity * 0.06 + ')');
+      gradient.addColorStop(1, 'rgba(' + rgb + ',0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath(); ctx.arc(sun.x, sun.y, radius, 0, Math.PI * 2); ctx.fill();
+    }
+    glow(sun.haloRadius, sun.haloOpacity, true);
+    glow(sun.opticalRadius, 0.18, false);
+    ctx.fillStyle = '#fff9e8';
+    ctx.beginPath(); ctx.arc(sun.x, sun.y, sun.discRadius, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    return sun;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchSunGeometry: mmLaunchSunGeometry, launchSunlight: mmLaunchSunlight, drawLaunchSun: mmDrawLaunchSun
+  }); } catch (e) {}
+
+  // The final five seconds show four preflight arms already stowed. The five
+  // remaining arms release on first motion. Angular easing and projection are
+  // illustrative; release follows the sampled trajectory's 3/4-inch rise.
+  function mmLaunchPadReleaseTime(profile) {
+    if (!profile || !Array.isArray(profile.samples) || profile.samples.length < 2) return null;
+    var a = profile.samples[0], threshold = 0.01905;
+    if (!a || a.time !== 0 || a.altitude !== 0) return null;
+    for (var i = 1; i < Math.min(profile.samples.length, 128); i++) {
+      var b = profile.samples[i];
+      if (!b || ![b.time,b.altitude].every(Number.isFinite) || b.time <= a.time || b.time > 60 || b.altitude < a.altitude) return null;
+      if (b.altitude >= threshold) return a.time + (b.time-a.time)*(threshold-a.altitude)/(b.altitude-a.altitude);
+      a=b;
+    }
+    return null;
+  }
+  function mmLaunchPadGeometry(time, width, height, altitude, releaseTime) {
+    if (![time,width,height,altitude,releaseTime].every(Number.isFinite) || time < -5 || time > 10000 ||
+        width < 1 || height < 1 || Math.max(width,height)>16384 || altitude<0 || altitude>100000000 || releaseTime<0 || releaseTime>60) return null;
+    var lift=altitude*1.2/9.25, k=height*0.58/MM_SATURN_V_H, cx=width/2;
+    var tx=cx+10.1*k/2*3.5, top=height*0.20+lift, bottom=height*0.8+lift;
+    var field={time:time,width:width,height:height,altitude:altitude,releaseTime:releaseTime,lift:lift,k:k,cx:cx,
+      visible:lift<height,deck:{x:width*0.4,y:height*0.795+lift,width:width*0.22,height:height*0.03},
+      tower:{x:tx,y:top,width:height*0.05,height:bottom-top,depth:height*0.018},bays:[],arms:[]};
+    var platformLeft=Math.min(field.deck.x,cx-8*k);
+    field.platform={x:platformLeft,y:field.deck.y,height:field.deck.height,
+      width:Math.max(field.deck.x+field.deck.width,tx+field.tower.width+field.tower.depth+3*k)-platformLeft};
+    if (!field.visible) return field;
+    for(var i=0;i<10;i++)field.bays.push({y0:top+(bottom-top)*i/10,y1:top+(bottom-top)*(i+1)/10});
+    var sections={},offset=height*0.22+lift;
+    MM_SATURN_V.forEach(function(s){sections[s.id]={y0:offset,y1:offset+s.h*k,w0:s.d0*k,w1:s.d1*k};offset+=s.h*k;});
+    // Attachment fractions are schematic within the corresponding stage.
+    var arms=[[1,'s1',0.48,0],[2,'s1',0.06,0],[3,'s2',0.95,0],[4,'s2',0.55,6.4],
+      [5,'s2',0.04,7.4],[6,'s4b',0.9,7.7],[7,'iu',0.5,8.4],[8,'sm',0.5,9],[9,'cm',0.65,0]];
+    arms.forEach(function(spec){
+      var s=sections[spec[1]],v=spec[2],preflight=spec[3]===0;
+      var contact={x:cx+(s.w0+(s.w1-s.w0)*v)/2,y:s.y0+(s.y1-s.y0)*v};
+      var t=preflight?1:Math.max(0,Math.min(1,(time-releaseTime)/spec[3]));
+      var retraction=t*t*(3-2*t),angle=retraction*Math.PI*5/9,length=tx-contact.x;
+      field.arms.push({id:spec[0],section:spec[1],preflight:preflight,duration:spec[3],retraction:retraction,angle:angle,
+        hinge:{x:tx,y:contact.y},contact:contact,tip:{x:tx-length*Math.cos(angle),y:contact.y+length*0.22*Math.sin(angle)},
+        length:length,thickness:height*0.006,connected:!preflight&&time<=releaseTime});
+    });
+    return field;
+  }
+  function mmDrawLaunchPad(ctx, field, light) {
+    if (!ctx || !field || ctx.globalAlpha===0) return null;
+    // Rebuild from bounded scalar inputs; diagnostics cannot inject paint paths.
+    var g=mmLaunchPadGeometry(field.time,field.width,field.height,field.altitude,field.releaseTime);
+    if(!g || !g.visible)return null;
+    var t=g.tower,d=g.platform,k=g.k,depth=t.depth,right=t.x+t.width,bottom=t.y+t.height;
+    function color(hex,nx,ny){return mmOrbitalCraftMaterial(hex,light,nx,ny);}
+    function line(x0,y0,x1,y1,width,paint){ctx.strokeStyle=paint;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();}
+    function polygon(points,paint){ctx.fillStyle=paint;ctx.beginPath();points.forEach(function(p,i){if(i)ctx.lineTo(p[0],p[1]);else ctx.moveTo(p[0],p[1]);});ctx.closePath();ctx.fill();}
+    var steel=color('#b96146',0,0),lit=color('#e69b70',0.8,-0.2),dark=color('#713c32',-0.8,0.2);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,g.width,g.height);ctx.clip();
+    // Keep the established deck/exhaust datum and paint order.
+    ctx.fillStyle='#4b5563';ctx.fillRect(g.deck.x,g.deck.y,g.deck.width,g.deck.height);
+    ctx.fillStyle=color('#677784',0,0.3);ctx.fillRect(d.x,d.y,d.width,d.height);
+    polygon([[d.x,d.y],[d.x+6*k,d.y-2*k],[d.x+d.width+6*k,d.y-2*k],[d.x+d.width,d.y]],color('#82909b',0,-1));
+    polygon([[d.x+d.width,d.y],[d.x+d.width+6*k,d.y-2*k],[d.x+d.width+6*k,d.y+d.height-2*k],[d.x+d.width,d.y+d.height]],color('#394753',1,0));
+    ctx.fillStyle=color('#26343d',0,0.5);
+    [0.12,0.8].forEach(function(f){ctx.fillRect(d.x+d.width*f,d.y+d.height,d.width*0.075,3*k);});
+    ctx.fillStyle=color('#19232b',0,0.5);ctx.fillRect(g.cx-5.8*k,d.y+0.5*k,11.6*k,d.height-0.5*k);
+    for(var p=1;p<8;p++)line(d.x+d.width*p/8,d.y+0.7*k,d.x+d.width*p/8,d.y+d.height-0.5*k,Math.max(0.35,k*0.25),color('#74828c',0,0));
+    // Rear face and elevator core give the lattice a visible depth.
+    polygon([[right,t.y],[right+depth,t.y-depth*0.45],[right+depth,bottom-depth*0.45],[right,bottom]],color('#5c423c',0.8,0));
+    ctx.fillStyle=color('#647079',0,0);ctx.fillRect(t.x+t.width*0.37,t.y,t.width*0.27,t.height);
+    line(t.x+t.width*0.42,t.y,t.x+t.width*0.42,bottom,Math.max(0.3,k*0.24),color('#b9c1c4',0.4,0));
+    g.bays.forEach(function(b){
+      line(right,b.y0,right+depth,b.y1-depth*0.45,Math.max(0.5,k*0.5),dark);
+      line(right+depth,b.y0-depth*0.45,right,b.y1,Math.max(0.5,k*0.5),lit);
+      line(t.x,b.y0,right,b.y1,Math.max(0.65,k*0.65),steel);
+      line(right,b.y0,t.x,b.y1,Math.max(0.65,k*0.65),lit);
+      ctx.fillStyle=color('#68767e',0,-0.5);ctx.fillRect(t.x-1.2*k,b.y0,t.width+2.4*k,0.65*k);
+      line(t.x-1.2*k,b.y0-1.8*k,right+1.2*k,b.y0-1.8*k,Math.max(0.3,k*0.25),lit);
+      [0,0.5,1].forEach(function(f){var x=t.x-1.2*k+(t.width+2.4*k)*f;line(x,b.y0-1.8*k,x,b.y0,Math.max(0.3,k*0.25),steel);});
+    });
+    [t.x,right].forEach(function(x){line(x,t.y,x,bottom,Math.max(1,k*1.1),steel);line(x+0.4*k,t.y,x+0.4*k,bottom,Math.max(0.3,k*0.25),lit);});
+    line(right+depth,t.y-depth*0.45,right+depth,bottom-depth*0.45,Math.max(0.8,k*0.8),lit);
+    // Hammerhead crane remains clear of the vehicle and countdown caption.
+    var craneY=t.y-4*k,craneEnd=right+depth+9*k;
+    line(t.x+t.width/2,t.y,t.x+t.width/2,craneY-3*k,1.1*k,steel);
+    line(t.x-3*k,craneY,craneEnd,craneY,1.5*k,steel);
+    line(t.x+t.width/2,craneY-3*k,craneEnd,craneY,Math.max(0.4,k*0.35),lit);
+    line(craneEnd-1.5*k,craneY,craneEnd-1.5*k,craneY+5*k,Math.max(0.3,k*0.22),color('#cad1d1',0,0));
+    // Arms swing horizontally; the oblique projection shows their foreshortening.
+    g.arms.forEach(function(a){
+      var x=a.hinge.x,y=a.hinge.y,ex=a.tip.x,ey=a.tip.y,h=a.thickness;
+      polygon([[x,y-h],[ex,ey-h],[ex,ey],[x,y]],color('#b6b4a4',-0.2,-0.5));
+      line(x,y,ex,ey,Math.max(0.5,k*0.65),steel);
+      line(x,y-h-1.4*k,ex,ey-h-1.4*k,Math.max(0.3,k*0.25),lit);
+      for(var j=0;j<=3;j++){var f=j/3,ax=x+(ex-x)*f,ay=y+(ey-y)*f;line(ax,ay-h-1.4*k,ax,ay,Math.max(0.3,k*0.25),steel);}
+      if(a.connected){ctx.fillStyle=color('#d4d6cd',0,0);ctx.fillRect(ex-0.45*k,ey-h,0.9*k,h);}
+      ctx.fillStyle=dark;ctx.fillRect(x-0.6*k,y-h-0.5*k,1.2*k,h+1*k);
+    });
+    ctx.restore();return g;
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{launchPadReleaseTime:mmLaunchPadReleaseTime,
+    launchPadGeometry:mmLaunchPadGeometry,drawLaunchPad:mmDrawLaunchPad});}catch(e){}
+
+  // Residual condensation around cold pad hardware. These parcels illustrate
+  // moisture mixing near the tanks; they do not imply an open oxygen vent or
+  // calculate tank boiloff. Source locations, cutoff and wind are schematic.
+  function mmLaunchPadCondensationGeometry(time,width,height,altitude) {
+    if(![time,width,height,altitude].every(Number.isFinite)||time < -5||time>10000||width<1||height<1||
+        Math.max(width,height)>16384||altitude<0||altitude>1e8)return null;
+    var lift=altitude*1.2/9.25,k=height*0.58/MM_SATURN_V_H,cx=width/2;
+    var field={time:time,width:width,height:height,altitude:altitude,lift:lift,k:k,lifetime:4.2,interval:0.32,
+      sources:[],puffs:[],visible:false};
+    var sections={},y=height*0.22+lift;
+    MM_SATURN_V.forEach(function(part){sections[part.id]={y0:y,y1:y+part.h*k,w0:part.d0*k,w1:part.d1*k};y+=part.h*k;});
+    [['s1',0.18,-1],['s2',0.78,1],['s4b',0.72,-1]].forEach(function(spec,index){
+      var s=sections[spec[0]],fraction=spec[1],side=spec[2],w=s.w0+(s.w1-s.w0)*fraction;
+      field.sources.push({id:spec[0],fraction:fraction,side:side,phase:index*0.11,
+        x:cx+side*(w/2+0.3*k),y:s.y0+(s.y1-s.y0)*fraction});
+    });
+    if(time>=field.lifetime||lift>=height)return field;
+    function smooth(a,b,value){var t=Math.max(0,Math.min(1,(value-a)/(b-a)));return t*t*(3-2*t);}
+    field.sources.forEach(function(source,index){
+      var latest=Math.floor((time-source.phase)/field.interval);
+      // Fixed history includes parcels born before the visible T-5 countdown.
+      // No mutable particle list is carried between animation or seek frames.
+      for(var slot=0;slot<14;slot++){
+        var ordinal=latest-slot,born=ordinal*field.interval+source.phase,age=time-born;
+        if(born>=0||age<=0||age>=field.lifetime)continue;
+        var emission=1-smooth(-2,0,born),seed=(Math.sin(ordinal*1.723+index*2.91)+1)/2;
+        var opacity=0.16*emission*smooth(0,0.18,age)*(1-smooth(2.5,field.lifetime,age))*(0.85+0.15*seed);
+        if(opacity<=0)continue;
+        var phase=ordinal*0.73+index*1.27;
+        var dx=-4.8*age+0.65*(Math.sin(age*1.8+phase)-Math.sin(phase))+source.side*0.8*(1-Math.exp(-3*age));
+        var dy=age+0.55*age*age/(1+age),r=k*(0.35+2.3*Math.sqrt(age))*(0.9+0.2*seed);
+        var x=source.x+k*dx,py=source.y+k*dy;
+        var lobes=[{x:x,y:py,rx:1.15*r,ry:0.70*r,opacity:opacity*0.60},
+          {x:x-0.50*r,y:py-0.22*r,rx:0.82*r,ry:0.61*r,opacity:opacity*0.44},
+          {x:x+0.42*r,y:py+0.12*r,rx:0.70*r,ry:0.55*r,opacity:opacity*0.38}];
+        field.puffs.push({id:source.id+':'+ordinal,sourceId:source.id,born:born,age:age,emission:emission,
+          x:x,y:py,radius:r,opacity:opacity,lobes:lobes});
+      }
+    });
+    field.visible=field.puffs.length>0;return field;
+  }
+  function mmDrawLaunchPadCondensation(ctx,field,light) {
+    if(!ctx||!field)return null;
+    var g=mmLaunchPadCondensationGeometry(field.time,field.width,field.height,field.altitude);
+    if(!g)return null;
+    if(!g.visible||ctx.globalAlpha===0)return g;
+    var sun=light&&[light.x,light.y,light.fraction].every(Number.isFinite)&&Math.hypot(light.x,light.y)>0&&Number.isFinite(Math.hypot(light.x,light.y))?light:mmLaunchSunlight(0);
+    var length=Math.hypot(sun.x,sun.y),exposure=Math.max(0,Math.min(1,sun.fraction));
+    var lx=sun.x/length*exposure,ly=sun.y/length*exposure;
+    ctx.save();
+    g.puffs.forEach(function(puff){puff.lobes.forEach(function(lobe){
+      ctx.save();ctx.translate(lobe.x,lobe.y);ctx.scale(lobe.rx,lobe.ry);
+      var glow=typeof ctx.createRadialGradient==='function'?ctx.createRadialGradient(lx*0.20,ly*0.20,0,0,0,1):null;
+      if(glow&&typeof glow.addColorStop==='function'){
+        glow.addColorStop(0,'rgba(249,251,249,'+lobe.opacity+')');
+        glow.addColorStop(0.45,'rgba(224,234,241,'+lobe.opacity*0.5+')');
+        glow.addColorStop(1,'rgba(207,222,235,0)');ctx.fillStyle=glow;
+      }else ctx.fillStyle='rgba(224,234,241,'+lobe.opacity*0.24+')';
+      ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
+    });});
+    ctx.restore();return g;
+  }
+  try{window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, {
+    launchPadCondensationGeometry:mmLaunchPadCondensationGeometry,drawLaunchPadCondensation:mmDrawLaunchPadCondensation
+  });}catch(e){}
+
+
+  // A schematic moist-air shroud near transonic flight. Mach, dynamic pressure
+  // and density come from the flight sample; these visibility weights do not
+  // predict humidity, local pressure, a shock angle or condensation onset.
+  function mmLaunchVapourGeometry(sample, cx, topY, fullHeight, seconds) {
+    if (!sample || ![cx,topY,fullHeight,seconds,sample.mach,sample.dynamicPressure,sample.density].every(Number.isFinite) ||
+        Math.max(Math.abs(cx),Math.abs(topY))>1000000 || fullHeight<1 || fullHeight>16384 || seconds < -5 || seconds>10000 ||
+        sample.mach<0 || sample.mach>100 || sample.dynamicPressure<0 || sample.dynamicPressure>1e9 || sample.density<0 || sample.density>100 ||
+        ![1,2,3].includes(sample.stage) || typeof sample.lesOn!=='boolean') return null;
+    function smooth(a,b,x){var t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);}
+    var envelope=smooth(0.82,1.05,sample.mach)*(1-smooth(1.08,1.5,sample.mach));
+    var strength=seconds<0?0:envelope*sample.dynamicPressure/(sample.dynamicPressure+6000)*sample.density/(sample.density+0.08);
+    var g={sample:{mach:sample.mach,dynamicPressure:sample.dynamicPressure,density:sample.density,stage:sample.stage,lesOn:sample.lesOn},
+      cx:cx,topY:topY,fullHeight:fullHeight,seconds:seconds,machEnvelope:envelope,strength:strength,active:strength>0,bands:[]};
+    if(!g.active)return g;
+    var k=fullHeight/MM_SATURN_V_H,y=topY;
+    for(var i=0;i<MM_SATURN_V.length;i++){
+      var part=MM_SATURN_V[i];
+      if(part.drop&&sample.stage>=part.drop)break;
+      var y1=y+part.h*k;
+      if(part.id==='sla'||part.id==='s1is'){
+        var lower=part.id==='s1is',w=Math.max(part.d0,part.d1)*k;
+        var ripple=0.025*Math.sin(seconds*6.3+i*1.7)+0.015*Math.sin(seconds*10.1+i);
+        g.bands.push({id:part.id,cx:cx,y:lower?y:y1,width:w,length:w*(lower?1.8:1.5)*(1+ripple),
+          spread:w*(lower?1.27:1.08)*(1+ripple*0.5),opacity:strength*(lower?1:0.62),ripple:ripple});
+      }
+      // The escape tower's reserved space also remains in the Saturn renderer.
+      y=y1;
+    }
+    return g;
+  }
+  function mmDrawLaunchVapour(ctx,field,layer,light) {
+    if(!ctx||!field||!['back','front'].includes(layer))return null;
+    var g=mmLaunchVapourGeometry(field.sample,field.cx,field.topY,field.fullHeight,field.seconds);
+    if(!g)return null;
+    if(!g.active||ctx.globalAlpha===0)return g;
+    var sun=light&&[light.x,light.y,light.fraction].every(Number.isFinite)&&Math.hypot(light.x,light.y)>0&&Number.isFinite(Math.hypot(light.x,light.y))?light:null;
+    var sunX=sun?sun.x/Math.hypot(sun.x,sun.y)*Math.max(0,Math.min(1,sun.fraction)):0;
+    function gradient(b,opacity,rgb){
+      var paint=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(0,b.y,0,b.y+b.length*1.12):null;
+      if(!paint||typeof paint.addColorStop!=='function')return 'rgba('+rgb+','+opacity*0.35+')';
+      [[0,0],[0.13,0.6],[0.32,1],[0.64,0.48],[0.86,0.13],[1,0]].forEach(function(s){paint.addColorStop(s[0],'rgba('+rgb+','+opacity*s[1]+')');});
+      return paint;
+    }
+    function outline(b,scale){
+      var x=b.cx,y=b.y,r=b.width*0.51,L=b.length,R=b.spread*scale;
+      ctx.beginPath();ctx.moveTo(x-r,y);
+      ctx.bezierCurveTo(x-r*1.05,y+L*0.12,x-R*0.9,y+L*0.50,x-R,y+L*0.86);
+      ctx.bezierCurveTo(x-R*0.80,y+L*1.08,x+R*0.80,y+L*1.08,x+R,y+L*0.86);
+      ctx.bezierCurveTo(x+R*0.9,y+L*0.50,x+r*1.05,y+L*0.12,x+r,y);
+      ctx.quadraticCurveTo(x,y+b.width*0.09,x-r,y);ctx.closePath();
+    }
+    ctx.save();
+    g.bands.forEach(function(b){
+      if(layer==='back'){
+        // The far half is occluded by the subsequently painted opaque hull.
+        ctx.fillStyle=gradient(b,b.opacity*0.30,'203,221,235');outline(b,1.05);ctx.fill();
+        return;
+      }
+      // A thin veil crosses the hull. The longer path at each limb is brighter,
+      // while the central markings remain visible through the front half.
+      ctx.fillStyle=gradient(b,b.opacity*0.13,'234,242,248');outline(b,0.97);ctx.fill();
+      [-1,1].forEach(function(side){
+        var exposure=0.84+0.16*side*sunX;
+        var rgb=side*sunX>=0?'250,252,253':'210,226,240';
+        // Nested curved ribbons soften the outer boundary without blur filters
+        // or offscreen allocations. Their shared axial fade has no hard tail.
+        [0,1,2].forEach(function(index){
+          var x=b.cx,y=b.y,L=b.length,r=b.width*0.51;
+          var outer=b.spread*(1-index*0.045),inner=outer-b.width*(0.19-index*0.035);
+          ctx.fillStyle=gradient(b,b.opacity*exposure*[0.12,0.16,0.19][index],rgb);
+          ctx.beginPath();ctx.moveTo(x+side*r,y);
+          ctx.bezierCurveTo(x+side*r*1.03,y+L*0.13,x+side*outer*0.90,y+L*0.50,x+side*outer,y+L*0.86);
+          ctx.quadraticCurveTo(x+side*(outer+inner)*0.5,y+L*1.04,x+side*inner,y+L*0.86);
+          ctx.bezierCurveTo(x+side*inner*0.9,y+L*0.54,x+side*r*0.90,y+L*0.14,x+side*r,y);
+          ctx.closePath();ctx.fill();
+        });
+      });
+    });
+    ctx.restore();return g;
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, {
+    launchVapourGeometry:mmLaunchVapourGeometry,drawLaunchVapour:mmDrawLaunchVapour
+  });}catch(e){}
+
+
+  // Schematic structural detail, in the existing stack's local coordinates.
+  // Feature locations, line widths and contrast are illustrative. Longitude
+  // projection follows the visible half of each cylinder or tapered adapter.
+  function mmSaturnDetailFade(width) {
+    var t = Math.max(0, Math.min(1, (width - 3) / 7)); return t * t * (3 - 2 * t);
+  }
+  function mmSaturnHardwareGeometry(geometry) {
+    if (!geometry || !Number.isFinite(geometry.k) || geometry.k <= 0 || geometry.k > 1000 ||
+        !Array.isArray(geometry.sections) || geometry.sections.length > 10) return null;
+    var ids = {}, valid = geometry.sections.every(function(s) {
+      if (!s || MM_SATURN_V.every(function(p) { return p.id !== s.id; }) || ids[s.id]) return false;
+      ids[s.id] = true;
+      return [s.y0, s.y1, s.w0, s.w1].every(Number.isFinite) && s.y1 > s.y0 && s.w0 > 0 && s.w1 > 0 &&
+        Math.max(Math.abs(s.y0), Math.abs(s.y1), s.w0, s.w1) <= 1000000 &&
+        mmSaturnSurfaceNormal(0,s.w0,s.w1,s.y1-s.y0)!==null;
+    });
+    if (!valid) return null;
+    var field = { scale: geometry.k, sections: [] };
+    geometry.sections.forEach(function(s) {
+      if (s.id === 'les' || s.id === 'cm') return;
+      var h = s.y1 - s.y0, w = Math.max(s.w0, s.w1), alpha = mmSaturnDetailFade(w);
+      var detail = { id: s.id, opacity: alpha, outline: [{x:-s.w0/2,y:s.y0},{x:s.w0/2,y:s.y0},
+        {x:s.w1/2,y:s.y1},{x:-s.w1/2,y:s.y1}], lines: [], panels: [] };
+      function point(u, v) { return { x: u * (s.w0 + (s.w1 - s.w0) * v) / 2, y: s.y0 + h * v }; }
+      function line(kind, u, a, b, color, opacity, offset) {
+        var normal = mmSaturnSurfaceNormal(u, s.w0, s.w1, h);
+        var p = point(u,a), q = point(u,b);
+        p.x += offset || 0; q.x += offset || 0;
+        detail.lines.push({ kind:kind, u:u, from:a, to:b, points:[p,q], color:color,
+          normal:{x:normal.x,y:normal.y}, opacity:opacity, width:Math.max(0.18, Math.min(1.2,w*0.018)) });
+      }
+      function panel(kind,u0,u1,a,b,color) {
+        var n=mmSaturnSurfaceNormal((u0+u1)/2,s.w0,s.w1,h);
+        detail.panels.push({kind:kind,points:[point(u0,a),point(u1,a),point(u1,b),point(u0,b)],
+          color:color,normal:{x:n.x,y:n.y},opacity:0.72});
+      }
+      var bands = {s1:[[0.02,0.12],[0.43,0.53],[0.86,0.99]],s2:[[0.02,0.13],[0.89,0.98]],
+        s4b:[[0.02,0.15],[0.83,0.99]],s1is:[[0.03,0.97]],s4bis:[[0.03,0.97]],iu:[[0.08,0.92]]}[s.id] || [];
+      bands.forEach(function(band) {
+        for(var i=-6;i<=6;i++) {
+          var u=Math.sin(i*Math.PI/15), spacing=w*0.012;
+          line('stringer-shadow',u,band[0],band[1],'#344858',0.3,0);
+          line('stringer-light',u,band[0],band[1],'#dbe7ed',0.44,-spacing);
+        }
+      });
+      if(s.id==='sla') [-0.7,0,0.7].forEach(function(u){line('adapter-seam',u,0.03,0.97,'#526878',0.45,0);});
+      if(s.id==='sm') {
+        panel('radiator',-0.78,-0.28,0.12,0.89,'#c8d6dd'); panel('radiator',0.16,0.63,0.12,0.89,'#e0e6df');
+        [-0.82,-0.23,0.12,0.68].forEach(function(u){line('panel-seam',u,0.08,0.93,'#344858',0.55,0);});
+      }
+      if(s.id==='s1') panel('service-fairing',0.51,0.63,0.15,0.84,'#bfcbd3');
+      if(s.id==='s2'||s.id==='s4b') panel('service-fairing',0.58,0.69,0.18,0.8,'#c6d0d7');
+      [0.02,0.98].forEach(function(v){detail.lines.push({kind:'joint',points:[point(-0.97,v),point(0.97,v)],
+        color:'#536676',normal:{x:0,y:v<0.5?-1:1},opacity:0.48,width:Math.max(0.18,Math.min(0.8,w*0.016))});});
+      field.sections.push(detail);
+    });
+    return field;
+  }
+  function mmSaturnHardwareValid(field) {
+    function point(p) { return p && Number.isFinite(p.x) && Number.isFinite(p.y) && Math.max(Math.abs(p.x),Math.abs(p.y))<=10000000; }
+    function item(p, count) { return p && Array.isArray(p.points) && p.points.length===count && p.points.every(point) &&
+      typeof p.color==='string' && /^#[0-9a-f]{6}$/i.test(p.color) && p.normal && [p.normal.x,p.normal.y,p.opacity].every(Number.isFinite) &&
+      p.opacity>=0 && p.opacity<=1; }
+    return field && Array.isArray(field.sections) && field.sections.length<=10 && field.sections.every(function(s){
+      return s && Number.isFinite(s.opacity) && s.opacity>=0 && s.opacity<=1 && Array.isArray(s.outline) && s.outline.length===4 && s.outline.every(point) &&
+        Array.isArray(s.lines) && s.lines.length<=100 && s.lines.every(function(p){return item(p,2)&&Number.isFinite(p.width)&&p.width>0&&p.width<=10;}) &&
+        Array.isArray(s.panels) && s.panels.length<=8 && s.panels.every(function(p){return item(p,4);});
+    });
+  }
+  function mmDrawSaturnHardware(ctx, cx, field, light) {
+    if(!ctx || !Number.isFinite(cx) || Math.abs(cx)>1000000 || !mmSaturnHardwareValid(field) || ctx.globalAlpha===0) return null;
+    function path(points) {ctx.beginPath();points.forEach(function(p,i){if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});}
+    ctx.save();ctx.translate(cx,0);
+    var inherited=Number.isFinite(ctx.globalAlpha)?ctx.globalAlpha:1;
+    field.sections.forEach(function(s){
+      if(s.opacity===0)return;
+      ctx.save();path(s.outline);ctx.closePath();ctx.clip();
+      s.panels.forEach(function(p){ctx.globalAlpha=inherited*s.opacity*p.opacity;ctx.fillStyle=mmOrbitalCraftMaterial(p.color,light,p.normal.x,p.normal.y);
+        path(p.points);ctx.closePath();ctx.fill();});
+      s.lines.forEach(function(p){ctx.globalAlpha=inherited*s.opacity*p.opacity;ctx.strokeStyle=mmOrbitalCraftMaterial(p.color,light,p.normal.x,p.normal.y);
+        ctx.lineWidth=p.width;path(p.points);ctx.stroke();});
+      ctx.restore();
+    });
+    ctx.restore();return field;
+  }
+  // Exposed divergent bell, with exact attachment and exit coordinates. The
+  // radius expands rapidly near the top then turns toward the nozzle axis.
+  // It is a schematic contour, not a gas-dynamic nozzle design.
+  function mmSaturnNozzleGeometry(cx, base, length, topWidth, exitWidth) {
+    if(![cx,base,length,topWidth,exitWidth].every(Number.isFinite) || Math.max(Math.abs(cx),Math.abs(base))>1000000 ||
+       length<=0 || topWidth/2<=0 || exitWidth<topWidth || Math.max(length,exitWidth)>100000 ||
+       !(base+length>base) || !(cx+topWidth/2>cx-topWidth/2)) return null;
+    function half(t){return topWidth/2+(exitWidth-topWidth)/2*(1.6*t-0.6*t*t);}
+    var g={x:cx,base:base,length:length,topWidth:topWidth,exitWidth:exitWidth,exit:base+length,
+      opacity:mmSaturnDetailFade(exitWidth),outline:[],ribs:[]};
+    g.outline.push({x:cx-topWidth/2,y:base},{x:cx+topWidth/2,y:base});
+    for(var i=1;i<=16;i++)g.outline.push({x:cx+half(i/16),y:base+length*i/16});
+    for(var i=16;i>=1;i--)g.outline.push({x:cx-half(i/16),y:base+length*i/16});
+    [0.22,0.38,0.54,0.7,0.86].forEach(function(t){g.ribs.push([{x:cx-half(t)*0.96,y:base+length*t},{x:cx+half(t)*0.96,y:base+length*t}]);});
+    return g;
+  }
+  function mmDrawSaturnNozzle(ctx, g, light) {
+    if(!ctx || !g || ![g.x,g.base,g.length,g.topWidth,g.exitWidth].every(Number.isFinite) || ctx.globalAlpha===0)return null;
+    // Rebuild from the bounded scalar inputs; caller-edited paths cannot reach Canvas.
+    g=mmSaturnNozzleGeometry(g.x,g.base,g.length,g.topWidth,g.exitWidth);if(!g)return null;
+    ctx.save();
+    ctx.fillStyle=light?mmSaturnMaterialGradient(ctx,g.x,g.base,g.exit,g.topWidth,g.exitWidth,'#374151',light):'#374151';
+    ctx.beginPath();g.outline.forEach(function(p,i){if(i)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);});ctx.closePath();ctx.fill();ctx.clip();
+    ctx.globalAlpha*=g.opacity*0.6;ctx.lineWidth=Math.max(0.18,Math.min(0.8,g.exitWidth*0.025));
+    ctx.strokeStyle=mmOrbitalCraftMaterial('#a1afba',light,0,-0.6);
+    g.ribs.forEach(function(line){ctx.beginPath();ctx.moveTo(line[0].x,line[0].y);ctx.lineTo(line[1].x,line[1].y);ctx.stroke();});
+    ctx.restore();return g;
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{saturnHardwareGeometry:mmSaturnHardwareGeometry,
+    drawSaturnHardware:mmDrawSaturnHardware,saturnNozzleGeometry:mmSaturnNozzleGeometry,drawSaturnNozzle:mmDrawSaturnNozzle});}catch(e){}
+
+
   function mmDrawSaturnV(ctx, cx, topY, fullH, stage, opts) {
     opts = opts || {};
     var orbitLight = opts.orbitLight;
@@ -5618,20 +6833,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.fillStyle = '#374151';
       xs.forEach(function (f) {
         var bx = cx + f * last.w1;
-        if (orbitLight) ctx.fillStyle = mmSaturnMaterialGradient(ctx, bx, base, base + bell[0] * k, bell[2] * k, bell[1] * k, '#374151', orbitLight);
-        ctx.beginPath();
-        ctx.moveTo(bx - bell[2] * k / 2, base);
-        ctx.lineTo(bx + bell[2] * k / 2, base);
-        ctx.lineTo(bx + bell[1] * k / 2, base + bell[0] * k);
-        ctx.lineTo(bx - bell[1] * k / 2, base + bell[0] * k);
-        ctx.closePath(); ctx.fill();
+        mmDrawSaturnNozzle(ctx, mmSaturnNozzleGeometry(bx, base, bell[0] * k, bell[2] * k, bell[1] * k), orbitLight);
       });
       nozzle = base + bell[0] * k;
       if (last.id === 's1') {
         // Two of the four fins, in profile, with the engine fairings they sit on.
         var hw = last.w1 / 2;
-        ctx.fillStyle = '#e5e7eb';
         [-1, 1].forEach(function (s) {
+          ctx.fillStyle = mmOrbitalCraftMaterial('#e5e7eb', orbitLight, s * 0.9, -0.4);
           ctx.beginPath();
           ctx.moveTo(cx + s * hw, base - 9 * k);
           ctx.lineTo(cx + s * (hw + 2.2 * k), base - 1.2 * k);
@@ -5641,7 +6850,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         });
       }
     }
-    return { nozzle: nozzle, sections: sections, k: k };
+    var geometry = { nozzle: nozzle, sections: sections, k: k };
+    geometry.hardware = mmSaturnHardwareGeometry(geometry);
+    mmDrawSaturnHardware(ctx, cx, geometry.hardware, orbitLight);
+    return geometry;
   }
 
   // Centre of a group of sections, as a fraction of the full stack from the top: the
@@ -5651,6 +6863,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     MM_SATURN_V.forEach(function (p) { if (ids.indexOf(p.id) !== -1) { if (a < 0) a = y; b = y + p.h; } y += p.h; });
     return (a + b) / 2 / MM_SATURN_V_H;
   }
+
+  // Released hardware inherits the measured velocity, then coasts under central
+  // Earth gravity in an inertial frame with +Y up at release and +X prograde.
+  // Impulses and constant tumble rates are display-model choices, not flight data.
+  // Drag, torque and finite retro/jettison motor burns are not modeled.
+  function mmLaunchDebrisStep(row, dt) {
+    function derivative(v) {
+      var r = Math.hypot(v[0], v[1]), f = -MM_LAUNCH.mu / (r * r * r);
+      return [v[2], v[3], f * v[0], f * v[1]];
+    }
+    var y = [row.x, row.y, row.vx, row.vy], a = derivative(y);
+    var b = derivative(y.map(function(v, i) { return v + a[i] * dt / 2; }));
+    var c = derivative(y.map(function(v, i) { return v + b[i] * dt / 2; }));
+    var d = derivative(y.map(function(v, i) { return v + c[i] * dt; }));
+    var end = y.map(function(v, i) { return v + dt * (a[i] + 2 * b[i] + 2 * c[i] + d[i]) / 6; });
+    return { age: row.age + dt, x: end[0], y: end[1], vx: end[2], vy: end[3] };
+  }
+  function mmLaunchDebrisTrack(event, kind) {
+    var choices = { stage1: { only: ['s1is', 's1'], axial: -2, lateral: 0, spin: 0.012 },
+      stage2: { only: ['s4bis', 's2'], axial: -1.5, lateral: 0, spin: -0.009 },
+      les: { only: ['les'], axial: 45, lateral: 14, spin: -0.035 } };
+    if (!Object.prototype.hasOwnProperty.call(choices, kind) || !event) return null;
+    var fields = ['time', 'altitude', 'radialSpeed', 'tangentialSpeed', 'downrange', 'pitch'];
+    if (!fields.every(function(key) { return Number.isFinite(event[key]); }) || event.time < 0 || event.altitude < 0) return null;
+    // Bound this short launch-only model before integration, including derived
+    // coordinates. Invalid imported values must not create unbounded trajectories.
+    if (event.altitude > 1e7 || Math.hypot(event.radialSpeed, event.tangentialSpeed) > 20000 ||
+        Math.abs(event.downrange) > 1e8 || Math.abs(event.pitch) > Math.PI * 2 || event.time > 10000) return null;
+    var config = choices[kind], release = {};
+    fields.forEach(function(key) { release[key] = event[key]; });
+    var sn = Math.sin(event.pitch), cs = Math.cos(event.pitch);
+    var row = { age: 0, x: 0, y: MM_LAUNCH.radius + event.altitude,
+      vx: event.tangentialSpeed + config.axial * sn + config.lateral * cs,
+      vy: event.radialSpeed + config.axial * cs - config.lateral * sn };
+    var rows = [Object.freeze(row)];
+    for (var i = 1; i <= 150; i++) { row = mmLaunchDebrisStep(row, 0.5); rows.push(Object.freeze(row)); }
+    return Object.freeze({ kind: kind, event: Object.freeze(release), duration: 75, step: 0.5,
+      impulse: Object.freeze({ axial: config.axial, lateral: config.lateral }), spin: config.spin,
+      only: Object.freeze(config.only), samples: Object.freeze(rows) });
+  }
+  function mmLaunchDebrisState(track, time) {
+    if (!track || !track.event || !Array.isArray(track.samples) || track.samples.length !== 151 ||
+        track.step !== 0.5 || track.duration !== 75 || !Number.isFinite(time) || !Number.isFinite(track.event.time)) return null;
+    var age = time - track.event.time;
+    if (age < 0 || age > track.duration + 1e-9) return null;
+    // Adding the lifetime to a fractional event time can subtract back a few
+    // ulps above 75. Keep that exact endpoint without extending the coast.
+    age = Math.min(track.duration, age);
+    var base = track.samples[Math.min(150, Math.floor(age / track.step))];
+    if (!base || !['age', 'x', 'y', 'vx', 'vy'].every(function(key) { return Number.isFinite(base[key]); }) ||
+        Math.hypot(base.x, base.y) < MM_LAUNCH.radius * 0.5) return null;
+    // Finish the fractional step from the cached state, so reverse seeking does
+    // not accumulate integration error or linearly interpolate a curved orbit.
+    var row = mmLaunchDebrisStep(base, age - base.age);
+    return ['age', 'x', 'y', 'vx', 'vy'].every(function(key) { return Number.isFinite(row[key]); }) ? row : null;
+  }
+  function mmLaunchDebrisPose(track, sample, camera) {
+    if (!sample || !camera || !['time', 'altitude', 'downrange', 'pitch'].every(function(key) { return Number.isFinite(sample[key]); }) ||
+        !['x', 'y', 'topY', 'fullHeight', 'width'].every(function(key) { return Number.isFinite(camera[key]); }) ||
+        camera.fullHeight <= 0 || camera.width <= 0 || sample.altitude < 0) return null;
+    var row = mmLaunchDebrisState(track, sample.time);
+    if (!row || !Number.isFinite(track.spin) || !Array.isArray(track.only) || !track.only.length) return null;
+    // Ground downrange omits Earth's rotation; restore it before comparing the
+    // released inertial trajectory with the active rocket's local horizon frame.
+    var theta = (sample.downrange - track.event.downrange + MM_LAUNCH.rotationSpeed * row.age) / MM_LAUNCH.radius;
+    var sn = Math.sin(theta), cs = Math.cos(theta), radius = MM_LAUNCH.radius + sample.altitude;
+    var dx = row.x - radius * sn, dy = row.y - radius * cs;
+    var relativeX = dx * cs - dy * sn, relativeY = -(dx * sn + dy * cs);
+    var angle = track.event.pitch + track.spin * row.age - theta, k = camera.fullHeight / MM_SATURN_V_H;
+    // Register the point-mass motion at the CM centre, shared by every retained
+    // stack. Keep the released section's own geometric offset and attitude.
+    var reference = camera.topY + (8.9 + 3.2 / 2) * k - camera.y;
+    var refX = camera.x - Math.sin(sample.pitch) * reference, refY = camera.y + Math.cos(sample.pitch) * reference;
+    var centre = mmSaturnSpanCentre(track.only) * MM_SATURN_V_H, offset = (centre - 10.5) * k;
+    var releaseAngle = track.event.pitch - theta;
+    // Compress only the range, preserving its direction and initial local scale.
+    // The viewport cap keeps released hardware inspectable on narrow screens.
+    var limit = Math.min(camera.fullHeight * 0.85, camera.width * 0.22);
+    var rangeCompression = 1 / (1 + Math.hypot(relativeX, relativeY) * k / limit);
+    var fade = Math.max(0, Math.min(1, (row.age - 50) / 25));
+    var pose = { kind: track.kind, age: row.age, only: track.only, fullHeight: camera.fullHeight,
+      topY: -centre * k, angle: angle, opacity: 1 - fade * fade * (3 - 2 * fade),
+      x: refX - Math.sin(releaseAngle) * offset + relativeX * k * rangeCompression,
+      y: refY + Math.cos(releaseAngle) * offset + relativeY * k * rangeCompression,
+      relativeX: relativeX, relativeY: relativeY, rangeCompression: rangeCompression };
+    return ['x', 'y', 'angle', 'topY', 'relativeX', 'relativeY', 'rangeCompression'].every(function(key) {
+      return Number.isFinite(pose[key]); }) ? pose : null;
+  }
+  function mmDrawLaunchDebris(ctx, pose) {
+    if (!ctx || !pose || !['x', 'y', 'angle', 'topY', 'fullHeight', 'opacity'].every(function(key) {
+      return Number.isFinite(pose[key]); }) || pose.fullHeight <= 0 || pose.opacity <= 0 || !Array.isArray(pose.only)) return null;
+    var inherited = Number.isFinite(ctx.globalAlpha) ? ctx.globalAlpha : 1;
+    ctx.save(); ctx.globalAlpha = inherited * Math.min(1, pose.opacity);
+    ctx.translate(pose.x, pose.y); ctx.rotate(pose.angle);
+    mmDrawSaturnV(ctx, 0, pose.topY, pose.fullHeight, 1, { only: pose.only, orbitLight: mmLaunchSunlight(pose.angle) });
+    ctx.restore(); return pose;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    launchDebrisTrack: mmLaunchDebrisTrack, launchDebrisState: mmLaunchDebrisState,
+    launchDebrisPose: mmLaunchDebrisPose, drawLaunchDebris: mmDrawLaunchDebris
+  }); } catch (e) {}
+
 
   // Half-width of the drawn hull at height y (0 where there is no hull), for arms.
   function mmSaturnHalfWidthAt(geom, y) {
@@ -5670,7 +6984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ctx.lineTo(cx + w1 / 2, y1); ctx.lineTo(cx - w1 / 2, y1);
       ctx.closePath(); ctx.fill();
     }
-    // Keep the established launch/TLI material unless the orbit supplies its Sun.
+    // Keep the legacy material for callers that do not supply a Sun direction.
     function material(color) {
       return orbitLight ? mmSaturnMaterialGradient(ctx, cx, y0, y1, w0, w1, color, orbitLight) : color;
     }
@@ -5791,11 +7105,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var sunLon = (termLon + 90) * MM_DEG;
     return Math.max(-1, Math.min(1, u * Math.sin(sunLon) + Math.sqrt(Math.max(0, 1 - u * u - v * v)) * Math.cos(sunLon)));
   }
-  var _mmLunarLightMask = null, _mmLunarLightMaskLon = null;
-  function mmMoonNight(ctx, cx, cy, r, termLon) {
+
+  // Illustrative flat floor and conical wall in a local tangent plane.
+  // A ray clears this convex bowl exactly when it clears the circular rim.
+  // Depth is deliberately a shared teaching value, not measured crater relief.
+  function mmLunarBowlLight(x, y, sunX, sunY, sunUp, depthRatio) {
+    var d = depthRatio === undefined ? 0.1 : depthRatio, q = x * x + y * y;
+    if (![x,y,sunX,sunY,sunUp,d].every(mmNum) || q > 1 || d <= 0 || d > 0.5 ||
+        Math.abs(sunX * sunX + sunY * sunY + sunUp * sunUp - 1) > 1e-8) return null;
+    var radius = Math.sqrt(q), slope = d / 0.35;
+    var height = Math.max(-d, slope * (radius - 1)), horizontal = sunX * sunX + sunY * sunY;
+    var shadow = sunUp <= 0;
+    if (!shadow && horizontal > 1e-14) {
+      var b = x * sunX + y * sunY;
+      var exit = (-b + Math.sqrt(Math.max(0, b * b + horizontal * (1 - q)))) / horizontal;
+      shadow = height + exit * sunUp < -1e-12;
+    }
+    var wallSlope = radius > 0.65 ? slope : 0, normalLength = Math.sqrt(1 + wallSlope * wallSlope);
+    var incidence = shadow ? 0 : Math.max(0, Math.min(1, (sunUp - wallSlope * (x * sunX + y * sunY) / Math.max(radius, 1e-15)) / normalLength));
+    return { height: height, incidence: incidence, shadow: shadow, illuminated: incidence > 0 };
+  }
+  var _mmLunarCraterFrames = null;
+  function mmLunarCraterFrames() {
+    if (_mmLunarCraterFrames) return _mmLunarCraterFrames;
+    _mmLunarCraterFrames = MM_MOON_CRATERS.map(function(c) {
+      var lon = c[0] * MM_DEG, lat = c[1] * MM_DEG, rho = c[2] / (2 * 1737);
+      var sl = Math.sin(lon), cl = Math.cos(lon), sp = Math.sin(lat), cp = Math.cos(lat);
+      return { name: c[4], center: [cp * sl, sp, cp * cl], east: [cl, 0, -sl],
+        north: [-sp * sl, cp, -sp * cl], sinRadius: Math.sin(rho), cosRadius: Math.cos(rho) };
+    });
+    return _mmLunarCraterFrames;
+  }
+  // Geographic footprint on the sphere; bowl normals and rim shadows use a
+  // local tangent-plane approximation. No terrain is added to orbital dynamics.
+  function mmLunarCraterRelief(u, v, termLon) {
+    if (!mmNum(u) || !mmNum(v) || u * u + v * v > 1 || (termLon !== undefined && !mmNum(termLon))) return null;
+    var z = Math.sqrt(Math.max(0, 1 - u * u - v * v)), frames = mmLunarCraterFrames();
+    var sunLon = ((termLon === undefined ? MM_TERMINATOR_LON : termLon) + 90) * MM_DEG;
+    var sx = Math.sin(sunLon), sz = Math.cos(sunLon);
+    // Match the albedo paint order where catalogue footprints overlap.
+    for (var i = frames.length - 1; i >= 0; i--) {
+      var c = frames[i], dot = u * c.center[0] + v * c.center[1] + z * c.center[2];
+      if (dot < c.cosRadius) continue;
+      var x = (u * c.east[0] + v * c.east[1] + z * c.east[2]) / c.sinRadius;
+      var y = (u * c.north[0] + v * c.north[1] + z * c.north[2]) / c.sinRadius;
+      // Roundoff at the cap boundary must not remove its last sample.
+      var q = x * x + y * y;
+      if (q > 1) { var scale = 1 / Math.sqrt(q); x *= scale; y *= scale; }
+      var light = mmLunarBowlLight(x, y, sx * c.east[0] + sz * c.east[2],
+        sx * c.north[0] + sz * c.north[2], sx * c.center[0] + sz * c.center[2], 0.1);
+      if (!light) continue;
+      var baseIncidence = u * sx + z * sz;
+      // The curved Moon still blocks the Sun beyond its smooth horizon.
+      if (baseIncidence <= 0) { light.incidence = 0; light.shadow = true; light.illuminated = false; }
+      return Object.assign({ name: c.name, x: x, y: y, depthRatio: 0.1, baseIncidence: baseIncidence }, light);
+    }
+    return null;
+  }
+
+  var _mmLunarLightMask = null, _mmLunarLightMaskLon = null, _mmLunarLightMaskRelief = false;
+  function mmMoonNight(ctx, cx, cy, r, termLon, opts) {
+    var relief = !!(opts && opts.craterRelief === true);
     ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
-    if (_mmLunarLightMaskLon !== termLon) {
-      _mmLunarLightMaskLon = termLon; _mmLunarLightMask = false;
+    if (_mmLunarLightMaskLon !== termLon || _mmLunarLightMaskRelief !== relief) {
+      _mmLunarLightMaskLon = termLon; _mmLunarLightMaskRelief = relief; _mmLunarLightMask = false;
       try {
         var mask = document.createElement('canvas'); mask.width = mask.height = 512;
         var mctx = mask.getContext('2d'), pixels = mctx && typeof mctx.createImageData === 'function' && mctx.createImageData(512, 512);
@@ -5804,7 +7177,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             var mu = mmLunarSurfaceLight((x + 0.5 - 256) / 256, (256 - y - 0.5) / 256, termLon), i = (y * 512 + x) * 4;
             if (mu === null) continue; // one continuous mask avoids an antialiased sunrise seam
             pixels.data[i] = 4; pixels.data[i + 1] = 7; pixels.data[i + 2] = 18;
-            pixels.data[i + 3] = Math.round(255 * 0.9 * (1 - Math.pow(Math.max(0, mu), 0.55)));
+            var exposure = Math.pow(Math.max(0, mu), 0.55);
+            if (relief) {
+              // Four subpixel samples resolve small bowls and hard rim shadows.
+              // Skip them outside a conservative square around each footprint.
+              var pu = (x + 0.5 - 256) / 256, pv = (256 - y - 0.5) / 256;
+              var nearCrater = mmLunarCraterFrames().some(function(c) {
+                return Math.abs(pu - c.center[0]) <= c.sinRadius + 0.006 &&
+                  Math.abs(pv - c.center[1]) <= c.sinRadius + 0.006;
+              });
+              if (nearCrater) {
+                var sampledExposure = 0, bowlSamples = 0;
+                for (var sy = 0; sy < 2; sy++) for (var sx = 0; sx < 2; sx++) {
+                  var u = (x + 0.25 + sx * 0.5 - 256) / 256, v = (256 - y - 0.25 - sy * 0.5) / 256;
+                  var bowl = mmLunarCraterRelief(u, v, termLon);
+                  if (bowl) bowlSamples++;
+                  var sampleMu = bowl ? bowl.incidence : mmLunarSurfaceLight(u, v, termLon);
+                  sampledExposure += Math.pow(Math.max(0, sampleMu === null ? 0 : sampleMu), 0.55) / 4;
+                }
+                if (bowlSamples) exposure = sampledExposure;
+              }
+            }
+            pixels.data[i + 3] = Math.round(255 * 0.9 * (1 - exposure));
           }
           mctx.putImageData(pixels, 0, 0); _mmLunarLightMask = mask;
         }
@@ -5822,6 +7216,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       for (var row = 0; row < 48; row++) for (var col = 0; col < 48; col++) {
         var muFallback = mmLunarSurfaceLight((col + 0.5) / 24 - 1, 1 - (row + 0.5) / 24, termLon);
         if (muFallback === null || muFallback <= 0) continue;
+        var fallbackBowl = relief ? mmLunarCraterRelief((col + 0.5) / 24 - 1, 1 - (row + 0.5) / 24, termLon) : null;
+        if (fallbackBowl) muFallback = fallbackBowl.incidence;
         ctx.fillStyle = 'rgba(4,7,18,' + (0.9 * (1 - Math.pow(muFallback, 0.55))) + ')';
         ctx.fillRect(cx - r + col * step, cy - r + row * step, step, step);
       }
@@ -7859,7 +9255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ['drag', 'lift', 'gravity', 'netPlane'].forEach(function(key) { vectors[key] = mmEntryDynamicsArrow(sample.forces[key], base.centerX, base.centerY, base.accelerationScale); });
     var speed = Math.hypot(sample.velocity.x, sample.velocity.y), velocity = mmEntryDynamicsArrow({ x: speed ? sample.velocity.x / speed : 0, y: speed ? sample.velocity.y / speed : 0 }, base.centerX, base.centerY, 54);
     var bank = mmEntryDynamicsArrow({ x: sample.liftLateral, y: sample.liftPlane, forceMagnitude: sample.liftMagnitudeForce }, 150, 110, base.bankScale);
-    var chart = base.chart, markers = {};
+    chart = base.chart; var markers = {};
     ['kinetic', 'potential', 'dragWork'].forEach(function(key) { markers[key] = Object.freeze({ x: chart.left + (chart.right - chart.left) * sample.time / chart.duration,
       y: chart.bottom - (chart.bottom - chart.top) * (sample.energy[key] - chart.min) / (chart.max - chart.min) }); });
     return Object.freeze({ base: base, sample: sample, vectors: Object.freeze(vectors), velocity: velocity, bank: bank,
@@ -8743,23 +10139,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
 
 
-  function drawStarfield(ctx, W, H, tick, count, opacity) {
-    var starOpacity=Number.isFinite(opacity)?Math.max(0,Math.min(1,opacity)):1;
-    var rng = _seededRand(7919); // fixed seed for stable positions
-    var colors = ['#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff',
-                  '#b8c8ff','#b8c8ff','#fff5d0','#ffd8b0'];
-    for (var si = 0; si < (count || 100); si++) {
-      var sx = rng.next() * W;
-      var sy = rng.next() * H;
-      var sr = 0.3 + rng.next() * 1.5;
-      var sc = colors[Math.floor(rng.next() * colors.length)];
-      var twinkle = 0.7 + 0.3 * Math.sin((tick || 0) * 0.004 + si * 1.7); // smooth breath (the abs() cusp made stars snap at their dimmest)
-      ctx.globalAlpha = twinkle * starOpacity;
-      ctx.fillStyle = sc;
-      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+  var _mmStarfieldCatalog = null;
+  // Display points, not a measured sky catalogue. Preserve the original seeded
+  // positions and color sequence; radius models an optical footprint, not size.
+  function mmStarfieldPoints(W, H, count) {
+    if (!mmNum(W) || !mmNum(H) || W <= 0 || H <= 0) return [];
+    var number = mmNum(count) ? Math.max(0, Math.min(1000, Math.floor(count))) : 100;
+    if (_mmStarfieldCatalog === null) {
+      var rng = _seededRand(7919), colors = ['#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff',
+        '#b8c8ff','#b8c8ff','#fff5d0','#ffd8b0'];
+      _mmStarfieldCatalog = [];
+      for (var i = 0; i < 1000; i++) {
+        var x = rng.next(), y = rng.next(), strength = rng.next();
+        _mmStarfieldCatalog.push({ x: x, y: y, radius: 0.3 + strength * 1.5,
+          color: colors[Math.floor(rng.next() * colors.length)], brightness: 0.22 + 0.78 * strength * strength });
+      }
     }
-    ctx.globalAlpha = 1;
+    return _mmStarfieldCatalog.slice(0, number).map(function(star) {
+      return { x: star.x * W, y: star.y * H, radius: star.radius, color: star.color, brightness: star.brightness };
+    });
   }
+  function drawStarfield(ctx, W, H, tick, count, opacity) {
+    var stars = mmStarfieldPoints(W, H, count);
+    var exposure = mmNum(opacity) ? Math.max(0, Math.min(1, opacity)) : 1;
+    var inherited = mmNum(ctx.globalAlpha) ? ctx.globalAlpha : 1;
+    if (!stars.length || exposure === 0 || inherited === 0) return;
+    // No time-dependent scintillation in the space backdrop. Scene exposure
+    // (including the launch sky fade) multiplies every point instead of being lost.
+    ctx.save();
+    stars.forEach(function(star) {
+      ctx.globalAlpha = inherited * exposure * star.brightness;
+      var glow = typeof ctx.createRadialGradient === 'function' ?
+        ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius) : null;
+      if (glow && typeof glow.addColorStop === 'function') {
+        glow.addColorStop(0, star.color); glow.addColorStop(0.35, star.color + 'f2');
+        glow.addColorStop(0.7, star.color + '59'); glow.addColorStop(1, star.color + '00');
+        ctx.fillStyle = glow;
+      } else ctx.fillStyle = star.color;
+      ctx.beginPath(); ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    starfieldPoints: mmStarfieldPoints, drawStarfield: drawStarfield
+  }); } catch (e) {}
 
   // ── Cinematic vignette overlay ──
   function drawVignette(ctx, W, H, intensity) {
@@ -11916,7 +13339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 role: 'img',
                 'data-a11y-static': 'true',
                 'aria-describedby': 'mm-launch-description',
-                'aria-label': t('stem.moonmission.launch_canvas_alt', 'Animated Saturn V launch, drawn to the rocket\'s real proportions. After a 5-second countdown it lifts off from the Florida coast, climbs through the clouds and pitches over into a gravity turn out over the Atlantic, trading straight-up climb for the sideways speed that orbit needs. As it climbs, the sky darkens from blue to black, the horizon sinks and curves, and the exhaust plume balloons as the air thins. It passes Mach 1 inside a white condensation cloud. A gauge shows how hard the air is pushing on the rocket, and a callout marks Max Q, the moment it pushes hardest. The first and second stages each drop away and tumble behind it, the escape tower flies off, and the third stage reaches orbit. Shows altitude, velocity, pitch, G-force, the push of the air and stage.'),
+                'aria-label': t('stem.moonmission.launch_canvas_alt', 'Animated Saturn V launch, drawn to the rocket\'s real proportions. After a 5-second countdown it lifts off from the Florida coast, climbs through the clouds and pitches over into a gravity turn out over the Atlantic, trading straight-up climb for the sideways speed that orbit needs. As it climbs, the sky darkens from blue to black, the horizon sinks and curves, and the exhaust plume balloons as the air thins. Near Mach 1, an illustrative moist-air condensation shroud forms around the vehicle and fades as it accelerates. A gauge shows how hard the air is pushing on the rocket, and a callout marks Max Q, the moment it pushes hardest. The first and second stages each drop away and tumble behind it, the escape tower flies off, and the third stage reaches orbit. Shows altitude, velocity, pitch, G-force, the push of the air and stage.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._launchInit) return;
@@ -11925,16 +13348,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 400;
                   cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var launchProfile = mmLaunchProfile(), savedLaunch = d.launchRun;
+                  var launchDebrisTracks = ['stage1', 'stage2', 'les'].map(function(kind) {
+                    return mmLaunchDebrisTrack(launchProfile.events[kind], kind);
+                  }).filter(Boolean);
                   var launchTime = savedLaunch ? Math.max(-5, Math.min(launchProfile.summary.duration, savedLaunch.time)) : -5;
                   var launchRecorded = !!(savedLaunch && savedLaunch.recorded && d.launchResult);
                   var launchPaused = !!d.launchPaused, launchRate = d.launchPlaybackRate || 30;
                   var launchLastTs = null, launchLastPublish = -Infinity, launchCheckpoint = '';
+                  var launchPadRelease = mmLaunchPadReleaseTime(launchProfile);
                   var launchSample = mmLaunchSample(launchProfile, Math.max(0, launchTime));
                   var tick = 0, countdown = 300, launched = false;
                   // These two values only scale the camera and plume. Flight measurements
                   // and events always come from the integrated SI sample below.
                   var altitude = 0, velocity = 0, gForce = 1, stage = 1, shakeIntensity = 0;
-                  var jettisoned = [], stagedAt = -999, lesOn = true, frameShift = 0, launchedAt = 300;
+                  var stagedAt = -999, lesOn = true, frameShift = 0, launchedAt = 300;
                   var mach1At = -1, maxQAt = -1, lastQ = 0, machNow = 0, peakQ = 0, maxQKm = 0;
                   var _lastLaunchState = null, _lastLaunchEngine = null, launchPeakPublished = !!d.launchMaxQ, launchBeepSecond = -1;
                   if (!savedLaunch && d.launchMaxQ) {
@@ -11977,39 +13404,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     cvEl.dataset.launchThrust = String(launched ? s.thrust : 0); cvEl.dataset.launchPressure = String(s.dynamicPressure);
                     cvEl.dataset.launchStage = String(s.stage); cvEl.dataset.launchPitch = String(s.pitch);
                     cvEl.dataset.launchEngine = s.engineOn && launched ? 'on' : 'off';
+                    var plumeState = mmLaunchPlumeGeometry(s, 1, launchTime);
+                    cvEl.dataset.launchPlumeActive = String(plumeState.active); cvEl.dataset.launchPlumeFuel = plumeState.fuel;
+                    cvEl.dataset.launchPlumeExpansion = String(plumeState.expansion); cvEl.dataset.launchPlumeEngines = String(plumeState.engineCount);
+                    cvEl.dataset.launchPlumeJets = String(plumeState.jets.length);
                     var host = cvEl.closest('[data-launch-workspace]'); if (!host) return;
                     var values = { time: launchTime < 0 ? 'T\u2212' + (-launchTime).toFixed(1) + ' s' : 'T+' + launchTime.toFixed(1) + ' s', altitude: (s.altitude / 1000).toFixed(1) + ' km',
                       speed: (s.speed / 1000).toFixed(3) + ' km/s', airSpeed: (s.airSpeed / 1000).toFixed(3) + ' km/s', vertical: s.radialSpeed.toFixed(0) + ' m/s', horizontal: (s.tangentialSpeed / 1000).toFixed(3) + ' km/s',
                       mass: (s.mass / 1000).toFixed(1) + ' t', propellant: (s.totalPropellant / 1000).toFixed(1) + ' t', thrust: launched ? (s.thrust / 1e6).toFixed(2) + ' MN' : '0.00 MN',
                       pressure: (s.dynamicPressure / 1000).toFixed(2) + ' kPa', load: launched ? s.loadG.toFixed(2) + ' g' : '1.00 g', downrange: (s.downrange / 1000).toFixed(1) + ' km' };
                     host.querySelectorAll('[data-launch-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-launch-value')] || ''; });
+                    host.querySelectorAll('[data-launch-chart-reading]').forEach(function(node) { node.textContent = values[node.getAttribute('data-launch-chart-reading')] || ''; });
+                    host.querySelectorAll('[data-launch-chart-time]').forEach(function(node) { node.textContent = values.time; });
+                    host.querySelectorAll('[data-launch-chart-plot-svg]').forEach(function(node) {
+                      var key = node.getAttribute('data-launch-chart-plot-svg'), maximum = Number(node.getAttribute('data-launch-chart-maximum')), divisor = Number(node.getAttribute('data-launch-chart-divisor'));
+                      var dot = node.parentNode.querySelector('[data-launch-chart-dot]');
+                      if (dot) {
+                        dot.style.left = ((20 + 560 * Math.max(0, Math.min(1, launchTime / launchProfile.summary.duration))) / 6) + '%';
+                        dot.style.top = (140 - 128 * Math.max(0, Math.min(1, s[key] / divisor / maximum))) + 'px';
+                      }
+                      node.setAttribute('aria-label', node.getAttribute('data-launch-chart-label') + ': ' + values[key] + ' at ' + values.time + '. Computed launch history from liftoff to the selected time.');
+                    });
                     var slider = host.querySelector('[data-launch-seek]'); if (slider && document.activeElement !== slider) slider.value = String(launchTime);
                     host.querySelectorAll('[data-launch-playhead]').forEach(function(node) { var x = 20 + 560 * Math.max(0, launchTime) / launchProfile.summary.duration; node.setAttribute('x1', x); node.setAttribute('x2', x); });
                     host.querySelectorAll('[data-launch-trace]').forEach(function(node) { node.setAttribute('width', 560 * Math.max(0, launchTime) / launchProfile.summary.duration); });
                   }
-                  // Deck + umbilical tower, `lift` px lower: the flight view scrolls them
-                  // away under the rising stack instead of cutting straight to open sky.
-                  // The tower stands two and a half body radii off the vehicle's side.
-                  function drawPadStructures(lift) {
-                    var towerX = W * 0.5 + 10.1 * H * 0.58 / MM_SATURN_V_H / 2 * 3.5;
-                    ctx.fillStyle = '#4b5563';
-                    ctx.fillRect(W * 0.40, H * 0.795 + lift, W * 0.22, H * 0.03);
-                    // Launch umbilical tower — lattice, not a plain grey bar
-                    ctx.fillStyle = '#6b7280';
-                    ctx.fillRect(towerX, H * 0.18 + lift, 7, H * 0.62);
-                    ctx.strokeStyle = 'rgba(156,163,175,0.75)';
-                    ctx.lineWidth = 1.5;
-                    for (var lt = 0; lt < 6; lt++) {
-                      var ly = H * (0.22 + lt * 0.1) + lift;
-                      ctx.beginPath(); ctx.moveTo(towerX, ly); ctx.lineTo(towerX + 7, ly + H * 0.05); ctx.stroke();
-                      ctx.beginPath(); ctx.moveTo(towerX + 7, ly); ctx.lineTo(towerX, ly + H * 0.05); ctx.stroke();
-                    }
-                    return towerX;
+                  // The gantry and arms share the ground-exhaust camera datum.
+                  function drawPadStructures() {
+                    var pad = mmLaunchPadGeometry(launchTime, W, H, launched ? launchSample.altitude : 0, launchPadRelease);
+                    cvEl._mmLaunchPad = pad;
+                    var condensation = mmLaunchPadCondensationGeometry(launchTime, W, H, launched ? launchSample.altitude : 0);
+                    cvEl._mmPadCondensation = condensation;
+                    mmDrawLaunchPadCondensation(ctx, condensation, mmLaunchSunlight(0));
+                    mmDrawLaunchPad(ctx, pad, mmLaunchSunlight(0));
                   }
 
-                  // The scene behind the stack. The sky comes from the air still overhead
-                  // (mmSkyAt). The horizon stays at eye level and sinks as the camera climbs
-                  // (dip = acos(R / (R + h))); only high up does the Earth look round.
+                  // The scene behind the stack. Air follows spherical viewing paths;
+                  // mmSkyAt retains the surface haze. The horizon sinks as the camera climbs
+                  // (dip = acos(R / (R + h))). Tangent rays set the full curved limb
+                  // at the Sun's nominal focal scale, independent of screen width.
                   // Kennedy is seen from the south: the Atlantic to the east (right), where
                   // the stack will fly, the coast running north to the horizon, the Vehicle
                   // Assembly Building 5.6 km off. A thing D pad-distances away sits
@@ -12018,52 +13451,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var MM_LAUNCH_CLOUDS = [[1.6, 0.16, 1], [2.4, 0.86, 0.8], [3.8, 0.3, 1.2], [5.5, 0.7, 1.05], [8, 0.1, 0.9]];   // [km up, x, nearness]
                   function drawLaunchScene(altKm, lift) {
                     var sky = mmSkyAt(altKm), cx = W * 0.5, drop = H * 0.2 + lift;
-                    var hz = H * 0.6 + H * 0.87 * Math.acos(6371 / (6371 + Math.max(0, altKm)));
-                    var sg = ctx.createLinearGradient(0, 0, 0, hz);
-                    sg.addColorStop(0, sky.top); sg.addColorStop(1, sky.bottom);
-                    ctx.fillStyle = sg; ctx.fillRect(-20, -20, W + 40, H + 40);
+                    var horizon = mmLaunchHorizonGeometry(altKm * 1000, W, H), hz = mmLaunchHorizonAt(horizon, cx);
+                    cvEl.dataset.launchHorizonDip = String(horizon.dipDegrees);
+                    cvEl.dataset.launchHorizonFocal = String(horizon.focal);
+                    cvEl.dataset.launchHorizonEye = String(horizon.eyeY);
+                    cvEl.dataset.launchHorizonCenter = String(hz);
+                    ctx.fillStyle = '#02040e'; ctx.fillRect(-20, -20, W + 40, H + 40);
                     if (sky.stars > 0) { ctx.save(); ctx.globalAlpha = sky.stars; drawStarfield(ctx, W, H, tick, 120); ctx.restore(); }
-                    // The Sun: a wide glow while there is air to scatter it, a hard disc above the air.
-                    var sunX = W * 0.74, sunY = H * 0.13, halo = H * (0.08 + 0.32 * sky.haze);
-                    var sunG = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, halo);
-                    sunG.addColorStop(0, 'rgba(255,253,240,1)'); sunG.addColorStop(Math.min(0.5, 7 / halo), 'rgba(255,247,222,0.75)'); sunG.addColorStop(1, 'rgba(255,247,222,0)');
-                    ctx.fillStyle = sunG; ctx.beginPath(); ctx.arc(sunX, sunY, halo, 0, Math.PI * 2); ctx.fill();
-                    // The Earth: the air seen edge-on along the limb, then the surface.
-                    var Rs = W * (2.4 + 60 * Math.pow(1 - Math.min(1, altKm / 120), 3)), ecy = hz + Rs;
-                    if (sky.stars > 0) {
-                      var limbG = ctx.createRadialGradient(cx, ecy, Rs, cx, ecy, Rs + H * 0.05);
-                      limbG.addColorStop(0, 'rgba(147,197,253,' + (0.9 * sky.stars) + ')'); limbG.addColorStop(1, 'rgba(147,197,253,0)');
-                      ctx.fillStyle = limbG; ctx.beginPath(); ctx.arc(cx, ecy, Rs + H * 0.05, 0, Math.PI * 2); ctx.fill();
+                    // Air lies in front of the stars. Reuse its raster while paused.
+                    var atmosphere = cvEl._mmLaunchAtmosphere, airAltitude = altKm * 1000;
+                    if (!atmosphere || atmosphere.altitude !== airAltitude || atmosphere.width !== W || atmosphere.height !== H) {
+                      atmosphere = mmLaunchAtmosphereGeometry(airAltitude, W, H);
+                      cvEl._mmLaunchAtmosphere = atmosphere;
                     }
-                    ctx.save();
-                    ctx.beginPath(); ctx.arc(cx, ecy, Rs, 0, Math.PI * 2); ctx.clip();
+                    mmDrawLaunchAtmosphere(ctx, atmosphere);
+                    // The solar disc stays small; only the atmospheric aureole fades with air.
+                    mmDrawLaunchSun(ctx, W, H, sky.haze);
+                    ctx.save(); // The surface hides the lower atmosphere at the exact spherical limb.
+                    mmLaunchHorizonPath(ctx, horizon, true); ctx.clip();
                     var seaG = ctx.createLinearGradient(0, hz, 0, H);
                     seaG.addColorStop(0, sky.limb); seaG.addColorStop(0.12, '#5b88ad'); seaG.addColorStop(1, '#16406a');
                     ctx.fillStyle = seaG; ctx.fillRect(-20, hz - 4, W + 40, H - hz + 40);
-                    // Cloud tops far below, flattened by the low angle, sliding back as the stack runs east.
-                    if (altKm > 12) {
-                      ctx.fillStyle = 'rgba(248,250,252,' + Math.min(0.28, (altKm - 12) / 80) + ')';
-                      for (var cp = 0; cp < 16; cp++) {
-                        var cv = (cp * 0.382 + 0.1) % 1, cpy = hz + (H - hz) * (0.04 + 0.96 * cv * cv), cnear = (cpy - hz) / (H - hz + 1);
-                        var cu = ((cp * 0.618 - altKm * (0.004 + 0.02 * cnear)) % 1 + 1) % 1, crx = 6 + 44 * cnear, cry = 1 + 9 * cnear;
-                        for (var cq = 0; cq < 4; cq++) {   // a soft cluster, not one hard disc
-                          ctx.beginPath(); ctx.ellipse(W * (cu * 1.3 - 0.15) + (cq - 1.5) * crx * 0.7, cpy + ((cq * 7) % 3 - 1) * cry * 0.4, crx * (0.6 + 0.2 * (cq % 2)), cry * (0.7 + 0.15 * (cq % 3)), 0, 0, Math.PI * 2); ctx.fill();
-                        }
-                      }
-                    }
                     // Florida, fading behind as the stack heads out over the ocean.
                     var landA = 1 - Math.min(1, Math.max(0, (altKm - 25) / 45));
                     if (landA > 0) {
                       var coastDx = W * 1.43 - lift * 0.9;              // where the coast runs, per unit of drop
                       var shoreX = function (y) { return cx + coastDx * (y - hz) / drop; };
-                      if (altKm < 30) {                                  // the Sun's glitter path on the water
-                        for (var gl = 0; gl < 9; gl++) {
-                          var gy = hz + 2 + gl * gl * H * 0.0022, gx = sunX + Math.sin(tick * 0.05 + gl * 1.7) * (3 + gl), gw = 6 + gl * 4;
-                          if (gx - gw / 2 < shoreX(gy) + 3 || gy > H) continue;
-                          ctx.fillStyle = 'rgba(255,250,228,' + (0.55 - gl * 0.045) + ')';
-                          ctx.fillRect(gx - gw / 2, gy, gw, 1 + gl * 0.15);
-                        }
-                      }
                       ctx.globalAlpha = landA;
                       var landG = ctx.createLinearGradient(0, hz, 0, H);
                       landG.addColorStop(0, sky.limb); landG.addColorStop(0.1, '#7d9563'); landG.addColorStop(1, '#3d6030');
@@ -12106,16 +13519,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                       ctx.globalAlpha = 1;
                     }
+                    // Preserve the close pad view, then blend to the spherical coastal surface.
+                    var surface = cvEl._mmLaunchSurface, surfaceAltitude = altKm * 1000;
+                    if (!surface || surface.altitude !== surfaceAltitude || surface.downrange !== launchSample.downrange || surface.width !== W || surface.height !== H) {
+                      surface = mmLaunchSurfaceGeometry(surfaceAltitude, launchSample.downrange, W, H);
+                      cvEl._mmLaunchSurface = surface;
+                    }
+                    mmDrawLaunchSurface(ctx, surface);
+                    // The cloud footprints cover ocean and land, inside the same curved limb.
+                    var cloudDeck = mmLaunchCloudDeckGeometry(altKm * 1000, launchSample.downrange, W, H);
+                    cvEl._mmLaunchCloudDeck = cloudDeck;
+                    mmDrawLaunchCloudDeck(ctx, cloudDeck);
                     ctx.restore();   // end Earth clip
-                    // Fair-weather cumulus the stack climbs through: nearer ones are bigger
-                    // and sweep past faster, so the climb reads as speed.
-                    MM_LAUNCH_CLOUDS.forEach(function (c) {
+                    // Illustrative cloud layers retain the original climb parallax and
+                    // deterministic drift, with varied silhouettes and one solar direction.
+                    cvEl._mmLaunchClouds = [];
+                    MM_LAUNCH_CLOUDS.forEach(function (c, index) {
                       var s = H * 0.045 * c[2], y = hz - (c[0] - altKm) * H * 0.09 * c[2], x = W * c[1] + Math.sin(tick * 0.003 + c[0]) * 6;
                       if (y < -3 * s || y > H + 3 * s) return;
-                      ctx.fillStyle = 'rgba(203,213,225,0.9)';   // shaded underside
-                      [[-1.5, 0.35, 0.75], [-0.4, 0.3, 1], [0.8, 0.35, 0.85], [1.7, 0.4, 0.6]].forEach(function (p) { ctx.beginPath(); ctx.arc(x + p[0] * s, y + p[1] * s, p[2] * s, 0, Math.PI * 2); ctx.fill(); });
-                      ctx.fillStyle = 'rgba(255,255,255,0.95)';
-                      [[-1.5, 0.15, 0.7], [-0.5, -0.15, 1], [0.6, -0.35, 1.1], [1.6, 0.1, 0.65]].forEach(function (p) { ctx.beginPath(); ctx.arc(x + p[0] * s, y + p[1] * s, p[2] * s, 0, Math.PI * 2); ctx.fill(); });
+                      var cloud = mmDrawLaunchCloud(ctx, x, y, s, index, mmLaunchSunlight(0));
+                      if (cloud) cvEl._mmLaunchClouds.push({ x: x, y: y, size: s, seed: index });
                     });
                   }
 
@@ -12145,16 +13568,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     stagedAt = stage === 3 && launchEvents.stage2 ? 300 + launchEvents.stage2.time * 2 : stage === 2 && launchEvents.stage1 ? 300 + launchEvents.stage1.time * 2 : -999;
                     lesOn = !(launchEvents.les && launchTime >= launchEvents.les.time);
-                    jettisoned = [];
-                    [['stage1', ['s1is', 's1'], 1], ['stage2', ['s4bis', 's2'], 1], ['les', ['les'], -1]].forEach(function(eventSpec) {
-                      var event = launchEvents[eventSpec[0]];
-                      if (event && launchTime >= event.time && launchTime - event.time < 75) jettisoned.push({ only: eventSpec[1], t0: 300 + event.time * 2, dir: eventSpec[2] });
-                    });
                     shakeIntensity = launched && launchSample.engineOn ? Math.min(4, lastQ / 18000 + Math.max(0, 2 - launchTime / 15)) : 0;
                     if (countdown > 0 && launchActive && Math.ceil(countdown / 60) !== launchBeepSecond) { launchBeepSecond = Math.ceil(countdown / 60); if (launchBeepSecond < 5) sfxCountdown(); }
                     recordLaunchResult(); paintLaunchInstruments();
                     if (!Number.isFinite(ts) || ts - launchLastPublish >= 250) { launchLastPublish = ts || 0; saveLaunchPlayback(); }
                     ctx.clearRect(0, 0, W, H);
+                    cvEl._mmLaunchDebris = []; cvEl._mmLaunchCamera = null; cvEl._mmLaunchGroundExhaust = null; cvEl._mmLaunchPad = null; cvEl._mmLaunchVapour = null; cvEl._mmPadCondensation = null;
                     // Narrate the ascent to the button below (state changes only).
                     var lState = countdown > 0 ? 'countdown'
                       : launchTime >= launchProfile.summary.duration ? launchProfile.summary.outcome === 'orbit' ? 'orbit' : 'cutoff'
@@ -12174,26 +13593,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       drawLaunchScene(0, 0);
                       // Saturn V standing on the deck in its real proportions.
                       var svH = H * 0.58, svCx = W * 0.5, svTop = H * 0.80 - svH;
-                      var svHw = 10.1 * svH / MM_SATURN_V_H / 2;
-                      var towerX = drawPadStructures(0);
-                      var sv = mmDrawSaturnV(ctx, svCx, svTop, svH, 1);
-                      // Swing arms to the hull: crew access at the command module hatch,
-                      // then the S-IVB, S-II and S-IC (metres down from the tower tip).
-                      ctx.fillStyle = '#9ca3af';
-                      [10.9, 27, 46, 72].forEach(function (m) {
-                        var ay = svTop + m * sv.k, ax = svCx + mmSaturnHalfWidthAt(sv, ay);
-                        ctx.fillRect(ax, ay, towerX - ax, 3);
-                      });
-                      var bodyX = svCx - svHw, bodyW = svHw * 2;
-                      // Pre-launch LOX venting — drifting steam puffs at the pad base
-                      for (var vp = 0; vp < 5; vp++) {
-                        var vph = (tick * 0.6 + vp * 47) % 60;
-                        var vpx = bodyX + bodyW * (vp % 2 === 0 ? -0.35 : 1.35) + Math.sin((tick + vp * 30) * 0.05) * 6;
-                        ctx.fillStyle = 'rgba(240,244,248,' + (0.28 * (1 - vph / 60)) + ')';
-                        ctx.beginPath();
-                        ctx.arc(vpx, H * 0.78 - vph * 0.5, 5 + vph * 0.28, 0, Math.PI * 2);
-                        ctx.fill();
-                      }
+                      drawPadStructures();
+                      var sv = mmDrawSaturnV(ctx, svCx, svTop, svH, 1, { orbitLight: mmLaunchSunlight(0) });
                       // Countdown text
                       var countSec = Math.ceil(countdown / 60);
                       ctx.fillStyle = '#ffffff';
@@ -12240,18 +13641,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // tower drop away below, then eases back to the ascent view.
                       var lift = altitude * 1.2;
                       if (lift < H) {
-                        var groundY = H * 0.80 + lift;
-                        drawPadStructures(lift);
-                        // Exhaust thrown sideways out of the flame trench.
-                        var spread = Math.min(1, (tick - launchedAt) / 60);
-                        for (var ci = 0; ci < 12; ci++) {
-                          ctx.fillStyle = 'rgba(236,239,243,' + (0.8 * (1 - ci / 13)) + ')';
-                          [-1, 1].forEach(function (sd) {
-                            ctx.beginPath();
-                            ctx.arc(W * 0.5 + sd * (12 + ci * (6 + 26 * spread)), groundY - 3 - ci * ci * 0.35 * spread, 7 + ci * 2.2 * spread + 5 * spread, 0, Math.PI * 2);
-                            ctx.fill();
-                          });
-                        }
+                        drawPadStructures();
+                        // Ground exhaust stays attached to the pad as the camera climbs.
+                        var groundExhaust = mmLaunchGroundExhaustGeometry(launchTime, W, H, launchSample.altitude, engineOn);
+                        cvEl._mmLaunchGroundExhaust = groundExhaust;
+                        mmDrawLaunchGroundExhaust(ctx, groundExhaust);
                       }
                       var zoom = Math.min(1, Math.max(0, (lift - H * 0.3) / (H * 0.7)));
                       zoom = zoom * zoom * (3 - 2 * zoom);
@@ -12268,136 +13662,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var centreBlend = Math.max(0, Math.min(1, (tick - stagedAt) / 80)); centreBlend = centreBlend * centreBlend * (3 - 2 * centreBlend);
                       frameShift = stackShift(Math.max(1, stage - 1)) + (stackShift(stage) - stackShift(Math.max(1, stage - 1))) * centreBlend;
                       var svTopF = rocketY - fullHF / 2 + frameShift;
+                      // Draw released hardware in independent inertial attitudes before
+                      // the active stack. Camera shake remains shared by the whole scene.
+                      var debrisCamera = { x: rocketX, y: rocketY, topY: svTopF, fullHeight: fullHF, width: W };
+                      var debrisPoses = launchDebrisTracks.map(function(track) {
+                        return mmLaunchDebrisPose(track, launchSample, debrisCamera);
+                      }).filter(function(pose) { return pose && pose.opacity > 0; });
+                      debrisPoses.forEach(function(pose) { mmDrawLaunchDebris(ctx, pose); });
+                      cvEl._mmLaunchCamera = debrisCamera;
+                      cvEl._mmLaunchDebris = debrisPoses;
                       ctx.save();                                   // ── vehicle attitude frame ──
                       ctx.translate(rocketX, rocketY);
                       ctx.rotate(pitchTurn);
                       ctx.translate(-rocketX, -rocketY);
-                      // Spent pieces, drawn first so the vehicle and its flame are in
-                      // front: a stage falls back along the axis, tumbling, and fades;
-                      // the escape tower pulls ahead and off to the side.
-                      var svF0k = fullHF / MM_SATURN_V_H;
-                      jettisoned = jettisoned.filter(function (j) { return tick - j.t0 < 150; });
-                      jettisoned.forEach(function (j) {
-                        var dt = tick - j.t0;
-                        var off = j.dir > 0 ? 0.6 * dt + 0.012 * dt * dt : -(1.2 * dt + 0.02 * dt * dt);
-                        var jcy = svTopF + fullHF * mmSaturnSpanCentre(j.only) + off;
-                        ctx.save();
-                        ctx.globalAlpha = Math.max(0, 1 - dt / 150);
-                        ctx.translate(rocketX - j.dir * 0.25 * dt, jcy);
-                        ctx.rotate(j.dir * 0.006 * dt);
-                        ctx.translate(-rocketX, -jcy);
-                        mmDrawSaturnV(ctx, rocketX, svTopF + off, fullHF, 1, { only: j.only });
-                        if (j.dir < 0 && dt < 45) {   // the tower's own motor, so the jettison is seen
-                          var lesY = svTopF + off + fullHF * 0.045;
-                          var lesG = ctx.createRadialGradient(rocketX, lesY, 0, rocketX, lesY, 7 * svF0k);
-                          lesG.addColorStop(0, 'rgba(255,237,160,' + (1 - dt / 45) + ')');
-                          lesG.addColorStop(1, 'rgba(251,146,60,0)');
-                          ctx.fillStyle = lesG;
-                          ctx.beginPath(); ctx.arc(rocketX, lesY, 7 * svF0k, 0, Math.PI * 2); ctx.fill();
-                        }
-                        ctx.restore();
-                      });
-                      var svF = mmDrawSaturnV(ctx, rocketX, svTopF, fullHF, stage, { les: lesOn });
-                      // Near Mach 1 the air round the vehicle drops in pressure so fast that
-                      // its water vapour condenses: the white shroud in every Saturn V film.
-                      var vapour = machNow > 0.85 && machNow < 1.5 ? Math.max(0, 1 - Math.abs(machNow - 1.1) / 0.4) : 0;
-                      if (vapour > 0) {
-                        svF.sections.forEach(function(sec) {
-                          if (sec.id !== 's1is' && sec.id !== 'sla') return;
-                          var w = Math.max(sec.w0, sec.w1), vy = sec.y0, flare = w * (sec.id === 'sla' ? 1.3 : 1.7);
-                          var vg = ctx.createLinearGradient(0, vy, 0, vy + flare);
-                          vg.addColorStop(0, 'rgba(248,250,252,' + (0.75 * vapour) + ')');
-                          vg.addColorStop(1, 'rgba(248,250,252,0)');
-                          ctx.fillStyle = vg;
-                          ctx.beginPath();
-                          ctx.moveTo(rocketX - w * 0.55, vy); ctx.lineTo(rocketX + w * 0.55, vy);
-                          ctx.lineTo(rocketX + w * 1.25, vy + flare); ctx.lineTo(rocketX - w * 1.25, vy + flare);
-                          ctx.closePath(); ctx.fill();
-                        });
-                      }
-                      var rBase = svF.nozzle;
-                      // ── Engine flame (dual envelope + Mach diamonds + particles) ──
-                      if (engineOn) {
-                      // The plume balloons as the air thins (mmPlumeGrow), fainter as it spreads.
-                      var grow = mmPlumeGrow(launchShown.altKm), fade = 1 / Math.sqrt(grow);
-                      var flameLen = (svF.k * (17 + launchNoise(3) * 8) + velocity * 1.0) * (1 + 0.35 * (grow - 1));
-                      var flameW = svF.k * (stage === 3 ? 2.6 : 5.5) + velocity * 0.15;   // across the nozzles
-                      // The F-1s burned kerosene: a bright, sooty orange plume. The J-2s
-                      // above them burned hydrogen, whose flame is nearly invisible, so
-                      // stages 2 and 3 get a faint blue plume and no smoke.
-                      var kero = stage === 1;
-                      var alphaAt = function (a) { return Math.round(a * fade * 100) / 100; };
-                      // Exhaust trail, behind the flame: a smooth column whose billows stream
-                      // back at the climb rate (the old puffs were re-randomised every frame,
-                      // so they flickered). It thins out with the air.
-                      if (kero) {
-                        var trailA = 0.35 * (1 - 0.8 * mmSkyAt(launchShown.altKm).stars);
-                        var tTop = rBase + flameLen * 0.8, tLen = H * 1.6, tw0 = flameW * Math.min(grow, 2) * 0.55;
-                        var trailG = ctx.createLinearGradient(0, tTop, 0, tTop + tLen);
-                        trailG.addColorStop(0, 'rgba(226,232,240,' + trailA + ')'); trailG.addColorStop(1, 'rgba(226,232,240,0)');
-                        ctx.fillStyle = trailG;
-                        ctx.beginPath(); ctx.moveTo(rocketX - tw0, tTop); ctx.lineTo(rocketX + tw0, tTop);
-                        ctx.lineTo(rocketX + tw0 * 3, tTop + tLen); ctx.lineTo(rocketX - tw0 * 3, tTop + tLen); ctx.closePath(); ctx.fill();
-                        for (var bi = 0; bi < 9; bi++) {
-                          var bp = ((altitude * 0.6 + bi * 48) % 432) / 432;   // 0 at the flame, 1 far behind
-                          var bw = tw0 * (1 + 2 * bp);
-                          ctx.fillStyle = 'rgba(241,245,249,' + (trailA * 0.8 * (1 - bp)) + ')';
-                          ctx.beginPath(); ctx.arc(rocketX + Math.sin(bi * 2.1) * bw * 0.35, tTop + bp * tLen * 0.7, bw * 0.75, 0, Math.PI * 2); ctx.fill();
-                        }
-                      }
-                      // Outer envelope: from the nozzles, swelling to its full width a third of the way down.
-                      var outerGrad = ctx.createLinearGradient(rocketX, rBase, rocketX, rBase + flameLen);
-                      outerGrad.addColorStop(0, kero ? 'rgba(255,120,0,' + alphaAt(0.8) + ')' : 'rgba(191,219,254,' + alphaAt(0.3) + ')');
-                      outerGrad.addColorStop(0.4, kero ? 'rgba(255,60,0,' + alphaAt(0.5) + ')' : 'rgba(129,140,248,' + alphaAt(0.12) + ')');
-                      outerGrad.addColorStop(1, kero ? 'rgba(200,0,0,0)' : 'rgba(99,102,241,0)');
-                      ctx.fillStyle = outerGrad;
-                      ctx.beginPath();
-                      ctx.moveTo(rocketX - flameW, rBase);
-                      ctx.bezierCurveTo(rocketX - flameW * grow, rBase + flameLen * 0.3, rocketX - flameW * grow * 0.7, rBase + flameLen * 0.75, rocketX, rBase + flameLen);
-                      ctx.bezierCurveTo(rocketX + flameW * grow * 0.7, rBase + flameLen * 0.75, rocketX + flameW * grow, rBase + flameLen * 0.3, rocketX + flameW, rBase);
-                      ctx.fill();
-                      // Inner core (white-yellow, narrow)
-                      var innerGrad = ctx.createLinearGradient(rocketX, rBase, rocketX, rBase + flameLen * 0.7);
-                      innerGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
-                      innerGrad.addColorStop(0.3, kero ? 'rgba(255,240,100,0.7)' : 'rgba(224,231,255,0.4)');
-                      innerGrad.addColorStop(1, kero ? 'rgba(255,180,0,0)' : 'rgba(199,210,254,0)');
-                      ctx.fillStyle = innerGrad;
-                      ctx.beginPath();
-                      ctx.moveTo(rocketX - flameW * 0.4, rBase);
-                      ctx.quadraticCurveTo(rocketX - flameW * 0.2, rBase + flameLen * 0.3, rocketX, rBase + flameLen * 0.7);
-                      ctx.quadraticCurveTo(rocketX + flameW * 0.2, rBase + flameLen * 0.3, rocketX + flameW * 0.4, rBase);
-                      ctx.fill();
-                      // Mach diamonds (bright spots in the exhaust at high velocity)
-                      if (kero && velocity > 5) {
-                        ctx.shadowColor = 'rgba(255,240,180,0.9)'; ctx.shadowBlur = 8;
-                        ctx.fillStyle = 'rgba(255,255,200,0.6)';
-                        for (var md = 0; md < 3; md++) {
-                          var mdy = rBase + flameLen * (0.15 + md * 0.18);
-                          var mdSize = 2 - md * 0.4;
-                          ctx.beginPath(); ctx.arc(rocketX, mdy, mdSize, 0, Math.PI * 2); ctx.fill();
-                        }
-                        ctx.shadowBlur = 0;
-                      }
-                      // Exhaust particles (scattered sparks)
-                      ctx.globalAlpha = kero ? 0.6 : 0;
-                      for (var epi = 0; epi < 6 && kero; epi++) {
-                        var epx = rocketX + (launchNoise(10 + epi) - 0.5) * flameW * 1.5;
-                        var epy = rBase + flameLen * (0.3 + launchNoise(20 + epi) * 0.7);
-                        var epr = 0.5 + launchNoise(30 + epi) * 1.5;
-                        ctx.fillStyle = epi < 3 ? 'rgba(255,200,50,0.7)' : 'rgba(255,100,0,0.5)';
-                        ctx.beginPath(); ctx.arc(epx, epy, epr, 0, Math.PI * 2); ctx.fill();
-                      }
-                      ctx.globalAlpha = 1;
-                      }   // engineOn
+                      var vapour = mmLaunchVapourGeometry(launchSample, rocketX, svTopF, fullHF, launchTime);
+                      cvEl._mmLaunchVapour = vapour;
+                      mmDrawLaunchVapour(ctx, vapour, 'back', mmLaunchSunlight(pitchTurn));
+                      var svF = mmDrawSaturnV(ctx, rocketX, svTopF, fullHF, stage, { les: lesOn, orbitLight: mmLaunchSunlight(pitchTurn) });
+                      mmDrawLaunchVapour(ctx, vapour, 'front', mmLaunchSunlight(pitchTurn));
+                      mmDrawLaunchPlume(ctx, rocketX, svF.nozzle, mmLaunchPlumeGeometry(launchSample, svF.k, launchTime));
                       ctx.restore(); // ── end vehicle attitude frame (flame + smoke trail
                                      //    stay inside it, so the exhaust follows the nose) ──
 
                       ctx.restore(); // end shake
 
+                      // Compact telemetry leaves the Sun and vehicle clear on phone canvases.
+                      var compactHud = W <= 480;
+                      if (compactHud) {
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(2,6,23,0.82)'; ctx.fillRect(8, H - 76, W - 16, 68);
+                        var hudCells = [
+                          ['ALTITUDE', launchShown.altKm >= 1 ? launchShown.altKm.toFixed(1) + ' km' : Math.round(launchShown.altKm * 1000) + ' m'],
+                          ['VELOCITY', Math.round(launchShown.velMs).toLocaleString('en-US') + ' m/s'],
+                          ['STAGE', stage + '/3'],
+                          ['PITCH', Math.round(pitchTurn * 180 / Math.PI) + '° from up'],
+                          ['G-FORCE', gForce.toFixed(1) + 'g'],
+                          ['AIR PUSH', (lastQ / 1000).toFixed(1) + ' kPa']
+                        ];
+                        hudCells.forEach(function(cell, index) {
+                          var cellX = 14 + (index % 3 + 0.5) * (W - 28) / 3;
+                          var cellY = H - 64 + Math.floor(index / 3) * 31;
+                          ctx.textAlign = 'center'; ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#7dd3fc';
+                          ctx.fillText(cell[0], cellX, cellY);
+                          ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#ffffff';
+                          if (index === 4) ctx.fillStyle = gForce > 4 ? '#f87171' : gForce > 3 ? '#fbbf24' : '#4ade80';
+                          ctx.fillText(cell[1], cellX, cellY + 15);
+                        });
+                        ctx.restore();
+                      } else {
                       // HUD overlay
                       ctx.fillStyle = 'rgba(0,0,0,0.5)';
                       ctx.fillRect(8, 8, 150, 108);
-                      ctx.fillRect(W - 158, W < 330 ? 124 : 8, 150, 108);   // right box drops under the left on narrow canvases (they collided < ~324px)
+                      ctx.fillRect(W - 158, 8, 150, 108);
                       ctx.font = 'bold 10px monospace';
                       ctx.textAlign = 'left';
                       ctx.fillStyle = '#38bdf8';
@@ -12422,9 +13738,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillStyle = '#fff'; ctx.font = '12px monospace';
                       ctx.fillText(Math.round(pitchTurn * 180 / Math.PI) + '° from up', 52, 104);   // '° from vertical' ran past the box edge
 
-                      // G-force meter (right side; follows the narrow-screen drop)
+                      // G-force meter
                       ctx.save();
-                      if (W < 330) ctx.translate(0, 116);
                       ctx.textAlign = 'right';
                       ctx.font = 'bold 10px monospace';
                       ctx.fillStyle = '#fbbf24';
@@ -12451,11 +13766,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (maxQAt > 0) { ctx.textAlign = 'left'; ctx.font = '10px monospace'; ctx.fillStyle = '#e2e8f0'; ctx.fillText('peak at ' + maxQKm.toFixed(1) + ' km', W - 148, 108); }
                       ctx.restore();
 
+                      }
+
                       // Mach 1 and Max Q, placed by the model (above), explained in words.
                       if (stage === 1 && mach1At > 0) {
-                        // Below the HUD boxes (they end 116px down), and below both on a
-                        // narrow canvas, where the right box drops under the left.
-                        var bnY = W < 330 ? 252 : Math.max(H * 0.3, 136);
+                        // Compact callouts stay above the vehicle; telemetry sits at the bottom.
+                        var bnY = compactHud ? 82 : Math.max(H * 0.3, 136);
                         var qRecent = maxQAt > 0 && tick - maxQAt < 30;
                         var qFresh = qRecent && lastQ >= peakQ * 0.98;   // "now" only within 2% of the measured peak
                         ctx.textAlign = 'center';
@@ -12490,11 +13806,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.textAlign = 'center';
                         ctx.globalAlpha = Math.min(1, (75 - (tick - launchedAt)) / 25);
                         ctx.font = 'bold 22px monospace';
-                        var lofW = ctx.measureText('LIFTOFF!').width + 20;
+                        var lofW = ctx.measureText('LIFTOFF!').width + 20, liftoffY = compactHud ? 28 : H * 0.93;
                         ctx.fillStyle = 'rgba(15,23,42,0.6)';
-                        ctx.fillRect(W * 0.5 - lofW / 2, H * 0.93 - 21, lofW, 29);
+                        ctx.fillRect(W * 0.5 - lofW / 2, liftoffY - 21, lofW, 29);
                         ctx.fillStyle = '#ffffff';
-                        ctx.fillText('LIFTOFF!', W * 0.5, H * 0.93);
+                        ctx.fillText('LIFTOFF!', W * 0.5, liftoffY);
                         ctx.globalAlpha = 1;
                       }
 
@@ -12544,20 +13860,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 var flightButton = { padding: '8px 12px', minHeight: '40px', border: '1px solid #475569', borderRadius: '8px', background: '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 600 };
                 function launchControl(ev, action, value) { var host = ev.currentTarget.closest('[data-launch-workspace]'), canvas = host && host.querySelector('[data-launch-canvas]'); if (canvas && canvas._launchAction) canvas._launchAction(action, value); }
                 function launchChart(key, title, divisor, unit, color) {
-                  var points = [], rows = uiLaunch.samples, maximum = Math.max.apply(null, rows.map(function(row) { return row[key] / divisor; })) * 1.08 || 1;
+                  var points = [], rows = uiLaunch.samples, increment = key === 'altitude' ? 50 : 2;
+                  var maximum = Math.max(increment, Math.ceil(Math.max.apply(null, rows.map(function(row) { return row[key] / divisor; })) / increment) * increment);
+                  function chartY(value) { return 140 - 128 * Math.max(0, Math.min(1, value / divisor / maximum)); }
                   var stride = Math.max(1, Math.floor(rows.length / 180));
-                  for (var chartRow = 0; chartRow < rows.length; chartRow += stride) { var row = rows[chartRow]; points.push((20 + 560 * row.time / uiLaunch.summary.duration).toFixed(2) + ',' + (82 - 68 * row[key] / divisor / maximum).toFixed(2)); }
-                  var last = rows[rows.length - 1]; points.push('580,' + (82 - 68 * last[key] / divisor / maximum).toFixed(2));
-                  var cursor = 20 + 560 * Math.max(0, uiLaunchTime) / uiLaunch.summary.duration;
-                  return h('figure', { key: key, style: { margin: 0, padding: '8px', minWidth: 0, borderRadius: '8px', background: '#091426' } },
-                    h('figcaption', { style: { color: color, fontSize: '12px', fontWeight: 700 } }, title + ' (' + unit + ')'),
-                    h('svg', { viewBox: '0 0 600 110', role: 'img', 'aria-label': title + ' along the reviewed launch timeline. Exact readings are in the flight instruments.', style: { width: '100%', display: 'block' } },
-                      h('defs', null, h('clipPath', { id: 'mm-launch-trace-' + key }, h('rect', { 'data-launch-trace': true, x: 20, y: 0, width: Math.max(0, cursor - 20), height: 110 }))),
-                      h('line', { x1: 20, x2: 580, y1: 82, y2: 82, stroke: '#475569' }),
-                      h('polyline', { points: points.join(' '), fill: 'none', stroke: color, strokeWidth: 2, clipPath: 'url(#mm-launch-trace-' + key + ')' }),
-                      h('line', { 'data-launch-playhead': true, x1: cursor, x2: cursor, y1: 6, y2: 86, stroke: '#f8fafc', strokeWidth: 1.5 }),
-                      h('text', { x: 20, y: 103, fill: '#cbd5e1', fontSize: 12 }, '0 s'),
-                      h('text', { x: 580, y: 103, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12 }, uiLaunch.summary.duration.toFixed(0) + ' s')));
+                  for (var chartRow = 0; chartRow < rows.length; chartRow += stride) { var row = rows[chartRow]; points.push((20 + 560 * row.time / uiLaunch.summary.duration).toFixed(2) + ',' + chartY(row[key]).toFixed(2)); }
+                  var last = rows[rows.length - 1]; points.push('580,' + chartY(last[key]).toFixed(2));
+                  var cursor = 20 + 560 * Math.max(0, Math.min(uiLaunch.summary.duration, uiLaunchTime)) / uiLaunch.summary.duration;
+                  var current = mmLaunchSample(uiLaunch, Math.max(0, uiLaunchTime));
+                  var reading = (current[key] / divisor).toFixed(key === 'altitude' ? 1 : 3) + ' ' + unit;
+                  var timeLabel = uiLaunchTime < 0 ? 'T\u2212' + (-uiLaunchTime).toFixed(1) + ' s' : 'T+' + uiLaunchTime.toFixed(1) + ' s';
+                  return h('figure', { key: key, 'data-launch-chart': key, style: { margin: 0, padding: '12px', minWidth: 0, border: '1px solid #24354c', borderRadius: '10px', background: '#091426' } },
+                    h('figcaption', null,
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: '4px 12px' } },
+                        h('span', { style: { color: color, fontSize: '12px', fontWeight: 700 } }, title + ' (' + unit + ')'),
+                        h('strong', { 'data-launch-chart-reading': key, style: { color: '#f8fafc', fontSize: '16px', fontVariantNumeric: 'tabular-nums' } }, reading)),
+                      h('span', { 'data-launch-chart-time': key, style: { display: 'block', marginTop: '3px', color: '#cbd5e1', fontSize: '11px', fontVariantNumeric: 'tabular-nums' } }, timeLabel)),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '32px minmax(0, 1fr)', columnGap: '8px', marginTop: '8px' } },
+                      h('div', { 'data-launch-chart-axis': 'y', 'aria-hidden': true, style: { position: 'relative', height: '160px', color: '#cbd5e1', fontSize: '11px', fontVariantNumeric: 'tabular-nums' } }, [maximum, maximum / 2, 0].map(function(tick, tickIndex) {
+                        return h('span', { key: tickIndex, 'data-launch-chart-tick': true, style: { position: 'absolute', right: 0, top: (12 + tickIndex * 64) + 'px', transform: 'translateY(-50%)' } }, String(tick));
+                      })),
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { 'data-launch-chart-plot': key, style: { position: 'relative', height: '160px' } },
+                          h('svg', { 'data-launch-chart-plot-svg': key, 'data-launch-chart-label': title, 'data-launch-chart-maximum': maximum, 'data-launch-chart-divisor': divisor, viewBox: '0 0 600 160', preserveAspectRatio: 'none', role: 'img', 'aria-label': title + ': ' + reading + ' at ' + timeLabel + '. Computed launch history from liftoff to the selected time.', style: { width: '100%', height: '160px', display: 'block', overflow: 'visible' } },
+                            h('defs', null, h('clipPath', { id: 'mm-launch-trace-' + key }, h('rect', { 'data-launch-trace': true, x: 20, y: 0, width: Math.max(0, cursor - 20), height: 160 }))),
+                            [12, 76, 140].map(function(y) { return h('line', { key: y, x1: 20, x2: 580, y1: y, y2: y, stroke: y === 140 ? '#64748b' : '#334155', strokeWidth: 1, vectorEffect: 'non-scaling-stroke', strokeDasharray: y === 140 ? undefined : '3 5' }); }),
+                            h('polyline', { points: points.join(' '), fill: 'none', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke', clipPath: 'url(#mm-launch-trace-' + key + ')' }),
+                            h('line', { 'data-launch-playhead': true, x1: cursor, x2: cursor, y1: 6, y2: 146, stroke: '#f8fafc', strokeWidth: 1, vectorEffect: 'non-scaling-stroke', opacity: 0.7 })),
+                          h('span', { 'data-launch-chart-dot': key, 'aria-hidden': true, style: { position: 'absolute', left: (cursor / 6) + '%', top: chartY(current[key]) + 'px', transform: 'translate(-50%, -50%)', width: '8px', height: '8px', boxSizing: 'border-box', border: '1px solid #f8fafc', background: color, borderRadius: '50%', pointerEvents: 'none' } })),
+                        h('div', { 'data-launch-chart-axis': 'x', 'aria-hidden': true, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', padding: '0 3.333333%', color: '#cbd5e1', fontSize: '11px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } },
+                          h('span', null, '0 s'), h('span', null, 'Flight time'), h('span', null, uiLaunch.summary.duration.toFixed(0) + ' s')))));
                 }
                 var launchMetrics = [['time', 'Flight time'], ['altitude', 'Altitude'], ['speed', 'Inertial speed'], ['airSpeed', 'Speed through air'], ['vertical', 'Vertical speed'], ['horizontal', 'Sideways speed'], ['mass', 'Vehicle mass'], ['propellant', 'Propellant aboard'], ['thrust', 'Engine thrust'], ['pressure', 'Dynamic pressure'], ['load', 'Crew load'], ['downrange', 'Downrange']];
                 return h('div', { 'data-launch-instruments': true, style: { background: '#0f172a', color: '#e2e8f0', border: '1px solid #334155', borderRadius: '12px', padding: '14px', marginBottom: '14px' } },
@@ -12578,14 +13910,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       return h('button', { key: milestone[0], type: 'button', 'data-launch-milestone': milestone[0], style: flightButton, onClick: function(ev) { launchControl(ev, 'seek', eventTime); } }, milestone[1]);
                     })),
                   h('p', { style: { fontSize: '11px', color: '#cbd5e1', marginBottom: '10px' } }, 'The final five seconds of countdown run in real time. Flight uses the selected speed. Scrub or choose a milestone to inspect the computed flight; Show launch result also works while paused.'),
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '8px' } }, launchChart('altitude', 'Altitude', 1000, 'km', '#7dd3fc'), launchChart('speed', 'Inertial speed', 1000, 'km/s', '#fde68a')),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '12px' } }, launchChart('altitude', 'Altitude', 1000, 'km', '#7dd3fc'), launchChart('speed', 'Inertial speed', 1000, 'km/s', '#fde68a')),
                   d.launchRun && d.launchRun.recorded && d.launchResult && h('div', { 'data-launch-outcome': d.launchResult.outcome, role: 'status', style: { fontSize: '13px', color: d.launchResult.outcome === 'orbit' ? '#86efac' : '#fde68a', marginTop: '12px' } },
                     d.launchResult.outcome === 'orbit' ? 'Parking orbit: ' + (d.launchResult.perigee / 1000).toFixed(1) + ' km lowest altitude (perigee), ' + (d.launchResult.apogee / 1000).toFixed(1) + ' km highest altitude (apogee). ' + (d.launchResult.propellantRemaining / 1000).toFixed(1) + ' t of propellant remains for the next burn.' : 'Engine cutoff: this trajectory does not form a bound parking orbit above 100 km.'),
                   h('details', { 'data-launch-model-note': true, style: { marginTop: '12px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.6 } },
                     h('summary', { style: { cursor: 'pointer' } }, 'How this launch model works'),
                     h('p', null, 'The model integrates motion around a spherical Earth using thrust, changing vehicle mass, gravity and atmospheric drag. A prescribed pitch program and simplified guidance aim for a parking orbit near 185 km. Stage and tower jettisons remove mass. The third stage retains propellant for trans-lunar injection.'),
                     h('p', null, 'Inertial speed includes the initial eastward rotation of Earth near Cape Kennedy. Speed through air drives Mach and dynamic pressure. Crew load measures non-gravitational acceleration; free fall reads zero. Stage constants and guidance are rounded educational approximations rather than a replay of Apollo flight telemetry.'),
-                    h('p', null, 'The camera, plume and separation motion are enlarged or slowed for clarity. Actual times and measurements appear in the instruments. The next phase uses a circular 185 km reference orbit for the burn-window exercise.'),
+                    h('p', null, 'Exhaust starts at the drawn engine bells and widens as measured ambient pressure falls. The first-stage kerosene plume is brighter than the hydrogen upper-stage exhaust. Three projected columns represent the five-engine stages; the middle column dims when the center engine shuts down, while the front and rear engines remain visible in projection. Plume size, color, brightness and atmospheric trail are illustrative; nozzle flow, shock cells and exhaust chemistry are not simulated.'),
+                    h('p', null, 'Released stages and the escape tower inherit the measured launch velocity, receive an illustrative separation impulse, then coast under central Earth gravity. Their attitudes turn independently of the powered stack. Separation distance is compressed to keep the hardware in view; impulse strengths, tumble rates and fade are illustrative. Drag, torque and finite separation-motor burns are omitted. The camera and plume are enlarged or slowed for clarity. Stars stay steady and fade with the teaching sky exposure; their positions, brightness and optical spread are illustrative. The Sun disc uses its angular size at 1 au with a nominal 60-degree vertical field. Earth’s horizon uses the same focal scale and rays tangent to the spherical Earth at the measured altitude; resizing crops the view consistently. The sky integrates an exponential air density along spherical view rays inside a 120 km shell, using an 8 km density scale height. The longer paths near the curved horizon stay bright as the upper sky darkens. Shorter wavelengths scatter more strongly; a Rayleigh-like angular pattern follows the displayed Sun. Color, exposure and the local fading of stars are illustrative. Sun-path attenuation, aerosols, multiple scattering, refraction and weather are omitted. The Sun’s atmospheric glow fades as the air thins. Launch clouds have varied outlines, flatter bases, soft internal shading and highlights toward the same fixed Sun. Their shapes, altitudes, drift and brightness are illustrative; weather and volumetric light scattering are not simulated. Distant cloud footprints project onto the spherical Earth using measured altitude and downrange; their layout, size, shading and haze are illustrative, and cloud height and relief are omitted. Above the close pad view, coastal terrain shares the spherical camera and measured downrange. The coast and lagoons are illustrative geography; colors, haze and water roughness are display choices. Water reflection follows the displayed Sun, local surface normal and viewing direction, and is masked by the same land fraction used for color. The surface appears between 1.5 and 1.6 km; one shoreline then morphs from the close-camera view to the spherical view by 6 km. Near Mach 1, curved condensation shrouds follow the retained vehicle sections and pitch. Their display strength uses the sampled air-relative Mach number, dynamic pressure and density, with a smooth fade through the transonic range. Moisture, collar placement, shape, brightness and flutter are illustrative. Humidity, dew point and local flow are not calculated; these shrouds do not predict condensation or shock strength. Ground exhaust and condensation spread from the flame trench in rising billows; spread, turbulence, dissipation and warm illumination are illustrative. Hull shading and fins follow the fixed displayed Sun through pitch and stage tumble. Structural ribs, joints, service fairings and radiator panels follow each retained stage or module; fine detail fades at small sizes. Engine bells have curved divergent outlines with the same attachment and exhaust exit positions. Residual condensation around cold pad hardware drifts and fades through liftoff. Its sources follow the standing tank sections; old clouds remain in the pad frame as the rocket rises. Source positions, emission taper, breeze, settling and mixing are illustrative. Tank vent-valve states, boiloff and humidity are not calculated. The launch tower has four service arms already stowed during the final countdown; five remaining arms release after the sampled vehicle rises 19.05 mm, then swing back over 6.4–9 seconds. Tower dimensions, attachment positions and swing easing are illustrative, as are detail placement, bell contours, framing, glare and material contrast. Actual times and measurements appear in the instruments. The next phase uses a circular 185 km reference orbit for the burn-window exercise.'),
                     h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'NASA Apollo 11 Mission Report')));
               })(),
               h('div', { className: 'flex items-center justify-between' },
@@ -13126,7 +14459,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 return h('div', { id: 'mm-lunar-atlas-selection', 'data-lunar-atlas-selection': true, 'aria-live': 'polite', 'aria-atomic': true, style: { fontSize: '13px', color: '#f8fafc', lineHeight: 1.7, margin: '8px 0' } },
                   h('strong', null, 'Apollo ' + site.m + ' — ' + site.name), h('div', null, Math.abs(site.lat).toFixed(3) + '\u00b0' + (site.lat < 0 ? 'S' : 'N') + ', ' + Math.abs(site.lon).toFixed(3) + '\u00b0' + (site.lon < 0 ? 'W' : 'E')),
                   h('div', null, 'Sun elevation: ' + light.elevation.toFixed(1) + '\u00b0 · ' + (light.daylight ? 'Daylight' : 'Below the horizon') + ' in this preset')); })(),
-              h('p', { id: 'mm-lunar-light-note', 'data-lunar-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Compare every site under the same Apollo 11 daylight preset. Other missions landed on different dates. The Sun lies on the equator in this spherical model; surface normals determine its elevation. Terrain, the brightness curve and the faint earthshine are illustrative.'),
+              h('p', { id: 'mm-lunar-light-note', 'data-lunar-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Compare every site under the same Apollo 11 daylight preset. Other missions landed on different dates. The Sun lies on the equator in this spherical model; surface normals determine its elevation. Landmark crater bowls follow the same Sun, including rim shadows. Their shared depth, flat floors and sloping walls are illustrative, not measured topography. The brightness curve and faint earthshine are illustrative.'),
               h('button', { type: 'button', 'aria-pressed': !!d.moonLabels, 'data-moonmission-moon-labels': true, style: buttonStyle, onClick: function() { upd('moonLabels', !d.moonLabels); } }, d.moonLabels ? 'Hide the sea keys and Apollo site numbers' : 'Show the seas and every Apollo landing site'),
               d.moonLabels && h('div', { 'data-moonmission-moon-sites': true, style: { fontSize: '12px', color: '#e2e8f0', marginTop: '8px' } }, h('p', null, 'All six landings were on the near side, the half that always faces Earth.'),
                 h('ul', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '4px', paddingLeft: '16px' } }, MM_MOON_SITES.map(function(site) { return h('li', { key: site.m }, 'Apollo ' + site.m + ' \u2014 ' + site.name); }))),

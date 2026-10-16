@@ -488,14 +488,17 @@ describe('guided hive inspection: judge first, then read the verdict', () => {
   it('holds back the brood verdict until the student records a judgement, then scores it', async () => {
     await mount({ day: 40, queenHealth: 100, workers: 8000 }); // below the crowding at which queen cells appear
     expect(host.querySelector('[data-beehive-guided-inspection="open"]')).toBeTruthy();
-    expect(host.textContent).toContain('Judge the brood pattern');
-    expect(host.textContent).not.toContain('wall-to-wall');
+    expect(host.querySelector('[role="radiogroup"][aria-label="Brood pattern"]').textContent).toContain('The brood pattern is');
+    expect(host.querySelector('[data-inspection-feedback]')).toBeNull();
     expect(host.querySelector('[data-inspection-record]').disabled).toBe(true);
     await click('[data-inspection-choice="brood:solid"]');
     await click('[data-inspection-choice="cells:no"]');
     await click('[data-inspection-record]');
     expect(latest.beehive.lastInspection).toMatchObject({ day: 40, brood: 'solid', broodCorrect: true, cells: 'no', cellsCorrect: true });
-    expect(host.textContent).toContain('wall-to-wall');
+    const broodResult = host.querySelector('[data-inspection-result="brood"]');
+    expect(broodResult.getAttribute('data-result')).toBe('match');
+    expect(broodResult.querySelector('[data-inspection-answer]').textContent).toBe('Solid, mostly continuous');
+    expect(broodResult.querySelector('[data-inspection-expected]').textContent).toBe('Solid, mostly continuous');
   });
 
   it('keeps the hive closed in winter', async () => {

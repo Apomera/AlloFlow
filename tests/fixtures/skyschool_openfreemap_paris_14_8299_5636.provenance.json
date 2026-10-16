@@ -1,0 +1,36 @@
+{
+  "fixtureFormat": "Full HTTP response body after gzip decompression; unmodified Mapbox Vector Tile protobuf",
+  "provider": "OpenFreeMap",
+  "dataAttribution": "© OpenMapTiles. Data from © OpenStreetMap contributors.",
+  "dataLicense": "OpenStreetMap data: ODbL 1.0; OpenMapTiles schema: CC-BY 4.0",
+  "usage": "One bounded developer validation download per city using the identifying User-Agent SkySchool-map-provider-validation/1.0. This is a regression test fixture, not an offline bulk map pack.",
+  "termsUrl": "https://openfreemap.org/tos/",
+  "schemaUrl": "https://openmaptiles.org/docs/schema/",
+  "providerSourceUrl": "https://github.com/hyperknot/openfreemap",
+  "providerVersion": "20261011_080001_pt",
+  "zoom": 14,
+  "extent": 4096,
+  "cors": "*",
+  "httpStatus": 200,
+  "userAgent": "SkySchool-map-provider-validation/1.0",
+  "city": "Paris",
+  "cityCenter": {
+    "lat": 48.8566,
+    "lon": 2.3522
+  },
+  "tile": {
+    "z": 14,
+    "x": 8299,
+    "y": 5636
+  },
+  "sourceUrl": "https://tiles.openfreemap.org/planet/20261011_080001_pt/14/8299/5636.pbf",
+  "retrievedAt": "2026-10-15T12:51:33Z",
+  "sourceLastModified": "2026-10-11T13:56:48Z",
+  "decodedBytes": 1099961,
+  "compressedBytes": 644188,
+  "sha256": "c62783dd7baeaf1e53a610fc873949df7b53ad41672f28a7bfdba5288d27b85a",
+  "buildingFeatures": 124,
+  "buildingRings": 5778,
+  "buildingPoints": 46265,
+  "transportationFeatures": 1496
+}

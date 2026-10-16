@@ -39,14 +39,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   })();
   var birdlab3DLoadPromise = null;
   var birdlab3DLoadedScripts = {};
+  function hasBirdlabMammals() { return !!(window.BirdLab3DMammals && typeof window.BirdLab3DMammals.create === 'function'); }
+  function hasBirdlabWoodlandBirds() {
+    return !!(window.AvianWoodlandBirds && typeof window.AvianWoodlandBirds.create === 'function' &&
+      typeof window.AvianWoodlandBirds.supports === 'function' && window.AvianWoodlandBirds.supports('mourningDove') && window.AvianWoodlandBirds.supports('grouse') && window.AvianWoodlandBirds.supports('blueJay') && window.AvianWoodlandBirds.supports('northernCardinal'));
+  }
   function hasBirdlabFeatherArt() {
     return !!(window.AvianFeatherArt && typeof window.AvianFeatherArt.createFlightFeatherCanvas === 'function' &&
-      typeof window.AvianFeatherArt.createVaneDetailCanvases === 'function');
+      typeof window.AvianFeatherArt.createVaneDetailCanvases === 'function' &&
+      typeof window.AvianFeatherArt.applyVaneGrain === 'function' &&
+      typeof window.AvianFeatherArt.vaneGrainCacheKey === 'function');
   }
   // 3D is entirely opt-in: opening the illustrated field lab never fetches
   // Three.js or creates a WebGL context. Failed loads remain retryable.
   function loadBirdlab3D() {
-    if (window.BirdLab3D && window.BirdLab3D.mount && hasBirdlabFeatherArt()) return Promise.resolve();
+    if (window.BirdLab3D && window.BirdLab3D.mount && window.BirdLab3DWildlife && hasBirdlabMammals() && hasBirdlabFeatherArt() && hasBirdlabWoodlandBirds()) return Promise.resolve();
     if (birdlab3DLoadPromise) return birdlab3DLoadPromise;
     function load(relativePath) {
       var src;
@@ -69,6 +76,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         script.async = true;
         script.setAttribute('data-birdlab-3d-script', relativePath);
         script.onload = function() {
+          if (relativePath === 'birdlab_3d_mammals.js' && !hasBirdlabMammals()) { finish(new Error('Woodland animals are unavailable. Please retry.')); return; }
+          if (relativePath === 'avian_woodland_birds.js' && !hasBirdlabWoodlandBirds()) { finish(new Error('Woodland birds are unavailable. Please retry.')); return; }
           finish(relativePath === 'avian_feather_art.js' && !hasBirdlabFeatherArt() ? new Error('Feather artwork is unavailable. Please retry.') : null);
         };
         script.onerror = function() { finish(new Error('The 3D scene could not load. Please try again.')); };
@@ -79,6 +88,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       .then(function() { return hasBirdlabFeatherArt() ? null : load('avian_feather_art.js'); })
       .then(function() { return load('birdlab_3d_bird.js'); })
       .then(function() { return load('birdlab_3d_habitat.js'); })
+      .then(function() { return hasBirdlabWoodlandBirds() ? null : load('avian_woodland_birds.js'); })
+      .then(function() { return load('birdlab_3d_wildlife.js'); })
+      .then(function() { return hasBirdlabMammals() ? null : load('birdlab_3d_mammals.js'); })
       .then(function() { return load('birdlab_3d_engine.js'); })
       .then(function() {
         if (!window.BirdLab3D || !window.BirdLab3D.mount) throw new Error('The 3D scene is unavailable. Please try again.');
@@ -143,6 +155,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-3d button[aria-pressed="true"]:hover:not(:disabled), .birdlab-3d button[aria-pressed="true"]:focus-visible { color:#f8f9e9; background:#2c4935; border-color:#2c4935; }',
       '.birdlab-3d-hint { color:#5b6a55; font-size:11px; line-height:1.7; margin:2px 0; }',
       '.birdlab-3d-phase-note { border-left:2px solid #a27436; padding-left:10px; }',
+      '.birdlab-3d-mode { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }',
+      '.birdlab-3d-binocular-mask { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.94; }',
+      '.birdlab-3d-reticle { position:absolute; left:50%; top:50%; width:14px; height:14px; border:1px solid #fff9; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; }',
+      '.birdlab-3d-reticle[data-focus="steady"] { width:24px; height:24px; border-color:#f3dfa2; box-shadow:0 0 0 3px #26392e70; }',
+      '.birdlab-3d-reticle[data-focus="identified"] { width:24px; height:24px; border:2px solid #e2f0bd; box-shadow:0 0 0 3px #26392e70; }',
+      '.birdlab-3d-focus-meter { margin:14px 0 12px; }',
+      '.birdlab-3d-focus-meter label { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:#53694f; }',
+      '.birdlab-3d-focus-meter progress { display:block; width:100%; height:7px; margin-top:7px; accent-color:#496b44; border:0; border-radius:6px; overflow:hidden; background:#e1e7d9; }',
+      '.birdlab-3d-focus-meter progress::-webkit-progress-bar { background:#e1e7d9; }',
+      '.birdlab-3d-focus-meter progress::-webkit-progress-value { background:#496b44; }',
+      '.birdlab-3d-focus-meter progress::-moz-progress-bar { background:#496b44; }',
+      '.birdlab-3d-observation button { width:100%; margin-top:14px; }',
+      '.birdlab-3d-notebook { padding:0; margin:14px 0 0; list-style:none; display:grid; gap:14px; counter-reset:sighting; }',
+      '.birdlab-3d-notebook li { counter-increment:sighting; border-top:1px solid #dce2d3; padding-top:12px; font-size:12px; line-height:1.5; }',
+      '.birdlab-3d-notebook li::before { content:counter(sighting, decimal-leading-zero); color:#7c8a73; font-family:ui-monospace,monospace; font-size:10px; margin-right:8px; }',
+      '.birdlab-3d-notebook small { display:block; margin-top:3px; color:#617059; }',
+      '.birdlab-3d-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }',
+      '.birdlab-3d-walk-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 0; }',
+      '.birdlab-3d-walk-controls button { min-width:64px; touch-action:none; user-select:none; }',
+      '.birdlab-3d-resident-status { padding:0; margin:12px 0 0; list-style:none; display:grid; gap:12px; font-size:12px; }',
+      '.birdlab-3d-resident-status small { display:block; color:#617059; margin-top:3px; }',
       '.birdlab-3d-entry { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; border:1px solid #c4cdb8; border-radius:10px; padding:10px 13px; background:#eaf0e1; color:#2d4835; font-size:12px; }',
       '.birdlab-3d-entry strong { font-family:Georgia,serif; font-size:17px; font-weight:400; margin-right:10px; }',
       '.birdlab-3d-entry button { border:1px solid #44684c; background:#33563f; color:#fffbed; padding:10px 15px; border-radius:7px; min-height:44px; font-size:12px; font-weight:700; cursor:pointer; }',
@@ -159,7 +192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var React = props.React, h = React.createElement;
     var canvasRef = React.useRef(null), controllerRef = React.useRef(null), titleRef = React.useRef(null);
     var reduced = React.useRef(!!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
-    var initial = { ready:false, paused:reduced.current, speed:1, camera:'orbit', lighting:'daylight', phase:'perched', label:'Preparing the woodland', altitude:0, airspeed:0, wingbeat:0, time:0 };
+    var initial = { ready:false, paused:reduced.current, speed:1, camera:'orbit', mode:'guided', binoculars:false, crouching:false, observation:null, sightings:[], lighting:'daylight', repeatFlights:false, phase:'perched', label:'Preparing the woodland', altitude:0, airspeed:0, wingbeat:0, time:0 };
     var statePair = React.useState(initial), state = statePair[0], setState = statePair[1];
     var errorPair = React.useState(''), error = errorPair[0], setError = errorPair[1];
     var retryPair = React.useState(0), retry = retryPair[0], setRetry = retryPair[1];
@@ -201,14 +234,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       var controller = controllerRef.current;
       if (!controller || error) return;
       controller[method](value);
+      if(method==='setCamera'&&value!==liveState.current.camera)patch=Object.assign({},patch,{repeatFlights:false});
       if (patch) setState(function(previous) { return Object.assign({}, previous, patch); });
     }
     function togglePause() { var paused = !liveState.current.paused; command('setPaused', paused, {paused:paused}); }
-    function seek(time) { command('seek', time, {paused:true, time:time}); }
+    function seek(time) { command('seek', time, {paused:true, time:time,repeatFlights:false}); }
+    function studyHawk(time) {
+      if (['robin','chickadee','mourningDove','grouse','blueJay','northernCardinal'].indexOf(liveState.current.camera) >= 0) command('setCamera', 'orbit', {camera:'orbit'});
+      seek(time);
+    }
+    function movement(direction,pressed){var controller=controllerRef.current;if(controller&&!error)controller.setMove(direction,pressed);}
     function readout(label, value, unit, key) {
       return h('div', {key:key}, h('dt', null, label), h('dd', {'data-birdlab-3d-readout':key}, state.ready && !error ? (Number(value) || 0).toFixed(1) : '—', ' ', h('small', null, unit)));
     }
-    var disabled = !state.ready || !!error;
+    var disabled = !state.ready || !!error, free=state.mode==='free';
+    var subject = free && state.binoculars && !disabled ? state.observation : null;
+    var identified = !!(subject && subject.identified);
+    var focusProgress = subject ? Math.max(0,Math.min(1,Number(subject.progress)||0)) : 0;
+    var sightings = state.sightings || [];
+    var recorded = !!(identified && sightings.some(function(entry) { return entry.id === subject.id; }));
+    function distanceLabel(value) { return isFinite(Number(value)) ? Number(value).toFixed(1)+' m away' : 'Distance unavailable'; }
+    function visitTime(value) { var seconds=Math.max(0,Math.floor(Number(value)||0)); return Math.floor(seconds/60)+':'+('0'+seconds%60).slice(-2); }
+    var neighbor = (state.wildlife || []).filter(function(bird) { return bird.id === state.camera; })[0];
+    var watchingNeighbor = ['robin','chickadee','mourningDove','grouse','blueJay','northernCardinal'].indexOf(state.camera) >= 0;
+    var species = state.camera === 'robin' ? {name:'American robin', scientific:'Turdus migratorius', note:'Look for the warm orange breast, gray back, and pale eye markings. Watch the pauses between short movements across the forest floor.'} :
+      state.camera === 'chickadee' ? {name:'Black-capped chickadee', scientific:'Poecile atricapillus', note:'Look for the black cap and bib, white cheeks, and buff flanks. Watch its quick looks, small hops, and brief flights.'} :
+      state.camera === 'mourningDove' ? {name:'Mourning dove', scientific:'Zenaida macroura', note:'Look for the small head, warm buff breast, black wing spots, and long pointed tail. Watch its deliberate seed pecks and quick flight across the clearing.'} :
+      state.camera === 'grouse' ? {name:'Ruffed grouse', scientific:'Bonasa umbellus', note:'Look for mottled brown feathers, the small crest, and the dark band across the broad tail. Watch it search the leaf litter and make a short woodland flight.'} :
+      state.camera === 'blueJay' ? {name:'Blue jay', scientific:'Cyanocitta cristata', note:'Look for the blue crest, black necklace, barred wings, and white wingbar. Watch its alert head turns, lively ground movements, and short flights between woodland lookouts.'} :
+      state.camera === 'northernCardinal' ? {name:'Northern cardinal', scientific:'Cardinalis cardinalis', note:'This adult male has red plumage, a black face, a stout orange-red bill, and an upright crest. Watch the pauses between small hops, seed pecks, and short flights across the woodland floor.'} :
+      {name:'Red-tailed hawk', scientific:'Buteo jamaicensis', note:'Watch the separated outer feathers, the bend at the wrist, and the spreading tail as the bird slows to land.'};
+    var observation = neighbor ? neighbor.behavior : state.label;
     var phase = String(state.phase || '').toLowerCase();
     var cycleTime = ((Number(state.time) || 0) % 44 + 44) % 44;
     if (state.paused && Number(state.time) > 0 && cycleTime < 0.000001) cycleTime = 44;
@@ -219,7 +275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       {label:'Landing', time:36.8, active:/land|approach/.test(phase), note:'The wings lift, the tail fans, and the feet reach forward toward the perch.'}
     ];
     var activeMoment = moments.filter(function(moment) { return moment.active; })[0] || moments[0];
-    return h('main', {className:'birdlab-3d', 'data-birdlab-3d-shell':'true', 'data-birdlab-3d-ready':String(state.ready && !error), 'data-birdlab-3d-paused':String(state.paused), 'data-birdlab-3d-phase':phase},
+    return h('main', {className:'birdlab-3d', 'data-birdlab-3d-shell':'true', 'data-birdlab-3d-mode':free?'free':'guided', 'data-birdlab-3d-ready':String(state.ready && !error), 'data-birdlab-3d-paused':String(state.paused), 'data-birdlab-3d-phase':phase},
       h('div', {className:'birdlab-3d-inner'},
         h('nav', {className:'birdlab-3d-topbar', 'aria-label':'BirdLab navigation'},
           h('button', {type:'button', onClick:props.onBack}, '← Back to 2D habitats'),
@@ -227,34 +283,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('button', {type:'button', onClick:props.onMenu}, 'BirdLab menu')),
         h('div', {className:'birdlab-3d-eyebrow'}, 'An observation in three dimensions'),
         h('h1', {className:'birdlab-3d-heading', ref:titleRef, tabIndex:-1}, 'Woodland flight observatory'),
-        h('p', {className:'birdlab-3d-intro'}, 'Follow a red-tailed hawk from its woodland perch into the air. Move around the bird, slow down a wingbeat, and watch how its wings and tail change from takeoff to landing.'),
+        h('p', {className:'birdlab-3d-intro'}, 'Study a wingbeat, or walk into the woodland with binoculars. Meet seven woodland birds, and watch an Eastern gray squirrel forage in Free roam.'),
+        h('div',{className:'birdlab-3d-mode',role:'group','aria-label':'Observation mode'},[{id:'guided',label:'Guided study'},{id:'free',label:'Free roam'}].map(function(choice){return h('button',{key:choice.id,type:'button',disabled:disabled,'aria-pressed':String((state.mode||'guided')===choice.id),onClick:function(){command('setMode',choice.id);}},choice.label);})),
         h('div', {className:'birdlab-3d-layout'},
           h('section', {'aria-label':'Interactive 3D woodland'},
             h('div', {className:'birdlab-3d-stage'},
-              h('canvas', {key:retry, ref:canvasRef, className:'birdlab-3d-canvas', 'data-birdlab-3d-canvas':'true', tabIndex:disabled ? -1 : 0, role:'img', 'aria-label':'Three-dimensional red-tailed hawk in a woodland clearing', 'aria-describedby':'birdlab-3d-camera-help', onKeyDown:function(event) { if (event.code === 'Space' && !disabled) { event.preventDefault(); togglePause(); } }}, 'A hawk perches, takes off, flaps, glides, banks, and lands in a woodland clearing. The observation panel describes its current behavior.'),
-              h('div', {className:'birdlab-3d-scene-caption', 'aria-hidden':'true'}, 'Temperate woodland', h('strong', null, 'A hawk’s flight')),
-              state.ready && !error ? h('div', {className:'birdlab-3d-live'}, h('span', {role:'status', 'aria-live':'polite', 'aria-atomic':'true', 'data-birdlab-3d-behavior':'true'}, state.label), h('small', null, state.paused ? 'PAUSED' : 'LIVE · ' + state.speed + '×')) : null,
+              h('canvas', {key:retry, ref:canvasRef, className:'birdlab-3d-canvas', 'data-birdlab-3d-canvas':'true', tabIndex:disabled ? -1 : 0, role:'img', 'aria-label':free?'First-person woodland explorer. Move with W A S D, drag or use arrow keys to look, press B for binoculars, and C to crouch.':'Three-dimensional ' + species.name.toLowerCase() + ' in a woodland clearing', 'aria-describedby':'birdlab-3d-camera-help', onKeyDown:function(event) { if (event.code === 'Space' && !disabled) { event.preventDefault(); togglePause(); } }}, 'A hawk flies above a clearing shared by a robin, chickadee, mourning dove, ruffed grouse, and blue jay. The observation panel describes their behavior.'),
+              free&&state.binoculars?h('svg',{className:'birdlab-3d-binocular-mask',viewBox:'0 0 1000 600',preserveAspectRatio:'none','aria-hidden':'true'},h('defs',null,h('mask',{id:'birdlab-binocular-lenses'},h('rect',{width:1000,height:600,fill:'white'}),h('ellipse',{cx:360,cy:290,rx:305,ry:255,fill:'black'}),h('ellipse',{cx:640,cy:290,rx:305,ry:255,fill:'black'}))),h('rect',{width:1000,height:600,fill:'#091a14',mask:'url(#birdlab-binocular-lenses)'})):null,
+              free?h('div',{className:'birdlab-3d-reticle','aria-hidden':'true','data-focus':identified?'identified':subject?'steady':'searching'}):null,
+              h('div', {className:'birdlab-3d-scene-caption', 'aria-hidden':'true'}, 'Temperate woodland', h('strong', null, free?(state.binoculars?'Through your binoculars':state.crouching?'Crouched in the clearing':'On foot in the clearing'):watchingNeighbor ? species.name : 'A hawk’s flight')),
+              state.ready && !error ? h('div', {className:'birdlab-3d-live'}, h('span', {role:'status', 'aria-live':'polite', 'aria-atomic':'true', 'data-birdlab-3d-behavior':'true'}, free?'Free observation · wildlife chooses its own movements':observation), h('small', null, state.paused ? 'PAUSED' : free?Math.floor(state.time||0)+' s · EXPLORING':'LIVE · ' + state.speed + '×')) : null,
               (!state.ready || error) ? h('div', {className:'birdlab-3d-loading', role:error ? 'alert' : 'status'},
                 h('span', {className:'birdlab-3d-eyebrow', style:{color:'#cfdec2'}}, error ? '3D is unavailable' : 'Entering the woodland'),
                 h('h2', null, error ? 'The habitat is still here.' : 'Preparing your observation'),
                 h('p', null, error || 'Loading the bird, woodland, and light. Your illustrated and photographic habitats are a step away.'),
                 error ? h('div', {style:{display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center'}}, h('button', {type:'button', onClick:function() { setRetry(function(value) { return value + 1; }); }}, 'Retry 3D'), h('button', {type:'button', onClick:props.onBack}, 'Return to 2D habitats')) : null) : null),
-            h('div', {className:'birdlab-3d-timeline'},
+            !free?h('div', {className:'birdlab-3d-timeline'},
               h('div', {className:'birdlab-3d-timeline-label'}, h('label', {htmlFor:'birdlab-3d-timeline'}, 'Flight timeline'), h('output', {htmlFor:'birdlab-3d-timeline', 'aria-hidden':'true'}, cycleTime.toFixed(1) + ' / 44 s')),
-              h('input', {id:'birdlab-3d-timeline', type:'range', min:0, max:44, step:0.1, value:cycleTime, disabled:disabled, 'aria-valuetext':cycleTime.toFixed(1) + ' seconds of 44 seconds; ' + state.label, 'aria-describedby':'birdlab-3d-timeline-help', onChange:function(event) { seek(Number(event.target.value)); }}),
-              h('p', {id:'birdlab-3d-timeline-help', className:'birdlab-3d-hint'}, 'Drag to pause at any moment. You can still move around the bird.')),
+              h('input', {id:'birdlab-3d-timeline', type:'range', min:0, max:44, step:0.1, value:cycleTime, disabled:disabled, 'aria-valuetext':cycleTime.toFixed(1) + ' seconds of 44 seconds; ' + observation, 'aria-describedby':'birdlab-3d-timeline-help', onChange:function(event) { seek(Number(event.target.value)); }}),
+              h('p', {id:'birdlab-3d-timeline-help', className:'birdlab-3d-hint'}, state.repeatFlights ? 'Drag to stop repeating and pause at any moment. You can still move around the bird.' : 'Drag to pause at any moment. You can still move around the bird.')):null,
             h('div', {className:'birdlab-3d-controls', 'aria-label':'Flight playback'},
-              h('button', {type:'button', className:'birdlab-3d-primary', disabled:disabled, onClick:togglePause}, state.paused ? 'Play flight' : 'Pause flight'),
-              h('label', null, 'Speed', h('select', {'aria-label':'Flight playback speed', value:state.speed, disabled:disabled, onChange:function(event) { var speed = Number(event.target.value); command('setSpeed', speed, {speed:speed}); }}, h('option', {value:1}, '1× · Natural'), h('option', {value:0.5}, '½× · Slow'), h('option', {value:0.25}, '¼× · Study'))),
-              h('button', {type:'button', disabled:disabled, onClick:function() { command('restart'); }}, 'Restart flight'),
-              h('button', {type:'button', disabled:disabled, onClick:function() { command('resetView'); }}, 'Reset view')),
-            h('p', {id:'birdlab-3d-camera-help', className:'birdlab-3d-hint'}, 'Drag to look around · scroll to zoom · focus the scene and use arrow keys to orbit, + / − to zoom, Space to pause.'),
-            reduced.current ? h('p', {className:'birdlab-3d-hint'}, 'Reduced motion is on. The scene starts still; choose Play flight when you are ready.') : null),
-          h('aside', {className:'birdlab-3d-side', 'aria-label':'Flight observation'},
-            h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Species in focus'), h('h2', null, 'Red-tailed hawk'), h('p', {style:{fontStyle:'italic', marginTop:5}}, 'Buteo jamaicensis'), h('p', null, 'Watch the separated outer feathers, the bend at the wrist, and the spreading tail as the bird slows to land.'), h('dl', {className:'birdlab-3d-readouts'}, readout('Height above ground', state.altitude, 'm', 'altitude'), readout('Flight speed', state.airspeed, 'm/s', 'airspeed'), readout('Wingbeats', state.wingbeat, 'Hz', 'wingbeat'), readout('Flight time', state.time, 's', 'time')), h('p', {style:{fontSize:10}}, 'Illustrative simulation values.')),
-            h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Your viewpoint'), h('div', {className:'birdlab-3d-camera-buttons', role:'group', 'aria-label':'Camera view'}, ['orbit','follow','wide'].map(function(camera) { return h('button', {key:camera, type:'button', disabled:disabled, 'aria-pressed':String(state.camera === camera), onClick:function() { command('setCamera', camera, {camera:camera}); }}, camera === 'orbit' ? 'Orbit' : camera === 'follow' ? 'Follow' : 'Habitat'); })), h('p', null, state.camera === 'follow' ? 'Travel alongside the hawk as it crosses the clearing.' : state.camera === 'wide' ? 'See the flight path in the wider woodland.' : 'Circle the hawk to examine its wings and feather layers.'),
-              h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland light'), h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':'Woodland lighting'}, [{value:'daylight', label:'Daylight'}, {value:'golden', label:'Golden hour'}].map(function(light) { return h('button', {key:light.value, type:'button', disabled:disabled, 'aria-pressed':String(state.lighting === light.value), onClick:function() { command('setLighting', light.value, {lighting:light.value}); }}, light.label); }))),
-            h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Study a moment'), h('div', {className:'birdlab-3d-moments', role:'group', 'aria-label':'Study a flight moment'}, moments.map(function(moment) { return h('button', {key:moment.label, type:'button', disabled:disabled, 'aria-pressed':String(moment.active), onClick:function() { seek(moment.time); }}, moment.label); })), h('p', {className:'birdlab-3d-phase-note'}, activeMoment.note), h('p', {style:{fontSize:10}}, 'Choose a moment to pause and inspect its posture.'))))));
+              h('button', {type:'button', className:'birdlab-3d-primary', disabled:disabled, onClick:togglePause}, free?(state.paused?'Resume woodland':'Pause woodland'):state.paused ? 'Play flight' : 'Pause flight'),
+              !free?h('label', null, 'Speed', h('select', {'aria-label':'Flight playback speed', value:state.speed, disabled:disabled, onChange:function(event) { var speed = Number(event.target.value); command('setSpeed', speed, {speed:speed}); }}, h('option', {value:1}, '1× · Natural'), h('option', {value:0.5}, '½× · Slow'), h('option', {value:0.25}, '¼× · Study'))):null,
+              !free?h('button', {type:'button', disabled:disabled, onClick:function() { command('restart'); }}, 'Restart flight'):null,
+              h('button', {type:'button', disabled:disabled, onClick:function() { command('resetView'); }}, free?'Return to clearing':'Reset view'),
+              free?h('button',{type:'button',disabled:disabled,'aria-pressed':String(!!state.binoculars),onClick:function(){command('setBinoculars',!state.binoculars);}},state.binoculars?'Lower binoculars · B':'Raise binoculars · B'):null,
+              free?h('button',{type:'button',disabled:disabled,'aria-pressed':String(!!state.crouching),'aria-label':'Crouch · C',onClick:function(){command('setCrouching',!state.crouching);}},state.crouching?'Stand up · C':'Crouch · C'):null,
+              free?h('button',{type:'button',disabled:disabled,onClick:function(){command('lockPointer');}},'Lock mouse look'):null),
+            free?h('div',{className:'birdlab-3d-walk-controls',role:'group','aria-label':'Walk through the woodland'},[{id:'forward',label:'Walk forward',glyph:'↑'},{id:'left',label:'Step left',glyph:'←'},{id:'back',label:'Walk backward',glyph:'↓'},{id:'right',label:'Step right',glyph:'→'}].map(function(direction){return h('button',{key:direction.id,type:'button',disabled:disabled||state.paused,'aria-label':direction.label,onPointerDown:function(event){event.preventDefault();try{event.currentTarget.setPointerCapture(event.pointerId);}catch(ignore){}movement(direction.id,true);},onPointerUp:function(){movement(direction.id,false);},onPointerCancel:function(){movement(direction.id,false);},onLostPointerCapture:function(){movement(direction.id,false);},onBlur:function(){movement(direction.id,false);},onClick:function(event){if(event.detail===0)command('stepMove',direction.id);}},direction.glyph);})):null,
+            h('p', {id:'birdlab-3d-camera-help', className:'birdlab-3d-hint'}, free?'Click the woodland, then W A S D to walk. Drag or use arrow keys to look. B raises binoculars; C lowers your viewpoint so you can move quietly. Hold the arrow buttons to walk on touch screens. Keep an animal near the center of your binoculars to identify it. Space pauses; Escape releases locked mouse look. Returning to Guided study restores your place.':'Drag to look around · scroll to zoom · focus the scene and use arrow keys to orbit, + / − to zoom, Space to pause.'),
+            reduced.current ? h('p', {className:'birdlab-3d-hint'}, 'Reduced motion is on. The scene starts still; choose '+(free?'Resume woodland':'Play flight')+' when you are ready.') : null),
+          h('aside', {className:'birdlab-3d-side', 'aria-label':free?'Woodland fieldwork':'Flight observation'},
+            free?h('section',{className:'birdlab-3d-card birdlab-3d-observation','aria-labelledby':'birdlab-3d-observation-title'},
+              h('div',{className:'birdlab-3d-eyebrow'},identified?(subject.category==='mammal'?'Woodland mammal':'Woodland bird'):'Through the lens'),
+              h('h2',{id:'birdlab-3d-observation-title'},identified?subject.name:subject?'Wildlife in view':'Watch the woodland'),
+              h('span',{className:'birdlab-3d-sr-only',role:'status','aria-live':'polite','aria-atomic':'true','data-birdlab-3d-identification':'true'},identified?(recorded?subject.name+' is in your field notebook.':subject.name+' identified. Ready to record.'):''),
+              identified?h('p',{style:{fontStyle:'italic',marginTop:5}},subject.scientificName):null,
+              identified?h('p',{'data-birdlab-3d-observation-details':'true'},distanceLabel(subject.distance),' · ',subject.behavior):
+                h('p',null,!state.binoculars?'Raise your binoculars and look for wildlife.':subject?(state.paused?'The woodland is paused. Keep this animal near the center and hold your view steady.':'Keep the animal near the center and hold your view steady.'):'Look for wildlife in the clearing, then bring it toward the center of the lenses.'),
+              state.binoculars?h('div',{className:'birdlab-3d-focus-meter'},h('label',{htmlFor:'birdlab-3d-focus-progress'},identified?'Identified':'Steady view',h('span',{'aria-hidden':'true'},Math.round(focusProgress*100)+'%')),h('progress',{id:'birdlab-3d-focus-progress',max:1,value:focusProgress,'aria-label':'Steady binocular view'})):null,
+              h('button',{type:'button',disabled:disabled||!identified||recorded,onClick:function(){command('recordSighting');}},recorded?'Recorded in notebook':'Record sighting'),
+              h('p',{className:'birdlab-3d-hint'},'Explore slowly. Birds and squirrels may become alert when you approach.')):
+              h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Species in focus'), h('h2', null, species.name), h('p', {style:{fontStyle:'italic', marginTop:5}}, species.scientific), h('p', null, species.note), watchingNeighbor ? h('p', {className:'birdlab-3d-phase-note'}, observation) : h('dl', {className:'birdlab-3d-readouts'}, readout('Height above ground', state.altitude, 'm', 'altitude'), readout('Flight speed', state.airspeed, 'm/s', 'airspeed'), readout('Wingbeats', state.wingbeat, 'Hz', 'wingbeat'), readout('Flight time', state.time, 's', 'time')), h('p', {style:{fontSize:10}}, watchingNeighbor ? 'Choose Orbit or Follow to return to the hawk.' : 'Illustrative simulation values.')),
+            free?h('section',{className:'birdlab-3d-card','aria-labelledby':'birdlab-3d-notebook-title'},
+              h('div',{className:'birdlab-3d-eyebrow'},'This visit'),h('h2',{id:'birdlab-3d-notebook-title'},'Field notebook'),
+              h('p',null,sightings.length?sightings.length+' species recorded':'Your notebook is waiting for its first sighting.'),
+              sightings.length?h('ol',{className:'birdlab-3d-notebook'},sightings.map(function(entry){return h('li',{key:entry.id},h('strong',null,entry.name),h('small',{style:{fontStyle:'italic'}},entry.scientificName),h('small',null,entry.behavior),h('small',null,distanceLabel(entry.distance),' · ',visitTime(entry.time),' into your visit'));})):h('p',null,'Identify an animal through your binoculars, then choose Record sighting.'),
+              h('p',{className:'birdlab-3d-hint'},'One entry per species. Notes stay here while you switch views during this visit.')):null,
+            h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Your viewpoint'), !free?h('div', {className:'birdlab-3d-camera-buttons', role:'group', 'aria-label':'Camera view'}, ['orbit','follow','wide'].map(function(camera) { return h('button', {key:camera, type:'button', disabled:disabled, 'aria-pressed':String(state.camera === camera), onClick:function() { command('setCamera', camera, {camera:camera}); }}, camera === 'orbit' ? 'Orbit' : camera === 'follow' ? 'Follow' : 'Habitat'); })):null, h('p', null, free?(state.crouching?'You are crouching with slower steps and a lower viewpoint. Stand up for a wider view across the clearing.':'Walk at eye level, or crouch for a lower, quieter approach. Raise binoculars for a closer view and lower them to find your way.'):watchingNeighbor ? 'Move around this bird or zoom closer to study its field marks.' : state.camera === 'follow' ? 'Travel alongside the hawk as it crosses the clearing.' : state.camera === 'wide' ? 'See the flight path in the wider woodland.' : 'Circle the hawk to examine its wings and feather layers.'),
+              h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland light'), h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':'Woodland lighting'}, [{value:'daylight', label:'Daylight'}, {value:'golden', label:'Golden hour'}].map(function(light) { return h('button', {key:light.value, type:'button', disabled:disabled, 'aria-pressed':String(state.lighting === light.value), onClick:function() { command('setLighting', light.value, {lighting:light.value}); }}, light.label); })),
+              !free?h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland neighbors'):null, !free?h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':'Observe woodland birds'}, [{id:'robin',label:'Robin'},{id:'chickadee',label:'Chickadee'},{id:'mourningDove',label:'Mourning dove'},{id:'grouse',label:'Ruffed grouse'},{id:'blueJay',label:'Blue jay'},{id:'northernCardinal',label:'Northern cardinal'}].map(function(other) { return h('button', {key:other.id,type:'button',disabled:disabled,'aria-pressed':String(state.camera===other.id),onClick:function(){command('setCamera',other.id,{camera:other.id});}},other.label); })):null),
+            !free&&watchingNeighbor && (state.camera==='mourningDove'||state.camera==='grouse') ? h('section', {className:'birdlab-3d-card'}, h('div',{className:'birdlab-3d-eyebrow'},'Observe this bird'),
+              h('button',{type:'button',disabled:disabled,'aria-pressed':String(!!state.repeatFlights),'aria-describedby':'birdlab-3d-repeat-help',onClick:function(){command('setRepeatFlights',!state.repeatFlights,{repeatFlights:!state.repeatFlights});}},'Repeat flights'),
+              h('p',{id:'birdlab-3d-repeat-help',className:'birdlab-3d-hint'},'Keeps both flights and shortens the resting pauses.'),
+              h('div',{className:'birdlab-3d-moments',role:'group','aria-label':'Study woodland bird behavior'},
+                [{label:'Walking',time:state.camera==='grouse'?5.27:4.0},{label:'Foraging',time:state.camera==='grouse'?10.53:8.53},{label:'Takeoff',time:state.camera==='grouse'?18.18:12.2},{label:'Flight',time:state.camera==='grouse'?18.55:12.7},{label:'Landing',time:state.camera==='grouse'?19:13.27}].map(function(moment){return h('button',{key:moment.label,type:'button',disabled:disabled,onClick:function(){seek(moment.time);}},moment.label);})),
+              h('p',{style:{fontSize:10}},'Illustrative behavior sequence. Choose a moment to pause, then orbit to study the feathers.')) : null,
+            !free&&state.camera==='blueJay'?h('section',{className:'birdlab-3d-card'},h('div',{className:'birdlab-3d-eyebrow'},'Observe the blue jay'),h('div',{className:'birdlab-3d-moments',role:'group','aria-label':'Study woodland bird behavior'},[{label:'Walking',time:7.2},{label:'Foraging',time:10.8},{label:'Takeoff',time:15.2},{label:'Flight',time:15.9},{label:'Landing',time:16.65}].map(function(moment){return h('button',{key:moment.label,type:'button',disabled:disabled,onClick:function(){seek(moment.time);}},moment.label);})),h('p',null,'Pause a moment to examine the crest, wing bars, and tail.')):null,
+            !free&&state.camera==='northernCardinal'?h('section',{className:'birdlab-3d-card'},h('div',{className:'birdlab-3d-eyebrow'},'Observe the cardinal'),h('div',{className:'birdlab-3d-moments',role:'group','aria-label':'Study woodland bird behavior'},[{label:'Hopping',time:4.7},{label:'Foraging',time:8.5},{label:'Takeoff',time:13.15},{label:'Flight',time:13.6},{label:'Landing',time:14.1}].map(function(moment){return h('button',{key:moment.label,type:'button',disabled:disabled,onClick:function(){seek(moment.time);}},moment.label);})),h('p',null,'Pause to inspect the heavy bill, overlapping red feathers, and two-foot landing between hops.')):null,
+            !free?h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Study the hawk'), h('div', {className:'birdlab-3d-moments', role:'group', 'aria-label':'Study a flight moment'}, moments.map(function(moment) { return h('button', {key:moment.label, type:'button', disabled:disabled, 'aria-pressed':String(moment.active && !watchingNeighbor), onClick:function() { studyHawk(moment.time); }}, moment.label); })), h('p', {className:'birdlab-3d-phase-note'}, activeMoment.note), h('p', {style:{fontSize:10}}, 'Choose a moment to pause and inspect the hawk’s posture.')):null))));
   }
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──

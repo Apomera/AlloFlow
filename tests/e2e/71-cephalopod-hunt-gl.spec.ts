@@ -314,6 +314,8 @@ test.describe('Cephalopod Lab — Hunter Sim on real WebGL', () => {
     await harness.mount(page, DIVE);
     await page.waitForTimeout(1200);
     await page.getByRole('button', { name: /End run/ }).click();
+    await expect(page.getByRole('dialog', { name: 'End of dive', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: /Pick different species/ }).click();
     await page.waitForTimeout(800);
     const after = await page.evaluate(() => document.querySelectorAll('#wrap canvas[role="application"]').length);
     expect(after).toBe(0);

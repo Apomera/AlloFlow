@@ -25,7 +25,7 @@ describe('Beehive Drone live 3D scene cue', () => {
     expect(html).toContain('data-beehive-stage-chip="drone"');
     expect(html).toContain('data-flight-scene-phase="true"');
     expect(html).toContain('data-flight-scene-detail="true"');
-    expect(html).toContain('Flight objective');
+    expect(runtime.host.querySelector('[data-flight-scene-phase]').textContent).toBe('Paused');
     expect(html).toContain('data-flight-live-status="true"');
   });
 

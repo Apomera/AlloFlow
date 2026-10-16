@@ -123,18 +123,23 @@ describe('solar system vehicle mode reachability', () => {
     });
   });
 
-  it('keeps both starfield gates in agreement, and off worlds with a bright sky', () => {
+  it('keeps sprite stars exclusive to airless, non-ocean views', () => {
     eachSource((source, path) => {
-      // Stars are drawn TWICE: painted into the sky-dome canvas texture, and
-      // again as a twinkle Points layer. Editing one and not the other is the
-      // trap — Mars would keep 200 painted stars in a daylit orange sky and
-      // merely lose the sparkle, which is worse than either state. Every one of
-      // these scenes is in daylight (sun disc up, shadows cast), so only the
-      // airless worlds, whose sky stays black, should have any.
+      // Both Points layers share one gate. Stars are no longer painted into
+      // the sky dome, where stretching near its poles blurred them. A daylit
+      // desert sky must stay clear of stars, and an ocean view must suppress
+      // them even when the underlying planet has an airless terrain type.
       const gates = source.match(/sel\.terrainType === 'cratered' \|\| sel\.terrainType === 'iceworld'\)/g) || [];
-      expect(gates.length, `${path}: expected both star gates to read the same pair`).toBe(2);
-      expect(source, `${path}: a bright-sky world crept back into a star gate`)
-        .not.toContain("cratered' || sel.terrainType === 'iceworld' || sel.terrainType === 'desert'");
+      expect(gates.length, `${path}: expected one shared starfield gate`).toBe(1);
+      const gateMatch = source.match(/var twinkleLayers = \[\];\s*if \((.+)\) \{/);
+      expect(gateMatch, `${path}: the Points starfield has lost its visibility gate`).toBeTruthy();
+      const starsVisible = new Function('sel', 'isOcean', `return ${gateMatch[1]};`);
+      ['cratered', 'iceworld', 'desert', 'volcanic', 'gas', 'ocean'].forEach((terrainType) => {
+        expect(starsVisible({ terrainType }, false), `${path}: incorrect star visibility for ${terrainType}`)
+          .toBe(terrainType === 'cratered' || terrainType === 'iceworld');
+        expect(starsVisible({ terrainType }, true), `${path}: stars are visible underwater on ${terrainType}`)
+          .toBe(false);
+      });
     });
   });
 

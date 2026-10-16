@@ -77,14 +77,15 @@ describe('Renewables signed mechanical drive',()=>{
     expect(object.userData.motionRate).toBeCloseTo(1.2,2);
   });
 
-  it('stops immediately at exact zero, including midway through a reversal',()=>{
+  it('coasts from its current signed rate at zero, including midway through a reversal',()=>{
     const drive=createDrive(),object=shaft();drive(object,'drive',.8,playing(0));
-    drive(object,'drive',-.8,playing(.1));const before=object.rotation.z;
+    drive(object,'drive',-.8,playing(.1));const before=object.rotation.z,rate=object.userData.motionRate;
     drive(object,'drive',0,playing(.12));
-    expect(object.rotation.z).toBe(before);expect(object.userData.motionRate).toBe(0);expect(object.userData.motionTarget).toBe(0);
+    expect(before-object.rotation.z).toBeCloseTo(rate*.42*(1-Math.exp(-.12/.42)),14);expect(object.userData.motionRate).toBeCloseTo(rate*Math.exp(-.12/.42),14);expect(object.userData.motionTarget).toBe(0);expect(object.userData.coasting).toBe(true);
+    const coastRate=object.userData.motionRate,coastAngle=object.rotation.z;
     drive(object,'drive',-.8,playing(.01));
-    expect(object.userData.motionRate).toBeLessThan(0);expect(object.userData.motionRate).toBeGreaterThan(-.1);
-    expect(object.rotation.z).toBeGreaterThan(before);
+    expect(object.userData.motionRate).toBeCloseTo(-.8+(coastRate+.8)*Math.exp(-.01/.42),14);expect(object.userData.motionRate).toBeGreaterThan(0);expect(object.userData.coasting).toBe(false);
+    expect(object.rotation.z).toBeLessThan(coastAngle);
   });
 
   it.each(['paused','reduced'])('%s controls snap the signed rate while holding the phase',()=>{

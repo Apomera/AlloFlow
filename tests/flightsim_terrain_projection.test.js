@@ -32,10 +32,14 @@ function drawBands(flight, localGround, horizon = 360, focalLength) {
   });
   // Execute the actual Canvas terrain pass, with a uniform sea and no random
   // landmarks so the observations contain only geographic bands and haze.
-  const draw = new Function('getCanvasTerrainSample', 'isWater', 'groundBelowAircraft', 'getWorldEnvironment', 'terrainHash',
+  // Supply the real shared sky helpers; these terrain-only scenarios omit
+  // a world camera, so the optional sun-glint projection is absent.
+  const draw = new Function('getCanvasTerrainSample', 'isWater', 'groundBelowAircraft', 'getWorldEnvironment', 'terrainHash', 'getFlightSolarFrame', 'projectFlightDirection', 'hudRef', 'getFlightWaterFrame', 'getFlightWaterGlint', 'weatherRef', 'skyReducedMotion', 'qualityRef',
     'return (' + terrainFunction + ');')(
     FS.getCanvasTerrainSample, () => true, () => localGround,
-    (lat, lon) => { cells.push({ lat, lon }); return { id: 'ocean', color: [20, 80, 150] }; }, () => 0);
+    (lat, lon) => { cells.push({ lat, lon }); return { id: 'ocean', color: [20, 80, 150] }; }, () => 0,
+    FS.getFlightSolarFrame, FS.projectFlightDirection, { current: { canvasWorldView: null } },
+    FS.getFlightWaterFrame, FS.getFlightWaterGlint, { current: {} }, { current: false }, { current: { tier: 0 } });
   draw(graphics, 1280, 720, horizon, flight, 0, null);
   return { cells, bands: rectangles.filter(rect => String(rect.fill).startsWith('rgb(')) };
 }

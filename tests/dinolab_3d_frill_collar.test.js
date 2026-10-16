@@ -8,7 +8,7 @@ const THREE=createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.
 const source=readFileSync(process.env.DINO_FRILL_SOURCE||resolve('stem_lab/stem_tool_dinolab.js'),'utf8');
 const start=source.indexOf('// DINO_DISPLAY_SHELL_START'),end=source.indexOf('// DINO_DISPLAY_SHELL_END',start);
 if(start<0||end<start)throw Error('Display shell helper markers missing.');
-const {dinoFrillGeometry,dinoPlateGeometry}=new Function(source.slice(start,end)+'\nreturn {dinoFrillGeometry,dinoPlateGeometry};')();
+const {dinoFrillGeometry,dinoPlateGeometry,dinoProtoceratopsFrillGeometry}=new Function(source.slice(start,end)+'\nreturn {dinoFrillGeometry,dinoPlateGeometry,dinoProtoceratopsFrillGeometry};')();
 const axis=new THREE.Vector3(1,-.60,0).normalize();
 const sides=128,backOffset=1+9*sides;
 function depth(g,ring,side){const p=g.attributes.position;return new THREE.Vector3().fromBufferAttribute(p,1+ring*sides+side).sub(new THREE.Vector3().fromBufferAttribute(p,backOffset+1+ring*sides+side)).dot(axis);}
@@ -32,8 +32,8 @@ function closedSurface(g,scale){
 function nativeFrill(species,present=true){
  const a=source.indexOf('            function addFrillSurface('),b=source.indexOf('            var hasHighSail',a);if(a<0||b<a)throw Error('Native frill caller missing.');
  const model=new THREE.Group(),material=new THREE.MeshStandardMaterial(),bone=new THREE.MeshStandardMaterial(),marks=[];
- const add=new Function('THREE','hasAnatomyPart','cranialSurface','head','vec','len','ht','surfaceBodyDepth','boneMat','model','dinoMarkSpecialPart','dinoFrillGeometry','props',source.slice(a,b)+'\nreturn addFrillSurface;')
-  (THREE,part=>present&&part==='frill',{frillScale:1},new THREE.Vector3(-2,1.8,0),(x,y,z)=>new THREE.Vector3(x,y,z),8,3,.8,bone,model,(mesh,part)=>marks.push([mesh,part]),dinoFrillGeometry,{species:{id:species}});
+ const add=new Function('THREE','hasAnatomyPart','cranialSurface','head','vec','len','ht','surfaceBodyDepth','boneMat','model','dinoMarkSpecialPart','dinoFrillGeometry','dinoProtoceratopsFrillGeometry','props',source.slice(a,b)+'\nreturn addFrillSurface;')
+  (THREE,part=>present&&part==='frill',{frillScale:1},new THREE.Vector3(-2,1.8,0),(x,y,z)=>new THREE.Vector3(x,y,z),8,3,.8,bone,model,(mesh,part)=>marks.push([mesh,part]),dinoFrillGeometry,dinoProtoceratopsFrillGeometry,{species:{id:species}});
  const mesh=add(material,1);return {model,material,mesh,marks,dispose(){mesh?.geometry.dispose();material.dispose();bone.dispose();}};
 }
 

@@ -284,12 +284,20 @@ describe('Cephalopod Lab lesson plans can actually be run', () => {
   });
 
   it('reports the other quantities its lesson plans ask students to record', () => {
-    // prey caught by type, time survived and predator damage are all asked for
-    // by the camouflage and food-web lessons
+    // Prey caught by type, duration and predator damage are all asked for
+    // by the camouflage and food-web lessons. Duration needs its mode context:
+    // a Field study has no hunger or health loss and is not a survival trial.
     ["statCard('Crabs'", "statCard('Fish'", "statCard('Clams'", "statCard('Bites taken'"].forEach((frag) => {
       expect(src).toContain(frag);
     });
-    expect(src).toMatch(/elapsedSec \+ 's survived/);
+    const overlayStart = src.indexOf('function renderStatsOverlay()');
+    const overlayEnd = src.indexOf('// ─── Game state', overlayStart);
+    expect(overlayStart).toBeGreaterThan(-1);
+    expect(overlayEnd).toBeGreaterThan(overlayStart);
+    const overlay = src.slice(overlayStart, overlayEnd);
+    expect(overlay).toMatch(/diveSetup\.label/);
+    expect(overlay).toMatch(/elapsedSec\s*\+\s*'s elapsed/);
+    expect(overlay).not.toMatch(/elapsedSec\s*\+\s*'s survived/);
   });
 });
 
@@ -518,7 +526,8 @@ describe('Cephalopod Lab charges the metabolic cost it teaches', () => {
     expect(readout({ hungerRate: 2.37, propulsionState: { forward: 1, swimming: true } }, false)).toBe('Swimming · 2.4 energy/s');
     expect(readout({ hungerRate: 1.6, propulsionState: { jetting: true, finPowered: true } }, false)).toBe('Fin boost · 1.6 energy/s');
     expect(src).toMatch(/statCard\('Time jetting'/);
-    expect(src).toMatch(/statCard\('Energy spent'/);
+    // Field study conserves the live energy bar while still tracking the modeled cost.
+    expect(src).toMatch(/statCard\(observation\s*\?\s*'Modeled energy use'\s*:\s*'Energy spent',\s*rs\.caloriesBurned\.toFixed\(0\)/);
     expect(src).toMatch(/jetMs: 0,/);
     expect(src).toMatch(/caloriesBurned: 0,/);
   });

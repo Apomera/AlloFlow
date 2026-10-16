@@ -140,7 +140,7 @@ describe('Butterfly life cycle investigation',()=>{
    expect(s.lifecycle.broods).toHaveLength(1);
    expect(BF.broodFor(s,'milkweed').prediction).toBe('complete');
    const saved=BF.save(s),restored=BF.freshState(saved);
-   expect(saved.version).toBe(4);
+   expect(saved.version).toBe(5);
    expect(restored.lifecycle).toEqual(s.lifecycle);
    saved.lifecycle.broods[0].result='stalls';
    expect(s.lifecycle.broods[0].result).toBe('complete');
@@ -208,17 +208,16 @@ describe('Butterfly life cycle investigation',()=>{
 });
 
 describe('Butterfly evidence-based conclusion',()=>{
- it('refuses to judge a claim before any generation has been followed',()=>{
+ it('refuses to judge a claim before its required experiment has been recorded',()=>{
    const s=examined(BF.freshState(),'milkweed');
    for(const c of BF.claims){
      const v=BF.judgeClaim(s,c.id);
      expect(v.tested).toBe(false);
      expect(v.verdict).toBe('You have not tested this claim yet.');
      // An untested claim must point at the investigation that WOULD test it.
-     // A timing claim needs a matched pair of seasons, not a followed
-     // generation, so the two kinds of claim send the learner to different
-     // places. Both must still name a concrete next step.
-     expect(v.why).toContain(c.needs==='season'?'run the SAME patch twice':'follow a generation');
+     // Timing needs paired seasons, pollination needs paired contact cases,
+     // and habitat claims need generations. Each names its own next step.
+     expect(v.why).toContain(c.needs==='season'?'run the SAME patch twice':c.needs==='pollination'?'record two model flower visits':'follow a generation');
    }
  });
 
@@ -232,6 +231,7 @@ describe('Butterfly evidence-based conclusion',()=>{
  it('supports the sound claim and rejects the unsound ones once tested',()=>{
    const s=examined(BF.freshState(),'milkweed');
    BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   examined(s,'bergamot');BF.layEggs(s,'bergamot','stalls');runToEnd(s);BF.broodResult(s);
    expect(BF.judgeClaim(s,'needs-both')).toMatchObject({tested:true,verdict:'Your records support that claim.'});
    for(const id of ['nectar-enough','green-enough'])
      expect(BF.judgeClaim(s,id).verdict).toBe('Your records do not support that claim.');

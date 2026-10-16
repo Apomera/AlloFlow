@@ -82,7 +82,7 @@ async function run(url) {
     await page.goto(url); await open(); await inspectViewer();
     await check('fourth bay renders equal-size projections and ray-picks all three physical spheres', async () => {
       await click('[data-walk-activity="parallax"]');
-      assert.equal(await page.locator('[data-walk-activity]').count(), 10);
+      assert.equal(await page.locator('[data-walk-activity]').count(), 20);
       assert.deepEqual((await state()).player, { x: 24, z: 9, yaw: 0, pitch: 0 });
       await page.locator('[data-walk-stage]').scrollIntoViewIfNeeded();
       const objects = await projected(), heights = objects.map(item => Math.abs(item.top.y - item.bottom.y));
@@ -141,7 +141,7 @@ async function run(url) {
       await setState({ progress: { ...(await state()).progress, ring: { solved: true, assisted: false, hints: 1 } }, notes: { ...(await state()).notes, ring: 'Keep the circle note.' } });
       const before = await state(); await page.reload(); await open(); await inspectViewer(); assert.deepEqual(await state(), before);
       await click('[data-walk-reset]'); const after = await state();
-      assert.deepEqual(after.parallax, { samples: [], choice: '' });
+      assert.deepEqual(after.parallax, { round: 0, completed: [], samples: [], choice: '' });
       assert.deepEqual(after.progress.parallax, { solved: false, assisted: false, hints: 0 });
       assert.equal(after.notes.parallax, before.notes.parallax); assert.equal(after.notes.ring, before.notes.ring);
       assert.deepEqual(after.progress.ring, before.progress.ring); assert.equal(after.precise, true);
@@ -164,8 +164,13 @@ async function run(url) {
         await click('[data-walk-activity="parallax"]'); await page.locator('[data-walk-stage]').scrollIntoViewIfNeeded();
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
         const bad = await page.locator('[data-perception-walk] button').evaluateAll(nodes => nodes.filter(node => {
-          const r = node.getBoundingClientRect(); return r.width && (r.left < -1 || r.right > innerWidth + 1 || node.scrollWidth > node.clientWidth + 2);
-        }).map(node => node.outerHTML)); assert.deepEqual(bad, []);
+          const rect = node.getBoundingClientRect(), strip = node.closest('.pw-nav[data-expanded="false"]');
+          return rect.width && (node.scrollWidth > node.clientWidth + 2 || !strip && (rect.left < -1 || rect.right > innerWidth + 1));
+        }).map(node => node.outerHTML)); assert.deepEqual(bad, [], 'Visible buttons and their labels fit');
+        assert(await page.locator('.pw-nav').evaluate(nav => {
+          const active = nav.querySelector('[aria-pressed="true"]').getBoundingClientRect(), bounds = nav.getBoundingClientRect();
+          return active.left >= bounds.left - 1 && active.right <= bounds.right + 1;
+        }), 'The selected room remains visible within the scrollable navigation strip');
         const marker = page.locator('[data-walk-waypoint="parallax"]'); await marker.waitFor(); await marker.focus(); await page.keyboard.press('Enter');
         assert.equal(await page.locator('[data-walk-activity="parallax"]').evaluate(node => document.activeElement === node), true);
         for (const x of [22.8, 25.4]) {
@@ -194,7 +199,7 @@ async function run(url) {
       assert.equal((await state()).parallax.samples.length, 2);
       assert.equal(await page.locator('[data-perception-walk] canvas').count(), 0);
       await click('[data-walk-view="0"]'); assert.equal((await state()).player.x, 24);
-      const name = await page.locator('[data-walk-plan]').getAttribute('aria-label'); assert.match(name, /challenge spaces/i);
+      const name = await page.locator('[data-walk-parallax-plan]').getAttribute('aria-label'); assert.equal(name, 'Spheres from your current viewpoint');
       assert.doesNotMatch(await page.locator('[data-perception-walk]').innerText(), /\\u[0-9a-f]{4}/i);
       await capturePage('fallback-mobile');
       await page.evaluate(() => window.__perceptionPreview.unmount()); assert.equal(await page.locator('canvas').count(), 0);

@@ -7694,16 +7694,17 @@ window.StemLab = window.StemLab || {
           });
         return h('div', { key: c.key, className: station ? 'ml-station-control' : undefined,
           'data-ml-setting-changed': reference ? String(changedFromReference) : undefined,
-          style: station ? { marginBottom: 10, padding: 10, borderRadius: 10, border: '1px solid ' + T.border, background: T.bg } : { marginBottom: 10 }
+          style: station ? { marginBottom: 12, padding: 14, borderRadius: 12, minWidth: 0, overflowWrap: 'anywhere', containerType: 'inline-size', containerName: 'ml-station-setting', border: '1px solid ' + T.border, background: T.bg } : { marginBottom: 10 }
         }, [
           h('label', {
-            key: 'lb', htmlFor: id,
-            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }
+            key: 'lb', htmlFor: id, className: station ? 'ml-station-label' : undefined,
+            style: station ? { display: 'grid', alignItems: 'center', gap: 10, fontSize: 15, lineHeight: 1.5, fontWeight: 750, color: T.text, marginBottom: 8 }
+              : { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }
           }, [
             h('span', { key: 'n', style: { minWidth: 0 } }, c.label),
-            h('span', { key: 'v', 'data-ml-setting-value': station ? c.key : undefined,
-              style: station ? { color: T.accent, background: T.card, border: '1px solid ' + T.border, borderRadius: 6,
-                padding: '4px 7px', fontWeight: 800, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }
+            h('span', { key: 'v', className: station ? 'ml-station-value' : undefined, 'data-ml-setting-value': station ? c.key : undefined,
+              style: station ? { color: T.accent, background: T.card, border: '1px solid ' + T.border, borderRadius: 8,
+                padding: '6px 10px', fontSize: 20, lineHeight: 1.4, fontWeight: 850, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }
                 : { color: T.accent, fontVariantNumeric: 'tabular-nums' } }, displayValue)
           ]),
           station ? h('div', { key: 'track', className: 'ml-setting-track', style: { position: 'relative' } }, [
@@ -7715,24 +7716,27 @@ window.StemLab = window.StemLab || {
             }, h('path', { d: 'M1 1H11L6 9Z', fill: T.card, stroke: 'currentColor', strokeWidth: 1.5, strokeLinejoin: 'round' })) : null
           ]) : range,
           station ? h('div', { key: 'scale', 'aria-hidden': 'true', className: 'ml-setting-scale',
-            style: { position: 'relative', height: 23, margin: '0 12px', color: T.dim, fontSize: 10, fontVariantNumeric: 'tabular-nums' }
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', minHeight: 30, margin: '0 12px', color: T.text, fontSize: 12, fontVariantNumeric: 'tabular-nums' }
           }, ticks.map(function (tick, i) {
             var value = c.min + tick * (c.max - c.min);
             var endpoint = i === 0 || i === ticks.length - 1;
             return h('span', { key: i, 'data-ml-setting-tick': tick, style: {
-              position: 'absolute', left: tick * 100 + '%', width: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
+              flex: '0 0 0', width: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
             } }, [
               h('span', { key: 'mark', style: { width: 1, height: 5, background: T.dim } }),
-              endpoint || c.key === 'pulleySegments' ? h('span', { key: 'text', style: { lineHeight: '14px', whiteSpace: 'nowrap',
+              endpoint || c.key === 'pulleySegments' ? h('span', { key: 'text', style: { lineHeight: 1.5, whiteSpace: 'nowrap',
                 alignSelf: i === 0 ? 'flex-start' : i === ticks.length - 1 ? 'flex-end' : 'center' } },
                 fmt(value, 3) + (c.unit ? ' ' + c.unit : '')) : null
             ]);
           })) : null,
           reference ? h('div', { key: 'reference-label', id: id + '-reference', 'data-ml-setting-reference': c.key,
-            style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 7, fontSize: 11, lineHeight: 1.4, color: T.text }
+            style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 10, borderTop: '1px dashed ' + T.border, fontSize: 14, lineHeight: 1.5, color: T.text }
           }, [
-            h('span', { key: 'saved', style: { fontVariantNumeric: 'tabular-nums' } }, '▽ ' + __alloT('stem.machinelab.reference_before', 'Saved') + ': ' + fmt(reference[c.key], 3) + (c.unit ? ' ' + c.unit : '')),
-            h('span', { key: 'state', style: { padding: '2px 5px', borderRadius: 5, border: '1px ' + (changedFromReference ? 'solid ' : 'dashed ') + T.border,
+            h('span', { key: 'saved', style: { minWidth: 0, fontVariantNumeric: 'tabular-nums' } }, [
+              '▽ ' + __alloT('stem.machinelab.reference_before', 'Saved') + ': ',
+              h('span', { key: 'value', style: { whiteSpace: 'nowrap', fontWeight: 750 } }, fmt(reference[c.key], 3) + (c.unit ? ' ' + c.unit : ''))
+            ]),
+            h('span', { key: 'state', style: { padding: '4px 8px', borderRadius: 7, border: '1px ' + (changedFromReference ? 'solid ' : 'dashed ') + T.border,
               background: T.card, fontWeight: changedFromReference ? 800 : 500 } },
               changedFromReference ? __alloT('stem.machinelab.setting_changed', 'Changed') : __alloT('stem.machinelab.setting_matches', 'Matches saved'))
           ]) : null
@@ -8195,6 +8199,9 @@ window.StemLab = window.StemLab || {
           ]);
         }
         function practiceView() {
+          var practiceText = Object.assign({}, textStyle, { fontSize: 14 });
+          var practiceInput = Object.assign({}, inputStyle, { minWidth: 0, minHeight: 48, padding: '10px 12px', borderRadius: 9, fontSize: 16 });
+          var practiceButton = Object.assign({}, buttonStyle, { minWidth: 0, minHeight: 44, padding: '10px 14px', borderRadius: 9, fontSize: 14, lineHeight: 1.5, overflowWrap: 'anywhere' });
           var labels = {
             input: __alloT('stem.machinelab.eff_choose_input', 'Input work'),
             force: __alloT('stem.machinelab.eff_choose_force', 'Effort force'),
@@ -8208,24 +8215,34 @@ window.StemLab = window.StemLab || {
             forceEfficiency: __alloT('stem.machinelab.eff_plan_choose_force', 'Efficiency at this MA'),
             taskEfficiency: __alloT('stem.machinelab.eff_plan_choose_task', 'Efficiency for limits')
           };
-          return h('div', { key: 'practice', 'data-ml-efficiency-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '3px solid ' + T.accent, paddingTop: 8 }) }, [
-            h('h3', { key: 'title', style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.eff_practice', 'Practice a calculation')),
-            h('label', { key: 'question-label', htmlFor: prefix + 'question-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_choose_question', 'Choose what to calculate')),
-            h('select', { key: 'question', id: prefix + 'question-' + bench.id, value: draft.question, style: inputStyle,
+          return h('div', { key: 'practice', className: 'ml-efficiency-practice', 'data-ml-efficiency-practice': '', style: Object.assign({}, panelStyle, { background: T.card, borderTop: '4px solid ' + T.accent, padding: 18, '--ml-efficiency-practice-focus': T.text }) }, [
+            h('div', { key: 'header', className: 'ml-efficiency-practice-header' }, [
+            h('h3', { key: 'title', style: { margin: 0, fontSize: 20, lineHeight: 1.3, color: T.text, overflowWrap: 'anywhere' } }, __alloT('stem.machinelab.eff_practice', 'Practice a calculation')),
+            h('div', { key: 'chooser', style: { minWidth: 0 } }, [
+            h('label', { key: 'question-label', htmlFor: prefix + 'question-' + bench.id, style: practiceText }, __alloT('stem.machinelab.eff_choose_question', 'Choose what to calculate')),
+            h('select', { key: 'question', id: prefix + 'question-' + bench.id, value: draft.question, style: practiceInput,
               onChange: function (ev) { change({ question: ev.target.value }); } }, kinds.map(function (kind) {
               return h('option', { key: kind, value: kind }, labels[kind]);
-            })),
+            }))
+            ])
+            ]),
             question ? h('div', { key: 'available' }, [
-            h('h4', { key: 'question-title', 'data-ml-efficiency-question-title': '', style: Object.assign({}, textStyle, { fontSize: 14, margin: '10px 0 6px', fontWeight: 800 }) }, question.title),
-            h('p', { key: 'given', 'data-ml-efficiency-given': '', style: Object.assign({}, textStyle, { padding: 12, background: T.bg, borderLeft: '3px solid ' + T.accent, borderRadius: 8 }) }, question.given),
-            h('p', { key: 'rule', id: prefix + 'rounding-' + bench.id, style: textStyle }, efficiencyRecordVersion(draft.question) >= 2 ? __alloT('stem.machinelab.eff_inverse_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.') : __alloT('stem.machinelab.eff_rounding', 'Use full values when possible, or round to 3 decimal places. Checks allow 1% or 0.0005 units, whichever is larger. This is practice, with no points awarded.')),
-            h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
+            h('h4', { key: 'question-title', 'data-ml-efficiency-question-title': '', style: Object.assign({}, textStyle, { fontSize: 22, lineHeight: 1.35, margin: '20px 0 14px', fontWeight: 800 }) }, question.title),
+            h('div', { key: 'task', style: { padding: 16, background: T.bg, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, borderRadius: 10, marginBottom: 20 } }, [
+              h('p', { key: 'label', style: Object.assign({}, practiceText, { margin: '0 0 6px', fontWeight: 800 }) }, __alloT('stem.machinelab.eff_practice_known', 'Known values')),
+              h('p', { key: 'given', 'data-ml-efficiency-given': '', style: Object.assign({}, textStyle, { fontSize: 16, margin: 0, fontVariantNumeric: 'tabular-nums' }) }, question.given)
+            ]),
+            h('div', { key: 'entry', className: 'ml-efficiency-practice-entry' }, [
+            h('div', { key: 'number', style: { minWidth: 0 } }, [
+            h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: practiceText }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
-              'aria-describedby': prefix + 'rounding-' + bench.id, 'aria-invalid': result === 'invalid' || result === 'incorrect', style: inputStyle,
+              'aria-describedby': prefix + 'rounding-' + bench.id, 'aria-invalid': result === 'invalid' || result === 'incorrect', style: Object.assign({}, practiceInput, { fontSize: 24, fontVariantNumeric: 'tabular-nums', lineHeight: 1.25, minHeight: 54 }),
               onChange: function (ev) { change({ answer: ev.target.value.slice(0, 64), checked: false }); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } }),
-            h('label', { key: 'unit-label', htmlFor: prefix + 'unit-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_unit', 'Answer unit')),
-            h('select', { key: 'unit', id: prefix + 'unit-' + bench.id, value: draft.unit, style: inputStyle, 'aria-invalid': result === 'unit',
+              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } })
+            ]),
+            h('div', { key: 'units', style: { minWidth: 0 } }, [
+            h('label', { key: 'unit-label', htmlFor: prefix + 'unit-' + bench.id, style: practiceText }, __alloT('stem.machinelab.eff_unit', 'Answer unit')),
+            h('select', { key: 'unit', id: prefix + 'unit-' + bench.id, value: draft.unit, style: Object.assign({}, practiceInput, { minHeight: 54 }), 'aria-invalid': result === 'unit',
               onChange: function (ev) { change({ unit: ev.target.value, checked: false }); } }, [
               h('option', { key: 'blank', value: '' }, __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')),
               h('option', { key: 'n', value: 'N' }, __alloT('stem.machinelab.eff_unit_n', 'N — newtons')),
@@ -8233,29 +8250,35 @@ window.StemLab = window.StemLab || {
               h('option', { key: 'm', value: 'm' }, __alloT('stem.machinelab.eff_unit_m', 'm — metres')),
               h('option', { key: 'percent', value: '%' }, __alloT('stem.machinelab.eff_unit_percent', '% — percent')),
               h('option', { key: 'ratio', value: '×' }, __alloT('stem.machinelab.eff_unit_ratio', '× — ratio'))
+            ])
+            ])
             ]),
-            h('div', { key: 'buttons', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 } }, [
-              h('button', { key: 'check', type: 'button', 'data-ml-efficiency-check': '', style: Object.assign({}, buttonStyle, { background: T.accent, color: T.accentInk, borderColor: T.accent, fontWeight: 800 }), onClick: function () { change({ checked: true }); } }, __alloT('stem.machinelab.eff_check', 'Check calculation')),
-              h('button', { key: 'hint', type: 'button', 'data-ml-efficiency-hint': '', style: buttonStyle, disabled: draft.hint >= 2,
+            h('p', { key: 'rule', id: prefix + 'rounding-' + bench.id, style: Object.assign({}, practiceText, { margin: '2px 0 16px' }) }, efficiencyRecordVersion(draft.question) >= 2 ? __alloT('stem.machinelab.eff_inverse_rounding', 'Use full values, or round to 3 significant figures. Checks allow 1% with a tiny absolute tolerance of 0.0000000001. Enter the requested unit; no points are awarded.') : __alloT('stem.machinelab.eff_rounding', 'Use full values when possible, or round to 3 decimal places. Checks allow 1% or 0.0005 units, whichever is larger. This is practice, with no points awarded.')),
+            h('div', { key: 'buttons', className: 'ml-efficiency-practice-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, [
+              h('button', { key: 'check', type: 'button', 'data-ml-efficiency-check': '', style: Object.assign({}, practiceButton, { background: T.accent, color: T.accentInk, borderColor: T.accent, fontWeight: 800 }), onClick: function () { change({ checked: true }); } }, __alloT('stem.machinelab.eff_check', 'Check calculation')),
+              h('button', { key: 'hint', type: 'button', 'data-ml-efficiency-hint': '', style: practiceButton, disabled: draft.hint >= 2,
                 onClick: function () { change({ hint: Math.min(2, draft.hint + 1) }); } }, draft.hint === 0 ? __alloT('stem.machinelab.eff_hint', 'Show a hint') : __alloT('stem.machinelab.eff_setup', 'Show calculation setup')),
-              h('button', { key: 'reveal', type: 'button', 'data-ml-efficiency-reveal': '', style: buttonStyle, disabled: draft.revealed,
+              h('button', { key: 'reveal', type: 'button', 'data-ml-efficiency-reveal': '', style: practiceButton, disabled: draft.revealed,
                 onClick: function () { change({ revealed: true }); } }, __alloT('stem.machinelab.eff_solution', 'Show worked solution'))
             ]),
-            h('div', { key: 'feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, textStyle, result || draft.hint ? { margin: '14px 0', padding: '0 12px', border: '1px solid ' + (result === 'correct' ? T.ok : result === 'incorrect' || result === 'unit' || result === 'invalid' ? T.warn : T.border), borderLeftWidth: 4, borderRadius: 8, background: T.bg } : {}) }, [
-              draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-efficiency-hint-level': draft.hint }, question.formula) : null,
-              draft.hint > 1 ? h('p', { key: 'setup' }, question.setup) : null,
+            h('div', { key: 'feedback', className: 'ml-efficiency-practice-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, textStyle, { fontSize: 16 }, result || draft.hint ? { margin: '18px 0', padding: '0 16px', border: '1px solid ' + (result === 'correct' ? T.ok : result === 'incorrect' || result === 'unit' || result === 'invalid' ? T.warn : T.border), borderLeftWidth: 4, borderRadius: 10, background: T.bg } : {}) }, [
+              draft.hint > 0 ? h('p', { key: 'hint', 'data-ml-efficiency-hint-level': draft.hint, style: { fontWeight: 800 } }, question.formula) : null,
+              draft.hint > 1 ? h('p', { key: 'setup', style: { fontVariantNumeric: 'tabular-nums' } }, question.setup) : null,
               result ? h('p', { key: 'result', 'data-ml-efficiency-result': result }, result === 'invalid' ? __alloT('stem.machinelab.eff_enter_answer', 'Enter a finite, non-negative number before checking.')
                 : result === 'unit' ? __alloT('stem.machinelab.eff_check_units_all', 'Use N for force, J for work or energy, m for hand travel, % for efficiency, and × for the mechanical-advantage ratio.')
                 : result === 'incorrect' ? (efficiencyRecordVersion(draft.question) === 3 ? question.formula : draft.question === 'efficiency' ? __alloT('stem.machinelab.eff_retry_percent', 'Not yet. Divide useful work by input work, then multiply by 100 to give a percentage.') : draft.question === 'actualMA' ? __alloT('stem.machinelab.eff_retry_ma', 'Not yet. Divide the load force by the modeled effort force. Actual MA is a ratio, not a percentage.') : draft.question === 'travel' ? __alloT('stem.machinelab.eff_retry_travel', 'Not yet. Divide input work by modeled effort force to find hand travel. Use input work, not useful output work.') : __alloT('stem.machinelab.eff_try_again', 'Not yet. Check the percentage-to-decimal conversion and your calculation. A hint can help.'))
                 : (result === 'solution' ? __alloT('stem.machinelab.eff_solution_shown', 'Worked solution: ') : __alloT('stem.machinelab.eff_correct', 'Correct within rounding tolerance: ')) + question.setup + ' = ' + (efficiencyRecordVersion(draft.question) === 3 ? String(question.target) : efficiencyRecordVersion(draft.question) === 2 ? powerFmt(question.target) : fmt(question.target, 3)) + ' ' + question.unit) : null
             ]),
-            h('div', { key: 'save-next', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
-            h('button', { key: 'save', type: 'button', 'data-ml-efficiency-save': '', style: buttonStyle, disabled: result !== 'correct' && result !== 'solution', onClick: save },
+            h('div', { key: 'keep-work', style: { marginTop: 20, paddingTop: 16, borderTop: '1px solid ' + T.border } }, [
+            h('div', { key: 'save-next', className: 'ml-efficiency-practice-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, [
+            h('button', { key: 'save', type: 'button', 'data-ml-efficiency-save': '', style: practiceButton, disabled: result !== 'correct' && result !== 'solution', onClick: save },
               saved ? __alloT('stem.machinelab.eff_update_record', 'Update saved efficiency work') : __alloT('stem.machinelab.eff_save_record', 'Save efficiency work')),
-            h('button', { key: 'next', type: 'button', 'data-ml-efficiency-next': '', style: buttonStyle, onClick: function () { change({ question: kinds[(kinds.indexOf(draft.question) + 1) % kinds.length] }); } }, __alloT('stem.machinelab.power_next', 'Next skill'))
+            h('button', { key: 'next', type: 'button', 'data-ml-efficiency-next': '', style: practiceButton, onClick: function () { change({ question: kinds[(kinds.indexOf(draft.question) + 1) % kinds.length] }); } }, __alloT('stem.machinelab.power_next', 'Next skill'))
             ]),
-            h('p', { key: 'save-help', style: textStyle }, __alloT('stem.machinelab.eff_save_next_help', 'Save before moving to the next skill. Each station keeps its latest efficiency calculation; saving again replaces that station’s prior calculation. The record keeps the task, answer, hints and any viewed solution; later settings do not rewrite it.'))
-            ]) : h('p', { key: 'unavailable', 'data-ml-efficiency-planning-unavailable': '', role: 'status', style: textStyle }, __alloT('stem.machinelab.eff_plan_invalid_practice', 'Enter valid effort and travel limits in Design within limits above to practice this planning skill. The earlier work, force, efficiency and travel skills are still available from this menu.'))
+            h('p', { key: 'save-help', style: Object.assign({}, practiceText, { margin: '12px 0 0' }) }, __alloT('stem.machinelab.eff_save_next_help', 'Save before moving to the next skill. Each station keeps its latest efficiency calculation; saving again replaces that station’s prior calculation. The record keeps the task, answer, hints and any viewed solution; later settings do not rewrite it.'))
+            ])
+            ]) : h('p', { key: 'unavailable', 'data-ml-efficiency-planning-unavailable': '', role: 'status', style: practiceText }, __alloT('stem.machinelab.eff_plan_invalid_practice', 'Enter valid effort and travel limits in Design within limits above to practice this planning skill. The earlier work, force, efficiency and travel skills are still available from this menu.')),
+            h('style', { key: 'practice-style' }, '.ml-efficiency-practice-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}.ml-efficiency-practice-entry{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px;align-items:end}.ml-efficiency-lab .ml-efficiency-practice input,.ml-efficiency-lab .ml-efficiency-practice select{margin-bottom:6px}.ml-efficiency-lab .ml-efficiency-practice button:focus-visible,.ml-efficiency-lab .ml-efficiency-practice input:focus-visible,.ml-efficiency-lab .ml-efficiency-practice select:focus-visible{outline:3px solid var(--ml-efficiency-practice-focus);outline-offset:3px}.ml-efficiency-practice-feedback p+p{padding-top:12px;border-top:1px solid currentColor}@media(max-width:600px){.ml-efficiency-practice-header,.ml-efficiency-practice-entry{grid-template-columns:minmax(0,1fr)}.ml-efficiency-practice-actions button{width:100%}}@media(forced-colors:active){.ml-efficiency-practice{--ml-efficiency-practice-focus:CanvasText!important}}')
           ]);
         }
         return card([h('details', { key: 'lab', className: 'ml-efficiency-lab', 'data-ml-efficiency': bench.id }, [
@@ -9987,22 +10010,47 @@ window.StemLab = window.StemLab || {
             { id: 'input', machine: bench, label: __alloT('stem.machinelab.compound_stage_in', 'Input stage: '), detail: String(p1) + '%' },
             { id: 'output', machine: second, label: __alloT('stem.machinelab.compound_stage_out', 'Output stage: '), detail: String(p2) + '%' }
           ];
-          return h('figure', { key: 'stage-map', 'data-ml-compound-stage-map': '', style: { margin: '14px 0 18px' } }, [
-            h('figcaption', { key: 'caption', style: Object.assign({}, textStyle, { fontWeight: 800, marginBottom: 10 }) },
+          var stageText = Object.assign({}, textStyle, { fontSize: 14 });
+          var stageValue = Object.assign({}, valueStyle, { fontSize: 24, margin: '6px 0 0' });
+          var stageCard = { position: 'relative', display: 'flex', flexDirection: 'column', padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.card, minWidth: 0 };
+          var stageLabel = Object.assign({}, stageText, { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, minHeight: 28, margin: 0, fontWeight: 750 });
+          function connector() {
+            return h('span', { key: 'connector', className: 'ml-compound-stage-connector', 'data-ml-compound-stage-connector': '', 'aria-hidden': 'true', style: { color: T.text } },
+              h('svg', { viewBox: '0 0 24 24', width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' },
+                h('path', { d: 'M4 12H20 M14 6L20 12L14 18' })));
+          }
+          return h('figure', { key: 'stage-map', className: 'ml-compound-stage-map', 'data-ml-compound-stage-map': '', style: { margin: '18px 0 22px', padding: 16, border: '1px solid ' + T.border, borderTop: '4px solid ' + T.accent, borderRadius: 14, background: T.bg, color: T.text, minWidth: 0, containerType: 'inline-size', containerName: 'ml-compound-stage' } }, [
+            h('figcaption', { key: 'caption', style: Object.assign({}, textStyle, { fontSize: 20, lineHeight: 1.35, fontWeight: 800, marginBottom: 8 }) },
               __alloT('stem.machinelab.compound_visual_route', 'Two stages, one final task')),
-            h('ol', { key: 'route', className: 'ml-compound-route', style: { padding: 0, margin: 0, listStyle: 'none', color: T.text } }, stages.map(function (stage, index) {
-              return h('li', { key: stage.id, 'data-ml-compound-flow-node': stage.id, className: 'ml-compound-route-node', style: { border: '1px solid ' + T.border, background: T.bg, borderRadius: 10, padding: 10, minWidth: 0 } }, [
-                h('div', { key: 'icon', 'aria-hidden': 'true', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } }, [benchPreview(stage.machine.id, false), h('strong', { key: 'step', style: { fontSize: 12, color: T.dim } }, String(index + 1))]),
-                h('span', { key: 'label', style: { display: 'block', fontSize: 11, lineHeight: 1.5, color: T.muted } }, stage.label),
-                h('strong', { key: 'name', style: { display: 'block', fontSize: 15, lineHeight: 1.4, overflowWrap: 'anywhere' } }, stage.machine.label),
-                h('span', { key: 'efficiency', style: { display: 'block', fontSize: 12, lineHeight: 1.5, marginTop: 6 } }, stage.detail + ' ' + __alloT('stem.machinelab.compound_visual_efficiency', 'efficiency'))
+            h('p', { key: 'guide', style: Object.assign({}, stageText, { margin: '0 0 16px' }) }, __alloT('stem.machinelab.compound_stage_map_guide', 'Machine symbols identify each mechanism; use the settings above for its geometry. Follow the stages in order to the final task.')),
+            h('ol', { key: 'route', className: 'ml-compound-stage-route', style: { padding: 0, margin: 0, listStyle: 'none' } }, stages.map(function (stage, index) {
+              return h('li', { key: stage.id, 'data-ml-compound-flow-node': stage.id, style: stageCard }, [
+                h('p', { key: 'label', 'data-ml-compound-stage-label': stage.id, style: stageLabel }, [
+                  h('span', { key: 'step', 'aria-hidden': 'true', style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, width: '1.75em', height: '1.75em', border: '1px solid ' + T.border, borderRadius: '50%', background: T.bg, fontVariantNumeric: 'tabular-nums' } }, String(index + 1)),
+                  h('span', { key: 'text', style: { minWidth: 0 } }, stage.label)
+                ]),
+                h('div', { key: 'icon', className: 'ml-compound-stage-art', 'aria-hidden': 'true', style: { background: T.bg, border: '1px solid ' + T.border } }, benchPreview(stage.machine.id, false)),
+                h('strong', { key: 'name', 'data-ml-compound-stage-name': stage.id, style: { display: 'block', fontSize: 18, lineHeight: 1.4, overflowWrap: 'anywhere' } }, stage.machine.label),
+                h('dl', { key: 'efficiency', style: { margin: 'auto 0 0', paddingTop: 16 } }, [
+                  h('dt', { key: 'label', style: stageText }, __alloT('stem.machinelab.compound_visual_efficiency', 'efficiency')),
+                  h('dd', { key: 'value', 'data-ml-compound-stage-efficiency': stage.id, style: stageValue }, stage.detail)
+                ]),
+                connector()
               ]);
-            }).concat([h('li', { key: 'task', 'data-ml-compound-flow-node': 'task', className: 'ml-compound-route-node', style: { padding: 10, border: '1px solid ' + T.load, borderRadius: 10, background: T.bg, minWidth: 0 } }, [
-              h('span', { key: 'symbol', 'aria-hidden': 'true', style: { display: 'block', fontSize: 30, height: 42, lineHeight: '42px', color: T.load, marginBottom: 8 } }, '◎'),
-              h('span', { key: 'label', style: { fontSize: 11, lineHeight: 1.5, color: T.muted } }, __alloT('stem.machinelab.compound_visual_task', 'Final task')),
-              h('strong', { key: 'load', style: { display: 'block', fontSize: 15, lineHeight: 1.4, overflowWrap: 'anywhere' } }, powerFmt(session.load) + ' N'),
-              h('span', { key: 'movement', style: { display: 'block', fontSize: 12, lineHeight: 1.5, marginTop: 6 } }, powerFmt(session.distance) + ' m · ' + (second.id === 'ramp' ? __alloT('stem.machinelab.compound_visual_rise', 'vertical rise') : __alloT('stem.machinelab.compound_visual_movement', 'movement')))
-            ])]))
+            }).concat([h('li', { key: 'task', 'data-ml-compound-flow-node': 'task', style: Object.assign({}, stageCard, { borderColor: T.load }) }, [
+              h('p', { key: 'label', style: stageLabel }, __alloT('stem.machinelab.compound_visual_task', 'Final task')),
+              h('div', { key: 'symbol', className: 'ml-compound-stage-art', 'aria-hidden': 'true', style: { color: T.load, background: T.bg, border: '1px solid ' + T.border } },
+                h('svg', { 'data-ml-compound-task-symbol': '', viewBox: '0 0 48 48', width: 72, height: 72, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, 'aria-hidden': 'true', focusable: 'false' }, [
+                  h('circle', { key: 'outer', cx: 24, cy: 24, r: 17 }), h('circle', { key: 'middle', cx: 24, cy: 24, r: 10 }), h('circle', { key: 'center', cx: 24, cy: 24, r: 3, fill: 'currentColor' })
+                ])),
+              h('dl', { key: 'task-values', style: { margin: 0 } }, [
+                h('dt', { key: 'load-label', style: stageText }, __alloT('stem.machinelab.compound_stage_map_load', 'Final load')),
+                h('dd', { key: 'load', 'data-ml-compound-task-value': 'load', style: stageValue }, powerFmt(session.load) + ' N'),
+                h('dt', { key: 'movement-label', style: Object.assign({}, stageText, { marginTop: 14 }) }, second.id === 'ramp' ? __alloT('stem.machinelab.compound_visual_rise', 'vertical rise') : __alloT('stem.machinelab.compound_visual_movement', 'movement')),
+                h('dd', { key: 'movement', 'data-ml-compound-task-value': 'movement', style: Object.assign({}, stageValue, { fontSize: 18 }) }, powerFmt(session.distance) + ' m')
+              ])
+            ])])),
+            h('style', { key: 'stage-style' }, '.ml-compound-stage-map .ml-compound-stage-route{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.ml-compound-stage-art{display:flex;align-items:center;justify-content:center;padding:8px;margin:14px 0;border-radius:10px;min-width:0}.ml-compound-stage-map .ml-compound-stage-art svg{display:block;width:72px;height:72px;max-width:100%;flex-shrink:1}.ml-compound-stage-connector{position:absolute;display:flex;align-items:center;justify-content:center;right:-28px;top:50%;width:28px;height:28px;transform:translateY(-50%)}@media(max-width:600px){.ml-compound-stage-map .ml-compound-stage-route{grid-template-columns:minmax(0,1fr)}.ml-compound-stage-map .ml-compound-stage-connector{right:auto;top:auto;bottom:-28px;left:50%;transform:translateX(-50%) rotate(90deg)}}@container ml-compound-stage (max-width:500px){.ml-compound-stage-map .ml-compound-stage-route{grid-template-columns:minmax(0,1fr)}.ml-compound-stage-map .ml-compound-stage-connector{right:auto;top:auto;bottom:-28px;left:50%;transform:translateX(-50%) rotate(90deg)}}@media(forced-colors:active){.ml-compound-stage-map svg *{stroke:CanvasText!important}.ml-compound-stage-map svg [fill]:not([fill=none]){fill:CanvasText!important}.ml-compound-stage-map [data-ml-compound-flow-node],.ml-compound-stage-art{border-color:CanvasText!important}}')
           ]);
         }
         function energySplit() {
@@ -10032,23 +10080,46 @@ window.StemLab = window.StemLab || {
           ]);
         }
         function powerFlow() {
-          return h('section', { key: 'power-flow', 'data-ml-compound-power-flow': bench.id, 'aria-labelledby': prefix + 'power-title-' + bench.id, style: panelStyle }, [
-            h('h3', { key: 'title', id: prefix + 'power-title-' + bench.id, style: { fontSize: 15, color: T.text } }, __alloT('stem.machinelab.compound_power_flow', 'Follow average power through both stages')),
+          var flowText = Object.assign({}, textStyle, { fontSize: 14 });
+          function reading(entry, withBar) {
+            var value = session.powerModel[entry[0]];
+            return h('div', { key: entry[0], 'data-ml-compound-power-metric': entry[0], 'data-value': value,
+              style: { padding: 14, border: '1px solid ' + T.border, borderRadius: 10, background: T.card, minWidth: 0 } }, [
+              h('dl', { key: 'reading', className: 'ml-compound-power-reading', style: { margin: 0 } }, [
+                h('dt', { key: 'label', style: Object.assign({}, flowText, { flex: '1 1 160px', fontWeight: 700 }) }, entry[1]),
+                h('dd', { key: 'value', style: { margin: 0, minWidth: 0, maxWidth: '100%', fontSize: 24, lineHeight: 1.3, fontWeight: 850, color: T.text, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, powerFmt(value) + ' W')
+              ]),
+              withBar ? h('div', { key: 'track', 'data-ml-compound-power-track': '', 'aria-hidden': 'true', style: { marginTop: 12, height: 16, border: '1px solid ' + T.border, borderRadius: 4, overflow: 'hidden', background: T.bg } },
+                h('div', { 'data-ml-compound-power-bar': entry[0], 'data-pattern': entry[2], style: { width: (value / session.powerModel.inputPower * 100) + '%', height: '100%', color: T.text,
+                  backgroundColor: entry[2] === 'solid' ? T.text : T.bg,
+                  backgroundImage: entry[2] === 'striped' ? 'repeating-linear-gradient(135deg,transparent,transparent 3px,currentColor 3px,currentColor 5px)' : entry[2] === 'dotted' ? 'radial-gradient(currentColor 1.5px,transparent 1.5px)' : 'none',
+                  backgroundSize: entry[2] === 'dotted' ? '6px 6px' : undefined } })) : null
+            ]);
+          }
+          return h('section', { key: 'power-flow', className: 'ml-compound-power-flow', 'data-ml-compound-power-flow': bench.id, 'aria-labelledby': prefix + 'power-title-' + bench.id, style: Object.assign({}, panelStyle, { padding: 18, borderTop: '4px solid ' + T.accent }) }, [
+            h('h3', { key: 'title', id: prefix + 'power-title-' + bench.id, style: { margin: '0 0 14px', fontSize: 20, lineHeight: 1.35, color: T.text, overflowWrap: 'anywhere' } }, __alloT('stem.machinelab.compound_power_flow', 'Follow average power through both stages')),
             session.powerModel ? h('div', { key: 'valid' }, [
-              h('p', { key: 'duration', style: textStyle }, __alloT('stem.machinelab.compound_power_interval', 'Every value uses the same task duration: ') + String(session.seconds) + ' s.'),
-              h('dl', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,140px),1fr))', gap: 8 } }, [
-                ['inputPower', __alloT('stem.machinelab.compound_pin', 'Average input power')],
-                ['transferPower', __alloT('stem.machinelab.compound_ptransfer', 'Average power between stages')],
-                ['usefulPower', __alloT('stem.machinelab.compound_pout', 'Average useful output power')],
+              h('p', { key: 'duration', style: Object.assign({}, flowText, { margin: '0 0 18px' }) }, [
+                __alloT('stem.machinelab.compound_power_interval', 'Every value uses the same task duration: '),
+                h('strong', { key: 'seconds', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, String(session.seconds) + ' s.')
+              ]),
+              h('p', { key: 'guide', style: Object.assign({}, flowText, { margin: '0 0 12px' }) }, __alloT('stem.machinelab.compound_power_flow_guide', 'Read from input to final output. Each row shows the power remaining at that position; do not add these three readings.')),
+              h('div', { key: 'metrics', style: { display: 'grid', gap: 10 } }, [
+                ['inputPower', __alloT('stem.machinelab.compound_pin', 'Average input power'), 'solid'],
+                ['transferPower', __alloT('stem.machinelab.compound_ptransfer', 'Average power between stages'), 'striped'],
+                ['usefulPower', __alloT('stem.machinelab.compound_pout', 'Average useful output power'), 'dotted']
+              ].map(function (entry) { return reading(entry, true); })),
+              h('p', { key: 'scale', style: Object.assign({}, flowText, { margin: '10px 0 20px' }) }, __alloT('stem.machinelab.compound_power_flow_scale', 'All bars share one scale, from 0 W to the input power. Tiny values may be too narrow to see; use the watt readings.')),
+              h('h4', { key: 'loss-title', style: Object.assign({}, flowText, { fontSize: 16, fontWeight: 800, margin: '0 0 10px' }) }, __alloT('stem.machinelab.compound_power_flow_losses', 'Power lost at each stage')),
+              h('div', { key: 'losses', className: 'ml-compound-power-losses' }, [
                 ['firstLossPower', __alloT('stem.machinelab.compound_ploss1', 'Average power lost in first stage')],
                 ['secondLossPower', __alloT('stem.machinelab.compound_ploss2', 'Average power lost in second stage')]
-              ].map(function (entry) { return h('div', { key: entry[0], 'data-ml-compound-power-metric': entry[0], 'data-value': session.powerModel[entry[0]],
-                style: { padding: 8, border: '1px solid ' + T.border, borderRadius: 6, background: T.bg, minWidth: 0 } }, [
-                h('dt', { key: 'label', style: textStyle }, entry[1]), h('dd', { key: 'value', style: Object.assign({}, textStyle, { fontWeight: 800, margin: '4px 0 0' }) }, powerFmt(session.powerModel[entry[0]]) + ' W')
-              ]); })),
-              h('p', { key: 'balance', style: textStyle }, __alloT('stem.machinelab.compound_power_balance', 'Input power = useful output power + both stage power losses. Useful output power ÷ input power gives the same combined efficiency as the energy calculation.')),
-              h('p', { key: 'pace', style: textStyle }, __alloT('stem.machinelab.compound_power_pace', 'For the same task and efficiencies, twice the duration halves every average power. Force, travel and work stay the same. At fixed task, efficiencies and duration, geometry changes effort and travel but not required power.'))
-            ]) : h('p', { key: 'invalid', 'data-ml-compound-power-invalid': '', role: 'status', style: textStyle }, invalidTimeText)
+              ].map(function (entry) { return reading(entry, false); })),
+              h('p', { key: 'balance', style: Object.assign({}, flowText, { padding: 14, borderLeft: '3px solid ' + T.accent, borderRadius: 8, background: T.card, margin: '14px 0 20px' }) }, __alloT('stem.machinelab.compound_power_balance', 'Input power = useful output power + both stage power losses. Useful output power ÷ input power gives the same combined efficiency as the energy calculation.')),
+              h('h4', { key: 'pace-title', style: Object.assign({}, flowText, { fontSize: 16, fontWeight: 800, margin: '0 0 8px' }) }, __alloT('stem.machinelab.compound_power_flow_try', 'Try twice the task time')),
+              h('p', { key: 'pace', style: Object.assign({}, flowText, { margin: 0 }) }, __alloT('stem.machinelab.compound_power_pace', 'For the same task and efficiencies, twice the duration halves every average power. Force, travel and work stay the same. At fixed task, efficiencies and duration, geometry changes effort and travel but not required power.'))
+            ]) : h('p', { key: 'invalid', 'data-ml-compound-power-invalid': '', role: 'status', style: flowText }, invalidTimeText),
+            h('style', { key: 'flow-style' }, '.ml-compound-power-reading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 16px}.ml-compound-power-losses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-compound-power-losses{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-compound-power-flow [data-ml-compound-power-track]{background:Canvas!important;border-color:CanvasText!important}.ml-compound-power-flow [data-ml-compound-power-bar]{forced-color-adjust:none;color:CanvasText!important;background-color:Canvas!important}.ml-compound-power-flow [data-pattern=solid]{background-color:CanvasText!important}}')
           ]);
         }
         function budgetPlanning() {
@@ -10746,8 +10817,8 @@ window.StemLab = window.StemLab || {
           { id: 'distance', title: __alloT('stem.machinelab.you_move', 'Your hand moves'), unit: 'm',
             before: _machineMath.effortDistance(plan.before.loadDistance, beforeMA), after: _machineMath.effortDistance(plan.after.loadDistance, afterMA) }
         ];
-        var buttonStyle = { minHeight: 42, padding: '8px 11px', borderRadius: 8, border: '1px solid ' + T.border,
-          background: T.bg, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' };
+        var buttonStyle = { minHeight: 44, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border,
+          background: T.bg, color: T.text, fontSize: 14, fontWeight: 750, cursor: 'pointer', maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' };
         function posePatch(setup) {
           return Object.assign({}, setup, { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
             benchPrediction: '', benchChoice: null, benchResult: null });
@@ -10829,44 +10900,51 @@ window.StemLab = window.StemLab || {
           announceToSR(__alloT('stem.machinelab.investigation_saved', 'Investigation saved to your work record. Add your explanation in the recorded comparison.'));
           focusEvidence();
         }
-        var status = !active ? __alloT('stem.machinelab.investigation_step_start', '1 · Set up') : active.tested
-          ? __alloT('stem.machinelab.investigation_step_explain', '3 · Explain') : __alloT('stem.machinelab.investigation_step_predict', '2 · Predict and test');
+        var currentStep = !active ? 0 : active.tested ? 2 : 1;
+        var steps = [__alloT('stem.machinelab.investigation_step_start', '1 · Set up'),
+          __alloT('stem.machinelab.investigation_step_predict', '2 · Predict and test'),
+          __alloT('stem.machinelab.investigation_step_explain', '3 · Explain')];
         return card([
-          h('div', { key: 'investigation', 'data-ml-investigation': bench.id }, [
-            h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 } }, [
-              h('h3', { key: 'title', id: 'ml-investigation-title-' + bench.id, tabIndex: -1, style: { margin: 0, fontSize: 15, color: T.text } }, __alloT('stem.machinelab.investigation_title', 'Investigate one change')),
-              h('span', { key: 'step', style: { fontSize: 11, fontWeight: 800, color: T.accent } }, status)
-            ]),
-            h('p', { key: 'question', style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.5, color: T.text, fontWeight: 650 } }, plan.question),
-            h('div', { key: 'change', style: { padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 12, lineHeight: 1.5 } }, [
+          h('div', { key: 'investigation', className: 'ml-investigation', 'data-ml-investigation': bench.id, style: { '--ml-investigation-focus': T.text } }, [
+            h('h3', { key: 'title', id: 'ml-investigation-title-' + bench.id, tabIndex: -1, style: { margin: '0 0 14px', fontSize: 20, fontWeight: 850, color: T.text } }, __alloT('stem.machinelab.investigation_title', 'Investigate one change')),
+            h('ol', { key: 'steps', className: 'ml-investigation-steps', 'aria-label': __alloT('stem.machinelab.investigation_steps', 'Investigation steps') }, steps.map(function (step, index) {
+              return h('li', { key: index, 'aria-current': currentStep === index ? 'step' : undefined,
+                style: { background: currentStep === index ? T.accent : T.bg, color: currentStep === index ? T.accentInk : T.muted, borderColor: currentStep === index ? T.accent : T.border } }, step);
+            })),
+            h('p', { key: 'question', style: { margin: '18px 0 12px', fontSize: 22, lineHeight: 1.35, color: T.text, fontWeight: 800, overflowWrap: 'anywhere' } }, plan.question),
+            h('div', { key: 'change', style: { padding: 14, borderRadius: 12, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, background: T.bg, color: T.text, fontSize: 14, lineHeight: 1.5 } }, [
               h('strong', { key: 'label' }, changedControl.label + ': '),
-              h('span', { key: 'values', style: { fontVariantNumeric: 'tabular-nums' } }, fmt(plan.before[plan.key], 3) + (changedControl.unit ? ' ' + changedControl.unit : '') + ' → ' + fmt(plan.after[plan.key], 3) + (changedControl.unit ? ' ' + changedControl.unit : '')),
+              h('span', { key: 'values', style: { display: 'block', fontSize: 20, fontWeight: 800, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, fmt(plan.before[plan.key], 3) + (changedControl.unit ? ' ' + changedControl.unit : '') + ' → ' + fmt(plan.after[plan.key], 3) + (changedControl.unit ? ' ' + changedControl.unit : '')),
               h('span', { key: 'fixed', style: { display: 'block', marginTop: 4, color: T.dim } },
                 __alloT('stem.machinelab.investigation_constants', 'Keep every other setting fixed, including the load and how far it moves.'))
             ]),
-            !active ? h('div', { key: 'start', style: { marginTop: 10 } }, [
+            !active ? h('div', { key: 'start', style: { marginTop: 16 } }, [
               h('button', { key: 'button', type: 'button', onClick: start, style: Object.assign({}, buttonStyle, { background: T.accent, color: T.accentInk, borderColor: T.accent }) },
                 __alloT('stem.machinelab.investigation_start', 'Start investigation')),
-              h('p', { key: 'help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+              h('p', { key: 'help', style: { margin: '10px 0 0', fontSize: 13, lineHeight: 1.5, color: T.dim } },
                 __alloT('stem.machinelab.investigation_start_help', 'Loads a starting setup at this station. Your saved setup and recorded comparison stay available.'))
             ]) : h('div', { key: 'active' }, [
               !active.tested ? h('div', { key: 'predict' }, [
-                h('p', { key: 'instruction', style: { fontSize: 12, lineHeight: 1.5, color: T.muted } },
+                h('p', { key: 'instruction', style: { fontSize: 14, lineHeight: 1.5, color: T.muted } },
                   __alloT('stem.machinelab.investigation_predict_help', 'Compared with the starting setup, will each quantity be less, the same, or more? Make both predictions before testing.')),
                 ['force', 'distance'].map(function (kind) {
                   var title = kind === 'force' ? __alloT('stem.machinelab.investigation_force_prediction', 'Effort force prediction') : __alloT('stem.machinelab.investigation_distance_prediction', 'Hand travel prediction');
-                  return h('fieldset', { key: kind, 'aria-label': title, style: { margin: '10px 0', padding: 8, minWidth: 0, borderRadius: 8, border: '1px solid ' + T.border } }, [
-                    h('legend', { key: 'legend', style: { fontSize: 12, fontWeight: 750, color: T.text } }, title),
-                    h('div', { key: 'choices', style: { display: 'flex', gap: 5, flexWrap: 'wrap' } }, ['less', 'same', 'more'].map(function (choice) {
+                  return h('fieldset', { key: kind, 'aria-label': title, style: { margin: '14px 0', padding: 12, minWidth: 0, borderRadius: 12, border: '1px solid ' + T.border } }, [
+                    h('legend', { key: 'legend', style: { fontSize: 15, fontWeight: 800, color: T.text, maxWidth: '100%', overflowWrap: 'anywhere' } }, title),
+                    h('div', { key: 'choices', className: 'ml-investigation-choices' }, ['less', 'same', 'more'].map(function (choice) {
                       var selected = active[kind] === choice;
                       return h('button', { key: choice, type: 'button', 'data-ml-prediction': kind, 'data-choice': choice,
                         'aria-pressed': selected, disabled: !beforeShown, onClick: function () { choose(kind, choice); },
-                        style: Object.assign({}, buttonStyle, { flex: '1 1 55px', padding: '8px 6px',
-                          background: selected ? T.accent : T.bg, color: selected ? T.accentInk : T.text, borderColor: selected ? T.accent : T.border }) }, predictionLabel(choice));
+                        style: Object.assign({}, buttonStyle, { fontSize: 16, borderWidth: 2,
+                          background: selected ? T.accent : T.bg, color: selected ? T.accentInk : T.text, borderColor: selected ? T.accent : T.border }) }, [
+                        h('svg', { key: 'icon', width: 28, height: 28, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: false },
+                          h('path', { d: choice === 'less' ? 'M12 4v16m-6-6 6 6 6-6' : choice === 'more' ? 'M12 20V4m-6 6 6-6 6 6' : 'M5 8h14M5 16h14' })),
+                        h('span', { key: 'label' }, predictionLabel(choice))
+                      ]);
                     }))
                   ]);
                 }),
-                !beforeShown ? h('p', { key: 'drift', role: 'status', style: { fontSize: 12, lineHeight: 1.5, color: T.warn } },
+                !beforeShown ? h('p', { key: 'drift', role: 'status', style: { fontSize: 14, lineHeight: 1.5, color: T.warn } },
                   __alloT('stem.machinelab.investigation_drift', 'The station settings changed. Restore the starting setup before testing this one-variable question.')) : null,
                 !beforeShown ? h('button', { key: 'restore', type: 'button', onClick: function (ev) { showSetup(false, false, ev); }, style: buttonStyle },
                   __alloT('stem.machinelab.investigation_restore', 'Restore starting setup')) : null,
@@ -10875,22 +10953,36 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.machinelab.investigation_test', 'Test planned change'))
               ]) : h('div', { key: 'result', 'data-ml-investigation-results': '', tabIndex: -1, role: 'region',
                 'aria-label': __alloT('stem.machinelab.investigation_results_label', 'Investigation results') }, [
-                h('p', { key: 'kept', style: { fontSize: 12, color: T.dim, lineHeight: 1.5 } },
+                h('p', { key: 'kept', style: { fontSize: 14, color: T.dim, lineHeight: 1.5 } },
                   __alloT('stem.machinelab.investigation_results_help', 'These results belong to the two planned setups. Your original predictions stay beside the evidence.')),
-                outcomes.map(function (outcome) {
+                h('div', { key: 'outcomes', className: 'ml-investigation-outcomes' }, outcomes.map(function (outcome) {
                   var observed = metricDirection(outcome.before, outcome.after), predicted = active[outcome.id];
-                  return h('div', { key: outcome.id, 'data-ml-investigation-outcome': outcome.id, style: { padding: 10, marginBottom: 8, border: '1px solid ' + T.border, borderRadius: 8, background: T.bg, fontSize: 12, color: T.text, lineHeight: 1.5 } }, [
-                    h('strong', { key: 'title', style: { display: 'block' } }, outcome.title),
-                    h('div', { key: 'values', style: { fontSize: 16, fontWeight: 800, fontVariantNumeric: 'tabular-nums', margin: '4px 0' } },
-                      fmt(outcome.before, 3) + ' ' + outcome.unit + ' → ' + fmt(outcome.after, 3) + ' ' + outcome.unit),
-                    h('div', { key: 'pred' }, __alloT('stem.machinelab.investigation_prediction', 'Your prediction: ') + predictionLabel(predicted) + ' · ' +
-                      __alloT('stem.machinelab.investigation_observed', 'Observed: ') + predictionLabel(observed)),
-                    h('div', { key: 'feedback', style: { color: T.dim } }, predicted === observed
+                  var scale = Math.max(outcome.before, outcome.after);
+                  return h('div', { key: outcome.id, 'data-ml-investigation-outcome': outcome.id, style: { minWidth: 0, padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.bg, fontSize: 14, color: T.text, lineHeight: 1.5, overflowWrap: 'anywhere' } }, [
+                    h('strong', { key: 'title', style: { display: 'block', fontSize: 18, marginBottom: 12 } }, outcome.title),
+                    ['before', 'after'].map(function (setup) {
+                      var value = outcome[setup], width = Number.isFinite(scale) && scale > 0 ? Math.max(0, Math.min(100, value / scale * 100)) : 0;
+                      return h('div', { key: setup, style: { marginBottom: 12 } }, [
+                        h('div', { key: 'label', style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: 12, alignItems: 'baseline' } }, [
+                          h('span', { key: 'setup', style: { color: T.muted } }, setup === 'before' ? __alloT('stem.machinelab.evidence_before', 'Before') : __alloT('stem.machinelab.evidence_after', 'After')),
+                          h('strong', { key: 'value', style: { fontSize: 20, fontVariantNumeric: 'tabular-nums' } }, fmt(value, 3) + ' ' + outcome.unit)
+                        ]),
+                        h('div', { key: 'track', className: 'ml-investigation-track', 'aria-hidden': true, style: { borderColor: T.border } },
+                          h('div', { className: 'ml-investigation-bar', 'data-ml-investigation-bar': setup, style: { width: width + '%', color: T.accent } }))
+                      ]);
+                    }),
+                    h('div', { key: 'pred', style: { paddingTop: 10, borderTop: '1px solid ' + T.border } }, [
+                      h('div', { key: 'original' }, __alloT('stem.machinelab.investigation_prediction', 'Your prediction: ') + predictionLabel(predicted)),
+                      h('strong', { key: 'observed', style: { display: 'block' } }, __alloT('stem.machinelab.investigation_observed', 'Observed: ') + predictionLabel(observed))
+                    ]),
+                    h('div', { key: 'feedback', style: { marginTop: 8, color: T.dim } }, predicted === observed
                       ? __alloT('stem.machinelab.investigation_matched', 'The model matches your prediction. Explain why using both quantities.')
                       : __alloT('stem.machinelab.investigation_rethink', 'The model differs from your prediction. Use the force and travel together to revise your explanation.'))
                   ]);
-                }),
-                h('p', { key: 'shown', 'data-ml-investigation-shown': beforeShown ? 'before' : afterShown ? 'after' : 'other', style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                })),
+                h('p', { key: 'scale', style: { fontSize: 13, color: T.dim, lineHeight: 1.5 } },
+                  __alloT('stem.machinelab.investigation_bar_scale', 'Each Before/After pair starts at zero and shares a scale. Force and travel use separate scales. Solid bars show Before; striped bars show After.')),
+                h('p', { key: 'shown', 'data-ml-investigation-shown': beforeShown ? 'before' : afterShown ? 'after' : 'other', style: { fontSize: 14, color: T.muted, lineHeight: 1.5 } },
                   beforeShown ? __alloT('stem.machinelab.investigation_showing_before', 'The station currently shows the before setup.') : afterShown
                     ? __alloT('stem.machinelab.investigation_showing_after', 'The station currently shows the after setup.')
                     : __alloT('stem.machinelab.investigation_showing_other', 'The station has other settings now.')),
@@ -10898,18 +10990,24 @@ window.StemLab = window.StemLab || {
                   h('button', { key: 'before', type: 'button', 'aria-pressed': beforeShown, onClick: function () { showSetup(false, true); }, style: buttonStyle }, __alloT('stem.machinelab.investigation_view_before', 'View before setup')),
                   h('button', { key: 'after', type: 'button', 'aria-pressed': afterShown, onClick: function () { showSetup(true, true); }, style: buttonStyle }, __alloT('stem.machinelab.investigation_view_after', 'View after setup'))
                 ]),
-                h('p', { key: 'pose', style: { fontSize: 11, color: T.dim, lineHeight: 1.45 } }, __alloT('stem.machinelab.investigation_pose', 'Both inspection buttons hold the model halfway through its stroke. Use Run demonstration to watch either setup move.')),
+                h('p', { key: 'pose', style: { fontSize: 13, color: T.dim, lineHeight: 1.5 } }, __alloT('stem.machinelab.investigation_pose', 'Both inspection buttons hold the model halfway through its stroke. Use Run demonstration to watch either setup move.')),
                 h('button', { key: 'save', type: 'button', onClick: saveInvestigation, style: Object.assign({}, buttonStyle, { background: T.accent, color: T.accentInk, borderColor: T.accent }) }, existing
                   ? __alloT('stem.machinelab.investigation_replace', 'Replace with investigation') : __alloT('stem.machinelab.investigation_save', 'Save investigation')),
-                existing ? h('p', { key: 'replace-help', style: { fontSize: 11, lineHeight: 1.45, color: T.dim } },
+                existing ? h('p', { key: 'replace-help', style: { fontSize: 13, lineHeight: 1.5, color: T.dim } },
                   __alloT('stem.machinelab.investigation_replace_help', 'Replaces this station\'s recorded pair and starts a new explanation.')) : null
               ]),
               h('button', { key: 'restart', type: 'button', onClick: start, style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, __alloT('stem.machinelab.investigation_restart', 'Restart investigation')),
-              h('p', { key: 'restart-help', style: { fontSize: 11, lineHeight: 1.45, color: T.dim, marginBottom: 0 } },
+              h('p', { key: 'restart-help', style: { fontSize: 13, lineHeight: 1.5, color: T.dim, marginBottom: 0 } },
                 __alloT('stem.machinelab.investigation_restart_help', 'Restart loads the starting settings and clears these predictions. Recorded evidence stays in your work record.'))
             ])
           ]),
-          h('style', { key: 'focus' }, '[data-ml-investigation] button:focus-visible,[data-ml-investigation-results]:focus-visible{outline:3px solid currentColor;outline-offset:2px}')
+          h('style', { key: 'focus' },
+            '.ml-investigation-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;list-style:none;margin:0;padding:0}.ml-investigation-steps li{padding:9px 10px;border:1px solid;border-radius:8px;font-size:13px;font-weight:750;line-height:1.4;overflow-wrap:anywhere}.ml-investigation-steps [aria-current="step"]{text-decoration:underline;text-underline-offset:4px}' +
+            '.ml-investigation-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ml-investigation-choices button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:88px!important;min-width:0}.ml-investigation-choices svg{flex-shrink:0}.ml-investigation-choices [aria-pressed="true"] span{text-decoration:underline;text-underline-offset:4px}.ml-investigation button:disabled{cursor:default}' +
+            '.ml-investigation-outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}.ml-investigation-track{height:18px;border:1px solid;border-radius:4px;overflow:hidden}.ml-investigation-bar{height:100%;background:currentColor}.ml-investigation-bar[data-ml-investigation-bar="after"]{background:repeating-linear-gradient(135deg,currentColor 0,currentColor 5px,transparent 5px,transparent 8px)}' +
+            '.ml-investigation[data-ml-investigation] button:focus-visible,.ml-investigation[data-ml-investigation] [data-ml-investigation-results]:focus-visible{outline:3px solid var(--ml-investigation-focus);outline-offset:3px}' +
+            '@media(max-width:440px){.ml-investigation-steps{grid-template-columns:1fr}.ml-investigation-choices{grid-template-columns:1fr}.ml-investigation-choices button{flex-direction:row;justify-content:flex-start;min-height:52px!important;gap:14px}}' +
+            '@media(forced-colors:active){.ml-investigation{--ml-investigation-focus:CanvasText!important}.ml-investigation-steps li,.ml-investigation-choices button{forced-color-adjust:none;background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.ml-investigation-steps [aria-current="step"],.ml-investigation-choices [aria-pressed="true"]{background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}.ml-investigation-track{forced-color-adjust:none;background:Canvas!important;border-color:CanvasText!important}.ml-investigation-bar{forced-color-adjust:none;color:CanvasText!important}}')
         ], 'investigation');
       }
 
@@ -10987,8 +11085,8 @@ window.StemLab = window.StemLab || {
             if (input) input.focus();
           }, 0);
         }
-        var buttonStyle = { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid ' + T.border,
-          background: T.card, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 750 };
+        var buttonStyle = { minHeight: 44, minWidth: 0, maxWidth: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border,
+          background: T.card, color: T.text, cursor: 'pointer', fontSize: 14, lineHeight: 1.5, fontWeight: 750, overflowWrap: 'anywhere' };
         function evidencePanel() {
           if (!record) return null;
           var investigation = recordedInvestigation(record);
@@ -11005,107 +11103,129 @@ window.StemLab = window.StemLab || {
             { id: 'workIn', label: __alloT('stem.machinelab.evidence_work_in', 'Work put in'), before: beforeWork.workIn, after: afterWork.workIn, unit: 'J' },
             { id: 'workOut', label: __alloT('stem.machinelab.evidence_work_out', 'Work delivered'), before: beforeWork.workOut, after: afterWork.workOut, unit: 'J' }
           ];
-          var cellStyle = { padding: '9px 5px', borderBottom: '1px solid ' + T.border, textAlign: 'right', verticalAlign: 'top', overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' };
+          var cellStyle = { padding: '12px 10px', borderBottom: '1px solid ' + T.border, textAlign: 'right', verticalAlign: 'middle', overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' };
           var noteId = 'ml-evidence-note-' + bench.id;
-          return h('section', { key: 'evidence', 'data-ml-experiment': bench.id,
+          return h('section', { key: 'evidence', className: 'ml-evidence-record', 'data-ml-experiment': bench.id,
             'aria-label': __alloT('stem.machinelab.evidence_title', 'Recorded comparison'),
-            style: { marginTop: 14, padding: 10, borderRadius: 8, border: '2px solid ' + T.accent, background: T.card, color: T.text } }, [
-            h('h4', { key: 'heading', style: { margin: '0 0 6px', fontSize: 14 } }, __alloT('stem.machinelab.evidence_title', 'Recorded comparison')),
-            h('p', { key: 'fixed', style: { margin: '0 0 10px', color: T.dim, fontSize: 12, lineHeight: 1.5 } },
+            style: { minWidth: 0, marginTop: 20, padding: 16, borderRadius: 14, border: '2px solid ' + T.accent, background: T.card, color: T.text, overflowWrap: 'anywhere', '--ml-record-focus': T.text } }, [
+            h('h4', { key: 'heading', id: noteId + '-heading', style: { margin: '0 0 12px', fontSize: 20, lineHeight: 1.35, fontWeight: 850 } }, __alloT('stem.machinelab.evidence_title', 'Recorded comparison')),
+            h('p', { key: 'fixed', style: { margin: '0 0 12px', padding: '12px 14px', borderLeft: '4px solid ' + T.accent, borderRadius: 6, background: T.bg, color: T.text, fontSize: 14, lineHeight: 1.6 } },
               __alloT('stem.machinelab.evidence_fixed', 'Before and after are fixed records. Moving a slider or clearing the saved setup will not change them.')),
-            h('p', { key: 'method', 'data-ml-experiment-changes': changes.length, style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5, fontWeight: 700 } },
+            h('p', { key: 'method', 'data-ml-experiment-changes': changes.length, style: { margin: '0 0 16px', padding: 12, border: '1px dashed ' + T.border, borderRadius: 8, fontSize: 14, lineHeight: 1.6, fontWeight: 750 } },
               changes.length === 1 ? __alloT('stem.machinelab.evidence_one_change', 'One setting changed: ') + changes[0].label
                 : __alloT('stem.machinelab.evidence_many_changes', 'Several settings changed. This pair alone cannot show which setting caused the effect.')),
-            investigation ? h('p', { key: 'prediction', 'data-ml-recorded-prediction': '', style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+            investigation ? h('p', { key: 'prediction', 'data-ml-recorded-prediction': '', style: { margin: '0 0 16px', fontSize: 14, color: T.muted, lineHeight: 1.6 } },
               __alloT('stem.machinelab.investigation_original', 'Original predictions — effort force: ') + predictionLabel(investigation.force) + '; ' +
               __alloT('stem.machinelab.investigation_original_distance', 'hand travel: ') + predictionLabel(investigation.distance)) : null,
-            h('table', { key: 'table', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12 } }, [
-              h('caption', { key: 'caption', style: { textAlign: 'left', color: T.dim, paddingBottom: 6, fontSize: 11 } },
+            h('p', { key: 'scroll-help', id: noteId + '-scroll-help', className: 'ml-evidence-scroll-help', style: { display: 'flex', alignItems: 'flex-start', gap: 8, margin: '0 0 10px', fontSize: 14, lineHeight: 1.6, color: T.text } }, [
+              h('span', { key: 'icon', 'aria-hidden': 'true', style: { flexShrink: 0, fontSize: 20, lineHeight: 1.1 } }, '↔'),
+              h('span', { key: 'text' }, __alloT('stem.machinelab.evidence_scroll_help', 'If a column is hidden, scroll sideways or focus the table and use arrow keys.'))
+            ]),
+            h('div', { key: 'table-scroll', className: 'ml-evidence-table-scroll', role: 'region', tabIndex: 0,
+              'aria-labelledby': noteId + '-heading', 'aria-describedby': noteId + '-scroll-help', style: { maxWidth: '100%', overflowX: 'auto', border: '1px solid ' + T.border, borderRadius: 10 } },
+            h('table', { key: 'table', style: { width: '100%', minWidth: '26em', borderCollapse: 'collapse', fontSize: 14 } }, [
+              h('caption', { key: 'caption', style: { textAlign: 'left', color: T.dim, padding: '10px 12px', fontSize: 14, lineHeight: 1.5 } },
                 __alloT('stem.machinelab.evidence_caption', 'Ideal model results; values are rounded.')),
-              h('thead', { key: 'head' }, h('tr', null, [
-                h('th', { key: 'metric', scope: 'col', style: Object.assign({}, cellStyle, { width: '44%', textAlign: 'left' }) }, __alloT('stem.machinelab.evidence_quantity', 'Quantity')),
+              h('thead', { key: 'head', style: { background: T.bg, fontSize: 14, lineHeight: 1.5 } }, h('tr', null, [
+                h('th', { key: 'metric', scope: 'col', style: Object.assign({}, cellStyle, { width: '40%', textAlign: 'left' }) }, __alloT('stem.machinelab.evidence_quantity', 'Quantity')),
                 h('th', { key: 'before', scope: 'col', style: cellStyle }, __alloT('stem.machinelab.evidence_before', 'Before')),
                 h('th', { key: 'after', scope: 'col', style: cellStyle }, __alloT('stem.machinelab.evidence_after', 'After'))
               ])),
-              h('tbody', { key: 'body' }, metrics.map(function (metric) {
-                return h('tr', { key: metric.id, 'data-ml-experiment-metric': metric.id }, [
-                  h('th', { key: 'label', scope: 'row', style: Object.assign({}, cellStyle, { textAlign: 'left', fontWeight: 600 }) }, metric.label),
-                  ['before', 'after'].map(function (side) { return h('td', { key: side, style: cellStyle,
+              h('tbody', { key: 'body' }, metrics.map(function (metric, index) {
+                return h('tr', { key: metric.id, 'data-ml-experiment-metric': metric.id, style: { background: index % 2 ? T.bg : T.card } }, [
+                  h('th', { key: 'label', scope: 'row', style: Object.assign({}, cellStyle, { textAlign: 'left', fontSize: 14, lineHeight: 1.5, fontWeight: 750 }) }, metric.label),
+                  ['before', 'after'].map(function (side) { return h('td', { key: side, style: Object.assign({}, cellStyle, { whiteSpace: 'nowrap', fontSize: 18, lineHeight: 1.5, fontWeight: 800 }),
                     'data-ml-experiment-value': side, 'data-value': metric[side] }, fmt(metric[side], 3) + ' ' + metric.unit); })
                 ]);
               }))
-            ]),
-            h('p', { key: 'work', style: { margin: '10px 0', fontSize: 12, lineHeight: 1.5 } }, sameTask
+            ])),
+            h('p', { key: 'work', style: { margin: '16px 0', padding: 14, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, fontSize: 14, lineHeight: 1.6 } }, sameTask
               ? __alloT('stem.machinelab.evidence_same_task', 'The load and its travel stayed the same. Both setups do the same ideal work: less effort force requires more hand travel.')
               : __alloT('stem.machinelab.evidence_task_changed', 'The load or its travel changed, so this is a different task. Work put in equals work delivered within each ideal setup; the totals can differ between setups.')),
-            h('details', { key: 'settings', style: { marginBottom: 12, fontSize: 12 } }, [
-              h('summary', { key: 'summary', style: { cursor: 'pointer', padding: '8px 0', fontWeight: 750 } }, __alloT('stem.machinelab.evidence_settings', 'Recorded settings')),
-              h('ul', { key: 'list', style: { paddingLeft: 18, margin: '4px 0', lineHeight: 1.6 } }, settings.map(function (c) {
+            h('details', { key: 'settings', style: { marginBottom: 20, fontSize: 14, border: '1px solid ' + T.border, borderRadius: 8, background: T.bg } }, [
+              h('summary', { key: 'summary', style: { cursor: 'pointer', minHeight: 44, boxSizing: 'border-box', padding: '12px 10px', lineHeight: 1.5, fontWeight: 800 } }, __alloT('stem.machinelab.evidence_settings', 'Recorded settings')),
+              h('ul', { key: 'list', style: { paddingLeft: 28, paddingRight: 12, margin: '0 0 12px', lineHeight: 1.7 } }, settings.map(function (c) {
                 return h('li', { key: c.key, style: { overflowWrap: 'anywhere' } }, c.label + ': ' + fmt(before[c.key], 3) + (c.unit ? ' ' + c.unit : '') + ' → ' + fmt(after[c.key], 3) + (c.unit ? ' ' + c.unit : '') +
                   (before[c.key] === after[c.key] ? ' (' + __alloT('stem.machinelab.evidence_held', 'held constant') + ')' : ' (' + __alloT('stem.machinelab.setting_changed', 'Changed') + ')'));
               }))
             ]),
-            h('label', { key: 'label', htmlFor: noteId, style: { display: 'block', fontSize: 12, fontWeight: 750, marginBottom: 6 } },
+            h('label', { key: 'label', htmlFor: noteId, style: { display: 'block', fontSize: 18, lineHeight: 1.5, fontWeight: 800, marginBottom: 10 } },
               __alloT('stem.machinelab.evidence_question', 'What does your comparison show?')),
             h('textarea', { key: 'note', id: noteId, rows: 3, maxLength: 1200,
               'aria-label': __alloT('stem.machinelab.evidence_question', 'What does your comparison show?'),
               'aria-describedby': noteId + '-help', value: typeof record.note === 'string' ? record.note.slice(0, 1200) : '',
               onChange: function (ev) { editEvidence(ev.target.value, ev); },
-              style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', minHeight: 78, padding: 8, borderRadius: 6,
-                border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit', fontSize: 13 } }),
-            h('p', { key: 'help', id: noteId + '-help', style: { margin: '5px 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.45 } },
+              style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', minHeight: 112, padding: 12, borderRadius: 8,
+                border: '2px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit', fontSize: 16, lineHeight: 1.6 } }),
+            h('p', { key: 'help', id: noteId + '-help', style: { margin: '8px 0 16px', fontSize: 14, color: T.dim, lineHeight: 1.6 } },
               __alloT('stem.machinelab.evidence_note_help', 'Use the before and after numbers as evidence. Your explanation is saved with this pair; it is not graded.')),
-            h('button', { key: 'open-work', type: 'button', onClick: openWorkRecord, style: Object.assign({}, buttonStyle, { marginRight: 6, marginBottom: 6 }) },
+            h('div', { key: 'actions', className: 'ml-evidence-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 16, borderTop: '1px solid ' + T.border } }, [
+            h('button', { key: 'open-work', type: 'button', onClick: openWorkRecord, style: Object.assign({}, buttonStyle, { minHeight: 44, padding: '10px 12px', fontSize: 14, lineHeight: 1.5, borderColor: T.accent }) },
               __alloT('stem.machinelab.investigation_open_work', 'Open your work record')),
-            h('button', { key: 'clear', type: 'button', onClick: function (ev) { editEvidence(null, ev); }, style: buttonStyle },
+            h('button', { key: 'clear', type: 'button', onClick: function (ev) { editEvidence(null, ev); }, style: Object.assign({}, buttonStyle, { minHeight: 44, padding: '10px 12px', fontSize: 14, lineHeight: 1.5 }) },
               __alloT('stem.machinelab.evidence_clear', 'Clear comparison record'))
+            ]),
+            h('style', { key: 'style' }, '.ml-evidence-record .ml-evidence-table-scroll:focus-visible,.ml-evidence-record button:focus-visible,.ml-evidence-record summary:focus-visible,.ml-evidence-record textarea:focus-visible{outline:3px solid var(--ml-record-focus);outline-offset:3px}@media(max-width:400px){.ml-evidence-record{padding:12px 4px!important}.ml-evidence-actions>button{width:100%}}@media(forced-colors:active){.ml-evidence-record{--ml-record-focus:Highlight!important}}')
           ]);
         }
         function comparisonRow(id, title, before, now, unit, color) {
           var scale = Math.max(before, now || 0, 1e-12);
           var direction = now === null ? 'unavailable' : Math.abs(now - before) <= 1e-9 * Math.max(1, Math.abs(before)) ? 'same' : now < before ? 'less' : 'more';
-          return h('div', { key: id, 'data-ml-reference-metric': id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } }, [
-            h('div', { key: 'heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 8 } }, [
-              h('h4', { key: 'title', style: { margin: 0, fontSize: 12, color: T.text } }, title),
-              h('span', { key: 'direction', 'data-ml-reference-direction': direction, style: { padding: '3px 6px', borderRadius: 5,
-                background: T.bg, border: '1px solid ' + T.border, color: T.text, fontSize: 11, fontWeight: 750 } },
+          return h('div', { key: id, className: 'ml-reference-reading', 'data-ml-reference-metric': id,
+            style: { minWidth: 0, padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border,
+              borderTop: '4px solid ' + color, color: T.text, overflowWrap: 'anywhere' } }, [
+            h('div', { key: 'heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 16 } }, [
+              h('h4', { key: 'title', style: { margin: 0, fontSize: 16, lineHeight: 1.4, fontWeight: 800, color: T.text } }, title),
+              h('span', { key: 'direction', 'data-ml-reference-direction': direction, style: { padding: '5px 8px', borderRadius: 7,
+                background: T.bg, border: '1px solid ' + T.border, color: T.text, fontSize: 14, lineHeight: 1.4, fontWeight: 800 } },
                 direction === 'unavailable' ? '—' : direction === 'same' ? '= ' + __alloT('stem.machinelab.reference_same', 'Same')
                   : direction === 'less' ? '↓ ' + __alloT('stem.machinelab.reference_less', 'Less') : '↑ ' + __alloT('stem.machinelab.reference_more', 'More'))
             ]),
             [{ id: 'saved', label: __alloT('stem.machinelab.reference_before', 'Saved'), value: before },
               { id: 'now', label: __alloT('stem.machinelab.reference_now', 'Now'), value: now }].map(function (row) {
-              return h('div', { key: row.id, style: { marginTop: 7 } }, [
-                h('div', { key: 'values', style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: T.text, fontSize: 12 } }, [
-                  h('span', { key: 'label' }, row.label),
-                  h('strong', { key: 'value', 'data-ml-reference-value': row.id, 'data-value': row.value,
-                    style: { fontVariantNumeric: 'tabular-nums' } }, fmt(row.value, 3) + ' ' + unit)
+              return h('div', { key: row.id, 'data-ml-reference-reading': row.id, style: { marginTop: 16 } }, [
+                h('dl', { key: 'values', style: { margin: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', justifyContent: 'space-between', gap: '4px 12px', color: T.text } }, [
+                  h('dt', { key: 'label', style: { fontSize: 14, lineHeight: 1.5, fontWeight: 700 } }, row.label),
+                  h('dd', { key: 'value', 'data-ml-reference-value': row.id, 'data-value': row.value,
+                    style: { margin: 0, minWidth: 0, maxWidth: '100%', fontSize: 24, lineHeight: 1.3, fontWeight: 850, fontVariantNumeric: 'tabular-nums' } }, fmt(row.value, 3) + ' ' + unit)
                 ]),
-                h('div', { key: 'track', 'aria-hidden': 'true', style: { marginTop: 5, height: 9, borderRadius: 3, background: T.bg } },
+                h('div', { key: 'track', className: 'ml-reference-track', 'aria-hidden': 'true', style: { marginTop: 8, height: 16, border: '1px solid ' + T.border, borderRadius: 4, background: T.bg, overflow: 'hidden' } },
                   h('div', { 'data-ml-reference-bar': row.id, style: { width: (row.value === null ? 0 : row.value / scale * 100) + '%',
-                    height: '100%', boxSizing: 'border-box', borderRadius: 3,
+                    height: '100%', boxSizing: 'border-box', borderRadius: 3, minWidth: 0,
                     border: '1px ' + (row.id === 'saved' ? 'dashed ' : 'solid ') + color,
                     background: row.id === 'saved' ? 'transparent' : color } }))
               ]);
-            })
+            }),
+            h('style', { key: 'style' }, '@media(max-width:400px){.ml-reference-reading{padding-left:8px!important;padding-right:8px!important}}@media(forced-colors:active){.ml-reference-reading .ml-reference-track{forced-color-adjust:none;background:Canvas!important;border-color:CanvasText!important}}')
           ]);
         }
         return h('details', { key: 'compare-' + bench.id, className: 'ml-station-comparison',
-          style: { border: '1px solid ' + T.border, borderRadius: 10, background: T.bg, color: T.text } }, [
-          h('summary', { key: 'summary', style: { minHeight: 44, boxSizing: 'border-box', padding: '12px 10px', cursor: 'pointer', fontSize: 13, fontWeight: 800 } },
-            [h('span', { key: 'title' }, __alloT('stem.machinelab.reference_compare', 'Compare a change')),
+          style: { minWidth: 0, border: '1px solid ' + T.border, borderTop: '3px solid ' + T.accent, borderRadius: 14, background: T.bg, color: T.text,
+            overflowWrap: 'anywhere', containerType: 'inline-size', containerName: 'ml-comparison-flow', '--ml-comparison-focus': T.text } }, [
+          h('summary', { key: 'summary', className: 'ml-comparison-summary', style: { minHeight: 64, boxSizing: 'border-box', padding: 16, cursor: 'pointer', fontSize: 20, lineHeight: 1.5, fontWeight: 850 } },
+            [h('span', { key: 'title', className: 'ml-comparison-summary-title' }, [
+              h('svg', { key: 'icon', viewBox: '0 0 32 32', width: 32, height: 32, 'aria-hidden': 'true', focusable: 'false',
+                style: { display: 'inline-block', verticalAlign: 'middle', marginRight: 10, color: T.accent } }, [
+                h('rect', { key: 'before', x: 3, y: 4, width: 10, height: 10, rx: 2, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                h('rect', { key: 'after', x: 19, y: 18, width: 10, height: 10, rx: 2, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                h('path', { key: 'arrows', d: 'M18 9H28M24 5L28 9L24 13M14 23H4M8 19L4 23L8 27', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+              ]),
+              h('span', { key: 'text' }, __alloT('stem.machinelab.reference_compare', 'Compare a change'))
+            ]),
               saved ? h('span', { key: 'count', 'data-ml-reference-count': changed.length,
-                style: { display: 'inline-block', verticalAlign: 'middle', marginLeft: 8, padding: '2px 6px', borderRadius: 5,
-                  border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 11, fontWeight: 700, lineHeight: 1.4 } },
+                style: { display: 'inline-block', verticalAlign: 'middle', margin: '6px 0 0 10px', padding: '5px 8px', borderRadius: 999,
+                  border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 14, fontWeight: 750, lineHeight: 1.4 } },
                 changed.length === 0 ? __alloT('stem.machinelab.reference_before', 'Saved') : changed.length === 1
                   ? __alloT('stem.machinelab.reference_one_change', '1 change') : changed.length + ' ' + __alloT('stem.machinelab.reference_changes', 'changes')) : null,
-              record ? h('span', { key: 'record', style: { display: 'inline-block', marginLeft: 8, fontSize: 11, color: T.accent } },
+              record ? h('span', { key: 'record', className: 'ml-comparison-record-badge', style: { display: 'inline-block', margin: '6px 0 0 10px', padding: '5px 8px', borderRadius: 999,
+                border: '1px solid ' + T.accent, background: T.card, fontSize: 14, lineHeight: 1.4, color: T.text } },
                 __alloT('stem.machinelab.evidence_kept', 'Record kept')) : null]),
-          h('div', { key: 'body', style: { padding: '0 10px 10px' } }, [
-            h('p', { key: 'help', style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: T.dim } },
+          h('div', { key: 'body', className: 'ml-comparison-body', style: { padding: '0 16px 16px' } }, [
+            h('p', { key: 'help', style: { margin: '0 0 16px', fontSize: 14, lineHeight: 1.6, color: T.text } },
               __alloT('stem.machinelab.reference_help', 'Save a setup, then change one setting. Compare the force you need and the distance your hand travels. Each station keeps its own saved setup.')),
-            h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } }, [
+            h('div', { key: 'actions', className: 'ml-comparison-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 } }, [
               h('button', { key: 'save', type: 'button', 'data-ml-save-reference': '', disabled: !canSave,
-                onClick: function (ev) { if (canSave) saveReference(false, ev); }, style: Object.assign({}, buttonStyle, { cursor: canSave ? 'pointer' : 'default' }) },
+                onClick: function (ev) { if (canSave) saveReference(false, ev); }, style: Object.assign({}, buttonStyle, { borderColor: T.accent, cursor: canSave ? 'pointer' : 'default' }) },
                 saved ? __alloT('stem.machinelab.reference_replace', 'Replace saved setup') : __alloT('stem.machinelab.reference_save', 'Save current setup')),
               saved ? h('button', { key: 'restore', type: 'button', disabled: !changed.length, onClick: restoreReference,
                 style: Object.assign({}, buttonStyle, { borderColor: changed.length ? T.accent : T.border,
@@ -11115,9 +11235,9 @@ window.StemLab = window.StemLab || {
                 __alloT('stem.machinelab.reference_clear_setup', 'Clear saved setup')) : null
             ]),
             saved ? h('div', { key: 'comparison' }, [
-              changed.length ? h('ul', { key: 'changes', 'data-ml-reference-changes': '', style: { margin: '0 0 10px', padding: 0, listStyle: 'none' } },
-                changed.map(function (c) { return h('li', { key: c.key, style: { marginTop: 6 } },
-                  h('button', { type: 'button', 'data-ml-adjust-setting': c.key,
+              changed.length ? h('ul', { key: 'changes', 'data-ml-reference-changes': '', style: { margin: '0 0 16px', padding: 0, listStyle: 'none' } },
+                changed.map(function (c) { return h('li', { key: c.key, style: { marginTop: 10 } },
+                  h('button', { type: 'button', className: 'ml-comparison-change', 'data-ml-adjust-setting': c.key,
                     'aria-label': __alloT('stem.machinelab.reference_adjust', 'Adjust ') + c.label,
                     'aria-controls': 'ml-' + c.key, 'aria-describedby': 'ml-change-values-' + c.key,
                     onClick: function (ev) {
@@ -11128,39 +11248,42 @@ window.StemLab = window.StemLab || {
                       var control = input.closest('.ml-station-control');
                       if (control) control.scrollIntoView({ block: 'center', behavior: 'auto' });
                     },
-                    style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'center', gap: 8,
-                      width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border,
-                      background: T.card, color: T.text, textAlign: 'left', cursor: 'pointer', fontSize: 12, lineHeight: 1.4 }
+                    style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'center', gap: 12,
+                      width: '100%', minHeight: 64, minWidth: 0, padding: '12px 14px', borderRadius: 10, border: '1px solid ' + T.border,
+                      background: T.card, color: T.text, textAlign: 'left', cursor: 'pointer', fontSize: 14, lineHeight: 1.5 }
                   }, [
                     h('span', { key: 'setting', style: { minWidth: 0 } }, [
                       h('span', { key: 'label', style: { display: 'block', fontWeight: 800 } }, c.label),
-                      h('span', { key: 'values', id: 'ml-change-values-' + c.key,
-                        style: { display: 'block', marginTop: 2, fontSize: 11, color: T.dim, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } },
-                        fmt(saved[c.key], 3) + (c.unit ? ' ' + c.unit : '') + ' → ' + fmt(d[c.key], 3) + (c.unit ? ' ' + c.unit : ''))
+                      h('span', { key: 'values', className: 'ml-comparison-change-values', id: 'ml-change-values-' + c.key,
+                        style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '4px 8px', marginTop: 6, fontSize: 16, fontWeight: 800, color: T.text, fontVariantNumeric: 'tabular-nums' } }, [
+                        h('span', { key: 'before', style: { whiteSpace: 'nowrap' } }, fmt(saved[c.key], 3) + (c.unit ? ' ' + c.unit : '')),
+                        h('span', { key: 'arrow' }, ' → '),
+                        h('span', { key: 'after', style: { whiteSpace: 'nowrap' } }, fmt(d[c.key], 3) + (c.unit ? ' ' + c.unit : ''))
+                      ])
                     ]),
-                    h('span', { key: 'action', 'aria-hidden': 'true', style: { fontSize: 11, fontWeight: 750 } },
+                    h('span', { key: 'action', className: 'ml-comparison-adjust-label', 'aria-hidden': 'true', style: { justifySelf: 'start', padding: '5px 8px', borderRadius: 7, border: '1px solid ' + T.border, fontSize: 14, fontWeight: 750 } },
                       __alloT('stem.machinelab.reference_adjust_short', 'Adjust') + ' ↑')
                   ])); }))
-                : h('p', { key: 'same', style: { margin: '0 0 10px', fontSize: 12, color: T.dim } }, __alloT('stem.machinelab.reference_unchanged', 'Same settings. Move one slider to see the trade.')),
+                : h('p', { key: 'same', style: { margin: '0 0 16px', padding: 12, border: '1px dashed ' + T.border, borderRadius: 10, fontSize: 14, lineHeight: 1.6, color: T.text } }, __alloT('stem.machinelab.reference_unchanged', 'Same settings. Move one slider to see the trade.')),
               h('div', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,190px),1fr))', gap: 8 } }, [
                 comparisonRow('force', __alloT('stem.machinelab.effort_needed', 'Effort needed'), _machineMath.effortForce(saved[bench.loadKey], savedMA), effort, 'N', T.effort),
                 comparisonRow('distance', __alloT('stem.machinelab.you_move', 'Your hand moves'), _machineMath.effortDistance(saved.loadDistance, savedMA), effortDist, 'm', T.load)
               ]),
-              h('p', { key: 'scale', style: { margin: '8px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+              h('p', { key: 'scale', style: { margin: '12px 0 0', fontSize: 14, lineHeight: 1.6, color: T.text } },
                 __alloT('stem.machinelab.reference_scale', 'Dashed = saved; filled = now. Each pair shares a scale. Values use the ideal model and are rounded.'))
             ]) : null,
-            saved ? h('div', { key: 'keep', style: { marginTop: 12 } }, [
+            saved ? h('div', { key: 'keep', className: 'ml-comparison-keep', style: { marginTop: 16, paddingTop: 16, borderTop: '1px solid ' + T.border } }, [
               h('button', { key: 'button', type: 'button', 'data-ml-keep-comparison': '', disabled: !canSave || !changed.length,
-                onClick: keepComparison, style: Object.assign({}, buttonStyle, { borderColor: T.accent,
+                onClick: keepComparison, style: Object.assign({}, buttonStyle, { borderColor: T.accent, background: T.accent, color: T.accentInk,
                   cursor: canSave && changed.length ? 'pointer' : 'default', opacity: canSave && changed.length ? 1 : 0.65 }) },
                 record ? __alloT('stem.machinelab.evidence_replace', 'Replace comparison record') : __alloT('stem.machinelab.evidence_save', 'Save comparison')),
-              h('p', { key: 'help', style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } }, record
+              h('p', { key: 'help', style: { margin: '10px 0 0', fontSize: 14, lineHeight: 1.6, color: T.text } }, record
                 ? __alloT('stem.machinelab.evidence_replace_help', 'Replacing keeps the new pair and starts a new explanation. Each station keeps one comparison record.')
                 : __alloT('stem.machinelab.evidence_save_help', 'Change a setting, then keep the pair to explain what you found. Each station keeps one comparison record.'))
             ]) : null,
             evidencePanel()
           ]),
-          h('style', { key: 'style' }, '.ml-station-comparison button:focus-visible,.ml-station-comparison summary:focus-visible,.ml-station-comparison textarea:focus-visible{outline:3px solid currentColor;outline-offset:2px}@media(forced-colors:active){.ml-station-comparison [data-ml-reference-bar]{forced-color-adjust:none;border-color:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=now]{background:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=saved]{background:Canvas!important}}')
+          h('style', { key: 'style' }, '.ml-station-comparison button:focus-visible,.ml-station-comparison summary:focus-visible,.ml-station-comparison textarea:focus-visible{outline:3px solid var(--ml-comparison-focus);outline-offset:3px}.ml-station-comparison .ml-comparison-actions>button{flex:1 1 180px}.ml-station-comparison .ml-comparison-change:hover{box-shadow:inset 0 0 0 1px currentColor}@container ml-comparison-flow (max-width:500px){.ml-station-comparison .ml-comparison-change{grid-template-columns:minmax(0,1fr)!important}.ml-station-comparison .ml-comparison-actions{flex-direction:column}.ml-station-comparison .ml-comparison-actions>button{flex:0 0 auto;width:100%}.ml-station-comparison .ml-comparison-keep>button{width:100%}}@container ml-comparison-flow (max-width:300px){.ml-station-comparison .ml-comparison-summary{padding:12px!important}.ml-station-comparison .ml-comparison-body{padding:0 10px 12px!important}.ml-station-comparison .ml-comparison-change{padding:10px!important}}@media(forced-colors:active){.ml-station-comparison{--ml-comparison-focus:Highlight!important}.ml-station-comparison .ml-comparison-summary svg{color:CanvasText!important}.ml-station-comparison [data-ml-reference-bar]{forced-color-adjust:none;border-color:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=now]{background:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=saved]{background:Canvas!important}}')
         ]);
       }
 
@@ -11418,89 +11541,104 @@ window.StemLab = window.StemLab || {
         var body;
 
         if (isChoiceBand) {
-          body = h('div', { key: 'choices', role: 'group', 'aria-label': bench.k2Question },
+          body = h('div', { key: 'choices', className: 'ml-proof-choices', role: 'group', 'aria-label': bench.k2Question },
             bench.k2Choices.map(function (opt) {
               var picked = d.benchChoice === opt.id;
               return h('button', {
-                key: opt.id,
+                key: opt.id, className: 'ml-proof-choice',
                 onClick: function () { submitChoice(opt); },
                 'aria-pressed': picked ? 'true' : 'false',
                 style: {
-                  display: 'block', width: '100%', textAlign: 'left', marginBottom: 6,
-                  padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-                  border: '1px solid ' + (picked ? T.accent : T.border),
+                  display: 'flex', alignItems: 'center', gap: 12, width: '100%', minWidth: 0, minHeight: 56, boxSizing: 'border-box', textAlign: 'left', marginBottom: 10,
+                  padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                  border: '2px solid ' + (picked ? T.accent : T.border),
                   background: picked ? T.accent : T.card,
                   color: picked ? T.accentInk : T.text,
-                  fontSize: 14, fontWeight: 600
+                  fontSize: 16, lineHeight: 1.5, fontWeight: 650, overflowWrap: 'anywhere'
                 }
-              }, opt.label);
+              }, [
+                h('svg', { key: 'selection', width: 24, height: 24, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } }, [
+                  h('circle', { key: 'ring', cx: 12, cy: 12, r: 9, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                  picked ? h('circle', { key: 'selected', cx: 12, cy: 12, r: 5, fill: 'currentColor' }) : null
+                ]),
+                h('span', { key: 'label', style: { minWidth: 0 } }, opt.label)
+              ]);
             }));
         } else if (band === 'g35') {
-          body = h('div', { key: 'g35' }, [
-            h('p', { key: 'q', style: { margin: '0 0 8px', fontSize: 13, color: T.muted } },
+          body = h('div', { key: 'g35', className: 'ml-proof-entry' }, [
+            h('p', { key: 'q', style: { margin: '0 0 14px', fontSize: 15, lineHeight: 1.6, color: T.text } },
               __alloT('stem.machinelab.g35_q', 'Work out the effort force, then check yourself. Effort = load divided by mechanical advantage.')),
-            h('div', { key: 'row', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, [
+            h('label', { key: 'label', htmlFor: 'ml-proof-answer-' + bench.id, style: { display: 'block', marginBottom: 8, fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text } },
+              __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons')),
+            h('div', { key: 'row', className: 'ml-proof-answer-row' }, [
               h('input', {
-                key: 'inp', type: 'text', inputMode: 'decimal',
+                key: 'inp', id: 'ml-proof-answer-' + bench.id, className: 'ml-proof-answer', type: 'text', inputMode: 'decimal',
                 value: d.benchPrediction || '',
                 'aria-label': __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons'),
                 placeholder: __alloT('stem.machinelab.newtons', 'newtons'),
                 onChange: function (e) { updMulti({ benchPrediction: e.target.value, benchResult: null }); },
                 onKeyDown: function (e) { if (e.key === 'Enter') submitTyped(); },
                 style: {
-                  flex: '1 1 120px', padding: '9px 11px', borderRadius: 8,
-                  border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14
+                  width: '100%', minWidth: 0, minHeight: 48, boxSizing: 'border-box', padding: '12px 14px', borderRadius: 10,
+                  border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 18, lineHeight: 1.5, fontVariantNumeric: 'tabular-nums'
                 }
               }),
               h('button', {
-                key: 'go', onClick: submitTyped,
+                key: 'go', className: 'ml-proof-check', onClick: submitTyped,
                 style: {
-                  padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
+                  minWidth: 0, minHeight: 48, padding: '12px 18px', borderRadius: 10, cursor: 'pointer', overflowWrap: 'anywhere',
                   border: '1px solid ' + T.accent, background: T.accent,
-                  color: T.accentInk, fontSize: 14, fontWeight: 700
+                  color: T.accentInk, fontSize: 16, lineHeight: 1.5, fontWeight: 800
                 }
               }, __alloT('stem.machinelab.check', 'Check'))
             ])
           ]);
         } else {
-          body = h('div', { key: 'typed' }, [
-            h('p', { key: 'q', style: { margin: '0 0 8px', fontSize: 13, color: T.muted } },
+          body = h('div', { key: 'typed', className: 'ml-proof-entry' }, [
+            h('p', { key: 'q', style: { margin: '0 0 14px', fontSize: 15, lineHeight: 1.6, color: T.text } },
               __alloT('stem.machinelab.typed_q', 'Predict the effort force these settings need, in newtons. Do it before you read the panel above.')),
-            h('div', { key: 'row', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, [
+            h('label', { key: 'label', htmlFor: 'ml-proof-answer-' + bench.id, style: { display: 'block', marginBottom: 8, fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text } },
+              __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons')),
+            h('div', { key: 'row', className: 'ml-proof-answer-row' }, [
               h('input', {
-                key: 'inp', type: 'text', inputMode: 'decimal',
+                key: 'inp', id: 'ml-proof-answer-' + bench.id, className: 'ml-proof-answer', type: 'text', inputMode: 'decimal',
                 value: d.benchPrediction || '',
                 'aria-label': __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons'),
                 placeholder: __alloT('stem.machinelab.newtons', 'newtons'),
                 onChange: function (e) { updMulti({ benchPrediction: e.target.value, benchResult: null }); },
                 onKeyDown: function (e) { if (e.key === 'Enter') submitTyped(); },
                 style: {
-                  flex: '1 1 120px', padding: '9px 11px', borderRadius: 8,
-                  border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14
+                  width: '100%', minWidth: 0, minHeight: 48, boxSizing: 'border-box', padding: '12px 14px', borderRadius: 10,
+                  border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 18, lineHeight: 1.5, fontVariantNumeric: 'tabular-nums'
                 }
               }),
               h('button', {
-                key: 'go', onClick: submitTyped,
+                key: 'go', className: 'ml-proof-check', onClick: submitTyped,
                 style: {
-                  padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
+                  minWidth: 0, minHeight: 48, padding: '12px 18px', borderRadius: 10, cursor: 'pointer', overflowWrap: 'anywhere',
                   border: '1px solid ' + T.accent, background: T.accent,
-                  color: T.accentInk, fontSize: 14, fontWeight: 700
+                  color: T.accentInk, fontSize: 16, lineHeight: 1.5, fontWeight: 800
                 }
               }, __alloT('stem.machinelab.check', 'Check'))
             ])
           ]);
         }
 
-        return card([
-          h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, [
+        return card([h('div', { key: 'panel', className: 'ml-proof-panel', style: { minWidth: 0, overflowWrap: 'anywhere', containerType: 'inline-size', containerName: 'ml-proof', '--ml-proof-focus': T.text } }, [
+          h('style', { key: 'layout' }, '.ml-proof-panel .ml-proof-answer-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}.ml-proof-panel .ml-proof-calculation-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ml-proof-panel :is(.ml-proof-choice,.ml-proof-check,.ml-proof-answer):focus-visible{outline:3px solid var(--ml-proof-focus);outline-offset:3px}.ml-proof-panel .ml-proof-choice:hover{box-shadow:inset 0 0 0 1px currentColor}@container ml-proof (max-width:400px){.ml-proof-panel .ml-proof-answer-row,.ml-proof-panel .ml-proof-calculation-steps{grid-template-columns:minmax(0,1fr)}.ml-proof-panel .ml-proof-check{width:100%}}@media(forced-colors:active){.ml-proof-panel :is(.ml-proof-choice,.ml-proof-check,.ml-proof-answer):focus-visible{outline-color:Highlight}.ml-proof-panel svg{color:CanvasText!important}.ml-proof-panel .ml-proof-choice[aria-pressed="true"]{border-color:Highlight;border-style:double}}'),
+          h('h3', { key: 'h', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, margin: '0 0 16px', fontSize: 22, lineHeight: 1.4, color: T.text } }, [
+            h('svg', { key: 'challenge', width: 30, height: 30, viewBox: '0 0 30 30', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, color: T.accent } }, [
+              h('rect', { key: 'board', x: 6, y: 5, width: 19, height: 22, rx: 3, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+              h('path', { key: 'marks', d: 'M11 5V3H20V5 M11 13H20 M11 18H16 M11 23H20', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+            ]),
             h('span', { key: 't' }, __alloT('stem.machinelab.prove_it', 'Prove it')),
-            proven ? h('span', { key: 'p', style: { marginLeft: 8, fontSize: 12, color: T.ok, fontWeight: 700 } },
+            proven ? h('span', { key: 'p', style: { padding: '5px 10px', borderRadius: 20, border: '1px solid ' + T.ok, fontSize: 14, lineHeight: 1.5, color: T.ok, fontWeight: 800 } },
               __alloT('stem.machinelab.proven', 'proven')) : null
           ]),
-          isChoiceBand ? h('p', { key: 'kq', style: { margin: '0 0 8px', fontSize: 14, color: T.text, fontWeight: 600 } }, bench.k2Question) : null,
+          isChoiceBand ? h('p', { key: 'kq', style: { margin: '0 0 14px', fontSize: 16, lineHeight: 1.6, color: T.text, fontWeight: 650 } }, bench.k2Question) : null,
           body,
           res ? h('div', { key: 'res', className: 'ml-proof-feedback', 'data-ml-proof-result': res.ok ? 'correct' : 'retry',
-            style: { marginTop: 12, padding: 12, borderRadius: 10, background: T.bg,
+            style: { marginTop: 16, padding: 16, borderRadius: 12, minWidth: 0, background: T.bg,
               border: '1px solid ' + T.border, borderLeft: '4px solid ' + (res.ok ? T.ok : T.bad) }
           }, [
             h('div', { key: 'message', style: { display: 'flex', alignItems: 'flex-start', gap: 10 } }, [
@@ -11510,30 +11648,30 @@ window.StemLab = window.StemLab || {
                 h('path', { key: 'mark', d: res.ok ? 'M7 14L12 19L21 9' : 'M9 10A7 7 0 1 1 8 18 M9 6V12H15',
                   fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
               ]),
-              h('p', { key: 'text', role: 'status', 'aria-atomic': 'true', style: { margin: 0, paddingTop: 3, fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text } }, res.message)
+              h('p', { key: 'text', role: 'status', 'aria-atomic': 'true', style: { margin: 0, paddingTop: 3, minWidth: 0, fontSize: 16, lineHeight: 1.6, fontWeight: 750, color: T.text } }, res.message)
             ]),
             res.showCalculation && !isChoiceBand && effort !== null && ma > 0 ? h('div', { key: 'calculation', className: 'ml-proof-calculation',
               role: 'group', 'aria-label': __alloT('stem.machinelab.proof_calculation', 'Effort calculation'), style: { marginTop: 12 }
             }, [
-              h('div', { key: 'steps', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6 } }, [
+              h('div', { key: 'steps', className: 'ml-proof-calculation-steps' }, [
                 {label: __alloT('stem.machinelab.load', 'Load'), value: fmt(load, 0), unit: 'N', color: T.load},
                 {label: __alloT('stem.machinelab.proof_divide_ma', '÷ MA'), value: fmt(ma, ma < 1 ? 3 : 2), unit: '', color: T.text},
                 {label: __alloT('stem.machinelab.proof_effort', '≈ Effort'), value: fmt(effort, 1), unit: 'N', color: T.effort}
               ].map(function (step, index) {
-                return h('div', { key: index, 'data-ml-calculation-step': index, style: { minWidth: 0, padding: '9px 6px', textAlign: 'center',
-                  borderRadius: 8, background: T.card, border: '1px solid ' + T.border } }, [
-                  h('div', { key: 'label', style: { fontSize: 11, lineHeight: 1.4, fontWeight: 750, color: T.dim } }, step.label),
-                  h('div', { key: 'value', style: { marginTop: 5, fontSize: 17, lineHeight: 1.3, fontWeight: 850, color: step.color,
-                    overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, step.value),
-                  h('div', { key: 'unit', style: { minHeight: 16, fontSize: 11, lineHeight: '16px', color: T.dim } }, step.unit)
+                return h('div', { key: index, 'data-ml-calculation-step': index, style: { minWidth: 0, padding: '14px 10px', textAlign: 'center',
+                  borderRadius: 10, background: T.card, border: '1px solid ' + T.border, borderTop: '3px solid ' + step.color } }, [
+                  h('div', { key: 'label', style: { fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text } }, step.label),
+                  h('div', { key: 'value', className: 'ml-proof-value', style: { marginTop: 6, fontSize: 24, lineHeight: 1.4, fontWeight: 850, color: step.color,
+                    whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' } }, step.value),
+                  h('div', { key: 'unit', style: { minHeight: 21, fontSize: 14, lineHeight: 1.5, color: T.text } }, step.unit)
                 ]);
               })),
-              h('p', { key: 'rounding', style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.4, color: T.dim } },
+              h('p', { key: 'rounding', style: { margin: '10px 0 0', fontSize: 14, lineHeight: 1.5, color: T.text } },
                 __alloT('stem.machinelab.proof_rounded', 'Displayed values are rounded.'))
             ]) : null,
             h('style', { key: 'system-colors' }, '@media(forced-colors:active){.ml-proof-feedback svg{color:CanvasText!important}}')
           ]) : null
-        ], 'prove');
+        ])], 'prove', { minWidth: 0, borderTop: '3px solid ' + T.accent, borderRadius: 14 });
       }
 
       // ═══════════════════════════════════════════════════════
@@ -12157,9 +12295,37 @@ window.StemLab = window.StemLab || {
       }
 
       function camControls(cam, label, fsWhich) {
+        function viewArt(key, selected) {
+          var paths = key === 'side' ? [
+            'M10 34H54M16 34V18H46V34M12 18H50M23 18V10H39V18',
+            'M9 42H55M9 39V45M55 39V45'
+          ] : key === 'close' ? [
+            'M12 17L28 9L43 17L28 25ZM12 17V34L28 42V25M28 42L38 37M43 17V25',
+            'M48 31a8 8 0 1 0 -16 0a8 8 0 1 0 16 0M46 37L55 45M36 31H44M40 27V35'
+          ] : key === 'drum' ? [
+            'M15 12C15 6 39 6 39 12C39 18 15 18 15 12ZM15 12V32C15 38 39 38 39 32V12M15 22C15 28 39 28 39 22',
+            'M39 15H49V34M44 34H54V44H44ZM20 10L28 14M29 9L37 13'
+          ] : [
+            'M8 17V7H19M45 7H56V17M56 33V43H45M19 43H8V33',
+            'M22 34V19H42V34ZM27 19V13H37V19M18 34H46'
+          ];
+          return h('svg', { key: 'art', className: 'ml-camera-view-art', viewBox: '0 0 64 52', width: 64, height: 52,
+            'aria-hidden': 'true', focusable: 'false' }, [
+            paths.map(function (path, index) { return h('path', { key: index, d: path, fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+              strokeLinecap: 'round', strokeLinejoin: 'round' }); }),
+            selected ? h('g', { key: 'selected', 'data-ml-camera-selected': '' }, [
+              h('circle', { key: 'badge', cx: 55, cy: 8, r: 7, fill: 'currentColor' }),
+              h('path', { key: 'check', d: 'M51.5 8L54 10.5L58.5 5.5', fill: 'none', stroke: T.accent, strokeWidth: 2,
+                strokeLinecap: 'round', strokeLinejoin: 'round', className: 'ml-camera-view-check' })
+            ]) : null
+          ]);
+        }
         function btn(key, glyph, aria, fn, selected) {
+          var viewCard = fsWhich === 'shop' && (key === 'side' || key === 'close');
           return h('button', {
             key: key, type: 'button',
+            className: viewCard ? 'ml-camera-view-button' : undefined,
+            'aria-describedby': viewCard ? 'ml-shop-camera-tip-' + key : undefined,
             'aria-pressed': typeof selected === 'boolean' ? selected : undefined,
             onClick: function () {
               fn();
@@ -12172,7 +12338,7 @@ window.StemLab = window.StemLab || {
               border: '1px solid ' + (selected ? T.accent : T.border), background: selected ? T.accent : T.card, color: selected ? T.accentInk : T.text,
               fontSize: fsWhich === 'shop' ? 13 : 12, fontWeight: 700, lineHeight: 1.4
             }
-          }, glyph);
+          }, viewCard ? [viewArt(key, selected), glyph] : glyph);
         }
         var controls = [
           h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } },
@@ -12185,6 +12351,7 @@ window.StemLab = window.StemLab || {
             function () { cam.setView(24, d.bench === 'screw' ? 32 : 12, 1.38); }, cam.rotY === 24 && cam.rotX === (d.bench === 'screw' ? 32 : 12) && cam.zoom === 1.38) : null,
           fsWhich === 'shop' && d.bench === 'windlass' ? h('button', {
             key: 'drum', type: 'button',
+            className: 'ml-camera-view-button', 'aria-describedby': 'ml-shop-camera-tip-drum',
             'aria-label': __alloT('stem.machinelab.cam_drum', 'Show the drum and lifting rope'),
             title: __alloT('stem.machinelab.cam_drum_hint', 'Inspect the striped drum and lifting rope from an oblique side view.'),
             'aria-pressed': cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18,
@@ -12197,9 +12364,10 @@ window.StemLab = window.StemLab || {
               background: cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18 ? T.accent : T.card,
               color: cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18 ? T.accentInk : T.text,
               fontSize: 12, fontWeight: 800 }
-          }, __alloT('stem.machinelab.cam_drum_short', 'Drum')) : null,
+          }, [viewArt('drum', cam.rotY === 72 && cam.rotX === 16 && cam.zoom === 1.18), __alloT('stem.machinelab.cam_drum_short', 'Drum')]) : null,
           fsWhich === 'shop' ? h('button', {
             key: 'focus', type: 'button', 'aria-pressed': !!d.shopFocusMechanism,
+            className: 'ml-camera-view-button ml-camera-focus-button', 'aria-describedby': 'ml-shop-camera-tip-focus',
             'aria-label': __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism'),
             title: __alloT('stem.machinelab.focus_mechanism_hint', 'Hide the room and frame the full machine. Select again to restore the workshop.'),
             onClick: function () {
@@ -12212,7 +12380,7 @@ window.StemLab = window.StemLab || {
               border: '1px solid ' + (d.shopFocusMechanism ? T.accent : T.border),
               background: d.shopFocusMechanism ? T.accent : T.card,
               color: d.shopFocusMechanism ? T.accentInk : T.text, fontSize: 12, fontWeight: 800 }
-          }, __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism')) : null,
+          }, [viewArt('focus', !!d.shopFocusMechanism), __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism')]) : null,
           fsWhich === 'range' ? btn('launch', __alloT('stem.machinelab.cam_launch_short', 'Launch'),
             __alloT('stem.machinelab.cam_launch', 'Focus the launch deck'),
             function () { cam.setView(48, 16, 1.18); }) : null,
@@ -12235,20 +12403,40 @@ window.StemLab = window.StemLab || {
         ];
         if (fsWhich === 'shop') {
           function items(keys) { return controls.filter(function (control) { return control && keys.indexOf(control.key) !== -1; }); }
+          function viewCard(control) {
+            var key = control.key;
+            var tip = key === 'side' ? __alloT('stem.machinelab.cam_side_tip', 'Compare movement from the side.')
+              : key === 'close' ? __alloT('stem.machinelab.cam_close_tip', 'See how the parts fit together.')
+              : key === 'drum' ? __alloT('stem.machinelab.cam_drum_tip', 'Follow the rope around the drum.')
+              : d.shopFocusMechanism ? __alloT('stem.machinelab.cam_focus_on_tip', 'Room hidden. Select again to restore it.')
+              : __alloT('stem.machinelab.cam_focus_off_tip', 'Hide the room from any camera view.');
+            return h('div', { key: key, className: 'ml-camera-view-card', 'data-ml-camera-card': key, style: { minWidth: 0 } }, [
+              control,
+              h('p', { key: 'tip', id: 'ml-shop-camera-tip-' + key, style: { margin: '9px 2px 0', fontSize: 14, lineHeight: 1.5, color: T.text } }, tip)
+            ]);
+          }
           function cameraGroup(key, title, keys) {
-            return h('div', { key: key, role: 'group', 'aria-label': title, style: { minWidth: 0 } }, [
-              h('div', { key: 'label', style: { fontSize: 11, lineHeight: 1.4, fontWeight: 800, color: T.dim, marginBottom: 6 } }, title),
-              h('div', { key: 'buttons', style: { display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' } }, items(keys))
+            var presets = key === 'presets';
+            return h('div', { key: key, role: 'group', 'aria-label': title, className: presets ? 'ml-camera-presets' : undefined, style: { minWidth: 0 } }, [
+              h('div', { key: 'label', style: { fontSize: presets ? 18 : 11, lineHeight: 1.4, fontWeight: 800, color: presets ? T.text : T.dim, marginBottom: presets ? 10 : 6 } }, title),
+              h('div', { key: 'buttons', className: presets ? 'ml-camera-view-grid' : undefined,
+                style: presets ? undefined : { display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' } }, presets ? items(keys).map(viewCard) : items(keys))
             ]);
           }
           return h('div', { key: 'cam', role: 'group', className: 'ml-shop-camera',
             'aria-label': __alloT('stem.machinelab.cam_group', 'Camera for the ') + label,
-            style: { marginTop: 10, padding: 10, borderRadius: 12, border: '1px solid ' + T.border, background: T.bg, color: T.text }
+            style: { marginTop: 12, padding: 16, borderRadius: 14, border: '1px solid ' + T.border, background: T.bg, color: T.text, overflowWrap: 'anywhere',
+              containerType: 'inline-size', containerName: 'ml-camera', '--ml-camera-focus': T.text }
           }, [
-            h('style', { key: 'layout' }, '.ml-shop-camera button{min-height:40px!important}.ml-shop-camera button:focus-visible,.ml-shop-camera summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}.ml-shop-camera-groups{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start}.ml-shop-camera-groups>div:first-child{flex:1 1 260px}.ml-shop-camera-adjustments{flex:1 1 220px;min-width:0}.ml-shop-camera-adjustments summary{min-height:44px;box-sizing:border-box;padding:12px 8px;cursor:pointer;border-radius:8px;font-size:12px;font-weight:800;line-height:20px}.ml-shop-camera-adjustment-groups{display:flex;flex-wrap:wrap;gap:14px 22px;padding:8px}@media(forced-colors:active){.ml-shop-camera-orientation svg{color:CanvasText!important}}'),
-            h('div', { key: 'header', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 10 } }, items(['l', 'fs'])),
+            h('style', { key: 'layout' }, '.ml-shop-camera button{min-height:44px!important}.ml-shop-camera button:focus-visible,.ml-shop-camera summary:focus-visible{outline:3px solid var(--ml-camera-focus);outline-offset:3px}.ml-shop-camera-groups{display:flex;flex-wrap:wrap;gap:18px 24px;align-items:flex-start}.ml-camera-presets{flex:3 1 460px}.ml-camera-view-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:14px}.ml-shop-camera .ml-camera-view-button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;width:100%;min-width:0;min-height:120px!important;padding:14px 10px!important;border-width:2px!important;border-radius:12px!important;font-size:16px!important;line-height:1.4!important;font-weight:800!important;overflow-wrap:anywhere}.ml-camera-view-art{display:block;flex:0 0 auto;max-width:100%}.ml-camera-view-button[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}.ml-camera-focus{flex:1 1 180px;min-width:0}.ml-camera-focus-button{border-style:dashed!important}.ml-shop-camera-header>span{font-size:14px!important;line-height:1.5}.ml-shop-camera-adjustments{min-width:0;margin-top:18px}.ml-shop-camera-adjustments summary{min-height:44px;box-sizing:border-box;padding:12px;cursor:pointer;border-radius:8px;font-size:14px;font-weight:800;line-height:1.5}.ml-shop-camera-adjustment-groups{display:flex;flex-wrap:wrap;gap:14px 22px;padding:8px}@media(max-width:400px){.ml-shop-camera{padding:12px 8px!important}}@container ml-camera (max-width:540px){.ml-shop-camera-groups{display:grid;grid-template-columns:minmax(0,1fr)}.ml-camera-view-grid{grid-template-columns:minmax(0,1fr)}.ml-shop-camera .ml-camera-view-button{flex-direction:row;justify-content:flex-start;text-align:left;min-height:88px!important;gap:14px}}@container ml-camera (max-width:300px){.ml-shop-camera .ml-camera-focus-button{flex-direction:column;align-items:flex-start}.ml-shop-camera-orientation{align-items:flex-start!important}.ml-shop-camera-orientation dl{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}.ml-shop-camera-orientation dd{white-space:nowrap}}@media(forced-colors:active){.ml-shop-camera{--ml-camera-focus:Highlight!important}.ml-shop-camera-orientation svg{color:CanvasText!important}.ml-camera-view-art{forced-color-adjust:none;color:ButtonText}.ml-camera-view-button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-5px}.ml-camera-view-check{stroke:ButtonFace!important}}'),
+            h('div', { key: 'header', className: 'ml-shop-camera-header', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 16 } }, items(['l', 'fs'])),
             h('div', { key: 'groups', className: 'ml-shop-camera-groups' }, [
-              cameraGroup('presets', __alloT('stem.machinelab.cam_views', 'Views'), ['side', 'close', 'drum', 'focus']),
+              cameraGroup('presets', __alloT('stem.machinelab.cam_views', 'Views'), ['side', 'close', 'drum']),
+              h('div', { key: 'focus', className: 'ml-camera-focus', role: 'group', 'aria-label': __alloT('stem.machinelab.cam_viewing_aid', 'Viewing aid') }, [
+                h('div', { key: 'label', style: { fontSize: 18, lineHeight: 1.4, fontWeight: 800, marginBottom: 10 } }, __alloT('stem.machinelab.cam_viewing_aid', 'Viewing aid')),
+                items(['focus']).map(viewCard)
+              ])
+            ]),
               h('details', { key: 'adjustments', className: 'ml-shop-camera-adjustments' }, [
                 h('summary', { key: 'summary', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } },
                   __alloT('stem.machinelab.cam_adjustments', 'Rotate & zoom')),
@@ -12288,7 +12476,6 @@ window.StemLab = window.StemLab || {
                   cameraGroup('zoom', __alloT('stem.machinelab.cam_zoom', 'Zoom'), ['zi', 'zo', 'rs'])
                 ])
               ])
-            ])
           ]);
         }
         return h('div', {
@@ -13343,6 +13530,24 @@ window.StemLab = window.StemLab || {
         var nextBench = BENCHES[(benchIndex + 1) % BENCHES.length];
         var hasRunDemo = d.shopDemoBench === bench.id;
         var shopPhaseElement = null, shopStrokeElement = null, shopStrokeReadout = null;
+        var shopDistanceElement = null;
+        var shopDistanceRows = !young && validStationSetup(d) && finite(effortDist) && effortDist > 0 && finite(d.loadDistance) && d.loadDistance > 0 ? [
+          { id: 'effort', label: __alloT('stem.machinelab.task_distance_effort', 'Effort-path distance'), total: effortDist, ink: T.effort, symbol: '◆' },
+          { id: 'load', label: bench.id === 'ramp' ? __alloT('stem.machinelab.task_distance_rise', 'Vertical load rise')
+            : __alloT('stem.machinelab.task_distance_load', 'Load-side task distance'), total: d.loadDistance, ink: T.load, symbol: '○' }
+        ] : null;
+        function syncShopDistances(progress) {
+          if (!shopDistanceElement || !shopDistanceElement.isConnected || !shopDistanceRows || !finite(progress)) return;
+          var fraction = Math.max(0, Math.min(1, progress));
+          shopDistanceElement.style.setProperty('--ml-task-position', (fraction * 100) + '%');
+          var position = shopDistanceElement.querySelector('[data-ml-task-position]');
+          if (position) position.textContent = Math.round(fraction * 100) + '%';
+          shopDistanceRows.forEach(function (row) {
+            var value = shopDistanceElement.querySelector('[data-ml-task-distance-value="' + row.id + '"]');
+            var text = powerFmt(row.total * fraction) + ' m';
+            if (value && value.textContent !== text) value.textContent = text;
+          });
+        }
         var shopStrokeSuffix = __alloT('stem.machinelab.stroke_percent', '% of the working stroke');
         var shopPhaseLabels = {
           work: __alloT('stem.machinelab.demo_phase_work', 'Working stroke'),
@@ -13366,6 +13571,7 @@ window.StemLab = window.StemLab || {
             var liveReadout = shopPhaseElement.querySelector('[data-ml-live-stroke]');
             if (liveReadout && liveReadout.textContent !== percent + '%') liveReadout.textContent = percent + '%';
           }
+          syncShopDistances(progress);
         }
         function recordShopPhase(progress, runId, kind, phase) {
           recordShopPose(progress, runId, kind, phase);
@@ -13452,6 +13658,50 @@ window.StemLab = window.StemLab || {
               d: 'M' + ex + ' 7l5 5-5 5-5-5z', fill: T.effort }),
             h('circle', { key: 'load', 'data-ml-preview-marker': 'load', 'data-distance': load * progress,
               cx: lx, cy: 32, r: 4.5, fill: T.bg, stroke: T.load, strokeWidth: 2 })
+          ]);
+        }
+        function shopTaskDistances() {
+          if (!shopDistanceRows || shopStatus === 'failed') return null;
+          var scale = Math.max(effortDist, d.loadDistance);
+          return h('section', { key: 'task-distances', className: 'ml-task-distances',
+            'aria-labelledby': 'ml-task-distances-title',
+            ref: function (el) { shopDistanceElement = el; if (el) syncShopDistances(shopProgress); },
+            style: { padding: 14, marginTop: 10, border: '1px solid ' + T.border, borderRadius: 12, background: T.bg,
+              color: T.text, overflowWrap: 'anywhere', '--ml-task-position': (shopProgress * 100) + '%' }
+          }, [
+            h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10 } }, [
+              h('h3', { key: 'title', id: 'ml-task-distances-title', style: { margin: 0, fontSize: 18, fontWeight: 850 } },
+                __alloT('stem.machinelab.task_distance_title', 'Task distances at this stroke position')),
+              h('strong', { key: 'position', 'data-ml-task-position': '', style: { fontSize: 24, fontVariantNumeric: 'tabular-nums' } }, Math.round(shopProgress * 100) + '%')
+            ]),
+            h('p', { key: 'scope', style: { margin: '8px 0 14px', fontSize: 13, lineHeight: 1.5, color: T.muted } },
+              __alloT('stem.machinelab.task_distance_scope', 'These distances scale your selected task to the stroke position. The 3D motion illustrates the mechanism; a full stroke does not show every turn needed for the task.')),
+            h('div', { key: 'rows', style: { margin: 0, display: 'grid', gap: 14 } }, shopDistanceRows.map(function (row) {
+              return h('div', { key: row.id, 'data-ml-task-distance-row': row.id, style: { minWidth: 0 } }, [
+                h('dl', { key: 'values', className: 'ml-task-distance-values', style: { margin: 0 } }, [
+                  h('dt', { key: 'label', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 750 } }, [
+                    h('span', { key: 'symbol', 'aria-hidden': true, style: { color: row.ink, fontSize: 22, lineHeight: 1 } }, row.symbol), row.label
+                  ]),
+                  h('dd', { key: 'reading', style: { margin: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px 10px', fontVariantNumeric: 'tabular-nums' } }, [
+                    h('strong', { key: 'value', 'data-ml-task-distance-value': row.id, style: { fontSize: 24, lineHeight: 1.3 } }, powerFmt(row.total * shopProgress) + ' m'),
+                    h('span', { key: 'total', 'data-ml-task-distance-total': row.id, style: { fontSize: 13, color: T.muted } },
+                      __alloT('stem.machinelab.task_distance_full', 'Full task: ') + powerFmt(row.total) + ' m')
+                  ])
+                ]),
+                h('div', { key: 'track', className: 'ml-task-distance-track', 'aria-hidden': true, style: { margin: '8px 0 0', borderColor: T.border, background: T.card } },
+                  h('div', { className: 'ml-task-distance-extent', 'data-ml-task-distance-extent': row.id,
+                    style: { position: 'relative', height: '100%', width: (row.total / scale * 100) + '%', color: row.ink } }, [
+                    h('div', { key: 'rail', style: { position: 'absolute', top: '50%', width: '100%', borderTop: '1px solid currentColor' } }),
+                    h('span', { key: 'end', style: { position: 'absolute', right: 0, top: 0, bottom: 0, borderRight: '2px solid currentColor' } }),
+                    h('div', { key: 'fill', 'data-ml-task-distance-fill': row.id, style: { width: 'var(--ml-task-position)', height: '100%', background: row.id === 'effort' ? 'currentColor' : 'repeating-linear-gradient(135deg,currentColor 0,currentColor 4px,transparent 4px,transparent 7px)' } })
+                  ]))
+              ]);
+            })),
+            h('p', { key: 'scale', style: { margin: '12px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
+              __alloT('stem.machinelab.task_distance_scale', 'Both rows start at zero and share one distance scale. End marks show the full task. Solid fill is effort; stripes are load. Numbers are rounded; small distances may be hard to see.')),
+            h('p', { key: 'reset', style: { margin: '6px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
+              __alloT('stem.machinelab.task_distance_reset', 'Readings decrease as the demonstration returns to start. They are not cumulative travel. Hold a pose or move the position slider to compare.')),
+            h('style', { key: 'style' }, '.ml-task-distance-values{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 18px}.ml-task-distance-track{height:18px;border:1px solid;border-radius:4px;overflow:hidden}@media(max-width:600px){.ml-task-distance-values{flex-direction:column;align-items:flex-start}}@media(forced-colors:active){.ml-task-distance-track{forced-color-adjust:none;background:Canvas!important;border-color:CanvasText!important}.ml-task-distance-extent{forced-color-adjust:none;color:CanvasText!important}}')
           ]);
         }
         function shopMotionInspector() {
@@ -13607,32 +13857,49 @@ window.StemLab = window.StemLab || {
             };
             var riseRatio = Number(d.rampHeight) / Number(d.rampLength);
             var slopeAngle = Math.asin(Math.min(1, Math.max(0, finite(riseRatio) ? riseRatio : 0))) * 180 / Math.PI;
-            return h('svg', { key: 'arrow', viewBox: '0 0 48 48', width: 48, height: 48,
+            return h('svg', { key: 'arrow', viewBox: '0 0 48 48', width: 64, height: 64,
               'aria-hidden': 'true', focusable: 'false', 'data-ml-motion-direction': direction,
-              style: { flexShrink: 0, color: color } },
+              style: { display: 'block', flexShrink: 0, color: color } },
               h('path', { d: paths[direction], transform: direction === 'slope' ? 'rotate(' + (-slopeAngle) + ' 24 24)' : undefined,
                 fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }));
           }
+          var cardStyle = { position: 'relative', minWidth: 0, padding: 14, borderRadius: 12,
+            border: '1px solid ' + T.border, background: T.card };
+          var labelStyle = { margin: 0, fontSize: 14, fontWeight: 800, lineHeight: 1.5, color: T.text };
+          var artStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 96, margin: '12px 0' };
+          var directionStyle = { margin: 0, fontSize: 18, fontWeight: 750, lineHeight: 1.45, color: T.text };
+          function link() { return h('span', { key: 'link', className: 'ml-motion-map-link', 'aria-hidden': 'true' }); }
+          function lane(index) {
+            var color = index ? T.load : T.effort;
+            return h('li', { key: index, 'data-ml-motion-lane': index ? 'load' : 'effort', style: Object.assign({}, cardStyle, { borderTop: '3px solid ' + color }) }, [
+              h('p', { key: 'name', style: labelStyle },
+                index ? __alloT('stem.machinelab.map_load', 'Load motion') : __alloT('stem.machinelab.map_effort', 'Effort motion')),
+              h('div', { key: 'art', className: 'ml-motion-map-art', style: artStyle }, directionIcon(motion[index * 2], color)),
+              h('p', { key: 'direction', 'data-ml-motion-description': index ? 'load' : 'effort', style: directionStyle }, motion[index * 2 + 1]),
+              index ? null : link()
+            ]);
+          }
           return h('div', { key: 'motion-map', className: 'ml-shop-motion-map', role: 'group',
-            'aria-label': __alloT('stem.machinelab.map_title', 'Follow the motion'), style: { margin: '12px 0' }
+            'aria-label': __alloT('stem.machinelab.map_title', 'Follow the motion'),
+            style: { margin: '12px 0', padding: 16, border: '1px solid ' + T.border, borderTop: '4px solid ' + T.accent,
+              borderRadius: 14, background: T.bg, color: T.text, overflowWrap: 'anywhere', containerType: 'inline-size', containerName: 'ml-motion-map' }
           }, [
-            h('style', { key: 'styles' }, '.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:600px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-motion-map-lanes>[data-ml-motion-lane]{flex-direction:column;align-items:flex-start!important}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}'),
-            h('div', { key: 'title', style: { marginBottom: 10, fontSize: 14, fontWeight: 800, color: T.text } },
+            h('style', { key: 'styles' }, '.ml-shop-motion-map .ml-motion-map-lanes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;list-style:none;padding:0;margin:16px 0}.ml-motion-map-mechanism-art{display:flex;align-items:center;justify-content:center;padding:8px;border:1px solid;border-radius:50%}.ml-shop-motion-map .ml-motion-map-mechanism-art svg{display:block;width:72px;height:72px;max-width:100%}.ml-motion-map-link{position:absolute;right:-24px;top:50%;width:23px;border-top:2px dotted currentColor}@media(max-width:600px){.ml-shop-motion-map .ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}.ml-shop-motion-map .ml-motion-map-link{right:auto;top:auto;bottom:-24px;left:50%;width:0;height:23px;border-top:0;border-left:2px dotted currentColor}}@container ml-motion-map (max-width:580px){.ml-shop-motion-map .ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}.ml-shop-motion-map .ml-motion-map-link{right:auto;top:auto;bottom:-24px;left:50%;width:0;height:23px;border-top:0;border-left:2px dotted currentColor}}@media(forced-colors:active){.ml-shop-motion-map svg,.ml-shop-motion-map svg *{color:CanvasText!important;stroke:CanvasText!important}.ml-shop-motion-map svg [fill]:not([fill=none]){fill:CanvasText!important}.ml-motion-map-mechanism-art{border-color:CanvasText!important}}'),
+            h('h4', { key: 'title', 'data-ml-motion-map-title': '', style: { margin: '0 0 8px', fontSize: 20, lineHeight: 1.35, fontWeight: 850 } },
               __alloT('stem.machinelab.map_title', 'Follow the motion')),
-            h('div', { key: 'lanes', className: 'ml-motion-map-lanes' }, [0, 1].map(function (index) {
-              var color = index ? T.load : T.effort;
-              return h('div', { key: index, 'data-ml-motion-lane': index ? 'load' : 'effort', style: {
-                display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, padding: '12px',
-                borderRadius: 10, border: '1px solid ' + T.border, borderLeft: '3px solid ' + color, background: T.bg
-              } }, [
-                directionIcon(motion[index * 2], color),
-                h('div', { key: 'text', style: { minWidth: 0 } }, [
-                  h('div', { key: 'name', style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } },
-                    index ? __alloT('stem.machinelab.map_load', 'Load motion') : __alloT('stem.machinelab.map_effort', 'Effort motion')),
-                  h('div', { key: 'direction', style: { fontSize: 16, fontWeight: 750, lineHeight: 1.45, color: T.text } }, motion[index * 2 + 1])
-                ])
-              ]);
-            })),
+            h('p', { key: 'guide', 'data-ml-motion-map-guide': '', style: { margin: 0, fontSize: 14, lineHeight: 1.55 } },
+              __alloT('stem.machinelab.map_working_stroke', 'Follow effort through the mechanism to the load. These arrows describe the working stroke; the demonstration also returns to the start.')),
+            h('ol', { key: 'lanes', className: 'ml-motion-map-lanes', role: 'list' }, [
+              lane(0),
+              h('li', { key: 'mechanism', 'data-ml-motion-mechanism': bench.id, style: Object.assign({}, cardStyle, { borderTop: '3px solid ' + T.accent }) }, [
+                h('p', { key: 'label', style: labelStyle }, __alloT('stem.machinelab.map_mechanism', 'Mechanism')),
+                h('div', { key: 'art', className: 'ml-motion-map-art', style: artStyle },
+                  h('div', { className: 'ml-motion-map-mechanism-art', 'aria-hidden': 'true', style: { borderColor: T.border, background: T.bg } }, benchPreview(bench.id, false))),
+                h('p', { key: 'name', style: directionStyle }, bench.label),
+                link()
+              ]),
+              lane(1)
+            ]),
             h('p', { key: 'scale', style: { margin: '10px 0 0', fontSize: 13, lineHeight: 1.5, color: T.dim } },
               __alloT('stem.machinelab.map_not_scale', 'Arrows show motion directions, not distances. Compare distances using the front tracks.'))
           ]);
@@ -13848,7 +14115,7 @@ window.StemLab = window.StemLab || {
             '.ml-station-range::-moz-range-thumb{box-sizing:border-box;width:24px;height:24px;border:4px solid var(--ml-setting-rest);border-radius:50%;background:var(--ml-setting-ink);box-shadow:0 0 0 2px var(--ml-setting-ink)}' +
             '.ml-station-range:focus-visible{outline:3px solid var(--ml-setting-ink);outline-offset:2px}' +
             '@media(forced-colors:active){.ml-station-range{forced-color-adjust:none;--ml-setting-ink:Highlight!important;--ml-setting-rest:Canvas!important;--ml-setting-border:CanvasText!important}.ml-setting-scale>span>span:first-child{background:CanvasText!important}.ml-setting-track [data-ml-saved-marker]{color:CanvasText!important}.ml-setting-track [data-ml-saved-marker] path{fill:Canvas}}'),
-          h('style', {key:'shop-layout'}, '@media(max-width:600px){.ml-shop-world .ml-shop-hud{position:relative!important;top:auto!important;left:auto!important;right:auto!important;order:-1;margin-bottom:8px;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.ml-shop-hud>div{min-width:0!important;max-width:none!important}.ml-shop-hud>div:nth-child(2){grid-column:1/-1;order:3}.ml-shop-hud>div:first-child{flex-direction:column;align-items:flex-start!important;gap:7px!important}.ml-shop-hud .ml-shop-station-icon{width:34px!important;height:34px!important}.ml-shop-station-icon svg{max-width:100%;max-height:100%}.ml-shop-hud .ml-shop-station-name{font-size:18px!important}.ml-shop-world .ml-shop-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}.ml-shop-world .ml-shop-legend{position:relative!important;left:auto!important;bottom:auto!important;align-self:flex-start;margin:8px 0 0}}'),
+          h('style', {key:'shop-layout'}, '.ml-shop-station-card{grid-column:1;grid-row:1}.ml-shop-observation{grid-column:1/-1;grid-row:2}.ml-shop-advantage-card{grid-column:2;grid-row:1}.ml-shop-station-icon svg{width:44px;height:44px;max-width:100%;max-height:100%}.ml-shop-guide{display:block;margin-top:12px;padding-top:12px;border-top:1px dashed;font-size:14px;line-height:1.6}.ml-shop-observation h3>span{min-width:0}@media(max-width:600px){.ml-shop-world .ml-shop-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}.ml-shop-world .ml-shop-legend{position:relative!important;left:auto!important;bottom:auto!important;align-self:flex-start;margin:8px 0 0}}@media(max-width:1000px){.ml-shop-advantage-card{grid-template-columns:minmax(0,1fr)!important}.ml-shop-ma-value{grid-column:1!important;grid-row:2!important;font-size:28px!important;text-align:left!important}}@media(max-width:800px){.ml-shop-world .ml-shop-hud{grid-template-columns:minmax(0,1fr)!important}.ml-shop-advantage-card{grid-column:1;grid-row:2}.ml-shop-observation{grid-row:3}}@media(max-width:440px){.ml-shop-station-card{flex-direction:column;align-items:flex-start!important;padding:12px!important}.ml-shop-advantage-card{padding:12px!important}.ml-shop-ma-value{font-size:22px!important}.ml-shop-observation{padding:12px!important;font-size:16px!important}.ml-shop-observation h3{font-size:18px!important}}@media(forced-colors:active){.ml-shop-observation svg{color:CanvasText!important}}'),
           h('div', {
             key: 'world', ref: shopFsRef, className:'ml-shop-world', id: 'ml-shop-panel', role: 'tabpanel',
             'aria-labelledby': 'ml-bench-tab-' + bench.id,
@@ -13928,80 +14195,106 @@ window.StemLab = window.StemLab || {
               }
             }, null),
             h('div', {
-              key: 'hud', 'aria-hidden': 'true', className:'ml-shop-hud',
+              key: 'hud', className:'ml-shop-hud',
               style: {
                 position: 'relative', order: -1, marginBottom: 8, display: 'grid',
-                gridTemplateColumns: 'minmax(160px, .85fr) minmax(0, 1.5fr) minmax(130px, .65fr)',
-                alignItems: 'stretch', gap: 8, pointerEvents: 'none'
+                gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, .9fr)',
+                alignItems: 'stretch', gap: 12, minWidth: 0, overflowWrap: 'anywhere'
               }
             }, [
               h('div', {
-                key: 'title', style: {
-                  display: 'flex', alignItems: 'center', gap: 10, minWidth: 0,
-                  padding: '12px', borderRadius: 12, color: T.text,
+                key: 'title', className: 'ml-shop-station-card', 'aria-hidden': 'true', style: {
+                  display: 'flex', alignItems: 'center', gap: 14, minWidth: 0,
+                  padding: 16, borderRadius: 12, color: T.text,
                   background: T.bg, border: '1px solid ' + T.border
                 }
               }, [
                 h('div', { key: 'schematic', className: 'ml-shop-station-icon', style: { display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 44, height: 44, flexShrink: 0, borderRadius: 10, background: T.accent } }, benchPreview(bench.id, true)),
+                  width: 56, height: 56, flexShrink: 0, borderRadius: 12, background: T.accent } }, benchPreview(bench.id, true)),
                 h('div', { key: 'name', style: { minWidth: 0 } }, [
-                  h('div', { key: 'ey', style: { fontSize: 10, lineHeight: 1.4, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: T.dim } },
+                  h('div', { key: 'ey', className: 'ml-shop-status', style: { display: 'inline-block', boxSizing: 'border-box', maxWidth: '100%', padding: '4px 8px', borderRadius: 99,
+                    background: T.card, border: '1px solid ' + T.border, fontSize: 13, lineHeight: 1.5, fontWeight: 750, color: T.dim } },
                     (d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.still_demo', 'Still demonstration') : '● ' + __alloT('stem.machinelab.motion_active', 'Motion active')) :
                       __alloT('stem.machinelab.live_workshop', 'Live workshop'))),
-                  h('div', { key: 'nm', className: 'ml-shop-station-name', style: { marginTop: 3, fontSize: 20, lineHeight: 1.2, fontWeight: 850 } }, bench.label)
+                  h('div', { key: 'nm', className: 'ml-shop-station-name', style: { marginTop: 8, fontSize: 24, lineHeight: 1.3, fontWeight: 850 } }, bench.label)
                 ])
               ]),
-              h('div', {
-                key: 'observe', style: {
-                  minWidth: 0, padding: '12px 14px', borderRadius: 12,
+              h('section', {
+                key: 'observe', className: 'ml-shop-observation', 'aria-labelledby': 'ml-shop-observation-title-' + bench.id, style: {
+                  minWidth: 0, padding: 16, borderRadius: 12,
                   color: T.text, background: T.bg,
                   border: '1px solid ' + (d.shopAnimating ? T.accent : T.border),
-                  borderLeft: '3px solid ' + T.accent,
-                  fontSize: 12, lineHeight: 1.5, textAlign: 'left'
+                  borderLeft: '4px solid ' + T.accent,
+                  fontSize: 17, lineHeight: 1.6, textAlign: 'left'
                 }
               }, [
-                h('span', { key: 'eye', style: { display: 'block', marginBottom: 4, color: T.accent, fontSize: 10, fontWeight: 850, letterSpacing: 0.8, textTransform: 'uppercase' } },
-                  d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.inspect_still_demo', 'Inspect the mechanism') : d.shopDemoDuration === 6600 ? __alloT('stem.machinelab.watch_slow_motion', 'Watch in slow motion') : __alloT('stem.machinelab.watch_motion', 'Watch the motion')) : __alloT('stem.machinelab.what_to_notice', 'What to notice')),
-                h('span', { key: 'cue' }, observationCues[bench.id]),
-                bench.id === 'lever' ? h('span', { key: 'arms', style: { display: 'block', marginTop: 4 } },
+                h('h3', { key: 'eye', id: 'ml-shop-observation-title-' + bench.id, style: { display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', color: T.text, fontSize: 20, lineHeight: 1.4, fontWeight: 850 } }, [
+                  h('svg', { key: 'icon', viewBox: '0 0 32 32', width: 28, height: 28, 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, color: T.accent } }, [
+                    h('path', { key: 'eye', d: 'M3 16C9 5 23 5 29 16C23 27 9 27 3 16Z', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinejoin: 'round' }),
+                    h('circle', { key: 'pupil', cx: 16, cy: 16, r: 4, fill: 'currentColor' })
+                  ]),
+                  h('span', { key: 'label' }, d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.inspect_still_demo', 'Inspect the mechanism') : d.shopDemoDuration === 6600 ? __alloT('stem.machinelab.watch_slow_motion', 'Watch in slow motion') : __alloT('stem.machinelab.watch_motion', 'Watch the motion')) : __alloT('stem.machinelab.what_to_notice', 'What to notice'))
+                ]),
+                h('p', { key: 'cue', 'data-ml-observation-cue': bench.id, style: { margin: 0, fontWeight: 650 } }, observationCues[bench.id]),
+                bench.id === 'lever' ? h('span', { key: 'arms', className: 'ml-shop-guide', style: { borderColor: T.border } },
                   __alloT('stem.machinelab.lever_arm_guides', 'The colored guides beneath the beam measure each arm from the pivot to its contact point.')) : null,
-                bench.id === 'windlass' || bench.id === 'screw' ? h('span', { key: 'turn-marks', style: { display: 'block', marginTop: 4 } },
+                bench.id === 'windlass' || bench.id === 'screw' ? h('span', { key: 'turn-marks', className: 'ml-shop-guide', style: { borderColor: T.border } },
                   __alloT('stem.machinelab.turn_position_guide', 'The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start.')) : null,
-                bench.id === 'pulley' ? h('span', { key: 'rope-bands', style: { display: 'block', marginTop: 4 } },
+                bench.id === 'pulley' ? h('span', { key: 'rope-bands', className: 'ml-shop-guide', style: { borderColor: T.border } },
                   __alloT('stem.machinelab.pulley_rope_bands', 'Follow a contrasting band to see the rope feed around the wheels.')) : null,
-                bench.id === 'pulley' ? h('span', { key: 'supports', 'data-ml-pulley-support-guide': '', style: { display: 'block', marginTop: 4 } },
+                bench.id === 'pulley' ? h('span', { key: 'supports', className: 'ml-shop-guide', 'data-ml-pulley-support-guide': '', style: { borderColor: T.border } },
                   __alloT('stem.machinelab.pulley_support_guides', 'The small up arrows mark the supporting strands. Equal arrows show equal tension in this ideal rope; the free end is pulled down.')) : null
               ]),
               h('div', {
-                key: 'metric', style: {
-                  minWidth: 0, padding: '12px', borderRadius: 12, textAlign: 'right',
-                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                key: 'metric', className: 'ml-shop-advantage-card', 'aria-hidden': 'true', style: {
+                  minWidth: 0, padding: 16, borderRadius: 12,
+                  display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignContent: 'center', alignItems: 'center', gap: '8px 12px',
                   color: T.text, background: T.bg, border: '1px solid ' + T.border
                 }
               }, [
-                h('div', { key: 'l', style: { fontSize: 10, lineHeight: 1.4, letterSpacing: 0.6, textTransform: 'uppercase', color: T.dim } },
+                h('div', { key: 'l', style: { minWidth: 0, fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text } },
                   __alloT('stem.machinelab.ma', 'Mechanical advantage')),
-                h('div', { key: 'v', style: { marginTop: 3, fontSize: 26, lineHeight: 1.2, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: T.accent } },
+                h('div', { key: 'v', className: 'ml-shop-ma-value', style: { gridColumn: 2, gridRow: 1, textAlign: 'right', fontSize: 32, lineHeight: 1.2, fontWeight: 900, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: T.accent } },
                   ma === null ? '—' : fmt(ma, 2) + '×'),
-                ma !== null ? h('div', { key: 'trade', style: { marginTop: 4, fontSize: 10, lineHeight: 1.4, fontWeight: 750, color: T.dim } },
+                ma !== null ? h('div', { key: 'trade', className: 'ml-shop-ratio-trade', style: { gridColumn: '1 / -1', paddingTop: 10, borderTop: '1px dashed ' + T.border, fontSize: 14, lineHeight: 1.5, fontWeight: 650, color: T.text } },
                   __alloT('stem.machinelab.distance_times', 'Distance ×') + fmt(ma, 2) +
                   '  ·  ' + __alloT('stem.machinelab.force_div', 'Force ÷') + fmt(ma, 2)) : null
               ])
             ]),
             h('div', {
-              key: 'legend', 'aria-hidden': 'true', className:'ml-shop-legend',
+              key: 'legend', 'aria-hidden': 'true', className: 'ml-shop-legend',
               style: {
-                position: 'relative', alignSelf: 'flex-start', marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', maxWidth: '100%',
-                padding: '8px 10px', borderRadius: 10, color: T.text,
-                background: T.bg, border: '1px solid ' + T.border, fontSize: 12, lineHeight: 1.45, fontWeight: 750,
-                pointerEvents: 'none'
+                position: 'relative', alignSelf: 'stretch', width: '100%', boxSizing: 'border-box', marginTop: 10,
+                padding: 16, borderRadius: 14, color: T.text, minWidth: 0, overflowWrap: 'anywhere',
+                background: T.bg, border: '1px solid ' + T.border, lineHeight: 1.5,
+                containerType: 'inline-size', containerName: 'ml-distance-key'
               }
             }, [
-              h('span', { key: 'e', 'data-ml-distance-symbol': 'effort', style: { color: T.effort } }, '◆ ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
-              h('span', { key: 'l', 'data-ml-distance-symbol': 'load', style: { color: T.load } }, '○ ' + __alloT('stem.machinelab.load_path', 'Load path')),
-              h('span', { key: 'scale' }, __alloT('stem.machinelab.same_distance_scale', 'Same distance scale')),
-              h('span', { key: 'fill', 'data-ml-distance-fill-guide': '', style: { flexBasis: '100%', fontWeight: 500 } }, __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled. End caps mark the finish.'))
+              h('style', { key: 'style' }, '.ml-shop-legend .ml-distance-key-paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}.ml-shop-legend .ml-distance-key-symbol{display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid;border-radius:10px;font-size:17px;font-weight:800}.ml-shop-legend .ml-distance-key-mark{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:1.4em;height:1.4em;font-size:32px;line-height:1}.ml-shop-legend .ml-distance-key-guide{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center;gap:16px;padding-top:12px;border-top:1px dashed}.ml-shop-legend .ml-distance-key-art{display:block;width:100%;max-width:360px;height:auto;justify-self:center}@media(max-width:700px){.ml-shop-legend .ml-distance-key-guide{grid-template-columns:minmax(0,1fr);gap:8px}}@media(max-width:600px){.ml-shop-legend .ml-distance-key-paths{grid-template-columns:minmax(0,1fr)}}@media(max-width:440px){.ml-shop-legend .ml-distance-key-symbol{flex-direction:column;align-items:flex-start;gap:4px}}@container ml-distance-key (max-width:480px){.ml-shop-legend .ml-distance-key-paths,.ml-shop-legend .ml-distance-key-guide{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-shop-legend .ml-distance-key-symbol{color:CanvasText!important;border-color:CanvasText!important}.ml-shop-legend .ml-distance-key-art{color:CanvasText!important}}'),
+              h('div', { key: 'scale', className: 'ml-distance-key-title', style: { fontSize: 18, fontWeight: 850, lineHeight: 1.4 } },
+                __alloT('stem.machinelab.same_distance_scale', 'Same distance scale')),
+              h('div', { key: 'paths', className: 'ml-distance-key-paths' }, [
+                h('div', { key: 'e', className: 'ml-distance-key-symbol', 'data-ml-distance-symbol': 'effort', style: { color: T.effort, borderColor: T.border, background: T.card } }, [
+                  h('span', { key: 'symbol', className: 'ml-distance-key-mark' }, '◆ '),
+                  h('span', { key: 'label', style: { minWidth: 0 } }, __alloT('stem.machinelab.effort_path', 'Effort path'))
+                ]),
+                h('div', { key: 'l', className: 'ml-distance-key-symbol', 'data-ml-distance-symbol': 'load', style: { color: T.load, borderColor: T.border, background: T.card } }, [
+                  h('span', { key: 'symbol', className: 'ml-distance-key-mark' }, '○ '),
+                  h('span', { key: 'label', style: { minWidth: 0 } }, __alloT('stem.machinelab.load_path', 'Load path'))
+                ])
+              ]),
+              h('div', { key: 'guide', className: 'ml-distance-key-guide', style: { borderColor: T.border } }, [
+                h('svg', { key: 'sample', className: 'ml-distance-key-art', 'data-ml-distance-key-example': '', viewBox: '0 0 320 60',
+                  width: 320, height: 60, 'aria-hidden': 'true', focusable: 'false', style: { color: T.text } }, [
+                  h('path', { key: 'rail', 'data-ml-distance-key-rail': '', d: 'M18 30H302', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                  h('rect', { key: 'travel', 'data-ml-distance-key-travel': '', x: 18, y: 22, width: 160, height: 16, rx: 4, fill: 'currentColor' }),
+                  h('path', { key: 'finish', 'data-ml-distance-key-finish': '', d: 'M302 14V46', fill: 'none', stroke: 'currentColor', strokeWidth: 3 })
+                ]),
+                h('p', { key: 'fill', 'data-ml-distance-fill-guide': '', style: { margin: 0, minWidth: 0, fontSize: 15, lineHeight: 1.6 } },
+                  __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled. End caps mark the finish.'))
+              ])
             ]),
+            shopTaskDistances(),
             shopDemoControls(),
             camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
             shopMotionInspector(),
@@ -14037,10 +14330,16 @@ window.StemLab = window.StemLab || {
                   pick(bench.copy, band))
               ], 'copy'),
               card([
-                h('div', { key: 'head', style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 10 } }, [
-                  h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
-                    __alloT('stem.machinelab.tune_station', 'Tune this station')),
-                  h('span', { key: 'p', style: { fontSize: 11, color: T.dim } }, completed + '/6 ' + __alloT('stem.machinelab.proven_short', 'proven'))
+                h('style', { key: 'tuning-layout' }, '.ml-station-label{grid-template-columns:minmax(0,1fr) auto}@container ml-station-setting (max-width:360px){.ml-station-label{grid-template-columns:minmax(0,1fr)}.ml-station-value{justify-self:start}}@media(forced-colors:active){.ml-tuning-heading svg{color:CanvasText!important}}'),
+                h('div', { key: 'head', className: 'ml-tuning-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 } }, [
+                  h('h3', { key: 'h', style: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, margin: 0, fontSize: 20, lineHeight: 1.5, color: T.text } }, [
+                    h('svg', { key: 'icon', width: 28, height: 28, viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, color: T.accent } }, [
+                      h('path', { key: 'rails', d: 'M4 7H24 M4 14H24 M4 21H24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' }),
+                      h('path', { key: 'handles', d: 'M9 4V10 M19 11V17 M12 18V24', fill: 'none', stroke: 'currentColor', strokeWidth: 4, strokeLinecap: 'round' })
+                    ]),
+                    h('span', { key: 'text', style: { minWidth: 0 } }, __alloT('stem.machinelab.tune_station', 'Tune this station'))
+                  ]),
+                  h('span', { key: 'p', style: { padding: '5px 10px', border: '1px solid ' + T.border, borderRadius: 20, fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text, background: T.bg } }, completed + '/6 ' + __alloT('stem.machinelab.proven_short', 'proven'))
                 ])
               ].concat(bench.controls.map(stationSlider)).concat(
                   (band === 'g68' || band === 'g912')

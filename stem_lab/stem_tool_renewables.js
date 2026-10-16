@@ -49,6 +49,2559 @@ window.StemLab = window.StemLab || {
   if (document.head) document.head.appendChild(st);
 })();
 
+// BEGIN GENERATED RENEWABLES TYCOON MODULES
+// Source: stem_lab/renewables_tycoon_engine.js
+/* Renewables Tycoon: a deterministic, deliberately simplified teaching campaign.
+ * Money is fictional game dollars. Equipment and weather are illustrative, not
+ * engineering or investment forecasts. All power values are kW; each step is 1 h.
+ */
+(function (root, factory) {
+  'use strict';
+  var engine = factory();
+  if (typeof module === 'object' && module.exports) module.exports = engine;
+  if (root) {
+    root.StemLab = root.StemLab || {};
+    root.StemLab.renewablesTycoonEngine = engine;
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  var VERSION = 1;
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  var DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  var CATALOG = {
+    solar: { name: 'Solar array', capacity: 40, power: 40, cost: 18000, serviceCost: 450, monthlyCost: 140, wear: 2.2 },
+    wind: { name: 'Wind turbine', capacity: 30, power: 30, cost: 31000, serviceCost: 650, monthlyCost: 230, wear: 5.5 },
+    battery: { name: 'Battery store', capacity: 100, power: 25, cost: 14000, serviceCost: 350, monthlyCost: 100, wear: 2.4 }
+  };
+  var SITES = [
+    { id: 'harbor-roofs', name: 'Harbor roofs', type: 'solar', x: 20, y: 25, resource: 1, landCost: 0 },
+    { id: 'north-bluff', name: 'North bluff', type: 'wind', x: 75, y: 20, resource: 1, landCost: 0 },
+    { id: 'harbor-store', name: 'Harbor store', type: 'battery', x: 72, y: 70, resource: 1, landCost: 0 },
+    { id: 'school-roofs', name: 'School roofs', type: 'solar', x: 37, y: 14, resource: 1.04, landCost: 2000 },
+    { id: 'south-meadow', name: 'South meadow', type: 'solar', x: 18, y: 66, resource: 1.12, landCost: 3500 },
+    { id: 'ridge-wind', name: 'Ridge wind', type: 'wind', x: 87, y: 43, resource: 1.1, landCost: 5000 },
+    { id: 'breakwater-wind', name: 'Breakwater wind', type: 'wind', x: 57, y: 8, resource: 1.04, landCost: 3500 },
+    { id: 'civic-store', name: 'Civic store', type: 'battery', x: 41, y: 76, resource: 1, landCost: 1000 },
+    { id: 'ferry-store', name: 'Ferry store', type: 'battery', x: 89, y: 84, resource: 1, landCost: 1500 }
+  ];
+  var GOALS = { coverage: 0.9, trust: 50, cash: 0 };
+  var CHARGE_EFFICIENCY = 0.95;
+  var DISCHARGE_EFFICIENCY = 0.95;
+  var SERVICE_HOURS = 48;
+  var TARIFF = 0.48;
+  var INITIAL_TRUST = 68;
+
+  function choice(id, label, description, cost, trust, effects) {
+    return { id: id, label: label, description: description, cost: cost, trust: trust, effects: effects || {} };
+  }
+  var EVENTS = {
+    cold: {
+      id: 'cold', title: 'A cold front approaches',
+      description: 'Heating demand rises by 15% this month. The cooperative can help households reduce the extra load.',
+      effects: { demand: 1.15 },
+      choices: [
+        choice('insulation', 'Fund draft-proofing kits', 'Spend $250; reduce this month\'s demand by 6% and gain 3 trust.', 250, 3, { demand: 0.94 }),
+        choice('schedule', 'Coordinate flexible heating', 'Spend $100; shift more evening demand into daytime hours and gain 1 trust.', 100, 1, { shift: 0.18 }),
+        choice('normal', 'Use existing resources', 'Keep cash available and serve the higher demand with your current fleet.', 0, 0)
+      ]
+    },
+    storm: {
+      id: 'storm', title: 'Storm watch',
+      description: 'Stronger winds bring energy and occasional turbine cut-out. Equipment fault risk increases this month.',
+      effects: { wind: 1.16, storm: true, risk: 1.8 },
+      choices: [
+        choice('standby', 'Put technicians on standby', 'Spend $700; reduce storm fault risk by 70%. Scheduled maintenance still uses the regular crew.', 700, 1, { risk: 0.3 }),
+        choice('flex', 'Organize flexible demand', 'Spend $150; shift extra evening demand into daytime hours and gain 2 trust.', 150, 2, { shift: 0.2 }),
+        choice('normal', 'Keep the normal operating plan', 'Retain cash and accept the elevated equipment risk.', 0, 0)
+      ]
+    },
+    grant: {
+      id: 'grant', title: 'A cooperative support fund opens',
+      description: 'A local fund offers two forms of support. Choose where the benefit goes.',
+      effects: {},
+      choices: [
+        choice('capital', 'Take the capital award', 'Receive $4,000 for the cooperative\'s operating and expansion budget.', -4000, 0),
+        choice('community', 'Share the community award', 'Receive $1,500 for the cooperative and gain 8 trust through household support.', -1500, 8)
+      ]
+    },
+    cloud: {
+      id: 'cloud', title: 'A persistent cloud band',
+      description: 'Solar resource falls by 30% this month. Wind and stored energy become more valuable.',
+      effects: { solar: 0.7 },
+      choices: [
+        choice('workshop', 'Run an efficiency workshop', 'Spend $250; reduce demand by 5% for the month and gain 2 trust.', 250, 2, { demand: 0.95 }),
+        choice('normal', 'Work with the current fleet', 'Keep cash available and rely on the system you have built.', 0, 0)
+      ]
+    },
+    training: {
+      id: 'training', title: 'Technician training places',
+      description: 'A visiting engineering team offers a month of supervised operation and component checks.',
+      effects: {},
+      choices: [
+        choice('train', 'Enroll the team', 'Spend $800; halve this month\'s wear and fault risk, and gain 2 trust.', 800, 2, { wear: 0.5, risk: 0.5 }),
+        choice('normal', 'Keep the existing routine', 'Preserve cash and continue normal maintenance practices.', 0, 0)
+      ]
+    },
+    festival: {
+      id: 'festival', title: 'Harbor festival contract',
+      description: 'The festival adds 12% to this month\'s demand. Extra revenue is earned only for electricity actually delivered.',
+      effects: { demand: 1.12 },
+      choices: [
+        choice('schedule', 'Schedule daytime activities', 'Spend $250; shift extra evening demand into solar hours and gain 3 trust.', 250, 3, { shift: 0.25 }),
+        choice('normal', 'Support the full evening program', 'Use existing resources and gain 1 trust for participating.', 0, 1)
+      ]
+    },
+    sun: {
+      id: 'sun', title: 'A bright summer outlook',
+      description: 'Solar resource rises by 15% this month. Extra energy may fill batteries or be curtailed when there is no demand.',
+      effects: { solar: 1.15 },
+      choices: [
+        choice('customer', 'Offer a daytime workshop contract', 'Serve 8% more demand this month; all added consumption takes place during daylight hours.', 0, 1, { daytimeLoad: 0.08 }),
+        choice('normal', 'Keep spare generation available', 'Use the extra sun for existing customers and battery charging.', 0, 0)
+      ]
+    },
+    visitors: {
+      id: 'visitors', title: 'The school wants an energy tour',
+      description: 'Students want to see the cooperative\'s equipment and discuss how a renewable microgrid works.',
+      effects: {},
+      choices: [
+        choice('tour', 'Host an equipment tour', 'Spend $200 on staff time and gain 6 trust.', 200, 6),
+        choice('guide', 'Send a classroom guide', 'Share a simple guide for free and gain 1 trust.', 0, 1)
+      ]
+    },
+    rebate: {
+      id: 'rebate', title: 'A regional resilience rebate',
+      description: 'The cooperative qualifies for a one-time payment. Decide how much to share with members.',
+      effects: {},
+      choices: [
+        choice('capital', 'Retain the rebate', 'Receive $2,500 for repairs or new equipment.', -2500, 0),
+        choice('members', 'Share most of it with members', 'Receive $750 for the cooperative and gain 7 trust.', -750, 7)
+      ]
+    },
+    breeze: {
+      id: 'breeze', title: 'A favorable coastal breeze',
+      description: 'The wind resource improves by 12% this month, increasing generation when turbine limits allow.',
+      effects: { wind: 1.12 },
+      choices: [
+        choice('tour', 'Invite a community inspection', 'Spend $150 and gain 4 trust through a guided public visit.', 150, 4),
+        choice('normal', 'Concentrate on operations', 'Keep the budget available for equipment and service.', 0, 0)
+      ]
+    },
+    bearings: {
+      id: 'bearings', title: 'An industry bearing advisory',
+      description: 'A supplier recommends extra checks. Fault risk is higher this month, especially on worn equipment.',
+      effects: { risk: 2.2 },
+      choices: [
+        choice('inspect', 'Commission extra inspections', 'Spend $550; reduce this month\'s fault risk by 80%. This does not replace a worn component.', 550, 1, { risk: 0.2 }),
+        choice('normal', 'Follow the regular schedule', 'Retain cash and accept the higher risk.', 0, 0)
+      ]
+    },
+    parts: {
+      id: 'parts', title: 'Spare parts are available locally',
+      description: 'A supplier offers a temporary support package before its seasonal shipping break.',
+      effects: {},
+      choices: [
+        choice('support', 'Reserve the support package', 'Spend $400; reduce this month\'s fault risk by 60%.', 400, 0, { risk: 0.4 }),
+        choice('normal', 'Keep the current arrangements', 'Retain cash and use the normal maintenance plan.', 0, 0)
+      ]
+    }
+  };
+  var SEASON_EVENTS = [
+    ['cold', 'storm', 'grant'], ['cloud', 'training', 'festival'],
+    ['sun', 'visitors', 'rebate'], ['breeze', 'bearings', 'parts']
+  ];
+
+  function clamp(value, low, high) { return Math.max(low, Math.min(high, value)); }
+  function copy(value) { return JSON.parse(JSON.stringify(value)); }
+  function finite(value, low, high) { return typeof value === 'number' && Number.isFinite(value) && value >= low && value <= high; }
+  function integer(value, low, high) { return finite(value, low, high) && Math.floor(value) === value; }
+  function freeze(value) {
+    Object.keys(value).forEach(function (key) { if (value[key] && typeof value[key] === 'object') freeze(value[key]); });
+    return Object.freeze(value);
+  }
+  function random(seed, key) {
+    var text = seed + '|' + key;
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i += 1) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    hash ^= hash >>> 16;
+    hash = Math.imul(hash, 0x7feb352d);
+    hash ^= hash >>> 15;
+    hash = Math.imul(hash, 0x846ca68b);
+    hash ^= hash >>> 16;
+    return (hash >>> 0) / 4294967296;
+  }
+  function siteById(id) { return SITES.find(function (site) { return site.id === id; }); }
+  function eventFor(seed, month) {
+    var season = Math.floor(month / 3);
+    var deck = SEASON_EVENTS[season].slice().sort(function (a, b) {
+      return random(seed, 'event:' + season + ':' + a) - random(seed, 'event:' + season + ':' + b) || (a < b ? -1 : 1);
+    });
+    return EVENTS[deck[month % 3]];
+  }
+  function selectedChoice(state, event) {
+    return event.choices.find(function (item) { return item.id === state.eventChoice; }) || null;
+  }
+  function effectsFor(event, selected) {
+    var effects = { demand: 1, solar: 1, wind: 1, risk: 1, wear: 1, shift: 0, daytimeLoad: 0, storm: false };
+    [event.effects, selected ? selected.effects : {}].forEach(function (source) {
+      Object.keys(source).forEach(function (key) {
+        if (key === 'storm') effects[key] = source[key];
+        else if (key === 'shift' || key === 'daytimeLoad') effects[key] += source[key];
+        else effects[key] *= source[key];
+      });
+    });
+    return effects;
+  }
+  function create(seed) {
+    var normalized = seed == null ? 'NORTH-HARBOR' : String(seed).trim().slice(0, 64);
+    if (!normalized) normalized = 'NORTH-HARBOR';
+    return {
+      version: VERSION, seed: normalized, month: 0, phase: 'planning', cash: 68000, trust: INITIAL_TRUST,
+      assets: SITES.slice(0, 3).map(function (site) {
+        return { id: 'asset-' + site.id, type: site.type, siteId: site.id, condition: 100,
+          readyMonth: 0, serviceMonth: null, fault: false, stored: 0 };
+      }),
+      policy: { reserve: 0.15, flex: false }, eventChoice: null, history: [], lastRun: null, outcome: null
+    };
+  }
+  function annualCoverage(state) {
+    var served = 0, demand = 0;
+    state.history.forEach(function (entry) { served += entry.totals.served; demand += entry.totals.demand; });
+    return demand ? served / demand : 0;
+  }
+  function outlook(state) {
+    var active = state.phase === 'planning';
+    var event = active ? eventFor(state.seed, state.month) : null;
+    return {
+      month: state.month, monthName: active ? MONTHS[state.month] : 'Campaign ended', days: active ? DAYS[state.month] : 0,
+      event: event ? copy(event) : null,
+      sites: SITES.map(function (site) {
+        var asset = state.assets.find(function (item) { return item.siteId === site.id; });
+        return Object.assign({}, site, { owned: !!asset, available: active && !asset && state.month < 11,
+          cost: CATALOG[site.type].cost + site.landCost });
+      }),
+      goals: copy(GOALS), crewAvailable: active && !state.assets.some(function (asset) { return asset.serviceMonth === state.month; }),
+      annualCoverage: annualCoverage(state)
+    };
+  }
+  function weather(state, day, hour, effects) {
+    var month = state.month;
+    var dayLength = [8.8, 9.8, 11.7, 13.5, 14.8, 15.5, 15.1, 13.9, 12.4, 10.7, 9.2, 8.4][month];
+    var sunrise = 12 - dayLength / 2;
+    var solarHeight = Math.max(0, Math.sin(Math.PI * (hour + 0.5 - sunrise) / dayLength));
+    if (hour + 0.5 < sunrise || hour + 0.5 > sunrise + dayLength) solarHeight = 0;
+    var front = random(state.seed, 'front:' + month + ':' + Math.floor(day / 3));
+    var cloud = 0.38 + 0.57 * random(state.seed, 'cloud:' + month + ':' + day);
+    var seasonalSun = [0.58, 0.68, 0.82, 0.94, 1, 1.04, 1.02, 0.96, 0.84, 0.71, 0.6, 0.54][month];
+    var irradiance = clamp(solarHeight * seasonalSun * cloud * effects.solar, 0, 1.05);
+    var seasonalWind = [1.14, 1.1, 1.07, 0.99, 0.93, 0.88, 0.86, 0.91, 0.98, 1.06, 1.13, 1.17][month];
+    var windSpeed = (4.1 + front * 5.1 + Math.sin((hour + day * 3.2) * 0.37) * 1.25
+      + (random(state.seed, 'gust:' + month + ':' + day + ':' + hour) - 0.5) * 1.8) * seasonalWind * effects.wind;
+    if (effects.storm && day === 6 && hour >= 8 && hour <= 16) windSpeed += 16;
+    return { irradiance: irradiance, sunHeight: solarHeight, windSpeed: clamp(windSpeed, 0, 30) };
+  }
+  function dailyDemand(state, day, effects) {
+    var seasonal = [1.22, 1.17, 1.08, 1, 0.96, 0.97, 1.02, 1.01, 0.98, 1.04, 1.13, 1.21][state.month];
+    var daily = 0.96 + 0.08 * random(state.seed, 'demand:' + state.month + ':' + day);
+    var hours = [];
+    for (var hour = 0; hour < 24; hour += 1) {
+      var profile = 0.73 + (hour >= 7 && hour <= 9 ? 0.43 : 0)
+        + (hour >= 10 && hour <= 16 ? 0.24 : 0) + (hour >= 17 && hour <= 21 ? 0.72 : 0);
+      hours.push(14.5 * seasonal * daily * profile * effects.demand);
+    }
+    var shift = clamp((state.policy.flex ? 0.22 : 0) + effects.shift, 0, 0.45);
+    var shifted = 0;
+    for (var evening = 17; evening <= 21; evening += 1) {
+      var amount = hours[evening] * shift;
+      hours[evening] -= amount;
+      shifted += amount;
+    }
+    for (var noon = 11; noon <= 15; noon += 1) hours[noon] += shifted / 5;
+    if (effects.daytimeLoad) {
+      var total = hours.reduce(function (sum, value) { return sum + value; }, 0);
+      for (var work = 10; work <= 16; work += 1) hours[work] += total * effects.daytimeLoad / 7;
+    }
+    return hours;
+  }
+  function windOutput(speed) {
+    if (speed < 3 || speed >= 25) return 0;
+    if (speed >= 11) return 1;
+    return (speed * speed * speed - 27) / (1331 - 27);
+  }
+  function monthlyFaultRisk(asset, effects) {
+    var wear = 1 - asset.condition / 100;
+    return clamp((0.008 + 0.72 * wear * wear + (asset.condition < 35 ? 0.1 : 0)) * effects.risk, 0, 0.8);
+  }
+  function faultSchedule(state, effects, realize) {
+    var faults = [];
+    state.assets.forEach(function (asset) {
+      if (asset.readyMonth > state.month || asset.serviceMonth === state.month) return;
+      if (asset.fault) { faults.push({ assetId: asset.id, hour: 0, existing: true }); return; }
+      if (!realize) return;
+      var chance = monthlyFaultRisk(asset, effects);
+      if (random(state.seed, 'fault:' + state.month + ':' + asset.id) < chance) {
+        faults.push({ assetId: asset.id, hour: 48 + Math.floor(random(state.seed, 'fault-hour:' + state.month + ':' + asset.id) * (DAYS[state.month] * 24 - 48)), existing: false });
+      }
+    });
+    return faults;
+  }
+  function dispatchStorage(batteries, stored, throughput, surplus, deficit, essentialGap, reserve) {
+    var spec = CATALOG.battery;
+    var charge = 0, discharge = 0, loss = 0;
+    function deliver(asset, output) {
+      stored[asset.id] -= output / DISCHARGE_EFFICIENCY;
+      deficit -= output;
+      discharge += output;
+      loss += output / DISCHARGE_EFFICIENCY - output;
+      asset.power += output;
+      throughput[asset.id] += output;
+    }
+    batteries.forEach(function (asset) { asset.power = 0; });
+    if (surplus > 0) {
+      batteries.forEach(function (asset) {
+        var input = Math.min(surplus, spec.power, Math.max(0, spec.capacity - stored[asset.id]) / CHARGE_EFFICIENCY);
+        stored[asset.id] += input * CHARGE_EFFICIENCY;
+        surplus -= input;
+        charge += input;
+        loss += input * (1 - CHARGE_EFFICIENCY);
+        asset.power = -input;
+        throughput[asset.id] += input;
+      });
+    } else if (deficit > 0) {
+      // Exhaust ordinary energy across the whole fleet before releasing any
+      // protected reserve. Array order must not bypass another pack's supply.
+      batteries.forEach(function (asset) {
+        var available = Math.max(0, stored[asset.id] - spec.capacity * reserve) * DISCHARGE_EFFICIENCY;
+        deliver(asset, Math.min(deficit, spec.power, available));
+      });
+      batteries.forEach(function (asset) {
+        var remainingEssential = Math.max(0, essentialGap - discharge);
+        var headroom = Math.max(0, spec.power - asset.power);
+        deliver(asset, Math.min(remainingEssential, headroom, Math.max(0, stored[asset.id]) * DISCHARGE_EFFICIENCY));
+      });
+    }
+    batteries.forEach(function (asset) {
+      stored[asset.id] = clamp(stored[asset.id], 0, spec.capacity);
+      asset.stored = stored[asset.id];
+      asset.status = Math.abs(asset.power) > 0.001 ? 'operating' : 'idle';
+    });
+    return { charge: charge, discharge: discharge, loss: loss, surplus: surplus, deficit: deficit };
+  }
+  function simulate(state, realize) {
+    var event = eventFor(state.seed, state.month);
+    var selected = selectedChoice(state, event);
+    var effects = effectsFor(event, selected);
+    var faults = faultSchedule(state, effects, realize);
+    var stored = {}, throughput = {}, hours = [];
+    var totals = { demand: 0, served: 0, unserved: 0, generation: 0, solar: 0, wind: 0,
+      charge: 0, discharge: 0, curtailed: 0, storageLoss: 0, initialStored: 0, endStored: 0,
+      essentialDemand: 0, essentialServed: 0, coverage: 0, revenue: 0, operatingCost: 0, profit: 0, endingCash: 0 };
+    state.assets.forEach(function (asset) {
+      stored[asset.id] = asset.stored;
+      throughput[asset.id] = 0;
+      totals.initialStored += asset.stored;
+    });
+    for (var day = 0; day < DAYS[state.month]; day += 1) {
+      var demandProfile = dailyDemand(state, day, effects);
+      for (var hour = 0; hour < 24; hour += 1) {
+        var index = day * 24 + hour;
+        var resource = weather(state, day, hour, effects);
+        var generation = 0, solar = 0, wind = 0, capacity = 0;
+        var rows = state.assets.map(function (asset) {
+          var spec = CATALOG[asset.type], site = siteById(asset.siteId);
+          var building = asset.readyMonth > state.month;
+          var service = asset.serviceMonth === state.month && index < SERVICE_HOURS;
+          var fault = faults.some(function (item) { return item.assetId === asset.id && index >= item.hour; });
+          var condition = asset.serviceMonth === state.month && index >= SERVICE_HOURS ? 100 : asset.condition;
+          var available = !building && !service && !fault;
+          var output = 0;
+          if (available && asset.type === 'solar') output = spec.power * Math.min(1, resource.irradiance * site.resource) * (0.7 + condition * 0.003);
+          if (available && asset.type === 'wind') output = spec.power * windOutput(resource.windSpeed * site.resource) * (0.7 + condition * 0.003);
+          if (asset.type === 'solar') solar += output;
+          if (asset.type === 'wind') wind += output;
+          generation += output;
+          if (asset.type === 'battery' && !building) capacity += spec.capacity;
+          return { id: asset.id, type: asset.type, siteId: asset.siteId, power: output, available: available,
+            status: building ? 'building' : service ? 'service' : fault ? 'fault' : output > 0.001 ? 'operating' : 'idle',
+            condition: condition, stored: stored[asset.id], capacity: spec.capacity };
+        });
+        var demand = demandProfile[hour];
+        var essential = demand * 0.55;
+        var direct = Math.min(generation, demand);
+        var deficit = demand - direct, surplus = generation - direct;
+        var batteries = rows.filter(function (asset) { return asset.type === 'battery' && asset.available; });
+        var dispatch = dispatchStorage(batteries, stored, throughput, surplus, deficit, Math.max(0, essential - direct), state.policy.reserve);
+        var charge = dispatch.charge, discharge = dispatch.discharge, loss = dispatch.loss;
+        surplus = dispatch.surplus;
+        deficit = dispatch.deficit;
+        var storedTotal = rows.reduce(function (sum, asset) { return sum + stored[asset.id]; }, 0);
+        var served = demand - Math.max(0, deficit);
+        var row = { hour: index, day: day + 1, hourOfDay: hour, solar: solar, wind: wind, generation: generation,
+          demand: demand, served: served, unserved: Math.max(0, deficit), charge: charge, discharge: discharge,
+          curtailed: Math.max(0, surplus), stored: storedTotal, capacity: capacity, storageLoss: loss,
+          essentialDemand: essential, essentialServed: Math.min(essential, served), windSpeed: resource.windSpeed,
+          irradiance: resource.irradiance, sunHeight: resource.sunHeight, assets: rows };
+        ['demand', 'served', 'unserved', 'generation', 'solar', 'wind', 'charge', 'discharge', 'curtailed', 'storageLoss', 'essentialDemand', 'essentialServed'].forEach(function (key) { totals[key] += row[key]; });
+        hours.push(row);
+      }
+    }
+    totals.endStored = hours[hours.length - 1].stored;
+    totals.coverage = totals.demand ? totals.served / totals.demand : 1;
+    totals.revenue = totals.served * TARIFF;
+    totals.operatingCost = 300 + (state.policy.flex ? 130 : 0) + totals.unserved * 0.08 + state.assets.reduce(function (sum, asset) {
+      return sum + CATALOG[asset.type].monthlyCost * (asset.readyMonth > state.month ? 0.2 : 1);
+    }, 0);
+    totals.profit = totals.revenue - totals.operatingCost;
+    totals.endingCash = state.cash + totals.profit;
+    return { hours: hours, totals: totals, faults: faults, month: state.month, monthName: MONTHS[state.month], event: copy(event),
+      choice: selected ? copy(selected) : null, forecast: !realize, weatherSummary: 'Seasonal coastal weather; ' + DAYS[state.month] + ' days at hourly resolution.',
+      storedByAsset: stored, throughputByAsset: throughput, effects: effects };
+  }
+  function preview(state) {
+    if (state.phase !== 'planning') {
+      if (state.lastRun) {
+        var replay = simulate(Object.assign({ seed: state.seed }, state.lastRun), true);
+        replay.weatherSummary = 'Recorded final month: ' + replay.monthName + '. Campaign ended.';
+        return replay;
+      }
+      var last = state.history[state.history.length - 1];
+      return { hours: [], totals: last ? copy(last.totals) : null, faults: [], month: last ? last.month : 0,
+        monthName: last ? last.monthName : 'Campaign ended', event: null, choice: null, forecast: false, weatherSummary: 'Campaign ended.' };
+    }
+    return simulate(state, false);
+  }
+  // Explain an existing run without simulating again or rolling hidden faults.
+  // Hour fields are absolute, zero-based indices in that run. Display thresholds
+  // suppress floating-point noise; the underlying energy sums remain unchanged.
+  function analyze(run) {
+    var summary = { days: [], gapHours: 0, gapHourIndices: [], peakGapHour: null, peakCurtailmentHour: null };
+    if (!run || !Array.isArray(run.hours) || !run.hours.length) return summary;
+    var energyKeys = ['demand', 'served', 'unserved', 'generation', 'solar', 'wind',
+      'charge', 'discharge', 'curtailed', 'storageLoss'];
+    var priorStored = run.totals && finite(run.totals.initialStored, 0, 1000000) ? run.totals.initialStored : 0;
+    var peakGap = 0.001, peakCurtailment = 0.001;
+    var day = null, dayPeakGap = 0.001, dayPeakCurtailment = 0.001;
+    run.hours.forEach(function (row) {
+      if (!day || day.day !== row.day) {
+        day = { day: row.day, hours: 0, initialStored: priorStored, endStored: priorStored,
+          coverage: 1, gapHours: 0, peakGapHour: null, peakCurtailmentHour: null };
+        energyKeys.forEach(function (key) { day[key] = 0; });
+        summary.days.push(day);
+        dayPeakGap = 0.001;
+        dayPeakCurtailment = 0.001;
+      }
+      day.hours += 1;
+      energyKeys.forEach(function (key) { day[key] += row[key]; });
+      day.endStored = row.stored;
+      day.coverage = day.demand ? day.served / day.demand : 1;
+      priorStored = row.stored;
+      if (row.unserved > 0.001) {
+        day.gapHours += 1;
+        summary.gapHours += 1;
+        summary.gapHourIndices.push(row.hour);
+      }
+      if (row.unserved > dayPeakGap) { dayPeakGap = row.unserved; day.peakGapHour = row.hour; }
+      if (row.unserved > peakGap) { peakGap = row.unserved; summary.peakGapHour = row.hour; }
+      if (row.curtailed > dayPeakCurtailment) { dayPeakCurtailment = row.curtailed; day.peakCurtailmentHour = row.hour; }
+      if (row.curtailed > peakCurtailment) { peakCurtailment = row.curtailed; summary.peakCurtailmentHour = row.hour; }
+    });
+    return summary;
+  }
+  // Advice uses only the current plan and its publicly known event. The 78%
+  // condition threshold is a planning cue, not an additional simulation rule.
+  // In particular, this never asks whether a seeded future fault will occur.
+  function fleet(state) {
+    if (!state || !Array.isArray(state.assets) || !integer(state.month, 0, 12)
+      || !finite(state.cash, -1000000, 10000000) || state.assets.some(function (asset) {
+        return !asset || !siteById(asset.siteId) || !CATALOG[asset.type] || !finite(asset.condition, 0, 100);
+      })) return { active: false, crewAvailable: false, crewAssetId: null, serviceHours: SERVICE_HOURS,
+        serviceThreshold: 78, eventId: null, choiceId: null, riskMultiplier: null, assets: [] };
+    var active = state.phase === 'planning';
+    var event = active ? eventFor(state.seed, state.month) : null;
+    var selected = event ? selectedChoice(state, event) : null;
+    var effects = event ? effectsFor(event, selected) : null;
+    var crew = active ? state.assets.find(function (asset) { return asset.serviceMonth === state.month; }) : null;
+    var priorities = { fault: 0, worn: 1, service: 2, building: 3, ready: 4 };
+    return { active: active, crewAvailable: active && !crew, crewAssetId: crew ? crew.id : null,
+      serviceHours: SERVICE_HOURS, serviceThreshold: 78, eventId: event ? event.id : null,
+      choiceId: selected ? selected.id : null, riskMultiplier: effects ? effects.risk : null,
+      assets: state.assets.map(function (asset) {
+        var building = asset.readyMonth > state.month;
+        var scheduled = active && asset.serviceMonth === state.month;
+        var spec = CATALOG[asset.type], site = siteById(asset.siteId);
+        var status = building ? 'building' : scheduled ? 'service' : asset.fault ? 'fault' : asset.condition < 78 ? 'worn' : 'ready';
+        var block = !active ? 'ended' : building ? 'building' : scheduled ? 'scheduled' : crew ? 'booked' : state.cash < spec.serviceCost ? 'cash' : null;
+        return { id: asset.id, siteId: asset.siteId, name: site.name, type: asset.type,
+          status: status, priority: priorities[status], condition: asset.condition, readyMonth: asset.readyMonth,
+          serviceCost: spec.serviceCost, canService: block === null, serviceBlock: block,
+          outputFactor: asset.type === 'battery' ? null : 0.7 + asset.condition * 0.003,
+          faultRisk: active && !building && !scheduled && !asset.fault ? monthlyFaultRisk(asset, effects) : null };
+      }).sort(function (a, b) {
+        return a.priority - b.priority || a.condition - b.condition || (a.siteId < b.siteId ? -1 : a.siteId > b.siteId ? 1 : 0);
+      }) };
+  }
+  // Compare a service booking with the current plan before spending any cash.
+  // Both runs are forecasts: known faults are included, hidden new faults are
+  // never realized. The proposed ending cash includes the service fee once.
+  function servicePlan(state, assetId) {
+    var advice = fleet(state);
+    var row = advice.assets.find(function (asset) { return asset.id === assetId; });
+    var asset = row ? state.assets.find(function (item) { return item.id === assetId; }) : null;
+    var plan = { assetId: typeof assetId === 'string' ? assetId : null,
+      siteId: row ? row.siteId : null, name: row ? row.name : null, type: row ? row.type : null,
+      eligible: !!row && row.canService, serviceBlock: row ? row.serviceBlock : 'unknown',
+      serviceCost: row ? row.serviceCost : null, serviceHours: SERVICE_HOURS, returnHour: SERVICE_HOURS,
+      conditionBefore: row ? row.condition : null, conditionAfterService: row ? 100 : null,
+      repairsFault: !!asset && asset.fault, faultRiskBefore: row ? row.faultRisk : null,
+      faultRiskAfter: row && row.canService ? 0 : null,
+      current: null, proposed: null, delta: null, outage: null };
+    if (!plan.eligible) return plan;
+    var current = preview(state);
+    var proposed = preview(apply(state, { type: 'service', assetId: assetId }));
+    var keys = ['coverage', 'served', 'unserved', 'generation', 'endingCash'];
+    plan.current = {};
+    plan.proposed = {};
+    plan.delta = {};
+    keys.forEach(function (key) {
+      plan.current[key] = current.totals[key];
+      plan.proposed[key] = proposed.totals[key];
+      plan.delta[key] = proposed.totals[key] - current.totals[key];
+    });
+    function firstHours(run) {
+      var summary = { demand: 0, served: 0, unserved: 0, generation: 0, coverage: 1 };
+      run.hours.slice(0, SERVICE_HOURS).forEach(function (hour) {
+        ['demand', 'served', 'unserved', 'generation'].forEach(function (key) { summary[key] += hour[key]; });
+      });
+      summary.coverage = summary.demand ? summary.served / summary.demand : 1;
+      return summary;
+    }
+    var currentOutage = firstHours(current), proposedOutage = firstHours(proposed), outageDelta = {};
+    Object.keys(currentOutage).forEach(function (key) { outageDelta[key] = proposedOutage[key] - currentOutage[key]; });
+    plan.outage = { hours: SERVICE_HOURS, current: currentOutage, proposed: proposedOutage, delta: outageDelta };
+    return plan;
+  }
+  // Compare a real construction booking and a separate commissioned-now study.
+  // The study reuses only this month's known conditions; it is not a forecast
+  // of next month's event, weather, faults, or cash balance.
+  function acquisitionPlan(state, siteId) {
+    var site = siteById(siteId), spec = site && CATALOG[site.type];
+    var valid = !!state && Array.isArray(state.assets) && integer(state.month, 0, 12)
+      && finite(state.cash, -1000000, 10000000);
+    var owned = valid && site && state.assets.some(function (asset) { return asset && asset.siteId === site.id; });
+    var totalCost = spec ? spec.cost + site.landCost : null;
+    var block = !site || !valid ? 'unknown' : owned ? 'owned' : state.phase !== 'planning' ? 'ended'
+      : state.month >= 11 ? 'late' : state.cash < totalCost ? 'cash' : null;
+    var readyMonth = valid && state.month < 11 ? state.month + 1 : null;
+    var plan = { siteId: site ? site.id : typeof siteId === 'string' ? siteId : null,
+      name: site ? site.name : null, type: site ? site.type : null, eligible: block === null, acquisitionBlock: block,
+      equipmentCost: spec ? spec.cost : null, landCost: site ? site.landCost : null, totalCost: totalCost,
+      monthlyCost: spec ? spec.monthlyCost : null, constructionCost: spec ? spec.monthlyCost * 0.2 : null,
+      readyMonth: site && readyMonth !== null ? readyMonth : null,
+      readyMonthName: site && readyMonth !== null ? MONTHS[readyMonth] : null,
+      cashAfterPurchase: site && valid ? state.cash - totalCost : null, currentMonth: null, study: null };
+    if (!plan.eligible) return plan;
+    var current = preview(state);
+    var purchased = apply(state, { type: 'buy', siteId: site.id });
+    var construction = preview(purchased);
+    function compare(first, second, keys) {
+      var comparison = { current: {}, proposed: {}, delta: {} };
+      keys.forEach(function (key) {
+        comparison.current[key] = first.totals[key];
+        comparison.proposed[key] = second.totals[key];
+        comparison.delta[key] = second.totals[key] - first.totals[key];
+      });
+      return comparison;
+    }
+    plan.currentMonth = compare(current, construction, ['coverage', 'unserved', 'generation', 'endingCash', 'operatingCost', 'revenue']);
+    // apply() returned a detached copy. Only the new candidate is commissioned
+    // early in this temporary study; all other bookings retain their timing.
+    var candidate = purchased.assets.find(function (asset) { return asset.siteId === site.id; });
+    candidate.readyMonth = state.month;
+    var commissioned = preview(purchased);
+    plan.study = compare(current, commissioned, ['coverage', 'served', 'unserved', 'generation', 'charge', 'discharge', 'curtailed', 'revenue', 'operatingCost', 'profit']);
+    plan.study.candidate = { generation: 0, charge: 0, discharge: 0 };
+    commissioned.hours.forEach(function (hour) {
+      var row = hour.assets.find(function (asset) { return asset.id === candidate.id; });
+      if (candidate.type === 'battery') {
+        if (row.power < 0) plan.study.candidate.charge -= row.power;
+        else plan.study.candidate.discharge += row.power;
+      } else plan.study.candidate.generation += row.power;
+    });
+    return plan;
+  }
+  var OPERATING_TITLES = { building: 'Under construction', service: 'Service outage', fault: 'Fault isolation',
+    darkness: 'No daylight', 'solar-output': 'Solar generation', 'wind-calm': 'Below cut-in speed',
+    'wind-cutout': 'High-wind shutdown', 'wind-output': 'Wind in operating range',
+    charging: 'Charging from the network', discharging: 'Supplying the network', empty: 'Store empty',
+    reserve: 'Holding protected reserve', full: 'Store full', standby: 'Available on standby' };
+  function equipmentPolicy(state, run) {
+    return !run.forecast && state.lastRun && state.lastRun.month === run.month ? state.lastRun.policy : state.policy;
+  }
+  function operatingReason(at, equipment, site, reserve) {
+    var epsilon = 0.001;
+    if (equipment.status === 'building' || equipment.status === 'service' || equipment.status === 'fault') return equipment.status;
+    if (equipment.type === 'solar') return at.irradiance <= 0 && !(at.sunHeight > 0) ? 'darkness' : 'solar-output';
+    if (equipment.type === 'wind') {
+      var speed = at.windSpeed * site.resource;
+      return speed < 3 ? 'wind-calm' : speed >= 25 ? 'wind-cutout' : 'wind-output';
+    }
+    if (equipment.power < -epsilon) return 'charging';
+    if (equipment.power > epsilon) return 'discharging';
+    if (equipment.stored <= epsilon) return 'empty';
+    if (equipment.stored >= equipment.capacity - epsilon) return 'full';
+    // The reserve explains this idle pack only when a nonessential gap is
+    // actually left. Another pack meeting demand is ordinary standby here.
+    if (reserve > 0 && equipment.stored <= equipment.capacity * reserve + epsilon
+      && at.unserved > epsilon && at.essentialServed >= at.essentialDemand - epsilon) return 'reserve';
+    return 'standby';
+  }
+  function operatingFlow(reason, power) {
+    return reason === 'building' || reason === 'service' || reason === 'fault' ? 'isolated'
+      : power < -0.001 ? 'charge' : power > 0.001 ? 'export' : 'idle';
+  }
+  // Inspect already-computed hourly frames. This never runs the simulation or
+  // samples a fault; recorded frame status outranks the campaign's ending state.
+  function inspect(state, run, assetId, hour) {
+    if (!state || !run || !Array.isArray(run.hours) || typeof run.forecast !== 'boolean'
+      || typeof assetId !== 'string' || !integer(hour, 0, 1000000)) return null;
+    var frame = run.hours.find(function (item) { return item && item.hour === hour; });
+    var asset = frame && Array.isArray(frame.assets) && frame.assets.find(function (item) { return item && item.id === assetId; });
+    var site = asset && siteById(asset.siteId);
+    if (!asset || !site || !CATALOG[asset.type] || asset.type !== site.type
+      || !finite(asset.power, -1000000, 1000000) || !finite(asset.condition, 0, 100)) return null;
+    var policy = equipmentPolicy(state, run);
+    if (!policy || !finite(policy.reserve, 0, 0.5)) return null;
+    var reserve = policy.reserve;
+    var reason = operatingReason(frame, asset, site, reserve);
+    var details = {
+      building: 'Construction isolates this equipment from the network. It cannot generate or exchange electricity at this hour.',
+      service: 'The crew keeps this equipment offline for the first 48 hours. It returns at 00:00 on day 3 with restored condition.',
+      fault: run.forecast ? 'A known fault isolates this equipment, so electrical output is zero. A service booking is needed to repair it.'
+        : 'A fault disconnected this equipment at the selected replay hour. Electrical output is zero in the recorded result.',
+      darkness: 'The sun is below the horizon. The panels cannot generate electricity without daylight.',
+      'solar-output': 'Sunlight, cloud cover, site resource, and equipment condition determine this array\'s generation.',
+      'wind-calm': 'Wind at this turbine is below the 3 m/s cut-in speed, so it produces no electricity.',
+      'wind-cutout': 'Wind at this turbine has reached the 25 m/s cut-out threshold. The turbine shuts down to protect its equipment.',
+      'wind-output': 'Wind is within the operating range. Generation follows the turbine power curve and equipment condition; rated output is reached at 11 m/s before condition losses.',
+      charging: 'This pack absorbs surplus renewable generation. Stored energy is shown after this hour\'s charging losses.',
+      discharging: 'This pack supplies the network within its power and energy limits. Protected reserve can also supply remaining essential demand.',
+      empty: 'No usable energy remains at the end of this hour. This pack must charge before it can supply more electricity.',
+      reserve: 'This idle pack retains protected energy while some nonessential demand is unserved. Reserve can still be released for remaining essential demand.',
+      full: 'This pack is full at the end of the hour. It remains available to discharge when the operating plan needs its energy.',
+      standby: 'This pack is available but is not exchanging electricity at this hour. Dispatch depends on generation, demand, and energy available across the battery fleet.'
+    };
+    var readings;
+    if (asset.type === 'solar') readings = [
+      { id: 'irradiance', label: 'Sunlight at site', value: frame.irradiance * site.resource * 100, unit: '% reference' },
+      { id: 'rated-power', label: 'Rated power', value: CATALOG.solar.power, unit: 'kW' },
+      { id: 'output-factor', label: 'Condition output factor', value: (0.7 + asset.condition * 0.003) * 100, unit: '%' }
+    ];
+    else if (asset.type === 'wind') readings = [
+      { id: 'wind-speed', label: 'Wind at turbine', value: frame.windSpeed * site.resource, unit: 'm/s' },
+      { id: 'cut-in', label: 'Cut-in speed', value: 3, unit: 'm/s' },
+      { id: 'cut-out', label: 'Cut-out speed', value: 25, unit: 'm/s' }
+    ];
+    else readings = [
+      { id: 'stored', label: 'Stored energy (end of hour)', value: asset.stored, unit: 'kWh' },
+      { id: 'reserve', label: 'Protected reserve floor', value: asset.capacity * reserve, unit: 'kWh' },
+      { id: 'power-limit', label: 'Charge/discharge limit', value: CATALOG.battery.power, unit: 'kW' }
+    ];
+    if (readings.some(function (reading) { return !Number.isFinite(reading.value); })) return null;
+    var next = null, nextReason = null;
+    run.hours.forEach(function (later) {
+      if (!later || later.hour <= hour || next !== null && later.hour >= next || !Array.isArray(later.assets)) return;
+      var laterAsset = later.assets.find(function (item) { return item && item.id === assetId; });
+      if (!laterAsset) return;
+      var laterReason = operatingReason(later, laterAsset, site, reserve);
+      if (laterReason !== reason) { next = later.hour; nextReason = laterReason; }
+    });
+    var nextLabels = { building: 'Next construction hour', service: 'Next service hour', fault: 'Next fault hour',
+      darkness: 'Next dark hour', 'solar-output': 'Next solar-generation hour', 'wind-calm': 'Next calm hour',
+      'wind-cutout': 'Next high-wind shutdown', 'wind-output': 'Next wind-generation hour', charging: 'Next charging hour',
+      discharging: 'Next discharging hour', empty: 'Next empty-storage hour', reserve: 'Next reserve-holding hour',
+      full: 'Next full-storage hour', standby: 'Next standby hour' };
+    return { assetId: asset.id, siteId: asset.siteId, type: asset.type, hour: frame.hour,
+      context: run.forecast ? 'forecast' : 'replay', status: asset.status, available: !!asset.available,
+      reason: reason, title: OPERATING_TITLES[reason], detail: details[reason], power: asset.power, condition: asset.condition,
+      flow: operatingFlow(reason, asset.power),
+      readings: readings, nextChangeHour: next,
+      nextChangeLabel: nextReason ? reason === 'service' ? 'Inspect return to service' : nextLabels[nextReason] : null };
+  }
+  // Read one complete calendar day from the supplied forecast or replay. Power
+  // and hourly energy come directly from its frames; this never reruns dispatch.
+  function equipmentDay(state, run, assetId, hour) {
+    if (!state || !Array.isArray(state.assets) || !run || !integer(run.month, 0, 11)
+      || typeof run.forecast !== 'boolean' || !Array.isArray(run.hours) || typeof assetId !== 'string'
+      || !integer(hour, 0, DAYS[run.month] * 24 - 1)) return null;
+    var owned = state.assets.filter(function (item) { return item && item.id === assetId; });
+    var original = owned[0], site = original && siteById(original.siteId), spec = original && CATALOG[original.type];
+    var policy = equipmentPolicy(state, run);
+    if (owned.length !== 1 || !site || !spec || original.type !== site.type
+      || !policy || !finite(policy.reserve, 0, 0.5)) return null;
+    var start = Math.floor(hour / 24) * 24, end = start + 23;
+    var frames = run.hours.filter(function (frame) { return frame && frame.hour >= start && frame.hour <= end; });
+    if (frames.length !== 24) return null;
+    var result = { assetId: assetId, siteId: site.id, type: original.type, context: run.forecast ? 'forecast' : 'replay',
+      month: run.month, day: start / 24 + 1, startHour: start, endHour: end, ratedPower: spec.power, rows: [],
+      totals: { generation: 0, charge: 0, discharge: 0, idleHours: 0, isolatedHours: 0 } };
+    for (var index = 0; index < 24; index += 1) {
+      var frame = frames[index];
+      if (frame.hour !== start + index || frame.hourOfDay !== index || frame.day !== result.day
+        || !Array.isArray(frame.assets)) return null;
+      var matches = frame.assets.filter(function (item) { return item && item.id === assetId; });
+      var equipment = matches[0];
+      if (matches.length !== 1 || equipment.siteId !== site.id || equipment.type !== original.type
+        || typeof equipment.available !== 'boolean' || !finite(equipment.condition, 0, 100)
+        || !finite(equipment.power, original.type === 'battery' ? -spec.power : 0, spec.power)) return null;
+      if (equipment.available) {
+        if (equipment.status !== (Math.abs(equipment.power) > 0.001 ? 'operating' : 'idle')) return null;
+      } else if (!['building', 'service', 'fault'].includes(equipment.status) || equipment.power !== 0) return null;
+      if (original.type === 'solar' && (!finite(frame.irradiance, 0, 1.05) || !finite(frame.sunHeight, 0, 1))) return null;
+      if (original.type === 'wind' && !finite(frame.windSpeed, 0, 30)) return null;
+      if (original.type === 'battery' && (equipment.capacity !== spec.capacity || !finite(equipment.stored, 0, spec.capacity)
+        || !finite(frame.unserved, 0, 1000000) || !finite(frame.essentialDemand, 0, 1000000)
+        || !finite(frame.essentialServed, 0, frame.essentialDemand))) return null;
+      var reason = operatingReason(frame, equipment, site, policy.reserve);
+      var flow = operatingFlow(reason, equipment.power);
+      var row = { hour: frame.hour, hourOfDay: frame.hourOfDay, power: equipment.power, status: equipment.status,
+        available: equipment.available, reason: reason, title: OPERATING_TITLES[reason], flow: flow };
+      if (original.type === 'battery') {
+        row.stored = equipment.stored; row.capacity = equipment.capacity;
+        if (equipment.power < 0) result.totals.charge -= equipment.power;
+        else result.totals.discharge += equipment.power;
+      } else result.totals.generation += equipment.power;
+      if (flow === 'idle') result.totals.idleHours += 1;
+      if (flow === 'isolated') result.totals.isolatedHours += 1;
+      result.rows.push(row);
+    }
+    return result;
+  }
+  // Summarize one piece of equipment from the supplied hourly record. This is
+  // deliberately independent of simulation and includes available idle hours.
+  function equipmentRecord(state, run, assetId) {
+    if (!state || !Array.isArray(state.assets) || !Array.isArray(state.history)
+      || !integer(state.month, 0, 12) || !run || !integer(run.month, 0, 11)
+      || typeof run.forecast !== 'boolean' || !Array.isArray(run.hours) || run.hours.length !== DAYS[run.month] * 24
+      || typeof assetId !== 'string') return null;
+    var asset = state.assets.find(function (item) { return item && item.id === assetId; });
+    var site = asset && siteById(asset.siteId);
+    if (!site || asset.type !== site.type || !finite(asset.condition, 0, 100)
+      || !integer(asset.readyMonth, 0, 11)) return null;
+    var record = { assetId: asset.id, siteId: asset.siteId, name: site.name, type: asset.type,
+      context: run.forecast ? 'forecast' : 'replay', month: run.month, monthName: MONTHS[run.month],
+      hours: run.hours.length, availableHours: 0, serviceHours: 0, faultHours: 0, constructionHours: 0,
+      generation: 0, charge: 0, discharge: 0, segments: [], conditionHistory: [], currentCondition: asset.condition };
+    for (var i = 0; i < run.hours.length; i += 1) {
+      var frame = run.hours[i];
+      if (!frame || frame.hour !== i || !Array.isArray(frame.assets)) return null;
+      var rows = frame.assets.filter(function (item) { return item && item.id === assetId; });
+      if (rows.length !== 1) return null;
+      var row = rows[0];
+      if (row.siteId !== asset.siteId || row.type !== asset.type || typeof row.available !== 'boolean'
+        || !finite(row.power, -CATALOG[asset.type].power, CATALOG[asset.type].power)) return null;
+      var status;
+      if (row.available && (row.status === 'operating' || row.status === 'idle')) status = 'available';
+      else if (!row.available && ['service', 'fault', 'building'].includes(row.status) && row.power === 0) status = row.status;
+      else return null;
+      var count = { available: 'availableHours', service: 'serviceHours', fault: 'faultHours', building: 'constructionHours' }[status];
+      record[count] += 1;
+      if (asset.type === 'battery') {
+        if (row.power < 0) record.charge -= row.power;
+        else record.discharge += row.power;
+      } else {
+        if (row.power < 0) return null;
+        record.generation += row.power;
+      }
+      var segment = record.segments[record.segments.length - 1];
+      if (segment && segment.status === status) segment.endHour = frame.hour + 1;
+      else record.segments.push({ startHour: frame.hour, endHour: frame.hour + 1, status: status });
+    }
+    for (var h = 0; h < state.history.length; h += 1) {
+      var entry = state.history[h];
+      if (!entry || !integer(entry.month, 0, 11)) return null;
+      // Construction and any later/current unsolved month are not condition
+      // observations. Missing older asset records remain missing, not inferred.
+      if (entry.month < asset.readyMonth || entry.month >= state.month || entry.month > run.month) continue;
+      if (!Array.isArray(entry.conditionByAsset)) continue;
+      var observations = entry.conditionByAsset.filter(function (item) { return item && item.id === assetId; });
+      if (!observations.length) continue;
+      if (observations.length !== 1 || !finite(observations[0].condition, 0, 100) || typeof observations[0].fault !== 'boolean') return null;
+      record.conditionHistory.push({ month: entry.month, monthName: MONTHS[entry.month],
+        condition: observations[0].condition, fault: observations[0].fault });
+    }
+    return record;
+  }
+  // Explain the existing one-hour dispatch without simulating or resampling it.
+  // Each battery's opening energy comes from its own preceding frame (or the
+  // original planning/replay input at hour zero), never from a fleet average.
+  function dispatchBalance(state, run, hour) {
+    if (!state || !run || !integer(run.month, 0, 11) || typeof run.forecast !== 'boolean'
+      || !integer(hour, 0, DAYS[run.month] * 24 - 1) || !Array.isArray(run.hours)
+      || run.hours.length !== DAYS[run.month] * 24) return null;
+    var source = run.forecast ? state : state.lastRun;
+    if (!source || source.month !== run.month || !Array.isArray(source.assets) || !source.policy
+      || !finite(source.policy.reserve, 0, 0.5)) return null;
+    var frame = run.hours[hour], prior = hour ? run.hours[hour - 1] : null;
+    if (!frame || frame.hour !== hour || !Array.isArray(frame.assets) || frame.assets.length !== source.assets.length
+      || hour && (!prior || prior.hour !== hour - 1 || !Array.isArray(prior.assets))) return null;
+    var keys = ['generation', 'charge', 'discharge', 'served', 'unserved', 'curtailed', 'demand', 'essentialDemand', 'essentialServed'];
+    if (keys.some(function (key) { return !finite(frame[key], 0, 1000000); }) || !finite(frame.storageLoss, 0, 1000000)
+      || !finite(frame.stored, 0, 1000000)) return null;
+    var grid = { directToLoad: Math.min(frame.generation, frame.demand) };
+    keys.forEach(function (key) { grid[key] = frame[key]; });
+    var storage = { start: 0, end: 0, loss: frame.storageLoss }, batteries = [], seen = {};
+    var tolerance = 0.000001, totalCharge = 0, totalDischarge = 0, totalLoss = 0, totalGeneration = 0;
+    for (var i = 0; i < frame.assets.length; i += 1) {
+      var row = frame.assets[i], original = row && source.assets.find(function (item) { return item && item.id === row.id; });
+      var site = original && siteById(original.siteId);
+      if (!row || !original || !site || seen[row.id] || row.type !== original.type || row.siteId !== original.siteId
+        || row.type !== site.type || typeof row.available !== 'boolean'
+        || !finite(row.power, -CATALOG[row.type].power, CATALOG[row.type].power)) return null;
+      seen[row.id] = true;
+      if (row.available ? !['operating', 'idle'].includes(row.status)
+        : !['building', 'service', 'fault'].includes(row.status) || row.power !== 0) return null;
+      if (row.type !== 'battery') {
+        if (row.power < 0) return null;
+        totalGeneration += row.power;
+        continue;
+      }
+      var preceding = prior ? prior.assets.filter(function (item) { return item && item.id === row.id; }) : [original];
+      if (preceding.length !== 1 || !finite(row.capacity, 0, CATALOG.battery.capacity) || row.capacity !== CATALOG.battery.capacity
+        || !finite(preceding[0].stored, 0, row.capacity) || !finite(row.stored, 0, row.capacity)) return null;
+      var start = preceding[0].stored, end = row.stored;
+      var charge = Math.max(0, -row.power), discharge = Math.max(0, row.power);
+      var loss = charge * (1 - CHARGE_EFFICIENCY) + discharge / DISCHARGE_EFFICIENCY - discharge;
+      // Only ordinary energy that this pack actually delivered counts here.
+      // The remainder is delivered from protected reserve for essential needs.
+      var floor = row.capacity * source.policy.reserve;
+      var ordinary = Math.min(discharge, Math.max(0, start - floor) * DISCHARGE_EFFICIENCY);
+      if (Math.abs(start + charge - discharge - loss - end) > tolerance) return null;
+      batteries.push({ assetId: row.id, siteId: row.siteId, name: site.name, available: row.available, status: row.status,
+        startStored: start, endStored: end, capacity: row.capacity, charge: charge, discharge: discharge,
+        loss: loss, reserveFloor: floor, ordinaryDischarge: ordinary, reserveDischarge: Math.max(0, discharge - ordinary) });
+      storage.start += start; storage.end += end;
+      totalCharge += charge; totalDischarge += discharge; totalLoss += loss;
+    }
+    if (Math.abs(totalGeneration - grid.generation) > tolerance || Math.abs(totalCharge - grid.charge) > tolerance
+      || Math.abs(totalDischarge - grid.discharge) > tolerance || Math.abs(totalLoss - storage.loss) > tolerance
+      || Math.abs(storage.end - frame.stored) > tolerance
+      || Math.abs(grid.generation + grid.discharge - grid.served - grid.charge - grid.curtailed) > tolerance
+      || Math.abs(grid.served + grid.unserved - grid.demand) > tolerance
+      || Math.abs(storage.start + grid.charge - grid.discharge - storage.loss - storage.end) > tolerance) return null;
+    return { hour: hour, context: run.forecast ? 'forecast' : 'replay', grid: grid, storage: storage, batteries: batteries };
+  }
+  // Identify limits in the supplied dispatch record. Opening energy determines
+  // each storage ceiling; a limit is called binding only while the network has
+  // a remaining shortage or surplus. No alternative dispatch is simulated.
+  function equipmentLimits(state, run, assetId, hour) {
+    if (typeof assetId !== 'string') return null;
+    var epsilon = 0.000001;
+    function at(index) {
+      var balance = dispatchBalance(state, run, index);
+      if (!balance) return null;
+      var frame = run.hours[index];
+      var row = frame.assets.find(function (item) { return item.id === assetId; });
+      var site = row && siteById(row.siteId), spec = row && CATALOG[row.type];
+      if (!row || !site || !spec || !finite(row.condition, 0, 100)) return null;
+      var pressure = balance.grid.unserved > epsilon ? 'shortage' : balance.grid.curtailed > epsilon ? 'surplus' : 'balanced';
+      var result = { assetId: row.id, siteId: row.siteId, type: row.type, hour: index,
+        context: balance.context, status: row.status, available: row.available, pressure: pressure,
+        binding: [], actualPower: row.power, ratedPower: spec.power, generation: null, storage: null, nextConstrainedHour: null };
+      if (row.type === 'battery') {
+        var pack = balance.batteries.find(function (item) { return item.assetId === assetId; });
+        if (!pack) return null;
+        // With one-hour frames, these energy-derived ceilings are average grid
+        // kW. They are physical bounds, not a promise of dispatch under reserve.
+        result.storage = { startStored: pack.startStored, endStored: pack.endStored, capacity: pack.capacity,
+          reserveFloor: pack.reserveFloor, chargePowerLimit: spec.power,
+          chargeEnergyLimit: Math.max(0, pack.capacity - pack.startStored) / CHARGE_EFFICIENCY,
+          dischargePowerLimit: spec.power, dischargeEnergyLimit: pack.startStored * DISCHARGE_EFFICIENCY,
+          ordinaryEnergyLimit: Math.max(0, pack.startStored - pack.reserveFloor) * DISCHARGE_EFFICIENCY,
+          actualCharge: pack.charge, actualDischarge: pack.discharge };
+        if (pressure !== 'balanced' && !row.available) result.binding.push(row.status);
+        else if (pressure === 'shortage') {
+          if (pack.discharge >= spec.power - epsilon) result.binding.push('converter');
+          if (pack.endStored <= epsilon) result.binding.push('empty');
+          else if (pack.reserveFloor > epsilon && pack.endStored <= pack.reserveFloor + epsilon
+            && balance.grid.essentialServed >= balance.grid.essentialDemand - epsilon) result.binding.push('reserve');
+        } else if (pressure === 'surplus') {
+          if (pack.charge >= spec.power - epsilon) result.binding.push('converter');
+          if (pack.endStored >= pack.capacity - epsilon) result.binding.push('full');
+        }
+      } else {
+        if (!finite(frame.irradiance, 0, 1.05) || !finite(frame.windSpeed, 0, 30)) return null;
+        var local = (row.type === 'solar' ? frame.irradiance : frame.windSpeed) * site.resource;
+        var resource = spec.power * (row.type === 'solar' ? Math.min(1, local) : windOutput(local));
+        var conditionLoss = resource * (1 - (0.7 + row.condition * 0.003));
+        var isolationLoss = row.available ? 0 : resource - conditionLoss;
+        if (Math.abs(resource - conditionLoss - isolationLoss - row.power) > epsilon) return null;
+        result.generation = { resourcePower: resource, conditionLoss: conditionLoss, isolationLoss: isolationLoss,
+          actualPower: row.power, resourceKind: row.type === 'solar' ? 'irradiance' : 'wind-speed', localResource: local };
+        if (pressure === 'shortage') {
+          if (resource < spec.power - epsilon) result.binding.push('resource');
+          if (conditionLoss > epsilon) result.binding.push('condition');
+          if (!row.available) result.binding.push(row.status);
+        }
+      }
+      return result;
+    }
+    var result = at(hour);
+    if (!result) return null;
+    for (var later = hour + 1; later < run.hours.length; later += 1) {
+      var candidate = at(later);
+      if (!candidate) return null;
+      if (candidate.binding.length) { result.nextConstrainedHour = later; break; }
+    }
+    return result;
+  }
+  // Explain only recorded consequences. Current-month purchases, event choices,
+  // service bookings, or trust changes must not rewrite last month's account.
+  function recap(state) {
+    if (!state || !Array.isArray(state.history) || !Array.isArray(state.assets)) return null;
+    var entry = state.history[state.history.length - 1], snapshot = state.lastRun;
+    if (!entry || !snapshot || snapshot.month !== entry.month || !integer(entry.month, 0, 11)
+      || !Array.isArray(entry.faults) || !Array.isArray(entry.conditionByAsset) || !entry.totals
+      || !Array.isArray(snapshot.assets) || !snapshot.policy || !finite(snapshot.trust, 0, 100)
+      || !finite(entry.trust, 0, 100) || entry.month && !state.history[entry.month - 1]) return null;
+    function detail(asset) {
+      var site = siteById(asset.siteId);
+      return { id: asset.id, siteId: asset.siteId, name: site ? site.name : 'Unknown equipment', type: asset.type || (site ? site.type : null) };
+    }
+    function faultDetail(fault) {
+      var asset = snapshot.assets.find(function (item) { return item.id === fault.assetId; })
+        || state.assets.find(function (item) { return item.id === fault.assetId; })
+        || { id: fault.assetId, siteId: String(fault.assetId).replace(/^asset-/, '') };
+      return Object.assign(detail(asset), { hour: fault.hour, day: Math.floor(fault.hour / 24) + 1, hourOfDay: fault.hour % 24 });
+    }
+    var startTrust = entry.month ? state.history[entry.month - 1].trust : INITIAL_TRUST;
+    var reliability = reliabilityTrust(entry.totals.coverage);
+    var flex = snapshot.policy.flex ? 1 : 0;
+    var event = eventFor(state.seed, entry.month);
+    var selected = event.choices.find(function (item) { return item.id === entry.choiceId; });
+    return { month: entry.month, monthName: entry.monthName, choiceLabel: selected ? selected.label : null,
+      newFaults: entry.faults.filter(function (fault) { return !fault.existing; }).map(faultDetail).sort(function (a, b) { return a.hour - b.hour; }),
+      existingFaults: entry.faults.filter(function (fault) { return fault.existing; }).map(faultDetail).sort(function (a, b) { return a.hour - b.hour; }),
+      serviced: snapshot.assets.filter(function (asset) { return asset.serviceMonth === entry.month; }).map(function (asset) {
+        var after = entry.conditionByAsset.find(function (item) { return item.id === asset.id; });
+        return Object.assign(detail(asset), { beforeCondition: asset.condition, afterCondition: after ? after.condition : null,
+          repaired: asset.fault, serviceHours: SERVICE_HOURS, cost: CATALOG[asset.type].serviceCost });
+      }),
+      commissioned: snapshot.assets.filter(function (asset) { return asset.readyMonth === entry.month + 1; }).map(function (asset) {
+        return Object.assign(detail(asset), { readyMonth: asset.readyMonth, monthName: MONTHS[asset.readyMonth] });
+      }),
+      trust: { start: startTrust, event: snapshot.trust - startTrust,
+        operation: entry.trust - snapshot.trust, end: entry.trust, total: entry.trust - startTrust,
+        reliability: reliability, flex: flex,
+        clamped: Math.abs(entry.trust - snapshot.trust - reliability - flex) > 0.000001
+          || !!selected && Math.abs(snapshot.trust - startTrust - selected.trust) > 0.000001 } };
+  }
+  function reliabilityTrust(coverage) {
+    return coverage >= 0.97 ? 3 : coverage >= 0.9 ? 1 : coverage >= 0.8 ? -3 : -8;
+  }
+  function outcome(state) {
+    var coverage = annualCoverage(state);
+    var won = state.month === 12 && state.cash >= GOALS.cash && state.trust >= GOALS.trust && coverage >= GOALS.coverage;
+    var reasons = [];
+    if (state.cash < GOALS.cash) reasons.push('The cooperative ran out of operating cash.');
+    if (coverage < GOALS.coverage) reasons.push('Annual delivered electricity was below the 90% reliability target.');
+    if (state.trust < GOALS.trust) reasons.push('Community trust ended below 50.');
+    if (won) reasons.push('You met the reliability, community trust, and cash targets across all twelve months.');
+    return { won: won, title: won ? 'A resilient renewable cooperative' : state.phase === 'insolvent' ? 'The cooperative needs a fresh start' : 'A year of lessons for North Harbor',
+      reasons: reasons, score: Math.round(clamp(coverage * 65 + state.trust * 0.25 + Math.min(10, Math.max(0, state.cash) / 10000), 0, 100)),
+      coverage: coverage, trust: state.trust, cash: state.cash };
+  }
+  function apply(state, action) {
+    if (!state || state.phase !== 'planning') throw new Error('This campaign has ended. Start a new campaign to make decisions.');
+    if (!action || typeof action.type !== 'string') throw new Error('Choose a valid campaign action.');
+    var next = copy(state);
+    if (action.type === 'buy') {
+      var site = siteById(action.siteId);
+      if (!site) throw new Error('Choose an available site.');
+      if (next.assets.some(function (asset) { return asset.siteId === site.id; })) throw new Error('The cooperative already owns this site.');
+      if (next.month >= 11) throw new Error('Construction takes one month; this site cannot open before the campaign ends.');
+      var price = CATALOG[site.type].cost + site.landCost;
+      if (next.cash < price) throw new Error('There is not enough cash to acquire and build this site.');
+      next.cash -= price;
+      next.assets.push({ id: 'asset-' + site.id, type: site.type, siteId: site.id, condition: 100,
+        readyMonth: next.month + 1, serviceMonth: null, fault: false, stored: 0 });
+    } else if (action.type === 'service') {
+      var asset = next.assets.find(function (item) { return item.id === action.assetId; });
+      if (!asset) throw new Error('Choose an owned piece of equipment.');
+      if (asset.readyMonth > next.month) throw new Error('Equipment under construction cannot be serviced yet.');
+      if (next.assets.some(function (item) { return item.serviceMonth === next.month; })) throw new Error('The maintenance crew is already booked this month.');
+      var cost = CATALOG[asset.type].serviceCost;
+      if (next.cash < cost) throw new Error('There is not enough cash for this service.');
+      next.cash -= cost;
+      asset.serviceMonth = next.month;
+    } else if (action.type === 'policy') {
+      if (!finite(action.reserve, 0, 0.5) || typeof action.flex !== 'boolean') throw new Error('Reserve must be between 0% and 50%; flexible demand must be on or off.');
+      next.policy = { reserve: action.reserve, flex: action.flex };
+    } else if (action.type === 'event') {
+      var event = eventFor(next.seed, next.month);
+      var selected = event.choices.find(function (item) { return item.id === action.choiceId; });
+      if (!selected) throw new Error('Choose one of this month\'s event responses.');
+      if (next.eventChoice === selected.id) return next;
+      if (next.eventChoice !== null) throw new Error('This month\'s event response is already committed.');
+      if (next.cash < selected.cost) throw new Error('There is not enough cash for this event response.');
+      next.cash -= selected.cost;
+      next.trust = clamp(next.trust + selected.trust, 0, 100);
+      next.eventChoice = selected.id;
+    } else if (action.type === 'advance') {
+      if (next.eventChoice === null) throw new Error('Choose a response to this month\'s event before operating the microgrid.');
+      next.lastRun = { month: next.month, cash: next.cash, trust: next.trust, assets: copy(next.assets), policy: copy(next.policy), eventChoice: next.eventChoice };
+      var result = simulate(next, true);
+      next.cash = result.totals.endingCash;
+      var trustChange = reliabilityTrust(result.totals.coverage);
+      next.trust = clamp(next.trust + trustChange + (next.policy.flex ? 1 : 0), 0, 100);
+      next.assets.forEach(function (item) {
+        var serviced = item.serviceMonth === next.month;
+        var built = item.readyMonth <= next.month;
+        if (built) {
+          var base = serviced ? 100 : item.condition;
+          var batteryWear = item.type === 'battery' ? result.throughputByAsset[item.id] / (CATALOG.battery.capacity * 100) : 0;
+          var wear = (CATALOG[item.type].wear + batteryWear) * result.effects.wear * (serviced ? 1 - SERVICE_HOURS / (DAYS[next.month] * 24) : 1);
+          item.condition = clamp(base - wear, 0, 100);
+          item.fault = !serviced && result.faults.some(function (fault) { return fault.assetId === item.id; });
+        }
+        item.stored = result.storedByAsset[item.id];
+        item.serviceMonth = null;
+      });
+      next.history.push({ month: next.month, monthName: MONTHS[next.month], eventId: result.event.id, choiceId: next.eventChoice,
+        totals: copy(result.totals), faults: copy(result.faults), trust: next.trust,
+        conditionByAsset: next.assets.map(function (item) { return { id: item.id, condition: item.condition, fault: item.fault }; }) });
+      next.month += 1;
+      next.eventChoice = null;
+      if (next.cash < 0) next.phase = 'insolvent';
+      else if (next.month === 12) next.phase = 'complete';
+      if (next.phase !== 'planning') next.outcome = outcome(next);
+    } else {
+      throw new Error('Unknown campaign action.');
+    }
+    return next;
+  }
+
+  // Saves are bounded data, not executable instructions. Reject structural or
+  // accounting corruption rather than trying to repair it into a different game.
+  function restore(raw) {
+    try {
+      if (typeof raw === 'string') {
+        if (raw.length > 120000) return null;
+        raw = JSON.parse(raw);
+      }
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      if (JSON.stringify(raw).length > 120000) return null;
+      if (raw.version !== VERSION || typeof raw.seed !== 'string' || raw.seed.length < 1 || raw.seed.length > 64) return null;
+      if (!integer(raw.month, 0, 12) || !['planning', 'complete', 'insolvent'].includes(raw.phase)) return null;
+      if (!finite(raw.cash, -1000000, 10000000) || !finite(raw.trust, 0, 100)) return null;
+      if (raw.phase === 'planning' && (raw.month >= 12 || raw.cash < 0)) return null;
+      if (raw.phase === 'complete' && (raw.month !== 12 || raw.cash < 0)) return null;
+      if (raw.phase === 'insolvent' && (raw.month < 1 || raw.cash >= 0)) return null;
+      if (!raw.policy || !finite(raw.policy.reserve, 0, 0.5) || typeof raw.policy.flex !== 'boolean') return null;
+      if (!Array.isArray(raw.assets) || raw.assets.length < 3 || raw.assets.length > SITES.length) return null;
+      var seen = {};
+      for (var i = 0; i < raw.assets.length; i += 1) {
+        var asset = raw.assets[i], site = siteById(asset.siteId);
+        if (!site || seen[site.id] || asset.id !== 'asset-' + site.id || asset.type !== site.type) return null;
+        seen[site.id] = true;
+        if (!finite(asset.condition, 0, 100) || !integer(asset.readyMonth, 0, Math.min(11, raw.month + 1))) return null;
+        if (asset.serviceMonth !== null && (asset.serviceMonth !== raw.month || raw.phase !== 'planning' || asset.readyMonth > raw.month)) return null;
+        if (typeof asset.fault !== 'boolean' || !finite(asset.stored, 0, asset.type === 'battery' ? CATALOG.battery.capacity : 0)) return null;
+        if (asset.readyMonth > raw.month && (asset.stored !== 0 || asset.fault || asset.condition !== 100)) return null;
+      }
+      if (SITES.slice(0, 3).some(function (site) { return !seen[site.id]; })) return null;
+      if (raw.assets.filter(function (asset) { return asset.serviceMonth === raw.month; }).length > 1) return null;
+      if (raw.eventChoice !== null) {
+        if (raw.phase !== 'planning' || !eventFor(raw.seed, raw.month).choices.some(function (item) { return item.id === raw.eventChoice; })) return null;
+      }
+      if (!Array.isArray(raw.history) || raw.history.length !== raw.month) return null;
+      for (var h = 0; h < raw.history.length; h += 1) {
+        var entry = raw.history[h], expectedEvent = eventFor(raw.seed, h);
+        if (!entry || entry.month !== h || entry.monthName !== MONTHS[h] || entry.eventId !== expectedEvent.id) return null;
+        if (!expectedEvent.choices.some(function (item) { return item.id === entry.choiceId; })) return null;
+        if (!entry.totals || !finite(entry.trust, 0, 100) || !Array.isArray(entry.faults) || entry.faults.length > SITES.length) return null;
+        var nonnegative = ['demand', 'served', 'unserved', 'generation', 'solar', 'wind', 'charge', 'discharge', 'curtailed', 'storageLoss', 'initialStored', 'endStored', 'essentialDemand', 'essentialServed', 'revenue', 'operatingCost'];
+        if (nonnegative.some(function (key) { return !finite(entry.totals[key], 0, 1000000); })) return null;
+        if (!finite(entry.totals.profit, -1000000, 1000000) || !finite(entry.totals.endingCash, -1000000, 10000000) || !finite(entry.totals.coverage, 0, 1)) return null;
+        var totals = entry.totals;
+        if (Math.abs(totals.served + totals.unserved - totals.demand) > 0.001) return null;
+        if (Math.abs(totals.generation + totals.discharge - totals.served - totals.charge - totals.curtailed) > 0.001) return null;
+        if (Math.abs(totals.initialStored + totals.charge - totals.discharge - totals.storageLoss - totals.endStored) > 0.001) return null;
+        if (Math.abs(totals.served / totals.demand - totals.coverage) > 0.000001) return null;
+        if (Math.abs(totals.revenue - totals.served * TARIFF) > 0.001 || Math.abs(totals.profit - totals.revenue + totals.operatingCost) > 0.001) return null;
+        if (entry.faults.some(function (fault) { return !fault || !seen[fault.assetId && fault.assetId.replace(/^asset-/, '')] || !integer(fault.hour, 0, DAYS[h] * 24 - 1) || typeof fault.existing !== 'boolean'; })) return null;
+        if (!Array.isArray(entry.conditionByAsset) || entry.conditionByAsset.length < 3 || entry.conditionByAsset.length > SITES.length || entry.conditionByAsset.some(function (item) {
+          return !item || !seen[item.id && item.id.replace(/^asset-/, '')] || !finite(item.condition, 0, 100) || typeof item.fault !== 'boolean';
+        })) return null;
+      }
+      if (raw.phase === 'planning' && raw.outcome !== null) return null;
+      var clean = { version: VERSION, seed: raw.seed, month: raw.month, phase: raw.phase, cash: raw.cash, trust: raw.trust,
+        assets: raw.assets.map(function (asset) { return { id: asset.id, type: asset.type, siteId: asset.siteId, condition: asset.condition,
+          readyMonth: asset.readyMonth, serviceMonth: asset.serviceMonth, fault: asset.fault, stored: asset.stored }; }),
+        policy: { reserve: raw.policy.reserve, flex: raw.policy.flex }, eventChoice: raw.eventChoice,
+        history: raw.history.map(function (entry) {
+          var totals = {};
+          ['demand', 'served', 'unserved', 'generation', 'solar', 'wind', 'charge', 'discharge', 'curtailed', 'storageLoss', 'initialStored', 'endStored', 'essentialDemand', 'essentialServed', 'coverage', 'revenue', 'operatingCost', 'profit', 'endingCash'].forEach(function (key) { totals[key] = entry.totals[key]; });
+          return { month: entry.month, monthName: entry.monthName, eventId: entry.eventId, choiceId: entry.choiceId, totals: totals, trust: entry.trust,
+            faults: entry.faults.map(function (fault) { return { assetId: fault.assetId, hour: fault.hour, existing: fault.existing }; }),
+            conditionByAsset: entry.conditionByAsset.map(function (item) { return { id: item.id, condition: item.condition, fault: item.fault }; }) };
+        }), lastRun: null, outcome: null };
+      var storedTotal = clean.assets.reduce(function (sum, asset) { return sum + asset.stored; }, 0);
+      var expectedStored = clean.month ? clean.history[clean.month - 1].totals.endStored : 0;
+      if (Math.abs(storedTotal - expectedStored) > 0.001) return null;
+      for (var j = 0; j < clean.history.length; j += 1) {
+        var priorStored = j ? clean.history[j - 1].totals.endStored : 0;
+        if (Math.abs(clean.history[j].totals.initialStored - priorStored) > 0.001) return null;
+      }
+      if (clean.month === 0) {
+        if (raw.lastRun !== null) return null;
+      } else {
+        var snapshot = raw.lastRun;
+        if (!snapshot || snapshot.month !== clean.month - 1 || !finite(snapshot.cash, 0, 10000000) || !finite(snapshot.trust, 0, 100)) return null;
+        if (!snapshot.policy || !finite(snapshot.policy.reserve, 0, 0.5) || typeof snapshot.policy.flex !== 'boolean') return null;
+        if (!Array.isArray(snapshot.assets) || snapshot.assets.length < 3 || snapshot.assets.length > clean.assets.length) return null;
+        var snapshotSites = {};
+        var snapshotAssets = [];
+        for (var k = 0; k < snapshot.assets.length; k += 1) {
+          var prior = snapshot.assets[k], priorSite = siteById(prior.siteId);
+          if (!priorSite || !seen[prior.siteId] || snapshotSites[prior.siteId] || prior.id !== 'asset-' + prior.siteId || prior.type !== priorSite.type) return null;
+          snapshotSites[prior.siteId] = true;
+          if (!finite(prior.condition, 0, 100) || !integer(prior.readyMonth, 0, Math.min(11, snapshot.month + 1)) || typeof prior.fault !== 'boolean') return null;
+          if (!finite(prior.stored, 0, prior.type === 'battery' ? CATALOG.battery.capacity : 0)) return null;
+          if (prior.serviceMonth !== null && (prior.serviceMonth !== snapshot.month || prior.readyMonth > snapshot.month)) return null;
+          if (prior.readyMonth > snapshot.month && (prior.condition !== 100 || prior.stored !== 0 || prior.fault)) return null;
+          snapshotAssets.push({ id: prior.id, type: prior.type, siteId: prior.siteId, condition: prior.condition,
+            readyMonth: prior.readyMonth, serviceMonth: prior.serviceMonth, fault: prior.fault, stored: prior.stored });
+        }
+        if (SITES.slice(0, 3).some(function (site) { return !snapshotSites[site.id]; })) return null;
+        if (snapshotAssets.filter(function (asset) { return asset.serviceMonth === snapshot.month; }).length > 1) return null;
+        if (!eventFor(clean.seed, snapshot.month).choices.some(function (item) { return item.id === snapshot.eventChoice; })) return null;
+        clean.lastRun = { month: snapshot.month, cash: snapshot.cash, trust: snapshot.trust, assets: snapshotAssets,
+          policy: { reserve: snapshot.policy.reserve, flex: snapshot.policy.flex }, eventChoice: snapshot.eventChoice };
+        var replay = simulate(Object.assign({ seed: clean.seed }, clean.lastRun), true);
+        var finalTotals = clean.history[clean.month - 1].totals;
+        if (Object.keys(replay.totals).some(function (key) { return Math.abs(replay.totals[key] - finalTotals[key]) > 0.001; })) return null;
+      }
+      if (clean.phase !== 'planning') clean.outcome = outcome(clean);
+      return clean;
+    } catch (_) { return null; }
+  }
+
+  return Object.freeze({ version: VERSION, create: create, restore: restore, outlook: outlook, apply: apply, preview: preview, analyze: analyze, fleet: fleet, servicePlan: servicePlan, acquisitionPlan: acquisitionPlan, inspect: inspect, equipmentDay: equipmentDay, equipmentRecord: equipmentRecord, dispatchBalance: dispatchBalance, equipmentLimits: equipmentLimits, recap: recap,
+    catalog: freeze(CATALOG), sites: freeze(SITES), months: freeze(MONTHS), goals: freeze(GOALS),
+    assumptions: freeze({ chargeEfficiency: CHARGE_EFFICIENCY, dischargeEfficiency: DISCHARGE_EFFICIENCY,
+      serviceHours: SERVICE_HOURS, tariff: TARIFF, hoursPerStep: 1, constructionMonths: 1, money: 'Fictional game dollars' }) });
+});
+
+// Source: stem_lab/renewables_tycoon_scene.js
+// Renewables Tycoon: illustrative equipment view. All power comes from the campaign engine.
+(function () {
+  'use strict';
+  var nextSceneId = 0;
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); }
+  function n(value) { return Number.isFinite(Number(value)) ? Number(value) : 0; }
+  function formatPower(value) { return Math.abs(n(value)).toFixed(1) + ' kW'; }
+  var FLOW_SLOTS = 7;
+  function flowAppearance(magnitude) {
+    var level = Math.sqrt(clamp(magnitude / 100, 0, 1));
+    // A visual travel speed in map units, independent of the length of the cable.
+    return { opacity: magnitude > 0 ? 0.08 + level * 0.92 : 0, radius: 1 + level * 2.6, speed: magnitude > 0 ? 9 + level * 81 : 0 };
+  }
+  function windsockShape(speed) {
+    var strength = clamp(speed / 12, 0, 1), extension = 13 + strength * 35, droop = (1 - strength) * 24;
+    function stripe(start, end) { return (extension * start) + ',' + (-5 + (droop + 3) * start) + ' ' + (extension * end) + ',' + (-5 + (droop + 3) * end) + ' ' + (extension * end) + ',' + (7 + (droop - 4) * end) + ' ' + (extension * start) + ',' + (7 + (droop - 4) * start); }
+    return ['0,-5 ' + extension + ',' + (droop - 2) + ' ' + extension + ',' + (droop + 3) + ' 0,7', stripe(0.3, 0.49), stripe(0.68, 0.84)];
+  }
+
+  window.StemLab = window.StemLab || {};
+  window.StemLab.RenewablesTycoonScene = function RenewablesTycoonScene(props) {
+    var React = props.ctx.React, h = React.createElement;
+    var t = function (key, fallback) { var value; try { value = typeof props.ctx.t === 'function' ? props.ctx.t(key, fallback) : fallback; } catch (error) { value = fallback; } return value == null ? fallback : value; };
+    var uidRef = React.useRef(null);
+    if (!uidRef.current) uidRef.current = 'renewables-tycoon-scene-' + (++nextSceneId);
+    var uid = uidRef.current, frame = props.frame || {}, sites = props.sites || [], assets = frame.assets || [];
+    var refs = React.useRef({ rotors: {}, paths: {}, particles: {}, flowGroups: {}, clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: {}, serviceTools: {} });
+    var motion = React.useRef({ rotors: {}, flows: {}, breeze: 0, clouds: 0, flutter: 0, weatherWind: null, work: {} });
+    var targets = React.useRef({});
+    var cameraState = React.useState({ zoom: 1, x: 550, y: 345 }), camera = cameraState[0], setCamera = cameraState[1];
+    var overlayState = React.useState('power'), overlay = overlayState[0], setOverlay = overlayState[1];
+    var focusLabelState = React.useState(null), focusedSiteId = focusLabelState[0], setFocusedSiteId = focusLabelState[1];
+    var mediaState = React.useState(typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches), nativeReduced = mediaState[0], setNativeReduced = mediaState[1];
+    var drag = React.useRef(null);
+    var hour = frame.hourOfDay == null ? n(frame.hour) % 24 : n(frame.hourOfDay);
+    // Work is scheduled in the first 48 simulated hours; animation never advances it.
+    var serviceElapsed = clamp(frame.hour, 0, 48), serviceRemaining = 48 - serviceElapsed;
+    // Stages illustrate the fixed work window; they add no simulation rules.
+    var serviceStage = serviceElapsed < 8 ? 'isolate' : serviceElapsed < 36 ? 'service' : 'checks';
+    var serviceStageLabel = serviceStage === 'isolate' ? t('renewables.tycoon.scene.stageIsolate', 'Isolate & inspect') : serviceStage === 'service' ? t('renewables.tycoon.scene.stageService', 'Service work') : t('renewables.tycoon.scene.stageChecks', 'Return checks');
+    var campaign = props.state || {}, replayMonth = campaign.lastRun && campaign.lastRun.month;
+    var buildMonth = campaign.phase === 'planning' ? campaign.month : replayMonth == null ? Math.max(0, n(campaign.month) - 1) : replayMonth;
+    var monthHours = n(props.totalHours) > 0 ? n(props.totalHours) : ([31,28,31,30,31,30,31,31,30,31,30,31][clamp(buildMonth, 0, 11)] || 31) * 24;
+    // Construction stages illustrate a month already scheduled by the engine.
+    var buildProgress = clamp(n(frame.hour) / monthHours, 0, 1);
+    var buildStage = buildProgress < 1 / 3 ? 'groundwork' : buildProgress < 2 / 3 ? 'assembly' : 'checks';
+    var buildStageLabel = buildStage === 'groundwork' ? t('renewables.tycoon.scene.buildGroundwork', 'Site preparation') : buildStage === 'assembly' ? t('renewables.tycoon.scene.buildAssembly', 'Equipment assembly') : t('renewables.tycoon.scene.buildChecks', 'Connection checks');
+    var daylight = frame.sunHeight == null ? clamp(Math.sin((hour - 6) / 12 * Math.PI), 0, 1) : clamp(frame.sunHeight, 0, 1);
+    var night = daylight <= 0.001, dawn = daylight > 0 && daylight < 0.45;
+    var servedFraction = n(frame.demand) > 0 ? clamp(n(frame.served) / n(frame.demand), 0, 1) : 0;
+    var networkServed = Math.max(0, n(frame.served)), networkDemand = Math.max(0, n(frame.demand));
+    var networkGap = Math.max(0, n(frame.unserved)), networkCurtailed = Math.max(0, n(frame.curtailed));
+    var networkMode = networkGap > 0 ? 'gap' : networkCurtailed > 0 ? 'surplus' : 'balanced';
+    var networkHeading = networkMode === 'gap' ? t('renewables.tycoon.scene.shortfall', 'Supply shortfall') : networkMode === 'surplus' ? t('renewables.tycoon.scene.surplus', 'Unused renewable surplus') : t('renewables.tycoon.scene.covered', 'Demand covered');
+    var canInspectDispatch = typeof props.onInspectDispatch === 'function';
+    var inspectDispatchLabel = t('renewables.tycoon.scene.inspectDispatch', 'Inspect network dispatch');
+    function inspectDispatch() { if (canInspectDispatch) props.onInspectDispatch(); }
+    function dispatchKey(event) { if (canInspectDispatch && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.stopPropagation(); inspectDispatch(); } }
+    function networkAttributes(surface) { return { 'data-tycoon-network-board': surface, 'data-mode': networkMode, 'data-served': networkServed, 'data-demand': networkDemand, 'data-unserved': networkGap, 'data-curtailed': networkCurtailed }; }
+    var windowColor = night ? 'rgb(' + Math.round(45 + servedFraction * 210) + ',' + Math.round(73 + servedFraction * 151) + ',' + Math.round(85 + servedFraction * 80) + ')' : '#6b9dab';
+    var windSpeed = n(frame.windSpeed), irradiance = n(frame.irradiance);
+    var weather = React.useRef({ wind: windSpeed });
+    weather.current.wind = windSpeed;
+    var overcast = daylight > 0.2 && irradiance < daylight * 0.42;
+    var requestedMotion = props.animate !== false && !props.reducedMotion;
+    var active = requestedMotion && !nativeReduced;
+    if (motion.current.weatherWind == null || !active) motion.current.weatherWind = clamp(windSpeed, 0, 25);
+    var theme = props.theme || {}, dark = !!(theme.dark || theme.isDark);
+    var liveTargets = {}, assetBySite = {};
+    assets.forEach(function (asset) { assetBySite[asset.siteId] = asset; });
+    function sitePoint(site, index) { return { x: 130 + clamp(site.x == null ? 18 + (index % 3) * 31 : site.x, 0, 100) * 8.3, y: 220 + clamp(site.y == null ? 20 + Math.floor(index / 3) * 29 : site.y, 0, 100) * 3.6 }; }
+    function fitCamera(next) {
+      var zoom = clamp(next.zoom, 1, 2.5), halfWidth = 550 / zoom, halfHeight = 345 / zoom;
+      return { zoom: zoom, x: clamp(next.x, halfWidth, 1100 - halfWidth), y: clamp(next.y, halfHeight, 690 - halfHeight) };
+    }
+    function zoomMap(change) { setCamera(function (old) { return fitCamera({ zoom: old.zoom + change, x: old.x, y: old.y }); }); }
+    function panMap(dx, dy) { setCamera(function (old) { return fitCamera({ zoom: old.zoom, x: old.x + dx * 180 / old.zoom, y: old.y + dy * 130 / old.zoom }); }); }
+    function focusSite(id) {
+      var index = sites.findIndex(function (site) { return site.id === id; });
+      if (index < 0) return;
+      var point = sitePoint(sites[index], index);
+      setCamera(fitCamera({ zoom: 2.5, x: point.x, y: point.y + (sites[index].type === 'wind' ? -45 : 10) }));
+    }
+    function mapKey(event) {
+      if (event.target !== event.currentTarget) return;
+      if (event.key === '+' || event.key === '=') zoomMap(0.5);
+      else if (event.key === '-') zoomMap(-0.5);
+      else if (event.key === 'Home' || event.key === 'Escape') setCamera({ zoom: 1, x: 550, y: 345 });
+      else if (event.key === 'ArrowLeft') panMap(-1, 0);
+      else if (event.key === 'ArrowRight') panMap(1, 0);
+      else if (event.key === 'ArrowUp') panMap(0, -1);
+      else if (event.key === 'ArrowDown') panMap(0, 1);
+      else return;
+      event.preventDefault();
+    }
+    function beginPan(event) {
+      if (camera.zoom === 1 || event.button !== 0 || event.target.closest('[role="button"]')) return;
+      var bounds = event.currentTarget.getBoundingClientRect();
+      drag.current = { x: event.clientX, y: event.clientY, camera: camera, scale: 1100 / camera.zoom / Math.max(1, bounds.width) };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    function movePan(event) {
+      if (!drag.current) return;
+      var start = drag.current;
+      setCamera(fitCamera({ zoom: start.camera.zoom, x: start.camera.x - (event.clientX - start.x) * start.scale, y: start.camera.y - (event.clientY - start.y) * start.scale }));
+    }
+    function endPan() { drag.current = null; }
+    sites.forEach(function (site) {
+      var asset = assetBySite[site.id], power = asset ? n(asset.power) : 0, localWind = windSpeed * (n(site.resource) || 1);
+      var unavailable = !asset || asset.available === false || asset.status === 'service' || asset.status === 'fault' || asset.status === 'building';
+      var rotating = asset && asset.type === 'wind' && !unavailable && power > 0 && localWind >= 3 && localWind < 25;
+      liveTargets[site.id] = { power: power, rotor: rotating ? clamp(18 + (localWind - 3) * 7, 18, 80) : 0, stopMode: unavailable || localWind >= 25 ? 'braking' : 'coasting', service: !!asset && asset.status === 'service' };
+    });
+    liveTargets.town = { power: Math.max(0, n(frame.served)), rotor: 0 };
+    targets.current = liveTargets;
+
+    function paintFlow(id, flow, power, length) {
+      var path = refs.current.paths[id], particles = refs.current.particles[id];
+      if (!path || !particles) return;
+      var appearance = flowAppearance(flow.magnitude), moving = power !== 0;
+      if (length == null) length = path.getTotalLength();
+      var group = refs.current.flowGroups[id];
+      if (group) {
+        group.setAttribute('data-flow-phase', flow.phase.toFixed(6));
+        group.setAttribute('data-visual-magnitude', flow.magnitude.toFixed(6));
+        group.setAttribute('data-flow-speed', appearance.speed.toFixed(6));
+        group.setAttribute('data-flow-cycle-rate', (appearance.speed / Math.max(1, length)).toFixed(6));
+        group.setAttribute('data-path-length', length.toFixed(3));
+      }
+      particles.forEach(function (particle, index) {
+        if (!particle) return;
+        particle.setAttribute('visibility', moving ? 'visible' : 'hidden');
+        particle.setAttribute('opacity', moving ? appearance.opacity.toFixed(4) : '0');
+        particle.setAttribute('r', appearance.radius.toFixed(4));
+        var point = path.getPointAtLength(((flow.phase + index / FLOW_SLOTS) % 1) * length);
+        particle.setAttribute('cx', point.x.toFixed(3)); particle.setAttribute('cy', point.y.toFixed(3));
+      });
+    }
+
+    function paintWeather() {
+      var breeze = motion.current.weatherWind, shape = windsockShape(breeze);
+      refs.current.windsockFabric.forEach(function (node, index) { if (node) node.setAttribute('points', shape[index]); });
+      if (refs.current.weatherResponse) {
+        refs.current.weatherResponse.setAttribute('data-visual-wind', breeze.toFixed(6));
+        refs.current.weatherResponse.setAttribute('data-target-wind', clamp(weather.current.wind, 0, 25).toFixed(6));
+      }
+      if (refs.current.ribbons) {
+        refs.current.ribbons.setAttribute('stroke-dashoffset', -motion.current.breeze);
+        refs.current.ribbons.setAttribute('opacity', clamp(breeze / 20, 0, 0.5).toFixed(4));
+      }
+      refs.current.clouds.forEach(function (node, index) { if (node) node.setAttribute('transform', 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')'); });
+      if (refs.current.windsock) refs.current.windsock.setAttribute('transform', 'rotate(' + (Math.sin(motion.current.flutter) * Math.min(breeze, 12) * 0.3).toFixed(2) + ')');
+    }
+
+    React.useEffect(function () {
+      var alive = true, request = null, previous = null;
+      var media = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      function canMove() { return alive && requestedMotion && !(media && media.matches) && !document.hidden; }
+      function tick(time) {
+        request = null;
+        if (!canMove()) { previous = null; return; }
+        var dt = previous == null ? 0 : Math.min(0.08, Math.max(0, (time - previous) / 1000));
+        previous = time;
+        Object.keys(targets.current).forEach(function (id) {
+          var target = targets.current[id], rotorNode = refs.current.rotors[id];
+          if (rotorNode) {
+            var rotor = motion.current.rotors[id] || (motion.current.rotors[id] = { speed: 0, phase: 18 });
+            // Generator flow stops immediately; the rotor takes time to spin up or brake.
+            var response = target.rotor ? rotor.speed < target.rotor ? 1.7 : 1.1 : target.stopMode === 'braking' ? 0.85 : 2.6;
+            var decay = Math.exp(-dt / response), oldSpeed = rotor.speed;
+            rotor.speed = target.rotor + (oldSpeed - target.rotor) * decay;
+            rotor.phase = (rotor.phase + target.rotor * dt + (oldSpeed - target.rotor) * response * (1 - decay)) % 360;
+            if (!target.rotor && rotor.speed < 0.02) rotor.speed = 0;
+            rotorNode.setAttribute('transform', 'rotate(' + rotor.phase.toFixed(3) + ')');
+            rotorNode.setAttribute('data-motion-rate', rotor.speed.toFixed(3));
+            rotorNode.setAttribute('data-motion-mode', target.rotor ? rotor.speed < target.rotor * 0.9 ? 'starting' : 'generating' : rotor.speed > 0 ? target.stopMode : 'parked');
+          }
+          var beacon = refs.current.serviceBeacons[id], tool = refs.current.serviceTools[id];
+          if (target.service && (beacon || tool)) {
+            var work = motion.current.work[id] || (motion.current.work[id] = { phase: 0 });
+            work.phase = (work.phase + dt * Math.PI * 2 / 3.2) % (Math.PI * 2);
+            if (beacon) beacon.setAttribute('opacity', (0.32 + Math.sin(work.phase) * 0.1).toFixed(3));
+            if (tool) tool.setAttribute('transform', 'rotate(' + (Math.sin(work.phase) * 8).toFixed(3) + ')');
+          }
+          var path = refs.current.paths[id], particles = refs.current.particles[id];
+          if (path && particles) {
+            var flow = motion.current.flows[id] || (motion.current.flows[id] = { phase: 0.12, magnitude: 0 });
+            var magnitude = Math.abs(target.power), direction = target.power < 0 ? -1 : 1;
+            flow.magnitude = magnitude ? flow.magnitude + (magnitude - flow.magnitude) * (1 - Math.exp(-dt / 0.24)) : 0;
+            var length = path.getTotalLength();
+            if (magnitude) flow.phase = (flow.phase + direction * flowAppearance(flow.magnitude).speed * dt / Math.max(1, length) + 1) % 1;
+            paintFlow(id, flow, target.power, length);
+          }
+        });
+        // One response drives the fabric and surrounding air; integrate its travel to avoid frame-rate-dependent drift.
+        var breezeTarget = clamp(weather.current.wind, 0, 25), oldBreeze = motion.current.weatherWind, weatherDecay = Math.exp(-dt / 0.6);
+        var windTravel = breezeTarget * dt + (oldBreeze - breezeTarget) * 0.6 * (1 - weatherDecay);
+        motion.current.weatherWind = breezeTarget + (oldBreeze - breezeTarget) * weatherDecay;
+        if (Math.abs(motion.current.weatherWind - breezeTarget) < 0.005) motion.current.weatherWind = breezeTarget;
+        motion.current.breeze = (motion.current.breeze + windTravel * 1.8) % 70;
+        motion.current.clouds = (motion.current.clouds + windTravel * 0.32) % 1360;
+        motion.current.flutter = (motion.current.flutter + windTravel * 0.8) % (Math.PI * 2);
+        paintWeather();
+        request = window.requestAnimationFrame(tick);
+      }
+      function resume() {
+        if (request != null) window.cancelAnimationFrame(request);
+        request = null; previous = null;
+        setNativeReduced(!!(media && media.matches));
+        if (!requestedMotion || media && media.matches) {
+          motion.current.weatherWind = clamp(weather.current.wind, 0, 25);
+          paintWeather();
+          Object.keys(targets.current).forEach(function (id) {
+            var power = targets.current[id].power, flow = motion.current.flows[id];
+            if (flow) { flow.magnitude = Math.abs(power); paintFlow(id, flow, power); }
+          });
+        }
+        if (canMove()) request = window.requestAnimationFrame(tick);
+      }
+      document.addEventListener('visibilitychange', resume);
+      if (media && media.addEventListener) media.addEventListener('change', resume);
+      resume();
+      return function () { alive = false; if (request != null) window.cancelAnimationFrame(request); document.removeEventListener('visibilitychange', resume); if (media && media.removeEventListener) media.removeEventListener('change', resume); };
+    }, [requestedMotion]);
+
+    // Reposition static packets after a manual hour change, including while motion is paused.
+    React.useEffect(function () {
+      Object.keys(targets.current).forEach(function (id) {
+        var power = targets.current[id].power;
+        var flow = motion.current.flows[id] || (motion.current.flows[id] = { phase: 0.12, magnitude: 0 });
+        if (!active || !power) flow.magnitude = Math.abs(power);
+        paintFlow(id, flow, power);
+      });
+      paintWeather();
+    }, [frame, active]);
+
+    function polygon(points, fill, extra) { return h('polygon', Object.assign({ points: points, fill: fill }, extra || {})); }
+    function line(x1, y1, x2, y2, stroke, width, extra) { return h('line', Object.assign({ x1: x1, y1: y1, x2: x2, y2: y2, stroke: stroke, strokeWidth: width || 1 }, extra || {})); }
+    function tree(x, y, scale, tint) { return h('g', { key: 'tree-' + x + '-' + y, transform: 'translate(' + x + ' ' + y + ') scale(' + (scale || 1) + ')' }, h('ellipse', { cx: 7, cy: 7, rx: 18, ry: 6, fill: '#254f4430' }), line(0, 4, 0, -17, '#6a5e47', 4), polygon('-19,-8 0,-43 19,-8', tint || '#3d785b'), polygon('-14,-24 0,-52 14,-24', '#56896a'), polygon('0,-52 14,-24 0,-28', '#366a55')); }
+    function building(x, y, scale, roof, clinic) { return h('g', { key: 'house-' + x + '-' + y, transform: 'translate(' + x + ' ' + y + ') scale(' + (scale || 1) + ')' }, polygon('-30,-10 12,-27 39,-12 -3,6', roof || '#578697'), polygon('-30,-10 -3,6 -3,39 -30,23', '#d5d6bd'), polygon('-3,6 39,-12 39,20 -3,39', '#f1ebd1'), polygon('-3,-28 12,-37 39,-12 -3,6 -30,-10', roof || '#578697'), line(-3, 6, -3, 39, '#697e70', 1), h('rect', { x: -24, y: 6, width: 10, height: 11, fill: windowColor, transform: 'skewY(30)', 'data-tycoon-town-window': 'true' }), polygon('7,13 17,9 17,21 7,25', windowColor), polygon('24,6 33,2 33,14 24,18', windowColor), clinic ? h('g', { transform: 'translate(19 -2)' }, h('circle', { r: 10, fill: '#f5fbf1' }), h('path', { d: 'M -5 0 H 5 M 0 -5 V 5', stroke: '#1d7a6e', strokeWidth: 3 })) : null); }
+    function panel(x, y) {
+      var cells = [];
+      function cellPoint(u, v) { return { x: -28 + 35 * u + 21 * v, y: -3 - 15 * u + 15 * v }; }
+      for (var column = 1; column < 4; column++) {
+        var top = cellPoint(column / 4, 0), bottom = cellPoint(column / 4, 1);
+        cells.push(line(top.x, top.y, bottom.x, bottom.y, '#a3c9d4', 0.65, { key: 'column-' + column }));
+      }
+      for (var row = 1; row < 3; row++) {
+        var left = cellPoint(0, row / 3), right = cellPoint(1, row / 3);
+        cells.push(line(left.x, left.y, right.x, right.y, '#8eb6c9', 0.65, { key: 'row-' + row }));
+      }
+      return h('g', { key: 'panel-' + x + '-' + y, transform: 'translate(' + x + ' ' + y + ')', 'data-tycoon-panel-detail': true },
+        polygon('-23,15 2,5 29,17 4,28', '#163f4930'),
+        line(-14, 7, -14, 20, '#71868b', 2), line(18, -6, 18, 8, '#71868b', 2), line(-14, 19, 18, -5, '#84999b', 1.1),
+        line(-19, 20, -9, 20, '#bac7bd', 2), line(14, 9, 22, 6, '#bac7bd', 2),
+        polygon('-30,-3 7,-19 30,-3 30,0 -7,16 -30,0', '#6e8994'),
+        polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#bdd5d9', strokeWidth: 1.25 }),
+        h('g', { opacity: night ? 0.58 : 0.78, 'data-tycoon-cell-grid': true }, cells),
+        polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.17, 0.035, 0.2) }),
+        line(-7, 13, 29, -2, '#d2e2dc', 1.2), line(-29, -2, -7, 13, '#8eabb3', 1));
+    }
+    function solar(site, asset) {
+      var rooftop = /roof/.test(site.id), panels = [];
+      for (var row = 0; row < 2; row++) for (var col = 0; col < 3; col++) if (asset.status !== 'building' || buildStage === 'checks' || buildStage === 'assembly' && row === 0) panels.push(panel(-42 + col * 35 + row * 25, -23 + row * 21 - col * 15));
+      return h('g', { 'data-tycoon-material': 'solar' }, h('ellipse', { cx: 7, cy: 7, rx: 88, ry: 24, fill: '#1f4d4933' }), rooftop ? h('g', null, polygon('-83,-21 18,-64 91,-18 -10,26', '#abb8ad'), polygon('-83,-21 -10,26 -10,42 -83,-4', '#b6b8a5'), polygon('-10,26 91,-18 91,0 -10,42', '#e0dcc5'), polygon('16,20 27,15 27,25 16,30', '#527f8a'), polygon('49,6 60,1 60,11 49,16', '#527f8a'), line(-80, -18, -10, 28, '#d1d5bd', 1.4), line(-10, 28, 88, -15, '#eef0d4', 1.3), line(76, -7, 76, 7, '#718b84', 2)) : null, h('g', { transform: rooftop ? 'translate(0 -16)' : undefined }, panels));
+    }
+    function wind(site, asset) {
+      var cached = motion.current.rotors[site.id], phase = cached ? cached.phase : 18;
+      var target = liveTargets[site.id], mode = target.rotor ? cached && cached.speed >= target.rotor * 0.9 ? 'generating' : 'starting' : cached && cached.speed > 0 ? target.stopMode : 'parked';
+      return h('g', { 'data-tycoon-material': 'wind' },
+        h('ellipse', { cx: 32, cy: 3, rx: 64, ry: 11, fill: '#173d423b', transform: 'rotate(-12)' }),
+        h('ellipse', { cy: 8, rx: 20, ry: 8, fill: '#617c73' }), h('ellipse', { cy: 4, rx: 20, ry: 8, fill: '#b5bfb0', stroke: '#7c9689', strokeWidth: 1.5 }),
+        [[-13,2],[-7,8],[9,7],[14,0]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: 1.4, fill: '#526d68', stroke: '#d3d8c4', strokeWidth: 0.5 }); }),
+        polygon('-8,2 8,2 4,-103 -4,-103', 'url(#' + uid + '-tower)'),
+        h('path', { d: 'M -6 -29 Q 0 -26 6 -29 M -5 -65 Q 0 -63 5 -65', fill: 'none', stroke: '#789994', strokeWidth: 0.7, opacity: 0.65 }),
+        h('path', { d: 'M -3 -5 V -18 Q -3 -23 2 -22 L 3 -5 Z', fill: '#b3c8bf', stroke: '#698a86', strokeWidth: 0.75 }), line(1, -14, 1, -10, '#547573', 0.9),
+        h('ellipse', { cy: -96, rx: 6, ry: 2.8, fill: '#88a6a0', stroke: '#cadbd0', strokeWidth: 0.8 }),
+        polygon('-3,-108 20,-115 26,-110 3,-102', '#dfebe0', { stroke: '#b4c9c1', strokeWidth: 0.65 }), polygon('3,-102 26,-110 26,-100 3,-92', 'url(#' + uid + '-nacelle)'),
+        [0,1,2,3].map(function (index) { return line(12 + index * 3, -103 - index, 12 + index * 3, -98 - index, '#73918a', 1, { key: index }); }),
+        line(6, -102, 24, -108, '#e1eee0', 0.75),
+        h('g', { transform: 'translate(0 -103)' }, h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' }, h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#eff5e9', stroke: '#9aafb0', strokeWidth: 0.9 }), h('path', { d: 'M 2 -73 L 6 -14 L 3 2 L 0 -9 Z', fill: '#c7d9d5' })); })), h('circle', { r: 8, fill: 'url(#' + uid + '-nacelle)', stroke: '#6e8c8f', strokeWidth: 1.5 }), h('circle', { r: 5.5, fill: 'none', stroke: '#e1ece0', strokeWidth: 0.8 }), h('circle', { r: 2.5, fill: '#f2f5e9' })),
+        line(-12, 7, 12, 7, '#d5dfce', 2));
+    }
+    function windsock() {
+      var breeze = motion.current.weatherWind, shape = windsockShape(breeze);
+      return h('g', { ref: function (node) { refs.current.weatherResponse = node; }, transform: 'translate(952 245)', 'data-tycoon-windsock': true, 'data-tycoon-weather-response': true, 'data-visual-wind': breeze, 'data-target-wind': clamp(windSpeed, 0, 25) },
+        h('ellipse', { cy: 46, rx: 14, ry: 5, fill: '#234c4230' }), line(0, 46, 0, -7, '#e0e8d3', 3),
+        h('g', { ref: function (node) { refs.current.windsock = node; }, transform: 'rotate(' + (Math.sin(motion.current.flutter) * Math.min(breeze, 12) * 0.3).toFixed(2) + ')' },
+          shape.map(function (points, index) { return polygon(points, index ? '#fff1d4' : '#efb065', { key: index, ref: function (node) { refs.current.windsockFabric[index] = node; }, 'data-tycoon-windsock-fabric': index }); }),
+          h('ellipse', { rx: 2.8, cy: 1, ry: 6, fill: '#ce9558', stroke: '#fff1d4', strokeWidth: 1 })));
+    }
+    function battery(site, asset) {
+      var fill = clamp(n(asset.stored) / Math.max(1, n(asset.capacity)), 0, 1), strips = [];
+      for (var i = 0; i < 6; i++) {
+        var cellFill = clamp(fill * 6 - i, 0, 1), x = 3 + i * 8, y = 4 - i * 2.84;
+        strips.push(h('g', { key: i, 'data-tycoon-battery-cell': site.id, 'data-cell': i, 'data-fill': cellFill },
+          polygon(x + ',' + y + ' ' + (x + 6) + ',' + (y - 2.15) + ' ' + (x + 6) + ',' + (y + 16.85) + ' ' + x + ',' + (y + 19), '#345e65'),
+          cellFill > 0 ? polygon(x + ',' + y + ' ' + (x + 6 * cellFill) + ',' + (y - 2.15 * cellFill) + ' ' + (x + 6 * cellFill) + ',' + (y + 19 - 2.15 * cellFill) + ' ' + x + ',' + (y + 19), '#7ce2b5') : null));
+      }
+      var indicatorState = asset.status === 'fault' ? 'fault' : asset.available === false || asset.status === 'service' || asset.status === 'building' ? 'isolated' : n(asset.power) < 0 ? 'charge' : n(asset.power) > 0 ? 'export' : 'idle';
+      var indicatorColor = { charge: '#b8a8f9', export: '#ffe6a0', idle: '#9cb6b5', isolated: '#ffca72', fault: '#ff9a87' }[indicatorState];
+      return h('g', { 'data-tycoon-material': 'battery' },
+        h('ellipse', { cx: 15, cy: 26, rx: 66, ry: 17, fill: '#173c4145' }),
+        polygon('-53,14 -6,41 67,15 67,20 -6,46 -53,19', '#758d81'), polygon('-53,14 16,-11 67,15 -6,41', '#adb9a7', { stroke: '#829c8b', strokeWidth: 0.8 }),
+        polygon('-47,-27 20,-51 61,-27 -6,-3', '#c6ded8', { stroke: '#8eb7af', strokeWidth: 1 }), polygon('-47,-27 -6,-3 -6,36 -47,12', 'url(#' + uid + '-cabinet-side)'), polygon('-6,-3 61,-27 61,12 -6,36', '#427c80'),
+        polygon('-43,-20 -10,-1 -10,29 -43,10', 'none', { stroke: '#365f65', strokeWidth: 0.8 }), line(-28, -11, -28, 19, '#446f72', 0.7),
+        [0,1,2,3].map(function (index) { return line(-39, -11 + index * 3, -32, -7 + index * 3, '#b2c8bb', 1.2, { key: index }); }),
+        line(-14, 10, -14, 16, '#d0ded0', 1.5), line(-40, 9, -33, 13, '#a4b9a9', 1),
+        polygon('0,1 56,-19 56,10 0,30', '#163f4b', { stroke: '#8ab4aa', strokeWidth: 0.7 }), strips,
+        polygon('-42,-24 21,-46 55,-27 -8,-6', 'url(#' + uid + '-cabinet-top)'), line(-42, -24, -8, -6, '#d6e8da', 1), line(-8, -6, 55, -27, '#cae0d3', 1.2),
+        line(-28, -29, 26, -34, '#719b94', 1.1), line(-22, -30, -16, -32, '#e1eee0', 1.5), line(18, -36, 24, -38, '#e1eee0', 1.5),
+        h('g', { 'data-tycoon-battery-indicator': site.id, 'data-state': indicatorState, 'aria-hidden': true },
+          h('circle', { cx: -31, cy: 5, r: 5.5, fill: '#284d52', stroke: '#8aa8a2', strokeWidth: 0.7 }),
+          h('circle', { cx: -31, cy: 5, r: 3.6, fill: indicatorColor }),
+          h('path', { d: indicatorState === 'charge' ? 'M -35 16 H -27 M -30 13 L -27 16 L -30 19' : indicatorState === 'export' ? 'M -27 16 H -35 M -32 13 L -35 16 L -32 19' : indicatorState === 'fault' ? 'M -31 13 V 16 M -31 18 V 19' : indicatorState === 'isolated' ? 'M -34 13 L -28 19 M -28 13 L -34 19' : 'M -34 16 H -28', fill: 'none', stroke: indicatorColor, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })));
+    }
+    function connectionInfo(asset) {
+      if (!asset) return null;
+      var status = asset.status || 'idle', power = n(asset.power);
+      var isolated = asset.available === false || status === 'fault' || status === 'service' || status === 'building';
+      var label = isolated ? t('renewables.tycoon.scene.connectionIsolated', 'Grid connection isolated') : t('renewables.tycoon.scene.connectionAvailable', 'Grid connection available');
+      var detail = isolated ? status === 'fault' ? t('renewables.tycoon.scene.connectionRepair', 'Repair needed') : status === 'service' ? t('renewables.tycoon.scene.connectionService', 'Planned service isolation') : status === 'building' ? t('renewables.tycoon.scene.connectionBuilding', 'Construction in progress') : t('renewables.tycoon.scene.connectionUnavailable', 'Unavailable this hour')
+        : power < 0 ? t('renewables.tycoon.scene.connectionCharging', 'Grid → battery') + ' · ' + formatPower(power)
+          : power > 0 ? (asset.type === 'battery' ? t('renewables.tycoon.scene.connectionDischarging', 'Battery → grid') : t('renewables.tycoon.scene.connectionGenerating', 'Equipment → grid')) + ' · ' + formatPower(power)
+            : t('renewables.tycoon.scene.connectionIdle', 'Connected · no power this hour');
+      return { state: isolated ? 'isolated' : 'connected', reason: status, label: label, detail: detail, isolated: isolated };
+    }
+    function connectionCabinet(site, asset) {
+      var connection = connectionInfo(asset), indicator = connection.isolated ? asset.status === 'fault' ? '#ffae91' : '#ffda87' : '#a9e7bd';
+      // The contact follows the selected hour immediately; idle equipment stays connected.
+      return h('g', { transform: 'translate(10 22)', 'data-tycoon-connection': site.id, 'data-state': connection.state, 'data-reason': connection.reason, 'aria-hidden': true, pointerEvents: 'none' },
+        h('ellipse', { cx: 3, cy: 13, rx: 22, ry: 6, fill: '#244c5345' }),
+        polygon('-14,-21 -5,-26 22,-26 13,-21', '#d3ded2', { stroke: '#547274', strokeWidth: 0.8 }),
+        polygon('13,-21 22,-26 22,4 13,10', '#6d8d8c', { stroke: '#466a6b', strokeWidth: 0.8 }),
+        h('rect', { x: -14, y: -21, width: 27, height: 31, rx: 1.5, fill: '#b0c6bf', stroke: '#547274', strokeWidth: 0.8 }),
+        h('rect', { x: -11, y: -18, width: 22, height: 20, rx: 2, fill: '#214149', stroke: '#71948d', strokeWidth: 0.8 }),
+        line(-11, -7, -7, -7, '#dce9db', 1.8), line(7, -7, 11, -7, '#dce9db', 1.8),
+        h('circle', { cx: -7, cy: -7, r: 1.7, fill: '#e8efd7' }), h('circle', { cx: 7, cy: -7, r: 1.7, fill: '#e8efd7' }),
+        h('g', { transform: 'translate(-7 -7)' }, line(0, 0, 14, 0, indicator, 2.2, { transform: connection.isolated ? 'rotate(-42)' : 'rotate(0)', 'data-tycoon-contact': site.id, 'data-state': connection.state, strokeLinecap: 'round' })),
+        h('text', { x: -0.5, y: 7, textAnchor: 'middle', fontSize: 5.5, fontWeight: 800, fill: '#214149' }, connection.isolated ? t('renewables.tycoon.scene.contactOpen', 'OPEN') : t('renewables.tycoon.scene.contactClosed', 'CLOSED')),
+        h('ellipse', { cx: 17, cy: -15, rx: 2.6, ry: 3.2, fill: indicator, stroke: asset.status === 'fault' ? '#8b4438' : '#365859', strokeWidth: 1.2 }),
+        asset.status === 'fault' ? h('path', { d: 'M 17 -6 V -1 M 17 1 V 2', stroke: '#ffe1cf', strokeWidth: 1.5, strokeLinecap: 'round' }) : null);
+    }
+    function serviceVan(x, y, site) {
+      var phase = motion.current.work[site.id] ? motion.current.work[site.id].phase : 0;
+      return h('g', { transform: 'translate(' + x + ' ' + y + ')' }, polygon('-20,-8 4,-18 22,-8 -2,2', '#f5d37d'), polygon('-20,-8 -2,2 -2,17 -20,7', '#c99345'), polygon('-2,2 22,-8 22,7 -2,17', '#eab95e'), polygon('7,-3 17,-7 17,0 7,4', '#376d7a'), h('ellipse', { cx: 3, cy: 15, rx: 4, ry: 5, fill: '#2e4c53' }), h('ellipse', { cx: 17, cy: 9, rx: 4, ry: 5, fill: '#2e4c53' }), line(-12, 0, -6, 3, '#fff7dd', 3),
+        h('circle', { ref: function (node) { refs.current.serviceBeacons[site.id] = node; }, cx: 3, cy: -18, r: 9, fill: '#ffd77a', opacity: (0.32 + Math.sin(phase) * 0.1).toFixed(3), 'data-tycoon-service-beacon': site.id }),
+        h('rect', { x: -1, y: -21, width: 8, height: 4, rx: 2, fill: '#ffe4a0', stroke: '#72583d', strokeWidth: 1 }));
+    }
+    function serviceProp() {
+      if (serviceStage === 'service') return h('path', { d: 'M 0 3 L 0 -6 M 0 -6 L -3 -10 M 0 -6 L 3 -10', fill: 'none', stroke: '#e5f0e6', strokeWidth: 2.2, strokeLinecap: 'round' });
+      return h('g', null,
+        h('rect', { x: -5, y: -12, width: 12, height: 17, rx: 1.5, fill: '#e8e9cd', stroke: '#536c67', strokeWidth: 1 }),
+        h('rect', { x: -2, y: -14, width: 6, height: 4, rx: 1, fill: '#829a8d' }),
+        serviceStage === 'checks' ? h('path', { d: 'M -2 -5 L 0 -2 L 5 -8 M -2 1 H 4', fill: 'none', stroke: '#246e53', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }) : h('g', null, line(-2, -6, 4, -6, '#648178', 1), line(-2, -2, 4, -2, '#648178', 1), h('circle', { cx: 3, cy: 2, r: 1.5, fill: 'none', stroke: '#648178', strokeWidth: 1 })));
+    }
+    function serviceWorksite(site) {
+      var phase = motion.current.work[site.id] ? motion.current.work[site.id].phase : 0;
+      function cone(x, y) { return h('g', { key: x, transform: 'translate(' + x + ' ' + y + ')' }, h('ellipse', { cy: 2, rx: 7, ry: 3, fill: '#744d30' }), polygon('-5,1 0,-12 5,1', '#e7a25b'), line(-2, -5, 2, -5, '#fff2cf', 2)); }
+      return h('g', { 'data-tycoon-service-worksite': site.id, 'data-stage': serviceStage, 'data-elapsed': serviceElapsed, 'data-remaining': serviceRemaining, 'data-return-hour': 48, 'data-animation': active ? 'on' : 'off', 'aria-hidden': true, pointerEvents: 'none' },
+        h('path', { d: 'M -77 14 L -10 43 L 80 17', fill: 'none', stroke: '#f3d48e', strokeWidth: 2, strokeDasharray: '5 5', opacity: 0.85 }),
+        cone(-77, 14), cone(-10, 43), cone(80, 17), serviceVan(54, 17, site),
+        h('g', { transform: 'translate(-45 23)' }, h('ellipse', { cx: 1, cy: 4, rx: 11, ry: 4, fill: '#244c5340' }), line(-3, -2, -5, 6, '#284c55', 4), line(3, -2, 6, 5, '#284c55', 4), h('path', { d: 'M -4 -13 Q 0 -16 5 -12 L 6 -2 H -5 Z', fill: '#efbc66', stroke: '#8d6b42', strokeWidth: 0.8 }), line(-3, -9, 4, -9, '#fff3ca', 2), h('circle', { cy: -19, r: 4, fill: '#cf9f76' }), h('path', { d: 'M -5 -20 Q -4 -27 2 -25 Q 6 -24 5 -20 Z', fill: '#fff0ba', stroke: '#9c874e', strokeWidth: 0.8 }), line(3, -12, 10, -8, '#efbc66', 3),
+          h('g', { transform: 'translate(10 -8)' }, h('g', { ref: function (node) { refs.current.serviceTools[site.id] = node; }, transform: 'rotate(' + (Math.sin(phase) * 8).toFixed(3) + ')', 'data-tycoon-service-tool': site.id, 'data-stage': serviceStage, 'data-tool': serviceStage === 'service' ? 'wrench' : serviceStage === 'checks' ? 'checklist' : 'clipboard' }, serviceProp()))),
+        h('g', { transform: 'translate(54 -28)' }, h('rect', { x: -25, y: -10, width: 50, height: 18, rx: 5, fill: '#294a4c', stroke: '#dfc38e', strokeWidth: 1 }), h('text', { y: 0, textAnchor: 'middle', fill: '#ffe5ad', fontSize: 9, fontWeight: 700 }, serviceElapsed + '/48h'), h('rect', { x: -19, y: 3, width: 38, height: 2, rx: 1, fill: '#78918a' }), h('rect', { x: -19, y: 3, width: 38 * serviceElapsed / 48, height: 2, rx: 1, fill: '#ffe1a0' })));
+    }
+    function buildOpening(siteId) {
+      var planned = (campaign.assets || []).find(function (asset) { return asset.siteId === siteId; });
+      var readyMonth = planned && planned.readyMonth, engine = window.StemLab.renewablesTycoonEngine;
+      return { month: readyMonth, label: engine && engine.months && engine.months[readyMonth] || t('renewables.tycoon.scene.nextMonth', 'next month') };
+    }
+    function construction(site) {
+      var groundwork = buildStage === 'groundwork', assembly = buildStage === 'assembly';
+      function foundation() {
+        if (site.type === 'wind') return h('g', null, h('ellipse', { cy: 4, rx: 29, ry: 13, fill: '#c3c6b6', stroke: '#72877e', strokeWidth: 2 }), [[-15,0],[0,-6],[15,0],[0,8]].map(function (bolt, index) { return line(bolt[0], bolt[1] - 10, bolt[0], bolt[1], '#7e908b', 2.5, { key: index }); }));
+        if (site.type === 'battery') return h('g', null, polygon('-55,-5 17,-32 62,-6 -10,24', '#bfc5b3', { stroke: '#6c867d', strokeWidth: 1.5 }), line(-37, -3, -5, 15, '#6b887f', 2), line(6, -19, 37, -2, '#6b887f', 2), h('path', { d: 'M 35 8 L 48 15 L 49 25', fill: 'none', stroke: '#536e68', strokeWidth: 3 }));
+        return h('g', null, polygon('-66,-4 18,-39 63,-11 -22,25', '#c1bc9b', { stroke: '#7d8872', strokeWidth: 1 }), [-29,0,29].map(function (offset) { return h('g', { key: offset, transform: 'translate(' + offset + ' ' + (-offset * 0.42) + ')' }, line(-14, 7, -14, -7, '#a8b8ac', 2), line(14, -5, 14, -19, '#a8b8ac', 2), line(-14, -7, 14, -19, '#d7dfcc', 3)); }));
+      }
+      function load() {
+        if (site.type === 'wind') return h('path', { d: 'M 60 -36 Q 43 -35 24 -26 L 25 -22 L 60 -29 Z', fill: '#e6eee2', stroke: '#91aaa3', strokeWidth: 1 });
+        if (site.type === 'battery') return h('g', null, polygon('45,-30 59,-35 70,-29 56,-24', '#c7d8ce'), polygon('45,-30 56,-24 56,-12 45,-18', '#799d93'), polygon('56,-24 70,-29 70,-17 56,-12', '#467d7a'), line(61,-23,61,-17,'#a1d8bc',1.5), line(66,-25,66,-19,'#a1d8bc',1.5));
+        return h('g', null, polygon('42,-29 61,-37 75,-29 56,-21', '#25567b', { stroke: '#b8d7d8', strokeWidth: 1 }), line(52, -32, 65, -25, '#7daec1', 1), line(49, -25, 68, -33, '#7daec1', 1));
+      }
+      return h('g', { 'data-tycoon-build': site.id, 'data-stage': buildStage, 'data-progress': buildProgress, 'data-type': site.type, 'aria-hidden': true, pointerEvents: 'none' },
+        groundwork ? foundation() : null,
+        line(-63, 17, -11, 40, '#d5b277', 4), line(-56, 11, -56, 29, '#f6db9b', 3), line(-18, 28, -18, 46, '#f6db9b', 3),
+        polygon('65,22 73,6 81,22', '#e99a51'), line(69, 15, 77, 15, '#fff3d1', 3),
+        assembly ? h('g', null, h('g', { transform: 'translate(38 -4)' }, line(0, 0, 0, -72, '#dca954', 5), line(-24, -64, 42, -64, '#dca954', 4), line(0, -78, 42, -64, '#e8c783', 2), line(21, -64, 21, -31, '#667873', 2), h('path', { d: 'M 21 -31 v 5 q 6 4 6 -2', stroke: '#4b6361', fill: 'none', strokeWidth: 2 })), load()) : null,
+        groundwork ? h('g', { transform: 'translate(54 9)' }, polygon('-15,0 2,-7 17,1 0,8', '#8d7953'), polygon('-15,0 0,8 0,18 -15,10', '#a38b5d'), polygon('0,8 17,1 17,11 0,18', '#bea56c'), line(-8, 3, 8, 11, '#e0c88e', 2)) : null,
+        buildStage === 'checks' ? h('g', { transform: 'translate(59 -14)' }, h('rect', { x: -8, y: -15, width: 18, height: 24, rx: 2, fill: '#e8e8ce', stroke: '#5a786c', strokeWidth: 1.5 }), h('rect', { x: -3, y: -18, width: 8, height: 5, rx: 1, fill: '#809b8a' }), h('path', { d: 'M -4 -7 L -1 -3 L 6 -10 M -4 2 H 5', fill: 'none', stroke: '#4d7162', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })) : null);
+    }
+    function flow(id, path, power, installed, cable) {
+      var moving = Math.abs(power) > 0, color = power < 0 ? '#c5a5ff' : '#ffe5a0';
+      var selected = !!installed && props.selectedId === id, cached = motion.current.flows[id];
+      var visualMagnitude = moving ? active ? cached ? cached.magnitude : 0 : Math.abs(power) : 0;
+      var appearance = flowAppearance(visualMagnitude);
+      var directionCues = selected && moving && cable ? [0.32, 0.67].map(function (position) {
+        var remaining = 1 - position;
+        var x = remaining * remaining * cable.x0 + 2 * remaining * position * cable.x1 + position * position * cable.x2;
+        var y = remaining * remaining * cable.y0 + 2 * remaining * position * cable.y1 + position * position * cable.y2;
+        var dx = 2 * remaining * (cable.x1 - cable.x0) + 2 * position * (cable.x2 - cable.x1);
+        var dy = 2 * remaining * (cable.y1 - cable.y0) + 2 * position * (cable.y2 - cable.y1);
+        var angle = Math.atan2(dy, dx) * 180 / Math.PI + (power < 0 ? 180 : 0);
+        return h('g', { key: position, transform: 'translate(' + x.toFixed(3) + ' ' + y.toFixed(3) + ') rotate(' + angle.toFixed(3) + ')', 'data-tycoon-flow-cue': id, 'data-position': position, 'data-direction': power < 0 ? 'to-storage' : 'to-grid', pointerEvents: 'none' }, polygon('-5,-4 1,0 -5,4 -2,0', color, { stroke: '#20484e', strokeWidth: 0.9, strokeLinejoin: 'round' }));
+      }) : null;
+      return h('g', { key: 'flow-' + id, ref: function (node) { refs.current.flowGroups[id] = node; }, 'data-tycoon-flow': id, 'data-power': power, 'data-direction': !power ? 'idle' : power < 0 ? 'to-storage' : id === 'town' ? 'to-community' : 'to-grid', 'data-slot-count': FLOW_SLOTS, 'data-selected': selected, 'data-flow-phase': cached ? cached.phase : 0.12, 'data-visual-magnitude': visualMagnitude, 'data-flow-speed': appearance.speed, 'aria-hidden': true },
+        selected ? h('path', { d: path, fill: 'none', stroke: '#c6f7e0', strokeWidth: 12, opacity: 0.32, 'data-tycoon-selected-cable': id }) : null,
+        h('path', { d: path, fill: 'none', stroke: installed ? '#2b5a59' : '#73948a', strokeWidth: installed ? 7 : 2, strokeDasharray: installed ? undefined : '3 7', opacity: installed ? 0.65 : 0.45 }),
+        h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#8e6ad0' : '#cba954' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
+        directionCues,
+        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
+    }
+    var skyTop = night ? '#10283b' : overcast ? '#658997' : dawn ? '#b9adad' : '#8cc7d2';
+    var skyBottom = night ? '#274858' : overcast ? '#afc9c7' : dawn ? '#f0d1ae' : '#deeee1';
+    var statusText = { building: t('renewables.tycoon.scene.building', 'Under construction'), service: t('renewables.tycoon.scene.service', 'Crew on site'), fault: t('renewables.tycoon.scene.fault', 'Repair needed'), operating: t('renewables.tycoon.scene.operating', 'Operating'), idle: t('renewables.tycoon.scene.idle', 'Idle') };
+    var title = t('renewables.tycoon.scene.title', 'Your coastal renewable network');
+    var description = t('renewables.tycoon.scene.description', 'Select a site to inspect, acquire, or maintain equipment. Gold packets show electricity delivered toward the grid; violet packets show battery charging. Motion is illustrative; displayed power comes from the hourly simulation.');
+    description += ' ' + t('renewables.tycoon.scene.dispatchDescription', 'The network board separates demand served, unmet demand, and curtailed generation that is not used. Generator flows show production before network dispatch.');
+    var conditionHeading = t('renewables.tycoon.scene.conditionHour', 'Condition at selected hour');
+    if (overlay === 'condition') description += ' ' + t('renewables.tycoon.scene.conditionDescription', 'Equipment labels show condition percentages and bars at the selected simulation hour. Repair, service, and construction labels show availability separately.');
+    var selectedAsset = assetBySite[props.selectedId], selectedSite = sites.find(function (site) { return site.id === props.selectedId; });
+    var canInspectEquipment = !!selectedAsset && !!selectedSite && typeof props.onInspectEquipment === 'function';
+    var selectedConnection = connectionInfo(selectedAsset);
+    var selectedOpening = selectedSite ? buildOpening(selectedSite.id) : null;
+    var selectedBattery = selectedAsset && selectedAsset.type === 'battery' ? selectedAsset : null;
+    var selectedCapacity = selectedBattery ? Math.max(0, n(selectedBattery.capacity)) : 0;
+    var selectedStored = selectedBattery ? clamp(selectedBattery.stored, 0, selectedCapacity) : 0;
+    var selectedFill = selectedCapacity ? selectedStored / selectedCapacity : 0;
+    var displayedPolicy = campaign.phase === 'planning' ? campaign.policy : campaign.lastRun && campaign.lastRun.policy || campaign.policy;
+    var reserveFraction = clamp(displayedPolicy && displayedPolicy.reserve, 0, 0.5);
+    var serviceElapsedText = serviceElapsed + ' ' + t('renewables.tycoon.scene.serviceElapsed', 'of 48 hours elapsed');
+    var serviceRemainingText = serviceRemaining + ' ' + (serviceRemaining === 1 ? t('renewables.tycoon.scene.serviceOneHourLeft', 'hour remaining') : t('renewables.tycoon.scene.serviceHoursLeft', 'hours remaining'));
+    var serviceReturnText = t('renewables.tycoon.scene.serviceReturn', 'Returns day 3 at 00:00');
+    var serviceContext = props.state && props.state.phase !== 'planning' ? t('renewables.tycoon.scene.serviceReplayHour', 'At replay hour') : t('renewables.tycoon.scene.serviceForecastHour', 'At forecast hour');
+    var serviceStageContext = props.state && props.state.phase !== 'planning' ? t('renewables.tycoon.scene.stagesReplay', 'Illustrative work stages · replay hour') : t('renewables.tycoon.scene.stagesForecast', 'Illustrative work stages · forecast hour');
+    // Labels occupy a fixed amount of screen space; equipment alone grows with the camera.
+    // Close-ups prioritize the selected or keyboard-focused site and keep its equipment clear.
+    var labelLayouts = {}, labelSubjectId = focusedSiteId || props.selectedId;
+    var cameraLeft = camera.x - 550 / camera.zoom, cameraTop = camera.y - 345 / camera.zoom;
+    var subjectIndex = sites.findIndex(function (site) { return site.id === labelSubjectId; });
+    var subjectSite = subjectIndex >= 0 ? sites[subjectIndex] : null;
+    var subjectPoint = subjectSite ? sitePoint(subjectSite, subjectIndex) : null;
+    var subjectBox = subjectPoint ? { left: (subjectPoint.x - 97 - cameraLeft) * camera.zoom, right: (subjectPoint.x + 97 - cameraLeft) * camera.zoom, top: (subjectPoint.y - (subjectSite.type === 'wind' ? 183 : 100) - cameraTop) * camera.zoom, bottom: (subjectPoint.y + 46 - cameraTop) * camera.zoom } : null;
+    var occupiedLabels = [];
+    function boxesOverlap(a, b) { return a.left < b.right + 6 && a.right > b.left - 6 && a.top < b.bottom + 6 && a.bottom > b.top - 6; }
+    sites.map(function (site, index) {
+      var point = sitePoint(site, index);
+      return { site: site, point: point, distance: Math.abs(point.x - camera.x) + Math.abs(point.y - camera.y) };
+    }).sort(function (a, b) {
+      if (a.site.id === labelSubjectId) return -1;
+      if (b.site.id === labelSubjectId) return 1;
+      return a.distance - b.distance;
+    }).forEach(function (entry) {
+      var site = entry.site, point = entry.point, subject = site.id === labelSubjectId;
+      var x = (point.x - cameraLeft) * camera.zoom, y = (point.y + 49 - cameraTop) * camera.zoom;
+      var box = { left: x - 80, right: x + 80, top: y - 2, bottom: y + 41 };
+      var visible = camera.zoom === 1 || (box.left >= 8 && box.right <= 1092 && box.top >= 8 && box.bottom <= 682 && (subject || !!assetBySite[site.id] && (!subjectBox || !boxesOverlap(box, subjectBox)) && !occupiedLabels.some(function (other) { return boxesOverlap(box, other); })));
+      labelLayouts[site.id] = { visible: visible, priority: site.id === focusedSiteId ? 'focused' : site.id === props.selectedId ? 'selected' : 'nearby' };
+      if (visible) occupiedLabels.push(box);
+    });
+    var siteLabels = [];
+    var siteGroups = sites.slice().sort(function (a, b) { return sitePoint(a, 0).y - sitePoint(b, 0).y; }).map(function (site, index) {
+      var point = sitePoint(site, index), asset = assetBySite[site.id], selected = props.selectedId === site.id;
+      var status = asset ? asset.status || 'idle' : 'available', power = asset ? n(asset.power) : 0;
+      var statusLabel = asset ? statusText[status] || statusText.idle : t('renewables.tycoon.scene.available', 'Available site');
+      var localWind = windSpeed * (n(site.resource) || 1);
+      if (asset && asset.type === 'wind' && status === 'idle') statusLabel = localWind >= 25 ? t('renewables.tycoon.scene.cutOut', 'High-wind shutdown') : localWind < 3 ? t('renewables.tycoon.scene.cutIn', 'Below starting wind') : statusLabel;
+      if (asset && asset.type === 'solar' && status === 'idle' && irradiance <= 0) statusLabel = t('renewables.tycoon.scene.noSun', 'Waiting for sunlight');
+      var label = site.name + '. ' + statusLabel + (asset ? '. ' + (power < 0 ? t('renewables.tycoon.scene.charging', 'Charging') + ' ' : '') + formatPower(power) : '');
+      if (asset) label += '. ' + connectionInfo(asset).label;
+      if (status === 'service') label += '. ' + serviceContext + ': ' + serviceElapsedText + ', ' + serviceRemainingText + '. ' + serviceReturnText + '. ' + t('renewables.tycoon.scene.illustrativeStage', 'Illustrative work stage') + ': ' + serviceStageLabel;
+      if (status === 'building') label += '. ' + t('renewables.tycoon.scene.illustrativeBuildStage', 'Illustrative construction stage') + ': ' + buildStageLabel + '. ' + t('renewables.tycoon.scene.opens', 'Opens') + ' ' + buildOpening(site.id).label;
+      var condition = asset && Number.isFinite(Number(asset.condition)) ? clamp(asset.condition, 0, 100) : null;
+      var showCondition = overlay === 'condition' && condition !== null;
+      if (showCondition) label += '. ' + conditionHeading + ': ' + Math.round(condition) + '%';
+      var color = status === 'fault' ? '#ffc3ac' : status === 'service' || status === 'building' ? '#ffe2a1' : selected ? '#dafff1' : '#d0e7da';
+      var labelLine = status === 'operating' || status === 'idle' && power ? power < 0 ? t('renewables.tycoon.scene.charging', 'Charging') + ' ' + formatPower(power) : formatPower(power) : statusLabel;
+      if (showCondition) labelLine = statusLabel;
+      function select() { if (props.onSelect) props.onSelect(site.id); }
+      function keySelect(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } }
+      var labelLayout = labelLayouts[site.id];
+      siteLabels.push(h('g', { key: 'label-' + site.id, transform: 'translate(' + point.x + ' ' + (point.y + 49) + ') scale(' + (1 / camera.zoom) + ')', visibility: labelLayout.visible ? 'visible' : 'hidden', role: 'button', tabIndex: -1, 'aria-label': label, 'aria-pressed': selected, 'data-tycoon-site-label': site.id, 'data-visible': labelLayout.visible, 'data-priority': labelLayout.priority, 'data-label-scale': 1 / camera.zoom, onClick: select, onKeyDown: keySelect, style: { cursor: 'pointer' } },
+        h('rect', { x: -80, y: -2, width: 160, height: 43, rx: 10, fill: selected ? '#173e48' : '#244c53', stroke: selected ? '#a5f3ce' : '#8eb4a3', strokeWidth: selected ? 2 : 0.8, opacity: 0.98 }),
+        h('text', { x: showCondition ? -68 : 0, y: 15, textAnchor: showCondition ? 'start' : 'middle', fill: '#f0f8e9', fontSize: showCondition ? 12.5 : 14, fontWeight: 650, pointerEvents: 'none' }, site.name),
+        h('text', { x: 0, y: showCondition ? 29 : 32, textAnchor: 'middle', fill: color, fontSize: 12, pointerEvents: 'none' }, labelLine),
+        showCondition ? h('g', { 'data-tycoon-condition': site.id, 'data-value': condition, 'data-status': status, 'aria-hidden': true, pointerEvents: 'none' },
+          h('text', { x: 68, y: 15, textAnchor: 'end', fill: color, fontSize: 11.5, fontWeight: 700 }, Math.round(condition) + '%'),
+          h('rect', { x: -68, y: 35, width: 136, height: 3.5, rx: 1.75, fill: '#102f38', stroke: '#8eafa1', strokeWidth: 0.5 }),
+          h('rect', { x: -68, y: 35, width: 136 * condition / 100, height: 3.5, rx: 1.75, fill: color })) : null));
+      return h('g', { key: site.id, transform: 'translate(' + point.x + ' ' + point.y + ')', role: 'button', tabIndex: 0, 'aria-label': label, 'aria-pressed': selected, 'data-tycoon-site': site.id, 'data-status': status, 'data-condition': condition === null ? undefined : condition, 'data-condition-hour': condition === null ? undefined : n(frame.hour), onClick: select, onKeyDown: keySelect, onFocus: function () { setFocusedSiteId(site.id); if (camera.zoom > 1) focusSite(site.id); }, onBlur: function () { setFocusedSiteId(null); }, className: 'rn-tycoon-site' },
+        h('title', null, label),
+        h('ellipse', { cx: 0, cy: 2, rx: 94, ry: 44, fill: selected ? '#9fffe72b' : 'transparent', stroke: selected ? '#d2fff0' : 'transparent', strokeWidth: 3, className: 'rn-tycoon-focus' }),
+        polygon('-92,-4 0,-44 92,-4 0,42', asset ? '#85a58d' : '#91b29a', { opacity: 0.75, stroke: selected ? '#ceffe8' : '#608d7b', strokeWidth: 1.5, strokeDasharray: asset ? undefined : '5 5' }),
+        asset ? h('g', { opacity: status === 'building' ? buildStage === 'groundwork' ? 0.16 : buildStage === 'assembly' ? 0.7 : 0.96 : status === 'fault' ? 0.68 : 1 }, asset.type === 'wind' ? wind(site, asset) : asset.type === 'battery' ? battery(site, asset) : solar(site, asset)) : h('g', { transform: 'scale(' + (1 / camera.zoom) + ')', 'data-tycoon-vacant-marker': site.id },
+          line(-9, -16, 9, -16, '#315c58', 3), line(0, -25, 0, -7, '#315c58', 3),
+          h('text', { x: 0, y: 14, textAnchor: 'middle', fill: '#244f4d', fontSize: 17, fontWeight: 700 }, site.type === 'wind' ? t('renewables.tycoon.scene.wind', 'Wind') : site.type === 'battery' ? t('renewables.tycoon.scene.storage', 'Storage') : t('renewables.tycoon.scene.solar', 'Solar'))),
+        status === 'building' ? construction(site) : null,
+        asset ? connectionCabinet(site, asset) : null,
+        status === 'service' ? serviceWorksite(site) : null,
+        status === 'fault' ? h('g', { transform: 'translate(61 -47)' }, h('circle', { r: 15, fill: '#763b36', stroke: '#ffc4a3', strokeWidth: 2 }), h('text', { y: 6, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#ffdfbd' }, '!')) : null);
+    });
+    return h('div', { className: 'rn-tycoon-scene ' + (props.className || ''), style: { borderRadius: 20, overflow: 'hidden', background: night ? '#173642' : '#b7d9d6', border: '1px solid ' + (dark ? '#426969' : '#9fbdb4'), position: 'relative' } },
+      h('style', null, '.rn-tycoon-scene svg{display:block;width:100%;height:auto;aspect-ratio:1100/690}.rn-tycoon-site{cursor:pointer;outline:none}.rn-tycoon-site:focus .rn-tycoon-focus,.rn-tycoon-site:focus-visible .rn-tycoon-focus{stroke:#fff7bb;stroke-width:5;fill:#ffefb52a}.rn-tycoon-site:hover .rn-tycoon-focus{stroke:#c9ffe8;stroke-width:3}.rn-tycoon-map-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px 12px;background:#173e48;color:#e5f1e5;font:12px/1.4 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button{min-height:38px;min-width:38px;border:1px solid #7aa69c;border-radius:8px;padding:7px 10px;background:#244c53;color:#f0f8e9;font:600 12px/1.3 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button:hover:not(:disabled){background:#356367;border-color:#b4e7d3}.rn-tycoon-scene .rn-tycoon-map-controls button:disabled{opacity:.45}.rn-tycoon-map-zoom{min-width:37px;text-align:center;font-variant-numeric:tabular-nums}.rn-tycoon-map-pan{display:flex;gap:6px;align-items:center}.rn-tycoon-map-weather{display:flex;flex-wrap:wrap;gap:5px 14px;padding:8px 14px;background:#204750;color:#e5f1e5;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-weather strong{color:#fff1ba}.rn-tycoon-map-hint{width:100%;font-size:11px;color:#c7e0d6}.rn-tycoon-map-key{display:flex;flex-wrap:wrap;gap:7px 16px;padding:11px 16px;background:#173e48;color:#e5f1e5;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-key span{display:inline-flex;align-items:center;gap:7px}.rn-tycoon-map-key i{display:inline-block;width:22px;height:3px;border-radius:3px;flex-shrink:0}.rn-tycoon-map-note{margin-left:auto;opacity:.85}@media(max-width:420px){.rn-tycoon-map-key{padding:10px;gap:6px 12px;font-size:11px}.rn-tycoon-map-note{width:100%;margin-left:0}.rn-tycoon-map-controls{padding:8px;gap:5px}.rn-tycoon-scene .rn-tycoon-map-controls button{padding:7px 8px}.rn-tycoon-map-weather{padding:8px 10px}}'),
+      h('style', null, '.rn-tycoon-map-overlays{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-right:5px}.rn-tycoon-scene .rn-tycoon-map-overlays button[aria-pressed="true"],.rn-tycoon-scene .rn-tycoon-map-overlays button[aria-pressed="true"]:hover:not(:disabled){background:#d6f5e6;color:#153e45;border-color:#d6f5e6;box-shadow:inset 0 -3px 0 #4d8c76}.rn-tycoon-scene .rn-tycoon-map-overlays button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-scene svg{user-select:none;-webkit-user-select:none}.rn-tycoon-map-condition{display:flex;flex-wrap:wrap;gap:3px 16px;padding:8px 14px;background:#173e48;border-top:1px solid #426b69;color:#edf7e9;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-condition strong{color:#d6f5e6}.rn-tycoon-map-condition span{font-variant-numeric:tabular-nums}@media(max-width:420px){.rn-tycoon-map-overlays{width:100%;margin-right:0}.rn-tycoon-map-overlays button{flex:1}.rn-tycoon-map-condition{padding:8px 10px}}'),
+      h('style', null, '.rn-tycoon-map-service{display:flex;flex-wrap:wrap;gap:3px 13px;padding:8px 14px;background:#3b433b;border-top:1px solid #8f895f;color:#ffefcc;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-service strong{font-weight:700;color:#fff0ca}.rn-tycoon-map-service span{font-variant-numeric:tabular-nums}.rn-tycoon-service-progress{width:100%;height:4px;margin-top:2px;background:#697267;border-radius:3px;overflow:hidden}.rn-tycoon-service-progress>span{display:block;height:100%;background:#ffe1a0;border-radius:3px}@media(max-width:420px){.rn-tycoon-map-service{padding:8px 10px;gap:3px 8px}}'),
+      h('style', null, '.rn-tycoon-map-connection{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;padding:8px 14px;border-top:1px solid #50766d;background:#1c4549;color:#e8f5e7;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-connection strong{font-size:12px;color:#f0f9e8}.rn-tycoon-map-connection span{font-variant-numeric:tabular-nums}.rn-tycoon-map-connection[data-state=isolated]{background:#414738;border-color:#8f895f;color:#ffefcc}.rn-tycoon-map-connection[data-state=isolated] strong{color:#fff0ca}.rn-tycoon-map-connection[data-reason=fault]{background:#513e3b;border-color:#aa7b67;color:#ffe5d4}.rn-tycoon-map-connection[data-reason=fault] strong{color:#ffe8d6}@media(max-width:420px){.rn-tycoon-map-connection{padding:8px 10px}}'),
+      h('style', null, '.rn-tycoon-service-stage{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;width:100%;margin-top:2px}.rn-tycoon-service-stage strong{display:inline-block;border:1px solid #b3a274;border-radius:5px;padding:1px 6px;background:#54523d;font-size:10px;line-height:1.5}.rn-tycoon-service-stage span{font-size:10px}'),
+      h('style', null, '.rn-tycoon-map-build{display:flex;flex-wrap:wrap;gap:3px 13px;padding:8px 14px;background:#354842;border-top:1px solid #8e9d7d;color:#f2efd6;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-build strong{color:#fff0ca}.rn-tycoon-map-build span{font-variant-numeric:tabular-nums}@media(max-width:420px){.rn-tycoon-map-build{padding:8px 10px;gap:3px 8px}}'),
+      h('style', null, '.rn-tycoon-battery-gauge{display:grid;gap:5px;padding:9px 14px;background:#204750;border-top:1px solid #52776c;color:#e6f5e9;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-battery-reading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px}.rn-tycoon-battery-reading strong{color:#eaffdf;font-size:12px;font-variant-numeric:tabular-nums}.rn-tycoon-battery-track{position:relative;height:9px;border:1px solid #70978b;border-radius:5px;background:#12333d;overflow:hidden}.rn-tycoon-battery-level{height:100%;background:#7ce2b5}.rn-tycoon-battery-reserve{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed #ffe0a0;transform:translateX(-1px)}.rn-tycoon-battery-note{font-size:10px;color:#d2e9dd}@media(max-width:420px){.rn-tycoon-battery-gauge{padding:9px 10px}}'),
+      h('style', null, '.rn-tycoon-network{display:grid;gap:6px;padding:8px 14px;background:#183e47;border-top:1px solid #50766d;color:#e9f4e8;font:11px/1.4 system-ui,sans-serif}.rn-tycoon-network-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}.rn-tycoon-network-heading strong{font-size:11px}.rn-tycoon-network-readings{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px}.rn-tycoon-network-readings span{display:block;color:#c9e0d5;font-size:10px}.rn-tycoon-network-readings strong{display:block;font-size:12px;font-variant-numeric:tabular-nums;color:#f2f8e7}.rn-tycoon-network-unused{border-left:4px solid #d5b577;padding-left:6px;background:repeating-linear-gradient(135deg,transparent,transparent 5px,#e4c58a0e 5px,#e4c58a0e 7px)}.rn-tycoon-scene .rn-tycoon-network button{min-height:32px;padding:5px 9px;border:1px solid #81b3a0;border-radius:7px;background:#28575a;color:#eff8e7;font:600 11px/1.4 system-ui,sans-serif;cursor:pointer}.rn-tycoon-network button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-substation{outline:none;cursor:pointer}.rn-tycoon-substation:hover .rn-tycoon-substation-focus{stroke:#baf1da;fill:#baf1da12}.rn-tycoon-substation:focus .rn-tycoon-substation-focus,.rn-tycoon-substation:focus-visible .rn-tycoon-substation-focus{stroke:#fff1b0;fill:#fff1b01f;stroke-width:4}@media(max-width:420px){.rn-tycoon-network{padding:8px 10px}.rn-tycoon-network-readings{gap:5px}.rn-tycoon-network-readings strong{font-size:11px}.rn-tycoon-network-readings span{font-size:9px}}'),
+      h('div', { className: 'rn-tycoon-map-controls', role: 'group', 'aria-label': t('renewables.tycoon.scene.mapControls', 'Map view controls') },
+        h('div', { className: 'rn-tycoon-map-overlays', role: 'group', 'aria-label': t('renewables.tycoon.scene.overlayControls', 'Map information') },
+          h('button', { type: 'button', 'data-tycoon-overlay': 'power', 'aria-pressed': overlay === 'power', onClick: function () { setOverlay('power'); } }, t('renewables.tycoon.scene.powerOverlay', 'Power flow')),
+          h('button', { type: 'button', 'data-tycoon-overlay': 'condition', 'aria-pressed': overlay === 'condition', onClick: function () { setOverlay('condition'); } }, t('renewables.tycoon.scene.conditionOverlay', 'Equipment condition'))),
+        h('button', { type: 'button', 'data-tycoon-zoom': 'out', 'aria-label': t('renewables.tycoon.scene.zoomOut', 'Zoom out'), disabled: camera.zoom <= 1, onClick: function () { zoomMap(-0.5); } }, '−'),
+        h('span', { className: 'rn-tycoon-map-zoom', 'data-tycoon-zoom-level': camera.zoom, 'aria-live': 'polite', 'aria-atomic': true }, Math.round(camera.zoom * 100) + '%'),
+        h('button', { type: 'button', 'data-tycoon-zoom': 'in', 'aria-label': t('renewables.tycoon.scene.zoomIn', 'Zoom in'), disabled: camera.zoom >= 2.5, onClick: function () { zoomMap(0.5); } }, '+'),
+        h('button', { type: 'button', 'data-tycoon-focus-site': true, disabled: !sites.some(function (site) { return site.id === props.selectedId; }), onClick: function () { focusSite(props.selectedId); } }, t('renewables.tycoon.scene.focusSelected', 'Focus selected')),
+        canInspectEquipment ? h('button', { type: 'button', 'data-tycoon-inspect-equipment': 'native', onClick: function () { props.onInspectEquipment(selectedSite.id); } }, t('renewables.tycoon.scene.inspectEquipment', 'Inspect equipment')) : null,
+        h('button', { type: 'button', 'data-tycoon-zoom': 'reset', disabled: camera.zoom === 1, onClick: function () { setCamera({ zoom: 1, x: 550, y: 345 }); } }, t('renewables.tycoon.scene.fullMap', 'Full map')),
+        camera.zoom > 1 ? h('div', { className: 'rn-tycoon-map-pan', role: 'group', 'aria-label': t('renewables.tycoon.scene.panControls', 'Pan map') }, [['left', -1, 0, '←', t('renewables.tycoon.scene.panLeft', 'Pan map left')], ['up', 0, -1, '↑', t('renewables.tycoon.scene.panUp', 'Pan map up')], ['down', 0, 1, '↓', t('renewables.tycoon.scene.panDown', 'Pan map down')], ['right', 1, 0, '→', t('renewables.tycoon.scene.panRight', 'Pan map right')]].map(function (button) { return h('button', { key: button[0], type: 'button', 'data-tycoon-pan': button[0], 'aria-label': button[4], onClick: function () { panMap(button[1], button[2]); } }, button[3]); })) : null,
+        camera.zoom > 1 ? h('span', { className: 'rn-tycoon-map-hint', id: uid + '-pan-help' }, t('renewables.tycoon.scene.panHelp', 'Drag the map or use the arrow buttons to explore.')) : null),
+      h('div', { className: 'rn-tycoon-map-weather' },
+        h('span', null, t('renewables.tycoon.scene.windResource', 'Wind') + ' ', h('strong', { 'data-tycoon-weather-wind': true }, windSpeed.toFixed(1) + ' m/s')),
+        h('span', null, t('renewables.tycoon.scene.sunResource', 'Sunlight') + ' ', h('strong', { 'data-tycoon-weather-sun': true }, Math.round(irradiance * 100) + '%')),
+        h('span', { 'data-tycoon-weather': true }, night ? t('renewables.tycoon.scene.night', 'Night') : overcast ? t('renewables.tycoon.scene.cloudy', 'Cloud cover') : dawn ? t('renewables.tycoon.scene.lowSun', 'Low sun') : t('renewables.tycoon.scene.day', 'Daylight'))),
+      h('div', Object.assign({ className: 'rn-tycoon-network', 'aria-label': t('renewables.tycoon.scene.networkAtHour', 'Network at selected hour') }, networkAttributes('native')),
+        h('div', { className: 'rn-tycoon-network-heading' }, h('strong', null, t('renewables.tycoon.scene.networkAtHour', 'Network at selected hour') + ' · ' + networkHeading), canInspectDispatch ? h('button', { type: 'button', 'data-tycoon-inspect-dispatch': 'native', onClick: inspectDispatch }, inspectDispatchLabel) : null),
+        h('div', { className: 'rn-tycoon-network-readings' },
+          h('div', null, h('strong', null, networkServed.toFixed(1) + ' / ' + networkDemand.toFixed(1)), h('span', null, t('renewables.tycoon.scene.servedDemandUnits', 'kW served / demand'))),
+          h('div', null, h('strong', null, formatPower(networkGap)), h('span', null, t('renewables.tycoon.scene.unmetDemand', 'Unmet demand'))),
+          h('div', { className: 'rn-tycoon-network-unused' }, h('strong', null, formatPower(networkCurtailed)), h('span', null, t('renewables.tycoon.scene.curtailedUnused', 'Curtailed · not used'))))),
+      selectedConnection && selectedSite ? h('div', { className: 'rn-tycoon-map-connection', 'data-tycoon-connection-summary': true, 'data-site': selectedSite.id, 'data-state': selectedConnection.state, 'data-reason': selectedConnection.reason },
+        h('strong', null, selectedSite.name + ' · ' + selectedConnection.label), h('span', null, selectedConnection.detail + ' · ' + serviceContext)) : null,
+      selectedBattery ? h('div', { className: 'rn-tycoon-battery-gauge', 'data-tycoon-battery-gauge': selectedSite.id, 'data-stored': selectedStored, 'data-capacity': selectedCapacity, 'data-fraction': selectedFill, 'data-reserve': reserveFraction },
+        h('div', { className: 'rn-tycoon-battery-reading' }, h('span', { id: uid + '-battery-stored' }, t('renewables.tycoon.scene.storedEndHour', 'Stored at end of selected hour')), h('strong', null, selectedStored.toFixed(1) + ' / ' + selectedCapacity.toFixed(1) + ' kWh · ' + (selectedFill * 100).toFixed(1) + '%')),
+        h('div', { className: 'rn-tycoon-battery-track', role: 'meter', 'aria-labelledby': uid + '-battery-stored', 'aria-valuemin': 0, 'aria-valuemax': selectedCapacity, 'aria-valuenow': selectedStored, 'aria-valuetext': selectedStored.toFixed(1) + ' ' + t('renewables.tycoon.scene.kwhStored', 'kWh stored') }, h('div', { className: 'rn-tycoon-battery-level', 'data-tycoon-battery-level': selectedSite.id, style: { width: selectedFill * 100 + '%' } }), h('span', { className: 'rn-tycoon-battery-reserve', 'data-tycoon-battery-reserve': selectedSite.id, 'data-reserve': reserveFraction, style: { left: reserveFraction * 100 + '%' }, 'aria-hidden': true })),
+        h('span', { className: 'rn-tycoon-battery-note' }, t('renewables.tycoon.scene.reserveTarget', 'Reserve target') + ': ' + (selectedCapacity * reserveFraction).toFixed(1) + ' kWh · ' + t('renewables.tycoon.scene.reserveRelease', 'Essential needs may draw on the reserve.'))) : null,
+      selectedAsset && selectedSite && selectedAsset.status === 'building' ? h('div', { className: 'rn-tycoon-map-build', 'data-tycoon-build-summary': true, 'data-site': selectedSite.id, 'data-stage': buildStage, 'data-progress': buildProgress, 'data-ready-month': selectedOpening.month },
+        h('strong', null, t('renewables.tycoon.scene.construction', 'Construction') + ' · ' + buildStageLabel), h('span', null, t('renewables.tycoon.scene.opens', 'Opens') + ' ' + selectedOpening.label),
+        h('span', null, (campaign.phase && campaign.phase !== 'planning' ? t('renewables.tycoon.scene.buildReplay', 'Illustrative stages · replay hour') : t('renewables.tycoon.scene.buildForecast', 'Illustrative stages · forecast hour')) + ' · ' + t('renewables.tycoon.scene.buildOffline', 'Offline for the entire construction month'))) : null,
+      overlay === 'condition' ? h('div', { className: 'rn-tycoon-map-condition', 'data-tycoon-condition-summary': true, 'aria-live': 'polite', 'aria-atomic': true },
+        h('strong', null, conditionHeading),
+        h('span', null, selectedAsset && selectedSite ? selectedSite.name + ': ' + Math.round(clamp(selectedAsset.condition, 0, 100)) + '% · ' + (statusText[selectedAsset.status] || statusText.idle) : t('renewables.tycoon.scene.selectCondition', 'Select owned equipment to inspect its condition.'))) : null,
+      selectedAsset && selectedSite && selectedAsset.status === 'service' ? h('div', { className: 'rn-tycoon-map-service', 'data-tycoon-service-summary': true, 'data-site': selectedSite.id, 'data-stage': serviceStage, 'data-elapsed': serviceElapsed, 'data-remaining': serviceRemaining },
+        h('strong', null, selectedSite.name + ' · ' + serviceContext), h('span', null, serviceElapsedText + ' · ' + serviceRemainingText), h('span', null, t('renewables.tycoon.scene.serviceOffline', 'Offline for service') + ' · ' + serviceReturnText),
+        h('div', { className: 'rn-tycoon-service-stage' }, h('strong', { 'data-tycoon-service-stage': serviceStage }, serviceStageLabel), h('span', null, serviceStageContext)),
+        h('div', { className: 'rn-tycoon-service-progress', role: 'progressbar', 'aria-label': t('renewables.tycoon.scene.serviceProgress', 'Service time elapsed for') + ' ' + selectedSite.name, 'aria-valuemin': 0, 'aria-valuemax': 48, 'aria-valuenow': serviceElapsed, 'aria-valuetext': serviceElapsedText + ', ' + serviceRemainingText }, h('span', { style: { width: serviceElapsed / 48 * 100 + '%' } }))) : null,
+      h('svg', { viewBox: (camera.x - 550 / camera.zoom) + ' ' + (camera.y - 345 / camera.zoom) + ' ' + 1100 / camera.zoom + ' ' + 690 / camera.zoom, xmlns: 'http://www.w3.org/2000/svg', role: 'group', tabIndex: 0, 'aria-labelledby': uid + '-title ' + uid + '-description', 'aria-describedby': camera.zoom > 1 ? uid + '-pan-help' : undefined, 'data-tycoon-map': 'true', 'data-tycoon-overlay': overlay, 'data-hour': hour, 'data-night': night ? 'true' : 'false', 'data-animation': active ? 'on' : 'off', 'data-zoom': camera.zoom, onKeyDown: mapKey, onPointerDown: beginPan, onPointerMove: movePan, onPointerUp: endPan, onPointerCancel: endPan, onLostPointerCapture: endPan, style: { cursor: camera.zoom > 1 ? 'grab' : undefined, touchAction: camera.zoom > 1 ? 'none' : 'pan-y' } },
+        h('title', { id: uid + '-title' }, title), h('desc', { id: uid + '-description' }, description),
+        h('defs', null,
+          h('linearGradient', { id: uid + '-sky', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: skyTop }), h('stop', { offset: '100%', stopColor: skyBottom })),
+          h('linearGradient', { id: uid + '-sea', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#31596b' : '#73b9bb' }), h('stop', { offset: '100%', stopColor: night ? '#183d53' : '#397e93' })),
+          h('linearGradient', { id: uid + '-grass', x1: '0', y1: '0', x2: '0.7', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#376d62' : '#9bc299' }), h('stop', { offset: '100%', stopColor: night ? '#274d4a' : '#598c78' })),
+          h('linearGradient', { id: uid + '-tower', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#99b2b1' }), h('stop', { offset: '45%', stopColor: '#ecf3e9' }), h('stop', { offset: '100%', stopColor: '#b3cbc6' })),
+          h('linearGradient', { id: uid + '-solar-glass', x1: '0', y1: '0', x2: '0.8', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#163549' : '#173f67' }), h('stop', { offset: '55%', stopColor: night ? '#25465c' : '#2f7093' }), h('stop', { offset: '100%', stopColor: night ? '#153344' : '#174b70' })),
+          h('linearGradient', { id: uid + '-nacelle', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#d8e6db' }), h('stop', { offset: '100%', stopColor: '#8daea6' })),
+          h('linearGradient', { id: uid + '-cabinet-side', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#8fbbb1' }), h('stop', { offset: '100%', stopColor: '#527c7b' })),
+          h('linearGradient', { id: uid + '-cabinet-top', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#d2e4d6' }), h('stop', { offset: '100%', stopColor: '#95bbb2' })),
+          h('radialGradient', { id: uid + '-sun' }, h('stop', { offset: '0%', stopColor: '#fff3b2', stopOpacity: 0.7 }), h('stop', { offset: '100%', stopColor: '#fff3b2', stopOpacity: 0 })),
+          h('pattern', { id: uid + '-curtail-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('rect', { width: 6, height: 6, fill: '#654f3b' }), line(0, 0, 0, 6, '#d9bb7d', 2)),
+          h('marker', { id: uid + '-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 3, markerHeight: 3, orient: 'auto' }, polygon('0,0 8,4 0,8', '#ffe5a0')),
+          h('marker', { id: uid + '-charge-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 3, markerHeight: 3, orient: 'auto-start-reverse' }, polygon('0,0 8,4 0,8', '#c5a5ff'))),
+        h('g', { 'aria-hidden': true },
+          h('rect', { width: 1100, height: 690, fill: 'url(#' + uid + '-sky)' }),
+          night ? h('g', { fill: '#cbe5e3' }, [[80,70],[190,45],[295,109],[442,40],[530,91],[724,50],[960,66],[1020,123]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: index % 2 ? 1.7 : 2.5, opacity: 0.8 }); }), h('circle', { cx: 900, cy: 80, r: 24, fill: '#d8e8db' }), h('circle', { cx: 910, cy: 73, r: 23, fill: skyTop })) : h('g', null, h('circle', { cx: 130 + hour / 24 * 800, cy: 110 - daylight * 55, r: 100, fill: 'url(#' + uid + '-sun)' }), h('circle', { cx: 130 + hour / 24 * 800, cy: 110 - daylight * 55, r: 25, fill: overcast ? '#d9dfc9' : '#fff1b0', opacity: overcast ? 0.55 : 0.95 })),
+          h('path', { d: 'M 0 194 L 65 174 L 100 185 L 180 149 L 242 178 L 321 136 L 420 187 L 478 160 L 561 193 L 663 145 L 721 171 L 780 151 L 881 189 L 981 157 L 1100 190 V 263 H 0 Z', fill: night ? '#355563' : '#7ea9a6', opacity: 0.45 }),
+          h('path', { d: 'M 0 222 Q 145 204 298 222 T 610 219 T 945 221 T 1100 211 V 690 H 0 Z', fill: 'url(#' + uid + '-sea)' }),
+          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', fill: night ? '#769298' : '#f1f2e5', opacity: overcast ? 0.65 : 0.43, 'data-tycoon-cloud': index }, h('ellipse', { rx: overcast ? 104 : 69, ry: 14 }), h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19 }), h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17 })); }),
+          h('g', { stroke: night ? '#71a1ad' : '#c8ece1', strokeWidth: 2, fill: 'none', opacity: 0.35 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          h('path', { d: 'M 111 297 Q 163 267 258 239 L 460 184 Q 578 174 676 202 L 982 321 Q 1026 346 1006 421 L 936 555 Q 909 592 838 610 L 588 659 Q 518 675 459 648 L 165 511 Q 87 474 86 403 Z', fill: '#244f584d', transform: 'translate(9 11)' }),
+          h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: night ? '#426c68' : '#879d83', transform: 'translate(0 8)', 'data-tycoon-shore-depth': true }),
+          h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: '#c6c9a4' }),
+          h('path', { d: 'M 99 424 Q 107 468 166 497 L 463 637 Q 520 663 587 649 L 838 601 Q 916 579 939 542', fill: 'none', stroke: night ? '#86b4aa' : '#e7e5c0', strokeWidth: 2.2, opacity: 0.45 }),
+          h('path', { d: 'M 130 286 L 273 234 L 469 181 Q 569 169 667 198 L 965 315 Q 1002 338 987 402 L 921 529 Q 891 564 829 581 L 584 629 Q 519 642 465 619 L 177 486 Q 106 453 104 391 Z', fill: 'url(#' + uid + '-grass)' }),
+          h('path', { d: 'M 145 322 Q 255 278 367 289 T 598 295 T 866 361 M 169 434 Q 282 388 420 409 M 671 473 Q 807 464 942 412', stroke: night ? '#7ea58b' : '#d0dbac', strokeWidth: 2, opacity: 0.28, fill: 'none' }),
+          h('path', { d: 'M 244 363 Q 365 374 470 426 L 587 449 L 727 429 L 876 375 M 470 426 L 458 520 L 598 575 L 856 528 M 587 449 L 600 296 L 764 287', fill: 'none', stroke: '#9ea993', strokeWidth: 17, strokeLinejoin: 'round' }),
+          h('path', { d: 'M 244 363 Q 365 374 470 426 L 587 449 L 727 429 L 876 375 M 470 426 L 458 520 L 598 575 L 856 528 M 587 449 L 600 296 L 764 287', fill: 'none', stroke: '#e2dbb6', strokeWidth: 12, strokeLinejoin: 'round' }),
+          [[146,366,.9],[203,285,.75],[348,228,.75],[504,204,.8],[681,228,.85],[936,353,.8],[973,414,.7],[192,460,.9],[342,545,.85],[779,589,.6],[930,481,.6],[113,412,.7]].map(function (item) { return tree(item[0],item[1],item[2]); }),
+          windsock(),
+          h('g', { ref: function (node) { refs.current.ribbons = node; }, stroke: night ? '#8bb9c6' : '#e7fff0', strokeWidth: 2, fill: 'none', strokeDasharray: '16 54', opacity: clamp(motion.current.weatherWind / 20, 0, 0.5) }, h('path', { d: 'M 31 241 Q 96 215 182 227 T 329 215 M 754 162 Q 822 143 900 160 T 1079 159' }))),
+        h('g', null, sites.map(function (site, index) { var point = sitePoint(site, index), asset = assetBySite[site.id], cable = { x0: point.x, y0: point.y + 12, x1: point.x * 0.55 + 575 * 0.45, y1: point.y + 49, x2: 575, y2: 428 }; return flow(site.id, 'M ' + cable.x0 + ' ' + cable.y0 + ' Q ' + cable.x1 + ' ' + cable.y1 + ' ' + cable.x2 + ' ' + cable.y2, asset ? n(asset.power) : 0, !!asset, cable); }), flow('town', 'M 575 428 Q 569 505 606 552', Math.max(0,n(frame.served)), true)),
+        h('g', null,
+          h('g', { className: canInspectDispatch ? 'rn-tycoon-substation' : undefined, role: canInspectDispatch ? 'button' : undefined, tabIndex: canInspectDispatch ? 0 : undefined, 'aria-label': canInspectDispatch ? inspectDispatchLabel : undefined, 'aria-hidden': canInspectDispatch ? undefined : true, 'data-tycoon-inspect-dispatch': canInspectDispatch ? 'substation' : undefined, onClick: canInspectDispatch ? inspectDispatch : undefined, onKeyDown: canInspectDispatch ? dispatchKey : undefined, onFocus: canInspectDispatch ? function () { setFocusedSiteId(null); if (camera.zoom > 1) setCamera(function (old) { return fitCamera({ zoom: old.zoom, x: 575, y: 425 }); }); } : undefined },
+          h('path', { className: 'rn-tycoon-substation-focus', d: 'M 514 407 L 574 370 L 639 410 L 636 478 L 519 478 Z', fill: 'transparent', stroke: 'transparent', strokeWidth: 3 }),
+          polygon('524,413 575,392 631,424 579,448', '#a4b9a4', { stroke: '#729c87', strokeWidth: 2 }),
+          polygon('545,390 575,379 598,392 567,404', '#c2d4c4'), polygon('545,390 567,404 567,435 545,422', '#739a8b'), polygon('567,404 598,392 598,421 567,435', '#a5beaa'),
+          [0,1,2].map(function (index) { return h('g', { key: index, transform: 'translate(' + (586 + index * 13) + ' ' + (422 - index * 4) + ')' }, line(0, 0, 0, -25, '#43656a', 4), line(-6, -18, 6, -18, '#9ac8bf', 3), line(-6, -23, 6, -23, '#9ac8bf', 3)); }),
+          h('rect', { x: 530, y: 448, width: 90, height: 22, rx: 8, fill: '#244c53' }), h('text', { x: 575, y: 463, textAnchor: 'middle', fill: '#ecf6e6', fontSize: 12, fontWeight: 650 }, t('renewables.tycoon.scene.substation', 'Substation'))),
+          h('g', { 'aria-hidden': true },
+          building(555,566,.8,'#78958d'), building(606,539,.95,'#558f91',true), building(666,567,.75,'#9d9b7a'), building(610,592,.65,'#5f8f88'),
+          h('g', { transform: 'translate(548 611)' }, h('rect', { width: 133, height: 25, rx: 9, fill: '#244c53' }), h('text', { x: 66.5, y: 17, textAnchor: 'middle', fill: '#e8f3dd', fontSize: 13 }, t('renewables.tycoon.scene.harbor', 'Harbor community'))),
+          h('g', { transform: 'translate(163 508)' }, polygon('-4,0 18,-8 66,20 43,30', '#8a8e77'), line(5, 3, 50, 28, '#bdc0a0', 2), h('path', { d: 'M 27 37 Q 64 18 87 29 L 72 44 Q 46 53 27 37 Z', fill: '#d9e8d2' }), line(58, 30, 58, 13, '#435e65', 2), polygon('59,14 76,28 59,30', '#d3d99b')))),
+        siteGroups, siteLabels,
+        h('g', { 'aria-hidden': true, transform: 'translate(30 25)', visibility: camera.zoom > 1 ? 'hidden' : 'visible', 'data-tycoon-map-hud': 'weather', pointerEvents: 'none' }, h('rect', { width: 245, height: 59, rx: 13, fill: '#183f49', opacity: 0.94 }), h('text', { x: 16, y: 24, fill: '#eaf4e6', fontSize: 18, fontWeight: 700 }, t('renewables.tycoon.scene.region', 'North Harbor')), h('text', { x: 16, y: 44, fill: '#bdd8ce', fontSize: 13 }, String(hour).padStart(2,'0') + ':00 · ' + (night ? t('renewables.tycoon.scene.night', 'Night') : overcast ? t('renewables.tycoon.scene.cloudy', 'Cloud cover') : dawn ? t('renewables.tycoon.scene.lowSun', 'Low sun') : t('renewables.tycoon.scene.day', 'Daylight')) + ' · ' + windSpeed.toFixed(1) + ' m/s')),
+        h('g', Object.assign({ 'aria-hidden': true, transform: 'translate(820 25)', visibility: camera.zoom > 1 ? 'hidden' : 'visible', 'data-tycoon-map-hud': 'network', pointerEvents: 'none' }, networkAttributes('map')),
+          h('rect', { width: 250, height: 116, rx: 12, fill: networkMode === 'gap' ? '#513f3d' : '#244b50', stroke: networkMode === 'gap' ? '#e0b49a' : '#93b7a2' }),
+          h('text', { x: 13, y: 22, fill: '#fff0cd', fontSize: 14, fontWeight: 700 }, networkHeading),
+          h('text', { x: 13, y: 42, fill: '#e9f4df', fontSize: 12 }, networkServed.toFixed(1) + ' / ' + networkDemand.toFixed(1) + ' ' + t('renewables.tycoon.scene.servedDemandUnits', 'kW served / demand')),
+          h('rect', { x: 13, y: 51, width: 224, height: 7, rx: 3.5, fill: networkGap > 0 ? '#b87e70' : '#52756b' }),
+          h('rect', { x: 13, y: 51, width: 224 * servedFraction, height: 7, rx: 3.5, fill: '#a8e4b9', 'data-tycoon-demand-coverage': servedFraction }),
+          h('text', { x: 13, y: 77, fill: networkGap > 0 ? '#ffdac0' : '#d5e8d8', fontSize: 12 }, t('renewables.tycoon.scene.unmetDemand', 'Unmet demand') + ': ' + formatPower(networkGap)),
+          h('rect', { x: 13, y: 88, width: 15, height: 16, rx: 2, fill: 'url(#' + uid + '-curtail-hatch)' }),
+          h('text', { x: 36, y: 101, fill: '#f4dfb1', fontSize: 11.5 }, formatPower(networkCurtailed) + ' ' + t('renewables.tycoon.scene.curtailedUnused', 'Curtailed · not used')))),
+      h('div', { className: 'rn-tycoon-map-key' }, h('span', null, h('i', { style: { background: '#ffe5a0' } }), t('renewables.tycoon.scene.delivering', 'Delivering electricity')), h('span', null, h('i', { style: { background: '#c5a5ff' } }), t('renewables.tycoon.scene.charging', 'Charging')), h('span', null, h('i', { style: { background: '#8bb0a0', border: '1px dashed #d2e4cd', height: 8 } }), t('renewables.tycoon.scene.available', 'Available site')), h('span', { className: 'rn-tycoon-map-note' }, t('renewables.tycoon.scene.illustrative', 'Illustrative motion · simulated hourly power'))));
+  };
+})();
+
+// Source: stem_lab/renewables_tycoon_view.js
+(function () {
+  'use strict';
+
+  window.StemLab = window.StemLab || {};
+  var CSS = [
+    '.rn-tycoon{--ty-bg:#eef5f1;--ty-card:#fff;--ty-soft:#f3f7f4;--ty-ink:#153c32;--ty-muted:#4c665e;--ty-line:#bdcec5;--ty-green:#116444;--ty-green-ink:#fff;--ty-gold:#7d5410;--ty-gold-bg:#fff1d4;--ty-bad:#a63532;--ty-blue:#245e86;color:var(--ty-ink);background:var(--ty-bg);border:1px solid var(--ty-line);border-radius:20px;padding:clamp(12px,2.3vw,28px);font-family:inherit;line-height:1.5;isolation:isolate}',
+    '.rn-tycoon[data-theme=dark]{--ty-bg:#0c211c;--ty-card:#142f26;--ty-soft:#1a392f;--ty-ink:#effbf4;--ty-muted:#b3cec0;--ty-line:#507566;--ty-green:#a5e6bf;--ty-green-ink:#123c28;--ty-gold:#ffdb8c;--ty-gold-bg:#443717;--ty-bad:#ffb2aa;--ty-blue:#a4d6fa}',
+    '.rn-tycoon[data-contrast=true]{--ty-bg:#000;--ty-card:#000;--ty-soft:#111;--ty-ink:#fff;--ty-muted:#fff;--ty-line:#fff;--ty-green:#ffff00;--ty-green-ink:#000;--ty-gold:#ffff00;--ty-gold-bg:#000;--ty-bad:#ffb2aa;--ty-blue:#00ffff}',
+    '.rn-tycoon *{box-sizing:border-box}.rn-tycoon h1,.rn-tycoon h2,.rn-tycoon h3,.rn-tycoon p{margin:0}.rn-tycoon h1{font-size:clamp(26px,3.5vw,42px);line-height:1.12;letter-spacing:-.035em}.rn-tycoon h2{font-size:21px;line-height:1.3;letter-spacing:-.025em}.rn-tycoon h3{font-size:17px;line-height:1.35}.rn-tycoon button,.rn-tycoon input,.rn-tycoon select{font:inherit}.rn-tycoon button,.rn-tycoon select{min-height:42px}.rn-tycoon button{border:1px solid var(--ty-line);border-radius:10px;background:var(--ty-card);color:var(--ty-ink);padding:9px 13px;cursor:pointer;font-weight:650;line-height:1.3}.rn-tycoon button:hover:not(:disabled){border-color:var(--ty-green);background:var(--ty-soft)}.rn-tycoon button:disabled{cursor:not-allowed;opacity:.65}.rn-tycoon :focus-visible{outline:3px solid var(--ty-blue);outline-offset:3px}.rn-tycoon .ty-primary{background:var(--ty-green);color:var(--ty-green-ink);border-color:var(--ty-green)}.rn-tycoon .ty-primary:hover:not(:disabled){background:var(--ty-green);filter:brightness(1.08)}.rn-tycoon input[type=text],.rn-tycoon select{width:100%;border:1px solid var(--ty-line);border-radius:8px;padding:9px 10px;color:var(--ty-ink);background:var(--ty-card);min-width:0}.rn-tycoon input[type=range]{width:100%;accent-color:var(--ty-green);min-height:28px;margin:0}.rn-tycoon input[type=checkbox],.rn-tycoon input[type=radio]{accent-color:var(--ty-green);width:19px;height:19px;flex:0 0 19px}.rn-tycoon label{cursor:pointer}.rn-tycoon small{font-size:12px;color:var(--ty-muted)}',
+    '.ty-topline,.ty-row,.ty-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.ty-topline{margin-bottom:22px}.ty-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.ty-eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:800;color:var(--ty-muted)}.ty-brand{display:flex;gap:9px;align-items:center;font-size:13px;font-weight:750;letter-spacing:.025em}.ty-brand-mark{background:var(--ty-green);color:var(--ty-green-ink);width:31px;height:31px;border-radius:9px;display:grid;place-items:center;font-size:20px}.ty-subtitle{color:var(--ty-muted);font-size:14px;max-width:65ch;margin-top:9px!important}.ty-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:end;margin-bottom:24px}.ty-hero-stats{display:flex;gap:10px;flex-wrap:wrap}.ty-hero-stat{background:var(--ty-card);border:1px solid var(--ty-line);border-radius:13px;padding:13px 17px;min-width:125px}.ty-hero-stat strong{display:block;font-size:23px;line-height:1.3;letter-spacing:-.04em}.ty-hero-stat span{font-size:11px;color:var(--ty-muted)}.ty-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:750;border:1px solid var(--ty-line);background:var(--ty-soft)}.ty-chip-gold{background:var(--ty-gold-bg);border-color:var(--ty-gold);color:var(--ty-gold)}.ty-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;margin:14px 0 3px}.ty-months span{height:5px;background:var(--ty-line);border-radius:6px}.ty-months span[data-past=true]{background:var(--ty-green)}.ty-months span[data-current=true]{background:var(--ty-gold)}',
+    '.ty-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr);gap:18px;align-items:start}.ty-stack{display:grid;gap:18px;min-width:0}.ty-card{border:1px solid var(--ty-line);background:var(--ty-card);border-radius:16px;padding:18px;min-width:0}.ty-section-head{margin-bottom:15px}.ty-section-head h2{font-size:18px}.ty-section-head p{font-size:12px;color:var(--ty-muted);margin-top:3px}.ty-scene-card{padding:0;overflow:hidden}.ty-scene-head{padding:17px 18px 0}.ty-map{position:relative;background:#dcece6;overflow:hidden}.ty-map>svg{display:block;width:100%;height:auto;max-height:550px}.ty-scene-footer{padding:15px 18px 17px;border-top:1px solid var(--ty-line);display:grid;gap:14px}.ty-time-controls{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px}.ty-clock{font-size:25px;font-variant-numeric:tabular-nums;font-weight:750;letter-spacing:-.03em;min-width:82px}.ty-clock small{display:block;font-size:11px;font-weight:400;letter-spacing:0}.ty-time-controls label{font-size:11px;color:var(--ty-muted);font-weight:650}.ty-time-controls select{padding:5px 8px;min-height:34px;width:auto}.ty-flow-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ty-flow-stat{border-left:2px solid var(--ty-line);padding-left:9px;min-width:0}.ty-flow-stat strong{display:block;font-size:17px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.ty-flow-stat span{font-size:10px;color:var(--ty-muted);display:block}.ty-flow-stat[data-color=green]{border-color:var(--ty-green)}.ty-flow-stat[data-color=blue]{border-color:var(--ty-blue)}.ty-flow-stat[data-color=gold]{border-color:var(--ty-gold)}.ty-flow-stat[data-color=bad]{border-color:var(--ty-bad)}.ty-source-bar{display:flex;width:100%;height:8px;border-radius:8px;overflow:hidden;background:var(--ty-line)}.ty-source-bar span{min-width:0;transition:width .3s ease}.ty-source-bar .ty-solar{background:#b87905}.ty-source-bar .ty-wind{background:#27886a}.ty-legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--ty-muted);font-size:11px;margin-top:5px}.ty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;background:currentColor}',
+    '.ty-detail{border-top:1px solid var(--ty-line);padding-top:13px;display:grid;gap:11px}.ty-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ty-detail-grid div{font-size:12px;color:var(--ty-muted)}.ty-detail-grid strong{display:block;color:var(--ty-ink);font-size:14px}.ty-meter{height:6px;background:var(--ty-line);border-radius:6px;overflow:hidden}.ty-meter>span{display:block;height:100%;background:var(--ty-green);border-radius:6px;transition:width .3s ease}.ty-acquisition-list{display:grid;gap:10px}.ty-acquisition{border:1px solid var(--ty-line);background:var(--ty-soft);border-radius:11px;padding:12px;display:grid;gap:9px}.ty-acquisition h3{font-size:14px}.ty-acquisition p{font-size:12px;color:var(--ty-muted)}.ty-acquisition .ty-row{align-items:start}.ty-acquisition .ty-icon{font-size:22px;width:35px;height:35px;border-radius:9px;background:var(--ty-card);display:grid;place-items:center}.ty-acquisition-name{display:flex;gap:9px;align-items:center}.ty-price{font-weight:750;font-size:16px;white-space:nowrap}.ty-acquisition button{font-size:12px;min-height:36px;padding:8px 10px}.ty-muted{color:var(--ty-muted)}.ty-small{font-size:12px}.ty-body{font-size:13px;line-height:1.6}.ty-field{display:grid;gap:7px;font-size:13px}.ty-policy{display:grid;gap:16px}.ty-check{display:flex;gap:9px;align-items:flex-start;font-size:13px}.ty-check input{margin-top:2px}.ty-check small{display:block;margin-top:3px}.ty-event{border-color:var(--ty-gold);background:var(--ty-card)}.ty-event-mark{color:var(--ty-gold);font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.ty-event h3{font-size:20px;margin-top:7px}.ty-event-description{font-size:13px;color:var(--ty-muted);margin-top:8px!important}.ty-choices{border:0;padding:0;margin:15px 0;display:grid;gap:8px;min-width:0}.ty-choices legend{padding:0;font-size:12px;font-weight:700;margin-bottom:8px}.ty-choice{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid var(--ty-line);border-radius:10px;cursor:pointer;background:var(--ty-soft)}.ty-choice[data-selected=true]{border-color:var(--ty-green);box-shadow:inset 0 0 0 1px var(--ty-green)}.ty-choice input{margin:2px 0 0}.ty-choice strong{display:block;font-size:13px}.ty-choice small{display:block;line-height:1.5;margin-top:4px}.ty-choice-cost{display:block;font-size:11px;font-weight:700;margin-top:6px;color:var(--ty-ink)}.ty-committed{font-size:12px;color:var(--ty-green);font-weight:700}.ty-advance{background:var(--ty-soft);display:grid;gap:13px}.ty-advance .ty-primary{width:100%;padding:14px;font-size:15px}.ty-projection{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ty-projection span{display:block;color:var(--ty-muted);font-size:11px}.ty-projection strong{font-size:19px;font-variant-numeric:tabular-nums}.ty-goals{display:grid;gap:14px}.ty-goal .ty-row{font-size:12px;margin-bottom:6px;gap:6px}.ty-goal strong{font-size:12px}.ty-goal small{display:block;margin-top:4px}.ty-alert{border:1px solid var(--ty-bad);color:var(--ty-bad);background:var(--ty-card);padding:12px 15px;border-radius:10px;margin-bottom:16px;overflow-wrap:anywhere}.ty-notice{font-size:13px;margin:0 0 15px;min-height:0;color:var(--ty-green)}.ty-notice:empty{display:none}',
+    '.ty-report{margin-top:18px}.ty-report-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.ty-report-stat{background:var(--ty-soft);border-radius:10px;padding:12px}.ty-report-stat span{font-size:11px;color:var(--ty-muted);display:block}.ty-report-stat strong{font-size:20px;display:block;letter-spacing:-.03em}.ty-report-stat small{font-size:10px}.ty-ledger{width:100%;border-collapse:collapse;font-size:12px}.ty-ledger th,.ty-ledger td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--ty-line);white-space:nowrap;font-variant-numeric:tabular-nums}.ty-ledger th:first-child,.ty-ledger td:first-child{text-align:left}.ty-table-scroll{overflow:auto;max-width:100%;border:1px solid var(--ty-line);border-radius:10px}.ty-history{margin-top:18px}.ty-history summary{font-size:13px;font-weight:700;cursor:pointer;padding:6px 0;min-height:35px}.ty-chart{display:grid;gap:7px;margin:16px 0}.ty-chart-row{display:grid;grid-template-columns:34px minmax(0,1fr) 75px;gap:9px;align-items:center;font-size:11px}.ty-chart-track{height:15px;background:var(--ty-soft);border-radius:3px;overflow:hidden}.ty-chart-track span{display:block;height:100%;border-radius:3px;background:var(--ty-green)}.ty-chart-row[data-negative=true] .ty-chart-track span{background:var(--ty-bad)}.ty-chart-row strong{text-align:right;font-size:11px;font-variant-numeric:tabular-nums}.ty-footer{margin-top:20px;padding-top:15px;border-top:1px solid var(--ty-line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.ty-footer p{font-size:11px;color:var(--ty-muted);max-width:75ch}.ty-file{font-size:12px;display:grid;gap:5px}.ty-file input{font-size:11px;max-width:100%;width:235px}.ty-file input::file-selector-button{font:inherit;border:1px solid var(--ty-line);color:var(--ty-ink);background:var(--ty-card);padding:8px;border-radius:7px;cursor:pointer}.ty-save-panel{margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.ty-reset{margin-bottom:18px;border-color:var(--ty-bad);display:grid;gap:12px}.ty-onboard{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,1fr);gap:25px;align-items:center;padding:20px 0}.ty-onboard h1{font-size:clamp(34px,5vw,62px);max-width:11ch}.ty-onboard-copy{display:grid;gap:18px}.ty-onboard-copy p{max-width:50ch;font-size:14px;color:var(--ty-muted)}.ty-onboard-steps{display:grid;gap:12px;margin:0;padding:0;list-style:none}.ty-onboard-steps li{display:flex;gap:12px;font-size:13px}.ty-step-number{width:26px;height:26px;border-radius:50%;background:var(--ty-green);color:var(--ty-green-ink);display:grid;place-items:center;flex-shrink:0;font-size:11px;font-weight:800}.ty-onboard-steps strong{display:block}.ty-onboard-steps span:not(.ty-step-number){color:var(--ty-muted)}.ty-start-form{display:grid;gap:14px;padding-top:16px;border-top:1px solid var(--ty-line)}.ty-start-form button{padding:13px}.ty-final{background:var(--ty-soft);border:1px solid var(--ty-green);margin-bottom:18px;display:grid;gap:13px}.ty-final h2{font-size:27px}.ty-final ul{padding-left:20px;font-size:13px;margin:0}.ty-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}',
+    '.ty-grid{grid-template-areas:"scene event" "scene fleet" "scene advance" "acquisition goals" "acquisition policy"}.ty-grid>[data-tycoon-panel=scene]{grid-area:scene}.ty-grid>[data-tycoon-panel=event]{grid-area:event}.ty-grid>[data-tycoon-panel=fleet]{grid-area:fleet}.ty-grid>[data-tycoon-panel=advance]{grid-area:advance}.ty-grid>[data-tycoon-panel=policy]{grid-area:policy}.ty-grid>[data-tycoon-panel=acquisition]{grid-area:acquisition}.ty-grid>[data-tycoon-panel=goals]{grid-area:goals}.ty-grid[data-terminal=true]{grid-template-areas:"scene goals"}.ty-grid[data-terminal=true]>[data-tycoon-panel=scene]{grid-row:auto}',
+    '.ty-fleet-list{list-style:none;margin:15px 0 0;padding:0;display:grid;gap:12px}.ty-fleet-item{border-top:1px solid var(--ty-line);padding-top:12px;display:grid;gap:7px;min-width:0}.ty-fleet-item[data-status=fault]{border-top:3px solid var(--ty-bad)}.ty-fleet-item[data-status=worn]{border-top:3px solid var(--ty-gold)}.ty-fleet-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px}.ty-fleet-status{font-size:11px;color:var(--ty-muted)}.ty-fleet-item[data-status=fault] .ty-fleet-status{color:var(--ty-bad)}.ty-fleet-item[data-status=worn] .ty-fleet-status{color:var(--ty-gold)}.ty-condition-track{height:5px;background:var(--ty-line);border-radius:4px;overflow:hidden}.ty-condition-track span{display:block;height:100%;background:var(--ty-green);transition:width .3s ease}.ty-fleet-item[data-status=fault] .ty-condition-track span{background:var(--ty-bad)}.ty-fleet-item[data-status=worn] .ty-condition-track span{background:var(--ty-gold)}.ty-fleet-actions{display:flex;gap:7px;flex-wrap:wrap}.rn-tycoon .ty-fleet-actions button{font-size:12px;padding:7px 10px}.ty-crew-note{padding:10px 12px;background:var(--ty-soft);border:1px solid var(--ty-line);border-radius:10px;font-size:12px}.ty-crew-note strong{display:block}.ty-fleet-method{margin-top:13px!important;font-size:11px;color:var(--ty-muted)}',
+    '.ty-recap{border-block:1px solid var(--ty-line);padding:18px 0;margin-top:20px;display:grid;gap:15px}.ty-recap-trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ty-recap-trust div{background:var(--ty-soft);padding:10px 12px;border-radius:9px;min-width:0}.ty-recap-trust strong{display:block;font-size:21px;font-variant-numeric:tabular-nums}.ty-recap-trust span{display:block;font-size:11px;color:var(--ty-muted)}.ty-recap-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.ty-recap-group{border:1px solid var(--ty-line);padding:13px;border-radius:12px;min-width:0}.ty-recap-group h3{font-size:14px;margin-bottom:9px}.ty-recap-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.ty-recap-list li{display:grid;gap:4px;font-size:12px}.ty-recap-list strong{font-size:13px}.ty-recap-list p{color:var(--ty-muted)}.rn-tycoon .ty-recap-list button{font-size:11px;padding:6px 8px;justify-self:start}.ty-recap-group[data-kind=faults]{border-top:3px solid var(--ty-bad)}.ty-recap-group[data-kind=service]{border-top:3px solid var(--ty-blue)}.ty-recap-group[data-kind=commissioned]{border-top:3px solid var(--ty-green)}',
+    '.ty-service-plan{border:1px solid var(--ty-line);border-radius:12px;background:var(--ty-soft);overflow:hidden}.ty-service-plan>summary{padding:13px 14px;cursor:pointer;font-size:13px;font-weight:750;min-height:44px}.ty-service-plan[open]>summary{border-bottom:1px solid var(--ty-line)}.ty-service-plan-body{display:grid;gap:13px;padding:14px}.ty-service-plan-body h3{font-size:16px}.ty-service-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ty-service-scenario{border:1px solid var(--ty-line);border-radius:10px;padding:11px;background:var(--ty-card);min-width:0}.ty-service-scenario[data-tycoon-service-scenario=proposed]{border-top:3px solid var(--ty-blue)}.ty-service-scenario h4{margin:0 0 10px;font-size:13px}.ty-service-scenario dl{margin:0;display:grid;gap:3px}.ty-service-scenario dt{font-size:11px;color:var(--ty-muted)}.ty-service-scenario dd{margin:0 0 8px;font-size:20px;font-weight:750;letter-spacing:-.025em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-service-scenario dd:last-child{margin-bottom:0}.ty-service-delta{font-size:12px;border-left:3px solid var(--ty-blue);padding-left:10px}.ty-service-outage{padding:11px;border:1px solid var(--ty-line);border-radius:10px;display:grid;gap:8px}.ty-service-outage h4{margin:0;font-size:13px}.ty-service-outage-readings{display:flex;gap:10px 24px;flex-wrap:wrap;font-size:12px}.ty-service-outage-readings strong{display:block}.ty-work-order{padding:14px;border:1px solid var(--ty-line);border-left:4px solid var(--ty-gold);border-radius:12px;display:grid;gap:11px;background:var(--ty-soft)}.ty-work-order[data-complete=true]{border-left-color:var(--ty-green)}.ty-work-order h3{font-size:16px}.ty-work-order progress{width:100%;height:8px;accent-color:var(--ty-green);border:0;border-radius:5px;overflow:hidden;background:var(--ty-line)}.ty-work-order progress::-webkit-progress-bar{background:var(--ty-line)}.ty-work-order progress::-webkit-progress-value{background:var(--ty-green)}.ty-work-order progress::-moz-progress-bar{background:var(--ty-green)}.ty-work-stage-buttons{display:flex;flex-wrap:wrap;gap:7px}.rn-tycoon .ty-work-stage-buttons button{flex:1;font-size:12px;min-width:92px}.rn-tycoon .ty-work-stage-buttons button[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}',
+    '.ty-inspection{display:grid;gap:10px;border:1px solid var(--ty-line);border-left:3px solid var(--ty-blue);border-radius:11px;background:var(--ty-soft);padding:12px}.ty-inspection[data-isolated=true]{border-left-color:var(--ty-gold)}.ty-inspection[data-fault=true]{border-left-color:var(--ty-bad)}.ty-inspection h4{font-size:14px;margin:0}.ty-inspector>summary{cursor:pointer;font-size:12px;font-weight:700;padding:5px 0;min-height:34px}.ty-inspector-body{display:grid;gap:12px;padding-top:10px}.ty-energy-route{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:center;gap:4px}.rn-tycoon .ty-energy-node{padding:9px 5px;font-size:11px;display:grid;justify-items:center;align-content:start;gap:5px;min-width:0;height:100%;min-height:86px;overflow-wrap:anywhere;background:var(--ty-card)}.rn-tycoon .ty-energy-node[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue);color:var(--ty-ink)}.rn-tycoon .ty-energy-node:hover{color:var(--ty-ink)}.ty-energy-node svg{width:39px;height:34px;display:block;color:var(--ty-blue)}.ty-energy-arrow{text-align:center;font-size:21px;font-weight:700;color:var(--ty-green)}.ty-energy-arrow[data-idle=true]{color:var(--ty-muted);font-size:16px}.ty-component-note{padding:10px 12px;background:var(--ty-card);border:1px solid var(--ty-line);border-radius:9px;display:grid;gap:4px;font-size:12px}.ty-component-note strong{font-size:13px}.ty-component-note p{color:var(--ty-muted)}.ty-inspection-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}.ty-inspection-readings div{min-width:0}.ty-inspection-readings dt{font-size:10px;color:var(--ty-muted)}.ty-inspection-readings dd{font-size:16px;font-weight:750;margin:2px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.rn-tycoon .ty-inspector-next{justify-self:start;font-size:12px;max-width:100%}.ty-inspector-footnote{font-size:11px;color:var(--ty-muted)}',
+    '@media(max-width:420px){.ty-inspection{padding:10px}.ty-energy-route{gap:2px;grid-template-columns:minmax(0,1fr) 13px minmax(0,1fr) 13px minmax(0,1fr)}.rn-tycoon .ty-energy-node{font-size:10px;padding:8px 3px}.ty-energy-arrow{font-size:17px}.ty-inspection-readings{grid-template-columns:1fr 1fr}.ty-inspection-readings dd{font-size:15px}}',
+    '.ty-equipment-record{border:1px solid var(--ty-line);border-radius:11px;background:var(--ty-soft);overflow:hidden}.ty-equipment-record>summary{padding:12px;min-height:44px;cursor:pointer;font-size:13px;font-weight:700}.ty-equipment-record[open]>summary{border-bottom:1px solid var(--ty-line)}.ty-record-body{padding:13px;display:grid;gap:13px}.ty-record-body h4{font-size:14px;margin:0}.ty-record-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0}.ty-record-stats div{border:1px solid var(--ty-line);border-radius:9px;background:var(--ty-card);padding:9px;min-width:0}.ty-record-stats dt{font-size:11px;color:var(--ty-muted)}.ty-record-stats dd{margin:2px 0 0;font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-record-timeline{width:100%;height:auto;display:block;color:var(--ty-ink)}.ty-record-timeline text{font:14px system-ui,sans-serif;fill:var(--ty-muted)}.ty-record-intervals{display:flex;gap:7px;flex-wrap:wrap}.rn-tycoon .ty-record-intervals button{font-size:11px;padding:8px 10px;flex:1;min-width:120px}.rn-tycoon .ty-record-intervals button[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}.ty-record-legend{display:flex;gap:7px 14px;flex-wrap:wrap;font-size:11px;color:var(--ty-muted)}.ty-record-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}.ty-record-history{border-top:1px solid var(--ty-line);padding-top:12px;display:grid;gap:10px}.ty-condition-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.rn-tycoon .ty-condition-month{padding:7px 3px;font-size:11px;display:grid;gap:4px;text-align:center;min-width:0;position:relative;overflow:hidden}.ty-condition-month strong{font-size:14px;font-variant-numeric:tabular-nums}.ty-condition-month i{height:4px;background:var(--ty-line);border-radius:3px;overflow:hidden;display:block;margin-top:3px}.ty-condition-month i span{height:100%;display:block;background:var(--ty-green)}.rn-tycoon .ty-condition-month[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}.ty-condition-month[data-fault=true] i span{background:var(--ty-bad)}.ty-condition-month small{font-size:9px;color:var(--ty-bad)}.ty-record-selected{border-left:3px solid var(--ty-blue);padding:8px 11px;background:var(--ty-card);font-size:12px}.ty-record-empty{border:1px dashed var(--ty-line);padding:12px;border-radius:9px;font-size:12px;color:var(--ty-muted)}.ty-work-phase{border:1px solid var(--ty-line);border-radius:9px;padding:11px;background:var(--ty-card);font-size:12px;display:grid;gap:4px}.ty-work-phase strong{font-size:14px}.ty-work-phase p{color:var(--ty-muted)}.ty-work-stage-buttons button span{display:block;font-weight:400;font-size:10px;margin-top:4px}.ty-record-body .ty-inspector-footnote{line-height:1.6}',
+    '@media(max-width:420px){.ty-condition-months{grid-template-columns:repeat(3,minmax(0,1fr))}.ty-record-body{padding:10px}.ty-record-stats dd{font-size:17px}.ty-record-timeline text{font-size:20px}.rn-tycoon .ty-record-intervals button{min-width:95px}}',
+    '.ty-expansion{border:1px solid var(--ty-line);border-radius:12px;overflow:hidden;background:var(--ty-soft)}.ty-expansion>summary{cursor:pointer;padding:13px;min-height:44px;font-size:13px;font-weight:750}.ty-expansion[open]>summary{border-bottom:1px solid var(--ty-line)}.ty-expansion-body{padding:14px;display:grid;gap:14px}.ty-expansion-body h4{margin:0;font-size:14px}.ty-expansion-body .ty-field{font-size:12px}.ty-build-budget{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}.ty-build-budget div{border:1px solid var(--ty-line);border-radius:9px;background:var(--ty-card);padding:10px;min-width:0}.ty-build-budget dt{font-size:11px;color:var(--ty-muted)}.ty-build-budget dd{margin:3px 0 0;font-size:18px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-fit-study{border-top:1px solid var(--ty-line);padding-top:14px;display:grid;gap:11px}.ty-fit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.ty-fit-case{padding:12px;border:1px solid var(--ty-line);border-radius:10px;background:var(--ty-card);min-width:0;display:grid;gap:8px}.ty-fit-case[data-tycoon-study=proposed]{border-top:3px solid var(--ty-blue)}.ty-fit-case h5{margin:0;font-size:12px}.ty-fit-case>strong{font-size:24px;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.ty-fit-case>small{margin-top:-7px}.ty-fit-case dl{margin:0;display:grid;gap:3px}.ty-fit-case dt{font-size:10px;color:var(--ty-muted)}.ty-fit-case dd{margin:0 0 5px;font-size:15px;font-weight:700;overflow-wrap:anywhere}.ty-fit-bar{height:9px;display:flex;overflow:hidden;border-radius:4px;background:var(--ty-bad)}.ty-fit-bar span{background:var(--ty-green);height:100%}.ty-expansion-result{padding:11px 12px;border-left:3px solid var(--ty-blue);font-size:12px;background:var(--ty-card)}.ty-build-order{border:1px solid var(--ty-line);border-left:4px solid var(--ty-gold);border-radius:11px;background:var(--ty-soft);padding:13px;display:grid;gap:11px}.ty-build-order h4{margin:0;font-size:15px}.ty-build-order .ty-actions button{flex:1;min-width:100px;font-size:11px}.ty-build-order .ty-actions button[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}.ty-build-order small{line-height:1.6}',
+    '@media(max-width:420px){.ty-expansion-body{padding:10px}.ty-fit-case{padding:9px}.ty-fit-case>strong{font-size:21px}.ty-fit-case dd{font-size:14px}.ty-build-budget dd{font-size:16px}}',
+    '@media(min-width:1100px){.ty-acquisition-list{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+    '@media(max-width:1050px){.ty-hero{grid-template-columns:1fr}.ty-hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.ty-hero-stat{min-width:0}.ty-grid{grid-template-columns:minmax(0,1.4fr) minmax(250px,1fr)}}',
+    '@media(max-width:760px){.ty-grid{grid-template-columns:1fr;grid-template-areas:"scene" "event" "fleet" "advance" "policy" "acquisition" "goals"}.ty-grid[data-terminal=true]{grid-template-areas:"scene" "goals"}.ty-onboard{grid-template-columns:1fr}.ty-onboard h1{max-width:none}.ty-report-grid,.ty-recap-trust{grid-template-columns:repeat(2,minmax(0,1fr))}.ty-recap-events{grid-template-columns:1fr}.ty-topline{margin-bottom:18px}.ty-card{padding:15px}.ty-scene-card{padding:0}.ty-scene-head,.ty-scene-footer{padding:14px}.ty-hero{margin-bottom:18px}.ty-hero-stat{padding:10px}.ty-hero-stat strong{font-size:20px}}',
+    '@media(max-width:380px){.rn-tycoon{padding:10px;border-radius:13px}.ty-hero-stats{gap:5px}.ty-hero-stat{padding:8px 6px;border-radius:9px}.ty-hero-stat strong{font-size:18px}.ty-hero-stat span{font-size:10px}.ty-flow-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ty-actions{gap:5px}.ty-actions button{font-size:11px;padding:8px}.ty-time-controls{gap:8px}.ty-clock{font-size:21px;min-width:66px}.ty-scene-head,.ty-scene-footer{padding:12px}.ty-report-stat strong{font-size:18px}.ty-card{padding:13px}.ty-scene-card{padding:0}.ty-onboard{padding:8px 0}.ty-onboard h1{font-size:34px}}',
+    '.ty-dispatch{display:grid;gap:12px;border-top:1px solid var(--ty-line);padding-top:16px}.ty-dispatch-heading{display:flex;justify-content:space-between;gap:10px;align-items:start;flex-wrap:wrap}.ty-dispatch-heading h3{font-size:15px}.ty-dispatch-plot{display:block;width:100%;height:auto;min-height:155px;border:1px solid var(--ty-line);border-radius:12px;background:var(--ty-soft);cursor:crosshair;overflow:visible}.ty-dispatch-plot text{font-family:inherit;fill:var(--ty-muted);font-size:16px}.ty-dispatch-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:var(--ty-muted)}.ty-dispatch-legend span{display:inline-flex;gap:5px;align-items:center}.ty-dispatch-swatch{width:14px;height:8px;border-radius:2px;background:var(--ty-green);display:inline-block}.ty-dispatch-swatch[data-source=solar]{background:var(--ty-gold)}.ty-dispatch-swatch[data-source=battery]{background:var(--ty-blue)}.ty-dispatch-swatch[data-source=gap]{background:var(--ty-bad)}.ty-dispatch-swatch[data-source=demand]{height:0;border-top:2px dashed var(--ty-ink);border-radius:0;background:none}.ty-day-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ty-day-summary strong{display:block;font-size:15px}.ty-day-summary span{display:block;font-size:10px;color:var(--ty-muted)}.ty-hour-explanation{border-left:3px solid var(--ty-green);border-radius:0 9px 9px 0;padding:11px 13px;background:var(--ty-soft);display:grid;gap:4px;font-size:12px}.ty-hour-explanation[data-mode=gap]{border-color:var(--ty-bad)}.ty-hour-explanation[data-mode=surplus]{border-color:var(--ty-gold)}.ty-hour-explanation[data-mode=battery]{border-color:var(--ty-blue)}.ty-hour-explanation p{color:var(--ty-muted)}.ty-gap-actions{display:flex;flex-wrap:wrap;gap:7px}.ty-gap-actions button{font-size:11px;padding:8px 10px}.ty-day-table{font-size:12px}.ty-day-table summary{cursor:pointer;color:var(--ty-muted);padding:5px 0}.ty-day-table table{font-size:11px;white-space:nowrap}.ty-day-table tr[data-current=true]{background:var(--ty-soft)}.ty-day-table button{min-height:32px;padding:5px;font-size:11px}.ty-response-preview{margin:14px 0;padding:13px;border-radius:11px;border:1px solid var(--ty-line);background:var(--ty-soft);display:grid;gap:10px}.ty-response-preview h4{font-size:12px;margin:0}.ty-response-preview .ty-projection{margin:0;gap:10px}.ty-response-preview .ty-projection strong{font-size:20px}.ty-response-preview .ty-projection small{display:block;margin-top:3px}.ty-response-preview p{font-size:11px;color:var(--ty-muted)}',
+    '@media(max-width:420px){.ty-dispatch-plot{min-height:130px}.ty-dispatch-plot text{font-size:24px}.ty-day-summary{gap:5px}.ty-day-summary strong{font-size:13px}.ty-response-preview .ty-projection{grid-template-columns:1fr}.ty-dispatch-legend{gap:7px 10px}}',
+    '.ty-policy-trial{margin-top:17px;border-top:1px solid var(--ty-line);padding-top:9px}.ty-policy-trial>summary{cursor:pointer;font-size:13px;font-weight:750;min-height:44px;padding:10px 0}.ty-trial-body{display:grid;gap:14px}.ty-trial-inputs{display:grid;gap:14px;padding:12px;border:1px solid var(--ty-blue);border-radius:10px;background:var(--ty-soft)}.ty-trial-scenarios{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ty-trial-scenario{min-width:0;border:1px solid var(--ty-line);border-radius:10px;padding:10px;background:var(--ty-soft)}.ty-trial-scenario[data-tycoon-trial-scenario=proposed]{border-top:3px solid var(--ty-blue)}.ty-trial-scenario h4{font-size:13px;margin:0 0 6px}.ty-trial-scenario h5{font-size:11px;margin:12px 0 6px}.ty-trial-scenario dl,.ty-battery-ledger dl{margin:0;display:grid;gap:8px}.ty-trial-scenario dt,.ty-battery-ledger dt{font-size:10px;color:var(--ty-muted);overflow-wrap:anywhere}.ty-trial-scenario dd,.ty-battery-ledger dd{font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;margin:0;overflow-wrap:anywhere}.ty-trial-time{display:grid;gap:9px;border-block:1px solid var(--ty-line);padding:12px 0}.ty-trial-time select{width:auto}.ty-trial-scenario [data-tycoon-trial-month]{border-bottom:1px solid var(--ty-line);padding-bottom:10px}.ty-battery-ledger{border:1px solid var(--ty-line);border-radius:10px;padding:12px;background:var(--ty-card);display:grid;gap:11px}.ty-battery-ledger h5{font-size:13px;margin:0}.ty-battery-ledger dl{grid-template-columns:repeat(3,minmax(0,1fr))}.ty-battery-track{height:13px;background:var(--ty-line);border-radius:3px;position:relative}.ty-battery-fill{display:block;height:100%;background:var(--ty-blue);border-radius:3px;transition:width .24s ease}.ty-battery-threshold{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--ty-gold);border-inline:1px solid var(--ty-card)}.ty-battery-ledger .ty-actions button{font-size:11px;flex:1;min-width:100px}.ty-trial-body .ty-actions button{font-size:12px;flex:1;min-width:110px}@media(max-width:420px){.ty-battery-ledger dl{grid-template-columns:repeat(2,minmax(0,1fr))}.ty-trial-scenario{padding:8px}.ty-trial-scenario dd{font-size:12px}.ty-trial-inputs{padding:10px}}',
+    '.ty-operating-limits{padding:12px;border:1px solid var(--ty-line);border-radius:10px;background:var(--ty-card);display:grid;gap:11px}.ty-operating-limits h5{font-size:13px;margin:0}.ty-limit-bindings{display:flex;flex-wrap:wrap;gap:6px}.ty-limit-bindings span{border:1px solid var(--ty-gold);border-radius:6px;background:var(--ty-gold-bg);color:var(--ty-gold);padding:4px 7px;font-size:11px;font-weight:700}.ty-limit-breakdown{display:flex;height:16px;overflow:hidden;border-radius:4px;background:var(--ty-line)}.ty-limit-breakdown span{height:100%;min-width:0;transition:width .24s ease}.ty-limit-breakdown [data-part=output]{background:var(--ty-green)}.ty-limit-breakdown [data-part=weather]{background:var(--ty-muted);opacity:.45}.ty-limit-breakdown [data-part=condition]{background:var(--ty-gold)}.ty-limit-breakdown [data-part=isolation]{background:var(--ty-bad)}.ty-limit-breakdown[data-charging=true] [data-part=output]{background:var(--ty-blue)}.ty-limit-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0}.ty-limit-readings dt{font-size:10px;color:var(--ty-muted);overflow-wrap:anywhere}.ty-limit-readings dd{margin:0;font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-limit-legend{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:10px;color:var(--ty-muted)}.ty-limit-legend i{display:inline-block;width:8px;height:8px;margin-right:4px;border:1px solid currentColor}.ty-limit-actions{display:flex;gap:7px;flex-wrap:wrap}.rn-tycoon .ty-limit-actions button{flex:1;min-width:120px;font-size:11px}.ty-limit-status{border-left:3px solid var(--ty-blue);padding-left:9px;font-size:12px}.ty-operating-limits[data-pressure=shortage] .ty-limit-status{border-color:var(--ty-bad)}.ty-operating-limits[data-pressure=surplus] .ty-limit-status{border-color:var(--ty-gold)}@media(max-width:420px){.ty-limit-readings{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+    '.ty-energy-route{gap:7px;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr);padding:12px;border:1px solid var(--ty-line);border-radius:12px;background:var(--ty-card)}.rn-tycoon .ty-energy-node{position:relative;gap:7px;min-height:152px;padding:13px 7px;border-radius:10px;background:var(--ty-soft);transition:border-color .18s ease,box-shadow .18s ease}.ty-energy-node svg{width:64px;max-width:100%;height:56px;color:var(--ty-blue)}.ty-energy-node>span{font-weight:750}.ty-energy-node>small{font-size:11px;line-height:1.5;font-weight:500;color:var(--ty-muted);font-variant-numeric:tabular-nums}.ty-energy-node[aria-pressed=true]>small{color:var(--ty-ink)}.ty-energy-route[data-flow=export]{--ty-route-color:var(--ty-green)}.ty-energy-route[data-flow=charge]{--ty-route-color:var(--ty-blue)}.ty-energy-route[data-flow=idle]{--ty-route-color:var(--ty-muted)}.ty-energy-route[data-flow=isolated]{--ty-route-color:var(--ty-gold)}.ty-energy-route[data-fault=true]{--ty-route-color:var(--ty-bad)}.ty-energy-arrow{display:flex;align-items:center;justify-content:center;color:var(--ty-route-color)}.ty-energy-arrow svg{width:22px;height:24px;overflow:visible}.ty-energy-route .ty-path-indicator{fill:var(--ty-route-color);stroke:none}.ty-energy-route .ty-path-charge{fill:var(--ty-blue);stroke:none;transition:height .24s ease,y .24s ease}.ty-component-note{border-left:3px solid var(--ty-blue)}.ty-energy-node:focus-visible{outline:3px solid var(--ty-blue);outline-offset:3px}.ty-energy-route[data-flow=isolated] .ty-energy-node[data-tycoon-inspect-part=network]{border-style:dashed}@media(max-width:420px){.ty-energy-route{grid-template-columns:minmax(0,1fr);gap:3px;padding:10px}.rn-tycoon .ty-energy-node{min-height:82px;grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;align-items:center;justify-items:start;text-align:left;padding:10px 12px;gap:3px 12px}.ty-energy-node svg{grid-row:1/3}.ty-energy-node>span,.ty-energy-node>small{grid-column:2}.ty-energy-arrow{height:24px}.ty-energy-arrow svg{transform:rotate(90deg)}}',
+    '.ty-energy-route .ty-energy-arrow{color:var(--ty-route-color)}',
+    '.ty-daylight{display:grid;gap:5px;margin-top:5px}.ty-daylight-track{display:flex;position:relative;height:12px;border:1px solid var(--ty-line);border-radius:4px;isolation:isolate}.ty-daylight-track>span{flex:1;min-width:0;background:#263f56;border-right:1px solid #ffffff18}.ty-daylight-track>span:first-child{border-radius:3px 0 0 3px}.ty-daylight-track>span:nth-child(24){border-radius:0 3px 3px 0;border-right:0}.ty-daylight-track>span[data-night=false]{background:#d6a34b}.ty-daylight-track>i{position:absolute;top:-4px;bottom:-4px;width:4px;transform:translateX(-50%);background:var(--ty-ink);border:1px solid var(--ty-card);border-radius:2px;transition:left .24s ease}.ty-daylight-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--ty-muted);font-variant-numeric:tabular-nums}.ty-daylight-note{font-size:10px;line-height:1.5;color:var(--ty-muted)}.ty-daylight-note strong{color:var(--ty-ink);font-weight:650}.ty-daylight-note i{display:inline-block;width:8px;height:8px;background:#d6a34b;margin:0 4px 0 7px;border:1px solid var(--ty-gold)}',
+    '.ty-daylight-labels{display:block;position:relative;height:14px}.ty-daylight-labels span{position:absolute;transform:translateX(-50%)}.ty-daylight-labels span:first-child{transform:none}.ty-daylight-labels span:last-child{transform:translateX(-100%)}',
+    '.ty-equipment-day{display:grid;gap:12px;padding:12px;background:var(--ty-card);border:1px solid var(--ty-line);border-radius:10px;min-width:0}.ty-equipment-day h5{margin:0;font-size:14px}.ty-equipment-day-heading{display:flex;align-items:baseline;justify-content:space-between;gap:6px 12px;flex-wrap:wrap}.ty-equipment-day-heading span{font-size:11px;color:var(--ty-muted)}.ty-equipment-day-plot{display:block;width:100%;height:auto;cursor:crosshair;border-radius:6px;background:var(--ty-soft)}.ty-equipment-day-plot text{font-family:inherit;font-size:16px;fill:var(--ty-muted);font-variant-numeric:tabular-nums}.ty-equipment-day-plot .ty-equipment-day-symbol{font-size:15px;font-weight:800;fill:var(--ty-card)}.ty-equipment-day-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--ty-muted)}.ty-equipment-day-legend b{font-size:13px;margin-right:4px}.ty-equipment-day-current{display:grid;gap:3px;border-left:3px solid var(--ty-blue);padding-left:10px;font-size:12px;min-height:44px;overflow-wrap:anywhere}.ty-equipment-day-current strong{font-size:13px}.ty-equipment-day-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rn-tycoon .ty-equipment-day-nav button{font-size:12px;padding:9px 6px}.ty-equipment-day-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}.ty-equipment-day-totals[data-battery=true]{grid-template-columns:repeat(4,minmax(0,1fr))}.ty-equipment-day-totals div{border-top:1px solid var(--ty-line);padding-top:8px;min-width:0}.ty-equipment-day-totals dt{font-size:11px;color:var(--ty-muted)}.ty-equipment-day-totals dd{margin:2px 0 0;font-size:15px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}@media(max-width:420px){.ty-equipment-day{padding:10px}.ty-equipment-day-totals,.ty-equipment-day-totals[data-battery=true]{grid-template-columns:repeat(2,minmax(0,1fr))}.ty-equipment-day-plot text{font-size:28px}}',
+    '@media(prefers-reduced-motion:reduce){.rn-tycoon *{transition:none!important;animation:none!important}}'
+  ].join('\n');
+
+  function number(value) { return typeof value === 'number' && isFinite(value) ? value : 0; }
+  function money(value) { return (value < 0 ? '−' : '') + '$' + Math.round(Math.abs(number(value))).toLocaleString('en-US'); }
+  function energy(value) { return Math.abs(number(value)) >= 1000 ? (number(value) / 1000).toFixed(1) + ' MWh' : Math.round(number(value)) + ' kWh'; }
+  function power(value) { return Math.abs(number(value)) >= 1000 ? (number(value) / 1000).toFixed(2) + ' MW' : number(value).toFixed(1) + ' kW'; }
+  function percent(value) { return Math.round(number(value) * 100) + '%'; }
+  function typeIcon(type) { return type === 'solar' ? '☀' : type === 'wind' ? '〰' : '▥'; }
+  function monthSeason(month) { return month < 2 || month === 11 ? 'Winter' : month < 5 ? 'Spring' : month < 8 ? 'Summer' : 'Autumn'; }
+
+  function RenewablesTycoon(props) {
+    var React = props.ctx.React, h = React.createElement, engine = window.StemLab.renewablesTycoonEngine;
+    var Scene = window.StemLab.RenewablesTycoonScene;
+    var state = React.useMemo(function () { return props.state ? engine.restore(props.state) : null; }, [props.state]);
+    var invalidHostSave = !!props.state && !state;
+    var id = React.useId().replace(/:/g, '') + 'tycoon';
+    var seedState = React.useState(state ? state.seed : 'harbor-01'), seed = seedState[0], setSeed = seedState[1];
+    var siteState = React.useState(engine.sites[0].id), selectedId = siteState[0], setSelectedId = siteState[1];
+    var hourState = React.useState(12), hour = hourState[0], setHour = hourState[1];
+    var clockState = React.useState(false), playing = clockState[0], setPlaying = clockState[1];
+    var motionState = React.useState(true), motion = motionState[0], setMotion = motionState[1];
+    var reduceState = React.useState(function () { return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches; });
+    var reduced = reduceState[0], setReduced = reduceState[1];
+    var choiceState = React.useState(state && state.eventChoice || ''), pendingChoice = choiceState[0], setPendingChoice = choiceState[1];
+    var errorState = React.useState(''), error = errorState[0], setError = errorState[1];
+    var noticeState = React.useState(''), notice = noticeState[0], setNotice = noticeState[1];
+    var resetState = React.useState(false), resetOpen = resetState[0], setResetOpen = resetState[1];
+    var saveState = React.useState(false), savesOpen = saveState[0], setSavesOpen = saveState[1];
+    var planState = React.useState(null), planAssetId = planState[0], setPlanAssetId = planState[1];
+    var inspectionState = React.useState('equipment'), inspectionPart = inspectionState[0], setInspectionPart = inspectionState[1];
+    var recordMonthState = React.useState(null), recordMonth = recordMonthState[0], setRecordMonth = recordMonthState[1];
+    var acquisitionState = React.useState(null), acquisitionPlanId = acquisitionState[0], setAcquisitionPlanId = acquisitionState[1];
+    var trialState = React.useState(null), trial = trialState[0], setTrial = trialState[1];
+    var reportRef = React.useRef(null), eventRef = React.useRef(null), sceneRef = React.useRef(null), siteSelectRef = React.useRef(null), resetTitleRef = React.useRef(null), trialSummaryRef = React.useRef(null), dispatchRef = React.useRef(null), acquisitionSummaryRef = React.useRef(null), focusAcquisition = React.useRef(null), focusReport = React.useRef(false), importRequest = React.useRef(0);
+    var onboardingState = React.useMemo(function () { return state || engine.create('harbor-01'); }, [state]);
+    var forecast = React.useMemo(function () { return engine.preview(onboardingState); }, [onboardingState]);
+    var analysis = React.useMemo(function () { return engine.analyze(forecast); }, [forecast]);
+    var outlook = React.useMemo(function () { return engine.outlook(onboardingState); }, [onboardingState]);
+    var fleet = React.useMemo(function () { return engine.fleet(onboardingState); }, [onboardingState]);
+    var recap = React.useMemo(function () { return engine.recap(onboardingState); }, [onboardingState]);
+    var active = !!state && state.phase === 'planning';
+    var displayHour = Math.min(hour, Math.max(0, forecast.hours.length - 1));
+    var frame = forecast.hours[displayHour] || null;
+    var totals = forecast.totals || {};
+    var selectedSite = engine.sites.find(function (site) { return site.id === selectedId; }) || engine.sites[0];
+    var selectedAsset = state && state.assets.find(function (asset) { return asset.siteId === selectedSite.id; });
+    var selectedCare = selectedAsset && fleet.assets.find(function (asset) { return asset.id === selectedAsset.id; });
+    var selectedPlanKey = active && selectedAsset ? JSON.stringify([state.seed, state.month, selectedAsset.id]) : null;
+    var servicePlanOpen = !!(selectedPlanKey && selectedPlanKey === planAssetId);
+    var servicePlan = React.useMemo(function () { return servicePlanOpen ? engine.servicePlan(state, selectedAsset.id) : null; }, [state, selectedAsset && selectedAsset.id, servicePlanOpen]);
+    var selectedFrame = frame && frame.assets.find(function (asset) { return asset.siteId === selectedSite.id; });
+    var inspection = React.useMemo(function () { return selectedAsset ? engine.inspect(state, forecast, selectedAsset.id, displayHour) : null; }, [state, forecast, selectedAsset && selectedAsset.id, displayHour]);
+    var equipmentDayIndex = Math.floor(displayHour / 24);
+    var equipmentDay = React.useMemo(function () { return selectedAsset ? engine.equipmentDay(state, forecast, selectedAsset.id, equipmentDayIndex * 24) : null; }, [state, forecast, selectedAsset && selectedAsset.id, equipmentDayIndex]);
+    var equipmentLimits = React.useMemo(function () { return selectedAsset ? engine.equipmentLimits(state, forecast, selectedAsset.id, displayHour) : null; }, [state, forecast, selectedAsset && selectedAsset.id, displayHour]);
+    var equipmentRecord = React.useMemo(function () { return selectedAsset ? engine.equipmentRecord(state, forecast, selectedAsset.id) : null; }, [state, forecast, selectedAsset && selectedAsset.id]);
+    var acquisitionKey = active && !selectedAsset ? JSON.stringify([state.seed, state.month, selectedSite.id]) : null;
+    var acquisitionOpen = !!acquisitionKey && acquisitionPlanId === acquisitionKey;
+    var acquisitionPlan = React.useMemo(function () { return acquisitionOpen ? engine.acquisitionPlan(state, selectedSite.id) : null; }, [state, selectedSite.id, acquisitionOpen]);
+    var balance = React.useMemo(function () { return state ? engine.dispatchBalance(state, forecast, displayHour) : null; }, [state, forecast, displayHour]);
+    var trialKey = active ? JSON.stringify([state.seed, state.month]) : null;
+    var trialOpen = !!trialKey && !!trial && trial.key === trialKey;
+    var trialPreview = React.useMemo(function () {
+      if (!trialOpen) return null;
+      var proposed = engine.apply(state, { type: 'policy', reserve: trial.reserve, flex: trial.flex });
+      var run = engine.preview(proposed), impactHour = null, largest = 1e-7;
+      run.hours.forEach(function (row, index) { var delta = Math.abs(row.unserved - forecast.hours[index].unserved); if (delta > largest) { largest = delta; impactHour = index; } });
+      return { state: proposed, run: run, impactHour: impactHour };
+    }, [state, forecast, trialOpen, trial && trial.reserve, trial && trial.flex]);
+    var trialBalance = React.useMemo(function () { return trialPreview ? engine.dispatchBalance(trialPreview.state, trialPreview.run, displayHour) : null; }, [trialPreview, displayHour]);
+    var lastReport = state && state.history.length ? state.history[state.history.length - 1] : null;
+    var t = function (key, fallback) { var value = props.ctx.t ? props.ctx.t(key, fallback) : fallback; return value && value !== key ? value : fallback; };
+    var responsePreview = React.useMemo(function () {
+      if (!active || state.eventChoice || !pendingChoice) return null;
+      var choice = outlook.event.choices.find(function (item) { return item.id === pendingChoice; });
+      if (!choice || choice.cost > state.cash) return null;
+      var proposed = engine.apply(state, { type: 'event', choiceId: choice.id });
+      return { choice: choice, state: proposed, totals: engine.preview(proposed).totals };
+    }, [active, state, outlook, pendingChoice]);
+
+    React.useEffect(function () {
+      if (document.getElementById('renewables-tycoon-css')) return;
+      var style = document.createElement('style'); style.id = 'renewables-tycoon-css'; style.textContent = CSS; document.head.appendChild(style);
+    }, []);
+    React.useEffect(function () { return function () { importRequest.current += 1; }; }, []);
+    React.useEffect(function () { if (acquisitionOpen && focusAcquisition.current === acquisitionKey && acquisitionSummaryRef.current) { focusAcquisition.current = null; acquisitionSummaryRef.current.focus(); } }, [acquisitionOpen, acquisitionKey]);
+    React.useEffect(function () { if (resetOpen && resetTitleRef.current) resetTitleRef.current.focus(); }, [resetOpen]);
+    React.useEffect(function () {
+      if (!window.matchMedia) return;
+      var query = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var change = function () { setReduced(query.matches); if (query.matches) setPlaying(false); };
+      if (query.addEventListener) query.addEventListener('change', change); else if (query.addListener) query.addListener(change);
+      return function () { if (query.removeEventListener) query.removeEventListener('change', change); else if (query.removeListener) query.removeListener(change); };
+    }, []);
+    React.useEffect(function () {
+      setHour(12); setPlaying(false); setPendingChoice(state && state.eventChoice || ''); setPlanAssetId(null); setRecordMonth(null); setAcquisitionPlanId(null); setTrial(null);
+      if (focusReport.current && reportRef.current) { reportRef.current.focus(); focusReport.current = false; }
+    }, [state && state.month, state && state.seed]);
+    React.useEffect(function () {
+      if (!playing || reduced || !forecast.hours.length) return;
+      var timer = window.setInterval(function () { setHour(function (value) { return (value + 1) % forecast.hours.length; }); }, 750);
+      return function () { window.clearInterval(timer); };
+    }, [playing, reduced, forecast.hours.length]);
+
+    function commit(action, message) {
+      try {
+        var next = engine.apply(state, action);
+        importRequest.current += 1;
+        setError(''); setNotice(message || 'Campaign plan updated.');
+        if (action.type === 'advance') { focusReport.current = true; setPlaying(false); }
+        props.onChange(next);
+      } catch (failure) { setError(failure && failure.message || 'That action could not be completed. Your campaign has not changed.'); }
+    }
+    function begin(event) {
+      if (event) event.preventDefault();
+      try { var next = engine.create(seed.trim()); importRequest.current += 1; props.onChange(next); setError(''); setResetOpen(false); setPendingChoice(''); setPlanAssetId(null); setAcquisitionPlanId(null); setTrial(null); setNotice('Welcome to North Harbor. Review your first event, plan your network, then resolve January.'); setHour(12); setPlaying(false); }
+      catch (failure) { setError(failure && failure.message || 'Please enter a campaign seed.'); }
+    }
+    function exportSave() {
+      try {
+        var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob), link = document.createElement('a');
+        link.href = url; link.download = 'north-harbor-month-' + state.month + '.json'; document.body.appendChild(link); link.click(); link.remove();
+        window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        setNotice('Campaign save exported.'); setError('');
+      } catch (failure) { setError('The save could not be exported. Your campaign is still available here.'); }
+    }
+    function importSave(event) {
+      var input = event.target, file = input.files && input.files[0]; input.value = '';
+      if (!file) return;
+      var request = ++importRequest.current;
+      if (file.size > 262144) { setError('This save is too large. Choose a Renewables Tycoon JSON save under 256 KB. Your current campaign is unchanged.'); return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        if (request !== importRequest.current) return;
+        try {
+          var next = engine.restore(String(reader.result));
+          if (!next) throw new Error('Invalid campaign save');
+          props.onChange(next); setSeed(next.seed); setPendingChoice(next.eventChoice || ''); setAcquisitionPlanId(null); setTrial(null); setHour(12); setPlaying(false); setError(''); setResetOpen(false); setNotice('Campaign restored. ' + next.history.length + ' months completed.');
+        } catch (failure) { setError('This file is not a valid Renewables Tycoon save. Your current campaign is unchanged.'); }
+      };
+      reader.onerror = function () { if (request === importRequest.current) setError('The file could not be read. Your current campaign is unchanged.'); };
+      reader.readAsText(file);
+    }
+    function chooseSite(siteId) { setSelectedId(siteId); setInspectionPart('equipment'); setRecordMonth(null); }
+    function badge(text, gold) { return h('span', { className: 'ty-chip' + (gold ? ' ty-chip-gold' : '') }, text); }
+    function sectionHead(eyebrow, title, text) { return h('div', { className: 'ty-section-head' }, h('div', null, eyebrow && h('p', { className: 'ty-eyebrow' }, eyebrow), h('h2', null, title), text && h('p', null, text))); }
+    function flowStat(label, value, color) { return h('div', { className: 'ty-flow-stat', 'data-color': color }, h('strong', null, value), h('span', null, label)); }
+    function importControl() { return h('label', { className: 'ty-file', htmlFor: id + 'import' }, 'Import a saved campaign', h('input', { id: id + 'import', 'data-tycoon-import': true, type: 'file', accept: '.json,application/json', onChange: importSave })); }
+    function progressGoal(label, current, target, display, extra) {
+      return h('div', { className: 'ty-goal' }, h('div', { className: 'ty-row' }, h('span', null, label), h('strong', null, display)), h('div', { className: 'ty-meter', 'aria-hidden': true }, h('span', { style: { width: Math.min(100, Math.max(0, current / Math.max(target, .001) * 100)) + '%' } })), h('small', null, extra));
+    }
+
+    function renderOnboarding() {
+      return h(React.Fragment, null,
+        h('div', { className: 'ty-onboard' },
+          h('div', { className: 'ty-onboard-copy' }, h('p', { className: 'ty-eyebrow' }, 'Your first campaign · 12 months'), h('h1', null, 'Power a place. Build a future.'),
+            h('p', null, 'Lead North Harbor’s renewable energy cooperative. Build a resilient island network, care for your equipment, and earn your community’s trust through a year of changing weather and unexpected decisions.'),
+            h('div', { className: 'ty-actions' }, badge('Solar + wind + storage'), badge('Seeded chance events'), badge('No fossil backup')),
+            h('ol', { className: 'ty-onboard-steps' },
+              h('li', null, h('span', { className: 'ty-step-number', 'aria-hidden': true }, '1'), h('div', null, h('strong', null, 'Acquire and prepare'), h('span', null, 'Choose sites, build capacity, and schedule your service crew.'))),
+              h('li', null, h('span', { className: 'ty-step-number', 'aria-hidden': true }, '2'), h('div', null, h('strong', null, 'Read the conditions'), h('span', null, 'Respond to a monthly event and explore your operating forecast.'))),
+              h('li', null, h('span', { className: 'ty-step-number', 'aria-hidden': true }, '3'), h('div', null, h('strong', null, 'Run the month'), h('span', null, 'Deliver electricity, review the results, and reinvest.')))),
+            h('form', { className: 'ty-start-form', onSubmit: begin }, h('label', { className: 'ty-field', htmlFor: id + 'seed' }, 'Campaign seed', h('input', { id: id + 'seed', type: 'text', value: seed, maxLength: 64, required: true, onChange: function (event) { setSeed(event.target.value); }, 'data-tycoon-seed': true }), h('small', null, 'The same seed gives the same conditions. Try harbor-01 with a friend.')), h('button', { className: 'ty-primary', type: 'submit', 'data-tycoon-start': true }, 'Found the North Harbor cooperative →'))),
+          h('div', { className: 'ty-stack' }, h('div', { className: 'ty-card ty-scene-card' }, h('div', { className: 'ty-scene-head' }, sectionHead('North Harbor', 'Your island, your decisions', 'Start with an operating solar array, wind turbine, and battery.')),
+            Scene && h(Scene, { ctx: props.ctx, theme: props.theme, state: onboardingState, frame: frame, sites: engine.sites, selectedId: selectedId, onSelect: chooseSite, animate: false, reducedMotion: reduced }),
+            h('div', { className: 'ty-scene-footer' }, h('p', { className: 'ty-body' }, 'Your mission: cover at least 90% of annual electricity demand, keep cash at or above zero, and finish with community trust at 50 or higher.'))),
+            h('div', { className: 'ty-card' }, importControl()))),
+        h('p', { className: 'ty-small ty-muted' }, 'An educational strategy game with a fictional economy and simplified equipment behavior. Preview controls only explore the plan; time and finances advance when you resolve a month.'));
+    }
+
+    function renderScene() {
+      var day = frame ? frame.day : 1, hourOfDay = frame ? frame.hourOfDay : 12;
+      var clock = String(hourOfDay).padStart(2, '0') + ':00';
+      var generation = frame ? number(frame.generation) : 0;
+      var solarShare = generation > 0 ? number(frame.solar) / generation * 100 : 0;
+      var windShare = generation > 0 ? number(frame.wind) / generation * 100 : 0;
+      return h('section', { className: 'ty-card ty-scene-card', ref: sceneRef, 'data-tycoon-panel': 'scene', 'aria-label': t('stem.renewables.tycoon.network_forecast', 'Interactive network forecast') },
+        h('div', { className: 'ty-scene-head' }, h('div', { className: 'ty-section-head' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'North Harbor network'), h('h2', null, active ? 'See your plan in motion' : 'Replay your final operating month')), badge(active ? 'Planning forecast' : 'Actual final month', false))),
+        h('div', { className: 'ty-map' }, Scene && h(Scene, { ctx: props.ctx, theme: props.theme, state: state, frame: frame, totalHours: forecast.hours.length, sites: engine.sites, selectedId: selectedId, onSelect: chooseSite, onInspectDispatch: inspectDispatch, onInspectEquipment: inspectEquipment, animate: motion && !reduced, reducedMotion: reduced })),
+        h('div', { className: 'ty-scene-footer' }, frame && h(React.Fragment, null,
+          h('div', { className: 'ty-time-controls' }, h('div', { className: 'ty-clock', 'data-tycoon-clock': true }, clock, h('small', null, forecast.monthName + ' ' + day)),
+            h('div', { className: 'ty-stack', style: { gap: 5 } }, h('div', { className: 'ty-row' }, h('label', { htmlFor: id + 'day' }, (active ? 'Forecast' : 'Replay') + ' day ', h('select', { id: id + 'day', value: day, 'data-tycoon-day': true, onChange: function (event) { setPlaying(false); setHour((Number(event.target.value) - 1) * 24 + hourOfDay); } }, Array.from({ length: Math.ceil(forecast.hours.length / 24) }, function (_, index) { return h('option', { value: index + 1, key: index }, index + 1); }))),
+              h('button', { type: 'button', 'data-tycoon-play': true, 'aria-pressed': playing, disabled: reduced, onClick: function () { setPlaying(!playing); } }, playing ? 'Pause preview' : active ? 'Play forecast' : 'Play final month')),
+              h('label', { htmlFor: id + 'hour' }, 'Hour of day'), h('input', { id: id + 'hour', type: 'range', min: 0, max: 23, step: 1, value: hourOfDay, 'data-tycoon-hour': true, 'aria-valuetext': t('stem.renewables.tycoon.forecast_hour', 'Forecast hour') + ' ' + clock, onChange: function (event) { setPlaying(false); setHour((day - 1) * 24 + Number(event.target.value)); } }), renderDaylight())),
+          h('div', { className: 'ty-flow-stats', 'data-tycoon-flows': true }, flowStat('Renewable generation', power(frame && frame.generation), 'green'), flowStat('Community demand', power(frame && frame.demand), 'gold'), flowStat(frame && frame.discharge > 0 ? 'Battery → network' : 'Network → battery', power(frame && (frame.discharge || frame.charge)), 'blue'), flowStat('Unserved demand', power(frame && frame.unserved), frame && frame.unserved > .01 ? 'bad' : 'green')),
+          h('div', null, h('div', { className: 'ty-source-bar', 'aria-hidden': true }, h('span', { className: 'ty-solar', style: { width: solarShare + '%' } }), h('span', { className: 'ty-wind', style: { width: windShare + '%' } })), h('div', { className: 'ty-legend' }, h('span', null, '☀ Solar ', power(frame && frame.solar)), h('span', null, '〰 Wind ', power(frame && frame.wind)), h('span', null, 'Stored ', energy(frame && frame.stored)))),
+          h('div', { className: 'ty-row' }, h('label', { className: 'ty-check', htmlFor: id + 'motion' }, h('input', { id: id + 'motion', type: 'checkbox', checked: motion && !reduced, disabled: reduced, onChange: function (event) { setMotion(event.target.checked); } }), h('span', null, 'Animate equipment')), h('small', null, reduced ? 'Reduced motion: use the day and hour controls.' : 'Preview only · no time or money spent'))),
+          h('div', { className: 'ty-detail' }, h('label', { className: 'ty-field', htmlFor: id + 'site' }, 'Inspect a site', h('select', { id: id + 'site', ref: siteSelectRef, value: selectedSite.id, 'data-tycoon-site-select': true, onChange: function (event) { chooseSite(event.target.value); } }, engine.sites.map(function (site) { var owned = state.assets.some(function (asset) { return asset.siteId === site.id; }); return h('option', { value: site.id, key: site.id }, site.name + (owned ? ' · owned' : active && state.month < 11 ? ' · available' : ' · unowned')); }))), renderSiteDetail()),
+          frame && renderDispatch()));
+    }
+
+    function inspectHour(value) { setPlaying(false); setHour(Math.max(0, Math.min(forecast.hours.length - 1, value))); }
+    function inspectDispatch() { setPlaying(false); if (dispatchRef.current) dispatchRef.current.focus(); }
+    function inspectEquipment() {
+      if (!selectedAsset || !sceneRef.current) return;
+      setPlaying(false);
+      var summary = sceneRef.current.querySelector('[data-tycoon-inspect-toggle]');
+      if (summary) { summary.parentElement.open = true; summary.focus(); }
+    }
+    function renderDaylight() {
+      var start = Math.floor(displayHour / 24) * 24, rows = forecast.hours.slice(start, start + 24);
+      var night = !(number(frame.sunHeight) > .001);
+      return h('div', { className: 'ty-daylight', 'data-tycoon-daylight': true, 'data-day': frame.day, 'data-hour': frame.hourOfDay, 'data-night': night },
+        h('div', { className: 'ty-daylight-track', role: 'img', 'aria-label': t('stem.renewables.tycoon.daylight_window', 'Daylight window for the selected day; gold marks hours with the sun above the horizon') },
+          rows.map(function (row) { return h('span', { key: row.hour, 'aria-hidden': true, 'data-tycoon-daylight-cell': row.hourOfDay, 'data-night': !(number(row.sunHeight) > .001), 'data-sun-height': number(row.sunHeight) }); }),
+          h('i', { 'aria-hidden': true, 'data-tycoon-daylight-cursor': frame.hourOfDay, style: { left: ((frame.hourOfDay + .5) / 24 * 100) + '%' } })),
+        h('div', { className: 'ty-daylight-labels', 'aria-hidden': true }, [0, 6, 12, 18, 23].map(function (hour, index) { return h('span', { key: hour, style: { left: (index === 0 ? 0 : index === 4 ? 100 : (hour + .5) / 24 * 100) + '%' } }, String(hour).padStart(2, '0') + ':00'); })),
+        h('p', { className: 'ty-daylight-note' }, h('strong', null, night ? 'Night at this hour' : 'Daylight at this hour'), h('i', { 'aria-hidden': true }), 'Gold marks daylight, not solar output.'));
+    }
+    function renderDispatch() {
+      var start = Math.floor(displayHour / 24) * 24, rows = forecast.hours.slice(start, start + 24);
+      var daily = analysis.days.find(function (item) { return item.day === frame.day; });
+      var maximum = Math.max(10, Math.ceil(Math.max.apply(null, rows.map(function (row) { return Math.max(row.generation + row.discharge, row.demand); })) / 10) * 10);
+      var left = 48, width = 672, step = width / 24, bottom = 180;
+      function x(index) { return left + (index + 0.5) * step; }
+      function y(value) { return bottom - value / maximum * 145; }
+      function pathFor(read, top, height) { return rows.map(function (row, index) { return (index ? 'L' : 'M') + x(index).toFixed(2) + ',' + (top - read(row) * height).toFixed(2); }).join(' '); }
+      function timeLabel(value) { return String(value).padStart(2, '0') + ':00'; }
+      var mode = frame.unserved > .001 ? 'gap' : frame.curtailed > .001 ? 'surplus' : frame.discharge > .001 ? 'battery' : 'balanced';
+      var heading = { gap: 'A supply gap remains', surplus: 'More generation than this hour can use', battery: 'Stored energy bridges the gap', balanced: 'The community demand is covered' }[mode];
+      var explanation = power(frame.generation) + ' generated + ' + power(frame.discharge) + ' from storage = ' + power(frame.served) + ' delivered + ' + power(frame.charge) + ' sent to storage + ' + power(frame.curtailed) + ' curtailed.';
+      var context = mode === 'gap' ? power(frame.unserved) + ' of demand is unmet after available battery dispatch. Essential demand served: ' + percent(frame.essentialDemand ? frame.essentialServed / frame.essentialDemand : 1) + '.' : mode === 'surplus' ? 'The surplus has no available demand or charging capacity this hour. Explore storage and demand timing to use more of it.' : mode === 'battery' ? 'The battery supplies previously generated renewable energy. Its output is limited by stored energy, reserve policy, and inverter power.' : frame.charge > .001 ? 'Spare renewable generation is charging the battery for later. Storage losses are included in the simulation.' : 'Generation and available storage meet the load at this hour.';
+      return h('section', { className: 'ty-dispatch', 'aria-labelledby': id + 'dispatch-title' },
+        h('div', { className: 'ty-dispatch-heading' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Follow the energy'), h('h3', { id: id + 'dispatch-title' }, forecast.monthName + ' ' + frame.day + ' · 24-hour dispatch')), badge((daily ? daily.gapHours : 0) + ' hours with a supply gap', !!(daily && daily.gapHours))),
+        h('svg', { ref: dispatchRef, viewBox: '0 0 744 314', className: 'ty-dispatch-plot', role: 'slider', tabIndex: 0, 'data-tycoon-dispatch-chart': true, 'data-plot-left': left, 'data-plot-width': width, 'aria-label': t('stem.renewables.tycoon.dispatch_hour', 'Inspect daily dispatch hour'), 'aria-valuemin': 0, 'aria-valuemax': 23, 'aria-valuenow': frame.hourOfDay, 'aria-valuetext': timeLabel(frame.hourOfDay) + ', ' + power(frame.generation) + ' generated, ' + power(frame.demand) + ' demand, ' + power(frame.unserved) + ' unmet', 'aria-describedby': id + 'dispatch-help',
+          onClick: function (event) { var rect = event.currentTarget.getBoundingClientRect(); var index = Math.floor(((event.clientX - rect.left) / rect.width * 744 - left) / step); inspectHour(start + Math.max(0, Math.min(23, index))); event.currentTarget.focus({ preventScroll: true }); },
+          onKeyDown: function (event) { var value = frame.hourOfDay; if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') value -= 1; else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') value += 1; else if (event.key === 'Home') value = 0; else if (event.key === 'End') value = 23; else if (event.key === 'PageDown') value -= 6; else if (event.key === 'PageUp') value += 6; else return; event.preventDefault(); inspectHour(start + Math.max(0, Math.min(23, value))); } },
+          h('g', { 'aria-hidden': true },
+            [0, .5, 1].map(function (share) { return h('g', { key: share }, h('line', { x1: left, x2: left + width, y1: y(maximum * share), y2: y(maximum * share), stroke: 'var(--ty-line)', strokeWidth: 1 }), h('text', { x: left - 8, y: y(maximum * share) + 5, textAnchor: 'end' }, Math.round(maximum * share))); }),
+            h('text', { x: 12, y: 22 }, 'kW'),
+            rows.map(function (row, index) { return h('g', { key: row.hour },
+              h('rect', { x: x(index) - step * .36, y: y(row.wind), width: step * .72, height: Math.max(0, bottom - y(row.wind)), fill: 'var(--ty-green)' }),
+              h('rect', { x: x(index) - step * .36, y: y(row.generation), width: step * .72, height: Math.max(0, y(row.wind) - y(row.generation)), fill: 'var(--ty-gold)' }),
+              h('rect', { x: x(index) - step * .36, y: y(row.generation + row.discharge), width: step * .72, height: Math.max(0, y(row.generation) - y(row.generation + row.discharge)), fill: 'var(--ty-blue)' }),
+              row.unserved > .001 && h('rect', { x: x(index) - step * .2, y: y(row.demand), width: step * .4, height: Math.max(1, y(row.served) - y(row.demand)), fill: 'var(--ty-bad)' })); }),
+            h('path', { d: pathFor(function (row) { return row.demand / maximum; }, bottom, 145), fill: 'none', stroke: 'var(--ty-ink)', strokeWidth: 3, strokeDasharray: '6 4' }),
+            h('text', { x: left, y: 210 }, 'Battery fill · 0–100%'),
+            h('rect', { x: left, y: 223, width: width, height: 45, rx: 3, fill: 'var(--ty-card)', stroke: 'var(--ty-line)' }),
+            h('path', { d: 'M' + x(0) + ',268 ' + pathFor(function (row) { return row.capacity > 0 ? row.stored / row.capacity : 0; }, 268, 45).replace(/^M/, 'L') + ' L' + x(rows.length - 1) + ',268 Z', fill: 'var(--ty-blue)', opacity: .15 }),
+            h('path', { d: pathFor(function (row) { return row.capacity > 0 ? row.stored / row.capacity : 0; }, 268, 45), fill: 'none', stroke: 'var(--ty-blue)', strokeWidth: 3 }),
+            [0, 6, 12, 18, 23].map(function (value) { return h('text', { key: value, x: x(value), y: 296, textAnchor: 'middle' }, timeLabel(value)); }),
+            h('line', { x1: x(frame.hourOfDay), x2: x(frame.hourOfDay), y1: 28, y2: 273, stroke: 'var(--ty-blue)', strokeWidth: 2, strokeDasharray: '3 4' }),
+            h('circle', { cx: x(frame.hourOfDay), cy: y(frame.demand), r: 5, fill: 'var(--ty-card)', stroke: 'var(--ty-ink)', strokeWidth: 2 }))),
+        h('div', { className: 'ty-dispatch-legend' }, [['solar', 'Solar'], ['wind', 'Wind'], ['battery', 'Battery output'], ['demand', 'Demand'], ['gap', 'Supply gap']].map(function (item) { return h('span', { key: item[0] }, h('i', { className: 'ty-dispatch-swatch', 'data-source': item[0], 'aria-hidden': true }), item[1]); })),
+        h('p', { id: id + 'dispatch-help', className: 'ty-small ty-muted' }, 'Tap the chart or use arrow keys to inspect an hour. Bars show generation plus battery output; the dashed line shows demand. Battery fill is measured at the end of each hour.'),
+        h('div', { className: 'ty-hour-explanation', 'data-tycoon-hour-explanation': true, 'data-mode': mode, 'data-hour': frame.hour, 'data-generation': frame.generation, 'data-discharge': frame.discharge, 'data-served': frame.served, 'data-charge': frame.charge, 'data-curtailed': frame.curtailed, 'data-unserved': frame.unserved }, h('strong', null, timeLabel(frame.hourOfDay) + ' · ' + heading), h('p', null, explanation), h('p', null, context)),
+        daily && h('div', { className: 'ty-day-summary' }, h('div', null, h('strong', null, energy(daily.served)), h('span', null, 'Delivered today')), h('div', null, h('strong', null, energy(daily.unserved)), h('span', null, 'Unserved today')), h('div', null, h('strong', null, energy(daily.curtailed)), h('span', null, 'Curtailed today'))),
+        h('div', { className: 'ty-gap-actions' }, h('button', { type: 'button', 'data-tycoon-next-gap': true, disabled: !analysis.gapHourIndices.length, onClick: function () { var next = analysis.gapHourIndices.find(function (value) { return value > displayHour; }); inspectHour(next == null ? analysis.gapHourIndices[0] : next); } }, analysis.gapHours ? 'Next supply gap · ' + analysis.gapHours + ' hours this month' : 'No supply gaps this month'), h('button', { type: 'button', 'data-tycoon-peak-surplus': true, disabled: analysis.peakCurtailmentHour == null, onClick: function () { inspectHour(analysis.peakCurtailmentHour); } }, 'Inspect largest surplus')),
+        h('details', { className: 'ty-day-table' }, h('summary', null, 'Exact hourly readings for this day'), h('div', { className: 'ty-table-scroll', tabIndex: 0, role: 'region', 'aria-label': t('stem.renewables.tycoon.daily_readings', 'Daily dispatch readings, scroll horizontally for all columns') }, h('table', { className: 'ty-ledger' }, h('caption', { className: 'ty-sr' }, 'Power in kilowatts and battery storage at the end of each hour'), h('thead', null, h('tr', null, ['Hour', 'Solar kW', 'Wind kW', 'Demand kW', 'Battery out kW', 'Charge kW', 'Gap kW', 'Curtailed kW', 'Stored kWh'].map(function (label) { return h('th', { key: label, scope: 'col' }, label); }))), h('tbody', null, rows.map(function (row) { return h('tr', { key: row.hour, 'data-current': row.hour === frame.hour }, h('th', { scope: 'row' }, h('button', { type: 'button', onClick: function () { inspectHour(row.hour); }, 'aria-label': t('stem.renewables.tycoon.inspect_hour', 'Inspect hour') + ' ' + timeLabel(row.hourOfDay) }, timeLabel(row.hourOfDay))), ['solar', 'wind', 'demand', 'discharge', 'charge', 'unserved', 'curtailed', 'stored'].map(function (key) { return h('td', { key: key }, row[key].toFixed(1)); })); }))))));
+    }
+
+    function renderSiteDetail() {
+      var spec = engine.catalog[selectedSite.type];
+      if (!selectedAsset) {
+        var totalCost = spec.cost + selectedSite.landCost;
+        return h(React.Fragment, null, h('div', { className: 'ty-row' }, h('h3', null, selectedSite.name), badge('Available site', false)),
+          h('p', { className: 'ty-body ty-muted' }, spec.name + ' site. Acquisition includes the equipment and site rights; new equipment becomes available next month.'),
+          h('div', { className: 'ty-detail-grid' }, h('div', null, 'Build capacity', h('strong', null, selectedSite.type === 'battery' ? energy(spec.capacity) + ' / ' + power(spec.power) : power(spec.capacity))), h('div', null, 'Total acquisition', h('strong', null, money(totalCost)))),
+          active && h('button', { className: 'ty-primary', type: 'button', disabled: state.month >= 11 || state.cash < totalCost, 'data-tycoon-buy': selectedSite.id, onClick: function () { commit({ type: 'buy', siteId: selectedSite.id }, selectedSite.name + ' acquired. Construction completes next month.'); } }, state.month >= 11 ? 'Construction would finish after the campaign' : state.cash < totalCost ? 'Insufficient cash · ' + money(totalCost) : 'Acquire ' + selectedSite.name + ' · ' + money(totalCost)), active && renderAcquisitionPlan());
+      }
+      var building = selectedAsset.readyMonth > state.month;
+      var service = selectedAsset.serviceMonth === state.month;
+      var displayedStatus = selectedFrame ? selectedFrame.status : building ? 'building' : service ? 'service' : selectedAsset.fault ? 'fault' : 'operating';
+      var status = { building: 'Under construction', service: 'Crew on site', fault: 'Fault · repair needed', idle: 'Idle', operating: 'Operating' }[displayedStatus] || 'Operating';
+      var displayedCondition = selectedFrame && typeof selectedFrame.condition === 'number' ? selectedFrame.condition : selectedAsset.condition;
+      var serviceDisabled = !active || building || service || !outlook.crewAvailable || state.cash < spec.serviceCost;
+      var serviceReason = building ? 'Available after construction' : service ? 'Crew assigned this month' : !outlook.crewAvailable ? 'Crew already assigned' : state.cash < spec.serviceCost ? 'Insufficient cash for service' : 'Schedule service · ' + money(spec.serviceCost);
+      return h(React.Fragment, null,
+        h('div', { className: 'ty-row' }, h('h3', null, selectedSite.name), h('span', { 'data-tycoon-equipment-status': displayedStatus }, badge(status, displayedStatus === 'building' || displayedStatus === 'service' || displayedStatus === 'fault'))),
+        h('div', { className: 'ty-detail-grid' }, h('div', null, spec.name, h('strong', null, selectedAsset.type === 'battery' ? energy(spec.capacity) + ' / ' + power(spec.power) : power(spec.capacity))), h('div', null, active ? 'At this forecast hour' : 'At this replay hour', h('strong', null, selectedFrame ? displayedStatus === 'operating' || displayedStatus === 'idle' ? power(selectedFrame.power) : status : 'Campaign complete'))),
+        h('div', null, h('div', { className: 'ty-row ty-small' }, h('span', null, 'Equipment condition'), h('strong', null, Math.round(displayedCondition) + '%')), h('div', { className: 'ty-meter', 'aria-hidden': true }, h('span', { style: { width: Math.max(0, Math.min(100, displayedCondition)) + '%' } }))),
+        renderInspection(),
+        h('div', { className: 'ty-actions' }, active && h('button', { type: 'button', disabled: serviceDisabled, 'data-tycoon-service': selectedAsset.id, onClick: function () { commit({ type: 'service', assetId: selectedAsset.id }, 'Service scheduled at ' + selectedSite.name + '. Allow for 48 hours offline this month.'); } }, serviceReason), props.onInspect && h('button', { type: 'button', 'data-tycoon-inspect': selectedAsset.type, onClick: function () { props.onInspect(selectedAsset.type); } }, 'Explore mechanism ↗')),
+        h('p', { className: 'ty-small ty-muted' }, 'One service crew per month. Planned work costs ' + money(spec.serviceCost) + ' and takes equipment offline for 48 hours. Condition influences performance and fault risk.'),
+        active && building && renderBuildOrder(), active && (service ? renderWorkOrder() : renderServicePlan()), renderEquipmentRecord());
+    }
+
+    function renderAcquisitionPlan() {
+      var plan = acquisitionPlan;
+      function dataAttributes(prefix, name, values) {
+        var attributes = {}; attributes[prefix] = name;
+        Object.keys(values).forEach(function (key) { attributes['data-' + key.replace(/[A-Z]/g, function (letter) { return '-' + letter.toLowerCase(); })] = values[key]; });
+        return attributes;
+      }
+      function studyCase(name, title) {
+        var values = plan.study[name];
+        return h('section', Object.assign({ className: 'ty-fit-case' }, dataAttributes('data-tycoon-study', name, values)),
+          h('h5', null, title), h('strong', null, (values.coverage * 100).toFixed(1) + '%'), h('small', null, 'of demand served'),
+          h('div', { className: 'ty-fit-bar', 'aria-hidden': true }, h('span', { style: { width: Math.max(0, Math.min(100, values.coverage * 100)) + '%' } })),
+          h('dl', null, h('dt', null, 'Unserved electricity'), h('dd', null, energy(values.unserved)), h('dt', null, 'Curtailed surplus'), h('dd', null, energy(values.curtailed)), h('dt', null, 'Operating surplus'), h('dd', null, money(values.profit))));
+      }
+      var reasons = { cash: 'Available cash does not cover this acquisition. Compare the equipment and site-rights price with your budget.', late: 'Construction would finish after the campaign ends. Acquisitions are closed in December.', ended: 'This campaign has ended.', owned: 'This site already belongs to the cooperative.', unknown: 'Select an available site.' };
+      return h('details', { className: 'ty-expansion', key: 'acquisition-plan:' + acquisitionKey, open: acquisitionOpen, 'data-tycoon-acquisition-plan': true, 'data-site-id': selectedSite.id, 'data-eligible': plan ? plan.eligible : undefined, 'data-block': plan ? plan.acquisitionBlock || 'none' : undefined, onToggle: function (event) { var expanded = event.currentTarget.open, key = acquisitionKey; setAcquisitionPlanId(function (previous) { return expanded ? key : previous === key ? null : previous; }); } },
+        h('summary', { ref: acquisitionSummaryRef, 'data-tycoon-acquisition-compare': true }, 'Compare acquisition cost and resource fit'),
+        acquisitionOpen && plan && h('div', { className: 'ty-expansion-body' },
+          h('label', { className: 'ty-field', htmlFor: id + 'compare-site' }, 'Compare another available site', h('select', { id: id + 'compare-site', value: selectedSite.id, 'data-tycoon-acquisition-candidate': true, onChange: function (event) { var siteId = event.target.value; chooseSite(siteId); setAcquisitionPlanId(JSON.stringify([state.seed, state.month, siteId])); } }, engine.sites.filter(function (site) { return !state.assets.some(function (asset) { return asset.siteId === site.id; }); }).map(function (site) { return h('option', { value: site.id, key: site.id }, site.name + ' · ' + money(engine.catalog[site.type].cost + site.landCost)); }))),
+          h('div', null, h('p', { className: 'ty-eyebrow' }, 'Acquisition budget'), h('h4', null, selectedSite.name)),
+          h('dl', { className: 'ty-build-budget' }, [['equipmentCost', 'Equipment'], ['landCost', 'Site rights'], ['totalCost', 'Total paid on acquisition'], ['monthlyCost', 'Monthly operating cost after opening']].map(function (item) { return h('div', { key: item[0], 'data-tycoon-acquisition-cost': item[0], 'data-value': plan[item[0]] }, h('dt', null, item[1]), h('dd', null, money(plan[item[0]]))); })),
+          !plan.eligible ? h('p', { className: 'ty-small', 'data-tycoon-acquisition-blocked': plan.acquisitionBlock }, reasons[plan.acquisitionBlock] || 'This site cannot be acquired in the current plan.') : h(React.Fragment, null,
+            h('p', { className: 'ty-small' }, 'Acquire during ' + engine.months[state.month] + ' · opens in ' + plan.readyMonthName + '. No electricity is produced or stored by the new equipment during construction.'),
+            h('dl', { className: 'ty-build-budget' }, h('div', { 'data-tycoon-acquisition-cost': 'cashAfterPurchase', 'data-value': plan.cashAfterPurchase }, h('dt', null, 'Cash immediately after purchase'), h('dd', null, money(plan.cashAfterPurchase))), h('div', { 'data-tycoon-acquisition-cost': 'constructionCost', 'data-value': plan.constructionCost }, h('dt', null, 'This month’s construction overhead'), h('dd', null, money(plan.constructionCost)))),
+            h('div', { className: 'ty-fit-grid' }, ['current', 'proposed'].map(function (scenario) { var values = plan.currentMonth[scenario]; return h('div', Object.assign({ key: scenario, className: 'ty-fit-case' }, dataAttributes('data-tycoon-acquisition-scenario', scenario, values)), h('h5', null, scenario === 'current' ? 'Keep current plan' : 'Acquire this site'), h('strong', { style: { fontSize: 20 } }, money(values.endingCash)), h('small', null, engine.months[state.month] + ' closing cash')); })),
+            h('p', { className: 'ty-inspector-footnote' }, 'Closing cash includes the purchase price once, construction overhead, and the current plan’s operating result.'),
+            plan.currentMonth.proposed.endingCash < 0 && h('p', { className: 'ty-small', style: { color: 'var(--ty-bad)' } }, 'This forecast runs out of cash before the end of the month.'),
+            h('div', { className: 'ty-fit-study' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Hypothetical resource-fit study'), h('h4', null, 'What if this site were already built?')),
+              h('p', { className: 'ty-small ty-muted' }, 'Both cases use ' + engine.months[state.month] + ' weather, demand, and your current policy. The second case makes only this new site available now, with 100% condition and empty storage. Existing construction, service, and known faults stay in place.'),
+              h('div', { className: 'ty-fit-grid' }, studyCase('current', 'Current network'), studyCase('proposed', 'With this site operating')),
+              h('p', { className: 'ty-expansion-result' }, 'Demand coverage changes by ' + (plan.study.delta.coverage >= 0 ? '+' : '') + (plan.study.delta.coverage * 100).toFixed(1) + ' percentage points. Operating surplus changes by ' + (plan.study.delta.profit >= 0 ? '+' : '') + money(plan.study.delta.profit) + ' under these same conditions.'),
+              h('p', Object.assign({ className: 'ty-small' }, dataAttributes('data-tycoon-study-candidate', selectedSite.id, plan.study.candidate)), selectedSite.type === 'battery' ? 'New store in this study: ' + energy(plan.study.candidate.charge) + ' absorbed and ' + energy(plan.study.candidate.discharge) + ' supplied. A battery shifts available electricity; it does not generate energy.' : 'New site in this study: ' + energy(plan.study.candidate.generation) + ' generated. Any surplus still needs demand or storage to be useful.'),
+              h('p', { className: 'ty-inspector-footnote' }, 'This is a comparison using current conditions, not a forecast of next month. Operating surplus means energy revenue minus operating costs; the study excludes the acquisition price. Neither case predicts new faults.')),
+            !state.eventChoice && h('p', { className: 'ty-small ty-muted' }, 'Your event response is not confirmed yet. Confirming it may change both comparisons.'),
+            h('p', { className: 'ty-inspector-footnote' }, 'Comparing sites spends no money. The map continues to show your actual current plan.'),
+            h('button', { type: 'button', className: 'ty-primary', 'data-tycoon-acquisition-book': selectedSite.id, onClick: function () { commit({ type: 'buy', siteId: selectedSite.id }, selectedSite.name + ' acquired. The site opens in ' + plan.readyMonthName + '. Inspect its construction stages in the current forecast.'); } }, 'Acquire ' + selectedSite.name + ' · ' + money(plan.totalCost)))));
+    }
+
+    function renderBuildOrder() {
+      var opening = engine.months[selectedAsset.readyMonth], totalHours = forecast.hours.length;
+      var stages = [{ hour: 0, id: 'groundwork', label: 'Site preparation' }, { hour: Math.ceil(totalHours / 3), id: 'assembly', label: 'Equipment assembly' }, { hour: Math.ceil(totalHours * 2 / 3), id: 'checks', label: 'Connection checks' }];
+      var stage = displayHour < stages[1].hour ? stages[0] : displayHour < stages[2].hour ? stages[1] : stages[2];
+      return h('section', { className: 'ty-build-order', 'data-tycoon-build-order': selectedSite.id, 'data-stage': stage.id, 'data-ready-month': selectedAsset.readyMonth },
+        h('div', { className: 'ty-row' }, h('h4', null, 'Construction booked'), badge('Opens in ' + opening, true)),
+        h('p', { className: 'ty-small' }, money(engine.catalog[selectedAsset.type].cost + selectedSite.landCost) + ' acquisition price already paid. The new equipment remains isolated for all of ' + engine.months[state.month] + '.'),
+        h('div', { className: 'ty-actions' }, stages.map(function (item) { return h('button', { type: 'button', key: item.id, 'data-tycoon-build-stage': item.id, 'data-hour': item.hour, 'aria-pressed': item.id === stage.id, onClick: function () { previewService(selectedSite.id, item.hour); } }, item.label); })),
+        h('small', null, 'Illustrative construction stages follow the selected forecast hour. Scrubbing never commissions the site. Resolve this month to make the equipment available in ' + opening + '.'));
+    }
+
+    function renderOperatingLimits() {
+      var limits = equipmentLimits;
+      if (!limits) return null;
+      var battery = limits.type === 'battery', storage = limits.storage, generation = limits.generation;
+      var labels = { resource: limits.type === 'solar' ? 'Sunlight limits potential' : 'Wind limits potential', condition: 'Condition reduces output', building: 'Construction isolation', service: 'Service isolation', fault: 'Fault isolation', converter: limits.pressure === 'surplus' ? 'Charging power limit reached' : 'Discharge power limit reached', empty: 'Stored energy exhausted', reserve: 'Protected reserve retained', full: 'Storage capacity reached' };
+      var pressureText = limits.pressure === 'shortage' ? power(frame.unserved) + ' of community demand remains unmet after dispatch.' : limits.pressure === 'surplus' ? power(frame.curtailed) + ' of renewable surplus remains unused after dispatch.' : 'Demand is covered and no renewable surplus remains unused at this hour.';
+      var readings = battery ? [
+        ['chargePowerLimit', 'Charging converter limit', storage.chargePowerLimit], ['chargeEnergyLimit', 'Charging limit from free capacity', storage.chargeEnergyLimit],
+        ['dischargePowerLimit', 'Discharge converter limit', storage.dischargePowerLimit], ['dischargeEnergyLimit', 'Discharge limit from stored energy', storage.dischargeEnergyLimit],
+        ['ordinaryEnergyLimit', 'Discharge limit above reserve', storage.ordinaryEnergyLimit], ['actualCharge', 'Actual charging', storage.actualCharge], ['actualDischarge', 'Actual output', storage.actualDischarge]
+      ] : [['ratedPower', 'Rated generator power', limits.ratedPower], ['resourcePower', 'Weather/site potential', generation.resourcePower], ['weatherGap', 'Unavailable from weather/site', Math.max(0, limits.ratedPower - generation.resourcePower)], ['conditionLoss', 'Condition reduction', generation.conditionLoss], ['isolationLoss', 'Potential isolated from network', generation.isolationLoss], ['actualPower', 'Actual production', generation.actualPower]];
+      var parts = battery ? [{ id: 'output', label: storage.actualCharge > 0 ? 'Charging' : 'Output', value: Math.abs(limits.actualPower), color: storage.actualCharge > 0 ? 'var(--ty-blue)' : 'var(--ty-green)' }] : [
+        { id: 'output', label: 'Produced', value: generation.actualPower, color: 'var(--ty-green)' }, { id: 'condition', label: 'Condition', value: generation.conditionLoss, color: 'var(--ty-gold)' },
+        { id: 'isolation', label: 'Isolation', value: generation.isolationLoss, color: 'var(--ty-bad)' }, { id: 'weather', label: 'Weather/site', value: Math.max(0, limits.ratedPower - generation.resourcePower), color: 'var(--ty-muted)' }
+      ];
+      var reviewService = active && selectedCare && selectedCare.canService && (limits.binding.indexOf('fault') >= 0 || limits.binding.indexOf('condition') >= 0);
+      var reviewPolicy = active && battery && limits.binding.indexOf('reserve') >= 0;
+      var candidate = active && state.month < 11 && battery && limits.binding.some(function (item) { return item === 'converter' || item === 'empty' || item === 'full'; }) ? engine.sites.filter(function (site) { return site.type === 'battery' && !state.assets.some(function (asset) { return asset.siteId === site.id; }); }).sort(function (a, b) { return a.landCost - b.landCost; })[0] : null;
+      var next = limits.nextConstrainedHour;
+      return h('section', { className: 'ty-operating-limits', 'data-tycoon-operating-limits': limits.assetId, 'data-hour': limits.hour, 'data-context': limits.context, 'data-pressure': limits.pressure, 'data-type': limits.type },
+        h('h5', null, battery ? 'What limits this battery?' : 'From rated power to actual production'),
+        h('p', { className: 'ty-limit-status' }, pressureText),
+        limits.binding.length ? h('div', { className: 'ty-limit-bindings', 'aria-label': t('stem.renewables.tycoon.operating_limits', 'Observed equipment limits at this hour') }, limits.binding.map(function (kind) { return h('span', { key: kind, 'data-tycoon-limit-binding': kind }, labels[kind]); })) : h('p', { className: 'ty-small ty-muted', 'data-tycoon-limit-clear': true }, limits.pressure === 'balanced' ? 'No limit is leaving demand unmet or surplus unused at this hour. The readings below show the equipment’s power and energy limits.' : 'This equipment has no diagnosed limit responsible for the remaining network imbalance. Inspect the other sites and the daily dispatch.'),
+        h('div', { className: 'ty-limit-breakdown', 'data-tycoon-limit-utilization': limits.ratedPower > 0 ? Math.abs(limits.actualPower) / limits.ratedPower : 0, 'data-charging': battery && limits.actualPower < 0, 'aria-hidden': true }, parts.map(function (part) { return h('span', { key: part.id, 'data-part': part.id, 'data-value': part.value, style: { width: Math.max(0, Math.min(100, part.value / Math.max(1, limits.ratedPower) * 100)) + '%' } }); })),
+        h('div', { className: 'ty-limit-legend', 'aria-hidden': true }, parts.map(function (part) { return h('span', { key: part.id }, h('i', { style: { background: part.color } }), part.label); }), battery && h('span', null, power(Math.abs(limits.actualPower)) + ' / ' + power(limits.ratedPower) + ' converter power')),
+        h('dl', { className: 'ty-limit-readings' }, readings.map(function (item) { return h('div', { key: item[0], 'data-tycoon-limit-metric': item[0], 'data-value': item[2] }, h('dt', null, item[1]), h('dd', null, power(item[2]))); })),
+        h('p', { className: 'ty-inspector-footnote' }, battery ? 'Energy ceilings use storage at the start of this one-hour interval and include conversion efficiency. The converter and energy ceilings both apply; the smaller one limits transfer. Protected energy is available only for remaining essential demand.' : 'Weather/site potential is calculated before condition and isolation. These reductions explain production, not guaranteed electricity delivered to customers. Curtailment is measured for the whole network and is not assigned to individual generators.'),
+        h('button', { type: 'button', 'data-tycoon-limit-next': true, 'data-hour': next, disabled: next == null, onClick: function () { if (next != null) inspectHour(next); } }, next == null ? 'No later constrained hour this month' : 'Inspect next constrained hour · day ' + (Math.floor(next / 24) + 1) + ' at ' + String(next % 24).padStart(2, '0') + ':00'),
+        (reviewService || reviewPolicy || candidate) && h('div', { className: 'ty-limit-actions' },
+          reviewService && h('button', { type: 'button', 'data-tycoon-limits-review': 'service', onClick: function () { setPlanAssetId(selectedPlanKey); var summary = sceneRef.current && sceneRef.current.querySelector('[data-tycoon-service-compare]'); if (summary) summary.focus(); } }, 'Compare service cost and impact'),
+          reviewPolicy && h('button', { type: 'button', 'data-tycoon-limits-review': 'policy', onClick: function () { setTrial({ key: trialKey, reserve: state.policy.reserve, flex: state.policy.flex }); if (trialSummaryRef.current) trialSummaryRef.current.focus(); } }, 'Try a different reserve policy'),
+          candidate && h('button', { type: 'button', 'data-tycoon-limits-review': 'storage', 'data-site-id': candidate.id, onClick: function () { var key = JSON.stringify([state.seed, state.month, candidate.id]); focusAcquisition.current = key; chooseSite(candidate.id); setAcquisitionPlanId(key); } }, 'Review another battery site')),
+        (reviewService || reviewPolicy || candidate) && h('p', { className: 'ty-inspector-footnote' }, 'Reviewing options does not spend cash or book work. Compare the full-month tradeoffs; new equipment cannot open until next month.'));
+    }
+
+    function renderBatteryLedger() {
+      var pack = balance && selectedAsset && balance.batteries.find(function (item) { return item.assetId === selectedAsset.id; });
+      if (!pack) return null;
+      var fields = [['startStored', 'Stored at start'], ['charge', 'Absorbed from network'], ['discharge', 'Supplied to network'], ['loss', 'Conversion losses'], ['endStored', 'Stored at end'], ['reserveFloor', 'Protected reserve threshold'], ['ordinaryDischarge', 'Output from above reserve'], ['reserveDischarge', 'Reserve used for essential demand']];
+      function nextTransfer(charging) {
+        var row = forecast.hours.find(function (item) { var asset = item.hour > displayHour && item.assets.find(function (unit) { return unit.id === pack.assetId; }); return asset && (charging ? asset.power < -1e-7 : asset.power > 1e-7); });
+        return row ? row.hour : null;
+      }
+      return h('section', { className: 'ty-battery-ledger', 'data-tycoon-battery-ledger': pack.assetId, 'data-hour': balance.hour, 'data-context': balance.context, 'data-status': pack.status },
+        h('h5', null, 'Inside the battery · this one-hour interval'),
+        h('div', { className: 'ty-battery-track', 'aria-hidden': true }, h('span', { className: 'ty-battery-fill', style: { width: Math.max(0, Math.min(100, pack.endStored / Math.max(1, pack.capacity) * 100)) + '%' } }), h('span', { className: 'ty-battery-threshold', style: { left: pack.reserveFloor / Math.max(1, pack.capacity) * 100 + '%' } })),
+        h('p', { className: 'ty-small ty-muted' }, percent(pack.capacity > 0 ? pack.endStored / pack.capacity : 0) + ' full at the end of the hour · gold line marks the reserve threshold.'),
+        h('dl', null, fields.map(function (item) { return h('div', { key: item[0], 'data-tycoon-battery-reading': item[0], 'data-value': pack[item[0]] }, h('dt', null, item[1]), h('dd', null, number(pack[item[0]]).toFixed(2) + ' kWh')); })),
+        h('p', { className: 'ty-small ty-muted' }, 'Opening energy + electricity absorbed = closing energy + electricity supplied + conversion losses. Values cover one simulated hour.'),
+        h('p', { className: 'ty-small', 'data-tycoon-battery-reserve-use': pack.reserveDischarge > 1e-7 }, !pack.available ? 'This pack is isolated. Any stored energy remains in the pack and cannot supply or absorb electricity.' : pack.reserveDischarge > 1e-7 ? 'Essential demand needs protected energy this hour. Available energy above reserve across the fleet is used before releasing this reserve.' : 'Protected reserve remains available for essential needs. Ordinary demand uses energy above that threshold first.'),
+        h('div', { className: 'ty-actions' }, [true, false].map(function (charging) { var next = nextTransfer(charging); return h('button', { key: String(charging), type: 'button', 'data-tycoon-battery-next': charging ? 'charge' : 'discharge', 'data-hour': next, disabled: next == null, onClick: function () { if (next != null) inspectHour(next); } }, next == null ? charging ? 'No later charging hour' : 'No later discharge hour' : charging ? 'Inspect next charging hour' : 'Inspect next discharge hour'); })),
+        active && h('button', { type: 'button', 'data-tycoon-battery-policy': true, onClick: function () { setTrial({ key: trialKey, reserve: state.policy.reserve, flex: state.policy.flex }); if (trialSummaryRef.current) trialSummaryRef.current.focus(); } }, 'Compare reserve and demand policies'),
+        h('p', { className: 'ty-inspector-footnote' }, 'Charging and discharging each use the model’s 95% conversion efficiency. The reserve threshold is a policy priority, not a physically separate battery.'));
+    }
+
+    function renderEquipmentDay() {
+      if (!equipmentDay) return null;
+      var day = equipmentDay, battery = day.type === 'battery', current = day.rows[displayHour - day.startHour];
+      if (!current) return null;
+      var left = 56, width = 624, step = width / 24, zero = battery ? 140 : 230, unit = (battery ? 90 : 180) / day.ratedPower;
+      var clockText = String(current.hourOfDay).padStart(2, '0') + ':00';
+      var direction = current.flow === 'isolated' ? 'isolated' : current.flow === 'idle' ? 'connected idle' : current.flow === 'charge' ? 'charging' : battery ? 'to network' : 'generated';
+      var currentText = clockText + ' · ' + current.title + ' · ' + power(Math.abs(current.power)) + ' ' + direction;
+      var colors = { export: 'var(--ty-green)', charge: 'var(--ty-blue)', idle: 'var(--ty-muted)', isolated: 'var(--ty-gold)', fault: 'var(--ty-bad)' };
+      function color(row) { return colors[row.reason === 'fault' ? 'fault' : row.flow]; }
+      function symbol(row) { return row.reason === 'fault' ? '!' : row.flow === 'isolated' ? '×' : row.flow === 'charge' ? '−' : row.flow === 'export' ? '+' : '·'; }
+      function select(index) { inspectHour(day.startHour + Math.max(0, Math.min(23, index))); }
+      function keyDown(event) {
+        var next = current.hourOfDay;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next -= 1;
+        else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next += 1;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = 23;
+        else if (event.key === 'PageUp') next += 6;
+        else if (event.key === 'PageDown') next -= 6;
+        else return;
+        event.preventDefault(); select(next);
+      }
+      var ticks = battery ? [day.ratedPower, 0, -day.ratedPower] : [day.ratedPower, day.ratedPower / 2, 0];
+      var metrics = battery ? [['charge', 'Absorbed'], ['discharge', 'Supplied'], ['idleHours', 'Connected idle'], ['isolatedHours', 'Isolated']]
+        : [['generation', 'Generated'], ['idleHours', 'Connected idle'], ['isolatedHours', 'Isolated']];
+      var legends = battery ? [['export', '+', 'Supplying'], ['charge', '−', 'Charging'], ['idle', '·', 'Idle'], ['isolated', '×', 'Isolated'], ['fault', '!', 'Fault']]
+        : [['export', '+', 'Generating'], ['idle', '·', 'Idle'], ['isolated', '×', 'Isolated'], ['fault', '!', 'Fault']];
+      return h('section', { className: 'ty-equipment-day', 'data-tycoon-equipment-day': day.assetId, 'data-context': day.context, 'data-day': day.day, 'data-hour': displayHour, 'data-type': day.type, 'data-rated-power': day.ratedPower, 'aria-labelledby': id + 'equipment-day-title' },
+        h('div', { className: 'ty-equipment-day-heading' }, h('h5', { id: id + 'equipment-day-title' }, '24-hour operation'), h('span', null, forecast.monthName + ' · day ' + day.day + ' · ' + (day.context === 'replay' ? 'recorded replay' : 'forecast'))),
+        h('p', { className: 'ty-small ty-muted', id: id + 'equipment-day-help' }, 'Select an hour to inspect this equipment across the map and energy path. Use arrow keys for one hour, Page Up/Down for six, or Home/End for the first/last hour.'),
+        h('svg', { className: 'ty-equipment-day-plot', viewBox: '0 0 720 310', role: 'slider', tabIndex: 0, 'aria-label': t('renewables.tycoon.equipmentDay', 'Equipment daily power chart'), 'aria-valuemin': 0, 'aria-valuemax': 23, 'aria-valuenow': current.hourOfDay, 'aria-valuetext': currentText, 'aria-describedby': id + 'equipment-day-help ' + id + 'equipment-day-current', 'data-tycoon-equipment-day-plot': true, 'data-plot-left': left, 'data-plot-width': width, 'data-zero-y': zero, 'data-unit-height': unit, onKeyDown: keyDown, onClick: function (event) { var rect = event.currentTarget.getBoundingClientRect(); if (rect.width <= 0) return; event.currentTarget.focus({ preventScroll: true }); select(Math.floor(((event.clientX - rect.left) / rect.width * 720 - left) / step)); } },
+          h('g', { 'aria-hidden': true },
+            h('rect', { x: left + current.hourOfDay * step, y: 28, width: step, height: 252, fill: 'var(--ty-blue)', opacity: .1 }),
+            h('text', { x: left, y: 22 }, 'kW'),
+            ticks.map(function (value) { var y = zero - value * unit; return h('g', { key: value }, h('line', { x1: left, x2: left + width, y1: y, y2: y, stroke: 'var(--ty-line)', strokeWidth: value === 0 ? 2 : 1, strokeDasharray: value === 0 ? undefined : '3 5' }), h('text', { x: left - 10, y: y + 5, textAnchor: 'end' }, String(value))); }),
+            day.rows.map(function (row) { var x = left + (row.hourOfDay + .5) * step, y = zero - row.power * unit; return h('rect', { key: row.hour, x: x - step * .32, y: Math.min(zero, y), width: step * .64, height: Math.abs(row.power * unit), rx: 2, fill: color(row), opacity: row.hour === current.hour ? 1 : .72, 'data-tycoon-equipment-day-bar': row.hour, 'data-power': row.power, 'data-status': row.status, 'data-flow': row.flow }, h('title', null, String(row.hourOfDay).padStart(2, '0') + ':00 · ' + row.title + ' · ' + power(row.power))); }),
+            h('line', { x1: left + (current.hourOfDay + .5) * step, x2: left + (current.hourOfDay + .5) * step, y1: 28, y2: 280, stroke: 'var(--ty-blue)', strokeWidth: 2, strokeDasharray: '4 4' }),
+            h('circle', { cx: left + (current.hourOfDay + .5) * step, cy: zero - current.power * unit, r: 5, fill: 'var(--ty-card)', stroke: color(current), strokeWidth: 3 }),
+            day.rows.map(function (row) { return h('g', { key: row.hour, 'data-tycoon-equipment-day-status': row.hour, 'data-reason': row.reason, 'data-flow': row.flow, 'data-status': row.status }, h('rect', { x: left + row.hourOfDay * step + 1, y: 262, width: step - 2, height: 16, rx: 3, fill: color(row) }), h('text', { className: 'ty-equipment-day-symbol', x: left + (row.hourOfDay + .5) * step, y: 275, textAnchor: 'middle' }, symbol(row))); }),
+            [0, 6, 12, 18, 23].map(function (value) { return h('text', { key: value, x: left + (value + .5) * step, y: 301, textAnchor: 'middle' }, String(value).padStart(2, '0')); }))),
+        h('div', { className: 'ty-equipment-day-legend' }, legends.map(function (item) { return h('span', { key: item[0] }, h('b', { style: { color: colors[item[0]] }, 'aria-hidden': true }, item[1]), item[2]); })),
+        h('p', { className: 'ty-small ty-muted' }, battery ? 'Above zero: supplying the network. Below zero: charging. The scale stays fixed at ±' + day.ratedPower + ' kW.' : 'Generated power before network dispatch; unused surplus can be curtailed. The scale stays fixed at ' + day.ratedPower + ' kW.'),
+        h('label', { className: 'ty-field', htmlFor: id + 'equipment-hour' }, h('span', null, 'Equipment hour of day · ' + clockText), h('input', { id: id + 'equipment-hour', type: 'range', min: 0, max: 23, step: 1, value: current.hourOfDay, 'aria-valuetext': currentText, 'aria-describedby': id + 'equipment-day-current', 'data-tycoon-equipment-day-hour': true, onChange: function (event) { select(Number(event.target.value)); } })),
+        h('div', { className: 'ty-equipment-day-current', id: id + 'equipment-day-current', 'data-tycoon-equipment-day-current': true, 'data-reason': current.reason, 'data-power': current.power, 'data-hour-of-day': current.hourOfDay }, h('strong', null, clockText + ' · ' + current.title), h('span', null, power(Math.abs(current.power)) + ' ' + direction + (battery ? ' · ' + current.stored.toFixed(1) + ' kWh stored at hour end' : ''))),
+        h('div', { className: 'ty-equipment-day-nav' }, h('button', { type: 'button', 'data-tycoon-equipment-day-nav': 'previous', disabled: day.startHour === 0, onClick: function () { inspectHour(displayHour - 24); } }, '← Previous day'), h('button', { type: 'button', 'data-tycoon-equipment-day-nav': 'next', disabled: day.endHour >= forecast.hours.length - 1, onClick: function () { inspectHour(displayHour + 24); } }, 'Next day →')),
+        h('dl', { className: 'ty-equipment-day-totals', 'data-battery': battery }, metrics.map(function (metric) { var hours = metric[0] === 'idleHours' || metric[0] === 'isolatedHours'; return h('div', { key: metric[0], 'data-tycoon-equipment-day-metric': metric[0], 'data-value': day.totals[metric[0]] }, h('dt', null, metric[1]), h('dd', null, hours ? day.totals[metric[0]] + ' h' : energy(day.totals[metric[0]]))); })),
+        h('p', { className: 'ty-inspector-footnote' }, 'Totals cover this equipment’s 24 one-hour intervals. Idle equipment remains connected; isolated equipment cannot exchange power. ' + (day.context === 'forecast' ? 'Forecasts include known outages; new faults are revealed when the month resolves.' : 'The replay includes faults recorded during this month.')));
+    }
+
+    function renderInspection() {
+      if (!inspection) return null;
+      var battery = inspection.type === 'battery', wind = inspection.type === 'wind';
+      var isolated = inspection.flow === 'isolated', moving = inspection.flow === 'charge' || inspection.flow === 'export';
+      var spec = engine.catalog[inspection.type];
+      var flowText = isolated ? 'Grid connection isolated' : !moving ? 'Connected · no electrical transfer' : inspection.flow === 'charge' ? 'Network → battery · ' + power(Math.abs(inspection.power)) : battery ? 'Battery → network · ' + power(inspection.power) : 'Production → network · ' + power(inspection.power);
+      var equipmentText = inspection.reason === 'fault' ? active ? 'This unit is disconnected because of a known fault. Compare the repair forecast below to see what the 48-hour outage and return would change.' : 'This unit was disconnected by a fault at the selected replay hour. The replay shows the recorded operating result; it does not change the completed campaign.'
+        : inspection.reason === 'service' ? 'The crew has isolated this unit for its booked service. It remains unavailable through hour 47 and reconnects at hour 48 with condition restored to 100%.'
+        : inspection.reason === 'building' ? 'Construction is still in progress. The site joins the network next month; it contributes no electricity during construction.'
+        : battery ? 'The bidirectional converter charges or discharges at up to ' + power(spec.power) + '. Condition affects fault risk and future wear; it does not shrink this battery’s rated capacity.'
+        : wind ? 'Wind drives the rotor and generator. Production starts at 3 m/s, reaches its rated level at 11 m/s, and stops at 25 m/s for protective cut-out. Equipment condition reduces available production.'
+        : 'The array converts available sunlight into electricity, which passes through the inverter to the network. Equipment condition reduces production; darkness does not indicate a fault.';
+      var resourceText = battery ? 'Stored energy is shown at the end of the selected hour. The reserve policy protects energy for essential demand; essential needs can still draw on that reserve.'
+        : wind ? 'The wind reading is local to this site, including its resource factor. Below cut-in the rotor coasts down; at cut-out it brakes. A calm hour does not require a repair.'
+        : 'Sunlight follows season, time of day, and cloud cover. The reading reflects the resource reaching this site. An isolated array can receive sunlight while producing no electricity.';
+      var networkText = isolated ? 'The isolator is open. This site cannot supply or absorb electricity, so its energy-flow packets stop. Other available equipment must cover the community’s demand.'
+        : battery ? 'The flow arrow follows this battery’s actual dispatch. Charging takes renewable surplus from the network; discharging supplies demand. An idle battery remains connected and can be waiting for surplus or need.'
+        : 'This is production before network dispatch. The network serves demand, charges available batteries with surplus, and curtails any remaining surplus. The site’s output is not a measure of electricity delivered to customers.';
+      var parts = [
+        { id: 'resource', label: battery ? 'Stored energy' : wind ? 'Local wind' : 'Sunlight', icon: battery ? 'cells' : wind ? 'breeze' : 'sun', text: resourceText },
+        { id: 'equipment', label: battery ? 'Converter' : wind ? 'Rotor + generator' : 'Array + inverter', icon: battery ? 'converter' : wind ? 'turbine' : 'array', text: equipmentText },
+        { id: 'network', label: 'Grid connection', icon: 'connection', text: networkText }
+      ];
+      var selected = parts.find(function (part) { return part.id === inspectionPart; }) || parts[1];
+      var resourceReading = inspection.readings[0];
+      var storedFraction = battery && selectedFrame && selectedFrame.capacity > 0 ? Math.max(0, Math.min(1, selectedFrame.stored / selectedFrame.capacity)) : 0;
+      var siteLight = !battery && !wind ? Math.max(0, Math.min(1, resourceReading.value / 100)) : 0;
+      function partReading(part) {
+        if (part.id === 'resource') return number(resourceReading.value).toFixed(1) + ' ' + resourceReading.unit;
+        if (part.id === 'equipment') return power(Math.abs(inspection.power)) + (isolated ? ' · offline' : inspection.flow === 'charge' ? ' · charging' : moving ? ' · output' : ' · standby');
+        return isolated ? 'Open · isolated' : moving ? inspection.flow === 'charge' ? 'Network → battery' : 'Equipment → grid' : 'Closed · no transfer';
+      }
+      function icon(kind) {
+        var drawings;
+        if (kind === 'sun') drawings = [h('circle', { key: 'halo', cx: 32, cy: 27, r: 21, fill: 'var(--ty-gold)', fillOpacity: .05 + siteLight * .12, stroke: 'none' }), h('circle', { key: 'disc', cx: 32, cy: 27, r: 11, fill: 'var(--ty-gold)', fillOpacity: .1 + siteLight * .5, stroke: 'var(--ty-gold)' }), h('path', { key: 'rays', d: 'M32 2v7 M32 45v7 M7 27h7 M50 27h7 M14 9l5 5 M45 40l5 5 M14 45l5-5 M45 14l5-5', stroke: 'var(--ty-gold)', opacity: .25 + siteLight * .75 })];
+        else if (kind === 'breeze') drawings = [h('path', { key: 'wind', d: 'M4 14h31c11 0 11-12 3-12 M4 27h42c13 0 12 18 1 18 M10 39h17c10 0 10 14 1 14' }), h('path', { key: 'soft', d: 'M4 20h21 M19 33h19 M5 47h12', opacity: .3 })];
+        else if (kind === 'cells') drawings = [h('rect', { key: 'shell', x: 11, y: 9, width: 42, height: 42, rx: 5, fill: 'var(--ty-card)' }), h('path', { key: 'cap', d: 'M24 9V4h16v5' }), h('rect', { key: 'fill', x: 16, y: 46 - storedFraction * 31, width: 32, height: storedFraction * 31, rx: 1, className: 'ty-path-charge', 'data-tycoon-path-storage': true, 'data-fraction': storedFraction }), h('path', { key: 'cells', d: 'M16 24h32 M16 35h32', stroke: 'var(--ty-card)', strokeWidth: 2 }), h('path', { key: 'terminal', d: 'M27 5h10', strokeWidth: 3 })];
+        else if (kind === 'converter') drawings = [h('path', { key: 'depth', d: 'M13 8l7-5h34v43l-7 6', fill: 'currentColor', fillOpacity: .12 }), h('rect', { key: 'case', x: 12, y: 8, width: 35, height: 44, rx: 3, fill: 'var(--ty-card)' }), h('path', { key: 'conversion', d: 'M18 19h10 M18 23h10 M30 38c3-10 6 10 11 0 M17 43L42 14' }), h('circle', { key: 'lamp', cx: 19, cy: 46, r: 2, className: 'ty-path-indicator' })];
+        else if (kind === 'turbine') drawings = [h('ellipse', { key: 'foot', cx: 32, cy: 52, rx: 12, ry: 3, fill: 'currentColor', fillOpacity: .12, strokeOpacity: .4 }), h('path', { key: 'tower', d: 'M30 25l-2 26h8l-2-26', fill: 'currentColor', fillOpacity: .12 }), h('path', { key: 'blades', d: 'M32 23L29 2l5 1-2 20 M32 23L8 29l2 5 22-11 M32 23l18 16 5-4-23-12', fill: 'var(--ty-card)' }), h('circle', { key: 'hub', cx: 32, cy: 23, r: 4, fill: 'var(--ty-card)' }), h('path', { key: 'door', d: 'M31 50v-7h3v7', strokeWidth: 1 })];
+        else if (kind === 'array') drawings = [h('path', { key: 'supports', d: 'M16 34v14l8-5 M46 34v14l8-5 M10 50h46', opacity: .6 }), h('path', { key: 'panel', d: 'M13 6h38l8 29H5z', fill: 'currentColor', fillOpacity: isolated ? .08 : .14 + Math.min(1, Math.abs(inspection.power) / spec.power) * .22 }), h('path', { key: 'cells', d: 'M25 6l-1 29 M38 6l3 29 M10 16h44 M8 25h49', strokeWidth: 1 }), h('path', { key: 'glass', d: 'M17 9l9 23 M21 9l9 23', stroke: 'var(--ty-card)', opacity: .5 }), h('path', { key: 'frame', d: 'M5 35v3h54v-3', strokeWidth: 1 })];
+        else drawings = [h('rect', { key: 'case', x: 8, y: 7, width: 48, height: 45, rx: 5, fill: 'var(--ty-card)' }), h('path', { key: 'leads', d: 'M2 28h16 M46 28h16' }), h('circle', { key: 'left', cx: 20, cy: 28, r: 3 }), h('circle', { key: 'right', cx: 44, cy: 28, r: 3 }), h('path', { key: 'blade', d: isolated ? 'M22 26L39 13' : 'M23 28h18', stroke: 'var(--ty-route-color)', strokeWidth: 3 }), h('circle', { key: 'lamp', cx: 16, cy: 44, r: 2, className: 'ty-path-indicator' }), isolated ? h('path', { key: 'lock', d: 'M29 42h11v7H29z M31 42v-3a3.5 3.5 0 0 1 7 0v3', stroke: 'var(--ty-route-color)' }) : h('path', { key: 'vents', d: 'M31 43h15 M31 47h15', opacity: .4 })];
+        return h('svg', { viewBox: '0 0 64 56', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, drawings);
+      }
+      var nextHour = inspection.nextChangeHour;
+      var nextTime = nextHour == null ? '' : ' · day ' + (Math.floor(nextHour / 24) + 1) + ' at ' + String(nextHour % 24).padStart(2, '0') + ':00';
+      return h('section', { className: 'ty-inspection', 'data-isolated': isolated, 'data-fault': inspection.reason === 'fault', 'aria-labelledby': id + 'inspection-title' },
+        h('div', { 'data-tycoon-inspect-reason': true, 'data-reason': inspection.reason }, h('p', { className: 'ty-eyebrow' }, 'Operating inspection · ' + (active ? 'forecast' : 'final-month replay')), h('h4', { id: id + 'inspection-title' }, inspection.title), h('p', { className: 'ty-small ty-muted' }, inspection.detail)),
+        h('details', { className: 'ty-inspector', key: JSON.stringify([state.seed, state.month, selectedAsset.id]), 'data-tycoon-inspector': true, 'data-asset-id': inspection.assetId, 'data-hour': inspection.hour, 'data-reason': inspection.reason, 'data-flow': inspection.flow, 'data-context': inspection.context },
+          h('summary', { 'data-tycoon-inspect-toggle': true }, 'Inspect energy path and readings'),
+          h('div', { className: 'ty-inspector-body' },
+            h('p', { className: 'ty-small', 'data-tycoon-inspect-flow': inspection.flow }, flowText),
+            h('div', { className: 'ty-energy-route', 'data-tycoon-path-diagram': inspection.assetId, 'data-flow': inspection.flow, 'data-fault': inspection.reason === 'fault' }, parts.map(function (part, index) { return h(React.Fragment, { key: part.id }, index > 0 && h('span', { className: 'ty-energy-arrow', 'aria-hidden': true, 'data-idle': !moving, 'data-direction': !moving ? 0 : inspection.flow === 'charge' ? -1 : 1 }, h('svg', { viewBox: '0 0 22 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, isolated ? h('path', { d: 'M2 12h4 M16 12h4 M8 7l6 10 M14 7L8 17' }) : !moving ? h('path', { d: 'M2 12h5 M15 12h5', opacity: .6 }) : h('path', { d: inspection.flow === 'charge' ? 'M20 12H2 M8 6l-6 6 6 6' : 'M2 12h18 M14 6l6 6-6 6' }))), h('button', { type: 'button', className: 'ty-energy-node', 'data-tycoon-inspect-part': part.id, 'aria-pressed': selected.id === part.id, 'aria-controls': id + 'inspection-explanation', onClick: function () { setInspectionPart(part.id); } }, icon(part.icon), h('span', null, part.label), h('small', { 'data-tycoon-part-reading': part.id }, partReading(part)))); })),
+            h('div', { className: 'ty-component-note', id: id + 'inspection-explanation', 'data-tycoon-inspect-explanation': true, 'data-part': selected.id }, h('strong', null, selected.label), h('p', null, selected.text)),
+            h('dl', { className: 'ty-inspection-readings' }, inspection.readings.map(function (reading) { return h('div', { key: reading.id, 'data-tycoon-inspect-reading': reading.id, 'data-value': reading.value, 'data-unit': reading.unit }, h('dt', null, reading.label), h('dd', null, number(reading.value).toFixed(reading.unit === '%' ? 0 : 1) + (reading.unit ? ' ' + reading.unit : ''))); })),
+            renderEquipmentDay(),
+            renderOperatingLimits(),
+            battery && renderBatteryLedger(),
+            h('button', { type: 'button', className: 'ty-inspector-next', 'data-tycoon-inspect-next': true, 'data-hour': nextHour, disabled: nextHour == null, onClick: function () { if (nextHour != null) inspectHour(nextHour); } }, nextHour == null ? 'No further operating change this month' : inspection.nextChangeLabel + nextTime),
+            active && inspection.reason === 'fault' && selectedCare && selectedCare.canService && h('button', { type: 'button', className: 'ty-inspector-next', 'data-tycoon-inspect-repair': true, onClick: function () { setPlanAssetId(selectedPlanKey); var summary = sceneRef.current && sceneRef.current.querySelector('[data-tycoon-service-compare]'); if (summary) summary.focus(); } }, 'Review repair cost and impact'),
+            h('p', { className: 'ty-inspector-footnote' }, active ? 'Readings follow the selected forecast hour. Inspecting or jumping ahead does not spend cash or advance the campaign. New faults remain unknown until the month is resolved.' : 'Readings follow the recorded final month, including faults that actually occurred. Inspecting the replay leaves the completed campaign unchanged.'))));
+    }
+
+    function renderServicePlan() {
+      function readings(scenario, label) {
+        var values = servicePlan[scenario];
+        return h('div', { className: 'ty-service-scenario', 'data-tycoon-service-scenario': scenario, 'data-coverage': values.coverage, 'data-served': values.served, 'data-unserved': values.unserved, 'data-generation': values.generation, 'data-ending-cash': values.endingCash },
+          h('h4', null, label), h('dl', null, h('dt', null, 'Demand served'), h('dd', null, (values.coverage * 100).toFixed(1) + '%'), h('dt', null, 'Unserved electricity'), h('dd', null, energy(values.unserved)), h('dt', null, 'Month-end cash'), h('dd', null, money(values.endingCash))));
+      }
+      function outageReadings(scenario, label) {
+        var values = servicePlan.outage[scenario];
+        return h('div', { 'data-tycoon-service-outage': scenario, 'data-coverage': values.coverage, 'data-served': values.served, 'data-unserved': values.unserved, 'data-generation': values.generation }, h('span', null, label), h('strong', null, energy(values.unserved) + ' unserved'));
+      }
+      var reason = { building: 'This equipment is still under construction. Service becomes available after commissioning.', booked: 'The crew is already assigned this month. Inspect the booked equipment to explore its repair timeline.', cash: 'Available cash does not cover the ' + money(selectedCare.serviceCost) + ' service cost.', ended: 'This campaign is complete.', scheduled: 'This equipment already has a service booking.', unknown: 'Select owned equipment to compare a service plan.' }[selectedCare.serviceBlock];
+      var delta = servicePlan && servicePlan.eligible ? servicePlan.delta : null;
+      var coverageChange = delta ? (Math.abs(delta.coverage) * 100).toFixed(1) : null;
+      var coverageText = !delta ? '' : Math.abs(delta.coverage) < .0005 ? 'Demand coverage changes by less than 0.1 percentage points.' : 'Demand coverage ' + (delta.coverage > 0 ? 'increases' : 'decreases') + ' by ' + coverageChange + ' percentage points.';
+      var cashText = !delta ? '' : Math.abs(delta.endingCash) < .5 ? 'Projected closing cash is unchanged after rounding, including the service fee.' : 'Projected closing cash is ' + money(Math.abs(delta.endingCash)) + (delta.endingCash < 0 ? ' lower' : ' higher') + ', including the service fee and changed energy revenue.';
+      return h('details', { className: 'ty-service-plan', key: 'service-plan:' + selectedPlanKey, open: servicePlanOpen, 'data-tycoon-service-plan': true, 'data-asset-id': selectedAsset.id, 'data-eligible': selectedCare.canService, 'data-service-block': selectedCare.serviceBlock || 'none', onToggle: function (event) { var expanded = event.currentTarget.open, planKey = selectedPlanKey; setPlanAssetId(function (previous) { return expanded ? planKey : previous === planKey ? null : previous; }); } },
+        h('summary', { 'data-tycoon-service-compare': selectedAsset.id }, 'Compare service impact before booking'),
+        servicePlanOpen && h('div', { className: 'ty-service-plan-body' },
+          !servicePlan.eligible ? h('p', { className: 'ty-small ty-muted' }, reason || 'This service cannot be booked in the current plan.') : h(React.Fragment, null,
+            h('div', { className: 'ty-row' }, h('h3', null, selectedAsset.fault ? 'Repair ' + selectedSite.name : 'Service ' + selectedSite.name), badge(money(servicePlan.serviceCost) + ' paid on booking', false)),
+            h('p', { className: 'ty-small ty-muted' }, selectedAsset.fault ? 'The equipment is already offline. A repair restores availability from day 3 at 00:00.' : 'Service pauses this equipment for days 1–2, then restores its condition to 100%. Compare the downtime with the remaining month’s benefit.'),
+            h('div', { className: 'ty-service-compare-grid' }, readings('current', 'Current plan'), readings('proposed', 'With service')),
+            h('p', { className: 'ty-service-delta' }, coverageText + ' ' + cashText),
+            h('div', { className: 'ty-service-outage' }, h('h4', null, 'During the first 48 hours'), h('p', { className: 'ty-small ty-muted' }, 'The rest of the network must cover demand while this equipment is unavailable.'), h('div', { className: 'ty-service-outage-readings' }, outageReadings('current', 'Current plan'), outageReadings('proposed', 'With service'))),
+            h('p', { className: 'ty-small ty-muted' }, servicePlan.repairsFault ? 'The known fault is repaired at the end of the outage.' : 'New-fault chance for this equipment: ' + (servicePlan.faultRiskBefore * 100).toFixed(1) + '% with the current plan. Scheduled service protects it from new faults for this game month.'),
+            !state.eventChoice && h('p', { className: 'ty-small ty-muted' }, 'Your event response is not confirmed yet. Its effects may change this comparison.'),
+            h('p', { className: 'ty-small ty-muted' }, 'Forecast comparison only. Neither scenario predicts new faults. Opening this comparison spends no money and leaves the operating map on your current plan.'),
+            h('button', { type: 'button', className: 'ty-primary', 'data-tycoon-service-plan-book': selectedAsset.id, onClick: function () { commit({ type: 'service', assetId: selectedAsset.id }, 'Crew booked for ' + selectedSite.name + '. Use the work-order timeline to inspect its outage and return.'); } }, (servicePlan.repairsFault ? 'Book this repair · ' : 'Book this service · ') + money(servicePlan.serviceCost)))));
+    }
+
+    function renderEquipmentRecord() {
+      var record = equipmentRecord;
+      if (!record) return null;
+      var history = record.conditionHistory;
+      var selected = history.find(function (point) { return point.month === recordMonth; }) || history[history.length - 1];
+      var labels = { available: 'Connected', service: 'Planned service', fault: 'Fault outage', building: 'Construction' };
+      var colors = { available: 'var(--ty-green)', service: 'var(--ty-gold)', fault: 'var(--ty-bad)', building: 'var(--ty-muted)' };
+      var durationFields = [['availableHours', 'Connected hours'], ['serviceHours', 'Service outage'], ['faultHours', 'Fault outage'], ['constructionHours', 'Construction']];
+      var timelineStart = 12, timelineWidth = 576;
+      function x(value) { return timelineStart + value / Math.max(1, record.hours) * timelineWidth; }
+      function when(value) { return 'day ' + (Math.floor(value / 24) + 1) + ', ' + String(value % 24).padStart(2, '0') + ':00'; }
+      var current = record.segments.find(function (segment) { return displayHour >= segment.startHour && displayHour < segment.endHour; });
+      var energyFields = record.type === 'battery' ? [['charge', 'Electricity absorbed'], ['discharge', 'Electricity supplied']] : [['generation', 'Electricity generated']];
+      return h('details', { className: 'ty-equipment-record', key: 'equipment-record:' + JSON.stringify([state.seed, state.month, selectedAsset.id]), 'data-tycoon-record': true, 'data-asset-id': record.assetId, 'data-context': record.context, 'data-hours': record.hours },
+        h('summary', { 'data-tycoon-record-toggle': true }, 'Equipment record · ' + history.length + (history.length === 1 ? ' month logged' : ' months logged')),
+        h('div', { className: 'ty-record-body' },
+          h('div', null, h('p', { className: 'ty-eyebrow' }, record.monthName + ' · ' + (record.context === 'forecast' ? 'planning forecast' : 'recorded replay')), h('h4', null, 'Availability through the month')),
+          h('dl', { className: 'ty-record-stats' }, durationFields.map(function (field) { return h('div', { key: field[0], 'data-tycoon-record-stat': field[0], 'data-value': record[field[0]] }, h('dt', null, field[1]), h('dd', null, record[field[0]] + ' h')); })),
+          h('svg', { className: 'ty-record-timeline', viewBox: '0 0 600 96', role: 'img', 'aria-label': t('stem.renewables.tycoon.availability_timeline', 'Equipment availability timeline for the selected month'), 'aria-describedby': id + 'record-timeline-description' },
+            h('rect', { x: timelineStart, y: 27, width: timelineWidth, height: 25, rx: 4, fill: 'var(--ty-line)' }),
+            record.segments.map(function (segment) { return h('rect', { key: segment.startHour, x: x(segment.startHour), y: 27, width: (segment.endHour - segment.startHour) / record.hours * timelineWidth, height: 25, fill: colors[segment.status] }); }),
+            h('line', { x1: x(displayHour + .5), x2: x(displayHour + .5), y1: 19, y2: 59, stroke: 'var(--ty-ink)', strokeWidth: 3 }),
+            h('path', { d: 'M' + (x(displayHour + .5) - 5) + ' 11h10l-5 7z', fill: 'var(--ty-ink)' }),
+            [0, Math.floor(record.hours / 48) * 24, record.hours - 24].map(function (hour, index) { return h('text', { key: index, x: x(hour), y: 81, textAnchor: index === 0 ? 'start' : index === 2 ? 'end' : 'middle' }, 'Day ' + (Math.floor(hour / 24) + 1)); })),
+          h('p', { id: id + 'record-timeline-description', className: 'ty-small', 'data-tycoon-record-cursor': displayHour }, when(displayHour) + ' · ' + (current ? labels[current.status] : 'No reading')),
+          h('div', { className: 'ty-record-legend' }, Object.keys(labels).filter(function (status) { return record.segments.some(function (segment) { return segment.status === status; }); }).map(function (status) { return h('span', { key: status }, h('i', { style: { background: colors[status] }, 'aria-hidden': true }), labels[status]); })),
+          h('div', { className: 'ty-record-intervals' }, record.segments.map(function (segment) { return h('button', { key: segment.startHour, type: 'button', 'data-tycoon-record-segment': segment.startHour, 'data-end-hour': segment.endHour, 'data-status': segment.status, 'aria-pressed': current === segment, onClick: function () { inspectHour(segment.startHour); } }, labels[segment.status] + ' · ' + (segment.endHour - segment.startHour) + ' h', h('span', { style: { display: 'block', fontWeight: 400, marginTop: 3 } }, 'Inspect from ' + when(segment.startHour))); })),
+          h('p', { className: 'ty-inspector-footnote' }, 'Connected hours include darkness, calm weather, and idle storage. Availability measures whether equipment can operate; it is separate from the share of community demand served.'),
+          h('dl', { className: 'ty-record-stats' }, energyFields.map(function (field) { return h('div', { key: field[0], 'data-tycoon-record-stat': field[0], 'data-value': record[field[0]] }, h('dt', null, field[1]), h('dd', null, energy(record[field[0]]))); })),
+          h('div', { className: 'ty-record-history' }, h('h4', null, 'Recorded month-end condition'),
+            history.length ? h(React.Fragment, null,
+              h('p', { className: 'ty-small ty-muted' }, 'Select a completed month to review its condition and fault status. This does not change the map’s selected hour.'),
+              h('div', { className: 'ty-condition-months' }, history.map(function (point) { return h('button', { type: 'button', key: point.month, className: 'ty-condition-month', 'data-tycoon-record-month': point.month, 'data-condition': point.condition, 'data-fault': point.fault, 'aria-pressed': selected.month === point.month, 'aria-controls': id + 'record-month-detail', onClick: function () { setRecordMonth(point.month); }, 'aria-label': point.monthName + ', ' + Math.round(point.condition) + '% ' + t('stem.renewables.tycoon.condition', 'condition') + ', ' + (point.fault ? t('stem.renewables.tycoon.month_end_fault', 'fault at month end') : t('stem.renewables.tycoon.month_end_no_fault', 'no fault at month end')) }, point.monthName.slice(0, 3), h('strong', null, Math.round(point.condition) + '%'), h('i', { 'aria-hidden': true }, h('span', { style: { width: point.condition + '%' } })), point.fault && h('small', null, 'Fault')); })),
+              h('p', { className: 'ty-record-selected', id: id + 'record-month-detail', 'data-tycoon-record-month-detail': selected.month, 'data-condition': selected.condition, 'data-fault': selected.fault }, h('strong', null, selected.monthName + ' · ' + selected.condition.toFixed(1) + '% condition'), h('span', { style: { display: 'block' } }, selected.fault ? 'A fault remained at the end of this month.' : 'No unresolved fault at the end of this month.')))
+              : h('p', { className: 'ty-record-empty', 'data-tycoon-record-empty': true }, selectedAsset.readyMonth > state.month ? 'This equipment is under construction. Its condition record starts after its first operating month.' : 'No operating month has been recorded for this equipment yet. Resolve a month to start its condition record.')),
+          h('p', { className: 'ty-inspector-footnote' }, record.context === 'forecast' ? 'Availability and energy above describe the current plan, including known faults and booked service. New faults can change the result when you resolve the month. The condition history contains completed months only.' : 'Availability and energy above come from the actual final-month replay. The condition history contains completed months only.')));
+    }
+
+    function renderWorkOrder() {
+      var duration = fleet.serviceHours, elapsed = Math.max(0, Math.min(duration, displayHour)), complete = displayHour >= duration;
+      var stages = [
+        { hour: 0, end: 8, id: 'isolate', title: 'Isolate & inspect', detail: 'The crew isolates the grid connection and inspects the equipment. Electrical transfer stays at zero.' },
+        { hour: 8, end: 36, id: 'service', title: 'Service work', detail: selectedAsset.fault ? 'The crew carries out the booked repair while the equipment remains isolated.' : 'The crew carries out preventive maintenance while the equipment remains isolated.' },
+        { hour: 36, end: 48, id: 'checks', title: 'Return checks', detail: 'The crew completes the final checks. The grid connection remains open until hour 48.' },
+        { hour: 48, end: Infinity, id: 'returned', title: 'Reconnect', detail: 'The connection is available again. Weather and network demand determine whether electricity flows at this hour.' }
+      ];
+      var stage = stages.find(function (item) { return elapsed >= item.hour && elapsed < item.end; });
+      return h('section', { className: 'ty-work-order', 'data-tycoon-work-order': selectedAsset.id, 'data-elapsed': elapsed, 'data-remaining': duration - elapsed, 'data-complete': complete, 'data-stage': stage.id, 'aria-labelledby': id + 'work-title' },
+        h('div', { className: 'ty-row' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Booked work order'), h('h3', { id: id + 'work-title' }, selectedAsset.fault ? 'Repair and return to service' : 'Preventive service')), badge(complete ? 'Returned in forecast' : (duration - elapsed) + ' hours to return', !complete)),
+        h('p', { className: 'ty-small ty-muted' }, money(engine.catalog[selectedAsset.type].serviceCost) + ' already paid · crew reserved this month. This timeline previews the booking; campaign time advances when you resolve the month.'),
+        h('progress', { value: elapsed, max: duration, 'aria-label': t('stem.renewables.tycoon.service_elapsed', 'Forecast service hours elapsed') }),
+        h('label', { className: 'ty-field', htmlFor: id + 'work-hour' }, 'Inspect service hour · ' + elapsed + ' / ' + duration, h('input', { id: id + 'work-hour', type: 'range', min: 0, max: duration, step: 1, value: elapsed, 'data-tycoon-work-hour': true, 'aria-valuetext': elapsed + ' hours elapsed, ' + (duration - elapsed) + ' hours remaining', onChange: function (event) { inspectHour(Number(event.target.value)); } })),
+        h('div', { className: 'ty-work-stage-buttons' }, stages.map(function (item) { return h('button', { type: 'button', key: item.hour, 'data-tycoon-work-stage': item.hour, 'aria-pressed': stage.id === item.id, onClick: function () { previewService(selectedSite.id, item.hour); } }, item.title, h('span', null, item.hour === 48 ? 'Hour 48 · return' : 'Hours ' + item.hour + '–' + (item.end - 1))); })),
+        h('div', { className: 'ty-work-phase', 'data-tycoon-work-phase': true, 'data-stage': stage.id }, h('strong', null, stage.title), h('p', null, stage.detail), h('small', null, 'Illustrative work stages within the booked 48-hour outage. Scrubbing previews the plan; it does not perform or charge for another repair.')),
+        h('p', { className: 'ty-small' }, complete ? 'Service has finished at this forecast hour. Condition is restored to 100%; actual output depends on weather and network demand.' : 'At this forecast hour the crew is on site and electrical output is zero. Equipment returns on day 3 at 00:00.'));
+    }
+
+    function renderAcquisition() {
+      var available = outlook.sites.filter(function (site) { return !site.owned; });
+      return h('section', { className: 'ty-card', 'data-tycoon-panel': 'acquisition' }, sectionHead('Expand with intent', 'Acquisition opportunities', state.month < 11 ? 'Build now. New equipment joins the network next month.' : 'Construction is closed: new sites would finish after the campaign.'),
+        h('div', { className: 'ty-acquisition-list' }, available.length ? available.map(function (site) { var spec = engine.catalog[site.type]; return h('article', { className: 'ty-acquisition', key: site.id },
+          h('div', { className: 'ty-row' }, h('div', { className: 'ty-acquisition-name' }, h('span', { className: 'ty-icon', 'aria-hidden': true }, typeIcon(site.type)), h('div', null, h('h3', null, site.name), h('p', null, spec.name))), h('span', { className: 'ty-price' }, money(site.cost))),
+          h('p', null, site.type === 'battery' ? energy(spec.capacity) + ' of storage · ' + power(spec.power) + ' charge/discharge limit' : power(spec.capacity) + ' nameplate · ' + Math.round(site.resource * 100) + '% site resource factor'),
+          h('div', { className: 'ty-row' }, h('small', null, money(spec.monthlyCost) + '/month operating cost'), h('button', { type: 'button', 'data-tycoon-select-opportunity': site.id, onClick: function () { chooseSite(site.id); if (siteSelectRef.current) siteSelectRef.current.focus(); }, 'aria-label': t('stem.renewables.tycoon.review_site', 'Review site') + ' ' + site.name }, 'Review site ↑'))); }) : h('p', { className: 'ty-body ty-muted' }, 'Every site is part of your cooperative. Keep the fleet healthy and tune the operating plan.')));
+    }
+
+    function renderPolicyTrial() {
+      function editTrial(patch) { setTrial(function (old) { return old && old.key === trialKey ? Object.assign({}, old, patch) : old; }); }
+      function scenario(kind, label, policy, run, reading) {
+        if (!reading) return null;
+        var month = run.totals;
+        var values = Object.assign({}, reading.grid, { stored: reading.storage.end, reserveDischarge: reading.batteries.reduce(function (sum, pack) { return sum + pack.reserveDischarge; }, 0) });
+        var hourFields = [['demand', 'Demand'], ['served', 'Delivered'], ['unserved', 'Unmet demand'], ['charge', 'Battery charging'], ['discharge', 'Battery output'], ['curtailed', 'Curtailed surplus'], ['stored', 'Stored at hour end'], ['reserveDischarge', 'Protected energy supplied'], ['essentialServed', 'Essential demand served']];
+        return h('article', { className: 'ty-trial-scenario', 'data-tycoon-trial-scenario': kind, 'data-reserve': policy.reserve, 'data-flex': policy.flex },
+          h('h4', null, label), h('p', { className: 'ty-small ty-muted' }, percent(policy.reserve) + ' reserve · flexibility ' + (policy.flex ? 'on' : 'off')),
+          h('h5', null, forecast.monthName + ' forecast'),
+          h('dl', { 'data-tycoon-trial-month': true, 'data-coverage': month.coverage, 'data-unserved': month.unserved, 'data-curtailed': month.curtailed, 'data-ending-cash': month.endingCash, 'data-operating-cost': month.operatingCost },
+            [['Demand covered', (month.coverage * 100).toFixed(1) + '%'], ['Unserved energy', energy(month.unserved)], ['Curtailed surplus', energy(month.curtailed)], ['Closing cash', money(month.endingCash)]].map(function (item) { return h('div', { key: item[0] }, h('dt', null, item[0]), h('dd', null, item[1])); })),
+          h('h5', null, 'Selected hour'), h('dl', null, hourFields.map(function (item) { return h('div', { key: item[0], 'data-tycoon-trial-reading': item[0], 'data-value': values[item[0]] }, h('dt', null, item[1]), h('dd', null, item[0] === 'stored' || item[0] === 'reserveDischarge' ? number(values[item[0]]).toFixed(2) + ' kWh' : power(values[item[0]]))); })));
+      }
+      var unchanged = trialOpen && trial.reserve === state.policy.reserve && trial.flex === state.policy.flex;
+      var impact = trialPreview && trialPreview.impactHour;
+      return h('details', { className: 'ty-policy-trial', key: 'policy-trial:' + trialKey, open: trialOpen, 'data-tycoon-policy-trial': true, 'data-hour': displayHour,
+        onToggle: function (event) { if (event.currentTarget.open) setTrial(function (old) { return old && old.key === trialKey ? old : { key: trialKey, reserve: state.policy.reserve, flex: state.policy.flex }; }); else setTrial(function (old) { return old && old.key === trialKey ? null : old; }); } },
+        h('summary', { ref: trialSummaryRef, 'data-tycoon-trial-toggle': true }, 'Try a policy before applying it'),
+        trialOpen && trialPreview && h('div', { className: 'ty-trial-body' },
+          h('p', { className: 'ty-small ty-muted' }, 'Compare the same month, weather, equipment, and starting energy. Trial settings do not change your campaign. The map continues to show your current plan.'),
+          h('div', { className: 'ty-trial-inputs' },
+            h('label', { className: 'ty-field', htmlFor: id + 'trial-reserve' }, h('span', { className: 'ty-row' }, h('span', null, 'Trial battery reserve'), h('strong', null, percent(trial.reserve))), h('input', { id: id + 'trial-reserve', type: 'range', min: 0, max: 50, step: 5, value: Math.round(trial.reserve * 100), 'data-tycoon-trial-reserve': true, 'aria-valuetext': percent(trial.reserve) + ' protected for essential demand', onChange: function (event) { editTrial({ reserve: Number(event.target.value) / 100 }); } })),
+            h('label', { className: 'ty-check', htmlFor: id + 'trial-flex' }, h('input', { id: id + 'trial-flex', type: 'checkbox', checked: trial.flex, 'data-tycoon-trial-flex': true, onChange: function (event) { editTrial({ flex: event.target.checked }); } }), h('span', null, 'Trial flexible-demand agreements', h('small', null, '$130 per month when enabled. Daily electricity use stays the same; some evening demand moves into solar hours.')))),
+          h('div', { className: 'ty-trial-time' }, h('label', { className: 'ty-field', htmlFor: id + 'trial-day' }, 'Compare day in ' + forecast.monthName, h('select', { id: id + 'trial-day', value: frame.day, 'data-tycoon-trial-day': true, onChange: function (event) { inspectHour((Number(event.target.value) - 1) * 24 + frame.hourOfDay); } }, Array.from({ length: Math.ceil(forecast.hours.length / 24) }, function (_, index) { return h('option', { key: index, value: index + 1 }, index + 1); }))),
+            h('label', { className: 'ty-field', htmlFor: id + 'trial-hour' }, 'Compare hour · ' + String(frame.hourOfDay).padStart(2, '0') + ':00', h('input', { id: id + 'trial-hour', type: 'range', min: 0, max: 23, step: 1, value: frame.hourOfDay, 'data-tycoon-trial-hour': true, 'aria-valuetext': String(frame.hourOfDay).padStart(2, '0') + ':00', onChange: function (event) { inspectHour((frame.day - 1) * 24 + Number(event.target.value)); } })),
+            h('button', { type: 'button', 'data-tycoon-trial-impact': true, 'data-hour': impact, disabled: impact == null, onClick: function () { if (impact != null) inspectHour(impact); } }, impact == null ? 'No change in hourly unmet demand' : 'Inspect largest change in unmet demand')),
+          h('div', { className: 'ty-trial-scenarios' }, scenario('current', 'Current plan', state.policy, forecast, balance), scenario('proposed', 'Trial policy', trialPreview.state.policy, trialPreview.run, trialBalance)),
+          h('p', { className: 'ty-service-delta' }, 'Monthly demand coverage changes by ' + ((trialPreview.run.totals.coverage - totals.coverage) * 100 >= 0 ? '+' : '') + ((trialPreview.run.totals.coverage - totals.coverage) * 100).toFixed(1) + ' percentage points. Closing cash changes by ' + money(trialPreview.run.totals.endingCash - totals.endingCash) + '.'),
+          h('p', { className: 'ty-inspector-footnote' }, 'Power readings are hourly averages in kW; stored and protected energy are measured in kWh. Each policy runs from the start of this month, so earlier dispatch can change storage at the selected hour. Known faults and booked service stay in both forecasts; new faults remain unknown.'),
+          !state.eventChoice && h('p', { className: 'ty-inspector-footnote' }, 'Your event response is not confirmed. Confirming it may change both forecasts.'),
+          h('div', { className: 'ty-actions' }, h('button', { type: 'button', className: 'ty-primary', 'data-tycoon-trial-apply': true, disabled: unchanged, onClick: function () { commit({ type: 'policy', reserve: trial.reserve, flex: trial.flex }, 'Trial policy applied. The network, equipment, and forecast now follow these settings.'); setTrial(null); } }, unchanged ? 'Trial matches current policy' : 'Apply trial policy'), h('button', { type: 'button', 'data-tycoon-trial-reset': true, onClick: function () { setTrial({ key: trialKey, reserve: state.policy.reserve, flex: state.policy.flex }); } }, 'Reset trial to current'))));
+    }
+
+    function renderPolicy() {
+      return h('section', { className: 'ty-card', 'data-tycoon-panel': 'policy' }, sectionHead('Cooperative policy', 'Set the operating priorities', 'Balance flexibility, storage reserves, and community needs.'),
+        h('div', { className: 'ty-policy' }, h('label', { className: 'ty-field', htmlFor: id + 'reserve' }, h('span', { className: 'ty-row' }, h('span', null, 'Battery reserve for essential demand'), h('strong', null, percent(state.policy.reserve))), h('input', { type: 'range', id: id + 'reserve', min: 0, max: 50, step: 5, value: Math.round(state.policy.reserve * 100), 'data-tycoon-reserve': true, onChange: function (event) { commit({ type: 'policy', reserve: Number(event.target.value) / 100, flex: state.policy.flex }, 'Battery reserve updated. The forecast now reflects your plan.'); } }), h('small', null, 'Protect this share of stored energy for essential demand. The reserve can still discharge to cover essential needs when other supply is insufficient.')),
+          h('label', { className: 'ty-check', htmlFor: id + 'flex' }, h('input', { type: 'checkbox', id: id + 'flex', checked: state.policy.flex, 'data-tycoon-flex': true, onChange: function (event) { commit({ type: 'policy', reserve: state.policy.reserve, flex: event.target.checked }, 'Flexible-demand policy updated.'); } }), h('span', null, 'Offer flexible-demand agreements', h('small', null, 'For $130 per month, shift some evening electricity use into solar hours while preserving daily energy demand.')))), renderPolicyTrial());
+    }
+
+    function renderEvent() {
+      var event = outlook.event;
+      if (!event) return null;
+      var committed = !!state.eventChoice;
+      var pending = event.choices.find(function (choice) { return choice.id === pendingChoice; });
+      var affordable = pending && pending.cost <= state.cash;
+      return h('section', { className: 'ty-card ty-event', 'data-tycoon-panel': 'event', ref: eventRef, 'data-tycoon-event': event.id }, h('p', { className: 'ty-event-mark' }, 'This month’s turning point'), h('h3', null, event.title), h('p', { className: 'ty-event-description' }, event.description),
+        h('fieldset', { className: 'ty-choices', disabled: committed }, h('legend', null, committed ? 'Your committed response' : 'Choose your response'), event.choices.map(function (choice) {
+          var selected = (state.eventChoice || pendingChoice) === choice.id;
+          return h('label', { className: 'ty-choice', key: choice.id, 'data-selected': selected }, h('input', { type: 'radio', name: id + 'event', value: choice.id, checked: selected, onChange: function () { setPendingChoice(choice.id); }, 'data-tycoon-choice': choice.id }), h('span', null, h('strong', null, choice.label), h('small', null, choice.description), h('span', { className: 'ty-choice-cost' }, (choice.cost > 0 ? money(choice.cost) + ' cost' : choice.cost < 0 ? money(-choice.cost) + ' received' : 'No cash cost') + (choice.trust ? ' · ' + (choice.trust > 0 ? '+' : '') + choice.trust + ' trust' : ''))));
+        })),
+        !committed && responsePreview && renderResponsePreview(),
+        committed ? h('p', { className: 'ty-committed', 'data-tycoon-choice-confirmed': true }, '✓ Response confirmed for this month') : h(React.Fragment, null, h('button', { type: 'button', className: 'ty-primary', disabled: !affordable, 'data-tycoon-confirm-event': true, onClick: function () { commit({ type: 'event', choiceId: pendingChoice }, 'Event response confirmed. Review your updated forecast, then resolve the month.'); } }, pending && !affordable ? 'Insufficient cash for this response' : 'Confirm response'), h('p', { className: 'ty-small ty-muted', style: { marginTop: 8 } }, 'Your response is fixed after confirmation. Its effects are included in the forecast.')));
+    }
+
+    function renderResponsePreview() {
+      var projected = responsePreview.totals, choice = responsePreview.choice;
+      var coverageDelta = Math.round((projected.coverage - totals.coverage) * 1000) / 10;
+      var cashDelta = Math.round(projected.endingCash - totals.endingCash);
+      var trustDelta = responsePreview.state.trust - state.trust;
+      var riskFactor = choice.effects && choice.effects.risk;
+      return h('div', { className: 'ty-response-preview', 'data-tycoon-response-preview': true, 'data-choice': choice.id, 'data-coverage': projected.coverage, 'data-ending-cash': projected.endingCash, 'aria-live': 'polite', 'aria-atomic': true },
+        h('h4', null, 'If you choose this response'),
+        h('div', { className: 'ty-projection' }, h('div', null, h('span', null, 'Forecast demand served'), h('strong', null, percent(projected.coverage)), h('small', null, coverageDelta ? (coverageDelta > 0 ? '+' : '−') + Math.abs(coverageDelta).toFixed(1) + ' percentage points' : 'No change in demand served')), h('div', null, h('span', null, 'Forecast closing cash'), h('strong', null, money(projected.endingCash)), h('small', null, cashDelta ? (cashDelta > 0 ? '+' : '−') + money(Math.abs(cashDelta)) + ' vs current plan' : 'No change in closing cash'))),
+        h('p', null, 'Trust after this response: ' + Math.round(responsePreview.state.trust) + '/100' + (trustDelta ? ' (' + (trustDelta > 0 ? '+' : '') + trustDelta + ')' : '') + '. Costs or awards are included in the cash forecast.'),
+        h('p', null, riskFactor != null && riskFactor < 1 ? 'New-fault risk is ' + Math.round((1 - riskFactor) * 100) + '% lower with this response. Fault prevention is a chance benefit; the forecast does not predict new faults.' : 'Forecasts include known equipment conditions and seasonal weather. New faults can change the actual result.'),
+        h('p', null, 'Preview only. Your cash, operating map, and campaign stay unchanged until you confirm.'));
+    }
+
+    function reviewEquipment(siteId) {
+      chooseSite(siteId);
+      if (siteSelectRef.current) siteSelectRef.current.focus();
+    }
+
+    function previewService(siteId, previewHour) {
+      inspectHour(previewHour); chooseSite(siteId);
+      var equipment = sceneRef.current && sceneRef.current.querySelector('[data-tycoon-site="' + siteId + '"]');
+      if (equipment) equipment.focus();
+    }
+
+    function renderFleet() {
+      var crew = fleet.assets.find(function (asset) { return asset.id === fleet.crewAssetId; });
+      var faults = fleet.assets.filter(function (asset) { return asset.status === 'fault'; }).length;
+      var attention = fleet.assets.filter(function (asset) { return asset.status === 'fault' || asset.status === 'worn'; }).length;
+      var labels = { fault: 'Fault · repair needed', worn: 'Consider service', service: 'Service booked', building: 'Under construction', ready: 'Ready to operate' };
+      return h('section', { className: 'ty-card', 'data-tycoon-panel': 'fleet', 'data-tycoon-fleet': true, 'aria-labelledby': id + 'fleet-title' },
+        h('div', { className: 'ty-section-head' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Care for your network'), h('h2', { id: id + 'fleet-title' }, 'Fleet maintenance'), h('p', null, 'Current plan · faults and worn equipment first.')), badge(attention ? attention + ' to review' : 'No repair flags', attention > 0)),
+        h('div', { className: 'ty-crew-note' }, h('strong', null, crew ? 'Crew booked · ' + crew.name : 'One maintenance crew available'), crew ? 'Offline for days 1–2. Repairs finish at 00:00 on day 3; condition returns to 100% before normal wear resumes.' : 'Book one asset this month. Service costs cash now and takes equipment offline for 48 hours.'),
+        faults > 0 && h('p', { className: 'ty-small', style: { color: 'var(--ty-bad)', marginTop: 10 } }, faults + (faults === 1 ? ' asset is' : ' assets are') + ' offline with a known fault. Each needs a service booking to return to operation.'),
+        h('ul', { className: 'ty-fleet-list' }, fleet.assets.map(function (asset) {
+          var serviceText = asset.serviceBlock === 'scheduled' ? 'Paid · ' + money(asset.serviceCost) + ' · resumes day 3' : asset.serviceBlock === 'building' ? 'Ready in ' + engine.months[asset.readyMonth] : asset.serviceBlock === 'booked' ? 'Crew already assigned this month' : asset.serviceBlock === 'cash' ? 'Service needs ' + money(asset.serviceCost) + ' cash' : null;
+          var riskText = asset.faultRisk == null ? null : (asset.faultRisk * 100).toFixed(1) + '% chance of a new fault this month';
+          return h('li', { className: 'ty-fleet-item', key: asset.id, 'data-tycoon-fleet-asset': asset.id, 'data-status': asset.status, 'data-condition': asset.condition, 'data-service-block': asset.serviceBlock || 'none' },
+            h('div', { className: 'ty-fleet-title' }, h('strong', null, asset.name), h('span', { className: 'ty-fleet-status' }, labels[asset.status])),
+            h('div', { className: 'ty-row ty-small' }, h('span', null, 'Condition'), h('strong', null, Math.round(asset.condition) + '%')),
+            h('div', { className: 'ty-condition-track', 'aria-hidden': true }, h('span', { style: { width: asset.condition + '%' } })),
+            riskText && h('p', { className: 'ty-small ty-muted' }, riskText + (asset.outputFactor == null ? '.' : ' · ' + percent(asset.outputFactor) + ' of healthy generation at the same weather.')),
+            serviceText && h('p', { className: 'ty-small ty-muted' }, serviceText),
+            asset.status === 'service' && h('div', { className: 'ty-fleet-actions' }, [[0, 'Inspect downtime'], [fleet.serviceHours, 'Preview return · day 3']].map(function (preview) { return h('button', { type: 'button', key: preview[0], 'data-tycoon-fleet-preview': asset.id, 'data-preview-hour': preview[0], onClick: function () { previewService(asset.siteId, preview[0]); } }, preview[1]); })),
+            h('div', { className: 'ty-fleet-actions' }, h('button', { type: 'button', 'data-tycoon-fleet-review': asset.siteId, 'aria-label': t('stem.renewables.tycoon.inspect_equipment', 'Inspect equipment at') + ' ' + asset.name, onClick: function () { reviewEquipment(asset.siteId); } }, 'Inspect equipment'),
+              asset.canService && h('button', { type: 'button', 'data-tycoon-fleet-service': asset.id, onClick: function () { commit({ type: 'service', assetId: asset.id }, 'Crew booked for ' + asset.name + '. Equipment returns after the first 48 hours. Scrub to day 3 to preview the repair.'); } }, (asset.status === 'fault' ? 'Book repair · ' : 'Book service · ') + money(asset.serviceCost))));
+        })),
+        h('p', { className: 'ty-fleet-method' }, 'Below ' + fleet.serviceThreshold + '% is a planning cue. Fault chance uses this month’s weather and confirmed event response; it does not reveal future outcomes. Inspect day 3 to preview completed service.'));
+    }
+
+    function renderAdvance() {
+      return h('section', { className: 'ty-card ty-advance', 'data-tycoon-panel': 'advance' }, sectionHead('Commit the plan', 'Ready to run ' + outlook.monthName + '?', 'Resolve the full month, then review the operating report.'),
+        h('div', { className: 'ty-projection' }, h('div', null, h('span', null, 'Forecast demand served'), h('strong', { 'data-tycoon-coverage': true }, percent(totals.coverage))), h('div', null, h('span', null, 'Forecast closing cash'), h('strong', { 'data-tycoon-ending-cash': true }, money(totals.endingCash)))),
+        h('p', { className: 'ty-small ty-muted' }, state.eventChoice ? forecast.weatherSummary + ' New equipment faults may change actual results.' : 'Confirm your event response to complete this month’s plan.'),
+        totals.endingCash < 0 && h('p', { className: 'ty-small', style: { color: 'var(--ty-bad)' } }, 'This plan is forecast to end with negative cash. Adjust the plan before advancing to avoid insolvency.'),
+        h('button', { type: 'button', className: 'ty-primary', 'data-tycoon-advance': true, disabled: !state.eventChoice, onClick: function () { commit({ type: 'advance' }, outlook.monthName + ' resolved. Review your monthly report below.'); } }, 'Resolve ' + outlook.monthName + ' →'),
+        h('small', null, 'Acquisitions and service are paid when scheduled. Preview controls never advance the campaign.'));
+    }
+
+    function renderGoals() {
+      return h('section', { className: 'ty-card', 'data-tycoon-panel': 'goals' }, sectionHead('The cooperative charter', 'Finish the year strong', 'Three goals across the full 12-month campaign.'), h('div', { className: 'ty-goals' },
+        progressGoal('Annual demand served', outlook.annualCoverage, outlook.goals.coverage, state.history.length ? percent(outlook.annualCoverage) : 'No months yet', 'Target: 90% across all completed months.'),
+        progressGoal('Community trust', state.trust, outlook.goals.trust, Math.round(state.trust) + ' / 100', 'Finish with at least 50 trust.'),
+        h('div', { className: 'ty-goal' }, h('div', { className: 'ty-row' }, h('span', null, 'Financial resilience'), h('strong', null, money(state.cash))), h('small', null, 'Keep cash at or above zero. Revenue comes from electricity delivered.'))));
+    }
+
+    function renderRecap() {
+      if (!recap) return null;
+      var trust = recap.trust;
+      function signed(value) { return (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value); }
+      function inspect(asset) { return h('button', { type: 'button', 'aria-label': (active ? t('stem.renewables.tycoon.inspect_current_forecast', 'Inspect current forecast for') : t('stem.renewables.tycoon.inspect_final_replay', 'Inspect final-month replay for')) + ' ' + asset.name, onClick: function () { reviewEquipment(asset.siteId); } }, active ? 'Inspect current forecast ↑' : 'Inspect final-month replay ↑'); }
+      function faultItem(asset, existing) {
+        return h('li', { key: asset.id, 'data-tycoon-recap-fault': asset.id, 'data-existing': existing, 'data-hour': asset.hour }, h('strong', null, asset.name), h('p', null, existing ? 'Fault carried into the month; equipment stayed offline.' : 'Fault on day ' + asset.day + ' at ' + String(asset.hourOfDay).padStart(2, '0') + ':00. Output stopped for the rest of the month.'), inspect(asset));
+      }
+      return h('section', { className: 'ty-recap', 'data-tycoon-recap': true, 'data-month': recap.month, 'data-trust-start': trust.start, 'data-trust-event': trust.event, 'data-trust-operation': trust.operation, 'data-trust-end': trust.end, 'data-trust-total': trust.total, 'aria-labelledby': id + 'recap-title' },
+        h('div', { className: 'ty-row' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Your decisions, in operation'), h('h3', { id: id + 'recap-title' }, 'What changed in ' + recap.monthName + '?')), badge(signed(trust.total) + ' trust this month', trust.total < 0)),
+        recap.choiceLabel && h('p', { className: 'ty-small ty-muted' }, 'Event response: ' + recap.choiceLabel + '.'),
+        h('div', { className: 'ty-recap-trust' }, [[trust.start, 'Starting trust'], [signed(trust.event), 'Event response'], [signed(trust.operation), 'Reliability + demand policy'], [trust.end + '/100', 'Closing trust']].map(function (item) { return h('div', { key: item[1] }, h('strong', null, item[0]), h('span', null, item[1])); })),
+        trust.clamped && h('p', { className: 'ty-small ty-muted' }, 'Trust reached its 0–100 limit. Changes above show the points actually applied.'),
+        h('div', { className: 'ty-recap-events' },
+          h('div', { className: 'ty-recap-group', 'data-kind': 'faults' }, h('h3', null, 'Faults · ' + (recap.newFaults.length + recap.existingFaults.length)), recap.newFaults.length || recap.existingFaults.length ? h('ul', { className: 'ty-recap-list' }, recap.newFaults.map(function (asset) { return faultItem(asset, false); }), recap.existingFaults.map(function (asset) { return faultItem(asset, true); })) : h('p', { className: 'ty-small ty-muted' }, 'No unresolved or new faults during this month’s operation.')),
+          h('div', { className: 'ty-recap-group', 'data-kind': 'service' }, h('h3', null, 'Service completed · ' + recap.serviced.length), recap.serviced.length ? h('ul', { className: 'ty-recap-list' }, recap.serviced.map(function (asset) { return h('li', { key: asset.id, 'data-tycoon-recap-service': asset.id, 'data-before-condition': asset.beforeCondition, 'data-after-condition': asset.afterCondition, 'data-repaired': asset.repaired }, h('strong', null, asset.name), h('p', null, (asset.repaired ? 'Fault repaired. ' : 'Preventive service completed. ') + 'Returned on day 3 at 00:00 after ' + asset.serviceHours + ' hours offline.'), h('p', null, Math.round(asset.beforeCondition) + '% → 100% after service' + (asset.afterCondition == null ? '.' : ' → ' + Math.round(asset.afterCondition) + '% at month end, after wear.')), inspect(asset)); })) : h('p', { className: 'ty-small ty-muted' }, 'No service was booked. The crew remained available.')),
+          h('div', { className: 'ty-recap-group', 'data-kind': 'commissioned' }, h('h3', null, 'Construction complete · ' + recap.commissioned.length), recap.commissioned.length ? h('ul', { className: 'ty-recap-list' }, recap.commissioned.map(function (asset) { return h('li', { key: asset.id, 'data-tycoon-recap-commissioned': asset.id, 'data-ready-month': asset.readyMonth }, h('strong', null, asset.name), h('p', null, 'Ready for ' + asset.monthName + '. Construction kept this equipment offline during ' + recap.monthName + '.'), inspect(asset)); })) : h('p', { className: 'ty-small ty-muted' }, 'No newly acquired sites finished construction.'))));
+    }
+
+    function renderReport() {
+      if (!lastReport) return null;
+      var report = lastReport.totals;
+      var maxCash = Math.max.apply(null, state.history.map(function (entry) { return Math.abs(entry.totals.endingCash); }).concat([1]));
+      function stat(label, value, detail) { return h('div', { className: 'ty-report-stat' }, h('span', null, label), h('strong', null, value), detail && h('small', null, detail)); }
+      return h('section', { className: 'ty-card ty-report', 'data-tycoon-report': true }, h('div', { className: 'ty-section-head' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Latest operating report'), h('h2', { ref: reportRef, tabIndex: -1 }, lastReport.monthName + ' · month ' + (lastReport.month + 1))), badge(percent(report.coverage) + ' demand served', false)),
+        h('div', { className: 'ty-report-grid' }, stat('Electricity delivered', energy(report.served), energy(report.unserved) + ' unserved'), stat('Renewable generation', energy(report.generation), energy(report.curtailed) + ' curtailed'), stat('Operating revenue', money(report.revenue), money(report.operatingCost) + ' operating costs'), stat('Closing cash', money(report.endingCash), money(report.profit) + ' operating result')),
+        h('p', { className: 'ty-small ty-muted', style: { marginTop: 12 } }, 'Battery discharge: ' + energy(report.discharge) + ' · storage losses: ' + energy(report.storageLoss) + '. Stored electricity is counted once, when generated; battery discharge is not new generation.'),
+        renderRecap(),
+        h('div', { className: 'ty-chart', role: 'img', 'aria-label': t('stem.renewables.tycoon.cash_history', 'Closing cash by completed month; exact values in the campaign ledger') }, state.history.map(function (entry) { return h('div', { className: 'ty-chart-row', key: entry.month, 'data-negative': entry.totals.endingCash < 0, 'aria-hidden': true }, h('span', null, entry.monthName.slice(0, 3)), h('div', { className: 'ty-chart-track' }, h('span', { style: { width: Math.max(1, Math.abs(entry.totals.endingCash) / maxCash * 100) + '%' } })), h('strong', null, money(entry.totals.endingCash))); })),
+        h('details', { className: 'ty-history' }, h('summary', null, 'Campaign ledger · ' + state.history.length + ' completed months'), h('div', { className: 'ty-table-scroll', tabIndex: 0, role: 'region', 'aria-label': t('stem.renewables.tycoon.campaign_ledger', 'Campaign ledger, scroll horizontally for all columns') }, h('table', { className: 'ty-ledger' }, h('caption', { className: 'ty-sr' }, 'Monthly operating results for North Harbor'), h('thead', null, h('tr', null, ['Month', 'Demand served', 'Generation', 'Revenue', 'Operating cost', 'Closing cash'].map(function (label) { return h('th', { key: label, scope: 'col' }, label); }))), h('tbody', null, state.history.map(function (entry) { return h('tr', { key: entry.month }, h('th', { scope: 'row' }, entry.monthName), h('td', null, percent(entry.totals.coverage)), h('td', null, energy(entry.totals.generation)), h('td', null, money(entry.totals.revenue)), h('td', null, money(entry.totals.operatingCost)), h('td', null, money(entry.totals.endingCash))); }))))));
+    }
+
+    return h('section', { className: 'rn-tycoon', 'data-theme': props.ctx.isDark ? 'dark' : 'light', 'data-contrast': !!props.ctx.isContrast, 'data-tycoon-phase': state ? state.phase : 'onboarding', 'aria-label': t('stem.renewables.tycoon.campaign', 'Renewables Tycoon campaign') },
+      h('div', { className: 'ty-topline' }, h('div', { className: 'ty-brand' }, h('span', { className: 'ty-brand-mark', 'aria-hidden': true }, '↗'), 'RENEWABLES TYCOON'), h('div', { className: 'ty-actions' }, props.onBack && h('button', { type: 'button', onClick: props.onBack, 'data-tycoon-back': true }, '← Renewables Lab'), state && h('button', { type: 'button', onClick: function () { setSavesOpen(!savesOpen); }, 'aria-expanded': savesOpen, 'aria-controls': id + 'saves' }, 'Save / load'), state && h('button', { type: 'button', onClick: function () { setResetOpen(!resetOpen); }, 'aria-expanded': resetOpen, 'aria-controls': id + 'reset' }, 'New campaign'))),
+      error && h('div', { className: 'ty-alert', role: 'alert', 'data-tycoon-error': true }, error), h('div', { className: 'ty-notice', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, notice),
+      invalidHostSave && h('div', { className: 'ty-alert', role: 'alert', 'data-tycoon-invalid-save': true }, 'The saved campaign could not be validated. Your saved data has not been changed. Import a valid campaign below, or explicitly start a new campaign to replace it.'),
+      state && savesOpen && h('div', { className: 'ty-card ty-save-panel', id: id + 'saves' }, h('div', null, h('h3', null, 'Keep your campaign'), h('p', { className: 'ty-small ty-muted' }, 'Progress saves with the lab. Export a file to keep another copy.')), h('button', { type: 'button', onClick: exportSave, 'data-tycoon-export': true }, 'Export campaign JSON'), importControl()),
+      state && resetOpen && h('section', { className: 'ty-card ty-reset', id: id + 'reset', 'aria-labelledby': id + 'reset-title' }, h('h3', { id: id + 'reset-title', ref: resetTitleRef, tabIndex: -1 }, 'Start a new cooperative?'), h('p', { className: 'ty-body' }, 'This replaces the current campaign. Export your save first if you want to return to it.'), h('form', { className: 'ty-start-form', onSubmit: begin }, h('label', { className: 'ty-field', htmlFor: id + 'restart-seed' }, 'Campaign seed', h('input', { id: id + 'restart-seed', type: 'text', value: seed, maxLength: 64, required: true, onChange: function (event) { setSeed(event.target.value); } })), h('div', { className: 'ty-actions' }, h('button', { type: 'button', onClick: function () { setResetOpen(false); } }, 'Keep current campaign'), h('button', { type: 'submit', 'data-tycoon-reset-confirm': true }, 'Replace and start again')))),
+      !state ? renderOnboarding() : h(React.Fragment, null,
+        h('header', { className: 'ty-hero' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'North Harbor · island energy cooperative'), h('h1', null, active ? outlook.monthName + ' at the harbor' : state.phase === 'insolvent' ? 'Your campaign, reviewed.' : 'A year of decisions.'), h('p', { className: 'ty-subtitle' }, active ? 'Month ' + (state.month + 1) + ' of 12 · ' + monthSeason(state.month) + ' · Acquire, maintain, and plan a reliable renewable network.' : state.phase === 'insolvent' ? 'The cooperative ran out of operating cash. Review the ledger and try a different plan.' : 'Review the network you built and the community you powered.'), h('div', { className: 'ty-months', 'aria-hidden': true }, engine.months.map(function (month, index) { return h('span', { key: month, 'data-past': index < state.month, 'data-current': active && index === state.month }); }))),
+          h('div', { className: 'ty-hero-stats' }, h('div', { className: 'ty-hero-stat' }, h('span', null, 'Available cash'), h('strong', { 'data-tycoon-cash': true }, money(state.cash))), h('div', { className: 'ty-hero-stat' }, h('span', null, 'Community trust'), h('strong', null, Math.round(state.trust) + '/100')), h('div', { className: 'ty-hero-stat' }, h('span', null, 'Fleet assets'), h('strong', null, state.assets.length)))),
+        !active && state.outcome && h('section', { className: 'ty-card ty-final', 'data-tycoon-outcome': state.outcome.won ? 'won' : 'review' }, h('p', { className: 'ty-eyebrow' }, 'Campaign debrief · ' + state.outcome.score + ' points'), h('h2', null, state.outcome.title), h('ul', null, state.outcome.reasons.map(function (reason, index) { return h('li', { key: index }, reason); })), h('div', { className: 'ty-actions' }, h('button', { type: 'button', onClick: exportSave }, 'Export this campaign'), h('button', { type: 'button', className: 'ty-primary', onClick: function () { setResetOpen(true); } }, 'Plan another campaign'))),
+        h('div', { className: 'ty-grid', 'data-terminal': !active }, renderScene(), active && renderEvent(), active && renderFleet(), active && renderAdvance(), active && renderPolicy(), active && renderAcquisition(), renderGoals()), renderReport(),
+        h('footer', { className: 'ty-footer' }, h('p', null, 'Educational game · fictional prices and policies · simplified hourly energy model. Renewable generation supplies the island; batteries shift energy through time. Seed: ' + state.seed + '.'), h('span', { className: 'ty-chip' }, active ? 'Plan → resolve → reflect' : state.history.length + ' months completed'))));
+  }
+
+  window.StemLab.RenewablesTycoon = RenewablesTycoon;
+})();
+// END GENERATED RENEWABLES TYCOON MODULES
+
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'))) {
 
 (function() {
@@ -1706,7 +4259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     {id:'storage',name:'Battery storage',icon:'🔋',lesson:'storage',tag:'Electricity → storage → electricity',primary:'power',
       intro:'Scrub a two-hour cycle: charge for the first hour, then discharge for the second. Watch energy capacity, power limits, and losses constrain the battery.',
       controls:[['capacity','Battery energy capacity',10,500,10,100,'kWh'],['power','Charge and discharge power limit',0,200,5,50,'kW'],['roundtrip','Round-trip efficiency',50,100,1,88,'%'],['initial','Initial state of charge',0,100,5,0,'%']],
-      components:[['resource','Charging supply','The external source offers the selected power for the first 60 minutes. Energy accepted is limited by the room remaining in storage.'],['converter','Battery cells','The green fill is stored energy divided by energy capacity. Charging and discharging each use the square root of round-trip efficiency.'],['generator','Inverter & load','From minute 60 to 120, the battery serves the load at the selected power until depleted. Losses prevent recovering all charging energy.']],
+      components:[['resource','Charging supply','The external source offers the selected power for the first 60 minutes. Energy accepted is limited by the room remaining in storage.'],['converter','Battery cells','The front charge gauges show stored energy divided by energy capacity while the battery modules stay fixed. Charging and discharging each use the square root of round-trip efficiency.'],['generator','Inverter & load','From minute 60 to 120, the battery serves the load at the selected power until depleted. Losses prevent recovering all charging energy.']],
       formula:'η = √(round-trip efficiency); stored = initial + accepted charge × η − delivered energy / η',
       limits:'Deterministic two-hour cycle, with energy integrated exactly within each phase. No degradation, thermal behavior, self-discharge, reserve dispatch, or chemistry-specific voltage model. Storage shifts energy; it is not a primary renewable source.',
       prompt:'Start empty, finish the full cycle, and compare delivered energy with accepted charging energy.',
@@ -2212,7 +4765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       sensitivity:{lower:lower,upper:upper,deltaPower:delta,deltaPercent:lower.power>0?100*delta/lower.power:null,elasticity:Number.isFinite(elasticity)?elasticity:null,crossesBoundary:crosses},insight:explanations[id],rules:RN_OPERATING_RULES};
   }
 
-  window.StemLab.renewablesEnergyModel={version:1,specs:RN_ENERGY_SPECS,settings:rnEnergySettings,simulate:rnEnergyRun,programs:RN_ENERGY_PROGRAMS,scenario:rnEnergyScenario,resolveReading:rnEnergyResolveReading,importReadings:rnEnergyImportReadings,openImportedReading:rnEnergyOpenImportedReading,compareReadings:rnEnergyCompareReadings,compareScenarios:rnEnergyCompareScenarios,compareInterval:rnEnergyCompareInterval,inputChecks:rnEnergyInputChecks,pathway:rnEnergyPathway,milestones:rnEnergyMilestones,interval:rnEnergyInterval,designMapConfig:rnEnergyMapConfig,designMap:rnEnergyMap,designMapCsv:rnEnergyMapCsv,designMapRules:RN_ENERGY_MAP_RULES,designMapExplanation:rnEnergyMapExplanation,designMapExplanationCsv:rnEnergyMapExplanationCsv,experimentGuides:RN_ENERGY_EXPERIMENTS,sweepConfig:rnEnergySweepConfig,sweep:rnEnergySweep,operatingEnvelope:rnOperatingEnvelope,operatingProbe:rnOperatingProbe,operatingRules:RN_OPERATING_RULES};
+  window.StemLab.renewablesEnergyModel={version:1,specs:RN_ENERGY_SPECS,settings:rnEnergySettings,simulate:rnEnergyRun,programs:RN_ENERGY_PROGRAMS,scenario:rnEnergyScenario,resolveReading:rnEnergyResolveReading,importReadings:rnEnergyImportReadings,openImportedReading:rnEnergyOpenImportedReading,compareReadings:rnEnergyCompareReadings,compareScenarios:rnEnergyCompareScenarios,compareInterval:rnEnergyCompareInterval,inputChecks:rnEnergyInputChecks,pathway:rnEnergyPathway,milestones:rnEnergyMilestones,interval:rnEnergyInterval,designMapConfig:rnEnergyMapConfig,designMap:rnEnergyMap,designMapCsv:rnEnergyMapCsv,designMapRules:RN_ENERGY_MAP_RULES,designMapExplanation:rnEnergyMapExplanation,designMapExplanationCsv:rnEnergyMapExplanationCsv,experimentGuides:RN_ENERGY_EXPERIMENTS,sweepConfig:rnEnergySweepConfig,sweep:rnEnergySweep,operatingEnvelope:rnOperatingEnvelope,operatingProbe:rnOperatingProbe,operatingRules:RN_OPERATING_RULES,discovery:rnEnergyDiscovery,applyDiscovery:rnEnergyDiscoveryApply};
 
 
 
@@ -2631,6 +5184,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
   }
 
   function rnEnergyReading(value){return value!==0&&Math.abs(value)<.01?Number(value).toExponential(2):Number(value).toLocaleString(undefined,{maximumFractionDigits:2});}
+  // Guided, one-input comparisons. Runs are recomputed from the existing model;
+  // sessions store only the learner's prediction and the setup to return to.
+  var RN_ENERGY_DISCOVERIES={
+    solarPv:{key:'incidence',control:'Angle from the panel normal',unit:'°',a:0,b:60,title:'Turn the panel',aLabel:'0° incidence',bLabel:'60° incidence',
+      question:'Turn the array from facing the beam to 60° away. How will electrical output change?',part:'converter',observe:'Watch the array tilt and the gold electrical flow.',
+      explanation:'At 60°, the direct-beam model intercepts half as much light as at 0°. The unchanged conversion efficiencies pass that reduction through to AC output.'},
+    wind:{key:'speed',control:'Wind speed',unit:'m/s',a:20,b:25,title:'Stronger wind, then what?',aLabel:'20 m/s wind',bLabel:'25 m/s wind',
+      question:'Increase wind speed from 20 to 25 m/s. How will electrical output change?',part:'generator',observe:'Watch the turbine, generator and electrical path.',
+      explanation:'A reaches the default generator rating. At 25 m/s this teaching model enters protective shutdown: the rotor and electrical flow stop even though the wind contains more power.'},
+    hydro:{key:'head',control:'Water head',unit:'m',a:30,b:60,title:'Raise the water',aLabel:'30 m head',bLabel:'60 m head',
+      question:'Double the water head while keeping flow unchanged. How will electrical output change?',part:'resource',observe:'Watch the reservoir height, runner and electrical path.',
+      explanation:'The same water flow falls through twice the head, doubling hydraulic power. With the same combined efficiency, electrical output doubles too.'},
+    geothermal:{key:'returnTemp',control:'Reinjection temperature',unit:'°C',a:70,b:100,title:'Change the return temperature',aLabel:'70°C reinjection',bLabel:'100°C reinjection',
+      question:'Raise reinjection temperature while the produced fluid stays at 180°C. How will electrical output change?',part:'converter',observe:'Watch the heat exchanger, thermal flow and generator.',
+      explanation:'A warmer return leaves a smaller temperature drop across the exchanger. Less heat is extracted, so the unchanged engine efficiency produces less electricity.'},
+    solarThermal:{key:'optical',control:'Optical and receiver efficiency',unit:'%',a:65,b:90,title:'Send more sunlight into heat',aLabel:'65% optical efficiency',bLabel:'90% optical efficiency',
+      question:'Improve optical and receiver efficiency with the same mirror field and sunlight. How will electrical output change?',part:'converter',observe:'Watch the receiver’s useful-heat segment and the generator.',
+      explanation:'Incident sunlight stays the same. A larger share becomes useful heat and a smaller share remains as optical loss. The unchanged heat-engine efficiency converts that extra heat into electricity.'},
+    wave:{key:'height',control:'Significant wave height',unit:'m',a:2,b:4,title:'Double the wave height',aLabel:'2 m wave height',bLabel:'4 m wave height',
+      question:'Double significant wave height without changing the period. How will mean electrical output change?',part:'converter',observe:'Watch the buoy’s travel and the electrical flow.',
+      explanation:'Mean wave power depends on height squared in this model. Doubling height gives four times the mean electrical output. The buoy travels farther while the selected wave period stays the same.'},
+    tidal:{key:'speed',control:'Signed tidal current',unit:'m/s',a:2,b:-2,title:'Reverse the tide',aLabel:'+2 m/s current',bLabel:'−2 m/s current',
+      question:'Reverse the current without changing its speed magnitude. How will electrical output change?',part:'converter',observe:'Watch current direction, rotor rotation and electrical delivery.',
+      explanation:'The current reverses, but its speed magnitude stays at 2 m/s. The model gives the same power in either direction. The water and rotor reverse while electricity still travels toward the load.'},
+    biomass:{key:'cycle',control:'Steam-cycle efficiency',unit:'%',a:25,b:35,title:'Get more from the same steam',aLabel:'25% cycle efficiency',bLabel:'35% cycle efficiency',
+      question:'Improve steam-cycle efficiency with the same fuel and boiler settings. How will electrical output change?',part:'generator',observe:'Compare the fire and feed screw with generator motion.',
+      explanation:'Fuel delivery, combustion and useful boiler heat stay the same. The steam cycle converts a larger fraction of that heat into electricity, so the drivetrain and electrical flow respond while the fire holds steady.'},
+    storage:{key:'capacity',control:'Battery energy capacity',unit:'kWh',a:100,b:200,base:{initial:0,power:50},minute:90,title:'A bigger battery, the same charge',aLabel:'100 kWh capacity',bLabel:'200 kWh capacity',
+      question:'Start both banks empty and charge at 50 kW. At minute 90, will doubling capacity change discharge output?',part:'converter',observe:'Compare the charge gauges and discharge path at minute 90.',
+      explanation:'Both banks accept the same energy during the charging hour; neither reaches capacity. At minute 90 both deliver 50 kW and hold the same remaining energy. The larger bank shows a lower charge percentage because that energy fills a smaller share of its capacity.'}
+  };
+
+  function rnEnergyDiscovery(id){
+    if(!Object.prototype.hasOwnProperty.call(RN_ENERGY_DISCOVERIES,id))return null;
+    var config=RN_ENERGY_DISCOVERIES[id],base=rnEnergySettings(id,config.base||{}),minute=config.minute||0;
+    function make(side,value,label){var input=Object.assign({},base);input[config.key]=value;var settings=rnEnergySettings(id,input);
+      return {key:side,label:label,settings:settings,profileId:'steady',minute:minute,part:config.part,run:rnEnergyRun(id,settings,minute)};
+    }
+    var a=make('a',config.a,config.aLabel),b=make('b',config.b,config.bLabel),delta=b.run.power-a.run.power,tolerance=Math.max(1,Math.abs(a.run.power),Math.abs(b.run.power))*1e-9;
+    return {version:1,id:id,title:config.title,question:config.question,explanation:config.explanation,
+      control:{key:config.key,label:config.control,unit:config.unit},observe:{part:config.part,text:config.observe},profileId:'steady',minute:minute,a:a,b:b,
+      changedKeys:Object.keys(a.settings).filter(function(key){return a.settings[key]!==b.settings[key];}),
+      delta:delta,ratio:a.run.power===0?(b.run.power===0?1:null):b.run.power/a.run.power,
+      outcome:Math.abs(delta)<=tolerance?'same':delta>0?'more':'less',maxPower:Math.max(a.run.power,b.run.power,0)};
+  }
+
+  function RenewablesEnergyDiscovery(props){
+    var React=props.React,h=React.createElement,discovery=rnEnergyDiscovery(props.id),headingRef=React.useRef(null),previousStage=React.useRef(null);
+    function tr(key,fallback){var value=null;if(typeof props.t==='function'){try{value=props.t('stem.renewables.discovery.'+key,fallback);}catch(e){value=null;}}return value==null?fallback:value;}
+    function snapshot(settings,profileId,minute){
+      var profile=typeof rnEnergyProgram==='function'?rnEnergyProgram(props.id,profileId):null,maxMinute=profile?profile.duration:props.id==='storage'?120:60,time=Number(minute);
+      return {settings:rnEnergySettings(props.id,settings),profileId:profile?profile.id:'steady',minute:Number.isFinite(time)?Math.max(0,Math.min(maxMinute,time)):0};
+    }
+    function validSession(input){
+      if(!input||input.version!==1||!input.original||!input.original.settings||typeof input.original.settings!=='object'||Array.isArray(input.original.settings)||typeof input.original.profileId!=='string'||typeof input.original.minute!=='number'||!Number.isFinite(input.original.minute)||typeof input.revealed!=='boolean')return null;
+      if(input.prediction!==null&&['more','less','same'].indexOf(input.prediction)===-1)return null;
+      var original=snapshot(input.original.settings,input.original.profileId,input.original.minute);
+      return {version:1,original:original,prediction:input.prediction,revealed:input.revealed&&input.prediction!==null};
+    }
+    var session=validSession(props.state),stage=session?(session.revealed?'result':'predict'):'idle',uid=(props.uid||'rn-discovery-'+props.id)+'-discovery';
+    React.useEffect(function(){var previous=previousStage.current;previousStage.current={id:props.id,stage:stage};if(previous&&previous.id===props.id&&previous.stage!==stage&&headingRef.current)headingRef.current.focus({preventScroll:true});},[props.id,stage]);
+    if(!discovery)return null;
+    var current=snapshot(props.settings,props.profileId,props.minute),canAct=typeof props.onAction==='function';
+    function matches(caseSetup){return current.profileId===caseSetup.profileId&&current.minute===caseSetup.minute&&Object.keys(caseSetup.settings).every(function(key){return current.settings[key]===caseSetup.settings[key];});}
+    var matchA=matches(discovery.a),matchB=matches(discovery.b),shown=matchA?'a':matchB?'b':'custom';
+    function setup(which){var chosen=discovery[which];return {settings:Object.assign({},chosen.settings),profileId:chosen.profileId,minute:chosen.minute,part:chosen.part};}
+    function emit(next,apply){if(canAct)props.onAction(next,apply);}
+    function change(patch){return Object.assign({},session,patch);}
+    function start(){emit({version:1,original:snapshot(props.settings,props.profileId,props.minute),prediction:null,revealed:false},setup('a'));}
+    function restore(){emit(null,{settings:Object.assign({},session.original.settings),profileId:session.original.profileId,minute:session.original.minute});}
+    function number(value){return rnEnergyReading(value);}
+    function button(label,action,extra){return h('button',Object.assign({type:'button',onClick:action,disabled:!canAct},extra||{}),label);}
+    function pair(){return h('div',{className:'rn-discovery-pair','aria-label':tr('prepared_pair','Prepared comparison')},['a','b'].map(function(key){return h('div',{key:key,className:'rn-discovery-case'},h('span',{className:'rn-discovery-letter','aria-hidden':true},key.toUpperCase()),h('span',null,h('small',null,tr('case_'+key,'Case '+key.toUpperCase())),tr(props.id+'_'+key,discovery[key].label)));}));}
+    function context(){return h('p',{className:'rn-discovery-context','data-discovery-current':shown},shown==='custom'?h('span',{'data-discovery-mismatch':true},tr('workbench_differs','Workbench differs from A and B. The discovery still compares its prepared pair.')):tr('viewing_'+shown,'Workbench: case '+shown.toUpperCase()+'.'),discovery.id==='storage'?' '+tr('minute_90','Both cases use minute 90.'):null);}
+    function meter(key){var item=discovery[key],power=item.run.power,width=discovery.maxPower>0?power/discovery.maxPower*100:0;
+      return h('div',{key:key,className:'rn-discovery-meter-row','data-discovery-case':key},
+        h('div',{className:'rn-discovery-meter-heading'},h('span',null,h('b',{className:'rn-discovery-letter','aria-hidden':true},key.toUpperCase()),h('span',null,tr(props.id+'_'+key,item.label))),h('strong',{'data-discovery-power':key,'data-power':power,title:String(power)+' kW'},number(power),h('small',null,' kW'))),
+        h('div',{className:'rn-discovery-meter','aria-hidden':true},h('span',{className:key==='b'?'rn-discovery-meter-b':'rn-discovery-meter-a',style:{width:width+'%'}})));
+    }
+    var predicted=session&&session.prediction,correct=session&&predicted===discovery.outcome,outcomeLabel=tr('choice_'+discovery.outcome,{more:'More',less:'Less',same:'Same'}[discovery.outcome]);
+    if(props.compact){
+      if(!session||!session.revealed)return null;
+      return h('div',{className:'rn-discovery-dock','data-discovery-dock':props.id,'aria-label':tr('scene_comparison','Discovery comparison at the scene')},
+        h('div',null,h('strong',null,tr('compare_in_scene','Compare in the scene')),h('small',null,discovery.a.label+' → '+discovery.b.label)),
+        h('div',{className:'rn-discovery-dock-actions',role:'group','aria-label':tr('scene_cases','Switch the scene between discovery cases')},['a','b'].map(function(key){return button(tr('view_'+key,'View '+key.toUpperCase()),function(){emit(change({}),setup(key));},{key:key,'data-discovery-dock-view':key,'aria-pressed':key==='a'?matchA:matchB});})),
+        h('small',{className:'rn-discovery-dock-status'},shown==='custom'?tr('scene_custom','Custom workbench. Choose A or B to return to the prepared comparison.'):tr('viewing_'+shown,'Workbench: case '+shown.toUpperCase())+' '+tr('same_minute','Both cases use the same minute.')));
+    }
+    return h('section',{className:'rn-energy-discovery','data-discovery':props.id,'data-discovery-stage':stage,'aria-labelledby':uid+'-heading'},
+      h('style',null,RN_ENERGY_DISCOVERY_CSS),
+      h('div',{className:'rn-discovery-kicker'},h('span',null,tr('quick_discovery','Quick discovery')),h('span',null,tr('steps','Predict → test → compare'))),
+      h('h3',{id:uid+'-heading',ref:headingRef,tabIndex:-1},stage==='idle'?tr(props.id+'_title',discovery.title):stage==='predict'?tr('make_prediction','Make your prediction'):tr('compare_cases','Compare A and B')),
+      h('p',{className:'rn-discovery-question'},tr(props.id+'_question',discovery.question)),
+      stage==='idle'?h(React.Fragment,null,pair(),h('div',{className:'rn-discovery-start'},button(tr('start','Start discovery'),start,{className:'rn-discovery-primary','data-discovery-action':'start'}),h('small',null,tr('return_note','Try a prepared pair, then return to your setup.')))):
+        h(React.Fragment,null,
+          stage==='predict'?h(React.Fragment,null,pair(),h('p',{className:'rn-discovery-basis'},tr('one_input','Only the named input changes. All other inputs use the same model defaults.')),
+            h('fieldset',{className:'rn-discovery-prediction'},h('legend',null,tr('prediction_legend','Compared with A, will B deliver…')),
+              h('div',null,[['more','More'],['less','Less'],['same','Same']].map(function(choice){return button(tr('choice_'+choice[0],choice[1]),function(){emit(change({prediction:choice[0]}));},{key:choice[0],'aria-pressed':predicted===choice[0],'aria-label':tr('predict_'+choice[0],choice[1]+' electrical output'),'data-discovery-prediction':choice[0]});}))),
+            button(tr('test','Test my prediction'),function(){if(predicted)emit(change({revealed:true}),setup('b'));},{className:'rn-discovery-primary','data-discovery-action':'test',disabled:!canAct||!predicted}),context()):
+            h('div',{'data-discovery-results':true,'data-outcome':discovery.outcome,'data-correct':!!correct},
+              h('p',{className:'rn-discovery-verdict',role:'status','aria-atomic':true,'data-discovery-verdict':true},h('strong',null,correct?tr('matched','Your prediction matched.'):tr('different','The result was different.')),' ',tr('result_'+discovery.outcome,discovery.outcome==='same'?'B delivers the same electrical output.':discovery.outcome==='more'?'B delivers more electrical output.':'B delivers less electrical output.')),
+              h('p',{className:'rn-discovery-prediction-summary'},tr('your_prediction','Your prediction')+': '+tr('choice_'+predicted,{more:'More',less:'Less',same:'Same'}[predicted])+' · '+tr('model_result','Model result')+': '+outcomeLabel),
+              h('div',{className:'rn-discovery-meters','aria-label':tr('output_comparison','Electrical output comparison')},meter('a'),meter('b')),
+              h('div',{className:'rn-discovery-delta','data-discovery-change':true,'data-delta':discovery.delta,'data-ratio':discovery.ratio===null?'undefined':discovery.ratio},
+                h('span',null,h('small',null,tr('change_b_a','Change, B − A')),h('strong',{title:String(discovery.delta)+' kW'},(discovery.delta>0?'+':'')+number(discovery.delta)+' kW')),
+                h('span',null,h('small',null,tr('relative_a','B relative to A')),h('strong',null,discovery.ratio===null?tr('ratio_no_baseline','No nonzero baseline'):number(discovery.ratio)+'×'))),
+              h('p',{className:'rn-discovery-scale-note'},tr('shared_scale','Both bars use the same output scale.')),
+              h('p',{className:'rn-discovery-explanation'},tr(props.id+'_explanation',discovery.explanation)),
+              h('p',{className:'rn-discovery-observe'},h('strong',null,tr('look_for','Look in the scene')+': '),tr(props.id+'_observe',discovery.observe.text)),
+              h('div',{className:'rn-discovery-views',role:'group','aria-label':tr('view_cases','View discovery cases')},['a','b'].map(function(key){return button(tr('view_'+key,'View '+key.toUpperCase()),function(){emit(change({}),setup(key));},{key:key,'data-discovery-view':key,'aria-pressed':key==='a'?matchA:matchB});})),context()),
+          h('div',{className:'rn-discovery-footer'},session.revealed&&button(tr('try_again','Try again'),function(){emit(change({prediction:null,revealed:false}),setup('a'));},{'data-discovery-action':'again'}),button(tr('return_setup','Return to my setup'),restore,{'data-discovery-action':'return'}))));
+  }
+
+  var RN_ENERGY_DISCOVERY_CSS='\n'+
+    '.rn-discovery-dock{margin:12px 14px;padding:12px;border:1px solid #63828b;border-radius:10px;background:#163744;color:#eff9f6;display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}.rn-discovery-dock>div:first-child{flex:1 1 170px;min-width:0}.rn-discovery-dock strong{display:block;font-size:12px}.rn-discovery-dock small{display:block;font-size:11px;line-height:1.5;color:#c8e3de}.rn-discovery-dock-actions{display:flex;gap:8px}.rn-energy-scene .rn-discovery-dock button{min-height:42px;padding:8px 14px;background:#173c4a;border-color:#779297;color:#eff9f6}.rn-energy-scene .rn-discovery-dock button[aria-pressed=true]{background:#d8f4e9;color:#163d35}.rn-energy-scene .rn-discovery-dock button:hover{background:#244c55;color:#eff9f6}.rn-energy-scene .rn-discovery-dock button[aria-pressed=true]:hover{background:#d8f4e9;color:#163d35}.rn-discovery-dock-status{flex-basis:100%}@media(max-width:480px){.rn-discovery-dock{margin:10px 12px}.rn-discovery-dock-actions{width:100%}.rn-discovery-dock-actions button{flex:1}}'+
+    '.rn-energy-discovery{margin:0 0 16px;padding:18px;border:1px solid var(--re-border);border-radius:14px;background:var(--re-card);color:var(--re-text);min-width:0;overflow-wrap:anywhere}'+
+    '.rn-discovery-kicker{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;margin-bottom:9px;color:var(--re-muted);font-size:10px;letter-spacing:.5px}.rn-discovery-kicker>span:first-child{font-weight:700;text-transform:uppercase;color:var(--re-accent)}'+
+    '.rn-energy-discovery h3{margin:0 0 8px;font-size:18px;line-height:1.35;letter-spacing:-.25px}.rn-energy-discovery h3:focus{outline:none}.rn-energy-discovery h3:focus-visible{outline:2px solid var(--re-accent);outline-offset:5px;border-radius:2px}'+
+    '.rn-energy-discovery p{line-height:1.6}.rn-discovery-question{margin:0 0 14px;font-size:13px}.rn-discovery-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.rn-discovery-case{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid var(--re-border);border-radius:9px;background:var(--re-alt);min-width:0;font-size:12px;line-height:1.45}.rn-discovery-case small{display:block;color:var(--re-muted);font-size:10px;margin-bottom:2px}'+
+    '.rn-discovery-letter{display:inline-grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border:1px solid var(--re-border);border-radius:7px;color:var(--re-text);background:var(--re-card);font-size:11px;font-weight:700}.rn-discovery-start{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;margin-top:14px}.rn-discovery-start small{flex:1 1 150px;color:var(--re-muted);font-size:11px;line-height:1.5}'+
+    '.rn-energy-discovery button{font:inherit;font-size:12px;min-height:42px;padding:9px 13px;border:1px solid var(--re-border);border-radius:8px;background:var(--re-card);color:var(--re-text);cursor:pointer;line-height:1.4;white-space:normal}.rn-energy-discovery button:hover:not(:disabled){background:var(--re-alt)}.rn-energy-discovery button:focus-visible{outline:3px solid var(--re-accent);outline-offset:3px}.rn-energy-discovery button[aria-pressed=true],.rn-energy-discovery button[aria-pressed=true]:hover:not(:disabled){background:var(--re-text);color:var(--re-bg);border-color:var(--re-text)}.rn-energy-discovery button:disabled{opacity:.55;cursor:default}.rn-energy-discovery .rn-discovery-primary{background:var(--re-text);border-color:var(--re-text);color:var(--re-bg);font-weight:600}.rn-energy-discovery .rn-discovery-primary:hover:not(:disabled){background:var(--re-text);box-shadow:0 0 0 2px var(--re-border)}'+
+    '.rn-discovery-basis,.rn-discovery-context,.rn-discovery-scale-note,.rn-discovery-prediction-summary{font-size:11px;color:var(--re-muted);margin:10px 0}.rn-discovery-context [data-discovery-mismatch]{display:block;padding:9px 11px;background:var(--re-alt);border-left:3px solid var(--re-accent);border-radius:0 6px 6px 0;color:var(--re-text)}.rn-discovery-prediction{border:0;padding:0;margin:16px 0}.rn-discovery-prediction legend{padding:0;font-size:12px;font-weight:600;margin-bottom:8px}.rn-discovery-prediction>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}'+
+    '.rn-discovery-verdict{font-size:13px;margin:14px 0 5px;padding:11px 12px;border:1px solid var(--re-border);border-left:3px solid var(--re-accent);border-radius:8px;background:var(--re-alt)}.rn-discovery-meters{display:grid;gap:14px;margin:18px 0 12px}.rn-discovery-meter-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px 12px;margin-bottom:7px}.rn-discovery-meter-heading>span{display:flex;gap:8px;align-items:center;min-width:0;font-size:12px}.rn-discovery-meter-heading strong{font-size:16px;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-.25px}.rn-discovery-meter-heading strong small{font-size:10px;font-weight:400;color:var(--re-muted)}.rn-discovery-meter{height:10px;border-radius:5px;overflow:hidden;background:var(--re-alt);border:1px solid var(--re-border)}.rn-discovery-meter>span{display:block;height:100%;border-radius:3px;background:var(--re-accent)}.rn-discovery-meter>span.rn-discovery-meter-b{background:var(--re-text)}'+
+    '.rn-discovery-delta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:11px 12px;border:1px solid var(--re-border);border-radius:9px}.rn-discovery-delta small{display:block;color:var(--re-muted);font-size:10px;margin-bottom:4px}.rn-discovery-delta strong{font-size:14px;font-variant-numeric:tabular-nums}.rn-discovery-explanation{font-size:12px;margin:14px 0 8px}.rn-discovery-observe{font-size:11px;color:var(--re-muted);margin:8px 0 14px}.rn-discovery-views{display:flex;gap:8px}.rn-discovery-views button{flex:1}.rn-discovery-footer{display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;margin-top:12px;border-top:1px solid var(--re-border)}'+
+    '@media(max-width:480px){.rn-energy-discovery{padding:14px}.rn-discovery-pair{grid-template-columns:1fr}.rn-discovery-case{padding:8px 10px}.rn-discovery-start{align-items:stretch}.rn-discovery-start>button{width:100%}.rn-discovery-start small{flex-basis:100%}.rn-discovery-footer button{flex:1 1 100%}.rn-discovery-meter-heading strong{padding-left:33px}.rn-discovery-delta{gap:8px;padding:10px}.rn-discovery-kicker{font-size:9px}.rn-energy-discovery h3{font-size:17px}}\n';
+
+  function rnEnergyDiscoveryApply(state,id,session,setup){
+    if(!RN_ENERGY_SPECS.some(function(spec){return spec.id===id;}))return state;
+    var discoveries=Object.assign({},state.discoveries),next=Object.assign({},state,{discoveries:discoveries});
+    if(session)discoveries[id]=session;else delete discoveries[id];
+    if(setup){
+      var settings=Object.assign({},state.settings),scenarios=Object.assign({},state.scenarios),profile=rnEnergyProgram(id,setup.profileId);
+      settings[id]=rnEnergySettings(id,setup.settings);
+      scenarios[id]=Object.assign({},scenarios[id],{profileId:profile?profile.id:'steady'});
+      next=rnEnergyPosition(Object.assign({},next,{settings:settings,scenarios:scenarios}),id,setup.minute);
+    }
+    return next;
+  }
+
   function RenewablesEnergyPathway(props){
     var h=props.React.createElement,pathway=rnEnergyPathway(props.run),before=props.previousRun&&props.previousRun.id===props.run.id?rnEnergyPathway(props.previousRun):null;
     var __alloT=rnEnergyT(props),storage=props.run.id==='storage',motion=props.motion===true;
@@ -2827,27 +5518,132 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',null,profileNote));
   }
 
+  // Insert immediately before RenewablesEnergyScene. This reducer has no DOM or THREE dependency.
+  // Input pointer: {id, pointerType, x, y, button, isPrimary, canStart}.
+  // Types: down, move, up, cancel, lost, reset. A null state starts an empty gesture.
+  // Touch intent uses an 8 px Euclidean excursion; mouse/pen retain the >5 px Manhattan threshold.
+  // Effects are returned separately so the caller can commit state BEFORE releasing pointer capture.
+  function rnEnergyIllustrationFeedback(status,id,complete,reduced,animate,response,currentKey){
+    var code=status==='failed'?'unavailable':status!=='ready'?'waiting':complete?'complete':
+      !response||response.id!==id||response.mode==='pending'||currentKey!==undefined&&response.key!==currentKey?'waiting':
+      reduced?'reduced':!animate?'paused':response.mode==='geometry'?'geometry':response.mode==='coasting'?'coasting':response.mode==='motion'?'motion':'steady';
+    var labels={
+      waiting:[status==='loading'?'Preparing illustration':'Updating illustration','Readings use the current settings. The drawing updates when the scene is visible.'],
+      unavailable:['Illustration unavailable','Controls, calculations and the energy-flow view remain available.'],
+      complete:['Sequence complete','The sequence has ended. No additional energy is flowing.'],
+      reduced:['Still illustration','Reduced motion is on. Settings update the drawing directly; Step illustration advances one motion step.'],
+      paused:['Illustration paused','Settings update the drawing directly. Step illustration advances motion without advancing simulation time.'],
+      geometry:['Equipment shape adjusting','Readings already use the current settings. Equipment size, angle or layout is easing into place.'],
+      coasting:['Rotor slowing to rest','Electrical output is already zero. The rotor and connected generator are slowing; this illustrated motion adds no energy.'],
+    motion:['Motion and flow adjusting','Readings already use the current settings. Motion and visual flow cues are easing toward them.'],
+      steady:['Illustration settled','The drawing reflects the current settings. Animation illustrates operation without advancing simulation time.']
+    };
+    return {code:code,title:labels[code][0],note:labels[code][1]};
+  }
+
+  function rnEnergyPointerGesture(state,type,pointer){
+    var previous=state||{owner:null,touches:[],suppressed:false};
+    var next={owner:previous.owner?Object.assign({},previous.owner):null,touches:previous.touches.slice(),suppressed:!!previous.suppressed};
+    var result={state:next,orbit:null,pick:false,hover:false,clearHover:false,capture:null,release:null};
+    var p=pointer||{},id=p.id,pointerType=p.pointerType||'mouse',touch=pointerType==='touch';
+    function clearOwner(){
+      if(next.owner&&next.owner.pointerType!=='touch')result.release=next.owner.id;
+      next.owner=null;
+    }
+    function begin(){
+      next.owner={id:id,pointerType:pointerType,startX:p.x,startY:p.y,x:p.x,y:p.y,intent:'pending',moved:false,maxTravel:0};
+      result.clearHover=true;
+      if(!touch)result.capture=id;
+    }
+    function sample(owner){
+      var x=Number.isFinite(p.x)?p.x:owner.x,y=Number.isFinite(p.y)?p.y:owner.y;
+      var totalX=x-owner.startX,totalY=y-owner.startY;
+      var travel=owner.pointerType==='touch'?Math.hypot(totalX,totalY):Math.abs(totalX)+Math.abs(totalY);
+      owner.maxTravel=Math.max(owner.maxTravel,travel);
+      var crossed=owner.pointerType==='touch'?owner.maxTravel>=8:owner.maxTravel>5;
+      if(crossed){
+        owner.moved=true;
+        if(owner.intent==='pending')owner.intent=owner.pointerType==='touch'&&Math.abs(totalX)<=1.25*Math.abs(totalY)?'scroll':'orbit';
+      }
+      var delta={dx:x-owner.x,dy:owner.pointerType==='touch'?0:y-owner.y};
+      owner.x=x;owner.y=y;
+      return delta;
+    }
+    if(type==='reset'){
+      clearOwner();next.touches=[];next.suppressed=false;result.clearHover=true;return result;
+    }
+    if(id===undefined||id===null)return result;
+    if(type==='down'){
+      if(touch){
+        // Bubbling duplicate down events cannot become a false second contact.
+        if(next.touches.indexOf(id)!==-1)return result;
+        next.touches.push(id);
+        if(next.touches.length>1){
+          next.suppressed=true;
+          if(next.owner&&next.owner.pointerType==='touch'){clearOwner();result.clearHover=true;}
+          return result;
+        }
+        // A non-primary first observed contact means another finger is already elsewhere.
+        if(p.isPrimary===false){next.suppressed=true;return result;}
+        if(!next.owner&&!next.suppressed&&p.canStart!==false)begin();
+        return result;
+      }
+      if((p.button===undefined||p.button===0)&&p.canStart!==false&&!next.owner&&!next.suppressed&&!next.touches.length)begin();
+      return result;
+    }
+    var owns=!!next.owner&&next.owner.id===id;
+    if(type==='move'){
+      if(!owns){
+        result.hover=!next.owner&&!next.touches.length&&!next.suppressed&&!touch;
+        return result;
+      }
+      var delta=sample(next.owner);
+      if(!next.suppressed&&next.owner.intent==='orbit'&&(delta.dx!==0||delta.dy!==0))result.orbit=delta;
+      return result;
+    }
+    if(type==='lost'){
+      if(!owns)return result;
+      // Losing implicit touch capture does not prove the finger has lifted.
+      // Keep its contact suppressed until an explicit up/cancel, never transfer ownership.
+      if(next.owner.pointerType==='touch')next.suppressed=true;
+      clearOwner();result.clearHover=true;return result;
+    }
+    if(type!=='up'&&type!=='cancel')return result;
+    if(owns){
+      if(type==='up')sample(next.owner);
+      result.pick=type==='up'&&!next.suppressed&&!next.owner.moved&&next.owner.intent==='pending';
+      clearOwner();
+    }
+    var contact=next.touches.indexOf(id);
+    if(contact!==-1)next.touches.splice(contact,1);
+    if(!next.touches.length)next.suppressed=false;
+    if(type==='cancel'&&owns)result.clearHover=true;
+    return result;
+  }
+
   function RenewablesEnergyScene(props){
     var React=props.React,h=React.createElement,mount=React.useRef(null),live=React.useRef(props),api=React.useRef(null);
-    var __alloT=rnEnergyT(props),hasGeneratorDetail=['wind','tidal','hydro'].indexOf(props.id)!==-1;
+    var __alloT=rnEnergyT(props),hasGeneratorDetail=['wind','tidal','hydro','geothermal','solarThermal','biomass'].indexOf(props.id)!==-1;
     var statusState=React.useState('loading'),status=statusState[0],retry=React.useState(0),inspectionState=React.useState({id:props.id,layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false}),cameraState=React.useState({name:'isometric',yaw:Math.PI/4,pitch:Math.atan(1/Math.sqrt(2))});
     var hoveredState=React.useState(null),hovered=hoveredState[0],cameraReading=cameraState[0],cameraNames={isometric:'Isometric view',front:'Front view',side:'Side view',top:'Top view',custom:'Free orbit'},cameraPresets=[['isometric','Isometric view'],['front','Front view'],['side','Side view'],['top','Top view']];
     var motionPreference=React.useState(function(){return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}),equipmentMotion=React.useState(function(){return !(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);});
-    var motionSpeed=React.useState(1),frameHold=React.useState(false);
+    var motionSpeed=React.useState(1),frameHold=React.useState(false),feedbackState=React.useState({id:props.id,mode:'pending'});
     var sequenceComplete=props.run.status==='Sequence complete'||props.run.status==='Cycle complete'||props.run.status==='Scenario complete';
     var inspection=inspectionState[0].id===props.id?inspectionState[0]:{id:props.id,layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false},selected=rnEnergySpec(props.id).components.find(function(c){return c[0]===props.selected;})||rnEnergySpec(props.id).components[1];
+    var feedbackKey=JSON.stringify([props.id,props.phase,props.run,inspection.cutaway,inspection.layout]),feedback=rnEnergyIllustrationFeedback(status,props.id,sequenceComplete,motionPreference[0],equipmentMotion[0],feedbackState[0],feedbackKey);
     function inspect(patch){inspectionState[1](Object.assign({},inspection,patch));}
     React.useEffect(function(){inspectionState[1]({id:props.id,layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false});hoveredState[1](null);frameHold[1](false);},[props.id]);
-    live.current=Object.assign({},props,{selected:selected[0],inspection:inspection,motionSpeed:motionSpeed[0],holdFraming:frameHold[0],animate:equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete});
+    live.current=Object.assign({},props,{selected:selected[0],inspection:inspection,feedbackKey:feedbackKey,motionSpeed:motionSpeed[0],holdFraming:frameHold[0],animate:equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete});
     React.useEffect(function(){
-      var disposed=false,failed=false,renderer,scene,camera,raf=0,observer,intersection,visible=true,dirty=true,lastProps=null,resize,drag=null,hoverPart=null,lastFrame=0,streamCount=0,pendingMotionStep=0;
+      var disposed=false,failed=false,renderer,scene,camera,raf=0,observer,intersection,visible=true,dirty=true,lastProps=null,resize,resetPointerGesture=null,hoverPart=null,lastFrame=0,streamCount=0,pendingMotionStep=0,lastFeedbackMode=null,lastFeedbackKey=null;
       var motionQuery=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null,reducedMotion=!!(motionQuery&&motionQuery.matches);
       var listeners=[],pickables=[],updaters=[],markerUpdaters=[],view={name:'isometric',yaw:Math.PI/4,pitch:Math.atan(1/Math.sqrt(2)),zoom:1,target:[0,1.4,0]},viewport={width:700,height:440},groups={},labels={},leaders={},context,generatorFocus=null,fitView=null,focusTarget=null,focusDetail=false,fitPending=true,lastInspection=null,lastDimensions=null,container=mount.current;
+      feedbackState[1](function(previous){return previous.id===props.id&&previous.mode==='pending'?previous:{id:props.id,mode:'pending'};});
       statusState[1]('loading');if(container)container.removeAttribute('data-energy-scene-id');
       function active(){return !disposed&&!failed&&live.current.id===props.id;}
       function zoomLimit(){return focusDetail&&focusTarget==='generator'?12:4;}
       function fail(){if(!active())return;failed=true;cancelAnimationFrame(raf);statusState[1]('failed');}
-      function bind(target,event,handler){target.addEventListener(event,handler);listeners.push([target,event,handler]);}
+      function bind(target,event,handler,capture){target.addEventListener(event,handler,!!capture);listeners.push([target,event,handler,!!capture]);}
       if(motionQuery&&motionQuery.addEventListener)bind(motionQuery,'change',function(event){reducedMotion=event.matches;motionPreference[1](event.matches);if(event.matches)equipmentMotion[1](false);lastFrame=0;dirty=true;});
       function position(){if(!camera)return;
         camera.position.set(view.target[0]+Math.sin(view.yaw)*Math.cos(view.pitch)*20,view.target[1]+Math.sin(view.pitch)*20,view.target[2]+Math.cos(view.yaw)*Math.cos(view.pitch)*20);
@@ -2885,7 +5681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         scene=new THREE.Scene();scene.background=null;context=new THREE.Group();context.name='energy-context';scene.add(context);
         camera=new THREE.OrthographicCamera(-8,8,6,-6,.1,100);position();
         renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setClearColor('#0d2432',0);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));renderer.outputEncoding=THREE.sRGBEncoding;
-        container.appendChild(renderer.domElement);renderer.domElement.style.cssText='width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab';renderer.domElement.setAttribute('aria-hidden','true');
+        container.appendChild(renderer.domElement);renderer.domElement.style.cssText='width:100%;height:100%;display:block;touch-action:pan-y pinch-zoom;cursor:grab';renderer.domElement.setAttribute('aria-hidden','true');
         scene.add(new THREE.HemisphereLight('#dbf0ff','#243b3b',.85));
         var sun=new THREE.DirectionalLight('#fff0d3',1.12);sun.position.set(-4,12,6);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.camera.near=.5;sun.shadow.camera.far=35;sun.shadow.normalBias=.045;sun.shadow.bias=-.00015;scene.add(sun);
         var rimLight=new THREE.DirectionalLight('#a7dce7',.5);rimLight.position.set(7,5,-6);scene.add(rimLight);
@@ -2935,11 +5731,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         function response(key,target,p,tau,zeroStops){
           var dt=p.dt||0,previous=responses[key],snap=previous==null||!p.animate||p.syncResponse||(zeroStops&&target===0);
           if(snap)previous=target;
+          var tracking=response.tracking||(response.tracking={targets:{},scales:{}});
+          // Reporting uses the scale at the start of this transition, including when its target is zero.
+          // It never changes the easing value or its integrated motion.
+          if(snap||tracking.targets[key]!==target){tracking.targets[key]=target;tracking.scales[key]=Math.max(Math.abs(previous),Math.abs(target),Number.MIN_VALUE);}
           var alpha=-Math.expm1(-dt/tau),value=previous+(target-previous)*alpha;
           // Integrate the exponential exactly so equal elapsed time gives equal poses at different frame rates.
           var delta=target*dt+(previous-target)*tau*alpha;
           responses[key]=value;
-          if(Math.abs(value-target)>Math.max(Math.abs(value),Math.abs(target),Number.MIN_VALUE)*.001)responseSettling=true;
+          if(Math.abs(value-target)>tracking.scales[key]*.001)responseSettling=true;
           return {value:value,delta:delta,target:target};
         }
         function shape(key,target,p,tau){
@@ -2956,33 +5756,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         // Signed mechanical motion crosses through rest when selected current reverses.
         // This is a drawing response only; electrical and resource-flow readings stay exact.
         function driveMotion(object,key,target,p){
-          var r=response(key,target,p,.42,true);
+          var complete=p.run&&(p.run.status==='Sequence complete'||p.run.status==='Cycle complete'||p.run.status==='Scenario complete');
+          if(complete)target=0;
+          var previous=responses[key],r;
+          if(target===0&&previous!=null&&p.animate&&!p.syncResponse&&!complete){
+            // This fixed drawing threshold ends a coast in finite visual time; it is not a physical RPM limit.
+            var tau=.42,stopRate=.001,dt=Math.max(0,p.dt||0),speed=Math.abs(previous);
+            var stopTime=speed>stopRate?tau*Math.log(speed/stopRate):0,elapsed=Math.min(dt,stopTime);
+            var value=dt>=stopTime?0:previous*Math.exp(-elapsed/tau);
+            // Truncate the integral at the exact stopping instant, not at the end of a rendered frame.
+            r={value:value,delta:previous*tau*(-Math.expm1(-elapsed/tau)),target:0,coasting:value!==0};
+            responses[key]=value;
+            var tracking=response.tracking||(response.tracking={targets:{},scales:{}});
+            if(tracking.targets[key]!==0){tracking.targets[key]=0;tracking.scales[key]=Math.max(speed,Number.MIN_VALUE);}
+            if(r.coasting)responseSettling=true;
+          }else{
+            // Paused/reduced-motion controls, timeline synchronization and completed sequences snap to rest.
+            // Nonzero targets retain the same signed response, including a reversal through zero.
+            r=response(key,target,p,.42,true);r.coasting=false;
+          }
           object.rotation.z-=r.delta;object.userData.motionRate=r.value;object.userData.motionTarget=target;
+          object.userData.coasting=r.coasting;driveMotion.coasting=r.coasting;
           return r;
         }
         function cue(key,target,p){return response(key,target,p,.26,true).value;}
-        function particles(parent,curve,color,enabled,speed,strength,powerCue){
+        function particles(parent,curve,color,enabled,speed,strength,powerCue,distanceFlow){
           // Stream markers indicate operation, not literal particle speed. Ease only the visual cue; readings stay exact.
           var dots=[],progress=0,streamId=streamCount++,arrowUp=new THREE.Vector3(0,1,0),arrowTangent=new THREE.Vector3();
-          for(var n=0;n<6;n++){var dot=ball(parent,0,0,0,.065,color);dot.name='energy-stream-'+streamId+'-marker-'+n;glow(dot,color,.5);dot.userData.streamColor=dot.material.color.clone();if(powerCue){dot.material.transparent=true;dot.material.depthWrite=false;}dots.push(dot);}
+          for(var n=0;n<6;n++){var dot=powerCue?mesh(parent,new THREE.ConeGeometry(.095,.26,8),color,0,0,0):ball(parent,0,0,0,.065,color);dot.name='energy-stream-'+streamId+'-marker-'+n;glow(dot,color,.5);dot.userData.streamColor=dot.material.color.clone();if(powerCue){dot.material.transparent=true;dot.material.depthWrite=false;dot.castShadow=false;dot.receiveShadow=false;dot.userData.cueShape='directional-arrow';}dots.push(dot);}
           var arrow=mesh(parent,new THREE.ConeGeometry(.105,.28,10),color,0,0,0);glow(arrow,color,.35);
-          arrow.name='energy-stream-'+streamId+'-direction';arrow.userData.streamColor=arrow.material.color.clone();
+          arrow.name='energy-stream-'+streamId+'-direction';arrow.userData.streamColor=arrow.material.color.clone();if(powerCue){arrow.castShadow=false;arrow.receiveShadow=false;}
           function traceMarker(object,p,scale,intensity){var tracing=!!p.inspection.trace,emphasis=tracing&&object.userData.component===p.selected,muted=tracing&&!emphasis;object.scale.setScalar(scale*(emphasis?1.24:muted?.78:1));object.material.color.copy(object.userData.streamColor).multiplyScalar(muted?.32:1);object.material.emissiveIntensity=muted?.04:emphasis?Math.max(.8,intensity):intensity;object.userData.traceState=tracing?(emphasis?'selected':'context'):'normal';}
           markerUpdaters.push(function(p){var targetRate=typeof speed==='function'?speed(p):(speed||.025),on=enabled(p)&&p.run.status!=='Sequence complete'&&p.run.status!=='Cycle complete'&&p.run.status!=='Scenario complete',exactPower=powerCue?Math.max(0,powerCue.power(p)):null,powerReference=powerCue?Math.max(.001,powerCue.referencePower):null,targetAmount=powerCue?exactPower/(exactPower+powerReference):strength?Math.max(0,Math.min(1,strength(p))):1;
             if(powerCue)on=on&&exactPower>0;
             // Zero flow is immediate. A reversal changes direction immediately; only its magnitude eases.
             var direction=targetRate<0?-1:targetRate>0?1:0,magnitude=response('stream-rate-'+streamId,on?Math.abs(targetRate):0,p,.22,true),strengthResponse=response('stream-strength-'+streamId,on?targetAmount:0,p,.22,true);
-            var rate=on?direction*magnitude.value:0,amount=on?strengthResponse.value:0;
+            var length=distanceFlow?Math.max(.001,curve.getLength()):1,rate=on?direction*magnitude.value/(distanceFlow?5*length:1):0,amount=on?strengthResponse.value:0;
             // Integrating the current rate preserves phase through slider changes. Arc-length sampling keeps marks evenly spaced through pipe bends.
-            if(on)progress=((progress+direction*magnitude.delta*5)%1+1)%1;
-            function reading(object){object.userData.flowRate=rate;object.userData.targetFlowRate=on?targetRate:0;object.userData.flowStrength=amount;object.userData.targetFlowStrength=on?targetAmount:0;object.userData.progress=progress;if(powerCue){object.userData.cueMode='power-density';object.userData.power=on?exactPower:0;object.userData.referencePower=powerReference;}}
-            // Electrical marks keep six fixed phases. Extra marks fade in at balanced positions as relative power rises.
-            dots.forEach(function(dot,index){var opacity=on?(powerCue?Math.max(0,Math.min(1,1+5*amount-[0,2,4,1,3,5][index])):1):0;dot.visible=on&&opacity>0;if(powerCue)dot.material.opacity=opacity;dot.userData.markerOpacity=opacity;curve.getPointAt((progress+index/6)%1,dot.position);traceMarker(dot,p,.55+.45*amount,.2+.5*amount);reading(dot);});
+            // Distance-flow response is smoothed before route-length conversion, avoiding a surge during layout changes.
+            if(on)progress=((progress+direction*magnitude.delta*(distanceFlow?1/length:5))%1+1)%1;
+            function reading(object){object.userData.flowRate=rate;object.userData.targetFlowRate=on?targetRate/(distanceFlow?5*length:1):0;object.userData.flowStrength=amount;object.userData.targetFlowStrength=on?targetAmount:0;object.userData.progress=progress;if(distanceFlow){object.userData.cueMode='distance-flow';object.userData.worldFlowRate=on?direction*magnitude.value:0;object.userData.targetWorldFlowRate=on?targetRate:0;}if(powerCue){object.userData.cueMode='power-density';object.userData.power=on?exactPower:0;object.userData.referencePower=powerReference;}}
+            // Electrical arrows keep six fixed phases and follow the local cable tangent. Power changes their density, not their travel speed.
+            dots.forEach(function(dot,index){var opacity=on?(powerCue?Math.max(0,Math.min(1,1+5*amount-[0,2,4,1,3,5][index])):1):0;dot.visible=on&&opacity>0;if(powerCue)dot.material.opacity=opacity;dot.userData.markerOpacity=opacity;var fraction=(progress+index/6)%1;curve.getPointAt(fraction,dot.position);if(powerCue){curve.getTangentAt(fraction,arrowTangent);dot.quaternion.setFromUnitVectors(arrowUp,arrowTangent.normalize().multiplyScalar(targetRate<0?-1:1));}traceMarker(dot,p,powerCue?1:.55+.45*amount,.2+.5*amount);reading(dot);});
             arrow.visible=on;curve.getPointAt(.72,arrow.position);curve.getTangentAt(.72,arrowTangent);arrow.quaternion.setFromUnitVectors(arrowUp,arrowTangent.normalize().multiplyScalar(targetRate<0?-1:1));reading(arrow);traceMarker(arrow,p,1,.35);
           });
           return {dots:dots,arrow:arrow};
         }
         function ring(parent,x,y,z,radius,color,tube){return mesh(parent,new THREE.TorusGeometry(radius,tube||.035,8,48),color,x,y,z);}
+        function waveSurface(parent,ocean){
+          var phase=0,crests=[],referenceFrequency=2*Math.PI/8;
+          // A fixed horizontal compression preserves the deep-water wavelength ∝ period² trend.
+          // This regular surface illustrates the selected energy period; it is not a sea spectrum.
+          for(var i=0;i<9;i++){var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));var line=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:'#bcebea',transparent:true,opacity:.5,depthWrite:false}));line.material.color.convertSRGBToLinear();line.name='energy-wave-crest-'+i;parent.add(line);crests.push(line);}
+          function update(p){
+            var amplitude=response('wave-amplitude',p.run.settings.height*.13,p,.28,true).value,frequency=response('wave-frequency',2*Math.PI/p.run.settings.period,p,.35,false);
+            phase=(phase+frequency.delta)%(2*Math.PI);
+            var k=.9*Math.pow(frequency.value/referenceFrequency,2),targetK=.9*Math.pow(8/p.run.settings.period,2),array=ocean.geometry.attributes.position,normals=ocean.geometry.attributes.normal;
+            function argument(x){return k*(x+1)-.9-phase;}
+            function heightAt(x){return 1+Math.sin(argument(x))*amplitude;}
+            for(var index=0;index<array.count;index++){var x=array.getX(index),slope=amplitude*k*Math.cos(argument(x)),normalLength=Math.sqrt(1+slope*slope);array.setZ(index,heightAt(x)-1);normals.setXYZ(index,-slope/normalLength,0,1/normalLength);}
+            array.needsUpdate=true;normals.needsUpdate=true;ocean.geometry.computeBoundingBox();ocean.geometry.computeBoundingSphere();
+            ocean.userData.phase=phase;ocean.userData.amplitude=amplitude;ocean.userData.targetAmplitude=p.run.settings.height*.13;ocean.userData.angularRate=frequency.value;ocean.userData.angularTarget=frequency.target;
+            ocean.userData.wavenumber=k;ocean.userData.targetWavenumber=targetK;ocean.userData.wavelength=2*Math.PI/k;ocean.userData.phaseSpeed=frequency.value/k;ocean.userData.anchorX=-1;
+            var first=Math.ceil((-5*k-Math.PI/2-.9-phase)/(2*Math.PI));
+            crests.forEach(function(line,index){var x=-1+(Math.PI/2+.9+phase+(first+index)*2*Math.PI)/k,edge=Math.max(0,Math.min(1,(6-Math.abs(x))/.35)),vertices=line.geometry.attributes.position;
+              line.visible=amplitude>0&&edge>0;line.material.opacity=edge*Math.min(.68,amplitude*1.6);vertices.setXYZ(0,x,1+amplitude+.018,-3.65);vertices.setXYZ(1,x,1+amplitude+.018,3.65);vertices.needsUpdate=true;line.geometry.computeBoundingSphere();
+              line.userData.crestX=x;line.userData.displayAmplitude=amplitude;line.userData.wavenumber=k;
+            });
+            return {phase:phase,amplitude:amplitude,wavenumber:k,heightAt:heightAt};
+          }
+          return {ocean:ocean,crests:crests,update:update};
+        }
         function waveTravelGuide(parent){
           // A schematic reference at the buoy's wave x-coordinate, clear of its rim and rear tether.
           var guide=new THREE.Group();guide.name='energy-wave-travel-reference';parent.add(guide);
@@ -3074,6 +5918,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var cap=cylinder(parent,-1,2.95,0,.20,.10,'#819ca6');cap.name='energy-wave-guide-cap';
           var carriage=new THREE.Group();carriage.name='energy-wave-pto-carriage';parent.add(carriage);
           var collar=waveAnnulus(carriage,0,0,0,.245,.17,.24,'#83acbc');collar.name='energy-wave-pto-collar';
+          var strokeStrip=box(parent,-1,1.49,.149,.026,2.48,.012,'#365d69');strokeStrip.name='energy-wave-stroke-strip';
+          var collarIndex=box(carriage,0,.015,.245,.14,.10,.025,'#28454f');collarIndex.name='energy-wave-carriage-index-base';
+          var collarMark=box(carriage,0,.015,.264,.055,.065,.014,'#f4d278');collarMark.name='energy-wave-carriage-index';
           for(var spoke=0;spoke<3;spoke++){var angle=spoke*Math.PI*2/3,arm=box(carriage,Math.sin(angle)*.28,-.09,Math.cos(angle)*.28,.075,.06,.14,'#a5c3cb');arm.rotation.y=angle;arm.name='energy-wave-carriage-spoke-'+spoke;}
           var rim=ring(parent,-1,1.60,0,.77,'#ffe5a9',.075);rim.name='energy-wave-rim';rim.rotation.x=Math.PI/2;
           var deck=new THREE.Group();deck.name='energy-wave-deck';parent.add(deck);
@@ -3116,6 +5963,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           [-1.5,-.45,.6].forEach(function(x,index){[-1,1].forEach(function(sign){var tx=x+sign*.2,z=sign*.38,name=sign<0?'positive':'negative';branches.push(conductor([[tx,2.875,0],[tx,2.98,sign*.10],[tx,3.06,z]],sign<0?'#c5af72':'#789bad','energy-storage-'+name+'-branch-'+index,.028));});});
           return {group:group,positive:positive,negative:negative,branches:branches};
         }
+        function storageRackModules(parent,x,index){
+          var group=new THREE.Group();group.name='energy-storage-module-stack-'+index;parent.add(group);var modules=[];
+          for(var level=0;level<5;level++){
+            var module=box(group,x,.38+level*.46,-.015,.58,.37,1.08,'#9fb9bd');module.name='energy-storage-module-'+index+'-'+level;modules.push(module);
+            box(module,0,0,.546,.54,.28,.025,'#567b86');box(module,0,.09,.572,.20,.025,.025,'#d2ded5');
+            for(var vent=0;vent<3;vent++)box(module,-.11+vent*.11,-.035,.565,.065,.012,.012,'#2c4854');
+            ball(module,-.21,-.09,.57,.022,'#dcaa76');ball(module,.21,-.09,.57,.022,'#a4c8d8');
+          }
+          var gauge=box(group,x-.38,1.30,.715,.105,2.34,.035,'#294852');gauge.name='energy-storage-soc-gauge-'+index;
+          var fill=box(group,x-.38,.15,.75,.06,.1,.035,'#55d7a3');fill.name='energy-storage-fill-'+index;fill.castShadow=false;fill.receiveShadow=false;
+          for(var tick=0;tick<=4;tick++){var mark=box(group,x-.38,.15+tick*.575,.782,.08,.012,.012,'#d1e2d8');mark.castShadow=false;}
+          // The front gauge repeats exact bank SOC; physical battery modules never grow or empty like a tank.
+          updaters.push(function(p){var soc=Math.max(0,Math.min(100,p.run.extra.soc)),height=soc/100*2.3;fill.visible=height>0;fill.scale.y=height/.1;fill.position.y=.15+height/2;fill.material.color.set(soc<20?'#dfb462':'#55d7a3').convertSRGBToLinear();glow(fill,soc<20?'#af7a30':'#23865f',.3);fill.userData.soc=soc;group.userData.soc=soc;});
+          return {group:group,modules:modules,gauge:gauge,fill:fill};
+        }
+        function storageCooling(parent,x,y,z,key){
+          var group=new THREE.Group();group.name='energy-storage-'+key+'-cooling';group.position.set(x,y,z);parent.add(group);
+          var mount=box(group,0,0,-.05,.56,.56,.08,'#93adb0');mount.name=group.name+'-mount';
+          var housing=cylinder(group,0,0,0,.245,.08,'#577985');housing.rotation.x=Math.PI/2;housing.name=group.name+'-housing';
+          var fan=new THREE.Group();fan.name=group.name+'-fan';fan.position.z=.076;group.add(fan);ball(fan,0,0,0,.055,'#ccdad4');
+          for(var blade=0;blade<5;blade++){var arm=new THREE.Group();arm.rotation.z=blade*Math.PI*2/5;fan.add(arm);var foil=box(arm,0,.123,0,.078,.15,.027,'#b4cec8');foil.rotation.z=.28;foil.rotation.y=.25;foil.name=group.name+'-blade-'+blade;if(blade===0)box(arm,0,.18,.022,.035,.035,.012,'#eccb79');}
+          ring(group,0,0,.105,.24,'#c5d8d0',.014);strut(group,[-.17,0,.12],[.17,0,.12],.012,'#b3c9c5');strut(group,[0,-.17,.12],[0,.17,.12],.012,'#b3c9c5');ball(group,0,0,.12,.023,'#c5d8d0');
+          var air=new THREE.Group();air.name=group.name+'-air';group.add(air);
+          var marks=[],phase=0,base=.31,depth=.68,spread=.55,length=Math.hypot(depth,.095*spread,.095*spread),airColor=new THREE.Color('#b4e6e8').convertSRGBToLinear();
+          [[-.095,-.095],[.095,-.095],[-.095,.095],[.095,.095]].forEach(function(point,lane){
+            var direction=new THREE.Vector3(point[0]*spread,point[1]*spread,depth).normalize();
+            for(var mark=0;mark<2;mark++){
+              var marker=new THREE.Group();marker.name=air.name+'-mark-'+lane+'-'+mark;air.add(marker);marker.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+              var tip=mesh(marker,new THREE.ConeGeometry(.032,.10,8),'#b4e6e8',0,0,0,.6),tail=cylinder(marker,0,-.085,0,.008,.09,'#b4e6e8');
+              [tip,tail].forEach(function(part){part.castShadow=false;part.receiveShadow=false;part.material.transparent=true;part.material.depthWrite=false;glow(part,'#99dce3',.18);});
+              marker.userData.lane=lane;marker.userData.offset=mark/2+lane/8;marks.push({object:marker,x:point[0],y:point[1]});
+            }
+          });
+          updaters.push(function(p){var complete=['Sequence complete','Cycle complete','Scenario complete'].indexOf(p.run.status)!==-1,eta=Math.sqrt(p.run.settings.roundtrip/100),power=complete?0:Math.max(0,key==='charge'?p.run.available:p.run.power),loss=power*(key==='charge'?1-eta:1/eta-1);
+            group.userData.activePower=power;group.userData.conversionLoss=loss;group.userData.efficiency=eta;
+            // Fan angle and outlet travel share one exact response integral; the air adds no second lag.
+            var drive=motion(fan,'storage-'+key+'-cooling',.9*Math.sqrt(Math.max(0,loss)/2.5),p,.4),active=loss>0,speed=active?.5*drive.value:0;
+            if(active)phase=((phase+.5*drive.delta/length)%1+1)%1;
+            air.visible=active;air.userData.progress=phase;air.userData.worldFlowRate=speed;air.userData.targetWorldFlowRate=active?.5*drive.target:0;air.userData.conversionLoss=loss;air.userData.travelLength=length;air.userData.depthLength=depth;air.userData.baseZ=base;air.userData.spread=spread;air.userData.cueMode='cooling-activity';
+            var tracing=!!p.inspection.trace,emphasis=tracing&&p.selected===(key==='charge'?'resource':'generator'),muted=tracing&&!emphasis,traceState=tracing?(emphasis?'selected':'context'):'normal';air.userData.traceState=traceState;
+            marks.forEach(function(entry){var marker=entry.object,t=(phase+marker.userData.offset)%1,fade=Math.min(1,t/.18,(1-t)/.22),opacity=active?fade*(muted?.28:emphasis?.92:.72):0;
+              marker.position.set(entry.x*(1+spread*t),entry.y*(1+spread*t),base+depth*t);marker.visible=active&&opacity>.001;marker.userData.progress=t;marker.userData.markerOpacity=opacity;marker.userData.worldFlowRate=speed;marker.userData.traceState=traceState;
+              marker.children.forEach(function(part){part.material.opacity=opacity;part.material.color.copy(airColor).multiplyScalar(muted?.32:1);part.material.emissiveIntensity=muted?.04:emphasis?.8:.18;});
+            });
+          });return {group:group,fan:fan,housing:housing,air:air,marks:marks};
+        }
         function storageTransferIndicator(parent,x,index){
           var group=new THREE.Group();group.name='energy-storage-transfer-'+index;parent.add(group);
           box(group,x+.38,1.3,.68,.10,2.08,.06,'#294852');var marks=[];
@@ -3134,7 +6027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           function connect(name,parent,from,to,points,charging){
             var group=new THREE.Group();group.name='energy-storage-'+name+'-cable';parent.add(group);
             var curve=pipe(group,points,'#e8c775',.045),body=group.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=group.name+'-tube';
-            particles(group,curve,'#fff0ac',function(p){return (charging?p.run.available:p.run.power)>0;},.025,null,{power:function(p){return charging?p.run.available:p.run.power;},referencePower:50});
+            particles(group,curve,'#fff0ac',function(p){return (charging?p.run.available:p.run.power)>0;},.7,null,{power:function(p){return charging?p.run.available:p.run.power;},referencePower:50},true);
             routes.push({group:group,body:body,curve:curve,from:from,to:to,update:function(){
               group.visible=from.parent.visible&&to.parent.visible;
               from.getWorldPosition(a);parent.worldToLocal(a);to.getWorldPosition(b);parent.worldToLocal(b);
@@ -3146,6 +6039,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           connect('discharge',C,ports['discharge-bank'],ports['inverter-input'],[[1.03,.6,0],[2.2,.6,0]],false);
           connect('load',C,ports['inverter-output'],ports.load,[[3.4,.4,0],[3.62,.4,0],[4.6,.4,.65],[4.6,.4,2.1]],false);
           return {ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function cspReceiverDetail(receiver){
+          var group=new THREE.Group();group.name='energy-csp-receiver-detail';receiver.add(group);
+          receiver.material.color.set('#343f42').convertSRGBToLinear();receiver.material.roughness=.72;receiver.material.metalness=.25;
+          var panels=[],tubes=[];
+          ['front','field'].forEach(function(face,index){
+            var panel=new THREE.Group();panel.name='energy-csp-absorber-'+face;group.add(panel);
+            if(index){panel.position.x=-.415;panel.rotation.y=-Math.PI/2;}else panel.position.z=.415;
+            for(var n=0;n<7;n++){var tube=cylinder(panel,(n-3)*.09,0,0,.026,.60,'#526267');tube.name=panel.name+'-tube-'+n;tube.material.roughness=.48;tube.material.metalness=.35;tube.userData.surfaceColor=tube.material.color.clone();tubes.push(tube);}
+            [-1,1].forEach(function(side){var header=cylinder(panel,0,side*.30,0,.032,.62,'#a1afac');header.rotation.z=Math.PI/2;header.name=panel.name+'-header-'+side;var frame=box(panel,side*.323,0,-.004,.022,.68,.032,'#71888b');frame.name=panel.name+'-frame-'+side;});
+            panel.userData.face=face;panels.push(panel);
+          });
+          // The instrument sits between the top ladder rung and the receiver platform.
+          [-.13,.13].forEach(function(x){box(group,x,-.69,.415,.06,.12,.53,'#879d9d');});
+          var instrument=new THREE.Group();instrument.name='energy-csp-receiver-instrument';instrument.position.set(0,-.69,.68);group.add(instrument);
+          var casing=box(instrument,0,0,0,.78,.28,.06,'#284b55');casing.name=instrument.name+'-casing';
+          [-.055,.055].forEach(function(y){box(instrument,0,y,.038,.64,.047,.014,'#182f37');});
+          [-1,1].forEach(function(x){[-1,1].forEach(function(y){ball(instrument,x*.36,y*.105,.035,.012,'#a8b9b4');});});
+          var fills={};[['incident',.055,'#efcb77'],['useful',-.055,'#ed9855'],['remainder',-.055,'#93816a']].forEach(function(entry){var fill=box(instrument,0,entry[1],.052,1,.026,.008,entry[2]);fill.name=instrument.name+'-'+entry[0];fill.castShadow=false;fill.receiveShadow=false;fill.userData.surfaceColor=fill.material.color.clone();fills[entry[0]]=fill;});
+          function update(p,heatStrength){
+            var complete=['Sequence complete','Cycle complete','Scenario complete'].indexOf(p.run.status)!==-1,incoming=complete?0:Math.max(0,p.run.stages[0].value),heat=complete?0:Math.max(0,p.run.stages[1].value),active=incoming>0,optical=active?heat/incoming:p.run.settings.optical/100;
+            // Complementary segments share one fraction, so smoothing never invents or loses input energy.
+            var fraction=response('csp-optical-fraction',optical,p,.30,false).value,strength=cue('csp-receiver-input',incoming/(incoming+9000),p),tracing=!!p.inspection.trace,emphasis=tracing&&p.selected==='converter',muted=tracing&&!emphasis,state=tracing?(emphasis?'selected':'context'):'normal',brightness=muted?.2:emphasis?1.25:1;
+            var heatCue=active?heatStrength:0;glow(receiver,'#bf5d14',heatCue*.18*brightness);
+            group.userData.heatStrength=heatCue;group.userData.incidentPower=incoming;group.userData.thermalPower=heat;group.userData.opticalLoss=Math.max(0,incoming-heat);group.userData.traceState=state;
+            tubes.forEach(function(tube){tube.material.color.copy(tube.userData.surfaceColor).multiplyScalar(muted?.42:1);glow(tube,'#d96e32',heatCue*brightness);tube.userData.heatStrength=heatCue;tube.userData.thermalPower=heat;tube.userData.traceState=state;});
+            instrument.userData.incidentPower=incoming;instrument.userData.thermalPower=heat;instrument.userData.opticalLoss=Math.max(0,incoming-heat);instrument.userData.opticalFraction=optical;instrument.userData.displayOpticalFraction=fraction;instrument.userData.incidentStrength=strength;instrument.userData.trackLength=.6;instrument.userData.traceState=state;instrument.userData.cueMode='optical-energy-split';
+            [['incident',1,-.30,incoming,'#d3a858'],['useful',fraction,-.30,heat,'#d77636'],['remainder',1-fraction,-.30+.6*fraction,Math.max(0,incoming-heat),'#796754']].forEach(function(entry){var fill=fills[entry[0]],width=.6*entry[1];fill.scale.x=width;fill.position.x=entry[2]+width/2;fill.visible=active&&width>0;fill.userData.fraction=entry[1];fill.userData.power=entry[3];fill.userData.traceState=state;fill.material.color.copy(fill.userData.surfaceColor).multiplyScalar(muted?.42:1);glow(fill,entry[4],active?(.12+.75*strength)*brightness:0);});
+          }
+          return {group:group,panels:panels,tubes:tubes,instrument:instrument,fills:fills,update:update};
         }
         function cspOpticalConnections(field,mirrors,receiver,A,B){
           var routes=[],illuminated=false;
@@ -3177,8 +6100,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           terminal('receiver-hot',receiver,.4,-.15,.20,'#df945b');terminal('block-hot',C,1.9,.8,.20,'#df945b');terminal('block-return',C,1.9,.45,-.52,'#87bbc9');terminal('receiver-return',receiver,.4,-.25,-.28,'#87bbc9');
           function connect(name,from,to,points,weights,color,markerColor){
             var lane=new THREE.Group();lane.name='energy-csp-'+name+'-pipe';group.add(lane);
-            var curve=pipe(lane,points,color,.065),body=lane.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=lane.name+'-tube';
-            particles(lane,curve,markerColor,function(p){return p.run.stages[1].value>0;},function(p){return .03*Math.sqrt(Math.max(0,p.run.stages[1].value)/5850);},function(p){return Math.sqrt(Math.max(0,p.run.stages[1].value)/5850);});
+            var curve=pipe(lane,points,color,.065),body=lane.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=lane.name+'-tube';body.material.transparent=true;body.material.opacity=.48;body.material.depthWrite=false;
+            particles(lane,curve,markerColor,function(p){return p.run.stages[1].value>0;},function(p){return .75*Math.sqrt(Math.max(0,p.run.stages[1].value)/5850);},function(p){return Math.sqrt(Math.max(0,p.run.stages[1].value)/5850);},null,true);
             routes.push({group:lane,body:body,curve:curve,from:from,to:to,update:function(){
               lane.visible=B.visible&&C.visible;from.getWorldPosition(a);lane.worldToLocal(a);to.getWorldPosition(b);lane.worldToLocal(b);
               var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
@@ -3190,6 +6113,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           connect('return',ports['block-return'],ports['receiver-return'],[[1.9,.45,-.52],[1.60,.45,-.52],[1.22,.45,-.52],[1.22,4.35,-.28],[.9,4.35,-.28]],[0,0,1,1,1],'#6d9fae','#bad9e2');
           updaters.push(function(p){var heat=Math.max(0,p.run.stages[1].value),intensity=cue('csp-loop-heat',Math.min(1.2,.5*Math.sqrt(heat/5850)),p);group.userData.thermalPower=heat;group.userData.heatStrength=intensity;routes.forEach(function(route,index){glow(route.body,index?'#4c8ca3':'#cb662b',intensity*(index?.45:1));route.group.userData.thermalPower=heat;});});
           return {group:group,ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function pvTemperatureDisplay(parent,array,inverter){
+          var group=new THREE.Group();group.name='energy-pv-temperature-instrument';parent.add(group);
+          var foot=box(group,0,.04,0,.58,.08,.32,'#91a8a8');foot.name='energy-pv-temperature-foot';
+          var support=cylinder(group,0,.14,0,.045,.20,'#9db7bc');support.name='energy-pv-temperature-support';
+          var gauge=new THREE.Group();gauge.name='energy-pv-temperature-gauge';gauge.position.y=.43;group.add(gauge);
+          var face=cylinder(gauge,0,0,0,.24,.10,'#e8eee1');face.rotation.x=Math.PI/2;face.name='energy-pv-temperature-face';ring(gauge,0,0,.055,.242,'#6b909a',.028);
+          for(var tick=0;tick<8;tick++){var angle=(135-270*tick/7)*Math.PI/180,mark=box(gauge,-Math.sin(angle)*.19,Math.cos(angle)*.19,.059,.014,.035,.012,'#66858c');mark.rotation.z=angle;}
+          var referenceAngle=(135-270*45/105)*Math.PI/180,reference=box(gauge,-Math.sin(referenceAngle)*.195,Math.cos(referenceAngle)*.195,.064,.027,.065,.018,'#b58231');reference.rotation.z=referenceAngle;reference.name='energy-pv-temperature-reference';reference.userData.temperature=25;
+          var needle=new THREE.Group();needle.name='energy-pv-temperature-needle';needle.position.z=.081;gauge.add(needle);box(needle,0,.080,0,.019,.16,.014,'#274b57');ball(needle,0,0,.008,.030,'#b58e4e');
+          var display=new THREE.Group();display.name='energy-pv-temperature-comparison';inverter.add(display);
+          box(display,2,1.3,.446,.91,.47,.06,'#153d47');
+          var bars={};[['actual',1.40,'#61dfb2'],['reference',1.22,'#edc779']].forEach(function(entry){
+            var track=box(display,2,entry[1],.484,.70,.065,.015,'#365660');track.name='energy-pv-'+entry[0]+'-track';
+            var bar=box(display,2,entry[1],.498,.70,.060,.015,entry[2]);bar.name='energy-pv-'+entry[0]+'-comparison-bar';bars[entry[0]]=bar;
+            ball(display,1.59,entry[1],.495,.025,entry[2]);
+          });
+          function update(p,size){
+            // One displayed temperature drives both the needle and relative output. Exact readings stay immediate.
+            var completed=p.run.status==='Sequence complete'||p.run.status==='Cycle complete'||p.run.status==='Scenario complete';
+            var temperature=response('pv-cell-temperature',p.run.settings.cellTemperature,p,.30,false).value,factor=1-.0037*(temperature-25),referencePower=completed?0:p.run.extra.referenceDc*.96,active=referencePower>0;
+            var level=response('pv-comparison-level',active?1/1.2:0,p,.26,true).value,trace=!!p.inspection.trace,muted=trace&&p.selected!=='generator';
+            group.position.set(-1.5,0,1.345*size+.30);needle.rotation.z=(135-270*(temperature+20)/105)*Math.PI/180;
+            gauge.userData.temperature=p.run.settings.cellTemperature;gauge.userData.displayTemperature=temperature;gauge.userData.scaleMinimum=-20;gauge.userData.scaleMaximum=85;gauge.userData.referenceTemperature=25;
+            display.userData.temperatureFactor=p.run.extra.temperatureFactor;display.userData.displayTemperatureFactor=factor;display.userData.referencePower=referencePower;display.userData.actualPower=p.run.power;display.userData.scaleReference=1.2;display.userData.traceState=trace?(muted?'context':'selected'):'normal';
+            [['actual',p.run.power,level*factor,'#61dfb2'],['reference',referencePower,level,'#edc779']].forEach(function(entry){
+              var bar=bars[entry[0]],fraction=active?entry[2]:0;bar.scale.x=fraction;bar.position.x=1.65+.35*fraction;bar.visible=active&&fraction>0;
+              bar.userData.power=entry[1];bar.userData.displayFraction=fraction;bar.userData.targetFraction=active?(entry[0]==='actual'?p.run.extra.temperatureFactor:1)/1.2:0;
+              var brightness=cue('pv-temperature-'+entry[0]+'-brightness',entry[1]/(entry[1]+referencePowerDefault),p);
+              bar.material.color.set(entry[3]).convertSRGBToLinear().multiplyScalar(muted?.32:1);glow(bar,entry[3],muted?.04:(trace?.45:.15)+brightness*.65);
+            });
+          }
+          var referencePowerDefault=Math.max(.001,rnEnergyRun('solarPv',{},0).power);
+          return {group:group,gauge:gauge,needle:needle,reference:reference,display:display,bars:bars,update:update};
         }
         function pvSunlight(A,B,array){
           var group=new THREE.Group();group.name='energy-pv-rays';A.add(group);var routes=[],collected=false;
@@ -3213,7 +6170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           function connect(name,parent,from,to,dc){
             var group=new THREE.Group();group.name='energy-pv-'+name+'-cable';parent.add(group);
             var curve=pipe(group,dc?[[0,0,0],[.2,0,0],[.5,-.2,0],[.8,0,0],[1,0,0]]:[[0,0,0],[.2,0,0],[1,0,.5],[1,0,1]],dc?'#e6bd6a':'#f2bf58',.04),body=group.children[0],signature='';body.name=group.name+'-tube';
-            particles(group,curve,'#fff0ac',function(p){return (dc?p.run.stages[1].value:p.run.power)>0;},.025,null,{power:function(p){return dc?p.run.stages[1].value:p.run.power;},referencePower:dc?dcReference:acReference});
+            particles(group,curve,'#fff0ac',function(p){return (dc?p.run.stages[1].value:p.run.power)>0;},.7,null,{power:function(p){return dc?p.run.stages[1].value:p.run.power;},referencePower:dc?dcReference:acReference},true);
             routes.push({group:group,body:body,curve:curve,from:from,to:to,update:function(){
               group.visible=C.visible&&(!dc||B.visible);
               var start=from.getWorldPosition(new THREE.Vector3()),end=to.getWorldPosition(new THREE.Vector3()),lead,approach,points;
@@ -3230,8 +6187,333 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           connect('dc',B,ports.array,ports['dc-input'],true);connect('ac',C,ports['ac-output'],ports.load,false);
           return {ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
         }
+        function hydroWaterCircuit(A,B,reservoirWater,casing){
+          var ports={},routes=[];
+          function terminal(key,parent,point){var port=ball(parent,point[0],point[1],point[2],.19,'#a1d7dc');port.name='energy-hydro-'+key+'-port';port.material.transparent=true;port.material.opacity=.46;port.material.depthWrite=false;ports[key]=port;return port;}
+          var intake=new THREE.Group();intake.name='energy-hydro-intake';intake.position.set(-2.5,3.0,2.01);A.add(intake);
+          ring(intake,0,0,.015,.245,'#b6cbd0',.033);
+          [-.13,0,.13].forEach(function(x){box(intake,x,0,.055,.018,.38,.028,'#b5c9cc');});box(intake,0,0,.055,.43,.018,.028,'#b5c9cc');
+          terminal('intake',intake,[0,0,0]);
+          // Cylinder geometry is rotated onto the shaft axis; ports live on its radial surface.
+          terminal('runner-inlet',casing,[0,0,-.8]);terminal('runner-outlet',casing,[.8,0,0]);terminal('valve-inlet',B,[1,2.2,1.45]);
+          var channel=new THREE.Group();channel.name='energy-hydro-tailrace-channel';B.add(channel);
+          box(channel,2,.05,1.7,4,.15,1.4,'#368eac',.8);[.97,2.43].forEach(function(z){box(channel,2,.08,z,4.2,.30,.12,'#a3b7ad');});
+          terminal('tailrace',channel,[3.7,.20,1.7]);
+          function connect(name,from,to,cross,points,weights){
+            var group=new THREE.Group();group.name='energy-hydro-'+name+'-stream';B.add(group);
+            var curve=pipe(group,points,'#67bdd2',.19),body=group.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=name==='inlet'?'energy-hydro-penstock':name==='valve'?'energy-hydro-valve-pipe':'energy-hydro-tailrace';body.material.transparent=true;body.material.opacity=.46;body.material.depthWrite=false;
+            // The drawing uses equal-bore pipes: flow changes distance per second, not laps per pipe.
+            particles(group,curve,'#dcfbff',function(p){return p.run.settings.flow>0;},function(p){return .10*p.run.settings.flow;},null,null,true);
+            routes.push({group:group,body:body,curve:curve,from:from,to:to,cross:cross,update:function(){
+              group.visible=B.visible&&(!cross||A.visible);from.getWorldPosition(a);group.worldToLocal(a);to.getWorldPosition(b);group.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('inlet',ports.intake,ports['valve-inlet'],true,[[-2.5,3,2.01],[-2.5,3,2.65],[-.9,3,2.65],[.55,2.4,2.65],[1,2.2,2.0],[1,2.2,1.45]],[0,0,0,.65,1,1]);
+          connect('valve',ports['valve-inlet'],ports['runner-inlet'],false,[[1,2.2,1.45],[1,2.2,.8],[1,2.2,.45],[1,2.2,0],[1,1.95,0],[1,1.6,0]],[0,.25,.5,.7,.85,1]);
+          connect('discharge',ports['runner-outlet'],ports.tailrace,false,[[1.8,.8,0],[2.15,.8,0],[2.45,.42,1.7],[3.25,.20,1.7],[3.7,.20,1.7]],[0,0,.5,1,1]);
+          // A butterfly disc turns within the transparent vertical inlet. Its opening illustrates selected flow.
+          var valveRim=ring(B,1,1.81,0,.205,'#abc2c2',.026);valveRim.rotation.x=Math.PI/2;valveRim.name='energy-hydro-valve-rim';
+          var gate=cylinder(B,1,1.81,0,.165,.025,'#e7bb65');gate.name='energy-hydro-flow-gate';
+          strut(B,[.60,1.81,0],[1.22,1.81,0],.023,'#c1d5cd');
+          var gateLever=new THREE.Group();gateLever.name='energy-hydro-gate-lever';gateLever.position.set(.60,1.81,0);B.add(gateLever);box(gateLever,0,0,.14,.04,.035,.28,'#e7bb65');ball(gateLever,0,0,0,.052,'#bed0c8');
+          updaters.push(function(p){var flow=p.run.settings.flow,displayFlow=response('hydro-gate',flow,p,.25,true).value,angle=displayFlow/50*Math.PI/2;gate.rotation.x=angle;gateLever.rotation.x=angle;
+            [gate,gateLever].forEach(function(object){object.userData.flow=flow;object.userData.displayFlow=displayFlow;object.userData.openFraction=flow/50;object.userData.displayOpenFraction=displayFlow/50;});
+            routes.forEach(function(route){route.group.userData.flow=flow;route.group.userData.targetWorldFlowRate=.10*flow;});
+          });
+          return {intake:intake,ports:ports,routes:routes,gate:gate,gateLever:gateLever,channel:channel,update:function(){
+            intake.position.y=reservoirWater.position.y-.34;intake.updateMatrixWorld(true);routes.forEach(function(route){route.update();});
+            routes[0].body.userData.displayHead=reservoirWater.userData.displayHead;routes[0].body.userData.targetHead=reservoirWater.userData.targetHead;
+          }};
+        }
+        function steamDrivetrain(parent,driver,key){
+          var x=driver.position.x,y=driver.position.y,z=key==='csp'?-2.5:-1.8,group=new THREE.Group();group.name='energy-'+key+'-generator';group.position.set(x,y,z);parent.add(group);
+          var assembly=generatorDetail(group,0,0,0,true);assembly.rotor.userData.driverName=driver.name;
+          var cover=mesh(group,new THREE.CylinderGeometry(.48,.48,1.02,32,1,true),'#a1bdc2',0,0,0);cover.rotation.x=Math.PI/2;cover.name=group.name+'-cover';cover.material.transparent=true;
+          [-.51,.51].forEach(function(z){ring(group,0,0,z,.45,'#cad8cf',.035);});
+          var plinth=box(group,0,.03-y,0,1.34,.20,1.38,'#7a9699');plinth.name=group.name+'-plinth';
+          [-.36,.36].forEach(function(offset,index){var foot=box(group,offset,-(y+.24)/2,0,.16,y-.50,.84,'#91aaad');foot.name=group.name+'-foot-'+index;});
+          // Leave the solar block's coupling exposed behind its tall cabinet in the default inspection view.
+          var back=z+.70,front=driver.position.z,shaft=new THREE.Group();shaft.name='energy-'+key+'-drive-shaft';shaft.position.set(x,y,(front+back)/2);parent.add(shaft);shaft.userData.driverName=driver.name;
+          var axle=cylinder(shaft,0,0,0,.10,front-back,'#dce6d5');axle.rotation.x=Math.PI/2;axle.name='energy-'+key+'-drive-axle';
+          var couplingZ=z+.75-shaft.position.z,coupling=cylinder(shaft,0,0,couplingZ,.17,.12,'#829faa');coupling.rotation.x=Math.PI/2;coupling.name='energy-'+key+'-drive-coupling';
+          var index=box(shaft,0,.17,couplingZ,.06,.035,.10,'#efc876');index.name='energy-'+key+'-coupling-mark';
+          var bearing=ring(parent,x,y,key==='csp'?-.93:-.23,.19,'#b8ccc6',.025);bearing.name='energy-'+key+'-drive-bearing';
+          function sync(p){
+            [shaft,assembly.rotor].forEach(function(part){part.rotation.z=driver.rotation.z;part.userData.motionRate=driver.userData.motionRate;part.userData.motionTarget=driver.userData.motionTarget;});
+            if(p){var target=p.inspection.cutaway?.14:1,opacity=response('generator-cover',target,p,.2,false).value;if(Math.abs(opacity-target)<.0001){opacity=target;responses['generator-cover']=target;}
+              var fraction=(1-opacity)/.86;cover.material.opacity=opacity;cover.material.depthWrite=opacity===1;assembly.shell.material.opacity=.28-.20*fraction;assembly.rotor.userData.cutawayFraction=fraction;
+            }
+          }
+          sync();return {group:group,assembly:assembly,cover:cover,shaft:shaft,bearing:bearing,sync:sync};
+        }
+        function steamElectricalConnections(parent,drive,key){
+          var x=drive.group.position.x,y=drive.group.position.y,z=drive.group.position.z,output=ball(drive.group,.48,-.2,0,.065,'#edc873'),loadPort=ball(parent,4.6,.3,2.1,.065,'#edc873');output.name='energy-'+key+'-output-port';loadPort.name='energy-'+key+'-load-port';
+          var cable=new THREE.Group();cable.name='energy-'+key+'-output-cable';parent.add(cable);
+          electricity(cable,[[x+.48,y-.2,z],[x+.78,y-.2,z],[x+.78,.3,z],[4.6,.3,.65],[4.6,.3,2.1]]);cable.children[0].name=cable.name+'-tube';
+          return {output:output,loadPort:loadPort,cable:cable};
+        }
+        function geothermalCooling(parent,condenser){
+          // The fan and outlet air share one illustrative rejected-heat response, not a fan-performance model.
+          var group=new THREE.Group();group.name='energy-geothermal-cooling';condenser.add(group);
+          var shroud=waveAnnulus(group,0,1.04,0,.59,.52,.42,'#9cb9ba');shroud.name='energy-geothermal-fan-shroud';
+          [.84,1.25].forEach(function(y,index){var lip=ring(group,0,y,0,.555,'#d2e0d8',.023);lip.rotation.x=Math.PI/2;lip.name='energy-geothermal-fan-lip-'+index;});
+          var fan=new THREE.Group();fan.name='energy-geothermal-cooling-fan';fan.position.y=1.03;fan.rotation.x=-Math.PI/2;group.add(fan);fan.userData.motionRadius=.49;
+          var hub=cylinder(fan,0,0,0,.13,.11,'#75969b');hub.rotation.x=Math.PI/2;hub.name='energy-geothermal-fan-hub';
+          for(var bladeIndex=0;bladeIndex<5;bladeIndex++){
+            var arm=new THREE.Group();arm.rotation.z=bladeIndex*2*Math.PI/5;fan.add(arm);
+            var profile=new THREE.Shape();profile.moveTo(-.045,.09);profile.quadraticCurveTo(-.14,.24,-.10,.44);profile.quadraticCurveTo(.015,.49,.115,.43);profile.quadraticCurveTo(.15,.25,.055,.10);profile.closePath();
+            var blade=mesh(arm,new THREE.ExtrudeGeometry(profile,{depth:.018,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.006,bevelThickness:.005}),'#517c86',0,0,-.009);blade.rotation.y=.22;blade.name='energy-geothermal-fan-blade-'+bladeIndex;
+          }
+          var witness=box(fan,.02,.35,.035,.045,.075,.012,'#efd48a');witness.name='energy-geothermal-fan-index';
+          var guard=new THREE.Group();guard.name='energy-geothermal-fan-guard';guard.position.y=1.28;group.add(guard);
+          [.34,.45,.555].forEach(function(radius,index){var hoop=ring(guard,0,0,0,radius,'#bdd1cd',index===2?.014:.007);hoop.rotation.x=Math.PI/2;hoop.name='energy-geothermal-fan-guard-ring-'+index;});
+          for(var spoke=0;spoke<3;spoke++){var angle=spoke*Math.PI/3,bar=strut(guard,[-Math.cos(angle)*.555,0,-Math.sin(angle)*.555],[Math.cos(angle)*.555,0,Math.sin(angle)*.555],.008,'#bdd1cd');bar.name='energy-geothermal-fan-guard-bar-'+spoke;}
+          var bearing=cylinder(group,0,1.28,0,.12,.09,'#6a8d93');bearing.name='energy-geothermal-fan-bearing';
+          var axle=cylinder(group,0,1.155,0,.035,.25,'#c3d6d1');axle.name='energy-geothermal-fan-axle';
+          var air=new THREE.Group();air.name='energy-geothermal-cooling-air';group.add(air);
+          var marks=[],phase=0,length=1.02,base=1.48,airColor=new THREE.Color('#b4e6e8').convertSRGBToLinear();
+          [[-.23,-.23],[.23,-.23],[-.23,.23],[.23,.23]].forEach(function(point,lane){
+            for(var mark=0;mark<3;mark++){
+              var marker=new THREE.Group();marker.name='energy-geothermal-air-'+lane+'-marker-'+mark;air.add(marker);
+              var tip=mesh(marker,new THREE.ConeGeometry(.039,.10,8),'#b4e6e8',0,0,0,.6),tail=cylinder(marker,0,-.105,0,.009,.12,'#b4e6e8');
+              [tip,tail].forEach(function(part){part.castShadow=false;part.receiveShadow=false;part.material.transparent=true;part.material.depthWrite=false;glow(part,'#99dce3',.18);});
+              marker.userData.lane=lane;marker.userData.offset=mark/3+lane/12;marks.push({object:marker,x:point[0],z:point[1]});
+            }
+          });
+          function update(p,rejected,drive){
+            var active=rejected>0&&p.run.status!=='Sequence complete'&&p.run.status!=='Cycle complete'&&p.run.status!=='Scenario complete',speed=active?drive.value*.7/.9:0;
+            if(active)phase=((phase+drive.delta*.7/.9/length)%1+1)%1;
+            air.visible=active;air.userData.progress=phase;air.userData.worldFlowRate=speed;air.userData.targetWorldFlowRate=active?drive.target*.7/.9:0;air.userData.rejectedHeat=rejected;air.userData.travelLength=length;air.userData.baseY=base;air.userData.cueMode='cooling-activity';
+            var tracing=!!p.inspection.trace,emphasis=tracing&&p.selected==='generator',muted=tracing&&!emphasis,traceState=tracing?(emphasis?'selected':'context'):'normal';air.userData.traceState=traceState;
+            marks.forEach(function(entry){var marker=entry.object,t=(phase+marker.userData.offset)%1,fade=Math.min(1,t/.16,(1-t)/.20),opacity=active?fade*(muted?.32:emphasis?.85:.7):0;
+              marker.position.set(entry.x,base+t*length,entry.z);marker.visible=active&&opacity>.001;marker.userData.progress=t;marker.userData.markerOpacity=opacity;marker.userData.worldFlowRate=speed;
+              marker.userData.traceState=traceState;marker.children.forEach(function(part){part.material.opacity=opacity;part.material.color.copy(airColor).multiplyScalar(muted?.32:1);part.material.emissiveIntensity=muted?.04:emphasis?.8:.18;});
+            });
+            group.userData.rejectedHeat=rejected;
+          }
+          return {group:group,fan:fan,shroud:shroud,guard:guard,bearing:bearing,axle:axle,air:air,marks:marks,update:update};
+        }
+        function geothermalDrivetrain(parent,driver){
+          var group=new THREE.Group();group.name='energy-geothermal-generator';group.position.set(2.4,1.5,-1.35);parent.add(group);
+          var assembly=generatorDetail(group,0,0,0,true);assembly.rotor.userData.driverName=driver.name;
+          var cover=mesh(group,new THREE.CylinderGeometry(.48,.48,1.02,32,1,true),'#a1bdc2',0,0,0);cover.rotation.x=Math.PI/2;cover.name='energy-geothermal-generator-cover';cover.material.transparent=true;
+          [-.51,.51].forEach(function(z){ring(group,0,0,z,.45,'#cad8cf',.035);});
+          var plinth=box(group,0,-1.47,0,1.34,.20,1.38,'#7a9699');plinth.name='energy-geothermal-generator-plinth';
+          [-.36,.36].forEach(function(x,index){var foot=box(group,x,-.87,0,.16,1,.84,'#91aaad');foot.name='energy-geothermal-generator-foot-'+index;});
+          var shaft=new THREE.Group();shaft.name='energy-geothermal-drive-shaft';shaft.position.set(2.4,1.5,.05);parent.add(shaft);shaft.userData.driverName=driver.name;
+          var axle=cylinder(shaft,0,0,0,.10,1.50,'#dce6d5');axle.rotation.x=Math.PI/2;axle.name='energy-geothermal-drive-axle';
+          var coupling=cylinder(shaft,0,0,-.67,.17,.12,'#829faa');coupling.rotation.x=Math.PI/2;coupling.name='energy-geothermal-drive-coupling';
+          var index=box(shaft,0,.17,-.67,.06,.035,.10,'#efc876');index.name='energy-geothermal-coupling-mark';
+          function sync(){[shaft,assembly.rotor].forEach(function(part){part.rotation.z=driver.rotation.z;part.userData.motionRate=driver.userData.motionRate;part.userData.motionTarget=driver.userData.motionTarget;});}
+          sync();return {group:group,assembly:assembly,cover:cover,shaft:shaft,sync:sync};
+        }
+        function geothermalWells(A,B,exchanger){
+          var group=new THREE.Group();group.name='energy-geothermal-wells';A.add(group);
+          var ports={},routes=[],gauges=[],cold=new THREE.Color('#66b6d2').convertSRGBToLinear(),warm=new THREE.Color('#ed9860').convertSRGBToLinear();
+          function terminal(key,parent,point){var port=ball(parent,point[0],point[1],point[2],.12,'#a2bcc1');port.name='energy-geothermal-'+key+'-port';ports[key]=port;return port;}
+          [['production',-4,3.1,'hot'],['reinjection',-2,2.7,'returnTemp']].forEach(function(well){
+            var key=well[0],x=well[1];terminal(key+'-bottom',group,[x,.2,2.4]);terminal(key+'-head',group,[x,well[2],2.4]);
+            var flange=waveAnnulus(group,x,2.21,2.4,.325,.145,.14,'#a8b7ae');flange.name='energy-geothermal-'+key+'-flange';
+            var body=cylinder(group,x,2.49,2.4,.20,.30,'#9bb5b6');body.name='energy-geothermal-'+key+'-wellhead';
+            var handwheel=new THREE.Group();handwheel.name='energy-geothermal-'+key+'-well-valve';handwheel.position.set(x,2.49,2.88);handwheel.rotation.x=Math.PI/2;group.add(handwheel);valve(handwheel,0,0,0,'#d9c58d');
+            strut(group,[x,1.85,2.50],[x,1.85,2.74],.04,'#a9c1c0');
+            var gauge=new THREE.Group();gauge.position.set(x,1.85,2.78);gauge.name='energy-geothermal-'+key+'-temperature-gauge';group.add(gauge);
+            var face=cylinder(gauge,0,0,0,.20,.08,'#e8eee1');face.rotation.x=Math.PI/2;ring(gauge,0,0,.045,.20,'#698995',.024);
+            for(var tick=0;tick<6;tick++){var angle=(135-270*tick/5)*Math.PI/180,mark=box(gauge,-Math.sin(angle)*.155,Math.cos(angle)*.155,.049,.014,.032,.012,'#64828a');mark.rotation.z=angle;}
+            var needle=new THREE.Group();needle.position.z=.064;needle.name='energy-geothermal-'+key+'-temperature-needle';gauge.add(needle);box(needle,0,.064,0,.016,.13,.012,'#244a55');ball(needle,0,0,.006,.027,'#c99552');
+            gauges.push({group:gauge,needle:needle,key:well[3]});
+          });
+          terminal('primary-in',exchanger,[0,.45,.7]);terminal('primary-out',exchanger,[0,-.5,.7]);
+          function connect(name,from,to,cross,key,points,weights){
+            var lane=new THREE.Group();lane.name='energy-geothermal-'+name+'-pipe';group.add(lane);
+            var curve=pipe(lane,points,'#9ebcc1',.12),body=lane.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=lane.name+'-tube';body.material.transparent=true;body.material.opacity=.5;body.material.depthWrite=false;
+            // Equal-diameter primary pipes use the same illustrative travel speed, regardless of route length.
+            particles(lane,curve,'#e3f3ec',function(p){return p.run.settings.flow>0;},function(p){return .012*p.run.settings.flow;},null,null,true);
+            routes.push({group:lane,body:body,curve:curve,from:from,to:to,cross:cross,key:key,update:function(){
+              lane.visible=A.visible&&(!cross||B.visible);from.getWorldPosition(a);lane.worldToLocal(a);to.getWorldPosition(b);lane.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('production-well',ports['production-bottom'],ports['production-head'],false,'hot',[[-4,.2,2.4],[-4,3.1,2.4]],[0,1]);
+          connect('production-link',ports['production-head'],ports['primary-in'],true,'hot',[[-4,3.1,2.4],[-3.6,3.1,2.4],[-1,3.1,2.4],[.5,3,2.4],[.5,2.05,1.05],[.5,2.05,.7]],[0,0,0,1,1,1]);
+          connect('reinjection-link',ports['primary-out'],ports['reinjection-head'],true,'returnTemp',[[.5,1.1,.7],[.5,1.1,1.05],[.5,2.7,2.7],[-1.6,2.7,2.7],[-2,2.7,2.7],[-2,2.7,2.4]],[0,0,0,1,1,1]);
+          connect('reinjection-well',ports['reinjection-head'],ports['reinjection-bottom'],false,'returnTemp',[[-2,2.7,2.4],[-2,.2,2.4]],[0,1]);
+          updaters.push(function(p){var temperatures={},s=p.run.settings;['hot','returnTemp'].forEach(function(key){temperatures[key]=response('geothermal-primary-temperature-'+key,s[key],p,.30,false).value;});
+            group.userData.massFlow=s.flow;routes.forEach(function(route){var temperature=temperatures[route.key],fraction=Math.max(0,Math.min(1,(temperature-40)/260));route.body.material.color.copy(cold).lerp(warm,fraction);route.group.userData.temperature=s[route.key];route.group.userData.displayTemperature=temperature;route.group.userData.massFlow=s.flow;route.group.userData.targetWorldFlowRate=.012*s.flow;});
+            Object.keys(ports).forEach(function(key){var returned=key.indexOf('reinjection')===0||key==='primary-out',fraction=Math.max(0,Math.min(1,(temperatures[returned?'returnTemp':'hot']-40)/260));ports[key].material.color.copy(cold).lerp(warm,fraction);});
+            gauges.forEach(function(gauge){var fraction=Math.max(0,Math.min(1,(temperatures[gauge.key]-40)/260));gauge.needle.rotation.z=(135-270*fraction)*Math.PI/180;gauge.group.userData.temperature=s[gauge.key];gauge.group.userData.displayTemperature=temperatures[gauge.key];gauge.group.userData.scaleMinimum=40;gauge.group.userData.scaleMaximum=300;});
+          });
+          return {group:group,ports:ports,routes:routes,gauges:gauges,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function geothermalCircuit(B,C,exchanger,turbine,condenser){
+          var group=new THREE.Group();group.name='energy-geothermal-working-fluid';B.add(group);var ports={},routes=[];
+          function terminal(key,parent,point,color){var port=ball(parent,point[0],point[1],point[2],.09,color);port.name='energy-geothermal-'+key+'-port';ports[key]=port;return port;}
+          terminal('exchanger-out',exchanger,[.7,.4,0],'#e3b974');terminal('turbine-in',turbine,[-.68,0,0],'#e3b974');
+          terminal('turbine-out',turbine,[.68,0,0],'#a5c9cd');terminal('condenser-in',condenser,[0,.1,.65],'#a5c9cd');
+          terminal('condenser-out',condenser,[-.65,-.25,0],'#77b4c7');terminal('exchanger-in',exchanger,[0,-.6,-.7],'#77b4c7');
+          function connect(name,from,to,fromStage,toStage,points,weights,color,markerColor){
+            var lane=new THREE.Group();lane.name='energy-geothermal-'+name+'-pipe';(fromStage===toStage?fromStage:group).add(lane);
+            var curve=pipe(lane,points,color,.07),body=lane.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=lane.name+'-tube';body.material.transparent=true;body.material.opacity=.48;body.material.depthWrite=false;
+            particles(lane,curve,markerColor,function(p){return p.run.available>0;},function(p){return .75*Math.sqrt(Math.max(0,p.run.available)/18392);},null,null,true);
+            routes.push({group:lane,body:body,curve:curve,from:from,to:to,fromStage:fromStage,toStage:toStage,update:function(){
+              lane.visible=fromStage.visible&&toStage.visible;from.getWorldPosition(a);lane.worldToLocal(a);to.getWorldPosition(b);lane.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('heated',ports['exchanger-out'],ports['turbine-in'],B,C,[[1.2,2,0],[1.43,2,0],[1.48,1.5,.35],[1.72,1.5,.35]],[0,0,1,1],'#d8ba7a','#ffe2ae');
+          connect('exhaust',ports['turbine-out'],ports['condenser-in'],C,C,[[3.08,1.5,.35],[3.4,1.5,.35],[3.9,1,-.9],[3.9,1,-1.35]],[0,0,1,1],'#9ab7b9','#d3e5dd');
+          connect('cooled-return',ports['condenser-out'],ports['exchanger-in'],C,B,[[3.25,.65,-2],[3.05,.65,-2],[3.05,.65,-2.45],[2.8,.65,-2.6],[.5,.65,-2.6],[.5,1,-.7]],[0,0,0,0,1,1],'#6eabbc','#bce2ee');
+          updaters.push(function(p){var heat=Math.max(0,p.run.available),rejected=Math.max(0,heat-p.run.power),hotCue=cue('geothermal-loop-hot',Math.min(1.2,.5*Math.sqrt(heat/18392)),p),coolCue=cue('geothermal-loop-cooling',Math.min(1.2,.4*Math.sqrt(rejected/15877)),p);
+            group.userData.thermalPower=heat;group.userData.rejectedHeat=rejected;
+            routes.forEach(function(route,index){glow(route.body,index?'#4f8a9b':'#ca8c38',index?coolCue*(index===2?.4:1):hotCue);route.group.userData.drivingHeat=heat;route.group.userData.rejectedHeat=rejected;});
+          });
+          return {group:group,ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function biomassCombustion(parent){
+          var group=new THREE.Group();group.name='energy-biomass-fire';group.position.set(-.7,.43,1.20);parent.add(group);
+          var bed=box(parent,-.7,.417,1.21,1.18,.03,.20,'#40332a');bed.name='energy-biomass-ember-bed';
+          var flames=[],embers=[],phase=0,profile=[.50,.86,1,.91,.72,.52,.34,.16,0],sides=10;
+          function tongue(flame,name,color){
+            var geometry=new THREE.BufferGeometry(),vertices=new Float32Array(profile.length*(sides+1)*3),indices=[];
+            geometry.setAttribute('position',new THREE.BufferAttribute(vertices,3));
+            for(var row=0;row<profile.length-1;row++)for(var side=0;side<sides;side++){var a=row*(sides+1)+side,b=a+sides+1;indices.push(a,b,a+1,a+1,b,b+1);}
+            geometry.setIndex(indices);var object=mesh(flame,geometry,color,0,0,0);object.name=name;object.castShadow=false;object.receiveShadow=false;
+            object.material.transparent=true;object.material.depthWrite=false;object.material.side=THREE.DoubleSide;object.userData.flameColor=object.material.color.clone();glow(object,color,.6);return object;
+          }
+          [-.44,-.22,0,.22,.44].forEach(function(x,index){
+            var flame=new THREE.Group();flame.name='energy-biomass-flame-'+index;flame.position.x=x;group.add(flame);
+            var outer=tongue(flame,flame.name+'-outer','#f18435'),core=tongue(flame,flame.name+'-core','#ffe3a0');
+            flames.push({group:flame,outer:outer,core:core,height:[.58,.82,1,.78,.54][index],offset:index*1.7});
+          });
+          for(var index=0;index<7;index++){var ember=box(group,-.48+index*.16,.011,(index%2?-.045:.045),.12,.022,.065,index%2?'#ba5329':'#d97535');ember.name='energy-biomass-ember-'+index;ember.castShadow=false;ember.receiveShadow=false;ember.userData.flameColor=ember.material.color.clone();glow(ember,'#ee8a36',.5);embers.push(ember);}
+          // One chemical-power envelope drives all flames. Tip motion is deterministic illustration, not a combustion or temperature model.
+          function deform(object,height,width,offset,core){
+            var positions=object.geometry.attributes.position,bend=.045*Math.sin(phase+offset)+.012*Math.sin(3*phase+offset),depth=.018*Math.sin(2*phase+offset);
+            for(var row=0;row<profile.length;row++){var t=row/(profile.length-1),radius=profile[row]*width;
+              for(var side=0;side<=sides;side++){var angle=side/sides*2*Math.PI,index=row*(sides+1)+side;positions.setXYZ(index,bend*t*t+Math.cos(angle)*radius,t*height,(core?.037:0)+depth*t*t+Math.sin(angle)*radius*.48);}
+            }
+            positions.needsUpdate=true;object.geometry.computeVertexNormals();
+            // Weld lighting across the duplicate seam and give the collapsed tip a finite unit normal.
+            var normals=object.geometry.attributes.normal;
+            for(var row=0;row<profile.length-1;row++){var first=row*(sides+1),last=first+sides,nx=normals.getX(first)+normals.getX(last),ny=normals.getY(first)+normals.getY(last),nz=normals.getZ(first)+normals.getZ(last),length=Math.hypot(nx,ny,nz)||1;normals.setXYZ(first,nx/length,ny/length,nz/length);normals.setXYZ(last,nx/length,ny/length,nz/length);}
+            var tipLength=Math.hypot(2*bend,height,2*depth);for(var side=0;side<=sides;side++)normals.setXYZ((profile.length-1)*(sides+1)+side,2*bend/tipLength,height/tipLength,2*depth/tipLength);normals.needsUpdate=true;
+            object.geometry.computeBoundingBox();object.geometry.computeBoundingSphere();object.userData.displayHeight=height;object.userData.tipBend=bend;object.userData.phase=phase;
+          }
+          function update(p){
+            var complete=['Sequence complete','Cycle complete','Scenario complete'].indexOf(p.run.status)!==-1,fuel=complete?0:Math.max(0,p.run.available),target=Math.min(2.2,Math.sqrt(fuel/(5000/3))),envelope=response('biomass-flame',target,p,.26,true).value,strength=envelope/2.2,active=fuel>0;
+            if(active)phase=(phase+(p.dt||0)*2.3)%(Math.PI*2);group.visible=active;
+            var trace=!!p.inspection.trace,muted=trace&&p.selected!=='converter',emphasis=trace&&!muted,state=trace?(muted?'context':'selected'):'normal',brightness=muted?.28:emphasis?1.15:1;
+            group.userData.chemicalPower=fuel;group.userData.phase=phase;group.userData.displayEnvelope=envelope;group.userData.targetEnvelope=target;group.userData.traceState=state;
+            flames.forEach(function(entry){var flutter=1+.055*Math.sin(2*phase+entry.offset)+.025*Math.sin(5*phase+entry.offset*.7),height=(.30+.44*strength)*entry.height*flutter,width=(.6+.4*strength)*.12;
+              deform(entry.outer,height,width,entry.offset,false);deform(entry.core,height*.65,width*.52,entry.offset,true);entry.group.userData.displayHeight=height;
+              [entry.outer,entry.core].forEach(function(object,index){object.material.color.copy(object.userData.flameColor).multiplyScalar(muted?.42:1);object.material.opacity=(index?.95:.82)*(muted?.55:1);object.material.emissiveIntensity=active?brightness*(index?.55+.65*strength:.35+.7*strength):0;object.userData.traceState=state;object.userData.chemicalPower=fuel;});
+            });
+            embers.forEach(function(ember,index){ember.material.color.copy(ember.userData.flameColor).multiplyScalar(muted?.42:1);ember.material.emissiveIntensity=active?brightness*(.18+.8*strength)*(1+.035*Math.sin(phase+index)):0;ember.userData.chemicalPower=fuel;ember.userData.traceState=state;});
+          }
+          updaters.push(update);return {group:group,bed:bed,flames:flames,embers:embers,update:update};
+        }
+
+        function biomassAuger(parent,from,to,A,B){
+          var group=new THREE.Group();group.name='energy-biomass-feed-stream';parent.add(group);
+          var cover=mesh(group,new THREE.CylinderGeometry(.205,.205,1,32,1,true),'#c7d5d1',0,0,0,.18);cover.rotation.x=Math.PI/2;cover.material.depthWrite=false;cover.name='energy-biomass-auger-cover';
+          var rotor=new THREE.Group();rotor.name='energy-biomass-auger';group.add(rotor);var shaft=cylinder(rotor,0,0,0,.045,1,'#9aaea8');shaft.rotation.x=Math.PI/2;
+          // A broad screw flight surrounds the shaft. Its phase is an illustrative feed cue, not calculated RPM.
+          var vertices=[],indices=[],segments=96;
+          for(var n=0;n<=segments;n++){var t=n/segments,angle=t*Math.PI*6;[.045,.16].forEach(function(radius){vertices.push(Math.cos(angle)*radius,Math.sin(angle)*radius,t-.5);});if(n<segments){var i=n*2;indices.push(i,i+1,i+2,i+1,i+3,i+2);}}
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+          var flight=mesh(rotor,geometry,'#c8a565',0,0,0);flight.material.side=THREE.DoubleSide;flight.material.metalness=.4;flight.material.roughness=.34;flight.name='energy-biomass-auger-flight';
+          var collars=[ring(group,0,0,-.5,.205,'#a7b8b3',.03),ring(group,0,0,.5,.205,'#a7b8b3',.03)];
+          var indexMark=box(rotor,.10,0,.41,.08,.035,.035,'#f3d68b');indexMark.name='energy-biomass-auger-index';
+          var arrow=mesh(group,new THREE.ConeGeometry(.06,.18,8),'#e6bd73',0,.27,0);arrow.rotation.x=Math.PI/2;arrow.name='energy-biomass-feed-direction';
+          updaters.push(function(p){var complete=['Sequence complete','Cycle complete','Scenario complete'].indexOf(p.run.status)!==-1,feed=complete?0:p.run.settings.feed;motion(rotor,'biomass-auger',1.4*feed/500,p,.32);group.userData.massFlow=feed;arrow.visible=feed>0;glow(arrow,'#dfac55',cue('biomass-feed',feed>0?.25+.6*feed/(feed+500):0,p));});
+          var a=new THREE.Vector3(),b=new THREE.Vector3(),axis=new THREE.Vector3(),zAxis=new THREE.Vector3(0,0,1);
+          return {group:group,rotor:rotor,cover:cover,flight:flight,from:from,to:to,update:function(){
+            group.visible=A.visible&&B.visible;from.getWorldPosition(a);parent.worldToLocal(a);to.getWorldPosition(b);parent.worldToLocal(b);axis.copy(b).sub(a);var length=axis.length();group.position.copy(a).add(b).multiplyScalar(.5);group.quaternion.setFromUnitVectors(zAxis,axis.normalize());rotor.scale.z=length;cover.scale.y=length;collars[0].position.z=-length/2;collars[1].position.z=length/2;group.userData.span=length;
+          }};
+        }
+        function biomassConnections(A,B,C,hopper,boiler,turbine){
+          var ports={};
+          function terminal(key,parent,point,radius,color){var port=ball(parent,point[0],point[1],point[2],radius,color);port.name='energy-biomass-'+key+'-port';ports[key]=port;return port;}
+          terminal('hopper',hopper,[1.05,.05,.8],.215,'#9caaa3');terminal('boiler-feed',boiler,[-1,-.65,.8],.215,'#9caaa3');
+          terminal('boiler-steam',boiler,[1,1.05,0],.13,'#d7dbbd');terminal('turbine-in',turbine,[0,.70,0],.13,'#d7dbbd');
+          var auger=biomassAuger(A,ports.hopper,ports['boiler-feed'],A,B),steamGroup=new THREE.Group();steamGroup.name='energy-biomass-steam-stream';B.add(steamGroup);
+          var curve=pipe(steamGroup,[[.3,2.5,0],[.7,2.5,0],[2.5,2.5,.15],[2.5,1.8,.15]],'#d1e3dd',.10),body=steamGroup.children[0],base=curve.points.map(function(point){return point.clone();}),weights=[0,0,1,1],a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name='energy-biomass-steam-tube';body.material.transparent=true;body.material.opacity=.48;body.material.depthWrite=false;
+          particles(steamGroup,curve,'#f8f9e3',function(p){return p.run.stages[1].value>0;},function(p){return .75*Math.sqrt(Math.max(0,p.run.stages[1].value)/(4000/3));},null,null,true);
+          updaters.push(function(p){var heat=p.run.stages[1].value;steamGroup.userData.thermalPower=heat;glow(body,'#c79958',cue('biomass-steam-pipe',Math.min(1.2,.35*Math.sqrt(Math.max(0,heat)/(4000/3))),p));});
+          var steam={group:steamGroup,body:body,curve:curve,from:ports['boiler-steam'],to:ports['turbine-in']};
+          return {ports:ports,auger:auger,steam:steam,update:function(){
+            auger.update();steamGroup.visible=B.visible&&C.visible;steam.from.getWorldPosition(a);steamGroup.worldToLocal(a);steam.to.getWorldPosition(b);steamGroup.worldToLocal(b);
+            var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+          }};
+        }
+        function rotorResourceStreams(parent,marine){
+          var group=new THREE.Group();group.name='energy-rotor-streams';group.position.x=-1.1;parent.add(group);var routes=[];
+          // Sample the swept disk around the solid hub. Translate fixed-bore lanes rather than stretching their markers.
+          for(var n=0;n<8;n++){
+            var lane=new THREE.Group();lane.name='energy-rotor-resource-lane-'+n;group.add(lane);
+            var curve=pipe(lane,[[0,0,3.5],[0,0,-3.5]],marine?'#357e97':'#517b91',.012),body=lane.children[0];body.name='energy-rotor-resource-tube-'+n;
+            var signal=particles(lane,curve,'#b7f2ff',function(p){return Math.abs(p.run.settings.speed)>0;},function(p){return p.run.settings.speed*(marine?.42:.14);},null,null,true);
+            // Drawing cues do not cast solid-object shadows onto the equipment or seabed.
+            [body,signal.arrow].concat(signal.dots).forEach(function(mark){mark.castShadow=false;mark.receiveShadow=false;});
+            routes.push({group:lane,body:body,curve:curve,angle:Math.PI/8+n*Math.PI/4});
+          }
+          function update(radius,height){
+            group.position.y=height;group.userData.footprintRadius=radius;group.userData.footprintCenterX=group.position.x;group.userData.footprintHalfWidth=.72*radius*Math.cos(Math.PI/8);group.userData.sampleRadius=.72*radius;
+            routes.forEach(function(route){route.group.position.set(Math.cos(route.angle)*radius*.72,Math.sin(route.angle)*radius*.72,0);});
+          }
+          update(2.07,marine?2.25:3.65);return {group:group,routes:routes,update:update};
+        }
+        function rotorPowerConnections(parent,hub,load,powerReference){
+          // Keep fixed output equipment outside the nacelle's inspection bounds.
+          var switchgear=box(parent,1.4,.70,-2.20,1.2,1.3,1.0,'#b9d0cf');switchgear.name='energy-rotor-switchgear';
+          var plinth=box(parent,1.4,.045,-2.20,1.4,.09,1.2,'#718c92');plinth.name='energy-rotor-switchgear-base';
+          box(switchgear,0,0,.513,1.01,1.10,.026,'#8cabad');box(switchgear,.37,0,.547,.038,.25,.038,'#d3e0d8');
+          box(switchgear,-.15,.30,.542,.41,.16,.03,'#294e58');
+          var indicator=ball(switchgear,.32,.34,.555,.047,'#72d6ac');indicator.name='energy-rotor-transfer-light';
+          var ports={},routes=[];
+          function terminal(key,body,point){var port=ball(body,point[0],point[1],point[2],.065,'#edc873');port.name='energy-rotor-'+key+'-port';ports[key]=port;return port;}
+          terminal('output',hub,[.52,-.30,-.47]);terminal('switchgear-input',switchgear,[-.60,-.25,0]);terminal('switchgear-output',switchgear,[.60,-.35,0]);terminal('load',load,[0,-.25,-.50]);
+          function connect(name,from,to,points,weights){
+            var group=new THREE.Group();group.name='energy-rotor-'+name+'-cable';parent.add(group);
+            var curve=pipe(group,points,'#e5bf69',.045),body=group.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=group.name+'-tube';
+            // Current reversal changes the shaft direction, not the direction of delivered electricity.
+            particles(group,curve,'#fff0ac',function(p){return p.run.power>0;},.7,null,{power:function(p){return p.run.power;},referencePower:powerReference},true);
+            routes.push({group:group,body:body,curve:curve,from:from,to:to,update:function(){
+              from.getWorldPosition(a);group.worldToLocal(a);to.getWorldPosition(b);group.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('generator',ports.output,ports['switchgear-input'],[[-.58,3.35,-.82],[-.30,3.35,-.82],[-.30,3.05,-.82],[-.30,.70,-.82],[.30,.45,-2.20],[.80,.45,-2.20]],[0,0,0,1,1,1]);
+          connect('load',ports['switchgear-output'],ports.load,[[2,.35,-2.20],[2.25,.35,-2.20],[3.6,.35,-1],[4.6,.35,.65],[4.6,.35,2.1]],[0,0,.5,1,1]);
+          updaters.push(function(p){var output=cue('rotor-transfer-output',p.run.power>0?p.run.power/(p.run.power+powerReference):0,p);glow(indicator,'#66dcaf',output*1.4);indicator.userData.outputPower=p.run.power;});
+          return {switchgear:switchgear,plinth:plinth,indicator:indicator,ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
+        function wavePowerConnections(B,C,guide,cabinet,load,equipment,powerReference){
+          var ports={},routes=[];
+          function terminal(key,parent,point){var port=ball(parent,point[0],point[1],point[2],.065,'#edc873');port.name='energy-wave-'+key+'-port';ports[key]=port;return port;}
+          terminal('pto',guide.cap,[.20,0,0]);terminal('cabinet-input',cabinet,[-.9,0,0]);terminal('cabinet-output',cabinet,[.9,-.65,0]);terminal('load',load,[0,-.15,-.5]);
+          function connect(name,parent,from,to,fromStage,toStage,points,weights){
+            var group=new THREE.Group();group.name='energy-wave-'+name+'-cable';parent.add(group);
+            var curve=pipe(group,points,'#e5bf69',.045),body=group.children[0],base=curve.points.map(function(point){return point.clone();}),a=new THREE.Vector3(),b=new THREE.Vector3(),signature='';body.name=group.name+'-tube';
+            // The electrical model reports mean output; the path does not reverse or pulse with each stroke.
+            particles(group,curve,'#fff0ac',function(p){return p.run.power>0;},.7,null,{power:function(p){return p.run.power;},referencePower:powerReference},true);
+            routes.push({group:group,body:body,curve:curve,from:from,to:to,update:function(){
+              group.visible=fromStage.visible&&toStage.visible;from.getWorldPosition(a);group.worldToLocal(a);to.getWorldPosition(b);group.worldToLocal(b);
+              var next=a.toArray().join(',')+'|'+b.toArray().join(',');if(next===signature)return;signature=next;
+              a.sub(base[0]);b.sub(base[base.length-1]);curve.points.forEach(function(point,index){point.copy(base[index]).addScaledVector(a,1-weights[index]).addScaledVector(b,weights[index]);});curve.updateArcLengths();deformTube(body,curve);
+            }});
+          }
+          connect('pto',B,ports.pto,ports['cabinet-input'],B,C,[[-.8,2.95,0],[-.55,2.95,0],[.85,3.2,0],[1.1,3.2,0]],[0,0,1,1]);
+          connect('load',equipment,ports['cabinet-output'],ports.load,C,C,[[2.9,.45,0],[3.2,.45,0],[4.6,.45,.65],[4.6,.45,2.1]],[0,0,1,1]);
+          return {ports:ports,routes:routes,update:function(){routes.forEach(function(route){route.update();});}};
+        }
         function electricity(parent,points){
-          var path=pipe(parent,points,'#f2bf58',.04);particles(parent,path,'#fff2ab',function(p){return p.run.power>0;},.045,null,{power:function(p){return p.run.power;},referencePower:referencePower});
+          var path=pipe(parent,points,'#f2bf58',.04);particles(parent,path,'#fff2ab',function(p){return p.run.power>0;},.7,null,{power:function(p){return p.run.power;},referencePower:referencePower},true);
         }
         ['resource','converter','generator'].forEach(function(id){groups[id]=new THREE.Group();groups[id].name='energy-'+id;groups[id].userData.component=id;scene.add(groups[id]);});
         var A=groups.resource,B=groups.converter,C=groups.generator,id=props.id;
@@ -3260,9 +6542,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var panelSupports=[],panelFootings=[];[-.8,.8].forEach(function(z,index){var footing=box(B,-1.5,.04,z,1.25,.12,.42,'#92a5a5'),post=strut(B,[-1.5,.1,z],[-1.5,1.1,z],.065,'#b9cbd0');footing.name='energy-pv-footing-'+index;post.name='energy-pv-support-'+index;panelFootings.push(footing);panelSupports.push(post);});
           var panelActuator=strut(B,[-2.0,.12,.8],[-2.0,1.0,.8],.075,'#89aab3');panelActuator.name='energy-pv-tilt-actuator';array.name='energy-pv-array';
           var pvOptics=pvSunlight(A,B,array),pvInverter=new THREE.Group();pvInverter.name='energy-pv-inverter';pvInverter.position.x=.85;C.add(pvInverter);
-          var pvInverterBody=box(pvInverter,2,1,0,1.2,1.8,.8,'#dce9e3');pvInverterBody.name='energy-pv-inverter-body';box(pvInverter,2,1.3,.43,.55,.35,.06,'#153d47');
-          var pvInverterLamp=ball(pvInverter,2.39,1.65,.43,.055,'#6ee4b4'),pvPowerBars=[];pvInverterLamp.name='energy-pv-inverter-light';
-          for(var bar=0;bar<5;bar++){var powerBar=box(pvInverter,1.79+bar*.105,1.23+bar*.018,.469,.069,.10+bar*.035,.012,'#50d7a6');powerBar.name='energy-pv-output-bar-'+bar;pvPowerBars.push(powerBar);}
+          var pvInverterBody=box(pvInverter,2,1,0,1.2,1.8,.8,'#dce9e3');pvInverterBody.name='energy-pv-inverter-body';
+          var pvInverterLamp=ball(pvInverter,2.39,1.65,.43,.055,'#6ee4b4');pvInverterLamp.name='energy-pv-inverter-light';
+          var pvTemperature=pvTemperatureDisplay(B,array,pvInverter);
           for(var vent=0;vent<5;vent++)box(pvInverter,2,.55+vent*.09,.415,.68,.025,.02,'#507780');
           var pvWiring=pvElectricalConnections(B,C,array,pvInverter,referencePower,referencePower);
           updaters.push(function(p){var targetAngle=-p.run.settings.incidence*Math.PI/180,targetSize=Math.sqrt(p.run.settings.area/20)*.75,angle=shape('pv-angle',targetAngle,p),size=shape('pv-size',targetSize,p);array.rotation.z=angle;array.scale.set(size,1,size);array.position.y=.65+Math.abs(Math.sin(angle))*1.94*size;array.userData.displayAngle=angle;array.userData.targetAngle=targetAngle;array.userData.displayScale=size;array.userData.targetScale=targetSize;
@@ -3274,7 +6556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             solarDisc.position.y=array.position.y+Math.abs(Math.sin(angle))*1.94*size+2.2;solarHalo.position.y=solarDisc.position.y;sun.intensity=.55+illumination*.69;glow(solarDisc,'#ffd378',illumination);solarHalo.visible=illumination>0;
             // Panels remain reflective, not incandescent. Temperature and efficiency affect the actual inverter output cue.
             pvCells.forEach(function(cell){cell.material.roughness=.34-.12*illumination;});glow(pvInverterLamp,'#59e0aa',p.run.power>0?.3+powerActivity:0);
-            pvPowerBars.forEach(function(bar,index){var level=Math.max(0,Math.min(1,powerActivity*5-index));bar.material.color.set(level>0?'#50d7a6':'#28484b').convertSRGBToLinear();glow(bar,'#50d7a6',level*.75);});});
+            pvTemperature.update(p,size);});
           label('1  Direct sunlight',-3.8,5.8,0);label('2  PV array',-1.2,.55,2.4);label('3  Inverter',2.85,2.5,0);
         }else if(id==='wind'||id==='tidal'){
           var marine=id==='tidal';if(marine){var waterVolume=box(context,0,1.9,0,12,4,8,'#16506a',.12);waterVolume.material.depthWrite=false;waterVolume.name='energy-tidal-water-volume';box(context,0,-.03,0,12,.07,8,'#587b72');}
@@ -3289,23 +6571,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           if(!marine){box(B,-1.1,.42,.211,.13,.53,.035,'#819f9f');strut(nacelle,[-1.1,.60,-.71],[-1.1,.88,-.71],.012,'#bdd1d8');strut(nacelle,[-1.32,.81,-.71],[-.9,.81,-.71],.016,'#dae5de');}
           else{[-.8,.8].forEach(function(dx){strut(B,[-1.1,.7,0],[-1.1+dx,.13,.65],.065,'#7b9b9f');});}
           var sweep=ring(B,-1.1,blade.position.y,.30,2.07,marine?'#72cad8':'#83b9c9',.017);sweep.name='energy-rotor-sweep';sweep.material.transparent=true;sweep.material.opacity=.55;
-          var rotorStreams=new THREE.Group();rotorStreams.name='energy-rotor-streams';rotorStreams.position.set(-1.1,blade.position.y,0);A.add(rotorStreams);
-          for(var n=0;n<5;n++){var flowX=(n-2)*.85,path=pipe(rotorStreams,[[flowX,0,3.5],[flowX,0,-3.5]],marine?'#357e97':'#517b91',.012);
-            particles(rotorStreams,path,'#b7f2ff',function(p){return Math.abs(p.run.settings.speed)>0;},function(p){return Math.sign(p.run.settings.speed)*Math.min(.09,Math.abs(p.run.settings.speed)*(marine?.012:.004));});}
-          electricity(C,[[-.9,.2,0],[2,.2,0],[4.6,.2,2.6]]);
+          var rotorResource=rotorResourceStreams(A,marine);
+          var rotorWiring=rotorPowerConnections(C,hub,load,referencePower);
           updaters.push(function(p){var targetSize=marine?p.run.settings.radius/5:p.run.settings.radius/40,scale=shape('rotor-scale',.65+targetSize*.35,p),displayRadius=2.07*scale,hubHeight=Math.max(marine?2.25:3.65,displayRadius+.65),shutdown=p.run.status==='Protective shutdown',rated=p.run.status==='At generator rating',operating=p.run.power>0;
             // The drawing compresses rotor scale; move the complete drivetrain and extend its support together.
-            blade.scale.setScalar(scale);blade.position.y=hubHeight;nacelle.position.y=hubHeight;sweep.scale.setScalar(scale);sweep.position.y=hubHeight;rotorStreams.position.y=hubHeight;
-            // Keep the intercepted stream centered on the hub and proportional to the illustrated swept radius.
-            // Only its width changes: depth, flow direction, speed, and each marker's phase remain unchanged.
-            rotorStreams.scale.x=displayRadius/2.07;rotorStreams.userData.footprintRadius=displayRadius;rotorStreams.userData.footprintCenterX=rotorStreams.position.x;rotorStreams.userData.footprintHalfWidth=1.7*rotorStreams.scale.x;
+            blade.scale.setScalar(scale);blade.position.y=hubHeight;nacelle.position.y=hubHeight;sweep.scale.setScalar(scale);sweep.position.y=hubHeight;
+            // Follow the displayed disk in both dimensions, preserving lane bore and marker shape.
+            rotorResource.update(displayRadius,hubHeight);
             tower.scale.y=(hubHeight-.10)/3.8;tower.position.y=.10+(hubHeight-.10)/2;blade.userData.displayRadius=displayRadius;blade.userData.targetDisplayRadius=2.07*(.65+targetSize*.35);
             if(marine){var waterHeight=hubHeight+displayRadius+.5;waterVolume.scale.y=waterHeight/4;waterVolume.position.y=waterHeight/2-.03;}
             // Preserve pose while easing speed. At the same current, a larger radius lowers angular speed.
             var rotorTarget=operating?Math.sign(p.run.settings.speed)*Math.min(1.8,Math.abs(p.run.settings.speed)*.12*(marine?5:40)/p.run.settings.radius):0;
             driveMotion(blade,'rotor-speed',rotorTarget,p,.42);
             // A single mechanical phase drives the shaft and core; no invented gear ratio or independent clock.
-            generatorAssembly.rotor.rotation.z=blade.rotation.z;generatorAssembly.rotor.userData.motionRate=blade.userData.motionRate;generatorAssembly.rotor.userData.motionTarget=blade.userData.motionTarget;
+            generatorAssembly.rotor.rotation.z=blade.rotation.z;generatorAssembly.rotor.userData.motionRate=blade.userData.motionRate;generatorAssembly.rotor.userData.motionTarget=blade.userData.motionTarget;generatorAssembly.rotor.userData.coasting=blade.userData.coasting;
             var coverTarget=p.inspection.cutaway?.14:1,coverOpacity=response('generator-cover',coverTarget,p,.2,false).value;
             if(Math.abs(coverOpacity-coverTarget)<.0001){coverOpacity=coverTarget;responses['generator-cover']=coverTarget;}
             var cutawayFraction=(1-coverOpacity)/.86;hub.material.opacity=coverOpacity;nacelleRoof.material.opacity=coverOpacity;hub.material.depthWrite=coverOpacity===1;nacelleRoof.material.depthWrite=coverOpacity===1;generatorAssembly.shell.material.opacity=.28-.20*cutawayFraction;generatorAssembly.rotor.userData.cutawayFraction=cutawayFraction;
@@ -3323,51 +6602,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var dam=box(B,-1.15,1.8,0,.5,3.5,4.3,'#8b9e9e');
           var hydroRunner=runner(B,1,.8,.7,.6,'#edc36e');hydroRunner.name='energy-hydro-runner';var casing=cylinder(B,1,.8,0,.8,1.15,'#769ea7');casing.rotation.x=Math.PI/2;casing.material.transparent=true;casing.material.opacity=.3;
           casing.material.depthWrite=false;ring(B,1,.8,.61,.79,'#b6d4cf',.055);runnerReference(B,hydroRunner,.79,false);var hydroDrive=hydroDrivetrain(B,C,hydroRunner);generatorFocus=hydroDrive.group;
-          flange(B,1,.8,.63,.87,'#b2c3bd');valve(B,.03,1.23,1.12,'#d98957');
+          flange(B,1,.8,.63,.87,'#b2c3bd');
           var damDeck=new THREE.Group();B.add(damDeck);box(damDeck,-1.15,.03,0,.78,.14,4.5,'#a8b6aa');
           var headGauge=strut(A,[-4.8,.2,2.3],[-4.8,4,2.3],.026,'#f4d68a');headGauge.name='energy-hydro-head';
           var headTop=box(A,-4.8,4,2.3,.32,.035,.05,'#f4d68a');box(A,-4.8,.2,2.3,.32,.035,.05,'#f4d68a');
-          var flowGate=box(B,-.06,1.07,1.34,.32,.34,.06,'#e7bb65');flowGate.name='energy-hydro-flow-gate';
+
           [-2.05,0,2.05].forEach(function(z){strut(damDeck,[-.8,.06,z],[-.8,.47,z],.025,'#d3ddd2');});strut(damDeck,[-.8,.47,-2.1],[-.8,.47,2.1],.025,'#d3ddd2');
-          var penstock=pipe(B,[[-2.5,3.7,1.1],[-.8,3,1.1],[.2,.8,1.1],[1,.8,.8]],'#77d0e3',.19),penstockMesh=B.children[B.children.length-1];penstockMesh.name='energy-hydro-penstock';particles(B,penstock,'#d9fbff',function(p){return p.run.settings.flow>0;},function(p){return .012+p.run.settings.flow*.002;});
-          var tailrace=pipe(B,[[1,.45,.8],[1.4,.2,1.7],[3.7,.2,1.7]],'#4fa3c2',.14);particles(B,tailrace,'#b5edff',function(p){return p.run.settings.flow>0;},function(p){return .012+p.run.settings.flow*.002;});
+          var hydroCircuit=hydroWaterCircuit(A,B,reservoirWater,casing);
           for(var rung=0;rung<9;rung++)box(A,-4.53,.3+rung*.4,2.03,.06,.025,.23,'#c7e2d6');
-          var hydroSwitchgear=cabinet(C,2.4,.65,-2.8,1.1,1.25,1.6,'#d1e4d9');hydroSwitchgear.name='energy-hydro-switchgear';box(context,2,.05,1.7,4,.15,1.4,'#368eac',.8);[.97,2.43].forEach(function(z){box(context,2,.08,z,4.2,.30,.12,'#a3b7ad');});hydroElectricalConnections(C);
-          var previousHead=null;updaters.push(function(p){var displayedHead=shape('hydro-head',p.run.settings.head,p),scale=.70+displayedHead/180;reservoir.scale.y=scale;reservoir.position.y=scale*1.9;reservoirWater.position.y=scale*3.8+.1;dam.scale.y=scale;dam.position.y=scale*1.75;reservoir.userData.displayHead=displayedHead;reservoir.userData.targetHead=p.run.settings.head;reservoirWater.userData.displayHead=displayedHead;reservoirWater.userData.targetHead=p.run.settings.head;
+          var hydroSwitchgear=cabinet(C,2.4,.65,-2.8,1.1,1.25,1.6,'#d1e4d9');hydroSwitchgear.name='energy-hydro-switchgear';hydroElectricalConnections(C);
+          updaters.push(function(p){var displayedHead=shape('hydro-head',p.run.settings.head,p),scale=.70+displayedHead/180;reservoir.scale.y=scale;reservoir.position.y=scale*1.9;reservoirWater.position.y=scale*3.8+.1;dam.scale.y=scale;dam.position.y=scale*1.75;reservoir.userData.displayHead=displayedHead;reservoir.userData.targetHead=p.run.settings.head;reservoirWater.userData.displayHead=displayedHead;reservoirWater.userData.targetHead=p.run.settings.head;
             var hydraulicRate=p.run.available>0?Math.min(3.2,.9*Math.sqrt(p.run.settings.head/30)*Math.sqrt(p.run.settings.flow/5)):0;motion(hydroRunner,'hydro-runner',hydraulicRate,p,.32);hydroDrive.sync();
             var coverTarget=p.inspection.cutaway?.14:1,coverOpacity=response('generator-cover',coverTarget,p,.2,false).value;
             if(Math.abs(coverOpacity-coverTarget)<.0001){coverOpacity=coverTarget;responses['generator-cover']=coverTarget;}
             var cutawayFraction=(1-coverOpacity)/.86;hydroDrive.cover.material.opacity=coverOpacity;hydroDrive.cover.material.depthWrite=coverOpacity===1;hydroDrive.assembly.shell.material.opacity=.28-.20*cutawayFraction;hydroDrive.assembly.rotor.userData.cutawayFraction=cutawayFraction;
             headGauge.userData.place([-4.8,.2,2.3],[-4.8,reservoirWater.position.y,2.3]);headTop.position.y=reservoirWater.position.y;
-            var gateFlow=response('hydro-gate',p.run.settings.flow,p,.25,true).value;flowGate.position.y=1.07+.38*gateFlow/50;flowGate.userData.flow=p.run.settings.flow;flowGate.userData.displayFlow=gateFlow;
+
             damDeck.position.y=scale*3.5;
-            if(previousHead!==displayedHead){previousHead=displayedHead;penstock.points[0].y=scale*3.8;penstock.points[1].y=scale*2.8;penstock.updateArcLengths();deformTube(penstockMesh,penstock);}penstockMesh.userData.displayHead=displayedHead;penstockMesh.userData.targetHead=p.run.settings.head;});
+          });
           label('1  Reservoir & head',-3.2,5,0);label('2  Penstock & runner',0,2.1,2);label('3  Powerhouse',3,2.3,-.6);
         }else if(id==='geothermal'){
           box(A,-2.5,.7,0,5,1.4,4.5,'#aa6249');box(A,-2.5,1.6,0,5,.35,4.5,'#75634c');box(A,-2.5,2,0,5,.35,4.5,'#568371');
           var geothermalHeat=box(A,-2.5,.35,2.27,4.9,.65,.03,'#d78a51');geothermalHeat.name='energy-geothermal-reservoir-heat';
           for(var strata=0;strata<4;strata++)pipe(A,[[-4.8,.22+strata*.26,2.30],[-3.4,.32+strata*.26,2.30],[-1.5,.19+strata*.26,2.30],[-.1,.3+strata*.26,2.30]],'#804d40',.022);
-          var hot=pipe(A,[[-4,.2,2.4],[-4,3,2.4],[-1,3,2.4],[.2,2,0]],'#f19462',.12);
-          var cool=pipe(A,[[.5,1,0],[-2,2.6,2.4],[-2,.2,2.4]],'#55a9d1',.12);
-          [-4,-2].forEach(function(x){box(A,x,2.21,2.4,.65,.14,.65,'#a8b7ae');var cap=ring(A,x,2.35,2.4,.22,'#bdd1cd',.045);cap.rotation.x=Math.PI/2;valve(A,x,2.55,2.4,x===-4?'#e29462':'#71aec7');});
-          particles(A,hot,'#ffd2a5',function(p){return p.run.settings.flow>0;},function(p){return .015+p.run.settings.flow*.0004;});particles(A,cool,'#b4e6ff',function(p){return p.run.settings.flow>0;},function(p){return .015+p.run.settings.flow*.0004;});
           var exchanger=cylinder(B,.5,1.6,0,.7,2,'#d4a465');exchanger.name='energy-geothermal-exchanger';exchanger.material.transparent=true;exchanger.material.opacity=.3;exchanger.material.depthWrite=false;
+          var geothermalPrimary=geothermalWells(A,B,exchanger);
           var geothermalCoils=[];for(var n=0;n<5;n++){var coil=ring(B,.5,.9+n*.32,0,.47,'#f2c27f',.055);coil.rotation.x=Math.PI/2;geothermalCoils.push(coil);}
           cylinder(B,.5,1.6,0,.14,2.1,'#9fd4de');
           [.7,2.48].forEach(function(y){var cap=ring(B,.5,y,0,.71,'#bbcdc2',.05);cap.rotation.x=Math.PI/2;});
           [-.37,1.37].forEach(function(x){strut(B,[x,.05,0],[x,.9,0],.065,'#9eb3b5');});
-          var workingFluid=new THREE.Group();workingFluid.name='energy-geothermal-working-fluid';B.add(workingFluid);
-          var workingHot=pipe(workingFluid,[[1.1,2,0],[1.8,2,0],[2.4,1.6,.15]],'#d8ba7a',.08);
-          var workingReturn=pipe(workingFluid,[[2.4,1.2,.15],[2.4,.55,-.7],[.6,.55,-.7],[.6,1,-.45]],'#88aeb6',.075);
-          particles(workingFluid,workingHot,'#ffe2ae',function(p){return p.run.available>0;},function(p){return .03*Math.sqrt(p.run.available/18392);});
-          particles(workingFluid,workingReturn,'#bce2ee',function(p){return p.run.available>0;},function(p){return .03*Math.sqrt(p.run.available/18392);});
-          var rotorGeo=runner(C,2.4,1.5,.8,.55,'#d6edf1');rotorGeo.name='energy-geothermal-turbine';box(C,2.4,.7,0,1,1.3,1.4,'#688c99');runnerReference(C,rotorGeo,.68,true);
-          cylinder(C,3.9,.9,-2,.65,1.7,'#afc7c6');var condenserRim=ring(C,3.9,1.78,-2,.53,'#d1ded5',.04);condenserRim.rotation.x=Math.PI/2;
-          var coolingFan=rotor(C,3.9,1.79,-2,.43,'#68888e');coolingFan.name='energy-geothermal-cooling-fan';coolingFan.rotation.x=-Math.PI/2;
-          pipe(C,[[2.9,1.1,-.2],[3.5,1.1,-.2],[3.9,.6,-1.5]],'#88aeb6',.075);electricity(C,[[2.4,.2,0],[3.5,.2,0],[4.6,.2,2.6]]);
+          var turbineHousing=new THREE.Group();turbineHousing.name='energy-geothermal-turbine-housing';turbineHousing.position.set(2.4,1.5,.35);C.add(turbineHousing);
+          var turbineCasing=cylinder(turbineHousing,0,0,0,.68,.7,'#86a6ad');turbineCasing.rotation.x=Math.PI/2;turbineCasing.name='energy-geothermal-turbine-casing';
+          var rotorGeo=runner(C,2.4,1.5,.8,.55,'#d6edf1');rotorGeo.name='energy-geothermal-turbine';var geoTurbinePlinth=box(C,2.4,.7,.1,1,1.3,1.1,'#688c99');geoTurbinePlinth.name='energy-geothermal-turbine-plinth';runnerReference(C,rotorGeo,.68,true);
+          var geoDrive=geothermalDrivetrain(C,rotorGeo);generatorFocus=geoDrive.group;
+          var condenser=cylinder(C,3.9,.9,-2,.65,1.7,'#afc7c6');condenser.name='energy-geothermal-condenser';
+          var geoCooling=geothermalCooling(C,condenser),coolingFan=geoCooling.fan;
+          var geothermalLoop=geothermalCircuit(B,C,exchanger,turbineHousing,condenser),workingFluid=geothermalLoop.group;
+          var geoOutput=ball(geoDrive.group,.48,-.2,0,.065,'#edc873'),geoLoadPort=ball(C,4.6,.35,2.1,.065,'#edc873');geoOutput.name='energy-geothermal-output-port';geoLoadPort.name='energy-geothermal-load-port';
+          var geoCable=new THREE.Group();geoCable.name='energy-geothermal-output-cable';C.add(geoCable);electricity(geoCable,[[2.88,1.3,-1.35],[3.12,1.3,-1.35],[3.12,.35,-1.35],[4.6,.35,.65],[4.6,.35,2.1]]);
           // Rotation and glow are operation cues; the model does not predict turbine RPM or fluid temperatures.
           updaters.push(function(p){var heat=p.run.available,rejected=Math.max(0,heat-p.run.power),heatCue=cue('geothermal-heat',Math.min(1.5,.55*Math.sqrt(heat/18392)),p);
-            motion(rotorGeo,'geothermal-runner',.8*Math.sqrt(Math.max(0,p.run.power)/2515),p,.4);motion(coolingFan,'geothermal-fan',.9*Math.sqrt(rejected/15877),p,.4);
+            motion(rotorGeo,'geothermal-runner',.8*Math.sqrt(Math.max(0,p.run.power)/2515),p,.4);geoDrive.sync();
+            var coverTarget=p.inspection.cutaway?.14:1,coverOpacity=response('generator-cover',coverTarget,p,.2,false).value;
+            if(Math.abs(coverOpacity-coverTarget)<.0001){coverOpacity=coverTarget;responses['generator-cover']=coverTarget;}
+            var cutawayFraction=(1-coverOpacity)/.86;geoDrive.cover.material.opacity=coverOpacity;geoDrive.cover.material.depthWrite=coverOpacity===1;geoDrive.assembly.shell.material.opacity=.28-.20*cutawayFraction;geoDrive.assembly.rotor.userData.cutawayFraction=cutawayFraction;
+            var coolingResponse=motion(coolingFan,'geothermal-fan',.9*Math.sqrt(rejected/15877),p,.4);geoCooling.update(p,rejected,coolingResponse);
             rotorGeo.userData.outputPower=p.run.power;coolingFan.userData.rejectedHeat=rejected;workingFluid.userData.thermalPower=heat;
             glow(geothermalHeat,'#ef7b35',cue('geothermal-reservoir',Math.max(0,p.run.settings.hot-40)/300,p));glow(exchanger,'#d87835',heatCue);geothermalCoils.forEach(function(coil){glow(coil,'#dd7b37',heatCue);});});
           label('1  Production / reinjection',-2.7,4,0);label('2  Heat exchanger',.5,3.2,0);label('3  Binary power block',3.5,3,-1.5);
@@ -3378,18 +6657,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             box(mirrorGroup,0,.056,0,.012,.006,.85,'#78989e');box(mirrorGroup,0,.056,0,.9,.006,.012,'#78989e');
             mirror.material.roughness=.14;mirror.material.metalness=.62;mirrorGroup.name='energy-csp-mirror-'+n;mirrors.push(mirrorGroup);
             cylinder(field,x,.28,z,.045,.5,'#b0beb9');var pivot=ball(field,x,.6,z,.085,'#879fa3');pivot.name='energy-csp-mirror-pivot-'+n;}
-          cylinder(B,.5,2.2,0,.22,4.4,'#b6c7ba');var receiver=box(B,.5,4.6,0,.8,.8,.8,'#e99c46');receiver.name='energy-csp-receiver';
-          box(B,.5,4.12,0,1.1,.11,1.1,'#a3b7ad');for(var rung=0;rung<12;rung++)box(B,.5,.3+rung*.3,.24,.24,.032,.055,'#a4bbb9');
-          ring(B,.5,4.6,0,.62,'#f5c675',.04);
+          cylinder(B,.5,2.2,0,.22,4.4,'#b6c7ba');var receiver=box(B,.5,4.6,0,.8,.8,.8,'#e99c46');receiver.name='energy-csp-receiver';var cspReceiver=cspReceiverDetail(receiver);
+          var receiverPlatform=box(B,.5,4.12,0,1.1,.11,1.1,'#a3b7ad');receiverPlatform.name='energy-csp-receiver-platform';for(var rung=0;rung<12;rung++)box(B,.5,.3+rung*.3,.24,.24,.032,.055,'#a4bbb9');
+          var receiverRing=ring(B,.5,4.6,0,.62,'#f5c675',.04);receiverRing.name='energy-csp-receiver-ring';
           var cspOptics=cspOpticalConnections(field,mirrors,receiver,A,B),cspThermal=cspThermalConnections(B,C,receiver),thermalLoop=cspThermal.group;
           cabinet(C,2.6,.9,-.3,1.4,1.7,1.2,'#d6e3d8');var solarRunner=runner(C,2.6,1.02,.48,.50,'#e9d6a5');solarRunner.name='energy-csp-turbine';ring(C,2.6,1.02,.42,.61,'#769ca7',.06);runnerReference(C,solarRunner,.61,false);
-          valve(C,1.60,.91,.20,'#e4a769');electricity(C,[[3.3,.3,0],[3.8,.3,0],[4.6,.3,2.1]]);
+          valve(C,1.60,.91,.20,'#e4a769');var cspDrive=steamDrivetrain(C,solarRunner,'csp');generatorFocus=cspDrive.group;var cspWiring=steamElectricalConnections(C,cspDrive,'csp');
           updaters.push(function(p){var targetSize=.6+.4*Math.sqrt(p.run.settings.area/10000),size=shape('csp-mirror-size',targetSize,p),heat=p.run.stages[1].value;field.userData.displaySize=size;field.userData.targetSize=targetSize;mirrors.forEach(function(mirror){mirror.scale.set(size,1,size);});
-            glow(receiver,'#bf5d14',cue('csp-heat',Math.min(1.5,.65*Math.sqrt(heat/5850)),p));receiver.userData.thermalPower=heat;thermalLoop.userData.thermalPower=heat;
-            motion(solarRunner,'csp-runner',.8*Math.sqrt(Math.max(0,p.run.power)/2047.5),p,.4);solarRunner.userData.outputPower=p.run.power;});
+            var receiverHeat=cue('csp-heat',['Sequence complete','Cycle complete','Scenario complete'].indexOf(p.run.status)!==-1?0:Math.min(1.5,.65*Math.sqrt(heat/5850)),p);cspReceiver.update(p,receiverHeat);receiver.userData.thermalPower=heat;thermalLoop.userData.thermalPower=heat;
+            motion(solarRunner,'csp-runner',.8*Math.sqrt(Math.max(0,p.run.power)/2047.5),p,.4);cspDrive.sync(p);solarRunner.userData.outputPower=p.run.power;});
           label('1  Heliostat field',-3,2.2,2.5);label('2  Tower receiver',.5,5.7,0);label('3  Power block',3.2,2.5,-.5);
         }else if(id==='wave'){
-          var ocean=new THREE.Mesh(new THREE.PlaneGeometry(12,7.6,48,24),new THREE.MeshStandardMaterial({color:'#286e91',roughness:.3,metalness:.25,side:THREE.DoubleSide}));
+          var ocean=new THREE.Mesh(new THREE.PlaneGeometry(12,7.6,96,24),new THREE.MeshStandardMaterial({color:'#286e91',roughness:.3,metalness:.25,side:THREE.DoubleSide}));
           ocean.name='energy-wave-ocean';ocean.material.color.convertSRGBToLinear();ocean.rotation.x=-Math.PI/2;ocean.position.y=1;A.add(ocean);
           var guidedWave=waveMechanism(B),buoy=guidedWave.buoy,floatRim=guidedWave.rim,buoyDeck=guidedWave.deck,beacon=guidedWave.beacon;
           var waveCabinet=cabinet(C,2,1.1,0,1.8,2,1.4,'#accad1');waveCabinet.name='energy-wave-electrical-cabinet';
@@ -3399,53 +6678,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var frontage=new THREE.Group();frontage.name='energy-wave-frontage';B.add(frontage);
           var frontageSpan=strut(frontage,[-2.5,1.1,-1],[-2.5,1.1,1],.022,'#ffe0a0'),frontageTicks=[];
           [-1,1].forEach(function(side){var tick=strut(frontage,[-2.7,1.1,side],[-2.3,1.1,side],.026,'#ffe0a0');frontageTicks.push(tick);});
-          var crests=[];for(var crest=0;crest<5;crest++){var crestGeometry=new THREE.BufferGeometry();crestGeometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(3*41),3));var crestLine=new THREE.Line(crestGeometry,new THREE.LineBasicMaterial({color:'#9adceb',transparent:true,opacity:.36}));A.add(crestLine);crests.push(crestLine);}
-          pipe(B,[[-1,.35,0],[-1,.35,2],[2,.35,2],[2,3.1,0]],'#abcad0',.10);electricity(C,[[2,.25,0],[3.4,.25,0],[4.6,.25,2.6]]);
+          var waveWater=waveSurface(A,ocean);
           // Keep electrical equipment on a fixed supported deck above the largest displayed crest.
           var waveEquipment=new THREE.Group();waveEquipment.name='energy-wave-platform-equipment';
           C.children.slice().forEach(function(object){waveEquipment.add(object);});C.add(waveEquipment);waveEquipment.position.y=2.1;
+          var waveWiring=wavePowerConnections(B,C,guidedWave,waveCabinet,load,waveEquipment,referencePower);
           var serviceDeck=box(C,3.15,2.02,1.2,5,.16,4.5,'#91a6a5');serviceDeck.name='energy-wave-service-deck';
           box(C,2,2.15,0,1.92,.1,1.52,'#718c92');
           [[.8,-.9],[5.5,-.9],[.8,3.3],[5.5,3.3]].forEach(function(point,index){var pile=cylinder(C,point[0],.96,point[1],.10,2.1,'#a8bdbb');pile.name='energy-wave-deck-pile-'+index;box(C,point[0],-.03,point[1],.42,.1,.42,'#657f86');});
           strut(C,[.8,.25,-.9],[5.5,1.94,-.9],.04,'#7e9fa6');strut(C,[5.5,.25,-.9],[.8,1.94,-.9],.04,'#7e9fa6');
-          var wavePhase=0;updaters.push(function(p){var array=ocean.geometry.attributes.position,amplitude=response('wave-amplitude',p.run.settings.height*.13,p,.28,true).value,frequency=response('wave-frequency',2*Math.PI/p.run.settings.period,p,.35,false);wavePhase=(wavePhase+frequency.delta)%(2*Math.PI);ocean.userData.phase=wavePhase;ocean.userData.amplitude=amplitude;ocean.userData.targetAmplitude=p.run.settings.height*.13;ocean.userData.angularRate=frequency.value;ocean.userData.angularTarget=frequency.target;
-            for(var i=0;i<array.count;i++){var x=array.getX(i);array.setZ(i,Math.sin(x*.9-wavePhase)*amplitude);}
-            array.needsUpdate=true;ocean.geometry.computeVertexNormals();guidedWave.place(1.25+Math.sin(-.9-wavePhase)*amplitude);mooringCleat.position.y=buoy.position.y-.30;mooring.userData.place([-3,.03,-1.6],[-1.62,mooringCleat.position.y,-.50]);waveTravel.place(buoy.position.y,amplitude);
-            var halfWidth=shape('wave-frontage',p.run.settings.width*.125,p),frontageY=1.06+Math.sin(-2.25-wavePhase)*amplitude;frontageSpan.userData.place([-2.5,frontageY,-halfWidth],[-2.5,frontageY,halfWidth]);frontageTicks.forEach(function(tick,index){var z=(index?1:-1)*halfWidth;tick.userData.place([-2.7,frontageY,z],[-2.3,frontageY,z]);});frontage.userData.frontage=p.run.settings.width;frontage.userData.displayHalfWidth=halfWidth;frontage.userData.targetHalfWidth=p.run.settings.width*.125;
+          updaters.push(function(p){var surface=waveWater.update(p),amplitude=surface.amplitude;guidedWave.place(surface.heightAt(-1)+.25);mooringCleat.position.y=buoy.position.y-.30;mooring.userData.place([-3,.03,-1.6],[-1.62,mooringCleat.position.y,-.50]);waveTravel.place(buoy.position.y,amplitude);
+            var halfWidth=shape('wave-frontage',p.run.settings.width*.125,p),frontageY=surface.heightAt(-2.5)+.06;frontageSpan.userData.place([-2.5,frontageY,-halfWidth],[-2.5,frontageY,halfWidth]);frontageTicks.forEach(function(tick,index){var z=(index?1:-1)*halfWidth;tick.userData.place([-2.7,frontageY,z],[-2.3,frontageY,z]);});frontage.userData.frontage=p.run.settings.width;frontage.userData.displayHalfWidth=halfWidth;frontage.userData.targetHalfWidth=p.run.settings.width*.125;
             glow(beacon,'#ef8856',p.run.power>0?.45:0);glow(wavePowerDisplay,'#4edcb9',cue('wave-output',Math.min(1.25,.5*Math.sqrt(Math.max(0,p.run.power)/37.68)),p));wavePowerDisplay.userData.outputPower=p.run.power;
-            crests.forEach(function(line,index){var vertices=line.geometry.attributes.position;for(var i=0;i<41;i++){var x=-6+i*.3;vertices.setXYZ(i,x,1.025+Math.sin(x*.9-wavePhase)*amplitude,-3.2+index*1.6);}vertices.needsUpdate=true;line.geometry.computeBoundingSphere();});});
+          });
           label('1  Surface waves',-3.6,3,-1);label('2  Heaving buoy',-1,3,1);label('3  Power take-off',2.6,3,-.5);
         }else if(id==='biomass'){
           var hopper=box(A,-3.7,.75,0,2.1,1.4,2.2,'#96815b');for(var n=0;n<10;n++){var pellet=cylinder(A,-4.2+(n%3)*.5,1.4+Math.floor(n/3)*.12,-.6+(n%4)*.4,.13,.43,n%2?'#c19c62':'#d7b77a');pellet.rotation.z=.65+n*.49;}
           box(A,-3.7,1.48,-1.09,2.2,.10,.12,'#b6bfa7');box(A,-3.7,1.48,1.09,2.2,.10,.12,'#b6bfa7');[-4.7,-2.7].forEach(function(x){box(A,x,1.48,0,.12,.10,2.2,'#b6bfa7');});
-          var feedStream=new THREE.Group();feedStream.name='energy-biomass-feed-stream';A.add(feedStream);
-          var feed=pipe(feedStream,[[-3.7,.8,0],[-2,.8,0],[-1,1.2,0]],'#9caa9f',.20);particles(feedStream,feed,'#f4d999',function(p){return p.run.settings.feed>0;},function(p){return .04*p.run.settings.feed/500;});
-          box(B,-.7,1.45,0,2,2.8,2.1,'#879fa4');box(B,-.7,.78,1.06,1.45,1.15,.035,'#293d43');var fire=new THREE.Group();fire.name='energy-biomass-fire';fire.position.set(-.7,.47,1.20);B.add(fire);
-          for(var flame=0;flame<3;flame++){var tongue=mesh(fire,new THREE.ConeGeometry(.16,flame===1?.8:.5,8),flame===1?'#ffcc6e':'#ee8c45',(flame-1)*.19,flame===1?.4:.25,0);glow(tongue,'#ed741d',.8);}
+          hopper.name='energy-biomass-hopper';var boilerBody=box(B,-.7,1.45,0,2,2.8,2.1,'#879fa4');boilerBody.name='energy-biomass-boiler';box(B,-.7,.78,1.06,1.45,1.15,.035,'#293d43');var combustion=biomassCombustion(B),fire=combustion.group;
           cylinder(B,-1,3.5,-.6,.2,2.3,'#859293');var chimneyLip=ring(B,-1,4.66,-.6,.22,'#a3b4ae',.035);chimneyLip.rotation.x=Math.PI/2;
           box(B,-.7,.18,1.11,1.5,.14,.32,'#5b7477');valve(B,.31,1.40,0,'#d9a166');
           for(var grate=0;grate<5;grate++)box(B,-1.2+grate*.25,.45,1.49,.045,.35,.045,'#607577');
           var boilerCoils=[];for(var boilerTube=0;boilerTube<4;boilerTube++){var coilPath=pipe(B,[[-1.25,1.5+boilerTube*.25,1.1],[-.7,1.63+boilerTube*.25,1.18],[-.15,1.5+boilerTube*.25,1.1]],'#d2b381',.055);B.children.forEach(function(o){if(o.geometry&&o.geometry.type==='TubeGeometry'&&o.geometry.parameters.path===coilPath)boilerCoils.push(o);});}
-          var steamStream=new THREE.Group();steamStream.name='energy-biomass-steam-stream';B.add(steamStream);
-          var steam=pipe(steamStream,[[0,2.5,0],[1.8,2.5,0],[2.3,1.2,0]],'#d1e3dd',.13);particles(steamStream,steam,'#f8f9e3',function(p){return p.run.stages[1].value>0;},function(p){return .035*Math.sqrt(p.run.stages[1].value/(4000/3));});
-          var steamRotor=runner(C,2.5,1.1,.6,.6,'#d9ede3');steamRotor.name='energy-biomass-turbine';box(C,2.5,.6,-.2,1.5,1.1,1.4,'#557f8d');runnerReference(C,steamRotor,.73,true);electricity(C,[[2.5,.25,0],[3.5,.25,0],[4.6,.25,2.6]]);
-          var flamePhase=0;updaters.push(function(p){var fuel=p.run.available,heat=p.run.stages[1].value,heatCue=cue('biomass-flame',Math.min(2.2,Math.sqrt(fuel/(5000/3))),p),steamCue=cue('biomass-steam',Math.min(1.2,.35*Math.sqrt(heat/(4000/3))),p),dt=p.dt||0;
-            if(fuel>0)flamePhase+=dt*2.3;fire.visible=fuel>0;fire.scale.set(.55+.22*heatCue,(.35+.34*heatCue)*(1+.045*Math.sin(flamePhase)),.4);fire.userData.chemicalPower=fuel;
-            fire.children.forEach(function(tongue){glow(tongue,'#ed741d',Math.min(1.5,.5*heatCue));});boilerCoils.forEach(function(coil){glow(coil,'#c78949',steamCue);});
-            motion(steamRotor,'biomass-runner',.8*Math.sqrt(Math.max(0,p.run.power)/(1000/3)),p,.4);steamRotor.userData.outputPower=p.run.power;steamStream.userData.thermalPower=heat;feedStream.userData.massFlow=p.run.settings.feed;});
+          var biomassHousing=new THREE.Group();biomassHousing.name='energy-biomass-turbine-housing';biomassHousing.position.set(2.5,1.1,.15);C.add(biomassHousing);
+          var biomassCasing=cylinder(biomassHousing,0,0,0,.70,.70,'#80a3ab');biomassCasing.rotation.x=Math.PI/2;biomassCasing.name='energy-biomass-turbine-casing';
+          var steamRotor=runner(C,2.5,1.1,.6,.6,'#d9ede3');steamRotor.name='energy-biomass-turbine';var biomassPlinth=box(C,2.5,.225,-.2,1.5,.35,1.4,'#557f8d');biomassPlinth.name='energy-biomass-turbine-plinth';runnerReference(C,steamRotor,.73,true);
+          var biomassDrive=steamDrivetrain(C,steamRotor,'biomass');generatorFocus=biomassDrive.group;
+          var biomassPaths=biomassConnections(A,B,C,hopper,boilerBody,biomassHousing),steamStream=biomassPaths.steam.group;
+          var biomassWiring=steamElectricalConnections(C,biomassDrive,'biomass');
+          updaters.push(function(p){var heat=p.run.stages[1].value,steamCue=cue('biomass-steam',Math.min(1.2,.35*Math.sqrt(heat/(4000/3))),p);
+            boilerCoils.forEach(function(coil){glow(coil,'#c78949',steamCue);});
+            motion(steamRotor,'biomass-runner',.8*Math.sqrt(Math.max(0,p.run.power)/(1000/3)),p,.4);biomassDrive.sync(p);steamRotor.userData.outputPower=p.run.power;steamStream.userData.thermalPower=heat;});
           label('1  Fuel hopper',-3.7,2.7,0);label('2  Boiler',-.8,4.9,0);label('3  Steam turbine',2.7,2.7,.6);
         }else{
           var storageSupply=cabinet(A,-4,1,0,1.4,2,1.3,'#a7bace');storageSupply.name='energy-storage-supply';box(A,-4,1.5,.67,.8,.4,.04,'#5d9eba');
-          var chargingLamp=ball(A,-4,1.84,.71,.07,'#9aafa3');chargingLamp.name='energy-storage-charge-lamp';
+          var chargingLamp=ball(A,-4,1.84,.71,.07,'#9aafa3');chargingLamp.name='energy-storage-charge-lamp';storageCooling(A,-4,.75,.72,'charge');
           for(var n=0;n<3;n++){var x=-1.5+n*1.05,rack=box(B,x,1.3,0,.86,2.6,1.3,'#6c8c94',.33);rack.name='energy-storage-rack-'+n;rack.material.depthWrite=false;storageTransferIndicator(B,x,n);
             box(B,x,.08,0,.97,.15,1.48,'#b9cbc3');[-.35,.35].forEach(function(offset){box(B,x+offset,1.3,-.68,.055,2.6,.055,'#b0c7c6');});
             box(B,x,2.65,0,.92,.12,1.35,'#bbd1d0');var positivePost=box(B,x-.2,2.79,0,.13,.17,.18,'#de9b67'),negativePost=box(B,x+.2,2.79,0,.13,.17,.18,'#a5cadd');positivePost.name='energy-storage-positive-terminal-'+n;negativePost.name='energy-storage-negative-terminal-'+n;
             [-.2,.2].forEach(function(offset){box(B,x+offset,2.79,.095,.075,.018,.008,'#253c43');});box(B,x-.2,2.79,.095,.018,.075,.008,'#253c43');
-            for(var cellLevel=0;cellLevel<5;cellLevel++){box(B,x,.33+cellLevel*.46,.67,.74,.025,.025,'#adc9c6');box(B,x-.35,.33+cellLevel*.46,.68,.035,.16,.04,'#c7ded8');}
-            var fill=box(B,x,.15,.05,.68,.1,1.05,'#55d7a3');fill.name='energy-storage-fill-'+n;(function(m){updaters.push(function(p){var ht=Math.max(0,p.run.extra.soc)/100*2.3;m.visible=ht>0;m.scale.y=ht/.1;m.position.y=.15+ht/2;m.material.color.set(p.run.extra.soc<20?'#dfb462':'#55d7a3').convertSRGBToLinear();glow(m,p.run.extra.soc<20?'#af7a30':'#23865f',.3);});})(fill);}
+            storageRackModules(B,x,n);}
           storageBus(B);
           var storageInverter=cabinet(C,2.8,1,0,1.2,1.9,1.4,'#d9e7df');storageInverter.name='energy-storage-inverter';
-          var dischargeLamp=ball(C,2.8,1.68,.75,.07,'#9aafa3');dischargeLamp.name='energy-storage-discharge-lamp';
+          var dischargeLamp=ball(C,2.8,1.68,.75,.07,'#9aafa3');dischargeLamp.name='energy-storage-discharge-lamp';storageCooling(C,2.8,.8,.77,'discharge');
           updaters.push(function(p){glow(chargingLamp,'#55ddad',cue('storage-charge',p.run.available>0?p.run.available/(p.run.available+50)*1.8:0,p));glow(dischargeLamp,'#f8d784',cue('storage-discharge',p.run.power>0?p.run.power/(p.run.power+50)*1.8:0,p));chargingLamp.userData.power=p.run.available;dischargeLamp.userData.power=p.run.power;});
           var storageWiring=storageConnections(A,B,C);
           label('1  Charging supply',-4,3,0);label('2  Stored energy',-.4,3.7,0);label('3  Inverter & load',3.4,3,1.1);
@@ -3480,6 +6755,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             object.children.forEach(visit);}
           // Frame the generator assembly independently of its switchgear and distant load.
           if(key==='generator'&&focusDetail&&generatorFocus){visit(generatorFocus);return points;}
+          // A receiver inspection frames the absorber and its instrument, rather than the full tower.
+          if(key==='converter'&&id==='solarThermal'){[receiver,receiverPlatform,receiverRing].forEach(visit);return points;}
           Object.keys(groups).forEach(function(k){if(!key||k===key)visit(groups[k]);});if(!key&&context.visible)visit(context);return points;
         }
         fitView=function(key){
@@ -3525,16 +6802,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           }catch(error){fail();return null;}
         }
         bind(renderer.domElement,'webglcontextlost',function(e){e.preventDefault();fail();});
+        // Replace the old setHovered/pointerdown/pointermove/pointerEnd/pointerleave block.
+        // Keep the immediately following dblclick/hitAt behavior unchanged.
+        // Replace `drag=null` with `resetPointerGesture=null` in the outer scene effect declaration.
+        // In effect cleanup, after setting disposed=true and before renderer disposal, call:
+        // if(resetPointerGesture)resetPointerGesture();
+        // This releases mouse/pen capture without updating unmounted React hover state.
+        // The parent integration sets canvas touch-action:pan-y pinch-zoom and updates the visible hint.
+        var pointerGesture=null;
         function setHovered(part){if(hoverPart===part)return;hoverPart=part;hoveredState[1](part);dirty=true;}
-        bind(renderer.domElement,'pointerdown',function(e){if(!active()||e.button!==0)return;setHovered(null);drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,touch:e.pointerType==='touch',moved:false};if(!drag.touch)renderer.domElement.setPointerCapture(e.pointerId);});
-        bind(renderer.domElement,'pointermove',function(e){if(!active())return;if(!drag){if(e.pointerType!=='touch'){var hit=hitAt(e);setHovered(hit?hit.object.userData.component:null);renderer.domElement.style.cursor=hit?'pointer':'grab';}return;}if(drag.touch)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;
-          if(Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>5)drag.moved=true;
-          if(drag.moved){frameHold[1](true);renderer.domElement.style.cursor='grabbing';view.name='custom';view.yaw=((view.yaw-dx*.006)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);view.pitch=Math.max(0,Math.min(Math.PI/2,view.pitch+dy*.006));position();}drag.x=e.clientX;drag.y=e.clientY;});
-        function pointerEnd(e){if(!active()){drag=null;return;}if(!drag)return;var moved=drag.moved||Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>8;drag=null;renderer.domElement.style.cursor='grab';if(moved||e.type==='pointercancel')return;
-          var hit=hitAt(e);if(hit)live.current.onPick(hit.object.userData.component);
+        function applyPointerGesture(type,e,canStart){
+          var result=rnEnergyPointerGesture(pointerGesture,active()?type:'reset',e?{
+            id:e.pointerId,pointerType:e.pointerType,x:e.clientX,y:e.clientY,
+            button:e.button,isPrimary:e.isPrimary,canStart:canStart
+          }:null);
+          // releasePointerCapture can synchronously dispatch lostpointercapture.
+          // Commit the finished state first so that event is harmless and cannot select anything.
+          pointerGesture=result.state;
+          var owner=pointerGesture.owner;
+          renderer.domElement.dataset.pointerGesture=pointerGesture.suppressed?'suppressed':owner?owner.intent:'idle';
+          renderer.domElement.dataset.pointerTouchCount=String(pointerGesture.touches.length);
+          renderer.domElement.dataset.pointerOwner=owner?owner.pointerType:'';
+          if(result.clearHover&&active())setHovered(null);
+          if(!owner)renderer.domElement.style.cursor='grab';
+          if(result.release!==null){
+            try{if(renderer.domElement.hasPointerCapture(result.release))renderer.domElement.releasePointerCapture(result.release);}catch(error){}
+          }
+          if(result.capture!==null){
+            try{renderer.domElement.setPointerCapture(result.capture);}catch(error){}
+          }
+          if(!active())return;
+          if(result.orbit){
+            frameHold[1](true);renderer.domElement.style.cursor='grabbing';view.name='custom';
+            view.yaw=((view.yaw-result.orbit.dx*.006)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+            view.pitch=Math.max(0,Math.min(Math.PI/2,view.pitch+result.orbit.dy*.006));position();
+          }
+          if(result.hover){
+            var hoverHit=hitAt(e);setHovered(hoverHit?hoverHit.object.userData.component:null);
+            renderer.domElement.style.cursor=hoverHit?'pointer':'grab';
+          }
+          if(result.pick){var hit=hitAt(e);if(hit)live.current.onPick(hit.object.userData.component);}
         }
-        bind(renderer.domElement,'pointerleave',function(){setHovered(null);if(!drag)renderer.domElement.style.cursor='grab';});
-        bind(renderer.domElement,'pointerup',pointerEnd);bind(renderer.domElement,'pointercancel',pointerEnd);
+        resetPointerGesture=function(){applyPointerGesture('reset');};
+        renderer.domElement.dataset.pointerGesture='idle';
+        renderer.domElement.dataset.pointerTouchCount='0';
+        renderer.domElement.dataset.pointerOwner='';
+        bind(renderer.domElement,'pointerdown',function(e){
+          if(e.pointerType!=='touch')applyPointerGesture('down',e,true);
+        });
+        bind(renderer.domElement,'pointermove',function(e){
+          if(e.pointerType!=='touch')applyPointerGesture('move',e);
+        });
+        // Observe native touch events without explicit pointer capture or preventDefault. Capture-phase observation
+        // catches a second finger outside the canvas, plus implicit-capture up/cancel events.
+        bind(window,'pointerdown',function(e){
+          if(e.pointerType!=='touch')return;
+          var onCanvas=e.target===renderer.domElement;
+          if(onCanvas||(pointerGesture&&(pointerGesture.touches.length||(pointerGesture.owner&&pointerGesture.owner.pointerType==='touch'))))applyPointerGesture('down',e,onCanvas);
+        },true);
+        bind(window,'pointermove',function(e){
+          if(e.pointerType==='touch'&&pointerGesture&&pointerGesture.touches.indexOf(e.pointerId)!==-1)applyPointerGesture('move',e);
+        },true);
+        bind(window,'pointerup',function(e){applyPointerGesture('up',e);},true);
+        bind(window,'pointercancel',function(e){applyPointerGesture('cancel',e);},true);
+        bind(renderer.domElement,'lostpointercapture',function(e){applyPointerGesture('lost',e);});
+        bind(renderer.domElement,'pointerleave',function(){
+          setHovered(null);if(!pointerGesture||!pointerGesture.owner)renderer.domElement.style.cursor='grab';
+        });
+        bind(window,'blur',resetPointerGesture);
+        bind(document,'visibilitychange',function(){if(document.hidden)resetPointerGesture();});
         bind(renderer.domElement,'dblclick',function(e){if(!active())return;var hit=hitAt(e);if(!hit)return;e.preventDefault();var part=hit.object.userData.component;live.current.onPick(part);focusTarget=part;focusDetail=hasGeneratorDetail&&part==='generator'&&!!live.current.inspection.cutaway;fitPending=true;dirty=true;});
         resize=function(){if(!active())return;var w=container.clientWidth||700,ht=container.clientHeight||440,aspect=w/ht,halfY=Math.max(5.8,8/aspect);viewport.width=w;viewport.height=ht;
           camera.left=-halfY*aspect;camera.right=halfY*aspect;camera.top=halfY;camera.bottom=-halfY;camera.updateProjectionMatrix();renderer.setSize(w,ht,false);fitPending=true;dirty=true;};
@@ -3557,7 +6893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var inspection=p.inspection,inspectionKey=inspection.layout+'|'+inspection.isolated+'|'+inspection.labels+'|'+p.selected+'|'+inspection.readings;
           Object.keys(groups).forEach(function(key,index){var offset=inspection.layout==='exploded'?(index-1)*3.4:0,lift=inspection.layout==='exploded'&&index===1?.8:0,g=groups[key],label=labels[key];g.position.set(offset,lift,0);g.visible=g.visible&&(!inspection.isolated||key===p.selected);label.position.set(label.userData.origin[0]+offset,label.userData.origin[1]+lift,label.userData.origin[2]);label.visible=inspection.labels&&(!inspection.isolated||key===p.selected);});
           context.visible=!inspection.isolated;
-          if(storageWiring||cspOptics||cspThermal||pvOptics||pvWiring){scene.updateMatrixWorld(true);if(storageWiring)storageWiring.update();if(cspOptics)cspOptics.update();if(cspThermal)cspThermal.update();if(pvOptics)pvOptics.update();if(pvWiring)pvWiring.update();}
+          if(storageWiring||cspOptics||cspThermal||pvOptics||pvWiring||geothermalLoop||geothermalPrimary||biomassPaths||waveWiring||rotorWiring||hydroCircuit){scene.updateMatrixWorld(true);if(storageWiring)storageWiring.update();if(cspOptics)cspOptics.update();if(cspThermal)cspThermal.update();if(pvOptics)pvOptics.update();if(pvWiring)pvWiring.update();if(geothermalLoop)geothermalLoop.update();if(geothermalPrimary)geothermalPrimary.update();if(biomassPaths)biomassPaths.update();if(waveWiring)waveWiring.update();if(rotorWiring)rotorWiring.update();if(hydroCircuit)hydroCircuit.update();}
           markerUpdaters.forEach(function(update){update(visualProps);});
           var dimensionKeys={solarPv:['area','incidence'],wind:['radius'],tidal:['radius'],hydro:['head'],solarThermal:['area'],wave:['height','width'],biomass:['feed','heating']}[id]||[],dimensions=dimensionKeys.map(function(key){return p.run.settings[key];}).join('|');
           if(dimensions!==lastDimensions){lastDimensions=dimensions;if(!p.holdFraming)fitPending=true;}
@@ -3577,32 +6913,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           container.setAttribute('data-inspection-labels',String(inspection.labels));container.setAttribute('data-inspection-readings',String(inspection.readings));
           container.setAttribute('data-motion-mode',reducedMotion?'reduced':animate?'preview':'paused');container.setAttribute('data-response-state',responseSettling?'settling':'steady');container.setAttribute('data-dimension-response',dimensionSettling?'settling':'steady');container.setAttribute('data-traced-component',inspection.trace?p.selected:'none');
           pickables.forEach(function(m){if(m.material.emissive&&!m.userData.energyGlow){m.material.emissive.set(m.userData.component===hoverPart?'#497fa3':m.userData.component===p.selected?'#206852':'#000000');m.material.emissiveIntensity=m.userData.component===hoverPart?.45:inspection.trace&&m.userData.component===p.selected?.52:.25;}});
-          container.setAttribute('data-hovered-component',hoverPart||'none');container.setAttribute('data-focused-component',focusTarget||'none');container.setAttribute('data-camera-detail',focusDetail&&focusTarget==='generator'?'generator':'none');
+          container.setAttribute('data-hovered-component',hoverPart||'none');container.setAttribute('data-focused-component',focusTarget||'none');container.setAttribute('data-camera-detail',focusDetail&&focusTarget==='generator'?'generator':focusTarget==='converter'&&id==='solarThermal'?'receiver':'none');
           renderer.render(scene,camera);container.setAttribute('data-energy-scene-id',id);
+          var feedbackMode=dimensionSettling?'geometry':driveMotion.coasting?'coasting':responseSettling?'motion':'steady';
+          if(active()&&(lastFeedbackMode!==feedbackMode||lastFeedbackKey!==p.feedbackKey)){lastFeedbackMode=feedbackMode;lastFeedbackKey=p.feedbackKey;feedbackState[1]({id:id,mode:feedbackMode,key:p.feedbackKey});}
           }catch(error){fail();}
         }
         if(!failed){raf=requestAnimationFrame(frame);statusState[1]('ready');}
       }).catch(fail);
-      return function(){disposed=true;cancelAnimationFrame(raf);api.current=null;
-        if(observer)observer.disconnect();if(intersection)intersection.disconnect();listeners.forEach(function(v){v[0].removeEventListener(v[1],v[2]);});release();
+      return function(){disposed=true;cancelAnimationFrame(raf);api.current=null;if(resetPointerGesture)resetPointerGesture();
+        if(observer)observer.disconnect();if(intersection)intersection.disconnect();listeners.forEach(function(v){v[0].removeEventListener(v[1],v[2],v[3]);});release();
         if(renderer){renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();}
       };
     },[props.id,retry[0]]);
-    var responseGuide={solarPv:'The supports, sunlight and DC cable follow panel area and angle. At grazing incidence, intercepted light and electrical flow stop. Separate gold paths carry DC from the array to the inverter and AC to the load; their marks follow the corresponding power readings. Module efficiency and cell temperature change electrical output without changing incoming light.',wind:'Rotor size follows radius; larger rotors turn more slowly at the same wind speed. The generator strip shows delivered power as a fraction of its rating: amber means the rating is reached; orange marks protective shutdown.',tidal:'Stream arrows follow the selected current immediately; the rotor slows through a change of direction. Larger rotors turn more slowly. Rotor clearance follows radius; the generator strip shows delivered power relative to its rating.',hydro:'The gold bracket follows water head. Flow opens the inlet gate and moves the water; head and flow smoothly change the shared runner and generator rotation. Gold flow marks carry electricity from the generator through the switchgear to the load. Efficiency changes electrical output without changing hydraulic motion.',geothermal:'Well circulation follows fluid flow. Extracted heat drives the separate working-fluid loop and turbine; the cooling fan responds to rejected heat.',solarThermal:'Mirror area changes the collecting surfaces and reflected beam footprint. Sunlight strength changes ray brightness. Orange flow carries heat from the receiver to the power block; blue flow returns to the receiver. The connected pipes brighten with delivered heat, while the turbine and output light follow electricity.',wave:'Height changes the travel range; period changes the motion cycle. The buoy and upper collar slide along the fixed central post. The gold ruler marks selected capture frontage on a compressed scale. Electrical equipment stays on a supported deck above the crests. The unnumbered travel guide shows the illustrated heave range; its pointer follows the buoy. Buoy size stays fixed; frontage and efficiency change mean output.',biomass:'Feed rate moves fuel; feed and heating value change the flame. Boiler efficiency changes useful steam heat, while steam-cycle efficiency changes electrical output.',storage:'The fill is the exact stored fraction at the selected minute. Rack indicators move down while charging and up while discharging; brightness follows actual transfer power. They show the bank direction, not individual rack power. Gold paths connect the supply, bank, inverter and load. Separate positive and negative rails connect all three racks. Preview motion does not charge or empty the battery.'}[props.id];
+    var pvReference=props.id==='solarPv'&&!sequenceComplete?props.run.extra.referenceDc*.96:0,pvDifference=props.id==='solarPv'?props.run.power-pvReference:0;
+    var responseGuide={solarPv:'The supports, sunlight and DC cable follow panel area and angle. At grazing incidence, intercepted light and electrical flow stop. Separate gold paths carry DC from the array to the inverter and AC to the load; their marks follow the corresponding power readings. Module efficiency and cell temperature change electrical output without changing incoming light. The front gauge shows selected cell temperature on a fixed −20 to 85°C scale; its brass tick marks 25°C. The inverter’s upper green bar shows actual output and its lower gold bar shows output at 25°C under the same sunlight, area and angle. Their shared relative scale follows the 25°C reference, so compare their lengths with each other; brightness and the gold cable follow power. Both bars switch off without intercepted sunlight. The temperature needle and relative comparison ease together during animation; this illustrates a setting change, not predicted heating or cooling.',wind:'Air streams surround the swept disk and follow its size and height without stretching their markers. Their travel smoothly follows wind speed, including during protective shutdown when air still moves past the slowing or stopped rotor. At zero output, the rotor, shaft and generator core ease to rest together while the gold electrical flow and load bar stop immediately. This brief coast illustrates a control change; it is not a calculated braking time and adds no electricity. Rotor size follows radius; larger rotors turn more slowly at the same wind speed. Gold cables carry electricity from the nacelle through the output cabinet to the load. The generator strip shows delivered power as a fraction of its rating: amber means the rating is reached; orange marks protective shutdown and electrical flow stops.',tidal:'Current streams surround the swept disk and follow its size and height without stretching their markers. Their travel smoothly follows current strength. Stream arrows follow the selected current direction immediately; the rotor slows through a change of direction. At slack water, the rotor, shaft and generator core ease to rest together while the gold electrical flow stops immediately. This brief coast illustrates a control change; it is not a calculated braking time and adds no electricity. Larger rotors turn more slowly. Rotor clearance and the attached generator cable follow radius. Gold flow travels from the nacelle through the output cabinet to the load in either current direction; it stops at zero output. The generator strip shows delivered power relative to its rating.',hydro:'The gold bracket and screened intake follow water head. Connected translucent pipes show water entering the top of the runner and leaving its side into the tailrace. Both pipes share an illustrative travel speed set by water flow; head changes their shape without changing that speed. The inline butterfly valve and its lever smoothly open with selected flow and close when flow stops. Head and flow smoothly change the shared runner and generator rotation. Gold flow marks carry electricity from the generator through the switchgear to the load. Efficiency changes electrical output without changing hydraulic motion.',geothermal:'Well circulation follows the selected fluid flow, with equal travel speed in the primary pipes. The connected production and reinjection routes meet the front of the exchanger. Translucent pipe walls expose the circulation markers. Pipe tints and the two unnumbered well gauges share a 40–300°C scale and follow the selected temperatures, even when circulation stops. The separate working-fluid circuit carries heat from the exchanger through the turbine and condenser, then returns to the exchanger. Its markers remain visible through the pipe walls and smoothly follow extracted heat. Their travel speed stays consistent when the layout expands; it illustrates heat transfer, not measured fluid velocity. The turbine, coupling and generator core turn together as electrical output changes. Open the generator cutaway to see the rotating core inside stationary windings; the shared motion is illustrative, not measured RPM. The gold cable starts at the generator terminal. The housed cooling fan and upward air marks share one smooth response to rejected heat. More efficient generation reduces this cooling activity while increasing electrical output. The stationary guard stays fixed as the five fan blades turn. Air marks fade at the outlet and stop when no heat is rejected; they illustrate cooling activity, not measured air velocity or temperature. The return-pipe glow also follows rejected heat, and the cooled return passes behind the generator supports.',solarThermal:'Mirror area changes the collecting surfaces and reflected beam footprint. Sunlight strength changes ray brightness. The dark receiver and fixed absorber tubes share a smooth warmth cue for useful heat; this illustrates energy transfer, not receiver temperature, warm-up or local light concentration. The instrument below the receiver compares the same incoming sunlight in two tracks: gold shows the whole input; orange shows useful heat and the muted remainder shows optical and receiver losses. Their relative lengths share one scale and change smoothly with optical efficiency; brightness follows collected sunlight. The active bars and warmth stop without input or at completion. Cycle efficiency acts downstream without changing the receiver split. Orange flow carries heat from the receiver to the power block; blue flow returns to the receiver. Translucent pipe walls expose the moving markers. Their travel smoothly follows delivered heat and stays consistent when the layout expands; it illustrates heat transfer, not measured fluid velocity. The pipes brighten with delivered heat, while the turbine, coupling and generator core turn together in response to electrical output. Open the generator cutaway to inspect the rotating core inside fixed windings. Gold flow starts at the generator terminal and follows electricity; cycle efficiency changes this output without changing heat arriving from the receiver.',wave:'Height changes the travel range. Longer periods give slower heave cycles and wider-spaced crests that travel faster once the new setting settles. Crest highlights move across the water; spacing and height are compressed for this regular-wave illustration. Period changes preserve the buoy’s local phase while the water shape adjusts smoothly. The buoy and marked upper collar slide along the fixed central post. Gold cables connect the fixed PTO terminal, platform cabinet and load; their marks show mean electrical output, so they keep the same direction on both buoy strokes. The gold ruler marks selected capture frontage on a compressed scale. Electrical equipment stays on a supported deck above the crests. The unnumbered travel guide shows the illustrated heave range; its pointer follows the buoy. Buoy size stays fixed; frontage and efficiency change mean output.',biomass:'Feed rate turns the visible feed screw; its rotation illustrates fuel delivery, not measured RPM. Flame size and ember brightness smoothly follow fuel chemical power; individual tips bend above the fixed grate. Feed and heating value change this cue, while boiler and cycle efficiency act downstream. Flames illustrate combustion, not temperature or burn timing. The translucent steam pipe brightens with useful boiler heat. Its visible markers smoothly follow that heat input and keep a consistent travel speed when the layout expands; they illustrate heat transfer, not measured steam velocity. Steam-cycle efficiency changes the shared turbine, coupling and generator motion and electrical output without changing fuel delivery or steam input. Open the generator cutaway to inspect the rotating core inside stationary windings. Gold flow starts at the generator terminal and follows electrical output.',storage:'Fixed battery modules sit behind each rack cover. The narrow front gauge repeats the exact bank state of charge at the selected minute; the modules keep their size. Supply and inverter cooling fans and outward air marks share one smooth response to active conversion loss. Higher round-trip efficiency reduces this cooling activity; it stops at zero loss, including ideal 100% efficiency. Air marks spread gently from each fixed guard and fade along their route. Fan speed and air travel illustrate cooling activity, not measured RPM, airflow, battery temperature or extra fan electricity use. Rack indicators move down while charging and up while discharging; brightness follows actual transfer power. They show the bank direction, not individual rack power. Gold paths connect the supply, bank, inverter and load. Separate positive and negative rails connect all three racks. Preview motion does not charge or empty the battery.'}[props.id];
     return h('div',{className:'rn-energy-scene',style:{'--re-scene-accent':RN_ENERGY_VISUALS[props.id].color}},
-      h('style',null,'.rn-energy-motion-speed{display:flex;align-items:center;gap:7px;color:#c8e3de;font-size:11px}.rn-energy-motion-speed select{min-height:36px;border:1px solid #779297;border-radius:6px;padding:5px;background:#173c4a;color:#eff9f6}.rn-energy-camera button[aria-pressed=true]{background:#d8f4e9;color:#163d35}'),
+      h('style',null,'.rn-energy-response-feedback{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 16px;border-bottom:1px solid #63828b;background:#14313c;color:#c8e3de}.rn-energy-response-feedback>div{min-width:0}.rn-energy-response-feedback strong{display:block;color:#e2fff0;font-size:12px;line-height:1.5}.rn-energy-response-feedback p{margin:3px 0 0!important;font-size:11px;line-height:1.5;overflow-wrap:anywhere;color:#c8e3de}.rn-energy-response-symbol{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border:1px solid #7faaa5;border-radius:50%;color:#a1ebcb;font-size:19px}.rn-energy-response-feedback[data-illustration-response=geometry],.rn-energy-response-feedback[data-illustration-response=motion],.rn-energy-response-feedback[data-illustration-response=coasting]{background:#343329}.rn-energy-response-feedback[data-illustration-response=geometry] .rn-energy-response-symbol,.rn-energy-response-feedback[data-illustration-response=motion] .rn-energy-response-symbol,.rn-energy-response-feedback[data-illustration-response=coasting] .rn-energy-response-symbol{color:#ffe2a2;border-color:#cbb478}.rn-energy-response-feedback[data-illustration-response=geometry] strong,.rn-energy-response-feedback[data-illustration-response=motion] strong,.rn-energy-response-feedback[data-illustration-response=coasting] strong{color:#ffedc5}@media(max-width:500px){.rn-energy-response-feedback{padding:12px;min-height:100px}}.rn-energy-touch-hint{display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:11px 14px;background:#163744;border-top:1px solid #63828b;border-bottom:1px solid #63828b;color:#c8e3de;font-size:11px;line-height:1.5}.rn-energy-touch-hint strong{color:#e2fff0;font-size:11px}.rn-energy-touch-hint span{display:inline-flex;align-items:center;gap:5px}.rn-energy-touch-hint b{color:#a1ebcb;font-size:17px;line-height:1}@media(max-width:480px){.rn-energy-touch-hint{gap:6px 12px}.rn-energy-touch-hint strong{flex-basis:100%}}.rn-energy-motion-speed{display:flex;align-items:center;gap:7px;color:#c8e3de;font-size:11px}.rn-energy-motion-speed select{min-height:36px;border:1px solid #779297;border-radius:6px;padding:5px;background:#173c4a;color:#eff9f6}.rn-energy-camera button[aria-pressed=true]{background:#d8f4e9;color:#163d35}'),
       h('div',{className:'rn-energy-scene-heading'},h('div',{className:'rn-energy-scene-identity'},rnEnergyIcon(React,props.id),h('div',null,h('span',null,'Interactive mechanism'),h('strong',null,rnEnergySpec(props.id).name))),h('div',{className:'rn-energy-scene-reading','aria-label':__alloT('stem.renewables.scene_electrical_output','Scene electrical output')},h('span',null,props.id==='storage'?'Discharge output':'Electrical output'),h('strong',null,Number(props.run.power).toLocaleString(undefined,{maximumFractionDigits:2})+' ',h('small',null,'kW')))),
       h('div',{className:'rn-energy-camera rn-energy-motion-controls'},h('button',{type:'button','aria-label':__alloT('stem.renewables.animate_equipment_at_current_conditions','Animate equipment at current conditions'),'aria-pressed':equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete,disabled:status!=='ready'||motionPreference[0]||sequenceComplete,onClick:function(){if(api.current)api.current('cancel-step');equipmentMotion[1](!equipmentMotion[0]);}},equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete?'Pause equipment animation':'Animate equipment'),
         h('label',{className:'rn-energy-motion-speed'},'Illustration speed',h('select',{'aria-label':__alloT('stem.renewables.illustration_speed','Illustration speed'),value:motionSpeed[0],onChange:function(e){motionSpeed[1](Number(e.target.value));}},[[.25,'Quarter speed'],[.5,'Half speed'],[1,'Normal speed']].map(function(option){return h('option',{key:option[0],value:option[0]},option[1]);}))),
         h('button',{type:'button',disabled:status!=='ready'||sequenceComplete||equipmentMotion[0]&&!motionPreference[0],onClick:function(){if(api.current)api.current('step');}},'Step illustration'),
         h('span',{style:{color:'#c8e3de',fontSize:11,alignSelf:'center'}},sequenceComplete?'Sequence complete: no additional energy flows.':motionPreference[0]?'Reduced motion: equipment stays still. Step advances the illustration by 0.1 seconds.':equipmentMotion[0]?'Slow motion helps inspect equipment response. Readings update immediately.':'Paused. Step advances the illustration by 0.1 seconds; controls still update readings.'),h('span',{style:{color:'#c8e3de',fontSize:11,flexBasis:'100%'}},'Speed and stepping apply to the 3D scene; simulation time and stored energy stay unchanged.')),
       h('div',{className:'rn-energy-camera rn-energy-trace-controls'},h('button',{type:'button',disabled:status!=='ready','aria-pressed':!!inspection.trace,onClick:function(){inspect({trace:!inspection.trace});}},'Emphasize selected stage'),hasGeneratorDetail&&h('button',{type:'button',disabled:status!=='ready','aria-pressed':!!inspection.cutaway,onClick:function(){inspect({cutaway:!inspection.cutaway});}},'Show generator cutaway'),hasGeneratorDetail&&h('button',{type:'button',disabled:status!=='ready',onClick:function(){props.onPick('generator');inspect({cutaway:true});if(api.current)api.current('inspect-generator');}},'Inspect generator'),h('span',{'data-trace-stage':inspection.trace?selected[0]:'none',style:{color:'#c8e3de',fontSize:11,alignSelf:'center',lineHeight:1.6}},inspection.trace?'Emphasizing '+selected[1]+'. Select another stage to follow its equipment and active flow.':'Select a stage, then emphasize its equipment and flow markers.')),
-      h('div',{ref:mount,className:'rn-energy-webgl',role:'group',tabIndex:status==='ready'?0:-1,'aria-label':rnEnergySpec(props.id).name+' interactive 3D mechanism. Arrow keys orbit, plus and minus zoom, Home resets, keys 1 to 3 select a component, Enter focuses it, and period steps the paused illustration. Component and camera buttons provide the same controls.','data-energy-render-status':status,onKeyDown:function(e){var action={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down','+':'in','=':'in','-':'out','_':'out',Home:'home',Enter:'focus','.':'step'}[e.key];if(e.altKey||e.ctrlKey||e.metaKey)return;if(action&&api.current){e.preventDefault();api.current(action);}else if(['1','2','3'].indexOf(e.key)!==-1){e.preventDefault();props.onPick(rnEnergySpec(props.id).components[Number(e.key)-1][0]);}}}),
+      h('div',{className:'rn-energy-touch-hint','data-touch-orbit-hint':true},h('strong',null,__alloT('stem.renewables.touch_exploration','Touch exploration')),h('span',null,h('b',{'aria-hidden':true},'↔'),' Swipe sideways to rotate'),h('span',null,h('b',{'aria-hidden':true},'↕'),' Scroll vertically'),h('span',null,'Pinch to zoom the page')),
+      h('div',{ref:mount,className:'rn-energy-webgl',role:'group',tabIndex:status==='ready'?0:-1,'aria-label':rnEnergySpec(props.id).name+' interactive 3D mechanism. Arrow keys orbit, plus and minus zoom, Home resets, keys 1 to 3 select a component, Enter focuses it, and period steps the paused illustration. On touchscreens, swipe sideways to rotate, swipe vertically to scroll, and pinch to zoom the page. Component and camera buttons provide tilt, zoom and focus controls.','data-energy-render-status':status,onKeyDown:function(e){var action={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down','+':'in','=':'in','-':'out','_':'out',Home:'home',Enter:'focus','.':'step'}[e.key];if(e.altKey||e.ctrlKey||e.metaKey)return;if(action&&api.current){e.preventDefault();api.current(action);}else if(['1','2','3'].indexOf(e.key)!==-1){e.preventDefault();props.onPick(rnEnergySpec(props.id).components[Number(e.key)-1][0]);}}}),
+      h(RenewablesEnergyDiscovery,{React:React,t:props.t,id:props.id,settings:props.controlSettings,profileId:props.profile?props.profile.id:'steady',minute:props.phase,state:props.discoveryState,onAction:props.onDiscoveryAction,compact:true}),
       props.onAdjust&&h(RenewablesEnergyControlDock,{React:React,t:props.t,id:props.id,settings:props.controlSettings,run:props.run,profile:props.profile,phase:props.phase,onChange:props.onAdjust}),
+      h('div',{className:'rn-energy-response-feedback','data-illustration-response':feedback.code,role:'status','aria-live':'polite','aria-atomic':true},h('span',{className:'rn-energy-response-symbol','aria-hidden':true},feedback.code==='steady'?'✓':feedback.code==='geometry'||feedback.code==='motion'||feedback.code==='coasting'?'↻':feedback.code==='paused'||feedback.code==='reduced'?'Ⅱ':'○'),h('div',null,h('strong',null,__alloT('stem.renewables.illustration_feedback_'+feedback.code,feedback.title)),h('p',null,__alloT('stem.renewables.illustration_feedback_'+feedback.code+'_note',feedback.note)))),
       h('div',{className:'rn-energy-camera',role:'group','aria-label':__alloT('stem.renewables.mechanism_camera_controls','Mechanism camera controls')},[['focus','Focus selected component'],['fit','Fit mechanism'],['left','Rotate left'],['right','Rotate right'],['up','Tilt up'],['down','Tilt down'],['in','Zoom in'],['out','Zoom out'],['home','Reset camera']].map(function(a){return h('button',{type:'button',key:a[0],disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);}),h('button',{type:'button',disabled:status!=='ready','aria-pressed':frameHold[0],onClick:function(){frameHold[1](!frameHold[0]);if(frameHold[0]&&api.current)api.current('fit');}},'Hold camera framing')),
       h('p',{className:'rn-energy-scene-note','data-component-hover-readout':hovered||'none',style:{paddingTop:10,minHeight:38}},hovered?(function(){var index=['resource','converter','generator'].indexOf(hovered),node=rnEnergyPathway(props.run).nodes[index];return node.component+' · '+rnEnergyReading(node.value)+' '+node.unit+' · Click to select; double-click to focus.';})():'Point at a component to preview its live reading. Click to select; double-click to focus.'),
       h('p',{className:'rn-energy-scene-note','data-equipment-response-guide':props.id},h('strong',null,props.run.status+'. '),responseGuide,['hydro','geothermal','solarThermal','biomass'].indexOf(props.id)!==-1?' Follow the brass tab against the fixed casing pointer; slow motion and Step illustration make each turn easier to inspect.':null),
-      hasGeneratorDetail&&h('p',{className:'rn-energy-scene-note','data-generator-inspection-note':true},props.id==='hydro'?(inspection.cutaway?'Generator cutaway: the coupling, shaft and colored core turn with the water runner; the outer windings stay fixed. Rotation is illustrative, not a measured generator speed.':'Open the generator cutaway to follow the shaft and core as you change water head or flow.'):(inspection.cutaway?'Generator cutaway: the shaft and colored core turn with the rotor; the outer windings stay fixed. The visual shows a shared shaft phase, not a measured gear ratio or generator speed.':'Open the generator cutaway to follow the shaft and core as you change the resource or rotor size.')),
+      hasGeneratorDetail&&h('p',{className:'rn-energy-scene-note','data-generator-inspection-note':true},['solarThermal','biomass'].indexOf(props.id)!==-1?(inspection.cutaway?'Generator cutaway: the turbine, coupling, shaft and colored core share one rotation phase; the outer windings stay fixed. Rotation illustrates electrical output, not measured RPM.':'Open the generator cutaway to follow the connected shaft and core as you change resource input or steam-cycle efficiency.'):props.id==='geothermal'?(inspection.cutaway?'Generator cutaway: the turbine, coupling, shaft and colored core share one rotation phase; the outer windings stay fixed. Rotation illustrates electrical output, not measured RPM.':'Open the generator cutaway to follow the connected shaft and core as you change temperatures, fluid flow or utilization.'):props.id==='hydro'?(inspection.cutaway?'Generator cutaway: the coupling, shaft and colored core turn with the water runner; the outer windings stay fixed. Rotation is illustrative, not a measured generator speed.':'Open the generator cutaway to follow the shaft and core as you change water head or flow.'):(inspection.cutaway?'Generator cutaway: the shaft and colored core turn with the rotor; the outer windings stay fixed. The visual shows a shared shaft phase, not a measured gear ratio or generator speed.':'Open the generator cutaway to follow the shaft and core as you change the resource or rotor size.')),
       h(RenewablesEnergyAdjustment,{React:React,t:props.t,run:props.run,previousRun:props.previousRun,adjustment:props.adjustment}),
       h(RenewablesEnergyPathway,{React:React,t:props.t,run:props.run,previousRun:props.previousRun,motion:equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete,selected:selected[0],onPick:props.onPick}),
       status!=='ready'&&h('div',{className:'rn-energy-fallback',role:'status'},status==='loading'?'Preparing the 3D workbench…':'3D is unavailable. Controls, calculations, and the energy-flow view remain available.',
@@ -3620,9 +6962,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.labels,onClick:function(){inspect({labels:!inspection.labels});}},'Component labels'),
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.readings,onClick:function(){inspect({readings:!inspection.readings,labels:true});}},'Live readings'),
         h('button',{type:'button',disabled:status!=='ready',onClick:function(){inspect({layout:'assembled',isolated:false,labels:true,readings:true,trace:false,cutaway:false});if(api.current)api.current('home');}},'Restore full mechanism')),
+      props.id==='solarPv'&&h('section',{className:'rn-pv-temperature-reading','aria-label':__alloT('stem.renewables.pv_temperature_output_comparison','Cell temperature and output comparison'),'data-cell-temperature':props.run.settings.cellTemperature,'data-actual-power':props.run.power,'data-reference-power':pvReference},
+        h('strong',null,'Cell temperature: '+props.run.settings.cellTemperature+'°C'),
+        h('div',{className:'rn-pv-temperature-values'},h('span',null,h('i',{'aria-hidden':true,style:{background:'#61dfb2'}}),'Actual · '+rnEnergyReading(props.run.power)+' kW'),h('span',null,h('i',{'aria-hidden':true,style:{background:'#edc779'}}),'At 25°C · '+rnEnergyReading(pvReference)+' kW')),
+        h('p',null,sequenceComplete?'Sequence complete: both output indicators are off. The gauge still shows the selected cell temperature.':pvReference>0?(pvDifference===0?'Same output at the 25°C reference.':(pvDifference>0?'+':'')+rnEnergyReading(pvDifference)+' kW ('+(pvDifference>0?'+':'')+rnEnergyReading((props.run.extra.temperatureFactor-1)*100)+'%) from cell temperature alone.'):'No intercepted sunlight: both outputs are zero. The gauge still shows the selected cell temperature.'),
+        h('small',null,'Green upper bar: actual output. Gold lower bar: 25°C reference with the same sunlight, area and angle. Bars share a relative scale; these readings show exact power.')),
       h('p',{className:'rn-energy-inspection-status','aria-live':'polite','aria-atomic':'true'},(inspection.isolated?'Isolated: ':'Selected: ')+selected[1]+'. '+(inspection.layout==='exploded'?'Assemblies are separated for inspection; gaps do not represent operating distances.':'Assemblies are shown together.')),
-      h('p',{className:'rn-energy-scene-note'},'Gold output cables trace electricity; blue paths show fluid or resource flow; amber rays show sunlight and orange indicates heat. Arrows show direction. More gold-path marks indicate higher power on a compressed relative scale; their speed and count do not represent electrons. Equipment and stream motion respond to the selected resource; the output lamp and window brightness respond to electrical power. These are illustrative cues, not measured dimensions, rotor rpm, fluid speed, or light output. Equipment dimensions and angles ease into place during animation; attached supports, resource paths, and automatic framing follow the displayed equipment. These visual transitions do not simulate construction time, mechanical inertia, or thermal storage. Zero-power paths stop immediately. Pausing holds the motion phase and applies new settings directly.'),
-      h('p',{className:'rn-energy-scene-note'},'Click a component or its label to inspect it; double-click to focus. Drag to orbit. With the scene focused, use arrow keys to orbit, + / − to zoom, 1 / 2 / 3 to select a stage, Enter to focus it, period to step the paused illustration, and Home to reset. The buttons provide the same controls. Live labels follow the current conditions; on smaller screens, select a stage to enlarge its reading.'));
+      h('p',{className:'rn-energy-scene-note'},'Gold output cables trace electricity; blue paths show fluid or resource flow; amber rays show sunlight and orange indicates heat. Arrows show direction. Moving gold arrows follow the cable direction at one shared illustrative travel speed. Longer cable routes take longer to traverse, including in exploded views. Power changes their density and brightness, not their travel speed; these cues do not represent electrons or electrical propagation speed. Marks remain attached while a cable changes shape. Equipment and stream motion respond to the selected resource; the output lamp and window brightness respond to electrical power. These are illustrative cues, not measured dimensions, rotor rpm, fluid speed, or light output. Equipment dimensions and angles ease into place during animation; attached supports, resource paths, and automatic framing follow the displayed equipment. These visual transitions do not simulate construction time, mechanical inertia, or thermal storage. Zero-power paths stop immediately. Pausing holds the motion phase and applies new settings directly.'),
+      h('p',{className:'rn-energy-scene-note'},'Tap or click a component or its label to inspect it; double-click to focus. Drag with a mouse or pen to orbit. On touchscreens, swipe sideways to rotate, swipe vertically to scroll, and pinch to zoom the page. Use the camera buttons to tilt, zoom and focus. With the scene focused, use arrow keys to orbit, + / − to zoom, 1 / 2 / 3 to select a stage, Enter to focus it, period to step the paused illustration, and Home to reset. The buttons provide the same controls. Live labels follow the current conditions; on smaller screens, select a stage to enlarge its reading.'));
 
   }
 
@@ -3654,6 +7001,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
   RN_ENERGY_CSS+="\n.rn-energy-window{border-top:1px solid var(--re-border);padding-top:10px;margin-top:14px}.rn-energy-window>summary{font-size:12px}.rn-energy-window .rn-energy-window-intro,.rn-energy-window .rn-energy-window-scope,.rn-energy-window .rn-energy-window-status{font-size:11px;line-height:1.6;margin:10px 0 14px}.rn-energy-window-toolbar,.rn-energy-window-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.rn-energy-window-toolbar{justify-content:space-between;margin:12px 0}.rn-energy-window button{font-size:11px;min-height:36px;padding:7px 9px}.rn-energy-window-toolbar>small{font-size:10px}.rn-energy-window-boundaries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.rn-energy-window-boundary{padding:12px;border:1px solid var(--re-border);border-radius:9px;background:var(--re-alt);min-width:0}.rn-energy-window-boundary label{font-size:11px;display:block}.rn-energy-window-boundary label>strong{float:right}.rn-energy-window-boundary input{display:block;width:100%;height:28px;margin:7px 0 10px;accent-color:var(--re-accent)}.rn-energy-window-actions>button{flex:1;min-width:100px;font-size:10px}.rn-energy-window-range{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:12px}.rn-energy-window-range>span{font-size:10px;color:var(--re-muted)}.rn-energy-window-strip{position:relative;height:10px;border-radius:3px;background:var(--re-alt);overflow:hidden;margin:9px 0 13px}.rn-energy-window-strip>span{position:absolute;height:100%;background:var(--re-accent)}.rn-energy-window-strip>i{position:absolute;top:0;bottom:0;width:3px;transform:translateX(-50%);background:var(--re-text)}.rn-energy-window-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}.rn-energy-window-metrics>div{border:1px solid var(--re-border);border-radius:8px;padding:10px;min-width:0}.rn-energy-window-metrics span{display:block;font-size:10px;color:var(--re-muted)}.rn-energy-window-metrics strong{display:block;font-size:18px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;margin-top:5px}.rn-energy-window-ledger{padding:12px;background:var(--re-alt);border-radius:9px;margin:14px 0}.rn-energy-window-ledger h5{font-size:12px;margin:0 0 7px}.rn-energy-window .rn-energy-window-ledger p{font-size:11px;line-height:1.7;margin:5px 0}.rn-energy-window-table th>small{display:block;font-weight:400;font-size:10px}.rn-energy-window .rn-energy-window-states summary,.rn-energy-window .rn-energy-window-states p{font-size:11px}.rn-energy-window-states p{margin-top:9px}.rn-energy-window-table{max-height:none}@media(max-width:600px){.rn-energy-window-boundaries,.rn-energy-window-metrics{grid-template-columns:1fr}.rn-energy-window-metrics>div{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.rn-energy-window-metrics strong{font-size:17px;margin:0}.rn-energy-window-actions>button{white-space:normal}.rn-energy-window-toolbar{align-items:stretch}.rn-energy-window-toolbar>button{flex:1}.rn-energy-window-toolbar>small{width:100%}}\n";
 
+
+  RN_ENERGY_CSS+='\n.rn-pv-temperature-reading{margin:8px 14px 14px;padding:12px;border:1px solid #597e85;border-radius:9px;background:#123542;color:#effdf7;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.rn-pv-temperature-values{display:flex;gap:6px 20px;flex-wrap:wrap;margin-top:7px;font-variant-numeric:tabular-nums}.rn-pv-temperature-values span{display:flex;gap:7px;align-items:center}.rn-pv-temperature-values i{display:inline-block;width:9px;height:9px;border-radius:2px;flex-shrink:0}.rn-energy-scene .rn-pv-temperature-reading p{margin:7px 0;color:#effdf7;font-size:12px}.rn-pv-temperature-reading small{color:#c8e3de;font-size:11px}\n';
   function RenewablesEnergyExperiment(props){
     var React=props.React,h=React.createElement,id=props.id,spec=rnEnergySpec(id),state=props.state||{},profileId=props.profileId||'steady';
     var __alloT=rnEnergyT(props);
@@ -4080,6 +7429,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       return function(){clearInterval(timer);};
     },[playing,id]);
     function change(patch){props.onChange(Object.assign({},state,patch));}
+    function discoveryAction(session,setup){
+      playingState[1](false);
+      if(setup){clearInputUndo();modeState[1]('3d');componentState[1](setup.part||'converter');}
+      props.onChange(rnEnergyDiscoveryApply(state,id,session,setup));
+    }
     function chooseComponent(key){playingState[1](false);componentState[1](key);}
     function jumpTo(suffix){playingState[1](false);var element=document.getElementById(uid+suffix);if(element){element.scrollIntoView({block:'center'});element.focus({preventScroll:true});}}
     function update(k,value,before){
@@ -4267,7 +7621,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('div',{style:{minWidth:0}},
           h('div',{className:'rn-energy-toolbar rn-energy-view-heading',style:{marginBottom:10}},h('strong',null,'Look inside the mechanism'),h('div',{className:'rn-energy-toolbar'},
             button('3D mechanism',function(){modeState[1]('3d');},modeState[0]==='3d'),button('Energy flow',function(){modeState[1]('flow');},modeState[0]==='flow'))),
-          modeState[0]==='3d'?h('div',{className:'rn-energy-stage'},h(RenewablesEnergyScene,{React:React,t:rnT,id:id,run:run,previousRun:previousRun,adjustment:adjustment,phase:phase,selected:selected,onPick:chooseComponent,controlSettings:settings,profile:profile,onAdjust:update}),h('div',{className:'rn-energy-scene-note'},'Schematic scale · drag to orbit · click a component · gold indicates electricity')):h('div',{className:'rn-energy-panel'},h(RenewablesEnergyAdjustment,{React:React,t:rnT,run:run,previousRun:previousRun,adjustment:adjustment}),h(RenewablesEnergyPathway,{React:React,t:rnT,run:run,previousRun:previousRun,motion:false,selected:selected,onPick:chooseComponent})),
+          h(RenewablesEnergyDiscovery,{key:id,React:React,t:rnT,id:id,uid:uid+'discovery',settings:settings,profileId:profile?profile.id:'steady',minute:phase,state:state.discoveries&&state.discoveries[id],onAction:discoveryAction}),
+          modeState[0]==='3d'?h('div',{className:'rn-energy-stage'},h(RenewablesEnergyScene,{React:React,t:rnT,id:id,run:run,previousRun:previousRun,adjustment:adjustment,phase:phase,selected:selected,onPick:chooseComponent,controlSettings:settings,profile:profile,onAdjust:update,discoveryState:state.discoveries&&state.discoveries[id],onDiscoveryAction:discoveryAction}),h('div',{className:'rn-energy-scene-note'},'Schematic scale · drag or swipe sideways to orbit · tap a component · gold indicates electricity')):h('div',{className:'rn-energy-panel'},h(RenewablesEnergyAdjustment,{React:React,t:rnT,run:run,previousRun:previousRun,adjustment:adjustment}),h(RenewablesEnergyPathway,{React:React,t:rnT,run:run,previousRun:previousRun,motion:false,selected:selected,onPick:chooseComponent})),
           (profile||storage)?h('div',{className:'rn-energy-time'},h('div',{className:'rn-energy-toolbar'},button(playing?'Pause timeline':'Play timeline',function(){if(!playing&&phase>=duration)props.onChange(rnEnergyPosition(state,id,0));playingState[1](!playing);},playing),button('Step forward',function(){time(Math.min(duration,phase+1));}),h('small',null,profile?profile.name:'Two-hour charge / discharge cycle')),
             h('div',{className:'rn-energy-control'},h('label',{htmlFor:uid+'phase'},profile?'Scenario minute':'Cycle minute',h('strong',null,phase+' min')),
               h('input',{id:uid+'phase',type:'range',min:0,max:duration,step:1,value:phase,'aria-label':profile?'Scenario minute':'Cycle minute',onChange:function(e){time(Number(e.target.value));}})),
@@ -5712,6 +9067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             if (seed.installerCo && d.installerCo === undefined) merge.installerCo = seed.installerCo;
             if (seed.transitionLab && d.transitionLab === undefined) merge.transitionLab = seed.transitionLab;
             if (seed.energyLab && d.energyLab === undefined) merge.energyLab = seed.energyLab;
+            if (seed.renewablesTycoon && d.renewablesTycoon === undefined) merge.renewablesTycoon = seed.renewablesTycoon;
             if (Object.keys(merge).length > 0) {
               Object.keys(merge).forEach(function (k) { upd(k, merge[k]); });
             }
@@ -5734,12 +9090,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             installerCo: d.installerCo || null,
             transitionLab: d.transitionLab || null,
             energyLab: d.energyLab || null,
+            renewablesTycoon: d.renewablesTycoon || null,
             _ts: Date.now()
           };
           window.__alloflowRenewablesLab = snapshot;
           try { localStorage.setItem('renewablesLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
         } catch (e) {}
-      }, [d.badges, d.modulesVisited, d.quizMastery, d.installerCo, d.transitionLab, d.energyLab]);
+      }, [d.badges, d.modulesVisited, d.quizMastery, d.installerCo, d.transitionLab, d.energyLab, d.renewablesTycoon]);
 
       // Hot-reload from project-JSON load mid-session.
       React.useEffect(function () {
@@ -5751,6 +9108,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             if (w.quizMastery) upd('quizMastery', w.quizMastery);
             if (w.transitionLab) upd('transitionLab', w.transitionLab);
             if (w.energyLab) upd('energyLab', w.energyLab);
+            // A restored project owns its campaign, including legacy projects with none.
+            upd('renewablesTycoon', Object.prototype.hasOwnProperty.call(w, 'renewablesTycoon') ? w.renewablesTycoon : null);
           } catch (e) {}
         }
         window.addEventListener('alloflow-renewableslab-restored', onRestore);
@@ -5967,6 +9326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // MENU
       // ─────────────────────────────────────────
       var MENU_TILES = [
+        { id: 'tycoon', icon: '🏝️', label: __alloT('stem.renewables.tycoon', 'Renewables Tycoon'), desc: __alloT('stem.renewables.tycoon_desc', 'Build a renewable island cooperative. Acquire solar, wind and batteries, maintain your fleet, respond to events, and complete a twelve-month campaign.') },
         { id: 'microgrid', icon: '🔌', label: 'Storage & demand lab', desc: 'Connect generation to demand, dispatch a battery bank, and explore grid outages with a minute-by-minute energy balance.' },
         { id: 'energy3d', icon: '⚙️', label: 'Individual 3D energy simulations', desc: 'Nine mechanisms: adjust the resource, inspect components, trace losses, and compare readings.' },
         { id: 'transition', icon: '🌎', label: __alloT('stem.renewables.transition_studio', 'US transition sandbox'), desc: __alloT('stem.renewables.transition_studio_desc', 'Site new capacity, explore a 3D energy landscape, and stress-test three to seven days of electricity demand.') },
@@ -6011,12 +9371,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
-        var RENEWABLES_CORE_TILES = ['energy3d', 'microgrid', 'transition', 'solarPv', 'wind', 'compare', 'mix', 'gridBalance', 'quiz'];
+        var RENEWABLES_CORE_TILES = ['tycoon', 'energy3d', 'microgrid', 'transition', 'solarPv', 'wind', 'compare', 'mix', 'gridBalance', 'quiz'];
         var showFullRenewablesMenu = !!d.showRenewablesLibrary;
         var visibleRenewablesTiles = showFullRenewablesMenu ? MENU_TILES : MENU_TILES.filter(function(tile) {
           return RENEWABLES_CORE_TILES.indexOf(tile.id) !== -1;
         });
-        var renewablesLaunchTiles = ['energy3d', 'microgrid', 'transition', 'solarPv', 'mix', 'gridBalance'].map(function(id) {
+        var renewablesLaunchTiles = ['tycoon', 'energy3d', 'microgrid', 'transition', 'solarPv', 'mix', 'gridBalance'].map(function(id) {
           return MENU_TILES.find(function(tile) { return tile.id === id; });
         }).filter(Boolean);
         // Adaptive "Start Here" suggestion based on visited count.
@@ -9818,6 +13178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // ─────────────────────────────────────────
       var viewBody;
       switch (view) {
+        case 'tycoon': viewBody = h(window.StemLab.RenewablesTycoon, {ctx:ctx,theme:T,state:d.renewablesTycoon,onChange:function(next){upd('renewablesTycoon',next);},onBack:function(){upd('view','menu');},onInspect:function(type){var id=type==='solar'?'solarPv':type==='battery'?'storage':'wind';updMulti({view:'energy3d',tycoonInspection:true,energyLab:Object.assign({},d.energyLab,{selected:id})});}}); break;
         case 'energy3d': viewBody = h(RenewablesEnergyLab,{ctx:ctx,theme:T,state:d.energyLab,onChange:function(next){upd('energyLab',next);},onBack:function(){upd('view','menu');},onLesson:function(id){upd('view',id);},onTransition:function(){upd('view','transition');},onMicrogrid:function(){var workbenches=Object.assign({},d.energyLab),source=workbenches.selected==='storage'?'solarPv':rnEnergySpec(workbenches.selected).id;if(!workbenches.microgrid)workbenches.microgrid={source:source,sourceSettings:workbenches.settings&&workbenches.settings[source],profileId:workbenches.scenarios&&workbenches.scenarios[source]&&workbenches.scenarios[source].profileId,battery:workbenches.settings&&workbenches.settings.storage};updMulti({view:'microgrid',energyLab:workbenches});}}); break;
         case 'microgrid': viewBody=h(RenewablesMicrogridLab,{ctx:ctx,theme:T,state:d.energyLab&&d.energyLab.microgrid,workbenches:d.energyLab||{},onChange:function(next){upd('energyLab',Object.assign({},d.energyLab,{microgrid:next}));},onBack:function(){upd('view','energy3d');},onLibrary:function(){upd('view','menu');},onSource:openEnergyLab}); break;
         case 'transition': viewBody = h(RenewablesTransition, { ctx: ctx, theme: T, state: d.transitionLab, onChange: function(next) { upd('transitionLab', next); }, onBack: function() { upd('view', 'menu'); } }); break;
@@ -9855,6 +13216,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         case 'menu':
         default:             viewBody = renderMenu(); break;
       }
+      if (view === 'energy3d' && d.tycoonInspection) viewBody = h('div', null,
+        h('div', {style:{padding:'12px 16px'}}, h('button', {type:'button',onClick:function(){updMulti({view:'tycoon',tycoonInspection:false});},style:{padding:'10px 16px',borderRadius:8,border:'1px solid '+T.border,background:T.card,color:T.text,cursor:'pointer'}}, __alloT('stem.renewables.return_to_tycoon','Return to Tycoon campaign'))), viewBody);
       return React.createElement('div', { 'data-renewables-root': 'true', style: { background: T.bg, borderRadius: 12 } }, renCelebOverlay(), viewBody);
       } catch(e) {
         console.error('[Renewables] render error', e);

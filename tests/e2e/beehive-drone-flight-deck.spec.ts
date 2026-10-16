@@ -2,11 +2,12 @@ import { test, expect } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { GlHarness } from './helpers/stem_gl_harness';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_beehive.js',toolId:'beehive',preScripts:['stem_lab/stem_lab_module.js'],appStyles:true,width:1280,height:1000,probes:'window.__testHooks={};',extraScripts:['node_modules/axe-core/axe.min.js']});
-test.describe.configure({timeout:180000});test.use({viewport:{width:1280,height:1000},reducedMotion:'reduce'});
+test.describe.configure({timeout:180000});test.use({viewport:{width:1280,height:1000},reducedMotion:'reduce',video:'off',trace:'off'});
 test.beforeAll(async()=>{mkdirSync('scratch/beehive-flight-deck',{recursive:true});await harness.start();});
 test.beforeEach(async({page})=>{page.on('pageerror',e=>console.log('FLIGHT_PAGE_ERROR',e.message));});
 test.afterAll(()=>harness.stop());test.afterEach(async({page})=>{await harness.destroy(page);});
 async function mount(page:any, fallback=false, pacing='live') {
+  await page.emulateMedia({reducedMotion:'reduce'});
   await page.addInitScript(()=>{(window as any).__RR_TEST_EXPORTS__={};});
   await page.goto(harness.url+'/__harness');
   await page.evaluate(({fallback,pacing})=>{
@@ -17,6 +18,9 @@ async function mount(page:any, fallback=false, pacing='live') {
     w.__mount({beehive:{viewMode:'drone',tutorialDone:true,soundOn:false,honey:80,queenHealth:100,morale:90,varroaLevel:2,drone:{active:false,pacing,courseSeed:20260908,graphicsMode:'eco'}}});
     Object.assign(document.getElementById('wrap')!.style,{width:'100%',height:'auto',display:'block'});
   },{fallback,pacing});
+  // Wait for the preference effect before launch so these inspection fixtures start paused.
+  await expect(page.locator('[data-beehive-root]')).toHaveAttribute('data-reduced-motion','true');
+  if(pacing==='live')await expect(page.locator('[data-flight-start-behavior]')).toContainText('Starts paused for your reduced-motion preference');
   await page.locator('[data-mobile-rail="drone-difficulty"] button').first().click();
   const cv=page.locator('[data-beehive-drone-canvas]');await cv.scrollIntoViewIfNeeded();
   if(pacing==='live' && await page.locator('#beehive-drone-playfield').getAttribute('data-flight-state')!=='paused') await page.locator('[data-beehive-flight-pause]').click();
@@ -172,6 +176,7 @@ test('Meadow art stays visible in Eco and scales detail without changing the pau
 
 test('Approach guide separates range and altitude, preserves paused checkpoints, and fits a narrow view',async({page})=>{
   await mount(page);const field=page.locator('#beehive-drone-playfield'),guide=field.locator('[data-flight-approach]');
+  await field.locator('[data-director-summary]').click();
   const redraw=async(patch:any)=>{await page.evaluate(patch=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;Object.assign(s,patch);},patch);await page.locator('[data-flight-camera-toggle]').click();};
   await redraw({phase:'flight',reachedLaunch:true,x:0,y:80,z:-550,yaw:0,pitch:0,trainingStep:5});
   const held=await physics(page);

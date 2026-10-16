@@ -44,9 +44,9 @@ describe('every SVG def referenced by the tool exists', () => {
       const referenced = [...new Set([...source.matchAll(/url\(#([A-Za-z0-9_-]+)\)/g)].map((m) => m[1]))];
       const defined = new Set();
       const tags = DEF_TAGS.join('|');
-      // Both quoting styles appear in this file.
+      // Both quoting styles and the local h = React.createElement alias appear.
       for (const m of source.matchAll(
-        new RegExp(`createElement\\(['"](${tags})['"],\\s*\\{[^}]*?id:\\s*['"]([A-Za-z0-9_-]+)['"]`, 'g'),
+        new RegExp(`(?:createElement|\\bh)\\(['"](${tags})['"],\\s*\\{[^}]*?id:\\s*['"]([A-Za-z0-9_-]+)['"]`, 'g'),
       )) {
         defined.add(m[2]);
       }
@@ -65,7 +65,7 @@ describe('every SVG def referenced by the tool exists', () => {
       const seen = new Map();
       const tags = DEF_TAGS.join('|');
       for (const m of source.matchAll(
-        new RegExp(`createElement\\(['"](${tags})['"],\\s*\\{[^}]*?id:\\s*['"]([A-Za-z0-9_-]+)['"]`, 'g'),
+        new RegExp(`(?:createElement|\\bh)\\(['"](${tags})['"],\\s*\\{[^}]*?id:\\s*['"]([A-Za-z0-9_-]+)['"]`, 'g'),
       )) {
         seen.set(m[2], (seen.get(m[2]) || 0) + 1);
       }

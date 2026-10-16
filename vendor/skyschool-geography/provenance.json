@@ -1,0 +1,83 @@
+{
+  "title": "SkySchool offline Natural Earth land/water geography",
+  "accessed": "2026-10-14",
+  "license": "Public domain",
+  "licenseUrl": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "attribution": "Made with Natural Earth.",
+  "sourceScale": "1:10,000,000, not 10-metre resolution",
+  "sources": [
+    {
+      "file": "vendor/skyschool-geography/ne_10m_land.zip",
+      "bytes": 3269070,
+      "sha256": "e547d749445eaa0964aba76738090ec88f5e63c4585122170f98c67a7ea922dc",
+      "url": "https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_land.zip",
+      "datasetPage": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/",
+      "version": "5.1.1",
+      "shapeRecords": 11,
+      "polygonRings": 6838,
+      "points": 446175
+    },
+    {
+      "file": "vendor/skyschool-geography/ne_10m_lakes.zip",
+      "bytes": 2349685,
+      "sha256": "0803a06f9c3cb4671d89b68c48b142aad9366ba40f665245e12a913fbc61722a",
+      "url": "https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_lakes.zip",
+      "datasetPage": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-lakes/",
+      "version": "5.0.0",
+      "shapeRecords": 1355,
+      "polygonRings": 1597,
+      "points": 162852
+    }
+  ],
+  "builder": {
+    "file": "dev-tools/build_skyschool_geography.py",
+    "bytes": 20717,
+    "sha256": "09d9b5d8d62275ab56cdec8e419337f9dc4cd7748ccf8ebb41d0d37bc7529df0"
+  },
+  "generated": {
+    "file": "vendor/skyschool-geography/land-water-mask.json",
+    "bytes": 1850874,
+    "sha256": "104393a0970b3239dcafb4b0a4fb2f64c6816ca114e02e3af9ec991a53481a86"
+  },
+  "fixture": {
+    "file": "tests/fixtures/skyschool_geography_points.json",
+    "bytes": 5500,
+    "sha256": "c15858452d321c49c42e80347cd1603cd9ee9add52c56e8bb96e77b5df89628f"
+  },
+  "processing": {
+    "horizontalDatum": "WGS84 longitude/latitude",
+    "resolutionDegrees": 0.01,
+    "width": 36000,
+    "height": 18000,
+    "cellSizeNorthSouth": "Approximately 1.11 km or 0.6 nautical miles",
+    "method": "Pixel-centre even/odd polygon scanline rasterization; union land; subtract lake polygons; polygon holes retained.",
+    "storage": "Base36 water-first per-row RLE; rows north to south and columns west to east.",
+    "rleBytes": 1843193,
+    "rleSha256": "76dabd2dd952a06cb1119f1437c308831cd3ccc456c8b1f9bce7bf1a0ff6bb2d",
+    "totalRunEnds": 696724,
+    "maxRowLandSpans": 88,
+    "landCells": 212714442
+  },
+  "validation": {
+    "fixtureCellCenters": 40,
+    "fixtureAlgorithm": "Independent point-in-polygon ray casting from original shapefile rings.",
+    "globalProbeCellCenters": 576,
+    "globalProbeMethod": "Independent polygon ray casting at raster cell centres spaced 7.5 degrees latitude by 15 degrees longitude; mismatch aborts build.",
+    "allMatched": true,
+    "rebuildSeconds": 24.91,
+    "rebuildCommand": "python dev-tools/build_skyschool_geography.py --output .skyschool-geography-rebuilt.json",
+    "rebuiltDatasetSha256": "104393a0970b3239dcafb4b0a4fb2f64c6816ca114e02e3af9ec991a53481a86",
+    "rebuiltFixtureSha256": "c15858452d321c49c42e80347cd1603cd9ee9add52c56e8bb96e77b5df89628f",
+    "optionalEmbed": {
+      "helpAndSyntaxPassed": true,
+      "invoked": false,
+      "sourceMutationPerformed": false,
+      "validatedCanonicalAndMirrorSha256": "3b275a2a9c8db3beb45eb481c5838379e83867d62a81eb2866105267649afe98"
+    }
+  },
+  "limitations": [
+    "Generalized 1:10 million cartography; not complete local shoreline, small-island, tidal, or current land-reclamation coverage.",
+    "Natural Earth notes coastline accuracy concerns in northern Russia and southern Chile.",
+    "This data encodes land and water, not surveyed topographic elevation or an aeronautical navigation chart."
+  ]
+}

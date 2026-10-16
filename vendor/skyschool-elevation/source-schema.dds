@@ -1,0 +1,12 @@
+Dataset {
+    String crs;
+    Float64 lat[lat = 10800];
+    Float64 lon[lon = 21600];
+    Grid {
+     ARRAY:
+        Float32 z[lat = 10800][lon = 21600];
+     MAPS:
+        Float64 lat[lat = 10800];
+        Float64 lon[lon = 21600];
+    } z;
+} global/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc;

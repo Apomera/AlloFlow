@@ -8,7 +8,7 @@ const harness = new GlHarness({
   preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['node_modules/axe-core/axe.min.js'],
   probes: 'window.__testHooks={};', appStyles: true, width: 980, height: 1800, layout: 'document',
 });
-const artifacts = path.resolve('.codex-artifacts/bee-symbol-key-2026-10-12');
+const artifacts = path.resolve(process.env.BEE_SYMBOL_KEY_ARTIFACTS || '.codex-artifacts/bee-symbol-key-2026-10-12');
 const roles = [
   { id: 'honey', topic: 'food', label: 'Food cells' }, { id: 'pollen', topic: 'pollen', label: 'Pollen cells' },
   { id: 'open_brood', topic: 'brood', label: 'Open brood' }, { id: 'capped_brood', topic: 'brood', label: 'Capped brood' },
@@ -78,7 +78,14 @@ async function chooseTopic(page: Page, id: string, activation: 'Enter' | 'Space'
   await expect(topic(page, id)).toHaveAttribute('aria-pressed', 'true'); await expect(topic(page, id)).toBeFocused();
 }
 async function shapes(page: Page, ids: string[]) {
-  await expect(detail(page).locator('button,a,input,select,textarea,[tabindex],[data-interior-role]')).toHaveCount(0);
+  const interactive = 'button,a,input,select,textarea,[tabindex],[data-interior-role]';
+  await expect(detail(page).locator('[data-interior-symbol-key]').locator(interactive)).toHaveCount(0);
+  const controls = detail(page).locator(interactive);
+  const elsewhere = await detail(page).locator('[data-interior-pattern-status="elsewhere"]').count();
+  const shown = await detail(page).locator('[data-interior-pattern-status="shown"]').count();
+  await expect(controls).toHaveCount(elsewhere || shown ? 1 : 0);
+  if (elsewhere) await expect(controls).toHaveAttribute('data-interior-show-matching', 'true');
+  if (shown) await expect(controls).toHaveAttribute('data-interior-inspect-matching', 'true');
   await expect(status(page)).toHaveAttribute('role', 'status'); await expect(status(page)).toHaveAttribute('aria-live', 'polite');
   await expect(status(page)).toHaveAttribute('aria-atomic', 'true');
   expect(await detail(page).locator('[data-interior-symbol-sample]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-interior-symbol-sample')))).toEqual(ids);
@@ -150,7 +157,7 @@ test('study symbol examples follow real topic controls without inventing frame c
     await interior(page).locator('[data-interior-frame="' + frame + '"]').click(); const frameWork = await work(page);
     await shapes(page, ['open_brood', 'capped_brood', 'drone_brood']);
     if (frame !== 2) {
-      await expect(status(page)).toHaveText('Developing brood: no matching cells are shown in this model frame. Try another frame to compare the pattern.');
+      await expect(status(page)).toHaveText('Developing brood: no matching cells are shown in this model frame. Matching marks are shown on another current frame.');
       await expect(interior(page).locator('[data-interior-cell][data-highlighted="true"]')).toHaveCount(0);
     } else await expect(status(page)).toHaveText('Developing brood highlighted in this model frame.');
     expect(await work(page)).toEqual(frameWork);

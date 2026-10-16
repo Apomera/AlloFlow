@@ -38,11 +38,11 @@ beforeEach(() => {
 afterEach(async () => { if (root) await act(async () => root.unmount()); host?.remove(); host = root = null; vi.restoreAllMocks(); delete globalThis.IS_REACT_ACT_ENVIRONMENT; });
 
 describe('shadow landing model', () => {
-  it('adds a safe final room without altering old puzzle saves', () => {
+  it('retains the landing room and expanded hall without altering old puzzle saves', () => {
     const old = { activity: 'weave', weave: { depths: [0.8, 0, -1], completed: [0] }, notes: { weave: 'Keep my note.' } }, state = walk.normalize(old);
     expect(state.landing.heights).toEqual([2.6, 1, 2.9]); expect(state.landing.lightAngle).toBe(0); expect(state.notes.weave).toBe(old.notes.weave); expect(state.weave.completed).toEqual([0]);
     expect(walk.nextRoom(seed(), 1)).toBe('aperture'); expect(walk.nextRoom(walk.normalize({ activity: 'weave' }), 1)).toBe('landing');
-    expect(walk.activities.at(-1).id).toBe('length'); expect(walk.normalizePlayer({ x: 999 }).x).toBe(199.3);
+    expect(walk.activities.at(-1).id).toBe('anamorphosis'); expect(walk.normalizePlayer({ x: 999 }).x).toBe(223.3);
   });
   it('normalizes malformed state and derives earned progress from unique rounds', () => {
     const s = seed({ landing: { round: 999, heights: [-2, '2.1', Infinity], selected: 999, completed: [0, 0, 1, 3] } });

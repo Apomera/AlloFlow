@@ -126,8 +126,14 @@ describe('Moon Mission launch loop', () => {
   }
 
   const stageOf = (f) => { const t = f.text.find((s) => /^STAGE \d\/3$/.test(s)); return t ? Number(t[6]) : 0; };
-  // Stage-body sections are shaded white to grey; count them to see what is drawn.
-  const whiteSections = (f) => f.grads.filter((g) => g.stops.join() === '#ffffff,#ffffff,#9ca3af').length;
+  // White stage-body materials remain neutral RGB under directional sunlight.
+  // Other hull materials are tinted or below white's 24% ambient-light floor.
+  const whiteSections = (f) => f.grads.filter((g) =>
+    g.stops.join() === '#ffffff,#ffffff,#9ca3af' ||
+    (g.stops.length > 3 && g.stops.every((color) => {
+      const rgb = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(color);
+      return rgb && rgb[1] === rgb[2] && rgb[2] === rgb[3] && Number(rgb[1]) >= Math.round(255 * 0.24);
+    }))).length;
   const kerosene = (f) => f.grads.some((g) => /^rgba\(255,120,0,/.test(g.stops[0]));   // fainter as the plume spreads
   const flightFrames = (fps = 60, through = P.launchProfile().summary.duration) => Math.ceil((5 + through / 30 + 2) * fps);
 

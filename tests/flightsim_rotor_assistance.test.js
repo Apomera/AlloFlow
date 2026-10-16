@@ -84,9 +84,11 @@ describe('aircraft-specific autopilot assistance', () => {
     const selected = configure('cessna172');
     const next = assist(current, input, ap, selected);
     expect(next).not.toBe(input);
-    expect(next.bank).toBeCloseTo(16, 10);
-    expect(next.pitch).toBeCloseTo(0.2, 10);
-    expect(next.throttle).toBeCloseTo(0.405, 10);
+    expect(next.bank).toBeCloseTo(30 / 60, 10);
+    expect(next.pitch).toBeGreaterThan(input.pitch);
+    expect(next.pitch).toBeLessThan(0.05);
+    const initialIas = FS.computeFlightTelemetry(current, input, {}, 0, 0, null, null, selected).iasKts;
+    expect(next.throttle).toBeCloseTo(0.4 + (40 - initialIas) * 0.001 * (1 / 60) * 30, 10);
     expect(next).toMatchObject({ yawRate: 0, flaps: 10, brake: 1 });
     expect(input).toEqual(controls({ throttle: 0.4, flaps: 10, brake: 1 }));
     expect(current.heading).toBe(350);
@@ -326,5 +328,20 @@ describe('mission holds use motion over the ground', () => {
     }
     expect(latest.survey.capturedCount).toBe(0);
     expect(latest.survey.captureProgress).toBe(0);
+  });
+});
+
+
+describe('assistance engagement during reverse rotor motion', () => {
+  it.each(['coastal_rescue', 'drone_powerline'])('captures signed %s speed without commanding a forward reversal', async id => {
+    const target = await mountMission(id);
+    Object.assign(hooks().flightRef.current, { speed: 10, rotorForwardFps: -10 });
+    Object.assign(hooks().getWeatherRef().current, { wind: 0, turbulence: 0 });
+    hooks().keysRef.current.b = true;
+    await missionFrames(target, 1);
+    expect(latest.autopilot.tgtSpd).toBe(-6);
+    await missionFrames(target, 1);
+    expect(Math.abs(hooks().controlsRef.current.pitch)).toBeLessThan(0.1);
+    expect(hooks().flightRef.current.rotorForwardFps).toBe(-10);
   });
 });

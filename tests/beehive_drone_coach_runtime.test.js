@@ -92,7 +92,7 @@ describe('Beehive Drone measurement-driven coaching', () => {
 
     const coach = host.querySelector('[data-drone-debrief-coach="energy-budget"]');
     expect(coach).toBeTruthy();
-    expect(coach.textContent).toContain('Energy was the limiting factor');
+    expect(coach.textContent).toContain('Review the low final reserve');
     expect(coach.textContent).toContain('Updraft-first');
     expect(coach.querySelectorAll('[data-drone-coach-evidence]')).toHaveLength(3);
     expect(host.querySelector('[data-drone-colony-consequence="true"]').textContent).toContain('without a mating contribution');

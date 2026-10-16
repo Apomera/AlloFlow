@@ -12,7 +12,7 @@ const canvas = 'canvas[role=application]';
 const ui = {
   tools: 'Tools', toolsPanel: '.cl-hunt-mobile-tools', forward: 'Forward', jet: 'Jet',
   hunt: 'Strike / hold', interact: 'Interact', inspect: 'Inspect',
-  settings: 'Help / settings', return: 'Return to dive', resume: 'Resume dive',
+  settings: 'Help / settings', return: 'Return to dive', resume: 'Return to dive',
 };
 const errors = new WeakMap<Page, string[]>();
 const touches = new WeakMap<Page, CDPSession>();
@@ -139,7 +139,7 @@ async function play(page: Page) {
   // Tools/settings may already resume, while its last painted burn says Paused.
   // Refresh BEFORE deciding to toggle Pause, otherwise the fixture repauses it.
   await step(page, 3); await frames(page);
-  if ((await page.locator('[data-hud=burn]').textContent()) === 'Paused') { await tap(page, 'Pause'); await step(page, 3); await frames(page); }
+  if ((await page.locator('[data-hud=burn]').textContent()) === 'Paused') { await tap(page, 'Resume'); await step(page, 3); await frames(page); }
   await expect(page.locator('[data-hud=burn]')).not.toHaveText('Paused');
 }
 
@@ -441,7 +441,10 @@ test('the mobile world has actual GL pixels, and ending through Tools releases t
   await mount(page); const contexts = await harness.glContexts(page); const live = contexts.filter(c => c.createdBy === 'page' && c.connected && !c.lost && c.draws > 0);
   expect(live).toHaveLength(1); const pixels = await harness.glPixels(page); expect(pixels).not.toBeNull(); expect(looksBlank(pixels!)).toBe(false); expect(pixels!.significantColors).toBeGreaterThan(3);
   await testInfo.attach('mobile-world-gl-pixels', { body: pixels!.png, contentType: 'image/png' });
-  await showTools(page); await tap(page, ui.settings); await tap(page, 'End run'); await expect(page.getByRole('heading', { name: 'Last dive', exact: true })).toBeVisible();
+  await showTools(page); await tap(page, ui.settings); await tap(page, 'End run');
+  await expect(page.getByRole('dialog', { name: 'End of dive', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /Pick different species/ }).tap();
+  await expect(page.getByRole('heading', { name: 'Last dive', exact: true })).toBeVisible();
   await expect.poll(async () => (await harness.glContexts(page)).filter(c => c.id === live[0].id && !c.lost).length).toBe(0);
   const summary = await page.evaluate(() => JSON.parse(localStorage.getItem('allo.cephalopodlab.lastRun.v2')!)); expect(summary.reason).toBe('surfaced'); expect(summary.seed).toBe(2741); expect(summary.events.filter((e: any) => e.kind === 'Finish')).toHaveLength(1);
 });

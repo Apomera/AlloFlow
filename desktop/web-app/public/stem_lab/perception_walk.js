@@ -24,7 +24,9 @@
   var CORNER_TARGETS = [315, 225, 135, 45], CORNER_DEFAULTS = [90, 0, 270, 180], TILE_IDS = ['A', 'B', 'C', 'D'];
   ACTIVITIES.push({ id: 'length', title: 'The length studio', principle: 'Length & surrounding context', goal: 'Match the lower teal shaft to the upper coral shaft in physical length. Compare the current match with the fins shown and hidden, then solve the second arrangement.', hints: ['Compare the straight shafts between their endpoints, not the total width including the fins.', 'Hide the fins without changing the shaft. A straight-ahead viewpoint can help you compare the endpoints.'], explanation: 'Endpoint fins can change how long a shaft appears, a pattern known as the Muller-Lyer illusion. Here, showing or hiding the fins leaves both shaft lengths unchanged. The second trial reverses the fin directions. Gold guides mark the reference endpoints. Your impression may vary; this is an exploration, not a vision test.' });
   var SHADOW_CELLS = [[-1, 0, 0], [0, 0, 0], [1, 0, 0], [-1, 1, 0], [0, 1, 0], [1, 1, 0], [0, 1, -1], [0, 1, -2], [-1, 2, 0], [0, 2, 0], [0, 2, -1], [-1, 3, 0]];
+  ACTIVITIES.push({ id: 'silhouette', title: 'The silhouette vault', principle: 'Shape from multiple views', goal: 'Find the sculpture that matches both reference silhouettes. Compare its front and side views, then solve the second pair.', hints: ['The two sculptures share a front silhouette. Their blocks extend differently in depth.', 'Turn both sculptures a quarter turn and compare the side reference, including its gaps and levels.'], explanation: 'The references use parallel projection, which discards depth: different solids can cast the same outline. A second view supplies more constraints; walking around these perspective sculptures can also reveal their depth. Both candidates match the front reference, but only one matches the side reference. The gold outline identifies that solid. Two views need not determine every possible solid uniquely; these pairs are constructed to have one matching candidate.' });
   var ROTATION_CELLS = [[0, 0, 0], [1, 0, 0], [2, 0, 0], [2, 1, 0], [2, 1, 1], [2, 1, 2]];
+  ACTIVITIES.push({ id: 'anamorphosis', title: 'The anamorphic workshop', principle: 'Perspective & anamorphosis', goal: 'Move beams B and C until all three fragments form one triangle from the front viewpoint. Record front and side observations of the finished arrangement, then solve the second arrangement.', hints: ['Compare the endpoints where neighboring fragments should meet. The coral anchor stays fixed while the teal beams move.', 'Inspect the side viewpoint to reveal the gaps in depth. After adjusting a beam, record both viewpoints again, then return to the front to check.'], explanation: 'The three fragments occupy different depths. Their endpoints can make one continuous triangle in the image from a particular viewpoint without meeting in space. This viewpoint-dependent construction is called anamorphosis. Moving sideways reveals the depth gaps. Gold outlines show the target positions without moving the actual beams.' });
   function object(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
   function number(value, fallback, min, max) { var n = typeof value === 'number' || typeof value === 'string' && value.trim() ? Number(value) : NaN; return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback; }
   function activity(id) { return ACTIVITIES.find(function (item) { return item.id === id; }) || ACTIVITIES[0]; }
@@ -38,18 +40,18 @@
     }
     return null;
   }
-  function spawn(id) { return id === 'length' ? { x: 192, z: 10, yaw: 0, pitch: 0 } : id === 'aperture' ? { x: 180, z: 11, yaw: 0, pitch: 0 } : id === 'landing' ? { x: 168, z: 12, yaw: 0, pitch: 0 } : id === 'weave' ? { x: 156, z: 9, yaw: 0, pitch: 0 } : id === 'frame' ? { x: 144, z: 9, yaw: 0, pitch: 0 } : id === 'motion' ? { x: 132, z: 9, yaw: 0, pitch: 0 } : id === 'shape' ? { x: 120, z: 9, yaw: 0, pitch: 0 } : id === 'relief' ? { x: 108, z: 9, yaw: 0, pitch: 0 } : id === 'rotation' ? { x: 96, z: 9, yaw: 0, pitch: 0 } : id === 'change' ? { x: 84, z: 9, yaw: 0, pitch: 0 } : id === 'shadow' ? { x: 72, z: 9, yaw: 0, pitch: 0 } : id === 'continuity' ? { x: 60, z: 9, yaw: 0, pitch: 0 } : id === 'contour' ? { x: 36, z: 6.5, yaw: 0, pitch: 0 } : id === 'context' ? { x: 48, z: 7, yaw: 0, pitch: 0 } : id === 'parallax' ? { x: 24, z: 9, yaw: 0, pitch: 0 } : id === 'scale' ? { x: 0, z: 9, yaw: 0, pitch: 0 } : id === 'occlusion' ? { x: 12, z: 8, yaw: 0, pitch: 0 } : { x: -15, z: 10, yaw: 15, pitch: 0 }; }
+  function spawn(id) { return id === 'anamorphosis' ? { x: 216, z: 10, yaw: 0, pitch: 0 } : id === 'silhouette' ? { x: 204, z: 11, yaw: 0, pitch: 0 } : id === 'length' ? { x: 192, z: 10, yaw: 0, pitch: 0 } : id === 'aperture' ? { x: 180, z: 11, yaw: 0, pitch: 0 } : id === 'landing' ? { x: 168, z: 12, yaw: 0, pitch: 0 } : id === 'weave' ? { x: 156, z: 9, yaw: 0, pitch: 0 } : id === 'frame' ? { x: 144, z: 9, yaw: 0, pitch: 0 } : id === 'motion' ? { x: 132, z: 9, yaw: 0, pitch: 0 } : id === 'shape' ? { x: 120, z: 9, yaw: 0, pitch: 0 } : id === 'relief' ? { x: 108, z: 9, yaw: 0, pitch: 0 } : id === 'rotation' ? { x: 96, z: 9, yaw: 0, pitch: 0 } : id === 'change' ? { x: 84, z: 9, yaw: 0, pitch: 0 } : id === 'shadow' ? { x: 72, z: 9, yaw: 0, pitch: 0 } : id === 'continuity' ? { x: 60, z: 9, yaw: 0, pitch: 0 } : id === 'contour' ? { x: 36, z: 6.5, yaw: 0, pitch: 0 } : id === 'context' ? { x: 48, z: 7, yaw: 0, pitch: 0 } : id === 'parallax' ? { x: 24, z: 9, yaw: 0, pitch: 0 } : id === 'scale' ? { x: 0, z: 9, yaw: 0, pitch: 0 } : id === 'occlusion' ? { x: 12, z: 8, yaw: 0, pitch: 0 } : { x: -15, z: 10, yaw: 15, pitch: 0 }; }
   function normalizePlayer(raw) {
     var p = object(raw), start = spawn('ring');
-    return { x: number(p.x, start.x, -19.3, 199.3), z: number(p.z, start.z, -7.3, 13.3), yaw: ((number(p.yaw, start.yaw, -100000, 100000) + 180) % 360 + 360) % 360 - 180, pitch: number(p.pitch, 0, -45, 45) };
+    return { x: number(p.x, start.x, -19.3, 223.3), z: number(p.z, start.z, -7.3, 13.3), yaw: ((number(p.yaw, start.yaw, -100000, 100000) + 180) % 360 + 360) % 360 - 180, pitch: number(p.pitch, 0, -45, 45) };
   }
   function angle(value, fallback) { return ((number(value, fallback, -100000, 100000) % 360) + 360) % 360; }
   function normalizeViewpoint(raw, id) {
     var data = object(raw), p = {};
     ['x', 'z', 'yaw', 'pitch'].forEach(function (key) { p[key] = number(data[key], NaN, -Infinity, Infinity); });
-    // Keep bookmarks made beside the former end wall before the length studio opened.
-    var legacyApertureEdge = id === 'aperture' && p.x > 186 && p.x <= 187.3;
-    if (!Object.keys(p).every(function (key) { return Number.isFinite(p[key]); }) || p.x < -19.3 || p.x > 199.3 || p.z < -7.3 || p.z > 13.3 || Math.abs(p.pitch) > 45 || roomAtX(p.x) !== id && !legacyApertureEdge) return null;
+    // Preserve bookmarks at former end walls as the hall gains rooms.
+    var legacyEdge = id === 'aperture' && p.x > 186 && p.x <= 187.3 || id === 'length' && p.x > 198 && p.x <= 199.3 || id === 'silhouette' && p.x > 210 && p.x <= 211.3;
+    if (!Object.keys(p).every(function (key) { return Number.isFinite(p[key]); }) || p.x < -19.3 || p.x > 223.3 || p.z < -7.3 || p.z > 13.3 || Math.abs(p.pitch) > 45 || roomAtX(p.x) !== id && !legacyEdge) return null;
     return normalizePlayer(p);
   }
   function sameViewpoint(a, b) { return !!a && !!b && ['x', 'z', 'yaw', 'pitch'].every(function (key) { return Math.abs(a[key] - b[key]) < 1e-6; }); }
@@ -62,8 +64,8 @@
   }
   function recallViewpoint(raw, slot) {
     var state = normalize(raw), pose = ['A', 'B'].indexOf(slot) >= 0 && state.viewpoints[state.activity][slot];
-    // The size workshop's movable block may now occupy the original camera position.
-    if (pose && !viewpointLocked(state)) state.player = safePlayer(pose, state.blockZ);
+    // A rearranged exhibit may now occupy the original camera position.
+    if (pose && !viewpointLocked(state)) state.player = safePlayer(pose, state.blockZ, state.parallax.round);
     return state;
   }
   function clearViewpoint(raw, slot) {
@@ -93,6 +95,11 @@
     var length = object(data.length), lengthRound = Math.floor(number(length.round, 0, 0, 1));
     result.length = { round: lengthRound, value: number(length.value, lengthDefaults(lengthRound).value, 1.8, 4.2), visible: length.visible !== false, seen: Math.floor(number(length.seen, length.visible === false ? 2 : 1, 0, 3)), completed: Array.isArray(length.completed) ? [0, 1].filter(function (id) { return length.completed.indexOf(id) >= 0; }) : [] };
     result.length.seen |= result.length.visible ? 1 : 2;
+    var anamorphosis = object(data.anamorphosis), anamorphosisRound = Math.floor(number(anamorphosis.round, 0, 0, 1)), anamorphosisSet = Math.floor(number(anamorphosis.set, 0, 0, 2)), anamorphosisStart = anamorphosisDefaults(anamorphosisRound, anamorphosisSet);
+    result.anamorphosis = { set: anamorphosisSet, round: anamorphosisRound, offsets: anamorphosisStart.offsets.map(function (v, i) { return number(Array.isArray(anamorphosis.offsets) ? anamorphosis.offsets[i] : undefined, v, -anamorphosisLimit(anamorphosisSet), anamorphosisLimit(anamorphosisSet)); }), selected: Math.floor(number(anamorphosis.selected, 0, 0, 1)), seen: Math.floor(number(anamorphosis.seen, 0, 0, 3)), completed: Array.isArray(anamorphosis.completed) ? [0, 1].filter(function (id) { return anamorphosis.completed.indexOf(id) >= 0; }) : [], mastered: anamorphosis.mastered === true };
+    result.anamorphosis.history = normalizeAnamorphosisHistory(anamorphosis.history, anamorphosisSet, anamorphosisRound);
+    var silhouette = object(data.silhouette);
+    result.silhouette = { set: Math.floor(number(silhouette.set, 0, 0, 1)), round: Math.floor(number(silhouette.round, 0, 0, 1)), angle: number(silhouette.angle, 0, 0, 90), seen: Math.floor(number(silhouette.seen, 1, 0, 3)), choice: ['A', 'B'].indexOf(silhouette.choice) >= 0 ? silhouette.choice : '', completed: Array.isArray(silhouette.completed) ? [0, 1].filter(function (id) { return silhouette.completed.indexOf(id) >= 0; }) : [], mastered: silhouette.mastered === true };
     var aperture = object(data.aperture);
     result.aperture = { round: Math.floor(number(aperture.round, 0, 0, 1)), phase: angle(aperture.phase, 0), speed: number(aperture.speed, 1, 0.25, 2), masked: aperture.masked !== false, seenMasked: Math.floor(number(aperture.seenMasked, 2, 0, 7)), seenOpen: Math.floor(number(aperture.seenOpen, 0, 0, 7)), choice: ['horizontal', 'vertical'].indexOf(aperture.choice) >= 0 ? aperture.choice : '', completed: Array.isArray(aperture.completed) ? [0, 1].filter(function (id) { return aperture.completed.indexOf(id) >= 0; }) : [] };
     var relief = object(data.relief);
@@ -109,12 +116,19 @@
     result.shape = { round: shapeRound, angles: shapeStart.angles.map(function (value, i) { return angle(Array.isArray(shape.angles) ? shape.angles[i] : undefined, value); }), tilts: shapeStart.tilts.map(function (value, i) { return number(Array.isArray(shape.tilts) ? shape.tilts[i] : undefined, value, -75, 75); }), selected: Math.floor(number(shape.selected, 0, 0, 1)), choice: ['A', 'B'].indexOf(shape.choice) >= 0 ? shape.choice : '', completed: Array.isArray(shape.completed) ? [0, 1].filter(function (id) { return shape.completed.indexOf(id) >= 0; }) : [] };
     result.relief = { round: Math.floor(number(relief.round, 0, 0, 1)), lightAngle: angle(relief.lightAngle, 0), seen: Math.floor(number(relief.seen, 1, 1, 3)), choice: ['A', 'B'].indexOf(relief.choice) >= 0 ? relief.choice : '', completed: Array.isArray(relief.completed) ? [0, 1].filter(function (id) { return relief.completed.indexOf(id) >= 0; }) : [] };
     var parallax = object(data.parallax);
+    result.parallax.round = Math.floor(number(parallax.round, 0, 0, 2));
     result.parallax.choice = ['A', 'B', 'C'].indexOf(parallax.choice) >= 0 ? parallax.choice : '';
     if (Array.isArray(parallax.samples)) parallax.samples.slice(0, 2).forEach(function (raw) {
       var sample = object(raw), p = { x: number(sample.x, NaN, -Infinity, Infinity), z: number(sample.z, NaN, -Infinity, Infinity), yaw: 0, pitch: 0 };
       if (observationArea(p) && (!result.parallax.samples.length || separateViews(result.parallax.samples[0], p))) result.parallax.samples.push(p);
     });
     ACTIVITIES.forEach(function (item) { var p = object(progress[item.id]); result.progress[item.id] = { solved: p.solved === true, assisted: p.assisted === true, hints: Math.floor(number(p.hints, 0, 0, 2)) }; result.notes[item.id] = typeof notes[item.id] === 'string' ? notes[item.id].slice(0, 600) : ''; });
+    var legacyParallax = !Object.prototype.hasOwnProperty.call(parallax, 'round') && !Object.prototype.hasOwnProperty.call(parallax, 'completed') && result.progress.parallax.solved && !result.progress.parallax.assisted;
+    result.parallax.completed = Array.isArray(parallax.completed) ? [0, 1, 2].filter(function (round) { return parallax.completed.indexOf(round) >= 0; }) : legacyParallax ? [0] : [];
+    if (result.parallax.completed.length) result.progress.parallax.solved = true;
+    var ring = object(data.ring), legacyRing = !Object.prototype.hasOwnProperty.call(data, 'ring') && result.progress.ring.solved && !result.progress.ring.assisted;
+    result.ring = { round: Math.floor(number(ring.round, 0, 0, 2)), completed: Array.isArray(ring.completed) ? [0, 1, 2].filter(function (round) { return ring.completed.indexOf(round) >= 0; }) : legacyRing ? [0] : [] };
+    if (result.ring.completed.length) result.progress.ring.solved = true;
     result.change.seen |= 1 << result.change.variant;
     result.progress.change.solved = result.change.completed.length === 3 && !result.progress.change.assisted;
     result.progress.rotation.solved = result.rotation.completed.length === 2 && !result.progress.rotation.assisted;
@@ -125,15 +139,21 @@
     result.progress.weave.solved = result.weave.completed.length === 2 && !result.progress.weave.assisted;
     result.progress.aperture.solved = result.aperture.completed.length === 2 && !result.progress.aperture.assisted;
     result.progress.length.solved = result.length.completed.length === 2 && !result.progress.length.assisted;
+    result.silhouette.mastered = result.silhouette.mastered || result.silhouette.completed.length === 2 && !result.progress.silhouette.assisted;
+    result.progress.silhouette.solved = result.silhouette.mastered;
+    result.anamorphosis.mastered = result.anamorphosis.mastered || result.anamorphosis.completed.length === 2 && !result.progress.anamorphosis.assisted;
+    result.progress.anamorphosis.solved = result.anamorphosis.mastered;
     result.progress.landing.solved = result.landing.completed.length === 2 && !result.progress.landing.assisted;
-    result.player = safePlayer(result.player, result.blockZ);
+    result.player = safePlayer(result.player, result.blockZ, result.parallax.round);
     return result;
   }
-  function obstacles(blockZ) { return [[9.65, 14.35, 1.45, 2.55], [-1.8, -0.1, -3.65, -2.35], [0.35, 1.55, blockZ - 0.6, blockZ + 0.6], [21.54, 23.26, 0.14, 1.86], [22.86, 25.14, -4.14, -1.86], [25.15, 26.45, 3.35, 4.65], [32.75, 39.25, -0.65, 0.35], [45.3, 50.7, -0.4, 0.4], [46.15, 46.85, 3.65, 4.35], [56.85, 63.15, -0.5, 0.6], [67.9, 72.1, -1.1, 3.1], [67.7, 77.3, -4.55, -3.7], [79.8, 88.2, -1.4, 2.6], [78.7, 89.3, -4.85, -4.15], [90.85, 94.15, -1.65, 1.65], [94.35, 97.65, -1.65, 1.65], [97.85, 101.15, -1.65, 1.65], [90.4, 101.6, -4.85, -4.15], [104.05, 107.95, -1.4, 1.1], [108.05, 111.95, -1.4, 1.1], [116.25, 119.75, -1.75, 1.75], [120.25, 123.75, -1.75, 1.75], [127.8, 136.2, -2.35, 1.25], [140.9, 147.1, -0.8, 0.65], [152.5, 159.5, -2, 2], [164, 172, -1.5, 1.5], [175.8, 184.2, -0.4, 1], [187.75, 196.25, -0.2, 0.55]]; }
+  function obstacles(blockZ, parallaxRound) { return [[9.65, 14.35, 1.45, 2.55], [-1.8, -0.1, -3.65, -2.35], [0.35, 1.55, blockZ - 0.6, blockZ + 0.6]].concat(parallaxObjects(parallaxRound).map(function (item) {
+    var margin = item.radius + 0.3; return [item.x - margin, item.x + margin, item.z - margin, item.z + margin];
+  }), [[32.75, 39.25, -0.65, 0.35], [45.3, 50.7, -0.4, 0.4], [46.15, 46.85, 3.65, 4.35], [56.85, 63.15, -0.5, 0.6], [67.9, 72.1, -1.1, 3.1], [67.7, 77.3, -4.55, -3.7], [79.8, 88.2, -1.4, 2.6], [78.7, 89.3, -4.85, -4.15], [90.85, 94.15, -1.65, 1.65], [94.35, 97.65, -1.65, 1.65], [97.85, 101.15, -1.65, 1.65], [90.4, 101.6, -4.85, -4.15], [104.05, 107.95, -1.4, 1.1], [108.05, 111.95, -1.4, 1.1], [116.25, 119.75, -1.75, 1.75], [120.25, 123.75, -1.75, 1.75], [127.8, 136.2, -2.35, 1.25], [140.9, 147.1, -0.8, 0.65], [152.5, 159.5, -2, 2], [164, 172, -1.5, 1.5], [175.8, 184.2, -0.4, 1], [187.75, 196.25, -0.2, 0.55], [199.85, 203.35, -1.75, 1.75], [204.65, 208.15, -1.75, 1.75], [198.6, 209.4, -2.3, -1.7], [203.65, 204.35, 2.65, 3.35], [211.7, 221.5, -2.45, 3.2]]); }
   function inside(p, box) { return p.x > box[0] && p.x < box[1] && p.z > box[2] && p.z < box[3]; }
-  function safePlayer(raw, blockZ) {
+  function safePlayer(raw, blockZ, parallaxRound) {
     var p = normalizePlayer(raw);
-    obstacles(number(blockZ, -1, -1, 6)).forEach(function (box) {
+    obstacles(number(blockZ, -1, -1, 6), parallaxRound).forEach(function (box) {
       if (!inside(p, box)) return;
       var edges = [{ key: 'x', value: box[0] }, { key: 'x', value: box[1] }, { key: 'z', value: box[2] }, { key: 'z', value: box[3] }];
       edges.sort(function (a, b) { return Math.abs(p[a.key] - a.value) - Math.abs(p[b.key] - b.value); });
@@ -141,13 +161,13 @@
     });
     return p;
   }
-  function movePlayer(raw, command, amount, blockZ) {
-    var p = safePlayer(raw, blockZ), n = number(amount, 0.32, 0, 10), radians = p.yaw * Math.PI / 180;
+  function movePlayer(raw, command, amount, blockZ, parallaxRound) {
+    var p = safePlayer(raw, blockZ, parallaxRound), n = number(amount, 0.32, 0, 10), radians = p.yaw * Math.PI / 180;
     if (command === 'turnLeft' || command === 'turnRight') { p.yaw += (command === 'turnLeft' ? -1 : 1) * n; return normalizePlayer(p); }
     if (command === 'lookUp' || command === 'lookDown') { p.pitch += (command === 'lookUp' ? 1 : -1) * n; return normalizePlayer(p); }
     var forward = command === 'forward' ? 1 : command === 'back' ? -1 : 0, side = command === 'right' ? 1 : command === 'left' ? -1 : 0;
     var dx = (Math.sin(radians) * forward + Math.cos(radians) * side) * n, dz = (-Math.cos(radians) * forward + Math.sin(radians) * side) * n;
-    var count = Math.max(1, Math.ceil(n / 0.12)), boxes = obstacles(number(blockZ, -1, -1, 6));
+    var count = Math.max(1, Math.ceil(n / 0.12)), boxes = obstacles(number(blockZ, -1, -1, 6), parallaxRound);
     // Small axis-separated steps let the camera slide along a barrier without tunnelling through it.
     for (var i = 0; i < count; i++) { var next = normalizePlayer(Object.assign({}, p, { x: p.x + dx / count })); if (!boxes.some(function (box) { return inside(next, box); })) p.x = next.x; next = normalizePlayer(Object.assign({}, p, { z: p.z + dz / count })); if (!boxes.some(function (box) { return inside(next, box); })) p.z = next.z; }
     return p;
@@ -172,7 +192,32 @@
     if (state.activity === 'parallax') return Object.assign({}, state.player, { yaw: 0, pitch: 0 });
     var z = state.activity === 'shadow' ? -4 : state.activity === 'length' || state.activity === 'aperture' || state.activity === 'landing' || state.activity === 'weave' || state.activity === 'frame' || state.activity === 'motion' || state.activity === 'shape' || state.activity === 'relief' || state.activity === 'rotation' || state.activity === 'change' || state.activity === 'ring' || state.activity === 'contour' || state.activity === 'context' || state.activity === 'continuity' ? 0 : state.activity === 'scale' ? (state.blockZ - 3) / 2 : -1.5;
     var dx = x - state.player.x, dz = z - state.player.z;
+    if (state.activity === 'silhouette') { dx = 204 - state.player.x; dz = -state.player.z; }
+    if (state.activity === 'anamorphosis') { dx = 216 - state.player.x; dz = -state.player.z; }
     return normalizePlayer(Object.assign({}, state.player, { yaw: Math.hypot(dx, dz) > 0.01 ? Math.atan2(dx, -dz) * 180 / Math.PI : state.player.yaw, pitch: 0 }));
+  }
+  function parallaxObjects(round) {
+    var r = Math.floor(number(round, 0, 0, 2)), order = [[0, 1, 2], [2, 1, 0], [0, 2, 1]][r], xs = r === 2 ? [21.6, 24, 28.3] : [22.4, 24, 25.8];
+    return ['A', 'B', 'C'].map(function (choice, index) {
+      var level = order[index];
+      return { id: 'parallax-' + choice, choice: choice, x: xs[index], y: 1.65, z: [1, -3, 4][level], radius: [0.56, 0.84, 0.35][level] };
+    });
+  }
+  function parallaxTarget(round) { return parallaxObjects(round).reduce(function (near, item) { return item.z > near.z ? item : near; }).choice; }
+  function checkParallax(raw) {
+    var state = normalize(raw), p = state.parallax;
+    if (state.activity === 'parallax' && !state.progress.parallax.assisted && p.samples.length === 2 && p.choice === parallaxTarget(p.round)) {
+      if (p.completed.indexOf(p.round) < 0) p.completed.push(p.round);
+      state.progress.parallax.solved = true;
+    }
+    return state;
+  }
+  function nextParallax(raw) {
+    var state = normalize(raw), p = state.parallax;
+    if (state.activity !== 'parallax' || p.completed.indexOf(p.round) < 0 && !state.progress.parallax.assisted) return state;
+    state.parallax = { round: (p.round + 1) % 3, completed: p.completed.slice(), samples: [], choice: '' };
+    state.progress.parallax.assisted = false; state.progress.parallax.hints = 0; state.player = spawn('parallax');
+    return state;
   }
   function recordView(raw) {
     var state = normalize(raw), samples = state.parallax.samples, p = state.player;
@@ -298,6 +343,133 @@
   }
   function apertureDefaults(round) { return { round: Math.floor(number(round, 0, 0, 1)), phase: 0, speed: 1, masked: true, seenMasked: 2, seenOpen: 0, choice: '', completed: [] }; }
   function lengthDefaults(round) { var r = Math.floor(number(round, 0, 0, 1)); return { round: r, value: r ? 3.8 : 2.2, visible: true, seen: 1, completed: [] }; }
+  function silhouetteDefaults(round, set) { return { set: Math.floor(number(set, 0, 0, 1)), round: Math.floor(number(round, 0, 0, 1)), angle: 0, seen: 1, choice: '', completed: [], mastered: false }; }
+  function silhouetteCells(round, choice, set) {
+    var r = Math.floor(number(round, 0, 0, 1));
+    var base = r ? [[0, 0, 0], [1, 0, 0], [2, 0, 0], [1, 1, 0], [1, 2, 0]] : [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0], [0, 2, 0]];
+    var extra = r ? choice === 'B' ? [[1, 0, 1], [1, 0, 2], [1, 2, 1]] : [[1, 1, 1], [1, 1, 2], [1, 0, 1]] : choice === 'B' ? [[0, 1, 1], [0, 1, 2], [0, 0, 1]] : [[0, 0, 1], [0, 0, 2], [0, 1, 2]];
+    if (Math.floor(number(set, 0, 0, 1))) {
+      base = r ? [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0], [0, 2, 0], [1, 2, 0], [2, 2, 0]] : [[0, 0, 0], [2, 0, 0], [0, 1, 0], [2, 1, 0], [0, 2, 0], [1, 2, 0], [2, 2, 0]];
+      extra = r ? choice === 'B' ? [[0, 1, 1], [0, 1, 2], [0, 0, 1]] : [[0, 0, 1], [0, 0, 2], [0, 1, 2]] : choice === 'B' ? [[0, 2, 1], [0, 2, 2], [0, 1, 2]] : [[0, 1, 1], [0, 1, 2], [0, 2, 1]];
+    }
+    return base.concat(extra).map(function (cell) { return cell.slice(); });
+  }
+  function silhouetteProjection(cells, view) {
+    var points = [];
+    (Array.isArray(cells) ? cells : []).forEach(function (cell) { if (!Array.isArray(cell) || cell.length < 3 || !cell.every(Number.isFinite)) return; var point = [cell[view === 'side' ? 2 : 0], cell[1]]; if (!points.some(function (saved) { return saved[0] === point[0] && saved[1] === point[1]; })) points.push(point); });
+    return points.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+  }
+  function silhouetteTarget(round, set) { return Math.floor(number(round, 0, 0, 1)) === Math.floor(number(set, 0, 0, 1)) ? 'A' : 'B'; }
+  function silhouetteReference(round, set) { var cells = silhouetteCells(round, silhouetteTarget(round, set), set); return { front: silhouetteProjection(cells, 'front'), side: silhouetteProjection(cells, 'side') }; }
+  function silhouetteObjects(round, value, set) { return ['A', 'B'].map(function (choice, index) { return { choice: choice, cells: silhouetteCells(round, choice, set), x: index ? 206.4 : 201.6, y: 0.75, z: 0, angle: number(value, 0, 0, 90), cellSize: 0.58 }; }); }
+  function silhouettePoint(item, cell) { var a = item.angle * Math.PI / 180, x = (cell[0] - 1) * item.cellSize, z = (cell[2] - 1) * item.cellSize; return { x: item.x + x * Math.cos(a) + z * Math.sin(a), y: item.y + cell[1] * item.cellSize, z: item.z - x * Math.sin(a) + z * Math.cos(a) }; }
+  function canObserveSilhouette(raw) { var state = normalize(raw), p = state.player; return state.activity === 'silhouette' && p.x >= 198.2 && p.x <= 209.5 && (p.z >= 4 && p.z <= 13 && (facing(p, 204, 0) || facing(p, 201.6, 0) || facing(p, 206.4, 0) || facing(p, 204, 3)) || p.z >= -0.3 && p.z <= 0.3 && (facing(p, 201.6, 0) || facing(p, 206.4, 0))); }
+  function setSilhouetteAngle(raw, value) { var state = normalize(raw), s = state.silhouette; if (canObserveSilhouette(state)) { s.angle = number(value, s.angle, 0, 90); if (s.angle <= 5) s.seen |= 1; if (s.angle >= 85) s.seen |= 2; } return state; }
+  function selectSilhouette(raw, choice) { var state = normalize(raw); if (canObserveSilhouette(state) && ['A', 'B'].indexOf(choice) >= 0) state.silhouette.choice = choice; return state; }
+  function silhouetteMatches(raw) { var state = normalize(raw); return canObserveSilhouette(state) && state.silhouette.seen === 3 && state.silhouette.choice === silhouetteTarget(state.silhouette.round, state.silhouette.set); }
+  function checkSilhouette(raw) { var state = normalize(raw), s = state.silhouette; if (silhouetteMatches(state) && !state.progress.silhouette.assisted && s.completed.indexOf(s.round) < 0) s.completed.push(s.round); return normalize(state); }
+  function nextSilhouette(raw) { var state = normalize(raw), s = state.silhouette; if (state.activity === 'silhouette' && (s.completed.indexOf(s.round) >= 0 || state.progress.silhouette.assisted)) { state.silhouette = Object.assign(silhouetteDefaults(1 - s.round, s.set), { completed: s.completed.slice(), mastered: s.mastered }); state.player = spawn('silhouette'); } return state; }
+  function advanceSilhouetteSet(raw) { var state = normalize(raw), s = state.silhouette; if (state.activity === 'silhouette' && (s.completed.length === 2 || state.progress.silhouette.assisted)) { state.silhouette = Object.assign(silhouetteDefaults(0, 1 - s.set), { mastered: s.mastered }); state.progress.silhouette = { solved: s.mastered, assisted: false, hints: 0 }; state.player = spawn('silhouette'); } return state; }
+  function silhouetteInspectionViews(choice) { return ['A', 'B'].filter(function (item) { return choice == null || item === choice; }).reduce(function (views, item) { var x = item === 'A' ? 201.6 : 206.4; return views.concat([{ choice: item, side: 'front', player: { x: x, z: 4.8, yaw: 0, pitch: -4 } }, { choice: item, side: 'side', player: { x: x - 3, z: 0, yaw: 90, pitch: -8 } }]); }, []); }
+  function silhouetteInspection(raw) {
+    var state = normalize(raw), p = state.player;
+    if (state.activity !== 'silhouette') return null;
+    // Keep the close-up tools stable through a small first-person step or look.
+    return silhouetteInspectionViews().find(function (view) {
+      var target = view.player, yaw = angle(p.yaw - target.yaw, 0);
+      return Math.hypot(p.x - target.x, p.z - target.z) <= 0.3 && Math.min(yaw, 360 - yaw) <= 12 && Math.abs(p.pitch - target.pitch) <= 10;
+    }) || null;
+  }
+  function inspectSilhouette(raw, choice, side) { var state = normalize(raw), view = silhouetteInspectionViews(choice).find(function (item) { return item.choice === choice && item.side === side; }); if (state.activity === 'silhouette' && view) state.player = view.player; return state; }
+  function anamorphosisLimit(set) { return set === 2 ? 45 : 1.2; }
+  function anamorphosisDefaults(round, set) { var r = Math.floor(number(round, 0, 0, 1)), s = Math.floor(number(set, 0, 0, 2)); return { set: s, round: r, offsets: s === 2 ? r ? [30, -30] : [-30, 30] : r ? [0.9, -0.9] : [-0.9, 0.9], selected: 0, seen: 0, completed: [], mastered: false, history: { past: [], future: [] } }; }
+  function anamorphosisTargets(round, set) { var r = Math.floor(number(round, 0, 0, 1)), s = Math.floor(number(set, 0, 0, 2)); return s === 2 ? r ? [-18, 9] : [15, -12] : s === 1 ? r ? [-0.65, 0.35] : [0.45, -0.6] : r ? [-0.55, 0.7] : [0.6, -0.45]; }
+  function anamorphosisObjects(round, offsets, set) {
+    var r = Math.floor(number(round, 0, 0, 1)), s = Math.floor(number(set, 0, 0, 2)), depth = s === 1, rotation = s === 2, targets = anamorphosisTargets(r, s), defaults = anamorphosisDefaults(r, s).offsets, limit = anamorphosisLimit(s);
+    var vertices = rotation ? r ? [[-1.7, 3.3], [0, 1.2], [1.7, 3.3]] : [[-1.7, 1.2], [1.7, 1.2], [0, 3.3]] : r ? [[-2, 4], [0, 1], [2, 4]] : [[-2, 1], [2, 1], [0, 4]], depths = depth ? r ? [1.5, -1, 0.2] : [-2, 0, 1] : r ? [1.5, -1.5, 0.2] : [-2, 0, 2];
+    return ['A', 'B', 'C'].map(function (choice, i) {
+      var index = i - 1, offset = i ? number(Array.isArray(offsets) ? offsets[index] : undefined, defaults[index], -limit, limit) : 0, target = i ? targets[index] : 0, factor = (10 - depths[i]) / 10;
+      // Translation and pivot rotation preserve each beam's physical dimensions.
+      function endpoint(vertex) {
+        var x = vertex[0], y = vertex[1];
+        if (rotation && i) {
+          var middleX = (vertices[i][0] + vertices[(i + 1) % 3][0]) / 2, middleY = (vertices[i][1] + vertices[(i + 1) % 3][1]) / 2;
+          var radians = (offset - target) * Math.PI / 180, dx = x - middleX, dy = y - middleY;
+          x = middleX + dx * Math.cos(radians) - dy * Math.sin(radians);
+          y = middleY + dx * Math.sin(radians) + dy * Math.cos(radians);
+        }
+        return { x: 216 + (x + (depth || rotation ? 0 : offset - target)) * factor, y: 1.65 + (y - 1.65) * factor, z: depths[i] + (depth ? offset - target : 0) };
+      }
+      return { id: 'anamorphosis-' + choice, choice: choice, index: index, from: endpoint(vertices[i]), to: endpoint(vertices[(i + 1) % 3]), radius: 0.085 * factor, targetOffset: target, offset: offset };
+    });
+  }
+  function canManipulateAnamorphosis(raw) { var state = normalize(raw), p = state.player; return state.activity === 'anamorphosis' && p.x >= 210.5 && p.x <= 221.5 && p.z >= 4 && p.z <= 13 && facing(p, 216, 0); }
+  function selectAnamorphosis(raw, index) { var state = normalize(raw); if (canManipulateAnamorphosis(state) && Number.isInteger(index) && index >= 0 && index < 2) state.anamorphosis.selected = index; return state; }
+  function normalizeAnamorphosisSnapshot(raw, set, round) {
+    var value = object(raw), limit = anamorphosisLimit(set);
+    if (value.set !== set || value.round !== round || !Number.isInteger(value.selected) || value.selected < 0 || value.selected > 1 || !Array.isArray(value.offsets) || value.offsets.length !== 2 || ![0, 1].every(function (index) { return Number.isFinite(value.offsets[index]) && Math.abs(value.offsets[index]) <= limit; })) return null;
+    return { set: set, round: round, offsets: value.offsets.slice(), selected: value.selected };
+  }
+  function normalizeAnamorphosisHistory(raw, set, round) {
+    var history = object(raw), result = { past: [], future: [] };
+    ['past', 'future'].forEach(function (key) {
+      if (Array.isArray(history[key])) result[key] = history[key].map(function (entry) { return normalizeAnamorphosisSnapshot(entry, set, round); }).filter(Boolean).slice(-24);
+    });
+    return result;
+  }
+  function anamorphosisSnapshot(raw) {
+    var a = normalize(raw).anamorphosis;
+    return { set: a.set, round: a.round, offsets: a.offsets.slice(), selected: a.selected };
+  }
+  function sameAnamorphosisGeometry(a, b) { return !!a && !!b && a.set === b.set && a.round === b.round && a.offsets[0] === b.offsets[0] && a.offsets[1] === b.offsets[1]; }
+  function setAnamorphosisOffset(raw, index, value, baseline) {
+    var state = normalize(raw), a = state.anamorphosis;
+    if (canManipulateAnamorphosis(state) && Number.isInteger(index) && index >= 0 && index < 2) {
+      var offset = number(value, a.offsets[index], -anamorphosisLimit(a.set), anamorphosisLimit(a.set));
+      if (offset !== a.offsets[index]) {
+        var before = anamorphosisSnapshot(state), origin = normalizeAnamorphosisSnapshot(baseline, a.set, a.round), past = a.history.past;
+        // Selection happens on pointer-down; retain the selection from before that gesture.
+        if (sameAnamorphosisGeometry(origin, before)) before.selected = origin.selected;
+        if (!sameAnamorphosisGeometry(origin, past[past.length - 1])) past.push(before);
+        a.offsets[index] = offset; a.seen = 0; a.history.future = [];
+        if (sameAnamorphosisGeometry(a, past[past.length - 1])) past.pop();
+        a.history.past = past.slice(-24);
+      }
+      a.selected = index;
+    }
+    return state;
+  }
+  function restoreAnamorphosis(raw, redo) {
+    var state = normalize(raw), a = state.anamorphosis, from = a.history[redo ? 'future' : 'past'], to = a.history[redo ? 'past' : 'future'];
+    if (!canManipulateAnamorphosis(state) || !from.length) return state;
+    to.push(anamorphosisSnapshot(state)); if (to.length > 24) to.shift();
+    var restored = from.pop(); a.offsets = restored.offsets.slice(); a.selected = restored.selected; a.seen = 0;
+    return state;
+  }
+  function undoAnamorphosis(raw) { return restoreAnamorphosis(raw, false); }
+  function redoAnamorphosis(raw) { return restoreAnamorphosis(raw, true); }
+  function anamorphosisInspectionViews() { return [{ side: 'front', player: spawn('anamorphosis') }, { side: 'side', player: { x: 220.4, z: 8, yaw: Math.atan2(-4.4, 8) * 180 / Math.PI, pitch: 0 } }]; }
+  function anamorphosisView(raw) {
+    var state = normalize(raw), p = state.player;
+    if (!canManipulateAnamorphosis(state)) return null;
+    var found = anamorphosisInspectionViews().find(function (view) { var yaw = angle(p.yaw - view.player.yaw, 0), front = view.side === 'front'; return Math.hypot(p.x - view.player.x, p.z - view.player.z) <= (front ? 0.25 : 0.6) + 1e-8 && Math.min(yaw, 360 - yaw) <= (front ? 5 : 8) + 1e-8 && Math.abs(p.pitch - view.player.pitch) <= (front ? 5 : 8) + 1e-8; });
+    return found ? found.side : null;
+  }
+  function recordAnamorphosis(raw) { var state = normalize(raw), view = anamorphosisView(state); if (view) state.anamorphosis.seen |= view === 'front' ? 1 : 2; return state; }
+  function inspectAnamorphosis(raw, side) { var state = normalize(raw), view = anamorphosisInspectionViews().find(function (item) { return item.side === side; }); if (state.activity === 'anamorphosis' && view) state.player = view.player; return state; }
+  function anamorphosisProjection(point, player) {
+    var yaw = player.yaw * Math.PI / 180, pitch = player.pitch * Math.PI / 180, dx = point.x - player.x, dy = point.y - 1.65, dz = point.z - player.z, depth = dx * Math.sin(yaw) - dz * Math.cos(yaw), d = depth * Math.cos(pitch) + dy * Math.sin(pitch);
+    return d > 0.05 ? { x: (dx * Math.cos(yaw) + dz * Math.sin(yaw)) / d, y: (dy * Math.cos(pitch) - depth * Math.sin(pitch)) / d, depth: d } : null;
+  }
+  function anamorphosisError(raw) {
+    var state = normalize(raw), objects = anamorphosisObjects(state.anamorphosis.round, state.anamorphosis.offsets, state.anamorphosis.set), error = 0;
+    objects.forEach(function (item, i) { var end = anamorphosisProjection(item.to, state.player), next = anamorphosisProjection(objects[(i + 1) % 3].from, state.player); error = Math.max(error, end && next ? Math.hypot(end.x - next.x, end.y - next.y) : Infinity); });
+    return error;
+  }
+  function anamorphosisMatches(raw) { var state = normalize(raw); return anamorphosisView(state) === 'front' && state.anamorphosis.seen === 3 && anamorphosisError(state) <= 0.008 + 1e-8; }
+  function checkAnamorphosis(raw) { var state = normalize(raw), a = state.anamorphosis; if (anamorphosisMatches(state) && !state.progress.anamorphosis.assisted && a.completed.indexOf(a.round) < 0) a.completed.push(a.round); return normalize(state); }
+  function nextAnamorphosis(raw) { var state = normalize(raw), a = state.anamorphosis; if (state.activity === 'anamorphosis' && (a.completed.indexOf(a.round) >= 0 || state.progress.anamorphosis.assisted)) { state.anamorphosis = Object.assign(anamorphosisDefaults(1 - a.round, a.set), { completed: a.completed.slice(), mastered: a.mastered }); state.player = spawn('anamorphosis'); } return state; }
+  function advanceAnamorphosisSet(raw) { var state = normalize(raw), a = state.anamorphosis; if (state.activity === 'anamorphosis' && (a.completed.length === 2 || state.progress.anamorphosis.assisted)) { state.anamorphosis = Object.assign(anamorphosisDefaults(0, (a.set + 1) % 3), { mastered: a.mastered }); state.progress.anamorphosis = { solved: a.mastered, assisted: false, hints: 0 }; state.player = spawn('anamorphosis'); } return state; }
   function lengthObjects(round, value) {
     var r = Math.floor(number(round, 0, 0, 1)), fin = 0.6 / Math.sqrt(2);
     function shaft(size, y, outward) {
@@ -467,19 +639,52 @@
   function reliefInspection(raw) { var state = normalize(raw); return state.activity === 'relief' ? reliefInspectionViews().find(function (view) { return ['x', 'z', 'yaw', 'pitch'].every(function (key) { return Math.abs(state.player[key] - view.player[key]) < 1e-5; }); }) || null : null; }
   function inspectRelief(raw, choice, side) { var state = normalize(raw), view = reliefInspectionViews().find(function (item) { return item.choice === choice && item.side === side; }); if (state.activity === 'relief' && view) state.player = view.player; return state; }
   function facing(p, x, z) { var dx = x - p.x, dz = z - p.z, length = Math.hypot(dx, dz), yaw = p.yaw * Math.PI / 180; return length > 0.2 && (dx * Math.sin(yaw) - dz * Math.cos(yaw)) / length > 0.94 && Math.abs(p.pitch) < 20; }
-  function evidence(raw) {
-    var state = normalize(raw), p = state.player, ringError = Infinity;
-    if (p.z > 3.5) {
-      ringError = 0;
-      for (var i = 0; i < 12; i++) {
-        var angle = (i + 2) * Math.PI / 6, depths = [-3, 0, 3], a = depths[i % 3], b = depths[(i + 1) % 3];
-        function point(depth) { var k = (9 - depth) / 9, t = p.z / (p.z - depth); return { x: p.x + (-12 + Math.cos(angle) * 1.35 * k - p.x) * t, y: Math.sin(angle) * 1.35 * k * t }; }
-        var first = point(a), second = point(b); ringError = Math.max(ringError, Math.hypot(first.x - second.x, first.y - second.y) / 1.35);
-      }
+  function ringConfiguration(round) {
+    var r = Math.floor(number(round, 0, 0, 2)), eye = [{ x: -12, z: 9 }, { x: -9.6, z: 7.6 }, { x: -14.6, z: 11.4 }][r];
+    return { round: r, eye: { x: eye.x, z: eye.z, yaw: Math.atan2(-12 - eye.x, eye.z) * 180 / Math.PI, pitch: 0 }, radius: r ? 1.2 : 1.35, depths: [[-3, 0, 3], [2.4, -2.2, 0.4], [-3.1, 2.7, -0.4]][r] };
+  }
+  function ringPoint(round, index, t) {
+    var config = ringConfiguration(round), eye = config.eye, i = Math.floor(number(index, 0, 0, 11)), theta = Math.PI / 6 + (i + number(t, 0, 0, 1)) * Math.PI / 6, yaw = eye.yaw * Math.PI / 180;
+    var x = -12 + config.radius * Math.cos(theta) * Math.cos(yaw), y = config.radius * Math.sin(theta), z = config.radius * Math.cos(theta) * Math.sin(yaw), depth = config.depths[i % 3], scale = (eye.z - depth) / (eye.z - z);
+    // Intersect a ray through the target camera's circular image with a physical depth plane.
+    return { x: eye.x + (x - eye.x) * scale, y: 1.65 + y * scale, z: depth };
+  }
+  function ringParts(round) {
+    var config = ringConfiguration(round);
+    return Array.from({ length: 12 }, function (_, index) {
+      var depth = config.depths[index % 3];
+      return { index: index, depth: depth, radius: 0.065 * (config.eye.z - depth) / config.eye.z, points: Array.from({ length: 17 }, function (_, step) { return ringPoint(config.round, index, step / 16); }) };
+    });
+  }
+  function ringError(raw) {
+    var state = normalize(raw), p = state.player, config = ringConfiguration(state.ring.round), error = 0;
+    if (p.z <= Math.max.apply(null, config.depths) + 0.5) return Infinity;
+    function project(point) { var scale = p.z / (p.z - point.z); return { x: p.x + (point.x - p.x) * scale, y: (point.y - 1.65) * scale }; }
+    for (var index = 0; index < 12; index++) {
+      var a = project(ringPoint(config.round, index, 1)), b = project(ringPoint(config.round, (index + 1) % 12, 0));
+      error = Math.max(error, Math.hypot(a.x - b.x, a.y - b.y) / config.radius);
     }
+    return error;
+  }
+  function checkRing(raw) {
+    var state = normalize(raw), r = state.ring;
+    if (state.activity === 'ring' && !state.progress.ring.assisted && facing(state.player, -12, 0) && ringError(state) <= 0.055) {
+      if (r.completed.indexOf(r.round) < 0) r.completed.push(r.round);
+      state.progress.ring.solved = true;
+    }
+    return state;
+  }
+  function nextRing(raw) {
+    var state = normalize(raw), r = state.ring;
+    if (state.activity !== 'ring' || r.completed.indexOf(r.round) < 0 && !state.progress.ring.assisted) return state;
+    r.round = (r.round + 1) % 3; state.progress.ring.assisted = false; state.progress.ring.hints = 0; state.player = spawn('ring');
+    return state;
+  }
+  function evidence(raw) {
+    var state = normalize(raw), p = state.player, alignmentError = ringError(state);
     var ratio = projectedHeight(p, 0.95, state.blockZ, 1.2) / projectedHeight(p, -0.95, -3, 2.4);
     var profile = shadowProfile(state.shadowAngle), target = shadowProfile(90), shadowError = Math.max.apply(null, profile.map(function (row, index) { return Math.max(Math.abs(row.left - target[index].left), Math.abs(row.right - target[index].right)); }));
-    return { ringError: ringError, ringAlignment: Math.max(0, Math.round(100 * (1 - Math.min(1, ringError)))), ringFacing: facing(p, -12, 0), scaleRatio: Number.isFinite(ratio) && ratio > 0 ? ratio : null, scaleFacing: facing(p, 0, (state.blockZ - 3) / 2), collected: state.collected.length, contourAligned: alignedCorners(state), contourFacing: facing(p, 36, 0), contextSelected: state.context.selected.length, continuityOffset: state.continuityOffset, continuityFacing: facing(p, 60, 0) && p.z >= 7 && p.z <= 11 && Math.abs(p.x - 60) <= 0.6 + 1e-8, shadowError: shadowError, shadowFacing: facing(p, 72.5, -4) && p.x >= 70.8 - 1e-8 && p.x <= 73.2 + 1e-8 && p.z >= 7 && p.z <= 11 };
+    return { ringError: alignmentError, ringAlignment: Math.max(0, Math.round(100 * (1 - Math.min(1, alignmentError)))), ringFacing: facing(p, -12, 0), scaleRatio: Number.isFinite(ratio) && ratio > 0 ? ratio : null, scaleFacing: facing(p, 0, (state.blockZ - 3) / 2), collected: state.collected.length, contourAligned: alignedCorners(state), contourFacing: facing(p, 36, 0), contextSelected: state.context.selected.length, continuityOffset: state.continuityOffset, continuityFacing: facing(p, 60, 0) && p.z >= 7 && p.z <= 11 && Math.abs(p.x - 60) <= 0.6 + 1e-8, shadowError: shadowError, shadowFacing: facing(p, 72.5, -4) && p.x >= 70.8 - 1e-8 && p.x <= 73.2 + 1e-8 && p.z >= 7 && p.z <= 11 };
   }
   function canCollect(raw, id) {
     if ([0, 1, 2].indexOf(id) < 0) return false;
@@ -493,7 +698,7 @@
     }
     return near > far;
   }
-  function checkAnswer(raw) { var state = normalize(raw), values = evidence(state); return state.activity === 'length' ? checkLength(state).progress.length.solved : state.activity === 'aperture' ? checkAperture(state).progress.aperture.solved : state.activity === 'landing' ? checkLanding(state).progress.landing.solved : state.activity === 'weave' ? checkWeave(state).progress.weave.solved : state.activity === 'frame' ? checkFrame(state).progress.frame.solved : state.activity === 'motion' ? checkMotion(state).progress.motion.solved : state.activity === 'shape' ? checkShape(state).progress.shape.solved : state.activity === 'relief' ? checkRelief(state).progress.relief.solved : state.activity === 'rotation' ? checkRotation(state).progress.rotation.solved : state.activity === 'change' ? checkChange(state).progress.change.solved : state.activity === 'ring' ? values.ringError <= 0.055 && values.ringFacing : state.activity === 'scale' ? values.scaleRatio != null && Math.abs(values.scaleRatio - 1) <= 0.05 && values.scaleFacing : state.activity === 'parallax' ? state.parallax.samples.length === 2 && state.parallax.choice === 'C' : state.activity === 'contour' ? values.contourAligned === 4 && state.contour.choice === 'square' && values.contourFacing : state.activity === 'context' ? state.context.selected.length === 2 && state.context.selected.indexOf('A') >= 0 && state.context.selected.indexOf('C') >= 0 : state.activity === 'continuity' ? Math.abs(state.continuityOffset) <= 0.06 + 1e-8 && values.continuityFacing : state.activity === 'shadow' ? values.shadowError <= 0.06 + 1e-8 && values.shadowFacing : values.collected === 3; }
+  function checkAnswer(raw) { var state = normalize(raw), values = evidence(state); return state.activity === 'anamorphosis' ? checkAnamorphosis(state).anamorphosis.completed.length === 2 && !state.progress.anamorphosis.assisted : state.activity === 'silhouette' ? checkSilhouette(state).silhouette.completed.length === 2 && !state.progress.silhouette.assisted : state.activity === 'length' ? checkLength(state).progress.length.solved : state.activity === 'aperture' ? checkAperture(state).progress.aperture.solved : state.activity === 'landing' ? checkLanding(state).progress.landing.solved : state.activity === 'weave' ? checkWeave(state).progress.weave.solved : state.activity === 'frame' ? checkFrame(state).progress.frame.solved : state.activity === 'motion' ? checkMotion(state).progress.motion.solved : state.activity === 'shape' ? checkShape(state).progress.shape.solved : state.activity === 'relief' ? checkRelief(state).progress.relief.solved : state.activity === 'rotation' ? checkRotation(state).progress.rotation.solved : state.activity === 'change' ? checkChange(state).progress.change.solved : state.activity === 'ring' ? values.ringError <= 0.055 && values.ringFacing : state.activity === 'scale' ? values.scaleRatio != null && Math.abs(values.scaleRatio - 1) <= 0.05 && values.scaleFacing : state.activity === 'parallax' ? state.parallax.samples.length === 2 && state.parallax.choice === parallaxTarget(state.parallax.round) : state.activity === 'contour' ? values.contourAligned === 4 && state.contour.choice === 'square' && values.contourFacing : state.activity === 'context' ? state.context.selected.length === 2 && state.context.selected.indexOf('A') >= 0 && state.context.selected.indexOf('C') >= 0 : state.activity === 'continuity' ? Math.abs(state.continuityOffset) <= 0.06 + 1e-8 && values.continuityFacing : state.activity === 'shadow' ? values.shadowError <= 0.06 + 1e-8 && values.shadowFacing : values.collected === 3; }
   var CSS = `
     [data-perception-walk]{--pw-ink:#203032;--pw-muted:#526466;--pw-bg:#fff;--pw-line:#c9d6d5;--pw-soft:#edf3f2;--pw-accent:#096a65;background:var(--pw-bg);color:var(--pw-ink);padding:20px;font:inherit;line-height:1.5;min-width:0}
     [data-perception-walk][data-theme=dark]{--pw-ink:#edf6f4;--pw-muted:#b9cdca;--pw-bg:#172323;--pw-line:#506966;--pw-soft:#263936;--pw-accent:#98e3d3}
@@ -512,6 +717,8 @@
     .pw-change-cover{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:#526466;color:#fff;font-size:18px;font-weight:650;pointer-events:auto}.pw-change-scene{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.pw-change-scene strong{font-size:14px}.pw-change-scene span{font-size:13px;color:var(--pw-muted)}
     .pw-rotation-pieces{display:flex;gap:16px;flex-wrap:wrap}.pw-rotation-pieces legend{width:100%}.pw-motion-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 16px}.pw-rotation-adjustments{display:flex;gap:8px;margin-top:8px}.pw-rotation-adjustments button{width:44px;padding:8px!important}
     .pw-inspection{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:0;border:0;min-width:0}.pw-inspection legend{font-size:13px;margin-bottom:6px}.pw-inspection-tools,.pw-inspection-views{display:flex;gap:6px}.pw-inspection-tools button{min-width:54px}.pw-viewpoint-slot{display:grid;grid-template-columns:56px 44px 44px;gap:4px}.pw-viewpoint-slot button{width:100%;height:44px;padding:8px!important}.pw-viewpoints{column-gap:16px}.pw-inspection-views button{width:44px;padding:8px!important}
+    .pw-orientations{display:flex;gap:6px;flex-wrap:wrap}.pw-orientations button{flex:1;min-width:90px}
+    .pw-silhouette-references{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.pw-silhouette-references svg{display:block;width:100%;aspect-ratio:1}.pw-silhouette-references figcaption{font-size:13px;text-align:center;padding-top:4px}
     .pw-waypoints{position:absolute;inset:0;pointer-events:none}[data-perception-walk] .pw-waypoint{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;width:100px;min-height:44px;padding:7px 5px;font-size:13px;background:#fff;color:#203032;border:2px solid #096a65;box-shadow:0 2px 4px #20303224;overflow-wrap:anywhere}.pw-waypoint:hover{background:#edf3f2!important}.pw-waypoint span:first-child{color:#096a65;font-weight:750}
     .pw-navigation{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--pw-line);padding:12px 0}.pw-pad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:4px}.pw-pad button{padding:0!important;touch-action:none;user-select:none}.pw-look{display:grid;grid-template-columns:repeat(2,44px);gap:4px}.pw-look button{padding:0!important;touch-action:none;user-select:none}.pw-controls{display:flex;gap:12px;align-items:center}.pw-actions .pw-icon{width:44px;padding:8px}.pw-position{font-size:12px;color:var(--pw-muted);font-variant-numeric:tabular-nums;margin-top:8px!important}
     .pw-task{border-left:1px solid var(--pw-line);padding-left:24px;min-width:0}.pw-task>*+*{margin-top:16px!important}.pw-task p{font-size:14px}.pw-task .pw-goal{font-size:16px;font-weight:600}.pw-reading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-block:1px solid var(--pw-line);padding:12px 0;font-size:14px}.pw-reading strong{font-size:21px;font-variant-numeric:tabular-nums}.pw-task input[type=range]{width:100%;display:block;min-height:36px;accent-color:var(--pw-accent)}.pw-slider{display:block;font-size:14px}.pw-slider output{float:right;font-variant-numeric:tabular-nums}
@@ -530,6 +737,55 @@
     [data-perception-walk] .pw-nav[data-expanded=false] small{display:block}.pw-nav[data-expanded=false] strong{font-size:14px}
     [data-perception-walk][data-mouse-look=true] .pw-waypoints{visibility:hidden}.pw-scene-column{position:relative}.pw-mouse-look{position:absolute;right:0;top:0;width:44px;padding:8px!important}.pw-scene-column>.pw-toolbar{padding-right:52px;min-height:44px}
   `;
+  function AnamorphosisPlan(props) {
+    var h = props.h, state = props.state, a = state.anamorphosis, enabled = canManipulateAnamorphosis(state), objects = anamorphosisObjects(a.round, a.offsets, a.set), focal = 600;
+    function project(point) { var p = anamorphosisProjection(point, state.player); return p && { x: 400 + focal * p.x, y: 300 - focal * p.y, depth: p.depth }; }
+    var projected = objects.reduce(function (points, item) { return points.concat([project(item.from), project(item.to)].filter(Boolean)); }, []);
+    var minX = Math.min.apply(null, projected.map(function (point) { return point.x; })), maxX = Math.max.apply(null, projected.map(function (point) { return point.x; }));
+    var labelOrder = objects.filter(function (item) { return item.index >= 0; }).slice().sort(function (one, two) {
+      var a = project({ x: (one.from.x + one.to.x) / 2, y: (one.from.y + one.to.y) / 2, z: one.from.z }), b = project({ x: (two.from.x + two.to.x) / 2, y: (two.from.y + two.to.y) / 2, z: two.from.z });
+      return (a ? a.x : 0) - (b ? b.x : 0);
+    });
+    function beam(item, ghost) {
+      var from = project(item.from), to = project(item.to);
+      if (!from || !to) return null;
+      var width = 2 * focal * item.radius / ((from.depth + to.depth) / 2), selected = item.index === a.selected, label = props.t('anamorphosis_select_' + item.choice.toLowerCase(), 'Select beam ' + item.choice);
+      function choose(event) { if (event && event.type === 'keydown') { if (event.key !== 'Enter' && event.key !== ' ') return; event.preventDefault(); } if (enabled && props.onAnamorphosisSelect) props.onAnamorphosisSelect(item.index); }
+      var attrs = { x1: from.x, y1: from.y, x2: to.x, y2: to.y, strokeLinecap: 'round' };
+      if (ghost) return h('line', Object.assign({ key: item.choice, stroke: '#a66e00', strokeWidth: width + 4, strokeDasharray: '9 7', 'data-walk-anamorphosis-guide': item.choice }, attrs));
+      return h('g', { key: item.choice, role: item.index >= 0 ? 'button' : undefined, tabIndex: item.index >= 0 && enabled ? 0 : undefined, 'aria-label': item.index >= 0 ? label : undefined, 'aria-pressed': item.index >= 0 ? selected : undefined, 'aria-disabled': item.index >= 0 && !enabled || undefined, onClick: item.index >= 0 ? choose : undefined, onKeyDown: item.index >= 0 ? choose : undefined },
+        item.index >= 0 && h('line', Object.assign({ stroke: 'transparent', strokeWidth: Math.max(28, width + 12), pointerEvents: 'stroke' }, attrs)),
+        selected && h('line', Object.assign({ stroke: '#203032', strokeWidth: width + 4 }, attrs)),
+        h('line', Object.assign({ stroke: item.index < 0 ? '#b84632' : '#147e78', strokeWidth: width, 'data-walk-anamorphosis-solid': item.choice }, attrs)),
+        h('text', { x: item.index < 0 ? (from.x + to.x) / 2 : Math.max(32, Math.min(768, labelOrder[0].choice === item.choice ? minX - 38 : maxX + 38)), y: (from.y + to.y) / 2 + (item.index < 0 ? 44 : 14), textAnchor: 'middle', fontSize: 42, fontWeight: 700, fill: '#203032', pointerEvents: 'none' }, item.choice));
+    }
+    return h('svg', { className: 'pw-plan', viewBox: '0 0 800 600', role: 'group', 'aria-label': props.t('anamorphosis_plan', 'Perspective view of three separated beams'), 'data-walk-plan': true, 'data-walk-anamorphosis-plan': true }, h('rect', { width: 800, height: 600, fill: '#edf3f2' }),
+      props.reveal && h('g', { 'data-walk-anamorphosis-guides': true }, anamorphosisObjects(a.round, anamorphosisTargets(a.round, a.set), a.set).map(function (item) { return beam(item, true); })),
+      objects.sort(function (one, two) { var p = project(one.from), q = project(two.from); return (q ? q.depth : 0) - (p ? p.depth : 0); }).map(function (item) { return beam(item, false); }));
+  }
+  function SilhouettePlan(props) {
+    var h = props.h, state = props.state, s = state.silhouette, p = state.player, inspection = silhouetteInspection(state), objects = silhouetteObjects(s.round, s.angle, s.set), reference = silhouetteReference(s.round, s.set), yaw = p.yaw * Math.PI / 180, pitch = p.pitch * Math.PI / 180;
+    function project(point) { var dx = point.x - p.x, dz = point.z - p.z, dy = point.y - 1.65, depth = dx * Math.sin(yaw) - dz * Math.cos(yaw), d = depth * Math.cos(pitch) + dy * Math.sin(pitch); return d > 0.05 ? { x: (dx * Math.cos(yaw) + dz * Math.sin(yaw)) / d, y: (dy * Math.cos(pitch) - depth * Math.sin(pitch)) / d, depth: d } : null; }
+    function rectangle(x, y, z, width, height) { return [[-1, -1], [-1, 1], [1, 1], [1, -1]].map(function (v) { return { x: x + v[0] * width / 2, y: y + v[1] * height / 2, z: z }; }); }
+    var board = rectangle(204, 2.65, -2, 10.5, 5.1), fitPoints = board;
+    if (inspection) {
+      var inspected = objects.find(function (item) { return item.choice === inspection.choice; });
+      fitPoints = [];
+      inspected.cells.forEach(function (cell) { [-0.5, 0.5].forEach(function (x) { [-0.5, 0.5].forEach(function (y) { [-0.5, 0.5].forEach(function (z) { fitPoints.push(silhouettePoint(inspected, [cell[0] + x, cell[1] + y, cell[2] + z])); }); }); }); });
+    }
+    var bounds = fitPoints.map(project).filter(Boolean), focal = Math.min(750, 350 / Math.max.apply(null, bounds.map(function (v) { return Math.abs(v.x); }).concat([0.001])), 245 / Math.max.apply(null, bounds.map(function (v) { return Math.abs(v.y); }).concat([0.001])));
+    function pixel(point) { var v = project(point); return v && { x: 400 + focal * v.x, y: 300 - focal * v.y }; }
+    function polygon(points, attrs) { var projected = points.map(pixel); return projected.every(Boolean) ? h('polygon', Object.assign({ points: projected.map(function (v) { return v.x + ',' + v.y; }).join(' ') }, attrs)) : null; }
+    function textAt(point, value, attrs) { var v = pixel(point); return !inspection && v && h('text', Object.assign({ x: v.x, y: v.y, textAnchor: 'middle', fontSize: 32, fill: '#203032', fontWeight: 700 }, attrs), value); }
+    var faces = [], cubeFaces = [ [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1]], [[-1,-1,1],[-1,1,1],[1,1,1],[1,-1,1]], [[-1,-1,-1],[-1,1,-1],[-1,1,1],[-1,-1,1]], [[1,-1,-1],[1,-1,1],[1,1,1],[1,1,-1]], [[-1,-1,-1],[-1,-1,1],[1,-1,1],[1,-1,-1]], [[-1,1,-1],[1,1,-1],[1,1,1],[-1,1,1]] ];
+    objects.forEach(function (item) { item.cells.forEach(function (cell, index) { cubeFaces.forEach(function (face, side) { var points = face.map(function (v) { return silhouettePoint(item, cell.map(function (n, axis) { return n + v[axis] / 2; })); }), projected = points.map(project); if (projected.every(Boolean)) faces.push({ key: item.choice + '-' + index + '-' + side, choice: item.choice, points: points, depth: projected.reduce(function (sum, v) { return sum + v.depth; }, 0) / 4, fill: ['#11655f', '#208e87', '#147e78', '#19736d', '#105c57', '#66b6ad'][side] }); }); }); });
+    return h('svg', { className: 'pw-plan', viewBox: '0 0 800 600', role: 'img', 'aria-label': props.t('silhouette_plan', 'Perspective sculptures and their front and side reference silhouettes'), 'data-walk-plan': true, 'data-walk-silhouette-plan': true },
+      h('rect', { width: 800, height: 600, fill: '#edf3f2' }), polygon(board, { fill: '#f6f8f5', stroke: '#b7c7c1', strokeWidth: 2 }),
+      ['front', 'side'].map(function (view, index) { var x = index ? 206.2 : 201.8, cells = reference[view], minU = Math.min.apply(null, cells.map(function (v) { return v[0]; })), maxU = Math.max.apply(null, cells.map(function (v) { return v[0]; })), minY = Math.min.apply(null, cells.map(function (v) { return v[1]; })), maxY = Math.max.apply(null, cells.map(function (v) { return v[1]; })), size = Math.min(0.46, 1.5 / (maxY - minY + 1), 2.8 / (maxU - minU + 1)); return h('g', { key: view, 'data-walk-silhouette-reference': view }, polygon(rectangle(x, 3.35, -1.89, 3.6, 1.75), { fill: '#e4ebe5' }), cells.map(function (cell, i) { return polygon(rectangle(x + (cell[0] - (minU + maxU) / 2) * size, 3.35 + (cell[1] - (minY + maxY) / 2) * size, -1.86, size, size), { key: i, fill: '#203032', stroke: props.reveal ? '#a66e00' : '#203032', strokeWidth: 1 }); }), textAt({ x: x, y: 4.7, z: -1.85 }, props.t('silhouette_' + view, view === 'front' ? 'Front' : 'Side'))); }),
+      h('g', { 'data-walk-silhouette-solids': true }, faces.sort(function (a, b) { return b.depth - a.depth; }).map(function (face) { return polygon(face.points, { key: face.key, fill: face.fill, stroke: '#145f5a', strokeWidth: 1, 'data-walk-silhouette-solid': face.choice }); })),
+      props.reveal && h('g', { 'data-walk-silhouette-guides': true }, faces.filter(function (face) { return face.choice === silhouetteTarget(s.round, s.set); }).map(function (face) { return polygon(face.points, { key: face.key, fill: 'none', stroke: '#a66e00', strokeWidth: 2 }); })),
+      !inspection && objects.map(function (item) { return textAt({ x: item.x + (item.choice === 'A' ? -1.95 : 1.95), y: 1.4, z: 0 }, item.choice, { key: item.choice, fontSize: 36, dominantBaseline: 'middle', fill: s.choice === item.choice ? '#096a65' : '#203032', textDecoration: s.choice === item.choice ? 'underline' : 'none' }); }));
+  }
   function LengthPlan(props) {
     var h = props.h, state = props.state, p = state.player, l = state.length, objects = lengthObjects(l.round, l.value), yaw = p.yaw * Math.PI / 180, pitch = p.pitch * Math.PI / 180;
     function project(point) { var dx = point.x - p.x, dz = point.z - p.z, dy = point.y - 1.65, depth = dx * Math.sin(yaw) - dz * Math.cos(yaw), d = depth * Math.cos(pitch) + dy * Math.sin(pitch); return d > 0.05 ? { x: (dx * Math.cos(yaw) + dz * Math.sin(yaw)) / d, y: (dy * Math.cos(pitch) - depth * Math.sin(pitch)) / d } : null; }
@@ -655,7 +911,37 @@
       surfaces.map(function (item) { var label = project(item.x, item.y + 1.95, 0); return label && h('text', { key: item.choice, x: label.x, y: label.y, textAnchor: 'middle', fontSize: 26, fill: '#203032', fontWeight: 700 }, item.choice); }),
       props.reveal && h('g', { 'data-walk-relief-profile': true }, profiles));
   }
+  function RingPlan(props) {
+    var h = props.h, t = props.t, state = props.state, config = ringConfiguration(state.ring.round), focal = 1100;
+    function project(point) { var p = anamorphosisProjection(point, state.player); return p && { x: 400 + focal * p.x, y: 300 - focal * p.y, depth: p.depth }; }
+    return h('svg', { className: 'pw-plan', viewBox: '0 0 800 600', role: 'img', 'aria-label': t('ring_plan', 'Circle fragments from your current viewpoint'), 'data-walk-plan': true, 'data-walk-ring-plan': true },
+      h('rect', { width: 800, height: 600, fill: '#f6f8f5' }),
+      ringParts(state.ring.round).sort(function (a, b) { return a.depth - b.depth; }).map(function (part) {
+        var points = part.points.map(project);
+        if (!points.every(Boolean)) return null;
+        return h('polyline', { key: part.index, points: points.map(function (p) { return p.x + ',' + p.y; }).join(' '), fill: 'none', stroke: '#9b6700', strokeWidth: Math.max(3, Math.min(30, 2 * focal * part.radius / points[8].depth)), strokeLinecap: 'round' });
+      }),
+      props.reveal && h('text', { x: 400, y: 570, textAnchor: 'middle', fontSize: 23, fill: '#203032' }, t('ring_target_view', 'Matching viewpoint: X {x} / Z {z}').replace('{x}', config.eye.x.toFixed(1)).replace('{z}', config.eye.z.toFixed(1))));
+  }
+  function ParallaxPlan(props) {
+    var h = props.h, t = props.t, state = props.state, focal = 450, colors = ['#c65543', '#9b6700', '#147e78'];
+    return h('svg', { className: 'pw-plan', viewBox: '0 0 800 600', role: 'img', 'aria-label': t('parallax_plan', 'Spheres from your current viewpoint'), 'data-walk-plan': true, 'data-walk-parallax-plan': true },
+      h('rect', { width: 800, height: 600, fill: '#f6f8f5' }),
+      parallaxObjects(state.parallax.round).map(function (item) { return { item: item, center: anamorphosisProjection(item, state.player) }; })
+        .filter(function (entry) { return entry.center; }).sort(function (a, b) { return b.center.depth - a.center.depth; }).map(function (entry) {
+        var item = entry.item, center = entry.center, label = anamorphosisProjection({ x: item.x, y: item.y + item.radius * 2.25, z: item.z }, state.player);
+        var index = item.choice.charCodeAt(0) - 65, x = 400 + focal * center.x, y = 300 - focal * center.y, radius = Math.min(1200, focal * item.radius / center.depth);
+        return h('g', { key: item.id, 'data-parallax-plan-choice': item.choice },
+          h('circle', { cx: x, cy: y, r: radius, fill: colors[index], stroke: state.parallax.choice === item.choice ? '#203032' : 'none', strokeWidth: 5 }),
+          label && h('text', { x: 400 + focal * label.x, y: 300 - focal * label.y, textAnchor: 'middle', fill: '#203032', fontSize: 36, fontWeight: 700 }, item.choice),
+          props.reveal && h('text', { x: x, y: y + radius + 42, textAnchor: 'middle', fill: '#203032', fontSize: 28 }, String(9 - item.z)));
+      }));
+  }
   function Plan(props) {
+    if (props.state.activity === 'parallax') return props.h(ParallaxPlan, props);
+    if (props.state.activity === 'ring') return props.h(RingPlan, props);
+    if (props.state.activity === 'anamorphosis') return props.h(AnamorphosisPlan, props);
+    if (props.state.activity === 'silhouette') return props.h(SilhouettePlan, props);
     if (props.state.activity === 'length') return props.h(LengthPlan, props);
     if (props.state.activity === 'aperture') return props.h(AperturePlan, props);
     if (props.state.activity === 'landing') return props.h(LandingPlan, props);
@@ -747,14 +1033,14 @@
       h('rect', { width: 800, height: 600, fill: '#f6f8f5' }),
       state.activity === 'contour' ? [[250, 150], [550, 150], [550, 450], [250, 450]].map(function (center, index) { return h('g', { key: index }, h('path', { d: 'M0 0 L57.45 57.45 A81.25 81.25 0 1 1 57.45 -57.45 Z', transform: 'translate(' + center.join(' ') + ') rotate(' + (-state.contour.angles[index]) + ')', fill: '#324d50' }), h('text', { x: center[0], y: center[1] - 100, textAnchor: 'middle', fontSize: 24, fill: '#203032' }, TILE_IDS[index])); }) : [[250, 175], [550, 175], [250, 425], [550, 425]].map(function (center, index) { var id = TILE_IDS[index]; return h('g', { key: id }, h('rect', { x: center[0] - 120, y: center[1] - 100, width: 240, height: 200, fill: state.context.neutral ? '#b8b8b8' : ['#ededed', '#ededed', '#202020', '#292929'][index], stroke: state.context.selected.indexOf(id) >= 0 ? '#096a65' : 'none', strokeWidth: 5 }), h('rect', { x: center[0] - 40, y: center[1] - 40, width: 80, height: 80, fill: ['#888888', '#a0a0a0', '#888888', '#707070'][index] }), h('text', { x: center[0], y: center[1] - 110, textAnchor: 'middle', fontSize: 24, fill: '#203032' }, id)); }),
       props.reveal && state.activity === 'contour' && h('rect', { x: 250, y: 150, width: 300, height: 300, fill: 'none', stroke: '#096a65', strokeWidth: 3 }));
-    return h('svg', { className: 'pw-plan', viewBox: '0 0 3360 380', role: 'img', 'aria-label': t('plan_label', 'Plan of the challenge spaces and your current position'), 'data-walk-plan': true },
-      h('rect', { x: 25, y: 20, width: 3310, height: 340, fill: '#e5edeb', stroke: '#506c68', strokeWidth: 2 }),
-      [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192].map(function (x, index) { return h('text', { key: x, x: px(x), y: 43, textAnchor: 'middle', fill: '#203032', fontSize: 14, fontWeight: 700 }, ['Circle', 'Size', 'Screen', 'Depth', 'Corners', 'Context', 'Line', 'Shadow', 'Change', 'Rotation', 'Light', 'Shape', 'Motion', 'Frame', 'Crossings', 'Landing', 'Aperture', 'Length'][index]); }),
+    return h('svg', { className: 'pw-plan', viewBox: '0 0 3720 380', role: 'img', 'aria-label': t('plan_label', 'Plan of the challenge spaces and your current position'), 'data-walk-plan': true },
+      h('rect', { x: 25, y: 20, width: 3670, height: 340, fill: '#e5edeb', stroke: '#506c68', strokeWidth: 2 }),
+      [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216].map(function (x, index) { return h('text', { key: x, x: px(x), y: 43, textAnchor: 'middle', fill: '#203032', fontSize: 14, fontWeight: 700 }, ['Circle', 'Size', 'Screen', 'Depth', 'Corners', 'Context', 'Line', 'Shadow', 'Change', 'Rotation', 'Light', 'Shape', 'Motion', 'Frame', 'Crossings', 'Landing', 'Aperture', 'Length', 'Silhouette', 'Triangle'][index]); }),
       [-3, 0, 3].map(function (z, index) { return h('line', { key: z, x1: px(-13.5), x2: px(-10.5), y1: pz(z), y2: pz(z), stroke: ['#147e78', '#c66b57', '#a8801d'][index], strokeWidth: 5 }); }),
       h('rect', { x: px(-1.45), y: pz(-3.3), width: 15, height: 9, fill: '#c66b57' }), h('rect', { x: px(0.7), y: pz(state.blockZ - 0.25), width: 7.5, height: 7.5, fill: '#147e78' }),
       h('rect', { x: px(10), y: pz(1.8), width: 60, height: 6, fill: '#43565d' }), [0, 1, 2].map(function (id) { return h('circle', { key: id, cx: px(10.5 + id * 1.5), cy: pz(-1.5), r: 5, fill: state.collected.indexOf(id) >= 0 ? '#b2bdb9' : ['#e9b342', '#208e87', '#e87967'][id] }); }),
       props.reveal && state.activity === 'ring' && h('circle', { cx: px(-12), cy: pz(9), r: 8, fill: 'none', stroke: '#096a65', strokeWidth: 2 }),
-      [[22.4, 1, 0.56, '#e87967'], [24, -3, 0.84, '#e9b342'], [25.8, 4, 0.35, '#208e87']].map(function (sphere, index) { return h('g', { key: index }, h('circle', { cx: px(sphere[0]), cy: pz(sphere[1]), r: sphere[2] * scale, fill: sphere[3], stroke: '#203032' }), h('text', { x: px(sphere[0]) + 15, y: pz(sphere[1]) + 4, fontSize: 13, fill: '#203032' }, ['A', 'B', 'C'][index])); }),
+      parallaxObjects(state.parallax.round).map(function (sphere, index) { return h('g', { key: sphere.id }, h('circle', { cx: px(sphere.x), cy: pz(sphere.z), r: sphere.radius * scale, fill: ['#e87967', '#e9b342', '#208e87'][index], stroke: '#203032' }), h('text', { x: px(sphere.x) + 15, y: pz(sphere.z) + 4, fontSize: 13, fill: '#203032' }, sphere.choice)); }),
       h('rect', { x: px(22.8), y: pz(8.5), width: 39, height: 37.5, fill: 'none', stroke: '#526466', strokeDasharray: '3 3' }),
       state.parallax.samples.map(function (sample, index) { return h('text', { key: index, x: px(sample.x), y: pz(sample.z) - 10, textAnchor: 'middle', fill: '#096a65', fontSize: 13 }, index + 1); }),
       [36, 48].map(function (x) { return h('line', { key: x, x1: px(x - 2.8), x2: px(x + 2.8), y1: pz(0), y2: pz(0), stroke: '#324d50', strokeWidth: 4 }); }),
@@ -776,17 +1062,19 @@
     var playingPair = React.useState(false), motionPlaying = playingPair[0], setMotionPlaying = playingPair[1], motionTimer = React.useRef(null);
     var motionMedia = React.useMemo(function () { return typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null; }, []);
     var reducedPair = React.useState(function () { return !!(motionMedia && motionMedia.matches); }), reducedMotion = reducedPair[0], setReducedMotion = reducedPair[1];
-    var host = React.useRef(null), root = React.useRef(null), viewer = React.useRef(null), latest = React.useRef(state), sceneLatest = React.useRef(null), drag = React.useRef(null), hold = React.useRef(null), focusStation = React.useRef(null);
+    var host = React.useRef(null), root = React.useRef(null), viewer = React.useRef(null), latest = React.useRef(state), sceneLatest = React.useRef(null), drag = React.useRef(null), anamorphosisSlider = React.useRef(null), hold = React.useRef(null), focusStation = React.useRef(null);
     latest.current = state;
     var reliefView = reliefInspection(state), shapeView = shapeInspection(state);
-    var inspection = !diagram && renderStatus === 'ready' ? rotationInspection(state) : null, referenceInspection = !!inspection && inspection.choice === 'R';
+    var inspection = !diagram && renderStatus === 'ready' ? rotationInspection(state) : null, referenceInspection = !!inspection && inspection.choice === 'R', silhouetteView = silhouetteInspection(state);
     function t(key, fallback) { var translated; try { translated = ctx.t && ctx.t('stem.perception.walk_' + key, fallback); } catch (_) {} return typeof translated === 'string' && translated !== 'stem.perception.walk_' + key ? translated : fallback; }
+    var depthAnamorphosis = state.activity === 'anamorphosis' && state.anamorphosis.set === 1, angularAnamorphosis = state.activity === 'anamorphosis' && state.anamorphosis.set === 2, anamorphosisBound = anamorphosisLimit(state.anamorphosis.set);
+    var goal = angularAnamorphosis ? t('anamorphosis_angular_goal', 'Turn beams B and C around their fixed pivots until the fragments form one triangle from the front. Record front and side observations, then solve the second arrangement.') : depthAnamorphosis ? t('anamorphosis_depth_goal', 'Move beams B and C nearer or farther away until the three fragments form one triangle from the front. Record front and side observations, then solve the second arrangement.') : t(meta.id + '_goal', meta.goal);
     function update(fn) { var setter = ctx.setToolData || ctx.setLabToolData; if (setter) setter(function (prev) { return Object.assign({}, prev, { perceptionWalk: normalize(fn(normalize((prev || {}).perceptionWalk))) }); }); }
     function icon(name, fallback) { var Icon = (ctx.icons || {})[name] || (window.LucideReact || {})[name]; return Icon ? h(Icon, { size: 20, 'aria-hidden': true, focusable: false }) : h('span', { 'aria-hidden': true }, fallback); }
     function button(label, handler, attrs) { return h('button', Object.assign({ type: 'button', onClick: handler }, attrs || {}), label); }
     function pauseMotion() { setMotionPlaying(false); if (motionTimer.current != null) { clearInterval(motionTimer.current); motionTimer.current = null; } }
     function releaseMouse() { lockRequested.current = false; lockTicket.current++; var target = lockTarget.current; if (target && document.pointerLockElement === target && document.exitPointerLock) document.exitPointerLock(); }
-    function stop() { releaseMouse(); pauseMotion(); if (hold.current != null) { clearInterval(hold.current); hold.current = null; } drag.current = null; }
+    function stop() { cancelAnamorphosisSlider(); releaseMouse(); pauseMotion(); if (hold.current != null) { clearInterval(hold.current); hold.current = null; } drag.current = null; }
     function toggleMouseLook() {
       if (mouseLook || lockRequested.current) { releaseMouse(); return; }
       var target = host.current;
@@ -803,13 +1091,13 @@
       var current = latest.current, pose = current.viewpoints[current.activity][slot];
       if (covered(current) || action === 'save' && !canSaveViewpoint(current) || action !== 'save' && !pose) return;
       stop();
-      var adjusted = action === 'recall' && !sameViewpoint(pose, safePlayer(pose, current.blockZ));
+      var adjusted = action === 'recall' && !sameViewpoint(pose, safePlayer(pose, current.blockZ, current.parallax.round));
       update(function (next) { return action === 'save' ? saveViewpoint(next, slot) : action === 'recall' ? recallViewpoint(next, slot) : clearViewpoint(next, slot); });
       var key = action === 'save' ? 'viewpoint_saved' : action === 'clear' ? 'viewpoint_cleared' : adjusted ? 'viewpoint_adjusted' : 'viewpoint_recalled';
       var message = action === 'save' ? 'Viewpoint {slot} saved.' : action === 'clear' ? 'Viewpoint {slot} cleared.' : adjusted ? 'Viewpoint {slot} recalled beside an obstacle.' : 'Viewpoint {slot} recalled.';
       setStatus(t(key, message).replace('{slot}', slot));
     }
-    function move(command, precise) { pauseMotion(); drag.current = null; update(function (next) { if (covered(next)) return next; var fine = precise || next.precise; next.player = movePlayer(next.player, command, command.indexOf('turn') === 0 || command.indexOf('look') === 0 ? fine ? 1 : 5 : fine ? 0.05 : 0.2, next.blockZ); next.activity = roomAtX(next.player.x); return next; }); }
+    function move(command, precise) { cancelAnamorphosisSlider(); pauseMotion(); drag.current = null; update(function (next) { if (covered(next)) return next; var fine = precise || next.precise; next.player = movePlayer(next.player, command, command.indexOf('turn') === 0 || command.indexOf('look') === 0 ? fine ? 1 : 5 : fine ? 0.05 : 0.2, next.blockZ, next.parallax.round); next.activity = roomAtX(next.player.x); return next; }); }
     React.useEffect(function () { setReveal(false); setSelected(false); setStatus(''); }, [state.activity]);
     React.useEffect(function () {
       if (!root.current || allRooms) return;
@@ -829,7 +1117,7 @@
       function changed() {
         var owned = !!host.current && document.pointerLockElement === host.current;
         if (owned && !lockRequested.current) { releaseMouse(); return; }
-        var wasOwned = lockOwner.current; lockOwner.current = owned; setMouseLook(owned); drag.current = null;
+        var wasOwned = lockOwner.current; lockOwner.current = owned; setMouseLook(owned); drag.current = null; cancelAnamorphosisSlider();
         if (owned) { host.current.focus({ preventScroll: true }); }
         else if (wasOwned) {
           lockRequested.current = false; pauseMotion();
@@ -848,7 +1136,13 @@
       return function () { releaseMouse(); document.removeEventListener('pointerlockchange', changed); document.removeEventListener('pointerlockerror', failed); document.removeEventListener('mousemove', look); };
     }, []);
     React.useEffect(function () { if (!focusStation.current || !root.current) return; var target = root.current.querySelector('[data-walk-activity="' + focusStation.current + '"]'); focusStation.current = null; if (target) target.focus({ preventScroll: true }); });
-    React.useEffect(function () { function pause() { if (document.hidden) stop(); } window.addEventListener('blur', stop); document.addEventListener('visibilitychange', pause); return function () { stop(); window.removeEventListener('blur', stop); document.removeEventListener('visibilitychange', pause); }; }, []);
+    React.useEffect(function () {
+      function blur() { stop(); endAnamorphosisSlider(); }
+      function pause() { if (document.hidden) blur(); }
+      window.addEventListener('blur', blur); window.addEventListener('pointerup', endAnamorphosisSlider); window.addEventListener('pointercancel', endAnamorphosisSlider); document.addEventListener('visibilitychange', pause);
+      return function () { stop(); window.removeEventListener('blur', blur); window.removeEventListener('pointerup', endAnamorphosisSlider); window.removeEventListener('pointercancel', endAnamorphosisSlider); document.removeEventListener('visibilitychange', pause); };
+    }, []);
+    React.useEffect(function () { drag.current = null; cancelAnamorphosisSlider(); }, [state.activity, state.anamorphosis.set, state.anamorphosis.round]);
     React.useEffect(function () {
       if (!motionMedia) return;
       function changed() { setReducedMotion(motionMedia.matches); if (motionMedia.matches) pauseMotion(); }
@@ -861,9 +1155,13 @@
       motionTimer.current = setInterval(function () { update(function (next) { return next.activity === 'aperture' ? setAperturePhase(next, next.aperture.phase + 2.25 * next.aperture.speed) : setMotionPhase(next, next.motion.phase + 2.25); }); }, 50);
       return function () { if (motionTimer.current != null) clearInterval(motionTimer.current); motionTimer.current = null; };
     }, [motionPlaying, state.activity, state.motion.round, state.aperture.round, canObserveAperture(state), canObserveMotion(state), diagram, renderStatus, reducedMotion]);
-    var sceneData = { player: state.player, activity: state.activity, blockZ: state.blockZ, continuityOffset: state.continuityOffset, shadowAngle: state.shadowAngle, changeRound: state.change.round, changeVariant: state.change.variant, changeSelected: state.change.selected, collected: state.collected, parallaxChoice: state.parallax.choice, contourAngles: state.contour.angles, contourSelected: state.contour.selected, contextNeutral: state.context.neutral, contextSelected: state.context.selected, reveal: reveal, selected: selected, static: true, sig: [state.activity, state.blockZ, state.continuityOffset, state.shadowAngle, state.change.round, state.change.variant, state.change.selected, state.collected.join(','), state.parallax.choice, state.contour.angles.join(','), state.contour.selected, state.context.neutral, state.context.selected.join(','), reveal, selected].join(':') };
-    Object.assign(sceneData, { rotationRound: state.rotation.round, rotationAngles: state.rotation.angles, rotationTilts: state.rotation.tilts, rotationSelected: state.rotation.selected, rotationChoice: state.rotation.choice, reliefRound: state.relief.round, reliefAngle: state.relief.lightAngle, reliefChoice: state.relief.choice, shapeRound: state.shape.round, shapeAngles: state.shape.angles, shapeTilts: state.shape.tilts, shapeSelected: state.shape.selected, shapeChoice: state.shape.choice, motionRound: state.motion.round, motionPhase: state.motion.phase, motionSelected: state.motion.selected, frameRound: state.frame.round, frameAdjustment: state.frame.adjustment, frameSurround: state.frame.surround, frameVisible: state.frame.visible, weaveRound: state.weave.round, weaveDepths: state.weave.depths, weaveSelected: state.weave.selected, landingRound: state.landing.round, landingLightAngle: state.landing.lightAngle, landingHeights: state.landing.heights, landingSelected: state.landing.selected, apertureRound: state.aperture.round, aperturePhase: state.aperture.phase, apertureMasked: state.aperture.masked, apertureChoice: state.aperture.choice, lengthRound: state.length.round, lengthValue: state.length.value, lengthVisible: state.length.visible });
-    sceneData.sig += ':' + [state.rotation.round, state.rotation.angles.join(','), state.rotation.tilts.join(','), state.rotation.selected, state.rotation.choice, state.relief.round, state.relief.choice, state.shape.round, state.shape.selected, state.shape.choice, state.motion.round, state.motion.selected.join(','), state.frame.round, state.frame.visible, state.weave.round, state.weave.selected, state.landing.round, state.landing.selected, state.aperture.round, state.aperture.masked, state.length.round, state.length.visible].join(':');
+    var sceneData = { player: state.player, activity: state.activity, ringRound: state.ring.round, parallaxRound: state.parallax.round, blockZ: state.blockZ, continuityOffset: state.continuityOffset, shadowAngle: state.shadowAngle, changeRound: state.change.round, changeVariant: state.change.variant, changeSelected: state.change.selected, collected: state.collected, parallaxChoice: state.parallax.choice, contourAngles: state.contour.angles, contourSelected: state.contour.selected, contextNeutral: state.context.neutral, contextSelected: state.context.selected, reveal: reveal, selected: selected, static: true, sig: [state.activity, state.ring.round, state.parallax.round, state.blockZ, state.continuityOffset, state.shadowAngle, state.change.round, state.change.variant, state.change.selected, state.collected.join(','), state.parallax.choice, state.contour.angles.join(','), state.contour.selected, state.context.neutral, state.context.selected.join(','), reveal, selected].join(':') };
+    Object.assign(sceneData, { rotationRound: state.rotation.round, rotationAngles: state.rotation.angles, rotationTilts: state.rotation.tilts, rotationSelected: state.rotation.selected, rotationChoice: state.rotation.choice, reliefRound: state.relief.round, reliefAngle: state.relief.lightAngle, reliefChoice: state.relief.choice, shapeRound: state.shape.round, shapeAngles: state.shape.angles, shapeTilts: state.shape.tilts, shapeSelected: state.shape.selected, shapeChoice: state.shape.choice, motionRound: state.motion.round, motionPhase: state.motion.phase, motionSelected: state.motion.selected, frameRound: state.frame.round, frameAdjustment: state.frame.adjustment, frameSurround: state.frame.surround, frameVisible: state.frame.visible, weaveRound: state.weave.round, weaveDepths: state.weave.depths, weaveSelected: state.weave.selected, landingRound: state.landing.round, landingLightAngle: state.landing.lightAngle, landingHeights: state.landing.heights, landingSelected: state.landing.selected, apertureRound: state.aperture.round, aperturePhase: state.aperture.phase, apertureMasked: state.aperture.masked, apertureChoice: state.aperture.choice, lengthRound: state.length.round, lengthValue: state.length.value, lengthVisible: state.length.visible, silhouetteRound: state.silhouette.round, silhouetteAngle: state.silhouette.angle, silhouetteChoice: state.silhouette.choice, silhouetteFrontLabel: t('silhouette_front', 'Front'), silhouetteSideLabel: t('silhouette_side', 'Side') });
+    sceneData.sig += ':' + [state.rotation.round, state.rotation.angles.join(','), state.rotation.tilts.join(','), state.rotation.selected, state.rotation.choice, state.relief.round, state.relief.choice, state.shape.round, state.shape.selected, state.shape.choice, state.motion.round, state.motion.selected.join(','), state.frame.round, state.frame.visible, state.weave.round, state.weave.selected, state.landing.round, state.landing.selected, state.aperture.round, state.aperture.masked, state.length.round, state.length.visible, state.silhouette.round, state.silhouette.choice].join(':');
+    Object.assign(sceneData, { silhouetteSet: state.silhouette.set, silhouetteInspection: silhouetteView ? silhouetteView.choice : '', silhouetteInspectionSide: silhouetteView ? silhouetteView.side : '' });
+    sceneData.sig += ':' + state.silhouette.set;
+    Object.assign(sceneData, { anamorphosisSet: state.anamorphosis.set, anamorphosisRound: state.anamorphosis.round, anamorphosisOffsets: state.anamorphosis.offsets, anamorphosisSelected: state.anamorphosis.selected });
+    sceneData.sig += ':' + state.anamorphosis.set + ':' + state.anamorphosis.round;
     sceneLatest.current = sceneData;
     React.useEffect(function () {
       stop(); setLayout([]); if (diagram) { setRenderStatus('diagram'); return; }
@@ -876,7 +1174,7 @@
       instance.attach(host.current); instance.push(sceneLatest.current); setRenderStatus(instance.status());
       return function () { active = false; stop(); instance.dispose(); if (viewer.current === instance) viewer.current = null; };
     }, [diagram, retry]);
-    React.useEffect(function () { if (viewer.current) viewer.current.push(sceneData); }, [state.player.x, state.player.z, state.player.yaw, state.player.pitch, state.relief.lightAngle, state.shape.angles.join(','), state.shape.tilts.join(','), state.motion.phase, state.frame.adjustment, state.frame.surround, state.weave.depths.join(','), state.landing.heights.join(','), state.landing.lightAngle, state.aperture.phase, state.aperture.choice, state.length.value, sceneData.sig, diagram, retry]);
+    React.useEffect(function () { if (viewer.current) viewer.current.push(sceneData); }, [state.player.x, state.player.z, state.player.yaw, state.player.pitch, state.relief.lightAngle, state.shape.angles.join(','), state.shape.tilts.join(','), state.motion.phase, state.frame.adjustment, state.frame.surround, state.weave.depths.join(','), state.landing.heights.join(','), state.landing.lightAngle, state.aperture.phase, state.aperture.choice, state.length.value, state.silhouette.angle, state.anamorphosis.offsets.join(','), state.anamorphosis.selected, sceneData.sig, diagram, retry]);
     function choose(id, focus) { stop(); if (focus) focusStation.current = id; setReveal(false); setSelected(false); setStatus(''); update(function (next) { next.activity = id; next.player = spawn(id); return next; }); }
     function travel(direction, unsolved) { var id = nextRoom(state, direction, unsolved); if (id) choose(id, !nextRoom(Object.assign({}, state, { activity: id }), direction, unsolved)); }
     function home() { stop(); update(function (next) { if (!covered(next)) next.player = spawn(next.activity); return next; }); setStatus(''); }
@@ -899,6 +1197,7 @@
     function nextChangeScene() { stop(); setReveal(false); setStatus(''); update(nextChange); }
     function selectRotation(index) { if (!canTurnRotation(latest.current, index)) { setStatus(t('rotation_far', 'Move closer to the front of the sculptures.')); return; } var view = !diagram && renderStatus === 'ready' ? rotationInspection(latest.current) : null; update(function (next) { if (view) return inspectRotation(next, index === 0 ? 'A' : 'B', view.side); next.rotation.selected = index; return next; }); setStatus(''); }
     function inspectSculpture(choice, side) { stop(); update(function (next) { return inspectRotation(next, choice, side); }); setStatus(''); if (host.current) host.current.focus({ preventScroll: true }); }
+    function inspectSilhouetteView(choice, side) { stop(); update(function (next) { return inspectSilhouette(next, choice, side); }); setStatus(''); if (!fallback && host.current) host.current.focus({ preventScroll: true }); }
     function rotationOverview() { home(); if (host.current) host.current.focus({ preventScroll: true }); }
     function rotateSculpture(index, yaw, pitch) { update(function (next) { return turnRotation(next, index, yaw, pitch); }); setStatus(''); }
     function nextRotationPair() { stop(); setReveal(false); setStatus(''); update(nextRotation); }
@@ -917,6 +1216,34 @@
     function changeFrameSurround(value) { update(function (next) { return setFrameSurround(next, value); }); setStatus(''); }
     function changeFrameVisible(value) { stop(); update(function (next) { return setFrameVisible(next, value); }); setStatus(''); }
     function nextFrameTrial() { stop(); setReveal(false); setStatus(''); update(nextFrame); }
+    function selectAnamorphosisPiece(index) { update(function (next) { return selectAnamorphosis(next, index); }); setStatus(''); }
+    function changeAnamorphosisOffset(index, value, baseline) { update(function (next) { return setAnamorphosisOffset(next, index, value, baseline); }); setStatus(''); }
+    function cancelAnamorphosisSlider() { if (anamorphosisSlider.current) anamorphosisSlider.current.cancelled = true; }
+    function endAnamorphosisSlider(event) { if (!event || !anamorphosisSlider.current || event.pointerId == null || event.pointerId === anamorphosisSlider.current.pointerId) anamorphosisSlider.current = null; }
+    function beginAnamorphosisSlider(event) {
+      if (event.button !== 0 || !canManipulateAnamorphosis(latest.current)) return;
+      stop(); anamorphosisSlider.current = { baseline: anamorphosisSnapshot(latest.current), pointerId: event.pointerId, cancelled: false };
+      if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    function historyAnamorphosis(redo) {
+      var current = latest.current;
+      if (!canManipulateAnamorphosis(current) || !current.anamorphosis.history[redo ? 'future' : 'past'].length) return;
+      stop(); update(redo ? redoAnamorphosis : undoAnamorphosis);
+      setStatus(redo ? t('anamorphosis_redone', 'Beam adjustment restored. Viewpoint observations cleared.') : t('anamorphosis_undone', 'Beam adjustment undone. Viewpoint observations cleared.'));
+    }
+    function historyKeyDown(event) {
+      var target = event.target, key = event.key.toLowerCase();
+      if (latest.current.activity !== 'anamorphosis' || event.defaultPrevented || event.altKey || event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || !event.ctrlKey && !event.metaKey || target && target.closest && target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
+      var redo = key === 'z' && event.shiftKey || key === 'y' && event.ctrlKey && !event.shiftKey;
+      if (key !== 'z' && !redo || !canManipulateAnamorphosis(latest.current)) return;
+      event.preventDefault(); if (!event.repeat) historyAnamorphosis(redo);
+    }
+    function inspectAnamorphosisView(side) { stop(); update(function (next) { return inspectAnamorphosis(next, side); }); setStatus(''); if (!fallback && host.current) host.current.focus({ preventScroll: true }); }
+    function recordAnamorphosisObservation() { stop(); update(recordAnamorphosis); setStatus(anamorphosisView(state) ? t('anamorphosis_recorded', 'Observation recorded for this arrangement.') : t('anamorphosis_view_needed', 'Use a front or side observation viewpoint.')); }
+    function nextParallaxTrial() { stop(); setReveal(false); setStatus(''); update(nextParallax); }
+    function nextRingTrial() { stop(); setReveal(false); setStatus(''); update(nextRing); }
+    function nextAnamorphosisTrial() { stop(); setReveal(false); setStatus(''); update(nextAnamorphosis); }
+    function nextAnamorphosisSet() { stop(); setReveal(false); setStatus(''); update(advanceAnamorphosisSet); }
     function selectWeavePiece(index) { update(function (next) { return selectWeave(next, index); }); setStatus(''); }
     function changeAperturePhase(value) { pauseMotion(); update(function (next) { return setAperturePhase(next, value); }); setStatus(''); }
     function changeApertureSpeed(value) { update(function (next) { return setApertureSpeed(next, value); }); setStatus(''); }
@@ -939,16 +1266,43 @@
     function neutralSurround(value) { stop(); update(function (next) { next.context.neutral = typeof value === 'boolean' ? value : !next.context.neutral; return next; }); setStatus(t('surround_changed', 'Surround changed. The center tiles remain unchanged.')); }
     function collect(id) { if (!canCollect(latest.current, id)) { setStatus(t('hidden', 'That symbol is hidden or out of reach.')); return; } update(function (next) { if (canCollect(next, id)) next.collected.push(id); return next; }); setStatus(t('collected', 'Symbol collected.')); }
     function nearBlock(current) { return Math.hypot(current.player.x - 0.95, current.player.z - current.blockZ) <= 7.00000001; }
-    function pick(x, y) { if (covered(latest.current) || !viewer.current || !viewer.current.pick) return; var hit = viewer.current.pick(x, y); if (!hit) { setStatus(t('nothing', 'No reachable object at this point.')); return; } if (hit.id === 'scale-block') { setSelected(true); setStatus(t('selected', 'Teal block selected.')); } else if (hit.id === 'length-fins') changeLengthVisible(); else if (hit.id === 'length-rod' || hit.id === 'length-handle') stepLengthHandle(); else if (hit.id === 'aperture-screen') changeApertureMask(); else if (hit.id === 'aperture-dial') stepApertureDial(); else if (/^landing-[ABC]$/.test(hit.id)) selectLandingPiece(hit.id.charCodeAt(8) - 65); else if (/^weave-[ABC]$/.test(hit.id)) selectWeavePiece(hit.id.charCodeAt(6) - 65); else if (/^weave-rail-[012]$/.test(hit.id)) selectWeavePiece(Number(hit.id.slice(-1))); else if (hit.id === 'frame-rod' || hit.id === 'frame-surround') setStatus(''); else if (/^motion-[A-F]$/.test(hit.id)) selectMotion(hit.id.slice(-1)); else if (hit.id === 'motion-dial') setStatus(''); else if (/^shape-[AB]$/.test(hit.id)) selectShape(hit.id === 'shape-A' ? 0 : 1); else if (/^relief-[AB]$/.test(hit.id)) selectRelief(hit.id.slice(-1)); else if (hit.id === 'relief-light') setStatus(''); else if (/^rotation-[AB]$/.test(hit.id)) selectRotation(hit.id === 'rotation-A' ? 0 : 1); else if (hit.id === 'continuity-rod') selectContinuation(); else if (/^shadow-block-\d+$/.test(hit.id)) selectShadow(); else if (/^change-[ABCDE]$/.test(hit.id)) selectChanged(hit.id.slice(-1)); else if (/^token-[012]$/.test(hit.id)) collect(Number(hit.id.slice(-1))); else if (/^parallax-[ABC]$/.test(hit.id)) selectSphere(hit.id.slice(-1)); else if (/^contour-[0123]$/.test(hit.id)) selectCorner(Number(hit.id.slice(-1))); else if (/^context-[ABCD]$/.test(hit.id)) selectTile(hit.id.slice(-1)); else if (hit.id === 'context-switch') neutralSurround(); }
+    function pick(x, y) { if (covered(latest.current) || !viewer.current || !viewer.current.pick) return; var hit = viewer.current.pick(x, y); if (!hit) { setStatus(t('nothing', 'No reachable object at this point.')); return; } if (hit.id === 'scale-block') { setSelected(true); setStatus(t('selected', 'Teal block selected.')); } else if (/^anamorphosis-[BC]$/.test(hit.id)) selectAnamorphosisPiece(hit.id.slice(-1) === 'B' ? 0 : 1); else if (hit.id === 'silhouette-dial') stepSilhouetteDial(); else if (/^silhouette-[AB]$/.test(hit.id)) chooseSilhouette(hit.id.slice(-1)); else if (hit.id === 'length-fins') changeLengthVisible(); else if (hit.id === 'length-rod' || hit.id === 'length-handle') stepLengthHandle(); else if (hit.id === 'aperture-screen') changeApertureMask(); else if (hit.id === 'aperture-dial') stepApertureDial(); else if (/^landing-[ABC]$/.test(hit.id)) selectLandingPiece(hit.id.charCodeAt(8) - 65); else if (/^weave-[ABC]$/.test(hit.id)) selectWeavePiece(hit.id.charCodeAt(6) - 65); else if (/^weave-rail-[012]$/.test(hit.id)) selectWeavePiece(Number(hit.id.slice(-1))); else if (hit.id === 'frame-rod' || hit.id === 'frame-surround') setStatus(''); else if (/^motion-[A-F]$/.test(hit.id)) selectMotion(hit.id.slice(-1)); else if (hit.id === 'motion-dial') setStatus(''); else if (/^shape-[AB]$/.test(hit.id)) selectShape(hit.id === 'shape-A' ? 0 : 1); else if (/^relief-[AB]$/.test(hit.id)) selectRelief(hit.id.slice(-1)); else if (hit.id === 'relief-light') setStatus(''); else if (/^rotation-[AB]$/.test(hit.id)) selectRotation(hit.id === 'rotation-A' ? 0 : 1); else if (hit.id === 'continuity-rod') selectContinuation(); else if (/^shadow-block-\d+$/.test(hit.id)) selectShadow(); else if (/^change-[ABCDE]$/.test(hit.id)) selectChanged(hit.id.slice(-1)); else if (/^token-[012]$/.test(hit.id)) collect(Number(hit.id.slice(-1))); else if (/^parallax-[ABC]$/.test(hit.id)) selectSphere(hit.id.slice(-1)); else if (/^contour-[0123]$/.test(hit.id)) selectCorner(Number(hit.id.slice(-1))); else if (/^context-[ABCD]$/.test(hit.id)) selectTile(hit.id.slice(-1)); else if (hit.id === 'context-switch') neutralSurround(); }
     function interact() { if (diagram || renderStatus !== 'ready') { if (state.activity === 'scale' && nearBlock(state)) setSelected(true); return; } var rect = host.current.getBoundingClientRect(); pick(rect.left + rect.width / 2, rect.top + rect.height / 2); }
     function changeBlock(value) { update(function (next) { return moveBlock(next, value); }); }
     function changeLengthValue(value) { update(function (next) { return setLengthValue(next, value); }); setStatus(''); }
+    function changeSilhouetteAngle(value) { update(function (next) { return setSilhouetteAngle(next, value); }); setStatus(''); }
+    function chooseSilhouette(choice) { update(function (next) { return selectSilhouette(next, choice); }); setStatus(''); }
+    function stepSilhouetteDial() { var current = latest.current; changeSilhouetteAngle(current.silhouette.angle >= 90 ? 0 : current.silhouette.angle + (current.precise ? 3.75 : 15)); }
+    function nextSilhouetteTrial() { stop(); setReveal(false); setStatus(''); update(nextSilhouette); }
+    function nextSilhouetteSet() { stop(); setReveal(false); setStatus(''); update(advanceSilhouetteSet); }
     function changeLengthVisible(value) { stop(); update(function (next) { return setLengthVisible(next, value); }); setStatus(''); }
     function stepLengthHandle() { var current = latest.current; changeLengthValue(current.length.value + (current.precise ? 0.025 : 0.1)); }
     function nextLengthTrial() { stop(); setReveal(false); setStatus(''); update(nextLength); }
     function inspectLengthView(side) { stop(); update(function (next) { return inspectLength(next, side); }); setStatus(''); if (!diagram && renderStatus === 'ready' && host.current) host.current.focus({ preventScroll: true }); }
     function check() {
+      if (state.activity === 'parallax') {
+        stop();
+        var parallaxResult = checkParallax(state), parallaxMatched = state.parallax.samples.length === 2 && state.parallax.choice === parallaxTarget(state.parallax.round);
+        setStatus(state.parallax.samples.length < 2 ? t('views_needed', 'Two separated viewpoints are needed before checking.') : !state.parallax.choice ? t('choice_needed', 'Choose the sphere you think is nearest.') : !parallaxMatched ? t('parallax_again', 'Compare again: which sphere shifts farthest between the two views?') : progress.assisted ? t('explored', 'Challenge explored with a reveal.') : parallaxResult.parallax.completed.length === 3 ? t('parallax_all_found', 'All three depth arrangements solved.') : t('parallax_found', 'Nearest sphere identified. The next arrangement is ready.'));
+        update(checkParallax); return;
+      }
+      if (state.activity === 'ring') {
+        stop();
+        var ringResult = checkRing(state);
+        setStatus(!reading.ringFacing ? t('face_again', 'The exhibit is out of view. Face the exhibit to compare it.') : reading.ringError > 0.055 ? t('ring_again', 'The arcs are still separated. Try another position and face the circle.') : progress.assisted ? t('explored', 'Challenge explored with a reveal.') : ringResult.ring.completed.length === 3 ? t('ring_all_found', 'All three viewpoints found.') : t('ring_found', 'Viewpoint found. The next arrangement is ready.'));
+        update(checkRing); return;
+      }
       pauseMotion();
+      if (state.activity === 'anamorphosis') {
+        var anamorphosisResult = checkAnamorphosis(state);
+        setStatus(!canManipulateAnamorphosis(state) ? t('anamorphosis_face', 'Face the beams from the observation area.') : state.anamorphosis.seen !== 3 ? t('anamorphosis_compare', 'Record front and side views after your final adjustment.') : anamorphosisView(state) !== 'front' ? t('anamorphosis_front_needed', 'Return to the front viewpoint to check the joins.') : anamorphosisMatches(state) ? progress.assisted ? t('explored', 'Challenge explored with a reveal.') : anamorphosisResult.anamorphosis.completed.length === 2 ? t('solved', 'Challenge solved.') : t('anamorphosis_found', 'The fragments align. The next arrangement is ready.') : t('anamorphosis_again', 'The endpoints do not yet meet in the front view.'));
+        update(checkAnamorphosis); return;
+      }
+      if (state.activity === 'silhouette') {
+        var silhouetteResult = checkSilhouette(state);
+        setStatus(!canObserveSilhouette(state) ? t('silhouette_face', 'Face the sculptures from the observation area.') : state.silhouette.seen !== 3 ? t('silhouette_compare', 'Compare the front and side orientations before checking.') : !state.silhouette.choice ? t('silhouette_choose', 'Choose sculpture A or B.') : silhouetteMatches(state) ? progress.assisted ? t('explored', 'Challenge explored with a reveal.') : silhouetteResult.silhouette.completed.length === 2 ? t('solved', 'Challenge solved.') : t('silhouette_found', 'Both views matched. The next pair is ready.') : t('silhouette_again', 'The side silhouette differs. Compare its occupied levels and gaps.'));
+        update(checkSilhouette); return;
+      }
       if (state.activity === 'length') {
         var lengthResult = checkLength(state);
         setStatus(!canObserveLength(state) ? t('length_face', 'Face the shafts from an observation area.') : state.length.seen !== 3 ? t('length_compare', 'Compare the current shaft with the fins shown and hidden.') : lengthMatches(state) ? progress.assisted ? t('explored', 'Challenge explored with a reveal.') : lengthResult.progress.length.solved ? t('solved', 'Challenge solved.') : t('length_found', 'Lengths matched. The next arrangement is ready.') : t('length_again', 'The straight shafts have different lengths. Compare their endpoints.'));
@@ -1013,9 +1367,9 @@
       setStatus(message);
       if (correct) update(function (next) { if (checkAnswer(next) && !next.progress[next.activity].assisted) next.progress[next.activity].solved = true; return next; });
     }
-    function reset() { stop(); setReveal(false); setSelected(false); setStatus(''); update(function (next) { next.player = spawn(next.activity); next.progress[next.activity] = { solved: false, assisted: false, hints: 0 }; if (next.activity === 'length') next.length = lengthDefaults(0); if (next.activity === 'aperture') next.aperture = apertureDefaults(0); if (next.activity === 'landing') next.landing = Object.assign(landingDefaults(0), { round: 0, completed: [] }); if (next.activity === 'weave') next.weave = Object.assign(weaveDefaults(0), { round: 0, seen: 0, completed: [] }); if (next.activity === 'frame') next.frame = Object.assign(frameDefaults(0), { round: 0, visible: true, seen: 1, completed: [] }); if (next.activity === 'motion') next.motion = { round: 0, phase: 0, seen: 1, selected: [], completed: [] }; if (next.activity === 'shape') next.shape = Object.assign(shapeDefaults(0), { round: 0, selected: 0, choice: '', completed: [] }); if (next.activity === 'relief') next.relief = { round: 0, lightAngle: 0, seen: 1, choice: '', completed: [] }; if (next.activity === 'scale') next.blockZ = -1; if (next.activity === 'occlusion') next.collected = []; if (next.activity === 'parallax') next.parallax = { samples: [], choice: '' }; if (next.activity === 'contour') next.contour = { angles: CORNER_DEFAULTS.slice(), selected: 0, choice: '' }; if (next.activity === 'context') next.context = { selected: [], neutral: false }; if (next.activity === 'continuity') next.continuityOffset = 0.8; if (next.activity === 'shadow') next.shadowAngle = 0; if (next.activity === 'change') next.change = { round: 0, variant: 0, closed: false, seen: 1, selected: '', completed: [] }; if (next.activity === 'rotation') next.rotation = { round: 0, angles: [125, 225], tilts: [20, -25], selected: 0, choice: '', completed: [] }; return next; }); }
+    function reset() { stop(); setReveal(false); setSelected(false); setStatus(''); update(function (next) { next.player = spawn(next.activity); next.progress[next.activity] = { solved: false, assisted: false, hints: 0 }; if (next.activity === 'ring') next.ring = { round: 0, completed: [] }; if (next.activity === 'anamorphosis') next.anamorphosis = anamorphosisDefaults(0); if (next.activity === 'silhouette') next.silhouette = silhouetteDefaults(0); if (next.activity === 'length') next.length = lengthDefaults(0); if (next.activity === 'aperture') next.aperture = apertureDefaults(0); if (next.activity === 'landing') next.landing = Object.assign(landingDefaults(0), { round: 0, completed: [] }); if (next.activity === 'weave') next.weave = Object.assign(weaveDefaults(0), { round: 0, seen: 0, completed: [] }); if (next.activity === 'frame') next.frame = Object.assign(frameDefaults(0), { round: 0, visible: true, seen: 1, completed: [] }); if (next.activity === 'motion') next.motion = { round: 0, phase: 0, seen: 1, selected: [], completed: [] }; if (next.activity === 'shape') next.shape = Object.assign(shapeDefaults(0), { round: 0, selected: 0, choice: '', completed: [] }); if (next.activity === 'relief') next.relief = { round: 0, lightAngle: 0, seen: 1, choice: '', completed: [] }; if (next.activity === 'scale') next.blockZ = -1; if (next.activity === 'occlusion') next.collected = []; if (next.activity === 'parallax') next.parallax = { round: 0, completed: [], samples: [], choice: '' }; if (next.activity === 'contour') next.contour = { angles: CORNER_DEFAULTS.slice(), selected: 0, choice: '' }; if (next.activity === 'context') next.context = { selected: [], neutral: false }; if (next.activity === 'continuity') next.continuityOffset = 0.8; if (next.activity === 'shadow') next.shadowAngle = 0; if (next.activity === 'change') next.change = { round: 0, variant: 0, closed: false, seen: 1, selected: '', completed: [] }; if (next.activity === 'rotation') next.rotation = { round: 0, angles: [125, 225], tilts: [20, -25], selected: 0, choice: '', completed: [] }; return next; }); }
     function hint() { update(function (next) { next.progress[next.activity].hints = Math.min(2, next.progress[next.activity].hints + 1); return next; }); }
-    function revealPrinciple() { setMotionPlaying(false); setReveal(!reveal); if (!reveal) update(function (next) { if (next.activity === 'aperture') next.aperture.masked = false; if (['change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length'].indexOf(next.activity) < 0 || !next.progress[next.activity].solved) next.progress[next.activity].assisted = true; return next; }); }
+    function revealPrinciple() { setMotionPlaying(false); setReveal(!reveal); if (!reveal) update(function (next) { if (next.activity === 'aperture') next.aperture.masked = false; if (next.activity === 'parallax' ? next.parallax.completed.indexOf(next.parallax.round) < 0 : next.activity === 'ring' ? next.ring.completed.indexOf(next.ring.round) < 0 : next.activity === 'anamorphosis' ? next.anamorphosis.completed.length < 2 : next.activity === 'silhouette' ? next.silhouette.completed.length < 2 : ['change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'anamorphosis'].indexOf(next.activity) < 0 || !next.progress[next.activity].solved) next.progress[next.activity].assisted = true; return next; }); }
     function keyDown(event) { if (event.ctrlKey || event.altKey || event.metaKey) return; var command = { w: 'forward', s: 'back', a: 'left', d: 'right', ArrowUp: 'forward', ArrowDown: 'back', ArrowLeft: 'turnLeft', ArrowRight: 'turnRight', PageUp: 'lookUp', PageDown: 'lookDown' }[event.key.length === 1 ? event.key.toLowerCase() : event.key]; if (command) { event.preventDefault(); move(command, event.shiftKey); } else if (event.key.toLowerCase() === 'e') { event.preventDefault(); if (!event.repeat) interact(); } else if (event.key === 'Escape' || event.key === 'Tab' && mouseLook) { var wasLocked = mouseLook; stop(); var target = wasLocked ? lockButton.current : root.current && root.current.querySelector('[data-walk-activity="' + state.activity + '"]'); if (target) { event.preventDefault(); target.focus({ preventScroll: true }); } } }
     function pointerDown(event) {
       if (event.button !== 0 || covered(latest.current) || diagram || renderStatus !== 'ready') return;
@@ -1032,6 +1386,12 @@
       var shapeIndex = hit && /^shape-[AB]$/.test(hit.id) ? hit.id === 'shape-A' ? 0 : 1 : -1;
       var weaveIndex = hit && /^weave-[ABC]$/.test(hit.id) ? hit.id.charCodeAt(6) - 65 : hit && /^weave-rail-[012]$/.test(hit.id) ? Number(hit.id.slice(-1)) : -1;
       var landingIndex = hit && /^landing-[ABC]$/.test(hit.id) ? hit.id.charCodeAt(8) - 65 : -1;
+      var anamorphosisIndex = hit && /^anamorphosis-[BC]$/.test(hit.id) ? hit.id.slice(-1) === 'B' ? 0 : 1 : -1;
+      if (anamorphosisIndex >= 0 && canManipulateAnamorphosis(latest.current)) {
+        Object.assign(drag.current, { kind: 'anamorphosis', baseline: anamorphosisSnapshot(latest.current), index: anamorphosisIndex, value: latest.current.anamorphosis.offsets[anamorphosisIndex], fine: latest.current.precise ? 0.25 : 1, angular: latest.current.anamorphosis.set === 2, touchAlternative: latest.current.anamorphosis.set > 0 && event.pointerType === 'touch', coordinate: instance.anamorphosisCoordinate ? instance.anamorphosisCoordinate(event.clientX, event.clientY, anamorphosisIndex) : null });
+        selectAnamorphosisPiece(anamorphosisIndex);
+      }
+      if (hit && hit.id === 'silhouette-dial' && canObserveSilhouette(latest.current)) Object.assign(drag.current, { kind: 'silhouette', angle: latest.current.silhouette.angle, fine: latest.current.precise ? 0.25 : 1 });
       if (hit && /^length-(handle|rod)$/.test(hit.id) && canObserveLength(latest.current)) {
         var lengthStart = instance.lengthCoordinate ? instance.lengthCoordinate(event.clientX, event.clientY) : null;
         Object.assign(drag.current, { kind: 'length', value: latest.current.length.value, fine: latest.current.precise ? 0.25 : 1, coordinate: lengthStart, direction: Number.isFinite(lengthStart) && lengthStart < 192 ? -1 : 1 });
@@ -1063,6 +1423,14 @@
       // Leave vertical touch gestures to page scrolling before changing scene state.
       if (event.pointerType === 'touch' && start.kind !== 'continuation' && !start.moved && Math.abs(dy) > Math.abs(dx)) return;
       start.moved = true;
+      if (start.kind === 'anamorphosis') {
+        var anamorphosisCoordinate = viewer.current && viewer.current.anamorphosisCoordinate && viewer.current.anamorphosisCoordinate(event.clientX, event.clientY, start.index);
+        if (!start.touchAlternative && Number.isFinite(start.coordinate) && !Number.isFinite(anamorphosisCoordinate)) return;
+        var delta = !start.touchAlternative && Number.isFinite(anamorphosisCoordinate) && Number.isFinite(start.coordinate) ? anamorphosisCoordinate - start.coordinate : dx * (start.angular ? 0.5 : 0.01);
+        if (start.angular && !start.touchAlternative && Number.isFinite(start.coordinate)) delta = ((delta + 180) % 360 + 360) % 360 - 180;
+        changeAnamorphosisOffset(start.index, start.value + delta * start.fine, start.baseline); return;
+      }
+      if (start.kind === 'silhouette') { changeSilhouetteAngle(start.angle + dx * 0.4 * start.fine); return; }
       if (start.kind === 'length') {
         var lengthCoordinate = viewer.current && viewer.current.lengthCoordinate && viewer.current.lengthCoordinate(event.clientX, event.clientY);
         if (event.pointerType === 'touch') changeLengthValue(start.value + dx * 0.01 * start.fine * start.direction);
@@ -1119,13 +1487,13 @@
     function pointerEnd(event, cancel) { var start = drag.current; if (!start || start.id !== event.pointerId) return; drag.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); if (!cancel && !start.moved && Math.hypot(event.clientX - start.x, event.clientY - start.y) <= 6) pick(event.clientX, event.clientY); }
     function control(command, label, name, fallback, style) { return button(icon(name, fallback), function (event) { if (!event.detail) move(command); }, { 'data-walk-move': command, disabled: covered(state), 'aria-label': t(command, label), title: t(command, label), style: style, onPointerDown: function (event) { if (event.button !== 0 || covered(latest.current)) return; event.currentTarget.focus({ preventScroll: true }); stop(); event.currentTarget.setPointerCapture(event.pointerId); move(command); hold.current = setInterval(function () { move(command); }, 120); }, onPointerUp: stop, onPointerCancel: stop, onLostPointerCapture: stop, onBlur: stop }); }
     var fallback = diagram || renderStatus !== 'ready', solved = ACTIVITIES.filter(function (item) { return state.progress[item.id].solved; }).length;
-    var readingVisible = meta.id === 'length' ? canObserveLength(state) : meta.id === 'aperture' ? canObserveAperture(state) : meta.id === 'landing' ? canManipulateLanding(state) : meta.id === 'weave' ? canManipulateWeave(state) : meta.id === 'frame' ? canObserveFrame(state) : meta.id === 'ring' ? reading.ringFacing : meta.id === 'scale' ? reading.scaleFacing && reading.scaleRatio != null : meta.id === 'contour' ? reading.contourFacing : meta.id === 'continuity' ? reading.continuityFacing : meta.id === 'shadow' ? reading.shadowFacing : true;
+    var readingVisible = meta.id === 'anamorphosis' ? canManipulateAnamorphosis(state) : meta.id === 'silhouette' ? canObserveSilhouette(state) : meta.id === 'length' ? canObserveLength(state) : meta.id === 'aperture' ? canObserveAperture(state) : meta.id === 'landing' ? canManipulateLanding(state) : meta.id === 'weave' ? canManipulateWeave(state) : meta.id === 'frame' ? canObserveFrame(state) : meta.id === 'ring' ? reading.ringFacing : meta.id === 'scale' ? reading.scaleFacing && reading.scaleRatio != null : meta.id === 'contour' ? reading.contourFacing : meta.id === 'continuity' ? reading.continuityFacing : meta.id === 'shadow' ? reading.shadowFacing : true;
     var markers = [], width = host.current && host.current.clientWidth || 600, height = host.current && host.current.clientHeight || 360, focusedWeave = state.activity === 'weave' && canManipulateWeave(state);
-    layout.filter(function (marker) { return marker.visible && (state.activity !== 'length' || !canObserveLength(state) || marker.id === 'length') && (state.activity !== 'aperture' || !canObserveAperture(state) || marker.id === 'aperture') && (!focusedWeave || marker.id === 'weave') && (state.activity !== 'landing' || !canManipulateLanding(state) || marker.id === 'landing'); }).sort(function (a, b) { return (a.id === state.activity ? -1 : b.id === state.activity ? 1 : a.distance - b.distance); }).forEach(function (marker) {
+    layout.filter(function (marker) { return marker.visible && (state.activity !== 'anamorphosis' || !canManipulateAnamorphosis(state) || marker.id === 'anamorphosis') && (state.activity !== 'silhouette' || !canObserveSilhouette(state) || marker.id === 'silhouette') && (state.activity !== 'length' || !canObserveLength(state) || marker.id === 'length') && (state.activity !== 'aperture' || !canObserveAperture(state) || marker.id === 'aperture') && (!focusedWeave || marker.id === 'weave') && (state.activity !== 'landing' || !canManipulateLanding(state) || marker.id === 'landing'); }).sort(function (a, b) { return (a.id === state.activity ? -1 : b.id === state.activity ? 1 : a.distance - b.distance); }).forEach(function (marker) {
       var item = Object.assign({}, marker, { x: Math.max(55, Math.min(width - 55, marker.x * width)), y: marker.id === state.activity ? 28 : Math.max(28, Math.min(height - 62, marker.y * height)) });
       if (!markers.some(function (other) { return Math.abs(other.x - item.x) < 110 && Math.abs(other.y - item.y) < 64; })) markers.push(item);
     });
-    return h('section', { ref: root, 'data-perception-walk': true, 'data-mouse-look': mouseLook, 'data-theme': ctx.isContrast || ctx.theme === 'contrast' ? 'contrast' : ctx.isDark || ctx.theme === 'dark' ? 'dark' : 'light', 'aria-label': t('title', 'Walk-through perception challenges') },
+    return h('section', { ref: root, onKeyDown: historyKeyDown, 'data-perception-walk': true, 'data-mouse-look': mouseLook, 'data-theme': ctx.isContrast || ctx.theme === 'contrast' ? 'contrast' : ctx.isDark || ctx.theme === 'dark' ? 'dark' : 'light', 'aria-label': t('title', 'Walk-through perception challenges') },
       h('style', null, CSS),
       h('header', { className: 'pw-header' }, h('div', null, h('div', { className: 'pw-eyebrow' }, t('lab', 'Perception Lab')), h('h2', null, t('title', 'Walk-through challenges'))), h('div', { className: 'pw-actions' }, h('span', { className: 'pw-progress' }, solved + ' / ' + ACTIVITIES.length + ' ' + t('solved_count', 'solved')), button(h(React.Fragment, null, icon('ArrowLeft', '\u2190'), t('back', 'Back to gallery')), function () { stop(); props.onClose(); }, { 'data-walk-close': true }))),
       h('div', { className: 'pw-room-tools' }, h('div', null,
@@ -1146,6 +1514,16 @@
               button(icon('Save', '+'), function () { viewpointAction('save', slot); }, { 'data-walk-viewpoint-save': slot, title: saveLabel, 'aria-label': saveLabel, disabled: !canSaveViewpoint(state) }),
               button(icon('Trash2', 'x'), function () { viewpointAction('clear', slot); }, { 'data-walk-viewpoint-clear': slot, title: clearLabel, 'aria-label': clearLabel, disabled: !pose || covered(state) }));
           })),
+        meta.id === 'anamorphosis' && h('fieldset', { className: 'pw-inspection' },
+          h('legend', null, t('anamorphosis_views', 'Observation viewpoints')),
+          h('div', { className: 'pw-inspection-views' }, [['front', 'Eye', 'Front viewpoint'], ['side', 'MoveHorizontal', 'Side viewpoint']].map(function (view) {
+            var label = t('anamorphosis_' + view[0], view[2]);
+            return button(icon(view[1], '>'), function () { inspectAnamorphosisView(view[0]); }, { key: view[0], 'data-walk-anamorphosis-view': view[0], title: label, 'aria-label': label, 'aria-pressed': anamorphosisView(state) === view[0] });
+          }), button(icon('Camera', '+'), recordAnamorphosisObservation, { 'data-walk-anamorphosis-record': true, title: t('anamorphosis_record', 'Record viewpoint'), 'aria-label': t('anamorphosis_record', 'Record viewpoint'), disabled: !anamorphosisView(state) }))),
+        meta.id === 'silhouette' && h('fieldset', { className: 'pw-inspection', 'data-walk-silhouette-inspection': true },
+          h('legend', null, t('silhouette_inspection', 'Inspect sculpture')),
+          h('div', { className: 'pw-inspection-tools' }, ['A', 'B'].map(function (choice) { var label = t('silhouette_inspect_' + choice.toLowerCase(), 'Inspect sculpture ' + choice); return button(h(React.Fragment, null, icon('Search', '+'), choice), function () { inspectSilhouetteView(choice, silhouetteView ? silhouetteView.side : 'front'); }, { key: choice, 'data-walk-silhouette-inspect': choice, title: label, 'aria-label': label, 'aria-pressed': !!silhouetteView && silhouetteView.choice === choice }); })),
+          h('div', { className: 'pw-inspection-views', role: 'group', 'aria-label': t('silhouette_inspection', 'Inspect sculpture') }, [['front', 'Eye', 'Front viewpoint'], ['side', 'ArrowLeft', 'Side viewpoint']].map(function (view) { var label = t('silhouette_camera_' + view[0], view[2]); return button(icon(view[1], '>'), function () { if (silhouetteView) inspectSilhouetteView(silhouetteView.choice, view[0]); }, { key: view[0], 'data-walk-silhouette-view': view[0], title: label, 'aria-label': label, disabled: !silhouetteView, 'aria-pressed': !!silhouetteView && silhouetteView.side === view[0] }); }), button(icon('Maximize', '+'), function () { home(); if (!fallback && host.current) host.current.focus({ preventScroll: true }); }, { 'data-walk-silhouette-overview': true, title: t('silhouette_overview', 'Return to comparison view'), 'aria-label': t('silhouette_overview', 'Return to comparison view') }))),
         meta.id === 'weave' && h('fieldset', { className: 'pw-inspection' }, h('legend', null, t('weave_views', 'Observation viewpoints')), h('div', { className: 'pw-inspection-views' }, [['left', 'ArrowLeft'], ['front', 'Eye'], ['right', 'ArrowRight']].map(function (view) { var label = view[0] === 'left' ? t('weave_view_left', 'Left-side view') : view[0] === 'front' ? t('weave_view_front', 'Front view') : t('weave_view_right', 'Right-side view'); return button(icon(view[1], '>'), function () { inspectWeaveView(view[0]); }, { key: view[0], 'data-walk-weave-view': view[0], title: label, 'aria-label': label }); })), button(icon('Camera', '+'), recordWeaveObservation, { className: 'pw-icon', title: t('weave_record', 'Record view'), 'aria-label': t('weave_record', 'Record view'), 'data-walk-weave-record': true, disabled: !weaveView(state) })),
         meta.id === 'rotation' && !fallback && h('fieldset', { className: 'pw-inspection', 'data-walk-rotation-inspection': true },
           h('legend', null, t('rotation_inspection', 'Inspect sculpture')),
@@ -1162,11 +1540,11 @@
         meta.id === 'length' && h('fieldset', { className: 'pw-inspection' }, h('legend', null, t('length_views', 'Inspection viewpoints')), h('div', { className: 'pw-inspection-views' }, lengthInspectionViews().sort(function (a, b) { return ['left', 'front', 'right'].indexOf(a.side) - ['left', 'front', 'right'].indexOf(b.side); }).map(function (view) { var label = t('length_view_' + view.side, view.side === 'left' ? 'Left-side view' : view.side === 'right' ? 'Right-side view' : 'Front view'); return button(icon(view.side === 'left' ? 'ArrowLeft' : view.side === 'right' ? 'ArrowRight' : 'Eye', '>'), function () { inspectLengthView(view.side); }, { key: view.side, 'data-walk-length-view': view.side, title: label, 'aria-label': label, 'aria-pressed': sameViewpoint(view.player, state.player) }); }))),
         meta.id === 'aperture' && h('fieldset', { className: 'pw-inspection' }, h('legend', null, t('aperture_views', 'Inspection viewpoints')), h('div', { className: 'pw-inspection-views' }, [['left', 'ArrowLeft'], ['front', 'Eye'], ['right', 'ArrowRight']].map(function (view) { var label = view[0] === 'left' ? t('aperture_view_left', 'Left-side view') : view[0] === 'front' ? t('aperture_view_front', 'Front view') : t('aperture_view_right', 'Right-side view'); return button(icon(view[1], '>'), function () { inspectApertureView(view[0]); }, { key: view[0], 'data-walk-aperture-view': view[0], title: label, 'aria-label': label }); }))),
         meta.id === 'landing' && h('fieldset', { className: 'pw-inspection' }, h('legend', null, t('landing_views', 'Inspection viewpoints')), h('div', { className: 'pw-inspection-views' }, [['left', 'ArrowLeft'], ['front', 'Eye'], ['right', 'ArrowRight']].map(function (view) { var label = view[0] === 'left' ? t('landing_view_left', 'Left-side view') : view[0] === 'front' ? t('landing_view_front', 'Front view') : t('landing_view_right', 'Right-side view'); return button(icon(view[1], '>'), function () { inspectLandingView(view[0]); }, { key: view[0], 'data-walk-landing-view': view[0], title: label, 'aria-label': label }); }))),
-        h('figure', { className: 'pw-stage', 'aria-label': t(meta.id + '_goal', meta.goal) },
-          fallback && h(Plan, { h: h, t: t, state: state, reveal: reveal }),
+        h('figure', { className: 'pw-stage', 'aria-label': goal },
+          fallback && h(Plan, { h: h, t: t, state: state, reveal: reveal, onAnamorphosisSelect: selectAnamorphosisPiece }),
           h('div', { className: 'pw-viewport', ref: host, hidden: fallback, style: state.activity === 'continuity' ? { touchAction: 'none' } : undefined, tabIndex: fallback || covered(state) ? -1 : 0, 'aria-hidden': covered(state) || undefined, role: 'group', 'aria-label': t('first_person', 'First-person viewpoint'), 'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight PageUp PageDown E Escape', 'data-walk-stage': true, onKeyDown: keyDown, onPointerDown: pointerDown, onPointerMove: pointerMove, onPointerUp: pointerEnd, onPointerCancel: function (event) { pointerEnd(event, true); }, onLostPointerCapture: function () { drag.current = null; } }),
           !fallback && h('span', { className: 'pw-crosshair', 'aria-hidden': true }),
-          !fallback && !covered(state) && h('div', { className: 'pw-waypoints', role: 'group', 'aria-label': t('activities', 'Challenge spaces') }, markers.map(function (marker) { var item = activity(marker.id), index = ACTIVITIES.indexOf(item), label = t('visit_' + item.id, 'Visit ' + item.title); return button(h(React.Fragment, null, h('span', { 'aria-hidden': true }, index + 1), h('span', null, t(item.id + '_short', ['Circle', 'Size', 'Screen', 'Depth', 'Corners', 'Context', 'Line', 'Shadow', 'Change', 'Rotation', 'Light', 'Shape', 'Motion', 'Frame', 'Crossings', 'Landing', 'Aperture', 'Length'][index]))), function () { choose(item.id, true); }, { key: item.id, className: 'pw-waypoint', style: { left: marker.x, top: marker.y }, title: label, 'aria-label': label, 'data-walk-waypoint': item.id }); })),
+          !fallback && !covered(state) && h('div', { className: 'pw-waypoints', role: 'group', 'aria-label': t('activities', 'Challenge spaces') }, markers.map(function (marker) { var item = activity(marker.id), index = ACTIVITIES.indexOf(item), label = t('visit_' + item.id, 'Visit ' + item.title); return button(h(React.Fragment, null, h('span', { 'aria-hidden': true }, index + 1), h('span', null, t(item.id + '_short', ['Circle', 'Size', 'Screen', 'Depth', 'Corners', 'Context', 'Line', 'Shadow', 'Change', 'Rotation', 'Light', 'Shape', 'Motion', 'Frame', 'Crossings', 'Landing', 'Aperture', 'Length', 'Silhouette', 'Triangle'][index]))), function () { choose(item.id, true); }, { key: item.id, className: 'pw-waypoint', style: { left: marker.x, top: marker.y }, title: label, 'aria-label': label, 'data-walk-waypoint': item.id }); })),
           !diagram && renderStatus !== 'ready' && h('div', { className: 'pw-render-status', role: 'status' }, renderStatus === 'failed' ? t('failed', '3D unavailable. Plan view is active.') : t('loading', 'Opening the walk-through...'), renderStatus === 'failed' && button(t('retry', 'Retry 3D'), function () { setRetry(retry + 1); }, { 'data-walk-retry': true })),
           h('figcaption', null, t(fallback ? ['contour', 'context', 'continuity', 'shadow', 'change', 'rotation'].indexOf(meta.id) >= 0 ? 'front_view' : 'plan' : 'first_person_caption', fallback ? ['contour', 'context', 'continuity', 'shadow', 'change', 'rotation'].indexOf(meta.id) >= 0 ? 'Front view' : 'Plan view' : 'First-person view') + ' / ' + t(meta.id + '_title', meta.title)),
           meta.id === 'change' && h('div', { id: uid + '-change-cover', className: 'pw-change-cover', hidden: !state.change.closed, style: !state.change.closed ? { display: 'none' } : undefined, 'data-walk-change-cover': true, role: 'status' }, t('change_covered', 'Shutter closed'))),
@@ -1177,8 +1555,45 @@
         h('p', { className: 'pw-position', 'data-walk-position': true }, 'X ' + state.player.x.toFixed(1) + ' / Z ' + state.player.z.toFixed(1) + ' / ' + t('heading', 'Heading') + ' ' + state.player.yaw.toFixed(0)),
         h('p', { className: 'pw-status', role: 'status', 'aria-live': 'polite', 'data-walk-status': true }, status)),
         h('aside', { className: 'pw-task', 'aria-label': t('challenge', 'Current challenge') },
-          h('div', { className: 'pw-principle' }, t(meta.id + '_principle', meta.principle)), h('h3', null, t(meta.id + '_title', meta.title)), h('p', { className: 'pw-goal' }, t(meta.id + '_goal', meta.goal)),
-          h('div', { className: 'pw-reading', 'data-walk-evidence': true, 'data-unavailable': !readingVisible }, h('span', null, t(meta.id + '_reading', { ring: 'Arc alignment', scale: 'Teal / coral image height', occlusion: 'Symbols collected', parallax: 'Viewpoints recorded', contour: 'Corners aligned', context: 'Tiles selected', continuity: 'Observation viewpoint', shadow: 'Observation viewpoint', change: 'Scenes solved', rotation: 'Pairs solved', relief: 'Pairs solved', shape: 'Pairs solved', motion: 'Patterns solved', frame: 'Trials solved', weave: 'Patterns solved', landing: 'Shadows aligned', aperture: 'Trials solved', length: 'Trials solved' }[meta.id])), h('strong', null, !readingVisible ? t('out_of_view', 'Out of view') : meta.id === 'length' ? state.length.completed.length + ' / 2' : meta.id === 'aperture' ? state.aperture.completed.length + ' / 2' : meta.id === 'landing' ? landingAligned(state) + ' / 3' : meta.id === 'weave' ? state.weave.completed.length + ' / 2' : meta.id === 'frame' ? state.frame.completed.length + ' / 2' : meta.id === 'motion' ? state.motion.completed.length + ' / 2' : meta.id === 'shape' ? state.shape.completed.length + ' / 2' : meta.id === 'relief' ? state.relief.completed.length + ' / 2' : meta.id === 'rotation' ? state.rotation.completed.length + ' / 2' : meta.id === 'change' ? state.change.completed.length + ' / 3' : meta.id === 'ring' ? reading.ringAlignment + '%' : meta.id === 'scale' ? reading.scaleRatio.toFixed(2) + ' : 1' : meta.id === 'parallax' ? state.parallax.samples.length + ' / 2' : meta.id === 'contour' ? reading.contourAligned + ' / 4' : meta.id === 'context' ? state.context.selected.length + ' / 2' : meta.id === 'continuity' || meta.id === 'shadow' ? t('continuity_ready', 'Ready') : reading.collected + ' / 3')),
+          h('div', { className: 'pw-principle' }, t(meta.id + '_principle', meta.principle)), h('h3', null, t(meta.id + '_title', meta.title)), h('p', { className: 'pw-goal' }, goal),
+          h('div', { className: 'pw-reading', 'data-walk-evidence': true, 'data-unavailable': !readingVisible }, h('span', null, t(meta.id + '_reading', { ring: 'Arc alignment', scale: 'Teal / coral image height', occlusion: 'Symbols collected', parallax: 'Viewpoints recorded', contour: 'Corners aligned', context: 'Tiles selected', continuity: 'Observation viewpoint', shadow: 'Observation viewpoint', change: 'Scenes solved', rotation: 'Pairs solved', relief: 'Pairs solved', shape: 'Pairs solved', motion: 'Patterns solved', frame: 'Trials solved', weave: 'Patterns solved', landing: 'Shadows aligned', aperture: 'Trials solved', length: 'Trials solved', silhouette: 'Pairs solved', anamorphosis: 'Arrangements solved' }[meta.id])), h('strong', null, !readingVisible ? t('out_of_view', 'Out of view') : meta.id === 'anamorphosis' ? state.anamorphosis.completed.length + ' / 2' : meta.id === 'silhouette' ? state.silhouette.completed.length + ' / 2' : meta.id === 'length' ? state.length.completed.length + ' / 2' : meta.id === 'aperture' ? state.aperture.completed.length + ' / 2' : meta.id === 'landing' ? landingAligned(state) + ' / 3' : meta.id === 'weave' ? state.weave.completed.length + ' / 2' : meta.id === 'frame' ? state.frame.completed.length + ' / 2' : meta.id === 'motion' ? state.motion.completed.length + ' / 2' : meta.id === 'shape' ? state.shape.completed.length + ' / 2' : meta.id === 'relief' ? state.relief.completed.length + ' / 2' : meta.id === 'rotation' ? state.rotation.completed.length + ' / 2' : meta.id === 'change' ? state.change.completed.length + ' / 3' : meta.id === 'ring' ? reading.ringAlignment + '%' : meta.id === 'scale' ? reading.scaleRatio.toFixed(2) + ' : 1' : meta.id === 'parallax' ? state.parallax.samples.length + ' / 2' : meta.id === 'contour' ? reading.contourAligned + ' / 4' : meta.id === 'context' ? state.context.selected.length + ' / 2' : meta.id === 'continuity' || meta.id === 'shadow' ? t('continuity_ready', 'Ready') : reading.collected + ' / 3')),
+          meta.id === 'ring' && h('div', { className: 'pw-change-scene' },
+            h('strong', { 'data-walk-ring-trial': true }, t('ring_trial', 'Arrangement') + ' ' + (state.ring.round + 1) + ' / 3'),
+            button(h(React.Fragment, null, t('ring_next', 'Next arrangement'), icon('ArrowRight', '>')), nextRingTrial, { 'data-walk-ring-next': true, disabled: state.ring.completed.indexOf(state.ring.round) < 0 && !progress.assisted })),
+          meta.id === 'ring' && h('p', { className: 'pw-baseline', 'data-walk-ring-completed': true }, t('ring_completed', 'Viewpoints found') + ': ' + state.ring.completed.length + ' / 3'),
+          meta.id === 'anamorphosis' && h('div', { className: 'pw-change-scene' }, h('strong', { 'data-walk-anamorphosis-set-label': true }, angularAnamorphosis ? t('anamorphosis_angular_set', 'Angular alignment') : depthAnamorphosis ? t('anamorphosis_depth_set', 'Depth alignment') : t('anamorphosis_horizontal_set', 'Sideways alignment')), button(icon('Shuffle', '>'), nextAnamorphosisSet, { 'data-walk-anamorphosis-set-next': true, title: t('anamorphosis_next_set', 'Next puzzle set'), 'aria-label': t('anamorphosis_next_set', 'Next puzzle set'), disabled: state.anamorphosis.completed.length < 2 && !progress.assisted })),
+          meta.id === 'anamorphosis' && h('div', { className: 'pw-change-scene' },
+            h('strong', null, t('anamorphosis_trial', 'Arrangement') + ' ' + (state.anamorphosis.round + 1) + ' / 2'),
+            button(h(React.Fragment, null, t('anamorphosis_next', 'Next arrangement'), icon('ArrowRight', '>')), nextAnamorphosisTrial, { 'data-walk-anamorphosis-next': true, disabled: state.anamorphosis.completed.indexOf(state.anamorphosis.round) < 0 && !progress.assisted })),
+          meta.id === 'anamorphosis' && h('fieldset', { className: 'pw-choices pw-rotation-pieces', disabled: !canManipulateAnamorphosis(state) },
+            h('legend', null, t('anamorphosis_beams', 'Movable beam')), ['B', 'C'].map(function (choice, index) {
+              return h('label', { key: choice }, h('input', { type: 'radio', name: uid + '-anamorphosis-beam', value: index, checked: state.anamorphosis.selected === index, 'data-walk-anamorphosis-choice': index, onChange: function () { selectAnamorphosisPiece(index); } }), choice);
+            })),
+          meta.id === 'anamorphosis' && h('div', null,
+            h('div', { className: 'pw-inspection-views' }, ['undo', 'redo'].map(function (action) {
+              var label = action === 'undo' ? t('anamorphosis_undo', 'Undo beam adjustment') : t('anamorphosis_redo', 'Redo beam adjustment');
+              return button(icon(action === 'undo' ? 'Undo2' : 'Redo2', action === 'undo' ? '\u21b6' : '\u21b7'), function () { historyAnamorphosis(action === 'redo'); }, { key: action, ['data-walk-anamorphosis-' + action]: true, title: label, 'aria-label': label, disabled: !canManipulateAnamorphosis(state) || !state.anamorphosis.history[action === 'undo' ? 'past' : 'future'].length });
+            })),
+            h('label', { className: 'pw-slider', htmlFor: uid + '-anamorphosis-offset' }, angularAnamorphosis ? t('anamorphosis_angular_offset', 'Beam rotation') : depthAnamorphosis ? t('anamorphosis_depth_offset', 'Depth offset') : t('anamorphosis_offset', 'Horizontal offset'),
+              h('output', { htmlFor: uid + '-anamorphosis-offset' }, state.anamorphosis.offsets[state.anamorphosis.selected].toFixed(angularAnamorphosis ? 1 : 2) + (angularAnamorphosis ? '\u00b0' : '')),
+              h('input', { id: uid + '-anamorphosis-offset', type: 'range', min: -anamorphosisBound, max: anamorphosisBound, step: angularAnamorphosis ? 0.5 : 0.01, value: state.anamorphosis.offsets[state.anamorphosis.selected], disabled: !canManipulateAnamorphosis(state), 'data-walk-anamorphosis-offset': true, onPointerDown: beginAnamorphosisSlider, onPointerUp: endAnamorphosisSlider, onPointerCancel: endAnamorphosisSlider, onLostPointerCapture: endAnamorphosisSlider, onBlur: endAnamorphosisSlider, onKeyDown: endAnamorphosisSlider, onKeyUp: endAnamorphosisSlider, onChange: function (event) { var gesture = anamorphosisSlider.current; if (!gesture || !gesture.cancelled) changeAnamorphosisOffset(latest.current.anamorphosis.selected, Number(event.target.value), gesture && gesture.baseline); } })),
+            h('div', { className: 'pw-inspection-views' }, (angularAnamorphosis ? [['clockwise', 'RotateCw', -1, 'Rotate beam clockwise'], ['counterclockwise', 'RotateCcw', 1, 'Rotate beam counterclockwise']] : depthAnamorphosis ? [['farther', 'ArrowUp', -1, 'Move beam farther away'], ['nearer', 'ArrowDown', 1, 'Move beam nearer']] : [['left', 'ArrowLeft', -1, 'Move beam left'], ['right', 'ArrowRight', 1, 'Move beam right']]).map(function (control) {
+              var label = t('anamorphosis_' + control[0], control[3]), value = state.anamorphosis.offsets[state.anamorphosis.selected];
+              return button(icon(control[1], control[2] < 0 ? '<' : '>'), function () { changeAnamorphosisOffset(state.anamorphosis.selected, value + control[2] * (angularAnamorphosis ? state.precise ? 0.5 : 3 : state.precise ? 0.01 : 0.05)); }, { key: control[0], ['data-walk-anamorphosis-' + control[0]]: true, title: label, 'aria-label': label, disabled: !canManipulateAnamorphosis(state) || (control[2] < 0 ? value <= -anamorphosisBound : value >= anamorphosisBound) });
+            }))),
+          meta.id === 'anamorphosis' && h('p', { className: 'pw-baseline', 'data-walk-anamorphosis-observed': true }, t('anamorphosis_observed', 'Viewpoints recorded') + ': ' + ((state.anamorphosis.seen & 1 ? 1 : 0) + (state.anamorphosis.seen & 2 ? 1 : 0)) + ' / 2'),
+          meta.id === 'silhouette' && h('div', { className: 'pw-change-scene' }, h('strong', { 'data-walk-silhouette-set-label': true }, t('silhouette_set', 'Puzzle set') + ' ' + (state.silhouette.set + 1) + ' / 2'), button(icon('Shuffle', '>'), nextSilhouetteSet, { 'data-walk-silhouette-set-next': true, title: t('silhouette_next_set', 'Next puzzle set'), 'aria-label': t('silhouette_next_set', 'Next puzzle set'), disabled: state.silhouette.completed.length < 2 && !progress.assisted })),
+          meta.id === 'silhouette' && h('div', { className: 'pw-change-scene' }, h('strong', null, t('silhouette_trial', 'Sculpture pair') + ' ' + (state.silhouette.round + 1) + ' / 2'), button(h(React.Fragment, null, t('silhouette_next', 'Next pair'), icon('ArrowRight', '>')), nextSilhouetteTrial, { 'data-walk-silhouette-next': true, disabled: state.silhouette.completed.indexOf(state.silhouette.round) < 0 && !progress.assisted })),
+          meta.id === 'silhouette' && silhouetteView && h('div', { className: 'pw-silhouette-references', role: 'group', 'aria-label': t('silhouette_views', 'Reference orientations'), 'data-walk-silhouette-reference-strip': true }, ['front', 'side'].map(function (view) {
+            var cells = silhouetteReference(state.silhouette.round, state.silhouette.set)[view], minU = Math.min.apply(null, cells.map(function (cell) { return cell[0]; })), maxU = Math.max.apply(null, cells.map(function (cell) { return cell[0]; })), minY = Math.min.apply(null, cells.map(function (cell) { return cell[1]; })), maxY = Math.max.apply(null, cells.map(function (cell) { return cell[1]; })), size = 84 / Math.max(maxU - minU + 1, maxY - minY + 1), label = t('silhouette_' + view, view === 'front' ? 'Front' : 'Side');
+            return h('figure', { key: view }, h('svg', { viewBox: '0 0 100 100', role: 'img', 'aria-label': label, 'data-walk-silhouette-mini-reference': view }, h('rect', { width: 100, height: 100, fill: '#e4ebe5' }), cells.map(function (cell, i) { return h('rect', { key: i, x: 50 + (cell[0] - (minU + maxU) / 2 - 0.5) * size, y: 50 + ((minY + maxY) / 2 - cell[1] - 0.5) * size, width: size, height: size, fill: '#203032' }); })), h('figcaption', null, label));
+          })),
+          meta.id === 'silhouette' && h('div', null,
+            h('label', { className: 'pw-slider', htmlFor: uid + '-silhouette-angle' }, t('silhouette_angle', 'Sculpture orientation'), h('output', { htmlFor: uid + '-silhouette-angle' }, state.silhouette.angle.toFixed(0) + '\u00b0'), h('input', { id: uid + '-silhouette-angle', type: 'range', min: 0, max: 90, step: 1, value: state.silhouette.angle, disabled: !canObserveSilhouette(state), 'data-walk-silhouette-angle': true, onChange: function (event) { changeSilhouetteAngle(Number(event.target.value)); } })),
+            h('div', { className: 'pw-inspection-views' }, [['left', 'RotateCcw', -1, 'Turn toward front'], ['right', 'RotateCw', 1, 'Turn toward side']].map(function (control) { var label = t('silhouette_' + control[0], control[3]); return button(icon(control[1], control[2] < 0 ? '<' : '>'), function () { changeSilhouetteAngle(state.silhouette.angle + control[2] * (state.precise ? 1 : 5)); }, { key: control[0], ['data-walk-silhouette-' + control[0]]: true, title: label, 'aria-label': label, disabled: !canObserveSilhouette(state) || (control[2] < 0 ? state.silhouette.angle <= 0 : state.silhouette.angle >= 90) }); })),
+            h('div', { className: 'pw-orientations', role: 'group', 'aria-label': t('silhouette_views', 'Reference orientations') }, [['front', 0, 'Front'], ['side', 90, 'Side']].map(function (view) { return button(h(React.Fragment, null, icon(view[1] ? 'RotateCw' : 'Eye', '>'), t('silhouette_' + view[0], view[2])), function () { changeSilhouetteAngle(view[1]); }, { key: view[0], ['data-walk-silhouette-' + view[0]]: true, 'aria-pressed': Math.abs(state.silhouette.angle - view[1]) < 0.01, disabled: !canObserveSilhouette(state) }); })),
+            h('fieldset', { className: 'pw-choices pw-rotation-pieces', disabled: !canObserveSilhouette(state) }, h('legend', null, t('silhouette_answer', 'Matching sculpture')), ['A', 'B'].map(function (choice) { return h('label', { key: choice }, h('input', { type: 'radio', name: uid + '-silhouette-answer', value: choice, checked: state.silhouette.choice === choice, 'data-walk-silhouette-choice': choice, onChange: function () { chooseSilhouette(choice); } }), choice); }))),
+          meta.id === 'silhouette' && h('p', { className: 'pw-baseline', 'data-walk-silhouette-observed': true }, t('silhouette_observed', 'Orientations compared') + ': ' + ((state.silhouette.seen & 1 ? 1 : 0) + (state.silhouette.seen & 2 ? 1 : 0)) + ' / 2'),
           meta.id === 'length' && h('div', { className: 'pw-change-scene' }, h('strong', null, t('length_trial', 'Fin arrangement') + ' ' + (state.length.round + 1) + ' / 2'), button(h(React.Fragment, null, t('length_next', 'Next arrangement'), icon('ArrowRight', '>')), nextLengthTrial, { 'data-walk-length-next': true, disabled: state.length.completed.indexOf(state.length.round) < 0 && !progress.assisted })),
           meta.id === 'length' && h('div', null,
             h('label', { className: 'pw-slider', htmlFor: uid + '-length-value' }, t('length_value', 'Lower shaft length'), h('output', { htmlFor: uid + '-length-value' }, state.length.value.toFixed(2)), h('input', { id: uid + '-length-value', type: 'range', min: 1.8, max: 4.2, step: 0.01, value: state.length.value, disabled: !canObserveLength(state), 'data-walk-length-value': true, 'aria-valuetext': state.length.value.toFixed(2) + ' ' + t('units', 'units'), onChange: function (event) { changeLengthValue(Number(event.target.value)); } })),
@@ -1246,6 +1661,10 @@
           meta.id === 'continuity' && h('div', null,
             h('label', { className: 'pw-slider', htmlFor: uid + '-continuity-offset' }, t('continuity_height', 'Right rod height'), h('output', { htmlFor: uid + '-continuity-offset' }, (2.995 + state.continuityOffset).toFixed(2)), h('input', { id: uid + '-continuity-offset', type: 'range', min: -1.2, max: 1.2, step: 0.01, value: state.continuityOffset, disabled: !canMoveContinuation(state), 'data-walk-continuity-offset': true, 'aria-valuetext': (2.995 + state.continuityOffset).toFixed(2) + ' ' + t('units', 'units'), onChange: function (event) { changeContinuation(Number(event.target.value)); } })),
             h('div', { className: 'pw-actions' }, button(icon('ArrowUp', '\u2191'), function () { changeContinuation(state.continuityOffset + (state.precise ? 0.01 : 0.05)); }, { disabled: !canMoveContinuation(state) || state.continuityOffset >= 1.2, title: t('continuity_up', 'Raise right rod'), 'aria-label': t('continuity_up', 'Raise right rod'), 'data-walk-continuity-up': true }), button(icon('ArrowDown', '\u2193'), function () { changeContinuation(state.continuityOffset - (state.precise ? 0.01 : 0.05)); }, { disabled: !canMoveContinuation(state) || state.continuityOffset <= -1.2, title: t('continuity_down', 'Lower right rod'), 'aria-label': t('continuity_down', 'Lower right rod'), 'data-walk-continuity-down': true }))),
+          meta.id === 'parallax' && h('div', { className: 'pw-change-scene' },
+            h('strong', { 'data-walk-parallax-trial': true }, t('parallax_trial', 'Arrangement') + ' ' + (state.parallax.round + 1) + ' / 3'),
+            button(h(React.Fragment, null, t('parallax_next', 'Next arrangement'), icon('ArrowRight', '>')), nextParallaxTrial, { 'data-walk-parallax-next': true, disabled: state.parallax.completed.indexOf(state.parallax.round) < 0 && !progress.assisted })),
+          meta.id === 'parallax' && h('p', { className: 'pw-baseline', 'data-walk-parallax-completed': true }, t('parallax_completed', 'Depth arrangements solved') + ': ' + state.parallax.completed.length + ' / 3'),
           meta.id === 'parallax' && h('div', null,
             button(h(React.Fragment, null, icon('Camera', '+'), t('record', 'Record viewpoint')), record, { 'data-walk-record': true, disabled: state.parallax.samples.length >= 2 }),
             state.parallax.samples.length > 0 && h('p', { className: 'pw-baseline', 'data-walk-baseline': true }, t('baseline', 'Sideways separation') + ': ' + Math.abs((state.parallax.samples[1] || state.player).x - state.parallax.samples[0].x).toFixed(1) + ' / 1.2 ' + t('units', 'units')),
@@ -1265,11 +1684,13 @@
             h('div', { className: 'pw-actions' }, button(icon('ArrowUp', '\u2191'), function () { changeBlock(state.blockZ - 0.3); }, { disabled: !selected || !nearBlock(state), title: t('push', 'Slide block farther'), 'aria-label': t('push', 'Slide block farther'), 'data-walk-push': true }), button(icon('ArrowDown', '\u2193'), function () { changeBlock(state.blockZ + 0.3); }, { disabled: !selected || !nearBlock(state), title: t('pull', 'Slide block nearer'), 'aria-label': t('pull', 'Slide block nearer'), 'data-walk-pull': true }))),
           meta.id === 'occlusion' && h('div', { className: 'pw-tokens', role: 'group', 'aria-label': t('symbols', 'Hidden symbols') }, [0, 1, 2].map(function (id) { var found = state.collected.indexOf(id) >= 0, visible = canCollect(state, id); return button(h(React.Fragment, null, h('span', { className: 'pw-token-dot', style: { background: ['#e9b342', '#208e87', '#e87967'][id] }, 'aria-hidden': true }), t('symbol_' + id, ['Ring', 'Diamond', 'Cross'][id]) + ': ' + t(found ? 'found' : visible ? 'collect' : 'hidden_label', found ? 'Found' : visible ? 'Collect' : 'Hidden')), function () { collect(id); }, { key: id, disabled: found || !visible, 'data-walk-token': id }); })),
           h('div', { className: 'pw-actions' }, button(t('check', 'Check challenge'), check, { className: 'pw-primary', 'data-walk-check': true }), button(icon('RotateCcw', '\u21ba'), reset, { className: 'pw-icon', 'data-walk-reset': true, title: t('reset', 'Reset this challenge'), 'aria-label': t('reset', 'Reset this challenge') })),
-          h('div', { className: 'pw-hints' }, button(h(React.Fragment, null, icon('Lightbulb', '?'), t(progress.hints ? 'another_hint' : 'hint', progress.hints ? 'Another hint' : 'Hint')), hint, { 'data-walk-hint': true, disabled: progress.hints >= meta.hints.length, 'aria-controls': uid + '-hints' }), h('div', { id: uid + '-hints', 'data-walk-hints': true, 'aria-live': 'polite' }, progress.hints > 0 && h('ol', null, meta.hints.slice(0, progress.hints).map(function (text, index) { return h('li', { key: index }, t(meta.id + '_hint_' + index, text)); })))),
-          button(t(meta.id === 'continuity' ? reveal ? 'continuity_cover' : 'continuity_uncover' : 'reveal', meta.id === 'continuity' ? reveal ? 'Cover the line' : 'Uncover the line' : 'Reveal principle'), revealPrinciple, { 'data-walk-reveal': true, 'aria-pressed': reveal }), reveal && h('p', { className: 'pw-explanation', 'data-walk-explanation': true }, t(meta.id + '_explanation', meta.explanation)),
+          h('div', { className: 'pw-hints' }, button(h(React.Fragment, null, icon('Lightbulb', '?'), t(progress.hints ? 'another_hint' : 'hint', progress.hints ? 'Another hint' : 'Hint')), hint, { 'data-walk-hint': true, disabled: progress.hints >= meta.hints.length, 'aria-controls': uid + '-hints' }), h('div', { id: uid + '-hints', 'data-walk-hints': true, 'aria-live': 'polite' }, progress.hints > 0 && h('ol', null, meta.hints.slice(0, progress.hints).map(function (text, index) { return h('li', { key: index }, angularAnamorphosis && index === 0 ? t('anamorphosis_angular_hint_0', 'Each beam turns around a fixed midpoint. Compare both of its endpoints with the neighboring fragments; a turn that improves one join can worsen the other.') : depthAnamorphosis && index === 0 ? t('anamorphosis_depth_hint_0', 'Moving a beam closer makes its image larger; moving it away makes it smaller. Its physical length stays fixed. Compare both endpoints with the coral anchor.') : t(meta.id + '_hint_' + index, text)); })))),
+          button(t(meta.id === 'continuity' ? reveal ? 'continuity_cover' : 'continuity_uncover' : 'reveal', meta.id === 'continuity' ? reveal ? 'Cover the line' : 'Uncover the line' : 'Reveal principle'), revealPrinciple, { 'data-walk-reveal': true, 'aria-pressed': reveal }), reveal && h('p', { className: 'pw-explanation', 'data-walk-explanation': true }, meta.id === 'parallax' && state.parallax.round > 0 ? t('parallax_alternate_explanation', 'The nearest sphere shifts farthest across the image between straight-ahead sideways viewpoints. Physical sizes change between arrangements to keep their apparent sizes similar at the starting distance, so color and apparent size do not identify the answer. The reveal compares forward distances from the shared baseline.') : meta.id === 'ring' && state.ring.round > 0 ? t('ring_alternate_explanation', 'Each arrangement has a different matching viewpoint. The fragments sit on separate depth planes, but rays from one position join their projected endpoints into a circle. The gold marker and rays identify that position; moving away opens the gaps again.') : angularAnamorphosis ? t('anamorphosis_angular_explanation', 'Turning the beams changes their orientation without changing their length, midpoint, or depth. Their projected endpoints can align from the front even while they remain separated in space. The side view exposes the gaps; gold outlines show the matching orientations.') : depthAnamorphosis ? t('anamorphosis_depth_explanation', 'Each beam keeps its physical size while sliding in depth. Closer beams make larger images, so the endpoints can align from the front even though the fragments never meet. The side view exposes this separation; gold outlines show the matching depths.') : t(meta.id + '_explanation', meta.explanation)),
           h('label', { className: 'pw-note', htmlFor: uid + '-note' }, t('note', 'Your observation'), h('textarea', { id: uid + '-note', maxLength: 600, value: state.notes[meta.id], 'data-walk-note': true, onChange: function (event) { var value = event.target.value; update(function (next) { next.notes[next.activity] = value; return next; }); } })))));
   }
   Lab.PerceptionWalk = { Component: Walk, normalize: normalize, normalizePlayer: normalizePlayer, movePlayer: movePlayer, moveBlock: moveBlock, moveContinuation: moveContinuation, canMoveContinuation: canMoveContinuation, shadowGeometry: shadowGeometry, shadowProfile: shadowProfile, shadowOutline: shadowOutline, canRotateShadow: canRotateShadow, rotateShadow: rotateShadow, changeObjects: changeObjects, changeTarget: changeTarget, canObserveChange: canObserveChange, toggleChangeShutter: toggleChangeShutter, selectChange: selectChange, changeMatches: changeMatches, checkChange: checkChange, nextChange: nextChange, faceExhibit: faceExhibit, recordView: recordView, turnCorner: turnCorner, toggleTile: toggleTile, evidence: evidence, checkAnswer: checkAnswer, canCollect: canCollect, spawn: spawn, activities: ACTIVITIES };
+  Object.assign(Lab.PerceptionWalk, { parallaxObjects: parallaxObjects, parallaxTarget: parallaxTarget, checkParallax: checkParallax, nextParallax: nextParallax });
+  Object.assign(Lab.PerceptionWalk, { ringConfiguration: ringConfiguration, ringPoint: ringPoint, ringParts: ringParts, ringError: ringError, checkRing: checkRing, nextRing: nextRing });
   Object.assign(Lab.PerceptionWalk, { nextRoom: nextRoom, rotationObjects: rotationObjects, rotationPoint: rotationPoint, rotationMatch: rotationMatch, canTurnRotation: canTurnRotation, turnRotation: turnRotation, chooseRotation: chooseRotation, rotationMatches: rotationMatches, checkRotation: checkRotation, nextRotation: nextRotation, rotationInspectionViews: rotationInspectionViews, rotationInspection: rotationInspection, inspectRotation: inspectRotation });
   Object.assign(Lab.PerceptionWalk, { reliefObjects: reliefObjects, reliefSurface: reliefSurface, reliefLight: reliefLight, reliefShade: reliefShade, reliefTarget: reliefTarget, canObserveRelief: canObserveRelief, turnReliefLight: turnReliefLight, chooseRelief: chooseRelief, reliefMatches: reliefMatches, checkRelief: checkRelief, nextRelief: nextRelief, reliefInspectionViews: reliefInspectionViews, reliefInspection: reliefInspection, inspectRelief: inspectRelief });
   Object.assign(Lab.PerceptionWalk, { shapeObjects: shapeObjects, shapePoint: rotationPoint, shapeTarget: shapeTarget, shapeDefaults: shapeDefaults, canTurnShape: canTurnShape, turnShape: turnShape, chooseShape: chooseShape, shapeMatches: shapeMatches, checkShape: checkShape, nextShape: nextShape, shapeInspectionViews: shapeInspectionViews, shapeInspection: shapeInspection, inspectShape: inspectShape });
@@ -1280,4 +1701,7 @@
   Object.assign(Lab.PerceptionWalk, { landingDefaults: landingDefaults, landingLight: landingLight, landingObjects: landingObjects, canManipulateLanding: canManipulateLanding, selectLanding: selectLanding, setLandingHeight: setLandingHeight, setLandingLight: setLandingLight, landingAligned: landingAligned, landingMatches: landingMatches, checkLanding: checkLanding, nextLanding: nextLanding, landingInspectionViews: landingInspectionViews, inspectLanding: inspectLanding });
   Object.assign(Lab.PerceptionWalk, { saveViewpoint: saveViewpoint, recallViewpoint: recallViewpoint, clearViewpoint: clearViewpoint, canSaveViewpoint: canSaveViewpoint });
   Object.assign(Lab.PerceptionWalk, { lengthDefaults: lengthDefaults, lengthObjects: lengthObjects, canObserveLength: canObserveLength, setLengthValue: setLengthValue, setLengthVisible: setLengthVisible, lengthMatches: lengthMatches, checkLength: checkLength, nextLength: nextLength, lengthInspectionViews: lengthInspectionViews, inspectLength: inspectLength });
+  Object.assign(Lab.PerceptionWalk, { silhouetteDefaults: silhouetteDefaults, silhouetteCells: silhouetteCells, silhouetteProjection: silhouetteProjection, silhouetteTarget: silhouetteTarget, silhouetteReference: silhouetteReference, silhouetteObjects: silhouetteObjects, silhouettePoint: silhouettePoint, canObserveSilhouette: canObserveSilhouette, setSilhouetteAngle: setSilhouetteAngle, selectSilhouette: selectSilhouette, silhouetteMatches: silhouetteMatches, checkSilhouette: checkSilhouette, nextSilhouette: nextSilhouette });
+  Object.assign(Lab.PerceptionWalk, { advanceSilhouetteSet: advanceSilhouetteSet, silhouetteInspectionViews: silhouetteInspectionViews, silhouetteInspection: silhouetteInspection, inspectSilhouette: inspectSilhouette });
+  Object.assign(Lab.PerceptionWalk, { anamorphosisSnapshot: anamorphosisSnapshot, undoAnamorphosis: undoAnamorphosis, redoAnamorphosis: redoAnamorphosis, advanceAnamorphosisSet: advanceAnamorphosisSet, anamorphosisDefaults: anamorphosisDefaults, anamorphosisTargets: anamorphosisTargets, anamorphosisObjects: anamorphosisObjects, canManipulateAnamorphosis: canManipulateAnamorphosis, selectAnamorphosis: selectAnamorphosis, setAnamorphosisOffset: setAnamorphosisOffset, anamorphosisInspectionViews: anamorphosisInspectionViews, anamorphosisView: anamorphosisView, recordAnamorphosis: recordAnamorphosis, inspectAnamorphosis: inspectAnamorphosis, anamorphosisError: anamorphosisError, anamorphosisMatches: anamorphosisMatches, checkAnamorphosis: checkAnamorphosis, nextAnamorphosis: nextAnamorphosis });
 }());

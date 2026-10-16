@@ -304,6 +304,126 @@ test('zero, tiny and mismatched energy allocations keep their exact size instead
   expect(errors).toEqual([]);
 });
 
+test('energy timelines keep finite geometry at zero, subnormal and excess energies and scale from every captured point', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await mount(page); await launch(page, false, false);
+  const fixtures = [
+    { name: 'two zero points', velocity: 0, mass: 2, gravity: 10, points: [{ vx: 0, height: 0 }, { vx: 0, height: 0 }] },
+    { name: 'positive subnormal energies', velocity: 1e-155, mass: 2, gravity: 10,
+      points: [{ vx: 1e-155, height: 0 }, { vx: .5e-155, height: 0 }] },
+    { name: 'zero initial with positive later energy', velocity: 0, mass: 2, gravity: 10,
+      points: [{ vx: 0, height: 0 }, { vx: 1, height: 0 }] },
+    { name: 'recorded sum above initial', velocity: 1, mass: 2, gravity: 10,
+      points: [{ vx: 1, height: 0 }, { vx: 2, height: .1 }] },
+    { name: 'unplotted full-resolution peak', velocity: 1, mass: 2, gravity: 10,
+      points: Array.from({ length: 161 }, (_, index) => ({ vx: index === 1 ? 10 : 1, height: 0 })) },
+    // Each component, captured force and launch setting remains finite; only KE + PE exceeds the display range.
+    { name: 'nonfinite cumulative sum', velocity: 0, mass: 1e308, gravity: 1,
+      points: [{ vx: 0, height: 0 }, { vx: Math.SQRT2, height: 1 }] },
+  ];
+  for (const fixture of fixtures) {
+    if (await page.locator('[data-physics-sample-close]').count()) await page.locator('[data-physics-sample-close]').click();
+    await page.evaluate(value => {
+      const cv = document.getElementById('physicsCanvas') as any, trail = cv._trails.at(-1), template = trail[0];
+      // Exercise the supported captured-sample contract without advancing or recalculating the flight.
+      trail.parameters = { ...trail.parameters, velocity: value.velocity, mass: value.mass, gravity: value.gravity,
+        launchHeight: 0, drag: false };
+      trail.splice(0, trail.length, ...value.points.map((point, index) => ({ ...template,
+        t: index, mX: index * .1, mY: point.height, mVx: point.vx, mVy: 0 })));
+      delete trail.apex;
+      (window as any).__rerender();
+    }, fixture);
+    await redraw(page); await view(page, 'energy');
+    const before = await evidence(page);
+    const expected = await page.evaluate(() => {
+      const trail = (document.getElementById('physicsCanvas') as any)._trails.at(-1), p = trail.parameters;
+      const values: Array<{ ke: number; pe: number; sum: number; t: number }> = trail.map((point: any) => {
+        const speed = Math.hypot(point.mVx, point.mVy), ke = .5 * p.mass * speed * speed;
+        const pe = p.mass * p.gravity * point.mY;
+        return { ke, pe, sum: ke + pe, t: point.t };
+      });
+      const initial = .5 * p.mass * p.velocity * p.velocity + p.mass * p.gravity * p.launchHeight;
+      return { values, initial, scale: Math.max(initial, ...values.map((value: any) => value.sum)) };
+    });
+    const graph = page.locator('[data-physics-energy-graph]');
+    if (fixture.name === 'nonfinite cumulative sum') {
+      expect(expected.values.every(value => Number.isFinite(value.ke) && Number.isFinite(value.pe))).toBe(true);
+      expect(expected.scale).toBe(Infinity);
+      await expect(graph).toHaveCount(0);
+      await expect(page.locator('[data-physics-energy-unavailable]')).toBeVisible();
+      await expect(page.locator('[data-physics-energy-unavailable]')).toHaveAttribute('data-reason', 'energy-range');
+      expect(await evidence(page)).toEqual(before);
+      continue;
+    }
+    await expect(graph).toBeVisible();
+    await expect(graph).toHaveAttribute('data-scale-energy', String(expected.scale));
+    await expect(graph).toHaveAttribute('data-initial-energy', String(expected.initial));
+    await expect(graph).toHaveAttribute('aria-describedby', /physics-energy-scale-help/);
+    const help = page.locator('#physics-energy-scale-help');
+    await expect(help).toBeVisible();
+    await expect(help).toContainText(expected.scale === 0 ? 'zero-energy baseline' : 'largest initial or recorded energy sum');
+    const initial = graph.locator('[data-physics-energy-initial]');
+    await expect(initial).toHaveAttribute('data-value', String(expected.initial));
+    const geometry = await graph.evaluate(svg => {
+      const origin = svg.querySelector('[data-physics-energy-origin]')!, initial = svg.querySelector('[data-physics-energy-initial]')!;
+      const attributes = ['x1', 'x2', 'y1', 'y2', 'cx', 'cy', 'r'];
+      const numeric = [...svg.querySelectorAll('line,circle')].flatMap(node => attributes
+        .filter(attribute => node.hasAttribute(attribute)).map(attribute => Number(node.getAttribute(attribute))));
+      const areas = [...svg.querySelectorAll('[data-physics-energy-area]')].map(node => ({
+        part: node.getAttribute('data-physics-energy-area'), d: node.getAttribute('d')!,
+        pairs: [...node.getAttribute('d')!.matchAll(/[ML]([-+\d.eE]+),([-+\d.eE]+)/g)].map(match => [Number(match[1]), Number(match[2])]),
+      }));
+      return { numeric, areas, zero: Number(origin.getAttribute('y1')), initialY: Number(initial.getAttribute('y1')),
+        initialY2: Number(initial.getAttribute('y2')), left: Number(origin.getAttribute('x1')), right: Number(origin.getAttribute('x2')),
+        plottedCount: Number(svg.getAttribute('data-plotted-count')) };
+    });
+    expect(geometry.numeric.every(Number.isFinite), fixture.name).toBe(true);
+    expect(geometry.zero).toBe(174);
+    const initialY = expected.scale > 0 ? geometry.zero - expected.initial / expected.scale * 140 : geometry.zero;
+    expect(geometry.initialY).toBeCloseTo(initialY, 12); expect(geometry.initialY2).toBeCloseTo(initialY, 12);
+    expect(geometry.areas.map(area => area.part)).toEqual(['dragLoss', 'pe', 'ke']);
+    for (const area of geometry.areas) {
+      expect(area.d, fixture.name).not.toMatch(/NaN|Infinity/);
+      expect(area.pairs).toHaveLength(geometry.plottedCount * 2);
+      for (const [x, y] of area.pairs) {
+        expect(Number.isFinite(x) && Number.isFinite(y), fixture.name).toBe(true);
+        expect(x).toBeGreaterThanOrEqual(geometry.left); expect(x).toBeLessThanOrEqual(geometry.right);
+        expect(y).toBeGreaterThanOrEqual(34); expect(y).toBeLessThanOrEqual(geometry.zero);
+      }
+      const count = area.pairs.length / 2;
+      for (let index = 0; index < count; index++) {
+        const [x, y] = area.pairs[index], fullIndex = Math.round((x - geometry.left) / (geometry.right - geometry.left) * (expected.values.length - 1));
+        const value = expected.values[fullIndex], upper = area.part === 'ke' ? value.ke : value.sum;
+        const lower = area.part === 'ke' ? 0 : area.part === 'pe' ? value.ke : value.sum;
+        const ordinate = (energy: number) => expected.scale > 0 ? geometry.zero - energy / expected.scale * 140 : geometry.zero;
+        expect(y).toBeCloseTo(ordinate(upper), 2);
+        expect(area.pairs[area.pairs.length - 1 - index][1]).toBeCloseTo(ordinate(lower), 2);
+      }
+    }
+    if (fixture.name === 'two zero points') {
+      expect(expected.scale).toBe(0); expect(geometry.areas.every(area => area.pairs.every(([, y]) => y === geometry.zero))).toBe(true);
+    }
+    if (fixture.name === 'positive subnormal energies') {
+      expect(expected.scale).toBeGreaterThan(0); expect(expected.scale).toBeLessThan(1e-308);
+      expect(geometry.areas.find(area => area.part === 'ke')!.pairs[0][1]).toBe(34);
+      await expect(page.locator('[data-physics-energy-value="ke"]')).not.toHaveText('0.00 J');
+    }
+    if (fixture.name === 'unplotted full-resolution peak') {
+      expect(expected.scale).toBe(100); expect(geometry.plottedCount).toBe(80);
+      const peakX = geometry.left + (geometry.right - geometry.left) / 160;
+      expect(geometry.areas.every(area => area.pairs.every(([x]) => Math.abs(x - peakX) > .01))).toBe(true);
+      // Selecting the omitted observation adds its vertex but must not change the scale derived from the complete trail.
+      await graph.focus(); await graph.press('Home'); await graph.press('ArrowRight');
+      await expect(page.locator('[data-physics-energy-panel]')).toHaveAttribute('data-sample-index', '1');
+      await expect(graph).toHaveAttribute('data-scale-energy', '100');
+      await expect(graph).toHaveAttribute('data-plotted-count', '81');
+      await expect(graph.locator('[data-physics-energy-boundary="ke"]')).toHaveAttribute('cy', '34');
+    }
+    expect(await evidence(page), fixture.name).toEqual(before);
+  }
+  expect(errors).toEqual([]);
+});
+
 function rgb(color: string): [number, number, number] {
   const match = color.match(/^rgba?\(([^)]+)\)$/);
   if (!match) throw Error('Unresolved energy accounting color: ' + color);

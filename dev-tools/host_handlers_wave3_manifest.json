@@ -1062,6 +1062,7 @@
     "setIsGeneratingProgression",
     "setIsGeneratingReflectionPrompt",
     "setIsGeneratingRubric",
+    "setIsGeneratingEtymology",
     "setIsGeneratingTermImage",
     "setIsGeneratingWorksheet",
     "setIsGeneratingWorksheetCover",

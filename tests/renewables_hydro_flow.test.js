@@ -102,7 +102,9 @@ describe('Hydro electrical flow response',()=>{
       expect(marker.userData.power).toBe(500);expect(marker.userData.flowStrength).toBeGreaterThan(initial);expect(marker.userData.flowStrength).toBeLessThan(1/3);
       expect(marker.userData.flowRate).toBeGreaterThan(0);
     }
-    expect(markers(f.routes.incoming)[0].userData.progress).toBeCloseTo(markers(f.routes.outgoing)[0].userData.progress,14);
+    const incoming=markers(f.routes.incoming)[0],outgoing=markers(f.routes.outgoing)[0];
+    expect(incoming.userData.worldFlowRate).toBe(.7);expect(outgoing.userData.worldFlowRate).toBe(.7);
+    expect(incoming.userData.progress*curve(f.routes.incoming).getLength()).toBeCloseTo(outgoing.userData.progress*curve(f.routes.outgoing).getLength(),12);
   });
 
   it('preserves marker positions during paused efficiency changes and hides every stopped transfer immediately',()=>{
@@ -121,8 +123,8 @@ describe('Hydro electrical flow response',()=>{
     const objects=[...routeMeshes(f.routes.incoming),...routeMeshes(f.routes.outgoing)],geometries=objects.map(object=>object.geometry),before=markers(f.routes.incoming)[0].userData.progress;
     for(let i=0;i<100;i++)f.update(i%2?100:900,.02);
     objects.forEach((object,index)=>expect(object.geometry).toBe(geometries[index]));
-    const phase=markers(f.routes.incoming)[0].userData.progress;expect(phase).not.toBe(before);
+    const phases=[f.routes.incoming,f.routes.outgoing].map(group=>markers(group)[0].userData.progress);expect(phases[0]).not.toBe(before);
     f.update(900,.1,true,'Sequence complete');
-    for(const group of [f.routes.incoming,f.routes.outgoing])for(const marker of markers(group)){expect(marker.visible).toBe(false);expect(marker.userData.progress).toBe(phase);expect(marker.userData.power).toBe(0);}
+    for(const [index,group] of [f.routes.incoming,f.routes.outgoing].entries())for(const marker of markers(group)){expect(marker.visible).toBe(false);expect(marker.userData.progress).toBe(phases[index]);expect(marker.userData.power).toBe(0);}
   });
 });

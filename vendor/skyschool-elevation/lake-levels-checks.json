@@ -1,0 +1,115 @@
+{
+  "format": "skyschool-lake-levels-checks-v1",
+  "files": [
+    {
+      "path": "dev-tools/build_skyschool_lake_levels.py",
+      "sha256": "e8941bc1dfaeff8552fce88aa30924a71a2857bc05aa23f397f6ef41487d1c59",
+      "bytes": 15840
+    },
+    {
+      "path": "vendor/skyschool-elevation/lake-levels.json",
+      "sha256": "86003e578de978b80806c74257ed0ce92441fc3ae844e74244eb446bf0a49b42",
+      "bytes": 1890676
+    },
+    {
+      "path": "vendor/skyschool-elevation/lake-levels-references.json",
+      "sha256": "805797cd9f2525f54ab95402fbf4a8a634f6bed9f9f41e35df19b0684868b2bf",
+      "bytes": 862
+    },
+    {
+      "path": "vendor/skyschool-elevation/lake-levels.README.md",
+      "sha256": "0accfdbe774d2dbe548b295cbe29fa2d2ffc1739eb81f83725e04e20f7b9d75b",
+      "bytes": 4637
+    }
+  ],
+  "allRunsVerifiedAsWater": 77768,
+  "waterCells": 2009825,
+  "lakes": 1356,
+  "missing": [],
+  "landCellsExcluded": 979,
+  "overlapCells": 26399,
+  "negativeLevelCount": 16,
+  "fixtures": [
+    {
+      "name": "Tahoe A",
+      "lat": 39.1,
+      "lon": -120.05,
+      "row": 5090,
+      "col": 5995,
+      "lakeId": 26,
+      "meters": 1910,
+      "rawWater": true
+    },
+    {
+      "name": "Tahoe B",
+      "lat": 39.05,
+      "lon": -120.1,
+      "row": 5095,
+      "col": 5990,
+      "lakeId": 26,
+      "meters": 1910,
+      "rawWater": true
+    },
+    {
+      "name": "Superior",
+      "lat": 47.7,
+      "lon": -87.5,
+      "row": 4230,
+      "col": 9250,
+      "lakeId": 465,
+      "meters": 192,
+      "rawWater": true
+    },
+    {
+      "name": "Titicaca",
+      "lat": -15.85,
+      "lon": -69.4,
+      "row": 10585,
+      "col": 11060,
+      "lakeId": 483,
+      "meters": 3813,
+      "rawWater": true
+    },
+    {
+      "name": "Caspian",
+      "lat": 42,
+      "lon": 51,
+      "row": 4800,
+      "col": 23100,
+      "lakeId": 1355,
+      "meters": -28,
+      "rawWater": true
+    },
+    {
+      "name": "Caspian island",
+      "lat": 46.435,
+      "lon": 53.005,
+      "row": 4356,
+      "col": 23300,
+      "lakeId": null,
+      "meters": null,
+      "rawWater": false
+    },
+    {
+      "name": "Northern Dead Sea",
+      "lat": 31.5,
+      "lon": 35.5,
+      "row": 5850,
+      "col": 21550,
+      "lakeId": 1297,
+      "meters": -441,
+      "rawWater": true
+    },
+    {
+      "name": "Pacific",
+      "lat": 0,
+      "lon": -150,
+      "row": 9000,
+      "col": 3000,
+      "lakeId": null,
+      "meters": null,
+      "rawWater": true
+    }
+  ],
+  "sourceResponseUncompressedSha256": "ce17f2d9965f85df04e74e36a5e70c4adbe050c6e844b9d36695b9b4d19427f4"
+}

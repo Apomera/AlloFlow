@@ -60,12 +60,12 @@ describe('Cephalopod Lab form-control accessibility', () => {
   it('keeps the complete form inventory and repaired names explicit in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
 
-    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(26);
+    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(27);
     expect(source).toContain(
       "'aria-label': __alloT('stem.cephalopodlab.audio_volume', 'Audio volume')"
     );
     const container = renderSection('hunt', { _threeLoaded: true });
-    ['Mode', 'Graphics', 'World seed'].forEach(name => {
+    [['Species', 'Dive species'], ['Mode', 'Dive mode'], ['Graphics', null], ['World seed', null]].forEach(([name, accessibleName]) => {
       const label = Array.from(container.querySelectorAll('label')).find(element =>
         Array.from(element.childNodes)
           .filter(node => node.nodeType === 3)
@@ -75,7 +75,7 @@ describe('Cephalopod Lab form-control accessibility', () => {
       expect(label.control).toBeTruthy();
       expect(label.control.labels).toHaveLength(1);
       expect(label.control.labels[0]).toBe(label);
-      expect(label.control.hasAttribute('aria-label')).toBe(false);
+      expect(label.control.getAttribute('aria-label')).toBe(accessibleName);
     });
     expect(source).toContain("htmlFor: 'ch-explanation'");
     expect(source).toContain("id: 'ch-explanation'");

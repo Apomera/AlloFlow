@@ -75,7 +75,7 @@ describe('solar rocky surface identity and impact feedback', () => {
   });
 
   it('uses one deterministic low-draw horizon outside every playable corner and inside the camera far range', () => {
-    expect(source).toContain('var horizonSegments = rockySurfaceLowPower ? 64 : 96;');
+    expect(source).toContain('var horizonSegments = rockySurfaceLowPower ? 96 : 192;');
     expect(source).toContain('var horizonInnerRadius = 234;');
     expect(source).toContain('var horizonOuterRadius = 262;');
     expect(source).toContain('new THREE.Mesh(rockyHorizonGeo, rockyHorizonMat)');
@@ -86,6 +86,8 @@ describe('solar rocky surface identity and impact feedback', () => {
     const horizonBlock = source.slice(source.indexOf('var rockyHorizonMesh = null;'), source.indexOf('// Hide sun'));
     expect(horizonBlock.match(/new THREE\.Mesh\(/g)).toHaveLength(1);
     expect(horizonBlock).not.toContain('ConeGeometry');
+    expect(horizonBlock).toContain('side: THREE.FrontSide');
+    expect(horizonBlock).not.toContain('side: THREE.DoubleSide');
   });
 
   it('arms on the first moving frame, ignores stationary compression, and uses cooldown plus hysteresis', () => {

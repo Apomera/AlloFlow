@@ -35,10 +35,320 @@ function __alloRockDeform(geo, seed, squashY) {
   }
   attr.needsUpdate = true;
   geo.computeVertexNormals();
+  if (geo.parameters && geo.parameters.detail >= 1) __alloSmoothRockNormals(geo);
   geo.computeBoundingSphere();
   return geo;
 }
 // ═══════════════════════════════════════════
+
+// Average area-weighted normals at coincident corners without welding positions or
+// UVs. Detailed organic rocks retain their silhouette; small angular chips keep
+// their original flat normals. This runs once when geometry is constructed.
+function __alloSmoothRockNormals(geo) {
+  if (geo.index || !geo.attributes.normal) return geo;
+  var p = geo.attributes.position.array, n = geo.attributes.normal.array;
+  var groups = new Map(), keys = new Array(p.length / 3);
+  for (var i = 0; i < p.length; i += 3) {
+    var key = Math.round(p[i] * 100000) + ':' + Math.round(p[i + 1] * 100000) + ':' + Math.round(p[i + 2] * 100000);
+    keys[i / 3] = key;
+    if (!groups.has(key)) groups.set(key, [0, 0, 0]);
+  }
+  for (var t = 0; t + 8 < p.length; t += 9) {
+    var ax = p[t + 3] - p[t], ay = p[t + 4] - p[t + 1], az = p[t + 5] - p[t + 2];
+    var bx = p[t + 6] - p[t], by = p[t + 7] - p[t + 1], bz = p[t + 8] - p[t + 2];
+    var nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+    for (var corner = 0; corner < 3; corner++) {
+      var sum = groups.get(keys[t / 3 + corner]); sum[0] += nx; sum[1] += ny; sum[2] += nz;
+    }
+  }
+  for (var v = 0; v < keys.length; v++) {
+    var normal = groups.get(keys[v]), length = Math.hypot(normal[0], normal[1], normal[2]);
+    if (length > 0.000000000001) {
+      n[v * 3] = normal[0] / length; n[v * 3 + 1] = normal[1] / length; n[v * 3 + 2] = normal[2] / length;
+    }
+  }
+  geo.attributes.normal.needsUpdate = true;
+  geo.userData = geo.userData || {}; geo.userData.rockSmoothNormals = true;
+  return geo;
+}
+
+// Bake gentle reflectance variation and contact darkening once. Sampling the
+// actual terrain under each transformed vertex keeps the foot of a rotated rock
+// grounded on slopes without moving its hull or changing its collision footprint.
+function solarShadeDroneRock(THREE, rock, heightAt) {
+  var geo = rock.geometry, position = geo.attributes.position;
+  if (!geo.boundingSphere) geo.computeBoundingSphere();
+  var radius = Math.max(0.001, geo.boundingSphere.radius);
+  var colors = new Float32Array(position.count * 3);
+  rock.updateMatrix();
+  var e = rock.matrix.elements, p = position.array;
+  for (var i = 0; i < p.length; i += 3) {
+    var x = p[i], y = p[i + 1], z = p[i + 2];
+    var wx = e[0] * x + e[4] * y + e[8] * z + e[12];
+    var wy = e[1] * x + e[5] * y + e[9] * z + e[13];
+    var wz = e[2] * x + e[6] * y + e[10] * z + e[14];
+    var clearance = wy - heightAt(wx, wz);
+    var fade = Math.max(0, Math.min(1, clearance / (radius * 0.32)));
+    fade = fade * fade * (3 - 2 * fade);
+    var mottle = 0.94 + 0.06 * Math.sin((x * 3.7 + y * 2.1) / radius)
+      * Math.sin((z * 4.3 - y * 1.9) / radius);
+    // These are linear reflectance multipliers, not sRGB palette values.
+    var shade = mottle * (0.72 + 0.28 * fade);
+    colors[i] = colors[i + 1] = colors[i + 2] = shade;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  return rock;
+}
+
+// Distant sky geometry follows translation only: camera turns still reveal the sky,
+// while crossing a local exploration scene cannot move the Sun or stars overhead.
+function solarSyncDroneBackdrop(backdrop, camera, corona) {
+  if (!backdrop || !camera) return;
+  camera.updateMatrixWorld(true);
+  backdrop.position.copy(camera.position);
+  backdrop.updateMatrixWorld(true);
+  if (corona) corona.lookAt(camera.position);
+}
+
+// Sky resources are exclusively owned by this group. Deduplicate shared maps and
+// materials so planet changes and repeated cleanup release each allocation once.
+function solarDisposeDroneBackdrop(backdrop) {
+  if (!backdrop || backdrop.userData.droneBackdropDisposed) return;
+  backdrop.userData.droneBackdropDisposed = true;
+  if (backdrop.parent) backdrop.parent.remove(backdrop);
+  var geometries = new Set(), materials = new Set(), textures = new Set();
+  backdrop.traverse(function(object) {
+    if (object.geometry) geometries.add(object.geometry);
+    var owned = object.material ? (Array.isArray(object.material) ? object.material : [object.material]) : [];
+    owned.forEach(function(material) {
+      materials.add(material);
+      if (material.map) textures.add(material.map);
+    });
+  });
+  textures.forEach(function(texture) { texture.dispose(); });
+  materials.forEach(function(material) { material.dispose(); });
+  geometries.forEach(function(geometry) { geometry.dispose(); });
+}
+
+// One continuous, world-fixed mountain strip. Sloped foothills replace the old
+// vertical curtain; periodic profiles and shared seam normals close the horizon.
+function solarCreateDroneHorizonGeometry(THREE, rockySurfaceProfile, rockySurfaceLowPower) {
+  var horizonSegments = rockySurfaceLowPower ? 96 : 192;
+  var horizonInnerRadius = 234;
+  var horizonOuterRadius = 262;
+  var rows = 6, positions = new Float32Array((horizonSegments + 1) * rows * 3);
+  var colors = new Float32Array(positions.length), indices = [];
+  var rowExposure = [0.69, 0.75, 0.83, 1.0, 0.85, 0.67];
+  for (var hp = 0; hp <= horizonSegments; hp++) {
+    // Reuse angle zero exactly, including Float32 rounding, at the closing seam.
+    var angle = hp === horizonSegments ? 0 : hp / horizonSegments * Math.PI * 2;
+    var wave = rockySurfaceProfile === 'aeolian-rippled' ? Math.sin(angle * 5) * 5 + Math.sin(angle * 11) * 2
+      : rockySurfaceProfile === 'fractured-basalt' ? Math.pow(Math.sin(angle * 7), 2) * 14 + Math.sin(angle * 3) * 5
+        : rockySurfaceProfile === 'crevassed-ice' ? Math.abs(Math.sin(angle * 9 + 0.4)) * 9 + Math.sin(angle * 4) * 4
+          : rockySurfaceProfile === 'regolith-pitted' ? Math.sin(angle * 6) * 8 + Math.sin(angle * 13) * 4
+            : Math.sin(angle * 5) * 7 + Math.sin(angle * 8) * 3;
+    var ridgeHeight = 14 + wave * 0.7 + Math.sin(angle * 2 + 0.8) * 2 + Math.cos(angle * 17) * 0.8;
+    var radii = [horizonInnerRadius, 238 + Math.sin(angle * 5) * 0.8,
+      244 + Math.sin(angle * 7 + 0.4) * 1.5, 251 + Math.sin(angle * 3 + 0.6) * 2 + Math.sin(angle * 9) * 0.6,
+      257 + Math.sin(angle * 5 + 1.1), horizonOuterRadius];
+    var heights = [-12, ridgeHeight * 0.10 - 5.5, ridgeHeight * 0.48 - 1,
+      ridgeHeight, ridgeHeight * 0.42 - 2.5, -14];
+    var variation = 0.78 + Math.sin(angle * 5 + 0.3) * 0.10 + Math.cos(angle * 11) * 0.06;
+    for (var row = 0; row < rows; row++) {
+      var offset = (hp * rows + row) * 3;
+      positions[offset] = Math.cos(angle) * radii[row];
+      positions[offset + 1] = heights[row];
+      positions[offset + 2] = Math.sin(angle) * radii[row];
+      var shade = variation * rowExposure[row];
+      colors[offset] = shade * (rockySurfaceProfile === 'aeolian-rippled' ? 1.04 : 1);
+      colors[offset + 1] = shade;
+      colors[offset + 2] = shade * (rockySurfaceProfile === 'crevassed-ice' ? 1.06 : 0.98);
+      if (hp < horizonSegments && row < rows - 1) {
+        var a = hp * rows + row, b = (hp + 1) * rows + row;
+        // Upward winding on both slopes, with continuous indexed shared edges.
+        indices.push(a, b, b + 1, a, b + 1, a + 1);
+      }
+    }
+  }
+  var geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  var normals = geometry.attributes.normal.array;
+  for (var seamRow = 0; seamRow < rows; seamRow++) {
+    var first = seamRow * 3, last = (horizonSegments * rows + seamRow) * 3;
+    var nx = normals[first] + normals[last], ny = normals[first + 1] + normals[last + 1], nz = normals[first + 2] + normals[last + 2];
+    var length = Math.hypot(nx, ny, nz) || 1;
+    normals[first] = normals[last] = nx / length;
+    normals[first + 1] = normals[last + 1] = ny / length;
+    normals[first + 2] = normals[last + 2] = nz / length;
+  }
+  geometry.attributes.normal.needsUpdate = true;
+  geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+  geometry.userData.droneHorizonSegments = horizonSegments;
+  geometry.userData.droneHorizonRows = rows;
+  geometry.userData.droneHorizonProfile = rockySurfaceProfile;
+  return geometry;
+}
+
+// Join the square driving surface to the distant foothills without extending the
+// collision grid. Every boundary vertex is retained so uneven edges cannot crack.
+function solarCreateDroneTerrainApronGeometry(THREE, terrainGeometry, lowPower) {
+  var segments = terrainGeometry.parameters.widthSegments, grid = segments + 1;
+  var size = terrainGeometry.parameters.width, half = size * 0.5;
+  var perimeter = segments * 4, bands = lowPower ? [0, 0.05, 0.35, 1] : [0, 0.04, 0.22, 0.55, 1];
+  var rows = bands.length, positions = new Float32Array((perimeter + 1) * rows * 3);
+  var uvs = new Float32Array((perimeter + 1) * rows * 2), indices = [];
+  var groundPositions = terrainGeometry.attributes.position.array;
+  var groundNormals = terrainGeometry.attributes.normal.array, groundUvs = terrainGeometry.attributes.uv.array;
+  var boundaryIndices = new Uint32Array(perimeter + 1);
+  for (var edge = 0; edge <= perimeter; edge++) {
+    var side = Math.floor((edge % perimeter) / segments), along = edge % segments;
+    var sourceIndex = side === 0 ? along : side === 1 ? along * grid + segments
+      : side === 2 ? segments * grid + segments - along : (segments - along) * grid;
+    boundaryIndices[edge] = sourceIndex;
+    var x = groundPositions[sourceIndex * 3], y = groundPositions[sourceIndex * 3 + 1];
+    var height = groundPositions[sourceIndex * 3 + 2], radialScale = 236 / Math.hypot(x, y);
+    for (var row = 0; row < rows; row++) {
+      var t = bands[row], scale = 1 + (radialScale - 1) * t;
+      var vertex = edge * rows + row, offset = vertex * 3, uvOffset = vertex * 2;
+      positions[offset] = x * scale; positions[offset + 1] = y * scale;
+      // Taper down from the boundary height. The buried outer skirt
+      // overlaps the horizon's radius-234 foot, hiding mismatched tessellation.
+      positions[offset + 2] = height + (-14 - height) * t * t * (3 - 2 * t);
+      // Preserve both repeating maps' phase and world scale across the join.
+      uvs[uvOffset] = row === 0 ? groundUvs[sourceIndex * 2] : (positions[offset] + half) / size;
+      uvs[uvOffset + 1] = row === 0 ? groundUvs[sourceIndex * 2 + 1] : (positions[offset + 1] + half) / size;
+      if (edge < perimeter && row < rows - 1) {
+        var a = vertex, b = (edge + 1) * rows + row;
+        indices.push(a, b, b + 1, a, b + 1, a + 1);
+      }
+    }
+  }
+  var geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  geometry.setIndex(indices); geometry.computeVertexNormals();
+  var normals = geometry.attributes.normal.array;
+  for (var boundary = 0; boundary <= perimeter; boundary++) {
+    var target = boundary * rows * 3, source = boundaryIndices[boundary] * 3;
+    normals[target] = groundNormals[source]; normals[target + 1] = groundNormals[source + 1]; normals[target + 2] = groundNormals[source + 2];
+  }
+  for (var seamRow = 1; seamRow < rows; seamRow++) {
+    var first = seamRow * 3, last = (perimeter * rows + seamRow) * 3;
+    var nx = normals[first] + normals[last], ny = normals[first + 1] + normals[last + 1], nz = normals[first + 2] + normals[last + 2];
+    var length = Math.hypot(nx, ny, nz) || 1;
+    normals[first] = normals[last] = nx / length;
+    normals[first + 1] = normals[last + 1] = ny / length;
+    normals[first + 2] = normals[last + 2] = nz / length;
+  }
+  geometry.attributes.normal.needsUpdate = true;
+  geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+  geometry.userData.droneTerrainApronSegments = perimeter;
+  geometry.userData.droneTerrainApronRows = rows;
+  return geometry;
+}
+
+// Periodic surface fields keep texture joins smooth and feature sizes independent
+// of the map resolution. These helpers run only while building the two maps.
+function solarDroneSurfaceHash(x, y, seed) {
+  var value = Math.imul(x ^ seed, 374761393) ^ Math.imul(y + seed, 668265263);
+  value = Math.imul(value ^ (value >>> 13), 1274126177);
+  return ((value ^ (value >>> 16)) >>> 0) / 4294967295;
+}
+
+function solarDroneSurfaceNoise(u, v, cells, seed) {
+  var x = u * cells, y = v * cells, ix = Math.floor(x), iy = Math.floor(y);
+  var fx = x - ix, fy = y - iy;
+  fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+  var x0 = ((ix % cells) + cells) % cells, y0 = ((iy % cells) + cells) % cells;
+  var x1 = (x0 + 1) % cells, y1 = (y0 + 1) % cells;
+  var a = solarDroneSurfaceHash(x0, y0, seed), b = solarDroneSurfaceHash(x1, y0, seed);
+  var c = solarDroneSurfaceHash(x0, y1, seed), d = solarDroneSurfaceHash(x1, y1, seed);
+  return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+}
+
+function solarDroneTerrainMicroHeight(profile, u, v) {
+  function smooth(a, b, value) {
+    var t = Math.max(0, Math.min(1, (value - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  }
+  var seed = profile === 'aeolian-rippled' ? 73 : profile === 'fractured-basalt' ? 149
+    : profile === 'crevassed-ice' ? 211 : profile === 'regolith-pitted' ? 37 : 101;
+  var tau = Math.PI * 2, broad = solarDroneSurfaceNoise(u, v, 4, seed);
+  var grain = solarDroneSurfaceNoise(u, v, 32, seed + 7) - 0.5;
+  if (profile === 'aeolian-rippled') {
+    return 132 + Math.sin(tau * (12 * u + 2 * v) + broad * 2) * 18 + grain * 12;
+  }
+  if (profile === 'fractured-basalt') {
+    var warp = solarDroneSurfaceNoise(u, v, 8, seed + 13);
+    var fissureA = Math.abs(Math.sin(tau * (5 * u + v) + broad * 3));
+    var fissureB = Math.abs(Math.sin(tau * (2 * u - 4 * v) + warp * 2));
+    var fissure = Math.max(1 - smooth(0.05, 0.32, fissureA), 1 - smooth(0.05, 0.32, fissureB));
+    return 150 + grain * 16 - fissure * 28 * (0.55 + broad * 0.45);
+  }
+  if (profile === 'crevassed-ice') {
+    var flow = tau * (3 * u + v) + Math.sin(tau * (2 * v - u)) * 0.8 + (broad - 0.5) * 2.2;
+    var crevasse = 1 - smooth(0.04, 0.32, Math.abs(Math.sin(flow)));
+    return 172 + grain * 12 - crevasse * 38 * (0.45 + broad * 0.55);
+  }
+  if (profile === 'regolith-pitted') {
+    var px = u * 8, py = v * 8, cellX = Math.floor(px), cellY = Math.floor(py);
+    var wrappedX = ((cellX % 8) + 8) % 8, wrappedY = ((cellY % 8) + 8) % 8;
+    // Each soft bowl and rim fits inside its cell; varied centres and radii
+    // remove the old rigid pit grid without creating a texture-wrap trench.
+    var centerX = 0.28 + solarDroneSurfaceHash(wrappedX, wrappedY, seed + 2) * 0.44;
+    var centerY = 0.28 + solarDroneSurfaceHash(wrappedX, wrappedY, seed + 3) * 0.44;
+    var radius = 0.10 + solarDroneSurfaceHash(wrappedX, wrappedY, seed + 4) * 0.08;
+    var distance = Math.hypot(px - cellX - centerX, py - cellY - centerY);
+    var bowl = 1 - smooth(0, radius, distance);
+    var rim = 1 - smooth(0, 0.05, Math.abs(distance - radius));
+    return 136 + grain * 18 - bowl * 28 + rim * 4;
+  }
+  return 132 + grain * 22 + (broad - 0.5) * 10;
+}
+
+function solarFillDroneTerrainMicroData(data, size, profile) {
+  for (var y = 0; y < size; y++) {
+    for (var x = 0; x < size; x++) {
+      var value = Math.max(18, Math.min(238, Math.round(solarDroneTerrainMicroHeight(profile, (x + 0.5) / size, (y + 0.5) / size))));
+      var offset = (y * size + x) * 4;
+      data[offset] = data[offset + 1] = data[offset + 2] = value;
+      data[offset + 3] = 255;
+    }
+  }
+}
+
+// Narrow surface joints, not displaced terrain. Signed edge coverage preserves
+// thin lines at pixel scale without making their crossings grow into dark blocks.
+function solarDroneBasaltFractureShader() {
+  return {
+    common: [
+      'float geologyJointCoverage(float phase, float halfWidth) {',
+      // Standard materials in pinned THREE r128 already enable derivatives in
+      // WebGL1; WebGL2 supplies them directly. Evaluate before spatial masking.
+      'float footprint = max(fwidth(phase), 0.0001);',
+      'float signedDistance = sin(phase);',
+      'float leading = smoothstep(-halfWidth - footprint, -halfWidth + footprint, signedDistance);',
+      'float trailing = smoothstep(halfWidth - footprint, halfWidth + footprint, signedDistance);',
+      'return clamp(leading - trailing, 0.0, 1.0) * (1.0 - smoothstep(0.25, 0.90, footprint));',
+      '}'
+    ].join('\n'),
+    surface: [
+      'vec2 jointWarp = vec2(geologyNoise(gp.xz * 0.11 + vec2(3.7, 9.2)), geologyNoise(gp.xz * 0.13 + vec2(18.4, 2.6)));',
+      'float jointPhaseA = dot(gp.xz, vec2(0.47, 0.19)) + jointWarp.x * 4.2 + gp.y * 0.08;',
+      'float jointPhaseB = dot(gp.xz, vec2(-0.24, 0.62)) + jointWarp.y * 4.0 - gp.y * 0.06;',
+      'float jointA = geologyJointCoverage(jointPhaseA, 0.045);',
+      'float jointB = geologyJointCoverage(jointPhaseB, 0.035);',
+      'float jointMaskA = smoothstep(0.24, 0.62, jointWarp.y);',
+      'float jointMaskB = smoothstep(0.30, 0.70, 1.0 - jointWarp.x);',
+      'float joints = max(jointA * jointMaskA, jointB * jointMaskB);',
+      'float jointStrength = mix(0.20, 0.30, clamp(geologyRockStrength, 0.0, 1.0));',
+      'diffuseColor.rgb *= 1.0 - joints * jointStrength * nearDetail;'
+    ].join('\n')
+  };
+}
 
 // ═══ Defensive StemLab guard ═══
 window.StemLab = window.StemLab || {
@@ -2933,6 +3243,20 @@ const d = labToolData.solarSystem || {};
               ".solar-cosmos .solar-log-empty{padding:18px;margin-top:14px;border:1px solid var(--sl-line);border-radius:12px;background:var(--sl-selected)}.solar-cosmos .solar-log-empty p{font-size:16px}.solar-cosmos .solar-log-more{display:block;margin:16px 0}.solar-cosmos .solar-mission-log .solar-log-footnote{font-size:13px;margin-top:16px}",
               "@media(max-width:640px){.solar-cosmos .solar-mission-log{padding:12px}.solar-cosmos .solar-log-controls{grid-template-columns:minmax(0,1fr)}.solar-cosmos .solar-log-header>div{flex-basis:100%}.solar-cosmos .solar-log-entry-content{padding:12px}.solar-cosmos .solar-log-list li{gap:8px}.solar-cosmos .solar-log-entry-heading time{margin:0;flex-basis:100%}}",
               '.solar-cosmos .solar-canvas-speed-input{width:100%;height:14px}',
+              ".solar-cosmos .solar-cme-lab{container-type:inline-size;min-width:0;padding:16px;border:1px solid var(--cp-border);border-radius:18px;background:var(--cp-bg);color:var(--cp-fg);font-size:14px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-cme-lab *{box-sizing:border-box}.solar-cosmos .solar-cme-lab [hidden]{display:none!important}.solar-cosmos .solar-cme-lab h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0}.solar-cosmos .solar-cme-lab h5,.solar-cosmos .solar-cme-lab figcaption{font-size:17px;line-height:1.45;font-weight:800;margin:0 0 10px}.solar-cosmos .solar-cme-lab p{margin:8px 0 12px}.solar-cosmos .solar-cp-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-cp-header>div{min-width:0}.solar-cosmos .solar-cp-eyebrow{font-size:13px;font-weight:800;color:var(--cp-accent)}.solar-cosmos .solar-cp-note{font-size:13px;color:var(--cp-muted)}.solar-cosmos .solar-cme-lab button,.solar-cosmos .solar-cme-lab a{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--cp-border);border-radius:9px;background:var(--cp-bg);color:var(--cp-fg);font-size:13px;line-height:1.5;font-weight:700;white-space:normal}.solar-cosmos .solar-cme-lab a{display:inline-flex;align-items:center;color:var(--cp-accent);text-decoration:underline;margin:4px 12px 4px 0}.solar-cosmos .solar-cme-lab button[aria-pressed=true]{border-color:var(--cp-accent);outline:1px solid var(--cp-accent);color:var(--cp-accent)}.solar-cosmos .solar-cme-lab :is(button,input,a):focus-visible{outline:3px solid var(--cp-accent);outline-offset:3px}.solar-cosmos .solar-cp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}.solar-cosmos .solar-cp-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.solar-cosmos .solar-cp-control,.solar-cosmos .solar-cp-card,.solar-cosmos .solar-cp-summary{min-width:0;margin:0;padding:14px;border:1px solid var(--cp-border);border-radius:13px;background:var(--cp-panel)}.solar-cosmos .solar-cp-control{display:grid;gap:8px;align-content:start}.solar-cosmos .solar-cp-control label,.solar-cosmos .solar-cp-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-cp-control output{color:var(--cp-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-cp-control input{width:100%;height:44px;min-width:0;margin:0;accent-color:var(--cp-accent)}.solar-cosmos .solar-cp-presets{display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-cp-presets button{flex:1 1 auto}.solar-cosmos .solar-cp-geometry,.solar-cosmos .solar-cp-summary{margin-top:16px}.solar-cosmos .solar-cme-lab svg{display:block;width:100%;height:auto;background:var(--cp-stage);border:1px solid var(--cp-border);border-radius:12px;box-shadow:none!important;overflow:hidden}.solar-cosmos .solar-cme-lab svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-cp-readouts,.solar-cosmos .solar-cp-distances{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.solar-cosmos .solar-cme-lab dt{font-size:13px;color:var(--cp-muted)}.solar-cosmos .solar-cme-lab dd{font-size:23px;font-weight:800;line-height:1.4;color:var(--cp-accent);font-variant-numeric:tabular-nums;margin:4px 0 0}.solar-cosmos .solar-cp-distances dd{font-size:17px}.solar-cosmos .solar-cp-chart-layout{display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px}.solar-cosmos .solar-cp-y-axis{margin-block:1px;position:relative;font-size:13px;color:var(--cp-muted)}.solar-cosmos .solar-cp-y-axis span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}.solar-cosmos .solar-cp-chart-axis{padding-left:50px}.solar-cosmos .solar-cp-x-axis{margin-inline:1px;position:relative;min-height:30px;margin-top:8px;font-size:13px;color:var(--cp-muted)}.solar-cosmos .solar-cp-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-cp-axis-title{text-align:center;font-size:13px;color:var(--cp-muted)}.solar-cosmos .solar-cp-gridline{stroke:var(--cp-guide);stroke-width:1;stroke-dasharray:3 5;opacity:.4}.solar-cosmos .solar-cp-cursor{stroke:var(--cp-mark);stroke-width:1;stroke-dasharray:3 4}.solar-cosmos .solar-cp-marker{fill:var(--cp-mark);stroke:var(--cp-stage);stroke-width:1.5}.solar-cosmos .solar-cp-front{fill:none;stroke:var(--cp-front);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.solar-cosmos .solar-cp-front-dot{fill:var(--cp-front)}.solar-cosmos .solar-cp-orbit{fill:none;stroke:var(--cp-earth);stroke-width:1.5;stroke-dasharray:5 5}.solar-cosmos .solar-cp-orbit-grid{fill:none;stroke:var(--cp-guide);stroke-width:1;opacity:.35}.solar-cosmos .solar-cp-edge{stroke:var(--cp-front);stroke-width:1;stroke-dasharray:3 5;opacity:.5}.solar-cosmos .solar-cp-coverage{fill:var(--cp-front);opacity:.12}.solar-cosmos .solar-cp-earth{fill:var(--cp-earth);stroke:var(--cp-stage);stroke-width:1.5}.solar-cosmos .solar-cp-reference{stroke:var(--cp-earth);stroke-width:1.5;stroke-dasharray:5 5}.solar-cosmos .solar-cp-crossing{fill:var(--cp-stage);stroke:var(--cp-earth);stroke-width:2}.solar-cosmos .solar-cp-axis{stroke:var(--cp-guide);stroke-width:1}.solar-cosmos .solar-cp-span{fill:var(--cp-front);fill-opacity:.15;stroke:var(--cp-front);stroke-width:1.5}.solar-cosmos .solar-cp-result,.solar-cosmos .solar-cp-bearing-value{font-weight:750;font-size:14px;color:var(--cp-accent)}.solar-cosmos .solar-cp-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0;font-size:13px}.solar-cosmos .solar-cp-legend span{display:inline-flex;align-items:center;gap:8px}.solar-cosmos .solar-cp-legend i{display:inline-block;flex-shrink:0;width:18px;height:3px;background:var(--cp-key)}.solar-cosmos .solar-cp-legend .solar-cp-key-sun{width:10px;height:10px;border:2px solid var(--cp-fg);border-radius:50%;background:none}.solar-cosmos .solar-cp-legend .solar-cp-key-earth{width:10px;height:10px;border-radius:50%;background:var(--cp-key-earth)}.solar-cosmos .solar-cp-model{margin-top:16px;padding:16px;border:1px solid var(--cp-border);border-radius:13px;background:var(--cp-panel);font-size:13px}.solar-cosmos .solar-cp-model h5{margin-bottom:8px}@container(max-width:680px){.solar-cosmos .solar-cp-grid,.solar-cosmos .solar-cp-controls,.solar-cosmos .solar-cp-readouts{grid-template-columns:minmax(0,1fr)}}@media(max-width:380px){.solar-cosmos .solar-cme-lab{padding:12px}.solar-cosmos .solar-cp-card,.solar-cosmos .solar-cp-control,.solar-cosmos .solar-cp-model,.solar-cosmos .solar-cp-summary{padding:10px}}@media(forced-colors:active){.solar-cosmos .solar-cme-lab{--cp-bg:Canvas!important;--cp-panel:Canvas!important;--cp-fg:CanvasText!important;--cp-muted:CanvasText!important;--cp-border:CanvasText!important;--cp-accent:LinkText!important;--cp-stage:Canvas!important;--cp-guide:CanvasText!important;--cp-front:CanvasText!important;--cp-earth:LinkText!important;--cp-mark:LinkText!important;--cp-key:CanvasText!important;--cp-key-earth:LinkText!important}.solar-cosmos .solar-cme-lab svg *,.solar-cosmos .solar-cp-legend i{forced-color-adjust:none}.solar-cosmos .solar-cp-sun{fill:CanvasText!important}}",
+              ".solar-cosmos .solar-gravity-well{container-type:inline-size;min-width:0;padding:16px;border:1px solid var(--gw-border);border-radius:18px;background:var(--gw-bg);color:var(--gw-fg);font-size:14px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-gravity-well *{box-sizing:border-box}.solar-cosmos .solar-gravity-well [hidden]{display:none!important}.solar-cosmos .solar-gravity-well h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0}.solar-cosmos .solar-gravity-well h5,.solar-cosmos .solar-gravity-well figcaption{font-size:17px;line-height:1.45;font-weight:800;margin:0 0 10px}.solar-cosmos .solar-gravity-well p{margin:8px 0 12px}.solar-cosmos .solar-gw-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-gw-header>div{min-width:0}.solar-cosmos .solar-gw-eyebrow{font-size:13px;font-weight:800;color:var(--gw-accent)}.solar-cosmos .solar-gw-note{font-size:13px;color:var(--gw-muted)}.solar-cosmos .solar-gravity-well button,.solar-cosmos .solar-gravity-well a{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--gw-border);border-radius:9px;background:var(--gw-bg);color:var(--gw-fg);font-size:13px;line-height:1.5;font-weight:700;white-space:normal}.solar-cosmos .solar-gravity-well a{display:inline-flex;align-items:center;color:var(--gw-accent);text-decoration:underline;margin:4px 12px 4px 0}.solar-cosmos .solar-gravity-well button[aria-pressed=true]{border-color:var(--gw-accent);outline:1px solid var(--gw-accent);color:var(--gw-accent)}.solar-cosmos .solar-gravity-well :is(button,input,a):focus-visible{outline:3px solid var(--gw-accent);outline-offset:3px}.solar-cosmos .solar-gw-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}.solar-cosmos .solar-gw-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.solar-cosmos .solar-gw-control,.solar-cosmos .solar-gw-card,.solar-cosmos .solar-gw-summary{min-width:0;margin:0;padding:14px;border:1px solid var(--gw-border);border-radius:13px;background:var(--gw-panel)}.solar-cosmos .solar-gw-control{display:grid;gap:8px;align-content:start}.solar-cosmos .solar-gw-control label,.solar-cosmos .solar-gw-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-gw-control output{color:var(--gw-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-gw-control input{width:100%;height:44px;min-width:0;margin:0;accent-color:var(--gw-accent)}.solar-cosmos .solar-gw-presets{display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-gw-presets button{flex:1 1 auto}.solar-cosmos .solar-gw-geometry,.solar-cosmos .solar-gw-summary{margin-top:16px}.solar-cosmos .solar-gravity-well svg{display:block;width:100%;height:auto;background:var(--gw-stage);border:1px solid var(--gw-border);border-radius:12px;box-shadow:none!important;overflow:hidden}.solar-cosmos .solar-gravity-well svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-gw-readouts,.solar-cosmos .solar-gw-distances{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.solar-cosmos .solar-gravity-well dt{font-size:13px;color:var(--gw-muted)}.solar-cosmos .solar-gravity-well dd{font-size:23px;font-weight:800;line-height:1.4;color:var(--gw-accent);font-variant-numeric:tabular-nums;margin:4px 0 0}.solar-cosmos .solar-gw-distances dd{font-size:17px}.solar-cosmos .solar-gw-chart-layout{display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px}.solar-cosmos .solar-gw-y-axis{margin-block:1px;position:relative;font-size:13px;color:var(--gw-muted)}.solar-cosmos .solar-gw-y-axis span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}.solar-cosmos .solar-gw-chart-axis{padding-left:50px}.solar-cosmos .solar-gw-x-axis{margin-inline:1px;position:relative;min-height:30px;margin-top:8px;font-size:13px;color:var(--gw-muted)}.solar-cosmos .solar-gw-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-gw-axis-title{text-align:center;font-size:13px;color:var(--gw-muted)}.solar-cosmos .solar-gw-gridline{stroke:var(--gw-guide);stroke-width:1;stroke-dasharray:3 5;opacity:.4}.solar-cosmos .solar-gw-cursor{stroke:var(--gw-mark);stroke-width:1;stroke-dasharray:3 4}.solar-cosmos .solar-gw-marker{fill:var(--gw-mark);stroke:var(--gw-stage);stroke-width:1.5}.solar-cosmos .solar-gw-curve{fill:none;stroke:var(--gw-curve);stroke-width:2;stroke-linejoin:round}.solar-cosmos .solar-gw-well-fill{fill:var(--gw-curve);opacity:.12}.solar-cosmos .solar-gw-reference,.solar-cosmos .solar-gw-surface{stroke:var(--gw-gold);stroke-width:1.5;stroke-dasharray:5 5}.solar-cosmos .solar-gw-body{stroke:#c4b5fd;stroke-width:1.5}.solar-cosmos .solar-gw-body-detail{stroke:#e0e7ff;stroke-width:1;fill:none;opacity:.4}.solar-cosmos .solar-gw-distance,.solar-cosmos .solar-gw-altitude{stroke:var(--gw-curve);stroke-width:1.5}.solar-cosmos .solar-gw-force{stroke:var(--gw-gold);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.solar-cosmos .solar-gw-probe-halo{fill:var(--gw-stage);stroke:var(--gw-mark);stroke-width:1}.solar-cosmos .solar-gw-probe{fill:var(--gw-mark)}.solar-cosmos .solar-gw-center{fill:var(--gw-mark)}.solar-cosmos .solar-gw-axis{stroke:var(--gw-guide);stroke-width:1}.solar-cosmos .solar-gw-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0;font-size:13px}.solar-cosmos .solar-gw-legend span{display:inline-flex;align-items:center;gap:8px}.solar-cosmos .solar-gw-legend i{display:inline-block;flex-shrink:0;width:18px;height:3px}.solar-cosmos .solar-gw-key-probe{width:10px!important;height:10px!important;border:2px solid var(--gw-fg);border-radius:50%}.solar-cosmos .solar-gw-key-surface{border-top:3px dashed var(--gw-key-gold)}.solar-cosmos .solar-gw-key-altitude{background:var(--gw-key)}.solar-cosmos .solar-gw-model{margin-top:16px;padding:16px;border:1px solid var(--gw-border);border-radius:13px;background:var(--gw-panel);font-size:13px}.solar-cosmos .solar-gw-model h5{margin-bottom:8px}@container(max-width:680px){.solar-cosmos .solar-gw-grid,.solar-cosmos .solar-gw-controls,.solar-cosmos .solar-gw-readouts,.solar-cosmos .solar-gw-distances{grid-template-columns:minmax(0,1fr)}}@media(max-width:380px){.solar-cosmos .solar-gravity-well{padding:12px}.solar-cosmos .solar-gw-card,.solar-cosmos .solar-gw-control,.solar-cosmos .solar-gw-model,.solar-cosmos .solar-gw-summary{padding:10px}}@media(forced-colors:active){.solar-cosmos .solar-gravity-well{--gw-bg:Canvas!important;--gw-panel:Canvas!important;--gw-fg:CanvasText!important;--gw-muted:CanvasText!important;--gw-border:CanvasText!important;--gw-accent:LinkText!important;--gw-stage:Canvas!important;--gw-guide:CanvasText!important;--gw-curve:CanvasText!important;--gw-gold:CanvasText!important;--gw-mark:LinkText!important;--gw-key:CanvasText!important;--gw-key-gold:CanvasText!important}.solar-cosmos .solar-gravity-well svg *{forced-color-adjust:none}.solar-cosmos .solar-gw-body{fill:Canvas!important;stroke:CanvasText!important}.solar-cosmos .solar-gw-body-detail{stroke:CanvasText!important}.solar-cosmos .solar-gw-legend i{forced-color-adjust:none}}",
+              ".solar-cosmos .solar-magnetosphere{container-type:inline-size;min-width:0;padding:16px;border:1px solid var(--mg-border);border-radius:18px;background:var(--mg-bg);color:var(--mg-fg);font-size:14px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-magnetosphere *{box-sizing:border-box}.solar-cosmos .solar-magnetosphere [hidden]{display:none!important}.solar-cosmos .solar-magnetosphere h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0}.solar-cosmos .solar-magnetosphere h5,.solar-cosmos .solar-magnetosphere figcaption{font-size:17px;line-height:1.45;font-weight:800;margin:0 0 10px}.solar-cosmos .solar-magnetosphere p{margin:8px 0 12px}.solar-cosmos .solar-mg-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-mg-header>div{min-width:0}.solar-cosmos .solar-mg-eyebrow{font-size:13px;font-weight:800;color:var(--mg-accent)}.solar-cosmos .solar-mg-note{font-size:13px;color:var(--mg-muted)}.solar-cosmos .solar-magnetosphere button,.solar-cosmos .solar-magnetosphere a{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-bg);color:var(--mg-fg);font-size:13px;line-height:1.5;font-weight:700;white-space:normal}.solar-cosmos .solar-magnetosphere a{display:inline-flex;align-items:center;color:var(--mg-accent);text-decoration:underline;margin:4px 12px 4px 0}.solar-cosmos .solar-magnetosphere button[aria-pressed=true]{border-color:var(--mg-accent);outline:1px solid var(--mg-accent);color:var(--mg-accent)}.solar-cosmos .solar-magnetosphere :is(button,input,a):focus-visible{outline:3px solid var(--mg-accent);outline-offset:3px}.solar-cosmos .solar-mg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}.solar-cosmos .solar-mg-control,.solar-cosmos .solar-mg-card{min-width:0;margin:0;padding:14px;border:1px solid var(--mg-border);border-radius:13px;background:var(--mg-panel)}.solar-cosmos .solar-mg-control{display:grid;grid-template-columns:1fr auto;gap:8px}.solar-cosmos .solar-mg-control label,.solar-cosmos .solar-mg-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-mg-control output{color:var(--mg-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-mg-control input{grid-column:1/-1;width:100%;height:44px;min-width:0;margin:0;accent-color:var(--mg-accent)}.solar-cosmos .solar-mg-presets{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-mg-presets button{flex:1 1 auto}.solar-cosmos .solar-mg-overview{align-items:stretch}.solar-cosmos .solar-magnetosphere svg{display:block;width:100%;height:auto;background:var(--mg-stage);border:1px solid var(--mg-border);border-radius:12px;box-shadow:none!important;overflow:hidden}.solar-cosmos .solar-magnetosphere svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-mg-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0;font-size:13px}.solar-cosmos .solar-mg-legend span{display:inline-flex;align-items:center;gap:8px}.solar-cosmos .solar-mg-legend i{display:inline-block;flex-shrink:0}.solar-cosmos .solar-mg-readouts{display:grid;gap:16px;margin:18px 0}.solar-cosmos .solar-mg-readouts dt{font-size:13px;color:var(--mg-muted)}.solar-cosmos .solar-mg-readouts dd{font-size:23px;font-weight:800;line-height:1.4;color:var(--mg-accent);font-variant-numeric:tabular-nums;margin:4px 0 0}.solar-cosmos .solar-mg-chart-layout{display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px}.solar-cosmos .solar-mg-y-axis{margin-block:1px;position:relative;font-size:13px;color:var(--mg-muted)}.solar-cosmos .solar-mg-y-axis span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}.solar-cosmos .solar-mg-chart-axis{padding-left:50px}.solar-cosmos .solar-mg-x-axis{margin-inline:1px;position:relative;min-height:30px;margin-top:8px;font-size:13px;color:var(--mg-muted)}.solar-cosmos .solar-mg-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-mg-axis-title{text-align:center;font-size:13px;color:var(--mg-muted)}.solar-cosmos .solar-mg-gridline{stroke:var(--mg-guide);stroke-width:1;stroke-dasharray:3 5;opacity:.45}.solar-cosmos .solar-mg-cursor{stroke:var(--mg-mark);stroke-width:1.3;stroke-dasharray:3 4}.solar-cosmos .solar-mg-marker{fill:var(--mg-mark);stroke:var(--mg-stage);stroke-width:1.5}.solar-cosmos .solar-mg-model{margin-top:16px;padding:16px;border:1px solid var(--mg-border);border-radius:13px;background:var(--mg-panel);font-size:13px}.solar-cosmos .solar-mg-model h5{margin-bottom:8px}@container(max-width:680px){.solar-cosmos .solar-mg-grid{grid-template-columns:minmax(0,1fr)}}@media(max-width:380px){.solar-cosmos .solar-magnetosphere{padding:12px}.solar-cosmos .solar-mg-card,.solar-cosmos .solar-mg-control,.solar-cosmos .solar-mg-model{padding:10px}.solar-cosmos .solar-mg-control{grid-template-columns:1fr}.solar-cosmos .solar-mg-control output{grid-column:1}}@media(forced-colors:active){.solar-cosmos .solar-magnetosphere{--mg-bg:Canvas!important;--mg-panel:Canvas!important;--mg-fg:CanvasText!important;--mg-muted:CanvasText!important;--mg-border:CanvasText!important;--mg-accent:LinkText!important;--mg-stage:Canvas!important;--mg-guide:CanvasText!important;--mg-mark:LinkText!important}.solar-cosmos .solar-magnetosphere svg *{forced-color-adjust:none}.solar-cosmos .solar-mg-legend i{border-color:CanvasText!important}} .solar-cosmos .solar-mg-boundary,.solar-cosmos .solar-mg-summary{margin-top:16px}.solar-cosmos .solar-mg-stage{position:relative}.solar-cosmos .solar-mg-planet-label{position:absolute;left:30.6451613%;top:60%;transform:translateX(-50%);color:var(--mg-mark);background:var(--mg-stage);padding:1px 4px;border-radius:4px;font-size:13px;font-weight:700;pointer-events:none;z-index:1}.solar-cosmos .solar-mg-world{stroke:#7dd3fc;stroke-width:1}.solar-cosmos .solar-mg-land{fill:#14b8a6}.solar-cosmos .solar-mg-boundary-line,.solar-cosmos .solar-mg-field-line,.solar-cosmos .solar-mg-curve{fill:none;stroke:var(--mg-field);stroke-width:2;stroke-linejoin:round}.solar-cosmos .solar-mg-field-line{stroke-width:1.4}.solar-cosmos .solar-mg-cavity{fill:var(--mg-field);opacity:.11}.solar-cosmos .solar-mg-wind{fill:none;stroke:var(--mg-wind);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.solar-cosmos .solar-mg-reference{stroke:var(--mg-wind);stroke-dasharray:5 5;stroke-width:1.5;fill:none}.solar-cosmos .solar-mg-distance{stroke:var(--mg-field);stroke-width:1;stroke-dasharray:3 4}.solar-cosmos .solar-mg-tail-cut,.solar-cosmos .solar-mg-axis-guide{stroke:var(--mg-guide);stroke-width:1;stroke-dasharray:3 5}.solar-cosmos .solar-mg-axis{stroke:var(--mg-guide);stroke-width:1}.solar-cosmos .solar-mg-probe-ring{fill:none;stroke:var(--mg-guide);stroke-width:1;stroke-dasharray:3 5;opacity:.6}.solar-cosmos .solar-mg-vector{fill:none;stroke:var(--mg-probe);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.solar-cosmos .solar-mg-legend .solar-mg-key-field{border:0;border-radius:0;height:3px;width:18px;background:var(--mg-key-field)}.solar-cosmos .solar-mg-legend .solar-mg-key-wind{border:0;border-radius:0;border-top:3px dashed var(--mg-key-wind);height:3px;width:18px;background:none}.solar-cosmos .solar-mg-readouts{grid-template-columns:repeat(3,minmax(0,1fr))}.solar-cosmos .solar-mg-dipole svg{margin-top:12px}.solar-cosmos .solar-mg-dipole p{margin-top:12px}@container(max-width:680px){.solar-cosmos .solar-mg-readouts{grid-template-columns:1fr}}@media(forced-colors:active){.solar-cosmos .solar-magnetosphere{--mg-field:CanvasText!important;--mg-key-field:CanvasText!important;--mg-key-wind:CanvasText!important;--mg-wind:CanvasText!important;--mg-probe:LinkText!important}.solar-cosmos .solar-mg-world{fill:Canvas!important;stroke:CanvasText!important}.solar-cosmos .solar-mg-land{fill:CanvasText!important;opacity:.35}.solar-cosmos .solar-mg-legend .solar-mg-key-field{background:CanvasText!important}}",
+              ".solar-cosmos .solar-cycle-lab{container-type:inline-size;min-width:0;padding:16px;border:1px solid var(--cy-border);border-radius:18px;background:var(--cy-bg);color:var(--cy-fg);font-size:14px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-cycle-lab *{box-sizing:border-box}.solar-cosmos .solar-cycle-lab [hidden]{display:none!important}.solar-cosmos .solar-cycle-lab h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0}.solar-cosmos .solar-cycle-lab h5,.solar-cosmos .solar-cycle-lab figcaption{font-size:17px;line-height:1.45;font-weight:800;margin:0 0 10px}.solar-cosmos .solar-cycle-lab p{margin:8px 0 12px}.solar-cosmos .solar-cy-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-cy-header>div{min-width:0}.solar-cosmos .solar-cy-eyebrow{font-size:13px;font-weight:800;color:var(--cy-accent)}.solar-cosmos .solar-cy-note{font-size:13px;color:var(--cy-muted)}.solar-cosmos .solar-cycle-lab button,.solar-cosmos .solar-cycle-lab a{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--cy-border);border-radius:9px;background:var(--cy-bg);color:var(--cy-fg);font-size:13px;line-height:1.5;font-weight:700;white-space:normal}.solar-cosmos .solar-cycle-lab a{display:inline-flex;align-items:center;color:var(--cy-accent);text-decoration:underline;margin:4px 12px 4px 0}.solar-cosmos .solar-cycle-lab button[aria-pressed=true]{border-color:var(--cy-accent);outline:1px solid var(--cy-accent);color:var(--cy-accent)}.solar-cosmos .solar-cycle-lab :is(button,input,a):focus-visible{outline:3px solid var(--cy-accent);outline-offset:3px}.solar-cosmos .solar-cy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}.solar-cosmos .solar-cy-control,.solar-cosmos .solar-cy-card{min-width:0;margin:0;padding:14px;border:1px solid var(--cy-border);border-radius:13px;background:var(--cy-panel)}.solar-cosmos .solar-cy-control{display:grid;grid-template-columns:1fr auto;gap:8px}.solar-cosmos .solar-cy-control label,.solar-cosmos .solar-cy-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-cy-control output{color:var(--cy-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-cy-control input{grid-column:1/-1;width:100%;height:44px;min-width:0;margin:0;accent-color:var(--cy-accent)}.solar-cosmos .solar-cy-presets{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-cy-presets button{flex:1 1 auto}.solar-cosmos .solar-cy-overview{align-items:stretch}.solar-cosmos .solar-cy-sun-stage{position:relative}.solar-cosmos .solar-cycle-lab svg{display:block;width:100%;height:auto;background:var(--cy-stage);border:1px solid var(--cy-border);border-radius:12px;box-shadow:none!important;overflow:hidden}.solar-cosmos .solar-cycle-lab svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-cy-pole{position:absolute;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;color:var(--cy-mark);z-index:1;pointer-events:none}.solar-cosmos .solar-cy-pole-n{top:2%}.solar-cosmos .solar-cy-pole-s{bottom:2%}.solar-cosmos .solar-cy-disk{stroke:#fcd34d;stroke-width:1}.solar-cosmos .solar-cy-latitude{fill:none;stroke:#78350f;stroke-width:1;opacity:.35}.solar-cosmos .solar-cy-equator{stroke:#78350f;stroke-width:1.3;stroke-dasharray:5 4;opacity:.6}.solar-cosmos .solar-cy-north{--cy-band:var(--cy-north)}.solar-cosmos .solar-cy-south{--cy-band:var(--cy-south)}.solar-cosmos .solar-cy-belt{fill:var(--cy-band)}.solar-cosmos .solar-cy-penumbra{fill:#92400e}.solar-cosmos .solar-cy-umbra{fill:#292018}.solar-cosmos .solar-cy-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0;font-size:13px}.solar-cosmos .solar-cy-legend span{display:inline-flex;align-items:center;gap:8px}.solar-cosmos .solar-cy-legend i{display:inline-block;width:14px;height:14px;background:var(--cy-stage);border:3px solid var(--cy-north);border-radius:50%}.solar-cosmos .solar-cy-legend .solar-cy-key-s{border-color:var(--cy-south);border-radius:2px}.solar-cosmos .solar-cy-readouts{display:grid;gap:16px;margin:18px 0}.solar-cosmos .solar-cy-readouts dt{font-size:13px;color:var(--cy-muted)}.solar-cosmos .solar-cy-readouts dd{font-size:23px;font-weight:800;line-height:1.4;color:var(--cy-accent);font-variant-numeric:tabular-nums;margin:4px 0 0}.solar-cosmos .solar-cy-chart-layout{display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px}.solar-cosmos .solar-cy-y-axis{margin-block:1px;position:relative;font-size:13px;color:var(--cy-muted)}.solar-cosmos .solar-cy-y-axis span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap}.solar-cosmos .solar-cy-chart-axis{padding-left:50px}.solar-cosmos .solar-cy-x-axis{margin-inline:1px;position:relative;min-height:30px;margin-top:8px;font-size:13px;color:var(--cy-muted)}.solar-cosmos .solar-cy-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-cy-axis-title{text-align:center;font-size:13px;color:var(--cy-muted)}.solar-cosmos .solar-cy-gridline{stroke:var(--cy-guide);stroke-width:1;stroke-dasharray:3 5;opacity:.45}.solar-cosmos .solar-cy-activity-area{fill:var(--cy-north);opacity:.13}.solar-cosmos .solar-cy-activity-curve{fill:none;stroke:var(--cy-north);stroke-width:2.5;stroke-linejoin:round}.solar-cosmos .solar-cy-wing{fill:var(--cy-band);opacity:.28}.solar-cosmos .solar-cy-center{fill:none;stroke:var(--cy-band);stroke-width:1.8;stroke-dasharray:5 4}.solar-cosmos .solar-cy-cursor{stroke:var(--cy-mark);stroke-width:1.3;stroke-dasharray:3 4}.solar-cosmos .solar-cy-marker{fill:var(--cy-mark);stroke:var(--cy-stage);stroke-width:1.5}.solar-cosmos .solar-cy-model{margin-top:16px;padding:16px;border:1px solid var(--cy-border);border-radius:13px;background:var(--cy-panel);font-size:13px}.solar-cosmos .solar-cy-model h5{margin-bottom:8px}@container(max-width:680px){.solar-cosmos .solar-cy-grid{grid-template-columns:minmax(0,1fr)}}@media(max-width:380px){.solar-cosmos .solar-cycle-lab{padding:12px}.solar-cosmos .solar-cy-card,.solar-cosmos .solar-cy-control,.solar-cosmos .solar-cy-model{padding:10px}.solar-cosmos .solar-cy-control{grid-template-columns:1fr}.solar-cosmos .solar-cy-control output{grid-column:1}}@media(forced-colors:active){.solar-cosmos .solar-cycle-lab{--cy-bg:Canvas!important;--cy-panel:Canvas!important;--cy-fg:CanvasText!important;--cy-muted:CanvasText!important;--cy-border:CanvasText!important;--cy-accent:LinkText!important;--cy-stage:Canvas!important;--cy-guide:CanvasText!important;--cy-north:CanvasText!important;--cy-south:CanvasText!important;--cy-mark:LinkText!important}.solar-cosmos .solar-cycle-lab svg *{forced-color-adjust:none}.solar-cosmos .solar-cy-disk{fill:Canvas!important;stroke:CanvasText!important}.solar-cosmos .solar-cy-sun svg>circle:not(.solar-cy-disk){fill:none!important}.solar-cosmos .solar-cy-latitude,.solar-cosmos .solar-cy-equator{stroke:CanvasText!important}.solar-cosmos .solar-cy-penumbra,.solar-cosmos .solar-cy-umbra{fill:CanvasText!important}.solar-cosmos .solar-cy-legend i{border-color:CanvasText!important}}",
+              ".solar-cosmos .solar-wind{background:var(--sw-bg);color:var(--sw-fg);border:1px solid var(--sw-border);border-radius:18px;padding:16px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-wind *{box-sizing:border-box}.solar-cosmos .solar-wind [hidden]{display:none!important}.solar-cosmos .solar-wind h4{font-size:24px;font-weight:800;margin:2px 0}.solar-cosmos .solar-wind h5,.solar-cosmos .solar-wind figcaption{font-size:17px;font-weight:750;margin:0 0 10px}.solar-cosmos .solar-wind p{margin:8px 0}.solar-cosmos .solar-sw-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}.solar-cosmos .solar-sw-eyebrow{font-size:13px;color:var(--sw-accent);font-weight:750}.solar-cosmos .solar-sw-note{font-size:13px;color:var(--sw-muted)}.solar-cosmos .solar-wind button,.solar-cosmos .solar-wind a{min-height:44px;max-width:100%;border:1px solid var(--sw-border);border-radius:10px;background:var(--sw-panel);color:var(--sw-fg);font-size:13px;font-weight:650;line-height:1.4;padding:9px 12px;white-space:normal}.solar-cosmos .solar-wind button[aria-pressed=true]{outline:1px solid var(--sw-accent);border-color:var(--sw-accent);color:var(--sw-accent)}.solar-cosmos .solar-wind button:disabled{cursor:default;opacity:1;color:var(--sw-muted)}.solar-cosmos .solar-wind :is(button,a,input):focus-visible{outline:3px solid var(--sw-accent);outline-offset:3px}.solar-cosmos .solar-sw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-sw-control,.solar-cosmos .solar-sw-card{min-width:0;background:var(--sw-panel);border:1px solid var(--sw-border);border-radius:12px;padding:12px;margin:0}.solar-cosmos .solar-sw-control{display:grid;grid-template-columns:1fr auto;gap:8px}.solar-cosmos .solar-sw-control label,.solar-cosmos .solar-sw-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-sw-control output{color:var(--sw-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-sw-control input{grid-column:1/-1;width:100%;height:44px;min-width:0;margin:0;accent-color:var(--sw-accent)}.solar-cosmos .solar-sw-presets{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}.solar-cosmos .solar-sw-presets button{flex:1 1 auto}.solar-cosmos .solar-sw-context{display:grid;gap:12px;min-width:0}.solar-cosmos .solar-sw-readouts{display:grid;gap:18px;margin:16px 0}.solar-cosmos .solar-sw-readouts dt{font-size:13px;color:var(--sw-muted)}.solar-cosmos .solar-sw-readouts dd{font-size:24px;line-height:1.4;font-weight:800;color:var(--sw-accent);margin:4px 0 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-sw-compass-stage{position:relative;max-width:400px;margin:auto}.solar-cosmos .solar-wind svg{display:block;width:100%;height:auto;background:var(--sw-stage);border-radius:10px;box-shadow:none!important}.solar-cosmos .solar-wind svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-sw-compass-label{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:750;color:var(--sw-guide);pointer-events:none}.solar-cosmos .solar-sw-ring,.solar-cosmos .solar-sw-tick{stroke:var(--sw-guide);stroke-width:1}.solar-cosmos .solar-sw-reference{stroke:var(--sw-guide);stroke-dasharray:5 5;stroke-width:2}.solar-cosmos .solar-sw-plane{stroke:var(--sw-curve);stroke-width:3}.solar-cosmos .solar-sw-endpoint{fill:var(--sw-mark);stroke:var(--sw-stage);stroke-width:2}.solar-cosmos .solar-sw-pivot{fill:var(--sw-guide)}.solar-cosmos .solar-sw-arrow{fill:none;stroke:var(--sw-mark);stroke-width:2}.solar-cosmos .solar-sw-arrowhead{fill:var(--sw-mark)}.solar-cosmos .solar-sw-status{font-size:16px;font-weight:750;color:var(--sw-accent)}.solar-cosmos .solar-sw-chart{margin-top:16px}.solar-cosmos .solar-sw-chart-row{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px}.solar-cosmos .solar-sw-yaxis{position:relative;color:var(--sw-muted);font-size:13px;font-variant-numeric:tabular-nums}.solar-cosmos .solar-sw-yaxis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-sw-xaxis{position:relative;min-height:24px;margin:5px 0 0 38px;color:var(--sw-muted);font-size:13px}.solar-cosmos .solar-sw-xaxis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-sw-axis-title{font-size:13px;font-weight:750;text-align:center}.solar-cosmos .solar-sw-gridline{stroke:var(--sw-guide);stroke-width:1;stroke-dasharray:2 6;opacity:.4}.solar-cosmos .solar-sw-curve{fill:none;stroke:var(--sw-curve);stroke-width:2.5}.solar-cosmos .solar-sw-selection{stroke:var(--sw-mark);stroke-dasharray:3 5;stroke-width:1.5}.solar-cosmos .solar-sw-sample{fill:var(--sw-stage);stroke:var(--sw-mark);stroke-width:2}.solar-cosmos .solar-sw-model{margin-top:16px;padding-top:16px;border-top:1px solid var(--sw-border);font-size:13px;color:var(--sw-muted)}.solar-cosmos .solar-sw-model a{display:inline-flex;align-items:center;margin:6px 6px 0 0;text-decoration:underline}@media(forced-colors:active){.solar-cosmos .solar-wind{--sw-bg:Canvas!important;--sw-panel:Canvas!important;--sw-fg:CanvasText!important;--sw-muted:CanvasText!important;--sw-border:CanvasText!important;--sw-accent:LinkText!important;--sw-stage:Canvas!important;--sw-guide:CanvasText!important;--sw-curve:CanvasText!important;--sw-mark:LinkText!important}.solar-cosmos .solar-wind svg,.solar-cosmos .solar-sw-compass-label{forced-color-adjust:none}}.solar-cosmos .solar-sw-distance-axis{position:relative;min-height:24px;margin-top:5px;color:var(--sw-muted);font-size:13px}.solar-cosmos .solar-sw-distance-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-sw-ruler{stroke:var(--sw-guide);stroke-width:1.5}.solar-cosmos .solar-sw-travel{stroke:var(--sw-curve);stroke-width:3}.solar-cosmos .solar-sw-origin{fill:var(--sw-guide)}.solar-cosmos .solar-sw-sample-box{fill:none;stroke:var(--sw-guide);stroke-width:1.5;stroke-dasharray:5 5}.solar-cosmos .solar-sw-proton{fill:var(--sw-curve);stroke:var(--sw-stage);stroke-width:1}.solar-cosmos .solar-sw-measurements,.solar-cosmos .solar-sw-weather{margin-top:16px}.solar-cosmos .solar-sw-readouts{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}.solar-cosmos .solar-sw-readouts dd{font-size:22px}.solar-cosmos .solar-sw-current-curve{stroke:var(--sw-curve)}.solar-cosmos .solar-sw-reference-curve{stroke:var(--sw-guide);stroke-dasharray:6 5}.solar-cosmos .solar-sw-marker{fill:var(--sw-stage);stroke:var(--sw-mark);stroke-width:2}.solar-cosmos .solar-sw-legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;margin:12px 0;color:var(--sw-muted)}.solar-cosmos .solar-sw-legend span{display:flex;align-items:center;gap:8px}.solar-cosmos .solar-sw-legend i{display:inline-block;width:24px;height:0;border-top:3px solid var(--sw-accent);flex:none}.solar-cosmos .solar-sw-legend .solar-sw-key-reference{border-top:3px dashed var(--sw-muted)}.solar-cosmos .solar-saturn-rings{container-type:inline-size;color:var(--rg-fg);background:var(--rg-bg);border:1px solid var(--rg-border);border-radius:16px;padding:16px;margin-top:16px;line-height:1.6;min-width:0}.solar-cosmos .solar-saturn-rings *{box-sizing:border-box}.solar-cosmos .solar-rg-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.solar-cosmos .solar-saturn-rings h4{font-size:22px;font-weight:750;line-height:1.3;margin:0}.solar-cosmos .solar-saturn-rings h5,.solar-cosmos .solar-saturn-rings figcaption{font-size:16px;font-weight:700;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-saturn-rings p{margin:10px 0;font-size:14px}.solar-cosmos .solar-rg-eyebrow{color:var(--rg-accent);font-size:13px!important;font-weight:650}.solar-cosmos .solar-rg-note{color:var(--rg-muted)}.solar-cosmos .solar-saturn-rings button{min-height:44px;padding:8px 12px;border-radius:9px;border:1px solid var(--rg-border);background:var(--rg-bg);color:var(--rg-fg);font-size:13px;line-height:1.4;white-space:normal}.solar-cosmos .solar-saturn-rings button[aria-pressed=true]{border-color:var(--rg-accent);box-shadow:inset 0 0 0 1px var(--rg-accent)}.solar-cosmos .solar-rg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:16px 0}.solar-cosmos .solar-rg-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:16px 0}.solar-cosmos .solar-rg-card,.solar-cosmos .solar-rg-control,.solar-cosmos .solar-rg-model{min-width:0;border:1px solid var(--rg-border);border-radius:12px;padding:14px;background:var(--rg-panel);margin:0}.solar-cosmos .solar-rg-control{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:8px}.solar-cosmos .solar-rg-control label{font-size:14px;font-weight:700}.solar-cosmos .solar-rg-control output{font-size:15px;color:var(--rg-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-rg-control input{width:100%;min-width:0;min-height:44px;accent-color:var(--rg-accent)}.solar-cosmos .solar-rg-presets,.solar-cosmos .solar-rg-regions{display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-saturn-rings svg{display:block;width:100%;height:auto;background:var(--rg-stage);border-radius:8px;overflow:hidden}.solar-cosmos .solar-saturn-rings svg,.solar-cosmos .solar-saturn-rings svg *{transition:none!important;animation:none!important}.solar-cosmos .solar-rg-selection{fill:none;stroke:var(--rg-mark);stroke-width:1.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-rg-planet-outline{fill:none;stroke:#bfa57f;stroke-width:.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-rg-edge-guide{stroke:var(--rg-edge);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke}.solar-cosmos .solar-rg-status{font-weight:650}.solar-cosmos .solar-rg-readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:16px 0 0}.solar-cosmos .solar-rg-readouts dt{font-size:13px;color:var(--rg-muted)}.solar-cosmos .solar-rg-readouts dd{font-size:20px;font-weight:700;line-height:1.5;margin:4px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.solar-cosmos .solar-rg-ruler,.solar-cosmos .solar-rg-model{margin-top:16px}.solar-cosmos .solar-rg-axis{stroke:var(--rg-guide);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-rg-surface{stroke:var(--rg-edge);stroke-width:1.5;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-rg-x-axis{position:relative;height:28px;font-size:13px;color:var(--rg-muted);margin-top:4px}.solar-cosmos .solar-rg-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-rg-axis-title{text-align:center;font-size:13px!important;color:var(--rg-muted)}.solar-cosmos .solar-saturn-rings a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--rg-accent);font-size:13px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-saturn-rings :is(button,input,a):focus-visible{outline:3px solid var(--rg-accent);outline-offset:3px}@container (max-width:650px){.solar-cosmos .solar-rg-grid,.solar-cosmos .solar-rg-controls,.solar-cosmos .solar-rg-readouts{grid-template-columns:minmax(0,1fr)}.solar-cosmos .solar-rg-card,.solar-cosmos .solar-rg-control,.solar-cosmos .solar-rg-model{padding:10px}}@media (forced-colors:active){.solar-cosmos .solar-saturn-rings{--rg-bg:Canvas!important;--rg-panel:Canvas!important;--rg-fg:CanvasText!important;--rg-muted:CanvasText!important;--rg-border:CanvasText!important;--rg-accent:LinkText!important;--rg-stage:Canvas!important;--rg-guide:CanvasText!important;--rg-mark:LinkText!important;--rg-edge:Highlight!important}.solar-cosmos .solar-saturn-rings svg{forced-color-adjust:none}.solar-cosmos .solar-saturn-rings [data-rg-band],.solar-cosmos .solar-saturn-rings [data-rg-radial-band]{fill:CanvasText}.solar-cosmos .solar-saturn-rings [data-rg-planet]{fill:Canvas;stroke:CanvasText;stroke-width:1}.solar-cosmos .solar-rg-planet-outline{stroke:CanvasText}}.solar-cosmos .solar-sundial{container-type:inline-size;color:var(--sd-fg);background:var(--sd-bg);border:1px solid var(--sd-border);border-radius:16px;padding:16px;margin-top:16px;line-height:1.6;min-width:0}.solar-cosmos .solar-sundial *{box-sizing:border-box}.solar-cosmos .solar-sd-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.solar-cosmos .solar-sundial h4{font-size:22px;font-weight:750;line-height:1.3;margin:0}.solar-cosmos .solar-sundial h5,.solar-cosmos .solar-sundial figcaption{font-size:16px;font-weight:700;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-sundial p{margin:10px 0;font-size:14px}.solar-cosmos .solar-sd-eyebrow{color:var(--sd-accent);font-size:13px!important;font-weight:650}.solar-cosmos .solar-sd-note{color:var(--sd-muted)}.solar-cosmos .solar-sundial button{min-height:44px;padding:8px 12px;border-radius:9px;border:1px solid var(--sd-border);background:var(--sd-bg);color:var(--sd-fg);font-size:13px;line-height:1.4;white-space:normal}.solar-cosmos .solar-sundial button[aria-pressed=true]{border-color:var(--sd-accent);box-shadow:inset 0 0 0 1px var(--sd-accent)}.solar-cosmos .solar-sd-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:16px 0}.solar-cosmos .solar-sd-card,.solar-cosmos .solar-sd-control,.solar-cosmos .solar-sd-model{min-width:0;border:1px solid var(--sd-border);border-radius:12px;padding:14px;background:var(--sd-panel);margin:0}.solar-cosmos .solar-sd-control{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:8px}.solar-cosmos .solar-sd-control label{font-size:14px;font-weight:700}.solar-cosmos .solar-sd-control output{font-size:15px;color:var(--sd-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-sd-control input{width:100%;min-width:0;min-height:44px;accent-color:var(--sd-accent)}.solar-cosmos .solar-sd-presets{display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-sundial svg{display:block;width:100%;height:auto;background:var(--sd-stage);border-radius:8px;overflow:hidden}.solar-cosmos .solar-sundial svg,.solar-cosmos .solar-sundial svg *{transition:none!important;animation:none!important}.solar-cosmos .solar-sd-map-stage{position:relative}.solar-cosmos .solar-sd-compass{position:absolute;transform:translate(-50%,-50%);font-size:13px;color:var(--sd-guide);line-height:1.2;pointer-events:none}.solar-cosmos .solar-sd-ring{fill:none;stroke:#64748b;stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-gridline{stroke:#475569;stroke-width:1;stroke-dasharray:3 5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-sun-direction{stroke:var(--sd-sun);stroke-width:1;stroke-dasharray:2 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-sun{fill:var(--sd-sun)}.solar-cosmos .solar-sd-shadow-line{stroke:var(--sd-shadow);stroke-width:4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-shadow-tip,.solar-cosmos .solar-sd-continuation{fill:var(--sd-shadow)}.solar-cosmos .solar-sd-post-base{fill:var(--sd-guide);stroke:var(--sd-stage);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-ground{stroke:var(--sd-guide);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-post{stroke:var(--sd-guide);stroke-width:4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-light-ray{stroke:var(--sd-sun);stroke-width:1.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-cutoff{stroke:var(--sd-guide);stroke-dasharray:3 4;stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-side-axis{position:relative;height:28px;font-size:13px;color:var(--sd-muted);margin-top:4px}.solar-cosmos .solar-sd-side-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}.solar-cosmos .solar-sd-readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0}.solar-cosmos .solar-sd-readouts dt{font-size:13px;color:var(--sd-muted)}.solar-cosmos .solar-sd-readouts dd{font-size:20px;font-weight:700;line-height:1.5;margin:4px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.solar-cosmos .solar-sd-chart,.solar-cosmos .solar-sd-model{margin-top:16px}.solar-cosmos .solar-sd-chart-layout{display:grid;grid-template-columns:36px minmax(0,1fr);gap:8px}.solar-cosmos .solar-sd-y-axis{position:relative;font-size:13px;color:var(--sd-muted)}.solar-cosmos .solar-sd-y-axis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-sd-chart-axis{margin-left:44px}.solar-cosmos .solar-sd-x-axis{position:relative;height:28px;font-size:13px;color:var(--sd-muted);margin-top:4px}.solar-cosmos .solar-sd-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-sd-axis-title{text-align:center;font-size:13px!important;color:var(--sd-muted)}.solar-cosmos .solar-sd-curve{fill:none;stroke:var(--sd-shadow);stroke-width:2.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-limit,.solar-cosmos .solar-sd-selected-guide{stroke:var(--sd-sun);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sd-marker{fill:var(--sd-sun);stroke:var(--sd-stage);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sundial a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--sd-accent);font-size:13px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-sundial :is(button,input,a):focus-visible{outline:3px solid var(--sd-accent);outline-offset:3px}@container (max-width:650px){.solar-cosmos .solar-sd-grid,.solar-cosmos .solar-sd-readouts{grid-template-columns:minmax(0,1fr)}.solar-cosmos .solar-sd-card,.solar-cosmos .solar-sd-control,.solar-cosmos .solar-sd-model{padding:10px}}@media (forced-colors:active){.solar-cosmos .solar-sundial{--sd-bg:Canvas!important;--sd-panel:Canvas!important;--sd-fg:CanvasText!important;--sd-muted:CanvasText!important;--sd-border:CanvasText!important;--sd-accent:LinkText!important;--sd-stage:Canvas!important;--sd-guide:CanvasText!important;--sd-shadow:LinkText!important;--sd-sun:Highlight!important}.solar-cosmos .solar-sundial svg{forced-color-adjust:none}.solar-cosmos .solar-sd-ring,.solar-cosmos .solar-sd-gridline{stroke:GrayText}.solar-cosmos .solar-sd-compass{forced-color-adjust:none}}.solar-cosmos .solar-pulsar{container-type:inline-size;color:var(--ps-fg);background:var(--ps-bg);border:1px solid var(--ps-border);border-radius:16px;padding:16px;margin-top:16px;line-height:1.6;min-width:0}.solar-cosmos .solar-pulsar *{box-sizing:border-box}.solar-cosmos .solar-ps-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.solar-cosmos .solar-pulsar h4{font-size:22px;font-weight:750;line-height:1.3;margin:0}.solar-cosmos .solar-pulsar h5,.solar-cosmos .solar-pulsar figcaption{font-size:16px;font-weight:700;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-pulsar p{margin:10px 0;font-size:14px}.solar-cosmos .solar-ps-eyebrow{color:var(--ps-accent);font-size:13px!important;font-weight:650}.solar-cosmos .solar-ps-note{color:var(--ps-muted)}.solar-cosmos .solar-pulsar button{min-height:44px;padding:8px 12px;border-radius:9px;border:1px solid var(--ps-border);background:var(--ps-bg);color:var(--ps-fg);font-size:13px;line-height:1.4;white-space:normal}.solar-cosmos .solar-pulsar button[aria-pressed=true]{border-color:var(--ps-accent);box-shadow:inset 0 0 0 1px var(--ps-accent)}.solar-cosmos .solar-ps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:16px 0}.solar-cosmos .solar-ps-card,.solar-cosmos .solar-ps-control,.solar-cosmos .solar-ps-model{min-width:0;border:1px solid var(--ps-border);border-radius:12px;padding:14px;background:var(--ps-panel);margin:0}.solar-cosmos .solar-ps-control{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:8px}.solar-cosmos .solar-ps-control label{font-size:14px;font-weight:700}.solar-cosmos .solar-ps-control output{font-size:15px;color:var(--ps-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-ps-control input{width:100%;min-width:0;min-height:44px;accent-color:var(--ps-accent)}.solar-cosmos .solar-ps-presets{display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-pulsar svg{display:block;width:100%;height:auto;background:var(--ps-stage);border-radius:8px;overflow:hidden}.solar-cosmos .solar-pulsar svg,.solar-cosmos .solar-pulsar svg *{transition:none!important;animation:none!important}.solar-cosmos .solar-ps-direction-sphere{fill:none;stroke:#475569;stroke-width:1.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-spin-axis{stroke:var(--ps-guide);stroke-width:1;stroke-dasharray:2 5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-sightline{stroke:var(--ps-observer);stroke-width:1.5;stroke-dasharray:2 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-beam-1{color:var(--ps-one)}.solar-cosmos .solar-ps-beam-2{color:var(--ps-two)}.solar-cosmos .solar-ps-rim{fill:currentColor;fill-opacity:.14;stroke:currentColor;stroke-width:1.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-cone-ray{stroke:currentColor;stroke-width:1;opacity:.65;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-beam-axis{stroke:currentColor;stroke-width:2.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-tip{stroke:currentColor;stroke-width:1.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-star{fill:var(--ps-guide);stroke:var(--ps-stage);stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-observer{stroke:var(--ps-observer);stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-context{display:grid;gap:16px;align-content:start;min-width:0}.solar-cosmos .solar-ps-readouts{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin:0}.solar-cosmos .solar-ps-readouts dt{font-size:13px;color:var(--ps-muted)}.solar-cosmos .solar-ps-readouts dd{font-size:20px;font-weight:700;line-height:1.5;margin:4px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.solar-cosmos .solar-ps-chart,.solar-cosmos .solar-ps-windows,.solar-cosmos .solar-ps-model{margin-top:16px}.solar-cosmos .solar-ps-chart-layout{display:grid;grid-template-columns:36px minmax(0,1fr);gap:8px}.solar-cosmos .solar-ps-y-axis{position:relative;font-size:13px;color:var(--ps-muted)}.solar-cosmos .solar-ps-y-axis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-ps-chart-axis{margin-left:44px}.solar-cosmos .solar-ps-x-axis{position:relative;height:28px;font-size:13px;color:var(--ps-muted);margin-top:4px}.solar-cosmos .solar-ps-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-ps-axis-title{text-align:center;font-size:13px!important;color:var(--ps-muted)}.solar-cosmos .solar-ps-gridline{stroke:#475569;stroke-width:1;stroke-dasharray:3 5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-acceptance{fill:var(--ps-band)}.solar-cosmos .solar-ps-cone-limit{stroke:var(--ps-observer);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-curve{fill:none;stroke-width:2.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-curve-1{stroke:var(--ps-one)}.solar-cosmos .solar-ps-curve-2{stroke:var(--ps-two);stroke-dasharray:7 4}.solar-cosmos .solar-ps-phase-guide{stroke:var(--ps-guide);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-chart-dot{stroke:var(--ps-stage);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-dot-1,.solar-cosmos .solar-ps-window-1{fill:var(--ps-one)}.solar-cosmos .solar-ps-dot-2,.solar-cosmos .solar-ps-window-2{fill:var(--ps-two)}.solar-cosmos .solar-ps-empty-window{fill:#1e293b;stroke:var(--ps-guide);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-window-dot{fill:var(--ps-stage);stroke:var(--ps-observer);stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ps-legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;margin-top:12px}.solar-cosmos .solar-ps-legend span{display:inline-flex;gap:8px;align-items:center}.solar-cosmos .solar-ps-legend i{display:inline-block;width:22px;height:6px;background:var(--ps-stage);border:1px solid var(--ps-border)}.solar-cosmos .solar-ps-key-one{border-color:var(--ps-one)!important;background:var(--ps-one)!important}.solar-cosmos .solar-ps-key-two{border-color:var(--ps-two)!important;background:repeating-linear-gradient(90deg,var(--ps-two) 0 5px,var(--ps-stage) 5px 8px)!important}.solar-cosmos .solar-ps-key-observer{border-color:var(--ps-observer)!important;background:var(--ps-observer)!important}.solar-cosmos .solar-pulsar a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--ps-accent);font-size:13px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-pulsar :is(button,input,a):focus-visible{outline:3px solid var(--ps-accent);outline-offset:3px}@container (max-width:650px){.solar-cosmos .solar-ps-grid{grid-template-columns:minmax(0,1fr)}.solar-cosmos .solar-ps-card,.solar-cosmos .solar-ps-control,.solar-cosmos .solar-ps-model{padding:10px}}@media (forced-colors:active){.solar-cosmos .solar-pulsar{--ps-bg:Canvas!important;--ps-panel:Canvas!important;--ps-fg:CanvasText!important;--ps-muted:CanvasText!important;--ps-border:CanvasText!important;--ps-accent:LinkText!important;--ps-stage:Canvas!important;--ps-guide:CanvasText!important;--ps-one:LinkText!important;--ps-two:CanvasText!important;--ps-observer:Highlight!important;--ps-band:Canvas!important}.solar-cosmos .solar-pulsar svg{forced-color-adjust:none}.solar-cosmos .solar-ps-gridline,.solar-cosmos .solar-ps-direction-sphere{stroke:GrayText}.solar-cosmos .solar-ps-empty-window{fill:Canvas}}.solar-cosmos .solar-mercury-transit{container-type:inline-size;color:var(--mt-fg);background:var(--mt-bg);border:1px solid var(--mt-border);border-radius:16px;padding:16px;margin-top:16px;line-height:1.6;min-width:0}.solar-cosmos .solar-mercury-transit *{box-sizing:border-box}.solar-cosmos .solar-mt-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.solar-cosmos .solar-mercury-transit h4{font-size:22px;font-weight:750;line-height:1.3;margin:0}.solar-cosmos .solar-mercury-transit h5,.solar-cosmos .solar-mercury-transit figcaption{font-size:16px;font-weight:700;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-mercury-transit p{margin:10px 0;font-size:14px}.solar-cosmos .solar-mt-eyebrow{color:var(--mt-accent);font-size:13px!important;font-weight:650}.solar-cosmos .solar-mt-note{color:var(--mt-muted)}.solar-cosmos .solar-mercury-transit button{min-height:44px;padding:8px 12px;border-radius:9px;border:1px solid var(--mt-border);background:var(--mt-bg);color:var(--mt-fg);font-size:13px;line-height:1.4;white-space:normal}.solar-cosmos .solar-mercury-transit button[aria-pressed=true]{border-color:var(--mt-accent);box-shadow:inset 0 0 0 1px var(--mt-accent)}.solar-cosmos .solar-mercury-transit button:disabled{opacity:.65;cursor:not-allowed}.solar-cosmos .solar-mt-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:16px 0}.solar-cosmos .solar-mt-card,.solar-cosmos .solar-mt-control,.solar-cosmos .solar-mt-model{min-width:0;border:1px solid var(--mt-border);border-radius:12px;padding:14px;background:var(--mt-panel);margin:0}.solar-cosmos .solar-mt-control{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:8px}.solar-cosmos .solar-mt-control label{font-size:14px;font-weight:700}.solar-cosmos .solar-mt-control output{font-size:15px;color:var(--mt-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-mt-control input{width:100%;min-width:0;min-height:44px;accent-color:var(--mt-accent)}.solar-cosmos .solar-mt-presets{display:flex;flex-wrap:wrap;gap:8px}.solar-cosmos .solar-mercury-transit svg{display:block;width:100%;height:auto;background:var(--mt-stage);border-radius:8px;overflow:hidden}.solar-cosmos .solar-mercury-transit svg,.solar-cosmos .solar-mercury-transit svg *{transition:none!important;animation:none!important}.solar-cosmos .solar-mt-sun{fill:var(--mt-sun)}.solar-cosmos .solar-mt-mercury{fill:var(--mt-mercury)}.solar-cosmos .solar-mt-track{stroke:#78350f;stroke-width:1;stroke-dasharray:4 6;vector-effect:non-scaling-stroke}.solar-cosmos .solar-mt-locator,.solar-cosmos .solar-mt-detail-guide{fill:none;stroke:var(--mt-guide);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke}.solar-cosmos .solar-mt-readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0}.solar-cosmos .solar-mt-readouts dt{font-size:13px;color:var(--mt-muted)}.solar-cosmos .solar-mt-readouts dd{font-size:20px;font-weight:700;line-height:1.5;margin:4px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.solar-cosmos .solar-mt-lightcurve,.solar-cosmos .solar-mt-model{margin-top:16px}.solar-cosmos .solar-mt-chart-layout{display:grid;grid-template-columns:36px minmax(0,1fr);gap:8px}.solar-cosmos .solar-mt-y-axis{position:relative;font-size:13px;color:var(--mt-muted)}.solar-cosmos .solar-mt-y-axis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-mt-chart-axis{margin-left:44px}.solar-cosmos .solar-mt-x-axis{position:relative;height:28px;font-size:13px;color:var(--mt-muted);margin-top:4px}.solar-cosmos .solar-mt-x-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-mt-axis-title{text-align:center;font-size:13px!important;color:var(--mt-muted)}.solar-cosmos .solar-mt-gridline{stroke:#475569;stroke-width:1;stroke-dasharray:3 5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-mt-curve{fill:none;stroke:var(--mt-curve);stroke-width:2.5;vector-effect:non-scaling-stroke}.solar-cosmos .solar-mt-selected-guide{stroke:var(--mt-mark);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-mt-marker{fill:var(--mt-mark);stroke:var(--mt-stage);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-mercury-transit a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--mt-accent);font-size:13px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-mercury-transit :is(button,input,a):focus-visible{outline:3px solid var(--mt-accent);outline-offset:3px}@container (max-width:650px){.solar-cosmos .solar-mt-grid,.solar-cosmos .solar-mt-readouts{grid-template-columns:minmax(0,1fr)}.solar-cosmos .solar-mt-card,.solar-cosmos .solar-mt-control,.solar-cosmos .solar-mt-model{padding:10px}}@media (forced-colors:active){.solar-cosmos .solar-mercury-transit{--mt-bg:Canvas!important;--mt-panel:Canvas!important;--mt-fg:CanvasText!important;--mt-muted:CanvasText!important;--mt-border:CanvasText!important;--mt-accent:LinkText!important;--mt-stage:Canvas!important;--mt-guide:CanvasText!important;--mt-curve:LinkText!important;--mt-mark:Highlight!important;--mt-sun:CanvasText!important;--mt-mercury:Canvas!important}.solar-cosmos .solar-mercury-transit svg{forced-color-adjust:none}.solar-cosmos .solar-mt-track,.solar-cosmos .solar-mt-gridline{stroke:GrayText}}.solar-cosmos .solar-orbit-shadow{background:var(--io-bg);color:var(--io-fg);border:1px solid var(--io-border);border-radius:18px;padding:16px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-orbit-shadow *{box-sizing:border-box}.solar-cosmos .solar-orbit-shadow [hidden]{display:none!important}.solar-cosmos .solar-orbit-shadow h4{font-size:24px;font-weight:800;margin:2px 0}.solar-cosmos .solar-orbit-shadow h5,.solar-cosmos .solar-orbit-shadow figcaption{font-size:17px;font-weight:750;margin:0 0 10px}.solar-cosmos .solar-orbit-shadow p{margin:8px 0}.solar-cosmos .solar-io-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}.solar-cosmos .solar-io-eyebrow{font-size:13px;color:var(--io-accent);font-weight:750}.solar-cosmos .solar-io-note{font-size:13px;color:var(--io-muted)}.solar-cosmos .solar-orbit-shadow button,.solar-cosmos .solar-orbit-shadow a{min-height:44px;max-width:100%;border:1px solid var(--io-border);border-radius:10px;background:var(--io-panel);color:var(--io-fg);font-size:13px;font-weight:650;line-height:1.4;padding:9px 12px;white-space:normal}.solar-cosmos .solar-orbit-shadow button[aria-pressed=true]{outline:1px solid var(--io-accent);border-color:var(--io-accent);color:var(--io-accent)}.solar-cosmos .solar-orbit-shadow button:disabled{cursor:default;opacity:1;color:var(--io-muted)}.solar-cosmos .solar-orbit-shadow :is(button,a,input):focus-visible{outline:3px solid var(--io-accent);outline-offset:3px}.solar-cosmos .solar-io-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-io-control,.solar-cosmos .solar-io-card{min-width:0;background:var(--io-panel);border:1px solid var(--io-border);border-radius:12px;padding:12px;margin:0}.solar-cosmos .solar-io-control{display:grid;grid-template-columns:1fr auto;gap:8px}.solar-cosmos .solar-io-control label,.solar-cosmos .solar-io-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-io-control output{color:var(--io-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-io-control input{grid-column:1/-1;width:100%;height:44px;min-width:0;margin:0;accent-color:var(--io-accent)}.solar-cosmos .solar-io-presets{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}.solar-cosmos .solar-io-presets button{flex:1 1 auto}.solar-cosmos .solar-io-context{display:grid;gap:12px;min-width:0}.solar-cosmos .solar-io-readouts{display:grid;gap:18px;margin:16px 0}.solar-cosmos .solar-io-readouts dt{font-size:13px;color:var(--io-muted)}.solar-cosmos .solar-io-readouts dd{font-size:24px;line-height:1.4;font-weight:800;color:var(--io-accent);margin:4px 0 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-io-compass-stage{position:relative;max-width:400px;margin:auto}.solar-cosmos .solar-orbit-shadow svg{display:block;width:100%;height:auto;background:var(--io-stage);border-radius:10px;box-shadow:none!important}.solar-cosmos .solar-orbit-shadow svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-io-compass-label{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:750;color:var(--io-guide);pointer-events:none}.solar-cosmos .solar-io-ring,.solar-cosmos .solar-io-tick{stroke:var(--io-guide);stroke-width:1}.solar-cosmos .solar-io-reference{stroke:var(--io-guide);stroke-dasharray:5 5;stroke-width:2}.solar-cosmos .solar-io-plane{stroke:var(--io-curve);stroke-width:3}.solar-cosmos .solar-io-endpoint{fill:var(--io-mark);stroke:var(--io-stage);stroke-width:2}.solar-cosmos .solar-io-pivot{fill:var(--io-guide)}.solar-cosmos .solar-io-arrow{fill:none;stroke:var(--io-mark);stroke-width:2}.solar-cosmos .solar-io-arrowhead{fill:var(--io-mark)}.solar-cosmos .solar-io-status{font-size:16px;font-weight:750;color:var(--io-accent)}.solar-cosmos .solar-io-chart{margin-top:16px}.solar-cosmos .solar-io-chart-row{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px}.solar-cosmos .solar-io-yaxis{position:relative;color:var(--io-muted);font-size:13px;font-variant-numeric:tabular-nums}.solar-cosmos .solar-io-yaxis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-io-xaxis{position:relative;min-height:24px;margin:5px 0 0 38px;color:var(--io-muted);font-size:13px}.solar-cosmos .solar-io-xaxis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-io-axis-title{font-size:13px;font-weight:750;text-align:center}.solar-cosmos .solar-io-gridline{stroke:var(--io-guide);stroke-width:1;stroke-dasharray:2 6;opacity:.4}.solar-cosmos .solar-io-curve{fill:none;stroke:var(--io-curve);stroke-width:2.5}.solar-cosmos .solar-io-selection{stroke:var(--io-mark);stroke-dasharray:3 5;stroke-width:1.5}.solar-cosmos .solar-io-sample{fill:var(--io-stage);stroke:var(--io-mark);stroke-width:2}.solar-cosmos .solar-io-model{margin-top:16px;padding-top:16px;border-top:1px solid var(--io-border);font-size:13px;color:var(--io-muted)}.solar-cosmos .solar-io-model a{display:inline-flex;align-items:center;margin:6px 6px 0 0;text-decoration:underline}@media(forced-colors:active){.solar-cosmos .solar-orbit-shadow{--io-bg:Canvas!important;--io-panel:Canvas!important;--io-fg:CanvasText!important;--io-muted:CanvasText!important;--io-border:CanvasText!important;--io-accent:LinkText!important;--io-stage:Canvas!important;--io-guide:CanvasText!important;--io-curve:CanvasText!important;--io-mark:LinkText!important}.solar-cosmos .solar-orbit-shadow svg,.solar-cosmos .solar-io-compass-label{forced-color-adjust:none}}.solar-cosmos .solar-io-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px;margin-top:16px}.solar-cosmos .solar-io-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr))}.solar-cosmos .solar-io-shadow-area{fill:var(--io-shadow-fill);stroke:var(--io-shadow);stroke-width:1;stroke-dasharray:4 4}.solar-cosmos .solar-io-orbit-path{fill:none;stroke:var(--io-guide);stroke-width:1.5;stroke-dasharray:5 5}.solar-cosmos .solar-io-eclipse-arc{fill:none;stroke:var(--io-shadow);stroke-width:3}.solar-cosmos .solar-io-earth-night{fill:var(--io-earth-dark)}.solar-cosmos .solar-io-earth-day{fill:var(--io-earth-light)}.solar-cosmos .solar-io-earth-outline{fill:none;stroke:var(--io-guide);stroke-width:1}.solar-cosmos .solar-io-sun-ray{stroke:var(--io-mark);stroke-width:2}.solar-cosmos .solar-io-sun-arrowhead{fill:var(--io-mark)}.solar-cosmos .solar-io-spacecraft{stroke:var(--io-curve);stroke-width:2}.solar-cosmos .solar-io-spacecraft-lit{fill:var(--io-mark)}.solar-cosmos .solar-io-spacecraft-shadow{fill:var(--io-stage)}.solar-cosmos .solar-io-timeline{margin-top:16px}.solar-cosmos .solar-io-day-band{fill:var(--io-mark)}.solar-cosmos .solar-io-night-band{fill:var(--io-shadow-fill);stroke:var(--io-shadow);stroke-width:2;stroke-dasharray:4 3}.solar-cosmos .solar-io-phase-guide{stroke:var(--io-curve);stroke-width:2}.solar-cosmos .solar-io-phase-marker{fill:var(--io-stage);stroke:var(--io-curve);stroke-width:2}.solar-cosmos .solar-io-time-axis{position:relative;min-height:24px;margin-top:4px;font-size:13px;color:var(--io-muted)}.solar-cosmos .solar-io-time-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-io-legend{display:flex;flex-wrap:wrap;gap:10px 20px;font-size:13px;color:var(--io-muted);margin:10px 0}.solar-cosmos .solar-io-legend span{display:flex;align-items:center;gap:8px}.solar-cosmos .solar-io-legend i{display:inline-block;width:24px;height:12px;flex:none;border:1px solid var(--io-muted);background:var(--io-mark)}.solar-cosmos .solar-io-legend .solar-io-key-night{background:var(--io-shadow-fill);border:2px dashed var(--io-shadow)}@media(forced-colors:active){.solar-cosmos .solar-orbit-shadow{--io-shadow:LinkText!important;--io-shadow-fill:Canvas!important;--io-earth-dark:Canvas!important;--io-earth-light:CanvasText!important}.solar-cosmos .solar-io-legend i{forced-color-adjust:none}}.solar-cosmos .solar-foucault{background:var(--fc-bg);color:var(--fc-fg);border:1px solid var(--fc-border);border-radius:18px;padding:16px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-foucault *{box-sizing:border-box}.solar-cosmos .solar-foucault [hidden]{display:none!important}.solar-cosmos .solar-foucault h4{font-size:24px;font-weight:800;margin:2px 0}.solar-cosmos .solar-foucault h5,.solar-cosmos .solar-foucault figcaption{font-size:17px;font-weight:750;margin:0 0 10px}.solar-cosmos .solar-foucault p{margin:8px 0}.solar-cosmos .solar-fc-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}.solar-cosmos .solar-fc-eyebrow{font-size:13px;color:var(--fc-accent);font-weight:750}.solar-cosmos .solar-fc-note{font-size:13px;color:var(--fc-muted)}.solar-cosmos .solar-foucault button,.solar-cosmos .solar-foucault a{min-height:44px;max-width:100%;border:1px solid var(--fc-border);border-radius:10px;background:var(--fc-panel);color:var(--fc-fg);font-size:13px;font-weight:650;line-height:1.4;padding:9px 12px;white-space:normal}.solar-cosmos .solar-foucault button[aria-pressed=true]{outline:1px solid var(--fc-accent);border-color:var(--fc-accent);color:var(--fc-accent)}.solar-cosmos .solar-foucault button:disabled{cursor:default;opacity:1;color:var(--fc-muted)}.solar-cosmos .solar-foucault :is(button,a,input):focus-visible{outline:3px solid var(--fc-accent);outline-offset:3px}.solar-cosmos .solar-fc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-fc-control,.solar-cosmos .solar-fc-card{min-width:0;background:var(--fc-panel);border:1px solid var(--fc-border);border-radius:12px;padding:12px;margin:0}.solar-cosmos .solar-fc-control{display:grid;grid-template-columns:1fr auto;gap:8px}.solar-cosmos .solar-fc-control label,.solar-cosmos .solar-fc-control output{font-size:14px;font-weight:750}.solar-cosmos .solar-fc-control output{color:var(--fc-accent);font-variant-numeric:tabular-nums}.solar-cosmos .solar-fc-control input{grid-column:1/-1;width:100%;height:44px;min-width:0;margin:0;accent-color:var(--fc-accent)}.solar-cosmos .solar-fc-presets{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}.solar-cosmos .solar-fc-presets button{flex:1 1 auto}.solar-cosmos .solar-fc-context{display:grid;gap:12px;min-width:0}.solar-cosmos .solar-fc-readouts{display:grid;gap:18px;margin:16px 0}.solar-cosmos .solar-fc-readouts dt{font-size:13px;color:var(--fc-muted)}.solar-cosmos .solar-fc-readouts dd{font-size:24px;line-height:1.4;font-weight:800;color:var(--fc-accent);margin:4px 0 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-fc-compass-stage{position:relative;max-width:400px;margin:auto}.solar-cosmos .solar-foucault svg{display:block;width:100%;height:auto;background:var(--fc-stage);border-radius:10px;box-shadow:none!important}.solar-cosmos .solar-foucault svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-fc-compass-label{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:750;color:var(--fc-guide);pointer-events:none}.solar-cosmos .solar-fc-ring,.solar-cosmos .solar-fc-tick{stroke:var(--fc-guide);stroke-width:1}.solar-cosmos .solar-fc-reference{stroke:var(--fc-guide);stroke-dasharray:5 5;stroke-width:2}.solar-cosmos .solar-fc-plane{stroke:var(--fc-curve);stroke-width:3}.solar-cosmos .solar-fc-endpoint{fill:var(--fc-mark);stroke:var(--fc-stage);stroke-width:2}.solar-cosmos .solar-fc-pivot{fill:var(--fc-guide)}.solar-cosmos .solar-fc-arrow{fill:none;stroke:var(--fc-mark);stroke-width:2}.solar-cosmos .solar-fc-arrowhead{fill:var(--fc-mark)}.solar-cosmos .solar-fc-status{font-size:16px;font-weight:750;color:var(--fc-accent)}.solar-cosmos .solar-fc-chart{margin-top:16px}.solar-cosmos .solar-fc-chart-row{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px}.solar-cosmos .solar-fc-yaxis{position:relative;color:var(--fc-muted);font-size:13px;font-variant-numeric:tabular-nums}.solar-cosmos .solar-fc-yaxis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-fc-xaxis{position:relative;min-height:24px;margin:5px 0 0 38px;color:var(--fc-muted);font-size:13px}.solar-cosmos .solar-fc-xaxis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-fc-axis-title{font-size:13px;font-weight:750;text-align:center}.solar-cosmos .solar-fc-gridline{stroke:var(--fc-guide);stroke-width:1;stroke-dasharray:2 6;opacity:.4}.solar-cosmos .solar-fc-curve{fill:none;stroke:var(--fc-curve);stroke-width:2.5}.solar-cosmos .solar-fc-selection{stroke:var(--fc-mark);stroke-dasharray:3 5;stroke-width:1.5}.solar-cosmos .solar-fc-sample{fill:var(--fc-stage);stroke:var(--fc-mark);stroke-width:2}.solar-cosmos .solar-fc-model{margin-top:16px;padding-top:16px;border-top:1px solid var(--fc-border);font-size:13px;color:var(--fc-muted)}.solar-cosmos .solar-fc-model a{display:inline-flex;align-items:center;margin:6px 6px 0 0;text-decoration:underline}@media(forced-colors:active){.solar-cosmos .solar-foucault{--fc-bg:Canvas!important;--fc-panel:Canvas!important;--fc-fg:CanvasText!important;--fc-muted:CanvasText!important;--fc-border:CanvasText!important;--fc-accent:LinkText!important;--fc-stage:Canvas!important;--fc-guide:CanvasText!important;--fc-curve:CanvasText!important;--fc-mark:LinkText!important}.solar-cosmos .solar-foucault svg,.solar-cosmos .solar-fc-compass-label{forced-color-adjust:none}}.solar-cosmos .solar-atmosphere{background:var(--am-bg);color:var(--am-fg);border:1px solid var(--am-border);border-radius:18px;padding:16px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-atmosphere *{box-sizing:border-box}.solar-cosmos .solar-atmosphere h4{font-size:22px;font-weight:800;margin:2px 0}.solar-cosmos .solar-atmosphere h5,.solar-cosmos .solar-atmosphere figcaption{font-size:16px;font-weight:750;margin:0 0 8px}.solar-cosmos .solar-atmosphere p{margin:8px 0}.solar-cosmos .solar-atmosphere button,.solar-cosmos .solar-atmosphere a{min-height:44px;padding:9px 12px;border:1px solid var(--am-border);border-radius:10px;background:var(--am-panel);color:var(--am-fg);font-size:13px;font-weight:650;line-height:1.4}.solar-cosmos .solar-atmosphere button[aria-pressed=true]{border-color:var(--am-accent);outline:1px solid var(--am-accent);color:var(--am-accent)}.solar-cosmos .solar-atmosphere button:hover,.solar-cosmos .solar-atmosphere a:hover{border-color:var(--am-accent)}.solar-cosmos .solar-atmosphere :is(button,input,a):focus-visible{outline:3px solid var(--am-accent);outline-offset:3px}.solar-cosmos .solar-am-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.solar-cosmos .solar-am-eyebrow{color:var(--am-accent);font-size:13px;font-weight:750;letter-spacing:.035em}.solar-cosmos .solar-am-intro{max-width:80ch;color:var(--am-muted)}.solar-cosmos .solar-am-control{padding:12px;border:1px solid var(--am-border);background:var(--am-panel);border-radius:12px;display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:16px}.solar-cosmos .solar-am-control label{font-weight:750;font-size:14px}.solar-cosmos .solar-am-control output{font-variant-numeric:tabular-nums;color:var(--am-accent);font-weight:750}.solar-cosmos .solar-am-control input{grid-column:1/-1;width:100%;min-width:0;height:44px;accent-color:var(--am-accent);margin:0}.solar-cosmos .solar-am-presets{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}.solar-cosmos .solar-am-presets button{flex:1 0 auto;max-width:100%}.solar-cosmos .solar-am-main,.solar-cosmos .solar-am-profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:16px;margin-top:16px;align-items:start}.solar-cosmos .solar-am-overview,.solar-cosmos .solar-am-profile,.solar-cosmos .solar-am-layer-card,.solar-cosmos .solar-am-measurements{min-width:0;margin:0;border:1px solid var(--am-border);border-radius:12px;padding:12px;background:var(--am-panel)}.solar-cosmos .solar-am-context{display:grid;gap:12px;min-width:0}.solar-cosmos .solar-am-overview-row{display:grid;grid-template-columns:36px minmax(0,1fr);gap:8px;max-width:344px;margin:auto}.solar-cosmos .solar-am-overview-stage{position:relative;min-width:0}.solar-cosmos .solar-am-layer-label{position:absolute;right:8px;transform:translateY(-50%);padding:2px 4px;background:var(--am-stage);color:var(--am-guide);font-size:13px;line-height:1.3;white-space:nowrap;pointer-events:none}.solar-cosmos .solar-am-overview-yaxis,.solar-cosmos .solar-am-profile-yaxis{position:relative;font-size:13px;font-variant-numeric:tabular-nums;color:var(--am-muted)}.solar-cosmos .solar-am-overview-yaxis span,.solar-cosmos .solar-am-profile-yaxis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-atmosphere svg{width:100%;height:auto;display:block;background:var(--am-stage);border-radius:8px}.solar-cosmos .solar-atmosphere svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-am-band-0{fill:#1e3a5f}.solar-cosmos .solar-am-band-1{fill:#164e63}.solar-cosmos .solar-am-band-2{fill:#312e81}.solar-cosmos .solar-am-band-3{fill:#3b254c}.solar-cosmos .solar-am-band-4{fill:#162133}.solar-cosmos .solar-am-boundary{stroke:var(--am-guide);stroke-width:1;stroke-dasharray:6 4}.solar-cosmos .solar-am-overview-tick{stroke:var(--am-guide);stroke-width:1;stroke-dasharray:2 5}.solar-cosmos .solar-am-model-bracket{fill:none;stroke:var(--am-pressure);stroke-width:3}.solar-cosmos .solar-am-orbit-icon{fill:var(--am-stage);stroke:var(--am-guide);stroke-width:1.5}.solar-cosmos .solar-am-selection{stroke:var(--am-selected);stroke-width:2}.solar-cosmos .solar-am-location{fill:var(--am-selected);stroke:var(--am-stage);stroke-width:2}.solar-cosmos .solar-am-readouts{display:grid;gap:14px;margin:12px 0}.solar-cosmos .solar-atmosphere dt{font-size:13px;color:var(--am-muted)}.solar-cosmos .solar-atmosphere dd{font-size:23px;color:var(--am-accent);font-weight:800;font-variant-numeric:tabular-nums;margin:4px 0 0}.solar-cosmos .solar-am-layer-list{display:grid;gap:8px}.solar-cosmos .solar-am-layer-list button{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;text-align:left;align-items:center}.solar-cosmos .solar-am-layer-number{font-size:15px;font-variant-numeric:tabular-nums}.solar-cosmos .solar-am-layer-feature{display:block;font-size:13px;font-weight:400;color:var(--am-muted);margin-top:3px}.solar-cosmos .solar-am-profile-row{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px}.solar-cosmos .solar-am-profile-xaxis{position:relative;min-height:24px;margin:5px 0 0 50px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--am-muted)}.solar-cosmos .solar-am-profile-xaxis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-am-axis-title{text-align:center;font-size:13px;font-weight:650}.solar-cosmos .solar-am-grid{stroke:var(--am-guide);stroke-width:1;stroke-dasharray:2 6;opacity:.4}.solar-cosmos .solar-am-curve{fill:none;stroke-width:2.5}.solar-cosmos .solar-am-curve-temperature{stroke:var(--am-temp)}.solar-cosmos .solar-am-curve-pressure{stroke:var(--am-pressure)}.solar-cosmos .solar-am-profile-guide{stroke:var(--am-selected);stroke-width:1.5;stroke-dasharray:3 5}.solar-cosmos .solar-am-sample{fill:var(--am-stage);stroke:var(--am-selected);stroke-width:2}.solar-cosmos .solar-am-note{font-size:13px;color:var(--am-muted)}.solar-cosmos .solar-am-model{margin-top:16px;border-top:1px solid var(--am-border);padding-top:16px;font-size:13px;color:var(--am-muted)}.solar-cosmos .solar-am-model a{display:inline-flex;align-items:center;margin:6px 6px 0 0;text-decoration:underline}@media(forced-colors:active){.solar-cosmos .solar-atmosphere{--am-bg:Canvas!important;--am-panel:Canvas!important;--am-fg:CanvasText!important;--am-muted:CanvasText!important;--am-border:CanvasText!important;--am-accent:LinkText!important;--am-stage:Canvas!important;--am-guide:CanvasText!important;--am-selected:LinkText!important;--am-temp:CanvasText!important;--am-pressure:LinkText!important}.solar-cosmos .solar-atmosphere svg{forced-color-adjust:none}.solar-cosmos .solar-am-band{fill:Canvas}}.solar-cosmos .solar-stellar-spectrum{background:var(--st-bg);color:var(--st-fg);border:1px solid var(--st-border);border-radius:18px;padding:16px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-stellar-spectrum *{box-sizing:border-box}.solar-cosmos .solar-stellar-spectrum h4{font-size:22px;font-weight:800;margin:2px 0}.solar-cosmos .solar-stellar-spectrum h5,.solar-cosmos .solar-stellar-spectrum figcaption{font-size:16px;font-weight:750;margin:0 0 8px}.solar-cosmos .solar-stellar-spectrum p{margin:8px 0}.solar-cosmos .solar-stellar-spectrum button,.solar-cosmos .solar-stellar-spectrum a{min-height:44px;padding:9px 12px;border:1px solid var(--st-border);border-radius:10px;background:var(--st-panel);color:var(--st-fg);font-size:13px;font-weight:650;line-height:1.4}.solar-cosmos .solar-stellar-spectrum button[aria-pressed=true]{border-color:var(--st-accent);outline:1px solid var(--st-accent);color:var(--st-accent)}.solar-cosmos .solar-stellar-spectrum button:hover,.solar-cosmos .solar-stellar-spectrum a:hover{border-color:var(--st-accent)}.solar-cosmos .solar-stellar-spectrum :is(button,input,a):focus-visible{outline:3px solid var(--st-accent);outline-offset:3px}.solar-cosmos .solar-st-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.solar-cosmos .solar-st-eyebrow{color:var(--st-accent);font-size:13px;font-weight:750;letter-spacing:.035em}.solar-cosmos .solar-st-intro{max-width:80ch;color:var(--st-muted)}.solar-cosmos .solar-st-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));gap:12px;margin-top:16px}.solar-cosmos .solar-st-control{padding:12px;border:1px solid var(--st-border);background:var(--st-panel);border-radius:12px;min-width:0;display:grid;grid-template-columns:1fr auto;align-content:start;gap:8px}.solar-cosmos .solar-st-control label{font-weight:750;font-size:14px}.solar-cosmos .solar-st-control output{font-variant-numeric:tabular-nums;color:var(--st-accent);font-weight:750}.solar-cosmos .solar-st-control input{grid-column:1/-1;width:100%;min-width:0;height:44px;accent-color:var(--st-accent);margin:0}.solar-cosmos .solar-st-presets{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}.solar-cosmos .solar-st-presets button{flex:1 0 auto;max-width:100%}.solar-cosmos .solar-st-experiments{padding:12px 0}.solar-cosmos .solar-st-experiments p{font-weight:650}.solar-cosmos .solar-st-readouts,.solar-cosmos .solar-st-sample-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:12px 0}.solar-cosmos .solar-st-readouts>div,.solar-cosmos .solar-st-sample-readouts>div{padding:14px;background:var(--st-panel);border:1px solid var(--st-border);border-radius:12px;min-width:0}.solar-cosmos .solar-stellar-spectrum dt{font-size:13px;color:var(--st-muted)}.solar-cosmos .solar-stellar-spectrum dd{font-size:21px;color:var(--st-accent);font-weight:800;font-variant-numeric:tabular-nums;margin:6px 0 0}.solar-cosmos .solar-st-spectrum{border:1px solid var(--st-border);background:var(--st-panel);border-radius:12px;padding:12px;margin:16px 0}.solar-cosmos .solar-st-plot-row{display:grid;grid-template-columns:32px minmax(0,1fr);gap:8px}.solar-cosmos .solar-st-yaxis{position:relative;font-size:13px;font-variant-numeric:tabular-nums;color:var(--st-muted)}.solar-cosmos .solar-st-yaxis span{position:absolute;right:0;transform:translateY(-50%)}.solar-cosmos .solar-st-xaxis{position:relative;min-height:24px;margin:5px 0 0 40px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--st-muted)}.solar-cosmos .solar-st-xaxis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-st-axis-title{text-align:center;font-size:13px;font-weight:650}.solar-cosmos .solar-st-legend{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:13px;font-weight:650}.solar-cosmos .solar-stellar-spectrum svg{width:100%;height:auto;display:block;background:var(--st-stage);border-radius:8px}.solar-cosmos .solar-stellar-spectrum svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-st-visible{fill:var(--st-visible);stroke:var(--st-guide);stroke-width:1;stroke-dasharray:2 4}.solar-cosmos .solar-st-grid{stroke:var(--st-guide);stroke-width:1;stroke-dasharray:2 6;opacity:.4}.solar-cosmos .solar-st-current-curve{fill:none;stroke:var(--st-current);stroke-width:2.5}.solar-cosmos .solar-st-reference-curve{fill:none;stroke:var(--st-reference);stroke-width:2;stroke-dasharray:7 5}.solar-cosmos .solar-st-probe-line{stroke:var(--st-guide);stroke-width:1.5;stroke-dasharray:3 4}.solar-cosmos .solar-st-reference-peak{fill:var(--st-stage);stroke:var(--st-reference);stroke-width:2}.solar-cosmos .solar-st-current-peak{fill:var(--st-current);stroke:var(--st-stage);stroke-width:1}.solar-cosmos .solar-st-sample{fill:var(--st-stage);stroke:var(--st-current);stroke-width:2}.solar-cosmos .solar-st-comparison{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:16px;margin-top:16px}.solar-cosmos .solar-st-stars,.solar-cosmos .solar-st-power{min-width:0;margin:0;border:1px solid var(--st-border);border-radius:12px;padding:12px;background:var(--st-panel)}.solar-cosmos .solar-st-background-star{fill:var(--st-guide);opacity:.3}.solar-cosmos .solar-st-disc{stroke:var(--st-current);stroke-width:2}.solar-cosmos .solar-st-reference-disc{stroke:var(--st-reference);stroke-dasharray:5 4}.solar-cosmos .solar-st-star-labels{display:grid;grid-template-columns:1fr 1fr;text-align:center;font-size:13px;font-weight:650;gap:8px;margin-top:8px}.solar-cosmos .solar-st-power-readouts{display:grid;gap:14px;margin:12px 0}.solar-cosmos .solar-st-note{font-size:13px;color:var(--st-muted)}.solar-cosmos .solar-st-model{margin-top:16px;border-top:1px solid var(--st-border);padding-top:16px;font-size:13px;color:var(--st-muted)}.solar-cosmos .solar-st-model a{display:inline-flex;align-items:center;margin:6px 6px 0 0;text-decoration:underline}@media(forced-colors:active){.solar-cosmos .solar-stellar-spectrum{--st-bg:Canvas!important;--st-panel:Canvas!important;--st-fg:CanvasText!important;--st-muted:CanvasText!important;--st-border:CanvasText!important;--st-accent:LinkText!important;--st-stage:Canvas!important;--st-current:LinkText!important;--st-reference:CanvasText!important;--st-guide:CanvasText!important;--st-visible:Canvas!important}.solar-cosmos .solar-stellar-spectrum svg{forced-color-adjust:none}.solar-cosmos .solar-st-disc{fill:Canvas}}.solar-cosmos .solar-telescope{background:var(--ts-bg);color:var(--ts-fg);border:1px solid var(--ts-border);border-radius:18px;padding:16px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-telescope *{box-sizing:border-box}.solar-cosmos .solar-telescope h4{font-size:22px;font-weight:800;margin:2px 0}.solar-cosmos .solar-telescope h5,.solar-cosmos .solar-telescope figcaption{font-size:16px;font-weight:750;margin:0 0 8px}.solar-cosmos .solar-telescope p{margin:8px 0}.solar-cosmos .solar-telescope button,.solar-cosmos .solar-telescope a{min-height:44px;padding:9px 12px;border:1px solid var(--ts-border);border-radius:10px;background:var(--ts-panel);color:var(--ts-fg);font-size:13px;font-weight:650;line-height:1.4}.solar-cosmos .solar-telescope button[aria-pressed=true]{border-color:var(--ts-accent);outline:1px solid var(--ts-accent);color:var(--ts-accent)}.solar-cosmos .solar-telescope button:hover,.solar-cosmos .solar-telescope a:hover{border-color:var(--ts-accent)}.solar-cosmos .solar-telescope :is(button,input,a):focus-visible{outline:3px solid var(--ts-accent);outline-offset:3px}.solar-cosmos .solar-ts-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.solar-cosmos .solar-ts-eyebrow{color:var(--ts-accent);font-size:13px;font-weight:750;letter-spacing:.035em}.solar-cosmos .solar-ts-intro{max-width:80ch;color:var(--ts-muted)}.solar-cosmos .solar-ts-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));gap:12px;margin-top:16px}.solar-cosmos .solar-ts-control{padding:12px;border:1px solid var(--ts-border);background:var(--ts-panel);border-radius:12px;min-width:0;display:grid;grid-template-columns:1fr auto;align-content:start;gap:8px}.solar-cosmos .solar-ts-control label{font-weight:750;font-size:14px}.solar-cosmos .solar-ts-control output{font-variant-numeric:tabular-nums;color:var(--ts-accent);font-weight:750}.solar-cosmos .solar-ts-control input{grid-column:1/-1;width:100%;min-width:0;height:44px;accent-color:var(--ts-accent);margin:0}.solar-cosmos .solar-ts-presets{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}.solar-cosmos .solar-ts-presets button{flex:1 0 auto}.solar-cosmos .solar-ts-experiments{padding:12px 0}.solar-cosmos .solar-ts-experiments p{font-weight:650}.solar-cosmos .solar-ts-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:12px 0}.solar-cosmos .solar-ts-readouts>div{padding:14px;background:var(--ts-panel);border:1px solid var(--ts-border);border-radius:12px}.solar-cosmos .solar-ts-readouts dt{font-size:13px;color:var(--ts-muted)}.solar-cosmos .solar-ts-readouts dd{font-size:25px;color:var(--ts-accent);font-weight:800;font-variant-numeric:tabular-nums;margin:6px 0 0}.solar-cosmos .solar-ts-verdict{border-left:4px solid var(--ts-accent);background:var(--ts-panel);padding:12px 16px;margin:16px 0}.solar-cosmos .solar-ts-views,.solar-cosmos .solar-ts-collection{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,370px),1fr));gap:16px;margin-top:16px}.solar-cosmos .solar-ts-view,.solar-cosmos .solar-ts-collection>figure,.solar-cosmos .solar-ts-area-summary{min-width:0;margin:0;border:1px solid var(--ts-border);border-radius:12px;padding:12px;background:var(--ts-panel)}.solar-cosmos .solar-telescope svg{width:100%;height:auto;display:block;background:var(--ts-stage);border-radius:8px}.solar-cosmos .solar-telescope svg *{vector-effect:non-scaling-stroke;transition:none!important;animation:none!important}.solar-cosmos .solar-ts-note{font-size:13px;color:var(--ts-muted)}.solar-cosmos .solar-ts-frame{fill:none;stroke:var(--ts-guide);stroke-width:1}.solar-cosmos .solar-ts-offscreen{fill:none;stroke:var(--ts-guide);stroke-width:2}.solar-cosmos .solar-ts-guide{stroke:var(--ts-guide);stroke-width:1}.solar-cosmos .solar-ts-grid{stroke:var(--ts-guide);stroke-width:1;stroke-dasharray:2 6;opacity:.5}.solar-cosmos .solar-ts-star-0{color:var(--ts-a)}.solar-cosmos .solar-ts-star-1{color:var(--ts-b)}.solar-cosmos .solar-ts-ring{fill:currentColor;fill-opacity:.08;stroke:currentColor;stroke-width:2}.solar-cosmos .solar-ts-star-1 .solar-ts-ring{stroke-dasharray:7 5}.solar-cosmos .solar-ts-center{fill:var(--ts-stage);stroke:currentColor;stroke-width:2}.solar-cosmos .solar-ts-axis{position:relative;min-height:24px;margin-top:5px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ts-muted)}.solar-cosmos .solar-ts-axis span{position:absolute;white-space:nowrap}.solar-cosmos .solar-ts-axis-title{text-align:center;font-size:13px;font-weight:650}.solar-cosmos .solar-ts-legend{padding:12px;background:var(--ts-panel);border:1px solid var(--ts-border);border-radius:10px}.solar-cosmos .solar-ts-aperture{fill:var(--ts-a);fill-opacity:.25;stroke:var(--ts-a);stroke-width:2}.solar-cosmos .solar-ts-reference{fill:var(--ts-guide);fill-opacity:.2;stroke:var(--ts-guide);stroke-width:2;stroke-dasharray:5 4}.solar-cosmos .solar-ts-area-labels{display:grid;grid-template-columns:1fr 1fr;text-align:center;font-size:13px;font-weight:650;margin-top:8px;gap:8px}.solar-cosmos .solar-ts-area-value{font-size:30px;color:var(--ts-accent);font-weight:800;font-variant-numeric:tabular-nums}.solar-cosmos .solar-ts-model{margin-top:16px;border-top:1px solid var(--ts-border);padding-top:16px;font-size:13px;color:var(--ts-muted)}.solar-cosmos .solar-ts-model a{display:inline-flex;align-items:center;margin:6px 6px 0 0;text-decoration:underline}@media(forced-colors:active){.solar-cosmos .solar-telescope{--ts-bg:Canvas!important;--ts-panel:Canvas!important;--ts-fg:CanvasText!important;--ts-muted:CanvasText!important;--ts-border:CanvasText!important;--ts-accent:LinkText!important;--ts-stage:Canvas!important;--ts-a:CanvasText!important;--ts-b:LinkText!important;--ts-guide:CanvasText!important}.solar-cosmos .solar-telescope svg{forced-color-adjust:none}.solar-cosmos .solar-ts-ring{fill:none}}.solar-cosmos .solar-albedo{min-width:0;padding:16px;border:1px solid var(--ab-border);border-radius:16px;background:var(--ab-bg);color:var(--ab-fg);font-size:13px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-albedo [hidden]{display:none!important}.solar-cosmos .solar-albedo h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0 0}.solar-cosmos .solar-albedo h5{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-albedo p{font-size:13px;line-height:1.6;margin:8px 0 12px}.solar-cosmos .solar-ab-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-ab-header>div{min-width:0;flex:1 1 220px}.solar-cosmos .solar-albedo .solar-ab-eyebrow{color:var(--ab-accent);font-weight:800;margin:0}.solar-cosmos .solar-albedo .solar-ab-intro{margin:16px 0}.solar-cosmos .solar-albedo button{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--ab-border);border-radius:9px;background:var(--ab-panel);color:var(--ab-accent);font-size:13px;line-height:1.5;font-weight:800;white-space:normal}.solar-cosmos .solar-albedo button[aria-pressed=true]{border:2px solid var(--ab-accent);padding:8px 11px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-albedo a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--ab-accent);font-size:13px;text-decoration:underline}.solar-cosmos .solar-albedo :is(button,input,a):focus-visible{outline:3px solid var(--ab-accent);outline-offset:3px}.solar-cosmos .solar-ab-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-ab-main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-ab-control{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;padding:12px 14px;border:1px solid var(--ab-border);border-radius:12px;background:var(--ab-panel)}.solar-cosmos .solar-ab-control label,.solar-cosmos .solar-ab-control output{font-size:14px;font-weight:800}.solar-cosmos .solar-ab-control output{font-variant-numeric:tabular-nums}.solar-cosmos .solar-ab-control input{width:100%;min-width:0;min-height:44px;margin:0;padding:0;accent-color:var(--ab-accent)}.solar-cosmos .solar-ab-presets{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}.solar-cosmos .solar-ab-note{color:var(--ab-muted)}.solar-cosmos .solar-ab-columns,.solar-cosmos .solar-ab-readout-card,.solar-cosmos .solar-ab-budget,.solar-cosmos .solar-ab-curve{min-width:0;margin:0;padding:14px;border:1px solid var(--ab-border);border-radius:12px;background:var(--ab-panel)}.solar-cosmos .solar-ab-budget,.solar-cosmos .solar-ab-curve{margin-top:16px}.solar-cosmos .solar-albedo figcaption{font-size:18px;font-weight:800;line-height:1.5;margin-bottom:16px}.solar-cosmos .solar-ab-budget-row{margin-top:16px}.solar-cosmos .solar-ab-budget-row h5{font-size:14px;margin-bottom:8px}.solar-cosmos .solar-ab-energy-key,.solar-cosmos .solar-ab-legend{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:13px}.solar-cosmos .solar-albedo .solar-ab-temperature{font-size:32px;font-weight:850;line-height:1.3;font-variant-numeric:tabular-nums}.solar-cosmos .solar-albedo svg{display:block;width:100%;height:auto;max-height:none;background:var(--ab-stage);box-shadow:none!important;overflow:visible}.solar-cosmos .solar-albedo svg :is(circle,path,line,rect){transition:none!important}.solar-cosmos .solar-ab-column{stroke:#0f172a;stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-column-cloud{fill:var(--ab-cloud);stroke-dasharray:5 3}.solar-cosmos .solar-ab-column-ice{fill:var(--ab-ice);stroke-dasharray:1 3}.solar-cosmos .solar-ab-column-dark{fill:var(--ab-dark)}.solar-cosmos .solar-ab-sunlight{fill:var(--ab-sunlight)}.solar-cosmos .solar-ab-reflected{fill:var(--ab-reflected);stroke:var(--ab-stage);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-thermal{fill:var(--ab-thermal);stroke:var(--ab-stage);stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-grid{stroke:#64748b;stroke-width:1;opacity:.65;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-reference-curve{fill:none;stroke:var(--ab-reference);stroke-width:2;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-current-curve{fill:none;stroke:var(--ab-current);stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-selection-guide{fill:none;stroke:var(--ab-guide);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-selected{fill:var(--ab-stage);stroke:var(--ab-current);stroke-width:3;vector-effect:non-scaling-stroke}.solar-cosmos .solar-ab-plot-row{display:grid;grid-template-columns:40px minmax(0,1fr);gap:8px;align-items:stretch}.solar-cosmos .solar-ab-yaxis{position:relative;color:var(--ab-muted);font-size:13px}.solar-cosmos .solar-ab-yaxis span{position:absolute;right:0;transform:translateY(-50%);white-space:nowrap;transition:none!important}.solar-cosmos .solar-ab-xaxis{position:relative;height:26px;margin:6px 0 0 48px;color:var(--ab-muted);font-size:13px}.solar-cosmos .solar-ab-xaxis span{position:absolute;top:0;white-space:nowrap;transition:none!important}.solar-cosmos .solar-ab-axis-title{color:var(--ab-muted);text-align:center}.solar-cosmos .solar-ab-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:14px;margin:16px 0}.solar-cosmos .solar-ab-readouts>div,.solar-cosmos .solar-ab-contributions>div{min-width:0}.solar-cosmos .solar-ab-readouts dt,.solar-cosmos .solar-ab-contributions dt{font-size:13px;color:var(--ab-muted)}.solar-cosmos .solar-ab-readouts dd{font-size:18px;line-height:1.5;font-weight:800;margin:4px 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-ab-contributions{display:grid;gap:14px;margin:16px 0}.solar-cosmos .solar-ab-contributions dd{font-size:15px;font-weight:800;line-height:1.5;margin:4px 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-ab-model{margin-top:16px;padding:14px;border:1px solid var(--ab-border);border-radius:12px;background:var(--ab-panel)}.solar-cosmos .solar-ab-model h5{margin-bottom:0}@media(max-width:380px){.solar-cosmos .solar-albedo{padding:12px}.solar-cosmos .solar-ab-columns,.solar-cosmos .solar-ab-readout-card,.solar-cosmos .solar-ab-budget,.solar-cosmos .solar-ab-curve,.solar-cosmos .solar-ab-model{padding:10px}}@media(forced-colors:active){.solar-cosmos .solar-albedo{--ab-bg:Canvas!important;--ab-panel:Canvas!important;--ab-fg:CanvasText!important;--ab-muted:CanvasText!important;--ab-border:CanvasText!important;--ab-accent:LinkText!important;--ab-stage:Canvas!important;--ab-guide:CanvasText!important;--ab-current:CanvasText!important;--ab-reference:CanvasText!important;--ab-cloud:Canvas!important;--ab-ice:Canvas!important;--ab-dark:Canvas!important;--ab-sunlight:CanvasText!important;--ab-reflected:Canvas!important;--ab-thermal:CanvasText!important}.solar-cosmos .solar-albedo svg *{forced-color-adjust:none}.solar-cosmos .solar-ab-column,.solar-cosmos .solar-ab-reflected,.solar-cosmos .solar-ab-thermal,.solar-cosmos .solar-ab-grid{stroke:CanvasText!important}.solar-cosmos .solar-ab-grid{opacity:1}}.solar-cosmos .solar-doppler{min-width:0;padding:16px;border:1px solid var(--dp-border);border-radius:16px;background:var(--dp-bg);color:var(--dp-fg);font-size:13px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-doppler [hidden]{display:none!important}.solar-cosmos .solar-doppler h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0 0}.solar-cosmos .solar-doppler h5{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-doppler p{font-size:13px;line-height:1.6;margin:8px 0 12px}.solar-cosmos .solar-dp-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-dp-header>div{min-width:0;flex:1 1 220px}.solar-cosmos .solar-doppler .solar-dp-eyebrow{color:var(--dp-accent);font-weight:800;margin:0}.solar-cosmos .solar-doppler .solar-dp-intro{margin:16px 0}.solar-cosmos .solar-doppler button{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--dp-border);border-radius:9px;background:var(--dp-panel);color:var(--dp-accent);font-size:13px;line-height:1.5;font-weight:800;white-space:normal}.solar-cosmos .solar-doppler button[aria-pressed=true]{border:2px solid var(--dp-accent);padding:8px 11px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-doppler a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--dp-accent);font-size:13px;text-decoration:underline}.solar-cosmos .solar-doppler :is(button,input,a):focus-visible{outline:3px solid var(--dp-accent);outline-offset:3px}.solar-cosmos .solar-dp-controls,.solar-cosmos .solar-dp-main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-dp-control{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;padding:12px 14px;border:1px solid var(--dp-border);border-radius:12px;background:var(--dp-panel)}.solar-cosmos .solar-dp-control label,.solar-cosmos .solar-dp-control output{font-size:14px;font-weight:800}.solar-cosmos .solar-dp-control output{font-variant-numeric:tabular-nums}.solar-cosmos .solar-dp-control input{width:100%;min-width:0;min-height:44px;margin:0;padding:0;accent-color:var(--dp-accent)}.solar-cosmos .solar-dp-presets{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.solar-cosmos .solar-dp-note{color:var(--dp-muted)}.solar-cosmos .solar-dp-motion,.solar-cosmos .solar-dp-readout-card,.solar-cosmos .solar-dp-overview,.solar-cosmos .solar-dp-detail{min-width:0;margin:0;padding:14px;border:1px solid var(--dp-border);border-radius:12px;background:var(--dp-panel)}.solar-cosmos .solar-dp-overview,.solar-cosmos .solar-dp-detail{margin-top:16px}.solar-cosmos .solar-doppler figcaption{font-size:18px;font-weight:800;line-height:1.5;margin-bottom:16px}.solar-cosmos .solar-dp-lane{min-width:0;margin-top:16px}.solar-cosmos .solar-dp-lane h5{font-size:14px;margin-bottom:8px}.solar-cosmos .solar-dp-axis{position:relative;height:26px;margin-top:5px;color:var(--dp-muted);font-size:13px}.solar-cosmos .solar-dp-axis span{position:absolute;top:0;white-space:nowrap;transition:none!important}.solar-cosmos .solar-doppler svg{display:block;width:100%;height:auto;max-height:none;background:var(--dp-stage);box-shadow:none!important;overflow:visible}.solar-cosmos .solar-doppler svg :is(circle,path,line,rect){transition:none!important}.solar-cosmos .solar-dp-ruler{stroke:var(--dp-guide);stroke-width:1.2}.solar-cosmos .solar-dp-reference-line,.solar-cosmos .solar-dp-rest-guide{stroke:var(--dp-guide);stroke-width:2;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}.solar-cosmos .solar-dp-rest-guide{stroke-width:1}.solar-cosmos .solar-dp-observed-line{stroke:var(--dp-observed);stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-dp-diamond{fill:var(--dp-observed);stroke:none}.solar-cosmos .solar-dp-sightline{stroke:var(--dp-guide);stroke-dasharray:5 5;stroke-width:1;vector-effect:non-scaling-stroke}.solar-cosmos .solar-dp-observer{fill:#67e8f9;stroke:var(--dp-guide);stroke-width:2}.solar-cosmos .solar-dp-source{fill:#fde68a;stroke:var(--dp-guide);stroke-width:2}.solar-cosmos .solar-dp-motion-arrow{fill:none;stroke:var(--dp-observed);stroke-width:3;vector-effect:non-scaling-stroke}.solar-cosmos .solar-dp-legend{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:12px;font-size:13px}.solar-cosmos .solar-doppler .solar-dp-status{font-size:18px;font-weight:800;line-height:1.5}.solar-cosmos .solar-dp-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:14px;margin:16px 0}.solar-cosmos .solar-dp-readouts>div{min-width:0}.solar-cosmos .solar-dp-readouts dt{font-size:13px;color:var(--dp-muted)}.solar-cosmos .solar-dp-readouts dd{font-size:18px;line-height:1.5;font-weight:800;margin:4px 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-dp-model{margin-top:16px;padding:14px;border:1px solid var(--dp-border);border-radius:12px;background:var(--dp-panel)}.solar-cosmos .solar-dp-model h5{margin-bottom:0}@media(max-width:380px){.solar-cosmos .solar-doppler{padding:12px}.solar-cosmos .solar-dp-motion,.solar-cosmos .solar-dp-readout-card,.solar-cosmos .solar-dp-overview,.solar-cosmos .solar-dp-detail,.solar-cosmos .solar-dp-model{padding:10px}}@media(forced-colors:active){.solar-cosmos .solar-doppler{--dp-bg:Canvas!important;--dp-panel:Canvas!important;--dp-fg:CanvasText!important;--dp-muted:CanvasText!important;--dp-border:CanvasText!important;--dp-accent:LinkText!important;--dp-stage:Canvas!important;--dp-guide:CanvasText!important;--dp-observed:CanvasText!important}.solar-cosmos .solar-doppler svg *{forced-color-adjust:none}.solar-cosmos .solar-dp-observer{fill:Canvas!important;stroke:CanvasText!important}.solar-cosmos .solar-dp-source{fill:CanvasText!important;stroke:CanvasText!important}}.solar-cosmos .solar-spectroscopy{min-width:0;padding:16px;border:1px solid var(--sp-border);border-radius:16px;background:var(--sp-bg);color:var(--sp-fg);font-size:13px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-spectroscopy [hidden]{display:none!important}.solar-cosmos .solar-spectroscopy h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0 0}.solar-cosmos .solar-spectroscopy h5{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-spectroscopy p{font-size:13px;line-height:1.6;margin:8px 0 12px}.solar-cosmos .solar-sp-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-sp-header>div{min-width:0;flex:1 1 220px}.solar-cosmos .solar-spectroscopy .solar-sp-eyebrow{color:var(--sp-accent);font-weight:800;margin:0}.solar-cosmos .solar-spectroscopy .solar-sp-intro{margin:16px 0}.solar-cosmos .solar-spectroscopy button{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--sp-border);border-radius:9px;background:var(--sp-panel);color:var(--sp-accent);font-size:13px;line-height:1.5;font-weight:800;white-space:normal}.solar-cosmos .solar-spectroscopy button[aria-pressed=true]{border:2px solid var(--sp-accent);padding:8px 11px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-spectroscopy a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--sp-accent);font-size:13px;text-decoration:underline}.solar-cosmos .solar-spectroscopy :is(button,input,a):focus-visible{outline:3px solid var(--sp-accent);outline-offset:3px}",
+              ".solar-cosmos .solar-sp-control{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;padding:12px 14px;border:1px solid var(--sp-border);border-radius:12px;background:var(--sp-panel)}.solar-cosmos .solar-sp-control label,.solar-cosmos .solar-sp-control output{font-size:14px;font-weight:800}.solar-cosmos .solar-sp-control output{font-variant-numeric:tabular-nums}.solar-cosmos .solar-sp-control input{width:100%;min-width:0;min-height:44px;margin:0;padding:0;accent-color:var(--sp-accent)}.solar-cosmos .solar-sp-presets,.solar-cosmos .solar-sp-lines{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}.solar-cosmos .solar-sp-note{color:var(--sp-muted)}.solar-cosmos .solar-sp-main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px;align-items:start;margin-top:16px}.solar-cosmos .solar-sp-overview,.solar-cosmos .solar-sp-detail,.solar-cosmos .solar-sp-inspector{min-width:0;margin:0;padding:14px;border:1px solid var(--sp-border);border-radius:12px;background:var(--sp-panel)}.solar-cosmos .solar-spectroscopy figcaption{font-size:18px;font-weight:800;line-height:1.5;margin-bottom:16px}.solar-cosmos .solar-sp-lane{min-width:0;margin-top:16px}.solar-cosmos .solar-sp-lane h5{font-size:14px;margin-bottom:8px}.solar-cosmos .solar-sp-axis{position:relative;height:26px;margin-top:5px;color:var(--sp-muted);font-size:13px}.solar-cosmos .solar-sp-axis span{position:absolute;top:0;white-space:nowrap;transition:none!important}.solar-cosmos .solar-sp-lines button{font-variant-numeric:tabular-nums}",
+              ".solar-cosmos .solar-spectroscopy svg{display:block;width:100%;height:auto;max-height:none;background:var(--sp-stage);box-shadow:none!important;overflow:visible}.solar-cosmos .solar-spectroscopy svg :is(circle,path,line,rect){transition:none!important}.solar-cosmos .solar-sp-ruler{stroke:var(--sp-guide);stroke-width:1.2}.solar-cosmos .solar-sp-line{stroke-width:2;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sp-cursor{fill:none;stroke:var(--sp-mark);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}.solar-cosmos .solar-sp-marker{fill:var(--sp-mark);stroke:none}",
+              ".solar-cosmos .solar-sp-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:14px;margin:16px 0}.solar-cosmos .solar-sp-readouts>div{min-width:0}.solar-cosmos .solar-sp-readouts dt{font-size:13px;color:var(--sp-muted)}.solar-cosmos .solar-sp-readouts dd{font-size:18px;line-height:1.5;font-weight:800;margin:4px 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-sp-model{margin-top:16px;padding:14px;border:1px solid var(--sp-border);border-radius:12px;background:var(--sp-panel)}.solar-cosmos .solar-sp-model h5{margin-bottom:0}.solar-cosmos .solar-sp-hint{border-left:3px solid var(--sp-accent);padding-left:12px}",
+              "@media(max-width:380px){.solar-cosmos .solar-spectroscopy{padding:12px}.solar-cosmos .solar-sp-overview,.solar-cosmos .solar-sp-detail,.solar-cosmos .solar-sp-inspector,.solar-cosmos .solar-sp-model{padding:10px}}@media(forced-colors:active){.solar-cosmos .solar-spectroscopy{--sp-bg:Canvas!important;--sp-panel:Canvas!important;--sp-fg:CanvasText!important;--sp-muted:CanvasText!important;--sp-border:CanvasText!important;--sp-accent:Highlight!important;--sp-stage:Canvas!important;--sp-guide:CanvasText!important;--sp-mark:Highlight!important}.solar-cosmos .solar-spectroscopy svg *{forced-color-adjust:none}.solar-cosmos .solar-sp-line{stroke:CanvasText!important}}",
+              ".solar-cosmos .solar-lagrange{min-width:0;padding:16px;border:1px solid var(--lg-border);border-radius:16px;background:var(--lg-bg);color:var(--lg-fg);font-size:13px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-lagrange [hidden]{display:none!important}.solar-cosmos .solar-lagrange h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0 0}.solar-cosmos .solar-lagrange h5{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-lagrange p{font-size:13px;line-height:1.6;margin:8px 0 12px}.solar-cosmos .solar-lg-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-lg-header>div{min-width:0;flex:1 1 220px}.solar-cosmos .solar-lagrange .solar-lg-eyebrow{color:var(--lg-accent);font-weight:800;margin:0}.solar-cosmos .solar-lagrange .solar-lg-intro{margin:16px 0}.solar-cosmos .solar-lagrange button{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--lg-border);border-radius:9px;background:var(--lg-panel);color:var(--lg-accent);font-size:13px;line-height:1.5;font-weight:800;white-space:normal}.solar-cosmos .solar-lagrange button[aria-pressed=true]{border:2px solid var(--lg-accent);padding:8px 11px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-lagrange a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--lg-accent);font-size:13px;text-decoration:underline}.solar-cosmos .solar-lagrange :is(button,input,a):focus-visible{outline:3px solid var(--lg-accent);outline-offset:3px}",
+              ".solar-cosmos .solar-lg-control{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;padding:12px 14px;border:1px solid var(--lg-border);border-radius:12px;background:var(--lg-panel)}.solar-cosmos .solar-lg-control label,.solar-cosmos .solar-lg-control output{font-size:14px;font-weight:800}.solar-cosmos .solar-lg-control output{font-variant-numeric:tabular-nums}.solar-cosmos .solar-lg-control input{width:100%;min-width:0;min-height:44px;margin:0;padding:0;accent-color:var(--lg-accent)}.solar-cosmos .solar-lg-presets{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.solar-cosmos .solar-lg-note{color:var(--lg-muted)}.solar-cosmos .solar-lg-main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px;align-items:start}.solar-cosmos .solar-lg-maps{min-width:0;display:grid;gap:16px}.solar-cosmos .solar-lg-map-card,.solar-cosmos .solar-lg-inset-card,.solar-cosmos .solar-lg-inspector{min-width:0;margin:0;padding:14px;border:1px solid var(--lg-border);border-radius:12px;background:var(--lg-panel)}.solar-cosmos .solar-lagrange figcaption{font-size:15px;font-weight:800;line-height:1.5;margin-bottom:12px}.solar-cosmos .solar-lg-map-wrap,.solar-cosmos .solar-lg-inset-wrap{position:relative;background:var(--lg-stage);border-radius:12px}.solar-cosmos .solar-lg-map-label{transition:none!important;position:absolute;transform:translateX(-50%);color:var(--lg-line);font-size:13px;font-weight:800;line-height:1.4;white-space:nowrap;pointer-events:none}.solar-cosmos .solar-lg-legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;margin:16px 0}.solar-cosmos .solar-lagrange .solar-lg-status{padding:12px;border:1px solid var(--lg-accent);border-radius:10px;color:var(--lg-accent);font-size:15px;font-weight:800}.solar-cosmos .solar-lg-stability{border-top:1px solid var(--lg-border);margin-top:20px;padding-top:16px}",
+              ".solar-cosmos .solar-lagrange svg{display:block;width:100%;height:auto;max-height:none;background:var(--lg-stage);box-shadow:none!important;overflow:visible}.solar-cosmos .solar-lagrange svg :is(circle,path,line,rect){transition:none!important}.solar-cosmos .solar-lg-axis{stroke:var(--lg-grid);stroke-width:1.3;stroke-dasharray:3 5}.solar-cosmos .solar-lg-triangles{fill:none;stroke:var(--lg-grid);stroke-width:1.5;stroke-dasharray:5 5}.solar-cosmos .solar-lg-separation{stroke:var(--lg-line);stroke-width:1.5}.solar-cosmos .solar-lg-barycenter{fill:none;stroke:var(--lg-line);stroke-width:2}.solar-cosmos .solar-lg-primary{fill:var(--lg-primary);stroke:var(--lg-stage);stroke-width:1}.solar-cosmos .solar-lg-secondary{fill:var(--lg-secondary);stroke:var(--lg-stage);stroke-width:1}.solar-cosmos .solar-lg-stable{color:var(--lg-stable)}.solar-cosmos .solar-lg-unstable{color:var(--lg-unstable)}.solar-cosmos .solar-lg-point-core{fill:currentColor;stroke:none}.solar-cosmos .solar-lg-point-ring{fill:none;stroke:currentColor;stroke-width:1.5}.solar-cosmos .solar-lg-selection{fill:none;stroke:var(--lg-line);stroke-width:2}",
+              ".solar-cosmos .solar-lg-readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:14px;margin:16px 0}.solar-cosmos .solar-lg-readouts>div{min-width:0}.solar-cosmos .solar-lg-readouts dt{font-size:13px;color:var(--lg-muted)}.solar-cosmos .solar-lg-readouts dd{font-size:18px;line-height:1.5;font-weight:800;margin:4px 0;font-variant-numeric:tabular-nums}.solar-cosmos .solar-lg-model{margin-top:16px;padding:14px;border:1px solid var(--lg-border);border-radius:12px;background:var(--lg-panel)}.solar-cosmos .solar-lg-model h5{margin-bottom:0}.solar-cosmos .solar-lg-mission{border-left:3px solid var(--lg-accent);padding-left:12px}",
+              "@media(max-width:380px){.solar-cosmos .solar-lagrange{padding:12px}.solar-cosmos .solar-lg-map-card,.solar-cosmos .solar-lg-inset-card,.solar-cosmos .solar-lg-inspector,.solar-cosmos .solar-lg-model{padding:10px}}@media(forced-colors:active){.solar-cosmos .solar-lagrange{--lg-bg:Canvas!important;--lg-panel:Canvas!important;--lg-fg:CanvasText!important;--lg-muted:CanvasText!important;--lg-border:CanvasText!important;--lg-accent:Highlight!important;--lg-stage:Canvas!important;--lg-grid:CanvasText!important;--lg-line:CanvasText!important;--lg-stable:Highlight!important;--lg-unstable:Highlight!important;--lg-primary:CanvasText!important;--lg-secondary:CanvasText!important}.solar-cosmos .solar-lagrange svg *{forced-color-adjust:none}}",
               ".solar-cosmos .solar-day-night{min-width:0;padding:16px;border:1px solid var(--dn-border);border-radius:16px;background:var(--dn-bg);color:var(--dn-fg);font-size:13px;line-height:1.6;overflow-wrap:anywhere}.solar-cosmos .solar-day-night [hidden]{display:none!important}.solar-cosmos .solar-day-night h4{font-size:24px;font-weight:850;line-height:1.3;margin:4px 0 0}.solar-cosmos .solar-day-night h5{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 12px}.solar-cosmos .solar-day-night p{font-size:13px;line-height:1.6;margin:8px 0 12px}.solar-cosmos .solar-dn-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}.solar-cosmos .solar-dn-header>div{min-width:0;flex:1 1 220px}.solar-cosmos .solar-day-night .solar-dn-eyebrow{color:var(--dn-accent);font-weight:800;margin:0}.solar-cosmos .solar-day-night .solar-dn-intro{margin:16px 0}.solar-cosmos .solar-day-night button{min-height:44px;min-width:44px;max-width:100%;padding:9px 12px;border:1px solid var(--dn-border);border-radius:9px;background:var(--dn-panel);color:var(--dn-accent);font-size:13px;line-height:1.5;font-weight:800;white-space:normal}.solar-cosmos .solar-day-night button[aria-pressed=true]{border:2px solid var(--dn-accent);padding:8px 11px;text-decoration:underline;text-underline-offset:4px}.solar-cosmos .solar-day-night a{display:inline-flex;align-items:center;min-height:44px;max-width:100%;margin-right:16px;color:var(--dn-accent);font-size:13px;text-decoration:underline}.solar-cosmos .solar-day-night :is(button,input,a):focus-visible{outline:3px solid var(--dn-accent);outline-offset:3px}",
               ".solar-cosmos .solar-dn-control{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;padding:12px 14px;border:1px solid var(--dn-border);border-radius:12px;background:var(--dn-panel)}.solar-cosmos .solar-dn-control label,.solar-cosmos .solar-dn-control output{font-size:14px;font-weight:800}.solar-cosmos .solar-dn-control output{font-variant-numeric:tabular-nums}.solar-cosmos .solar-dn-control input{width:100%;min-width:0;min-height:44px;margin:0;padding:0;accent-color:var(--dn-accent)}.solar-cosmos .solar-dn-presets{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.solar-cosmos .solar-dn-note{color:var(--dn-muted)}.solar-cosmos .solar-dn-main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px;align-items:start}.solar-cosmos .solar-dn-globe-card,.solar-cosmos .solar-dn-observer-card,.solar-cosmos .solar-dn-timeline-card{min-width:0;margin:0;padding:14px;border:1px solid var(--dn-border);border-radius:12px;background:var(--dn-panel)}.solar-cosmos .solar-day-night figcaption{font-size:15px;font-weight:800;line-height:1.5;margin-bottom:12px}.solar-cosmos .solar-dn-pole-label{padding-right:7.6923%;text-align:center;font-size:13px;font-weight:700;color:var(--dn-muted);margin:6px 0}.solar-cosmos .solar-dn-legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;margin:16px 0}.solar-cosmos .solar-day-night .solar-dn-status{margin-top:16px;padding:12px;border:1px solid var(--dn-accent);border-radius:10px;color:var(--dn-accent)}.solar-cosmos .solar-dn-status strong{font-size:15px;display:block}.solar-cosmos .solar-dn-status span{font-size:13px;display:block;margin-top:4px}",
               ".solar-cosmos .solar-day-night svg{display:block;width:100%;height:auto;max-height:none;background:var(--dn-stage);box-shadow:none!important;overflow:visible}.solar-cosmos .solar-day-night svg :is(circle,path,line,rect){transition:none!important}.solar-cosmos .solar-dn-night{fill:var(--dn-night);stroke:none}.solar-cosmos .solar-dn-horizon{fill:var(--dn-stage);stroke:none}.solar-cosmos .solar-dn-hatch{fill:none;stroke:var(--dn-hatch);stroke-width:1}.solar-cosmos .solar-dn-day{fill:var(--dn-day);stroke:none}.solar-cosmos .solar-dn-grid{fill:none;stroke:var(--dn-line);stroke-width:1;opacity:.65}.solar-cosmos .solar-dn-terminator{stroke:var(--dn-line);stroke-width:2}.solar-cosmos .solar-dn-axis{stroke:var(--dn-line);stroke-width:1.5;stroke-dasharray:3 5}.solar-cosmos .solar-dn-rim{fill:none;stroke:var(--dn-line);stroke-width:1.5}.solar-cosmos .solar-dn-latitude{stroke:var(--dn-marker);stroke-width:2;stroke-dasharray:6 5}.solar-cosmos .solar-dn-ray{fill:none;stroke:var(--dn-marker);stroke-width:2.5}.solar-cosmos .solar-dn-observer{fill:var(--dn-marker);stroke:var(--dn-stage);stroke-width:2}.solar-cosmos .solar-dn-observer-back{fill:var(--dn-stage);stroke:var(--dn-marker);stroke-width:2;stroke-dasharray:3 2}.solar-cosmos .solar-dn-hours{position:relative;height:26px;margin-top:4px;color:var(--dn-muted);font-size:13px}.solar-cosmos .solar-dn-hours span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}",
@@ -3090,6 +3414,9 @@ const d = labToolData.solarSystem || {};
               '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
               '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
               '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{position:relative;top:auto;left:auto;right:auto;bottom:auto;max-width:none;margin:8px 10px 66px;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
+              ".solar-cosmos .solar-rover-pathfinder{container-type:inline-size;min-width:0;padding:16px;border:1px solid var(--rp-border);border-radius:18px;background:var(--rp-bg);color:var(--rp-fg);font-size:14px;line-height:1.55;overflow-wrap:anywhere}.solar-cosmos .solar-rover-pathfinder *{box-sizing:border-box}.solar-cosmos .solar-rover-pathfinder [hidden]{display:none!important}.solar-cosmos .solar-rover-pathfinder h4{font-size:25px;line-height:1.25;margin:4px 0;font-weight:850}.solar-cosmos .solar-rover-pathfinder h5,.solar-cosmos .solar-rover-pathfinder figcaption{font-size:17px;line-height:1.4;margin:0 0 10px;font-weight:800}.solar-cosmos .solar-rover-pathfinder p{margin:8px 0 12px}.solar-cosmos .solar-rp-header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-start}.solar-cosmos .solar-rp-eyebrow{color:var(--rp-accent);font-size:13px;font-weight:800}.solar-cosmos .solar-rp-note{font-size:13px;color:var(--rp-muted)}.solar-cosmos .solar-rover-pathfinder button{min-width:44px;min-height:44px;max-width:100%;padding:9px 12px;border:1px solid var(--rp-border);border-radius:9px;background:var(--rp-bg);color:var(--rp-fg);font-size:13px;line-height:1.5;font-weight:700;white-space:normal}.solar-cosmos .solar-rover-pathfinder button:hover:not(:disabled){border-color:var(--rp-accent);background:var(--rp-panel)}.solar-cosmos .solar-rover-pathfinder button:disabled{opacity:.55;cursor:not-allowed}.solar-cosmos .solar-rover-pathfinder button[aria-pressed=true]{outline:1px solid var(--rp-accent);border-color:var(--rp-accent);color:var(--rp-accent)}.solar-cosmos .solar-rover-pathfinder :is(button,[tabindex]):focus-visible{outline:3px solid var(--rp-accent);outline-offset:3px}.solar-cosmos .solar-rp-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.solar-cosmos .solar-rp-metrics>div{padding:14px;border:1px solid var(--rp-border);border-radius:12px;background:var(--rp-panel)}.solar-cosmos .solar-rp-metrics dt{font-size:13px;color:var(--rp-muted)}.solar-cosmos .solar-rp-metrics dd{margin:4px 0 0;color:var(--rp-accent);font-size:23px;font-weight:800;font-variant-numeric:tabular-nums}.solar-cosmos .solar-rp-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,1fr);gap:16px;align-items:start}.solar-cosmos .solar-rp-map-card,.solar-cosmos .solar-rp-mission,.solar-cosmos .solar-rp-model{min-width:0;margin:0;padding:14px;background:var(--rp-panel);border:1px solid var(--rp-border);border-radius:14px}.solar-cosmos .solar-rp-map-caption{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;color:var(--rp-muted);font-size:13px;margin-bottom:6px}.solar-cosmos .solar-rp-map-wrap{display:grid;grid-template-columns:22px minmax(0,1fr);grid-template-rows:24px auto;gap:2px}.solar-cosmos .solar-rp-column-axis{position:relative;grid-column:2;grid-row:1;font-size:13px;color:var(--rp-muted)}.solar-cosmos .solar-rp-column-axis span{position:absolute;transform:translateX(-50%)}.solar-cosmos .solar-rp-row-axis{position:relative;grid-column:1;grid-row:2;font-size:13px;color:var(--rp-muted)}.solar-cosmos .solar-rp-row-axis span{position:absolute;right:3px;transform:translateY(-50%)}.solar-cosmos .solar-rp-map-focus{grid-column:2;grid-row:2;min-width:0;border-radius:12px}.solar-cosmos .solar-rover-pathfinder svg{display:block;width:100%;height:auto;overflow:hidden;box-shadow:none!important}.solar-cosmos .solar-rp-map-focus svg{background:var(--rp-stage);border:1px solid var(--rp-border);border-radius:12px}.solar-cosmos .solar-rover-pathfinder svg *{vector-effect:non-scaling-stroke;animation:none!important;transition:none!important}.solar-cosmos .solar-rp-tile-0{fill:var(--rp-ground)}.solar-cosmos .solar-rp-tile-1{fill:var(--rp-rock)}.solar-cosmos .solar-rp-tile-2{fill:var(--rp-boulder)}.solar-cosmos .solar-rp-tile-3{fill:var(--rp-steep)}.solar-cosmos .solar-rp-terrain-mark{fill:var(--rp-glyph);stroke:var(--rp-glyph);stroke-width:1}.solar-cosmos .solar-rp-dust{fill:none;opacity:.6}.solar-cosmos .solar-rp-rock-edge{fill:none;stroke:var(--rp-stage)}.solar-cosmos .solar-rp-neighbor{fill:none;stroke:var(--rp-guide);stroke-width:1.5}.solar-cosmos .solar-rp-guide{fill:none;stroke:var(--rp-guide);stroke-width:3;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:4 6}.solar-cosmos .solar-rp-route{fill:none;stroke:var(--rp-route);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.solar-cosmos .solar-rp-start,.solar-cosmos .solar-rp-goal{fill:none;stroke:var(--rp-guide);stroke-width:2}.solar-cosmos .solar-rp-start{stroke:var(--rp-route)}.solar-cosmos .solar-rp-wheel{fill:#172132;stroke:#e2e8f0;stroke-width:1}.solar-cosmos .solar-rp-axle{stroke:#e2e8f0;stroke-width:2}.solar-cosmos .solar-rp-body{fill:#f8e5c2;stroke:#34271b;stroke-width:1.5}.solar-cosmos .solar-rp-panel{fill:#174e72;stroke:#bde9ff;stroke-width:1}.solar-cosmos .solar-rp-panel-lines{fill:none;stroke:#bde9ff;stroke-width:.75}.solar-cosmos .solar-rp-mast{stroke:#f8e5c2;stroke-width:2}.solar-cosmos .solar-rp-camera{fill:#bde9ff;stroke:#172132;stroke-width:1}.solar-cosmos .solar-rp-map-tools{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px}.solar-cosmos .solar-rp-status{border-left:3px solid var(--rp-accent);padding-left:12px;margin-bottom:16px}.solar-cosmos .solar-rp-status p{font-size:14px}.solar-cosmos .solar-rp-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,auto);gap:8px;max-width:340px;margin:0 auto 16px}.solar-cosmos .solar-rp-direction{display:flex;flex-direction:column;align-items:center;padding:8px 3px!important;gap:1px}.solar-cosmos .solar-rp-direction small{font-size:13px;font-weight:500}.solar-cosmos .solar-rp-arrow{font-size:25px;line-height:1.2}.solar-cosmos .solar-rp-north{grid-column:2;grid-row:1}.solar-cosmos .solar-rp-west{grid-column:1;grid-row:2}.solar-cosmos .solar-rp-east{grid-column:3;grid-row:2}.solar-cosmos .solar-rp-south{grid-column:2;grid-row:3}.solar-cosmos .solar-rp-compass{grid-column:2;grid-row:2;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--rp-muted);font-size:13px;line-height:1.25}.solar-cosmos .solar-rp-compass span:last-child{font-size:30px}.solar-cosmos .solar-rp-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.solar-cosmos .solar-rp-actions button{flex:1 1 120px}.solar-cosmos .solar-rp-legend{margin-top:16px}.solar-cosmos .solar-rp-terrain-key{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:10px;margin:10px 0;font-size:13px}.solar-cosmos .solar-rp-terrain-key svg{width:32px;height:32px;border-radius:5px}.solar-cosmos .solar-rp-terrain-key strong{font-size:13px;white-space:nowrap}.solar-cosmos .solar-rp-model{margin-top:16px;font-size:13px}@container(max-width:760px){.solar-cosmos .solar-rp-layout{grid-template-columns:minmax(0,1fr)}}@container(max-width:480px){.solar-cosmos .solar-rp-metrics{grid-template-columns:minmax(0,1fr);gap:8px}.solar-cosmos .solar-rp-metrics>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px}.solar-cosmos .solar-rp-metrics dd{font-size:20px;margin:0}}@media(max-width:380px){.solar-cosmos .solar-rover-pathfinder{padding:12px}.solar-cosmos .solar-rp-map-card,.solar-cosmos .solar-rp-mission,.solar-cosmos .solar-rp-model{padding:10px}.solar-cosmos .solar-rp-controls{gap:6px}.solar-cosmos .solar-rp-direction small{font-size:13px}.solar-cosmos .solar-rp-terrain-key{gap:8px}}@media(forced-colors:active){.solar-cosmos .solar-rover-pathfinder{--rp-bg:Canvas!important;--rp-panel:Canvas!important;--rp-fg:CanvasText!important;--rp-muted:CanvasText!important;--rp-border:CanvasText!important;--rp-accent:LinkText!important;--rp-stage:Canvas!important;--rp-ground:Canvas!important;--rp-rock:Canvas!important;--rp-boulder:Canvas!important;--rp-steep:Canvas!important;--rp-glyph:CanvasText!important;--rp-route:CanvasText!important;--rp-guide:LinkText!important;--rp-key:LinkText!important}.solar-cosmos .solar-rover-pathfinder svg *{forced-color-adjust:none}.solar-cosmos .solar-rp-tile{stroke:GrayText;stroke-width:.5}.solar-cosmos .solar-rp-wheel,.solar-cosmos .solar-rp-body,.solar-cosmos .solar-rp-panel,.solar-cosmos .solar-rp-camera{fill:Canvas!important;stroke:LinkText!important}.solar-cosmos .solar-rp-axle,.solar-cosmos .solar-rp-mast,.solar-cosmos .solar-rp-panel-lines{stroke:LinkText!important}}",
+              ".solar-cosmos [data-drone-exploration-cue] svg{box-shadow:none!important;animation:none!important;transition:none!important}.solar-cosmos [data-drone-exploration-cue] svg *{transition:none!important;animation:none!important}.solar-cosmos [data-drone-exploration-cue] [hidden]{display:none!important}@media(max-width:380px){.solar-cosmos [data-drone-exploration-cue]{grid-template-columns:56px minmax(0,1fr)!important;gap:8px!important;padding:8px!important}.solar-cosmos [data-drone-exploration-cue] svg{width:56px!important;height:56px!important}}@media(forced-colors:active){.solar-cosmos [data-drone-exploration-cue]{background:Canvas!important;border-color:CanvasText!important}.solar-cosmos [data-drone-exploration-cue] div{color:CanvasText!important}.solar-cosmos [data-drone-exploration-cue] button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.solar-cosmos [data-drone-exploration-cue] svg *{forced-color-adjust:none;fill:Canvas;stroke:CanvasText}.solar-cosmos [data-drone-exploration-cue] [data-exploration-arrow]{fill:LinkText;stroke:LinkText}}",
+              ".solar-cosmos .solar-rp-touch-controls,.solar-cosmos .solar-rp-touch-summary{display:none}@container(max-width:760px){.solar-cosmos .solar-rp-controls{display:none}.solar-cosmos .solar-rp-touch-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.solar-cosmos .solar-rp-touch-controls button{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:62px}.solar-cosmos .solar-rp-touch-controls small{font-size:13px;font-weight:500}.solar-cosmos .solar-rp-touch-summary{display:block;font-size:13px;font-weight:700;color:var(--rp-accent);margin:10px 0}.solar-cosmos .solar-rp-mission .solar-rp-status{margin-bottom:12px}}",
               '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-ticker-controls],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.solar-cosmos [data-drone-sampling-active=true] #hud-sample-prox,.solar-cosmos [data-drone-survey-tracking=true] #hud-sample-prox{display:none!important}@media(max-width:640px){.solar-cosmos [data-drone-sampling-overlay]{bottom:120px!important}}',
               // Phone HUD. Three values below are COUPLED and must move together:
               // the HUD's max-height, the flex order, and the hazard banner's top.
@@ -4362,6 +4689,1179 @@ const d = labToolData.solarSystem || {};
             { label: 'NASA eclipse geometry', href: 'https://science.nasa.gov/eclipses/geometry/' },
             { label: 'NASA GSFC Moon orbit', href: 'https://eclipse.gsfc.nasa.gov/SEhelp/moonorbit.html' }
           ];
+
+          function buildSolarRoverPathfinder() {
+            var h = React.createElement;
+            var baseTerrain = [
+              [0,0,0,1,0,0,2,0,0,3], [0,0,1,1,0,2,0,0,0,0], [0,1,0,0,2,0,0,0,1,0],
+              [0,0,0,1,0,0,3,0,1,0], [1,0,0,0,2,0,0,2,0,0], [0,0,0,2,0,0,0,0,0,0],
+              [0,2,0,0,1,0,3,0,1,0], [0,0,0,0,0,1,0,0,0,2], [0,0,1,0,0,0,0,2,0,0],
+              [3,0,0,0,2,0,1,0,0,0]
+            ];
+            var costs = [1,2,3,5], names = ['Open ground','Scattered rocks','Boulder field','Steep terrain'];
+            var validTerrain = Array.isArray(d.roverTerrain) && d.roverTerrain.length === 10 && new Array(10).fill(0).every(function(_,y) {
+              var row = d.roverTerrain[y];
+              return Array.isArray(row) && row.length === 10 && new Array(10).fill(0).every(function(_,x) { var value=row[x]; return Number.isInteger(value) && value >= 0 && value <= 3; });
+            });
+            var terrain = validTerrain ? d.roverTerrain : baseTerrain;
+            function validPoint(p) { return p && Number.isInteger(p.x) && Number.isInteger(p.y) && p.x >= 0 && p.x < 10 && p.y >= 0 && p.y < 10; }
+            var validPath = Array.isArray(d.roverPath) && d.roverPath.length > 0 && Array.from(d.roverPath).every(function(p, i, all) {
+              return validPoint(p) && (i ? Math.abs(p.x - all[i - 1].x) + Math.abs(p.y - all[i - 1].y) === 1 : p.x === 0 && p.y === 5);
+            });
+            // Normalize only the displayed model. Reading a saved lesson never writes to its state.
+            var path = validPath ? d.roverPath : [{x:0,y:5}], pos = path[path.length - 1], goal = {x:9,y:5};
+            var fuel = typeof d.roverFuel === 'number' && isFinite(d.roverFuel) ? Math.max(0,Math.min(30,d.roverFuel)) : 30;
+            var reached = pos.x === goal.x && pos.y === goal.y, guide = d.roverRouteGuide === true;
+            var directions = [{name:'North',short:'N',symbol:'↑',dx:0,dy:-1,key:'north'}, {name:'West',short:'W',symbol:'←',dx:-1,dy:0,key:'west'}, {name:'East',short:'E',symbol:'→',dx:1,dy:0,key:'east'}, {name:'South',short:'S',symbol:'↓',dx:0,dy:1,key:'south'}];
+            function coordinate(p) { return String.fromCharCode(65 + p.x) + (p.y + 1); }
+            function nextStep(direction) {
+              var x = pos.x + direction.dx, y = pos.y + direction.dy, inside = x >= 0 && x < 10 && y >= 0 && y < 10;
+              var cost = inside ? costs[terrain[y][x]] : null;
+              return {x:x,y:y,cost:cost,inside:inside,allowed:inside && !reached && fuel >= cost};
+            }
+            function move(direction) {
+              var next = nextStep(direction);
+              if (!next.allowed) return;
+              upd('roverPath',path.concat([{x:next.x,y:next.y}]));
+              upd('roverFuel',fuel - next.cost);
+            }
+            function undo() {
+              if (path.length < 2) return;
+              upd('roverPath',path.slice(0,-1));
+              upd('roverFuel',Math.min(30,fuel + costs[terrain[pos.y][pos.x]]));
+            }
+            function reset() { upd('roverPath',[{x:0,y:5}]); upd('roverFuel',30); }
+            function onMapKey(event) {
+              if (event.altKey || event.ctrlKey || event.metaKey) return;
+              var key = String(event.key).toLowerCase(), index = {arrowup:0,w:0,arrowleft:1,a:1,arrowright:2,d:2,arrowdown:3,s:3}[key];
+              if (typeof index !== 'number') return;
+              event.preventDefault();
+              // Holding a key does not accidentally spend the entire route budget.
+              if (!event.repeat) move(directions[index]);
+            }
+            // Dijkstra uses the same destination-entry costs as the controls; all 100 cells are traversable.
+            function leastCostRoute(start) {
+              var distances = new Array(100).fill(Infinity), previous = new Array(100).fill(-1), visited = new Array(100).fill(false);
+              var startIndex = start.y * 10 + start.x, endIndex = goal.y * 10 + goal.x;
+              distances[startIndex] = 0;
+              for (var pass = 0; pass < 100; pass++) {
+                var current = -1;
+                for (var k = 0; k < 100; k++) if (!visited[k] && (current < 0 || distances[k] < distances[current])) current = k;
+                if (current < 0 || !isFinite(distances[current])) break;
+                if (current === endIndex) break;
+                visited[current] = true;
+                var cx = current % 10, cy = Math.floor(current / 10);
+                directions.forEach(function(direction) {
+                  var nx = cx + direction.dx, ny = cy + direction.dy;
+                  if (nx < 0 || nx >= 10 || ny < 0 || ny >= 10) return;
+                  var index = ny * 10 + nx, candidate = distances[current] + costs[terrain[ny][nx]];
+                  if (candidate < distances[index]) { distances[index] = candidate; previous[index] = current; }
+                });
+              }
+              var route = [], cursor = endIndex;
+              while (cursor >= 0) { route.unshift({x:cursor%10,y:Math.floor(cursor/10)}); if (cursor === startIndex) break; cursor = previous[cursor]; }
+              return {cost:distances[endIndex],points:route};
+            }
+            var best = leastCostRoute(pos), margin = fuel - best.cost, steps = path.length - 1;
+            var prev = path.length > 1 ? path[path.length - 2] : {x:pos.x-1,y:pos.y};
+            var heading = Math.atan2(pos.y - prev.y,pos.x - prev.x) * 180 / Math.PI + 90;
+            function center(p) { return {x:58 + 56 * p.x,y:58 + 56 * p.y}; }
+            function routePoints(points) { return points.map(function(p) { var c = center(p); return c.x + ',' + c.y; }).join(' '); }
+            function metric(key,label,value) { return h('div',null,h('dt',null,label),h('dd',{'data-rp-metric':key,'data-value':value},value)); }
+            function terrainMark(t,x,y,key) {
+              return h('g',{key:key,transform:'translate('+x+' '+y+')',className:'solar-rp-terrain-mark','data-rp-terrain-mark':t},
+                t === 0 ? h('path',{d:'M-12 6h6 M7-8h5',className:'solar-rp-dust'}) :
+                t === 1 ? h(React.Fragment,null,h('path',{d:'M-15 9l3-7 8-1 4 5-3 5z'}),h('path',{d:'M6-4l2-7 7 1 3 6-5 4z'})) :
+                t === 2 ? h(React.Fragment,null,h('path',{d:'M-18 7l4-17 14-5 12 12-6 16-15 2z'}),h('path',{d:'M-14-10L0 3 12-3 M0 3L-9 15',className:'solar-rp-rock-edge'})) :
+                h(React.Fragment,null,h('path',{d:'M-21 16L-3-18 12 10 19-3 27 16z'}),h('path',{d:'M-3-18L1 3-5-2-9 3 M19-3L21 6',className:'solar-rp-rock-edge'})));
+            }
+            var theme = isDark ? {'--rp-bg':'#0f1726','--rp-panel':'#172337','--rp-fg':'#eef4ff','--rp-muted':'#bccbdc','--rp-border':'#4b5f78','--rp-accent':'#fdba74','--rp-stage':'#21120e','--rp-ground':'#713e2d','--rp-rock':'#a56a45','--rp-boulder':'#8c5b35','--rp-steep':'#4d342c','--rp-glyph':'#f5d4ab','--rp-route':'#fff2a8','--rp-guide':'#8eefff','--rp-key':'#67e8f9'} : {'--rp-bg':'#fffdfb','--rp-panel':'#fff4e9','--rp-fg':'#242c39','--rp-muted':'#555f6b','--rp-border':'#a39687','--rp-accent':'#9a3412','--rp-stage':'#f3d9bc','--rp-ground':'#e2ba96','--rp-rock':'#d8aa7f','--rp-boulder':'#d4a174','--rp-steep':'#c3906d','--rp-glyph':'#3f2719','--rp-route':'#3b2513','--rp-guide':'#004c69','--rp-key':'#00627e'};
+            var status = reached ? 'Relay reached — traverse complete' : margin < 0 ? 'The finish needs more energy' : 'Choose your next waypoint';
+            var statusDetail = reached ? 'You arrived at J6 in '+steps+' moves with '+fuel+' energy remaining. Undo a move or restart to try a different route.' : margin < 0 ? 'Even the lowest-cost route needs '+best.cost+' energy; you have '+fuel+'. Undo a detour or restart the traverse.' : 'At '+coordinate(pos)+'. The lowest-cost finish needs '+best.cost+' energy, leaving '+margin+' in reserve.';
+            var roverCenter = center(pos), startCenter = center({x:0,y:5}), goalCenter = center(goal);
+            return h('section',{id:'solar-rover-pathfinder',className:'solar-rover-pathfinder',style:theme,'aria-labelledby':'solar-rp-title','data-rp-position':coordinate(pos),'data-rp-fuel':fuel,'data-rp-cost':best.cost,'data-rp-reached':String(reached)},
+              h('div',{className:'solar-rp-header'},h('div',null,h('span',{className:'solar-rp-eyebrow'},'Surface operations · route planning'),h('h4',{id:'solar-rp-title'},'Mars Rover Pathfinder')),h('button',{type:'button','aria-label':'Toggle Mars Rover Pathfinder','aria-expanded':!!d.showRover,'aria-controls':'solar-rp-content',onClick:function(){upd('showRover',!d.showRover);}},d.showRover?'Hide traverse':'Open traverse')),
+              h('p',{className:'solar-rp-note'},'Pilot from the landing site at A6 to the relay at J6. Read the terrain, compare entry costs, and keep enough energy for the finish.'),
+              h('div',{id:'solar-rp-content',hidden:!d.showRover},d.showRover ? h(React.Fragment,null,
+                h('dl',{className:'solar-rp-metrics'},metric('energy','Energy remaining',fuel+' / 30'),metric('moves','Moves made',steps),metric('minimum','Lowest-cost finish',best.cost+' energy')),
+                h('div',{className:'solar-rp-layout'},
+                  h('figure',{className:'solar-rp-map-card'},h('figcaption',null,'Traverse map'),h('div',{className:'solar-rp-map-caption'},h('span',null,'North ↑'),h('span',null,'Rover: '+coordinate(pos)+' · relay: J6')),
+                    h('div',{className:'solar-rp-map-wrap'},h('div',{className:'solar-rp-column-axis','aria-hidden':true},new Array(10).fill(0).map(function(_,x){return h('span',{key:x,style:{left:(58+56*x)/6.2+'%'}},String.fromCharCode(65+x));})),
+                      h('div',{className:'solar-rp-row-axis','aria-hidden':true},new Array(10).fill(0).map(function(_,y){return h('span',{key:y,style:{top:(58+56*y)/6.2+'%'}},y+1);})),
+                      h('div',{className:'solar-rp-map-focus',tabIndex:0,role:'group','aria-label':'Rover map keyboard controls','aria-describedby':'solar-rp-keyboard solar-rp-live',onKeyDown:onMapKey,'data-rp-map-control':true},
+                        h('svg',{viewBox:'0 0 620 620',role:'img','aria-label':'Terrain and rover route from A6 to J6','aria-describedby':'solar-rp-map-description','data-rp-map':true},
+                          terrain.map(function(row,y){return row.map(function(t,x){return h('g',{key:x+'-'+y},h('rect',{x:30+x*56,y:30+y*56,width:54,height:54,rx:5,className:'solar-rp-tile solar-rp-tile-'+t,'data-rp-cell':coordinate({x:x,y:y}),'data-rp-terrain':t}),terrainMark(t,58+56*x,58+56*y,'mark'));});}),
+                          directions.map(function(direction){var next=nextStep(direction);return next.allowed?h('rect',{key:direction.key,x:33+next.x*56,y:33+next.y*56,width:48,height:48,rx:4,className:'solar-rp-neighbor','data-rp-neighbor':coordinate(next)}):null;}),
+                          guide && !reached ? h('polyline',{points:routePoints(best.points),className:'solar-rp-guide','data-rp-guide':true}) : null,
+                          path.length > 1 ? h('polyline',{points:routePoints(path),className:'solar-rp-route','data-rp-route':true}) : null,
+                          h('g',{className:'solar-rp-start',transform:'translate('+startCenter.x+' '+startCenter.y+')','data-rp-start':true},h('circle',{r:17}),h('path',{d:'M-23 0h9 M14 0h9 M0-23v9 M0 14v9'})),
+                          h('g',{className:'solar-rp-goal',transform:'translate('+goalCenter.x+' '+goalCenter.y+')','data-rp-goal':true},h('circle',{r:23}),h('circle',{r:18}),h('path',{d:'M-4 12v-26l16 4-16 7'})),
+                          h('g',{transform:'translate('+roverCenter.x+' '+roverCenter.y+') rotate('+heading+')',className:'solar-rp-rover','data-rp-rover':true,'data-heading':heading},
+                            [-12,0,12].map(function(y){return h('g',{key:y},h('rect',{x:-20,y:y-4,width:8,height:8,rx:2,className:'solar-rp-wheel'}),h('rect',{x:12,y:y-4,width:8,height:8,rx:2,className:'solar-rp-wheel'}),h('line',{x1:-15,x2:15,y1:y,y2:y,className:'solar-rp-axle'}));}),
+                            h('rect',{x:-12,y:-17,width:24,height:35,rx:5,className:'solar-rp-body'}),h('rect',{x:-8,y:-3,width:16,height:15,rx:2,className:'solar-rp-panel'}),h('path',{d:'M-8 2H8 M-8 7H8 M0-3V12',className:'solar-rp-panel-lines'}),h('line',{x1:0,x2:0,y1:-10,y2:-25,className:'solar-rp-mast'}),h('rect',{x:-8,y:-27,width:16,height:6,rx:2,className:'solar-rp-camera'}))
+                        )
+                      )
+                    ),
+                    h('div',{className:'solar-rp-touch-controls',role:'group','aria-label':'Drive the rover near the map'},directions.map(function(direction){var next=nextStep(direction);return h('button',{key:direction.key,type:'button',disabled:!next.allowed,'data-rp-touch-direction':direction.key,'aria-label':'Move '+direction.name.toLowerCase()+(next.inside?' to '+coordinate(next)+', '+next.cost+' energy':', map edge'),onClick:function(){move(direction);}},h('span',null,h('span',{'aria-hidden':true},direction.symbol+' '),direction.name),h('small',null,reached?'Complete':!next.inside?'Map edge':next.cost+' energy'));})),
+                    h('p',{className:'solar-rp-touch-summary'},coordinate(pos)+' · '+fuel+' energy left · '+best.cost+' to finish'),
+                    h('p',{id:'solar-rp-keyboard',className:'solar-rp-note'},'Focus the map, then press an arrow key or W, A, S, D to move one cell. Each press is one decision.'),
+                    h('p',{id:'solar-rp-map-description',className:'solar-rp-note'},'Solid trail: traveled route. Dashed line: optional lowest-cost guide. Outlined neighboring cells are affordable next moves. All terrain can be crossed; entry costs vary.'),
+                    h('div',{className:'solar-rp-map-tools'},h('button',{type:'button','aria-pressed':guide,'data-rp-action':'guide',onClick:function(){upd('roverRouteGuide',!guide);}},guide?'Hide route guide':'Show route guide'),h('span',{className:'solar-rp-note'},guide ? (best.points.length-1)+' guide moves · '+best.cost+' energy' : 'Try a route yourself, then compare.'))
+                  ),
+                  h('div',{className:'solar-rp-mission'},h('div',{className:'solar-rp-status',role:'status','aria-live':'polite','aria-atomic':true,id:'solar-rp-live'},h('h5',null,status),h('p',null,statusDetail)),
+                    h('div',{className:'solar-rp-controls',role:'group','aria-label':'Drive the rover'},directions.map(function(direction){var next=nextStep(direction);var detail = reached ? 'Mission complete' : !next.inside ? 'Map edge' : next.cost+' energy';return h('button',{key:direction.key,type:'button',className:'solar-rp-direction solar-rp-'+direction.key,disabled:!next.allowed,'data-rp-direction':direction.key,'data-rp-entry-cost':next.cost,'aria-label':'Move '+direction.name.toLowerCase()+(next.inside?' to '+coordinate(next)+', '+names[terrain[next.y][next.x]]+', '+next.cost+' energy':', map edge'),onClick:function(){move(direction);}},h('span',{'aria-hidden':true,className:'solar-rp-arrow'},direction.symbol),h('span',null,direction.name),h('small',null,detail));}),h('div',{className:'solar-rp-compass','aria-hidden':true},h('span',null,'N'),h('span',null,'◇'))),
+                    h('div',{className:'solar-rp-actions'},h('button',{type:'button',disabled:path.length<2,'data-rp-action':'undo',onClick:undo},'Undo last move'),h('button',{type:'button','data-rp-action':'reset',onClick:reset},'Restart traverse')),
+                    h('div',{className:'solar-rp-legend'},h('h5',null,'Terrain entry cost'),names.map(function(name,i){return h('div',{key:name,className:'solar-rp-terrain-key'},h('svg',{viewBox:'-30 -30 60 60','aria-hidden':true},h('rect',{x:-28,y:-28,width:56,height:56,rx:6,className:'solar-rp-tile solar-rp-tile-'+i}),terrainMark(i,0,0,'icon')),h('span',null,name),h('strong',null,costs[i]+' energy'));})),
+                    h('p',{className:'solar-rp-note'},'The guide minimizes energy, which may differ from the shortest route. Entering a cell spends energy; undo returns that entry cost, up to the 30-energy starting budget.')
+                  )
+                ),
+                h('div',{className:'solar-rp-model'},h('h5',null,'A planning challenge'),h('p',null,'This is an invented, fixed terrain map with an abstract energy budget. Cells have no physical distance, and the costs are game rules, not measured rover fuel or battery use. The rover and terrain symbols are enlarged for visibility. Restart keeps the same terrain so you can compare routes.'))
+              ) : null)
+            );
+          }
+
+          function buildSolarCME() {
+            var h=React.createElement,AU=149597870.7,periodHours=365.256*24,startAU=.1,rad=Math.PI/180;
+            function restored(key,fallback,min,max,step){var v=d[key];return typeof v==='number'&&isFinite(v)?Number((Math.round(Math.max(min,Math.min(max,v))/step)*step).toFixed(6)):fallback;}
+            var speed=restored('cmeSpeedKmS',600,400,1000,50),elapsed=restored('cmeElapsedHours',36,0,120,.1),direction=restored('cmeDirectionDeg',0,-90,90,.1),halfWidth=restored('cmeHalfWidthDeg',30,10,60,1);
+            var distance=startAU+speed*3600*elapsed/AU,crossing=(1-startAU)*AU/(speed*3600),earthAngle=elapsed/periodHours*360,crossingAngle=crossing/periodHours*360;
+            var separation=Math.abs(((direction-crossingAngle+180)%360+360)%360-180),encounter=separation<=halfWidth+1e-9;
+            var theme={'--cp-bg':isDark?'#020617':'#ffffff','--cp-panel':isDark?'#0f172a':'#f8fafc','--cp-fg':isDark?'#e2e8f0':'#0f172a','--cp-muted':isDark?'#cbd5e1':'#475569','--cp-border':isDark?'#475569':'#cbd5e1','--cp-accent':isDark?'#fdba74':'#9a3412','--cp-stage':'#020617','--cp-guide':'#94a3b8','--cp-front':'#fdba74','--cp-earth':'#67e8f9','--cp-mark':'#f8fafc','--cp-key':isDark?'#fdba74':'#9a3412','--cp-key-earth':isDark?'#67e8f9':'#155e75'};
+            function point(r,a){return{x:310+72*r*Math.cos(a*rad),y:250-72*r*Math.sin(a*rad)};}
+            function arc(r){var a=point(r,direction-halfWidth),b=point(r,direction+halfWidth);return 'M'+a.x+' '+a.y+' A'+(72*r)+' '+(72*r)+' 0 0 0 '+b.x+' '+b.y;}
+            var innerA=point(startAU,direction-halfWidth),innerB=point(startAU,direction+halfWidth),nose=point(distance,direction),earth=point(1,earthAngle);
+            var coverage=arc(distance)+' L'+innerB.x+' '+innerB.y+' A7.2 7.2 0 0 1 '+innerA.x+' '+innerA.y+' Z';
+            var timeX=function(t){return 20+t/120*580;},distanceY=function(r){return 274-r/3*248;},angleX=function(a){return 20+(a+150)/300*580;};
+            function axis(ticks,name){return h('div',{className:'solar-cp-x-axis','data-cp-axis':name,'aria-hidden':true},ticks.map(function(t,i){return h('span',{key:t[0],style:{left:t[0]/6.2+'%',transform:i===0?'none':i===ticks.length-1?'translateX(-100%)':'translateX(-50%)'}},t[1]);}));}
+            function control(key,label,value,min,max,step,unit,presets){return h('div',{className:'solar-cp-control'},h('label',{htmlFor:'solar-cp-'+key},label),h('output',{htmlFor:'solar-cp-'+key},value.toFixed(step<1?1:0)+' '+unit),h('input',{id:'solar-cp-'+key,type:'range',min:min,max:max,step:step,value:value,'aria-valuetext':value+' '+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-cp-presets'},presets.map(function(p){return h('button',{key:p[0],type:'button','data-cp-preset':key,'data-value':p[0],'aria-pressed':value===p[0],onClick:function(){upd(key,p[0]);}},p[1]);})));}
+            function metric(key,label,value,unit,places){return h('div',null,h('dt',null,label),h('dd',{'data-cp-metric':key,'data-value':value},value.toFixed(places)+' '+unit));}
+            return h('section',{id:'solar-cme-lab',className:'solar-cme-lab',style:theme,'aria-labelledby':'solar-cp-title','data-cp-speed':speed,'data-cp-elapsed':elapsed,'data-cp-direction':direction,'data-cp-half-width':halfWidth,'data-cp-encounter':String(encounter)},h('div',{className:'solar-cp-header'},h('div',null,h('span',{className:'solar-cp-eyebrow'},'A front in motion · a moving Earth'),h('h4',{id:'solar-cp-title'},'CME Propagation Lab')),h('button',{type:'button','aria-label':'Toggle CME propagation lab','aria-expanded':!!d.showCME,'aria-controls':'solar-cp-content',onClick:function(){upd('showCME',!d.showCME);}},d.showCME?'Hide propagation lab':'Open propagation lab')),h('p',{className:'solar-cp-note'},'Follow an idealized coronal mass ejection front from 0.1 AU. Explore how speed, direction, and angular spread change a possible encounter with Earth.'),h('div',{id:'solar-cp-content',hidden:!d.showCME},d.showCME?h(React.Fragment,null,
+              h('div',{className:'solar-cp-controls'},control('cmeSpeedKmS','Constant radial speed',speed,400,1000,50,'km/s',[[400,'400'],[600,'600'],[800,'800'],[1000,'1,000']]),control('cmeElapsedHours','Elapsed model time',elapsed,0,120,.1,'hours',[[0,'Start'],[24,'24 h'],[72,'72 h'],[120,'120 h']]),control('cmeDirectionDeg','Front center direction',direction,-90,90,.1,'degrees',[[-60,'−60°'],[0,'0°'],[13,'+13°'],[60,'+60°']]),control('cmeHalfWidthDeg','Angular half-width',halfWidth,10,60,1,'degrees',[[10,'10°'],[20,'20°'],[40,'40°'],[60,'60°']])),
+              h('figure',{className:'solar-cp-card solar-cp-geometry'},h('figcaption',{id:'solar-cp-geometry-title'},'Above the orbital plane · fixed AU scale'),h('svg',{viewBox:'0 0 620 520',role:'img','aria-labelledby':'solar-cp-geometry-title','aria-describedby':'solar-cp-geometry-note','data-cp-scene':true},[1,2,3].map(function(r){return h('circle',{key:r,cx:310,cy:250,r:72*r,className:r===1?'solar-cp-orbit':'solar-cp-orbit-grid','data-cp-orbit':r});}),h('line',{x1:310,x2:526,y1:250,y2:250,className:'solar-cp-gridline'}),[direction-halfWidth,direction+halfWidth].map(function(a,i){var end=point(3,a);return h('line',{key:i,x1:310,y1:250,x2:end.x,y2:end.y,className:'solar-cp-edge','data-cp-edge':a});}),h('path',{d:coverage,className:'solar-cp-coverage','data-cp-coverage':true}),h('path',{d:arc(distance),className:'solar-cp-front','data-cp-front':true}),h('circle',{cx:nose.x,cy:nose.y,r:3,className:'solar-cp-front-dot','data-cp-nose':true}),h('circle',{cx:310,cy:250,r:4,fill:'#fde68a',className:'solar-cp-sun','data-cp-sun':true}),h('circle',{cx:earth.x,cy:earth.y,r:6,className:'solar-cp-earth','data-cp-earth':true}),h('line',{x1:310,x2:526,y1:490,y2:490,className:'solar-cp-axis'}),[0,1,2,3].map(function(r){return h('line',{key:r,x1:310+72*r,x2:310+72*r,y1:484,y2:496,className:'solar-cp-axis'});})),axis([[310,'0'],[382,'1'],[454,'2'],[526,'3']],'geometry'),h('p',{className:'solar-cp-axis-title'},'Distance from the Sun · astronomical units (AU)'),h('div',{className:'solar-cp-legend'},h('span',null,h('i',{className:'solar-cp-key-sun','aria-hidden':true}),'Sun'),h('span',null,h('i',{className:'solar-cp-key-earth','aria-hidden':true}),'Earth now'),h('span',null,h('i',{className:'solar-cp-key-front','aria-hidden':true}),'Modeled front')),h('p',{id:'solar-cp-geometry-note',className:'solar-cp-note'},'The arc is the front. Faint shading shows the angular region swept since 0.1 AU; it does not show plasma density or cloud thickness. Sun and Earth symbols are enlarged. The cyan circle is Earth’s 1 AU orbit; gray circles mark 2 and 3 AU. Zero direction points toward Earth at model start. Positive angles follow Earth counterclockwise.')),
+              h('div',{className:'solar-cp-summary','data-cp-status':true},h('h5',null,elapsed<crossing?'Front approaching 1 AU':'Front has crossed 1 AU'),h('dl',{className:'solar-cp-readouts'},metric('distance','Front distance from Sun',distance,'AU',3),metric('crossing','1 AU crossing time',crossing,'h',2),metric('separation','Angular separation at crossing',separation,'°',2)),h('p',{className:'solar-cp-result','data-cp-result':true},encounter?'Geometric encounter: Earth lies within the front’s angular span at the 1 AU crossing.':'Geometric miss: Earth lies outside the front’s angular span at the 1 AU crossing.'),h('p',{className:'solar-cp-note'},'This compares positions in the model. It does not predict auroras, storm strength, or effects on technology.')),
+              h('div',{className:'solar-cp-grid'},h('figure',{className:'solar-cp-card solar-cp-timeline'},h('figcaption',{id:'solar-cp-timeline-title'},'Travel at a fixed speed'),h('p',{className:'solar-cp-note'},'Fixed vertical scale · front distance, 0–3 AU'),h('div',{className:'solar-cp-chart-layout'},h('div',{className:'solar-cp-y-axis','aria-hidden':true},[3,1.5,0].map(function(r){return h('span',{key:r,style:{top:distanceY(r)/3+'%'}},String(r));})),h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-cp-timeline-title','aria-describedby':'solar-cp-timeline-note','data-cp-chart':true},[0,1.5,3].map(function(r){return h('line',{key:r,x1:20,x2:600,y1:distanceY(r),y2:distanceY(r),className:'solar-cp-gridline'});}),h('line',{x1:20,x2:600,y1:distanceY(1),y2:distanceY(1),className:'solar-cp-reference'}),h('line',{x1:timeX(elapsed),x2:timeX(elapsed),y1:18,y2:282,className:'solar-cp-cursor'}),h('line',{x1:20,x2:600,y1:distanceY(startAU),y2:distanceY(startAU+speed*3600*120/AU),className:'solar-cp-front','data-cp-trajectory':true}),h('circle',{cx:timeX(crossing),cy:distanceY(1),r:7,className:'solar-cp-crossing','data-cp-crossing-dot':true}),h('circle',{cx:timeX(elapsed),cy:distanceY(distance),r:4.5,className:'solar-cp-marker','data-cp-time-dot':true}))),h('div',{className:'solar-cp-chart-axis'},axis([[20,'0'],[310,'60'],[600,'120']],'time')),h('p',{className:'solar-cp-axis-title'},'Elapsed model time · hours'),h('p',{id:'solar-cp-timeline-note',className:'solar-cp-note'},'The white point follows the selected time. The cyan ring marks the exact 1 AU crossing, even when Earth is outside the sector. The clock begins at a chosen 0.1 AU boundary, not at the solar surface.')),
+                h('figure',{className:'solar-cp-card solar-cp-bearing'},h('figcaption',{id:'solar-cp-bearing-title'},'Direction at the 1 AU crossing'),h('p',{className:'solar-cp-note'},'Angular span: '+(2*halfWidth).toFixed(0)+'° total · '+halfWidth.toFixed(0)+'° either side of center'),h('svg',{viewBox:'0 0 620 220',role:'img','aria-labelledby':'solar-cp-bearing-title','aria-describedby':'solar-cp-bearing-note','data-cp-bearing':true},[-150,0,150].map(function(a){return h('line',{key:a,x1:angleX(a),x2:angleX(a),y1:30,y2:176,className:'solar-cp-gridline'});}),h('rect',{x:angleX(direction-halfWidth),y:60,width:angleX(direction+halfWidth)-angleX(direction-halfWidth),height:70,className:'solar-cp-span','data-cp-span':true}),h('line',{x1:angleX(direction),x2:angleX(direction),y1:45,y2:145,className:'solar-cp-front','data-cp-center-line':true}),h('line',{x1:angleX(crossingAngle),x2:angleX(crossingAngle),y1:36,y2:164,className:'solar-cp-reference'}),h('circle',{cx:angleX(crossingAngle),cy:95,r:6,className:'solar-cp-earth','data-cp-encounter-point':true}),h('line',{x1:20,x2:600,y1:176,y2:176,className:'solar-cp-axis'})),axis([[20,'−150°'],[310,'0°'],[600,'+150°']],'bearing'),h('p',{className:'solar-cp-axis-title'},'Direction relative to Earth at model start'),h('p',{className:'solar-cp-bearing-value','data-cp-earth-bearing':crossingAngle},'Earth at crossing: +'+crossingAngle.toFixed(2)+'°'),h('p',{id:'solar-cp-bearing-note',className:'solar-cp-note'},'The cyan point is Earth’s direction at the exact crossing time; the orange band is the front’s angular span. Changing elapsed time does not change this encounter check. A faster front reaches 1 AU sooner, leaving Earth less time to move.'))),
+              h('div',{className:'solar-cp-model'},h('h5',null,'What this model includes'),h('p',null,'A CME expels plasma and magnetic field from the solar corona. Coronal holes instead feed persistent fast solar-wind streams. This lab follows only a two-dimensional radial front: r = 0.1 + vt/AU, with t converted to seconds. Earth follows a circular 1 AU orbit with a 365.256-day period; 1 AU = 149,597,870.7 km.'),h('p',null,'Speed and angular width remain fixed. The starting boundary is chosen for the lesson; it does not mark the end of real CME acceleration. Acceleration, drag, deflection, latitude, shocks, cloud structure, and magnetic-field orientation are omitted. These factors matter for real arrival and geomagnetic effects.'),h('a',{href:'https://www.spaceweather.gov/phenomena/coronal-mass-ejections',target:'_blank',rel:'noopener noreferrer'},'CMEs · NOAA'),h('a',{href:'https://www.spaceweather.gov/phenomena/coronal-holes',target:'_blank',rel:'noopener noreferrer'},'Coronal holes · NOAA'),h('a',{href:'https://www.spaceweather.gov/products/wsa-enlil-solar-wind-prediction',target:'_blank',rel:'noopener noreferrer'},'Operational modeling · NOAA'))
+            ):null));
+          }
+
+
+          function buildSolarGravityWell() {
+            var h=React.createElement;
+            function restored(key,fallback,min,max){var v=d[key];return typeof v==='number'&&isFinite(v)?Number((Math.round(Math.max(min,Math.min(max,v))*10)/10).toFixed(1)):fallback;}
+            // These source-body controls are independent of gravMass, the drop lab's test-object mass in kg.
+            var mass=restored('gravWellMass',1,0,2),radius=restored('gravWellRadius',1,.5,2),probe=restored('gravWellDistance',2,1,6);
+            var earthGM=398600.435507,earthRadius=6371.0084,mu=mass*earthGM,R=radius*earthRadius,r=probe*R;
+            function model(q){var distance=q*R;return{potential:mass===0?0:-mu/distance,gravity:1000*mu/(distance*distance),escape:Math.sqrt(2*mu/distance)};}
+            var current=model(probe),bodyRadius=36*radius,probeX=90+bodyRadius*probe,surfaceX=90+bodyRadius;
+            var theme={'--gw-bg':isDark?'#020617':'#ffffff','--gw-panel':isDark?'#0f172a':'#f8fafc','--gw-fg':isDark?'#e2e8f0':'#0f172a','--gw-muted':isDark?'#cbd5e1':'#475569','--gw-border':isDark?'#475569':'#cbd5e1','--gw-accent':isDark?'#c4b5fd':'#6b21a8','--gw-stage':'#020617','--gw-guide':'#94a3b8','--gw-curve':'#67e8f9','--gw-gold':'#fde68a','--gw-mark':'#f8fafc','--gw-key':isDark?'#67e8f9':'#155e75','--gw-key-gold':isDark?'#fde68a':'#854d0e'};
+            var chartX=function(q){return 20+(q-1)/5*580;},potentialY=function(value){return 26-value/260*248;},gravityY=function(value){return 274-value/80*248;};
+            var samples=Array.from({length:201},function(_,i){return 1+i/40;});samples.push(probe);samples.sort(function(a,b){return a-b;});
+            function curve(key,y){return samples.map(function(q,i){return(i?'L':'M')+chartX(q)+' '+y(model(q)[key]);}).join(' ');}
+            function axis(ticks,name){return h('div',{className:'solar-gw-x-axis','data-gw-axis':name,'aria-hidden':true},ticks.map(function(t,i){return h('span',{key:t[0],style:{left:t[0]/6.2+'%',transform:i===0?'none':i===ticks.length-1?'translateX(-100%)':'translateX(-50%)'}},t[1]);}));}
+            function control(key,label,value,min,max,unit,presets){return h('div',{className:'solar-gw-control'},h('label',{htmlFor:'solar-gw-'+key},label),h('output',{htmlFor:'solar-gw-'+key},value.toFixed(1)+' '+unit),h('input',{id:'solar-gw-'+key,type:'range',min:min,max:max,step:.1,value:value,'aria-valuetext':value+' '+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-gw-presets'},presets.map(function(p){return h('button',{key:p[0],type:'button','data-gw-preset':key,'data-value':p[0],'aria-pressed':value===p[0],onClick:function(){upd(key,p[0]);}},p[1]);})));}
+            function metric(key,label,value,unit){return h('div',null,h('dt',null,label),h('dd',{'data-gw-metric':key,'data-value':value},value.toFixed(2)+' '+unit));}
+            function chart(key,title,unit,y,ticks,reference,note){var value=current[key],path=curve(key,y);return h('figure',{className:'solar-gw-card solar-gw-chart','data-gw-figure':key},h('figcaption',{id:'solar-gw-'+key+'-title'},title),h('p',{className:'solar-gw-note'},'Fixed vertical scale · '+unit),h('div',{className:'solar-gw-chart-layout'},h('div',{className:'solar-gw-y-axis','aria-hidden':true},ticks.map(function(t){return h('span',{key:t,style:{top:y(t)/3+'%'}},String(t).replace('-','−'));})),h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-gw-'+key+'-title','aria-describedby':'solar-gw-'+key+'-note','data-gw-chart':key},ticks.map(function(t){return h('line',{key:t,x1:20,x2:600,y1:y(t),y2:y(t),className:'solar-gw-gridline'});}),h('line',{x1:20,x2:600,y1:y(reference),y2:y(reference),className:'solar-gw-reference','data-gw-reference':key}),key==='potential'?h('path',{d:path+' L600 26 L20 26 Z',className:'solar-gw-well-fill'}):null,h('line',{x1:chartX(probe),x2:chartX(probe),y1:18,y2:282,className:'solar-gw-cursor'}),h('path',{d:path,className:'solar-gw-curve','data-gw-curve':key}),h('circle',{cx:chartX(probe),cy:y(value),r:5,className:'solar-gw-marker','data-gw-dot':key}))),h('div',{className:'solar-gw-chart-axis'},axis([[20,'1 R'],[252,'3 R'],[600,'6 R']],key)),h('p',{className:'solar-gw-axis-title'},'Center distance · selected body radii (R)'),h('p',{id:'solar-gw-'+key+'-note',className:'solar-gw-note'},note));}
+            return h('section',{id:'solar-gravity-well',className:'solar-gravity-well',style:theme,'aria-labelledby':'solar-gw-title','data-gw-mass':mass,'data-gw-radius':radius,'data-gw-probe':probe},h('div',{className:'solar-gw-header'},h('div',null,h('span',{className:'solar-gw-eyebrow'},'Distance changes the pull'),h('h4',{id:'solar-gw-title'},'Gravity & Escape Lab')),h('button',{type:'button','aria-label':'Toggle gravity and escape lab','aria-expanded':!!d.showGrav,'aria-controls':'solar-gw-content',onClick:function(){upd('showGrav',!d.showGrav);}},d.showGrav?'Hide gravity lab':'Open gravity lab')),h('p',{className:'solar-gw-note'},'Build a hypothetical spherical body, move a probe, and compare gravitational potential, inward acceleration, and ideal escape speed.'),h('div',{id:'solar-gw-content',hidden:!d.showGrav},d.showGrav?h(React.Fragment,null,
+              h('div',{className:'solar-gw-controls'},control('gravWellMass','Source mass',mass,0,2,'Earth masses',[[0,'Zero mass'],[.5,'0.5×'],[1,'1×'],[2,'2×']]),control('gravWellRadius','Source radius',radius,.5,2,'Earth radii',[[.5,'0.5×'],[1,'1×'],[1.5,'1.5×'],[2,'2×']]),control('gravWellDistance','Probe center distance',probe,1,6,'body radii',[[1,'Surface'],[2,'2 R'],[3,'3 R'],[6,'6 R']])),
+              h('figure',{className:'solar-gw-card solar-gw-geometry'},h('figcaption',{id:'solar-gw-geometry-title'},'Source and probe · one fixed distance scale'),h('svg',{viewBox:'0 0 620 320',role:'img','aria-labelledby':'solar-gw-geometry-title','aria-describedby':'solar-gw-geometry-note','data-gw-scene':true},h('defs',null,h('radialGradient',{id:'solar-gw-body',cx:'32%',cy:'28%',r:'75%'},h('stop',{offset:'0%',stopColor:'#c4b5fd'}),h('stop',{offset:'45%',stopColor:'#6366f1'}),h('stop',{offset:'100%',stopColor:'#172554'})),h('clipPath',{id:'solar-gw-body-clip'},h('circle',{cx:90,cy:150,r:bodyRadius}))),[0,4,8,12].map(function(q){return h('line',{key:q,x1:90+36*q,x2:90+36*q,y1:54,y2:280,className:'solar-gw-gridline'});}),h('line',{x1:90,x2:probeX,y1:150,y2:150,className:'solar-gw-distance'}),h('circle',{cx:90,cy:150,r:bodyRadius,fill:mass===0?'none':'url(#solar-gw-body)',className:'solar-gw-body','data-gw-body':true}),mass>0?h('g',{clipPath:'url(#solar-gw-body-clip)',className:'solar-gw-body-detail'},h('ellipse',{cx:90,cy:150,rx:bodyRadius*.4,ry:bodyRadius}),h('ellipse',{cx:90,cy:150,rx:bodyRadius,ry:bodyRadius*.35})):null,h('line',{x1:surfaceX,x2:surfaceX,y1:52,y2:280,className:'solar-gw-surface','data-gw-surface':true}),h('line',{x1:probeX,x2:probeX,y1:145,y2:280,className:'solar-gw-cursor','data-gw-position':true}),probe>1?h('g',{'data-gw-altitude':true},h('line',{x1:surfaceX,x2:probeX,y1:245,y2:245,className:'solar-gw-altitude'}),h('line',{x1:surfaceX,x2:surfaceX,y1:240,y2:250,className:'solar-gw-altitude'}),h('line',{x1:probeX,x2:probeX,y1:240,y2:250,className:'solar-gw-altitude'})):null,mass>0?h('g',{'data-gw-direction':true},h('line',{x1:probeX,x2:probeX-30,y1:106,y2:106,className:'solar-gw-force'}),h('path',{d:'M'+(probeX-23)+' 101 L'+(probeX-30)+' 106 L'+(probeX-23)+' 111',className:'solar-gw-force'})):null,h('circle',{cx:probeX,cy:150,r:10,className:'solar-gw-probe-halo'}),h('circle',{cx:probeX,cy:150,r:4.5,className:'solar-gw-probe','data-gw-probe-point':true}),h('circle',{cx:90,cy:150,r:2,className:'solar-gw-center'}),h('line',{x1:90,x2:522,y1:280,y2:280,className:'solar-gw-axis'}),[0,4,8,12].map(function(q){return h('line',{key:q,x1:90+36*q,x2:90+36*q,y1:274,y2:286,className:'solar-gw-axis'});})),axis([[90,'0'],[234,'4'],[378,'8'],[522,'12']],'geometry'),h('p',{className:'solar-gw-axis-title'},'Distance from center · Earth radii (6,371 km each)'),h('div',{className:'solar-gw-legend'},h('span',null,h('i',{className:'solar-gw-key-probe','aria-hidden':true}),'Probe'),h('span',null,h('i',{className:'solar-gw-key-surface','aria-hidden':true}),'Surface'),h('span',null,h('i',{className:'solar-gw-key-altitude','aria-hidden':true}),'Altitude')),h('dl',{className:'solar-gw-distances'},metric('radiusKm','Body radius R',R,'km'),metric('distanceKm','Center distance r',r,'km'),metric('altitudeKm','Altitude r − R',r-R,'km')),h('p',{id:'solar-gw-geometry-note',className:'solar-gw-note'},'Body size and probe position share a fixed scale. The gold arrow indicates inward acceleration; its length does not encode magnitude. The probe marker is enlarged for visibility. '+(mass===0?'At zero mass the body outline is a geometric reference and there is no inward acceleration.':'Changing radius keeps the probe at the selected number of body radii, so its distance in kilometers changes.'))),
+              h('div',{className:'solar-gw-summary','data-gw-status':true},h('h5',null,mass===0?'Zero-mass limit':probe===1?'Measurements at the surface':'Measurements at the probe'),h('dl',{className:'solar-gw-readouts'},metric('potential','Potential · zero at infinity',current.potential,'MJ/kg'),metric('gravity','Inward acceleration',current.gravity,'m/s²'),metric('escape','Ideal escape speed',current.escape,'km/s')),h('p',{className:'solar-gw-note'},'From rest here, '+(-current.potential).toFixed(2)+' MJ per kilogram is the ideal energy increase needed to reach infinity with zero final speed.')),
+              h('div',{className:'solar-gw-grid'},chart('potential','The potential well','−260 to 0 MJ/kg',potentialY,[0,-130,-260],-earthGM/earthRadius,'The shaded depth is energy per kilogram relative to infinity, not a physical funnel. '+(mass===0?'At zero mass, potential is zero at every distance.':'Potential approaches zero from below beyond this window.')+' The gold line marks the reference Earth surface potential.'),chart('gravity','How quickly the pull fades','0 to 80 m/s²',gravityY,[80,40,0],1000*earthGM/(earthRadius*earthRadius),'Acceleration falls with the square of center distance: at twice the distance it is one quarter as large. The gold line marks the reference Earth surface acceleration. Both plots keep fixed vertical scales.')),
+              h('div',{className:'solar-gw-model'},h('h5',null,'Read the model'),h('p',null,'Outside a spherical body, Φ = −GM/r, g = GM/r², and escape speed = √(2GM/r). The probe stays on or above the surface (r ≥ R). Potential is energy per unit test mass; the probe’s mass does not change these readouts.'),h('p',null,'Mass and radius are independent settings for a hypothetical body. This Newtonian model assumes an isolated, nonrotating sphere and omits atmosphere, propulsion, other bodies, and relativistic effects. It does not simulate a trajectory or a rocket launch.'),h('p',null,'Reference values: Earth GM = 398,600.435507 km³/s²; mean Earth radius = 6,371.0084 km. These give 9.82 m/s² at the reference surface. The gravity-drop investigation keeps its own test-object mass and settings.'),h('a',{href:'https://ssd.jpl.nasa.gov/astro_par.html',target:'_blank',rel:'noopener noreferrer'},'Earth GM · JPL'),h('a',{href:'https://ssd.jpl.nasa.gov/planets/phys_par.html',target:'_blank',rel:'noopener noreferrer'},'Earth radius · JPL'),h('a',{href:'https://farside.ph.utexas.edu/teaching/355/Surveyhtml/node49.html',target:'_blank',rel:'noopener noreferrer'},'Potential and escape · UT Austin'))
+            ):null));
+          }
+
+
+          function buildSolarMagnetosphere() {
+            var h=React.createElement;
+            function restored(key){var v=d[key];return typeof v==='number'&&isFinite(v)?Math.round(Math.max(0,Math.min(100,v))):50;}
+            var strength=restored('magStr'),wind=restored('magSolar'),moment=strength/50,pressure=wind/50;
+            var distance=moment>0&&pressure>0?10*Math.pow(moment*moment/pressure,1/6):null;
+            var status=moment===0?(pressure===0?'No intrinsic dipole and no wind pressure':'No intrinsic dipole balance'):pressure===0?'No finite boundary in this model':distance<10?'Compressed relative to reference':distance>10?'Expanded relative to reference':'Reference pressure balance';
+            var theme={'--mg-bg':isDark?'#020617':'#ffffff','--mg-panel':isDark?'#0f172a':'#f8fafc','--mg-fg':isDark?'#e2e8f0':'#0f172a','--mg-muted':isDark?'#cbd5e1':'#475569','--mg-border':isDark?'#475569':'#cbd5e1','--mg-accent':isDark?'#67e8f9':'#155e75','--mg-stage':'#020617','--mg-guide':'#94a3b8','--mg-field':'#67e8f9','--mg-key-field':isDark?'#67e8f9':'#155e75','--mg-key-wind':isDark?'#fde68a':'#854d0e','--mg-wind':'#fde68a','--mg-probe':'#f0abfc','--mg-mark':'#f8fafc'};
+            var nose=distance===null?null:190+14*distance,halfHeight=distance===null?0:Math.max(24,14*distance*.42);
+            // Only the nose position follows pressure balance. The open tail silhouette is schematic.
+            var boundary=distance===null?'':'M20 '+(200-halfHeight*1.25)+' C'+(190-14*distance*.6)+' '+(200-halfHeight*1.25)+' '+nose+' '+(200-halfHeight)+' '+nose+' 200 C'+nose+' '+(200+halfHeight)+' '+(190-14*distance*.6)+' '+(200+halfHeight*1.25)+' 20 '+(200+halfHeight*1.25);
+            var chartX=function(p){return 20+p/2*580;},chartY=function(r){return 274-r/26*248;},cutPressure=moment>0?moment*moment*Math.pow(10/26,6):null,curve='';
+            if(moment>0){var samples=Array.from({length:161},function(_,i){return cutPressure*Math.pow(2/cutPressure,i/160);});samples[0]=cutPressure;samples[160]=2;if(pressure>0)samples.push(pressure);samples.sort(function(a,b){return a-b;});curve=samples.map(function(p,j){return(j?'L':'M')+chartX(p)+' '+chartY(Math.min(26,10*Math.pow(moment*moment/p,1/6)));}).join(' ');}
+            function dipole(L,sign){var start=Math.asin(1/Math.sqrt(L));return Array.from({length:81},function(_,i){var theta=start+(Math.PI-2*start)*i/80,r=L*Math.sin(theta)*Math.sin(theta);return(i?'L':'M')+(310+sign*42*r*Math.sin(theta))+' '+(200-42*r*Math.cos(theta));}).join(' ');}
+            function control(key,label,value,presets){return h('div',{className:'solar-mg-control'},h('label',{htmlFor:'solar-mg-'+key},label),h('output',{htmlFor:'solar-mg-'+key},(value/50).toFixed(2)+'× reference'),h('input',{id:'solar-mg-'+key,type:'range',min:0,max:100,step:1,value:value,'aria-valuetext':(value/50).toFixed(2)+' times reference',onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-mg-presets'},presets.map(function(p){return h('button',{key:p[0],type:'button','data-mg-preset':key,'data-value':p[0],'aria-pressed':value===p[0],onClick:function(){upd(key,p[0]);}},p[1]);})));}
+            function metric(label,text,key,value){return h('div',{key:key},h('dt',null,label),h('dd',{'data-mg-metric':key,'data-value':value===null?'none':value},text));}
+            function axis(values,kind){return h('div',{className:'solar-mg-x-axis','data-mg-axis':kind,'aria-hidden':true},values.map(function(p,i){return h('span',{key:p[1],style:{left:p[0]/6.2+'%',transform:'translateX('+(i===0?'0':i===values.length-1?'-100%':'-50%')+')'}},p[1]);}));}
+            function planet(cx,cy,r,id){return h('g',{'data-mg-planet':id},h('circle',{cx:cx,cy:cy,r:r,fill:'url(#solar-mg-planet)',className:'solar-mg-world'}),h('path',{d:'M'+(cx-r*.5)+' '+(cy-r*.55)+' Q'+cx+' '+(cy-r*.9)+' '+(cx+r*.25)+' '+(cy-r*.3)+' L'+(cx+r*.05)+' '+(cy+r*.15)+' '+(cx-r*.4)+' '+(cy+r*.3)+' Z',className:'solar-mg-land'}));}
+            return h('section',{id:'solar-magnetosphere',className:'solar-magnetosphere',style:theme,'aria-labelledby':'solar-mg-title','data-mg-strength':strength,'data-mg-wind':wind,'data-mg-moment':moment,'data-mg-pressure':pressure},
+              h('div',{className:'solar-mg-header'},h('div',null,h('p',{className:'solar-mg-eyebrow'},'Field strength meets wind pressure'),h('h4',{id:'solar-mg-title'},'Magnetosphere Pressure Lab')),h('button',{type:'button','aria-label':'Toggle magnetosphere pressure lab','aria-controls':'solar-mg-content','aria-expanded':!!d.showMag,onClick:function(){upd('showMag',!d.showMag);}},d.showMag?'Hide pressure lab':'Open pressure lab')),
+              h('p',{className:'solar-mg-note'},'Explore how an intrinsic magnetic dipole and solar-wind dynamic pressure set a simplified Sun-facing boundary. Compare every setting with the same reference.'),
+              h('div',{id:'solar-mg-content',hidden:!d.showMag},d.showMag?h(React.Fragment,null,
+                h('div',{className:'solar-mg-grid'},control('magStr','Relative dipole moment',strength,[[0,'No dipole'],[25,'0.5×'],[50,'1×'],[100,'2×']]),control('magSolar','Relative wind pressure',wind,[[0,'No pressure'],[25,'0.5×'],[50,'1×'],[100,'2×']])),
+                h('figure',{className:'solar-mg-card solar-mg-boundary'},h('figcaption',{id:'solar-mg-boundary-title'},'Sun-facing boundary · wind arrives from the right'),h('div',{className:'solar-mg-stage'},h('span',{className:'solar-mg-planet-label','aria-hidden':true},'Planet'),h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-mg-boundary-title','aria-describedby':'solar-mg-boundary-note','data-mg-scene':true},h('defs',null,h('radialGradient',{id:'solar-mg-planet',cx:'70%',cy:'30%',r:'80%'},h('stop',{offset:'0%',stopColor:'#7dd3fc'}),h('stop',{offset:'55%',stopColor:'#2563eb'}),h('stop',{offset:'100%',stopColor:'#172554'}))),h('line',{x1:330,x2:330,y1:30,y2:340,className:'solar-mg-reference','data-mg-reference':true}),distance!==null?h('g',null,h('path',{d:boundary+' Z',className:'solar-mg-cavity'}),h('path',{d:boundary,className:'solar-mg-boundary-line','data-mg-boundary':true}),h('line',{x1:20,x2:20,y1:200-halfHeight*1.25,y2:200+halfHeight*1.25,className:'solar-mg-tail-cut','data-mg-tail-cut':true}),h('line',{x1:190,x2:nose,y1:200,y2:200,className:'solar-mg-distance'}),h('line',{x1:nose,x2:nose,y1:200,y2:365,className:'solar-mg-distance'}),h('circle',{cx:nose,cy:200,r:4,className:'solar-mg-marker','data-mg-nose':true})):null,
+                  pressure>0?[80,140,200,260,320].map(function(y){var end=(nose===null?220:nose)+18;return h('g',{key:y,'data-mg-wind-arrow':true},h('line',{x1:600,x2:end,y1:y,y2:y,className:'solar-mg-wind'}),h('path',{d:'M'+(end+7)+' '+(y-4)+' L'+end+' '+y+' L'+(end+7)+' '+(y+4),className:'solar-mg-wind'}));}):null,planet(190,200,14,'overview'),h('line',{x1:190,x2:610,y1:365,y2:365,className:'solar-mg-axis'}),[0,10,20,30].map(function(r){return h('line',{key:r,x1:190+14*r,x2:190+14*r,y1:359,y2:373,className:'solar-mg-axis'});}))),axis([[190,'0'],[330,'10'],[470,'20'],[610,'30']],'distance'),h('p',{className:'solar-mg-axis-title'},'Sunward distance from planet center · planetary radii (R)'),h('div',{className:'solar-mg-legend'},h('span',null,h('i',{className:'solar-mg-key-field','aria-hidden':true}),'Selected boundary'),h('span',null,h('i',{className:'solar-mg-key-wind','aria-hidden':true}),'Reference nose at 10 R')),h('p',{id:'solar-mg-boundary-note',className:'solar-mg-note'},'Only the Sun-facing nose follows the pressure-balance formula. The shaded boundary and truncated tail are illustrative, not calculated field lines. Wind arrows show direction, not particle trajectories. The planet and nose distance share one fixed scale.')),
+                h('div',{className:'solar-mg-card solar-mg-summary'},h('h5',{'data-mg-status':true},status),h('dl',{className:'solar-mg-readouts'},metric('Sun-facing boundary · from center',distance===null?'No boundary solution':distance.toFixed(2)+' R','distance',distance),metric('Distance relative to 10 R reference',distance===null?'Not applicable':(distance*10).toFixed(1)+'%','ratio',distance===null?null:distance/10),metric('Intrinsic equatorial field at 2 R',(moment/8).toFixed(3)+' B₀','field',moment/8)),h('p',{className:'solar-mg-note'},moment===0?'Without an intrinsic dipole, this model has no dipole-supported boundary. Induced or crustal magnetic fields and atmospheric interactions are outside its scope.':pressure===0?'With no external wind pressure, this pressure-balance relation has no finite boundary distance. The intrinsic dipole field remains.':'Increasing wind pressure compresses the boundary; increasing dipole moment expands it. The reference is a chosen 10 R distance at 1× moment and 1× pressure.')),
+                h('div',{className:'solar-mg-grid solar-mg-detail'},h('figure',{className:'solar-mg-card solar-mg-dipole'},h('figcaption',{id:'solar-mg-dipole-title'},'Intrinsic dipole · ideal vacuum field'),h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-mg-dipole-title','aria-describedby':'solar-mg-dipole-note','data-mg-dipole':true},h('line',{x1:310,x2:310,y1:55,y2:345,className:'solar-mg-axis-guide'}),h('circle',{cx:310,cy:200,r:84,className:'solar-mg-probe-ring'}),moment>0?[1.4,2,2.8,3.8].flatMap(function(L){return [1,-1].map(function(sign){return h('path',{key:L+':'+sign,d:dipole(L,sign),className:'solar-mg-field-line','data-mg-line':L,'data-sign':sign});});}):null,planet(310,200,42,'dipole'),moment>0?h('g',{'data-mg-vector':true},h('line',{x1:394,x2:394,y1:200,y2:200+48*moment,className:'solar-mg-vector'}),h('path',{d:'M389 '+(195+48*moment)+' L394 '+(200+48*moment)+' L399 '+(195+48*moment),className:'solar-mg-vector'})):null,h('circle',{cx:394,cy:200,r:4,className:'solar-mg-marker','data-mg-probe':true})),h('p',{id:'solar-mg-dipole-note',className:'solar-mg-note'},'The white probe is on the magnetic equator at 2 R, marked by the dashed circle. The pink field vector has a fixed display scale and points opposite the upward dipole axis. B₀ is the equatorial surface field of the 1× reference dipole. Nonzero moment changes field magnitude, not these vacuum field-line shapes. This local view uses a different distance scale from the boundary view.')),
+                  h('figure',{className:'solar-mg-card solar-mg-chart'},h('figcaption',{id:'solar-mg-chart-title'},'Boundary response to wind pressure'),h('p',{className:'solar-mg-note'},'Hold the selected dipole moment fixed. Vertical axis: boundary distance, 0–26 R.'),h('div',{className:'solar-mg-chart-layout'},h('div',{className:'solar-mg-y-axis','aria-hidden':true},[[26,'26 R'],[13,'13 R'],[0,'0']].map(function(p){return h('span',{key:p[0],style:{top:chartY(p[0])/3+'%'}},p[1]);})),h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-mg-chart-title','aria-describedby':'solar-mg-chart-note','data-mg-chart':true},[0,13,26].map(function(r){return h('line',{key:r,x1:20,x2:600,y1:chartY(r),y2:chartY(r),className:'solar-mg-gridline'});}),h('line',{x1:20,x2:600,y1:chartY(10),y2:chartY(10),className:'solar-mg-reference'}),moment>0?h('g',null,h('path',{d:curve,className:'solar-mg-curve','data-mg-curve':true}),h('path',{d:'M'+(chartX(cutPressure)-4)+' 26 L'+chartX(cutPressure)+' 18 L'+(chartX(cutPressure)+4)+' 26',className:'solar-mg-curve','data-mg-continuation':true,'data-pressure':cutPressure})):null,h('line',{x1:chartX(pressure),x2:chartX(pressure),y1:18,y2:282,className:'solar-mg-cursor'}),distance!==null?h('circle',{cx:chartX(pressure),cy:chartY(distance),r:5,className:'solar-mg-marker','data-mg-chart-dot':true}):null)),h('div',{className:'solar-mg-chart-axis'},axis([[20,'0'],[310,'1×'],[600,'2×']],'pressure')),h('p',{className:'solar-mg-axis-title'},'Wind dynamic pressure · relative to reference'),h('p',{id:'solar-mg-chart-note',className:'solar-mg-note'},'The arrow continues above 26 R as positive pressure approaches zero. At zero pressure there is no finite solution. With zero dipole moment the curve is omitted. The gold line marks the fixed 10 R reference.'))),
+                h('div',{className:'solar-mg-model'},h('h5',null,'What sets the balance'),h('p',null,'For a dipole, field magnitude decreases as M / r³, so magnetic pressure scales as M² / r⁶. Equating it to wind dynamic pressure gives R₀ = 10 × (M² / P)¹⁄⁶ in planetary radii, with M and P measured relative to this model’s reference. The factor 10 is a chosen normalization, not a universal magnetosphere size.'),h('p',null,'The local vacuum field uses r / R = L sin² θ, where θ is measured from the dipole axis. At the equatorial probe, B / B₀ = M / 2³. The field-line view does not include solar-wind distortion or simulate the field inside the boundary silhouette.'),h('p',null,'This steady illustration omits plasma pressure, reconnection, wind-field direction, induced and crustal fields, and time-dependent response. It does not predict atmospheric loss or habitability. A planet without an intrinsic dipole can still interact magnetically with the wind; Venus has an induced magnetic field.'),h('a',{href:'https://ntrs.nasa.gov/citations/19720024217',target:'_blank',rel:'noopener noreferrer'},'Pressure-balance scaling · NASA archive'),h('a',{href:'https://science.nasa.gov/venus/venus-facts/',target:'_blank',rel:'noopener noreferrer'},'Induced magnetic fields · NASA'))
+              ):null));
+          }
+
+
+          function buildSolarCycle() {
+            var h=React.createElement,rad=Math.PI/180;
+            function restored(key,fallback,max,step){var v=d[key];return typeof v==='number'&&isFinite(v)?Number((Math.round(Math.max(0,Math.min(max,v))/step)*step).toFixed(6)):fallback;}
+            var year=restored('sunCycleYear',5.5,11,.1),rotation=restored('sunCycleLongitude',0,360,5);
+            function model(t){var p=t/11,wave=t===0||t===11?0:Math.sin(Math.PI*p);return{activity:wave*wave*100,latitude:30-25*p,width:8*wave};}
+            var current=model(year),status=year===0?'Starting minimum':year===11?'Ending minimum':year===5.5?'Peak of this model':year<5.5?'Rising activity':'Declining activity';
+            var theme={'--cy-bg':isDark?'#020617':'#ffffff','--cy-panel':isDark?'#0f172a':'#f8fafc','--cy-fg':isDark?'#e2e8f0':'#0f172a','--cy-muted':isDark?'#cbd5e1':'#475569','--cy-border':isDark?'#475569':'#cbd5e1','--cy-accent':isDark?'#fde68a':'#92400e','--cy-stage':'#020617','--cy-guide':'#94a3b8','--cy-north':'#fcd34d','--cy-south':'#67e8f9','--cy-mark':'#f8fafc'};
+            var cx=310,cy=200,R=145;
+            function project(lat,lon){var a=lat*rad,b=lon*rad;return{x:cx+R*Math.cos(a)*Math.sin(b),y:cy-R*Math.sin(a),z:Math.cos(a)*Math.cos(b)};}
+            function belt(sign){var low=sign*current.latitude-current.width,high=sign*current.latitude+current.width,points=[];for(var i=0;i<=24;i++)points.push(project(low+(high-low)*i/24,90));for(var j=24;j>=0;j--)points.push(project(low+(high-low)*j/24,-90));return points.map(function(p,k){return(k?'L':'M')+p.x+' '+p.y;}).join(' ')+' Z';}
+            // These are representative surface patches, not persistent spots or a counted observation.
+            var patches=[];if(current.activity>0)[1,-1].forEach(function(sign){[-150,-92,-35,20,82,145].forEach(function(lon,i){var lat=sign*(current.latitude+[-.7,-.3,.1,.5,.8,0][i]*current.width),longitude=lon+(rotation%360),p=project(lat,longitude);if(p.z>1e-10)patches.push({id:sign+':'+i,lat:lat,lon:longitude,x:p.x,y:p.y,z:p.z,angle:Math.atan2(p.y-cy,p.x-cx)/rad,size:4+(i%3)});});});
+            var x=function(t){return 20+t/11*580;},activityY=function(a){return 274-a/100*248;},latitudeY=function(a){return 150-a/45*124;},times=Array.from({length:111},function(_,i){return i/10;});
+            var activityPath=times.map(function(t,i){return(i?'L':'M')+x(t)+' '+activityY(model(t).activity);}).join(' ');
+            function wing(sign){return times.map(function(t,i){var p=model(t);return(i?'L':'M')+x(t)+' '+latitudeY(sign*p.latitude+p.width);}).join(' ')+times.slice().reverse().map(function(t){var p=model(t);return ' L'+x(t)+' '+latitudeY(sign*p.latitude-p.width);}).join('')+' Z';}
+            function centerPath(sign){return times.map(function(t,i){return(i?'L':'M')+x(t)+' '+latitudeY(sign*model(t).latitude);}).join(' ');}
+            function control(key,label,max,step,values,unit){var value=key==='sunCycleYear'?year:rotation;return h('div',{className:'solar-cy-control'},h('label',{htmlFor:'solar-cy-'+key},label),h('output',{htmlFor:'solar-cy-'+key},value.toFixed(key==='sunCycleYear'?1:0)+unit),h('input',{id:'solar-cy-'+key,type:'range',min:0,max:max,step:step,value:value,'aria-valuetext':value+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-cy-presets'},values.map(function(p){return h('button',{key:p[0],type:'button','data-cy-preset':key,'data-value':p[0],'aria-pressed':value===p[0],onClick:function(){upd(key,p[0]);}},p[1]);})));}
+            function metric(label,text,key,value){return h('div',{key:key},h('dt',null,label),h('dd',{'data-cy-metric':key,'data-value':value},text));}
+            function timeAxis(){return h('div',{className:'solar-cy-chart-axis'},h('div',{className:'solar-cy-x-axis','aria-hidden':true},[[0,'0'],[5.5,'−50%'],[11,'−100%']].map(function(p){return h('span',{key:p[0],style:{left:x(p[0])/6.2+'%',transform:'translateX('+p[1].replace('−','-')+')'}},String(p[0]));})));}
+            function plot(kind,title,note){var activity=kind==='activity',ys=activity?[[100,'100'],[50,'50'],[0,'0']]:[[45,'45° N'],[0,'0°'],[-45,'45° S']];return h('figure',{className:'solar-cy-card solar-cy-'+kind},h('figcaption',{id:'solar-cy-'+kind+'-title'},title),h('p',{className:'solar-cy-note'},activity?'Vertical axis: illustrative activity, 0–100 model scale.':'Vertical axis: solar latitude. North is above the equator.'),h('div',{className:'solar-cy-chart-layout'},h('div',{className:'solar-cy-y-axis','aria-hidden':true},ys.map(function(v){return h('span',{key:v[0],style:{top:(activity?activityY(v[0]):latitudeY(v[0]))/3+'%'}},v[1]);})),h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-cy-'+kind+'-title','aria-describedby':'solar-cy-'+kind+'-note','data-cy-chart':kind},ys.map(function(v){return h('line',{key:v[0],x1:20,x2:600,y1:activity?activityY(v[0]):latitudeY(v[0]),y2:activity?activityY(v[0]):latitudeY(v[0]),className:'solar-cy-gridline'});}),activity?h('g',null,h('path',{d:activityPath+' L600 274 L20 274 Z',className:'solar-cy-activity-area'}),h('path',{d:activityPath,className:'solar-cy-activity-curve','data-cy-curve':true})):h('g',null,[1,-1].map(function(sign){return h('g',{key:sign,className:sign>0?'solar-cy-north':'solar-cy-south'},h('path',{d:wing(sign),className:'solar-cy-wing','data-cy-wing':sign}),h('path',{d:centerPath(sign),className:'solar-cy-center','data-cy-center':sign}));})),h('line',{x1:x(year),x2:x(year),y1:18,y2:282,className:'solar-cy-cursor','data-cy-cursor':kind}),activity?h('circle',{cx:x(year),cy:activityY(current.activity),r:5,className:'solar-cy-marker','data-cy-dot':'activity'}):[1,-1].map(function(sign){return h('circle',{key:sign,cx:x(year),cy:latitudeY(sign*current.latitude),r:5,className:'solar-cy-marker','data-cy-dot':sign});}))),timeAxis(),h('p',{className:'solar-cy-axis-title'},'Time within one model cycle · years'),h('p',{id:'solar-cy-'+kind+'-note',className:'solar-cy-note'},note));}
+            return h('section',{id:'solar-cycle-lab',className:'solar-cycle-lab',style:theme,'aria-labelledby':'solar-cy-title','data-cy-year':year,'data-cy-rotation':rotation,'data-cy-activity':current.activity,'data-cy-latitude':current.latitude,'data-cy-width':current.width},
+              h('div',{className:'solar-cy-header'},h('div',null,h('p',{className:'solar-cy-eyebrow'},'An idealized cycle · a changing pattern'),h('h4',{id:'solar-cy-title'},'Solar Cycle Explorer')),h('button',{type:'button','aria-label':'Toggle solar cycle explorer','aria-controls':'solar-cy-content','aria-expanded':!!d.showSunCycle,onClick:function(){upd('showSunCycle',!d.showSunCycle);}},d.showSunCycle?'Hide cycle explorer':'Open cycle explorer')),
+              h('p',{className:'solar-cy-note'},'Scrub through one illustrative 11-year cycle. Follow the activity curve and the sunspot emergence bands as they approach the equator.'),
+              h('div',{id:'solar-cy-content',hidden:!d.showSunCycle},d.showSunCycle?h(React.Fragment,null,
+                h('div',{className:'solar-cy-grid solar-cy-controls'},control('sunCycleYear','Time within model cycle',11,.1,[[0,'Start'],[2.7,'Rising'],[5.5,'Peak'],[8.3,'Declining'],[11,'End']],' years'),control('sunCycleLongitude','Rotate the surface illustration',360,5,[[0,'0°'],[90,'90°'],[180,'180°'],[270,'270°']],'°')),
+                h('div',{className:'solar-cy-grid solar-cy-overview'},h('figure',{className:'solar-cy-card solar-cy-sun'},h('figcaption',{id:'solar-cy-sun-title'},'Sun disk · equator-on, north up'),h('div',{className:'solar-cy-sun-stage'},h('span',{className:'solar-cy-pole solar-cy-pole-n','aria-hidden':true},'N'),h('span',{className:'solar-cy-pole solar-cy-pole-s','aria-hidden':true},'S'),h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-cy-sun-title','aria-describedby':'solar-cy-sun-note','data-cy-sun':true},h('defs',null,h('radialGradient',{id:'solar-cy-surface',cx:'40%',cy:'36%',r:'68%'},h('stop',{offset:'0%',stopColor:'#fff3b0'}),h('stop',{offset:'65%',stopColor:'#fbbf24'}),h('stop',{offset:'100%',stopColor:'#b45309'})),h('radialGradient',{id:'solar-cy-glow'},h('stop',{offset:'65%',stopColor:'#f59e0b',stopOpacity:.16}),h('stop',{offset:'100%',stopColor:'#f59e0b',stopOpacity:0})),h('clipPath',{id:'solar-cy-limb',clipPathUnits:'userSpaceOnUse'},h('circle',{cx:cx,cy:cy,r:R}))),h('circle',{cx:cx,cy:cy,r:180,fill:'url(#solar-cy-glow)'}),h('circle',{cx:cx,cy:cy,r:R,fill:'url(#solar-cy-surface)',className:'solar-cy-disk','data-cy-disk':true}),h('g',{clipPath:'url(#solar-cy-limb)','data-cy-surface':true},[-30,0,30].map(function(lat){var p=project(lat,90);return h('line',{key:lat,x1:cx-(p.x-cx),x2:p.x,y1:p.y,y2:p.y,className:lat===0?'solar-cy-equator':'solar-cy-latitude','data-cy-guide':lat});}),[-60,0,60].map(function(lon){return h('path',{key:lon,d:Array.from({length:61},function(_,i){var p=project(-90+i*3,lon);return(i?'L':'M')+p.x+' '+p.y;}).join(' '),className:'solar-cy-latitude'});}),current.activity>0?[1,-1].map(function(sign){return h('path',{key:sign,d:belt(sign),className:'solar-cy-belt '+(sign>0?'solar-cy-north':'solar-cy-south'),opacity:.22*current.activity/100,'data-cy-belt':sign});}):null,patches.map(function(p){return h('g',{key:p.id,opacity:current.activity/100,transform:'translate('+p.x+' '+p.y+') rotate('+p.angle+')','data-cy-patch':p.id,'data-lat':p.lat,'data-lon':p.lon,'data-depth':p.z,'data-x':p.x,'data-y':p.y},h('ellipse',{rx:p.size*p.z,ry:p.size,className:'solar-cy-penumbra'}),h('ellipse',{rx:p.size*p.z*.5,ry:p.size*.5,className:'solar-cy-umbra'}));})))),h('div',{className:'solar-cy-legend'},h('span',null,h('i',{className:'solar-cy-key-n','aria-hidden':true}),'North emergence band'),h('span',null,h('i',{className:'solar-cy-key-s','aria-hidden':true}),'South emergence band')),h('p',{id:'solar-cy-sun-note',className:'solar-cy-note'},'Dark patches are enlarged examples of sunspots, with lighter surrounding penumbrae. Their visibility is illustrative. Scrubbing years changes representative emergence locations; it does not track individual spots living for years.')),
+                  h('div',{className:'solar-cy-card solar-cy-summary'},h('p',{className:'solar-cy-eyebrow'},'Selected moment'),h('h5',{'data-cy-status':true},status),h('dl',{className:'solar-cy-readouts'},metric('Time in this model',year.toFixed(1)+' / 11 years','year',year),metric('Illustrative activity · model scale',current.activity.toFixed(1)+' / 100','activity',current.activity),metric('Schematic emergence latitude',current.latitude.toFixed(1)+'° N and S','latitude',current.latitude)),h('p',{className:'solar-cy-note'},current.activity===0?'This teaching model reaches zero activity at each endpoint. Real solar minima can still have sunspots and eruptions.':'The two hemispheres share the same timing in this teaching model. Real northern and southern activity can differ.'),h('p',{className:'solar-cy-note'},'Rotating the disk reveals different longitudes. It does not advance the cycle or change either chart.'))),
+                h('div',{className:'solar-cy-grid solar-cy-plots'},plot('activity','Activity rises and falls','The symmetric curve is 100 × sin²(π × year / 11). It is a relative model scale, not a sunspot count, measured brightness or eruption probability.'),plot('migration','Latitude migration · butterfly pattern','The ribbons illustrate emergence zones moving toward the equator. Dashed paths are their model centers; white dots mark the selected time, including at the minimum endpoints. These bands are not observed data.')),
+                h('div',{className:'solar-cy-model'},h('h5',null,'A pattern to explore, not a forecast'),h('p',null,'Real solar activity varies on roughly an 11-year cycle. This isolated model uses a fixed duration, symmetric activity curve and belt centers moving linearly from 30° to 5° in each hemisphere. Belt widths and patch sizes are illustrative. Real cycles vary in length, strength and shape; neighboring cycles overlap.'),h('p',null,'The Sun’s large-scale magnetic polarity reverses around solar maximum. Returning to the same polarity takes about two activity cycles, or 22 years. This view does not simulate magnetic polarity.'),h('p',null,'This is not live solar data or a space-weather forecast. Cycle phase alone does not predict individual eruptions or their effects at Earth.'),h('a',{href:'https://solarscience.msfc.nasa.gov/SunspotCycle.shtml',target:'_blank',rel:'noopener noreferrer'},'Sunspot cycles and butterfly diagrams · NASA'),h('a',{href:'https://www.spaceweather.gov/products/solar-cycle-progression',target:'_blank',rel:'noopener noreferrer'},'Observed solar activity · NOAA'))
+              ):null));
+          }
+
+
+          function buildSolarRings() {
+            var h=React.createElement;
+            function restored(key,fallback,min,max){var v=d[key];return typeof v==='number'&&isFinite(v)?Math.round(Math.max(min,Math.min(max,v))):fallback;}
+            var opening=restored('ringOpening',25,0,90),ice=restored('ringIce',95,0,100),opacity=restored('ringDensity',60,0,100),flattening=Math.sin(opening*Math.PI/180);
+            // One consistent NASA reference table; radii are measured from Saturn's center.
+            var planetKm=60268,scale=70/planetKm,regions=[{id:'C',name:'C ring',inner:74658,outer:91975,tone:.62},{id:'B',name:'B ring',inner:91975,outer:117507,tone:1},{id:'division',name:'Cassini Division',inner:117507,outer:122340,tone:0},{id:'A',name:'A ring',inner:122340,outer:136780,tone:.82}];
+            var selected=regions.find(function(region){return region.id===d.ringBand;})||regions[1],outerKm=136780,outer=outerKm*scale;
+            var theme={'--rg-bg':isDark?'#020617':'#ffffff','--rg-panel':isDark?'#0f172a':'#f8fafc','--rg-fg':isDark?'#e2e8f0':'#0f172a','--rg-muted':isDark?'#cbd5e1':'#475569','--rg-border':isDark?'#475569':'#cbd5e1','--rg-accent':isDark?'#7dd3fc':'#075985','--rg-stage':'#020617','--rg-guide':'#cbd5e1','--rg-mark':'#67e8f9','--rg-edge':'#fde68a'};
+            function color(region){var warm=[182,141,98],cold=[231,237,240];return 'rgb('+warm.map(function(v,i){return Math.round((v+(cold[i]-v)*ice/100)*region.tone);}).join(',')+')';}
+            function halfPath(inner,outer,s,front,outline){var ri=inner*scale,ro=outer*scale,sign=front?1:-1;return 'M'+(310+sign*ro)+' 200 A'+ro+' '+(ro*s)+' 0 0 1 '+(310-sign*ro)+' 200 '+(outline?'M':'L')+(310-sign*ri)+' 200 A'+ri+' '+(ri*s)+' 0 0 0 '+(310+sign*ri)+' 200'+(outline?'':' Z');}
+            // Paint each full annulus once behind Saturn; restore only the near-side portion inside its disk.
+            // This avoids alpha seams and doubled opacity where separately painted halves would meet.
+            function ringPath(inner,outer,s,front,outline){return halfPath(inner,outer,s,front,outline)+(front?'':' '+halfPath(inner,outer,s,true,outline));}
+            function rings(s,front,view){return h('g',{'data-rg-layer':view+'-'+(front?'front':'back'),clipPath:front?'url(#solar-rg-front-clip-'+view+')':undefined},regions.filter(function(region){return region.id!=='division';}).map(function(region){return h('path',{key:region.id,d:ringPath(region.inner,region.outer,s,front),fill:color(region),opacity:opacity/100,'data-rg-band':region.id,'data-rg-view':view,'data-rg-half':front?'front':'back','data-inner':region.inner,'data-outer':region.outer});}),h('path',{d:ringPath(selected.inner,selected.outer,s,front,true),className:'solar-rg-selection','data-rg-selection':view+'-'+(front?'front':'back')}));}
+            function planet(view){return h('g',{'data-rg-layer':view+'-planet'},h('circle',{cx:310,cy:200,r:70,fill:'url(#solar-rg-planet-'+view+')','data-rg-planet':view}),h('circle',{cx:310,cy:200,r:70,className:'solar-rg-planet-outline'}));}
+            function definitions(view){return h('defs',null,h('radialGradient',{id:'solar-rg-planet-'+view,cx:'32%',cy:'25%',r:'78%'},h('stop',{offset:'0%',stopColor:'#fce6b0'}),h('stop',{offset:'60%',stopColor:'#c7a471'}),h('stop',{offset:'100%',stopColor:'#806443'})),h('clipPath',{id:'solar-rg-front-clip-'+view},h('circle',{cx:310,cy:200,r:70})));}
+            function scene(view,s){return h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-rg-'+view+'-title','aria-describedby':'solar-rg-'+view+'-note','data-rg-scene':view},definitions(view),
+              s>0?rings(s,false,view):null,planet(view),s>0?rings(s,true,view):h('g',{'data-rg-edge-guide':true},[-1,1].map(function(sign){return h('line',{key:sign,x1:310+sign*70,y1:200,x2:310+sign*outer,y2:200,className:'solar-rg-edge-guide'});})));}
+            var values={ringOpening:opening,ringIce:ice,ringDensity:opacity};
+            function control(key,label,max,presets,unit){return h('div',{className:'solar-rg-control'},h('label',{htmlFor:'solar-rg-'+key},label),h('output',{htmlFor:'solar-rg-'+key},values[key]+unit),h('input',{id:'solar-rg-'+key,type:'range',min:0,max:max,step:1,value:values[key],'aria-valuetext':values[key]+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-rg-presets'},presets.map(function(p){return h('button',{key:p[0],type:'button','data-rg-preset':key,'data-value':p[0],'aria-pressed':values[key]===p[0],onClick:function(){upd(key,p[0]);}},p[1]);})));}
+            function metric(label,text,key,value){return h('div',{key:key},h('dt',null,label),h('dd',{'data-rg-metric':key,'data-value':value},text));}
+            var rulerX=function(km){return 20+(km-60000)/80000*580;};
+            return h('section',{id:'solar-saturn-rings',className:'solar-saturn-rings',style:theme,'aria-labelledby':'solar-rg-title','data-rg-opening':opening,'data-rg-ice':ice,'data-rg-opacity':opacity,'data-rg-selected':selected.id,'data-rg-flattening':flattening},
+              h('div',{className:'solar-rg-header'},h('div',null,h('p',{className:'solar-rg-eyebrow'},'One ring plane · two ways to see it'),h('h4',{id:'solar-rg-title'},'Saturn Ring Explorer')),h('button',{type:'button','aria-label':'Toggle Saturn ring explorer','aria-expanded':!!d.showRings,'aria-controls':'solar-rg-content',onClick:function(){upd('showRings',!d.showRings);}},d.showRings?'Hide ring explorer':'Open ring explorer')),
+              h('p',{className:'solar-rg-note'},'Tilt your view of Saturn’s main rings. Compare the projected view with a face-on map, then select a ring region to trace its true radial extent.'),
+              h('div',{id:'solar-rg-content',hidden:!d.showRings},d.showRings?h(React.Fragment,null,
+                h('div',{className:'solar-rg-controls'},control('ringOpening','Viewing angle above ring plane',90,[[0,'Edge-on'],[25,'25°'],[60,'60°'],[90,'Face-on']],'°'),control('ringIce','Illustrative palette · ice-like blend',100,[[0,'Warm'],[50,'Mixed'],[100,'Pale']],' / 100'),control('ringDensity','Ring visibility · display opacity',100,[[0,'Hidden'],[60,'60%'],[100,'Opaque']],' %')),
+                h('div',{className:'solar-rg-grid solar-rg-views'},h('figure',{className:'solar-rg-card solar-rg-projected'},h('figcaption',{id:'solar-rg-projected-title'},'Projected view · '+opening+'° above the plane'),scene('projected',flattening),h('p',{id:'solar-rg-projected-note',className:'solar-rg-note'},opening===0?'Infinitely thin rings have zero projected area edge-on. The yellow hairlines are enlarged extent guides, not a depiction of ring thickness.':'Where the rings cross Saturn’s projected disk, Saturn hides their far side and the near side appears in front. At higher viewing angles, the rings clear the disk.')),
+                  h('figure',{className:'solar-rg-card solar-rg-face'},h('figcaption',{id:'solar-rg-face-title'},'Face-on reference · same distance scale'),scene('face',1),h('p',{id:'solar-rg-face-note',className:'solar-rg-note'},'This reference stays face-on as you change the viewing angle. Planet radius and ring radii use the same scale in both views. Cyan outlines identify the selected region.'))),
+                h('div',{className:'solar-rg-card'},h('h5',null,'Inspect a ring region'),h('div',{className:'solar-rg-regions',role:'group','aria-label':'Select a ring region'},regions.map(function(region){return h('button',{key:region.id,type:'button','data-rg-region':region.id,'aria-pressed':selected.id===region.id,onClick:function(){upd('ringBand',region.id);}},region.name);})),
+                  h('p',{className:'solar-rg-status','data-rg-status':true},selected.name+' · '+selected.inner.toLocaleString('en-US')+'–'+selected.outer.toLocaleString('en-US')+' km from Saturn’s center'),h('p',{className:'solar-rg-note'},selected.id==='division'?'The Cassini Division separates the B and A rings. It is drawn as a clear gap here; the real division contains faint material and ringlets.':selected.id==='C'?'The C ring is the innermost of the three broad ring regions shown here. Its dimmer tone is an illustrative style.':selected.id==='B'?'The B ring is the broad central region, inside the Cassini Division. The selected outline traces both its inner and outer edges.':'The A ring lies beyond the Cassini Division. Narrow internal gaps, including the Encke Gap, are omitted in this simplified map.'),
+                  h('dl',{className:'solar-rg-readouts'},metric('Selected radial width',(selected.outer-selected.inner).toLocaleString('en-US')+' km','width',selected.outer-selected.inner),metric('Projected height ÷ width',(flattening*100).toFixed(1)+'%','ratio',flattening),metric('Main-ring outer diameter',(2*outerKm).toLocaleString('en-US')+' km','diameter',2*outerKm))),
+                h('figure',{className:'solar-rg-card solar-rg-ruler'},h('figcaption',{id:'solar-rg-ruler-title'},'Radial cross-section · fixed distances'),h('p',{className:'solar-rg-note'},'Distance from Saturn’s center, not height above the cloud tops.'),h('svg',{viewBox:'0 0 620 160',role:'img','aria-labelledby':'solar-rg-ruler-title','aria-describedby':'solar-rg-ruler-note','data-rg-ruler':true},h('line',{x1:20,x2:600,y1:104,y2:104,className:'solar-rg-axis'}),h('line',{x1:rulerX(planetKm),x2:rulerX(planetKm),y1:28,y2:112,className:'solar-rg-surface','data-rg-surface':true}),regions.filter(function(region){return region.id!=='division';}).map(function(region){return h('rect',{key:region.id,x:rulerX(region.inner),y:52,width:rulerX(region.outer)-rulerX(region.inner),height:42,fill:color(region),opacity:opacity/100,'data-rg-radial-band':region.id});}),h('rect',{x:rulerX(selected.inner),y:46,width:rulerX(selected.outer)-rulerX(selected.inner),height:54,className:'solar-rg-selection','data-rg-radial-selection':true}),[60000,100000,140000].map(function(v){return h('line',{key:v,x1:rulerX(v),x2:rulerX(v),y1:104,y2:114,className:'solar-rg-axis'});})),
+                  h('div',{className:'solar-rg-x-axis','aria-hidden':true},[['60,000',20/6.2,'0'],['100,000',50,'-50%'],['140,000',600/6.2,'-100%']].map(function(t){return h('span',{key:t[0],style:{left:t[1]+'%',transform:'translateX('+t[2]+')'}},t[0]);})),h('p',{className:'solar-rg-axis-title'},'Radius from Saturn’s center · kilometres'),h('p',{id:'solar-rg-ruler-note',className:'solar-rg-note'},'The yellow vertical line marks the adopted planetary radius of 60,268 km. The cyan rectangle marks '+selected.name+'. Opening the view changes the projected shape, not these radii.')),
+                h('div',{className:'solar-rg-model'},h('h5',null,'Shape, scale and appearance'),h('p',null,'For a flat circular ring viewed at angle B above its plane, projected height ÷ width = sin B. The unocculted projected area has the same fraction of its face-on area. That fraction is measured before Saturn hides any part of the rings; it is not visible area or brightness.'),h('p',null,'The viewing angle explores an arbitrary observer viewpoint, not Earth’s seasonal viewing range. The C, B and A ring boundaries use one NASA reference table. Saturn is simplified to a sphere with its equatorial reference radius, 60,268 km. The rings are infinitely thin. The D, F and more distant rings, internal fine structure, planet oblateness and cast shadows are omitted.'),h('p',null,'Saturn’s rings are mostly water ice. Palette blend and display opacity are artistic controls: they do not measure composition, particle density or optical depth. The band tones and planet shading are illustrative. Selection outlines remain visible when the ring fill is hidden.'),h('a',{href:'https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html',target:'_blank',rel:'noopener noreferrer'},'Ring radii and structure · NASA'))
+              ):null));
+          }
+
+
+          function buildSolarSundial() {
+            var h=React.createElement,rad=Math.PI/180,epsilon=1e-10;
+            function restored(key,fallback,min,max,step){var v=d[key];return typeof v==='number'&&isFinite(v)?Number((Math.round(Math.max(min,Math.min(max,v))/step)*step).toFixed(6)):fallback;}
+            var hour=restored('sdHour',12,0,24,.25),latitude=restored('sdLatitude',45,-80,80,1),declination=restored('sdDeclination',0,-23.44,23.44,.01),height=restored('sdHeight',1,.2,2,.1),phi=latitude*rad,delta=declination*rad;
+            var constant=Math.sin(phi)*Math.sin(delta),amplitude=Math.cos(phi)*Math.cos(delta);
+            function position(time){var angle=(time-12)*15*rad,east=-Math.cos(delta)*Math.sin(angle),north=Math.cos(phi)*Math.sin(delta)-Math.sin(phi)*Math.cos(delta)*Math.cos(angle),up=constant+amplitude*Math.cos(angle),horizontal=Math.hypot(east,north),day=up>epsilon,zenith=day&&horizontal<epsilon;
+              var length=day?(zenith?0:height*horizontal/up):null,shadowEast=day?(zenith?0:-height*east/up):null,shadowNorth=day?(zenith?0:-height*north/up):null,bearing=day&&!zenith?(Math.atan2(-east,-north)/rad+360)%360:null;
+              return{hour:time,east:east,north:north,up:up,horizontal:horizontal,altitude:Math.atan2(up,horizontal)/rad,day:day,zenith:zenith,length:length,shadowEast:shadowEast,shadowNorth:shadowNorth,bearing:bearing};}
+            var selected=position(hour),mapLimit=4,chartLimit=8,clipped=selected.day&&selected.length>mapLimit,tipScale=selected.day&&selected.length>0?Math.min(1,mapLimit/selected.length):1;
+            var tip=selected.day?{x:310+35*selected.shadowEast*tipScale,y:200-35*selected.shadowNorth*tipScale}:null;
+            var sunDirection=selected.day&&!selected.zenith?{x:310+125*selected.east/selected.horizontal,y:200-125*selected.north/selected.horizontal}:null;
+            var status=!selected.day?(Math.abs(selected.up)<=epsilon?'Sun on the horizon · no finite shadow':'Sun below the horizon · no direct shadow'):selected.zenith?'Sun overhead · zero-length shadow':clipped?'Shadow continues beyond the 4 m map':'Daylight · shadow tip is on the map';
+            var times=Array.from({length:289},function(_,i){return i/12;}).concat([hour]);
+            [0,height/Math.hypot(height,chartLimit)].forEach(function(level){var q=(level-constant)/amplitude;if(q>=-1&&q<=1){var half=Math.acos(q)/rad/15;times.push(12-half,12+half);}});times.sort(function(a,b){return a-b;});
+            var chartX=function(time){return 20+time/24*580;},chartY=function(length){return 274-length/chartLimit*248;},path='',previous=false;
+            times.forEach(function(time){var p=position(time),inside=p.day&&p.length<=chartLimit+1e-8;if(inside){path+=(previous?' L':'M')+chartX(time)+' '+chartY(Math.min(chartLimit,p.length));}previous=inside;});
+            var sideBase={x:350,y:300},sideTip={x:350,y:300-height*60},sideShadow=selected.day?{x:350-Math.min(mapLimit,selected.length)*60,y:300}:null;
+            var sideSun=selected.day?{x:350+120*selected.horizontal,y:sideTip.y-120*selected.up}:null;
+            // Clip the actual light ray above the ground when the true shadow tip is outside the window.
+            var rayEnd=selected.day?{x:sideShadow.x,y:clipped?sideTip.y+mapLimit*60*selected.up/selected.horizontal:300}:null;
+            var values={sdHour:hour,sdLatitude:latitude,sdDeclination:declination,sdHeight:height};
+            function clockText(time){var minutes=Math.round(time*60);return String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0');}
+            var theme={'--sd-bg':isDark?'#020617':'#ffffff','--sd-panel':isDark?'#0f172a':'#f8fafc','--sd-fg':isDark?'#e2e8f0':'#0f172a','--sd-muted':isDark?'#cbd5e1':'#475569','--sd-border':isDark?'#475569':'#cbd5e1','--sd-accent':isDark?'#7dd3fc':'#075985','--sd-stage':'#020617','--sd-guide':'#cbd5e1','--sd-shadow':'#67e8f9','--sd-sun':'#fde68a'};
+            function control(key,label,min,max,step,unit,presets){return h('div',{className:'solar-sd-control'},h('label',{htmlFor:'solar-sd-'+key},label),h('output',{htmlFor:'solar-sd-'+key},key==='sdHour'?clockText(hour):values[key]+unit),h('input',{id:'solar-sd-'+key,type:'range',min:min,max:max,step:step,value:values[key],'aria-valuetext':key==='sdHour'?clockText(hour)+' local solar time':values[key]+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-sd-presets'},presets.map(function(p){return h('button',{key:p[0],type:'button','data-sd-preset':key,'data-value':p[0],'aria-pressed':values[key]===p[0],onClick:function(){upd(key,p[0]);}},p[1]);})));}
+            function metric(label,text,key,value){return h('div',{key:key},h('dt',null,label),h('dd',{'data-sd-metric':key,'data-value':value===null?'none':value},text));}
+            function continuation(point,ux,uy){return 'M'+point.x+' '+point.y+' L'+(point.x-10*ux+5*uy)+' '+(point.y-10*uy-5*ux)+' L'+(point.x-10*ux-5*uy)+' '+(point.y-10*uy+5*ux)+' Z';}
+            return h('section',{id:'solar-sundial',className:'solar-sundial',style:theme,'aria-labelledby':'solar-sd-title','data-sd-hour':hour,'data-sd-latitude':latitude,'data-sd-declination':declination,'data-sd-height':height,'data-sd-day':selected.day,'data-sd-clipped':clipped},
+              h('div',{className:'solar-sd-header'},h('div',null,h('p',{className:'solar-sd-eyebrow'},'Follow the Sun · measure its shadow'),h('h4',{id:'solar-sd-title'},'Sundial & Shadow Lab')),h('button',{type:'button','aria-label':'Toggle sundial and shadow explorer','aria-expanded':!!d.showSundial,'aria-controls':'solar-sd-content',onClick:function(){upd('showSundial',!d.showSundial);}},d.showSundial?'Hide shadow explorer':'Open shadow explorer')),
+              h('p',{className:'solar-sd-note'},'Explore a vertical post on level ground. Change solar time, latitude, season and post height to see how the shadow turns and stretches.'),
+              h('div',{id:'solar-sd-content',hidden:!d.showSundial},d.showSundial?h(React.Fragment,null,
+                h('div',{className:'solar-sd-grid'},control('sdHour','Local solar time',0,24,.25,'',[[0,'Midnight'],[6,'06:00'],[9,'09:00'],[12,'Noon'],[15,'15:00'],[18,'18:00'],[24,'24:00']]),control('sdLatitude','Latitude · north positive',-80,80,1,'°',[[-80,'80° S'],[-45,'45° S'],[0,'Equator'],[45,'45° N'],[80,'80° N']]),control('sdDeclination','Solar declination',-23.44,23.44,.01,'°',[[-23.44,'December-like'],[0,'Equinox'],[23.44,'June-like']]),control('sdHeight','Vertical post height',.2,2,.1,' m',[[.2,'0.2 m'],[1,'1 m'],[2,'2 m']])),
+                h('p',{className:'solar-sd-note'},'Solar noon is 12:00 here. Declination is the Sun’s angle north or south of Earth’s equator; it stays fixed for this model day. The seasonal presets are representative angles.'),
+                h('div',{className:'solar-sd-grid solar-sd-views'},h('figure',{className:'solar-sd-card solar-sd-map'},h('figcaption',{id:'solar-sd-map-title'},'Ground view · north up'),h('div',{className:'solar-sd-map-stage'},[['N',50,6],['E',81,50],['S',50,94],['W',19,50]].map(function(p){return h('span',{key:p[0],className:'solar-sd-compass','aria-hidden':true,style:{left:p[1]+'%',top:p[2]+'%'}},p[0]);}),
+                  h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-sd-map-title','aria-describedby':'solar-sd-map-note','data-sd-map':true},[1,2,4].map(function(v){return h('circle',{key:v,cx:310,cy:200,r:v*35,className:'solar-sd-ring','data-sd-ring':v});}),h('path',{d:'M170 200 H450 M310 60 V340',className:'solar-sd-gridline'}),sunDirection?h('g',null,h('line',{x1:310,y1:200,x2:sunDirection.x,y2:sunDirection.y,className:'solar-sd-sun-direction'}),h('circle',{cx:sunDirection.x,cy:sunDirection.y,r:7,className:'solar-sd-sun','data-sd-sun-direction':true})):null,
+                    tip?h('g',null,h('line',{x1:310,y1:200,x2:tip.x,y2:tip.y,className:'solar-sd-shadow-line','data-sd-ground-shadow':true}),clipped?h('path',{d:continuation(tip,selected.shadowEast/selected.length,-selected.shadowNorth/selected.length),className:'solar-sd-continuation','data-sd-ground-continuation':true}):h('circle',{cx:tip.x,cy:tip.y,r:5,className:'solar-sd-shadow-tip','data-sd-ground-tip':true})):null,h('circle',{cx:310,cy:200,r:3,className:'solar-sd-post-base'}))),
+                  h('p',{id:'solar-sd-map-note',className:'solar-sd-note'},'Rings are 1, 2 and 4 m from the post. Cyan marks the shadow; an arrow at the outer ring means it continues beyond 4 m. The yellow marker shows the Sun’s compass direction, not its distance.')),
+                  h('figure',{className:'solar-sd-card solar-sd-side'},h('figcaption',{id:'solar-sd-side-title'},'Side view · in the Sun’s vertical plane'),
+                    h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-sd-side-title','aria-describedby':'solar-sd-side-note','data-sd-side':true},h('line',{x1:110,x2:530,y1:300,y2:300,className:'solar-sd-ground'}),[110,230,350,470].map(function(v){return h('line',{key:v,x1:v,x2:v,y1:294,y2:310,className:'solar-sd-ground'});}),h('line',{x1:350,y1:300,x2:sideTip.x,y2:sideTip.y,className:'solar-sd-post','data-sd-post':true}),selected.day?h('g',null,h('line',{x1:sideSun.x,y1:sideSun.y,x2:rayEnd.x,y2:rayEnd.y,className:'solar-sd-light-ray','data-sd-ray':true}),h('circle',{cx:sideSun.x,cy:sideSun.y,r:9,className:'solar-sd-sun','data-sd-side-sun':true}),h('line',{x1:350,y1:300,x2:sideShadow.x,y2:300,className:'solar-sd-shadow-line','data-sd-side-shadow':true}),clipped?h('g',null,h('line',{x1:110,x2:110,y1:90,y2:330,className:'solar-sd-cutoff'}),h('path',{d:continuation(sideShadow,-1,0),className:'solar-sd-continuation'})):h('circle',{cx:sideShadow.x,cy:300,r:5,className:'solar-sd-shadow-tip'})):null),
+                    h('div',{className:'solar-sd-side-axis','aria-hidden':true},[['−4 m',110/6.2],['−2',230/6.2],['Post',350/6.2],['+2 m',470/6.2]].map(function(t){return h('span',{key:t[0],style:{left:t[1]+'%'}},t[0]);})),h('p',{id:'solar-sd-side-note',className:'solar-sd-note'},'The horizontal axis points toward the Sun; it is not east–west. Horizontal and vertical lengths use the same metre scale in this view. The Sun icon shows direction only. When the shadow exceeds 4 m, the light ray leaves the window above the ground.'))),
+                h('div',{className:'solar-sd-card'},h('h5',{'data-sd-status':true},status),h('dl',{className:'solar-sd-readouts'},metric('Sun altitude',selected.altitude.toFixed(2)+'°','altitude',selected.altitude),metric('Actual shadow length',selected.length===null?(Math.abs(selected.up)<=epsilon?'No finite length':'No direct shadow'):selected.length.toFixed(3)+' m','length',selected.length),metric('Shadow bearing · clockwise from north',selected.bearing===null?(selected.zenith?'Undefined at zero length':'Not applicable'):selected.bearing.toFixed(2)+'°','bearing',selected.bearing))),
+                h('figure',{className:'solar-sd-card solar-sd-chart'},h('figcaption',{id:'solar-sd-chart-title'},'Shadow length through one solar day'),h('p',{className:'solar-sd-note'},'Fixed vertical scale: 0–8 m. Dashed line: the ground map’s 4 m limit.'),h('div',{className:'solar-sd-chart-layout'},h('div',{className:'solar-sd-y-axis','aria-hidden':true},[0,4,8].map(function(v){return h('span',{key:v,style:{top:chartY(v)/3+'%'}},v+' m');})),
+                  h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-sd-chart-title','aria-describedby':'solar-sd-chart-note','data-sd-chart':true},[0,4,8].map(function(v){return h('line',{key:v,x1:20,x2:600,y1:chartY(v),y2:chartY(v),className:v===4?'solar-sd-limit':'solar-sd-gridline'});}),h('path',{d:path,className:'solar-sd-curve','data-sd-curve':true}),h('line',{x1:chartX(hour),x2:chartX(hour),y1:18,y2:282,className:'solar-sd-selected-guide'}),selected.day&&selected.length<=chartLimit?h('circle',{cx:chartX(hour),cy:chartY(selected.length),r:5,className:'solar-sd-marker','data-sd-marker':true}):null)),
+                  h('div',{className:'solar-sd-chart-axis'},h('div',{className:'solar-sd-x-axis','aria-hidden':true},[0,6,12,18,24].map(function(time,i){return h('span',{key:time,style:{left:chartX(time)/6.2+'%',transform:'translateX('+(i===0?'0':i===4?'-100%':'-50%')+')'}},String(time).padStart(2,'0'));}))),h('p',{className:'solar-sd-axis-title'},'Local solar time · hours'),h('p',{id:'solar-sd-chart-note',className:'solar-sd-note'},'Gaps mean the Sun is at or below the horizon, or the shadow is longer than 8 m. The readout distinguishes those cases. A missing dot does not mean a zero-length shadow. The curve is not flattened at the chart’s upper limit.')),
+                h('div',{className:'solar-sd-model'},h('h5',null,'Why the shadow changes'),h('p',null,'For a vertical post of height h, shadow length is h / tan(Sun altitude), directed opposite the Sun’s horizontal bearing. A higher Sun makes a shorter shadow. Doubling the post height doubles the shadow without changing its direction.'),h('p',null,'This is a vertical-gnomon shadow model. Its hour directions change with solar declination; a single set of fixed hour marks would not work for every season. A traditional horizontal sundial often uses a gnomon aligned with Earth’s rotation axis instead.'),h('p',null,'Times are local apparent solar time, not time-zone or daylight-saving clock time. The model assumes a level surface, a point Sun, a fixed declination and no refraction, terrain or diffuse sky illumination. At the geometric horizon there is no finite shadow tip; below it, no direct sunlight reaches the post. Latitude is limited to 80° north or south so a north-based compass remains defined.'),h('a',{href:'https://gml.noaa.gov/grad/solcalc/solareqns.PDF',target:'_blank',rel:'noopener noreferrer'},'Solar-position geometry · NOAA'),h('a',{href:'https://cdaweb.gsfc.nasa.gov/pub/documents/archived_websites/pwg.gsfc.nasa.gov/stargaze/Sundial.htm',target:'_blank',rel:'noopener noreferrer'},'Gnomons and sundial design · NASA'))
+              ):null));
+          }
+
+
+          function buildSolarPulsar() {
+            var h=React.createElement,rad=Math.PI/180,epsilon=1e-12;
+            function restored(key,fallback,min,max){var v=d[key];return typeof v==='number'&&isFinite(v)?Math.round(Math.max(min,Math.min(max,v))):fallback;}
+            var phase=restored('pulsarSpin',0,0,360),tilt=restored('pulsarTilt',30,0,90),view=restored('pulsarView',30,0,180),cone=restored('pulsarCone',10,5,30);
+            var a=tilt*rad,z=view*rad,p=phase*rad,rho=cone*rad,A=Math.sin(a)*Math.sin(z),B=Math.cos(a)*Math.cos(z),c=Math.cos(rho);
+            function angles(degrees){var dot=Math.max(-1,Math.min(1,A*Math.cos(degrees*rad)+B)),first=Math.acos(dot)/rad;return [first,180-first];}
+            function halfWindow(sign){if(A<epsilon)return sign*B>=c-epsilon?180:0;var threshold=(c-sign*B)/A;if(threshold>=1-epsilon)return 0;if(threshold<=-1+epsilon)return 180;return Math.acos(threshold)/rad;}
+            var half1=halfWindow(1),half2=halfWindow(-1),coverage=(half1+half2)/180*100,current=angles(phase),seen1=current[0]<=cone+1e-9,seen2=current[1]<=cone+1e-9,edge=Math.abs(Math.min(current[0],current[1])-cone)<1e-8;
+            var status=edge?'Observer on a beam edge':seen1?'Beam 1 reaches the observer':seen2?'Beam 2 reaches the observer':'Neither beam reaches the observer';
+            var m={x:Math.sin(a)*Math.cos(p),y:Math.sin(a)*Math.sin(p),z:Math.cos(a)},e1={x:Math.cos(a)*Math.cos(p),y:Math.cos(a)*Math.sin(p),z:-Math.sin(a)},e2={x:-Math.sin(p),y:Math.cos(p),z:0};
+            var centerX=310,centerY=200,R=140;
+            function project(v,sign){return {x:centerX+sign*R*v.x,y:centerY-sign*R*v.z};}
+            var observer=project({x:Math.sin(z),z:Math.cos(z)},1);
+            var rim=Array.from({length:73},function(_,i){var t=i/72*2*Math.PI;return {x:c*m.x+Math.sin(rho)*(Math.cos(t)*e1.x+Math.sin(t)*e2.x),y:c*m.y+Math.sin(rho)*(Math.cos(t)*e1.y+Math.sin(t)*e2.y),z:c*m.z+Math.sin(rho)*(Math.cos(t)*e1.z+Math.sin(t)*e2.z)};});
+            var x=function(deg){return 20+deg/360*580;},y=function(deg){return 274-deg/180*248;};
+            // Include exact contacts alongside one-degree samples, so narrow windows remain represented.
+            var phases=Array.from({length:361},function(_,i){return i;}).concat([phase,half1,360-half1,180-half2,180+half2]);phases.sort(function(v,w){return v-w;});
+            function curve(index){return phases.map(function(deg,i){return (i?'L':'M')+x(deg)+' '+y(angles(deg)[index]);}).join(' ');}
+            function intervals(index){var half=index?half2:half1;if(half===0)return [];if(half===180)return [[0,360]];return index?[[180-half,180+half]]:[[0,half],[360-half,360]];}
+            var values={pulsarSpin:phase,pulsarTilt:tilt,pulsarView:view,pulsarCone:cone};
+            var theme={'--ps-bg':isDark?'#020617':'#ffffff','--ps-panel':isDark?'#0f172a':'#f8fafc','--ps-fg':isDark?'#e2e8f0':'#0f172a','--ps-muted':isDark?'#cbd5e1':'#475569','--ps-border':isDark?'#475569':'#cbd5e1','--ps-accent':isDark?'#7dd3fc':'#075985','--ps-stage':'#020617','--ps-guide':'#cbd5e1','--ps-one':'#67e8f9','--ps-two':'#f0abfc','--ps-observer':'#fde68a','--ps-band':'#3b351d'};
+            function control(key,label,min,max,presets){return h('div',{className:'solar-ps-control'},h('label',{htmlFor:'solar-ps-'+key},label),h('output',{htmlFor:'solar-ps-'+key},values[key]+'°'),h('input',{id:'solar-ps-'+key,type:'range',min:min,max:max,step:1,value:values[key],'aria-valuetext':values[key]+' degrees',onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-ps-presets'},presets.map(function(v){return h('button',{key:v,type:'button','data-ps-preset':key,'data-value':v,'aria-pressed':values[key]===v,onClick:function(){upd(key,v);}},v+'°');})));}
+            function metric(label,text,key,value){return h('div',{key:key},h('dt',null,label),h('dd',{'data-ps-metric':key,'data-value':value},text));}
+            function axis(){return h('div',{className:'solar-ps-chart-axis'},h('div',{className:'solar-ps-x-axis','aria-hidden':true},[['0°',20/6.2,'0'],['180°',50,'-50%'],['360°',600/6.2,'-100%']].map(function(t){return h('span',{key:t[0],style:{left:t[1]+'%',transform:'translateX('+t[2]+')'}},t[0]);})));}
+            function beam(sign,index){var tip=project(m,sign),behind=sign*m.y<-epsilon,points=rim.map(function(v){return project(v,sign);});return h('g',{key:index,className:'solar-ps-beam-'+index,'data-ps-beam':index,'data-depth':sign*m.y},h('path',{d:points.map(function(v,i){return(i?'L':'M')+v.x+' '+v.y;}).join(' ')+' Z',className:'solar-ps-rim','data-ps-rim':index}),[0,18,36,54].map(function(i){return h('line',{key:i,x1:centerX,y1:centerY,x2:points[i].x,y2:points[i].y,className:'solar-ps-cone-ray'});}),h('line',{x1:centerX,y1:centerY,x2:tip.x,y2:tip.y,className:'solar-ps-beam-axis',strokeDasharray:behind?'5 4':undefined,'data-ps-beam-axis':index}),h('circle',{cx:tip.x,cy:tip.y,r:5,className:'solar-ps-tip',style:{fill:behind?'var(--ps-stage)':index===1?'var(--ps-one)':'var(--ps-two)'},'data-ps-tip':index}));}
+            return h('section',{id:'solar-pulsar',className:'solar-pulsar',style:theme,'aria-labelledby':'solar-ps-title','data-ps-phase':phase,'data-ps-tilt':tilt,'data-ps-view':view,'data-ps-cone':cone,'data-ps-seen-one':seen1,'data-ps-seen-two':seen2},
+              h('div',{className:'solar-ps-header'},h('div',null,h('p',{className:'solar-ps-eyebrow'},'A rotating lighthouse · a fixed observer'),h('h4',{id:'solar-ps-title'},'Pulsar Beam Explorer')),h('button',{type:'button','aria-label':'Toggle pulsar beam explorer','aria-expanded':!!d.showPulsar,'aria-controls':'solar-ps-content',onClick:function(){upd('showPulsar',!d.showPulsar);}},d.showPulsar?'Hide beam explorer':'Open beam explorer')),
+              h('p',{className:'solar-ps-note'},'A pulsar is a rotating neutron star. Explore how its magnetic tilt, beam width and your viewing direction determine whether either beam sweeps past you.'),
+              h('div',{id:'solar-ps-content',hidden:!d.showPulsar},d.showPulsar?h(React.Fragment,null,
+                h('div',{className:'solar-ps-grid'},control('pulsarSpin','Rotation phase',0,360,[0,90,180,270,360]),control('pulsarTilt','Magnetic tilt · α',0,90,[0,30,60,90]),control('pulsarView','Observer angle from spin axis · ζ',0,180,[0,30,90,150,180]),control('pulsarCone','Beam cone half-angle · ρ',5,30,[5,10,20,30])),
+                h('div',{className:'solar-ps-grid'},h('figure',{className:'solar-ps-card solar-ps-projection'},h('figcaption',{id:'solar-ps-projection-title'},'Rotating beams · side projection'),
+                  h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-ps-projection-title','aria-describedby':'solar-ps-projection-note solar-ps-depth-note','data-ps-projection':true},h('circle',{cx:310,cy:200,r:R,className:'solar-ps-direction-sphere'}),h('line',{x1:310,y1:35,x2:310,y2:365,className:'solar-ps-spin-axis'}),h('line',{x1:310,y1:200,x2:observer.x,y2:observer.y,className:'solar-ps-sightline'}),beam(1,1),beam(-1,2),h('circle',{cx:310,cy:200,r:8,className:'solar-ps-star'}),h('circle',{cx:observer.x,cy:observer.y,r:8,className:'solar-ps-observer',style:{fill:seen1||seen2?'var(--ps-observer)':'var(--ps-stage)'},'data-ps-observer':true})),
+                  h('div',{className:'solar-ps-legend'},h('span',null,h('i',{className:'solar-ps-key-one','aria-hidden':true}),'Beam 1'),h('span',null,h('i',{className:'solar-ps-key-two','aria-hidden':true}),'Beam 2'),h('span',null,h('i',{className:'solar-ps-key-observer','aria-hidden':true}),'Observer')),
+                  h('p',{id:'solar-ps-depth-note',className:'solar-ps-note'},'Beam 1 axis: '+(Math.abs(m.y)<epsilon?'in the viewing plane':m.y>0?'on the viewer’s side':'behind the viewing plane')+'. Solid axes and filled tips are in or in front of the viewing plane; dashed axes and hollow tips are behind the plane.'),
+                  h('p',{id:'solar-ps-projection-note',className:'solar-ps-note'},'The circle is a sphere of directions, not the star’s surface. The vertical line is the spin axis. The central star is enlarged. Cone rims and rays are projected from 3D; a projected overlap alone does not mean visibility.')),
+                  h('div',{className:'solar-ps-context'},h('div',{className:'solar-ps-card'},h('h5',{'data-ps-status':true},status),h('p',{className:'solar-ps-note'},'The observer marker fills when either beam includes the viewing direction. Its position stays fixed as the star rotates.'),h('dl',{className:'solar-ps-readouts'},metric('Angle to Beam 1',current[0].toFixed(2)+'°','angleOne',current[0]),metric('Angle to Beam 2',current[1].toFixed(2)+'°','angleTwo',current[1]),metric('Visible fraction of one rotation',coverage.toFixed(2)+'%','coverage',coverage))),h('div',{className:'solar-ps-card'},h('h5',null,'Try a different view'),h('p',{className:'solar-ps-note'},'Match the observer angle to the magnetic tilt to cross Beam 1 near phase 0°. Set both to 90° to see two beam crossings per rotation.'),h('p',{className:'solar-ps-note'},'With zero magnetic tilt, the beams do not sweep: a fixed observer stays inside or outside a cone for the whole rotation.')))),
+                h('figure',{className:'solar-ps-card solar-ps-chart'},h('figcaption',{id:'solar-ps-chart-title'},'One rotation · angular separation from the observer'),h('p',{className:'solar-ps-note'},'Smaller angle means closer to the beam axis. The shaded band spans 0° to '+cone+'°.'),
+                  h('div',{className:'solar-ps-chart-layout'},h('div',{className:'solar-ps-y-axis','aria-hidden':true},[0,90,180].map(function(v){return h('span',{key:v,style:{top:y(v)/3+'%'}},v+'°');})),h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-ps-chart-title','aria-describedby':'solar-ps-chart-note','data-ps-angle-chart':true},h('rect',{x:20,y:y(cone),width:580,height:274-y(cone),className:'solar-ps-acceptance','data-ps-acceptance':true}),[0,90,180].map(function(v){return h('line',{key:v,x1:20,x2:600,y1:y(v),y2:y(v),className:'solar-ps-gridline'});}),h('line',{x1:20,x2:600,y1:y(cone),y2:y(cone),className:'solar-ps-cone-limit'}),[0,1].map(function(index){return h('g',{key:index},h('path',{d:curve(index),className:'solar-ps-curve solar-ps-curve-'+(index+1),'data-ps-curve':index+1}),h('circle',{cx:x(phase),cy:y(current[index]),r:5,className:'solar-ps-chart-dot solar-ps-dot-'+(index+1),'data-ps-chart-dot':index+1}));}),h('line',{x1:x(phase),x2:x(phase),y1:18,y2:282,className:'solar-ps-phase-guide'}))),axis(),h('p',{className:'solar-ps-axis-title'},'Rotation phase · degrees'),h('div',{className:'solar-ps-legend'},h('span',null,h('i',{className:'solar-ps-key-one','aria-hidden':true}),'Beam 1 · solid'),h('span',null,h('i',{className:'solar-ps-key-two','aria-hidden':true}),'Beam 2 · dashed')),h('p',{id:'solar-ps-chart-note',className:'solar-ps-note'},'Each curve measures the full 3D angle, even when the side projection overlaps. A beam reaches the observer when its curve enters the shaded band. This is an angle chart, not a prediction of brightness.')),
+                h('figure',{className:'solar-ps-card solar-ps-windows'},h('figcaption',{id:'solar-ps-windows-title'},'Beam visibility windows'),h('p',{className:'solar-ps-note'},'Upper strip: Beam 1. Lower strip: Beam 2. Colored intervals show geometric visibility.'),
+                  h('div',{className:'solar-ps-chart-layout'},h('div',{className:'solar-ps-y-axis','aria-hidden':true},h('span',{style:{top:'30%'}},'1'),h('span',{style:{top:'70%'}},'2')),h('svg',{viewBox:'0 0 620 120',role:'img','aria-labelledby':'solar-ps-windows-title','aria-describedby':'solar-ps-windows-note','data-ps-windows':true},[0,1].map(function(index){var row=index?72:24;return h('g',{key:index},h('rect',{x:20,y:row,width:580,height:24,rx:3,className:'solar-ps-empty-window'}),intervals(index).map(function(interval,i){return h('rect',{key:i,x:x(interval[0]),y:row,width:x(interval[1])-x(interval[0]),height:24,className:'solar-ps-window solar-ps-window-'+(index+1),'data-ps-window':index+1,'data-start':interval[0],'data-end':interval[1]});}),h('circle',{cx:x(phase),cy:row+12,r:5,className:'solar-ps-window-dot','data-ps-window-dot':index+1}));}),h('line',{x1:x(phase),x2:x(phase),y1:14,y2:106,className:'solar-ps-phase-guide'}))),axis(),h('p',{className:'solar-ps-axis-title'},'Rotation phase · same scale as the angle chart'),h('p',{id:'solar-ps-windows-note',className:'solar-ps-note','data-ps-half-one':half1,'data-ps-half-two':half2},coverage===100?'Continuous geometric visibility throughout the rotation.':coverage===0?'No finite visibility window. An isolated tangent touch can reach a beam edge at a single phase, but has zero duration.':'Visible during '+coverage.toFixed(2)+'% of one rotation. A window crossing phase 0° continues at 360°; it is one crossing split by the chart boundary.')),
+                h('div',{className:'solar-ps-model'},h('h5',null,'An ideal lighthouse model'),h('p',null,'Two identical, filled circular cones point in opposite directions along the magnetic axis. The magnetic tilt α is measured from the spin axis; the observer angle ζ is measured from the same axis. The cone half-angle ρ is measured from its beam axis.'),h('p',null,'The angle θ to Beam 1 follows cos θ = cos α cos ζ + sin α sin ζ cos φ, where φ is rotation phase. Beam 2 is at 180° − θ. Exact cone-edge contact counts as touching the beam; an isolated touch contributes no rotation time.'),h('p',null,'Real pulsar emission can have hollow cones, patchy beams and unequal poles. This model omits emission-height effects, relativistic effects and the actual pulse intensity. It predicts geometric beam coverage only. The drawing is static while you inspect it; use rotation phase to sweep the beams.'),h('a',{href:'https://academic.oup.com/mnras/article/485/1/640/5315779',target:'_blank',rel:'noopener noreferrer'},'Beam geometry and real-beam limits · Johnston & Karastergiou'))
+              ):null));
+          }
+
+
+          function buildSolarMercuryTransit() {
+            var h = React.createElement;
+            function restored(key, fallback, min, max) { var v = d[key]; return typeof v === 'number' && isFinite(v) ? Math.round(Math.max(min, Math.min(max, v)) * 100) / 100 : fallback; }
+            var phase = restored('transPhase', 50, 0, 100), impact = restored('transImpact', 0, 0, 1.05), k = 12 / 1902, u = -1.2 + 2.4 * phase / 100;
+            // Uniform-source circle overlap (Mandel & Agol, 2002, section 2). Radii are in solar-radius units.
+            function depthAt(position) {
+              var z = Math.hypot(position, impact);
+              if (z >= 1 + k) return 0;
+              if (z <= 1 - k) return k * k * 1e6;
+              var clamp = function(v) { return Math.max(-1, Math.min(1, v)); };
+              var sunAngle = Math.acos(clamp((z*z + 1 - k*k) / (2*z))), mercuryAngle = Math.acos(clamp((z*z + k*k - 1) / (2*z*k)));
+              var radicand = (-z+1+k)*(z+1-k)*(z-1+k)*(z+1+k);
+              return Math.max(0, Math.min(k*k, (sunAngle + k*k*mercuryAngle - 0.5*Math.sqrt(Math.max(0, radicand))) / Math.PI)) * 1e6;
+            }
+            var depth = depthAt(u), maximum = k*k*1e6, separation = Math.hypot(u,impact), crosses = impact < 1+k, full = impact <= 1-k;
+            var outer = crosses ? Math.sqrt((1+k)*(1+k)-impact*impact) : 0, inner = full ? Math.sqrt((1-k)*(1-k)-impact*impact) : 0;
+            var progressAt = function(position) { return (position+1.2)/2.4*100; };
+            var status = separation >= 1+k ? 'Mercury outside the Sun’s disk' : separation <= 1-k ? 'Mercury fully in front of the Sun' : u < 0 ? 'Partial ingress · Mercury entering' : u > 0 ? 'Partial egress · Mercury leaving' : 'Grazing transit · midpoint';
+            var samples = [-1.2,1.2,u,0], breaks = full ? [-outer,-inner,inner,outer] : [-outer,0,outer];
+            if (crosses) for (var j=1;j<breaks.length;j++) for (var i=0;i<=64;i++) samples.push(breaks[j-1]+(breaks[j]-breaks[j-1])*i/64);
+            samples.sort(function(a,b){return a-b;});
+            var chartX = function(position) { return 20+(position+1.2)/2.4*580; }, chartY = function(ppm) { return 26+ppm/45*248; };
+            var curve = samples.map(function(position,index){return (index?'L':'M')+chartX(position)+' '+chartY(depthAt(position));}).join(' ');
+            var detailPhase = Math.round(progressAt(-(outer+inner)/2)*100)/100;
+            var theme = {'--mt-bg':isDark?'#020617':'#ffffff','--mt-panel':isDark?'#0f172a':'#f8fafc','--mt-fg':isDark?'#e2e8f0':'#0f172a','--mt-muted':isDark?'#cbd5e1':'#475569','--mt-border':isDark?'#475569':'#cbd5e1','--mt-accent':isDark?'#7dd3fc':'#075985','--mt-stage':'#020617','--mt-guide':'#cbd5e1','--mt-curve':'#67e8f9','--mt-mark':'#fde68a','--mt-sun':'#fcd34d','--mt-mercury':'#111827'};
+            function metric(label,text,key,value){return h('div',{key:key},h('dt',null,label),h('dd',{'data-mt-metric':key,'data-value':value},text));}
+            function preset(key,value,label,disabled){return h('button',{key:label,type:'button',disabled:!!disabled,'data-mt-preset':key,'data-value':value,'aria-pressed':(key==='transPhase'?phase:impact)===value,onClick:function(){upd(key,value);}},label);}
+            function control(key,label,value,min,max,unit,presets){return h('div',{className:'solar-mt-control'},h('label',{htmlFor:'solar-mt-'+key},label),h('output',{htmlFor:'solar-mt-'+key},value+unit),h('input',{id:'solar-mt-'+key,type:'range',min:min,max:max,step:0.01,value:value,'aria-valuetext':value+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-mt-presets'},presets));}
+            return h('section',{id:'solar-mercury-transit',className:'solar-mercury-transit',style:theme,'aria-labelledby':'solar-mt-title','data-mt-phase':phase,'data-mt-impact':impact,'data-mt-ratio':k},
+              h('div',{className:'solar-mt-header'},h('div',null,h('p',{className:'solar-mt-eyebrow'},'A tiny silhouette · a measurable change'),h('h4',{id:'solar-mt-title'},'Mercury Transit Lab')),h('button',{type:'button','aria-label':'Toggle Mercury transit explorer','aria-expanded':!!d.showTrans,'aria-controls':'solar-mt-content',onClick:function(){upd('showTrans',!d.showTrans);}},d.showTrans?'Hide transit explorer':'Open transit explorer')),
+              h('p',{className:'solar-mt-note'},'Move Mercury across the Sun as seen from Earth. Watch the edge contacts in close-up, then connect the silhouette to the tiny dip in sunlight.'),
+              h('div',{id:'solar-mt-content',hidden:!d.showTrans},d.showTrans?h(React.Fragment,null,
+                h('div',{className:'solar-mt-grid'},control('transPhase','Crossing progress',phase,0,100,'%',[preset('transPhase',0,'Before'),preset('transPhase',detailPhase,'Ingress detail',!crosses),preset('transPhase',50,'Midpoint'),preset('transPhase',Math.round((100-detailPhase)*100)/100,'Egress detail',!crosses),preset('transPhase',100,'After')]),control('transImpact','Path offset · b',impact,0,1.05,' solar radii',[preset('transImpact',0,'Central'),preset('transImpact',0.5,'Off-center'),preset('transImpact',1,'Grazing'),preset('transImpact',1.02,'Misses Sun')])),
+                h('div',{className:'solar-mt-grid solar-mt-views'},
+                  h('figure',{className:'solar-mt-card solar-mt-overview'},h('figcaption',{id:'solar-mt-overview-title'},'Whole Sun · apparent sizes to scale'),
+                    h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-mt-overview-title','aria-describedby':'solar-mt-overview-note','data-mt-overview':true},
+                      h('circle',{cx:310,cy:200,r:140,className:'solar-mt-sun','data-mt-sun':true}),h('line',{x1:142,x2:478,y1:200-impact*140,y2:200-impact*140,className:'solar-mt-track'}),
+                      h('circle',{cx:310+u*140,cy:200-impact*140,r:k*140,className:'solar-mt-mercury','data-mt-mercury':true}),h('circle',{cx:310+u*140,cy:200-impact*140,r:9,className:'solar-mt-locator','data-mt-locator':true})),
+                    h('p',{id:'solar-mt-overview-note',className:'solar-mt-note'},'Mercury is the tiny dark dot. The dashed locator ring is a guide, not Mercury’s diameter. The horizontal line marks its path.')),
+                  h('figure',{className:'solar-mt-card solar-mt-detail'},h('figcaption',{id:'solar-mt-detail-title'},'Contact detail · 40× magnification'),
+                    h('svg',{viewBox:'0 0 620 400',role:'img','aria-labelledby':'solar-mt-detail-title','aria-describedby':'solar-mt-detail-note','data-mt-detail':true},h('circle',{cx:310-u*5600,cy:200+impact*5600,r:5600,className:'solar-mt-sun','data-mt-detail-sun':true}),h('circle',{cx:310,cy:200,r:k*5600,className:'solar-mt-mercury','data-mt-detail-mercury':true}),h('circle',{cx:310,cy:200,r:k*5600+6,className:'solar-mt-detail-guide'})),
+                    h('p',{id:'solar-mt-detail-note',className:'solar-mt-note'},'This window follows Mercury. Both disks are magnified equally; the solar limb can move outside the window. The dashed ring helps locate Mercury against dark space.'))),
+                h('div',{className:'solar-mt-card'},h('h5',{'data-mt-status':true},status),h('dl',{className:'solar-mt-readouts'},metric('Sunlight blocked now',depth.toFixed(3)+' ppm','depth',depth),metric('Sunlight remaining',(100-depth/1e4).toFixed(6)+'%','remaining',100-depth/1e4),metric('Maximum for a fully inside disk',maximum.toFixed(3)+' ppm','maximum',maximum))),
+                h('figure',{className:'solar-mt-card solar-mt-lightcurve'},h('figcaption',{id:'solar-mt-curve-title'},'Transit light curve · downward means dimmer'),h('p',{className:'solar-mt-note'},'Dimming below unobscured sunlight · parts per million (ppm)'),
+                  h('div',{className:'solar-mt-chart-layout'},h('div',{className:'solar-mt-y-axis','aria-hidden':true},[0,22.5,45].map(function(v){return h('span',{key:v,style:{top:chartY(v)/3+'%'}},v);})),h('svg',{viewBox:'0 0 620 300',role:'img','aria-labelledby':'solar-mt-curve-title','aria-describedby':'solar-mt-curve-note','data-mt-lightcurve':true},
+                    [0,22.5,45].map(function(v){return h('line',{key:v,x1:20,x2:600,y1:chartY(v),y2:chartY(v),className:'solar-mt-gridline'});}),
+                    h('path',{d:curve,className:'solar-mt-curve','data-mt-curve':true}),h('line',{x1:chartX(u),x2:chartX(u),y1:18,y2:282,className:'solar-mt-selected-guide'}),h('circle',{cx:chartX(u),cy:chartY(depth),r:5,className:'solar-mt-marker','data-mt-marker':true}))),
+                  h('div',{className:'solar-mt-chart-axis'},h('div',{className:'solar-mt-x-axis','aria-hidden':true},[['0%',20/6.2,'0'],['50%',50,'-50%'],['100%',600/6.2,'-100%']].map(function(t){return h('span',{key:t[0],style:{left:t[1]+'%',transform:'translateX('+t[2]+')'}},t[0]);}))),h('p',{className:'solar-mt-axis-title'},'Crossing progress · fixed straight path'),
+                  h('p',{id:'solar-mt-curve-note',className:'solar-mt-note'},'The vertical scale is a magnified view of just 45 ppm, not the full brightness of the Sun. The dot matches the current silhouette. With uniform solar brightness, a fully inside Mercury blocks a constant area.'),
+                  h('p',{className:'solar-mt-note','data-mt-contacts':true,'data-first':crosses?progressAt(-outer):undefined,'data-second':full?progressAt(-inner):undefined,'data-third':full?progressAt(inner):undefined,'data-fourth':crosses?progressAt(outer):undefined},!crosses?'This path misses the Sun. There is no transit and no light-curve dip.':full?'First contact '+progressAt(-outer).toFixed(2)+'% · fully inside '+progressAt(-inner).toFixed(2)+'% to '+progressAt(inner).toFixed(2)+'% · final contact '+progressAt(outer).toFixed(2)+'%.':'Grazing path: first contact '+progressAt(-outer).toFixed(2)+'% and final contact '+progressAt(outer).toFixed(2)+'%. Mercury never fits entirely inside the Sun’s disk.')),
+                h('div',{className:'solar-mt-model'},h('h5',null,'What this model measures'),h('p',null,'Representative May-transit apparent diameters are 12 arcseconds for Mercury and 1,902 arcseconds for the Sun. These rounded NASA catalog values give a diameter ratio of 12/1,902. When Mercury is fully inside, the blocked fraction is the square of that ratio: about 39.8 parts per million.'),h('p',null,'The path offset b is the closest projected center-to-center separation, in solar radii. It is not orbital inclination. Crossing progress moves the center uniformly from −1.2 to +1.2 solar radii; it does not predict a real transit date or duration.'),h('p',null,'The light curve uses the overlapping area of two circular disks, including partial ingress and egress. Solar brightness is uniform. Limb darkening, sunspots, orbital acceleration and changes in apparent size are omitted. Never view the real Sun through unfiltered optics.'),h('a',{href:'https://eclipse.gsfc.nasa.gov/transit/catalog/MercuryCatalog.html',target:'_blank',rel:'noopener noreferrer'},'Apparent sizes and contacts · NASA'),h('a',{href:'https://faculty.washington.edu/agol/MandelAgol2002.pdf',target:'_blank',rel:'noopener noreferrer'},'Uniform-source transit geometry · Mandel & Agol'))
+              ):null));
+          }
+
+
+          function buildSolarOrbitShadow() {
+            var h = React.createElement;
+            function restored(key, fallback, min, max, step) { var v = d[key]; return typeof v === 'number' && isFinite(v) ? Math.round(Math.max(min, Math.min(max, v)) / step) * step : fallback; }
+            var phase = restored('issOrbit', 0, 0, 360, 1), altitude = restored('issAltitudeKm', 400, 200, 1200, 10), beta = restored('issBetaDeg', 0, 0, 90, 1);
+            var earthRadius = 6371, mu = 398600.4418, radius = earthRadius + altitude, speed = Math.sqrt(mu / radius), period = 2 * Math.PI * Math.sqrt(radius * radius * radius / mu), q = earthRadius / radius;
+            var rad = Math.PI / 180, critical = Math.asin(q) / rad, cosBeta = Math.cos(beta * rad), sinBeta = Math.sin(beta * rad), halfAngle = beta >= critical ? 0 : Math.acos(Math.min(1, Math.sqrt(1 - q * q) / cosBeta));
+            var eclipseSeconds = period * halfAngle / Math.PI, entry = 180 - halfAngle / rad, exit = 180 + halfAngle / rad, elapsed = period * phase / 360;
+            var alongSun = radius * Math.cos(phase * rad) * cosBeta, perpendicular = radius * Math.sqrt(Math.max(0, 1 - Math.pow(Math.cos(phase * rad) * cosBeta, 2))), inShadow = beta < critical && alongSun < 0 && perpendicular < earthRadius;
+            var cx = 310, cy = 180, earthR = 100, orbitR = earthR / q;
+            function point(deg) { return { x: cx + orbitR * Math.cos(deg * rad), y: cy - orbitR * Math.sin(deg * rad) }; }
+            var craft = point(phase), entryPoint = point(entry), exitPoint = point(exit), dayPath = 'M' + cx + ' ' + (cy-earthR) + ' A100 100 0 0 1 ' + cx + ' ' + (cy+earthR) + (beta === 0 ? ' L' + cx + ' ' + (cy-earthR) : ' A' + (earthR*sinBeta) + ' 100 0 0 1 ' + cx + ' ' + (cy-earthR)) + ' Z';
+            var shadowPath = beta === 0 ? 'M18 80 L310 80 L310 280 L18 280 Z' : Array.from({ length: 65 }, function(_,i) { var a = -Math.PI/2 + i*Math.PI/64; return (i ? 'L' : 'M') + Math.max(18,cx-earthR/sinBeta*Math.cos(a)) + ' ' + (cy+earthR*Math.sin(a)); }).join(' ') + ' Z';
+            var theme = { '--io-bg': isDark ? '#020617' : '#ffffff', '--io-panel': isDark ? '#0f172a' : '#f8fafc', '--io-fg': isDark ? '#e2e8f0' : '#0f172a', '--io-muted': isDark ? '#cbd5e1' : '#475569', '--io-border': isDark ? '#475569' : '#cbd5e1', '--io-accent': isDark ? '#7dd3fc' : '#075985', '--io-stage': '#020617', '--io-guide': '#cbd5e1', '--io-curve': '#67e8f9', '--io-mark': '#fde68a', '--io-shadow': '#a78bfa', '--io-shadow-fill': '#292044', '--io-earth-dark': '#102a43', '--io-earth-light': '#2876a8' };
+            function metric(label,text,key,value) { return h('div',{key:key},h('dt',null,label),h('dd',{'data-io-metric':key,'data-value':value},text)); }
+            function control(key,label,value,min,max,step,unit,presets) { return h('div',{className:'solar-io-control',key:key},h('label',{htmlFor:'solar-io-'+key},label),h('output',{htmlFor:'solar-io-'+key},value+unit),h('input',{id:'solar-io-'+key,type:'range',min:min,max:max,step:step,value:value,'aria-valuetext':value+unit,onChange:function(event){var v=Number(event.target.value);if(isFinite(v))upd(key,v);}}),h('div',{className:'solar-io-presets'},presets.map(function(p){return h('button',{key:p[0],type:'button','data-io-preset':key,'data-value':p[0],'aria-pressed':value===p[0],onClick:function(){upd(key,p[0]);}},p[1]);}))); }
+            var timelineX = function(deg) { return 20 + deg / 360 * 580; };
+            return h('section',{id:'solar-orbit-shadow',className:'solar-orbit-shadow',style:theme,'aria-labelledby':'solar-io-title','data-io-phase':phase,'data-io-altitude':altitude,'data-io-beta':beta,'data-io-shadow':inShadow},
+              h('div',{className:'solar-io-header'},h('div',null,h('p',{className:'solar-io-eyebrow'},'Around Earth · from sunlight into shadow'),h('h4',{id:'solar-io-title'},'ISS Orbit & Sunlight')),h('button',{type:'button','aria-label':'Toggle orbit and sunlight explorer','aria-expanded':!!d.showISS,'aria-controls':'solar-io-content',onClick:function(){upd('showISS',!d.showISS);}},d.showISS?'Hide orbit explorer':'Open orbit explorer')),
+              h('p',{className:'solar-io-note'},'Explore a simplified circular orbit, starting at an ISS-like altitude of 400 km. Change altitude and Sun angle to see when eclipses occur. This is an educational model, not live ISS tracking.'),
+              h('div',{id:'solar-io-content',hidden:!d.showISS},d.showISS?h(React.Fragment,null,
+                h('div',{className:'solar-io-controls'},control('issOrbit','Orbital phase',phase,0,360,1,'°',[[0,'0°'],[90,'90°'],[180,'180°'],[270,'270°'],[360,'360°']]),control('issAltitudeKm','Circular orbit altitude',altitude,200,1200,10,' km',[[200,'200 km'],[400,'400 km'],[1200,'1,200 km']]),control('issBetaDeg','Sun angle above orbit · β',beta,0,90,1,'°',[[0,'In plane'],[30,'30°'],[60,'60°'],[90,'Toward viewer']])),
+                h('div',{className:'solar-io-grid'},
+                  h('figure',{className:'solar-io-card solar-io-orbit'},h('figcaption',{id:'solar-io-orbit-title'},'Looking straight down on the orbit'),
+                    h('svg',{viewBox:'0 0 620 360',role:'img','aria-labelledby':'solar-io-orbit-title','aria-describedby':'solar-io-orbit-note solar-io-sun-note','data-io-orbit-map':true},
+                      h('path',{d:shadowPath,className:'solar-io-shadow-area','data-io-shadow-area':true}),
+                      h('circle',{cx:cx,cy:cy,r:orbitR,className:'solar-io-orbit-path','data-io-orbit-radius':true}),
+                      halfAngle>0?h('path',{d:'M'+entryPoint.x+' '+entryPoint.y+' A'+orbitR+' '+orbitR+' 0 0 0 '+exitPoint.x+' '+exitPoint.y,className:'solar-io-eclipse-arc','data-io-eclipse-arc':true}):null,
+                      h('circle',{cx:cx,cy:cy,r:earthR,className:'solar-io-earth-night','data-io-earth-radius':true}),h('path',{d:dayPath,className:'solar-io-earth-day','data-io-earth-day':true,'data-lit-fraction':(1+sinBeta)/2}),h('circle',{cx:cx,cy:cy,r:earthR,className:'solar-io-earth-outline'}),
+                      beta<90?h('g',{'data-io-sun-arrows':true},[100,180,260].map(function(v){return h('g',{key:v},h('line',{x1:570,x2:500,y1:v,y2:v,className:'solar-io-sun-ray'}),h('path',{d:'M500 '+v+' L511 '+(v-5)+' L511 '+(v+5)+' Z',className:'solar-io-sun-arrowhead'}));})):null,
+                      h('circle',{cx:craft.x,cy:craft.y,r:5,className:'solar-io-spacecraft '+(inShadow?'solar-io-spacecraft-shadow':'solar-io-spacecraft-lit'),'data-io-spacecraft':true})),
+                    h('p',{className:'solar-io-status',id:'solar-io-sun-note'},beta===90?'Sun toward the viewer · no in-plane sunlight direction':'Sun projects from the right · '+beta+'° above the orbit plane'),
+                    h('p',{id:'solar-io-orbit-note',className:'solar-io-note'},'Earth radius and orbit radius share one fixed scale. The spacecraft marker is enlarged. The purple area is the shadow’s intersection with the orbital plane; the purple arc marks the eclipsed part of the orbit. The shadow may continue beyond the left edge.'),
+                    h('p',{className:'solar-io-note'},beta===90?'Phase 0° keeps the same right-hand reference axis. Phase increases counterclockwise.':'Phase 0° faces the Sun’s projected direction; 180° is opposite. Phase increases counterclockwise.')),
+                  h('div',{className:'solar-io-context'},h('div',{className:'solar-io-card'},h('h5',{'data-io-status':true},inShadow?'Spacecraft in Earth’s shadow':'Spacecraft in sunlight'),h('p',{className:'solar-io-note'},halfAngle===0?'This orbit stays sunlit throughout the cycle in this model.':inShadow?'The spacecraft is behind Earth and inside the cylindrical shadow.':'The spacecraft is outside the cylindrical shadow at this phase.'),
+                    h('dl',{className:'solar-io-readouts'},metric('Circular orbital speed',speed.toFixed(3)+' km/s','speed',speed),metric('Time for one orbit',(period/60).toFixed(2)+' min','periodMinutes',period/60),metric('Time in shadow per orbit',(eclipseSeconds/60).toFixed(2)+' min','eclipseMinutes',eclipseSeconds/60),metric('Elapsed time from phase 0°',(elapsed/60).toFixed(2)+' min','elapsedMinutes',elapsed/60))),
+                    h('div',{className:'solar-io-card'},h('h5',null,'Why an eclipse can disappear'),h('p',{className:'solar-io-note'},'At this altitude, the critical Sun angle is '+critical.toFixed(2)+'°. At or above that angle, the orbit misses the shadow. β is the Sun’s angle above the orbital plane, not geographic latitude or orbital inclination.'),h('p',{className:'solar-io-note'},'Earth’s visible sunlit face also grows as the Sun moves toward the viewer. That disk illumination is different from the fraction of an orbit spent in sunlight.')))),
+                h('figure',{className:'solar-io-card solar-io-timeline'},h('figcaption',{id:'solar-io-timeline-title'},'One orbit · sunlight and eclipse'),
+                  h('svg',{viewBox:'0 0 620 100',role:'img','aria-labelledby':'solar-io-timeline-title','aria-describedby':'solar-io-timeline-note','data-io-timeline':true},
+                    h('rect',{x:20,y:30,width:580,height:28,rx:4,className:'solar-io-day-band'}),
+                    halfAngle>0?h('rect',{x:timelineX(entry),y:30,width:timelineX(exit)-timelineX(entry),height:28,className:'solar-io-night-band','data-io-night-band':true}):null,
+                    [0,180,360].map(function(v){return h('line',{key:v,x1:timelineX(v),x2:timelineX(v),y1:67,y2:76,className:'solar-io-tick','data-io-time-tick':v});}),h('line',{x1:timelineX(phase),x2:timelineX(phase),y1:18,y2:66,className:'solar-io-phase-guide'}),h('circle',{cx:timelineX(phase),cy:44,r:5,className:'solar-io-phase-marker','data-io-phase-marker':true})),
+                  h('div',{className:'solar-io-time-axis','aria-hidden':true},[['0°',20/6.2,'0'],['180°',50,'-50%'],['360°',600/6.2,'-100%']].map(function(t){return h('span',{key:t[0],style:{left:t[1]+'%',transform:'translateX('+t[2]+')'}},t[0]);})),h('p',{className:'solar-io-axis-title'},'Orbital phase · linear scale in angle and elapsed time'),
+                  h('div',{className:'solar-io-legend'},h('span',null,h('i',{className:'solar-io-key-day','aria-hidden':true}),'Sunlight'),h('span',null,h('i',{className:'solar-io-key-night','aria-hidden':true}),'Earth shadow')),
+                  h('p',{id:'solar-io-timeline-note',className:'solar-io-note','data-io-eclipse-summary':true,'data-entry':halfAngle>0?entry:undefined,'data-exit':halfAngle>0?exit:undefined,'data-critical':critical},halfAngle>0?'Shadow begins at '+entry.toFixed(2)+'° and ends at '+exit.toFixed(2)+'°. The marker matches the spacecraft above. Tangent contact is the boundary, not a finite interval in shadow.':'No eclipse interval at this Sun angle. The spacecraft and timeline remain sunlit throughout the orbit.')),
+                h('div',{className:'solar-io-model'},h('h5',null,'Reading the model accurately'),h('p',null,'Circular two-body motion uses r = Rₑ + altitude, speed = √(μ/r), and period = 2π√(r³/μ). This model adopts a rounded mean Earth radius Rₑ = 6,371 km and μ = 398,600.4418 km³/s². The altitude range explores circular Earth orbits; it is not an ISS operational range.'),h('p',null,'Sunlight is parallel and the shadow is a cylinder. A spacecraft is eclipsed only when it is behind Earth and closer to the Sun–Earth axis than Earth’s radius. β stays fixed during each orbit. Earth is spherical; penumbra, refraction, atmospheric drag, orbital precession and the Sun’s finite size are omitted.'),h('p',null,'The view is from above the orbital plane. Earth lighting is projected consistently from the same Sun direction used for the eclipse calculation. The model does not show geography, ground tracks, real-time position or visibility from your location.'),
+                  h('a',{href:'https://ntrs.nasa.gov/api/citations/19950023025/downloads/19950023025.pdf',target:'_blank',rel:'noopener noreferrer'},'Cylindrical eclipse model · NASA'),h('a',{href:'https://ssd.jpl.nasa.gov/planets/phys_par.html',target:'_blank',rel:'noopener noreferrer'},'Planetary physical parameters · JPL'),h('a',{href:'https://earth-info.nga.mil/?action=wgs84&dir=wgs84',target:'_blank',rel:'noopener noreferrer'},'Earth gravity parameter · NGA'))
+              ):null));
+          }
+
+          function buildSolarWind() {
+            var h = React.createElement;
+            function restored(key, fallback, min, max, step) { var v = d[key]; return typeof v === 'number' && isFinite(v) ? Math.round(Math.max(min, Math.min(max, v)) / step) * step : fallback; }
+            var speed = restored('swSpeed', 400, 200, 900, 10), density = restored('swDens', 5, 1, 15, 1);
+            var protonMass = 1.67262192595e-27, auKm = 149597870.7;
+            function pressureAt(v, n) { return protonMass * n * v * v * 1e21; }
+            var pressure = pressureAt(speed, density), flux = density * speed * 1e5, travelDays = auKm / speed / 86400, referencePressure = pressureAt(400, 5), ratio = pressure / referencePressure;
+            function scientific(v) { var parts = v.toExponential(2).split('e'), chars = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' }; return parts[0] + ' × 10' + String(Number(parts[1])).split('').map(function(c) { return chars[c]; }).join(''); }
+            var theme = { '--sw-bg': isDark ? '#020617' : '#ffffff', '--sw-panel': isDark ? '#0f172a' : '#f8fafc', '--sw-fg': isDark ? '#e2e8f0' : '#0f172a', '--sw-muted': isDark ? '#cbd5e1' : '#475569', '--sw-border': isDark ? '#475569' : '#cbd5e1', '--sw-accent': isDark ? '#7dd3fc' : '#075985', '--sw-stage': '#020617', '--sw-guide': '#cbd5e1', '--sw-curve': '#67e8f9', '--sw-mark': '#fde68a' };
+            function metric(label, text, key, value) { return h('div', { key: key }, h('dt', null, label), h('dd', { 'data-sw-metric': key, 'data-value': value }, text)); }
+            function control(key, label, value, min, max, step, unit, presets) { return h('div', { className: 'solar-sw-control', key: key }, h('label', { htmlFor: 'solar-sw-' + key }, label), h('output', { htmlFor: 'solar-sw-' + key }, value + ' ' + unit), h('input', { id: 'solar-sw-' + key, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value + ' ' + unit, onChange: function(event) { var v = Number(event.target.value); if (isFinite(v)) upd(key, v); } }), h('div', { className: 'solar-sw-presets' }, presets.map(function(v) { return h('button', { key: v, type: 'button', 'data-sw-preset': key, 'data-value': v, 'aria-pressed': value === v, onClick: function() { upd(key, v); } }, v + ' ' + unit); }))); }
+            function axis(ticks, className) { return h('div', { className: className, 'aria-hidden': true }, ticks.map(function(tick, i) { return h('span', { key: tick[0], style: { left: tick[1] + '%', transform: 'translateX(' + (i === 0 ? '0' : i === ticks.length - 1 ? '-100%' : '-50%') + ')' } }, tick[0]); })); }
+            var x = function(v) { return 20 + (v - 200) / 700 * 580; }, y = function(p) { return 274 - p / 22 * 248; }, distanceX = function(v) { return 20 + v / 900 * 580; };
+            function curve(n) { return Array.from({ length: 141 }, function(_, i) { var v = 200 + i * 5; return (i ? 'L' : 'M') + x(v) + ' ' + y(pressureAt(v, n)); }).join(' '); }
+            return h('section', { id: 'solar-wind', className: 'solar-wind', style: theme, 'aria-labelledby': 'solar-sw-title', 'data-sw-speed': speed, 'data-sw-density': density },
+              h('div', { className: 'solar-sw-header' }, h('div', null, h('p', { className: 'solar-sw-eyebrow' }, 'From the Sun · particles in motion'), h('h4', { id: 'solar-sw-title' }, 'Solar Wind Lab')), h('button', { type: 'button', 'aria-label': 'Toggle solar wind explorer', 'aria-expanded': !!d.showSWind, 'aria-controls': 'solar-sw-content', onClick: function() { upd('showSWind', !d.showSWind); } }, d.showSWind ? 'Hide wind explorer' : 'Open wind explorer')),
+              h('p', { className: 'solar-sw-note' }, 'Separate speed from density. Explore how each changes the flow of protons and the pressure they carry.'),
+              h('div', { id: 'solar-sw-content', hidden: !d.showSWind }, d.showSWind ? h(React.Fragment, null,
+                h('div', { className: 'solar-sw-grid' }, control('swSpeed', 'Bulk wind speed', speed, 200, 900, 10, 'km/s', [200,400,800,900]), control('swDens', 'Proton number density', density, 1, 15, 1, 'cm⁻³', [1,5,10,15])),
+                h('div', { className: 'solar-sw-grid' },
+                  h('figure', { className: 'solar-sw-card solar-sw-distance' }, h('figcaption', { id: 'solar-sw-distance-title' }, 'Speed · distance in one second'),
+                    h('svg', { viewBox: '0 0 620 200', role: 'img', 'aria-labelledby': 'solar-sw-distance-title', 'aria-describedby': 'solar-sw-distance-note', 'data-sw-distance': true },
+                      h('line', { x1: 20, x2: 600, y1: 150, y2: 150, className: 'solar-sw-ruler' }),
+                      [0,450,900].map(function(v) { return h('line', { key: v, x1: distanceX(v), x2: distanceX(v), y1: 142, y2: 158, className: 'solar-sw-ruler', 'data-sw-distance-tick': v }); }),
+                      h('line', { x1: distanceX(400), x2: distanceX(400), y1: 40, y2: 150, className: 'solar-sw-reference', 'data-sw-distance-reference': true }),
+                      h('line', { x1: 20, x2: distanceX(speed), y1: 95, y2: 95, className: 'solar-sw-travel', 'data-sw-distance-line': true }),
+                      h('path', { d: 'M' + distanceX(speed) + ' 95 L' + (distanceX(speed) - 14) + ' 87 L' + (distanceX(speed) - 14) + ' 103 Z', className: 'solar-sw-arrowhead' }),
+                      h('circle', { cx: 20, cy: 95, r: 4, className: 'solar-sw-origin' })),
+                    axis([['0 km',20/6.2],['450',50],['900 km',600/6.2]], 'solar-sw-distance-axis'),
+                    h('p', { className: 'solar-sw-status' }, speed + ' km covered in 1 second'), h('p', { id: 'solar-sw-distance-note', className: 'solar-sw-note' }, 'Arrow length uses a fixed 900 km ruler. The dashed vertical line marks the 400 km/s reference. This is travel distance, not a picture of the Sun–Earth separation.')),
+                  h('figure', { className: 'solar-sw-card solar-sw-density' }, h('figcaption', { id: 'solar-sw-density-title' }, 'Density · a notional sample'),
+                    h('svg', { viewBox: '0 0 400 200', role: 'img', 'aria-labelledby': 'solar-sw-density-title', 'aria-describedby': 'solar-sw-density-note', 'data-sw-density-map': true },
+                      h('rect', { x: 24, y: 24, width: 352, height: 152, rx: 10, className: 'solar-sw-sample-box' }),
+                      Array.from({ length: density }, function(_, i) { return h('circle', { key: i, cx: 100 + (i % 5) * 50, cy: 55 + Math.floor(i / 5) * 45, r: 7, className: 'solar-sw-proton', 'data-sw-proton': true }); })),
+                    h('p', { className: 'solar-sw-status' }, density + (density === 1 ? ' proton' : ' protons') + ' per cubic centimeter'), h('p', { id: 'solar-sw-density-note', className: 'solar-sw-note' }, 'Each dot represents one proton in a notional 1 cm³ sample. Dot sizes and positions are schematic. Solar wind also contains electrons and helium ions; these icons show only protons.'))),
+                h('div', { className: 'solar-sw-card solar-sw-measurements' }, h('h5', null, 'Read the flow'),
+                  h('dl', { className: 'solar-sw-readouts' }, metric('Proton dynamic pressure', pressure.toFixed(3) + ' nPa', 'pressure', pressure), metric('Proton number flux', scientific(flux) + ' cm⁻² s⁻¹', 'flux', flux), metric('Pressure relative to 400 km/s, 5 cm⁻³', ratio.toFixed(3) + '×', 'ratio', ratio), metric('1 AU at constant speed · illustration', travelDays.toFixed(3) + ' days', 'travelDays', travelDays)),
+                  h('div', { className: 'solar-sw-presets' }, h('button', { type: 'button', disabled: speed > 450, 'data-sw-double-speed': true, onClick: function() { if (speed <= 450) upd('swSpeed', speed * 2); } }, 'Double speed · same density'), h('button', { type: 'button', disabled: density > 7, 'data-sw-double-density': true, onClick: function() { if (density <= 7) upd('swDens', density * 2); } }, 'Double density · same speed')),
+                  h('p', { className: 'solar-sw-note' }, 'Doubling speed makes pressure four times greater and particle flux twice as large. Doubling density doubles both. A doubling button is unavailable when the result would exceed the slider range.')),
+                h('figure', { className: 'solar-sw-card solar-sw-chart' }, h('figcaption', { id: 'solar-sw-chart-title' }, 'Pressure grows with speed squared'), h('p', { className: 'solar-sw-note' }, 'Proton dynamic pressure (nPa) · linear scale'),
+                  h('div', { className: 'solar-sw-chart-row' }, h('div', { className: 'solar-sw-yaxis', 'aria-hidden': true }, [22,11,0].map(function(v) { return h('span', { key: v, style: { top: y(v)/3 + '%' } }, v); })),
+                    h('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-labelledby': 'solar-sw-chart-title', 'aria-describedby': 'solar-sw-chart-note', 'data-sw-chart': true },
+                      [200,550,900].map(function(v) { return h('line', { key: 'x'+v, x1: x(v), x2: x(v), y1: 26, y2: 274, className: 'solar-sw-gridline', 'data-sw-x-tick': v }); }),
+                      [22,11,0].map(function(v) { return h('line', { key: 'y'+v, x1: 20, x2: 600, y1: y(v), y2: y(v), className: 'solar-sw-gridline', 'data-sw-y-tick': v }); }),
+                      h('path', { d: curve(5), className: 'solar-sw-curve solar-sw-reference-curve', 'data-sw-curve': 'reference' }), h('path', { d: curve(density), className: 'solar-sw-curve solar-sw-current-curve', 'data-sw-curve': 'current' }),
+                      h('line', { x1: x(speed), x2: x(speed), y1: 26, y2: 274, className: 'solar-sw-selection' }), h('circle', { cx: x(speed), cy: y(pressure), r: 5, className: 'solar-sw-marker', 'data-sw-marker': true }))),
+                  axis([['200',20/6.2],['550',50],['900',600/6.2]], 'solar-sw-xaxis'), h('p', { className: 'solar-sw-axis-title' }, 'Bulk wind speed (km/s) · linear scale'),
+                  h('div', { className: 'solar-sw-legend' }, h('span', null, h('i', { className: 'solar-sw-key-current', 'aria-hidden': true }), 'Solid · selected density ' + density + ' cm⁻³'), h('span', null, h('i', { className: 'solar-sw-key-reference', 'aria-hidden': true }), 'Dashed · fixed density 5 cm⁻³')),
+                  h('p', { id: 'solar-sw-chart-note', className: 'solar-sw-note' }, 'The circle marks your selected speed and density. Both curves share the same fixed scales.' + (density === 5 ? ' At 5 cm⁻³ the selected and reference curves coincide.' : ' Changing density raises or lowers the selected curve; the reference remains fixed.'))),
+                h('div', { className: 'solar-sw-card solar-sw-weather' }, h('h5', null, 'Pressure is not a storm forecast'), h('p', { className: 'solar-sw-note' }, 'Speed and density alone do not determine geomagnetic-storm severity or aurora visibility. The strength, direction and duration of the interplanetary magnetic field also matter, especially a sustained southward component. This lab does not assign storm categories or predict GPS disruption.')),
+                h('div', { className: 'solar-sw-model' }, h('h5', null, 'Reading the model accurately'), h('p', null, 'This proton-only model uses P = n mₚ v² for dynamic pressure (momentum flux), with no factor of ½. Number flux is n v: bulk-flow protons crossing unit area perpendicular to the flow, not energetic-particle radiation-storm flux. Inputs convert from cm⁻³ to m⁻³ and from km/s to m/s; 1 nPa = 10⁻⁹ Pa. The adopted proton mass is 1.67262192595 × 10⁻²⁷ kg.'), h('p', null, 'Helium and heavier ions add mass and pressure in real solar wind; thermal and magnetic pressures are not included here. Number density and bulk speed are illustrative inputs, not live measurements.'), h('p', null, 'The travel estimate is distance divided by speed over exactly 1 AU = 149,597,870.7 km. It assumes a constant speed along the entire path and omits acceleration, changing flow structures and Earth’s motion. It is not an arrival prediction.'),
+                  h('a', { href: 'https://www.spaceweather.gov/phenomena/geomagnetic-storms', target: '_blank', rel: 'noopener noreferrer' }, 'Geomagnetic storms · NOAA'), h('a', { href: 'https://omniweb.gsfc.nasa.gov/ftpbrowser/bow_derivation.html', target: '_blank', rel: 'noopener noreferrer' }, 'Solar-wind parameters · NASA'), h('a', { href: 'https://physics.nist.gov/cgi-bin/cuu/Value?mp', target: '_blank', rel: 'noopener noreferrer' }, 'Proton mass · NIST'))
+              ) : null));
+          }
+
+          function buildSolarFoucault() {
+            var h = React.createElement;
+            function restored(key, fallback, min, max, step) { var value = d[key]; return typeof value === 'number' && isFinite(value) ? Math.round(Math.max(min, Math.min(max, value)) / step) * step : fallback; }
+            var latitude = restored('foucLat', 45, -90, 90, 1), hours = restored('foucTime', 0, 0, 48, 0.5);
+            var siderealHours = 86164.09054 / 3600, rate = 360 / siderealHours * Math.sin(latitude * Math.PI / 180), rotation = rate * hours;
+            var period = latitude === 0 ? null : 360 / Math.abs(rate), angle = rotation * Math.PI / 180;
+            var direction = latitude > 0 ? 'Clockwise' : latitude < 0 ? 'Counterclockwise' : 'No precession';
+            function latText(value) { return value === 0 ? '0° · Equator' : Math.abs(value) + '° ' + (value > 0 ? 'N' : 'S'); }
+            function signed(value, digits) { return (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toFixed(digits); }
+            function update(key, value) { if (isFinite(value)) upd(key, value); }
+            var theme = { '--fc-bg': isDark ? '#020617' : '#ffffff', '--fc-panel': isDark ? '#0f172a' : '#f8fafc', '--fc-fg': isDark ? '#e2e8f0' : '#0f172a', '--fc-muted': isDark ? '#cbd5e1' : '#475569', '--fc-border': isDark ? '#475569' : '#cbd5e1', '--fc-accent': isDark ? '#7dd3fc' : '#075985', '--fc-stage': '#020617', '--fc-guide': '#cbd5e1', '--fc-curve': '#67e8f9', '--fc-mark': '#fde68a' };
+            function control(key, label, value, min, max, step, text, presets) {
+              return h('div', { className: 'solar-fc-control', key: key }, h('label', { htmlFor: 'solar-fc-' + key }, label), h('output', { htmlFor: 'solar-fc-' + key }, text),
+                h('input', { id: 'solar-fc-' + key, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': text, onChange: function(event) { update(key, Number(event.target.value)); } }),
+                h('div', { className: 'solar-fc-presets' }, presets.map(function(preset) { return h('button', { key: preset[0], type: 'button', 'data-fc-preset': key, 'data-value': preset[0], 'aria-pressed': value === preset[0], onClick: function() { update(key, preset[0]); } }, preset[1]); })));
+            }
+            function metric(label, text, key, value) { return h('div', { key: key }, h('dt', null, label), h('dd', { 'data-fc-metric': key, 'data-value': value === null ? undefined : value }, text)); }
+            var x = function(lat) { return 20 + (lat + 90) / 180 * 580; }, y = function(speed) { return 150 - speed / 16 * 124; };
+            var curve = Array.from({ length: 181 }, function(_, i) { var lat = i - 90; return (i ? 'L' : 'M') + x(lat) + ' ' + y(360 / siderealHours * Math.sin(lat * Math.PI / 180)); }).join(' ');
+            var endpoint = { x: 200 + 110 * Math.sin(angle), y: 180 - 110 * Math.cos(angle) };
+            var arrowSign = Math.sign(latitude), arrowStart = -70 * Math.PI / 180, arrowEnd = (-70 + 35 * arrowSign) * Math.PI / 180;
+            var arrowX = 200 + 139 * Math.cos(arrowEnd), arrowY = 180 + 139 * Math.sin(arrowEnd), tangentX = -Math.sin(arrowEnd) * arrowSign, tangentY = Math.cos(arrowEnd) * arrowSign;
+            return h('section', { id: 'solar-foucault', className: 'solar-foucault', style: theme, 'aria-labelledby': 'solar-fc-title', 'data-fc-latitude': latitude, 'data-fc-hours': hours },
+              h('div', { className: 'solar-fc-header' }, h('div', null, h('p', { className: 'solar-fc-eyebrow' }, 'Earth in motion · an experiment on the ground'), h('h4', { id: 'solar-fc-title' }, 'Foucault Pendulum')), h('button', { type: 'button', 'aria-label': 'Toggle Foucault explorer', 'aria-expanded': !!d.showFouc, 'aria-controls': 'solar-fc-content', onClick: function() { upd('showFouc', !d.showFouc); } }, d.showFouc ? 'Hide pendulum explorer' : 'Open pendulum explorer')),
+              h('p', { className: 'solar-fc-note' }, 'Watch the swing plane change relative to the floor. Compare hemispheres, move toward the equator, and inspect elapsed time.'),
+              h('div', { id: 'solar-fc-content', hidden: !d.showFouc }, d.showFouc ? h(React.Fragment, null,
+                h('div', { className: 'solar-fc-grid' },
+                  control('foucLat', 'Latitude', latitude, -90, 90, 1, latText(latitude), [[90,'North Pole'],[45,'45° N'],[0,'Equator'],[-45,'45° S'],[-90,'South Pole']]),
+                  control('foucTime', 'Elapsed time', hours, 0, 48, 0.5, hours.toFixed(1) + ' hours', [[0,'Start'],[6,'6 h'],[12,'12 h'],[24,'24 h'],[48,'48 h']])),
+                h('div', { className: 'solar-fc-grid' },
+                  h('figure', { className: 'solar-fc-card solar-fc-compass' }, h('figcaption', { id: 'solar-fc-compass-title' }, 'Top view · fixed to the floor'),
+                    h('div', { className: 'solar-fc-compass-stage' },
+                      h('svg', { viewBox: '0 0 400 360', role: 'img', 'aria-labelledby': 'solar-fc-compass-title', 'aria-describedby': 'solar-fc-compass-note solar-fc-pole-note', 'data-fc-compass': true },
+                        h('circle', { cx: 200, cy: 180, r: 124, className: 'solar-fc-ring', fill: 'none' }),
+                        Array.from({ length: 24 }, function(_, i) { var a = i * Math.PI / 12; return h('line', { key: i, x1: 200 + 120 * Math.sin(a), y1: 180 - 120 * Math.cos(a), x2: 200 + 126 * Math.sin(a), y2: 180 - 126 * Math.cos(a), className: 'solar-fc-tick' }); }),
+                        h('line', { x1: 200, y1: 70, x2: 200, y2: 290, className: 'solar-fc-reference', 'data-fc-reference': true }),
+                        h('line', { x1: 400 - endpoint.x, y1: 360 - endpoint.y, x2: endpoint.x, y2: endpoint.y, className: 'solar-fc-plane', 'data-fc-plane': true }),
+                        h('circle', { cx: endpoint.x, cy: endpoint.y, r: 7, className: 'solar-fc-endpoint', 'data-fc-endpoint': true }),
+                        h('circle', { cx: 200, cy: 180, r: 4, className: 'solar-fc-pivot' }),
+                        latitude !== 0 ? h('g', { 'data-fc-direction': arrowSign }, h('path', { d: 'M' + (200 + 139 * Math.cos(arrowStart)) + ' ' + (180 + 139 * Math.sin(arrowStart)) + ' A139 139 0 0 ' + (arrowSign > 0 ? 1 : 0) + ' ' + arrowX + ' ' + arrowY, className: 'solar-fc-arrow' }), h('path', { d: 'M' + arrowX + ' ' + arrowY + ' L' + (arrowX - 10 * tangentX + 5 * tangentY) + ' ' + (arrowY - 10 * tangentY - 5 * tangentX) + ' L' + (arrowX - 10 * tangentX - 5 * tangentY) + ' ' + (arrowY - 10 * tangentY + 5 * tangentX) + ' Z', className: 'solar-fc-arrowhead' })) : null),
+                      [['N',50,6],['E',94,50],['S',50,94],['W',6,50]].map(function(label) { return h('span', { key: label[0], className: 'solar-fc-compass-label', style: { left: label[1] + '%', top: label[2] + '%' }, 'aria-hidden': true }, label[0]); })),
+                    h('p', { className: 'solar-fc-status', 'data-fc-direction-text': true }, direction + (latitude ? ' · viewed from above' : ' · at the equator')),
+                    h('p', { id: 'solar-fc-compass-note', className: 'solar-fc-note' }, 'The solid cyan diameter is the swing plane; the dashed diameter is its starting orientation. The yellow dot marks one end of the orientation, not the moving pendulum bob. The small arrow indicates precession direction, not distance traveled.'),
+                    h('p', { id: 'solar-fc-pole-note', className: 'solar-fc-note' }, Math.abs(latitude) === 90 ? 'At a pole, compass north has no unique local direction. N here labels an arbitrary starting axis on the floor.' : 'The starting plane lies along the north–south floor axis.')),
+                  h('div', { className: 'solar-fc-context' },
+                    h('div', { className: 'solar-fc-card' }, h('h5', null, 'Your observation'),
+                      h('dl', { className: 'solar-fc-readouts' }, metric('Precession rate · clockwise is positive', signed(rate, 3) + ' °/h', 'rate', rate), metric('Accumulated rotation · all turns included', signed(rotation, 2) + '°', 'rotation', rotation), metric('Time for a full 360° orientation turn', period === null ? 'No finite period' : period.toFixed(2) + ' hours', 'period', period)),
+                      h('p', { className: 'solar-fc-note', 'data-fc-interpretation': true }, latitude === 0 ? 'Earth still rotates at the equator. In this ideal model its rotation has no component along the local vertical, so the swing plane does not precess relative to the floor.' : 'At ' + latText(latitude) + ', the swing plane turns ' + direction.toLowerCase() + '. Changing hemisphere reverses direction while keeping the rate magnitude at the same absolute latitude.'),
+                      h('div', { className: 'solar-fc-presets' }, h('button', { type: 'button', disabled: latitude === 0, 'data-fc-flip': true, onClick: function() { upd('foucLat', -latitude); } }, 'Compare opposite hemisphere'), h('button', { type: 'button', 'data-fc-reset': true, onClick: function() { upd('foucTime', 0); } }, 'Reset elapsed time'))),
+                    h('div', { className: 'solar-fc-card' }, h('h5', null, 'A line repeats before a full turn'), h('p', { className: 'solar-fc-note' }, 'An unmarked swing plane looks identical after 180°. The yellow endpoint keeps track of orientation through a full 360°. Neither time is the back-and-forth swing period of the pendulum.')))),
+                h('figure', { className: 'solar-fc-card solar-fc-chart' }, h('figcaption', { id: 'solar-fc-chart-title' }, 'Latitude sets the precession rate'), h('p', { className: 'solar-fc-note' }, 'Signed precession rate (°/h) · linear scale'),
+                  h('div', { className: 'solar-fc-chart-row' }, h('div', { className: 'solar-fc-yaxis', 'aria-hidden': true }, [16,0,-16].map(function(v) { return h('span', { key: v, style: { top: y(v) / 3 + '%' } }, v > 0 ? '+' + v : v); })),
+                    h('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-labelledby': 'solar-fc-chart-title', 'aria-describedby': 'solar-fc-chart-note', 'data-fc-chart': true },
+                      [-90,0,90].map(function(v) { return h('line', { key: 'x' + v, x1: x(v), x2: x(v), y1: 26, y2: 274, className: 'solar-fc-gridline', 'data-fc-x-tick': v }); }),
+                      [16,0,-16].map(function(v) { return h('line', { key: 'y' + v, x1: 20, x2: 600, y1: y(v), y2: y(v), className: 'solar-fc-gridline', 'data-fc-y-tick': v }); }),
+                      h('path', { d: curve, className: 'solar-fc-curve', 'data-fc-curve': true }),
+                      h('line', { x1: x(latitude), x2: x(latitude), y1: 26, y2: 274, className: 'solar-fc-selection' }), h('circle', { cx: x(latitude), cy: y(rate), r: 5, className: 'solar-fc-sample', 'data-fc-sample': true }))),
+                  h('div', { className: 'solar-fc-xaxis', 'aria-hidden': true }, [['90° S',20/6.2,'0'],['0°',50,'-50%'],['90° N',600/6.2,'-100%']].map(function(tick) { return h('span', { key: tick[0], style: { left: tick[1] + '%', transform: 'translateX(' + tick[2] + ')' } }, tick[0]); })),
+                  h('p', { className: 'solar-fc-axis-title' }, 'Latitude · linear scale'), h('p', { id: 'solar-fc-chart-note', className: 'solar-fc-note' }, 'The circle marks your latitude. Positive values turn clockwise from above; negative values turn counterclockwise. Rate is zero at the equator and greatest in magnitude at the poles. Elapsed time changes the orientation, not this rate.')),
+                h('div', { className: 'solar-fc-model' }, h('h5', null, 'Reading the experiment accurately'), h('p', null, 'This ideal, small-amplitude model shows precession relative to the rotating ground: clockwise rate = (360° / sidereal day) × sin(latitude). One sidereal day is approximately 86,164.09054 seconds, or 23 h 56 min 4.09 s. Elapsed hours here are ordinary 3,600-second hours.'), h('p', null, 'The compass is a schematic of orientation, not a bob trajectory or a map to scale. Air drag, suspension friction, finite-amplitude effects and the pendulum’s rapid swings are omitted. Scrub time to inspect the geometry; this explorer does not run a real-time pendulum.'),
+                  h('a', { href: 'https://www.animations.physics.unsw.edu.au/jw/pendulumdetails.html', target: '_blank', rel: 'noopener noreferrer' }, 'Foucault pendulum · UNSW Physics'), h('a', { href: 'https://ssd.jpl.nasa.gov/astro_par.html', target: '_blank', rel: 'noopener noreferrer' }, 'Mean sidereal day · NASA JPL'))
+              ) : null));
+          }
+
+          function buildSolarAtmosphere() {
+            // 1976 standard-atmosphere lower profile, using geopotential height and constant dry-air composition through 80 km.
+            var altitude = typeof d.atmAlt === 'number' && isFinite(d.atmAlt) ? Math.round(Math.max(0, Math.min(700, d.atmAlt))) : 50;
+            var earthRadius = 6356.766, gasConstant = 8314.32 / 28.9644, gravity = 9.80665;
+            var heights = [0, 11, 20, 32, 47, 51, 71, 84.852], lapses = [-6.5, 0, 1, 2.8, 0, -2.8, -2], bases = [{ h: 0, t: 288.15, p: 101325 }];
+            function advance(base, height, lapse) {
+              var t = base.t + lapse * (height - base.h), p = lapse === 0 ? base.p * Math.exp(-1000 * gravity * (height - base.h) / (gasConstant * base.t)) : base.p * Math.pow(base.t / t, 1000 * gravity / (gasConstant * lapse));
+              return { h: height, t: t, p: p, density: p / (gasConstant * t) };
+            }
+            for (var index = 0; index < lapses.length; index++) bases.push(advance(bases[index], heights[index + 1], lapses[index]));
+            function modelAt(z) {
+              var height = earthRadius * z / (earthRadius + z), layer = 0;
+              while (layer < lapses.length - 1 && height >= heights[layer + 1]) layer++;
+              return advance(bases[layer], height, lapses[layer]);
+            }
+            var valid = altitude <= 80, selected = valid ? modelAt(altitude) : null;
+            var layers = [
+              { key: 'troposphere', name: 'Troposphere', lo: 0, hi: 12, visit: 5, range: '0–12 km', feature: 'Weather and clouds', note: 'Most weather occurs in this lowest layer. Its upper boundary changes with latitude, season and weather.' },
+              { key: 'stratosphere', name: 'Stratosphere', lo: 12, hi: 50, visit: 30, range: '12–50 km', feature: 'Ozone absorbs ultraviolet light', note: 'Ozone absorbs solar ultraviolet radiation, helping temperature increase through much of the stratosphere.' },
+              { key: 'mesosphere', name: 'Mesosphere', lo: 50, hi: 85, visit: 75, range: '50–85 km', feature: 'Many meteors ablate here', note: 'Temperature falls toward the mesopause. Many incoming meteoroids heat, ablate and produce visible meteor trails in this region.' },
+              { key: 'thermosphere', name: 'Thermosphere', lo: 85, hi: 600, visit: 400, range: '85–600 km', feature: 'Auroras and low spacecraft orbits', note: 'Sparse particles can have high kinetic temperatures. Temperature and density respond strongly to solar and geomagnetic activity. The ionosphere overlaps several thermal layers.' },
+              { key: 'exosphere', name: 'Exosphere', lo: 600, hi: 700, visit: 650, range: 'Above about 600 km', feature: 'A gradual transition outward', note: 'This very sparse outer region continues well beyond the 700 km view. Its lower boundary changes with conditions; Earth’s atmosphere has no single sharp outer edge.' }
+            ];
+            var activeLayer = layers.filter(function(layer) { return altitude >= layer.lo; }).slice(-1)[0];
+            var palette = { '--am-bg': isDark ? '#020617' : '#ffffff', '--am-panel': isDark ? '#0f172a' : '#f8fafc', '--am-fg': isDark ? '#f1f5f9' : '#0f172a', '--am-muted': isDark ? '#cbd5e1' : '#475569', '--am-border': isDark ? '#475569' : '#cbd5e1', '--am-accent': isDark ? '#7dd3fc' : '#075985', '--am-stage': '#020617', '--am-guide': '#cbd5e1', '--am-selected': '#fde68a', '--am-temp': '#fdba74', '--am-pressure': '#67e8f9' };
+            function overviewY(z) { return 470 - 444 * Math.log(1 + z) / Math.log(701); }
+            function profileX(z) { return 18 + 584 * z / 80; }
+            function temperatureY(celsius) { return 276 - (celsius + 100) / 150 * 248; }
+            function pressureY(hpa) { return 276 - Math.log(hpa / 0.001) / Math.log(2000000) * 248; }
+            function scientific(value) { var parts = value.toExponential(3).split('e'), sup = '⁰¹²³⁴⁵⁶⁷⁸⁹'; return parts[0] + ' × 10' + String(Number(parts[1])).split('').map(function(character) { return character === '-' ? '⁻' : sup[Number(character)]; }).join(''); }
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-am-metric': key, 'data-value': value === null ? undefined : value }, text)); }
+            function choose(z) { upd('atmAlt', z); }
+            function profile(kind) {
+              var isTemperature = kind === 'temperature', id = 'solar-am-' + kind, y = isTemperature ? temperatureY : pressureY, values = isTemperature ? [-100, -25, 50] : [0.001, 1, 2000], samples = [];
+              for (var index = 0; index <= 160; index++) samples.push(index / 2);
+              heights.slice(1).forEach(function(h) { var z = earthRadius * h / (earthRadius - h); if (z < 80) samples.push(z); });
+              if (valid) samples.push(altitude); samples.sort(function(a, b) { return a - b; });
+              var curve = samples.map(function(z, index) { var state = modelAt(z), value = isTemperature ? state.t - 273.15 : state.p / 100; return (index ? ' L ' : 'M ') + profileX(z) + ' ' + y(value); }).join('');
+              return React.createElement('figure', { className: 'solar-am-profile', 'data-am-profile': kind }, React.createElement('figcaption', { id: id + '-title' }, isTemperature ? 'Temperature · lower 80 km' : 'Pressure · lower 80 km'),
+                React.createElement('p', { className: 'solar-am-note' }, isTemperature ? 'Reference temperature (°C) · linear scale' : 'Reference pressure (hPa) · logarithmic scale'),
+                React.createElement('div', { className: 'solar-am-profile-row' }, React.createElement('div', { className: 'solar-am-profile-yaxis', 'aria-hidden': true }, values.map(function(value) { return React.createElement('span', { key: value, style: { top: y(value) / 300 * 100 + '%' } }, value); })),
+                  React.createElement('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-labelledby': id + '-title', 'aria-describedby': id + '-note', 'data-am-profile-map': kind },
+                    values.map(function(value) { return React.createElement('line', { key: 'y' + value, x1: 18, x2: 602, y1: y(value), y2: y(value), className: 'solar-am-grid', 'data-am-y-tick': value }); }),
+                    [0, 40, 80].map(function(z) { return React.createElement('line', { key: 'x' + z, x1: profileX(z), x2: profileX(z), y1: 20, y2: 282, className: 'solar-am-grid', 'data-am-x-tick': z }); }),
+                    React.createElement('path', { d: curve, className: 'solar-am-curve solar-am-curve-' + kind, 'data-am-curve': kind }),
+                    valid && React.createElement('line', { x1: profileX(altitude), x2: profileX(altitude), y1: 20, y2: 276, className: 'solar-am-profile-guide' }),
+                    valid && React.createElement('circle', { cx: profileX(altitude), cy: y(isTemperature ? selected.t - 273.15 : selected.p / 100), r: 5, className: 'solar-am-sample', 'data-am-sample': kind }))),
+                React.createElement('div', { className: 'solar-am-profile-xaxis', 'aria-hidden': true }, [0, 40, 80].map(function(z, index) { return React.createElement('span', { key: z, style: { left: profileX(z) / 620 * 100 + '%', transform: index === 0 ? 'none' : index === 2 ? 'translateX(-100%)' : 'translateX(-50%)' } }, z); })),
+                React.createElement('p', { className: 'solar-am-axis-title' }, 'Altitude above sea level (km) · linear scale'),
+                React.createElement('p', { id: id + '-note', className: 'solar-am-note' }, (valid ? 'The circle marks your selected altitude. ' : 'Your ' + altitude + ' km selection is above this chart; no selected marker is drawn. ') + (isTemperature ? 'The slope changes and flat intervals follow the standard reference’s thermal layers. These numerical breaks differ from the approximate overview bands.' : 'Equal vertical distances represent equal pressure ratios, not equal pressure differences. Pressure keeps falling throughout this reference profile.')));
+            }
+            return React.createElement('section', { id: 'solar-atmosphere', className: 'solar-atmosphere', style: palette, 'aria-labelledby': 'solar-am-title', 'data-am-altitude': altitude, 'data-am-valid': valid, 'data-am-layer': activeLayer.key },
+              React.createElement('div', { className: 'solar-am-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-am-eyebrow' }, 'Earth’s atmosphere · from weather to orbit'), React.createElement('h4', { id: 'solar-am-title' }, 'Atmospheric Layers')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle atmosphere explorer', 'aria-expanded': !!d.showAtmos, 'aria-controls': 'solar-am-content', onClick: function() { upd('showAtmos', !d.showAtmos); } }, d.showAtmos ? 'Hide atmosphere explorer' : 'Explore the atmosphere')),
+              React.createElement('div', { id: 'solar-am-content', hidden: !d.showAtmos }, d.showAtmos ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-am-intro' }, 'Travel upward through Earth’s atmosphere. Compare a compressed overview with detailed temperature and pressure profiles, and see why the upper atmosphere needs a different model.'),
+                React.createElement('div', { className: 'solar-am-control' }, React.createElement('label', { htmlFor: 'solar-am-altitude' }, 'Altitude above sea level'), React.createElement('output', { htmlFor: 'solar-am-altitude' }, altitude + ' km'),
+                  React.createElement('input', { id: 'solar-am-altitude', type: 'range', min: 0, max: 700, step: 1, value: altitude, 'aria-valuetext': altitude + ' kilometers above sea level', onChange: function(event) { var next = Number(event.target.value); if (isFinite(next)) choose(Math.round(Math.max(0, Math.min(700, next)))); } }),
+                  React.createElement('div', { className: 'solar-am-presets', role: 'group', 'aria-label': 'Altitude presets' }, [0, 12, 50, 80, 85, 400, 700].map(function(z) { return React.createElement('button', { type: 'button', key: z, 'data-am-altitude-preset': z, 'aria-pressed': altitude === z, onClick: function() { choose(z); } }, z + ' km'); }))),
+                React.createElement('div', { className: 'solar-am-main' },
+                  React.createElement('figure', { className: 'solar-am-overview' }, React.createElement('figcaption', { id: 'solar-am-overview-title' }, '01 · A journey through the layers'), React.createElement('p', { className: 'solar-am-note' }, 'Altitude (km) · compressed using log(1 + altitude)'),
+                    React.createElement('div', { className: 'solar-am-overview-row' }, React.createElement('div', { className: 'solar-am-overview-yaxis', 'aria-hidden': true }, [0, 10, 100, 700].map(function(z) { return React.createElement('span', { key: z, style: { top: overviewY(z) / 500 * 100 + '%' } }, z); })),
+                      React.createElement('div', { className: 'solar-am-overview-stage' }, React.createElement('svg', { viewBox: '0 0 300 500', role: 'img', 'aria-labelledby': 'solar-am-overview-title', 'aria-describedby': 'solar-am-overview-note solar-am-layer-reading', 'data-am-overview-map': true },
+                        layers.map(function(layer, index) { return React.createElement('rect', { key: layer.key, x: 24, y: overviewY(layer.hi), width: 252, height: overviewY(layer.lo) - overviewY(layer.hi), className: 'solar-am-band solar-am-band-' + index, 'data-am-band': layer.key, 'data-lo': layer.lo, 'data-hi': layer.hi }); }),
+                        [0, 10, 100, 700].map(function(z) { return React.createElement('line', { key: z, x1: 12, x2: 288, y1: overviewY(z), y2: overviewY(z), className: 'solar-am-overview-tick', 'data-am-overview-tick': z }); }),
+                        layers.slice(1).map(function(layer) { return React.createElement('line', { key: layer.key, x1: 24, x2: 276, y1: overviewY(layer.lo), y2: overviewY(layer.lo), className: 'solar-am-boundary' }); }),
+                        React.createElement('path', { d: 'M 270 ' + overviewY(80) + ' H 282 V ' + overviewY(0) + ' H 270', className: 'solar-am-model-bracket', 'data-am-model-bracket': true }),
+                        React.createElement('path', { d: 'M 121 ' + (overviewY(400) - 7) + ' h 17 v 14 h -17 Z M 145 ' + (overviewY(400) - 5) + ' h 10 v 10 h -10 Z M 162 ' + (overviewY(400) - 7) + ' h 17 v 14 h -17 Z M 138 ' + overviewY(400) + ' H 162', className: 'solar-am-orbit-icon', 'data-am-orbit-icon': true }),
+                        React.createElement('line', { x1: 12, x2: 288, y1: overviewY(altitude), y2: overviewY(altitude), className: 'solar-am-selection', 'data-am-overview-selection': true }),
+                        React.createElement('circle', { cx: 78, cy: overviewY(altitude), r: 7, className: 'solar-am-location', 'data-am-location': true })),
+                      layers.map(function(layer, index) { return React.createElement('span', { key: layer.key, className: 'solar-am-layer-label', 'data-am-band-label': layer.key, style: { top: (overviewY(layer.lo) + overviewY(layer.hi)) / 1000 * 100 + '%' } }, String(index + 1).padStart(2, '0') + ' · ' + layer.name); }))),
+                    React.createElement('p', { id: 'solar-am-overview-note', className: 'solar-am-note' }, 'The yellow line marks your altitude. Numbered labels identify the same layers as the exploration buttons. Band thicknesses are compressed, not physical thicknesses. The cyan bracket spans the 0–80 km numerical model; the spacecraft symbol is an illustrative 400 km orbit. Exosphere continues above this view.')),
+                  React.createElement('div', { className: 'solar-am-context' }, React.createElement('div', { className: 'solar-am-layer-card' }, React.createElement('p', { className: 'solar-am-eyebrow' }, altitude + ' km · approximate layer'), React.createElement('h5', { id: 'solar-am-layer-reading' }, activeLayer.name + ' · ' + activeLayer.range), React.createElement('p', null, activeLayer.note)),
+                    React.createElement('div', { className: 'solar-am-measurements' }, React.createElement('h5', null, valid ? 'Standard reference at this altitude' : 'Beyond this lab’s numerical profile'),
+                      React.createElement('dl', { className: 'solar-am-readouts' }, metric('Reference temperature', valid ? (selected.t - 273.15).toFixed(1) + ' °C' : 'Not calculated', 'temperatureC', valid ? selected.t - 273.15 : null), metric('Reference pressure', valid ? (selected.p / 100 < 0.01 ? scientific(selected.p / 100) : (selected.p / 100).toFixed(selected.p < 100 ? 4 : 3)) + ' hPa' : 'Not calculated', 'pressure', valid ? selected.p / 100 : null), metric('Reference density', valid ? scientific(selected.density) + ' kg/m³' : 'Not calculated', 'density', valid ? selected.density : null)),
+                      React.createElement('p', { className: 'solar-am-note', 'data-am-validity-note': true }, valid ? 'A dry, standard reference atmosphere—not a live weather sounding. ' + selected.t.toFixed(2) + ' K; geopotential height ' + selected.h.toFixed(3) + ' km.' : 'The explorer continues to 700 km, but this lab calculates pressure, temperature and density only through 80 km. No values are extrapolated or held at an artificial floor.'),
+                      !valid && React.createElement('button', { type: 'button', 'data-am-return': true, onClick: function() { choose(80); } }, 'Inspect the 80 km model limit')),
+                    React.createElement('div', { className: 'solar-am-layer-list', role: 'group', 'aria-label': 'Explore atmospheric layers' }, layers.map(function(layer, index) { return React.createElement('button', { type: 'button', key: layer.key, 'data-am-layer-preset': layer.key, 'aria-pressed': layer.key === activeLayer.key, onClick: function() { choose(layer.visit); } }, React.createElement('span', { className: 'solar-am-layer-number' }, String(index + 1).padStart(2, '0')), React.createElement('span', null, React.createElement('strong', null, layer.name + ' · ' + layer.range), React.createElement('span', { className: 'solar-am-layer-feature' }, layer.feature))); })))),
+                React.createElement('div', { className: 'solar-am-profiles' }, profile('temperature'), profile('pressure')),
+                React.createElement('div', { className: 'solar-am-model' }, React.createElement('h5', null, 'Reading the atmosphere accurately'),
+                  React.createElement('p', null, 'The overview uses approximate boundaries at 12, 50, 85 and 600 km. Real boundaries vary, and a point exactly on a displayed boundary is assigned to the layer above. These broad bands are distinct from the standard reference’s lapse-rate intervals. A conventional 100 km space boundary is not the end of the atmosphere.'),
+                  React.createElement('p', null, 'The lower profile follows the 1976 U.S. Standard Atmosphere lapse-rate equations through geometric altitude 80 km, with constant dry-air composition. Geopotential height H = r₀z/(r₀ + z) accounts for the change of gravity with height; r₀ = 6356.766 km. Starting at 288.15 K and 101325 Pa, temperature changes at −6.5, 0, +1, +2.8, 0, −2.8 and −2 K per geopotential km across breaks at 0, 11, 20, 32, 47, 51, 71 and 84.852 km.'),
+                  React.createElement('p', null, 'Pressure is integrated continuously through those intervals using hydrostatic balance, g₀ = 9.80665 m/s² and R = 8314.32/28.9644 J/(kg K). Density = pressure/(R × temperature), with pressure in Pa; 1 hPa = 100 Pa. The full standard also has an upper-atmosphere model; this lab intentionally uses only its lower, constant-composition calculation.'),
+                  React.createElement('p', null, 'Above this calculation, composition, solar activity and geomagnetic conditions matter. High thermospheric temperature describes particle motion; the gas is extremely sparse, so heat transfer differs greatly from dense air near the surface. The ionosphere is an overlapping region of ionized gas, not a separate band stacked above these thermal layers.'),
+                  React.createElement('a', { href: 'https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf', target: '_blank', rel: 'noopener noreferrer' }, '1976 standard-atmosphere model · NASA'),
+                  React.createElement('a', { href: 'https://www.noaa.gov/jetstream/atmosphere/layers-of-atmosphere', target: '_blank', rel: 'noopener noreferrer' }, 'Atmospheric layers · NOAA'),
+                  React.createElement('a', { href: 'https://science.nasa.gov/earth/earth-atmosphere/earths-atmosphere-a-multi-layered-cake/', target: '_blank', rel: 'noopener noreferrer' }, 'Earth’s atmosphere · NASA'))
+              ) : null));
+          }
+
+
+          function buildSolarStellarSpectrum() {
+            // Ideal blackbody radiance per wavelength; radius is an independent input.
+            function bounded(value, fallback, min, max, step) { return typeof value === 'number' && isFinite(value) ? Number(Math.max(min, Math.min(max, Math.round(value / step) * step)).toFixed(1)) : fallback; }
+            var temperature = bounded(d.starTemp, 5778, 2500, 40000, 1), radius = bounded(d.starRadiusSolar, 1, 0.1, 20, 0.1), probe = bounded(d.starProbeNm, 550, 50, 3000, 1);
+            var h = 6.62607015e-34, c = 299792458, k = 1.380649e-23, sigma = 5.670374419e-8, wien = 2.897771955e6;
+            var referenceTemperature = 5772, solarRadius = 6.957e8, solarLuminosity = 3.828e26;
+            var peak = wien / temperature, referencePeak = wien / referenceTemperature;
+            var surfaceFlux = sigma * Math.pow(temperature, 4), luminosity = 4 * Math.PI * Math.pow(radius * solarRadius, 2) * surfaceFlux;
+            var fluxRatio = Math.pow(temperature / referenceTemperature, 4), luminositySolar = luminosity / solarLuminosity;
+            function radiance(nm, kelvin) { var meters = nm * 1e-9; return 2 * h * c * c / (Math.pow(meters, 5) * Math.expm1(h * c / (meters * k * kelvin))) * 1e-9; }
+            function normalized(nm, kelvin) { return radiance(nm, kelvin) / radiance(wien / kelvin, kelvin); }
+            function plotX(nm) { return 18 + 584 * Math.log(nm / 50) / Math.log(60); }
+            function plotY(value) { return 276 - 248 * value; }
+            function curve(kelvin) {
+              var wavelengths = [];
+              for (var index = 0; index <= 240; index++) wavelengths.push(50 * Math.pow(60, index / 240));
+              wavelengths.push(wien / kelvin, probe); wavelengths.sort(function(a, b) { return a - b; });
+              return wavelengths.map(function(nm, index) { return (index ? 'L ' : 'M ') + plotX(nm) + ' ' + plotY(normalized(nm, kelvin)); }).join(' ');
+            }
+            function swatch(kelvin) {
+              // Deliberately illustrative interpolation, not a colorimetric conversion.
+              var anchors = [[2500, [255, 190, 140]], [5772, [255, 246, 232]], [10000, [222, 235, 255]], [40000, [180, 205, 255]]];
+              for (var index = 1; index < anchors.length; index++) if (kelvin <= anchors[index][0]) { var low = anchors[index - 1], high = anchors[index], fraction = (kelvin - low[0]) / (high[0] - low[0]); return 'rgb(' + low[1].map(function(value, component) { return Math.round(value + fraction * (high[1][component] - value)); }).join(',') + ')'; }
+              return 'rgb(180,205,255)';
+            }
+            var palette = { '--st-bg': isDark ? '#020617' : '#ffffff', '--st-panel': isDark ? '#0f172a' : '#f8fafc', '--st-fg': isDark ? '#f1f5f9' : '#0f172a', '--st-muted': isDark ? '#cbd5e1' : '#475569', '--st-border': isDark ? '#475569' : '#cbd5e1', '--st-accent': isDark ? '#fdba74' : '#9a3412', '--st-stage': '#020617', '--st-current': '#fdba74', '--st-reference': '#cbd5e1', '--st-guide': '#cbd5e1', '--st-visible': '#164e63' };
+            function scientific(value) { var parts = value.toExponential(3).split('e'), superscripts = '⁰¹²³⁴⁵⁶⁷⁸⁹'; return parts[0] + ' × 10' + String(Number(parts[1])).split('').map(function(character) { return character === '-' ? '⁻' : superscripts[Number(character)]; }).join(''); }
+            function percent(value) { return value > 0 && value < 0.00001 ? '<0.001%' : (value * 100).toFixed(3) + '%'; }
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-st-metric': key, 'data-value': value }, text)); }
+            function control(key, label, value, min, max, step, unit, spoken, presets) {
+              var id = 'solar-st-' + key;
+              return React.createElement('div', { className: 'solar-st-control', key: key }, React.createElement('label', { htmlFor: id }, label), React.createElement('output', { htmlFor: id }, value + ' ' + unit),
+                React.createElement('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value + ' ' + spoken, onChange: function(event) { var next = Number(event.target.value); if (isFinite(next)) upd(key, bounded(next, value, min, max, step)); } }),
+                React.createElement('div', { className: 'solar-st-presets', role: 'group', 'aria-label': label + ' presets' }, presets.map(function(preset) { return React.createElement('button', { key: preset, type: 'button', 'data-st-control': key, 'data-st-value': preset, 'aria-pressed': value === preset, onClick: function() { upd(key, preset); } }, preset + ' ' + unit); })));
+            }
+            var selectedValue = normalized(probe, temperature), referenceValue = normalized(probe, referenceTemperature), peakRegion = peak < 380 ? 'ultraviolet' : peak <= 780 ? 'visible' : 'infrared';
+            return React.createElement('section', { id: 'solar-stellar-spectrum', className: 'solar-stellar-spectrum', style: palette, 'aria-labelledby': 'solar-st-title', 'data-st-temperature': temperature, 'data-st-radius': radius, 'data-st-probe': probe },
+              React.createElement('div', { className: 'solar-st-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-st-eyebrow' }, 'Stellar light · temperature, spectrum and size'), React.createElement('h4', { id: 'solar-st-title' }, 'Star Color + Temperature')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle stellar spectrum explorer', 'aria-expanded': !!d.showStarWheel, 'aria-controls': 'solar-st-content', onClick: function() { upd('showStarWheel', !d.showStarWheel); } }, d.showStarWheel ? 'Hide spectrum explorer' : 'Explore stellar light')),
+              React.createElement('div', { id: 'solar-st-content', hidden: !d.showStarWheel }, d.showStarWheel ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-st-intro' }, 'A higher temperature shifts an ideal star’s spectrum toward shorter wavelengths. Size changes how much surface emits. Explore them independently, then compare your thermal emitter with a 5772 K, one-solar-radius reference.'),
+                React.createElement('div', { className: 'solar-st-controls' }, control('starTemp', 'Effective temperature', temperature, 2500, 40000, 1, 'K', 'kelvin', [3000, 5772, 10000, 40000]), control('starRadiusSolar', 'Stellar radius', radius, 0.1, 20, 0.1, 'R☉', 'nominal solar radii', [0.1, 1, 2, 20]), control('starProbeNm', 'Inspect wavelength', probe, 50, 3000, 1, 'nm', 'nanometers', [100, 550, 1000, 3000])),
+                React.createElement('div', { className: 'solar-st-experiments' }, React.createElement('p', null, 'Compare changes from the 5772 K, 1 R☉ reference:'), React.createElement('div', { className: 'solar-st-presets', role: 'group', 'aria-label': 'Stellar light experiments' }, [{ key: 'reference', label: '5772 K · 1 R☉', t: 5772, r: 1 }, { key: 'radius', label: 'Reference temperature · 2 R☉', t: 5772, r: 2 }, { key: 'heat', label: 'Double reference temperature · 1 R☉', t: 11544, r: 1 }].map(function(preset) { return React.createElement('button', { type: 'button', key: preset.key, 'data-st-experiment': preset.key, 'aria-pressed': temperature === preset.t && radius === preset.r, onClick: function() { upd('starTemp', preset.t); upd('starRadiusSolar', preset.r); } }, preset.label); }))),
+                React.createElement('dl', { className: 'solar-st-readouts' }, metric('Peak wavelength · per wavelength spectrum', peak.toFixed(2) + ' nm', 'peak', peak), metric('Emission per square meter · all wavelengths', scientific(surfaceFlux) + ' W/m²', 'flux', surfaceFlux), metric('Total luminosity · nominal solar units', luminositySolar.toFixed(luminositySolar < 0.01 ? 6 : 3) + ' L☉', 'luminositySolar', luminositySolar)),
+                React.createElement('figure', { className: 'solar-st-spectrum' }, React.createElement('figcaption', { id: 'solar-st-spectrum-title' }, '01 · Follow the thermal spectrum'),
+                  React.createElement('p', { className: 'solar-st-note' }, 'Spectral shape · each curve normalized to its own peak (1.0)'),
+                  React.createElement('div', { className: 'solar-st-plot-row' }, React.createElement('div', { className: 'solar-st-yaxis', 'aria-hidden': true }, [0, 0.5, 1].map(function(value) { return React.createElement('span', { key: value, style: { top: plotY(value) / 300 * 100 + '%' } }, value.toFixed(1)); })),
+                    React.createElement('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-labelledby': 'solar-st-spectrum-title', 'aria-describedby': 'solar-st-spectrum-note solar-st-spectrum-reading', 'data-st-map': true },
+                      React.createElement('rect', { x: plotX(380), y: 20, width: plotX(780) - plotX(380), height: 256, className: 'solar-st-visible', 'data-st-visible-band': true }),
+                      [0, 0.5, 1].map(function(value) { return React.createElement('line', { key: 'y' + value, x1: 18, x2: 602, y1: plotY(value), y2: plotY(value), className: 'solar-st-grid', 'data-st-y-tick': value }); }),
+                      [50, 200, 800, 3000].map(function(nm) { return React.createElement('line', { key: nm, x1: plotX(nm), x2: plotX(nm), y1: 20, y2: 282, className: 'solar-st-grid', 'data-st-x-tick': nm }); }),
+                      React.createElement('path', { d: curve(referenceTemperature), className: 'solar-st-reference-curve', 'data-st-curve': 'reference', 'data-temperature': referenceTemperature }),
+                      React.createElement('path', { d: curve(temperature), className: 'solar-st-current-curve', 'data-st-curve': 'selected', 'data-temperature': temperature }),
+                      React.createElement('line', { x1: plotX(probe), x2: plotX(probe), y1: 20, y2: 276, className: 'solar-st-probe-line', 'data-st-probe-line': true }),
+                      React.createElement('path', { d: 'M ' + plotX(referencePeak) + ' 22 L ' + (plotX(referencePeak) + 6) + ' 28 L ' + plotX(referencePeak) + ' 34 L ' + (plotX(referencePeak) - 6) + ' 28 Z', className: 'solar-st-reference-peak', 'data-st-reference-peak': referencePeak }),
+                      React.createElement('circle', { cx: plotX(peak), cy: 28, r: 5, className: 'solar-st-current-peak', 'data-st-peak': peak }),
+                      React.createElement('circle', { cx: plotX(probe), cy: plotY(selectedValue), r: 4, className: 'solar-st-sample', 'data-st-sample': true }))),
+                  React.createElement('div', { className: 'solar-st-xaxis', 'aria-hidden': true }, [50, 200, 800, 3000].map(function(nm, index) { return React.createElement('span', { key: nm, style: { left: plotX(nm) / 620 * 100 + '%', transform: index === 0 ? 'none' : index === 3 ? 'translateX(-100%)' : 'translateX(-50%)' } }, nm); })),
+                  React.createElement('p', { className: 'solar-st-axis-title' }, 'Wavelength (nm) · logarithmic scale'),
+                  React.createElement('div', { className: 'solar-st-legend' }, React.createElement('span', null, 'Solid + circle · selected ' + temperature + ' K'), React.createElement('span', null, 'Dashed + diamond · reference 5772 K')),
+                  React.createElement('p', { id: 'solar-st-spectrum-reading', className: 'solar-st-note' }, 'The selected spectrum peaks at ' + peak.toFixed(2) + ' nm, in the ' + peakRegion + '. The shaded band marks approximately 380–780 nm visible light; shorter wavelengths are ultraviolet and longer wavelengths infrared.' + (temperature === referenceTemperature ? ' Both normalized curves coincide at the reference temperature.' : '')),
+                  React.createElement('p', { id: 'solar-st-spectrum-note', className: 'solar-st-note' }, 'These are Planck radiance curves per unit wavelength (Bλ), divided by their own peak. Equal peak heights do not mean equal power. The logarithmic horizontal spacing emphasizes spectral shape; areas under this drawing are not energy fractions. The window shows 50–3000 nm; emission continues beyond both edges.'),
+                  React.createElement('dl', { className: 'solar-st-sample-readouts' }, metric('Inspected wavelength', probe + ' nm', 'probe', probe), metric('Selected · fraction of its peak', percent(selectedValue), 'sample', selectedValue), metric('Reference · fraction of its peak', percent(referenceValue), 'referenceSample', referenceValue))),
+                React.createElement('div', { className: 'solar-st-comparison' },
+                  React.createElement('figure', { className: 'solar-st-stars' }, React.createElement('figcaption', { id: 'solar-st-stars-title' }, '02 · Separate size from temperature'),
+                    React.createElement('svg', { viewBox: '0 0 560 240', role: 'img', 'aria-labelledby': 'solar-st-stars-title', 'aria-describedby': 'solar-st-stars-note', 'data-st-stars': true },
+                      new Array(24).fill(0).map(function(_, index) { return React.createElement('circle', { key: index, cx: 12 + index * 131 % 536, cy: 12 + index * 47 % 216, r: 0.7, className: 'solar-st-background-star' }); }),
+                      React.createElement('circle', { cx: 140, cy: 120, r: 100 * radius / Math.max(radius, 1), fill: swatch(temperature), className: 'solar-st-disc', 'data-st-disc': 'selected' }),
+                      React.createElement('circle', { cx: 420, cy: 120, r: 100 / Math.max(radius, 1), fill: swatch(referenceTemperature), className: 'solar-st-disc solar-st-reference-disc', 'data-st-disc': 'reference' })),
+                    React.createElement('div', { className: 'solar-st-star-labels' }, React.createElement('span', null, 'Selected · ' + radius + ' R☉'), React.createElement('span', null, 'Reference · 1 R☉')),
+                    React.createElement('p', { id: 'solar-st-stars-note', className: 'solar-st-note' }, 'Disc radii share a scale that reframes to fit the larger star. Their warm-white to blue-white colors are illustrative, not exact colorimetry or a brightness simulation. The spectrum is broad: a peak in green wavelengths does not make a star look green.')),
+                  React.createElement('div', { className: 'solar-st-power' }, React.createElement('h5', null, '03 · Count all the emitting surface'),
+                    React.createElement('dl', { className: 'solar-st-power-readouts' }, metric('Surface emission · vs 5772 K', fluxRatio.toFixed(4) + '×', 'fluxRatio', fluxRatio), metric('Surface area · vs one solar radius', (radius * radius).toFixed(2) + '×', 'areaRatio', radius * radius), metric('Total luminosity · all wavelengths', scientific(luminosity) + ' W', 'luminosity', luminosity)),
+                    React.createElement('p', null, 'Double the radius at the same temperature: four times the area and luminosity, with the same spectral shape. Double the temperature in kelvin at the same radius: sixteen times the surface emission and luminosity, with half the peak wavelength.'),
+                    React.createElement('p', { className: 'solar-st-note' }, 'Temperature alone does not determine radius, total luminosity or lifetime. These independent controls explore ideal thermal emitters; not every combination represents a stable, real star.'))),
+                React.createElement('div', { className: 'solar-st-model' }, React.createElement('h5', null, 'Model and reference values'),
+                  React.createElement('p', null, 'Planck law: Bλ = 2hc² / {λ⁵[exp(hc/λkT) − 1]}. The per-wavelength peak follows Wien’s law: λpeak = b/T, with b = 2.897771955 × 10⁻³ m K. A spectrum per unit frequency has a different peak. Real stellar atmospheres add absorption features and other departures from a blackbody.'),
+                  React.createElement('p', null, 'Surface emission F = σT⁴ and luminosity L = 4πR²σT⁴, integrated over all wavelengths, with σ = 5.670374419 × 10⁻⁸ W m⁻² K⁻⁴. One nominal solar radius is 6.957 × 10⁸ m; one nominal solar luminosity is 3.828 × 10²⁶ W. The reference uses 5772 K. Rounded nominal reference constants give approximately, not exactly, 1 L☉; a saved 5778 K selection is retained.'),
+                  React.createElement('a', { href: 'https://science.nasa.gov/asset/webb/continuous-spectra-blackbody-curves-of-stars/', target: '_blank', rel: 'noopener noreferrer' }, 'Stellar blackbody spectra · NASA'),
+                  React.createElement('a', { href: 'https://physics.nist.gov/cuu/Constants/Table/allascii.txt', target: '_blank', rel: 'noopener noreferrer' }, 'Radiation constants · NIST'),
+                  React.createElement('a', { href: 'https://www.iau.org/common/Uploaded%20files/IAUGA2015-Resolution-B3-recommended-nominal-conversion.pdf', target: '_blank', rel: 'noopener noreferrer' }, 'Nominal solar reference values · IAU'))
+              ) : null));
+          }
+
+
+          function buildSolarTelescope() {
+            // Rayleigh criterion for an ideal, unobstructed circular aperture at one wavelength.
+            function bounded(value, fallback, min, max, step) { return typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, Math.round(value / step) * step)) : fallback; }
+            var aperture = bounded(d.scopeAp, 10, 2, 700, 1), magnif = bounded(d.scopeMag, 50, 10, 500, 5);
+            var separation = Number(bounded(d.scopeSeparation, 1, 0.02, 10, 0.01).toFixed(2));
+            var wavelength = 550e-9, rayleigh = 1.22 * wavelength / (aperture / 100) * 180 / Math.PI * 3600;
+            var area = Math.PI * Math.pow(aperture / 200, 2), lightRatio = Math.pow(aperture / 10, 2), resolutionRatio = separation / rayleigh;
+            var ratioText = Math.abs(resolutionRatio - 1) < 0.01 ? resolutionRatio.toFixed(6) : fmt(resolutionRatio);
+            var apparentSeparation = separation * magnif / 60, apparentRadius = rayleigh * magnif / 60;
+            var detailScale = Math.min(100 / rayleigh, 260 / (separation / 2 + rayleigh));
+            var fieldArcmin = d.scopeFieldArcmin === 120 ? 120 : 20;
+            var eyepieceScale = magnif * 572 / (fieldArcmin * 60);
+            var centersOutside = separation * magnif / 60 > fieldArcmin;
+            var cropped = rayleigh * eyepieceScale > 124 || (separation / 2 + rayleigh) * eyepieceScale > 286;
+            var palette = { '--ts-bg': isDark ? '#020617' : '#ffffff', '--ts-panel': isDark ? '#0f172a' : '#f8fafc', '--ts-fg': isDark ? '#f1f5f9' : '#0f172a', '--ts-muted': isDark ? '#cbd5e1' : '#475569', '--ts-border': isDark ? '#475569' : '#cbd5e1', '--ts-accent': isDark ? '#67e8f9' : '#155e75', '--ts-stage': '#020617', '--ts-a': '#67e8f9', '--ts-b': '#fdba74', '--ts-guide': '#cbd5e1' };
+            function fmt(value) { return value < 0.1 ? value.toFixed(3) : value.toFixed(2); }
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-ts-metric': key, 'data-value': value }, text)); }
+            function control(key, label, value, min, max, step, unit, spoken, presets) {
+              var id = 'solar-ts-' + key;
+              return React.createElement('div', { key: key, className: 'solar-ts-control' }, React.createElement('label', { htmlFor: id }, label), React.createElement('output', { htmlFor: id }, value + ' ' + unit),
+                React.createElement('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value + ' ' + spoken, onChange: function(event) { var next = Number(event.target.value); if (isFinite(next)) upd(key, Number(bounded(next, value, min, max, step).toFixed(2))); } }),
+                React.createElement('div', { className: 'solar-ts-presets', role: 'group', 'aria-label': label + ' presets' }, presets.map(function(preset) { return React.createElement('button', { key: preset, type: 'button', 'data-ts-control': key, 'data-ts-value': preset, 'aria-pressed': value === preset, onClick: function() { upd(key, preset); } }, preset + ' ' + unit); })));
+            }
+            function pair(kind, scale) {
+              var id = 'solar-ts-' + kind, halfSpan = 286 / scale, isDetail = kind === 'detail';
+              return React.createElement('figure', { className: 'solar-ts-view', 'data-ts-view': kind }, React.createElement('figcaption', { id: id + '-title' }, isDetail ? '01 · Diffraction on the sky' : '02 · The same pair, magnified'),
+                React.createElement('p', { className: 'solar-ts-note' }, isDetail ? 'Adaptive angular scale · independent of magnification' : 'Fixed apparent field · ' + fieldArcmin + ' arcminutes wide'),
+                React.createElement('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-labelledby': id + '-title', 'aria-describedby': id + '-note solar-ts-ring-note', 'data-ts-map': kind, 'data-scale': scale, 'data-half-span': halfSpan },
+                  !isDetail && React.createElement('defs', null, React.createElement('clipPath', { id: 'solar-ts-eyepiece-clip' }, React.createElement('rect', { x: 24, y: 16, width: 572, height: 248 }))),
+                  React.createElement('rect', { x: 24, y: 16, width: 572, height: 248, className: 'solar-ts-frame' }),
+                  [24, 310, 596].map(function(x) { return React.createElement('line', { key: x, x1: x, x2: x, y1: 270, y2: 286, className: 'solar-ts-guide', 'data-ts-tick': x }); }),
+                  React.createElement('line', { x1: 24, x2: 596, y1: 140, y2: 140, className: 'solar-ts-grid' }),
+                  !isDetail && centersOutside && React.createElement('path', { d: 'M 40 130 L 30 140 L 40 150 M 580 130 L 590 140 L 580 150', className: 'solar-ts-offscreen', 'data-ts-offscreen': true }),
+                  React.createElement('g', { clipPath: isDetail ? undefined : 'url(#solar-ts-eyepiece-clip)' }, [-1, 1].map(function(sign, index) {
+                    var x = 310 + sign * separation * scale / 2, radius = rayleigh * scale;
+                    return React.createElement('g', { key: sign, className: 'solar-ts-star solar-ts-star-' + index },
+                      React.createElement('circle', { cx: x, cy: 140, r: radius, className: 'solar-ts-ring', 'data-ts-ring': index, 'data-radius': rayleigh }),
+                      React.createElement('path', { d: index === 0 ? 'M ' + (x - 5) + ' 140 H ' + (x + 5) + ' M ' + x + ' 135 V 145' : 'M ' + x + ' 134 L ' + (x + 6) + ' 140 L ' + x + ' 146 L ' + (x - 6) + ' 140 Z', className: 'solar-ts-center', 'data-ts-center': index, 'data-x': x }));
+                  }))),
+                React.createElement('div', { className: 'solar-ts-axis', 'aria-hidden': true }, [-1, 0, 1].map(function(sign) { return React.createElement('span', { key: sign, style: { left: (310 + sign * 286) / 620 * 100 + '%', transform: sign === -1 ? 'none' : sign === 1 ? 'translateX(-100%)' : 'translateX(-50%)' } }, sign === 0 ? '0' : (sign < 0 ? '−' : '+') + (isDetail ? fmt(halfSpan) : fieldArcmin / 2)); })),
+                React.createElement('p', { className: 'solar-ts-axis-title' }, isDetail ? 'Angular position on the sky (arcseconds)' : 'Apparent angular position (arcminutes)'),
+                !isDetail && React.createElement('div', { className: 'solar-ts-presets', role: 'group', 'aria-label': 'Magnified view field' }, [20, 120].map(function(field) { return React.createElement('button', { key: field, type: 'button', 'data-ts-field': field, 'aria-pressed': fieldArcmin === field, onClick: function() { upd('scopeFieldArcmin', field); } }, field === 20 ? '20 arcmin · close' : '120 arcmin · wide'); })),
+                React.createElement('p', { id: id + '-note', className: 'solar-ts-note', 'data-ts-centers-outside': !isDetail ? centersOutside : undefined, 'data-ts-crop-note': !isDetail ? cropped : undefined }, isDetail ? 'Center separation: ' + fmt(separation) + '″. First-dark-ring radius: ' + fmt(rayleigh) + '″. This view reframes to keep both ring boundaries visible; read its changing scale.' : magnif + '× enlarges the separation to ' + fmt(apparentSeparation) + ' arcmin and each ring radius to ' + fmt(apparentRadius) + ' arcmin.' + (centersOutside ? ' Both star centers lie outside this window; arrows show their directions. Choose 120 arcmin to include them.' : '') + (cropped ? ' Ring boundaries extend beyond this window and are cropped.' : ' Both ring boundaries fit in this window.') + ' Changing the field only changes the drawing scale; magnification and resolution stay the same.'));
+            }
+            return React.createElement('section', { id: 'solar-telescope', className: 'solar-telescope', style: palette, 'aria-labelledby': 'solar-ts-title', 'data-ts-aperture': aperture, 'data-ts-magnification': magnif, 'data-ts-separation': separation, 'data-ts-field': fieldArcmin },
+              React.createElement('div', { className: 'solar-ts-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-ts-eyebrow' }, 'Optical bench · light, detail and scale'), React.createElement('h4', { id: 'solar-ts-title' }, 'Telescope Aperture Lab')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle telescope explorer', 'aria-expanded': !!d.showScope, 'aria-controls': 'solar-ts-content', onClick: function() { upd('showScope', !d.showScope); } }, d.showScope ? 'Hide optical bench' : 'Explore the optical bench')),
+              React.createElement('div', { id: 'solar-ts-content', hidden: !d.showScope }, d.showScope ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-ts-intro' }, 'Can a larger image reveal more detail? Explore a pair of equal-brightness stars. Change the aperture to gather more light and narrow diffraction, then magnify the very same pair.'),
+                React.createElement('div', { className: 'solar-ts-controls' }, control('scopeAp', 'Aperture diameter', aperture, 2, 700, 1, 'cm', 'centimeters', [5, 10, 20, 35, 240, 650]), control('scopeMag', 'Magnification', magnif, 10, 500, 5, '×', 'times magnification', [10, 50, 200, 500]), control('scopeSeparation', 'Star separation', separation, 0.02, 10, 0.01, '″', 'arcseconds', [0.1, 1, 2, 10])),
+                React.createElement('div', { className: 'solar-ts-experiments' }, React.createElement('p', null, 'Compare the same 1-arcsecond pair:'), React.createElement('div', { className: 'solar-ts-presets', role: 'group', 'aria-label': 'Optical bench experiments' }, [[10, 50], [10, 200], [20, 200]].map(function(preset, index) { return React.createElement('button', { key: index, type: 'button', 'data-ts-experiment': index, 'aria-pressed': aperture === preset[0] && magnif === preset[1] && separation === 1, onClick: function() { upd('scopeAp', preset[0]); upd('scopeMag', preset[1]); upd('scopeSeparation', 1); } }, preset[0] + ' cm · ' + preset[1] + '×'); }))),
+                React.createElement('dl', { className: 'solar-ts-readouts' }, metric('Ideal light collection · vs 10 cm', fmt(lightRatio) + '×', 'light', lightRatio), metric('Rayleigh angle · at 550 nm', fmt(rayleigh) + '″', 'rayleigh', rayleigh), metric('Separation / Rayleigh angle', ratioText + '×', 'ratio', resolutionRatio)),
+                React.createElement('div', { className: 'solar-ts-verdict' }, React.createElement('strong', { 'data-ts-verdict': resolutionRatio < 1 ? 'below' : 'above' }, resolutionRatio < 1 ? 'Below the Rayleigh criterion' : 'At or above the Rayleigh criterion'), React.createElement('p', null, 'The star centers are ' + ratioText + ' first-dark-ring radii apart. Increasing magnification enlarges both the separation and diffraction by the same factor; it leaves this ratio unchanged.')),
+                React.createElement('div', { className: 'solar-ts-views' }, pair('detail', detailScale), pair('eyepiece', eyepieceScale)),
+                React.createElement('p', { id: 'solar-ts-ring-note', className: 'solar-ts-note solar-ts-legend' }, 'Schematic boundaries, not a star photograph: solid cyan ring + cross = star A; dashed orange ring + diamond = star B. Each outline marks the first dark ring around a diffraction pattern. Faint fills identify the two regions, not intensity. Center marks are enlarged for visibility.'),
+                React.createElement('div', { className: 'solar-ts-collection' },
+                  React.createElement('figure', null, React.createElement('figcaption', { id: 'solar-ts-area-title' }, '03 · Compare collecting areas'),
+                    React.createElement('svg', { viewBox: '0 0 560 240', role: 'img', 'aria-labelledby': 'solar-ts-area-title', 'aria-describedby': 'solar-ts-area-note' },
+                      React.createElement('circle', { cx: 140, cy: 120, r: 100 * aperture / Math.max(aperture, 10), className: 'solar-ts-aperture', 'data-ts-aperture-circle': 'selected' }),
+                      React.createElement('circle', { cx: 420, cy: 120, r: 100 * 10 / Math.max(aperture, 10), className: 'solar-ts-reference', 'data-ts-aperture-circle': 'reference' })),
+                    React.createElement('div', { className: 'solar-ts-area-labels' }, React.createElement('span', null, 'Selected · ' + aperture + ' cm'), React.createElement('span', null, 'Reference · 10 cm')),
+                    React.createElement('p', { id: 'solar-ts-area-note', className: 'solar-ts-note' }, 'Both circular openings share one scale, which reframes to fit the larger opening. At large apertures the reference becomes tiny; the numerical ratio remains exact. These are generic filled apertures, not models of specific telescopes.')),
+                  React.createElement('div', { className: 'solar-ts-area-summary' }, React.createElement('h5', null, 'A wider opening collects more light'), React.createElement('p', { className: 'solar-ts-area-value', 'data-ts-metric': 'area', 'data-value': area }, area.toFixed(4) + ' m²'), React.createElement('p', null, 'Ideal collecting area · π(D/2)²'), React.createElement('p', null, 'Doubling the diameter collects four times as much light and halves the Rayleigh angle. Magnification changes neither quantity.'), React.createElement('p', { className: 'solar-ts-note' }, 'The light ratio assumes equal exposure and throughput. It is not a prediction of eyepiece surface brightness or the faintest star you can see.'))),
+                React.createElement('div', { className: 'solar-ts-model' }, React.createElement('h5', null, 'How to read this optical bench'),
+                  React.createElement('p', null, 'Rayleigh angle θ ≈ 1.22λ/D radians, with λ = 550 nm green light and D in meters. One radian is 180/π degrees; one degree is 3600 arcseconds. At the Rayleigh criterion, one star center lies on the other’s first dark ring. The rings still overlap; they do not have to become disjoint.'),
+                  React.createElement('p', null, 'Assumptions: ideal unobstructed circular aperture, equal-brightness point sources and monochromatic light. Atmospheric seeing, aberrations, central obstructions, detector sampling and eye response are omitted. Rayleigh is a conventional separation criterion; actual detectability also depends on contrast and noise. The magnified view shows apparent angles in an illustrative window, not the true field of a particular eyepiece.'),
+                  React.createElement('a', { href: 'https://science.nasa.gov/wp-content/uploads/2023/09/Electromagnetic_Math.pdf', target: '_blank', rel: 'noopener noreferrer' }, 'Diffraction and angular resolution · NASA Space Math'),
+                  React.createElement('a', { href: 'https://nightsky.jpl.nasa.gov/documents/838/TTKWhatPower.pdf', target: '_blank', rel: 'noopener noreferrer' }, 'Aperture and light collection · NASA'),
+                  React.createElement('a', { href: 'https://supernova.eso.org/exhibition/0803/?lang=en', target: '_blank', rel: 'noopener noreferrer' }, 'Magnification and resolving power · ESO'))
+              ) : null));
+          }
+
+
+          function buildSolarAlbedo() {
+            // Illustrative independent cloud/surface columns, with global radiative equilibrium and emissivity 1.
+            var ice = typeof d.albIce === 'number' && isFinite(d.albIce) ? Math.round(Math.max(0, Math.min(100, d.albIce))) : 30;
+            var cloud = typeof d.albCloud === 'number' && isFinite(d.albCloud) ? Math.round(Math.max(0, Math.min(100, d.albCloud))) : 60;
+            var distance = typeof d.albDistanceAU === 'number' && isFinite(d.albDistanceAU) ? Math.round(Math.max(0.3, Math.min(5, d.albDistanceAU)) * 10) / 10 : 1;
+            var clearIce = (1 - cloud / 100) * ice / 100, clearDark = (1 - cloud / 100) * (1 - ice / 100), cloudy = cloud / 100;
+            var albedo = cloudy * 0.50 + clearIce * 0.60 + clearDark * 0.10;
+            var solarReference = 1361, sigma = 5.670374419e-8, irradiance = solarReference / (distance * distance), incoming = irradiance / 4;
+            var reflected = incoming * albedo, absorbed = incoming * (1 - albedo), temperature = Math.pow(absorbed / sigma, 0.25), emitted = sigma * Math.pow(temperature, 4);
+            var referenceTemperature = Math.pow(solarReference * (1 - albedo) / (4 * sigma), 0.25);
+            var columns = [{ key: 'cloud', name: 'Cloud-covered', weight: cloudy, reflectivity: 0.50 }, { key: 'ice', name: 'Clear ice', weight: clearIce, reflectivity: 0.60 }, { key: 'dark', name: 'Clear dark surface', weight: clearDark, reflectivity: 0.10 }];
+            var palette = { '--ab-bg': isDark ? '#020617' : '#ffffff', '--ab-panel': isDark ? '#0f172a' : '#f8fafc', '--ab-fg': isDark ? '#f1f5f9' : '#0f172a', '--ab-muted': isDark ? '#cbd5e1' : '#475569', '--ab-border': isDark ? '#475569' : '#cbd5e1', '--ab-accent': isDark ? '#fdba74' : '#9a3412', '--ab-stage': '#020617', '--ab-guide': '#cbd5e1', '--ab-current': '#fdba74', '--ab-reference': '#cbd5e1', '--ab-cloud': '#cbd5e1', '--ab-ice': '#93c5fd', '--ab-dark': '#64748b', '--ab-sunlight': '#fde68a', '--ab-reflected': '#67e8f9', '--ab-thermal': '#fdba74' };
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-ab-metric': key, 'data-value': value }, text)); }
+            function control(key, label, value, min, max, step, unit, presets) {
+              var id = 'solar-ab-' + key;
+              return React.createElement('div', { className: 'solar-ab-control', key: key }, React.createElement('label', { htmlFor: id }, label), React.createElement('output', { htmlFor: id }, value + ' ' + unit),
+                React.createElement('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value + (unit === '%' ? ' percent' : ' astronomical units'), 'aria-describedby': 'solar-ab-coverage-note', onChange: function(event) { var next = Number(event.target.value); if (isFinite(next)) upd(key, step === 0.1 ? Math.round(Math.max(min, Math.min(max, next)) * 10) / 10 : Math.round(Math.max(min, Math.min(max, next)))); } }),
+                React.createElement('div', { className: 'solar-ab-presets', role: 'group', 'aria-label': label + ' presets' }, presets.map(function(preset) { return React.createElement('button', { key: preset, type: 'button', 'data-ab-control': key, 'data-ab-value': preset, 'aria-pressed': value === preset, onClick: function() { upd(key, preset); } }, preset + ' ' + unit); })));
+            }
+            function budgetRow(kind) {
+              var id = 'solar-ab-' + kind, isIncoming = kind === 'incoming';
+              return React.createElement('div', { className: 'solar-ab-budget-row' }, React.createElement('h5', { id: id + '-title' }, isIncoming ? 'Incoming sunlight · 100%' : 'Outgoing energy at equilibrium · 100%'),
+                React.createElement('svg', { viewBox: '0 0 720 64', role: 'img', 'aria-labelledby': id + '-title', 'aria-describedby': 'solar-ab-budget-note', 'data-ab-budget': kind },
+                  isIncoming ? React.createElement('rect', { x: 24, y: 16, width: 672, height: 32, className: 'solar-ab-sunlight', 'data-ab-energy': 'incoming', 'data-fraction': 1, 'data-flux': incoming }) : React.createElement(React.Fragment, null,
+                    React.createElement('rect', { x: 24, y: 16, width: 672 * albedo, height: 32, className: 'solar-ab-reflected', 'data-ab-energy': 'reflected', 'data-fraction': albedo, 'data-flux': reflected }),
+                    React.createElement('rect', { x: 24 + 672 * albedo, y: 16, width: 672 * (1 - albedo), height: 32, className: 'solar-ab-thermal', 'data-ab-energy': 'thermal', 'data-fraction': 1 - albedo, 'data-flux': emitted }))),
+                isIncoming ? React.createElement('p', { className: 'solar-ab-note' }, incoming.toFixed(2) + ' W/m² globally averaged incoming sunlight.') : React.createElement('div', { className: 'solar-ab-energy-key' }, React.createElement('p', null, 'Left · reflected sunlight: ' + (100 * albedo).toFixed(1) + '%'), React.createElement('p', null, 'Right · emitted thermal energy: ' + (100 * (1 - albedo)).toFixed(1) + '%')));
+            }
+            var plotX = function(a) { return 16 + a * 588; }, plotY = function(kelvin) { return 276 - kelvin / 600 * 252; };
+            function curve(au) {
+              // Uniform temperature samples retain the steep limiting shape as albedo approaches 1.
+              var path = '', maximum = Math.pow(solarReference / (4 * sigma * au * au), 0.25);
+              for (var index = 0; index <= 120; index++) { var fraction = 1 - index / 120, a = 1 - Math.pow(fraction, 4), kelvin = maximum * fraction; path += (index ? ' L ' : 'M ') + plotX(a) + ' ' + plotY(kelvin); }
+              return path;
+            }
+            return React.createElement('section', { id: 'solar-albedo', className: 'solar-albedo', style: palette, 'aria-labelledby': 'solar-ab-title', 'data-ab-ice': ice, 'data-ab-cloud': cloud, 'data-ab-distance': distance, 'data-ab-albedo': albedo, 'data-ab-temperature': temperature },
+              React.createElement('div', { className: 'solar-ab-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-ab-eyebrow' }, 'Follow the energy · reflection and radiation'), React.createElement('h4', { id: 'solar-ab-title' }, 'Planetary Albedo Lab')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle albedo explorer', 'aria-expanded': !!d.showAlbedo, 'aria-controls': 'solar-ab-content', onClick: function() { upd('showAlbedo', !d.showAlbedo); } }, d.showAlbedo ? 'Hide albedo explorer' : 'Explore the energy budget')),
+              React.createElement('div', { id: 'solar-ab-content', hidden: !d.showAlbedo }, d.showAlbedo ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-ab-intro' }, 'Explore a planet around a Sun-like star. Set an illustrative mix of ice and cloud, follow how incoming sunlight is divided, and compare the effective radiating temperature at different distances.'),
+                React.createElement('div', { className: 'solar-ab-controls' }, control('albIce', 'Surface ice coverage', ice, 0, 100, 1, '%', [0, 30, 80, 100]), control('albCloud', 'Cloud coverage', cloud, 0, 100, 1, '%', [0, 60, 100]), control('albDistanceAU', 'Distance from the star', distance, 0.3, 5, 0.1, 'AU', [0.3, 1, 1.5, 5])),
+                React.createElement('p', { id: 'solar-ab-coverage-note', className: 'solar-ab-note' }, 'Cloud and surface ice coverage are independent in this toy model. Opaque cloud columns mask the surface below them. One astronomical unit (AU) is the reference Earth–Sun distance; distance changes incoming sunlight by the inverse-square law.'),
+                React.createElement('div', { className: 'solar-ab-presets', role: 'group', 'aria-label': 'Choose an illustrative coverage mix' }, [{ key: 'mixed', label: 'Mixed surface + cloud', ice: 30, cloud: 60 }, { key: 'dark', label: 'Dark + clear', ice: 0, cloud: 0 }, { key: 'ice', label: 'Ice + clear', ice: 100, cloud: 0 }, { key: 'cloud', label: 'Fully cloudy', ice: 30, cloud: 100 }].map(function(preset) { return React.createElement('button', { key: preset.key, type: 'button', 'data-ab-mix': preset.key, 'aria-pressed': ice === preset.ice && cloud === preset.cloud, onClick: function() { upd('albIce', preset.ice); upd('albCloud', preset.cloud); } }, preset.label); })),
+                React.createElement('div', { className: 'solar-ab-main' },
+                  React.createElement('figure', { className: 'solar-ab-columns' }, React.createElement('figcaption', { id: 'solar-ab-columns-title' }, 'Which columns reflect sunlight?'),
+                    React.createElement('svg', { viewBox: '0 0 720 80', role: 'img', 'aria-labelledby': 'solar-ab-columns-title', 'aria-describedby': 'solar-ab-column-note', 'data-ab-columns': true }, columns.map(function(column, index) { var preceding = columns.slice(0, index).reduce(function(sum, item) { return sum + item.weight; }, 0); return React.createElement('rect', { key: column.key, x: 24 + 672 * preceding, y: 20, width: 672 * column.weight, height: 40, className: 'solar-ab-column solar-ab-column-' + column.key, 'data-ab-column': column.key, 'data-weight': column.weight, 'data-reflectivity': column.reflectivity, 'data-contribution': column.weight * column.reflectivity }); })),
+                    React.createElement('p', { className: 'solar-ab-note', id: 'solar-ab-column-note' }, 'Left to right: cloud-covered, clear ice, clear dark surface. Widths show each effective area fraction. Cloud boundaries are dashed, ice dotted, and dark surface solid. Zero-area columns disappear.'),
+                    React.createElement('dl', { className: 'solar-ab-contributions' }, columns.map(function(column) { return React.createElement('div', { key: column.key, 'data-ab-component': column.key }, React.createElement('dt', null, column.name + ' · reflectivity ' + column.reflectivity.toFixed(2)), React.createElement('dd', null, (100 * column.weight).toFixed(1) + '% of area × ' + column.reflectivity.toFixed(2) + ' = ' + (column.weight * column.reflectivity).toFixed(3))); })),
+                    React.createElement('p', { className: 'solar-ab-note', 'data-ab-mask-note': true }, cloud === 100 ? 'With 100% cloud cover, all surface columns are masked: changing ice coverage cannot change this model’s albedo or temperature.' : ice > 80 ? 'Here, clear ice-rich columns reflect more than the assumed clouds. Adding clouds hides brighter surface and lowers albedo, so the effective radiating temperature rises. This is a shortwave masking effect in the toy model.' : ice === 80 ? 'At 80% ice, the clear-surface average and cloud reflectivity both equal 0.50. Changing cloud coverage therefore leaves this model’s albedo unchanged.' : 'For this surface mix, the assumed clouds reflect more than the clear-surface average. Adding clouds raises albedo and lowers effective radiating temperature.')),
+                  React.createElement('div', { className: 'solar-ab-readout-card' }, React.createElement('h5', null, 'Effective radiating temperature'),
+                    React.createElement('p', { className: 'solar-ab-temperature', 'data-ab-metric': 'temperature', 'data-value': temperature }, temperature.toFixed(2) + ' K'),
+                    React.createElement('p', { className: 'solar-ab-note' }, (temperature - 273.15).toFixed(2) + ' °C equivalent · this is not a predicted surface temperature.'),
+                    React.createElement('dl', { className: 'solar-ab-readouts' }, metric('Bond albedo · reflected fraction', albedo.toFixed(3), 'albedo', albedo), metric('Irradiance facing the star', irradiance.toFixed(2) + ' W/m²', 'irradiance', irradiance), metric('Globally averaged incoming sunlight', incoming.toFixed(2) + ' W/m²', 'incoming', incoming), metric('Reflected sunlight', reflected.toFixed(2) + ' W/m²', 'reflected', reflected), metric('Absorbed solar energy', absorbed.toFixed(2) + ' W/m²', 'absorbed', absorbed), metric('Emitted thermal energy · equilibrium', emitted.toFixed(2) + ' W/m²', 'emitted', emitted)),
+                    React.createElement('p', { className: 'solar-ab-note' }, 'Absorbed solar energy equals outgoing thermal energy at equilibrium. Reflection redirects sunlight; thermal emission releases energy absorbed by the planet.'))),
+                React.createElement('figure', { className: 'solar-ab-budget' }, React.createElement('figcaption', null, 'Energy in = energy out'), budgetRow('incoming'), budgetRow('outgoing'),
+                  React.createElement('p', { id: 'solar-ab-budget-note', className: 'solar-ab-note' }, 'Both bars use the same 100% incoming-energy scale. Outgoing energy is reflected sunlight plus thermal radiation. Thermal emission comes from absorbed energy; absorption is not a third outgoing share. All fluxes below the irradiance readout are global averages.')),
+                React.createElement('figure', { className: 'solar-ab-curve' }, React.createElement('figcaption', { id: 'solar-ab-curve-title' }, 'More reflection · less energy to radiate'),
+                  React.createElement('p', { className: 'solar-ab-note' }, 'Effective radiating temperature (K) · fixed 0–600 K scale'),
+                  React.createElement('div', { className: 'solar-ab-plot-row' },
+                    React.createElement('div', { className: 'solar-ab-yaxis', 'aria-hidden': true }, [0, 200, 400, 600].map(function(value) { return React.createElement('span', { key: value, style: { top: plotY(value) / 300 * 100 + '%' } }, value); })),
+                    React.createElement('svg', { viewBox: '0 0 620 300', role: 'img', 'aria-labelledby': 'solar-ab-curve-title', 'aria-describedby': 'solar-ab-curve-note', 'data-ab-curve-map': true },
+                      [0, 200, 400, 600].map(function(value) { return React.createElement('line', { key: 'y' + value, x1: 16, x2: 604, y1: plotY(value), y2: plotY(value), className: 'solar-ab-grid', 'data-ab-y-tick': value }); }),
+                      [0, 0.25, 0.5, 0.75, 1].map(function(value) { return React.createElement('line', { key: 'x' + value, x1: plotX(value), x2: plotX(value), y1: 24, y2: 281, className: 'solar-ab-grid', 'data-ab-x-tick': value }); }),
+                      React.createElement('path', { d: curve(1), className: 'solar-ab-reference-curve', 'data-ab-curve-path': 'reference', 'data-distance': 1 }),
+                      React.createElement('path', { d: curve(distance), className: 'solar-ab-current-curve', 'data-ab-curve-path': 'current', 'data-distance': distance }),
+                      React.createElement('path', { d: 'M 16 ' + plotY(temperature) + ' H ' + plotX(albedo) + ' V 276', className: 'solar-ab-selection-guide' }),
+                      React.createElement('circle', { cx: plotX(albedo), cy: plotY(temperature), r: 5, className: 'solar-ab-selected', 'data-ab-selected': true, 'data-albedo': albedo, 'data-temperature': temperature }))),
+                  React.createElement('div', { className: 'solar-ab-xaxis', 'aria-hidden': true }, [0, 0.25, 0.5, 0.75, 1].map(function(value, index) { return React.createElement('span', { key: value, style: { left: plotX(value) / 620 * 100 + '%', transform: index === 0 ? 'none' : index === 4 ? 'translateX(-100%)' : 'translateX(-50%)' } }, Math.round(value * 100)); })),
+                  React.createElement('p', { className: 'solar-ab-axis-title' }, 'Bond albedo · reflected sunlight (%)'),
+                  React.createElement('div', { className: 'solar-ab-legend' }, React.createElement('span', null, 'Solid curve + circle · ' + distance.toFixed(1) + ' AU'), React.createElement('span', null, 'Dashed curve · 1 AU reference')),
+                  React.createElement('p', { id: 'solar-ab-curve-note', className: 'solar-ab-note' }, 'The circle marks the selected coverage mix. Curves vary albedo from 0 to 1 at a fixed distance; not every curve point is reachable with these illustrative coverage coefficients. The same mix at 1 AU would radiate at ' + referenceTemperature.toFixed(2) + ' K.' + (distance === 1 ? ' At 1 AU, both curves coincide.' : '') + ' The zero-temperature endpoint assumes perfect reflection and no other heat sources; it is an ideal model limit.')),
+                React.createElement('div', { className: 'solar-ab-model' }, React.createElement('h5', null, 'What this energy model assumes'),
+                  React.createElement('p', null, 'Illustrative column reflectivities: cloud 0.50, clear ice 0.60, clear dark surface 0.10. They are fixed teaching choices, not measured planetary properties. Each column type receives the same average sunlight; latitude and seasonal weighting are omitted. A = C × 0.50 + (1 − C) × (I × 0.60 + (1 − I) × 0.10), where I and C are coverage fractions.'),
+                  React.createElement('p', null, 'Using nominal solar irradiance S₀ = 1361 W/m² at 1 AU: S = S₀/r²; global incoming flux = S/4; T = [(1 − A)S/(4σ)]¼, with σ = 5.670374419 × 10⁻⁸ W m⁻² K⁻⁴. A sphere intercepts sunlight over πR² and radiates over 4πR², producing the factor of four.'),
+                  React.createElement('p', null, 'Thermal emissivity is 1, with no internal heat or greenhouse warming. This is an effective uniform radiating temperature, not a climate simulation. It does not calculate ice-albedo feedback, weather, cloud greenhouse effects, surface freezing or habitability. Ice and cloud coverage are inputs and do not evolve with temperature.'),
+                  React.createElement('a', { href: 'https://science.nasa.gov/earth/earth-observatory/climate-and-earths-energy-budget/', target: '_blank', rel: 'noopener noreferrer' }, 'Planetary energy budget · NASA'),
+                  React.createElement('a', { href: 'https://earth.gsfc.nasa.gov/climate/projects/solar-irradiance/science', target: '_blank', rel: 'noopener noreferrer' }, 'Solar irradiance · NASA'),
+                  React.createElement('a', { href: 'https://physics.nist.gov/cuu/Constants/Table/allascii.txt', target: '_blank', rel: 'noopener noreferrer' }, 'Stefan–Boltzmann constant · NIST'))
+              ) : null));
+          }
+
+          function buildSolarDoppler() {
+            // Longitudinal special-relativistic Doppler shift in vacuum; positive v means recession.
+            var speedOfLight = 299792.458;
+            var velocity = typeof d.dopplerVel === 'number' && isFinite(d.dopplerVel) ? Math.round(Math.max(-50000, Math.min(50000, d.dopplerVel)) / 100) * 100 || 0 : 0;
+            var rest = typeof d.dopplerRestNm === 'number' && isFinite(d.dopplerRestNm) ? Math.round(Math.max(400, Math.min(700, d.dopplerRestNm))) : 650;
+            var beta = velocity / speedOfLight, ratio = Math.sqrt((1 + beta) / (1 - beta)), observed = rest * ratio, delta = observed - rest, redshift = ratio - 1;
+            var direction = velocity > 0 ? 'receding' : velocity < 0 ? 'approaching' : 'rest';
+            var status = velocity > 0 ? 'Redshift · moving away' : velocity < 0 ? 'Blueshift · moving toward' : 'At rest relative to the observer';
+            var overviewMin = 320, overviewMax = 840;
+            var detailSpan = Math.max(2, Math.abs(delta) * 1.6), detailMin = Math.max(overviewMin, Math.min(overviewMax - detailSpan, (rest + observed) / 2 - detailSpan / 2)), detailMax = detailMin + detailSpan;
+            var observedColor = velocity > 0 ? '#fda4af' : velocity < 0 ? '#67e8f9' : '#e2e8f0';
+            var palette = { '--dp-bg': isDark ? '#020617' : '#ffffff', '--dp-panel': isDark ? '#0f172a' : '#f8fafc', '--dp-fg': isDark ? '#f1f5f9' : '#0f172a', '--dp-muted': isDark ? '#cbd5e1' : '#475569', '--dp-border': isDark ? '#475569' : '#cbd5e1', '--dp-accent': isDark ? '#67e8f9' : '#0e7490', '--dp-stage': '#020617', '--dp-guide': '#cbd5e1', '--dp-observed': observedColor };
+            function signed(value, places) { return (value > 0 ? '+' : '') + value.toFixed(places); }
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-dp-metric': key, 'data-value': value }, text)); }
+            function lane(role, min, max, detail) {
+              var value = role === 'rest' ? rest : observed, id = 'solar-dp-' + (detail ? 'detail' : 'overview') + '-' + role;
+              var plot = function(wavelength) { return 24 + (wavelength - min) / (max - min) * 672; }, x = plot(value), restX = plot(rest);
+              var ticks = detail ? [min, (min + max) / 2, max] : [320, 500, 600, 700, 840];
+              return React.createElement('div', { className: 'solar-dp-lane', 'data-dp-lane': role, 'data-detail': !!detail, 'data-min': min, 'data-max': max },
+                React.createElement('h5', { id: id + '-title' }, role === 'rest' ? 'Rest reference · dashed mark' : 'Observed line · solid mark + diamond'),
+                React.createElement('svg', { viewBox: '0 0 720 104', role: 'img', 'aria-labelledby': id + '-title', 'aria-describedby': id + '-note solar-dp-scale-note', 'data-dp-spectrum': true },
+                  React.createElement('line', { x1: 24, y1: 78, x2: 696, y2: 78, className: 'solar-dp-ruler' }),
+                  ticks.map(function(tick, index) { return React.createElement('line', { key: index, x1: plot(tick), x2: plot(tick), y1: 78, y2: 89, className: 'solar-dp-ruler', 'data-dp-tick': tick }); }),
+                  role === 'observed' ? React.createElement('line', { x1: restX, x2: restX, y1: 19, y2: 70, className: 'solar-dp-rest-guide', 'data-dp-rest-guide': rest }) : null,
+                  React.createElement('line', { x1: x, x2: x, y1: 23, y2: 65, className: role === 'rest' ? 'solar-dp-reference-line' : 'solar-dp-observed-line', 'data-dp-line': value }),
+                  role === 'observed' ? React.createElement('path', { d: 'M ' + x + ' 5 L ' + (x + 5) + ' 11 L ' + x + ' 17 L ' + (x - 5) + ' 11 Z', className: 'solar-dp-diamond' }) : null),
+                React.createElement('div', { className: 'solar-dp-axis', 'aria-hidden': true }, ticks.map(function(tick, index) { return React.createElement('span', { key: index, style: { left: plot(tick) / 720 * 100 + '%', transform: index === 0 ? 'none' : index === ticks.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)' } }, detail ? tick.toFixed(2) : tick); })),
+                React.createElement('p', { id: id + '-note', className: 'solar-dp-note' }, (role === 'rest' ? 'Rest: ' : 'Observed: ') + value.toFixed(4) + ' nm.' + (role === 'observed' ? ' The dashed guide repeats the rest wavelength for alignment.' : ' This is an illustrative vacuum wavelength, not an identified atomic line.')));
+            }
+            return React.createElement('section', { id: 'solar-doppler', className: 'solar-doppler', style: palette, 'aria-labelledby': 'solar-dp-title', 'data-dp-velocity': velocity, 'data-dp-rest': rest, 'data-dp-observed': observed, 'data-dp-ratio': ratio, 'data-dp-direction': direction },
+              React.createElement('div', { className: 'solar-dp-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-dp-eyebrow' }, 'Read motion · measure a wavelength shift'), React.createElement('h4', { id: 'solar-dp-title' }, 'Doppler Shift Lab')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle Doppler explorer', 'aria-expanded': !!d.showDoppler, 'aria-controls': 'solar-dp-content', onClick: function() { upd('showDoppler', !d.showDoppler); } }, d.showDoppler ? 'Hide Doppler explorer' : 'Explore Doppler shifts')),
+              React.createElement('div', { id: 'solar-dp-content', hidden: !d.showDoppler }, d.showDoppler ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-dp-intro' }, 'Move a light source directly toward or away from an observer. Compare its rest wavelength with the observed wavelength on the same ruler, then inspect the separation in a close-up.'),
+                React.createElement('div', { className: 'solar-dp-controls' },
+                  React.createElement('div', { className: 'solar-dp-control' }, React.createElement('label', { htmlFor: 'solar-dp-velocity' }, 'Radial velocity'), React.createElement('output', { htmlFor: 'solar-dp-velocity' }, signed(velocity, 0) + ' km/s'),
+                    React.createElement('input', { id: 'solar-dp-velocity', type: 'range', min: -50000, max: 50000, step: 100, value: velocity, 'aria-valuetext': Math.abs(velocity) + ' kilometers per second, ' + (direction === 'rest' ? 'at rest' : direction), 'aria-describedby': 'solar-dp-sign-note', onChange: function(event) { var value = Number(event.target.value); if (isFinite(value)) upd('dopplerVel', Math.round(Math.max(-50000, Math.min(50000, value)) / 100) * 100 || 0); } }),
+                    React.createElement('p', { id: 'solar-dp-sign-note', className: 'solar-dp-note' }, 'Negative: toward the observer. Positive: away. Speeds are exaggerated to make wavelength changes easy to explore.'),
+                    React.createElement('div', { className: 'solar-dp-presets', role: 'group', 'aria-label': 'Choose a radial velocity' }, [['Toward · −30,000', -30000], ['Toward · −1,000', -1000], ['At rest · 0', 0], ['Away · +1,000', 1000], ['Away · +30,000', 30000]].map(function(preset) { return React.createElement('button', { key: preset[1], type: 'button', 'data-dp-velocity-preset': preset[1], 'aria-pressed': velocity === preset[1], onClick: function() { upd('dopplerVel', preset[1]); } }, preset[0]); }))),
+                  React.createElement('div', { className: 'solar-dp-control' }, React.createElement('label', { htmlFor: 'solar-dp-rest' }, 'Rest wavelength'), React.createElement('output', { htmlFor: 'solar-dp-rest' }, rest + ' nm'),
+                    React.createElement('input', { id: 'solar-dp-rest', type: 'range', min: 400, max: 700, step: 1, value: rest, 'aria-valuetext': rest + ' nanometers in vacuum', 'aria-describedby': 'solar-dp-rest-note', onChange: function(event) { var value = Number(event.target.value); if (isFinite(value)) upd('dopplerRestNm', Math.round(Math.max(400, Math.min(700, value)))); } }),
+                    React.createElement('p', { id: 'solar-dp-rest-note', className: 'solar-dp-note' }, 'Choose an illustrative reference line. Every wavelength receives the same multiplicative Doppler factor at a given velocity.'),
+                    React.createElement('div', { className: 'solar-dp-presets', role: 'group', 'aria-label': 'Choose a rest wavelength' }, [450, 550, 650].map(function(value) { return React.createElement('button', { key: value, type: 'button', 'data-dp-rest-preset': value, 'aria-pressed': rest === value, onClick: function() { upd('dopplerRestNm', value); } }, value + ' nm'); })))),
+                React.createElement('div', { className: 'solar-dp-main' },
+                  React.createElement('figure', { className: 'solar-dp-motion' }, React.createElement('figcaption', { id: 'solar-dp-motion-title' }, 'Line of sight · observer at left'),
+                    React.createElement('svg', { viewBox: '0 0 640 170', role: 'img', 'aria-labelledby': 'solar-dp-motion-title', 'aria-describedby': 'solar-dp-motion-note solar-dp-status', 'data-dp-motion': true },
+                      React.createElement('line', { x1: 96, y1: 88, x2: 550, y2: 88, className: 'solar-dp-sightline' }),
+                      React.createElement('circle', { cx: 96, cy: 88, r: 21, className: 'solar-dp-observer', 'data-dp-observer': true }),
+                      React.createElement('path', { d: 'M 400 64 L 424 88 L 400 112 L 376 88 Z', className: 'solar-dp-source', 'data-dp-source': true }),
+                      velocity !== 0 ? React.createElement('path', { d: velocity > 0 ? 'M 430 88 H 556 M 544 78 L 556 88 L 544 98' : 'M 370 88 H 244 M 256 78 L 244 88 L 256 98', className: 'solar-dp-motion-arrow', 'data-dp-arrow': direction, 'data-start-x': velocity > 0 ? 430 : 370, 'data-end-x': velocity > 0 ? 556 : 244 }) : null),
+                    React.createElement('div', { className: 'solar-dp-legend' }, React.createElement('span', null, '● Observer'), React.createElement('span', null, '◆ Light source')),
+                    React.createElement('p', { className: 'solar-dp-status', id: 'solar-dp-status', 'data-dp-status': direction }, status),
+                    React.createElement('p', { id: 'solar-dp-motion-note', className: 'solar-dp-note' }, 'A fixed-position snapshot: the arrow indicates the source’s direction relative to the observer. Arrow length does not encode speed, distance or elapsed travel. Light travels at c in vacuum in both frames.')),
+                  React.createElement('div', { className: 'solar-dp-readout-card' }, React.createElement('h5', null, 'Read the shift'),
+                    React.createElement('dl', { className: 'solar-dp-readouts' }, metric('Observed wavelength', observed.toFixed(4) + ' nm', 'observed', observed), metric('Change from rest', signed(delta, 4) + ' nm', 'delta', delta), metric('Wavelength factor · λ observed / λ rest', ratio.toFixed(6) + '×', 'ratio', ratio), metric('Redshift parameter · z', signed(redshift, 6), 'z', redshift), metric('Frequency factor · f observed / f rest', (1 / ratio).toFixed(6) + '×', 'frequency', 1 / ratio), metric('Velocity as a fraction of c', signed(beta, 6), 'beta', beta)),
+                    React.createElement('p', { className: 'solar-dp-note' }, velocity > 0 ? 'A longer wavelength means a lower observed frequency. Redshift describes the change; the light need not look red.' : velocity < 0 ? 'A shorter wavelength means a higher observed frequency. Blueshift describes the change; the light need not look blue.' : 'With zero relative radial velocity, the observed and rest wavelengths agree. The two rows align exactly.'))),
+                React.createElement('figure', { className: 'solar-dp-overview' }, React.createElement('figcaption', null, 'Fixed ruler · 320–840 nm'), lane('rest', overviewMin, overviewMax, false), lane('observed', overviewMin, overviewMax, false),
+                  React.createElement('p', { id: 'solar-dp-scale-note', className: 'solar-dp-note' }, 'Wavelength increases to the right; nm means nanometers. Both rows share one scale. Blue and red are direction cues, not calibrated visible colors; this ruler includes ultraviolet and near infrared. Marks have enlarged widths for readability, not physical line widths or brightness.')),
+                React.createElement('figure', { className: 'solar-dp-detail', id: 'solar-dp-detail' }, React.createElement('figcaption', null, 'Automatic close-up · compare the separation'),
+                  React.createElement('p', { className: 'solar-dp-note', 'data-dp-window': true, 'data-span': detailSpan }, detailMin.toFixed(4) + '–' + detailMax.toFixed(4) + ' nm · ' + detailSpan.toFixed(4) + ' nm window. This view rescales to include both wavelengths, with a minimum width of 2 nm. Use the fixed ruler above to compare shifts across different velocities. This drawing does not simulate an instrument’s resolving power.'), lane('rest', detailMin, detailMax, true), lane('observed', detailMin, detailMax, true)),
+                React.createElement('div', { className: 'solar-dp-model' }, React.createElement('h5', null, 'What the model assumes'),
+                  React.createElement('p', null, 'For motion directly along the line of sight: β = v/c; λ observed / λ rest = √((1 + β)/(1 − β)); z = λ observed / λ rest − 1. The speed of light is exactly 299,792.458 km/s. All wavelengths here use the vacuum convention.'),
+                  React.createElement('p', null, 'This is special-relativistic relative motion between inertial source and observer frames. It does not model transverse motion, gravitational redshift, expanding-space cosmological redshift, line broadening or intensity changes. Redshift alone does not determine a distance in this model.'),
+                  React.createElement('a', { href: 'https://farside.ph.utexas.edu/teaching/355/Surveyhtml/node151.html', target: '_blank', rel: 'noopener noreferrer' }, 'Relativistic Doppler derivation · UT Austin'),
+                  React.createElement('a', { href: 'https://physics.nist.gov/cgi-bin/cuu/Value?c', target: '_blank', rel: 'noopener noreferrer' }, 'Speed of light · NIST'),
+                  React.createElement('a', { href: 'https://www.astro.ucla.edu/~wright/doppler.htm', target: '_blank', rel: 'noopener noreferrer' }, 'Cosmological redshift · UCLA'))
+              ) : null));
+          }
+
+          function buildSolarSpectroscopy() {
+            // Selected neutral-atom components from NIST's air-wavelength strong-line tables, converted from angstroms to nm.
+            var elements = {
+              hydrogen: { name: 'Hydrogen', symbol: 'H I', lines: [410.174, 434.0462, 486.13615, 656.28518] },
+              helium: { name: 'Helium', symbol: 'He I', lines: [388.86489, 402.6191, 447.1479, 501.5678, 587.56148, 667.81517, 706.51771, 728.135] },
+              sodium: { name: 'Sodium', symbol: 'Na I', lines: [568.2633, 568.8205, 588.995, 589.5924, 615.4225, 616.0747] },
+              neon: { name: 'Neon', symbol: 'Ne I', lines: [540.05618, 585.24879, 602.99969, 614.30626, 640.2248, 650.65281, 692.94673, 703.24131] },
+              mercury: { name: 'Mercury', symbol: 'Hg I', lines: [404.6563, 435.8328, 546.0735, 576.9598, 579.0663, 708.19] },
+              argon: { name: 'Argon', symbol: 'Ar I', lines: [696.5431, 706.7218, 727.2936, 738.398, 750.3869, 751.4652, 763.5106, 794.8176] }
+            };
+            var keys = Object.keys(elements), element = keys.indexOf(d.spectroElem) >= 0 ? d.spectroElem : 'hydrogen';
+            var comparison = d.spectroCompare === 'none' || keys.indexOf(d.spectroCompare) >= 0 ? d.spectroCompare : 'sodium';
+            var selected = elements[element], reference = comparison === 'none' ? null : elements[comparison];
+            var index = typeof d.spectroLineIndex === 'number' && isFinite(d.spectroLineIndex) ? Math.max(0, Math.min(selected.lines.length - 1, Math.round(d.spectroLineIndex))) : 0;
+            var span = typeof d.spectroSpanNm === 'number' && isFinite(d.spectroSpanNm) ? Math.round(Math.max(2, Math.min(100, d.spectroSpanNm)) / 2) * 2 : 20;
+            var wavelength = selected.lines[index], low = Math.max(380, Math.min(800 - span, wavelength - span / 2)), high = low + span;
+            var nearest = reference ? reference.lines.reduce(function(best, line) { return Math.abs(line - wavelength) < Math.abs(best - wavelength) ? line : best; }, reference.lines[0]) : null;
+            var gap = nearest === null ? null : Math.abs(nearest - wavelength);
+            var palette = { '--sp-bg': isDark ? '#020617' : '#ffffff', '--sp-panel': isDark ? '#0f172a' : '#f8fafc', '--sp-fg': isDark ? '#f1f5f9' : '#0f172a', '--sp-muted': isDark ? '#cbd5e1' : '#475569', '--sp-border': isDark ? '#475569' : '#cbd5e1', '--sp-accent': isDark ? '#c4b5fd' : '#6d28d9', '--sp-stage': '#020617', '--sp-guide': '#cbd5e1', '--sp-mark': '#ffffff' };
+            function color(line) { return line < 440 ? '#c4b5fd' : line < 490 ? '#60a5fa' : line < 510 ? '#22d3ee' : line < 570 ? '#4ade80' : line < 600 ? '#fde047' : line < 640 ? '#fb923c' : line <= 700 ? '#f87171' : '#cbd5e1'; }
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-sp-metric': key, 'data-value': value }, text)); }
+            function lane(key, min, max, zoomed, role) {
+              var item = elements[key], visible = item.lines.filter(function(line) { return line >= min && line <= max; });
+              var prefix = 'solar-sp-' + (zoomed ? 'detail' : 'overview') + '-' + role, plot = function(line) { return 24 + (line - min) / (max - min) * 672; };
+              var ticks = zoomed ? [min, (min + max) / 2, max] : [380, 500, 600, 700, 800];
+              return React.createElement('div', { className: 'solar-sp-lane', key: role, 'data-sp-lane': role, 'data-element': key, 'data-zoomed': !!zoomed, 'data-min': min, 'data-max': max },
+                React.createElement('h5', { id: prefix + '-title' }, (role === 'primary' ? 'Selected · ' : 'Reference · ') + item.name + ' (' + item.symbol + ')'),
+                React.createElement('svg', { viewBox: '0 0 720 104', role: 'img', 'aria-labelledby': prefix + '-title', 'aria-describedby': prefix + '-note solar-sp-color-note', 'data-sp-spectrum': true },
+                  React.createElement('line', { x1: 24, y1: 78, x2: 696, y2: 78, className: 'solar-sp-ruler' }),
+                  ticks.map(function(tick, i) { return React.createElement('line', { key: i, x1: plot(tick), y1: 78, x2: plot(tick), y2: 89, className: 'solar-sp-ruler', 'data-sp-tick': tick }); }),
+                  visible.map(function(line) { return React.createElement('line', { key: line, x1: plot(line), y1: 23, x2: plot(line), y2: 65, className: 'solar-sp-line', style: { stroke: color(line) }, 'data-sp-line': line, 'data-region': line > 700 ? 'red-edge-near-infrared' : 'visible' }); }),
+                  wavelength >= min && wavelength <= max ? React.createElement('path', { d: 'M ' + plot(wavelength) + ' 19 V 70', className: 'solar-sp-cursor', 'data-sp-cursor': wavelength, 'data-x': plot(wavelength) }) : null,
+                  role === 'primary' ? React.createElement('path', { d: 'M ' + (plot(wavelength) - 5) + ' 7 L ' + plot(wavelength) + ' 15 L ' + (plot(wavelength) + 5) + ' 7 Z', className: 'solar-sp-marker' }) : null),
+                React.createElement('div', { className: 'solar-sp-axis', 'aria-hidden': true }, ticks.map(function(tick, i) { return React.createElement('span', { key: i, style: { left: plot(tick) / 720 * 100 + '%', transform: i === 0 ? 'none' : i === ticks.length - 1 ? 'translateX(-100%)' : 'translateX(-50%)' } }, zoomed ? tick.toFixed(2) : tick); })),
+                React.createElement('p', { id: prefix + '-note', className: 'solar-sp-note' }, visible.length + ' of ' + item.lines.length + ' selected reference lines in this window.' + (visible.length === 0 ? ' This does not mean the element has no spectral lines here; the library is a small teaching subset.' : '') + (role === 'reference' ? ' The dashed guide marks the selected element’s wavelength for alignment.' : ' The triangle marks the selected line.')),
+                role === 'reference' && visible.length ? React.createElement('p', { className: 'solar-sp-note', 'data-sp-reference-values': true }, 'Reference wavelengths in view (nm): ' + visible.map(function(line) { return line.toFixed(4); }).join(' · ')) : null);
+            }
+            return React.createElement('section', { id: 'solar-spectroscopy', className: 'solar-spectroscopy', style: palette, 'aria-labelledby': 'solar-sp-title', 'data-sp-element': element, 'data-sp-comparison': comparison, 'data-sp-index': index, 'data-sp-span': span, 'data-sp-wavelength': wavelength },
+              React.createElement('div', { className: 'solar-sp-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-sp-eyebrow' }, 'Read light · compare line patterns'), React.createElement('h4', { id: 'solar-sp-title' }, 'Spectroscopy Lab')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle spectroscopy explorer', 'aria-expanded': !!d.showSpectro, 'aria-controls': 'solar-sp-content', onClick: function() { upd('showSpectro', !d.showSpectro); } }, d.showSpectro ? 'Hide spectrum explorer' : 'Explore the spectra')),
+              React.createElement('div', { id: 'solar-sp-content', hidden: !d.showSpectro }, d.showSpectro ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-sp-intro' }, 'Compare where selected neutral atoms emit light. Keep two patterns on the same wavelength ruler, then magnify a small interval to inspect neighboring lines.'),
+                React.createElement('h5', null, 'Choose an element'),
+                React.createElement('div', { className: 'solar-sp-presets', role: 'group', 'aria-label': 'Choose the primary spectrum' }, keys.map(function(key) { return React.createElement('button', { key: key, type: 'button', 'data-sp-element-preset': key, 'aria-pressed': element === key, onClick: function() { upd('spectroElem', key); } }, elements[key].name); })),
+                React.createElement('h5', null, 'Compare with a reference'),
+                React.createElement('div', { className: 'solar-sp-presets', role: 'group', 'aria-label': 'Choose a comparison spectrum' }, ['none'].concat(keys).map(function(key) { return React.createElement('button', { key: key, type: 'button', 'data-sp-compare-preset': key, 'aria-pressed': comparison === key, onClick: function() { upd('spectroCompare', key); } }, key === 'none' ? 'No comparison' : elements[key].name); })),
+                comparison === element ? React.createElement('p', { className: 'solar-sp-note' }, 'The same element is selected twice, so these reference patterns coincide.') : null,
+                React.createElement('figure', { className: 'solar-sp-overview' }, React.createElement('figcaption', null, '380–800 nm · visible to near infrared'),
+                  lane(element, 380, 800, false, 'primary'), reference ? lane(comparison, 380, 800, false, 'reference') : null,
+                  React.createElement('p', { id: 'solar-sp-color-note', className: 'solar-sp-note' }, 'Wavelength increases to the right; nm means nanometers. Colors are illustrative cues, not calibrated eye or camera colors. Gray marks the red edge / near infrared above 700 nm; human sensitivity fades gradually. Line widths and brightness are enlarged uniformly for readability and do not measure intensity.'),
+                  React.createElement('p', { className: 'solar-sp-note' }, 'Closely spaced lines can overlap at this broad scale. Their positions are preserved; use the close-up and individual line buttons to inspect them.')),
+                React.createElement('div', { className: 'solar-sp-main' },
+                  React.createElement('div', { className: 'solar-sp-inspector' }, React.createElement('h5', null, 'Inspect a line · ' + selected.symbol),
+                    React.createElement('p', { className: 'solar-sp-note' }, 'Choose a listed air wavelength. Each button remains available even when neighboring marks overlap in the overview.'),
+                    React.createElement('div', { className: 'solar-sp-lines', role: 'group', 'aria-label': 'Select a ' + selected.name.toLowerCase() + ' spectral line' }, selected.lines.map(function(line, i) { return React.createElement('button', { key: line, type: 'button', 'data-sp-line-index': i, 'data-wavelength': line, 'aria-pressed': i === index, 'aria-controls': 'solar-sp-detail', onClick: function() { upd('spectroLineIndex', i); } }, line.toFixed(4) + ' nm'); })),
+                    React.createElement('dl', { className: 'solar-sp-readouts' }, metric('Selected air wavelength', wavelength.toFixed(4) + ' nm', 'wavelength', wavelength),
+                      reference ? metric('Nearest line in ' + reference.symbol + ' subset', nearest.toFixed(4) + ' nm', 'nearest', nearest) : null,
+                      reference ? metric('Separation from that reference line', gap.toFixed(4) + ' nm', 'difference', gap) : null),
+                    React.createElement('p', { className: 'solar-sp-note' }, 'A nearby line alone does not identify an element. Compare several features, and account for temperature, ionization, blends and wavelength shifts in real spectra.'),
+                    React.createElement('p', { className: 'solar-sp-hint' }, 'Try sodium · Select 588.9950 or 589.5924 nm, then use a 2 nm window. The two D lines are 0.5974 nm apart. A magnified drawing separates their markers; it does not simulate an instrument’s resolving power.')),
+                  React.createElement('figure', { className: 'solar-sp-detail', id: 'solar-sp-detail' }, React.createElement('figcaption', null, 'Close-up · one shared wavelength window'),
+                    React.createElement('div', { className: 'solar-sp-control' }, React.createElement('label', { htmlFor: 'solar-sp-span' }, 'Close-up window width'), React.createElement('output', { htmlFor: 'solar-sp-span' }, span + ' nm'),
+                      React.createElement('input', { id: 'solar-sp-span', type: 'range', min: 2, max: 100, step: 2, value: span, 'aria-valuetext': span + ' nanometer window', 'aria-describedby': 'solar-sp-window-note', onChange: function(event) { var value = Number(event.target.value); if (isFinite(value)) upd('spectroSpanNm', Math.max(2, Math.min(100, Math.round(value / 2) * 2))); } })),
+                    React.createElement('div', { className: 'solar-sp-presets', role: 'group', 'aria-label': 'Choose a wavelength window' }, [2, 20, 100].map(function(value) { return React.createElement('button', { key: value, type: 'button', 'data-sp-span-preset': value, 'aria-pressed': span === value, onClick: function() { upd('spectroSpanNm', value); } }, value + ' nm'); })),
+                    React.createElement('p', { id: 'solar-sp-window-note', className: 'solar-sp-note' }, low.toFixed(4) + '–' + high.toFixed(4) + ' nm. The window follows the selected line and stays within 380–800 nm. Both rows use exactly the same interval; changing width changes their horizontal scale.'),
+                    lane(element, low, high, true, 'primary'), reference ? lane(comparison, low, high, true, 'reference') : null)),
+                React.createElement('div', { className: 'solar-sp-model' }, React.createElement('h5', null, 'What these patterns represent'),
+                  React.createElement('p', null, 'These are selected NIST reference components for neutral atoms, indicated by Roman numeral I. They are not complete spectra. Some features have fine-structure components omitted here, and the displayed wavelengths are rounded. Values use the air-wavelength convention, not vacuum wavelengths.'),
+                  React.createElement('p', null, 'Emission strengths depend on how atoms are excited. This diagram shows positions only; it does not calculate line intensities, abundances, Doppler shifts, broadening or detector response. The number or brightness of these drawn lines cannot tell you how much of an element is present.'),
+                  React.createElement('a', { href: 'https://physics.nist.gov/PhysRefData/Handbook/Tables/' + element + 'table2.htm', target: '_blank', rel: 'noopener noreferrer' }, selected.name + ' reference lines · NIST'),
+                  reference && comparison !== element ? React.createElement('a', { href: 'https://physics.nist.gov/PhysRefData/Handbook/Tables/' + comparison + 'table2.htm', target: '_blank', rel: 'noopener noreferrer' }, reference.name + ' reference lines · NIST') : null,
+                  React.createElement('a', { href: 'https://www.nist.gov/pml/handbook-basic-atomic-spectroscopic-data/basic-atomic-spectroscopic-data-handbook', target: '_blank', rel: 'noopener noreferrer' }, 'About the reference data · NIST'))
+              ) : null));
+          }
+
+          function buildSolarLagrange() {
+            var hasSavedMass = typeof d.lagrangeMass === 'number' && isFinite(d.lagrangeMass);
+            var system = ['sun-earth', 'earth-moon', 'custom'].indexOf(d.lagrangeSystem) >= 0 ? d.lagrangeSystem : hasSavedMass ? 'custom' : 'sun-earth';
+            var customMass = Math.round(Math.max(0.001, Math.min(0.5, hasSavedMass ? d.lagrangeMass : 0.01)) * 1000) / 1000;
+            var systems = {
+              'sun-earth': { name: 'Sun–Earth', primary: 'Sun', secondary: 'Earth', mu: 398600.435507 / (132712440041.279419 + 398600.435507), separation: 149597870.7, reference: '1 astronomical unit' },
+              'earth-moon': { name: 'Earth–Moon', primary: 'Earth', secondary: 'Moon', mu: 4902.800118 / (398600.435507 + 4902.800118), separation: 384400, reference: '1 lunar distance' },
+              custom: { name: 'Custom pair', primary: 'Body A', secondary: 'Body B', mu: customMass, separation: null, reference: '1 separation unit' }
+            };
+            var pair = systems[system], mu = pair.mu, primary = -mu, secondary = 1 - mu, critical = (1 - Math.sqrt(23 / 27)) / 2;
+            function field(x, y) {
+              var r1 = Math.hypot(x - primary, y), r2 = Math.hypot(x - secondary, y);
+              return { x: x - (1 - mu) * (x - primary) / Math.pow(r1, 3) - mu * (x - secondary) / Math.pow(r2, 3), y: y - (1 - mu) * y / Math.pow(r1, 3) - mu * y / Math.pow(r2, 3) };
+            }
+            function root(left, right) { for (var i = 0; i < 70; i++) { var middle = (left + right) / 2; if (field(middle, 0).x > 0) right = middle; else left = middle; } return (left + right) / 2; }
+            var points = [
+              { id: 'L1', x: root(primary + 1e-10, secondary - 1e-10), y: 0, description: 'Between the two bodies. A small displacement can grow, so missions near this point need orbit maintenance.' },
+              { id: 'L2', x: root(secondary + 1e-10, 3), y: 0, description: 'Beyond the secondary, away from the primary. This point is an equilibrium in the rotating frame, not a place where gravity vanishes.' },
+              { id: 'L3', x: root(-3, primary - 1e-10), y: 0, description: 'Beyond the primary, on the side opposite the secondary. Its location is solved from the same force balance as L1 and L2.' },
+              { id: 'L4', x: 0.5 - mu, y: Math.sqrt(3) / 2, description: 'The leading triangular point: 60° ahead of the secondary as measured from the primary, for the counterclockwise motion defined here.' },
+              { id: 'L5', x: 0.5 - mu, y: -Math.sqrt(3) / 2, description: 'The trailing triangular point: 60° behind the secondary as measured from the primary, for the counterclockwise motion defined here.' }
+            ];
+            var selected = points.find(function(point) { return point.id === d.lagrangePoint; }) || points[1];
+            var triangularStable = mu < critical, selectedStable = (selected.id === 'L4' || selected.id === 'L5') && triangularStable;
+            var residual = field(selected.x, selected.y), distance = Math.hypot(selected.x - secondary, selected.y);
+            var mainX = function(x) { return 300 + 170 * x; }, mainY = function(y) { return 220 - 170 * y; };
+            var insetScale = 180 / Math.max(secondary - points[0].x, points[1].x - secondary), insetX = function(x) { return 240 + (x - secondary) * insetScale; };
+            var palette = { '--lg-bg': isDark ? '#020617' : '#ffffff', '--lg-panel': isDark ? '#0f172a' : '#f8fafc', '--lg-fg': isDark ? '#f1f5f9' : '#0f172a', '--lg-muted': isDark ? '#cbd5e1' : '#475569', '--lg-border': isDark ? '#475569' : '#cbd5e1', '--lg-accent': isDark ? '#67e8f9' : '#0e7490', '--lg-stage': '#020617', '--lg-grid': '#64748b', '--lg-line': '#cbd5e1', '--lg-stable': '#86efac', '--lg-unstable': '#fde047', '--lg-primary': '#fb923c', '--lg-secondary': '#38bdf8' };
+            function number(value, decimals) { return value.toLocaleString('en-US', { maximumFractionDigits: decimals || 0 }); }
+            function metric(label, text, key, value) { return React.createElement('div', { key: key }, React.createElement('dt', null, label), React.createElement('dd', { 'data-lg-metric': key, 'data-value': value }, text)); }
+            function marker(point, x, y, inset) {
+              var stable = (point.id === 'L4' || point.id === 'L5') && triangularStable;
+              return React.createElement('g', { key: point.id, 'data-lg-point': point.id, 'data-x': point.x, 'data-y': point.y, 'data-stable': stable, 'data-inset': !!inset, className: stable ? 'solar-lg-stable' : 'solar-lg-unstable' },
+                React.createElement('circle', { cx: x, cy: y, r: inset ? 5 : 3, className: 'solar-lg-point-core' }),
+                React.createElement('circle', { cx: x, cy: y, r: inset ? 9 : 7, className: 'solar-lg-point-ring', strokeDasharray: stable ? undefined : '3 3' }),
+                point.id === selected.id ? React.createElement('path', { d: 'M ' + (x - 13) + ' ' + (y - 8) + ' V ' + (y + 8) + ' M ' + (x + 13) + ' ' + (y - 8) + ' V ' + (y + 8), className: 'solar-lg-selection' }) : null);
+            }
+            function body(x, y, className, which) { return React.createElement('path', { d: 'M ' + x + ' ' + (y - 8) + ' l 8 8 l -8 8 l -8 -8 Z', className: className, 'data-lg-body': which, 'data-x': which === 'primary' ? primary : secondary }); }
+            return React.createElement('section', { id: 'solar-lagrange', className: 'solar-lagrange', style: palette, 'aria-labelledby': 'solar-lg-title', 'data-lg-system': system, 'data-lg-mu': mu, 'data-lg-selected': selected.id, 'data-lg-critical': critical, 'data-lg-residual': Math.hypot(residual.x, residual.y) },
+              React.createElement('div', { className: 'solar-lg-header' }, React.createElement('div', null, React.createElement('p', { className: 'solar-lg-eyebrow' }, 'Five points · one rotating system'), React.createElement('h4', { id: 'solar-lg-title' }, 'Lagrange Points Lab')),
+                React.createElement('button', { type: 'button', 'aria-label': 'Toggle Lagrange points explorer', 'aria-expanded': !!d.showLagrange, 'aria-controls': 'solar-lg-content', onClick: function() { upd('showLagrange', !d.showLagrange); } }, d.showLagrange ? 'Hide points explorer' : 'Explore the five points')),
+              React.createElement('div', { id: 'solar-lg-content', hidden: !d.showLagrange }, d.showLagrange ? React.createElement(React.Fragment, null,
+                React.createElement('p', { className: 'solar-lg-intro' }, 'Explore five places that stay aligned with two bodies in an ideal circular orbit. The camera rotates with the pair. Compare real-system mass ratios, inspect each point, and change a custom pair to explore stability.'),
+                React.createElement('div', { className: 'solar-lg-presets', role: 'group', 'aria-label': 'Choose a two-body system' }, Object.keys(systems).map(function(key) { return React.createElement('button', { key: key, type: 'button', 'data-lg-system-preset': key, 'aria-pressed': system === key, onClick: function() { upd('lagrangeSystem', key); } }, systems[key].name); })),
+                system === 'custom' ? React.createElement('div', { className: 'solar-lg-custom' },
+                  React.createElement('div', { className: 'solar-lg-control' }, React.createElement('label', { htmlFor: 'solar-lg-mass' }, 'Body B share of total mass'), React.createElement('output', { htmlFor: 'solar-lg-mass' }, (mu * 100).toFixed(1) + '% · μ = ' + mu.toFixed(3)),
+                    React.createElement('input', { id: 'solar-lg-mass', type: 'range', min: 1, max: 500, step: 1, value: customMass * 1000, 'aria-valuetext': (mu * 100).toFixed(1) + ' percent of the total mass', 'aria-describedby': 'solar-lg-mass-note', onChange: function(event) { var value = Number(event.target.value); if (isFinite(value)) upd('lagrangeMass', Math.max(1, Math.min(500, Math.round(value))) / 1000); } })),
+                  React.createElement('div', { className: 'solar-lg-presets', role: 'group', 'aria-label': 'Compare custom mass shares' }, [0.01, 0.03, 0.04, 0.1, 0.5].map(function(value) { return React.createElement('button', { key: value, type: 'button', 'data-lg-mass-preset': value, 'aria-pressed': mu === value, onClick: function() { upd('lagrangeMass', value); } }, (value * 100).toFixed(0) + '%'); })),
+                  React.createElement('p', { id: 'solar-lg-mass-note', className: 'solar-lg-note' }, 'This custom control spans 0.1–50% of the total mass. Try 3% and 4% to cross the L4/L5 stability threshold. Switching system presets preserves your custom setting.')) : null,
+                React.createElement('p', { className: 'solar-lg-note' }, 'μ = secondary mass ÷ total mass = ' + mu.toPrecision(7) + '. ' + (pair.separation ? 'Reference separation: ' + number(pair.separation, 1) + ' km (' + pair.reference + '). These are model distances, not today’s positions.' : 'Body A is at least as massive as Body B. One separation unit is the center-to-center distance; no kilometer scale is assigned.')),
+                React.createElement('div', { className: 'solar-lg-main' },
+                  React.createElement('div', { className: 'solar-lg-maps' },
+                    React.createElement('figure', { className: 'solar-lg-map-card' }, React.createElement('figcaption', { id: 'solar-lg-map-title' }, pair.name + ' · the five equilibrium points'),
+                      React.createElement('div', { className: 'solar-lg-map-wrap' },
+                        React.createElement('svg', { viewBox: '0 0 640 440', role: 'img', 'aria-labelledby': 'solar-lg-map-title', 'aria-describedby': 'solar-lg-map-note solar-lg-legend', 'data-lg-map': true },
+                          React.createElement('line', { x1: 55, y1: 220, x2: 565, y2: 220, className: 'solar-lg-axis' }),
+                          React.createElement('path', { d: 'M ' + mainX(primary) + ' 220 L ' + mainX(points[3].x) + ' ' + mainY(points[3].y) + ' L ' + mainX(secondary) + ' 220 L ' + mainX(points[4].x) + ' ' + mainY(points[4].y) + ' Z', className: 'solar-lg-triangles' }),
+                          React.createElement('line', { x1: mainX(primary), y1: 220, x2: mainX(secondary), y2: 220, className: 'solar-lg-separation' }),
+                          React.createElement('path', { d: 'M 294 214 L 306 226 M 294 226 L 306 214', className: 'solar-lg-barycenter', 'data-lg-barycenter': true }),
+                          body(mainX(primary), 220, 'solar-lg-primary', 'primary'), body(mainX(secondary), 220, 'solar-lg-secondary', 'secondary'),
+                          points.map(function(point) { return marker(point, mainX(point.x), mainY(point.y), false); })),
+                        [points[2], points[3], points[4]].map(function(point) { return React.createElement('span', { key: point.id, className: 'solar-lg-map-label', 'data-lg-label': point.id, style: { left: mainX(point.x) / 640 * 100 + '%', top: mainY(point.y) / 440 * 100 + '%', marginTop: point.id === 'L4' ? '-6px' : '6px', transform: point.id === 'L4' ? 'translate(-50%, -100%)' : 'translateX(-50%)' } }, point.id); })),
+                      React.createElement('div', { id: 'solar-lg-legend', className: 'solar-lg-legend' }, React.createElement('span', null, 'Left diamond · ' + pair.primary), React.createElement('span', null, 'Right diamond · ' + pair.secondary), React.createElement('span', null, 'Cross · center of mass'), React.createElement('span', null, 'Brackets · selected point')),
+                      React.createElement('p', { id: 'solar-lg-map-note', className: 'solar-lg-note' }, 'Both axes use the same fixed separation scale. Body sizes and point symbols are enlarged guides. L1 and L2 cluster near the secondary, so use the close-up below. The triangular guides have three equal sides. L4 leads and L5 trails for counterclockwise orbital motion.')),
+                    React.createElement('figure', { className: 'solar-lg-inset-card' }, React.createElement('figcaption', { id: 'solar-lg-inset-title' }, 'L1 and L2 · close-up around ' + pair.secondary),
+                      React.createElement('div', { className: 'solar-lg-inset-wrap' },
+                        React.createElement('svg', { viewBox: '0 0 480 150', role: 'img', 'aria-labelledby': 'solar-lg-inset-title', 'aria-describedby': 'solar-lg-inset-note', 'data-lg-inset': true, 'data-scale': insetScale },
+                          React.createElement('line', { x1: 30, y1: 75, x2: 450, y2: 75, className: 'solar-lg-axis' }),
+                          body(240, 75, 'solar-lg-secondary', 'secondary'),
+                          [points[0], points[1]].map(function(point) { return marker(point, insetX(point.x), 75, true); })),
+                        [points[0], points[1]].map(function(point) { return React.createElement('span', { key: point.id, className: 'solar-lg-map-label', 'data-lg-label': point.id, style: { left: insetX(point.x) / 480 * 100 + '%', top: '50%', marginTop: '-10px', transform: 'translate(-50%, -100%)' } }, point.id); }),
+                        React.createElement('span', { className: 'solar-lg-map-label', style: { left: '50%', top: '72%' } }, pair.secondary)),
+                      React.createElement('p', { id: 'solar-lg-inset-note', className: 'solar-lg-note' }, 'Left is toward the primary; right is away from it. This close-up rescales when the mass ratio changes. Its two gaps use one common scale; body and point symbols remain schematic.'))),
+                  React.createElement('div', { className: 'solar-lg-inspector' }, React.createElement('h5', null, 'Inspect a point'),
+                    React.createElement('div', { className: 'solar-lg-presets', role: 'group', 'aria-label': 'Choose a Lagrange point' }, points.map(function(point) { return React.createElement('button', { key: point.id, type: 'button', 'data-lg-select': point.id, 'aria-pressed': point.id === selected.id, 'aria-controls': 'solar-lg-point-details', onClick: function() { upd('lagrangePoint', point.id); } }, point.id); })),
+                    React.createElement('div', { id: 'solar-lg-point-details' }, React.createElement('h5', null, selected.id + ' · ' + (selected.id === 'L1' ? 'Between the bodies' : selected.id === 'L2' ? 'Beyond the secondary' : selected.id === 'L3' ? 'Beyond the primary' : selected.id === 'L4' ? 'Leading triangle' : 'Trailing triangle')),
+                      React.createElement('p', null, selected.description),
+                      React.createElement('p', { className: 'solar-lg-status', role: 'status' }, selectedStable ? 'Linearly stable in this ideal circular model' : 'Unstable in this ideal circular model'),
+                      React.createElement('dl', { className: 'solar-lg-readouts' },
+                        metric('x · from the center of mass', selected.x.toFixed(6), 'x', selected.x), metric('y · above/below the body line', selected.y.toFixed(6), 'y', selected.y),
+                        metric('Distance from ' + pair.secondary, distance.toFixed(6) + ' separations', 'distance', distance),
+                        pair.separation ? metric('Reference distance from ' + pair.secondary, '≈ ' + number(distance * pair.separation) + ' km', 'distance-km', distance * pair.separation) : null),
+                      React.createElement('p', { className: 'solar-lg-note' }, 'Coordinates use one body separation as the unit. The primary lies at x = −μ and the secondary at x = 1 − μ. The center of mass is x = 0.')),
+                    React.createElement('div', { className: 'solar-lg-stability' }, React.createElement('h5', null, 'When are L4 and L5 stable?'),
+                      React.createElement('p', null, 'Only below a secondary mass share of about 3.85209% (μ < 0.0385209). L1, L2 and L3 are unstable for every pair shown. The boundary itself is not included in the stable range.'),
+                      React.createElement('p', { className: 'solar-lg-status' }, pair.name + ': L4/L5 are ' + (triangularStable ? 'linearly stable' : 'unstable') + ' in this model.'),
+                      React.createElement('p', { className: 'solar-lg-note' }, 'Solid rings mark linearly stable points; dashed rings mark unstable points. Stable does not mean a spacecraft settles there: this model has no damping. Other bodies and real orbital variations can change long-term behavior.')))),
+                React.createElement('div', { className: 'solar-lg-model' }, React.createElement('h5', null, 'A rotating-frame model'),
+                  React.createElement('p', null, 'Gravity from both bodies and the centrifugal term balance at each point for an object at rest in this rotating frame. Gravity is still present. In a nonrotating view the bodies and equilibrium points move around their shared center of mass.'),
+                  React.createElement('p', null, 'The circular restricted three-body model treats both bodies as point masses on circular orbits and the spacecraft as too light to affect them. The diagrams are equilibrium maps, not calculated spacecraft trajectories. Sun–Earth omits the Moon; Earth–Moon omits the Sun. Reference separations are fixed.'),
+                  React.createElement('p', { className: 'solar-lg-mission' }, 'Webb example · JWST follows a halo orbit around Sun–Earth L2 while orbiting the Sun. It does not sit at the point and uses course corrections to maintain its orbit.'),
+                  React.createElement('a', { href: 'https://ssd.jpl.nasa.gov/astro_par.html', target: '_blank', rel: 'noopener noreferrer' }, 'Mass parameters · JPL'),
+                  React.createElement('a', { href: 'https://science.nasa.gov/solar-system/resources/faq/what-are-lagrange-points/', target: '_blank', rel: 'noopener noreferrer' }, 'Lagrange points and stability · NASA'),
+                  React.createElement('a', { href: 'https://science.nasa.gov/asset/webb/webbs-orbit-at-sun-earth-lagrange-point-2-l2/', target: '_blank', rel: 'noopener noreferrer' }, 'Webb’s halo orbit · NASA'))
+              ) : null));
+          }
 
           function buildSolarDayNight() {
             function bounded(value, fallback, min, max, step) { return Math.round((typeof value === 'number' && isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback) / step) * step; }
@@ -20418,6 +21918,32 @@ const d = labToolData.solarSystem || {};
                         // through the composer, every saved photo would look unlike the view
                         // the student actually photographed.
                         function droneRender() {
+                          // Run after every camera adjustment, including descent and photo captures.
+                          solarSyncDroneBackdrop(droneBackdrop, camera, coronaMesh);
+                          if (saturnRingSky) saturnRingSky.position.copy(camera.position);
+                          // Sun glare overlay tracks where the sun sits on screen (rover worlds only —
+                          // fluid modes hide the sun underwater or fade it behind atmosphere fog)
+                          if (sunGlareEl && !isFluid && sunMesh.visible && tick3d % 3 === 0) {
+                            sunMesh.getWorldPosition(_glareSunDir).sub(camera.position).normalize();
+                            camera.getWorldDirection(_glareCamDir);
+                            var glareDot = _glareCamDir.dot(_glareSunDir);
+                            if (glareDot > 0.55) {
+                              sunMesh.getWorldPosition(_glareNdc).project(camera);
+                              var gx = Math.round((_glareNdc.x * 0.5 + 0.5) * 100);
+                              var gy = Math.round((-_glareNdc.y * 0.5 + 0.5) * 100);
+                              // Glare strength rides irradiance too, so looking sunward means
+                              // something different on each world: near-blinding on Mercury,
+                              // ordinary on Mars, barely a sparkle out at Pluto. Capped at
+                              // 0.85 — the same ceiling as before — because past that the
+                              // terrain disappears and the student cannot drive.
+                              var glareStrength = Math.max(0.10, Math.min(0.85, 0.12 + sunIrradiance * 0.34));
+                              var glareSpread = Math.round(18 + Math.min(26, sunIrradiance * 5));
+                              sunGlareEl.style.background = 'radial-gradient(circle at ' + gx + '% ' + gy + '%,rgba(255,244,214,' + (0.26 + glareStrength * 0.3).toFixed(2) + '),rgba(255,244,214,0.12) ' + glareSpread + '%,transparent ' + (glareSpread + 33) + '%)';
+                              sunGlareEl.style.opacity = String(Math.min(1, (glareDot - 0.55) / 0.4) * glareStrength);
+                            } else {
+                              sunGlareEl.style.opacity = '0';
+                            }
+                          }
                           if (droneComposer) {
                             try { droneComposer.render(); return; }
                             catch (e) { droneComposer = null; droneBloomPass = null; }
@@ -20429,6 +21955,10 @@ const d = labToolData.solarSystem || {};
 
                         // â"€â"€ Sky dome â"€â"€
 
+                        var droneBackdrop = new THREE.Group();
+                        droneBackdrop.name = 'drone-celestial-backdrop';
+                        scene.add(droneBackdrop);
+                        canvasEl.dataset.droneBackdrop = 'camera-centered';
                         var skyGeo = new THREE.SphereGeometry(200, 32, 16);
 
                         var skyCv = document.createElement('canvas'); skyCv.setAttribute('aria-hidden', 'true'); skyCv.width = 512; skyCv.height = 256;
@@ -20492,22 +22022,6 @@ const d = labToolData.solarSystem || {};
                           sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 512, 256);
                         }
 
-                        // Stars for dark worlds — the dome's painted layer. Must carry the
-                        // SAME world list as the twinkle layer further down, or Mars loses its
-                        // glitter and keeps 200 painted stars in a daylit orange sky.
-
-                        if (!isOcean && (sel.terrainType === 'cratered' || sel.terrainType === 'iceworld')) {
-
-                          for (var si = 0; si < 200; si++) {
-
-                            sCtx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
-
-                            sCtx.beginPath(); sCtx.arc(Math.random() * 512, Math.random() * 128, Math.random() * 1.5, 0, Math.PI * 2); sCtx.fill();
-
-                          }
-
-                        }
-
                         var skyTex = new THREE.CanvasTexture(skyCv);
                         if (isGas && THREE.sRGBEncoding !== undefined) skyTex.encoding = THREE.sRGBEncoding;   // keep the dark zenith dark
 
@@ -20520,11 +22034,16 @@ const d = labToolData.solarSystem || {};
                         // decks stacked overhead hide it anyway.
                         if (isGas) skyMat.fog = false;
 
-                        scene.add(new THREE.Mesh(skyGeo, skyMat));
+                        var skyMesh = new THREE.Mesh(skyGeo, skyMat);
+                        skyMesh.name = 'drone-sky-dome';
+                        // Render behind all terrain even when a material's shader program changes.
+                        skyMesh.renderOrder = -1000;
+                        droneBackdrop.add(skyMesh);
 
                         // ── Twinkling star points (dark-sky worlds) ──
-                        // The sky-dome stars are static paint; two phase-offset additive
-                        // layers make the sky glitter without per-star attribute updates.
+                        // Two phase-offset layers use a shared round sprite and fixed pixel
+                        // sizes. Painting stars on the 512px dome stretched them into blurry
+                        // patches near its poles; point sprites stay crisp across the sky.
                         // Under prefers-reduced-motion they stay at a fixed opacity.
                         //
                         // 'desert' dropped from this list: every one of these scenes is in
@@ -20537,6 +22056,17 @@ const d = labToolData.solarSystem || {};
                         // to believe until they see it. Venus was already excluded.
                         var twinkleLayers = [];
                         if (!isOcean && (sel.terrainType === 'cratered' || sel.terrainType === 'iceworld')) {
+                          var starSpriteCanvas = document.createElement('canvas');
+                          starSpriteCanvas.width = starSpriteCanvas.height = 32;
+                          var starSpriteCtx = starSpriteCanvas.getContext('2d');
+                          var starSpriteGradient = starSpriteCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+                          starSpriteGradient.addColorStop(0, 'rgba(255,255,255,1)');
+                          starSpriteGradient.addColorStop(0.35, 'rgba(255,255,255,0.9)');
+                          starSpriteGradient.addColorStop(1, 'rgba(255,255,255,0)');
+                          starSpriteCtx.fillStyle = starSpriteGradient; starSpriteCtx.fillRect(0, 0, 32, 32);
+                          var starSprite = new THREE.CanvasTexture(starSpriteCanvas);
+                          starSprite.name = 'drone-star-sprite';
+                          starSprite.generateMipmaps = false; starSprite.minFilter = THREE.LinearFilter;
                           for (var tl = 0; tl < 2; tl++) {
                             var twGeo = new THREE.BufferGeometry();
                             var twCount = 110;
@@ -20550,9 +22080,10 @@ const d = labToolData.solarSystem || {};
                               twPos[twi * 3 + 2] = Math.sin(twTheta) * twR * 190;
                             }
                             twGeo.setAttribute('position', new THREE.BufferAttribute(twPos, 3));
-                            var twMesh = new THREE.Points(twGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.2 + tl * 0.6, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+                            var twMesh = new THREE.Points(twGeo, new THREE.PointsMaterial({ color: 0xffffff, map: starSprite, size: 1.2 + tl * 0.6, sizeAttenuation: false, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
                             twMesh._twPhase = tl * Math.PI * 0.5;
-                            scene.add(twMesh);
+                            twMesh.name = 'drone-sky-stars-' + tl;
+                            droneBackdrop.add(twMesh);
                             twinkleLayers.push(twMesh);
                           }
                         }
@@ -20581,7 +22112,8 @@ const d = labToolData.solarSystem || {};
                         var sunMat = new THREE.MeshBasicMaterial({ color: 0xfff8e1 });
                         var sunMesh = new THREE.Mesh(sunGeo, sunMat);
                         sunMesh.position.set(50, 30, 20).normalize().multiplyScalar(180);
-                        scene.add(sunMesh);
+                        sunMesh.name = 'drone-sky-sun';
+                        droneBackdrop.add(sunMesh);
 
                         // Sun glow corona. Spread grows with irradiance rather than sitting at
                         // a flat 4x the disc: close in, the glare bleeds far past the limb and
@@ -20610,7 +22142,8 @@ const d = labToolData.solarSystem || {};
                         });
                         var coronaMesh = new THREE.Mesh(coronaGeoS, coronaMatS);
                         coronaMesh.position.copy(sunMesh.position);
-                        scene.add(coronaMesh);
+                        coronaMesh.name = 'drone-sky-corona';
+                        droneBackdrop.add(coronaMesh);
 
                         // ── Horizon Haze (ground fog/dust for atmosphere) ──
                         if (solarHasAtmosphere(sel) && !isFluid) {
@@ -20627,6 +22160,10 @@ const d = labToolData.solarSystem || {};
                           var hazePlane = new THREE.Mesh(hazeGeo, hazeMat2);
                           hazePlane.rotation.x = -Math.PI / 2;
                           hazePlane.position.y = 0.3;
+                          // Flat haze cuts through the heightfield, leaving jagged pale patches.
+                          // Distance fog below supplies the atmosphere. Retain this allocation
+                          // order: r128 UUIDs consume the randomness used by later scenery.
+                          hazePlane.visible = false;
                           scene.add(hazePlane);
                         }
 
@@ -20655,8 +22192,8 @@ const d = labToolData.solarSystem || {};
                         // Every rocky world ended at the edge of its 250-unit terrain plate
                         // and then simply stopped: the mid-distance in every screenshot was
                         // bare, so there was no sense of scale and nothing for the fog to act
-                        // on. This is a ring of peaks out at 140-185, beyond the +/-115 the
-                        // vehicle can reach, so it reads as landscape you cannot get to.
+                        // on. A single strip of sloping ridges spans radii 234-262, outside
+                        // every corner of the +/-115 playable square and within the far plane.
                         //
                         // The payoff is that ONE ring looks completely different per world,
                         // purely from the fog above: on airless Mercury it stays razor sharp
@@ -20680,11 +22217,13 @@ const d = labToolData.solarSystem || {};
                           'rocky-granular': { base: '#8b7963', rock: '#726453', light: '#b1a189', label: 'Granular terrain and weathered rock fragments' }
                         }[rockySurfaceProfile];
                         var geologyMaterials = [];
+                        var rockyBoulderMeshes = [];
                         var geologyDetailMesh = null;
                         function applyDroneGeology(material, rockStrength, separatelyOwned) {
                           var profileCode = rockySurfaceProfile === 'aeolian-rippled' ? 1 : rockySurfaceProfile === 'fractured-basalt' ? 2 : rockySurfaceProfile === 'crevassed-ice' ? 3 : 0;
+                          var basaltShader = profileCode === 2 ? solarDroneBasaltFractureShader() : null;
                           material.userData.geologyProfile = rockySurfaceProfile;
-                          material.customProgramCacheKey = function () { return 'drone-geology-1-' + profileCode + '-' + rockStrength; };
+                          material.customProgramCacheKey = function () { return 'drone-geology-3-' + profileCode + '-' + rockStrength; };
                           material.onBeforeCompile = function (shader) {
                             shader.uniforms.geologyRockStrength = { value: rockStrength };
                             shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vGeologyPosition; varying float vGeologySlope;');
@@ -20703,7 +22242,8 @@ const d = labToolData.solarSystem || {};
                               'float geologyHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
                               'float geologyNoise(vec2 p) {',
                               'vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);',
-                              'return mix(mix(geologyHash(i), geologyHash(i + vec2(1.0, 0.0)), f.x), mix(geologyHash(i + vec2(0.0, 1.0)), geologyHash(i + vec2(1.0, 1.0)), f.x), f.y); }'
+                              'return mix(mix(geologyHash(i), geologyHash(i + vec2(1.0, 0.0)), f.x), mix(geologyHash(i + vec2(0.0, 1.0)), geologyHash(i + vec2(1.0, 1.0)), f.x), f.y); }',
+                              basaltShader ? basaltShader.common : ''
                             ].join('\n'));
                             var surfaceColor = [
                               '#include <map_fragment>',
@@ -20714,15 +22254,17 @@ const d = labToolData.solarSystem || {};
                               'diffuseColor.rgb *= mix(0.72, 1.22, macro);'
                             ];
                             if (profileCode === 1) surfaceColor.push(
-                              'float strata = 0.5 + 0.5 * sin(gp.y * 8.0 + geologyNoise(gp.xz * 0.22) * 2.8);',
-                              'float bedding = mix(0.70, 1.16, strata);',
-                              'diffuseColor.rgb *= mix(1.0, bedding, max(exposure * 0.55, geologyRockStrength) * nearDetail);',
+                              // Uneven spacing and patchy exposure suggest weathered layers without
+                              // giving every rock the same high-contrast horizontal stripe pattern.
+                              'float layerWarp = geologyNoise(gp.xz * 0.14) * 2.6 + geologyNoise(vec2(gp.y * 0.21, gp.x * 0.035 + gp.z * 0.06)) * 1.8;',
+                              'float strata = smoothstep(0.28, 0.72, 0.5 + 0.5 * sin(gp.y * 3.1 + layerWarp));',
+                              'float bedding = mix(0.88, 1.06, strata);',
+                              'float layerMask = mix(0.35, 1.0, geologyNoise(gp.xz * 0.33 + vec2(gp.y * 0.08, 0.0)));',
+                              'float layerStrength = geologyRockStrength > 0.0 ? geologyRockStrength * (0.3 + exposure * 0.7) : exposure * 0.42;',
+                              'diffuseColor.rgb *= mix(1.0, bedding, layerStrength * layerMask * nearDetail);',
                               'diffuseColor.rgb *= mix(vec3(1.08, 1.02, 0.93), vec3(0.88, 0.91, 0.95), exposure * 0.6);'
                             );
-                            if (profileCode === 2) surfaceColor.push(
-                              'float fracture = abs(sin(gp.x * 0.91 + sin(gp.z * 0.27)) * sin(gp.z * 0.76 + gp.y * 0.35));',
-                              'diffuseColor.rgb *= mix(1.0, mix(0.58, 1.0, smoothstep(0.018, 0.095, fracture)), nearDetail * 0.65);'
-                            );
+                            if (basaltShader) surfaceColor.push(basaltShader.surface);
                             if (profileCode === 3) surfaceColor.push(
                               'float frost = smoothstep(0.35, 0.72, macro) * (1.0 - exposure * 0.65);',
                               'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.66, 0.75, 0.81), frost * 0.34);'
@@ -20735,50 +22277,19 @@ const d = labToolData.solarSystem || {};
                         var rockyHorizonMesh = null;
                         var rockyHorizonGeo = null;
                         var rockyHorizonMat = null;
+                        var rockyTerrainMesh = null;
+                        var terrainApronMesh = null;
                         if (!isFluid && !isGas) {
-                          var horizonSegments = rockySurfaceLowPower ? 64 : 96;
-                          var horizonPositions = new Float32Array((horizonSegments + 1) * 4 * 3);
-                          var horizonIndices = [];
-                          // Even at a +/-115 playable CORNER (radius 162.6) the nearest ridge
-                          // remains 70+ units away; the deep skirt hides the terrain seam.
-                          var horizonInnerRadius = 234;
-                          var horizonOuterRadius = 262;
-                          for (var hp = 0; hp <= horizonSegments; hp++) {
-                            var hpAngle = hp / horizonSegments * Math.PI * 2;
-                            var profileWave = rockySurfaceProfile === 'aeolian-rippled' ? Math.sin(hpAngle * 5) * 5 + Math.sin(hpAngle * 11) * 2
-                              : rockySurfaceProfile === 'fractured-basalt' ? Math.abs(Math.sin(hpAngle * 7)) * 14 + Math.sin(hpAngle * 3) * 5
-                                : rockySurfaceProfile === 'crevassed-ice' ? Math.abs(Math.sin(hpAngle * 9 + 0.4)) * 9 + Math.sin(hpAngle * 4) * 4
-                                  : rockySurfaceProfile === 'regolith-pitted' ? Math.sin(hpAngle * 6) * 8 + Math.sin(hpAngle * 13) * 4
-                                    : Math.sin(hpAngle * 5) * 7 + Math.sin(hpAngle * 8) * 3;
-                            var ridgeHeight = 10 + Math.max(0, profileWave);
-                            var horizonVertex = hp * 12;
-                            horizonPositions[horizonVertex] = Math.cos(hpAngle) * horizonInnerRadius;
-                            horizonPositions[horizonVertex + 1] = -8;
-                            horizonPositions[horizonVertex + 2] = Math.sin(hpAngle) * horizonInnerRadius;
-                            horizonPositions[horizonVertex + 3] = Math.cos(hpAngle) * horizonInnerRadius;
-                            horizonPositions[horizonVertex + 4] = ridgeHeight;
-                            horizonPositions[horizonVertex + 5] = Math.sin(hpAngle) * horizonInnerRadius;
-                            horizonPositions[horizonVertex + 6] = Math.cos(hpAngle) * horizonOuterRadius;
-                            horizonPositions[horizonVertex + 7] = ridgeHeight * 0.42 - 3;
-                            horizonPositions[horizonVertex + 8] = Math.sin(hpAngle) * horizonOuterRadius;
-                            horizonPositions[horizonVertex + 9] = Math.cos(hpAngle) * horizonOuterRadius;
-                            horizonPositions[horizonVertex + 10] = -10;
-                            horizonPositions[horizonVertex + 11] = Math.sin(hpAngle) * horizonOuterRadius;
-                            if (hp < horizonSegments) {
-                              var hb = hp * 4;
-                              horizonIndices.push(hb, hb + 1, hb + 5, hb, hb + 5, hb + 4, hb + 1, hb + 2, hb + 6, hb + 1, hb + 6, hb + 5, hb + 2, hb + 3, hb + 7, hb + 2, hb + 7, hb + 6);
-                            }
-                          }
-                          rockyHorizonGeo = new THREE.BufferGeometry();
-                          rockyHorizonGeo.setAttribute('position', new THREE.BufferAttribute(horizonPositions, 3));
-                          rockyHorizonGeo.setIndex(horizonIndices);
-                          rockyHorizonGeo.computeVertexNormals();
+                          rockyHorizonGeo = solarCreateDroneHorizonGeometry(THREE, rockySurfaceProfile, rockySurfaceLowPower);
+                          // This is an upward-facing heightfield. Back faces reverse its smooth
+                          // crest normals and draw dark triangular facets across the silhouette.
                           rockyHorizonMat = new THREE.MeshStandardMaterial({
-                            color: new THREE.Color(geologyPalette.base).multiplyScalar(0.56),
-                            roughness: 0.99, metalness: 0, flatShading: false, fog: true, side: THREE.DoubleSide
+                            color: new THREE.Color(geologyPalette.base).convertSRGBToLinear().multiplyScalar(0.82),
+                            roughness: 0.99, metalness: 0, vertexColors: true, flatShading: false, fog: true, side: THREE.FrontSide
                           });
                           applyDroneGeology(rockyHorizonMat, 0.4, true);
                           rockyHorizonMesh = new THREE.Mesh(rockyHorizonGeo, rockyHorizonMat);
+                          rockyHorizonMesh.name = 'drone-rocky-horizon';
                           rockyHorizonMesh.userData.horizonPeak = true;
                           rockyHorizonMesh.castShadow = false;
                           rockyHorizonMesh.receiveShadow = false;
@@ -21225,8 +22736,9 @@ const d = labToolData.solarSystem || {};
                                      new THREE.Color('#665544');
                           for (var ty = 0; ty < 512; ty++) {
                             for (var tx = 0; tx < 512; tx++) {
-                              var n1 = fbm(tx * 0.8, ty * 0.8, 3, 2.5, 0.5) * 0.5 + 0.5;
-                              var n2 = (Math.sin(tx * 0.15 + ty * 0.12) * 0.5 + 0.5) * 0.3;
+                              var surfaceU = (tx + 0.5) / 512, surfaceV = (ty + 0.5) / 512;
+                              var n1 = 0.5 + (solarDroneSurfaceNoise(surfaceU, surfaceV, 32, 17) - 0.5) * 0.65 + (solarDroneSurfaceNoise(surfaceU, surfaceV, 64, 29) - 0.5) * 0.25;
+                              var n2 = (Math.sin(Math.PI * 2 * (12 * surfaceU + 10 * surfaceV) + solarDroneSurfaceNoise(surfaceU, surfaceV, 8, 41) * 2) * 0.5 + 0.5) * 0.3;
                               var n = n1 * 0.7 + n2 * 0.3;
                               var cr = Math.round((baseC.r * (1 - n * 0.4) + secC.r * n * 0.4) * 255);
                               var cg = Math.round((baseC.g * (1 - n * 0.4) + secC.g * n * 0.4) * 255);
@@ -21240,6 +22752,7 @@ const d = labToolData.solarSystem || {};
                           var terrainTex = new THREE.CanvasTexture(tCv);
                           terrainTex.encoding = THREE.sRGBEncoding;
                           terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(12, 12);
+                          try { terrainTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (e) { terrainTex.anisotropy = 1; }
 
                           // One seeded linear data texture adds terrain-type microstructure.
                           // POT 128/256 keeps mipmapping inexpensive on classroom hardware;
@@ -21252,41 +22765,13 @@ const d = labToolData.solarSystem || {};
                           var terrainMicroContext = terrainMicroCanvas.getContext('2d');
                           var terrainMicroImage = terrainMicroContext.createImageData(terrainMicroSize, terrainMicroSize);
                           var terrainMicroData = terrainMicroImage.data;
-                          var terrainMicroSeed = sel.terrainType === 'desert' ? 73 : sel.terrainType === 'volcanic' ? 149 : sel.terrainType === 'iceworld' ? 211 : sel.terrainType === 'cratered' ? 37 : 101;
-                          for (var terrainMicroY = 0; terrainMicroY < terrainMicroSize; terrainMicroY++) {
-                            for (var terrainMicroX = 0; terrainMicroX < terrainMicroSize; terrainMicroX++) {
-                              var terrainMicroHash = Math.sin((terrainMicroX + terrainMicroSeed) * 12.9898 + (terrainMicroY + terrainMicroSeed) * 78.233) * 43758.5453;
-                              var terrainMicroNoise = terrainMicroHash - Math.floor(terrainMicroHash);
-                              var terrainMicroValue = 128;
-                              if (rockySurfaceProfile === 'aeolian-rippled') {
-                                terrainMicroValue = 126 + Math.sin(terrainMicroX * 0.30 + terrainMicroY * 0.055) * 36 + (terrainMicroNoise - 0.5) * 14;
-                              } else if (rockySurfaceProfile === 'fractured-basalt') {
-                                var fissureA = Math.abs(Math.sin(terrainMicroX * 0.115 + Math.sin(terrainMicroY * 0.073) * 2.4));
-                                var fissureB = Math.abs(Math.sin(terrainMicroY * 0.093 - terrainMicroX * 0.031));
-                                terrainMicroValue = 150 + (terrainMicroNoise - 0.5) * 38 - (fissureA < 0.10 || fissureB < 0.075 ? 86 : 0);
-                              } else if (rockySurfaceProfile === 'crevassed-ice') {
-                                var crevasseBand = Math.abs(Math.sin(terrainMicroX * 0.084 + terrainMicroY * 0.025 + Math.sin(terrainMicroY * 0.11)));
-                                terrainMicroValue = 176 + (terrainMicroNoise - 0.5) * 22 - (crevasseBand < 0.095 ? 118 : 0);
-                              } else if (rockySurfaceProfile === 'regolith-pitted') {
-                                var pitCellX = terrainMicroX % 29 - 14;
-                                var pitCellY = terrainMicroY % 23 - 11;
-                                var pitRadius = Math.sqrt(pitCellX * pitCellX + pitCellY * pitCellY);
-                                terrainMicroValue = 136 + (terrainMicroNoise - 0.5) * 46 - (pitRadius < 3.4 ? (3.4 - pitRadius) * 24 : 0);
-                              } else {
-                                terrainMicroValue = 132 + (terrainMicroNoise - 0.5) * 62 + Math.sin((terrainMicroX + terrainMicroY) * 0.12) * 10;
-                              }
-                              terrainMicroValue = Math.max(18, Math.min(238, Math.round(terrainMicroValue)));
-                              var terrainMicroOffset = (terrainMicroY * terrainMicroSize + terrainMicroX) * 4;
-                              terrainMicroData[terrainMicroOffset] = terrainMicroValue;
-                              terrainMicroData[terrainMicroOffset + 1] = terrainMicroValue;
-                              terrainMicroData[terrainMicroOffset + 2] = terrainMicroValue;
-                              terrainMicroData[terrainMicroOffset + 3] = 255;
-                            }
-                          }
+                          solarFillDroneTerrainMicroData(terrainMicroData, terrainMicroSize, rockySurfaceProfile);
                           terrainMicroContext.putImageData(terrainMicroImage, 0, 0);
                           var terrainMicroTex = new THREE.CanvasTexture(terrainMicroCanvas);
                           terrainMicroTex.wrapS = terrainMicroTex.wrapT = THREE.RepeatWrapping;
-                          terrainMicroTex.repeat.set(18, 18);
+                          // Pinned THREE r128 shares the albedo uvTransform with bumpMap.
+                          // Keep their metadata aligned with the effective texture scale.
+                          terrainMicroTex.repeat.copy(terrainTex.repeat);
                           terrainMicroTex.minFilter = THREE.LinearMipmapLinearFilter;
                           terrainMicroTex.magFilter = THREE.LinearFilter;
                           terrainMicroTex.generateMipmaps = true;
@@ -21302,6 +22787,7 @@ const d = labToolData.solarSystem || {};
                           terrain.name = 'drone-geology-ground';
                           terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
                           _terrainMesh = terrain;
+                          rockyTerrainMesh = terrain;
 
                           // Allocation-free height lookup that follows PlaneGeometry's actual
                           // indexed triangle split. Before rotation, rows run from local +Y to
@@ -21332,7 +22818,7 @@ const d = labToolData.solarSystem || {};
                           };
 
                           // Add scattered rocks and boulders for visual detail
-                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(geologyPalette.rock), roughness: 0.95, metalness: 0, flatShading: false });
+                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(geologyPalette.rock).convertSRGBToLinear(), roughness: 0.95, metalness: 0, flatShading: false, vertexColors: true });
                           var layeredRockMat = rockMat.clone();
                           applyDroneGeology(rockMat, 0.12);
                           applyDroneGeology(layeredRockMat, 0.86);
@@ -21351,7 +22837,9 @@ const d = labToolData.solarSystem || {};
                             var ry = _terrainHeightAt(rx, rz);
                             rock.position.set(rx, ry + rScale * 0.3, rz);
                             rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                            solarShadeDroneRock(THREE, rock, _terrainHeightAt);
                             scene.add(rock);
+                            rockyBoulderMeshes.push(rock);
                             addRoverObstacle(rx, rz, Math.max(0.45, rScale * 0.85), 'rock');
                           }
 
@@ -21557,20 +23045,30 @@ const d = labToolData.solarSystem || {};
                             var clCv = document.createElement('canvas'); clCv.setAttribute('aria-hidden', 'true'); clCv.width = 512; clCv.height = 128;
                             var clCx = clCv.getContext('2d');
                             var bandOffset = cl * 1.7;
+                            // Soft, irregular coverage lets the existing decks overlap in depth.
+                            // Painted once; no extra mesh, texture update, or animated shader.
+                            var cloudImage = clCx.createImageData(512, 128);
+                            var cloudPixels = cloudImage.data;
                             for (var cy2 = 0; cy2 < 128; cy2++) {
-                              var band = Math.sin(cy2 * 0.15 + bandOffset) * 0.5 + 0.5;
-                              var stormBand = Math.pow(Math.sin(cy2 * 0.08 + cl * 3), 2) * 0.3;
                               for (var cx3 = 0; cx3 < 512; cx3++) {
-                                var turb = fbm(cx3 * 0.3 + cl * 100, cy2 * 0.5 + cl * 70, 3, 2, 0.5) * 0.3;
-                                var swirl = Math.sin(cx3 * 0.02 + cy2 * 0.04 + cl) * 15;
-                                var mix = band + turb + stormBand;
-                                var rV = Math.max(0, Math.min(255, Math.round(gasBaseColor.r * 255 * (0.5 + mix * 0.5) + swirl)));
-                                var gV = Math.max(0, Math.min(255, Math.round(gasBaseColor.g * 255 * (0.5 + mix * 0.5) + swirl * 0.6)));
-                                var bV = Math.max(0, Math.min(255, Math.round(gasBaseColor.b * 255 * (0.6 + mix * 0.4) + swirl * 0.3)));
-                                clCx.fillStyle = 'rgb(' + rV + ',' + gV + ',' + bV + ')';
-                                clCx.fillRect(cx3, cy2, 1, 1);
+                                // Periodic horizontal coordinates keep the repeating texture seamless.
+                                var cloudAngle = cx3 / 511 * Math.PI * 2; // identical first/last texels at the repeat seam
+                                var cloudX = Math.cos(cloudAngle) * 70 + cl * 29;
+                                var cloudZ = Math.sin(cloudAngle) * 70 + cy2 * 1.15;
+                                var billow = fbm(cloudX, cloudZ, 3, 2.1, 0.48);
+                                var band = Math.sin(cy2 * 0.15 + bandOffset + billow * 1.6) * 0.5 + 0.5;
+                                var whorl = fbm(cloudX * 2.8 + 13, cloudZ * 2.8, 2, 2.0, 0.5);
+                                var coverage = Math.max(0, Math.min(1, 0.5 + billow * 1.4 + band * 0.25));
+                                coverage = coverage * coverage * (3 - 2 * coverage);
+                                var light = 0.48 + band * 0.32 + billow * 0.18 + whorl * 0.08;
+                                var pixel = (cy2 * 512 + cx3) * 4;
+                                cloudPixels[pixel] = Math.max(0, Math.min(255, gasBaseColor.r * 255 * light));
+                                cloudPixels[pixel + 1] = Math.max(0, Math.min(255, gasBaseColor.g * 255 * (light + 0.025)));
+                                cloudPixels[pixel + 2] = Math.max(0, Math.min(255, gasBaseColor.b * 255 * (light + 0.09)));
+                                cloudPixels[pixel + 3] = Math.round(255 * (0.24 + coverage * 0.76));
                               }
                             }
+                            clCx.putImageData(cloudImage, 0, 0);
                             var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(4, 1);
                             // Painted in sRGB like the rocky terrain textures: untagged, the renderer's
                             // sRGB output read these golds as linear and lifted them to cream.
@@ -21603,6 +23101,8 @@ const d = labToolData.solarSystem || {};
                             var deck = deckPlan[cl] || { y: -3 - cl * 5, op: 0.4, tint: 0xffffff };
                             var clMat = new THREE.MeshBasicMaterial({ map: clTex, color: deck.tint, transparent: true, opacity: deck.op, side: THREE.DoubleSide, depthWrite: false });
                             var clMesh = new THREE.Mesh(clGeo, clMat);
+                            clMesh.name = 'drone-cloud-deck-' + cl;
+                            clMesh.userData.cloudCoverage = 'soft-billows';
                             clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = deck.y;
                             clMesh._cloudSpeed = 0.008 + cl * 0.004;
                             clMesh._cloudDrift = cl * 0.3;
@@ -21663,6 +23163,7 @@ const d = labToolData.solarSystem || {};
                             var stormMesh = new THREE.Mesh(stormGeo, stormMat);
                             stormMesh.rotation.x = -Math.PI / 2; stormMesh.position.set(30, -4, -20);
                             stormMesh._cloudSpeed = 0.015; stormMesh._isStorm = true;
+                            stormMesh.name = 'drone-storm-vortex';
                             stormMesh.position.y = 1.4; // ride with the re-spaced Cloud Deck
                             scene.add(stormMesh);
                           }
@@ -21854,7 +23355,7 @@ const d = labToolData.solarSystem || {};
 
                         // ── Visible Moons in Sky (orbiting overhead for planets with notable moons) ──
                         var skyMoons = [];
-                        var notableMoonsForSky = NOTABLE_MOONS[sel.key] || [];
+                        var notableMoonsForSky = isOcean ? [] : (NOTABLE_MOONS[sel.key] || []);
                         notableMoonsForSky.forEach(function(moonData, mi) {
                           var moonGroup = new THREE.Group();
                           // Moon sphere
@@ -21875,9 +23376,23 @@ const d = labToolData.solarSystem || {};
                           moonGroup._orbitPhase = mi * (Math.PI * 2 / Math.max(1, notableMoonsForSky.length));
                           moonGroup._orbitTilt = 0.2 + mi * 0.15;
                           moonGroup._moonName = moonData.name;
-                          scene.add(moonGroup);
+                          moonGroup.name = 'drone-sky-moon-' + mi;
+                          droneBackdrop.add(moonGroup);
                           skyMoons.push(moonGroup);
                         });
+                        function updateDroneSkyMoons(skyTime) {
+                          skyMoons.forEach(function(sm) {
+                            var angle = skyTime * sm._orbitSpeed + sm._orbitPhase;
+                            sm.position.set(
+                              Math.cos(angle) * sm._orbitR,
+                              40 + Math.sin(angle * 0.7 + sm._orbitPhase) * sm._orbitR * sm._orbitTilt,
+                              Math.sin(angle) * sm._orbitR
+                            );
+                          });
+                        }
+                        // Place moons in the sky before the first descent frame.
+                        updateDroneSkyMoons(0);
+                        droneBackdrop.traverse(function(object) { object.userData.droneBackdropObject = true; });
 
                         // â"€â"€ 3D Rover / Probe / Submarine Model â"€â"€
 
@@ -22433,6 +23948,55 @@ const d = labToolData.solarSystem || {};
                           vehiclePart(roverGroup, new THREE.CylinderGeometry(0.065, 0.065, 0.14, 12), vehicleCeramic, 0, 0.48, 0);
                         }
                         finishVehicleDetails();
+                        // One small, world-aligned environment map gives manufactured surfaces
+                        // broad reflections without another camera, render pass, or point light.
+                        // It is an illustrative sky/ground approximation, not a live reflection.
+                        var vehicleEnvironmentFaces = [];
+                        var vehicleEnvSky = new THREE.Color(isOcean ? '#397d9d' : isGas ? '#939aaf' : sel.skyColor || '#343440');
+                        var vehicleEnvGround = new THREE.Color(isOcean ? '#152f38' : sel.terrainColor || '#4a4540').multiplyScalar(0.45);
+                        // r128 reflects CubeTexture X when sampling; compensate only the
+                        // painted sun lobe so it agrees with the scene's (+50,+30,+20) light.
+                        var vehicleEnvSun = new THREE.Vector3(-50, 30, 20).normalize();
+                        var vehicleEnvDirection = new THREE.Vector3(), vehicleEnvColor = new THREE.Color();
+                        for (var face = 0; face < 6; face++) {
+                          var envCanvas = document.createElement('canvas'); envCanvas.width = envCanvas.height = 64;
+                          var envContext = envCanvas.getContext('2d'), envImage = envContext.createImageData(64, 64);
+                          for (var ey = 0; ey < 64; ey++) for (var ex = 0; ex < 64; ex++) {
+                            var eu = 2 * (ex + 0.5) / 64 - 1, ev = 2 * (ey + 0.5) / 64 - 1;
+                            if (face === 0) vehicleEnvDirection.set(1, -ev, -eu);
+                            else if (face === 1) vehicleEnvDirection.set(-1, -ev, eu);
+                            else if (face === 2) vehicleEnvDirection.set(eu, 1, ev);
+                            else if (face === 3) vehicleEnvDirection.set(eu, -1, -ev);
+                            else if (face === 4) vehicleEnvDirection.set(eu, -ev, 1);
+                            else vehicleEnvDirection.set(-eu, -ev, -1);
+                            vehicleEnvDirection.normalize();
+                            var skyMix = Math.max(0, Math.min(1, (vehicleEnvDirection.y + 0.22) / 0.85));
+                            skyMix = skyMix * skyMix * (3 - 2 * skyMix);
+                            vehicleEnvColor.copy(vehicleEnvGround).lerp(vehicleEnvSky, skyMix);
+                            var highlight = Math.pow(Math.max(0, vehicleEnvDirection.dot(vehicleEnvSun)), 16) * (isOcean ? 0.08 : 0.24);
+                            var ep = (ey * 64 + ex) * 4;
+                            envImage.data[ep] = Math.min(255, (vehicleEnvColor.r + highlight) * 255);
+                            envImage.data[ep + 1] = Math.min(255, (vehicleEnvColor.g + highlight * 0.96) * 255);
+                            envImage.data[ep + 2] = Math.min(255, (vehicleEnvColor.b + highlight * 0.9) * 255);
+                            envImage.data[ep + 3] = 255;
+                          }
+                          envContext.putImageData(envImage, 0, 0); vehicleEnvironmentFaces.push(envCanvas);
+                        }
+                        var vehicleEnvironmentMap = new THREE.CubeTexture(vehicleEnvironmentFaces);
+                        vehicleEnvironmentMap.name = 'drone-vehicle-environment';
+                        vehicleEnvironmentMap.encoding = THREE.sRGBEncoding;
+                        vehicleEnvironmentMap.generateMipmaps = true;
+                        vehicleEnvironmentMap.minFilter = THREE.LinearMipmapLinearFilter;
+                        vehicleEnvironmentMap.needsUpdate = true;
+                        roverGroup.traverse(function(part) {
+                          var materials = part.material ? (Array.isArray(part.material) ? part.material : [part.material]) : [];
+                          materials.forEach(function(material) {
+                            if (!material.isMeshStandardMaterial || material.metalness < 0.2) return;
+                            material.envMap = vehicleEnvironmentMap;
+                            material.envMapIntensity = isOcean ? 0.48 : 0.65;
+                          });
+                        });
+                        canvasEl.dataset.droneMaterialDepth = 'environment-64';
                         roverGroup.position.set(0, isFluid ? 5 : 0, 0);
 
                         scene.add(roverGroup);
@@ -22732,24 +24296,28 @@ const d = labToolData.solarSystem || {};
 
                         if (!isFluid) {
                           // Landmark boulders that sit on terrain
-                          var rockColor2 = new THREE.Color(sel.terrainColor || '#886644');
+                          var rockColor2 = new THREE.Color(geologyPalette.rock);
                           for (var bi = 0; bi < 10; bi++) {
                             var bSize = 1.5 + Math.random() * 3;
                             var bGeo = __alloRockDeform(
-                              new THREE.DodecahedronGeometry(bSize, 1),
+                              new THREE.DodecahedronGeometry(bSize, rockySurfaceLowPower ? 1 : 2),
                               Math.random() * 100,
                               0.70
                             );
                             var bMat = new THREE.MeshStandardMaterial({
-                              color: rockColor2.clone().offsetHSL(0, -0.05, -0.1),
-                              roughness: 0.95, metalness: 0.05, flatShading: false
+                              color: rockColor2.clone().offsetHSL(0, -0.025, ((bi % 3) - 1) * 0.025).convertSRGBToLinear(),
+                              roughness: 0.98, metalness: 0, flatShading: false, vertexColors: true
                             });
+                            applyDroneGeology(bMat, 0.74);
                             var boulder2 = new THREE.Mesh(bGeo, bMat);
+                            boulder2.name = 'drone-landmark-boulder';
                             var bx = (Math.random() - 0.5) * 120, bz = (Math.random() - 0.5) * 120;
                             var by = _terrainHeightAt(bx, bz);
                             boulder2.position.set(bx, by + bSize * 0.25, bz);
                             boulder2.rotation.y = Math.random() * Math.PI * 2;
+                            solarShadeDroneRock(THREE, boulder2, _terrainHeightAt);
                             scene.add(boulder2);
+                            rockyBoulderMeshes.push(boulder2);
                             envObjects.push(boulder2);
                             addRoverObstacle(bx, bz, Math.max(1, bSize * 0.95), 'boulder');
                           }
@@ -23550,6 +25118,7 @@ const d = labToolData.solarSystem || {};
 
 
                         var tick3d = 0;
+                        var droneSkyTime = 0;
                         var photoCaptureReadyAt = 0;
                         var latestDronePhoto = null;
                         var dronePhotoReview = null;
@@ -24861,15 +26430,6 @@ const d = labToolData.solarSystem || {};
                           '<div style="font-size:6px;color:#94a3b8;margin-top:1px">' + (isOcean ? '\u2193 DEEP' : isGas ? '\u2193 DEEP' : '\u2193 DN') + '</div>';
                         canvasEl.parentElement.appendChild(depthGauge);
 
-                        // ── POI Direction Arrow (points to nearest undiscovered POI) ──
-                        var poiArrow = document.createElement('div');
-                        poiArrow.id = 'poi-arrow';
-                        poiArrow.style.cssText = 'position:absolute;bottom:56px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:10;text-align:center;opacity:0;transition:opacity 0.5s';
-                        poiArrow.innerHTML =
-                          '<div id="poi-arrow-icon" style="font-size:20px;transition:transform 0.2s;filter:drop-shadow(0 0 4px rgba(251,191,36,0.5))">\u2B06\uFE0F</div>' +
-                          '<div id="poi-arrow-label" style="font-size:8px;color:#fbbf24;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,0.8)">POI 50m</div>';
-                        canvasEl.parentElement.appendChild(poiArrow);
-
                         // North-up local map: fixed distance scale, retained route, and shape-coded sites.
                         var mapPanel = document.createElement('div');
                         mapPanel.setAttribute('data-drone-map-panel', 'true');
@@ -24884,7 +26444,7 @@ const d = labToolData.solarSystem || {};
                         var mapRadiusWorld = 100;
                         var mapRadiusMeters = mapRadiusWorld * scaleFactor;
                         var mapRadiusLabel = (mapRadiusMeters / 1000).toLocaleString(undefined, { maximumFractionDigits:1 }) + ' km';
-                        miniMap.setAttribute('aria-label', 'North-up local map. Vehicle at center; ' + mapRadiusLabel + ' from center to edge. Amber rings: unvisited sites. Green checks: visited sites. Violet diamond: navigation goal. Cyan line: recent route. Horizontal distances use the scene model scale.');
+                        miniMap.setAttribute('aria-label', 'North-up local map. Vehicle at center; ' + mapRadiusLabel + ' from center to edge. Amber rings: unvisited sites. Green checks: visited sites. Amber diamond: current exploration target, kept at the edge if out of range. Dashed line: target bearing, not a safe route. Cyan line: recent route. Horizontal distances use the scene model scale.');
                         var mapPixelRatio = Math.min(window.devicePixelRatio || 1, 2);
                         miniMap.width = Math.round(160 * mapPixelRatio); miniMap.height = Math.round(160 * mapPixelRatio);
                         miniMap.style.cssText = 'display:block;position:relative;width:100%;height:auto;aspect-ratio:1;border:0;background:transparent;pointer-events:none';
@@ -24897,7 +26457,7 @@ const d = labToolData.solarSystem || {};
                         mapPanel.appendChild(mapScale);
                         var mapLegend = document.createElement('div');
                         mapLegend.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:2px 6px;font-size:10px;line-height:1.4';
-                        mapLegend.innerHTML = '<span style="color:#fcd34d">○ Site</span><span style="color:#6ee7b7">✓ Seen</span><span style="color:#c4b5fd">◆ Goal</span>';
+                        mapLegend.innerHTML = '<span style="color:#fcd34d">○ Site</span><span style="color:#6ee7b7">✓ Seen</span><span style="color:#fbbf24">◆ Target</span>';
                         mapPanel.appendChild(mapLegend);
                         canvasEl.parentElement.appendChild(mapPanel);
                         var mmCtx = miniMap.getContext('2d');
@@ -25425,6 +26985,7 @@ const d = labToolData.solarSystem || {};
                         function toggleDroneSceneFocus() {
                           droneSceneFocus = !droneSceneFocus;
                           canvasEl.parentElement.setAttribute('data-drone-presentation', droneSceneFocus ? 'scene' : 'guides');
+                          if (explorationCue) explorationCue.style.display = droneSceneFocus ? 'none' : 'grid';
                           sceneFocusButton.setAttribute('aria-pressed', String(droneSceneFocus));
                           sceneFocusButton.textContent = droneSceneFocus ? 'Restore guides' : 'Scene focus';
                           sceneFocusButton.style.background = droneSceneFocus ? '#bae6fd' : '#14263b';
@@ -26983,6 +28544,147 @@ const d = labToolData.solarSystem || {};
 
                         // â"€â"€ Signal Triangulation System â"€â"€
 
+                        // One destination cue connects existing exploration activities. It
+                        // never moves the vehicle, completes an objective, or grants rewards.
+                        var explorationLandmarkIndex = -1;
+                        var explorationCueAt = 0;
+                        var explorationCueKey = '';
+                        var explorationCueKind = '';
+                        var explorationCurrentTarget = null;
+                        var explorationCue = document.createElement('section');
+                        explorationCue.setAttribute('data-drone-exploration-cue', 'true');
+                        explorationCue.setAttribute('aria-label', 'Exploration guidance');
+                        explorationCue.style.cssText = 'grid-column:1/-1;min-width:0;display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px 12px;align-items:center;padding:10px;border:1px solid #426580;border-radius:10px;background:linear-gradient(120deg,#102c40,#101d30);box-sizing:border-box';
+                        var explorationDial = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        explorationDial.setAttribute('viewBox', '0 0 76 76');
+                        explorationDial.setAttribute('aria-hidden', 'true');
+                        explorationDial.style.cssText = 'display:block;width:76px;height:76px;max-width:100%;overflow:visible';
+                        explorationDial.innerHTML = '<circle cx="38" cy="38" r="31" fill="#091725" stroke="#57728c" stroke-width="1.5"/><path d="M38 7V13M69 38H63M38 69V63M7 38H13" fill="none" stroke="#a9c3d9" stroke-width="2"/><path d="M38 21L47 44L38 40L29 44Z" fill="#fbbf24" stroke="#fff3c4" stroke-width="1.5" data-exploration-arrow="true"/><circle cx="38" cy="38" r="2.5" fill="#0a2134"/>';
+                        var explorationArrow = explorationDial.querySelector('[data-exploration-arrow]');
+                        var explorationBody = document.createElement('div');
+                        explorationBody.style.cssText = 'min-width:0;display:grid;gap:3px;overflow-wrap:anywhere';
+                        var explorationMode = document.createElement('div');
+                        explorationMode.setAttribute('data-exploration-mode', 'true');
+                        explorationMode.style.cssText = 'font:700 13px/1.4 system-ui;letter-spacing:.06em;text-transform:uppercase;color:#93c5fd';
+                        var explorationTitle = document.createElement('div');
+                        explorationTitle.setAttribute('data-exploration-target', 'true');
+                        explorationTitle.style.cssText = 'font:750 14px/1.35 system-ui;color:#f1f5f9';
+                        var explorationReading = document.createElement('div');
+                        explorationReading.setAttribute('data-exploration-reading', 'true');
+                        explorationReading.style.cssText = 'font:650 13px/1.4 system-ui;color:#fde68a;font-variant-numeric:tabular-nums';
+                        var explorationAction = document.createElement('div');
+                        explorationAction.setAttribute('data-exploration-action', 'true');
+                        explorationAction.style.cssText = 'font:13px/1.45 system-ui;color:#dbeafe';
+                        explorationBody.appendChild(explorationMode); explorationBody.appendChild(explorationTitle);
+                        explorationBody.appendChild(explorationReading); explorationBody.appendChild(explorationAction);
+                        var explorationFooter = document.createElement('div');
+                        explorationFooter.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px';
+                        var explorationNote = document.createElement('div');
+                        explorationNote.style.cssText = 'flex:1;min-width:140px;font:13px/1.4 system-ui;color:#b9cce0';
+                        explorationNote.textContent = 'Arrow: direction from vehicle heading. The map’s amber diamond marks this target; dashed lines show a bearing, not a safe route.';
+                        var explorationNext = document.createElement('button');
+                        explorationNext.type = 'button'; explorationNext.textContent = 'Next landmark';
+                        explorationNext.setAttribute('data-exploration-next', 'true');
+                        explorationNext.style.cssText = 'min-height:44px;max-width:100%;padding:6px 10px;border:1px solid #647f98;border-radius:8px;background:#193b51;color:#e0f2fe;font:700 13px system-ui;cursor:pointer';
+                        explorationFooter.appendChild(explorationNote); explorationFooter.appendChild(explorationNext);
+                        explorationCue.appendChild(explorationDial); explorationCue.appendChild(explorationBody); explorationCue.appendChild(explorationFooter);
+                        roverCameraBar.insertBefore(explorationCue, roverCameraBar.firstChild);
+
+                        function getDroneExplorationGeometry(position, target, vehicleYaw, metersPerUnit) {
+                          var dx = target.x - position.x, dz = target.z - position.z;
+                          var horizontal = Math.sqrt(dx * dx + dz * dz);
+                          var vertical = target.spatial && isFinite(target.y) ? target.y - position.y : 0;
+                          var distance = Math.sqrt(horizontal * horizontal + vertical * vertical);
+                          var angle = Math.atan2(dx, -dz) + vehicleYaw;
+                          var relative = Math.atan2(Math.sin(angle), Math.cos(angle)) * 180 / Math.PI;
+                          var bearing = ((Math.atan2(dx, -dz) * 180 / Math.PI) % 360 + 360) % 360;
+                          var direction = Math.abs(relative) <= 15 ? 'ahead' : Math.abs(relative) >= 165 ? 'behind' : relative > 0 ? 'right' : 'left';
+                          return { distance: distance, meters: distance * metersPerUnit, horizontal: horizontal, verticalMeters: vertical * metersPerUnit, relative: relative, bearing: bearing, direction: direction, hasBearing: horizontal > 0.01 };
+                        }
+                        function nextExplorationLandmark() {
+                          if (explorationCueKind !== 'discovery') return;
+                          for (var offset = 1; offset <= pois.length; offset++) {
+                            var index = (explorationLandmarkIndex + offset + pois.length) % pois.length;
+                            if (!discoveredPOIs[index]) { explorationLandmarkIndex = index; break; }
+                          }
+                          explorationCueAt = 0; updateDroneExplorationCue();
+                          if (typeof announceToSR === 'function') announceToSR('Landmark selected: ' + explorationTitle.textContent + '. ' + explorationReading.textContent + '.');
+                          canvasEl.focus({preventScroll:true});
+                        }
+                        explorationNext.addEventListener('click', nextExplorationLandmark);
+                        function setExplorationText(node, value) { if (node.textContent !== value) node.textContent = value; }
+                        function getDroneExplorationTarget() {
+                          if (_descentPhase === 0) return { kind:'deployment', title:'Deployment in progress', action:'Your destination guide will appear when the vehicle is ready.' };
+                          var samplingOrb = sampleOperation ? sampleOperation.orb : sampleReadyOrb;
+                          if (samplingOrb && !samplingOrb._collected) return { kind:'sampling', title:samplingOrb._sampleData.name, x:samplingOrb.position.x, y:samplingOrb.position.y, z:samplingOrb.position.z, spatial:true, action:sampleStatus.textContent };
+                          if (sampleSurveySweeping) return { kind:'survey', title:'Surveying nearby samples', action:'Wait for the sweep to identify authored training markers.' };
+                          if (sampleSurveyTarget && !sampleSurveyTarget._collected) return { kind:'sample', title:sampleSurveyTarget._sampleData.name, x:sampleSurveyTarget.position.x, y:sampleSurveyTarget.position.y, z:sampleSurveyTarget.position.z, spatial:true, action:'Follow the selected training marker, then collect (F).' };
+                          if (navChallengeActive) return { kind:'navigation', title:'Navigation challenge target', x:navTargetX, z:navTargetZ, action:'Follow the bearing to your active navigation target.' };
+                          if (plotterRouteLine && plotterWaypoints.length >= 2 && !plotterRouteComplete && plotterWaypoints[plotterActiveWP]) return { kind:'route', title:'Route waypoint ' + (plotterActiveWP + 1) + ' of ' + plotterWaypoints.length, x:plotterWaypoints[plotterActiveWP].x, z:plotterWaypoints[plotterActiveWP].z, action:'Reach this waypoint to continue your plotted route.' };
+                          if (!isFluid && roverTraverse.active) {
+                            var home = roverTraverse.step === 'return' || roverTraverse.step === 'home_park';
+                            return { kind:'traverse', title:home ? 'Return to the landing zone' : 'Science waypoint', x:home ? roverTraverse.startX : roverTraverse.waypointX, z:home ? roverTraverse.startZ : roverTraverse.waypointZ, action:roverTraverseDetailEl ? roverTraverseDetailEl.textContent : 'Follow the field traverse marker.' };
+                          }
+                          if (explorationLandmarkIndex < 0 || !pois[explorationLandmarkIndex] || discoveredPOIs[explorationLandmarkIndex]) {
+                            explorationLandmarkIndex = -1;
+                            var nearest = Infinity;
+                            for (var i = 0; i < pois.length; i++) {
+                              if (discoveredPOIs[i]) continue;
+                              var dx = pois[i].x - playerPos.x, dz = pois[i].z - playerPos.z;
+                              var distance = dx * dx + dz * dz;
+                              if (distance < nearest) { nearest = distance; explorationLandmarkIndex = i; }
+                            }
+                          }
+                          var poi = pois[explorationLandmarkIndex];
+                          if (poi) return { kind:'discovery', title:poi.name, x:poi.x, z:poi.z, action:'Approach this landmark to reveal its field note.' };
+                          return { kind:'free-roam', title:'Landmarks explored', action:'Compare environment scans, collect a specimen, or photograph a new observation.' };
+                        }
+                        function updateDroneExplorationCue() {
+                          if (!explorationCue || roverSceneDisposed) return;
+                          var now = performance.now();
+                          if (now < explorationCueAt) return;
+                          explorationCueAt = now + 180;
+                          var target = getDroneExplorationTarget();
+                          explorationCurrentTarget = target;
+                          explorationCueKind = target.kind;
+                          var key = target.kind + ':' + target.title;
+                          if (key !== explorationCueKey) {
+                            explorationCueKey = key;
+                            explorationCue.dataset.targetKind = target.kind;
+                            setExplorationText(explorationTitle, target.title);
+                          }
+                          var names = { deployment:'Deployment', sampling:'Sampling in progress', survey:'Sample survey', sample:'Tracked sample', navigation:'Navigation challenge', route:'Plotted route', traverse:'Field traverse', discovery:'Explore a landmark', 'free-roam':'Free exploration' };
+                          setExplorationText(explorationMode, names[target.kind]);
+                          var reading = '', action = target.action;
+                          if (isFinite(target.x) && isFinite(target.z)) {
+                            var geometry = getDroneExplorationGeometry(playerPos, target, yaw, scaleFactor);
+                            var meters = Math.round(geometry.meters);
+                            reading = meters.toLocaleString() + ' m ' + (target.spatial ? 'direct' : 'horizontal') + ' model distance';
+                            if (geometry.hasBearing) reading += ' · ' + (geometry.direction === 'ahead' || geometry.direction === 'behind' ? geometry.direction : Math.round(Math.abs(geometry.relative)) + '° ' + geometry.direction);
+                            else reading += Math.abs(geometry.verticalMeters) > 1 ? ' · directly ' + (geometry.verticalMeters > 0 ? 'above' : 'below') : ' · at target';
+                            if (target.spatial && geometry.hasBearing && Math.abs(geometry.verticalMeters) >= 10) reading += ' · ' + Math.round(Math.abs(geometry.verticalMeters)).toLocaleString() + ' m ' + (geometry.verticalMeters > 0 ? 'above' : 'below');
+                            explorationArrow.setAttribute('transform', 'rotate(' + geometry.relative.toFixed(1) + ' 38 38)');
+                            explorationArrow.style.visibility = geometry.hasBearing ? 'visible' : 'hidden';
+                            explorationCue.dataset.distanceMeters = String(meters);
+                            explorationCue.dataset.relativeBearing = geometry.relative.toFixed(1);
+                            if (target.kind === 'sample' && geometry.distance < 2) action = 'Within reach. Collect this sample (F), then review your specimen.';
+                          } else {
+                            explorationArrow.style.visibility = 'hidden';
+                            delete explorationCue.dataset.distanceMeters; delete explorationCue.dataset.relativeBearing;
+                          }
+                          setExplorationText(explorationReading, reading);
+                          setExplorationText(explorationAction, action);
+                          var available = 0;
+                          for (var poiIndex = 0; poiIndex < pois.length; poiIndex++) if (!discoveredPOIs[poiIndex]) available++;
+                          explorationNext.hidden = target.kind !== 'discovery';
+                          explorationNext.disabled = available < 2;
+                          explorationNext.style.opacity = explorationNext.disabled ? '0.55' : '1';
+                        }
+                        function disposeDroneExplorationCue() {
+                          explorationNext.removeEventListener('click', nextExplorationLandmark);
+                          explorationCue.remove(); explorationCue = null;
+                        }
+
                         var beacons = [
 
                           { x: 20, z: -15, name: __alloT('stem.solarsystem.beacon_alpha', 'Beacon Alpha'), color: 0xff6b6b },
@@ -27556,63 +29258,35 @@ const d = labToolData.solarSystem || {};
                             }
                           }
 
-                          // Billboard corona to face camera
+                          // Pause decorative sky time without a catch-up jump when motion resumes.
+                          if (!droneReduceMotion) droneSkyTime += droneFrameDt * 60;
                           if (coronaMesh) {
-                            coronaMesh.lookAt(camera.position);
-                            // Subtle sun pulse
-                            var sunPulse = 1 + Math.sin(tick3d * 0.015) * 0.05;
+                            var sunPulse = droneReduceMotion ? 1 : 1 + Math.sin(droneSkyTime * 0.015) * 0.05;
                             coronaMesh.scale.setScalar(sunPulse);
                           }
 
                           // Star twinkle — phase-offset opacity waves (static under reduced motion)
                           if (!droneReduceMotion && twinkleLayers.length) {
                             for (var twl = 0; twl < twinkleLayers.length; twl++) {
-                              twinkleLayers[twl].material.opacity = 0.35 + 0.3 * Math.abs(Math.sin(tick3d * 0.013 + twinkleLayers[twl]._twPhase));
+                              twinkleLayers[twl].material.opacity = 0.35 + 0.3 * Math.abs(Math.sin(droneSkyTime * 0.013 + twinkleLayers[twl]._twPhase));
                             }
                           }
 
-                          // Sun glare overlay tracks where the sun sits on screen (rover worlds only —
-                          // fluid modes hide the sun underwater or fade it behind atmosphere fog)
-                          if (sunGlareEl && !isFluid && sunMesh.visible && tick3d % 3 === 0) {
-                            _glareSunDir.copy(sunMesh.position).normalize();
-                            camera.getWorldDirection(_glareCamDir);
-                            var glareDot = _glareCamDir.dot(_glareSunDir);
-                            if (glareDot > 0.55) {
-                              _glareNdc.copy(sunMesh.position).project(camera);
-                              var gx = Math.round((_glareNdc.x * 0.5 + 0.5) * 100);
-                              var gy = Math.round((-_glareNdc.y * 0.5 + 0.5) * 100);
-                              // Glare strength rides irradiance too, so looking sunward means
-                              // something different on each world: near-blinding on Mercury,
-                              // ordinary on Mars, barely a sparkle out at Pluto. Capped at
-                              // 0.85 — the same ceiling as before — because past that the
-                              // terrain disappears and the student cannot drive.
-                              var glareStrength = Math.max(0.10, Math.min(0.85, 0.12 + sunIrradiance * 0.34));
-                              var glareSpread = Math.round(18 + Math.min(26, sunIrradiance * 5));
-                              sunGlareEl.style.background = 'radial-gradient(circle at ' + gx + '% ' + gy + '%,rgba(255,244,214,' + (0.26 + glareStrength * 0.3).toFixed(2) + '),rgba(255,244,214,0.12) ' + glareSpread + '%,transparent ' + (glareSpread + 33) + '%)';
-                              sunGlareEl.style.opacity = String(Math.min(1, (glareDot - 0.55) / 0.4) * glareStrength);
-                            } else {
-                              sunGlareEl.style.opacity = '0';
-                            }
-                          }
-
-                          // Animate sky moons orbiting overhead
-                          skyMoons.forEach(function(sm) {
-                            var angle = tick3d * sm._orbitSpeed + sm._orbitPhase;
-                            sm.position.set(
-                              Math.cos(angle) * sm._orbitR,
-                              40 + Math.sin(angle * 0.7 + sm._orbitPhase) * sm._orbitR * sm._orbitTilt,
-                              Math.sin(angle) * sm._orbitR
-                            );
-                          });
+                          // These are illustrative sky orbits; nearby vehicle travel adds no parallax.
+                          updateDroneSkyMoons(droneSkyTime);
 
                           // Animate clouds
 
                           scene.children.forEach(function (c) {
-                            if (c._cloudSpeed) {
+                            if (c._cloudSpeed && !droneReduceMotion) {
                               var drift = c._cloudDrift || 0;
-                              c.position.x = Math.sin(tick3d * c._cloudSpeed + drift) * 4 + Math.cos(tick3d * c._cloudSpeed * 0.3) * 2;
-                              c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7 + drift) * 3;
-                              if (c.material && c.material.map) {
+                              // The visible vortex stays over its authored encounter center.
+                              // Only its texture and rotation move; cloud decks may drift.
+                              if (!c._isStorm) {
+                                c.position.x = Math.sin(tick3d * c._cloudSpeed + drift) * 4 + Math.cos(tick3d * c._cloudSpeed * 0.3) * 2;
+                                c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7 + drift) * 3;
+                              }
+                              if (!c._isStorm && c.material && c.material.map) {
                                 c.material.map.offset.x += c._cloudSpeed * 0.15; // texture scrolling for wind effect
                               }
                               if (c._isStorm) {
@@ -28711,33 +30385,6 @@ const d = labToolData.solarSystem || {};
                               }
                             }
 
-                            // ── POI Direction Arrow Update ──
-                            var poiArrowEl = document.getElementById('poi-arrow');
-                            var poiArrowIcon = document.getElementById('poi-arrow-icon');
-                            var poiArrowLabel = document.getElementById('poi-arrow-label');
-                            if (poiArrowEl && pois.length > 0) {
-                              var nearestPOI = null, nearestPOIDist = 999, nearestPOIIdx = -1;
-                              for (var np = 0; np < pois.length; np++) {
-                                if (discoveredPOIs[np]) continue;
-                                var npDist = Math.sqrt(Math.pow(playerPos.x - pois[np].x, 2) + Math.pow(playerPos.z - pois[np].z, 2));
-                                if (npDist < nearestPOIDist) {
-                                  nearestPOIDist = npDist;
-                                  nearestPOI = pois[np];
-                                  nearestPOIIdx = np;
-                                }
-                              }
-                              if (nearestPOI && nearestPOIDist > 4) {
-                                poiArrowEl.style.opacity = '1';
-                                // Calculate angle from player to POI
-                                var poiAngle = Math.atan2(nearestPOI.x - playerPos.x, -(nearestPOI.z - playerPos.z));
-                                var relAngle = poiAngle + yaw; // clockwise target bearing minus clockwise vehicle bearing
-                                if (poiArrowIcon) poiArrowIcon.style.transform = 'rotate(' + (relAngle * 180 / Math.PI) + 'deg)';
-                                if (poiArrowLabel) poiArrowLabel.textContent = '\uD83D\uDD2D ' + Math.round(nearestPOIDist * scaleFactor) + 'm';
-                              } else {
-                                poiArrowEl.style.opacity = Object.keys(discoveredPOIs).length >= totalPOIs ? '0' : (nearestPOIDist <= 4 ? '0' : '0.3');
-                              }
-                            }
-
                             // Atmospheric science HUD (gas giants only)
                             if (isGas && gasAtmo) {
                               var curZone = gasAtmo.getZone(playerPos.y);
@@ -28860,7 +30507,7 @@ const d = labToolData.solarSystem || {};
                           // Scanner + photo cooldowns
                           refreshScannerCooldown();
                           updateSampleSurvey();
-
+                          updateDroneExplorationCue();
 
                           // Pluto geyser particle animation
                           if (typeof geyserMesh !== 'undefined' && geyserMesh) {
@@ -28965,14 +30612,20 @@ const d = labToolData.solarSystem || {};
                               mmCtx.fillStyle = '#' + bc.color.toString(16).padStart(6,'0');
                               mmCtx.fillRect(mmCx+(bc.x-playerPos.x)/mmScale-2,mmCy+(bc.z-playerPos.z)/mmScale-2,4,4);
                             });
-                            // Keep a distant goal visible at the edge, with a directional stem.
-                            if (navChallengeActive) {
-                              var goalX = (navTargetX-playerPos.x)/mmScale, goalY = (navTargetZ-playerPos.z)/mmScale;
+                            // The map and bearing dial share one target selected by the active task.
+                            // A dashed bearing is guidance, not a traversable path through obstacles.
+                            if (explorationCurrentTarget && isFinite(explorationCurrentTarget.x) && isFinite(explorationCurrentTarget.z)) {
+                              var goalX = (explorationCurrentTarget.x-playerPos.x)/mmScale, goalY = (explorationCurrentTarget.z-playerPos.z)/mmScale;
                               var goalDistance = Math.hypot(goalX,goalY), goalClamp = Math.min(1, (mmRadius-7)/Math.max(1,goalDistance));
                               var gx = mmCx+goalX*goalClamp, gy = mmCy+goalY*goalClamp;
-                              mmCtx.fillStyle = '#c4b5fd'; mmCtx.strokeStyle = '#c4b5fd'; mmCtx.lineWidth = 2;
-                              mmCtx.beginPath(); mmCtx.moveTo(gx,gy-5); mmCtx.lineTo(gx+5,gy); mmCtx.lineTo(gx,gy+5); mmCtx.lineTo(gx-5,gy); mmCtx.closePath(); mmCtx.fill();
-                              if (goalClamp < 1) { mmCtx.beginPath(); mmCtx.moveTo(gx,gy); mmCtx.lineTo(mmCx+goalX/goalDistance*(mmRadius-1),mmCy+goalY/goalDistance*(mmRadius-1)); mmCtx.stroke(); }
+                              mmCtx.strokeStyle = '#fbbf24'; mmCtx.lineWidth = 1.5; mmCtx.setLineDash([3,4]);
+                              mmCtx.beginPath(); mmCtx.moveTo(mmCx,mmCy); mmCtx.lineTo(gx,gy); mmCtx.stroke(); mmCtx.setLineDash([]);
+                              mmCtx.fillStyle = '#fbbf24'; mmCtx.strokeStyle = '#082f49'; mmCtx.lineWidth = 1.5;
+                              mmCtx.beginPath(); mmCtx.moveTo(gx,gy-5); mmCtx.lineTo(gx+5,gy); mmCtx.lineTo(gx,gy+5); mmCtx.lineTo(gx-5,gy); mmCtx.closePath(); mmCtx.fill(); mmCtx.stroke();
+                              if (goalClamp < 1) { mmCtx.strokeStyle='#fbbf24'; mmCtx.beginPath(); mmCtx.moveTo(gx,gy); mmCtx.lineTo(mmCx+goalX/goalDistance*(mmRadius-1),mmCy+goalY/goalDistance*(mmRadius-1)); mmCtx.stroke(); }
+                              miniMap.dataset.targetKind=explorationCurrentTarget.kind; miniMap.dataset.targetX=String(explorationCurrentTarget.x); miniMap.dataset.targetZ=String(explorationCurrentTarget.z); miniMap.dataset.targetClamped=String(goalClamp<1);
+                            } else {
+                              delete miniMap.dataset.targetKind; delete miniMap.dataset.targetX; delete miniMap.dataset.targetZ; delete miniMap.dataset.targetClamped;
                             }
                             // Heading wedge uses the same clockwise bearing as the numeric compass.
                             mmCtx.save(); mmCtx.translate(mmCx,mmCy); mmCtx.rotate(-yaw);
@@ -29221,6 +30874,18 @@ const d = labToolData.solarSystem || {};
 
                         }
 
+                        // Build after procedural scenery so the added THREE objects do not
+                        // consume random values before rock and landmark placement.
+                        if (rockyTerrainMesh) {
+                          terrainApronMesh = new THREE.Mesh(solarCreateDroneTerrainApronGeometry(THREE, rockyTerrainMesh.geometry, rockySurfaceLowPower), rockyTerrainMesh.material);
+                          terrainApronMesh.name = 'drone-terrain-apron';
+                          terrainApronMesh.userData.droneTerrainApron = true;
+                          terrainApronMesh.rotation.copy(rockyTerrainMesh.rotation);
+                          terrainApronMesh.castShadow = false;
+                          terrainApronMesh.receiveShadow = !!droneShadows;
+                          scene.add(terrainApronMesh);
+                        }
+
                         // Flag what casts and what receives. Done as ONE traverse here, after
                         // the whole scene exists, rather than by editing the ~30 creation
                         // sites — the rule is uniform, so writing it once is both less code
@@ -29234,7 +30899,7 @@ const d = labToolData.solarSystem || {};
                         if (droneShadows) {
                           scene.traverse(function (o) {
                             if (!o.isMesh || !o.material) return;
-                            if (o.userData && (o.userData.horizonPeak || o.userData.surfaceMicrodetail)) return; // no distant or tiny-fragment shadow passes
+                            if (o.userData && (o.userData.horizonPeak || o.userData.surfaceMicrodetail || o.userData.droneBackdropObject || o.userData.droneTerrainApron)) return; // no distant or tiny-fragment shadow passes
                             var m = Array.isArray(o.material) ? o.material[0] : o.material;
                             if (!m || m.transparent || m.blending === THREE.AdditiveBlending) return;
                             if (!m.isMeshStandardMaterial && !m.isMeshPhongMaterial && !m.isMeshLambertMaterial) return;
@@ -29276,6 +30941,7 @@ const d = labToolData.solarSystem || {};
                           document.removeEventListener('visibilitychange', onRoverVisibilityChange);
 
                           canvasEl.removeEventListener('keydown', onDroneShortcutKeydown);
+                          disposeDroneExplorationCue();
                           if (roverCameraBar && roverCameraBar.parentElement) roverCameraBar.parentElement.removeChild(roverCameraBar);
                           if (canvasEl.parentElement) canvasEl.parentElement.removeAttribute('data-drone-presentation');
                           delete canvasEl.dataset.droneCameraView;
@@ -29385,6 +31051,9 @@ const d = labToolData.solarSystem || {};
                             if (geologyDetailMesh.dispose) geologyDetailMesh.dispose();
                             geologyDetailMesh = null;
                           }
+                          rockyBoulderMeshes.forEach(function (mesh) { scene.remove(mesh); mesh.geometry.dispose(); });
+                          rockyBoulderMeshes.length = 0;
+                          envObjects.length = 0;
                           geologyMaterials.forEach(function (material) { material.dispose(); });
                           geologyMaterials.length = 0;
                           oceanSceneryObjects.forEach(function(object) { scene.remove(object); if (object.isInstancedMesh && object.dispose) object.dispose(); });
@@ -29396,6 +31065,22 @@ const d = labToolData.solarSystem || {};
                           vehicleDetailMaterials.forEach(function(material) { material.dispose(); });
                           vehicleDetailMaterials.length = 0;
                           vehicleThrusterRotors.length = 0;
+                          if (vehicleEnvironmentMap) { vehicleEnvironmentMap.dispose(); vehicleEnvironmentMap = null; }
+                          vehicleEnvironmentFaces.length = 0;
+                          delete canvasEl.dataset.droneMaterialDepth;
+                          solarDisposeDroneBackdrop(droneBackdrop);
+                          delete canvasEl.dataset.droneBackdrop;
+                          if (hazePlane) {
+                            scene.remove(hazePlane);
+                            hazeGeo.dispose(); hazeMat2.dispose(); hazeTex.dispose();
+                            hazePlane = null; hazeGeo = null; hazeMat2 = null; hazeTex = null;
+                          }
+                          if (gasCloudDecks) gasCloudDecks.forEach(function(deckMesh) {
+                            scene.remove(deckMesh); deckMesh.geometry.dispose();
+                            if (deckMesh.material.map) deckMesh.material.map.dispose();
+                            deckMesh.material.dispose();
+                          });
+                          if (gasCloudDecks) gasCloudDecks.length = 0;
                           delete canvasEl.dataset.droneVehicleDetail;
                           delete canvasEl.dataset.droneGeology;
                           delete canvasEl.dataset.droneFragmentCount;
@@ -29408,6 +31093,17 @@ const d = labToolData.solarSystem || {};
                           }
                           if (rockyHorizonGeo) { try { rockyHorizonGeo.dispose(); } catch (e) {} rockyHorizonGeo = null; }
                           if (rockyHorizonMat) { try { rockyHorizonMat.dispose(); } catch (e) {} rockyHorizonMat = null; }
+                          if (terrainApronMesh) {
+                            scene.remove(terrainApronMesh);
+                            terrainApronMesh.geometry.dispose();
+                            terrainApronMesh = null; // material and maps belong to the ground
+                          }
+                          if (rockyTerrainMesh) {
+                            scene.remove(rockyTerrainMesh);
+                            rockyTerrainMesh.geometry.dispose();
+                            rockyTerrainMesh.material.map.dispose();
+                            rockyTerrainMesh = null; // material is already released by geologyMaterials
+                          }
                           if (typeof terrainMicroTex !== 'undefined' && terrainMicroTex) {
                             try { terrainMicroTex.dispose(); } catch (e) {}
                             terrainMicroTex = null;
@@ -29510,8 +31206,6 @@ const d = labToolData.solarSystem || {};
                           var sampleProx = document.getElementById('hud-sample-prox');
                           if (sampleProx && sampleProx.parentElement) sampleProx.parentElement.removeChild(sampleProx);
                           if (depthGauge && depthGauge.parentElement) depthGauge.parentElement.removeChild(depthGauge);
-                          var poiArrowClean = document.getElementById('poi-arrow');
-                          if (poiArrowClean && poiArrowClean.parentElement) poiArrowClean.parentElement.removeChild(poiArrowClean);
                           if (mapPanel && mapPanel.parentElement) mapPanel.parentElement.removeChild(mapPanel);
                           mapRoute.length = 0;
                           delete canvasEl.dataset.droneHeading;
@@ -31341,76 +33035,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: SOLAR CYCLE VISUALIZER ===
-              activityElement('solar-cycle-visualizer', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_cycle_visualizer', "☀ Solar Cycle Visualizer")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showSunCycle", !d.showSunCycle); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showSunCycle ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
-                  }, d.showSunCycle ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_sun_has_an_11_year_cycle_of_sunspo', "The Sun has an 11-year cycle of sunspot activity. Scrub through to see sunspots come and go + CME launches.")),
-                d.showSunCycle && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var year = (typeof d.sunCycleYear === 'number' && isFinite(d.sunCycleYear)) ? d.sunCycleYear : 5.5;
-                                      var phase = (year % 11) / 11;
-                                      var sunspots = Math.max(0, 100 * (1 - Math.cos(phase * Math.PI * 2)) / 2);
-                                      var cmeProb = sunspots > 70 ? 'HIGH' : sunspots > 30 ? 'Moderate' : 'Low';
-                                      var phaseLabel = sunspots > 80 ? 'Solar Maximum' : sunspots > 40 ? 'Rising/Falling phase' : 'Solar Minimum';
-                                      var spots = [];
-                                      for (var s = 0; s < Math.floor(sunspots / 8); s++) {
-                                        var sa = (s * 73 + year * 30) % 360 * Math.PI / 180;
-                                        var sr = 30 + (s % 4) * 8;
-                                        spots.push({ x: 150 + Math.cos(sa) * sr, y: 110 + Math.sin(sa) * sr, sz: 2 + s % 3 });
-                                      }
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.solar_cycle_visualizer', "☀ Solar Cycle Visualizer"), viewBox: '0 0 400 220', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            [20, 70, 110, 160, 200, 250, 290, 340, 380].map(function(sx, si) {
-                                              var sy = (si * 33 + 7) % 200 + 5;
-                                              return React.createElement('circle', { key: 'sc' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.45 });
-                                            }),
-                                            React.createElement('defs', null,
-                                              React.createElement('radialGradient', { id: 'sunSurf' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#fde047' }),
-                                                React.createElement('stop', { offset: '60%', stopColor: '#fbbf24' }),
-                                                React.createElement('stop', { offset: '100%', stopColor: '#dc2626' })
-                                              )
-                                            ),
-                                            React.createElement('circle', { cx: 150, cy: 110, r: 80, fill: '#f59e0b', opacity: 0.4 }),
-                                            React.createElement('circle', { cx: 150, cy: 110, r: 60, fill: 'url(#sunSurf)' }),
-                                            spots.map(function(sp, si) {
-                                              return React.createElement('circle', { key: 'sp' + si, cx: sp.x, cy: sp.y, r: sp.sz, fill: '#1c1917' });
-                                            }),
-                                            sunspots > 60 && [0, 60, 120, 180, 240, 300].slice(0, Math.floor(sunspots / 20)).map(function(deg) {
-                                              var rad = deg * Math.PI / 180;
-                                              var x1 = 150 + Math.cos(rad) * 60;
-                                              var y1 = 110 + Math.sin(rad) * 60;
-                                              var x2 = 150 + Math.cos(rad) * 95;
-                                              var y2 = 110 + Math.sin(rad) * 95;
-                                              return React.createElement('path', { key: 'cme' + deg, d: 'M ' + x1 + ' ' + y1 + ' Q ' + ((x1 + x2) / 2 + 5) + ' ' + ((y1 + y2) / 2 - 5) + ' ' + x2 + ' ' + y2, fill: 'none', stroke: '#fbbf24', strokeWidth: 3, opacity: 0.6, strokeLinecap: 'round' });
-                                            }),
-                                            React.createElement('rect', { x: 250, y: 30, width: 130, height: 8, rx: 4, fill: '#1e293b' }),
-                                            React.createElement('rect', { x: 250, y: 30, width: 130 * (sunspots / 100), height: 8, rx: 4, fill: sunspots > 70 ? '#dc2626' : sunspots > 30 ? '#f97316' : '#22c55e' }),
-                                            React.createElement('text', { x: 315, y: 55, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, Math.round(sunspots) + ' sunspots'),
-                                            React.createElement('text', { x: 315, y: 90, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, phaseLabel),
-                                            React.createElement('text', { x: 315, y: 110, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'CME risk: ' + cmeProb),
-                                            React.createElement('text', { x: 315, y: 135, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Year ' + year.toFixed(1) + ' of 11')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.cycle_year', 'Cycle year')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.cycle_year', 'Cycle year'), type: 'range', min: 0, max: 11, step: 0.1, value: year, onChange: function(e) { upd('sunCycleYear', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, year.toFixed(1))
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.the_sun_cycles_every_11_years_between_', 'The Sun cycles every ~11 years between minimum (few sunspots, calm) and maximum (many sunspots, frequent solar flares + CMEs). Cycle 25 reached its maximum around 2024-2025 and is now declining.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('solar-cycle-visualizer','div',{className:'mt-3'},buildSolarCycle()),
 
               // === MINI-TOOL: HABITABLE ZONE CALCULATOR ===
               activityElement('habitable-zone-calculator', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -31518,162 +33143,10 @@ const d = labToolData.solarSystem || {};
               activityElement('day-night-globe', 'div', { className: 'mt-3' }, buildSolarDayNight()),
 
               // === MINI-TOOL: LAGRANGE POINTS LAB ===
-              activityElement('lagrange-points-lab', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.lagrange_points_lab', "⚖ Lagrange Points Lab")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showLagrange", !d.showLagrange); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showLagrange ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200')
-                  }, d.showLagrange ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.five_gravitational_sweet_spots_between', "Five gravitational sweet spots between two bodies where spacecraft can hover. James Webb sits at L2.")),
-                d.showLagrange && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var massRatio = (typeof d.lagrangeMass === 'number' && isFinite(d.lagrangeMass)) ? d.lagrangeMass : 0.01;
-                                      var cx = 250, cy = 130;
-                                      var R = 100;
-                                      var planetX = cx + R;
-                                      var planetY = cy;
-                                      var L1 = { x: cx + R * (1 - Math.cbrt(massRatio / 3)), y: cy, name: 'L1' };
-                                      var L2 = { x: cx + R * (1 + Math.cbrt(massRatio / 3)), y: cy, name: 'L2' };
-                                      var L3 = { x: cx - R, y: cy, name: 'L3' };
-                                      var L4 = { x: cx + R * Math.cos(Math.PI / 3), y: cy - R * Math.sin(Math.PI / 3), name: 'L4' };
-                                      var L5 = { x: cx + R * Math.cos(Math.PI / 3), y: cy + R * Math.sin(Math.PI / 3), name: 'L5' };
-                                      var lpoints = [L1, L2, L3, L4, L5];
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.lagrange_points_lab', "⚖ Lagrange Points Lab"), viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            [15, 60, 130, 200, 280, 360, 440].map(function(sx, si) {
-                                              var sy = (si * 41 + 7) % 260 + 5;
-                                              return React.createElement('circle', { key: 'last' + si, cx: sx, cy: sy, r: 0.6, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('defs', null,
-                                              React.createElement('radialGradient', { id: 'lgsun' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
-                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
-                                              )
-                                            ),
-                                            React.createElement('circle', { cx: cx, cy: cy, r: R, fill: 'none', stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '2,3' }),
-                                            React.createElement('circle', { cx: cx, cy: cy, r: 14, fill: 'url(#lgsun)' }),
-                                            React.createElement('text', { x: cx, y: cy + 30, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, 'Sun'),
-                                            React.createElement('circle', { cx: planetX, cy: planetY, r: 6, fill: '#3b82f6' }),
-                                            React.createElement('text', { x: planetX, y: planetY + 18, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.earth_6', 'Earth')),
-                                            lpoints.map(function(L, li) {
-                                              var stable = L.name === 'L4' || L.name === 'L5';
-                                              return React.createElement('g', { key: L.name },
-                                                React.createElement('circle', { cx: L.x, cy: L.y, r: 4, fill: stable ? '#22c55e' : '#fbbf24' }),
-                                                React.createElement('circle', { cx: L.x, cy: L.y, r: 8, fill: 'none', stroke: stable ? '#22c55e' : '#fbbf24', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.6 }),
-                                                React.createElement('text', { x: L.x, y: L.y - 12, textAnchor: 'middle', fill: stable ? '#86efac' : '#fde047', fontSize: 9, fontWeight: 'bold' }, L.name)
-                                              );
-                                            }),
-                                            React.createElement('text', { x: 250, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.lagrange_points', 'Lagrange Points')),
-                                            React.createElement('text', { x: 250, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.green_stable_equilibria_l4_l5_yellow_u', 'Green: stable equilibria (L4, L5) • Yellow: unstable but useful (L1, L2, L3)'))
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1 text-[0.625rem]' },
-                                          [
-                                            ['L1', 'Sun + Earth observation (SOHO)', '#fbbf24'],
-                                            ['L2', 'James Webb Space Telescope', '#fbbf24'],
-                                            ['L3', 'Always behind Sun (mostly theoretical)', '#fbbf24'],
-                                            ['L4', 'Trojan asteroids — stable', '#22c55e'],
-                                            ['L5', 'Trojan asteroids — stable', '#22c55e']
-                                          ].map(function(L) {
-                                            return React.createElement('div', { key: L[0], className: 'p-1 rounded text-[0.625rem] ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), style: { borderLeft: '3px solid ' + L[2] } },
-                                              React.createElement('div', { className: 'font-bold' }, L[0]),
-                                              React.createElement('div', null, L[1])
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.five_points_in_any_two_body_orbit_wher', 'Five points in any two-body orbit where gravity and centrifugal effects balance. Spacecraft can park here with minimal fuel. JWST sits at L2 — always behind Earth, away from Sun.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('lagrange-points-lab', 'div', { className: 'mt-3' }, buildSolarLagrange()),
 
               // === MINI-TOOL: SPECTROSCOPY LAB ===
-              activityElement('spectroscopy-lab', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.spectroscopy_lab', "🌈 Spectroscopy Lab")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showSpectro", !d.showSpectro); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showSpectro ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
-                  }, d.showSpectro ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.each_element_fingerprints_light_in_spe', "Each element fingerprints light in specific wavelengths. Cycle through elements to see how astronomers identify them in distant stars.")),
-                d.showSpectro && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var element = d.spectroElem || 'hydrogen';
-                                      var ELEMENTS = {
-                                        hydrogen: { name: __alloT('stem.solarsystem.hydrogen', 'Hydrogen'), lines: [410, 434, 486, 656], color: '#dc2626' },
-                                        helium: { name: __alloT('stem.solarsystem.helium', 'Helium'), lines: [438, 447, 471, 492, 502, 587, 668, 706], color: '#fbbf24' },
-                                        sodium: { name: __alloT('stem.solarsystem.sodium', 'Sodium'), lines: [589, 589.5], color: '#facc15' },
-                                        neon: { name: __alloT('stem.solarsystem.neon', 'Neon'), lines: [540, 585, 588, 614, 626, 633, 638, 640, 650, 659, 692, 703], color: '#f97316' },
-                                        mercury: { name: __alloT('stem.solarsystem.mercury_3', 'Mercury'), lines: [404, 435, 546, 577, 579], color: '#22c55e' },
-                                        argon: { name: __alloT('stem.solarsystem.argon', 'Argon'), lines: [415, 420, 425, 696, 707, 727, 738, 750, 763, 772, 794], color: '#7dd3fc' }
-                                      };
-                                      var sel = ELEMENTS[element];
-                                      function wavelengthToColor(w) {
-                                        if (w < 380) return '#000';
-                                        if (w < 440) return '#7e22ce';
-                                        if (w < 490) return '#2563eb';
-                                        if (w < 510) return '#06b6d4';
-                                        if (w < 580) return '#22c55e';
-                                        if (w < 645) return '#facc15';
-                                        if (w < 700) return '#f97316';
-                                        if (w < 780) return '#dc2626';
-                                        return '#000';
-                                      }
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
-                                          Object.keys(ELEMENTS).map(function(k) {
-                                            var active = element === k;
-                                            return React.createElement('button', { key: k, onClick: function() { upd('spectroElem', k); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold capitalize ' + (active ? 'bg-fuchsia-600 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ELEMENTS[k].name);
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.spectroscopy_lab', "🌈 Spectroscopy Lab"), viewBox: '0 0 400 180', style: { width: '100%', display: 'block', background: '#000' } },
-                                            React.createElement('defs', null,
-                                              React.createElement('linearGradient', { id: 'spec', x1: '0%', x2: '100%' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#000' }),
-                                                React.createElement('stop', { offset: '7%', stopColor: '#000' }),
-                                                React.createElement('stop', { offset: '10%', stopColor: '#7e22ce' }),
-                                                React.createElement('stop', { offset: '25%', stopColor: '#2563eb' }),
-                                                React.createElement('stop', { offset: '40%', stopColor: '#06b6d4' }),
-                                                React.createElement('stop', { offset: '55%', stopColor: '#22c55e' }),
-                                                React.createElement('stop', { offset: '70%', stopColor: '#facc15' }),
-                                                React.createElement('stop', { offset: '83%', stopColor: '#f97316' }),
-                                                React.createElement('stop', { offset: '95%', stopColor: '#dc2626' }),
-                                                React.createElement('stop', { offset: '100%', stopColor: '#000' })
-                                              )
-                                            ),
-                                            React.createElement('rect', { x: 20, y: 30, width: 360, height: 40, fill: 'url(#spec)', opacity: 0.3 }),
-                                            React.createElement('rect', { x: 20, y: 90, width: 360, height: 50, fill: '#000' }),
-                                            sel.lines.map(function(w, wi) {
-                                              var x = 20 + ((w - 380) / 400) * 360;
-                                              if (x < 20 || x > 380) return null;
-                                              return React.createElement('g', { key: wi },
-                                                React.createElement('rect', { x: x - 1, y: 90, width: 2, height: 50, fill: wavelengthToColor(w) }),
-                                                React.createElement('text', { x: x, y: 160, textAnchor: 'middle', fill: wavelengthToColor(w), fontSize: 7 }, w + 'nm')
-                                              );
-                                            }),
-                                            React.createElement('text', { x: 20, y: 25, fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.380nm_uv', '380nm (UV)')),
-                                            React.createElement('text', { x: 380, y: 25, textAnchor: 'end', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.780nm_ir', '780nm (IR)')),
-                                            React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, sel.name + ' emission spectrum'),
-                                            React.createElement('text', { x: 200, y: 85, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.visible_light_continuum', 'Visible light continuum')),
-                                            React.createElement('text', { x: 200, y: 175, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.element_emission_lines_fingerprint', 'Element emission lines (fingerprint)'))
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.every_element_emits_its_own_unique_pat', 'Every element emits its own unique pattern of light wavelengths — its spectral fingerprint. By looking at light from distant stars, we can determine what they\'re made of. This is how we know the Sun is 75% hydrogen!')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('spectroscopy-lab', 'div', { className: 'mt-3' }, buildSolarSpectroscopy()),
 
               // === MINI-TOOL: CONSTELLATION HUNTER ===
               activityElement('constellation-hunter', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -31820,84 +33293,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: MARS ROVER PATHFINDER ===
-              activityElement('mars-rover-pathfinder', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_rover_pathfinder', "🚗 Mars Rover Pathfinder")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showRover", !d.showRover); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showRover ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
-                  }, d.showRover ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pilot_a_rover_from_start_to_goal_plan_', "Pilot a rover from start to goal. Plan around rocks and mountains; watch your fuel!")),
-                d.showRover && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var path = d.roverPath || [{ x: 0, y: 5 }];
-                                      var pos = path[path.length - 1];
-                                      var goal = { x: 9, y: 5 };
-                                      var fuel = (typeof d.roverFuel === 'number' && isFinite(d.roverFuel)) ? d.roverFuel : 30;
-                                      var terrain = d.roverTerrain || [
-                                        [0,0,0,1,0,0,2,0,0,3], [0,0,1,1,0,2,0,0,0,0], [0,1,0,0,2,0,0,0,1,0],
-                                        [0,0,0,1,0,0,3,0,1,0], [1,0,0,0,2,0,0,2,0,0], [0,0,0,2,0,0,0,0,0,0],
-                                        [0,2,0,0,1,0,3,0,1,0], [0,0,0,0,0,1,0,0,0,2], [0,0,1,0,0,0,0,2,0,0],
-                                        [3,0,0,0,2,0,1,0,0,0]
-                                      ];
-                                      var COSTS = { 0: 1, 1: 2, 2: 3, 3: 5 };
-                                      var COLORS = { 0: '#7c2d12', 1: '#9a3412', 2: '#a16207', 3: '#451a03' };
-                                      var SYMBOLS = { 0: '', 1: '·', 2: '◇', 3: '▲' };
-                                      var reached = pos.x === goal.x && pos.y === goal.y;
-                                      function move(dx, dy) {
-                                        var nx = pos.x + dx, ny = pos.y + dy;
-                                        if (nx < 0 || nx > 9 || ny < 0 || ny > 9) return;
-                                        var cost = COSTS[terrain[ny][nx]];
-                                        if (fuel < cost) return;
-                                        upd('roverPath', path.concat([{ x: nx, y: ny }]));
-                                        upd('roverFuel', fuel - cost);
-                                      }
-                                      function reset() { upd('roverPath', [{ x: 0, y: 5 }]); upd('roverFuel', 30); }
-                                      var cs = 30, ox = 50, oy = 10;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.mars_rover_pathfinder', "🚗 Mars Rover Pathfinder"), viewBox: '0 0 400 350', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1a0f0a 0%, #2a1810 100%)' } },
-                                            new Array(10).fill(0).map(function(_, y) {
-                                              return new Array(10).fill(0).map(function(_, x) {
-                                                var t = terrain[y][x];
-                                                return React.createElement('g', { key: x + '-' + y },
-                                                  React.createElement('rect', { x: ox + x * cs, y: oy + y * cs, width: cs - 1, height: cs - 1, fill: COLORS[t], opacity: 0.85 }),
-                                                  t > 0 && React.createElement('text', { x: ox + x * cs + cs/2, y: oy + y * cs + cs/2 + 3, textAnchor: 'middle', fill: '#fcd34d', fontSize: 10 }, SYMBOLS[t])
-                                                );
-                                              });
-                                            }),
-                                            path.slice(1).map(function(p, pi) {
-                                              var prev = path[pi];
-                                              return React.createElement('line', { key: 'pp' + pi, x1: ox + prev.x * cs + cs/2, y1: oy + prev.y * cs + cs/2, x2: ox + p.x * cs + cs/2, y2: oy + p.y * cs + cs/2, stroke: '#fde047', strokeWidth: 2, opacity: 0.8 });
-                                            }),
-                                            React.createElement('circle', { cx: ox + goal.x * cs + cs/2, cy: oy + goal.y * cs + cs/2, r: 10, fill: 'none', stroke: '#22c55e', strokeWidth: 3 }),
-                                            React.createElement('text', { x: ox + goal.x * cs + cs/2, y: oy + goal.y * cs + cs/2 + 3, textAnchor: 'middle', fill: '#22c55e', fontSize: 12 }, '⛳'),
-                                            React.createElement('rect', { x: ox + pos.x * cs + 6, y: oy + pos.y * cs + 6, width: cs - 13, height: cs - 13, fill: '#dc2626', rx: 3 }),
-                                            React.createElement('circle', { cx: ox + pos.x * cs + cs/2, cy: oy + pos.y * cs + cs/2, r: 4, fill: '#fff' }),
-                                            React.createElement('text', { x: 200, y: 335, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, reached ? '🎉 GOAL REACHED in ' + (path.length - 1) + ' moves, ' + (30 - fuel) + ' fuel used' : 'Fuel: ' + fuel + ' • Moves: ' + (path.length - 1))
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 flex justify-center gap-1' },
-                                          React.createElement('button', { onClick: function() { move(0, -1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '↑')
-                                        ),
-                                        React.createElement('div', { className: 'flex justify-center gap-1' },
-                                          React.createElement('button', { onClick: function() { move(-1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '←'),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-xs bg-orange-700 text-white hover:bg-orange-800' }, __alloT('stem.solarsystem.reset_2', 'Reset')),
-                                          React.createElement('button', { onClick: function() { move(1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '→')
-                                        ),
-                                        React.createElement('div', { className: 'flex justify-center gap-1' },
-                                          React.createElement('button', { onClick: function() { move(0, 1); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '↓')
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          React.createElement('div', null, __alloT('stem.solarsystem.drive_the_rover_from_start_to_goal_cos', 'Drive the rover from start to goal. Costs: flat ground 1, '), React.createElement('span', { style: { color: '#fcd34d' } }, '·'), __alloT('stem.solarsystem.rocks_2', ' rocks 2, '), React.createElement('span', { style: { color: '#fcd34d' } }, '◇'), __alloT('stem.solarsystem.boulders_3', ' boulders 3, '), React.createElement('span', { style: { color: '#fcd34d' } }, '▲'), __alloT('stem.solarsystem.mountains_5', ' mountains 5')),
-                                          React.createElement('div', null, __alloT('stem.solarsystem.plan_the_path_to_conserve_fuel_like_re', 'Plan the path to conserve fuel. Like real Mars rovers, every meter requires fuel budgeting.'))
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('mars-rover-pathfinder', 'div', {className:'mt-3'}, buildSolarRoverPathfinder()),
 
               // === MINI-TOOL: COSMIC DISTANCE LADDER ===
               activityElement('cosmic-distance-ladder', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -31964,144 +33360,10 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: DOPPLER SHIFT DEMO ===
-              activityElement('doppler-shift-demo', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.doppler_shift_demo', "🚦 Doppler Shift Demo")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showDoppler", !d.showDoppler); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showDoppler ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200')
-                  }, d.showDoppler ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_receding_objects_redshifts_', "Light from receding objects redshifts; from approaching, blueshifts. This is how we measure cosmic distances + know universe is expanding.")),
-                d.showDoppler && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var vel = (typeof d.dopplerVel === 'number' && isFinite(d.dopplerVel)) ? d.dopplerVel : 0;
-                                      var lambdaRest = 656;
-                                      var c = 300000;
-                                      var lambdaObs = lambdaRest * Math.sqrt((1 + vel / c) / (1 - vel / c));
-                                      function wColor(w) {
-                                        if (w < 440) return '#7e22ce';
-                                        if (w < 490) return '#2563eb';
-                                        if (w < 580) return '#22c55e';
-                                        if (w < 645) return '#facc15';
-                                        if (w < 700) return '#f97316';
-                                        return '#dc2626';
-                                      }
-                                      var fracOff = (lambdaObs - lambdaRest) / lambdaRest;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.doppler_shift_demo', "🚦 Doppler Shift Demo"), viewBox: '0 0 400 230', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(40).fill(0).map(function(_, i) {
-                                              var sx = (i * 43) % 400;
-                                              var sy = (i * 29) % 220;
-                                              return React.createElement('circle', { key: 'dpst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('rect', { x: 20, y: 40, width: 360, height: 30, fill: '#000' }),
-                                            new Array(80).fill(0).map(function(_, i) {
-                                              var w = 380 + i * 5;
-                                              return React.createElement('rect', { key: 'sp' + i, x: 20 + i * 4.5, y: 40, width: 5, height: 30, fill: wColor(w), opacity: 0.3 });
-                                            }),
-                                            React.createElement('rect', { x: 20 + ((lambdaRest - 380) / 400) * 360 - 1, y: 35, width: 2, height: 40, fill: '#fff', stroke: '#fff' }),
-                                            React.createElement('text', { x: 20 + ((lambdaRest - 380) / 400) * 360, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, __alloT('stem.solarsystem.rest_656nm', 'rest 656nm')),
-                                            React.createElement('rect', { x: 20 + ((lambdaObs - 380) / 400) * 360 - 1, y: 80, width: 2, height: 40, fill: wColor(lambdaObs), stroke: '#fff' }),
-                                            React.createElement('text', { x: 20 + ((lambdaObs - 380) / 400) * 360, y: 95, textAnchor: 'middle', fill: wColor(lambdaObs), fontSize: 9 }, 'observed ' + lambdaObs.toFixed(0) + 'nm'),
-                                            React.createElement('circle', { cx: 70, cy: 175, r: 12, fill: '#94a3b8' }),
-                                            React.createElement('text', { x: 70, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.observer', 'Observer')),
-                                            React.createElement('circle', { cx: 330 - Math.min(Math.abs(vel) / 500, 100), cy: 175, r: 10, fill: vel > 0 ? '#dc2626' : vel < 0 ? '#2563eb' : '#facc15' }),
-                                            React.createElement('text', { x: 330 - Math.min(Math.abs(vel) / 500, 100), y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.galaxy', 'Galaxy')),
-                                            vel !== 0 && React.createElement('line', { x1: 290, y1: 175, x2: 290 + Math.max(-80, Math.min(80, -vel / 1000)), y2: 175, stroke: vel > 0 ? '#dc2626' : '#2563eb', strokeWidth: 2, markerEnd: '' }),
-                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, vel > 1000 ? 'REDSHIFT (receding)' : vel < -1000 ? 'BLUESHIFT (approaching)' : 'At rest'),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, __alloT('stem.solarsystem.hydrogen_alpha_line_656nm', 'Hydrogen-alpha line (656nm)'))
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.velocity_km_s', 'Velocity (km/s)'), type: 'range', min: -50000, max: 50000, step: 100, value: vel, onChange: function(e) { upd('dopplerVel', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, vel.toLocaleString())
-                                        ),
-                                        React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
-                                          [['Approaching', -30000], ['At rest', 0], ['Receding', 30000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('dopplerVel', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          'A moving source shifts the wavelength of its light. Toward observer: blue-shifted (shorter wavelength). Away from observer: red-shifted (longer wavelength). z = ' + fracOff.toFixed(4) + '. Distant galaxies are nearly all redshifted (universe is expanding).'
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('doppler-shift-demo', 'div', { className: 'mt-3' }, buildSolarDoppler()),
 
               // === MINI-TOOL: PLANETARY ALBEDO LAB ===
-              activityElement('planetary-albedo-lab', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.planetary_albedo_lab', "❄ Planetary Albedo Lab")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showAlbedo", !d.showAlbedo); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showAlbedo ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
-                  }, d.showAlbedo ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_much_of_a_planet_s_incoming_sunlig', "How much of a planet's incoming sunlight is reflected vs absorbed? This drives global temperature.")),
-                d.showAlbedo && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var iceCover = (typeof d.albIce === 'number' && isFinite(d.albIce)) ? d.albIce : 30;
-                                      var cloudCover = (typeof d.albCloud === 'number' && isFinite(d.albCloud)) ? d.albCloud : 60;
-                                      var albedo = 0.03 + (iceCover / 100) * 0.7 + (cloudCover / 100) * 0.35;
-                                      albedo = Math.min(0.95, albedo);
-                                      var Tsun = 5778;
-                                      var Tplanet = Tsun * Math.pow((1 - albedo) / 4, 0.25) * Math.sqrt(696000 / 149597871) * 2;
-                                      var Tc = Tplanet - 273;
-                                      var stateLabel = Tc < -50 ? '❄ Snowball — runaway freeze' : Tc < 0 ? '🧊 Frozen world' : Tc < 30 ? '🌍 Habitable range' : Tc < 80 ? '🔥 Hot — water near boiling' : '☄ Inferno';
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.planetary_albedo_lab', "❄ Planetary Albedo Lab"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(30).fill(0).map(function(_, i) {
-                                              var sx = (i * 67) % 400;
-                                              var sy = (i * 29) % 220;
-                                              return React.createElement('circle', { key: 'alst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('circle', { cx: 50, cy: 120, r: 14, fill: '#fde047' }),
-                                            React.createElement('circle', { cx: 50, cy: 120, r: 20, fill: '#fbbf24', opacity: 0.3 }),
-                                            new Array(6).fill(0).map(function(_, i) {
-                                              var ry = 60 + i * 20;
-                                              return React.createElement('line', { key: 'ray' + i, x1: 80, y1: ry, x2: 180, y2: ry + (i - 2.5) * 5, stroke: '#fde047', strokeWidth: 1.5, opacity: 0.5, strokeDasharray: '3,2' });
-                                            }),
-                                            React.createElement('circle', { cx: 250, cy: 120, r: 60, fill: '#1e40af' }),
-                                            iceCover > 0 && React.createElement('path', { d: 'M 210 100 Q 250 80 290 100 L 290 130 Q 250 110 210 130 Z', fill: '#f0f9ff', opacity: iceCover / 100 }),
-                                            iceCover > 0 && React.createElement('path', { d: 'M 215 145 Q 250 165 285 145 L 285 175 Q 250 165 215 175 Z', fill: '#f0f9ff', opacity: iceCover / 100 }),
-                                            cloudCover > 0 && React.createElement('ellipse', { cx: 240, cy: 95, rx: 30, ry: 8, fill: '#fff', opacity: cloudCover / 100 * 0.7 }),
-                                            cloudCover > 0 && React.createElement('ellipse', { cx: 270, cy: 130, rx: 25, ry: 7, fill: '#fff', opacity: cloudCover / 100 * 0.7 }),
-                                            cloudCover > 0 && React.createElement('ellipse', { cx: 230, cy: 160, rx: 35, ry: 9, fill: '#fff', opacity: cloudCover / 100 * 0.7 }),
-                                            new Array(Math.round(albedo * 8)).fill(0).map(function(_, i) {
-                                              var ry = 60 + i * 20;
-                                              return React.createElement('line', { key: 'rfl' + i, x1: 200, y1: ry + (i - 2.5) * 5, x2: 130, y2: ry + (i - 2.5) * 5 + 20, stroke: '#fde047', strokeWidth: 1.5, opacity: 0.4, strokeDasharray: '4,2' });
-                                            }),
-                                            React.createElement('text', { x: 320, y: 80, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, 'Albedo: ' + albedo.toFixed(2)),
-                                            React.createElement('text', { x: 320, y: 100, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Temp: ' + Tc.toFixed(0) + '°C'),
-                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, stateLabel)
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.ice_cover', 'Ice cover (%)'), val: iceCover, key: 'albIce' },
-                                            { label: __alloT('stem.solarsystem.cloud_cover', 'Cloud cover (%)'), val: cloudCover, key: 'albCloud' }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.albedo_fraction_of_light_reflected_ice', 'Albedo = fraction of light reflected. Ice + clouds are highly reflective (high albedo); dark soil + water absorb (low albedo). More reflection = cooler planet. This is the ice-albedo feedback that drives ice ages.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('planetary-albedo-lab', 'div', { className: 'mt-3' }, buildSolarAlbedo()),
 
               // === MINI-TOOL: BIG BANG STRETCH ===
               activityElement('big-bang-stretch', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -32339,269 +33601,16 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: TELESCOPE APERTURE LAB ===
-              activityElement('telescope-aperture-lab', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.telescope_aperture_lab', "🔭 Telescope Aperture Lab")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showScope", !d.showScope); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showScope ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
-                  }, d.showScope ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.bigger_aperture_gathers_more_light_res', "Bigger aperture gathers more light + resolves finer detail. Magnification matters less than you think.")),
-                d.showScope && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var aperture = (typeof d.scopeAp === 'number' && isFinite(d.scopeAp)) ? d.scopeAp : 10;
-                                      var magnif = (typeof d.scopeMag === 'number' && isFinite(d.scopeMag)) ? d.scopeMag : 50;
-                                      var maxMag = aperture * 5;
-                                      if (magnif > maxMag) magnif = maxMag;
-                                      var resolveArcsec = 11.6 / aperture;
-                                      var limitMag = 7.5 + 5 * Math.log10(aperture);
-                                      // Aperture runs from 2 cm binoculars to JWST's 650 cm, so the
-                                      // tube and the eyepiece view are sized by its logarithm. At
-                                      // the old 1.5 px per cm a 650 cm mirror drew a tube 995 px
-                                      // long on a 400 px canvas - and the slider stopped at 100, so
-                                      // its own Hubble and JWST presets could not be reached at all.
-                                      var apFrac = (Math.log10(Math.max(2, aperture)) - Math.log10(2)) / (Math.log10(700) - Math.log10(2));
-                                      var apXp = 20 + 150 * apFrac;
-                                      // Magnification is what makes the image bigger, so it sizes
-                                      // the disc. Aperture was doing that job while this slider
-                                      // moved nothing but its own label; aperture's real effect is
-                                      // resolution and light grasp, which the detail thresholds
-                                      // below already read it for. maxMag caps this: a small scope
-                                      // cannot usefully magnify, so its disc stays small no matter
-                                      // where the magnification slider is dragged.
-                                      var apDiscR = 4 + 41 * (magnif - 10) / 490;
-                                      var detail = aperture < 5 ? 'fuzzy blob' : aperture < 12 ? 'cloud bands visible' : aperture < 30 ? 'storm details + moons' : 'fine cloud detail';
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.telescope_aperture_lab', "🔭 Telescope Aperture Lab"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(40).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 29) % 260;
-                                              return React.createElement('circle', { key: 'tst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.5 });
-                                            }),
-                                            React.createElement('rect', { x: 30, y: 90, width: apXp, height: 80, fill: '#475569', rx: 6 }),
-                                            React.createElement('rect', { x: 30, y: 90, width: 6, height: 80, fill: '#1e293b' }),
-                                            React.createElement('rect', { x: 30 + apXp - 6, y: 90, width: 6, height: 80, fill: '#1e293b' }),
-                                            React.createElement('ellipse', { cx: 30 + apXp/2, cy: 90, rx: apXp/2 - 5, ry: 4, fill: '#0a0a18' }),
-                                            React.createElement('text', { x: 30 + apXp/2, y: 75, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, aperture + ' cm aperture'),
-                                            React.createElement('text', { x: 30 + apXp/2, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, magnif + '× magnification'),
-                                            React.createElement('circle', { cx: 300, cy: 130, r: 60, fill: '#fde047', opacity: 0.05 }),
-                                            React.createElement('circle', { cx: 300, cy: 130, r: 50, fill: '#000' }),
-                                            React.createElement('circle', { cx: 300, cy: 130, r: apDiscR, fill: '#f97316' }),
-                                            aperture > 5 && React.createElement('line', { x1: 300 - apDiscR, y1: 130, x2: 300 + apDiscR, y2: 130, stroke: '#7c2d12', strokeWidth: 1 }),
-                                            aperture > 12 && React.createElement('circle', { cx: 300 + apDiscR * 0.35, cy: 130 - apDiscR * 0.2, r: Math.max(1, apDiscR * 0.16), fill: '#dc2626' }),
-                                            aperture > 18 && apDiscR < 26 && [-3, -2, 2, 3].map(function(mk, i) {
-                                              // The Galilean moons orbit outside the disc; they were
-                                              // drawn at fixed x, which put them on top of the
-                                              // planet as soon as the disc grew. Above about 300x
-                                              // they fall outside the eyepiece altogether, which is
-                                              // exactly what high magnification costs you.
-                                              var mOff = (apDiscR + 4 + Math.abs(mk) * 3) * (mk < 0 ? -1 : 1);
-                                              return React.createElement('circle', { key: 'mn' + i, cx: 300 + mOff, cy: 130 + (i - 1.5) * 2, r: 0.7, fill: '#fff' });
-                                            }),
-                                            React.createElement('text', { x: 300, y: 200, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, 'Jupiter: ' + detail),
-                                            React.createElement('text', { x: 300, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Resolves ' + resolveArcsec.toFixed(1) + '" • Mag ' + limitMag.toFixed(1) + ' faintest')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.aperture_cm', 'Aperture (cm)'), val: aperture, key: 'scopeAp', min: 2, max: 700, log: true, unit: ' cm' },
-                                            { label: __alloT('stem.solarsystem.magnification', 'Magnification'), val: magnif, key: 'scopeMag', min: 10, max: 500, step: 5 }
-                                          ].map(function(s) {
-                                            // A log row reports its logarithm, so aria-valuetext has
-                                            // to carry the real number for assistive tech.
-                                            var lo = s.log ? Math.log10(s.min) : s.min;
-                                            var hi = s.log ? Math.log10(s.max) : s.max;
-                                            var pos = s.log ? Math.log10(Math.max(s.min, Math.min(s.max, s.val))) : s.val;
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, 'aria-valuetext': s.val + (s.unit || ''), type: 'range', min: lo, max: hi, step: s.log ? (hi - lo) / 300 : s.step, value: pos, onChange: function(e) { var raw = parseFloat(e.target.value); upd(s.key, s.log ? Math.round(Math.pow(10, raw)) : raw); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
-                                          [['Binoculars', 5], ['Beginner', 10], ['Mid-range', 20], ['Pro Amateur', 35], ['Hubble', 240], ['JWST', 650]].slice(0, 6).map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('scopeAp', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (Math.abs(aperture - p[1]) < 2 ? 'bg-cyan-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.aperture_matters_more_than_magnificati', 'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond about 20x per cm of aperture just blurs. JWST\'s 6.5 m mirror studies galaxies from the first few hundred million years after the Big Bang.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('telescope-aperture-lab', 'div', { className: 'mt-3' }, buildSolarTelescope()),
 
               // === MINI-TOOL: ATMOSPHERIC LAYERS ===
-              activityElement('atmospheric-layers', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.atmospheric_layers', "🌫 Atmospheric Layers")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showAtmos", !d.showAtmos); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showAtmos ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
-                  }, d.showAtmos ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_altitude_slider_up_through_ea', "Drag the altitude slider up through Earth's atmosphere. Pressure drops, temp swings, and chemistry changes layer by layer.")),
-                d.showAtmos && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var alt = (typeof d.atmAlt === 'number' && isFinite(d.atmAlt)) ? d.atmAlt : 50;
-                                      var layers = [
-                                        { name: __alloT('stem.solarsystem.troposphere_2', 'Troposphere'), range: [0, 12], color: '#3b82f6', desc: __alloT('stem.solarsystem.weather_happens_here_temperature_decre', 'Weather happens here. Temperature decreases with altitude.') },
-                                        { name: __alloT('stem.solarsystem.stratosphere_3', 'Stratosphere'), range: [12, 50], color: '#60a5fa', desc: __alloT('stem.solarsystem.ozone_layer_absorbs_uv_temperature_inc', 'Ozone layer absorbs UV. Temperature increases with altitude.') },
-                                        { name: __alloT('stem.solarsystem.mesosphere', 'Mesosphere'), range: [50, 85], color: '#a78bfa', desc: __alloT('stem.solarsystem.meteors_burn_up_here_coldest_layer_90_', 'Meteors burn up here. Coldest layer (-90°C).') },
-                                        { name: __alloT('stem.solarsystem.thermosphere_2', 'Thermosphere'), range: [85, 600], color: '#dc2626', desc: __alloT('stem.solarsystem.iss_orbits_here_400km_aurora_glow_very', 'ISS orbits here (400km). Aurora glow. Very thin air but hot.') },
-                                        { name: __alloT('stem.solarsystem.exosphere', 'Exosphere'), range: [600, 10000], color: '#1e1b4b', desc: __alloT('stem.solarsystem.boundary_to_space_air_escapes_to_space', 'Boundary to space. Air escapes to space.') }
-                                      ];
-                                      var currentLayer = layers.find(function(L) { return alt >= L.range[0] && alt <= L.range[1]; }) || layers[layers.length - 1];
-                                      var pressure = Math.max(0.0001, 1013 * Math.pow(0.5, alt / 5.5));
-                                      var tempC = alt < 12 ? 15 - alt * 6.5 : alt < 50 ? -56 + (alt - 12) * 1.5 : alt < 85 ? 5 - (alt - 50) * 2.7 : alt < 200 ? -90 + (alt - 85) * 6 : 800;
-                                      var H = 280;
-                                      function mapY(a) { return H - 20 - Math.min(H - 40, Math.log10(a + 1) * 70); }
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.atmospheric_layers', "🌫 Atmospheric Layers"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#000' } },
-                                            layers.map(function(L, li) {
-                                              var y1 = mapY(L.range[0]);
-                                              var y2 = mapY(L.range[1] === 10000 ? 1000 : L.range[1]);
-                                              return React.createElement('rect', { key: 'lay' + li, x: 40, y: y2, width: 340, height: y1 - y2, fill: L.color, opacity: 0.3 });
-                                            }),
-                                            layers.map(function(L, li) {
-                                              var y2 = mapY(L.range[1] === 10000 ? 1000 : L.range[1]);
-                                              return React.createElement('text', { key: 'lab' + li, x: 50, y: y2 + 12, fill: L.color, fontSize: 10, fontWeight: 'bold' }, L.name);
-                                            }),
-                                            React.createElement('rect', { x: 40, y: mapY(0) - 5, width: 340, height: 8, fill: '#22c55e' }),
-                                            alt < 12 && [70, 130, 220, 290].map(function(cx, i) {
-                                              return React.createElement('ellipse', { key: 'cl' + i, cx: cx, cy: mapY(8) + i * 4, rx: 20, ry: 5, fill: '#fff', opacity: 0.6 });
-                                            }),
-                                            alt >= 35 && alt <= 60 && new Array(15).fill(0).map(function(_, i) {
-                                              return React.createElement('circle', { key: 'oz' + i, cx: 50 + i * 22, cy: mapY(35), r: 2, fill: '#fbbf24' });
-                                            }),
-                                            alt >= 60 && alt <= 80 && [80, 160, 240, 320].map(function(mx) {
-                                              return React.createElement('line', { key: 'm' + mx, x1: mx, y1: mapY(80), x2: mx + 20, y2: mapY(60), stroke: '#fbbf24', strokeWidth: 2 });
-                                            }),
-                                            alt >= 350 && alt <= 450 && React.createElement('text', { x: 200, y: mapY(400), fill: '#fff', fontSize: 10, textAnchor: 'middle' }, __alloT('stem.solarsystem.iss_400km', '🛰 ISS (400km)')),
-                                            alt >= 600 && React.createElement('text', { x: 200, y: 30, fill: '#fff', fontSize: 10, textAnchor: 'middle' }, __alloT('stem.solarsystem.space', '⭐ Space ⭐')),
-                                            React.createElement('line', { x1: 20, y1: mapY(alt), x2: 380, y2: mapY(alt), stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '4,2' }),
-                                            React.createElement('circle', { cx: 200, cy: mapY(alt), r: 4, fill: '#fde047' }),
-                                            React.createElement('text', { x: 30, y: mapY(alt) + 3, textAnchor: 'end', fill: '#fde047', fontSize: 9, fontWeight: 'bold' }, alt + 'km')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.altitude_2', 'Altitude')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.altitude_2', 'Altitude'), type: 'range', min: 0, max: 700, step: 1, value: alt, onChange: function(e) { upd('atmAlt', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, alt + 'km')
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-[0.625rem]' },
-                                          [
-                                            { l: 'Layer', v: currentLayer.name, c: 'fuchsia' },
-                                            { l: 'Pressure', v: pressure < 1 ? pressure.toFixed(3) + ' hPa' : pressure.toFixed(0) + ' hPa', c: 'sky' },
-                                            { l: 'Temp', v: tempC.toFixed(0) + '°C', c: 'orange' }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                              React.createElement('div', { className: 'font-bold text-[0.625rem]' }, s.l),
-                                              React.createElement('div', { className: 'text-[0.625rem]' }, s.v)
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          React.createElement('span', { className: 'font-bold' }, currentLayer.name + ': '),
-                                          currentLayer.desc
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('atmospheric-layers', 'div', { className: 'mt-3' }, buildSolarAtmosphere()),
 
               // === MINI-TOOL: PHASES OF VENUS (GALILEO) ===
               activityElement('phases-of-venus-galileo', 'div', { className: 'mt-3' }, buildSolarVenusPhases()),
 
               // === MINI-TOOL: MAGNETIC FIELD VISUALIZER ===
-              activityElement('magnetic-field-visualizer', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.magnetic_field_visualizer', "🧲 Magnetic Field Visualizer")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showMag", !d.showMag); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showMag ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
-                  }, d.showMag ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_magnetic_field_deflects_solar_wind_p', "A magnetic field deflects solar wind + protects atmosphere. Mars lost both; that's why it's barren.")),
-                d.showMag && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var strength = (typeof d.magStr === 'number' && isFinite(d.magStr)) ? d.magStr : 50;
-                                      var solar = (typeof d.magSolar === 'number' && isFinite(d.magSolar)) ? d.magSolar : 50;
-                                      var cx = 200, cy = 150;
-                                      var compressR = 80 - (solar / 100) * 40;
-                                      var protected_ = strength > 30;
-                                      var lines = [];
-                                      for (var li = 0; li < 7; li++) {
-                                        var lat = (li - 3) * 25;
-                                        var rLat = lat * Math.PI / 180;
-                                        var pts = [];
-                                        for (var theta = 0; theta <= Math.PI; theta += Math.PI / 30) {
-                                          var r = (compressR + 30) * (1 - 0.5 * Math.cos(theta)) * (1 - Math.abs(Math.sin(rLat)) * 0.3);
-                                          var px = cx + Math.cos(theta - Math.PI / 2) * r;
-                                          var py = cy - Math.sin(theta - Math.PI / 2) * r + Math.sin(rLat) * 30;
-                                          pts.push(px + ',' + py);
-                                        }
-                                        lines.push(pts.join(' '));
-                                      }
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.magnetic_field_visualizer', "🧲 Magnetic Field Visualizer"), viewBox: '0 0 400 300', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(40).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 27) % 290;
-                                              return React.createElement('circle', { key: 'mst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            new Array(Math.floor(solar / 8)).fill(0).map(function(_, i) {
-                                              var sy = 30 + i * 18 + (i % 3) * 6;
-                                              return React.createElement('line', { key: 'sw' + i, x1: 400, y1: sy, x2: 320, y2: sy + (Math.random() - 0.5) * 8, stroke: '#fbbf24', strokeWidth: 1.5, opacity: 0.7, strokeLinecap: 'round' });
-                                            }),
-                                            protected_ && lines.map(function(p, pi) {
-                                              return React.createElement('polyline', { key: 'fl' + pi, points: p, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1, opacity: 0.5 - pi * 0.04 });
-                                            }),
-                                            protected_ && React.createElement('ellipse', { cx: cx, cy: cy, rx: compressR + 30, ry: compressR + 30, fill: '#0ea5e9', opacity: 0.05 }),
-                                            React.createElement('circle', { cx: cx, cy: cy, r: 24, fill: '#1e40af' }),
-                                            React.createElement('ellipse', { cx: cx - 5, cy: cy - 4, rx: 10, ry: 6, fill: '#22c55e' }),
-                                            React.createElement('ellipse', { cx: cx + 7, cy: cy + 6, rx: 7, ry: 5, fill: '#22c55e' }),
-                                            React.createElement('text', { x: cx, y: cy + 40, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.earth_10', 'Earth')),
-                                            protected_ && (solar > 50) && [0, 120, 240].map(function(deg) {
-                                              var rad = (deg + 60) * Math.PI / 180;
-                                              return React.createElement('path', { key: 'aur' + deg, d: 'M ' + (cx + Math.cos(rad) * 22) + ' ' + (cy + Math.sin(rad) * 22) + ' Q ' + (cx + Math.cos(rad) * 38) + ' ' + (cy + Math.sin(rad) * 38) + ' ' + (cx + Math.cos(rad) * 50) + ' ' + (cy + Math.sin(rad) * 50), fill: 'none', stroke: '#22c55e', strokeWidth: 2.5, opacity: 0.6 });
-                                            }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, protected_ ? 'Magnetic shield deflecting solar wind' : 'No protection — atmosphere stripping'),
-                                            React.createElement('text', { x: 200, y: 280, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Field strength: ' + strength + '% • Solar wind: ' + solar + '%')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.magnetic_field_3', 'Magnetic field'), val: strength, key: 'magStr' },
-                                            { label: __alloT('stem.solarsystem.solar_wind_2', 'Solar wind'), val: solar, key: 'magSolar' }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
-                                          [['Mars (lost)', 5, 70], ['Earth (now)', 70, 50], ['Jupiter (strongest)', 100, 50]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('magStr', p[1]); upd('magSolar', p[2]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.earth_s_magnetic_field_deflects_most_s', 'Earth\'s magnetic field deflects most solar wind, protecting atmosphere + life. Mars lost its magnetic field ~4 billion years ago and slowly lost its atmosphere. Jupiter has the strongest field in the solar system.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('magnetic-field-visualizer','div',{className:'mt-3'},buildSolarMagnetosphere()),
 
               // === MINI-TOOL: SOLAR SYSTEM SCALE ===
               React.createElement('div', { className: 'mt-3 rounded-xl border p-3 ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-900') },
@@ -32942,81 +33951,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: STAR COLOR + TEMPERATURE ===
-              activityElement('star-color-temperature', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_color_temperature', "🌟 Star Color + Temperature")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showStarWheel", !d.showStarWheel); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showStarWheel ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
-                  }, d.showStarWheel ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hotter_stars_look_bluer_cooler_stars_r', "Hotter stars look bluer; cooler stars redder. Stars are classified OBAFGKM by spectral type.")),
-                d.showStarWheel && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var temp = (typeof d.starTemp === 'number' && isFinite(d.starTemp)) ? d.starTemp : 5778;
-                                      function tempColor(t) {
-                                        if (t < 3500) return '#dc2626';
-                                        if (t < 5000) return '#f97316';
-                                        if (t < 6000) return '#fde047';
-                                        if (t < 7500) return '#fffbeb';
-                                        if (t < 10000) return '#dbeafe';
-                                        return '#7dd3fc';
-                                      }
-                                      function classify(t) {
-                                        if (t < 3500) return { cls: 'M', desc: __alloT('stem.solarsystem.red_dwarf_coolest_most_common_stars_75', 'Red dwarf — coolest + most common stars (75% of all stars)') };
-                                        if (t < 5000) return { cls: 'K', desc: __alloT('stem.solarsystem.orange_dwarf_quieter_than_sun_longer_l', 'Orange dwarf — quieter than Sun, longer-lived') };
-                                        if (t < 6000) return { cls: 'G', desc: __alloT('stem.solarsystem.yellow_sun_like', 'Yellow (Sun-like)') };
-                                        if (t < 7500) return { cls: 'F', desc: 'Yellow-white' };
-                                        if (t < 10000) return { cls: 'A', desc: __alloT('stem.solarsystem.white_sirius_vega', 'White (Sirius, Vega)') };
-                                        if (t < 30000) return { cls: 'B', desc: __alloT('stem.solarsystem.blue_white_rigel', 'Blue-white (Rigel)') };
-                                        return { cls: 'O', desc: __alloT('stem.solarsystem.blue_hottest_rarest_stars_lifespans_on', 'Blue — hottest + rarest stars, lifespans only millions of years') };
-                                      }
-                                      var cls = classify(temp);
-                                      var color = tempColor(temp);
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.star_color_temperature', "🌟 Star Color + Temperature"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(40).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 31) % 280;
-                                              return React.createElement('circle', { key: 'tst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('defs', null,
-                                              React.createElement('radialGradient', { id: 'sg' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.9 }),
-                                                React.createElement('stop', { offset: '50%', stopColor: color, stopOpacity: 0.9 }),
-                                                React.createElement('stop', { offset: '100%', stopColor: color, stopOpacity: 0 })
-                                              )
-                                            ),
-                                            React.createElement('circle', { cx: 200, cy: 130, r: 70, fill: 'url(#sg)', opacity: 0.7 }),
-                                            React.createElement('circle', { cx: 200, cy: 130, r: 35, fill: color }),
-                                            [10, 30, 50, 70, 110, 130, 150, 170].map(function(deg) {
-                                              var rad = deg * Math.PI / 180;
-                                              return React.createElement('line', { key: 'r' + deg, x1: 200, y1: 130, x2: 200 + Math.cos(rad) * 65, y2: 130 + Math.sin(rad) * 65, stroke: color, strokeWidth: 1, opacity: 0.4 });
-                                            }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, 'Class ' + cls.cls + ' star'),
-                                            React.createElement('text', { x: 200, y: 240, textAnchor: 'middle', fill: color, fontSize: 11 }, temp.toLocaleString() + ' K'),
-                                            React.createElement('text', { x: 200, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, cls.desc)
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.temperature', 'Temperature')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.temperature', 'Temperature'), type: 'range', min: 2500, max: 40000, step: 100, value: temp, onChange: function(e) { upd('starTemp', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, temp + ' K')
-                                        ),
-                                        React.createElement('div', { className: 'mt-1 grid grid-cols-7 gap-1' },
-                                          [['M', 3000], ['K', 4500], ['G', 5800], ['F', 6500], ['A', 8500], ['B', 15000], ['O', 35000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('starTemp', p[1]); }, className: 'p-1 rounded text-[0.625rem] font-bold ' + (cls.cls === p[0] ? 'bg-amber-700 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.star_color_temperature_astronomy_mnemo', 'Star color = temperature. Astronomy mnemonic for the OBAFGKM spectral sequence (hottest to coolest): \'Oh Be A Fine Girl/Guy, Kiss Me.\' Hotter stars are bigger + brighter + shorter-lived.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('star-color-temperature', 'div', { className: 'mt-3' }, buildSolarStellarSpectrum()),
 
               // === MINI-TOOL: TIDAL LOCKING SIMULATOR ===
               activityElement('tidal-locking-simulator', 'div', { className: 'mt-3' }, buildSolarTidalLocking()),
@@ -33082,89 +34017,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: GRAVITY WELL VISUALIZER ===
-              activityElement('gravity-well-visualizer', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.gravity_well_visualizer', "⚖ Gravity Well Visualizer")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showGrav", !d.showGrav); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showGrav ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
-                  }, d.showGrav ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mass_curves_spacetime_drag_mass_watch_', "Mass curves spacetime. Drag mass + watch the well deepen. Roll the ball to see how it falls in.")),
-                d.showGrav && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var mass = (typeof d.gravMass === 'number' && isFinite(d.gravMass)) ? d.gravMass : 50;
-                                      var ballX = (typeof d.gravBallX === 'number' && isFinite(d.gravBallX)) ? d.gravBallX : 50;
-                                      var cx = 200, cy = 140;
-                                      var depth = mass * 1.2;
-                                      function gravPt(angle, r) {
-                                        var x = cx + Math.cos(angle) * r;
-                                        var dropoff = depth / (1 + r * 0.05);
-                                        var y = cy + Math.sin(angle) * r * 0.4 + dropoff;
-                                        return [x, y];
-                                      }
-                                      var rings = [];
-                                      for (var ri = 20; ri <= 130; ri += 22) {
-                                        var pts = [];
-                                        for (var a = 0; a < Math.PI * 2; a += Math.PI / 16) {
-                                          var p = gravPt(a, ri);
-                                          pts.push(p[0] + ',' + p[1]);
-                                        }
-                                        rings.push(pts.join(' '));
-                                      }
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.gravity_well_visualizer', "⚖ Gravity Well Visualizer"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(30).fill(0).map(function(_, i) {
-                                              var sx = (i * 43) % 400;
-                                              var sy = (i * 29) % 270;
-                                              return React.createElement('circle', { key: 'gst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            rings.map(function(r, ri) {
-                                              return React.createElement('polygon', { key: 'gr' + ri, points: r, fill: 'none', stroke: '#3b82f6', strokeWidth: 0.7, opacity: 0.4 + ri * 0.04 });
-                                            }),
-                                            [0, 30, 60, 90, 120, 150, 180].map(function(deg) {
-                                              var rad = deg * Math.PI / 180;
-                                              var pts = [];
-                                              for (var rr = 0; rr <= 130; rr += 8) {
-                                                var p = gravPt(rad, rr);
-                                                pts.push(p[0] + ',' + p[1]);
-                                              }
-                                              return React.createElement('polyline', { key: 'spk' + deg, points: pts.join(' '), fill: 'none', stroke: '#3b82f6', strokeWidth: 0.5, opacity: 0.3 });
-                                            }),
-                                            React.createElement('circle', { cx: cx, cy: cy + depth, r: 12 + mass / 10, fill: '#1e1b4b' }),
-                                            React.createElement('circle', { cx: cx, cy: cy + depth, r: 8 + mass / 12, fill: '#3b0764' }),
-                                            React.createElement('circle', { cx: cx, cy: cy + depth, r: 4 + mass / 16, fill: '#581c87' }),
-                                            (function() {
-                                              var ballAng = ballX * Math.PI / 50;
-                                              var ballR = 100 - ballX * 0.8;
-                                              var bp = gravPt(ballAng, ballR);
-                                              return React.createElement('circle', { cx: bp[0], cy: bp[1], r: 5, fill: '#fde047' });
-                                            })(),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, mass < 30 ? 'Shallow well — easy to escape' : mass < 70 ? 'Deep well — needs more energy' : 'Extreme curvature — near black hole'),
-                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Mass ' + mass + 'x Earth')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.mass_2', 'Mass'), val: mass, key: 'gravMass' },
-                                            { label: __alloT('stem.solarsystem.ball_position', 'Ball position'), val: ballX, key: 'gravBallX' }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 5, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.einstein_s_general_relativity_says_mas', 'Einstein\'s general relativity says mass curves spacetime. Objects don\'t feel a force — they follow geodesics through the curved geometry. This is gravity. Black holes curve spacetime so steeply that not even light escapes.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('gravity-well-visualizer', 'div', { className: 'mt-3' }, buildSolarGravityWell()),
 
               // === MINI-TOOL: ASTEROID COMPOSITION ===
               activityElement('asteroid-composition', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -33296,61 +34149,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: SATURN RING COMPOSER ===
-              activityElement('saturn-ring-composer', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.saturn_ring_composer', "🪐 Saturn Ring Composer")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showRings", !d.showRings); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showRings ? 'bg-yellow-700 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200')
-                  }, d.showRings ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_rings_are_99_water_ice_in_tri', "Saturn's rings are 99% water ice in trillions of pieces. They might be just 100 million years old.")),
-                d.showRings && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var iceFrac = (typeof d.ringIce === 'number' && isFinite(d.ringIce)) ? d.ringIce : 95;
-                                      var density = (typeof d.ringDensity === 'number' && isFinite(d.ringDensity)) ? d.ringDensity : 60;
-                                      var nLines = 5 + Math.floor(density / 8);
-                                      var color = iceFrac > 80 ? '#f0f9ff' : iceFrac > 50 ? '#cbd5e1' : '#a16207';
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.saturn_ring_composer', "🪐 Saturn Ring Composer"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(40).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 27) % 240;
-                                              return React.createElement('circle', { key: 'rst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            new Array(nLines).fill(0).map(function(_, ri) {
-                                              var rad = 70 + ri * 10;
-                                              return React.createElement('ellipse', { key: 'rb' + ri, cx: 200, cy: 130, rx: rad, ry: rad * 0.18, fill: 'none', stroke: color, strokeWidth: 2 + (ri % 2), opacity: 0.4 + density / 200 });
-                                            }),
-                                            React.createElement('ellipse', { cx: 200, cy: 130, rx: 85, ry: 15, fill: 'none', stroke: '#000', strokeWidth: 3 }),
-                                            React.createElement('circle', { cx: 200, cy: 130, r: 32, fill: '#eab308' }),
-                                            React.createElement('ellipse', { cx: 200, cy: 122, rx: 28, ry: 6, fill: '#fbbf24', opacity: 0.6 }),
-                                            React.createElement('ellipse', { cx: 200, cy: 138, rx: 28, ry: 6, fill: '#ca8a04', opacity: 0.6 }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.saturn_s_rings', 'Saturn\'s Rings')),
-                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, iceFrac + '% water ice, ' + density + ' rings/bands')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.ice_fraction', 'Ice fraction'), val: iceFrac, key: 'ringIce' },
-                                            { label: __alloT('stem.solarsystem.ring_density', 'Ring density'), val: density, key: 'ringDensity' }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.saturn_s_rings_are_mostly_water_ice_pa', 'Saturn\'s rings are mostly water ice particles ranging from dust grains to house-sized chunks. They span 282,000 km but are < 1 km thick. Likely formed from a destroyed moon ~100 million years ago — relatively young!')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('saturn-ring-composer', 'div', { className: 'mt-3' }, buildSolarRings()),
 
               // === MINI-TOOL: CUSTOM PLANET BUILDER ===
               activityElement('custom-planet-builder', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -33416,189 +34215,13 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: PULSAR BEAM SWEEPER ===
-              activityElement('pulsar-beam-sweeper', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.pulsar_beam_sweeper', "📡 Pulsar Beam Sweeper")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showPulsar", !d.showPulsar); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showPulsar ? 'bg-fuchsia-600 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
-                  }, d.showPulsar ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pulsars_are_spinning_neutron_stars_wit', "Pulsars are spinning neutron stars with magnetic beams. Earth sees a pulse only when a beam sweeps by.")),
-                d.showPulsar && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var spin = (typeof d.pulsarSpin === 'number' && isFinite(d.pulsarSpin)) ? d.pulsarSpin : 0;
-                                      var tiltDeg = (typeof d.pulsarTilt === 'number' && isFinite(d.pulsarTilt)) ? d.pulsarTilt : 30;
-                                      var rad = spin * Math.PI / 180;
-                                      var beamLen = 100;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.pulsar_beam_sweeper', "📡 Pulsar Beam Sweeper"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(40).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 29) % 250;
-                                              return React.createElement('circle', { key: 'pust' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.5 });
-                                            }),
-                                            React.createElement('g', { transform: 'rotate(' + tiltDeg + ' 200 130)' },
-                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 - beamLen, stroke: '#a78bfa', strokeWidth: 8, opacity: 0.3 }),
-                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 - beamLen, stroke: '#c4b5fd', strokeWidth: 3, opacity: 0.7 }),
-                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 + beamLen, stroke: '#a78bfa', strokeWidth: 8, opacity: 0.3 }),
-                                              React.createElement('line', { x1: 200, y1: 130, x2: 200, y2: 130 + beamLen, stroke: '#c4b5fd', strokeWidth: 3, opacity: 0.7 })
-                                            ),
-                                            React.createElement('circle', { cx: 200, cy: 130, r: 14, fill: '#0a0a18', stroke: '#a78bfa', strokeWidth: 2 }),
-                                            React.createElement('circle', { cx: 200, cy: 130, r: 8, fill: '#a78bfa' }),
-                                            React.createElement('line', { x1: 200, y1: 130 - 20, x2: 200, y2: 130 + 20, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.6 }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.neutron_star_pulsar', 'Neutron Star Pulsar')),
-                                            React.createElement('text', { x: 200, y: 235, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Spin: ' + spin + '° • Tilt: ' + tiltDeg + '° • ' + (Math.abs((spin + 90) % 180 - 90) < 15 && tiltDeg < 30 ? 'BEAM POINTING AT EARTH' : 'Beam aimed elsewhere'))
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.spin_angle', 'Spin angle'), val: spin, key: 'pulsarSpin', max: 360 },
-                                            { label: __alloT('stem.solarsystem.axis_tilt', 'Axis tilt'), val: tiltDeg, key: 'pulsarTilt', max: 90 }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: s.max, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '°')
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.a_pulsar_is_a_rapidly_rotating_neutron', 'A pulsar is a rapidly rotating neutron star. Its magnetic poles emit beams of radiation. We see a pulse only when the beam sweeps past us — like a lighthouse. Some pulse 700 times per second. Jocelyn Bell Burnell discovered the first in 1967.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('pulsar-beam-sweeper', 'div', { className: 'mt-3' }, buildSolarPulsar()),
 
               // === MINI-TOOL: SOLAR WIND STREAMER ===
-              activityElement('solar-wind-streamer', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_wind_streamer', "💨 Solar Wind Streamer")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showSWind", !d.showSWind); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showSWind ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
-                  }, d.showSWind ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.stream_of_charged_particles_from_sun_h', "Stream of charged particles from Sun, hitting Earth. Stronger wind = more auroras + GPS disruption.")),
-                d.showSWind && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var speed = (typeof d.swSpeed === 'number' && isFinite(d.swSpeed)) ? d.swSpeed : 400;
-                                      var density = (typeof d.swDens === 'number' && isFinite(d.swDens)) ? d.swDens : 5;
-                                      var streamers = [];
-                                      for (var s = 0; s < density; s++) {
-                                        var sy = 30 + s * (200 / density);
-                                        var stream = { y: sy, w: 2 + (speed / 200), color: speed > 600 ? '#dc2626' : speed > 400 ? '#fbbf24' : '#fde047' };
-                                        streamers.push(stream);
-                                      }
-                                      var stormLabel = speed > 700 ? 'EXTREME storm' : speed > 500 ? 'Strong solar wind' : speed > 350 ? 'Normal solar wind' : 'Quiet';
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.solar_wind_streamer', "💨 Solar Wind Streamer"), viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(30).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 27) % 260;
-                                              return React.createElement('circle', { key: 'swst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('defs', null,
-                                              React.createElement('radialGradient', { id: 'sunSW' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
-                                                React.createElement('stop', { offset: '100%', stopColor: '#f59e0b' })
-                                              )
-                                            ),
-                                            React.createElement('circle', { cx: 70, cy: 135, r: 25, fill: 'url(#sunSW)' }),
-                                            React.createElement('circle', { cx: 70, cy: 135, r: 32, fill: '#f59e0b', opacity: 0.3 }),
-                                            streamers.map(function(st, si) {
-                                              return React.createElement('path', { key: 'sw' + si, d: 'M ' + 95 + ' ' + st.y + ' Q ' + 200 + ' ' + (st.y + (si % 2 ? -8 : 8)) + ' ' + 360 + ' ' + (st.y + (si % 3 ? 5 : -5)), fill: 'none', stroke: st.color, strokeWidth: st.w, opacity: 0.7, strokeLinecap: 'round' });
-                                            }),
-                                            React.createElement('circle', { cx: 320, cy: 135, r: 10, fill: '#3b82f6' }),
-                                            React.createElement('circle', { cx: 320, cy: 135, r: 15, fill: '#7dd3fc', opacity: 0.4 }),
-                                            React.createElement('text', { x: 320, y: 160, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.earth_13', 'Earth')),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, stormLabel),
-                                            React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Wind speed: ' + speed + ' km/s • Density: ' + density + ' particles/cm³')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.wind_speed', 'Wind speed'), val: speed, key: 'swSpeed', min: 200, max: 900, step: 10 },
-                                            { label: __alloT('stem.solarsystem.density', 'Density'), val: density, key: 'swDens', min: 1, max: 15, step: 1 }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-20 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.solar_wind_is_a_stream_of_charged_part', 'Solar wind is a stream of charged particles (mostly protons + electrons) constantly flowing from the Sun. Speed varies 250-800 km/s. Strong storms cause auroras + can disrupt GPS + power grids. Carrington 1859 event: telegraphs sparked + caught fire.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('solar-wind-streamer', 'div', { className: 'mt-3' }, buildSolarWind()),
 
               // === MINI-TOOL: ISS ORBITAL POSITION ===
-              activityElement('iss-orbital-position', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.iss_orbital_position', "🛰 ISS Orbital Position")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showISS", !d.showISS); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showISS ? 'bg-sky-700 text-white' : 'bg-sky-100 text-sky-800 hover:bg-sky-200')
-                  }, d.showISS ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_iss_orbits_earth_every_90_minutes_', "The ISS orbits Earth every 90 minutes. Sometimes in daylight, sometimes in Earth's shadow.")),
-                d.showISS && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var orb = (typeof d.issOrbit === 'number' && isFinite(d.issOrbit)) ? d.issOrbit : 0;
-                                      var cx = 200, cy = 140;
-                                      var orbitR = 90;
-                                      var rad = orb * Math.PI / 180;
-                                      var issX = cx + Math.cos(rad) * orbitR;
-                                      var issY = cy + Math.sin(rad) * orbitR;
-                                      var sunSide = Math.cos(rad) > -0.3;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.iss_orbital_position', "🛰 ISS Orbital Position"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(30).fill(0).map(function(_, i) {
-                                              var sx = (i * 41) % 400;
-                                              var sy = (i * 31) % 270;
-                                              return React.createElement('circle', { key: 'isst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('circle', { cx: 380, cy: 140, r: 8, fill: '#fde047' }),
-                                            React.createElement('circle', { cx: 380, cy: 140, r: 14, fill: '#f59e0b', opacity: 0.3 }),
-                                            React.createElement('circle', { cx: cx, cy: cy, r: orbitR, fill: 'none', stroke: '#475569', strokeWidth: 0.7, strokeDasharray: '3,3' }),
-                                            React.createElement('circle', { cx: cx, cy: cy, r: 70, fill: '#1e40af' }),
-                                            React.createElement('path', { d: 'M ' + (cx - 70) + ' ' + cy + ' A 70 70 0 0 0 ' + (cx + 70) + ' ' + cy + ' Z', fill: '#0a0a18', opacity: 0.6 }),
-                                            [[180, 110], [220, 140], [185, 165]].map(function(c, ci) {
-                                              return React.createElement('ellipse', { key: 'co' + ci, cx: c[0], cy: c[1], rx: 18, ry: 8, fill: '#22c55e' });
-                                            }),
-                                            React.createElement('g', { transform: 'translate(' + issX + ', ' + issY + ')' },
-                                              React.createElement('circle', { cx: 0, cy: 0, r: 6, fill: sunSide ? '#fbbf24' : '#475569' }),
-                                              React.createElement('rect', { x: -10, y: -1, width: 6, height: 2, fill: '#94a3b8' }),
-                                              React.createElement('rect', { x: 4, y: -1, width: 6, height: 2, fill: '#94a3b8' }),
-                                              React.createElement('text', { x: 0, y: -10, textAnchor: 'middle', fill: '#fff', fontSize: 8 }, 'ISS')
-                                            ),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sunSide ? '☀ ISS in daylight' : '🌙 ISS in Earth\'s shadow'),
-                                            React.createElement('text', { x: 200, y: 260, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Orbital position: ' + orb + '° • 400 km altitude • 17,500 mph • orbit completes every 90 min')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.orbit_3', 'Orbit')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.orbit_3', 'Orbit'), type: 'range', min: 0, max: 360, value: orb, onChange: function(e) { upd('issOrbit', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, orb + '°')
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.the_iss_orbits_400_km_up_at_17_500_mph', 'The ISS orbits 400 km up at 17,500 mph (28,000 km/h). It completes one orbit every 90 minutes — so astronauts see 16 sunrises + sunsets per day. ISS is the largest object humans have built in space.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('iss-orbital-position', 'div', { className: 'mt-3' }, buildSolarOrbitShadow()),
 
               // === MINI-TOOL: VOYAGER POSITION TRACKER ===
               activityElement('voyager-position-tracker', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -33677,109 +34300,10 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: MERCURY TRANSIT ===
-              activityElement('mercury-transit', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mercury_transit', "🌑 Mercury Transit")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showTrans", !d.showTrans); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showTrans ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
-                  }, d.showTrans ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mercury_passes_in_front_of_the_sun_eve', "Mercury passes in front of the Sun every few years. Watch it cross — but only with a proper solar filter.")),
-                d.showTrans && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var phase = (typeof d.transPhase === 'number' && isFinite(d.transPhase)) ? d.transPhase : 50;
-                                      var mercX = 60 + (phase / 100) * 280;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.mercury_transit', "🌑 Mercury Transit"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
-                                            React.createElement('defs', null,
-                                              React.createElement('radialGradient', { id: 'sunBig' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
-                                                React.createElement('stop', { offset: '70%', stopColor: '#fbbf24' }),
-                                                React.createElement('stop', { offset: '100%', stopColor: '#dc2626' })
-                                              )
-                                            ),
-                                            React.createElement('circle', { cx: 200, cy: 140, r: 110, fill: '#f59e0b', opacity: 0.2 }),
-                                            React.createElement('circle', { cx: 200, cy: 140, r: 90, fill: 'url(#sunBig)' }),
-                                            new Array(15).fill(0).map(function(_, i) {
-                                              var ax = 130 + Math.random() * 140;
-                                              var ay = 80 + Math.random() * 130;
-                                              var dx = ax - 200, dy = ay - 140;
-                                              if (dx*dx + dy*dy > 6800) return null;
-                                              return React.createElement('circle', { key: 'sp' + i, cx: ax, cy: ay, r: 2 + (i % 3), fill: '#7c2d12', opacity: 0.6 });
-                                            }),
-                                            mercX >= 110 && mercX <= 290 && React.createElement('circle', { cx: mercX, cy: 140, r: 4, fill: '#0a0a18' }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, mercX >= 110 && mercX <= 290 ? '🌑 Mercury transiting Sun' : 'Mercury approaching/exiting'),
-                                            React.createElement('text', { x: 200, y: 265, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, __alloT('stem.solarsystem.watch_with_proper_solar_filter_only_ne', 'Watch with PROPER solar filter only — NEVER look directly!'))
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.time_3', 'Time')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.time_3', 'Time'), type: 'range', min: 0, max: 100, value: phase, onChange: function(e) { upd('transPhase', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, phase + '%')
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.a_transit_happens_when_mercury_or_venu', 'A transit happens when Mercury (or Venus) passes between Earth + the Sun. It looks like a small black dot on the Sun. Next Mercury transit: November 13, 2032. Next Venus transit: December 2117 — won\'t happen again until 2125.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('mercury-transit', 'div', { className: 'mt-3' }, buildSolarMercuryTransit()),
 
               // === MINI-TOOL: FOUCAULT PENDULUM ===
-              activityElement('foucault-pendulum', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.foucault_pendulum', "🎯 Foucault Pendulum")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showFouc", !d.showFouc); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showFouc ? 'bg-cyan-700 text-white' : 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200')
-                  }, d.showFouc ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.l_on_foucault_1851_proved_earth_rotate', "Léon Foucault 1851 proved Earth rotates with a giant pendulum. Its swing-plane rotates faster at the poles.")),
-                d.showFouc && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var lat = (typeof d.foucLat === 'number' && isFinite(d.foucLat)) ? d.foucLat : 45;
-                                      var t = (typeof d.foucTime === 'number' && isFinite(d.foucTime)) ? d.foucTime : 0;
-                                      var period = 24 / Math.abs(Math.sin(lat * Math.PI / 180));
-                                      var rotation = (t / period) * 360;
-                                      var rad = rotation * Math.PI / 180;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.foucault_pendulum', "🎯 Foucault Pendulum"), viewBox: '0 0 400 280', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            React.createElement('circle', { cx: 200, cy: 150, r: 100, fill: 'none', stroke: '#475569', strokeWidth: 1 }),
-                                            [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(function(deg, di) {
-                                              var r = deg * Math.PI / 180;
-                                              return React.createElement('text', { key: 'tk' + di, x: 200 + Math.cos(r) * 110, y: 154 + Math.sin(r) * 110, fill: '#7dd3fc', fontSize: 8, textAnchor: 'middle' }, deg);
-                                            }),
-                                            React.createElement('line', { x1: 200 - Math.cos(rad) * 95, y1: 150 - Math.sin(rad) * 95, x2: 200 + Math.cos(rad) * 95, y2: 150 + Math.sin(rad) * 95, stroke: '#fbbf24', strokeWidth: 2 }),
-                                            React.createElement('circle', { cx: 200 + Math.cos(rad) * 95, cy: 150 + Math.sin(rad) * 95, r: 5, fill: '#fbbf24' }),
-                                            React.createElement('circle', { cx: 200, cy: 150, r: 3, fill: '#fff' }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, __alloT('stem.solarsystem.foucault_pendulum_2', 'Foucault Pendulum')),
-                                            React.createElement('text', { x: 200, y: 270, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Rotates full circle every ' + period.toFixed(1) + ' hours at latitude ' + lat + '°')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.latitude_3', 'Latitude'), val: lat, key: 'foucLat', min: -90, max: 90, step: 5 },
-                                            { label: __alloT('stem.solarsystem.hours_elapsed', 'Hours elapsed'), val: t, key: 'foucTime', min: 0, max: 48, step: 0.5 }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.l_on_foucault_1851_demonstrated_earth_', 'Léon Foucault 1851 demonstrated Earth\'s rotation with a giant pendulum. Its swing plane appears to rotate because Earth turns under it. At the poles: 24 hours. At equator: never. In Maine: ~34 hours.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('foucault-pendulum', 'div', { className: 'mt-3' }, buildSolarFoucault()),
 
               // === MINI-TOOL: SATURN HEXAGON ===
               activityElement('saturn-hexagon', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -33834,50 +34358,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: SUNDIAL DEMO ===
-              activityElement('sundial-demo', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.sundial_demo', "🕰 Sundial Demo")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showSundial", !d.showSundial); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showSundial ? 'bg-amber-700 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200')
-                  }, d.showSundial ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_original_clock_as_the_sun_arcs_acr', "The original clock. As the Sun arcs across the sky, the gnomon casts a rotating shadow that marks the hours.")),
-                d.showSundial && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var hour = (typeof d.sdHour === 'number' && isFinite(d.sdHour)) ? d.sdHour : 12;
-                                      var rotation = (hour - 12) * 15;
-                                      var rad = rotation * Math.PI / 180;
-                                      var shadowX = 200 + Math.sin(rad) * 80;
-                                      var shadowY = 180 - Math.cos(rad) * 30;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.sundial_demo', "🕰 Sundial Demo"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: hour > 6 && hour < 18 ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 60%, #dc2626 100%)' : 'linear-gradient(180deg, #0a0a18 0%, #1e1b4b 100%)' } },
-                                            React.createElement('rect', { x: 0, y: 180, width: 400, height: 70, fill: '#6b7280' }),
-                                            hour > 6 && hour < 18 && React.createElement('circle', { cx: 200 + Math.sin(rad) * 130, cy: 180 - Math.cos(rad) * 60, r: 14, fill: '#fde047' }),
-                                            hour > 6 && hour < 18 && React.createElement('circle', { cx: 200 + Math.sin(rad) * 130, cy: 180 - Math.cos(rad) * 60, r: 22, fill: '#fde047', opacity: 0.3 }),
-                                            React.createElement('polygon', { points: '195,180 205,180 200,140', fill: '#92400e' }),
-                                            React.createElement('line', { x1: 200, y1: 180, x2: shadowX, y2: shadowY + 0, stroke: '#3f3f46', strokeWidth: 4, opacity: 0.7 }),
-                                            [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(function(h, hi) {
-                                              var ang = (h - 12) * 15 * Math.PI / 180;
-                                              return React.createElement('text', { key: 'hk' + hi, x: 200 + Math.sin(ang) * 95, y: 178 - Math.cos(ang) * 35, fill: '#fff', fontSize: 8, textAnchor: 'middle' }, h);
-                                            }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Sundial — ' + hour + ':00')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
-                                          React.createElement('span', { className: 'text-[0.625rem] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.hour', 'Hour')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.hour', 'Hour'), type: 'range', min: 6, max: 18, step: 0.25, value: hour, onChange: function(e) { upd('sdHour', parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                          React.createElement('span', { className: 'text-[0.625rem] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hour.toFixed(1))
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.sundials_predate_clocks_by_millennia_a', 'Sundials predate clocks by millennia. As Sun moves across sky, the gnomon\'s shadow rotates. Ancient Egyptians, Greeks, Romans, Chinese all built precise sundials. Modern ones must correct for daylight saving time + equation of time.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('sundial-demo', 'div', { className: 'mt-3' }, buildSolarSundial()),
 
               // === MINI-TOOL: LOCAL GROUP MAP ===
               activityElement('local-group-map', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
@@ -34022,66 +34503,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === MINI-TOOL: CORONAL MASS EJECTION ===
-              activityElement('coronal-mass-ejection', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
-                React.createElement('div', { className: 'flex items-center justify-between mb-2' },
-                  React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.coronal_mass_ejection', "⚡ Coronal Mass Ejection")),
-                  React.createElement('button', {
-                    onClick: function() { upd("showCME", !d.showCME); },
-                    className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
-                      (d.showCME ? 'bg-orange-700 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200')
-                  }, d.showCME ? 'Hide' : 'Open')
-                ),
-                React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_cme_blasts_billions_of_tons_of_plasm', "A CME blasts billions of tons of plasma from Sun. Days later, it can cause spectacular auroras + GPS failures.")),
-                d.showCME && React.createElement('div', { className: 'mt-2' },
-                  (function() {
-                                      var phase = (typeof d.cmePhase === 'number' && isFinite(d.cmePhase)) ? d.cmePhase : 0;
-                                      var size = (typeof d.cmeSize === 'number' && isFinite(d.cmeSize)) ? d.cmeSize : 50;
-                                      return React.createElement('div', null,
-                                        React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.coronal_mass_ejection', "⚡ Coronal Mass Ejection"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            new Array(20).fill(0).map(function(_, i) {
-                                              var sx = (i * 53) % 400;
-                                              var sy = (i * 41) % 230;
-                                              return React.createElement('circle', { key: 'cmst' + i, cx: sx, cy: sy, r: 0.4, fill: '#fff', opacity: 0.4 });
-                                            }),
-                                            React.createElement('defs', null,
-                                              React.createElement('radialGradient', { id: 'sunCH' },
-                                                React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
-                                                React.createElement('stop', { offset: '70%', stopColor: '#f59e0b' }),
-                                                React.createElement('stop', { offset: '100%', stopColor: '#dc2626' })
-                                              )
-                                            ),
-                                            React.createElement('circle', { cx: 150, cy: 130, r: 65, fill: 'url(#sunCH)' }),
-                                            React.createElement('ellipse', { cx: 170, cy: 105, rx: 18, ry: 12, fill: '#000' }),
-                                            phase > 20 && React.createElement('path', { d: 'M 195 110 Q ' + (215 + phase * 0.5) + ' 80 ' + (245 + phase) + ' 60', fill: 'none', stroke: '#fbbf24', strokeWidth: 3 + size / 20, opacity: 0.7 - phase / 200 }),
-                                            phase > 20 && React.createElement('path', { d: 'M 200 130 Q ' + (220 + phase * 0.6) + ' 110 ' + (260 + phase) + ' 90', fill: 'none', stroke: '#fde047', strokeWidth: 4 + size / 15, opacity: 0.85 - phase / 250 }),
-                                            phase > 30 && React.createElement('ellipse', { cx: 250 + phase * 1.2, cy: 130, rx: 30 + phase * 0.5, ry: 15 + phase * 0.2, fill: '#dc2626', opacity: 0.3 }),
-                                            React.createElement('circle', { cx: 360, cy: 130, r: 10, fill: '#3b82f6' }),
-                                            React.createElement('text', { x: 360, y: 155, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.earth_14', 'Earth')),
-                                            phase > 80 && React.createElement('circle', { cx: 360, cy: 130, r: 20 + size / 5, fill: '#22c55e', opacity: 0.4 }),
-                                            phase > 80 && React.createElement('text', { x: 360, y: 105, textAnchor: 'middle', fill: '#86efac', fontSize: 8 }, __alloT('stem.solarsystem.aurora', '⚡ AURORA!')),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, phase < 20 ? 'Coronal hole — CME building' : phase < 80 ? 'CME launched + traveling' : 'CME hit Earth — aurora!')
-                                          )
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 space-y-1 text-[0.625rem]' },
-                                          [
-                                            { label: __alloT('stem.solarsystem.time_after_launch', 'Time after launch'), val: phase, key: 'cmePhase' },
-                                            { label: __alloT('stem.solarsystem.cme_size', 'CME size'), val: size, key: 'cmeSize' }
-                                          ].map(function(s) {
-                                            return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
-                                              React.createElement('span', { className: 'font-bold w-28 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0, max: 100, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val + '%')
-                                            );
-                                          })
-                                        ),
-                                        React.createElement('div', { className: 'mt-2 text-[0.625rem] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.a_coronal_mass_ejection_blasts_billion', 'A Coronal Mass Ejection blasts billions of tons of plasma into space at 1-2 million mph. Takes 1-5 days to reach Earth. Strong CMEs cause geomagnetic storms, vivid auroras, and can disrupt satellites + power grids.')
-                                        )
-                                      );
-                                    })()
-                )
-              ),
+              activityElement('coronal-mass-ejection', 'div', { className: 'mt-3' }, buildSolarCME()),
 
               // === MINI-TOOL: CEPHEID VARIABLE STAR ===
               activityElement('cepheid-variable-star', 'div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },

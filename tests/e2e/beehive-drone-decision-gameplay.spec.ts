@@ -34,6 +34,7 @@ test('deliberate flight renders the landscape, waits for the learner, and comple
   for(let i=0;i<3;i++) await advance.press('Enter');
   for(let i=0;i<78 && (await state(page)).phase!=='end';i++) await advance.press('Enter');
   expect(await state(page)).toMatchObject({phase:'end',reachedDca:true,reachedQueen:true});
+  expect(await page.evaluate(()=>(window as any).__toolData.beehive.drone.bestDifficulty)).toBe('easy');
   await expect(page.getByRole('region',{name:'Saved flight decision evidence'})).toBeVisible(); await expect(page.getByRole('region',{name:'Saved flight decision evidence'})).toBeFocused();
   expect(errors).toEqual([]);
 });
