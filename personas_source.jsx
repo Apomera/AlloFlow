@@ -418,10 +418,20 @@ const createPersonas = (deps) => {
         }
         return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
     };
-    const getPersonaGenerationContext = (scope) => {
+    const getPersonaGenerationContext = (scope, sourceConfig = {}) => {
         const safeHistory = Array.isArray(scope && scope.history) ? scope.history : [];
-        const latestAnalysis = safeHistory.slice().reverse().find(item => item && item.type === 'analysis');
-        const sourceText = String(
+        const resolver = window.AlloModules?.GenDispatcher?.resolveGenerationSource;
+        const sourceResolution = typeof resolver === 'function' ? resolver({
+            type: 'persona', history: safeHistory, inputText: scope?.inputText,
+            selectedReadingSourceId: scope?.selectedReadingSourceId || '', activeUnitId: scope?.activeUnitId,
+            config: sourceConfig, contextModule: window.AlloModules?.InstructionalContext,
+        }) : null;
+        const selectedArtifact = sourceResolution?.artifact || sourceResolution?.item
+            || safeHistory.find(item => item && item.id != null && String(item.id) === String(sourceResolution?.inputArtifactId));
+        const latestAnalysis = typeof resolver === 'function'
+            ? (selectedArtifact?.type === 'analysis' ? selectedArtifact : null)
+            : safeHistory.slice().reverse().find(item => item && item.type === 'analysis');
+        const sourceText = typeof resolver === 'function' ? String(sourceResolution?.text || '') : String(
             latestAnalysis && latestAnalysis.data && typeof latestAnalysis.data.originalText === 'string'
                 ? latestAnalysis.data.originalText
                 : ((scope && scope.inputText) || '')
@@ -436,9 +446,13 @@ const createPersonas = (deps) => {
             sourceText,
             topic,
             targetLanguage,
+            sourceResolution,
             fingerprint: fingerprintText(JSON.stringify({
                 analysisId: latestAnalysis && latestAnalysis.id != null ? String(latestAnalysis.id).slice(0, 160) : null,
                 sourceFingerprint: fingerprintText(sourceText),
+                sourceStatus: sourceResolution?.status || '',
+                inputArtifactId: sourceResolution?.inputArtifactId || null,
+                unitId: scope?.activeUnitId || null,
                 topic,
                 gradeLevel: String((scope && scope.gradeLevel) || ''),
                 customInstructions: String((scope && scope.personaCustomInstructions) || ''),
@@ -899,18 +913,49 @@ const createPersonas = (deps) => {
     };
 
     // ─── handleGeneratePersonas ──────────────────────────────────────
-    const handleGeneratePersonas = async () => {
+    const handleGeneratePersonas = async (sourceConfig = {}) => {
+        if (!window.AlloModules?.GenDispatcher?.resolveGenerationSource
+            && typeof liveRef.current.ensureGenerationSourceResolver === 'function') {
+            const keys = ['history', 'inputText', 'selectedReadingSourceId', 'activeUnitId', 'sourceTopic',
+                'gradeLevel', 'personaCustomInstructions', 'leveledTextLanguage', 'selectedLanguages', 'generatedContent'];
+            const initial = keys.map(key => liveRef.current[key]);
+            try {
+                await liveRef.current.ensureGenerationSourceResolver();
+            } catch (_) {
+                liveRef.current.addToast('Reading choices could not load. Please try again.', 'info');
+                return;
+            }
+            if (keys.some((key, index) => liveRef.current[key] !== initial[index])) return;
+            if (!window.AlloModules?.GenDispatcher?.resolveGenerationSource) {
+                liveRef.current.addToast('Reading choices could not load. Please try again.', 'info');
+                return;
+            }
+        }
         const {
             history, inputText, sourceTopic, gradeLevel, personaCustomInstructions,
             generatedContent, leveledTextLanguage, selectedLanguages,
             setIsGeneratingPersona, setGeneratedContent, setHistory, setPersonaState,
-            addToast, t,
+            addToast, t, selectedReadingSourceId, activeUnitId, requestGenerationSourceChoice,
         } = liveRef.current;
         const generationContext = getPersonaGenerationContext({
             history, inputText, sourceTopic, gradeLevel, personaCustomInstructions,
-            leveledTextLanguage, selectedLanguages
-        });
-        const { latestAnalysis, sourceText, topic, targetLanguage } = generationContext;
+            leveledTextLanguage, selectedLanguages, selectedReadingSourceId, activeUnitId,
+        }, sourceConfig);
+        const { latestAnalysis, sourceText, topic, targetLanguage, sourceResolution } = generationContext;
+        if (sourceResolution?.status === 'ambiguous') {
+            const choices = window.AlloModules?.GenDispatcher?.getGenerationSourceChoices?.(sourceResolution) || [];
+            if (choices.length > 1 && typeof requestGenerationSourceChoice === 'function'
+                && requestGenerationSourceChoice({ type: 'persona', choices, configOverride: sourceConfig,
+                    onGenerate: value => handleGeneratePersonas({ ...sourceConfig, inputArtifactId: value, selectedReadingSourceId: value }),
+                }) === true) return;
+            addToast('Choose a reading in Based on before generating. More than one reading is available.', 'info');
+            return;
+        }
+        if (sourceResolution?.status === 'missing' && (selectedReadingSourceId || sourceConfig.inputArtifactId
+            || sourceConfig.selectedReadingSourceId || (Array.isArray(history) && history.some(item => item && ['analysis', 'simplified'].includes(item.type))))) {
+            addToast('The selected reading is unavailable in this lesson. Choose a reading in Based on.', 'info');
+            return;
+        }
         if (!sourceText.trim() && !String(sourceTopic || '').trim()) return;
         const initialResourceId = generatedContent && generatedContent.id ? generatedContent.id : null;
         if (activePersonaGenerationRequest) {
@@ -931,7 +976,10 @@ const createPersonas = (deps) => {
             activePersonaGenerationRequest === generationRequest
             && generationRequest.token === personaSessionToken
             && ((liveRef.current.generatedContent && liveRef.current.generatedContent.id) || null) === generationRequest.initialResourceId
-            && getPersonaGenerationContext(liveRef.current).fingerprint === generationRequest.contextFingerprint
+            && (!sourceConfig.inputArtifactId && !sourceConfig.selectedReadingSourceId
+                || String(liveRef.current.selectedReadingSourceId || '') === String(selectedReadingSourceId || '')
+                || String(liveRef.current.selectedReadingSourceId) === String(sourceConfig.inputArtifactId || sourceConfig.selectedReadingSourceId))
+            && getPersonaGenerationContext(liveRef.current, sourceConfig).fingerprint === generationRequest.contextFingerprint
         );
         setIsGeneratingPersona(true);
         try {

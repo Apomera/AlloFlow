@@ -25,7 +25,16 @@ const onUpdateResource = (resourceId, updater, options = {}) => {
       if (!previous || String(previous.id) !== id || previous.type !== artifact.type || !sameCopy(previous)) return previous;
       const next = previous === artifact ? candidate : updater(previous);
       if (!next || next === previous || !preservesOriginal(previous, next)) return previous;
-      return { ...next, id: previous.id, type: previous.type, updatedAt };
+      // Language views must not advance the source revision on a stale device.
+      const withoutLanguageViews = item => {
+        const { analysisTranslationUpdatedAt, data, ...rest } = item;
+        const { reportLanguage, displayReportLanguage, reportTranslations, sourceTranslations, ...sourceData } = data || {};
+        return { ...rest, data: sourceData };
+      };
+      const languageViewOnly = previous.type === 'analysis'
+        && JSON.stringify(withoutLanguageViews(previous)) === JSON.stringify(withoutLanguageViews(next));
+      return { ...next, id: previous.id, type: previous.type,
+        ...(languageViewOnly ? { analysisTranslationUpdatedAt: updatedAt } : { updatedAt }) };
     };
     __d.setHistory(previous => previous.map(apply));
     __d.setGeneratedContent(apply);
@@ -1822,7 +1831,9 @@ const calculateReadability = (text) => {
         syllables
     };
   };
-const handleTranslateAction = async () => {
+const handleTranslateAction = async (requestedScope) => {
+    // Capture the clicked scope before React applies the modal's state update.
+    const translationScope = requestedScope === 'single' || requestedScope === 'all' ? requestedScope : __d.translateScope;
     if (!__d.targetTranslationLang.trim()) {
         __d.addToast(__d.t('toasts.enter_target_language'), "error");
         return;
@@ -1833,13 +1844,14 @@ const handleTranslateAction = async () => {
     __d.addToast(__d.t('toasts.translation_started'), "info");
     try {
         let itemsToProcess = [];
-        if (__d.translateScope === 'single' && __d.generatedContent) {
+        if (translationScope === 'single' && __d.generatedContent) {
             const currentItem = __d.history.find(h => h.id === __d.generatedContent.id);
             if(currentItem) itemsToProcess = [currentItem];
         } else {
             itemsToProcess = __d.history.filter(item => !['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type));
         }
         const newItems = [];
+        const analysisUpdates = new Map();
         const _translatedIdMap = {}; // originalId → translated copy's new id (for resourceRef repointing)
         const _translateFailures = [];
         for (let i = 0; i < itemsToProcess.length; i++) {
@@ -1850,6 +1862,12 @@ const handleTranslateAction = async () => {
             // the pack — the completed copies land, the failures are named in the toast.
             try {
                 const translatedItem = await __d.translateResourceItem(item, __d.targetTranslationLang);
+                if (item.type === 'analysis') {
+                    // Analysis stays the same source artifact in both scopes. Other
+                    // resources and directions retain their links to this exact id.
+                    analysisUpdates.set(item.id, { original: item, translated: translatedItem });
+                    _translatedIdMap[item.id] = item.id;
+                } else {
                 const newItem = {
                     ...translatedItem,
                     id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -1857,6 +1875,7 @@ const handleTranslateAction = async () => {
                 };
                 _translatedIdMap[item.id] = newItem.id;
                 newItems.push(newItem);
+                }
             } catch (itemErr) {
                 __d.warnLog('Translation failed for one resource, continuing:', item.title || item.type, itemErr?.message);
                 _translateFailures.push(item.title || item.type);
@@ -1887,16 +1906,45 @@ const handleTranslateAction = async () => {
                 } : {}),
             };
         }
-        __d.setHistory(prev => [...prev, ...newItems]);
+        // Apply analysis translations only if their source and base findings still
+        // match. A source edit while the request was running invalidates the reply.
+        const translationUpdatedAt = new Date().toISOString();
+        const mergeAnalysisTranslation = current => {
+            const update = current && analysisUpdates.get(current.id);
+            if (!update || current.type !== 'analysis') return current;
+            const original = update.original.data || {};
+            const data = current.data || {};
+            if (['originalText', 'rawEnglishText', 'readingLevel', 'concepts', 'accuracy', 'grammar'].some(key => JSON.stringify(data[key]) !== JSON.stringify(original[key]))) return current;
+            const translated = update.translated.data || {};
+            const changedViews = key => Object.fromEntries(Object.entries(translated[key] || {})
+                .filter(([language, value]) => JSON.stringify(value) !== JSON.stringify(original[key]?.[language])));
+            return { ...current, analysisTranslationUpdatedAt: translationUpdatedAt, data: { ...data,
+                reportLanguage: translated.reportLanguage,
+                displayReportLanguage: translated.displayReportLanguage,
+                ...(translated.reportTranslations ? { reportTranslations: { ...data.reportTranslations, ...changedViews('reportTranslations') } } : {}),
+                ...(translated.sourceTranslations ? { sourceTranslations: { ...data.sourceTranslations, ...changedViews('sourceTranslations') } } : {})
+            } };
+        };
+        const currentTranslationHistory = __d._resourceMutationStateRef?.current?.history || __d.history;
+        for (const [id, update] of analysisUpdates) {
+            const current = currentTranslationHistory.find(resource => resource && resource.id === id);
+            if (!current || mergeAnalysisTranslation(current) === current) {
+                analysisUpdates.delete(id);
+                _translateFailures.push(update.original.title || update.original.type);
+            }
+        }
+        __d.setHistory(prev => [...prev.map(mergeAnalysisTranslation), ...newItems]);
+        if (analysisUpdates.size) __d.setGeneratedContent(prev => mergeAnalysisTranslation(prev));
         if (_translateFailures.length) {
             __d.addToast((__d.t('toasts.translate_partial') || 'Some resources could not be translated: ') + _translateFailures.slice(0, 4).join(', ') + (_translateFailures.length > 4 ? '…' : ''), 'warning');
         }
-        if (__d.translateScope === 'single' && newItems.length > 0) {
+        if (translationScope === 'single' && newItems.length > 0) {
             const newItem = newItems[0];
             __d.setGeneratedContent({ ...newItem });
             __d.setActiveView(newItem.type);
         }
-        if (newItems.length) __d.addToast(__d.t('toasts.translated_resources', { count: newItems.length }) || `Successfully translated ${newItems.length} resources!`, "success");
+        const translatedCount = newItems.length + analysisUpdates.size;
+        if (translatedCount) __d.addToast(__d.t('toasts.translated_resources', { count: translatedCount }) || `Successfully translated ${translatedCount} resources!`, "success");
     } catch (e) {
         __d.warnLog("Unhandled error:", e);
         __d.addToast(__d.t('toasts.translation_interrupted'), "error");
@@ -6101,6 +6149,17 @@ const handleAnnotationImportFile = (e) => {
       if (isCurrent()) __d.addToast && __d.addToast(__d.t('toasts.could_not_parse_file_must'), 'error');
     }
   };
+const _analysisDataForSourceEdit = (previous, text) => {
+    const data = { ...previous, originalText: text };
+    if (previous?.analysisSourceVersion === 1) data.rawEnglishText = text;
+    if (previous?.originalText !== text) {
+        delete data.reportTranslations;
+        delete data.sourceTranslations;
+        delete data.displayReportLanguage;
+        if (previous?.analysisSourceVersion === 1) delete data.translatedText;
+    }
+    return data;
+  };
 const onCorrectAnalysisText = (resourceId, expectedOriginalText, correctedText, fixedNotes) => {
     const state = __d._resourceMutationStateRef.current;
     const resource = state.history.find(item => item && String(item.id) === String(resourceId))
@@ -6110,7 +6169,7 @@ const onCorrectAnalysisText = (resourceId, expectedOriginalText, correctedText, 
     const accepted = __d.onUpdateResource(resourceId, previous => {
       if (previous.data?.originalText !== expectedOriginalText) return previous;
       const evidence = _getFreshTextComplexityEvidence(previous, correctedText);
-      const data = { ...previous.data, originalText: correctedText,
+      const data = { ..._analysisDataForSourceEdit(previous.data, correctedText),
         grammar: (Array.isArray(previous.data.grammar) ? previous.data.grammar : []).map(note => selectedNotes.has(note) ? '✓ FIXED: ' + note : note)
       };
       if (evidence.localStats) data.localStats = evidence.localStats;
@@ -6316,6 +6375,33 @@ const handleAutoGrade = async () => {
       }
   };
 const mergeCloudAndLocal = (localItems, cloudItems) => {
+      // Creation time determines display order; modification time determines
+      // which saved version wins. Old resources have only a creation timestamp.
+      const revisionTime = item => Math.max(
+          new Date(item.timestamp).getTime() || 0,
+          new Date(item.updatedAt).getTime() || 0
+      );
+      const mergeAnalysisViews = (local, cloud, base) => {
+          if (local.type !== 'analysis' || cloud.type !== 'analysis') return base;
+          const left = local.data || {}, right = cloud.data || {};
+          const reportLanguage = item => item.data?.reportLanguage || item.config?.language || 'English';
+          // A translation revision never chooses the source. Ignore language
+          // views from a device whose source or assessed findings have changed.
+          if (reportLanguage(local) !== reportLanguage(cloud)
+              || ['originalText', 'rawEnglishText', 'readingLevel', 'concepts', 'accuracy', 'grammar'].some(key => JSON.stringify(left[key]) !== JSON.stringify(right[key]))) return base;
+          const viewTime = item => Math.max(revisionTime(item), new Date(item.analysisTranslationUpdatedAt).getTime() || 0);
+          const preferred = viewTime(cloud) > viewTime(local) ? cloud : local;
+          const other = preferred === cloud ? local : cloud;
+          const data = { ...base.data };
+          for (const key of ['reportTranslations', 'sourceTranslations']) {
+              if (other.data?.[key] || preferred.data?.[key]) data[key] = { ...other.data?.[key], ...preferred.data?.[key] };
+          }
+          for (const key of ['reportLanguage', 'displayReportLanguage']) {
+              if (preferred.data?.[key] !== undefined) data[key] = preferred.data[key];
+          }
+          const viewRevision = Math.max(new Date(local.analysisTranslationUpdatedAt).getTime() || 0, new Date(cloud.analysisTranslationUpdatedAt).getTime() || 0);
+          return { ...base, data, ...(viewRevision ? { analysisTranslationUpdatedAt: new Date(viewRevision).toISOString() } : {}) };
+      };
       const itemMap = new Map();
       localItems.forEach(item => {
           const instanceId = __d.getArtifactInstanceId(item);
@@ -6326,11 +6412,9 @@ const mergeCloudAndLocal = (localItems, cloudItems) => {
           const mergeKey = instanceId ? 'instance:' + instanceId : 'legacy:' + __d.getArtifactPublicId(cloudItem);
           const localItem = itemMap.get(mergeKey);
           if (localItem) {
-              const localTime = new Date(localItem.timestamp).getTime();
-              const cloudTime = new Date(cloudItem.timestamp).getTime();
-              if (cloudTime > localTime) {
-                  itemMap.set(mergeKey, cloudItem);
-              }
+              const localTime = revisionTime(localItem);
+              const cloudTime = revisionTime(cloudItem);
+              itemMap.set(mergeKey, mergeAnalysisViews(localItem, cloudItem, cloudTime > localTime ? cloudItem : localItem));
           } else {
               itemMap.set(mergeKey, cloudItem);
           }
@@ -6449,26 +6533,62 @@ const _alloCheckpointArtifact = () => {
       return { text: parts.join(String.fromCharCode(10, 10)), providedTexts: provided };
   };
 const applyAppUpdate = async () => {
-    if (!('serviceWorker' in navigator) || __d.appUpdateApplying) return false;
-    __d.setAppUpdateApplying(true);
+    const updates = window.__alloAppUpdates;
+    if (updates && updates.getState().applying) return false;
+    if (!updates && (window.__alloLegacyUpdateApplying || __d.appUpdateApplying)) return false;
     try {
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (!registration || !registration.waiting) {
-        if (registration) await registration.update().catch(() => {});
-        __d.setAppUpdateApplying(false);
-        if (__d.addToastRef.current) __d.addToastRef.current('The update is still being prepared. AlloFlow will notify you when it is ready.', 'info');
-        return false;
+      if (!updates) {
+        // A cached older shell can load this newer CDN handler before it has
+        // the update manager. This fallback runs only after an explicit click.
+        window.__alloLegacyUpdateApplying = true;
+        if (__d.setAppUpdateApplying) __d.setAppUpdateApplying(true);
+        try {
+          const registration = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
+          const waiting = registration && registration.waiting;
+          if (waiting && (waiting.state === 'installed' || waiting.state === 'activating')) {
+            await new Promise((resolve, reject) => {
+              let done = false;
+              const finish = error => {
+                if (done) return;
+                done = true;
+                clearTimeout(timer);
+                navigator.serviceWorker.removeEventListener('controllerchange', verify);
+                waiting.removeEventListener('statechange', verify);
+                if (error) reject(error); else resolve();
+              };
+              const verify = () => {
+                if (waiting.state === 'redundant') {
+                  finish(new Error('AlloFlow could not finish the update. Your current page is still open. Please try again.'));
+                } else if (waiting.state === 'activated' && registration.active === waiting && navigator.serviceWorker.controller === waiting) {
+                  finish();
+                }
+              };
+              const timer = setTimeout(() => finish(new Error('AlloFlow could not finish the update. Your current page is still open. Please try again.')), 10000);
+              navigator.serviceWorker.addEventListener('controllerchange', verify);
+              waiting.addEventListener('statechange', verify);
+              if (registration.waiting === waiting && waiting.state === 'installed') {
+                try { waiting.postMessage({ type: 'ALLOFLOW_ACTIVATE_UPDATE' }); } catch (error) { finish(error); }
+              }
+              verify();
+            });
+          }
+          // The installed update is controlling this page, or another tab has
+          // already activated it. A normal reload also works without SW support.
+          window.location.reload();
+          return true;
+        } finally {
+          window.__alloLegacyUpdateApplying = false;
+          if (__d.setAppUpdateApplying) __d.setAppUpdateApplying(false);
+        }
       }
-      window.__alloReloadForUpdate = true;
-      registration.waiting.postMessage({ type: 'ALLOFLOW_ACTIVATE_UPDATE' });
-      // controllerchange is the primary path. The timeout covers embedded
-      // browsers that activate correctly but fail to deliver that event.
-      setTimeout(() => { try { window.location.reload(); } catch (_) {} }, 1800);
-      return true;
-    } catch (_) {
-      window.__alloReloadForUpdate = false;
-      __d.setAppUpdateApplying(false);
-      if (__d.addToastRef.current) __d.addToastRef.current('AlloFlow could not apply the update yet. Your work is safe; try again shortly.', 'warning');
+      const applied = await updates.apply();
+      if (!applied && !updates.getState().applying && __d.addToastRef.current) {
+        const error = updates.getState().error;
+        if (error) __d.addToastRef.current(error, 'warning');
+      }
+      return applied;
+    } catch (error) {
+      if (__d.addToastRef.current) __d.addToastRef.current(error?.message || 'AlloFlow could not apply the update. Please try again when your connection is available.', 'warning');
       return false;
     }
   };
@@ -10151,14 +10271,14 @@ const handleAnalysisTextChange = (value) => {
     __d._recordTextChange('analysis', __d.generatedContent.id, (__d.generatedContent.data && __d.generatedContent.data.originalText) || '', value);
     const evidence = __d._getFreshTextComplexityEvidence(__d.generatedContent, value);
     const newData = {
-        ...__d.generatedContent?.data,
-        originalText: value,
+        ..._analysisDataForSourceEdit(__d.generatedContent?.data, value),
         ...(evidence.localStats ? { localStats: evidence.localStats } : {})
     };
     if (!evidence.localStats && newData.localStats) delete newData.localStats;
     const updatedContent = {
         ...__d.generatedContent,
         data: newData,
+        updatedAt: new Date().toISOString(),
         targetGradeLevel: evidence.targetGrade,
         instructionalText: evidence.instructionalText
     };
@@ -10177,14 +10297,14 @@ const _applyTextDomain = (entry) => {
       if (entry.domain !== 'analysis') return __d._applySimplifiedTextMutation(item, entry.value);
       const evidence = __d._getFreshTextComplexityEvidence(item, entry.value);
       const data = {
-        ...item.data,
-        originalText: entry.value,
+        ..._analysisDataForSourceEdit(item.data, entry.value),
         ...(evidence.localStats ? { localStats: evidence.localStats } : {})
       };
       if (!evidence.localStats && data.localStats) delete data.localStats;
       const updated = {
         ...item,
         data,
+        updatedAt: new Date().toISOString(),
         targetGradeLevel: evidence.targetGrade,
         instructionalText: evidence.instructionalText
       };
@@ -11286,24 +11406,138 @@ const handleGlossarySelectAll = (e) => {
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
   };
+// Deletion receipts restore only the removed entry or media fields. Replaying a
+// resource snapshot here would silently discard edits made after the deletion.
+const _glossaryDeletionEntryId = entry => entry && (entry.entryId || entry.glossaryEntryId || entry.id);
+const _glossaryDeletionSameValue = (left, right) => left === right || JSON.stringify(left) === JSON.stringify(right);
+const _glossaryDeletionFindEntry = (data, entry) => {
+    const id = _glossaryDeletionEntryId(entry);
+    if (!id) {
+      const referenceAt = data.indexOf(entry);
+      if (referenceAt >= 0 && data.lastIndexOf(entry) === referenceAt) return referenceAt;
+    }
+    const matches = data.map((item, index) => item && (id
+      ? String(_glossaryDeletionEntryId(item) || '') === String(id)
+      : _glossaryDeletionSameValue(item, entry)) ? index : -1).filter(index => index >= 0);
+    return matches.length === 1 ? matches[0] : -1;
+  };
+const _glossaryDeletionSameResource = (resource, origin) => !!resource && resource.type === 'glossary'
+    && resource.id != null && String(resource.id) === String(origin.id)
+    && (resource._artifactInstanceId || '') === (origin._artifactInstanceId || '') && Array.isArray(resource.data);
+const _glossaryDeletionActive = () => {
+    const live = __d._resourceMutationStateRef && __d._resourceMutationStateRef.current;
+    return live && Object.prototype.hasOwnProperty.call(live, 'generatedContent') ? live.generatedContent : __d.generatedContent;
+  };
+const _glossaryDeletionApply = (origin, update) => {
+    if (!_glossaryDeletionSameResource(_glossaryDeletionActive(), origin)) return false;
+    const apply = previous => _glossaryDeletionSameResource(previous, origin) ? update(previous) : previous;
+    if (typeof __d.onUpdateResource === 'function') {
+      return !!__d.onUpdateResource(origin.id, apply, { instanceId: origin._artifactInstanceId || '' });
+    }
+    // Old embedded shells have the local mutation shim but may not expose its
+    // getter. Its functional setters still preserve independent store updates.
+    if (__d._resourceMutationStateRef && __d._resourceMutationStateRef.current) {
+      return onUpdateResource(origin.id, apply, { instanceId: origin._artifactInstanceId || '' });
+    }
+    if (apply(_glossaryDeletionActive()) === _glossaryDeletionActive()) return false;
+    __d.setGeneratedContent(apply);
+    __d.setHistory(previous => previous.map(apply));
+    return true;
+  };
+const _glossaryDeletionCancelTasks = (origin, entry, channels) => {
+    if (typeof __d._alloBeginGlossaryTask !== 'function' || !_glossaryDeletionSameResource(__d.generatedContent, origin)) return;
+    const index = _glossaryDeletionFindEntry(__d.generatedContent.data, entry);
+    if (index < 0) return;
+    channels.forEach(channel => {
+      // Superseding the existing token also invalidates already queued commits.
+      // Cancel before removal so legacy entries still have their original key.
+      const task = __d._alloBeginGlossaryTask(index, [], channel);
+      if (!task) return;
+      const setter = channel === 'image' ? __d.setIsGeneratingTermImage : __d.setIsGeneratingEtymology;
+      if (typeof setter === 'function') task.busy(setter, false);
+      task.cancel();
+    });
+  };
 const handleDeleteGlossaryItem = (index) => {
-    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
-    const newData = [...__d.generatedContent?.data];
-    newData.splice(index, 1);
-    const updatedContent = { ...__d.generatedContent, data: newData };
-    __d.setGeneratedContent(updatedContent);
-    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
-    __d.addToast(__d.t('glossary.actions.term_deleted'), "info");
+    const origin = _glossaryDeletionActive();
+    if (!origin || origin.type !== 'glossary' || origin.id == null || !Array.isArray(origin.data)
+      || !Number.isInteger(index) || index < 0 || index >= origin.data.length) return null;
+    const entry = origin.data[index];
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+    _glossaryDeletionCancelTasks(origin, entry, ['image', 'etymology']);
+    const before = origin.data.slice(0, index).reverse(), after = origin.data.slice(index + 1);
+    const existingLegacyCopies = _glossaryDeletionEntryId(entry) ? 0 : origin.data.filter(item => _glossaryDeletionSameValue(item, entry)).length - 1;
+    const removed = _glossaryDeletionApply(origin, previous => {
+      const at = _glossaryDeletionFindEntry(previous.data, entry);
+      if (at < 0) return previous;
+      return { ...previous, data: previous.data.filter((_, position) => position !== at) };
+    });
+    if (!removed) return null;
+    __d.addToast(__d.t('glossary.actions.term_deleted'), 'info');
+    let restored = false;
+    return { kind: 'term', term: String(entry.term || ''), resourceId: origin.id, undo: () => {
+      if (restored) return false;
+      const accepted = _glossaryDeletionApply(origin, previous => {
+        const id = _glossaryDeletionEntryId(entry);
+        if (id ? previous.data.some(item => item && String(_glossaryDeletionEntryId(item) || '') === String(id))
+          : previous.data.includes(entry) || previous.data.filter(item => _glossaryDeletionSameValue(item, entry)).length > existingLegacyCopies) return previous;
+        let at = -1;
+        for (const neighbor of after) {
+          at = _glossaryDeletionFindEntry(previous.data, neighbor);
+          if (at >= 0) break;
+        }
+        if (at < 0) {
+          for (const neighbor of before) {
+            const preceding = _glossaryDeletionFindEntry(previous.data, neighbor);
+            if (preceding >= 0) { at = preceding + 1; break; }
+          }
+        }
+        if (at < 0) at = Math.min(index, previous.data.length);
+        const data = previous.data.slice(); data.splice(at, 0, entry);
+        return { ...previous, data };
+      });
+      if (accepted) restored = true;
+      return accepted;
+    } };
   };
 const handleDeleteTermImage = (index) => {
-    if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
-    const newData = [...__d.generatedContent?.data];
-    const { image, ...rest } = newData[index];
-    newData[index] = rest;
-    const updatedContent = { ...__d.generatedContent, data: newData };
-    __d.setGeneratedContent(updatedContent);
-    __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
-    __d.addToast(__d.t('glossary.actions.icon_removed'), "info");
+    const origin = _glossaryDeletionActive();
+    if (!origin || origin.type !== 'glossary' || origin.id == null || !Array.isArray(origin.data)
+      || !Number.isInteger(index) || index < 0 || index >= origin.data.length) return null;
+    const entry = origin.data[index];
+    if (!entry || typeof entry !== 'object' || !entry.image) return null;
+    _glossaryDeletionCancelTasks(origin, entry, ['image']);
+    const fields = ['image', 'imageAlt', 'imageAltHash', 'imageAltSource', 'imageDecorative', 'imageSource', 'imageAttribution', 'imageCreditBand'];
+    const saved = {};
+    fields.forEach(field => { if (Object.prototype.hasOwnProperty.call(entry, field)) saved[field] = entry[field]; });
+    // Legacy entries need durable identity before unrelated edits can clone or
+    // move them. Reuse the same entryId convention as saved glossary audio.
+    const entryId = _glossaryDeletionEntryId(entry) || ('glossary-' + (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)));
+    const target = _glossaryDeletionEntryId(entry) ? entry : { ...entry, entryId };
+    const removed = _glossaryDeletionApply(origin, previous => {
+      const at = _glossaryDeletionFindEntry(previous.data, entry);
+      if (at < 0 || fields.some(field => !_glossaryDeletionSameValue(previous.data[at][field], entry[field]))) return previous;
+      const replacement = { ...previous.data[at] };
+      if (!_glossaryDeletionEntryId(replacement)) replacement.entryId = entryId;
+      fields.forEach(field => { delete replacement[field]; });
+      const data = previous.data.slice(); data[at] = replacement;
+      return { ...previous, data };
+    });
+    if (!removed) return null;
+    __d.addToast(__d.t('glossary.actions.icon_removed'), 'info');
+    let restored = false;
+    return { kind: 'image', term: String(entry.term || ''), resourceId: origin.id, undo: () => {
+      if (restored) return false;
+      const accepted = _glossaryDeletionApply(origin, previous => {
+        const at = _glossaryDeletionFindEntry(previous.data, target);
+        if (at < 0 || fields.some(field => Object.prototype.hasOwnProperty.call(previous.data[at], field))) return previous;
+        const data = previous.data.slice(); data[at] = { ...data[at], ...saved };
+        return { ...previous, data };
+      });
+      if (accepted) restored = true;
+      return accepted;
+    } };
   };
 const _applySimplifiedTextMutation = (item, value) => {
     if (item?.instructionalText?.form === 'same-text-supported') return item;
