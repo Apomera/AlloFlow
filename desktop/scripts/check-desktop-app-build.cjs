@@ -262,11 +262,12 @@ function validateBuildArtifacts({ appBuildDir }) {
   }
 
   if (worker) {
-    if (worker.includes('__BUILD_TS__') || worker.includes('__PRECACHE_PATHS__')) {
+    if (worker.includes('__BUILD_TS__') || worker.includes('__RELEASE_ID__') || worker.includes('__PRECACHE_PATHS__')) {
       errors.push('sw.js still contains an unstamped build placeholder.');
     }
-    if (!/const CACHE_NAME = ['"]alloflow-v\d+['"]/.test(worker)) {
-      errors.push('sw.js is missing a stamped alloflow-v<timestamp> cache name.');
+    // postbuild.js stamps alloflow-v<sha256 release id>-<build time>; older builds used alloflow-v<build time>.
+    if (!/const CACHE_NAME = ['"]alloflow-v(?:[0-9a-f]{64}-)?\d+['"]/.test(worker)) {
+      errors.push('sw.js is missing a stamped alloflow-v<release>-<timestamp> cache name.');
     }
     if (!/self\.registration\.scope/.test(worker) || !/const SHELL_URL = scopedUrl\(['"]\.\/index\.html['"]\)/.test(worker)) {
       errors.push('sw.js must resolve its shell relative to the desktop app scope.');
