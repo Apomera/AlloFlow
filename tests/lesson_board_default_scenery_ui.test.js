@@ -23,7 +23,7 @@ const scene=()=>element.querySelector('[data-artwork-slot="scene:tabletop"] img'
 
 beforeAll(()=>{
   window.React=React;globalThis.IS_REACT_ACT_ENVIRONMENT=true;window.AlloLanguageContext=React.createContext({t});
-  const bundle=require('node:child_process').execFileSync(process.execPath,['-e',"process.stdout.write(require('esbuild').buildSync({stdin:{contents:\"export {LessonBoardSetup} from './lesson_board_source.jsx';\",resolveDir:process.cwd()},bundle:true,write:false,format:'iife',globalName:'DefaultSceneryUI',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).outputFiles[0].text)"],{encoding:'utf8'});
+  const bundle=require('node:child_process').execFileSync(process.execPath,['-e',"process.stdout.write(require('esbuild').buildSync({stdin:{contents:\"export {LessonBoardSetup} from './lesson_board_source.jsx';\",resolveDir:process.cwd()},bundle:true,write:false,format:'iife',globalName:'DefaultSceneryUI',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).outputFiles[0].text)"],{ encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   UI=new Function(bundle+';return DefaultSceneryUI;')();
 });
 beforeEach(()=>vi.stubGlobal('Image',class {naturalWidth=1;naturalHeight=1;set src(value){queueMicrotask(()=>{if(value==='data:image/png;base64,AAAA')this.onerror?.();else if(value)this.onload?.();});}}));

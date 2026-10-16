@@ -8,7 +8,7 @@ const require=createRequire(import.meta.url),React=require('../desktop/web-app/n
 const t=key=>key;let UI,root,element,latest,controls;
 beforeAll(()=>{
   window.React=React;window.AlloLanguageContext=React.createContext({t});globalThis.IS_REACT_ACT_ENVIRONMENT=true;
-  const code=require('node:child_process').execFileSync(process.execPath,['-e',"process.stdout.write(require('esbuild').buildSync({stdin:{contents:\"export * from './lesson_board_puzzles_ui.jsx'; export {Activity} from './lesson_board_ui.jsx'; export {LessonBoardSolo} from './lesson_board_source.jsx';\",resolveDir:process.cwd()},bundle:true,write:false,format:'iife',globalName:'Puzzles',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).outputFiles[0].text)"],{encoding:'utf8'});
+  const code=require('node:child_process').execFileSync(process.execPath,['-e',"process.stdout.write(require('esbuild').buildSync({stdin:{contents:\"export * from './lesson_board_puzzles_ui.jsx'; export {Activity} from './lesson_board_ui.jsx'; export {LessonBoardSolo} from './lesson_board_source.jsx';\",resolveDir:process.cwd()},bundle:true,write:false,format:'iife',globalName:'Puzzles',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).outputFiles[0].text)"],{ encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   UI=new Function(code+';return Puzzles;')();
 });
 afterEach(async()=>{if(root)await act(async()=>root.unmount());element?.remove();root=element=controls=null;localStorage.clear();sessionStorage.clear();});
