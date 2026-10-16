@@ -422,10 +422,12 @@
             return prefix + '-' + hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
         };
     }
+    // Helper <-> roster panel message version. A message without one is version 1.
+    const LINKED_PROTOCOL_VERSION = 1;
     async function linkedClassIds(syncKey, courseIds) {
         if (!Array.isArray(courseIds) || courseIds.length > DEFAULT_LIMITS.maxCourses) fail('MALFORMED_REQUEST');
         const sign = await syncSigner(syncKey);
-        const result = {};
+        const result = Object.create(null);              // course IDs may legally be "__proto__"
         for (const courseId of courseIds) result[identifier(courseId, 'MALFORMED_REQUEST')] = await sign('CLS', LABEL_CLASS, courseId);
         return result;
     }
@@ -434,17 +436,33 @@
         const compact = String(value).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]/gu, '');
         return /[\p{L}\p{N}]/u.test(compact) ? compact : '';
     };
+    // Codenames become roster object keys: refuse prototype names and control characters.
+    function checkedCodename(codename) {
+        if (typeof codename !== 'string' || !codename.trim() || [...codename].length > 80
+            || ['__proto__', 'constructor', 'prototype'].includes(codename) || /[\u0000-\u001f\u007f]/.test(codename)) fail('MALFORMED_REQUEST');
+        const key = codenameKey(codename);
+        if (!key) fail('MALFORMED_REQUEST');
+        return key;
+    }
     async function convertLinkedSnapshot(snapshot, options) {
-        shape(options, ['syncKey', 'classId', 'existing'], ['syncKey', 'classId', 'existing'], 'MALFORMED_REQUEST');
-        const existing = options.existing;
-        if (!record(existing) || Object.keys(existing).length > DEFAULT_LIMITS.maxStudents) fail('MALFORMED_REQUEST');
+        shape(options, ['syncKey', 'classId', 'existing', 'reservedCodenames'], ['syncKey', 'classId', 'existing'], 'MALFORMED_REQUEST');
+        syncKeyBytes(options.syncKey);
+        if (!record(options.existing) || Object.keys(options.existing).length > DEFAULT_LIMITS.maxStudents) fail('MALFORMED_REQUEST');
+        const reservedInput = own(options, 'reservedCodenames') ? options.reservedCodenames : [];
+        if (!Array.isArray(reservedInput) || reservedInput.length > 2 * DEFAULT_LIMITS.maxStudents) fail('MALFORMED_REQUEST');
+        // Copied before any await, so the identity assignment cannot change mid-read.
+        const existing = {};
         const existingCodenames = new Set();
-        for (const [learnerId, codename] of Object.entries(existing)) {
-            if (!LEARNER_ID.test(learnerId) || typeof codename !== 'string' || !codename.trim() || [...codename].length > 80) fail('MALFORMED_REQUEST');
-            const key = codenameKey(codename);
-            if (!key || existingCodenames.has(key)) fail('MALFORMED_REQUEST');
+        for (const [learnerId, codename] of Object.entries(options.existing)) {
+            if (!LEARNER_ID.test(learnerId)) fail('MALFORMED_REQUEST');
+            const key = checkedCodename(codename);
+            if (existingCodenames.has(key)) fail('MALFORMED_REQUEST');
             existingCodenames.add(key);
+            existing[learnerId] = codename;
         }
+        // The roster's other codenames (students added by hand): a newcomer must not get one, or the
+        // reviewed update stops on a codename conflict.
+        const reservedCodenames = reservedInput.map(checkedCodename);
         if (options.classId !== null && (typeof options.classId !== 'string' || !CLASS_ID.test(options.classId))) fail('MALFORMED_REQUEST');
         if (options.classId === null && Object.keys(existing).length) fail('MALFORMED_REQUEST');
         const students = completeStudents(snapshot);
@@ -453,7 +471,7 @@
         if (options.classId !== null && classId !== options.classId) fail('LINKED_CLASS_MISMATCH');
         const adjectives = ['Brave', 'Bright', 'Calm', 'Clever', 'Curious', 'Gentle', 'Kind', 'Mighty', 'Quiet', 'Swift'];
         const animals = ['Bear', 'Dolphin', 'Falcon', 'Fox', 'Otter', 'Owl', 'Panda', 'Tiger', 'Turtle', 'Wolf'];
-        const takenCodenames = new Set(existingCodenames);
+        const takenCodenames = new Set([...existingCodenames, ...reservedCodenames]);
         let sequence = 0;
         function nextCodename() {
             while (sequence < 100000) {
@@ -490,5 +508,5 @@
         const absentCount = Object.keys(existing).filter(learnerId => !seenIds.has(learnerId)).length;
         return { roster, json, studentCount: students.length, preview: rows, returningCount: rows.filter(row => row.status === 'returning').length, newCount: rows.filter(row => row.status === 'new').length, absentCount };
     }
-    return Object.freeze({ VERSION: '1.1.0', READONLY_SCOPES, DEFAULT_LIMITS, createConnector, convertSnapshot, assertEmptyDestination, convertLinkedSnapshot, linkedClassIds });
+    return Object.freeze({ VERSION: '1.2.0', LINKED_PROTOCOL_VERSION, READONLY_SCOPES, DEFAULT_LIMITS, createConnector, convertSnapshot, assertEmptyDestination, convertLinkedSnapshot, linkedClassIds });
 }));

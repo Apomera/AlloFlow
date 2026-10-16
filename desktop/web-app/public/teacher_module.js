@@ -1026,10 +1026,14 @@ const ALLO_CLASSROOM_HANDOFF_WINDOW = "alloflow-classroom-import";
 const ALLO_ROSTER_IMPORT_MAX_BYTES = 2 * 1024 * 1024;
 const ALLO_CLASSROOM_HELLO_TYPE = "alloflow-classroom-hello";
 const ALLO_CLASSROOM_CONTEXT_TYPE = "alloflow-classroom-context";
+const ALLO_CLASSROOM_PROTOCOL_VERSION = 1;
+const ALLO_CLASSROOM_PROTOCOL_MISMATCH = "This Google Classroom helper is from a different AlloFlow version. Reload AlloFlow, then open the helper again. Nothing changed.";
 const alloAcceptClassroomHandoff = (event, helperWindow, origin) => {
   if (!event || !helperWindow || event.source !== helperWindow) return null;
   if (typeof origin !== "string" || !origin || event.origin !== origin) return null;
   const data = event.data;
+  const known = data && typeof data === "object" && (data.type === ALLO_CLASSROOM_HELLO_TYPE || data.type === ALLO_CLASSROOM_HANDOFF_TYPE);
+  if (known && data.protocol !== void 0 && data.protocol !== ALLO_CLASSROOM_PROTOCOL_VERSION) return { error: ALLO_CLASSROOM_PROTOCOL_MISMATCH };
   if (data && typeof data === "object" && data.type === ALLO_CLASSROOM_HELLO_TYPE) return { hello: true };
   if (!data || typeof data !== "object" || data.type !== ALLO_CLASSROOM_HANDOFF_TYPE || typeof data.json !== "string") return null;
   if (data.json.length > ALLO_ROSTER_IMPORT_MAX_BYTES) return { error: "That roster is larger than the 2 MB safety limit." };
@@ -1088,6 +1092,10 @@ const alloClassroomSyncExisting = (roster) => {
     if (typeof learnerId === "string" && ALLO_CLASSROOM_LEARNER_ID_PATTERN.test(learnerId) && Object.prototype.hasOwnProperty.call(roster.students || {}, codename)) existing[learnerId] = codename;
   });
   return existing;
+};
+const alloClassroomReservedCodenames = (roster, existing) => {
+  const linked = new Set(Object.values(existing || {}));
+  return Object.keys(roster?.students || {}).filter((codename) => !linked.has(codename) && codename.trim() && [...codename].length <= 80 && !["__proto__", "constructor", "prototype"].includes(codename) && !/[\u0000-\u001f\u007f]/.test(codename)).slice(0, 1e3);
 };
 const alloParseClassroomSyncKeyFile = (text, classId) => {
   let data;
@@ -1452,10 +1460,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const linkedKey = roster?.classId ? classroomSyncKeysRef.current.byClass[roster.classId]?.key : "";
       if (accepted.hello) {
         let context;
-        if (linkedKey) context = { type: ALLO_CLASSROOM_CONTEXT_TYPE, mode: "sync", syncKey: linkedKey, classId: roster.classId, existing: alloClassroomSyncExisting(roster) };
-        else {
+        if (linkedKey) {
+          const existing = alloClassroomSyncExisting(roster);
+          context = { type: ALLO_CLASSROOM_CONTEXT_TYPE, protocol: ALLO_CLASSROOM_PROTOCOL_VERSION, mode: "sync", syncKey: linkedKey, classId: roster.classId, existing, reservedCodenames: alloClassroomReservedCodenames(roster, existing) };
+        } else {
           if (!pendingLinkKeyRef.current) pendingLinkKeyRef.current = alloNewClassroomSyncKey();
-          context = { type: ALLO_CLASSROOM_CONTEXT_TYPE, mode: "link", syncKey: pendingLinkKeyRef.current, classId: null, existing: {} };
+          context = { type: ALLO_CLASSROOM_CONTEXT_TYPE, protocol: ALLO_CLASSROOM_PROTOCOL_VERSION, mode: "link", syncKey: pendingLinkKeyRef.current, classId: null, existing: {}, reservedCodenames: [] };
         }
         try {
           event.source.postMessage(context, event.origin);
@@ -7498,6 +7508,9 @@ window.AlloModules.TeacherPrivateLabelInternals = {
   acceptHandoff: alloAcceptClassroomHandoff,
   helloType: ALLO_CLASSROOM_HELLO_TYPE,
   contextType: ALLO_CLASSROOM_CONTEXT_TYPE,
+  protocolVersion: ALLO_CLASSROOM_PROTOCOL_VERSION,
+  protocolMismatch: ALLO_CLASSROOM_PROTOCOL_MISMATCH,
+  reservedCodenames: alloClassroomReservedCodenames,
   syncKeysKey: ALLO_CLASSROOM_SYNC_KEYS_KEY,
   syncKeyFileType: ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE,
   newSyncKey: alloNewClassroomSyncKey,

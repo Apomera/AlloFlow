@@ -73,6 +73,30 @@ describe('keyed deterministic IDs in the helper service', () => {
       .rejects.toMatchObject({ code: 'MALFORMED_REQUEST' });
     await expect(service.convertLinkedSnapshot(snapshot([AVERY]), { syncKey: KEY_A, classId: null, existing: { [id]: 'Calm Owl' } })).rejects.toMatchObject({ code: 'MALFORMED_REQUEST' });
   });
+
+  // 2026-10-16: checks ported from the guarded redesign kept on archive/codex-classroom-redesign-2026-10-15.
+  it('never gives a newcomer a codename the roster already uses, and refuses unsafe codenames', async () => {
+    const linked = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN]), { syncKey: KEY_A, classId: null, existing: {} });
+    const existing = Object.fromEntries(Object.entries(linked.roster.learnerIds).map(([codename, id]) => [id, codename]));
+    const classId = linked.roster.classId;
+    // Without the reserved list, Riley gets the next generated codename: say a hand-added student already has it.
+    const unprotected = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN, RILEY]), { syncKey: KEY_A, classId, existing });
+    const handAdded = unprotected.preview.find(row => row.fullName === 'Fictional Riley').codename;
+    const guarded = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN, RILEY]), { syncKey: KEY_A, classId, existing, reservedCodenames: [handAdded] });
+    expect(guarded.preview.find(row => row.fullName === 'Fictional Riley').codename).not.toBe(handAdded);
+    expect(Object.keys(guarded.roster.students)).not.toContain(handAdded);
+    const someId = Object.keys(existing)[0];
+    for (const bad of ['__proto__', 'constructor', 'Calm\u0007Owl', '   ', 'x'.repeat(81)]) {
+      await expect(service.convertLinkedSnapshot(snapshot([AVERY]), { syncKey: KEY_A, classId, existing: { [someId]: bad } })).rejects.toMatchObject({ code: 'MALFORMED_REQUEST' });
+      await expect(service.convertLinkedSnapshot(snapshot([AVERY]), { syncKey: KEY_A, classId, existing, reservedCodenames: [bad] })).rejects.toMatchObject({ code: 'MALFORMED_REQUEST' });
+    }
+    await expect(service.convertLinkedSnapshot(snapshot([AVERY]), { syncKey: KEY_A, classId, existing, reservedCodenames: 'Brave Fox' })).rejects.toMatchObject({ code: 'MALFORMED_REQUEST' });
+    expect(service.LINKED_PROTOCOL_VERSION).toBe(1);
+    const ids = await service.linkedClassIds(KEY_A, ['__proto__', COURSE]);   // a legal course ID must not reach the prototype
+    expect(Object.getPrototypeOf(ids)).toBeNull();
+    expect(ids.__proto__).toMatch(PLANNER_CLASS);
+    expect(ids[COURSE]).toBe(classId);
+  });
 });
 
 describe('linked sync through the real roster panel', () => {
@@ -231,5 +255,34 @@ describe('linked sync through the real roster panel', () => {
       expect(body).not.toMatch(/SyncKey|syncKey/);
     }
     expect(readFileSync('teacher_module.js', 'utf8')).toBe(readFileSync('desktop/web-app/public/teacher_module.js', 'utf8'));
+  });
+
+  it('protects hand-added codenames during sync and answers a different protocol version clearly', async () => {
+    const linked = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN]), { syncKey: KEY_A, classId: null, existing: {} });
+    const linkedMap = Object.fromEntries(Object.entries(linked.roster.learnerIds).map(([codename, id]) => [id, codename]));
+    const preview = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN, RILEY]), { syncKey: KEY_A, classId: linked.roster.classId, existing: linkedMap });
+    const taken = preview.preview.find(row => row.fullName === 'Fictional Riley').codename;
+    const roster = JSON.parse(linked.json);
+    roster.students[taken] = '';                       // added by hand, with a legacy (non-UUID) learner ID the helper cannot use
+    roster.learnerIds[taken] = 'LRN-hand-added';
+    localStorage.setItem(internals.syncKeysKey, JSON.stringify({ version: 1, byClass: { [linked.roster.classId]: { key: KEY_A, linkedAt: '2026-10-16T00:00:00.000Z' } } }));
+    await mount(window.AlloModules.RosterIdentityInternals.normalizeRosterImport(roster));
+    const { helper, context } = await openHelper();
+    expect(context).toMatchObject({ protocol: internals.protocolVersion, mode: 'sync', classId: linked.roster.classId });
+    expect(context.reservedCodenames).toEqual([taken]);
+    // Control: without the reserved list Riley collides with the hand-added student and the update is blocked.
+    const collide = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN, RILEY]), { syncKey: context.syncKey, classId: context.classId, existing: context.existing });
+    await post(helper, { type: internals.handoffType, json: collide.json, mode: 'sync' });
+    expect(reply(helper)).toMatchObject({ ok: false, message: expect.stringContaining('identity conflicts') });
+    const synced = await service.convertLinkedSnapshot(snapshot([AVERY, JORDAN, RILEY]), { syncKey: context.syncKey, classId: context.classId, existing: context.existing, reservedCodenames: context.reservedCodenames });
+    expect(synced.preview.find(row => row.fullName === 'Fictional Riley').codename).not.toBe(taken);
+    await post(helper, { type: internals.handoffType, protocol: 1, json: synced.json, mode: 'sync' });
+    expect(reply(helper)).toMatchObject({ ok: true, message: expect.stringContaining('Review and confirm the update') });
+    const before = JSON.stringify(liveRoster);
+    await post(helper, { type: internals.helloType, protocol: 2 });
+    expect(reply(helper)).toEqual({ type: internals.handoffReply, ok: false, pending: false, message: internals.protocolMismatch });
+    await post(helper, { type: internals.handoffType, protocol: 2, json: synced.json, mode: 'sync' });
+    expect(reply(helper)).toMatchObject({ ok: false, message: internals.protocolMismatch });
+    expect(JSON.stringify(liveRoster)).toBe(before);
   });
 });

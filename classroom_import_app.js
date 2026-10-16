@@ -182,7 +182,7 @@
       const mode = linkMode();
       const converted = mode === 'replace' || typeof service.convertLinkedSnapshot !== 'function'
         ? service.convertSnapshot(snapshot, { destinationRoster: null })
-        : await service.convertLinkedSnapshot(snapshot, { syncKey: linkContext.syncKey, classId: mode === 'sync' ? linkContext.classId : null, existing: mode === 'sync' ? linkContext.existing : {} });
+        : await service.convertLinkedSnapshot(snapshot, { syncKey: linkContext.syncKey, classId: mode === 'sync' ? linkContext.classId : null, existing: mode === 'sync' ? linkContext.existing : {}, reservedCodenames: mode === 'sync' ? linkContext.reservedCodenames : [] });
       if (epoch !== generation) return;
       result = converted;
       missingNames = converted.preview.some(student => typeof student.fullName !== 'string' || !student.fullName.trim());
@@ -236,7 +236,7 @@
     if (!handoff || busy || !result || missingNames || !$('confirm-new-class').checked) return;
     const epoch = ++handoffEpoch;
     try {
-      handoff.postMessage({ type: 'alloflow-classroom-roster', json: result.json, mode: linkMode() }, location.origin);
+      handoff.postMessage({ type: 'alloflow-classroom-roster', protocol: 1, json: result.json, mode: linkMode() }, location.origin);
     } catch (_) {
       say('The roster could not be sent to AlloFlow. Download it instead.');
       return;
@@ -254,12 +254,19 @@
     if (!handoff || event.origin !== location.origin || event.source !== handoff) return;
     const data = event.data;
     if (data && typeof data === 'object' && data.type === 'alloflow-classroom-context') {
+      // Version 1 is the only protocol this helper speaks; a context without one is version 1.
+      if (data.protocol !== undefined && data.protocol !== 1) {
+        say('This helper and the open AlloFlow tab are from different versions. Reload AlloFlow, then open the helper again from the roster panel.');
+        return;
+      }
       const existing = data.existing;
+      const reserved = data.reservedCodenames === undefined ? [] : data.reservedCodenames;
       const valid = (data.mode === 'link' || data.mode === 'sync') && typeof data.syncKey === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.syncKey) &&
         existing && typeof existing === 'object' && !Array.isArray(existing) &&
+        Array.isArray(reserved) && reserved.length <= 1000 && reserved.every(name => typeof name === 'string') &&
         (data.mode === 'link' ? data.classId === null && Object.keys(existing).length === 0 : typeof data.classId === 'string' && data.classId.length <= 60);
       if (!valid) return;
-      linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze({ ...existing }) });
+      linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze({ ...existing }), reservedCodenames: Object.freeze(reserved.slice()) });
       if (result) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
       describeMode(); controls();
       return;
@@ -287,7 +294,7 @@
   };
   window.addEventListener('pagehide', () => clearSession());
   describeMode();
-  if (handoff) { try { handoff.postMessage({ type: 'alloflow-classroom-hello' }, location.origin); } catch (_) { /* Download remains available. */ } }
+  if (handoff) { try { handoff.postMessage({ type: 'alloflow-classroom-hello', protocol: 1 }, location.origin); } catch (_) { /* Download remains available. */ } }
   if (!configured()) {
     say('Not configured for Google access. The AlloFlow helper is installed; school deployment review and an approved OAuth client are still required.');
     controls(); return;

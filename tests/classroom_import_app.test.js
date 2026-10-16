@@ -351,7 +351,7 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         const o = opener();
         const h = harness({ opener: o });
         h.ready();
-        expect(o.postMessage.mock.calls).toEqual([[{ type: 'alloflow-classroom-hello' }, sameOrigin]]);
+        expect(o.postMessage.mock.calls).toEqual([[{ type: 'alloflow-classroom-hello', protocol: 1 }, sameOrigin]]);
         o.postMessage.mockClear();
         expect(h.$('send-classroom').hidden).toBe(false);
         expect(h.$('send-classroom').disabled).toBe(true);
@@ -365,7 +365,7 @@ describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
         expect(o.postMessage).toHaveBeenCalledTimes(1);
         const [message, targetOrigin] = o.postMessage.mock.calls[0];
         expect(targetOrigin).toBe(sameOrigin);
-        expect(message).toEqual({ type: 'alloflow-classroom-roster', json: prepared().json, mode: 'replace' });
+        expect(message).toEqual({ type: 'alloflow-classroom-roster', protocol: 1, json: prepared().json, mode: 'replace' });
         expect(JSON.stringify(message)).not.toContain(PRIVATE_NAME);
         expect(JSON.stringify(message)).not.toContain(SECRET);
         expect(o.focus).toHaveBeenCalled();
@@ -445,7 +445,7 @@ describe('linked Classroom sync in the helper', () => {
         expect(h.$('send-classroom').textContent).toBe('Send to AlloFlow and link this class');
         expect(h.$('download-classroom').hidden).toBe(true);
         await h.connect(); await h.read();
-        expect(serviceExtras.convertLinkedSnapshot).toHaveBeenCalledWith(expect.objectContaining({ selectedCourseId: COURSE }), { syncKey: KEY, classId: null, existing: {} });
+        expect(serviceExtras.convertLinkedSnapshot).toHaveBeenCalledWith(expect.objectContaining({ selectedCourseId: COURSE }), { syncKey: KEY, classId: null, existing: {}, reservedCodenames: [] });
         expect(h.service.convertSnapshot).not.toHaveBeenCalled();
         expect(h.$('preview-count').textContent).toContain('Sending links this class');
         h.acknowledge();
@@ -455,6 +455,8 @@ describe('linked Classroom sync in the helper', () => {
         h.click('send-classroom');
         const sent = o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-roster')[0];
         expect(sent.mode).toBe('link');
+        expect(sent.protocol).toBe(1);
+        expect(o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-hello')[0]).toEqual({ type: 'alloflow-classroom-hello', protocol: 1 });
         expect(JSON.stringify(sent)).not.toContain(KEY);
         expect(h.$('import-status').textContent).not.toContain(KEY);
         expect(h.logs.every(spy => spy.mock.calls.every(call => !JSON.stringify(call).includes(KEY)))).toBe(true);
@@ -463,7 +465,7 @@ describe('linked Classroom sync in the helper', () => {
     it('syncs a linked class: preselects the linked course, shows what changes and sends in sync mode', async () => {
         const o = opener(), serviceExtras = extras(linkedResult('returning'));
         const h = harness({ opener: o, serviceExtras });
-        context(h, o, { mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' } });
+        context(h, o, { protocol: 1, mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' }, reservedCodenames: ['Hand Added Fox'] });
         expect(h.$('send-classroom').textContent).toBe('Send update to AlloFlow');
         expect(h.$('confirm-text').textContent).toContain('AlloFlow will list every change');
         await h.connect();
@@ -471,7 +473,7 @@ describe('linked Classroom sync in the helper', () => {
         expect(h.$('classroom-course').value).toBe(COURSE);
         expect(h.$('import-status').textContent).toContain('linked to this AlloFlow class is selected');
         h.click('read-classroom'); await flush();
-        expect(serviceExtras.convertLinkedSnapshot.mock.calls[0][1]).toEqual({ syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' } });
+        expect(serviceExtras.convertLinkedSnapshot.mock.calls[0][1]).toEqual({ syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' }, reservedCodenames: ['Hand Added Fox'] });
         expect(h.$('preview-count').textContent).toBe('1 students read: 1 keep their codenames, 0 new, and 2 in AlloFlow are no longer in this Classroom class (AlloFlow keeps them).');
         h.acknowledge(); h.click('send-classroom');
         expect(o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-roster')[0].mode).toBe('sync');
@@ -490,6 +492,18 @@ describe('linked Classroom sync in the helper', () => {
         expect(h.$('preview-section').hidden).toBe(true);
         expect(h.$('course-section').hidden).toBe(false);
         expect(h.connectors[0].dispose).not.toHaveBeenCalled();
+    });
+
+    it('refuses a context from a different protocol version and says to reload AlloFlow', async () => {
+        const o = opener(), serviceExtras = extras();
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { protocol: 2, mode: 'link', syncKey: KEY, classId: null, existing: {} });
+        expect(h.$('import-status').textContent).toContain('different versions. Reload AlloFlow');
+        expect(h.$('send-classroom').textContent).toBe('Send to the AlloFlow tab');
+        context(h, o, { mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: {}, reservedCodenames: 'not a list' });
+        expect(h.$('send-classroom').textContent).toBe('Send to the AlloFlow tab');
+        await h.connect(); await h.read();
+        expect(serviceExtras.convertLinkedSnapshot).not.toHaveBeenCalled();
     });
 
     it('ignores malformed contexts and contexts from anywhere but its own opener', async () => {
