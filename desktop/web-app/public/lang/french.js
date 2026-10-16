@@ -11314,7 +11314,7 @@
     "creating": "Création de la session {code}...",
     "live": "Session en direct ! Code : {code}",
     "error_generic": "Échec du démarrage de la session. Les données peuvent être trop volumineuses.",
-    "error_invalid_code": "Veuillez saisir un code valide de 4 caractères.",
+    "error_invalid_code": "Veuillez saisir un code valide de 5 caractères.",
     "joining": "Rejoindre la session {code} sur l'hôte {host}...",
     "join_panel_title": "Rejoindre la session de classe",
     "join_instructions": "Saisissez le code à 5 caractères fourni par votre enseignant pour vous synchroniser.",

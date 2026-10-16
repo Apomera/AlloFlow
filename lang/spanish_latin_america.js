@@ -6258,7 +6258,7 @@
     "creating": "Creando la sesión {code}...",
     "live": "¡Sesión en Vivo! Código: {code}",
     "error_generic": "No se pudo iniciar la sesión. Los datos pueden ser demasiado grandes.",
-    "error_invalid_code": "Por favor ingresa un código válido de 4 caracteres.",
+    "error_invalid_code": "Por favor ingresa un código válido de 5 caracteres.",
     "joining": "Uniéndose a la sesión {code} en el anfitrión {host}...",
     "join_panel_title": "Unirse a la Sesión de Clase",
     "join_instructions": "Ingresa el código de 5 caracteres que te dio tu docente para sincronizar.",
