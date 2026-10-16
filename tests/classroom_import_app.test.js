@@ -74,7 +74,8 @@ function harness(overrides = {}) {
             };
             connectors.push(connector); return connector;
         }),
-        convertSnapshot: vi.fn(() => converted)
+        convertSnapshot: vi.fn(() => converted),
+        ...(overrides.serviceExtras || {})
     };
     w.AlloModules = { GoogleClassroomImport: service };
     if (overrides.unconfigured) w.eval(defaultConfig);
@@ -84,6 +85,7 @@ function harness(overrides = {}) {
         allowedOrigins: [w.location.origin], allowedAccountIds: [], ...overrides.config
     };
     if (overrides.framed) dom.reconfigure({ windowTop: {} });
+    if (overrides.opener) Object.defineProperty(w, 'opener', { configurable: true, value: overrides.opener });
     w.eval(app);
     const googleScript = w.document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
     function ready() { if (googleScript) googleScript.dispatchEvent(new w.Event('load')); }
@@ -317,5 +319,192 @@ describe('shipped Classroom teacher helper UI', () => {
         expect(h.$('roster-preview').textContent).toContain(PRIVATE_NAME);
         expect(h.$('import-status').textContent).toContain('could not start');
         expect(h.w.document.body.textContent).not.toContain(SECRET);
+    });
+});
+
+describe('in-app handoff to the AlloFlow tab that opened the helper', () => {
+    const sameOrigin = 'https://alloflow.example.test';
+    function opener(origin = sameOrigin, extra = {}) {
+        const location = {};
+        Object.defineProperty(location, 'origin', { get() { if (origin === 'throw') throw new Error('SecurityError'); return origin; } });
+        return { closed: false, location, postMessage: vi.fn(), focus: vi.fn(), ...extra };
+    }
+    async function reviewed(h) { await h.connect(); await h.read(); h.acknowledge(); }
+    function reply(h, target, data, origin = sameOrigin) {
+        const event = new h.w.MessageEvent('message', { data, origin });
+        Object.defineProperty(event, 'source', { value: target });
+        h.w.dispatchEvent(event);
+    }
+
+    it('offers no send button without a same-origin opener', async () => {
+        for (const o of [undefined, opener('https://other.example.test'), opener('throw'), opener(sameOrigin, { closed: true })]) {
+            const h = harness({ opener: o });
+            await reviewed(h);
+            expect(h.$('send-classroom').hidden).toBe(true);
+            expect(h.$('handoff-note').hidden).toBe(true);
+            expect(h.$('download-classroom').disabled).toBe(false);
+            if (o) expect(o.postMessage.mock.calls.every(([message]) => message.type === 'alloflow-classroom-hello')).toBe(true);
+        }
+    });
+
+    it('posts only the codename JSON to its own origin after review and confirmation, then reports the reply', async () => {
+        const o = opener();
+        const h = harness({ opener: o });
+        h.ready();
+        expect(o.postMessage.mock.calls).toEqual([[{ type: 'alloflow-classroom-hello' }, sameOrigin]]);
+        o.postMessage.mockClear();
+        expect(h.$('send-classroom').hidden).toBe(false);
+        expect(h.$('send-classroom').disabled).toBe(true);
+        h.click('send-classroom');
+        expect(o.postMessage).not.toHaveBeenCalled();
+        await h.connect(); await h.read();
+        expect(h.$('send-classroom').disabled).toBe(true);
+        h.acknowledge();
+        expect(h.$('send-classroom').disabled).toBe(false);
+        h.click('send-classroom');
+        expect(o.postMessage).toHaveBeenCalledTimes(1);
+        const [message, targetOrigin] = o.postMessage.mock.calls[0];
+        expect(targetOrigin).toBe(sameOrigin);
+        expect(message).toEqual({ type: 'alloflow-classroom-roster', json: prepared().json, mode: 'replace' });
+        expect(JSON.stringify(message)).not.toContain(PRIVATE_NAME);
+        expect(JSON.stringify(message)).not.toContain(SECRET);
+        expect(o.focus).toHaveBeenCalled();
+        expect(h.$('confirm-new-class').checked).toBe(false);
+        expect(h.$('import-status').textContent).toContain('Roster sent');
+        expect(h.$('roster-preview').children).toHaveLength(1);
+        expect(h.blobs).toHaveLength(0);
+        reply(h, {}, { type: 'alloflow-classroom-roster-received', ok: true, message: 'ignored: wrong source' });
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: 'ignored: wrong origin' }, 'https://other.example.test');
+        expect(h.$('import-status').textContent).toContain('Roster sent');
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: false, message: 'Roster replacement cancelled. Nothing changed.' });
+        expect(h.$('import-status').textContent).toBe('AlloFlow did not import the roster. Roster replacement cancelled. Nothing changed.');
+        h.acknowledge(); h.click('send-classroom');
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: 'Roster imported: 0 groups and 1 codenames. Legacy real-name fields were removed.' });
+        expect(h.$('import-status').textContent).toContain('AlloFlow imported the roster. Roster imported: 0 groups and 1 codenames.');
+        expect(h.$('import-status').textContent).not.toContain('<');
+    });
+
+    it('tells the teacher to switch tabs while AlloFlow waits for confirmation, without the no-reply warning', async () => {
+        const o = opener();
+        const h = harness({ opener: o });
+        await reviewed(h);
+        h.click('send-classroom');
+        const pending = [...h.timers.values()].find(timer => timer.ms === 20000);
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, pending: true, message: 'Switch to the AlloFlow tab: the roster is waiting there for your confirmation.' });
+        expect(h.$('import-status').textContent).toBe('Switch to the AlloFlow tab: the roster is waiting there for your confirmation.');
+        expect(h.w.clearTimeout).toHaveBeenCalled();
+        expect([...h.timers.values()]).not.toContain(pending);
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, pending: false, message: 'Roster imported: 0 groups and 1 codenames.' });
+        expect(h.$('import-status').textContent).toContain('AlloFlow imported the roster. Roster imported');
+    });
+
+    it('tells the teacher to download instead when AlloFlow never confirms, and cannot be spoofed by markup', async () => {
+        const o = opener();
+        const h = harness({ opener: o });
+        await reviewed(h);
+        h.click('send-classroom');
+        const pending = [...h.timers.values()].find(timer => timer.ms === 20000);
+        expect(pending).toBeTruthy();
+        pending.fn();
+        expect(h.$('import-status').textContent).toContain('download the roster instead');
+        h.acknowledge(); h.click('send-classroom');
+        reply(h, o, { type: 'alloflow-classroom-roster-received', ok: true, message: '<img src=x onerror="alert(1)">' + 'x'.repeat(1000) });
+        expect(h.$('import-status').querySelector('img')).toBeNull();
+        expect(h.$('import-status').textContent.length).toBeLessThan(420);
+        expect(h.logs.every(spy => spy.mock.calls.every(call => !JSON.stringify(call).includes(PRIVATE_NAME) && !JSON.stringify(call).includes(SECRET)))).toBe(true);
+    });
+});
+
+describe('linked Classroom sync in the helper', () => {
+    const sameOrigin = 'https://alloflow.example.test';
+    const KEY = 'K'.repeat(42) + 'A';
+    const LINKED_CLASS = 'CLS-33333333-3333-4333-8333-333333333333';
+    const RETURNING = 'LRN-44444444-4444-4444-8444-444444444444';
+    function opener() {
+        const location = {};
+        Object.defineProperty(location, 'origin', { get: () => sameOrigin });
+        return { closed: false, location, postMessage: vi.fn(), focus: vi.fn() };
+    }
+    function linkedResult(status = 'new') {
+        const base = prepared();
+        return { ...base, preview: base.preview.map(row => ({ ...row, status })), returningCount: status === 'returning' ? 1 : 0, newCount: status === 'new' ? 1 : 0, absentCount: status === 'returning' ? 2 : 0 };
+    }
+    function context(h, o, data, origin = sameOrigin) {
+        const event = new h.w.MessageEvent('message', { data: { type: 'alloflow-classroom-context', ...data }, origin });
+        Object.defineProperty(event, 'source', { value: o });
+        h.w.dispatchEvent(event);
+    }
+    function extras(result = linkedResult(), ids = { [COURSE]: LINKED_CLASS }) {
+        return { convertLinkedSnapshot: vi.fn(async () => { if (result instanceof Error) throw result; return result; }), linkedClassIds: vi.fn(async () => ids) };
+    }
+
+    it('links a new class: hides download, converts with the device key and sends in link mode', async () => {
+        const o = opener(), serviceExtras = extras();
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: null, existing: {} });
+        expect(h.$('send-classroom').textContent).toBe('Send to AlloFlow and link this class');
+        expect(h.$('download-classroom').hidden).toBe(true);
+        await h.connect(); await h.read();
+        expect(serviceExtras.convertLinkedSnapshot).toHaveBeenCalledWith(expect.objectContaining({ selectedCourseId: COURSE }), { syncKey: KEY, classId: null, existing: {} });
+        expect(h.service.convertSnapshot).not.toHaveBeenCalled();
+        expect(h.$('preview-count').textContent).toContain('Sending links this class');
+        h.acknowledge();
+        expect(h.$('download-classroom').disabled).toBe(true);
+        h.click('download-classroom');
+        expect(h.blobs).toHaveLength(0);
+        h.click('send-classroom');
+        const sent = o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-roster')[0];
+        expect(sent.mode).toBe('link');
+        expect(JSON.stringify(sent)).not.toContain(KEY);
+        expect(h.$('import-status').textContent).not.toContain(KEY);
+        expect(h.logs.every(spy => spy.mock.calls.every(call => !JSON.stringify(call).includes(KEY)))).toBe(true);
+    });
+
+    it('syncs a linked class: preselects the linked course, shows what changes and sends in sync mode', async () => {
+        const o = opener(), serviceExtras = extras(linkedResult('returning'));
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' } });
+        expect(h.$('send-classroom').textContent).toBe('Send update to AlloFlow');
+        expect(h.$('confirm-text').textContent).toContain('AlloFlow will list every change');
+        await h.connect();
+        expect(serviceExtras.linkedClassIds).toHaveBeenCalledWith(KEY, [COURSE]);
+        expect(h.$('classroom-course').value).toBe(COURSE);
+        expect(h.$('import-status').textContent).toContain('linked to this AlloFlow class is selected');
+        h.click('read-classroom'); await flush();
+        expect(serviceExtras.convertLinkedSnapshot.mock.calls[0][1]).toEqual({ syncKey: KEY, classId: LINKED_CLASS, existing: { [RETURNING]: 'Calm Owl 1' } });
+        expect(h.$('preview-count').textContent).toBe('1 students read: 1 keep their codenames, 0 new, and 2 in AlloFlow are no longer in this Classroom class (AlloFlow keeps them).');
+        h.acknowledge(); h.click('send-classroom');
+        expect(o.postMessage.mock.calls.find(([message]) => message.type === 'alloflow-classroom-roster')[0].mode).toBe('sync');
+        expect(h.$('import-status').textContent).toContain('Update sent');
+    });
+
+    it('explains a class mismatch without discarding the connection, and says when no listed class is the linked one', async () => {
+        const mismatch = Object.assign(new Error('LINKED_CLASS_MISMATCH'), { code: 'LINKED_CLASS_MISMATCH' });
+        const o = opener(), serviceExtras = extras(mismatch, { [COURSE]: 'CLS-55555555-5555-4555-8555-555555555555' });
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'sync', syncKey: KEY, classId: LINKED_CLASS, existing: {} });
+        await h.connect();
+        expect(h.$('import-status').textContent).toContain('None of the classes this account teaches is the one linked');
+        await h.read();
+        expect(h.$('import-status').textContent).toContain('linked to a different Google Classroom class');
+        expect(h.$('preview-section').hidden).toBe(true);
+        expect(h.$('course-section').hidden).toBe(false);
+        expect(h.connectors[0].dispose).not.toHaveBeenCalled();
+    });
+
+    it('ignores malformed contexts and contexts from anywhere but its own opener', async () => {
+        const o = opener(), serviceExtras = extras();
+        const h = harness({ opener: o, serviceExtras });
+        context(h, o, { mode: 'sync', syncKey: 'short', classId: LINKED_CLASS, existing: {} });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: LINKED_CLASS, existing: {} });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: null, existing: { [RETURNING]: 'Calm Owl' } });
+        context(h, o, { mode: 'admin', syncKey: KEY, classId: null, existing: {} });
+        context(h, {}, { mode: 'link', syncKey: KEY, classId: null, existing: {} });
+        context(h, o, { mode: 'link', syncKey: KEY, classId: null, existing: {} }, 'https://other.example.test');
+        expect(h.$('send-classroom').textContent).toBe('Send to the AlloFlow tab');
+        expect(h.$('download-classroom').hidden).toBe(false);
+        await h.connect(); await h.read();
+        expect(serviceExtras.convertLinkedSnapshot).not.toHaveBeenCalled();
+        expect(h.service.convertSnapshot).toHaveBeenCalled();
     });
 });

@@ -459,9 +459,106 @@ function srRecognitionText(recognition) {
   if (!rows.length) return "";
   return ["School Rewards worksheet from AlloFlow session " + (recognition.sessionCode || "") + " (codenames; award in the portal)"].concat(rows.map((row) => row.codename + ": " + row.total + " token" + (row.total === 1 ? "" : "s") + " (" + (row.reasons || []).map((r) => r.label + " x" + r.count).join(", ") + ")")).join("\n");
 }
+const SR_RECOGNITION_LOG_KEY = "allo_school_rewards_recognition_log_v1";
+const SR_HANDOFF_KEY = "allo_school_rewards_handoff_v1";
+const SR_HANDOFF_KEEP_MS = 120 * 864e5;
+function srReadJsonKey(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "null");
+    return value && typeof value === "object" ? value : null;
+  } catch (_) {
+    return null;
+  }
+}
+function srReadHandoff() {
+  const value = srReadJsonKey(SR_HANDOFF_KEY);
+  return { ids: value && value.ids && typeof value.ids === "object" ? value.ids : {}, last: value && value.last && Array.isArray(value.last.ids) ? value.last : null };
+}
+function srPendingAwards(log, handoff) {
+  const sessions = log && log.sessions && typeof log.sessions === "object" ? log.sessions : {};
+  const handed = handoff && handoff.ids ? handoff.ids : {};
+  const byName = /* @__PURE__ */ Object.create(null);
+  Object.keys(sessions).forEach((code) => {
+    const rows2 = sessions[code] && sessions[code].rows;
+    if (!rows2 || typeof rows2 !== "object") return;
+    Object.keys(rows2).forEach((codename) => {
+      (Array.isArray(rows2[codename] && rows2[codename].ids) ? rows2[codename].ids : []).forEach((raw) => {
+        const id = code + "|" + String(raw);
+        if (handed[id]) return;
+        (byName[codename] || (byName[codename] = [])).push(id);
+      });
+    });
+  });
+  const names = Object.keys(byName).filter((name) => name && name.length <= 80).sort().slice(0, 500);
+  const rows = names.map((codename) => ({ codename, tokens: Math.min(1e3, byName[codename].length) }));
+  const ids = names.reduce((all, name) => all.concat(byName[name].slice(0, 1e3)), []);
+  return { rows, ids, total: rows.reduce((sum, row) => sum + row.tokens, 0) };
+}
+function srNewAwardFileId() {
+  try {
+    const bytes = new Uint8Array(12);
+    crypto.getRandomValues(bytes);
+    return "af" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch (_) {
+    return "af" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+}
+function srBuildAwardFile(pending, fileId, now) {
+  return { format: "alloflow-store-award-file", version: 1, fileId, createdAt: new Date(now).toISOString(), rows: pending.rows.map((row) => ({ codename: row.codename, tokens: row.tokens })) };
+}
+function srMarkHandedOff(ids, fileId, now) {
+  const handoff = srReadHandoff();
+  Object.keys(handoff.ids).forEach((id) => {
+    if (!(Number(handoff.ids[id]) > now - SR_HANDOFF_KEEP_MS)) delete handoff.ids[id];
+  });
+  ids.forEach((id) => {
+    handoff.ids[id] = now;
+  });
+  localStorage.setItem(SR_HANDOFF_KEY, JSON.stringify({ version: 1, ids: handoff.ids, last: { fileId, ids: ids.slice(), at: now } }));
+}
+function srUndoLastHandoff() {
+  const handoff = srReadHandoff();
+  if (!handoff.last) return 0;
+  handoff.last.ids.forEach((id) => {
+    delete handoff.ids[id];
+  });
+  localStorage.setItem(SR_HANDOFF_KEY, JSON.stringify({ version: 1, ids: handoff.ids, last: null }));
+  return handoff.last.ids.length;
+}
 function SrRecognitionWorksheet({ recognition, tt, addToast }) {
   const rows = recognition && Array.isArray(recognition.rows) ? recognition.rows : [];
   const [copied, setCopied] = React.useState(false);
+  const [handoffTick, setHandoffTick] = React.useState(0);
+  const pending = React.useMemo(() => srPendingAwards(srReadJsonKey(SR_RECOGNITION_LOG_KEY), srReadHandoff()), [recognition, handoffTick]);
+  const lastHandoff = React.useMemo(() => srReadHandoff().last, [recognition, handoffTick]);
+  const downloadAwardFile = () => {
+    if (!pending.total) return;
+    try {
+      const now = Date.now(), fileId = srNewAwardFileId();
+      const blob = new Blob([JSON.stringify(srBuildAwardFile(pending, fileId, now), null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "class.alloflow-store-awards.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1e3);
+      srMarkHandedOff(pending.ids, fileId, now);
+      setHandoffTick((value) => value + 1);
+      addToast(tt("schoolrewards.award_file_done", "Store award file downloaded. Upload it in the School Store under Award, then Award from an AlloFlow file. These tokens are left out of your next file."), "success");
+    } catch (_) {
+      addToast(tt("schoolrewards.award_file_failed", "The Store award file could not be saved in this window."), "error");
+    }
+  };
+  const undoAwardFile = () => {
+    try {
+      srUndoLastHandoff();
+    } catch (_) {
+    }
+    setHandoffTick((value) => value + 1);
+    addToast(tt("schoolrewards.award_file_undone", "The last file's tokens are back. Download a new Store award file when you are ready."), "info");
+  };
   const download = () => {
     try {
       const blob = new Blob([srRecognitionCsv(recognition)], { type: "text/csv;charset=utf-8" });
@@ -485,7 +582,7 @@ function SrRecognitionWorksheet({ recognition, tt, addToast }) {
     }
     addToast(tt("schoolrewards.worksheet_copy_failed", "Clipboard is blocked here. Download the CSV instead."), "info");
   };
-  return /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "schoolrewards-worksheet-title", className: "rounded-2xl border border-slate-200 bg-white p-4", "data-help-key": "schoolrewards_recognition_worksheet" }, /* @__PURE__ */ React.createElement("h3", { id: "schoolrewards-worksheet-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.worksheet_title", "Recognition worksheet")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm leading-relaxed text-slate-700" }, tt("schoolrewards.worksheet_help", "Recognition given during the live class session, by codename. Award it in the portal: pick the student, or use a group award when the reason is the same. Nothing here is sent to the ledger automatically.")), !rows.length ? /* @__PURE__ */ React.createElement("p", { className: "mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700", role: "status" }, tt("schoolrewards.worksheet_none", recognition && recognition.sessionCode ? "No recognition has been recorded in the active session yet." : "Start a class session and recognise students in AlloHaven; the worksheet fills in here and keeps the last sessions on this device.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-left text-sm" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-xs font-black text-slate-700" }, /* @__PURE__ */ React.createElement("th", { className: "py-1 pr-3" }, tt("schoolrewards.worksheet_codename", "Codename")), /* @__PURE__ */ React.createElement("th", { className: "py-1 pr-3" }, tt("schoolrewards.worksheet_tokens", "Tokens")), /* @__PURE__ */ React.createElement("th", { className: "py-1 pr-3" }, tt("schoolrewards.worksheet_sessions", "Sessions")), /* @__PURE__ */ React.createElement("th", { className: "py-1" }, tt("schoolrewards.worksheet_reasons", "Reasons")))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.codename, className: "border-t border-slate-200 text-slate-800", "data-help-key": "schoolrewards_worksheet_row" }, /* @__PURE__ */ React.createElement("td", { className: "py-1 pr-3 font-bold" }, row.codename), /* @__PURE__ */ React.createElement("td", { className: "py-1 pr-3" }, row.total), /* @__PURE__ */ React.createElement("td", { className: "py-1 pr-3" }, row.sessions || 1), /* @__PURE__ */ React.createElement("td", { className: "py-1" }, (row.reasons || []).map((r) => r.label + " ×" + r.count).join(", "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: download, "data-help-key": "schoolrewards_worksheet_download" }, tt("schoolrewards.worksheet_download", "Download worksheet CSV")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, onClick: copy, "data-help-key": "schoolrewards_worksheet_copy" }, copied ? tt("schoolrewards.worksheet_copied", "Copied") : tt("schoolrewards.worksheet_copy", "Copy as text")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, recognition.sessionCode ? tt("schoolrewards.worksheet_session", "Live session ") + recognition.sessionCode : tt("schoolrewards.worksheet_no_live", "No live session"), recognition.sessionCount > 1 ? " · " + recognition.sessionCount + tt("schoolrewards.worksheet_sessions_kept", " sessions kept on this device") : ""))));
+  return /* @__PURE__ */ React.createElement("section", { "aria-labelledby": "schoolrewards-worksheet-title", className: "rounded-2xl border border-slate-200 bg-white p-4", "data-help-key": "schoolrewards_recognition_worksheet" }, /* @__PURE__ */ React.createElement("h3", { id: "schoolrewards-worksheet-title", className: "text-base font-black text-slate-900" }, tt("schoolrewards.worksheet_title", "Recognition worksheet")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm leading-relaxed text-slate-700" }, tt("schoolrewards.worksheet_help", "Recognition given during the live class session, by codename. Award it in the portal: pick the student, or use a group award when the reason is the same. Nothing here is sent to the ledger automatically.")), !rows.length ? /* @__PURE__ */ React.createElement("p", { className: "mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700", role: "status" }, tt("schoolrewards.worksheet_none", recognition && recognition.sessionCode ? "No recognition has been recorded in the active session yet." : "Start a class session and recognise students in AlloHaven; the worksheet fills in here and keeps the last sessions on this device.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-left text-sm" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-xs font-black text-slate-700" }, /* @__PURE__ */ React.createElement("th", { className: "py-1 pr-3" }, tt("schoolrewards.worksheet_codename", "Codename")), /* @__PURE__ */ React.createElement("th", { className: "py-1 pr-3" }, tt("schoolrewards.worksheet_tokens", "Tokens")), /* @__PURE__ */ React.createElement("th", { className: "py-1 pr-3" }, tt("schoolrewards.worksheet_sessions", "Sessions")), /* @__PURE__ */ React.createElement("th", { className: "py-1" }, tt("schoolrewards.worksheet_reasons", "Reasons")))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.codename, className: "border-t border-slate-200 text-slate-800", "data-help-key": "schoolrewards_worksheet_row" }, /* @__PURE__ */ React.createElement("td", { className: "py-1 pr-3 font-bold" }, row.codename), /* @__PURE__ */ React.createElement("td", { className: "py-1 pr-3" }, row.total), /* @__PURE__ */ React.createElement("td", { className: "py-1 pr-3" }, row.sessions || 1), /* @__PURE__ */ React.createElement("td", { className: "py-1" }, (row.reasons || []).map((r) => r.label + " ×" + r.count).join(", "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: download, "data-help-key": "schoolrewards_worksheet_download" }, tt("schoolrewards.worksheet_download", "Download worksheet CSV")), /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, onClick: copy, "data-help-key": "schoolrewards_worksheet_copy" }, copied ? tt("schoolrewards.worksheet_copied", "Copied") : tt("schoolrewards.worksheet_copy", "Copy as text")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, recognition.sessionCode ? tt("schoolrewards.worksheet_session", "Live session ") + recognition.sessionCode : tt("schoolrewards.worksheet_no_live", "No live session"), recognition.sessionCount > 1 ? " · " + recognition.sessionCount + tt("schoolrewards.worksheet_sessions_kept", " sessions kept on this device") : "")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-slate-900", "data-store-award-file": true }, /* @__PURE__ */ React.createElement("p", null, pending.total ? tt("schoolrewards.award_file_pending", "{n} tokens for {c} codenames are not yet in a Store award file.").replace("{n}", String(pending.total)).replace("{c}", String(pending.rows.length)) : tt("schoolrewards.award_file_none", "Every token here is already in a Store award file.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_SECONDARY, onClick: downloadAwardFile, disabled: !pending.total, "data-help-key": "schoolrewards_award_file" }, tt("schoolrewards.award_file_download", "Download Store award file")), lastHandoff && /* @__PURE__ */ React.createElement("button", { type: "button", className: SR_BTN_QUIET, onClick: undoAwardFile }, tt("schoolrewards.award_file_undo", "Put the last file's tokens back"))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-700" }, tt("schoolrewards.award_file_help", "Staff upload the file in the School Store, review the students it matches through your reviewed class links, and confirm. Each student is awarded once per file.")))));
 }
 function SchoolRewardsPanel(props) {
   const { onClose, t, onSavePortalUrl, onOpenPortal } = props;
@@ -819,6 +916,12 @@ function SchoolRewardsPanel(props) {
       srRosterTemplateCsv: srRosterTemplateCsv,
       srRecognitionCsv: srRecognitionCsv,
       srRecognitionText: srRecognitionText,
+      srPendingAwards: srPendingAwards,
+      srBuildAwardFile: srBuildAwardFile,
+      srMarkHandedOff: srMarkHandedOff,
+      srUndoLastHandoff: srUndoLastHandoff,
+      srReadHandoff: srReadHandoff,
+      SR_HANDOFF_KEY: SR_HANDOFF_KEY,
       srHandoffText: srHandoffText,
       srHandoffHtml: srHandoffHtml,
       srHandoffSteps: srHandoffSteps,

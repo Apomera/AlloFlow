@@ -384,5 +384,111 @@
         if (new TextEncoder().encode(json).byteLength > 2 * 1024 * 1024) fail('EXPORT_TOO_LARGE');
         return { roster, json, studentCount: students.length, preview };
     }
-    return Object.freeze({ VERSION: '1.0.0', READONLY_SCOPES, DEFAULT_LIMITS, createConnector, convertSnapshot, assertEmptyDestination });
+    // Linked sync (2026-09-25). A class linked from AlloFlow carries a random 256-bit key that
+    // lives only on the teacher's device. Learner and class IDs are HMAC-SHA-256 pseudonyms of the
+    // Google user/course IDs under that key, formatted as the same opaque UUIDs the roster planner
+    // already requires, so re-reading the class yields the same IDs without anyone storing a
+    // Google-ID mapping. Without the key the IDs cannot be recomputed or linked to Google records.
+    const SYNC_KEY = /^[A-Za-z0-9_-]{43}$/;
+    const LEARNER_ID = /^LRN-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    const CLASS_ID = /^CLS-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+    const LABEL_LEARNER = 'alloflow-classroom-learner-v1:';
+    const LABEL_CLASS = 'alloflow-classroom-class-v1:';
+    function syncKeyBytes(syncKey) {
+        if (typeof syncKey !== 'string' || !SYNC_KEY.test(syncKey)) fail('INVALID_SYNC_KEY');
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        const bytes = new Uint8Array(32);
+        let buffer = 0, bits = 0, index = 0;
+        for (const char of syncKey) {
+            buffer = (buffer << 6) | alphabet.indexOf(char); bits += 6;
+            if (bits >= 8) { bits -= 8; if (index < 32) bytes[index++] = (buffer >> bits) & 255; }
+        }
+        if (index !== 32 || (buffer & ((1 << bits) - 1)) !== 0) fail('INVALID_SYNC_KEY');
+        return bytes;
+    }
+    async function syncSigner(syncKey) {
+        const subtle = globalThis.crypto && globalThis.crypto.subtle;
+        if (!subtle) fail('ID_GENERATION_FAILED');
+        let key;
+        try { key = await subtle.importKey('raw', syncKeyBytes(syncKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); }
+        catch (error) { if (error instanceof ImportError) throw error; fail('ID_GENERATION_FAILED'); }
+        return async (prefix, label, sourceId) => {
+            let digest;
+            try { digest = new Uint8Array(await subtle.sign('HMAC', key, new TextEncoder().encode(label + sourceId))); }
+            catch (_) { fail('ID_GENERATION_FAILED'); }
+            const b = digest.slice(0, 16);
+            b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+            const hex = Array.from(b, byte => byte.toString(16).padStart(2, '0')).join('');
+            return prefix + '-' + hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+        };
+    }
+    async function linkedClassIds(syncKey, courseIds) {
+        if (!Array.isArray(courseIds) || courseIds.length > DEFAULT_LIMITS.maxCourses) fail('MALFORMED_REQUEST');
+        const sign = await syncSigner(syncKey);
+        const result = {};
+        for (const courseId of courseIds) result[identifier(courseId, 'MALFORMED_REQUEST')] = await sign('CLS', LABEL_CLASS, courseId);
+        return result;
+    }
+    // Same rule as the roster panel's alloNormalizeRosterCodenameKey, so "taken" means the same thing on both sides.
+    const codenameKey = value => {
+        const compact = String(value).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+        return /[\p{L}\p{N}]/u.test(compact) ? compact : '';
+    };
+    async function convertLinkedSnapshot(snapshot, options) {
+        shape(options, ['syncKey', 'classId', 'existing'], ['syncKey', 'classId', 'existing'], 'MALFORMED_REQUEST');
+        const existing = options.existing;
+        if (!record(existing) || Object.keys(existing).length > DEFAULT_LIMITS.maxStudents) fail('MALFORMED_REQUEST');
+        const existingCodenames = new Set();
+        for (const [learnerId, codename] of Object.entries(existing)) {
+            if (!LEARNER_ID.test(learnerId) || typeof codename !== 'string' || !codename.trim() || [...codename].length > 80) fail('MALFORMED_REQUEST');
+            const key = codenameKey(codename);
+            if (!key || existingCodenames.has(key)) fail('MALFORMED_REQUEST');
+            existingCodenames.add(key);
+        }
+        if (options.classId !== null && (typeof options.classId !== 'string' || !CLASS_ID.test(options.classId))) fail('MALFORMED_REQUEST');
+        if (options.classId === null && Object.keys(existing).length) fail('MALFORMED_REQUEST');
+        const students = completeStudents(snapshot);
+        const sign = await syncSigner(options.syncKey);
+        const classId = await sign('CLS', LABEL_CLASS, snapshot.selectedCourseId);
+        if (options.classId !== null && classId !== options.classId) fail('LINKED_CLASS_MISMATCH');
+        const adjectives = ['Brave', 'Bright', 'Calm', 'Clever', 'Curious', 'Gentle', 'Kind', 'Mighty', 'Quiet', 'Swift'];
+        const animals = ['Bear', 'Dolphin', 'Falcon', 'Fox', 'Otter', 'Owl', 'Panda', 'Tiger', 'Turtle', 'Wolf'];
+        const takenCodenames = new Set(existingCodenames);
+        let sequence = 0;
+        function nextCodename() {
+            while (sequence < 100000) {
+                const index = sequence++, cycle = Math.floor(index / 100);
+                const codename = adjectives[Math.floor(index / 10) % 10] + ' ' + animals[index % 10] + (cycle ? ' ' + (cycle + 1) : '');
+                if (!takenCodenames.has(codenameKey(codename))) { takenCodenames.add(codenameKey(codename)); return codename; }
+            }
+            fail('ID_COLLISION_LIMIT');
+        }
+        const roster = {
+            className: '', classId, groups: {}, students: {}, learnerIds: {},
+            learnerPreferences: {}, readingThemeDefault: 'default', progressHistory: {}, sessionHistory: [], exportVersion: 4
+        };
+        const seenIds = new Set();
+        const derived = [];
+        for (const student of students) {
+            const learnerId = await sign('LRN', LABEL_LEARNER, student.userId);
+            if (seenIds.has(learnerId)) fail('ID_COLLISION_LIMIT');
+            seenIds.add(learnerId);
+            derived.push({ student, learnerId });
+        }
+        // Returning learners keep their codenames before any new codename is chosen.
+        const preview = derived.map(({ student, learnerId }) => ({ student, learnerId, codename: own(existing, learnerId) ? existing[learnerId] : null }));
+        for (const row of preview) if (row.codename === null) row.codename = nextCodename();
+        const rows = preview.map(({ student, learnerId, codename }) => {
+            roster.students[codename] = '';
+            roster.learnerIds[codename] = learnerId;
+            const name = student.profile && student.profile.name;
+            const fullName = name ? name.fullName || [name.givenName, name.familyName].filter(Boolean).join(' ') : '';
+            return { fullName, codename, learnerId, status: own(existing, learnerId) ? 'returning' : 'new' };
+        });
+        const json = JSON.stringify(roster, null, 2);
+        if (new TextEncoder().encode(json).byteLength > 2 * 1024 * 1024) fail('EXPORT_TOO_LARGE');
+        const absentCount = Object.keys(existing).filter(learnerId => !seenIds.has(learnerId)).length;
+        return { roster, json, studentCount: students.length, preview: rows, returningCount: rows.filter(row => row.status === 'returning').length, newCount: rows.filter(row => row.status === 'new').length, absentCount };
+    }
+    return Object.freeze({ VERSION: '1.1.0', READONLY_SCOPES, DEFAULT_LIMITS, createConnector, convertSnapshot, assertEmptyDestination, convertLinkedSnapshot, linkedClassIds });
 }));
