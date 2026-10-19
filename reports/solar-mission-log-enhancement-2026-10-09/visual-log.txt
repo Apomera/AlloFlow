@@ -1,8 +1,0 @@
-Starting mission-log-1060-dark
-Checked mission-log-1060-dark
-Starting mission-log-1060-light
-Checked mission-log-1060-light
-Starting mission-log-320-dark
-Checked mission-log-320-dark
-Starting mission-log-320-light
-Checked mission-log-320-light

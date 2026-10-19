@@ -1,8 +1,0 @@
-Starting challenge-board-1060-dark
-Checked challenge-board-1060-dark
-Starting challenge-board-1060-light
-Checked challenge-board-1060-light
-Starting challenge-board-320-dark
-Checked challenge-board-320-dark
-Starting challenge-board-320-light
-Checked challenge-board-320-light

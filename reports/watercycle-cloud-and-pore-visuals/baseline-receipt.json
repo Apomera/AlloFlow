@@ -1,9 +1,0 @@
-{
-  "capturedAt": "2026-10-05T14:51:03.148Z",
-  "sourceSha256": "f2360e271a96e40308aeb0b45a4ded56aaecec4366eafa92781278713a6f2a36",
-  "bytes": 3163319,
-  "paths": [
-    "stem_lab/stem_tool_watercycle.js",
-    "desktop/web-app/public/stem_lab/stem_tool_watercycle.js"
-  ]
-}

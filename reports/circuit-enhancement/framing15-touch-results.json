@@ -1,9 +1,0 @@
-{
-  "checks": [
-    "horizontal touch pans",
-    "vertical touch scrolls page",
-    "touch preserves circuit readings",
-    "pointer cancellation ends drag"
-  ],
-  "errors": []
-}

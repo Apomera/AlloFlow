@@ -264,7 +264,7 @@ desktop/web-app/firestore-debug.log
 
 # Session review output: screenshots, audio captures and MCP live runs under
 # scratch/ (about 1 GB on 2026-09-05) and one-off output/. Same git add -A
-# hazard as reading_library/.cache above; durable results live in reports/.
+# hazard as reading_library/.cache above; durable results belong in docs/ or tests/fixtures/.
 /scratch/
 /output/
 
@@ -279,7 +279,7 @@ desktop/mcp/vendor/epubcheck/
 
 # Per-session tool dumps: never tracked (0 files in git history as of 2026-09-07),
 # but a tree-wide `git add -A` sweep for a deploy would bake ~113 MB of them into
-# history permanently. Durable evidence belongs in reports/, which IS tracked.
+# history permanently. Durable evidence belongs in docs/ or tests/fixtures/.
 .codex-artifacts/
 dev-tools/canvas_text_out/
 dev-tools/lum_out/
@@ -302,5 +302,7 @@ __pycache__/
 /tests/discovery_fixture_*/
 /tests/vacuous_fixture_*/
 
-# Local integration recovery archive (367 MiB); source and verification manifests stay tracked.
-/reports/tyler-merge-audit-2026-09-28/integration-final-files.tar.gz
+# reports/ is QA run output (screenshots, traces, logs) and is local-only since 2026-10-19:
+# new files there are ignored. Files still tracked in it (data some tests read) stay tracked;
+# older reports are recoverable from history, e.g. git show 08d5e4b32:reports/<path>
+/reports/

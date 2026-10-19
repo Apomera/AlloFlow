@@ -1,8 +1,0 @@
-{
-  "doc_pipeline_module.js": {
-    "desktopMirrorMatches": true
-  },
-  "view_pdf_audit_module.js": {
-    "desktopMirrorMatches": true
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "beforeSha256": "436a6afaeead657122e28d773ba7c0bc6a091ab7fd16e513054c02d4980a3d8d",
-  "afterSha256": "3256297e1a9b898e210facc11ec4db2e071513bfa4b95a165660155785d5d56f",
-  "occurrences": 2,
-  "from": "focus:['#circuit-active-notebook > summary']",
-  "to": "focus:[':scope > summary']",
-  "unchangedExceptSelectors": true
-}

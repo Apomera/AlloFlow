@@ -1,5 +1,0 @@
-{
-  "file": "tests/circuit_active_regions.test.js",
-  "before": "disabled=\"\" aria-describedby=\"circuit-region-unavailable-saturated\"",
-  "after": "disabled=\"\" aria-describedby=\"circuit-region-unavailable-saturated-[^\"]+\""
-}

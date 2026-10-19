@@ -1,9 +1,0 @@
-{
-  "sessionId": 4915,
-  "toolChunk": "33ae82",
-  "exitCode": 1,
-  "completed": true,
-  "passed": 155,
-  "failed": 2,
-  "reason": "Two new fixtures set a selection end beyond the note length. The native textarea correctly clamps that end. Capture the actual initial selection before testing preservation."
-}

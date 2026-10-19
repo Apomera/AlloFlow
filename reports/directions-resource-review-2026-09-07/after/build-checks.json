@@ -1,8 +1,0 @@
-{
-  "appSyntax": true,
-  "documentSyntax": true,
-  "documentBuildParity": true,
-  "directionsViewBuildParity": true,
-  "composerBuildParity": true,
-  "sharedFormatterParity": true
-}
