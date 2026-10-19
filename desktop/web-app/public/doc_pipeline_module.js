@@ -37296,6 +37296,7 @@ tr { page-break-inside: avoid; }
     let _perLeafLinked = 0;
     let _offPagePruned = 0; // Option B: unlinked leaves whose text is not on the page, dropped from this PDF's tree
     let _noPrintedHeadings = false; // every heading was AI-written and off the page: none left, title stands in
+    let _offPageCellsBlanked = 0, _offPageHeaderRowsDropped = 0; // Option B for tables (Stage 4b)
     if (!isScanned && _stage4PageResults.length > 0 && _unifiableLeafRefs.length > 0) {
       try {
         // Tolerant fold: the accessibleHtml side passes through the AI rewrite,
@@ -37565,6 +37566,106 @@ tr { page-break-inside: avoid; }
           }
           if (_uniqueLinked) { try { warnLog('[Stage4b-Unique] linked ' + _uniqueLinked + ' short leaf/leaves to their only exact match in the unclaimed page text'); } catch (_) {} }
         } catch (uqErr) { try { warnLog('[Stage4b-Unique] non-fatal: ' + (uqErr && uqErr.message)); } catch (_) {} }
+        // ── Row-anchored cell matching (2026-10-18, IRS 1040) ── An unlinked TH/TD may take unclaimed
+        // blocks lying between its matched neighbours in OTHER rows of the table (<= 40 blocks apart):
+        // a line label printed split ("1" + "a") or twice (left and right), a sub-line letter alone
+        // ("c" for "3c", only when it is the ONE such letter in the gap), a description drawn with its
+        // line letter ("b Taxable interest") or a short dot leader (". .").
+        try {
+          let _raLinked = 0, _raLetter = 0;
+          const _strip = (k) => k.replace(/\.+$/, '');
+          const _trOf = (lf) => { try { return String(context.lookup(lf.ref).get(PDFName.of('P'))); } catch (_) { return ''; } };
+          // the Table a cell belongs to (TR -> [THead/TBody/TFoot ->] Table), cached
+          const _tblCache = new Map();
+          const _tableOf = (lf) => {
+            if (_tblCache.has(lf)) return _tblCache.get(lf);
+            let t = '';
+            try {
+              const tr = context.lookup(context.lookup(lf.ref).get(PDFName.of('P')));
+              let secRef = tr && tr.get ? tr.get(PDFName.of('P')) : null;
+              const sec = secRef ? context.lookup(secRef) : null;
+              if (sec && /^\/(THead|TBody|TFoot)$/.test(String(sec.get(PDFName.of('S'))))) secRef = sec.get(PDFName.of('P'));
+              t = String(secRef || '');
+            } catch (_) { t = ''; }
+            _tblCache.set(lf, t);
+            return t;
+          };
+          const _rowLabel = (lf) => {
+            try {
+              const d = context.lookup(lf.ref); const tr = context.lookup(d.get(PDFName.of('P')));
+              const K = tr && tr.get ? context.lookup(tr.get(PDFName.of('K'))) || tr.get(PDFName.of('K')) : null;
+              const arr = K && typeof K.size === 'function' ? Array.from({ length: K.size() }, (_, i) => K.get(i)) : [];
+              for (const r of arr) { const c = context.lookup(r); if (!c || String(c.get(PDFName.of('S'))) !== '/TH') continue; const at = c.get(PDFName.of('ActualText')); const t = at && at.decodeText ? at.decodeText().trim() : ''; if (/^\d{1,2}[a-z]?$/i.test(t)) return t.toLowerCase(); }
+            } catch (_) {}
+            return '';
+          };
+          const _link = (lf, idxs) => {
+            const run = idxs.map((k) => blockStream[k]);
+            const leafDict = context.lookup(lf.ref);
+            leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+            leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+            for (const b of run) { if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} } consumed.add(String(b.bRef)); }
+            lf._linkedRun = { start: Math.min.apply(null, idxs), end: Math.max.apply(null, idxs) };
+            _perLeafLinked++; _raLinked++;
+          };
+          for (let round = 0; round < 3; round++) {
+            let prevEnd = -1;
+            for (let li = 0; li < leafSeq.length; li++) {
+              const lf = leafSeq[li];
+              if (lf._linkedRun) { prevEnd = Math.max(prevEnd, lf._linkedRun.end); continue; }
+              if (lf.role !== 'TH' && lf.role !== 'TD') continue;
+              const tKey = _key(_norm(lf.text)); if (!tKey) continue;
+              let nextStart = blockStream.length;
+              // Gap bounds from matched cells in OTHER rows of the SAME table first (a paragraph the AI
+              // placed out of order before a table must not bound a row's gap); any matched leaf only
+              // when the table has none on that side.
+              { const myTr = _trOf(lf), myTbl = _tableOf(lf);
+                const bound = (sameTable) => {
+                  let ns = blockStream.length, pe = -1;
+                  for (let lj = li + 1; lj < leafSeq.length; lj++) { const o = leafSeq[lj]; if (o._linkedRun && _trOf(o) !== myTr && (!sameTable || _tableOf(o) === myTbl)) { ns = o._linkedRun.start; break; } }
+                  let seen = 0;
+                  for (let lj = li - 1; lj >= 0 && seen < 8; lj--) { const o = leafSeq[lj]; if (!o._linkedRun || _trOf(o) === myTr || (sameTable && _tableOf(o) !== myTbl)) continue; seen++; if (o._linkedRun.end < ns && o._linkedRun.end > pe) pe = o._linkedRun.end; }
+                  return { ns, pe };
+                };
+                const inTbl = bound(true), any = bound(false);
+                nextStart = inTbl.ns < blockStream.length ? inTbl.ns : any.ns;
+                prevEnd = inTbl.pe >= 0 ? inTbl.pe : any.pe;
+                if (prevEnd >= nextStart) prevEnd = any.pe; }
+              if (nextStart - prevEnd > 40 || nextStart <= prevEnd + 1) continue;
+              const free = (k) => k > prevEnd && k < nextStart && !consumed.has(String(blockStream[k].bRef));
+              const label = _rowLabel(lf); const letter = (/[a-z]$/.exec(label) || [''])[0];
+              const isLbl = lf.role === 'TH' && /^\d{1,2}[a-z]?$/.test(tKey);
+              if (isLbl) {
+                const picks = [];
+                for (let k = prevEnd + 1; k < nextStart; k++) {
+                  if (!free(k)) continue;
+                  if (blockStream[k].key === tKey) picks.push([k]);
+                  else if (free(k + 1) && blockStream[k].key + blockStream[k + 1].key === tKey) { picks.push([k, k + 1]); k++; }
+                }
+                if (picks.length >= 1 && picks.length <= 2) { _link(lf, [].concat.apply([], picks)); continue; }
+                const tl = (/[a-z]$/.exec(tKey) || [''])[0];
+                if (!picks.length && tl) {
+                  const ls = []; for (let k = prevEnd + 1; k < nextStart; k++) if (free(k) && blockStream[k].key === tl) ls.push(k);
+                  if (ls.length === 1) { _link(lf, ls); _raLetter++; }
+                }
+                continue;
+              }
+              const hits = [];
+              for (let s = prevEnd + 1; s < nextStart && hits.length < 2; s++) {
+                if (!free(s)) continue;
+                let kr = '';
+                for (let e = s; e < nextStart && e - s < 3 && free(e); e++) {
+                  kr += blockStream[e].key;
+                  const ks = _strip(kr);
+                  if (ks === tKey || (letter && ks === letter + tKey)) { hits.push({ s, e }); break; }
+                  if (kr.length > tKey.length + 3) break;
+                }
+              }
+              if (hits.length === 1) { const ix = []; for (let k = hits[0].s; k <= hits[0].e; k++) ix.push(k); _link(lf, ix); }
+            }
+          }
+          if (_raLinked) { try { warnLog('[Stage4b-RowAnchor] linked ' + _raLinked + ' cell(s) inside the gap between matched neighbours (' + _raLetter + ' by sub-line letter only)'); } catch (_) {} }
+        } catch (raErr) { try { warnLog('[Stage4b-RowAnchor] non-fatal: ' + (raErr && raErr.message)); } catch (_) {} }
         // ── Option B: off-page leaves (2026-10-17) ── A leaf still unlinked whose words are NOT on
         // the page (a title or note the AI wrote) is dropped from this PDF's tag tree; it stays in the
         // HTML export. Not on the page = its folded text is not in the page text, fewer than half its
@@ -37609,7 +37710,26 @@ tr { page-break-inside: avoid; }
             }
             return best;
           };
+          // Is this exact text printed in UNCLAIMED page text (one block, or a run of up to 3)?
+          const _freeKeyList = free.map((k) => blockStream[k].key);
+          const _onFreeExact = (tKey) => {
+            if (!tKey) return false;
+            for (let i = 0; i < _freeKeyList.length; i++) {
+              let r = '';
+              for (let j = i; j < _freeKeyList.length && j - i < 3; j++) { r += _freeKeyList[j]; if (r === tKey) return true; if (r.length >= tKey.length) break; }
+            }
+            return false;
+          };
           const linkedKeys = new Set(leafSeq.filter((lf) => lf._linkedRun).map((lf) => _key(_norm(lf.text))));
+          // A heading that NEARLY repeats a linked heading (the AI's "Form 1040: U.S. Individual Income
+          // Tax Return, 2025" under the printed title) is a repeat too: word agreement >= 0.8.
+          const linkedHeadingWords = leafSeq.filter((lf) => lf._linkedRun && /^H[1-6]$/.test(lf.role)).map((lf) => _w(lf.text));
+          const _wordDice = (a, b) => {
+            if (!a.length || !b.length) return 0;
+            const m = new Map(); a.forEach((x) => m.set(x, (m.get(x) || 0) + 1));
+            let hit = 0; b.forEach((x) => { const n = m.get(x) || 0; if (n > 0) { hit++; m.set(x, n - 1); } });
+            return (2 * hit) / (a.length + b.length);
+          };
           const samples = [];
           const candidates = [];
           for (const lf of leafSeq) {
@@ -37617,13 +37737,16 @@ tr { page-break-inside: avoid; }
             const lw = _w(lf.text);
             if (!lw.length) continue;
             const tKey = _key(_norm(lf.text));
-            const repeat = !!tKey && linkedKeys.has(tKey);
+            const repeat = (!!tKey && linkedKeys.has(tKey))
+              || (/^H[1-6]$/.test(lf.role) && linkedHeadingWords.some((hw) => _wordDice(lw, hw) >= 0.8));
             if (!repeat) {
               if (tKey && pageKeyAll.includes(tKey)) continue;
               // a short leaf (up to 3 words, e.g. a 2-word title) must appear WHOLE, in order
               if (lw.length === 1 ? uni.has(lw[0]) : longestRun(lw) >= (lw.length <= 3 ? lw.length : Math.ceil(lw.length / 2))) continue;
             }
-            if (bestFreeDice(lw) >= 0.5) continue; // matches page text nobody claimed: keep it for review
+            // matches page text nobody claimed: keep it for review. A repeat of a linked heading is kept
+            // only for an unclaimed EXACT printed copy (loose header fragments do not count).
+            if (repeat ? _onFreeExact(tKey) : bestFreeDice(lw) >= 0.5) continue;
             candidates.push({ lf, repeat });
           }
           // Every heading off the page means the printed page has none (a one-page letter whose title
@@ -37648,6 +37771,94 @@ tr { page-break-inside: avoid; }
             } else if (pk && String(pk) === String(lf.ref)) { parent.delete(PDFName.of('K')); removed = true; }
             if (removed) { lf._offPage = true; _offPagePruned++; if (samples.length < 4) samples.push(lf.role + (repeat ? ' (repeat)' : '') + ' "' + String(lf.text).slice(0, 50) + '"'); }
           }
+          // A dropped heading must not leave its sub-headings skipping a level (veraPDF 7.4.2-1 on IRS
+          // 1040: H1 then H3). Re-level the remaining headings in reading order: never more than one
+          // below the previous, and the first is H1. Only when a heading was dropped; the HTML is untouched.
+          if (candidates.some((c) => c.lf._offPage && isHeading(c.lf.role))) {
+            let prevLevel = 0, releveled = 0;
+            for (const lf of _unifiableLeafRefs) {
+              if (lf._offPage || !isHeading(lf.role)) continue;
+              const level = Number(lf.role.slice(1));
+              const want = Math.min(level, prevLevel + 1);
+              if (want !== level) {
+                try { context.lookup(lf.ref).set(PDFName.of('S'), PDFName.of('H' + want)); lf.role = 'H' + want; releveled++; } catch (_) {}
+              }
+              prevLevel = want;
+            }
+            if (releveled) { try { warnLog('[Stage4b-OffPage] re-levelled ' + releveled + ' heading(s) so none skips a level after the drop'); } catch (_) {} }
+          }
+          // ── Option B for TABLES (2026-10-18, Aaron) ── A cell cannot simply leave the tree (the grid
+          // would shift), so: (1) a header row NONE of whose headers is printed (the AI's "Line |
+          // Description | Amount") leaves the table whole, and no cell keeps pointing at its headers;
+          // (2) any other cell the AI wrote that is not in the unclaimed page text stays in the grid as
+          // an EMPTY cell (no /ActualText). Both stay in the HTML export.
+          let _hdrRowsDropped = 0, _hdrCellsDropped = 0;
+          try {
+            const rows = new Map();
+            for (const lf of _unifiableLeafRefs) {
+              if (lf.role !== 'TH' && lf.role !== 'TD') continue;
+              let p = ''; try { p = String(context.lookup(lf.ref).get(PDFName.of('P'))); } catch (_) {}
+              if (!rows.has(p)) rows.set(p, []);
+              rows.get(p).push(lf);
+            }
+            const removeFrom = (parent, childRef) => {
+              const k = parent && parent.get ? parent.get(PDFName.of('K')) : null;
+              let arr = null; try { arr = context.lookup(k) || k; } catch (_) { arr = k; }
+              if (arr && typeof arr.size === 'function') { for (let i = arr.size() - 1; i >= 0; i--) if (String(arr.get(i)) === String(childRef)) { arr.remove(i); return true; } }
+              return false;
+            };
+            const droppedIds = new Set();
+            for (const cells of rows.values()) {
+              if (!cells.length || !cells.every((x) => x.role === 'TH') || cells.some((x) => x._linkedRun)) continue;
+              // printed = its exact text stands as unclaimed page text (a header word such as "Amount"
+              // also occurs inside sentences, so a substring test would keep every invented header)
+              if (cells.some((x) => { const k = _key(_norm(x.text)); return !k || _onFreeExact(k); })) continue;
+              const trRef = context.lookup(cells[0].ref).get(PDFName.of('P'));
+              const tr = trRef ? context.lookup(trRef) : null;
+              const secRef = tr && tr.get ? tr.get(PDFName.of('P')) : null;
+              const sec = secRef ? context.lookup(secRef) : null;
+              if (!removeFrom(sec, trRef)) continue;
+              // a THead/TBody/TFoot left with no rows goes too
+              try {
+                const sk = context.lookup(sec.get(PDFName.of('K'))) || sec.get(PDFName.of('K'));
+                if (/^\/(THead|TBody|TFoot)$/.test(String(sec.get(PDFName.of('S')))) && sk && typeof sk.size === 'function' && sk.size() === 0) removeFrom(context.lookup(sec.get(PDFName.of('P'))), secRef);
+              } catch (_) {}
+              for (const x of cells) {
+                x._dropped = true; _hdrCellsDropped++;
+                try { const id = context.lookup(x.ref).get(PDFName.of('ID')); if (id) droppedIds.add(id.decodeText ? id.decodeText() : String(id)); } catch (_) {}
+              }
+              _hdrRowsDropped++;
+            }
+            if (droppedIds.size) {
+              for (const lf of _unifiableLeafRefs) {
+                if (lf.role !== 'TD' && lf.role !== 'TH') continue;
+                try {
+                  const A = context.lookup(lf.ref).get(PDFName.of('A')); const Ad = A ? (context.lookup(A) || A) : null;
+                  const H = Ad && Ad.get ? (context.lookup(Ad.get(PDFName.of('Headers'))) || Ad.get(PDFName.of('Headers'))) : null;
+                  if (!H || typeof H.size !== 'function') continue;
+                  const keep = [];
+                  for (let i = 0; i < H.size(); i++) { const h = H.get(i); if (!droppedIds.has(h && h.decodeText ? h.decodeText() : String(h))) keep.push(h); }
+                  if (keep.length === H.size()) continue;
+                  if (keep.length) Ad.set(PDFName.of('Headers'), context.obj(keep)); else Ad.delete(PDFName.of('Headers'));
+                } catch (_) {}
+              }
+              for (let i = idTreeEntries.length - 1; i >= 0; i--) if (droppedIds.has(idTreeEntries[i].id)) idTreeEntries.splice(i, 1);
+            }
+          } catch (hdrErr) { try { warnLog('[Stage4b-OffPageCells] header rows non-fatal: ' + (hdrErr && hdrErr.message)); } catch (_) {} }
+          let _cellsBlanked = 0; const _blankS = [];
+          const _blank = (lf) => { try { context.lookup(lf.ref).delete(PDFName.of('ActualText')); } catch (_) {} lf._blanked = true; if (_blankS.length < 6) _blankS.push(lf.role + ' "' + String(lf.text).slice(0, 30) + '"'); };
+          { const fk = free.filter((k) => !consumed.has(String(blockStream[k].bRef))).map((k) => blockStream[k].key);
+          for (const lf of leafSeq) {
+            if (lf._linkedRun || lf._dropped || (lf.role !== 'TH' && lf.role !== 'TD')) continue;
+            const lw = _w(lf.text); if (!lw.length) continue;
+            const tKey = _key(_norm(lf.text)); if (!tKey) continue;
+            let onFree = false;
+            for (let i = 0; i < fk.length && !onFree; i++) { let r = ''; for (let j = i; j < fk.length && j - i < 3; j++) { r += fk[j]; if (r === tKey || (tKey.length >= 4 && r.includes(tKey))) { onFree = true; break; } } }
+            if (onFree || bestFreeDice(lw) >= 0.5) continue;
+            _blank(lf); _cellsBlanked++;
+          } }
+          _offPageCellsBlanked = _cellsBlanked; _offPageHeaderRowsDropped = _hdrRowsDropped;
+          if (_cellsBlanked || _hdrRowsDropped) { try { warnLog('[Stage4b-OffPageCells] ' + _hdrRowsDropped + ' unprinted header row(s) (' + _hdrCellsDropped + ' cells) left the tables; ' + _cellsBlanked + ' cell(s) not on the page kept as EMPTY cells, e.g. ' + _blankS.join('; ')); } catch (_) {} }
           if (_offPagePruned) { try { warnLog('[Stage4b-OffPage] ' + _offPagePruned + ' leaf/leaves not on the page left out of the tagged PDF (kept in the HTML export), e.g. ' + samples.join('; ')); } catch (_) {} }
         } catch (offErr) { try { warnLog('[Stage4b-OffPage] non-fatal: ' + (offErr && offErr.message)); } catch (_) {} }
         // ── Figure linkage (Stage 4c match): order-based, gated on EXACT
@@ -37707,6 +37918,7 @@ tr { page-break-inside: avoid; }
     // that key on the annotation's dict so readers can walk from widget
     // to tag tree. No-op when the PDF has no form (the common case).
     const fieldElemRefs = [];
+    const __formRecs = [];
     let nextStructParentKey = pages.length;
     // Digital-signature presence — shared by Stage 3 (forms) and Stage 3b (link
     // annots). 2026-06-07 rationale: adding /StructParent to annotation dicts
@@ -37727,6 +37939,7 @@ tr { page-break-inside: avoid; }
     // signature and disclose it in the exported report.
     let _pdfHasSignature = false;
     let _acroFormForSave = null; // the pdf-lib form, so field appearances can be drawn with an embedded font at save
+    let _fieldsNestedInCells = 0; // TD > Form > OBJR pairs (Stage 3)
     try {
       const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
       if (_acroSig && _acroSig.get) {
@@ -37866,12 +38079,64 @@ tr { page-break-inside: avoid; }
             const fieldElemDict = context.obj(_fieldDictObj);
             const fieldElemRef = context.register(fieldElemDict);
             fieldElemRefs.push(fieldElemRef);
+            __formRecs.push({ ref: fieldElemRef, label: String(fieldLabelText || ''), ft: (() => { try { return String(field.acroField.dict.get(PDFName.of('FT')) || ''); } catch (_) { return ''; } })(), x: (() => { try { const r = context.lookup(info.annotDict.get(PDFName.of('Rect'))) || info.annotDict.get(PDFName.of('Rect')); return Math.min(r.get(0).asNumber(), r.get(2).asNumber()); } catch (_) { return 0; } })(), used: false });
             try { info.annotDict.set(PDFName.of('StructParent'), PDFNumber.of(key)); } catch(_) {}
             parentTreeNums.push(PDFNumber.of(key));
             parentTreeNums.push(fieldElemRef);
           }
         }
       }
+      // ── Fields inside their table cells (2026-10-18, IRS 1040) ── The AI writes a blank form cell
+      // ("________") where the page draws a widget; that leaf has no page text to link to. Nest the
+      // widget's Form element in the cell (TD > Form > OBJR) and drop the placeholder /ActualText, so
+      // a screen reader meets the field IN its row (not after the whole document). Pairing is by the
+      // row's printed line label ("1a") or the XFA "Row: ... Column: ..." name; text similarity paired
+      // 1 of 54 wrongly and is not used. A cell with no single unused match stays as it was.
+      try {
+        const fc = String.fromCharCode;
+        const _phRe = new RegExp('[' + fc(0x2610, 0x25a1) + '_\\s.:;,()\\/-]', 'g');
+        const _ph = (s) => !!String(s || '').trim() && !String(s || '').replace(_phRe, '');
+        const _idMap = new Map(idTreeEntries.map((e) => [e.id, e.ref]));
+        const _at = (ref) => { try { const d = context.lookup(ref); const a = d && d.get(PDFName.of('ActualText')); return a ? (a.decodeText ? a.decodeText() : String(a)).trim() : ''; } catch (_) { return ''; } };
+        // A field name's line label: "1a. Total amount..." -> "1a"; "25. Federal income tax withheld from:
+        // a. Form(s) W-2" -> "25a" (a sub-line letter before the next period belongs to the number).
+        const _firstLbl = (tu) => {
+          const s = String(tu).replace(/^Page \d+\.\s*/i, '');
+          const m = /(?:^|\s)(\d{1,2})([a-z])?\.\s/i.exec(s);
+          if (!m) return null;
+          let lbl = (m[1] + (m[2] || '')).toLowerCase();
+          if (!m[2]) { const sub = /^(?:[^.\d]*?\s)?([a-z])\.\s/i.exec(s.slice(m.index + m[0].length)); if (sub) lbl += sub[1].toLowerCase(); }
+          return lbl;
+        };
+        const cand = [];
+        for (const lf of _unifiableLeafRefs) {
+          if (lf.role !== 'TD' || !_ph(lf.text)) continue;
+          const d = context.lookup(lf.ref); if (!d || d.get(PDFName.of('K')) != null) continue;
+          const A = d.get(PDFName.of('A')); const Ad = A ? (context.lookup(A) || A) : null; const H = Ad && Ad.get ? Ad.get(PDFName.of('Headers')) : null;
+          const hs = []; if (H && typeof H.size === 'function') for (let i = 0; i < H.size(); i++) { const h = H.get(i); const id = h && h.decodeText ? h.decodeText() : String(h); const r = _idMap.get(id); if (r) hs.push(_at(r)); }
+          cand.push({ lf, d, hs });
+        }
+        const pairs = [];
+        {
+          for (const c of cand) {
+            const line = c.hs.find((h) => /^\d{1,2}[a-z]?$/i.test(h));
+            const dep = c.hs.find((h) => /^Dependent \d$/i.test(h)); const rowH = c.hs.find((h) => /^\(\d\)/.test(h));
+            let m = null;
+            if (line) { m = __formRecs.filter((f) => !f.used && _firstLbl(f.label) === line.toLowerCase()); if (m.length > 1) { const mx = Math.max(...m.map((x) => x.x)); m = m.filter((x) => x.x === mx); } }
+            else if (dep && rowH) { const rk = rowH.replace(/\bSSN\b/, 'S S N'); m = __formRecs.filter((f) => !f.used && f.label.indexOf('Row: ' + rk) !== -1 && f.label.indexOf('Column: ' + dep) !== -1); }
+            if (!m || m.length !== 1) continue;
+            m[0].used = true; pairs.push({ c, f: m[0] });
+          }
+        }
+        for (const { c, f } of pairs) {
+          c.d.set(PDFName.of('K'), context.obj([f.ref]));
+          try { c.d.delete(PDFName.of('ActualText')); } catch (_) {}
+          try { context.lookup(f.ref).set(PDFName.of('P'), c.lf.ref); } catch (_) {}
+          const ix = fieldElemRefs.indexOf(f.ref); if (ix !== -1) fieldElemRefs.splice(ix, 1);
+        }
+        _fieldsNestedInCells = pairs.length;
+        if (cand.length) { try { warnLog('[Stage3-FieldsInCells] nested ' + pairs.length + '/' + cand.length + ' blank field cell(s) as TD > Form > OBJR (by printed line label / XFA row+column)'); } catch (_) {} }
+      } catch (nestErr) { try { warnLog('[Stage3-FieldsInCells] non-fatal: ' + (nestErr && nestErr.message)); } catch (_) {} }
     } catch(formErr) { try { warnLog('[createTaggedPdf] AcroForm tagging failed: ' + (formErr && formErr.message)); } catch(_) {} }
     // ── Stage 3b: Link annotation tagging ──
     // PDF/UA-1 §7.18 requires every annotation to be reachable from the
@@ -38626,7 +38891,10 @@ tr { page-break-inside: avoid; }
         // leaf" would block the UA declaration over decoration-grade text.
         // Lbls with REAL text (definition lists, custom markers) still count.
         if (lf.role === 'Lbl' && /^([•◦▪‣·*–-]|\d{1,3}[.)])$/.test(String(lf.text || '').trim())) continue;
-        if (!_reachable.has(_refKey(lf.ref))) continue; // stray from a fallback build attempt — not shipped
+        if (!_reachable.has(_refKey(lf.ref))) continue; // stray from a fallback build attempt
+        // An EMPTY cell (no content, no /ActualText: a grid placeholder, e.g. an off-page AI cell under
+        // Option B) is not an orphan; the validator applies the same exemption (2026-10-18).
+        if (lf.role === 'TH' || lf.role === 'TD') { try { const _d0 = context.lookup(lf.ref); if (_d0 && _d0.get(PDFName.of('K')) == null && _d0.get(PDFName.of('ActualText')) == null) continue; } catch (_) {} }
         _reachableLeafCountAtStamp++;
         try {
           const d = context.lookup(lf.ref);
@@ -38685,6 +38953,9 @@ tr { page-break-inside: avoid; }
         _summary.imageTextMovedToAlt = _imageTextMovedToAlt;
         _summary.provenanceFooterDropped = _provenanceFooterDropped;
         _summary.noPrintedHeadings = _noPrintedHeadings;
+        _summary.offPageCellsBlanked = _offPageCellsBlanked;
+        _summary.offPageHeaderRowsDropped = _offPageHeaderRowsDropped;
+        _summary.fieldsNestedInCells = _fieldsNestedInCells;
         // CORRECTNESS OVERWRITE: the summary literal sets pdfUaDeclared from
         // "any /Metadata stream exists" — true even when the evidence-based
         // gate WITHHELD the pdfuaid:part claim. The baseline download toast

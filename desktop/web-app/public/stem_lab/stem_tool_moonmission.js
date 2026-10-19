@@ -6024,9 +6024,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }); } catch (e) {}
 
 
-  // Fixed, varied cumulus silhouettes. Smooth lobes rise from a common body;
-  // one outline prevents overlapping translucent discs from showing through.
-  // Shapes, placement and shading are illustrative, not reconstructed weather.
+  // Fixed, varied cumulus silhouettes: a lopsided mound crowned with rounded
+  // turrets, and smaller turrets on those, so the top edge is a chain of bulges
+  // with cusps between them. Each turret rises from the surface beneath it and
+  // fades to nothing at its sides, so the outline never steps. One outline still
+  // prevents overlapping translucent shapes from showing through. Shapes,
+  // placement and shading are illustrative, not reconstructed weather.
   var _mmLaunchCloudShapes = {};
   function mmLaunchCloudGeometry(seed) {
     if (!Number.isInteger(seed) || seed < 0 || seed > 2147483647) return null;
@@ -6034,30 +6037,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     seed = seed % 5;
     if (_mmLaunchCloudShapes[seed]) return _mmLaunchCloudShapes[seed];
     function variation(i) { var n = Math.sin((seed + 1) * 17.13 + i * 43.71) * 43758.5453; return n - Math.floor(n); }
+    function bodyTopAt(x) { return 0.16 - 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4))); }
+    function bump(x, b) { var q = (x - b.x) / b.rx; return Math.abs(q) >= 1 ? 0 : b.h * Math.pow(1 - q * q, b.p); }
+    var mound = { x: (variation(1) - 0.5) * 0.9, rx: 1.75 + variation(2) * 0.3, h: 0.32 + variation(3) * 0.2, p: 0.7 };
+    // Large turrets across the mound, tallest near its crest; small ones crown them.
+    var large = [], small = [], count = 5 + Math.floor(variation(4) * 3);
+    for (var i = 0; i < count; i++) {
+      var cx = -1.7 + 3.4 * (i + 0.5) / count + (variation(10 + i) - 0.5) * 0.3;
+      var rx = 0.42 + variation(20 + i) * 0.32, crest = 1 - Math.min(1, Math.abs(cx - mound.x) / 2.2), taper = Math.min(1, (2.4 - Math.abs(cx)) / 1.1);
+      large.push({ x: cx, rx: Math.min(rx, 2.3 - Math.abs(cx)), h: rx * (0.45 + 0.5 * crest) * taper, p: 0.55 });
+    }
+    large.forEach(function(turret, i) {
+      if (variation(40 + i) < 0.4) return;
+      var cx = turret.x + (variation(50 + i) - 0.5) * turret.rx, rx = turret.rx * (0.45 + variation(60 + i) * 0.25);
+      small.push({ x: cx, rx: Math.min(rx, 2.3 - Math.abs(cx)), h: rx * 0.6, p: 0.55 });
+    });
+    function layer(x, set) { var best = 0; set.forEach(function(b) { best = Math.max(best, bump(x, b)); }); return best; }
+    function surface(x, depth) {
+      var y = bodyTopAt(x) - bump(x, mound);
+      if (depth >= 1) y -= layer(x, large);
+      if (depth >= 2) y -= layer(x, small);
+      return y;
+    }
     var lobes = [{ x: 0, y: 0.16, rx: 2.4, ry: 0.48 }];
-    [-1.5, -0.62, 0.35, 1.4].forEach(function(x, i) {
-      var primary = i === 1 + seed % 2, inner = i === 1 || i === 2;
-      var center = x + (variation(i + 12) - 0.5) * 0.18;
-      // One broad rising crest and lower shoulders avoid a regular ridge.
-      var rx = Math.min(2.35 - Math.abs(center), 0.68 + variation(i + 1) * 0.16 + (primary ? 0.3 : inner ? 0.15 : 0));
-      var ry = 0.5 + variation(i + 7) * 0.24 + (primary ? 0.5 : inner ? 0.18 : 0);
-      lobes.push({ x: center,
-        y: 0.34 - ry * (0.78 + variation(i + 19) * 0.24), rx: rx, ry: ry });
+    large.concat(small).forEach(function(turret, i) {
+      var top = surface(turret.x, i < large.length ? 1 : 2);
+      lobes.push({ x: turret.x, y: top + turret.h * 0.9, rx: turret.rx, ry: Math.max(0.12, turret.h) });
     });
     var top = [], bottom = [], minY = Infinity, baseY = 0.44;
-    for (var i = 0; i <= 128; i++) {
-      var x = -2.4 + 4.8 * i / 128;
-      var bodyHeight = 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4)));
-      var bodyTop = 0.16 - bodyHeight, upper = bodyTop, lower = 0.16 + bodyHeight;
-      lobes.slice(1).forEach(function(lobe) {
-        var q = (x - lobe.x) / lobe.rx;
-        if (Math.abs(q) >= 1) return;
-        // Each crest fades back into the body at its sides, avoiding a step
-        // where an elevated ellipse would first enter the outer envelope.
-        var centerTop = 0.16 - 0.48 * Math.sqrt(1 - (lobe.x / 2.4) * (lobe.x / 2.4));
-        var height = Math.max(0.1, centerTop - (lobe.y - lobe.ry));
-        upper = Math.min(upper, bodyTop - height * Math.pow(1 - q * q, 1.15));
-      });
+    for (var p = 0; p <= 256; p++) {
+      var x = -2.4 + 4.8 * p / 256;
+      var lower = 0.16 + 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4)));
+      var upper = p === 0 || p === 256 ? 0.16 : surface(x, 2);
       top.push(Object.freeze({ x: x, y: upper }));
       bottom.push(Object.freeze({ x: x, y: Math.min(baseY, lower) }));
       minY = Math.min(minY, upper);
